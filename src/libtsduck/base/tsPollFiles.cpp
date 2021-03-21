@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPollFiles.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 

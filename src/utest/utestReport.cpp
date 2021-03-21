@@ -33,7 +33,7 @@
 
 #include "tsReportBuffer.h"
 #include "tsReportFile.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 

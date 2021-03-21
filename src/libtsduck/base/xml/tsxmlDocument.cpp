@@ -32,7 +32,7 @@
 #include "tsxmlDeclaration.h"
 #include "tsxmlComment.h"
 #include "tsxmlUnknown.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 

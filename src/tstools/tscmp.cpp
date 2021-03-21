@@ -37,6 +37,7 @@
 #include "tsjsonOutputArgs.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsTextFormatter.h"
+#include "tsFileUtils.h"
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"

@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsTS.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);

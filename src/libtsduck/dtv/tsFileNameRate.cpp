@@ -29,7 +29,7 @@
 
 #include "tsFileNameRate.h"
 #include "tsxmlDocument.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 

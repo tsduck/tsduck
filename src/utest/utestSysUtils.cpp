@@ -27,10 +27,11 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for tsSysUtils.h
+//  TSUnit test suite for tsSysUtils.h and tsFileUtils.h
 //
 //----------------------------------------------------------------------------
 
+#include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsRegistry.h"

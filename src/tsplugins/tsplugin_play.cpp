@@ -34,7 +34,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsTSForkPipe.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsRegistry.h"
 TSDUCK_SOURCE;
 

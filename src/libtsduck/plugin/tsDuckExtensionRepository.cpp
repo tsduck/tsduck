@@ -29,6 +29,7 @@
 
 #include "tsDuckExtensionRepository.h"
 #include "tsApplicationSharedLibrary.h"
+#include "tsFileUtils.h"
 #include "tsCerrReport.h"
 TSDUCK_SOURCE;
 

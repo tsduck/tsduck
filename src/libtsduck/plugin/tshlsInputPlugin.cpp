@@ -29,7 +29,7 @@
 
 #include "tshlsInputPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"hls", ts::hls::InputPlugin);

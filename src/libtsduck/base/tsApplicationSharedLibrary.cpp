@@ -30,7 +30,7 @@
 #include "tsApplicationSharedLibrary.h"
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 

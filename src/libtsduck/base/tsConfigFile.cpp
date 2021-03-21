@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsConfigFile.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 // Used to return a constant reference.

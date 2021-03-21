@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsOutputPager.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 // Default name of the environment variable containing the pager command.

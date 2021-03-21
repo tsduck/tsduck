@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractHTTPInputPlugin.h"
+#include "tsFileUtils.h"
 #include "tsURL.h"
-#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 

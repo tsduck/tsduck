@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsByteBlock.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 

@@ -30,7 +30,7 @@
 #include "tshlsPlayList.h"
 #include "tshlsTagAttributes.h"
 #include "tsWebRequest.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 

@@ -41,7 +41,7 @@
 #include "tsjsonObject.h"
 #include "tsjsonArray.h"
 #include "tsjsonRunningDocument.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
 #include "tsunit.h"

@@ -30,7 +30,7 @@
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsSingletonManager.h"
 #include "tsNullReport.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsGuard.h"
 TSDUCK_SOURCE;
 

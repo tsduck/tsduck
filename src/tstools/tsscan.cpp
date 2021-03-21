@@ -43,7 +43,7 @@
 #include "tsTransportStreamId.h"
 #include "tsDescriptorList.h"
 #include "tsTime.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsNullReport.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
