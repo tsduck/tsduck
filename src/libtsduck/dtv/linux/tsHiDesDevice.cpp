@@ -83,7 +83,7 @@
 #include "tsHiDesDevice.h"
 #include "tsNullReport.h"
 #include "tsMemory.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsNames.h"
 TSDUCK_SOURCE;
 
