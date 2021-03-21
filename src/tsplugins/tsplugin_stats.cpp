@@ -37,6 +37,7 @@
 #include "tsSingleDataStatistics.h"
 #include "tsSafePtr.h"
 #include "tsFatal.h"
+#include "tsFileNameGenerator.h"
 #include "tsFileUtils.h"
 #include <cmath>
 TSDUCK_SOURCE;
@@ -78,11 +79,12 @@ namespace ts {
         TSPacketMetadata::LabelSet _labels;  // List of labels to track.
 
         // Working data.
-        std::ofstream  _output_stream; // Output file stream.
-        std::ostream*  _output;        // Point to actual output stream.
-        ContextMap     _ctx_map;       // Description of all tracked categories of packets.
-        TSSpeedMetrics _metrics;       // Timing to synchronize next output files.
-        NanoSecond     _next_report;   // Next time to create next output.
+        std::ofstream     _output_stream;  // Output file stream.
+        std::ostream*     _output;         // Point to actual output stream.
+        ContextMap        _ctx_map;        // Description of all tracked categories of packets.
+        TSSpeedMetrics    _metrics;        // Timing to synchronize next output files.
+        NanoSecond        _next_report;    // Next time to create next output.
+        FileNameGenerator _name_gen;       // Generate multiple output file names.
 
         // Get or create the description of a tracked PID or label.
         ContextPtr getContext(size_t index);
@@ -132,7 +134,8 @@ ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
     _output(nullptr),
     _ctx_map(),
     _metrics(),
-    _next_report(0)
+    _next_report(0),
+    _name_gen()
 {
     option(u"csv", 'c');
     help(u"csv",
@@ -163,7 +166,7 @@ ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
          u"When used with --interval and --output-file, create a new file for each "
          u"statistics report instead of rewriting the previous file. "
          u"Assuming that the specified output file name has the form 'base.ext', "
-         u"each file is created with a time stamp in its name as 'base_YYYYMMDD_hhmmss.ext'.");
+         u"each file is created with a time stamp in its name as 'base-YYYYMMDD-hhmmss.ext'.");
 
     option(u"noheader", 'n');
     help(u"noheader",
@@ -229,6 +232,7 @@ bool ts::StatsPlugin::start()
     // For production of multiple reports at regular intervals.
     _metrics.start();
     _next_report = _output_interval;
+    _name_gen.initDateTime(_output_name);
 
     // Create the output file. Note that this file is used only in the stop
     // method and could be created there. However, if the file cannot be
@@ -255,14 +259,7 @@ bool ts::StatsPlugin::openOutput()
     }
 
     // Build file name in case of --multiple-files
-    UString name;
-    if (_multiple_output) {
-        const Time::Fields now(Time::CurrentLocalTime());
-        name = UString::Format(u"%s_%04d%02d%02d_%02d%02d%02d%s", {PathPrefix(_output_name), now.year, now.month, now.day, now.hour, now.minute, now.second, PathSuffix(_output_name)});
-    }
-    else {
-        name = _output_name;
-    }
+    const UString name(_multiple_output ? _name_gen.newFileName() : _output_name);
 
     // Create the file
     _output_stream.open(name.toUTF8().c_str());

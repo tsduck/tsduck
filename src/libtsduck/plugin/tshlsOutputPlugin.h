@@ -38,6 +38,7 @@
 #include "tsTSFile.h"
 #include "tsPCRAnalyzer.h"
 #include "tsContinuityAnalyzer.h"
+#include "tsFileNameGenerator.h"
 #include "tshlsPlayList.h"
 
 namespace ts {
@@ -86,10 +87,7 @@ namespace ts {
             TSPacketMetadata::LabelSet _closeLabels;   // Close segment on packets with any of these labels.
 
             // Working data.
-            UString            _segmentTemplateHead;   // Head of segment file names.
-            UString            _segmentTemplateTail;   // Tail of segment file names.
-            size_t             _segmentNumWidth;       // Width of number field in segment file names.
-            size_t             _segmentNextFile;       // Counter in next segment file name.
+            FileNameGenerator  _nameGenerator;         // Generate the segment file names.
             SectionDemux       _demux;                 // Demux to extract PAT and PMT.
             TSPacketVector     _patPackets;            // TS packets for the PAT at start of each segment file.
             TSPacketVector     _pmtPackets;            // TS packets for the PMT at start of each segment file, after the PAT.

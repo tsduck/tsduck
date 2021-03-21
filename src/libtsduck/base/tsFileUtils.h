@@ -432,7 +432,6 @@ namespace ts {
     //! @return The path to an existing file or an empty string if not found.
     //!
     TSDUCKDLL UString SearchConfigurationFile(const UString& fileName);
-
 }
 
 TS_ENABLE_BITMASK_OPERATORS(ts::ResolveSymbolicLinksFlags);

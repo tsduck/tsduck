@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2284
+VERSION 3.26-2300
 
 [NEW] New commands and plugins:
 
@@ -23,6 +23,7 @@ VERSION 3.26-2284
       to plugin "splicemonitor".
     - Options --event-command, --event-udp, --event-ttl and --event-local-address
       to "tsswitch".
+    - Options --max-size and --max-duration in output plugin "file".
 
 -------------------------------------------------------------------------------
 

@@ -35,6 +35,7 @@
 #pragma once
 #include "tsOutputPlugin.h"
 #include "tsTSFile.h"
+#include "tsFileNameGenerator.h"
 
 namespace ts {
     //!
@@ -63,6 +64,7 @@ namespace ts {
         //! @endcond
 
     private:
+        // Command line options:
         UString           _name;
         TSFile::OpenFlags _flags;
         TSPacketFormat    _file_format;
@@ -71,7 +73,15 @@ namespace ts {
         size_t            _retry_max;
         size_t            _start_stuffing;
         size_t            _stop_stuffing;
+        uint64_t          _max_size;
+        Second            _max_duration;
+        bool              _multiple_files;
+
+        // Working data:
         TSFile            _file;
+        FileNameGenerator _name_gen;
+        uint64_t          _current_size;
+        Time              _next_open_time;
 
         // Open the file, retry on error if necessary.
         // Use max number of retries. Updated with remaining number of retries.
