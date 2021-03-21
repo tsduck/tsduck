@@ -96,13 +96,13 @@ void WebRequestTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile();
     }
-    ts::DeleteFile(_tempFileName);
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 // Test suite cleanup method.
 void WebRequestTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName);
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 ts::Report& WebRequestTest::report()

@@ -55,8 +55,8 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
     ::HANDLE handle = ::FindFirstFileW(pattern.wc_str(), &fdata);
     if (handle == INVALID_HANDLE_VALUE) {
         // No file matching the pattern is not an error
-        const SysErrorCode status = ::GetLastError();
-        return status == SYS_SUCCESS || status == ERROR_FILE_NOT_FOUND;
+        const ::DWORD status = ::GetLastError();
+        return status == ERROR_SUCCESS || status == ERROR_FILE_NOT_FOUND;
     }
 
     // Loop on all file matching the pattern
@@ -70,11 +70,11 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
             container.push_back(dir + file);
         }
     } while (::FindNextFileW(handle, &fdata) != 0);
-    const SysErrorCode status = ::GetLastError(); // FindNextFile status
+    const ::DWORD status = ::GetLastError(); // FindNextFile status
 
     // Cleanup the search context
     ::FindClose(handle);
-    return status == SYS_SUCCESS || status == ERROR_NO_MORE_FILES; // normal end of search
+    return status == ERROR_SUCCESS || status == ERROR_NO_MORE_FILES; // normal end of search
 
 #elif defined(TS_UNIX)
 
@@ -90,7 +90,7 @@ bool ts::ExpandWildcardAndAppend(CONTAINER& container, const UString& pattern)
             }
         }
     }
-    ::globfree (&gl);
+    ::globfree(&gl);
     return status == 0 || status == GLOB_NOMATCH;
 
 #else

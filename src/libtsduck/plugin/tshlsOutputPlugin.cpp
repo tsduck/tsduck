@@ -377,9 +377,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
         // Delete the segment file.
         tsp->verbose(u"deleting obsolete segment file %s", {name});
-        if (DeleteFile(name) != SYS_SUCCESS) {
-            tsp->verbose(u"error deleting obsolete segment file %s", {name});
-        }
+        DeleteFile(name, *tsp);
 
         // WARNING: several improvements are possible here.
         // - It could be better to delay the purge of obsolete segments. Clients may have loaded

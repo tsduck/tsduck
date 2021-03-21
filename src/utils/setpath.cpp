@@ -41,6 +41,7 @@
 
 #include "tsArgs.h"
 #include "tsByteBlock.h"
+#include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsRegistry.h"
 TSDUCK_SOURCE;

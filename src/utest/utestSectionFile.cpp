@@ -118,15 +118,15 @@ void SectionFileTest::beforeTest()
         _tempFileNameBin = ts::TempFile(u".tmp.bin");
         _tempFileNameXML = ts::TempFile(u".tmp.xml");
     }
-    ts::DeleteFile(_tempFileNameBin);
-    ts::DeleteFile(_tempFileNameXML);
+    ts::DeleteFile(_tempFileNameBin, NULLREP);
+    ts::DeleteFile(_tempFileNameXML, NULLREP);
 }
 
 // Test suite cleanup method.
 void SectionFileTest::afterTest()
 {
-    ts::DeleteFile(_tempFileNameBin);
-    ts::DeleteFile(_tempFileNameXML);
+    ts::DeleteFile(_tempFileNameBin, NULLREP);
+    ts::DeleteFile(_tempFileNameXML, NULLREP);
 }
 
 ts::Report& SectionFileTest::report()

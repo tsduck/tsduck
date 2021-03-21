@@ -102,13 +102,13 @@ void JsonTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".tmp.json");
     }
-    ts::DeleteFile(_tempFileName);
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 // Test suite cleanup method.
 void JsonTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName);
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 // Load the content of a text file.

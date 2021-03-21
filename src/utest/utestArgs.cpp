@@ -33,6 +33,7 @@
 
 #include "tsArgs.h"
 #include "tsReportBuffer.h"
+#include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsVersion.h"
 #include "tsunit.h"
@@ -131,8 +132,8 @@ void ArgsTest::beforeTest()
 // Test suite cleanup method.
 void ArgsTest::afterTest()
 {
-    ts::DeleteFile(_tempFile1);
-    ts::DeleteFile(_tempFile2);
+    ts::DeleteFile(_tempFile1, NULLREP);
+    ts::DeleteFile(_tempFile2, NULLREP);
 }
 
 

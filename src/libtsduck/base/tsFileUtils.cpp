@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsFileUtils.h"
+#include "tsSysUtils.h"
 #include "tsMemory.h"
 #include "tsUID.h"
 TSDUCK_SOURCE;
@@ -384,27 +385,30 @@ ts::UString ts::UserHomeDirectory()
 // Create a directory
 //----------------------------------------------------------------------------
 
-ts::SysErrorCode ts::CreateDirectory(const UString& path, bool intermediate)
+bool ts::CreateDirectory(const UString& path, bool intermediate, Report& report)
 {
     // Create intermediate directories.
     if (intermediate) {
-        const UString dir(DirectoryName(path));
-        // Create only if does not exist or is identical to path (meaning root).
-        if (dir != path && !IsDirectory(dir)) {
-            // Create recursively.
-            const SysErrorCode err = CreateDirectory(dir, true);
-            if (err != SYS_SUCCESS) {
-                return err;
-            }
+        const UString parent(DirectoryName(path));
+        // Create recursively only if does not exist or is not identical to path (meaning root).
+        if (parent != path && !IsDirectory(parent) && !CreateDirectory(parent, true, report)) {
+            return false;
         }
     }
 
     // Create the final directory.
 #if defined(TS_WINDOWS)
-    return ::CreateDirectoryW(path.wc_str(), nullptr) == 0 ? ::GetLastError() : SYS_SUCCESS;
+    if (::CreateDirectoryW(path.wc_str(), nullptr)) {
+        return true;
+    }
 #else
-    return ::mkdir(path.toUTF8().c_str(), 0777) < 0 ? errno : SYS_SUCCESS;
+    if (::mkdir(path.toUTF8().c_str(), 0777) == 0) {
+        return true;
+    }
 #endif
+    const SysErrorCode err = LastSysErrorCode();
+    report.error(u"error creating directory %s: %s", { path, SysErrorCodeMessage(err) });
+    return false;
 }
 
 
@@ -509,18 +513,27 @@ bool ts::IsDirectory(const UString& path)
 // Delete a file. Return an error code.
 //----------------------------------------------------------------------------
 
-ts::SysErrorCode ts::DeleteFile(const UString& path)
+bool ts::DeleteFile(const UString& path, Report& report)
 {
 #if defined(TS_WINDOWS)
     if (IsDirectory(path)) {
-        return ::RemoveDirectoryW(path.wc_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
+        if (::RemoveDirectoryW(path.wc_str())) {
+            return true;
+        }
     }
     else {
-        return ::DeleteFileW(path.wc_str()) == 0 ? ::GetLastError() : SYS_SUCCESS;
+        if (::DeleteFileW(path.wc_str())) {
+            return true;
+        }
     }
 #else
-    return ::remove(path.toUTF8().c_str()) < 0 ? errno : SYS_SUCCESS;
+    if (::remove(path.toUTF8().c_str()) == 0) {
+        return true;
+    }
 #endif
+    const SysErrorCode err = LastSysErrorCode();
+    report.error(u"error deleting %s: %s", {path, SysErrorCodeMessage(err)});
+    return false;
 }
 
 
@@ -528,30 +541,35 @@ ts::SysErrorCode ts::DeleteFile(const UString& path)
 // Truncate a file to the specified size. Return an error code.
 //----------------------------------------------------------------------------
 
-ts::SysErrorCode ts::TruncateFile(const UString& path, uint64_t size)
+bool ts::TruncateFile(const UString& path, uint64_t size, Report& report)
 {
+    SysErrorCode err = SYS_SUCCESS;
+
 #if defined(TS_WINDOWS)
 
     ::LONG size_high = ::LONG(size >> 32);
-    ::DWORD status = ERROR_SUCCESS;
     ::HANDLE h = ::CreateFileW(path.wc_str(), GENERIC_WRITE, 0, 0, OPEN_EXISTING, 0, 0);
-    if (h == INVALID_HANDLE_VALUE) {
-        return ::GetLastError();
-    }
-    else if (::SetFilePointer(h, ::LONG(size), &size_high, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
-        status = ::GetLastError();
-    }
-    else if (::SetEndOfFile(h) == 0) {
-        status = ::GetLastError();
+    if (h == INVALID_HANDLE_VALUE ||
+        ::SetFilePointer(h, ::LONG(size), &size_high, FILE_BEGIN) == INVALID_SET_FILE_POINTER ||
+        ::SetEndOfFile(h) == 0)
+    {
+        err = ::GetLastError();
     }
     ::CloseHandle(h);
-    return status;
 
 #else
 
-    return ::truncate(path.toUTF8().c_str(), off_t(size)) < 0 ? errno : 0;
+    err = ::truncate(path.toUTF8().c_str(), off_t(size)) < 0 ? errno : 0;
 
 #endif
+
+    if (err == SYS_SUCCESS) {
+        return true;
+    }
+    else {
+        report.error(u"error truncating %s: %s", {path, SysErrorCodeMessage(err)});
+        return false;
+    }
 }
 
 
@@ -560,13 +578,20 @@ ts::SysErrorCode ts::TruncateFile(const UString& path, uint64_t size)
 // Not guaranteed to work across volumes or file systems.
 //----------------------------------------------------------------------------
 
-ts::SysErrorCode ts::RenameFile(const UString& old_path, const UString& new_path)
+bool ts::RenameFile(const UString& old_path, const UString& new_path, Report& report)
 {
 #if defined(TS_WINDOWS)
-    return ::MoveFileW(old_path.wc_str(), new_path.wc_str()) == 0 ? ::GetLastError() : ERROR_SUCCESS;
+    if (::MoveFileW(old_path.wc_str(), new_path.wc_str())) {
+        return true;
+    }
 #else
-    return ::rename(old_path.toUTF8().c_str(), new_path.toUTF8().c_str()) < 0 ? errno : 0;
+    if (::rename(old_path.toUTF8().c_str(), new_path.toUTF8().c_str()) == 0) {
+        return true;
+    }
 #endif
+    const SysErrorCode err = LastSysErrorCode();
+    report.error(u"error renaming %s: %s", {old_path, SysErrorCodeMessage(err)});
+    return false;
 }
 
 

@@ -33,7 +33,6 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
-#include "tsFileUtils.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFileArgs.h"
 #include "tsDVBCharTable.h"
@@ -42,6 +41,8 @@
 #include "tsReportWithPrefix.h"
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
+#include "tsFileUtils.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
