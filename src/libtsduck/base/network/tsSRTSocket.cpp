@@ -691,8 +691,8 @@ bool ts::SRTSocket::Guts::setSockOptPost(ts::Report& report)
 
 int ts::SRTSocket::Guts::srtListen(const ts::SocketAddress& addr, ts::Report& report)
 {
-    int ret, reuse = 1, peer_addr_len;
     ::sockaddr sock_addr, peer_addr;
+    int ret, reuse = 1, peer_addr_len = sizeof(peer_addr);
     addr.copy(sock_addr);
 
     ret = setSockOpt(SRTO_REUSEADDR, "SRTO_REUSEADDR", &reuse, sizeof(reuse), report);
