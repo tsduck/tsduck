@@ -36,8 +36,8 @@
 #pragma once
 #include "tsUString.h"
 #include "tsEnumUtils.h"
-#include "tsSysUtils.h"
 #include "tsTime.h"
+#include "tsCerrReport.h"
 
 //!
 //! Executable file suffix.
@@ -250,9 +250,10 @@ namespace ts {
     //! Create a directory
     //! @param [in] path A directory path.
     //! @param [in] intermediate When true, also create intermediate directories.
-    //! @return A system-specific error code (SYS_SUCCESS on success).
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
     //!
-    TSDUCKDLL SysErrorCode CreateDirectory(const UString& path, bool intermediate = false);
+    TSDUCKDLL bool CreateDirectory(const UString& path, bool intermediate = false, Report& report = CERR);
 
     //!
     //! Return the name of a directory for temporary files.
@@ -311,18 +312,20 @@ namespace ts {
     //! Otherwise, an error is returned.
     //!
     //! @param [in] path A file or directory path.
-    //! @return A system-specific error code (SYS_SUCCESS on success).
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
     //!
-    TSDUCKDLL SysErrorCode DeleteFile(const UString& path);
+    TSDUCKDLL bool DeleteFile(const UString& path, Report& report = CERR);
 
     //!
     //! Truncate a file to the specified size.
     //!
     //! @param [in] path A file path.
     //! @param [in] size Size in bytes after which the file shall be truncated.
-    //! @return A system-specific error code (SYS_SUCCESS on success).
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
     //!
-    TSDUCKDLL SysErrorCode TruncateFile(const UString& path, uint64_t size);
+    TSDUCKDLL bool TruncateFile(const UString& path, uint64_t size, Report& report = CERR);
 
     //!
     //! Rename / move a file or directory.
@@ -335,9 +338,10 @@ namespace ts {
     //!
     //! @param [in] old_path The file path of an existing file or directory.
     //! @param [in] new_path The new name for the file or directory.
-    //! @return A system-specific error code (SYS_SUCCESS on success).
+    //! @param [in,out] report Where to report errors.
+    //! @return True on success, false on error.
     //!
-    TSDUCKDLL SysErrorCode RenameFile(const UString& old_path, const UString& new_path);
+    TSDUCKDLL bool RenameFile(const UString& old_path, const UString& new_path, Report& report = CERR);
 
     //!
     //! Get all files matching a specified wildcard pattern and append them into a container.

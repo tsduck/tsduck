@@ -1058,10 +1058,7 @@ bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileLis
 
                 // Delete file after successful load when required.
                 if (_plugin->_delete_files) {
-                    const SysErrorCode err = DeleteFile(name);
-                    if (err != SYS_SUCCESS) {
-                        _tsp->error(u"error deleting %s: %s", {name, SysErrorCodeMessage(err)});
-                    }
+                    DeleteFile(name, *_tsp);
                 }
             }
         }

@@ -30,6 +30,7 @@
 #include "tsDuckConfigFile.h"
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 // Define singleton instance

@@ -31,6 +31,8 @@
 #include "tsStaticInstance.h"
 #include "tsMutex.h"
 #include "tsGuard.h"
+#include "tsTime.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 
 #if defined(TS_WINDOWS)

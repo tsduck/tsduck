@@ -33,6 +33,7 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsFileUtils.h"
+#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -510,10 +511,7 @@ bool ts::ChannelFile::save(const UString& fileName, bool createDirectories, Repo
     if (createDirectories) {
         const UString dir(DirectoryName(fileName));
         if (!IsDirectory(dir)) {
-            const SysErrorCode err = CreateDirectory(dir, true);
-            if (err != SYS_SUCCESS) {
-                report.error(u"error creating directory %s: %s", {dir, SysErrorCodeMessage(err)});
-            }
+            CreateDirectory(dir, true, report);
         }
     }
 

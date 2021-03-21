@@ -100,13 +100,13 @@ void XMLTest::beforeTest()
     if (_tempFileName.empty()) {
         _tempFileName = ts::TempFile(u".tmp.xml");
     }
-    ts::DeleteFile(_tempFileName);
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 // Test suite cleanup method.
 void XMLTest::afterTest()
 {
-    ts::DeleteFile(_tempFileName);
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 ts::Report& XMLTest::report()
@@ -247,7 +247,7 @@ void XMLTest::testFileBOM()
     TSUNIT_EQUAL(childText1, elem->text(false));
     TSUNIT_EQUAL(childText2, elem->text(true));
 
-    TSUNIT_EQUAL(ts::SYS_SUCCESS, ts::DeleteFile(_tempFileName));
+    TSUNIT_ASSERT(ts::DeleteFile(_tempFileName));
 }
 
 void XMLTest::testValidation()

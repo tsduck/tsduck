@@ -36,6 +36,7 @@
 #include "tsFatal.h"
 #include "tsIntegerUtils.h"
 #include "tsFileUtils.h"
+#include "tsSysUtils.h"
 #include "tsSingletonManager.h"
 #include "tsURL.h"
 TSDUCK_SOURCE;
@@ -212,14 +213,7 @@ bool ts::WebRequest::deleteCookiesFile(Report& report) const
     }
     else {
         report.debug(u"deleting cookies file %s", {_cookiesFileName});
-        const SysErrorCode status = DeleteFile(_cookiesFileName);
-        if (status != SYS_SUCCESS) {
-            report.error(u"error deleting cookies file %s", {_cookiesFileName});
-            return false;
-        }
-        else {
-            return true;
-        }
+        return DeleteFile(_cookiesFileName, report);
     }
 }
 

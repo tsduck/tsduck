@@ -33,6 +33,7 @@
 
 #include "tsMain.h"
 #include "tsFileUtils.h"
+#include "tsSysUtils.h"
 #include "tsTS.h"
 TSDUCK_SOURCE;
 TS_MAIN(MainCode);
@@ -165,9 +166,7 @@ int MainCode(int argc, char *argv[])
 
         // Do the truncation
 
-        if (!opt.check_only && keep < file_size && (err = TruncateFile(*file, keep)) != ts::SYS_SUCCESS) {
-            err = ts::LastSysErrorCode();
-            opt.error(u"%s: %s", {*file, ts::SysErrorCodeMessage(err)});
+        if (!opt.check_only && keep < file_size && !TruncateFile(*file, keep, opt)) {
             success = false;
         }
     }
