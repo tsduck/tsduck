@@ -40,6 +40,10 @@ TSDUCK_SOURCE;
 #include "tsWinUtils.h"
 #endif
 
+#if defined(TS_LINUX)
+#include "tsFileUtils.h"
+#endif
+
 #if defined(TS_MAC)
 #include <sys/resource.h>
 #include <mach/mach.h>

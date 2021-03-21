@@ -28,7 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerDeviceInfo.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 

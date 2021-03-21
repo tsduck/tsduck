@@ -36,6 +36,7 @@
 #include "tsHFBand.h"
 #include "tsTime.h"
 #include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsSignalAllocator.h"
 #include "tsNullReport.h"
 #include "tsMemory.h"
