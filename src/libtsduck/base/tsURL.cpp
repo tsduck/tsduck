@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsURL.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 

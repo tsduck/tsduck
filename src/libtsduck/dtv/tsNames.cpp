@@ -29,7 +29,7 @@
 
 #include "tsNames.h"
 #include "tsDuckContext.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsFatal.h"
 #include "tsCerrReport.h"
 #include "tsPSIRepository.h"

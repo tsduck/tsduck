@@ -33,7 +33,7 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFileArgs.h"
 #include "tsDVBCharTable.h"

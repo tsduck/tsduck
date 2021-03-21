@@ -33,7 +33,7 @@
 #include "tsSectionFile.h"
 #include "tsPAT.h"
 #include "tstlv.h"
-#include "tsTime.h"
+#include "tsFileUtils.h"
 #include "tsDuckContext.h"
 #include "tsSimulCryptDate.h"
 #include "tsDuckProtocol.h"

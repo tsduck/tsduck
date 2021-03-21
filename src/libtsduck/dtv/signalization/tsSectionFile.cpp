@@ -36,7 +36,7 @@
 #include "tsDuckContext.h"
 #include "tsxmlJSONConverter.h"
 #include "tsjsonNull.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsEIT.h"
 TSDUCK_SOURCE;
 

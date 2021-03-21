@@ -29,7 +29,7 @@
 
 #include "tsArgs.h"
 #include "tsAlgorithm.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsVersionInfo.h"
 #include "tsOutputPager.h"
 #include "tsDuckConfigFile.h"

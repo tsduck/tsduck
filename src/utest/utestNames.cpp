@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNames.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsDuckContext.h"
 #include "tsMPEG2.h"
 #include "tsAVC.h"

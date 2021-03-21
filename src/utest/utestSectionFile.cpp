@@ -37,7 +37,7 @@
 #include "tsCAT.h"
 #include "tsTDT.h"
 #include "tsCAIdentifierDescriptor.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
 #include "tsTSPacket.h"

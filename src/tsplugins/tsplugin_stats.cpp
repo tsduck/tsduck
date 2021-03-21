@@ -37,6 +37,7 @@
 #include "tsSingleDataStatistics.h"
 #include "tsSafePtr.h"
 #include "tsFatal.h"
+#include "tsFileUtils.h"
 #include <cmath>
 TSDUCK_SOURCE;
 

@@ -33,7 +33,7 @@
 
 #include "tsUString.h"
 #include "tsByteBlock.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsSocketAddress.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;

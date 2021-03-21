@@ -32,7 +32,7 @@
 #include "tsLegacyBandWidth.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 

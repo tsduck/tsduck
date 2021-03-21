@@ -35,7 +35,7 @@
 #include "tsPluginRepository.h"
 #include "tsSectionDemux.h"
 #include "tsBinaryTable.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsChannelFile.h"
 #include "tsPAT.h"
 #include "tsNIT.h"

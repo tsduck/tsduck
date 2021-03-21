@@ -38,6 +38,7 @@
 #include "tsTablesDisplay.h"
 #include "tsTablesLoggerFilterInterface.h"
 #include "tsArgs.h"
+#include "tsTime.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsTextFormatter.h"

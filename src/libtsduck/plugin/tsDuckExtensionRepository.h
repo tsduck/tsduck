@@ -35,7 +35,6 @@
 #pragma once
 #include "tsSingletonManager.h"
 #include "tsReport.h"
-#include "tsSysUtils.h"
 #include "tsVersionInfo.h"
 
 namespace ts {

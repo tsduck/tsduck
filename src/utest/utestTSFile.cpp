@@ -35,7 +35,7 @@
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
 #include "tsCerrReport.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsunit.h"
 TSDUCK_SOURCE;
 

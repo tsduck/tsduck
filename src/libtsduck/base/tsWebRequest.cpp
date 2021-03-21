@@ -35,7 +35,7 @@
 #include "tsWebRequest.h"
 #include "tsFatal.h"
 #include "tsIntegerUtils.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsSingletonManager.h"
 #include "tsURL.h"
 TSDUCK_SOURCE;

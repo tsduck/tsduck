@@ -36,7 +36,7 @@
 #include "tsCyclingPacketizer.h"
 #include "tsFileNameRate.h"
 #include "tsSectionFileArgs.h"
-#include "tsSysUtils.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 #define DEF_EVALUATE_INTERVAL  100   // In packets

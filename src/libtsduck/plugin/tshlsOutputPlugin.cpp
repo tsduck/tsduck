@@ -30,10 +30,10 @@
 #include "tshlsOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsOneShotPacketizer.h"
+#include "tsFileUtils.h"
 #include "tsPESPacket.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
-#include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
