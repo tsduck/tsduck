@@ -209,6 +209,9 @@ TSDUCKPY bool tspyStartInputSwitcher(void* pyobj, const tspyInputSwitcherArgs* p
         }
     }
 
+    // Fix missing default values.
+    args.enforceDefaults();
+
     // Finally start the InputSwitcher.
     return isw->start(args);
 }

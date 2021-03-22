@@ -27,31 +27,14 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TS input switch based on input plugins.
-//
-//  Implementation notes:
-//
-//  The class Core implements the core function of tsswitch. It is used
-//  by all other classes to get their instructions and report their status.
-//
-//  Each instance of the class InputExecutor implements a thread running one
-//  input plugin.
-//
-//  The class OutputExecutor implements the thread running the single output
-//  plugin. When started, it simply waits for packets from the current input
-//  plugin and outputs them. The output threads stops when instructed by the
-//  Switch object or in case of output error. In case of error, the output
-//  threads sends a global stop command to the Switch object.
-//
-//  If the option --remote is used, an instance of the class CommandListener
-//  starts a thread which listens to UDP commands. The received commands are
-//  sent to the Switch object.
+//  TS multiplexer.
 //
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsMuxer.h"
+#include "tsMuxerArgs.h"
 #include "tsArgsWithPlugins.h"
-#include "tsInputSwitcher.h"
 #include "tsPluginRepository.h"
 #include "tsSystemMonitor.h"
 #include "tsAsyncReport.h"
@@ -65,40 +48,40 @@ TS_MAIN(MainCode);
 //----------------------------------------------------------------------------
 
 namespace {
-    class TSSwitchOptions: public ts::ArgsWithPlugins
+    class TSMuxOptions: public ts::ArgsWithPlugins
     {
-        TS_NOBUILD_NOCOPY(TSSwitchOptions);
+        TS_NOBUILD_NOCOPY(TSMuxOptions);
     public:
-        TSSwitchOptions(int argc, char *argv[]);
+        TSMuxOptions(int argc, char *argv[]);
 
-        bool                  monitor;         // Run a resource monitoring thread in the background.
-        ts::UString           monitor_config;  // System monitoring configuration file.
-        ts::DuckContext       duck;            // TSDuck context
-        ts::AsyncReportArgs   log_args;        // Asynchronous logger arguments.
-        ts::InputSwitcherArgs switch_args;     // TS processing arguments.
+        bool                monitor;         // Run a resource monitoring thread in the background.
+        ts::UString         monitor_config;  // System monitoring configuration file.
+        ts::DuckContext     duck;            // TSDuck context
+        ts::AsyncReportArgs log_args;        // Asynchronous logger arguments.
+        ts::MuxerArgs       mux_args;        // TS multiplexer arguments.
     };
 }
 
-TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
+TSMuxOptions::TSMuxOptions(int argc, char *argv[]) :
     ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1),
     monitor(false),
     monitor_config(),
     duck(this),
     log_args(),
-    switch_args()
+    mux_args()
 {
-    setDescription(u"TS input source switch using remote control");
-    setSyntax(u"[tsswitch-options] -I input-name [input-options] ... [-O output-name [output-options]]");
+    setDescription(u"TS multiplexer");
+    setSyntax(u"[tsmux-options] -I input-name [input-options] ... [-O output-name [output-options]]");
 
     option(u"monitor", 'm', STRING, 0, 1, 0, UNLIMITED_VALUE, true);
     help(u"monitor", u"filename",
-         u"Continuously monitor the system resources which are used by tsswitch. "
+         u"Continuously monitor the system resources which are used by tsmux. "
          u"This includes CPU load, virtual memory usage. "
          u"Useful to verify the stability of the application. "
          u"The optional file is an XML monitoring configuration file.");
 
     log_args.defineArgs(*this);
-    switch_args.defineArgs(*this);
+    mux_args.defineArgs(*this);
 
     // Analyze the command.
     analyze(argc, argv);
@@ -107,7 +90,7 @@ TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
     monitor = present(u"monitor");
     getValue(monitor_config, u"monitor");
     log_args.loadArgs(duck, *this);
-    switch_args.loadArgs(duck, *this);
+    mux_args.loadArgs(duck, *this);
 
     // Final checking
     exitOnError();
@@ -121,7 +104,7 @@ TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
 int MainCode(int argc, char *argv[])
 {
     // Get command line options.
-    TSSwitchOptions opt(argc, argv);
+    TSMuxOptions opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
 
     // If plugins were statically linked, disallow the dynamic loading of plugins.
@@ -129,19 +112,33 @@ int MainCode(int argc, char *argv[])
     ts::PluginRepository::Instance()->setSharedLibraryAllowed(false);
 #endif
 
+    // Prevent from being killed when writing on broken pipes.
+    ts::IgnorePipeSignal();
+
     // Create and start an asynchronous log (separate thread).
     ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
 
     // System monitor thread.
     ts::SystemMonitor monitor(report, opt.monitor_config);
 
+    // The mux is performed into this object.
+    ts::Muxer mux(report);
+
     // Start the monitoring thread if required.
     if (opt.monitor) {
         monitor.start();
     }
 
-    // The TS input processing is performed into this object.
-    ts::InputSwitcher switcher(opt.switch_args, report);
+    // Start the mux.
+    if (!mux.start(opt.mux_args)) {
+        return EXIT_FAILURE;
+    }
 
-    return switcher.success() ? EXIT_SUCCESS : EXIT_FAILURE;
+    // Start checking for new TSDuck version in the background.
+    ts::VersionInfo version_check(report);
+    version_check.startNewVersionDetection();
+
+    // And wait for mux termination.
+    mux.waitForTermination();
+    return EXIT_SUCCESS;
 }

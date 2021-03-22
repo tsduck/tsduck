@@ -33,7 +33,7 @@ package io.tsduck;
  * A wrapper class for C++ TSProcessor.
  * @ingroup java
  */
-public final class TSProcessor extends NativeObject {
+public final class TSProcessor extends PluginEventHandlerRegistry {
 
     /*
      * Set the address of the C++ object.
@@ -69,25 +69,6 @@ public final class TSProcessor extends NativeObject {
     public TSProcessor(Report report) {
         initNativeObject(report);
     }
-
-    /**
-     * Register an event handler by event code.
-     * @param handler An instance of AbstractPluginEventHandler.
-     * @param eventCode The code of the events to handle.
-     */
-    public native void registerEventHandler(AbstractPluginEventHandler handler, int eventCode);
-
-    /**
-     * Register an event handler for all events from the input plugin.
-     * @param handler An instance of AbstractPluginEventHandler.
-     */
-    public native void registerInputEventHandler(AbstractPluginEventHandler handler);
-
-    /**
-     * Register an event handler for all events from the output plugin.
-     * @param handler An instance of AbstractPluginEventHandler.
-     */
-    public native void registerOutputEventHandler(AbstractPluginEventHandler handler);
 
     /**
      * Start the TS processor.

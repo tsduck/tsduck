@@ -406,6 +406,8 @@
 #include "tsMultiplexBufferUtilizationDescriptor.h"
 #include "tsMutex.h"
 #include "tsMutexInterface.h"
+#include "tsMuxer.h"
+#include "tsMuxerArgs.h"
 #include "tsMVCExtensionDescriptor.h"
 #include "tsMVCOperationPointDescriptor.h"
 #include "tsNames.h"

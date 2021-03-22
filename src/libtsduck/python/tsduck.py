@@ -1211,6 +1211,61 @@ class SystemMonitor(NativeObject):
 
 
 #-----------------------------------------------------------------------------
+# PluginEventHandlerRegistry: Base class for plugin processors
+#-----------------------------------------------------------------------------
+
+##
+# A wrapper class for C++ PluginEventHandlerRegistry.
+# @ingroup python
+#
+class PluginEventHandlerRegistry(NativeObject):
+
+    ##
+    # Constructor.
+    #
+    def __init__(self):
+        super().__init__()
+
+    ##
+    # Register an event handler by event code.
+    # @param handler An instance of AbstractPluginEventHandler.
+    # @param event_code The code of the events to handle.
+    # @return None.
+    #
+    def registerEventHandler(self, handler, event_code):
+        # void tspyPluginEventHandlerRegister(void* tsp, ts::PluginEventHandlerInterface* handler, uint32_t event_code)
+        cfunc = _lib.tspyPluginEventHandlerRegister
+        cfunc.restype = None
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32]
+        cfunc(self._native_object, handler._native_object, ctypes.c_uint32(event_code))
+
+    ##
+    # Register an event handler for all events from the input plugin.
+    # @param handler An instance of AbstractPluginEventHandler.
+    # @return None.
+    #
+    def registerInputEventHandler(self, handler):
+        # void tspyPluginEventHandlerRegisterInput(void* tsp, ts::PluginEventHandlerInterface* handler)
+        cfunc = _lib.tspyPluginEventHandlerRegisterInput
+        cfunc.restype = None
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+        cfunc(self._native_object, handler._native_object)
+
+    ##
+    # Register an event handler for all events from the output plugin.
+    # @param handler An instance of AbstractPluginEventHandler.
+    # @return None.
+    #
+    def registerOutputEventHandler(self, handler):
+        # void tspyPluginEventHandlerRegisterOutput(void* tsp, ts::PluginEventHandlerInterface* handler)
+        cfunc = _lib.tspyPluginEventHandlerRegisterOutput
+        cfunc.restype = None
+        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+        cfunc(self._native_object, handler._native_object)
+
+
+
+#-----------------------------------------------------------------------------
 # TSPStartError: Exception class for start error in TSProcessor
 #-----------------------------------------------------------------------------
 
@@ -1230,7 +1285,7 @@ class TSPStartError(Exception):
 # A wrapper class for C++ TSProcessor.
 # @ingroup python
 #
-class TSProcessor(NativeObject):
+class TSProcessor(PluginEventHandlerRegistry):
 
     ## @cond nodoxygen
     # Internal class to pass TSProcessorArgs to the native library
@@ -1311,43 +1366,6 @@ class TSProcessor(NativeObject):
         cfunc.argtypes = [ctypes.c_void_p]
         cfunc(self._native_object)
         super().delete()
-
-    ##
-    # Register an event handler by event code.
-    # @param handler An instance of AbstractPluginEventHandler.
-    # @param event_code The code of the events to handle.
-    # @return None.
-    #
-    def registerEventHandler(self, handler, event_code):
-        # void tspyTSProcessorRegisterEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler, uint32_t event_code)
-        cfunc = _lib.tspyTSProcessorRegisterEventHandler
-        cfunc.restype = None
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32]
-        cfunc(self._native_object, handler._native_object, ctypes.c_uint32(event_code))
-
-    ##
-    # Register an event handler for all events from the input plugin.
-    # @param handler An instance of AbstractPluginEventHandler.
-    # @return None.
-    #
-    def registerInputEventHandler(self, handler):
-        # void tspyTSProcessorRegisterInputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
-        cfunc = _lib.tspyTSProcessorRegisterInputEventHandler
-        cfunc.restype = None
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-        cfunc(self._native_object, handler._native_object)
-
-    ##
-    # Register an event handler for all events from the output plugin.
-    # @param handler An instance of AbstractPluginEventHandler.
-    # @return None.
-    #
-    def registerOutputEventHandler(self, handler):
-        # void tspyTSProcessorRegisterOutputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
-        cfunc = _lib.tspyTSProcessorRegisterOutputEventHandler
-        cfunc.restype = None
-        cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-        cfunc(self._native_object, handler._native_object)
 
     ##
     # Start the TS processor.
@@ -1436,7 +1454,7 @@ class SwitchStartError(Exception):
 # A wrapper class for C++ InputSwitcher.
 # @ingroup python
 #
-class InputSwitcher(NativeObject):
+class InputSwitcher(PluginEventHandlerRegistry):
 
     ## @cond nodoxygen
     # Internal class to pass TSProcessorArgs to the native library

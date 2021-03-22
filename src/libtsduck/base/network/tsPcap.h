@@ -192,7 +192,7 @@ namespace ts {
     //!
     //! List of pcap-ng option codes.
     //!
-    enum PcapNgOptionCOde : uint32_t {
+    enum PcapNgOptionCode : uint32_t {
         PCAPNG_OPT_ENDOFOPT   =  0,  //!< End of option list.
         PCAPNG_OPT_COMMENT    =  1,  //!< Comment.
         PCAPNG_SHB_HARDWARE   =  2,  //!< System hardware.

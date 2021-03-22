@@ -33,7 +33,7 @@ package io.tsduck;
  * A wrapper class for C++ InputSwitcher.
  * @ingroup java
  */
-public final class InputSwitcher extends  NativeObject {
+public final class InputSwitcher extends PluginEventHandlerRegistry {
 
     /*
      * Set the address of the C++ object.
