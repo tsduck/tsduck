@@ -92,30 +92,6 @@ TSDUCKPY void tspyWaitTSProcessor(void* tsp)
     }
 }
 
-TSDUCKPY void tspyTSProcessorRegisterEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler, uint32_t event_code)
-{
-    ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
-    if (proc != nullptr) {
-        proc->registerEventHandler(handler, event_code);
-    }
-}
-
-TSDUCKPY void tspyTSProcessorRegisterInputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
-{
-    ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
-    if (proc != nullptr) {
-        proc->registerEventHandler(handler, ts::PluginType::INPUT);
-    }
-}
-
-TSDUCKPY void tspyTSProcessorRegisterOutputEventHandler(void* tsp, ts::PluginEventHandlerInterface* handler)
-{
-    ts::TSProcessor* proc = reinterpret_cast<ts::TSProcessor*>(tsp);
-    if (proc != nullptr) {
-        proc->registerEventHandler(handler, ts::PluginType::OUTPUT);
-    }
-}
-
 //-----------------------------------------------------------------------------
 // Start the TS processing and decode arguments.
 //-----------------------------------------------------------------------------
@@ -185,6 +161,9 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
             current->args.push_back(*it);
         }
     }
+
+    // Apply default values when unspecified.
+    args.applyDefaults(true);
 
     // Debug message.
     if (proc->report().debug()) {

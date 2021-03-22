@@ -55,7 +55,7 @@ namespace ts {
         size_t              cycleCount;        //!< Number of input cycles to execute (0 = infinite).
         size_t              bufferedPackets;   //!< Input buffer size in packets.
         size_t              maxInputPackets;   //!< Maximum input packets to read at a time.
-        size_t              maxOutputPackets;  //!< Maximum input packets to send at a time.
+        size_t              maxOutputPackets;  //!< Maximum output packets to send at a time.
         UString             eventCommand;      //!< External shell command to run on an event.
         SocketAddress       eventUDP;          //!< Remote UDP socket address for event description.
         IPAddress           eventLocalAddress; //!< Outgoing local interface for UDP event description.

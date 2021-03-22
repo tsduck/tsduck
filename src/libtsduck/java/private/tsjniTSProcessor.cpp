@@ -58,42 +58,6 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, 
 }
 
 //
-// public native void registerEventHandler(AbstractPluginEventHandler handler, int eventCode);
-//
-TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_registerEventHandler(JNIEnv* env, jobject obj, jobject jhandler, jint eventCode)
-{
-    ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
-    ts::PluginEventHandlerInterface* handler = ts::jni::GetPointerField<ts::PluginEventHandlerInterface>(env, jhandler, "nativeObject");
-    if (tsp != nullptr && handler != nullptr) {
-        tsp->registerEventHandler(handler, uint32_t(eventCode));
-    }
-}
-
-//
-// public native void registerInputEventHandler(AbstractPluginEventHandler handler);
-//
-TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_registerInputEventHandler(JNIEnv* env, jobject obj, jobject jhandler)
-{
-    ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
-    ts::PluginEventHandlerInterface* handler = ts::jni::GetPointerField<ts::PluginEventHandlerInterface>(env, jhandler, "nativeObject");
-    if (tsp != nullptr && handler != nullptr) {
-        tsp->registerEventHandler(handler, ts::PluginType::INPUT);
-    }
-}
-
-//
-// public native void registerOutputEventHandler(AbstractPluginEventHandler handler);
-//
-TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_registerOutputEventHandler(JNIEnv* env, jobject obj, jobject jhandler)
-{
-    ts::TSProcessor* tsp = ts::jni::GetPointerField<ts::TSProcessor>(env, obj, "nativeObject");
-    ts::PluginEventHandlerInterface* handler = ts::jni::GetPointerField<ts::PluginEventHandlerInterface>(env, jhandler, "nativeObject");
-    if (tsp != nullptr && handler != nullptr) {
-        tsp->registerEventHandler(handler, ts::PluginType::OUTPUT);
-    }
-}
-
-//
 // public native void abort();
 //
 TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_abort(JNIEnv* env, jobject obj)

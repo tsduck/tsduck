@@ -164,19 +164,15 @@ int MainCode(int argc, char *argv[])
     TSPOptions opt(argc, argv);
     CERR.setMaxSeverity(opt.maxSeverity());
 
-    // Get the repository of plugins.
-    ts::PluginRepository* plugins = ts::PluginRepository::Instance();
-    ts::CheckNonNull(plugins);
-
     // If plugins were statically linked, disallow the dynamic loading of plugins.
 #if defined(TSDUCK_STATIC_PLUGINS)
-    plugins->setSharedLibraryAllowed(false);
+    ts::PluginRepository::Instance()->setSharedLibraryAllowed(false);
 #endif
 
     // Process the --list-processors option
     if (opt.list_proc_flags != 0) {
         // Build the list of plugins.
-        const ts::UString text(plugins->listPlugins(true, opt, opt.list_proc_flags));
+        const ts::UString text(ts::PluginRepository::Instance()->listPlugins(true, opt, opt.list_proc_flags));
         // Try to page, raw output otherwise.
         ts::OutputPager pager;
         if ((opt.list_proc_flags & ts::PluginRepository::LIST_COMPACT) != 0) {
