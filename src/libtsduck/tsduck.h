@@ -444,6 +444,7 @@
 #include "tsPcapFile.h"
 #include "tsPCAT.h"
 #include "tsPCRAnalyzer.h"
+#include "tsPCRMerger.h"
 #include "tsPCRRegulator.h"
 #include "tsPCSC.h"
 #include "tsPDCDescriptor.h"
