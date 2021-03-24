@@ -173,8 +173,8 @@ jobs:
         for file in src/tstools/*.cpp; do
             name=$(basename $file .cpp)
             if [[ -x $bin/$name ]]; then
-                echo -n $(basename $cmd):
-                $cmd --help=description 2>&1
+                echo -n $name:
+                $bin/$name --help=description 2>&1
             fi
         done >tsduck.commands.txt
         zip -q9 tsduck.commands.zip tsp.version.txt tsp.input.txt tsp.output.txt tsp.packet.txt tsduck.commands.txt
