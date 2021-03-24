@@ -33,10 +33,11 @@
 
 name: Nightly build
 
-# Trigger the workflow every day at 01:10 GMT
+# Trigger the workflow every day at 01:10 GMT. Also allow manual trigger (workflow_dispatch).
 on:
   schedule:
     - cron:  '10 1 * * *'
+  workflow_dispatch:
 
 # We currently build on Windows only. If is easy for users to rebuild on Unix.
 jobs:
