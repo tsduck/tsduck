@@ -168,9 +168,13 @@ jobs:
         tsp --list=input &>tsp.input.txt
         tsp --list=output &>tsp.output.txt
         tsp --list=packet &>tsp.packet.txt
-        for cmd in $(find $(build/setenv.sh --display) -type f -executable -name 'ts*' ! -name '*.*' | sort); do
-            echo -n $(basename $cmd):
-            $cmd --help=description 2>&1
+        bin=$(build/setenv.sh --display)
+        for file in src/tstools/*.cpp; do
+            name=$(basename $file .cpp)
+            if [[ -x $bin/$name ]]; then
+                echo -n $(basename $cmd):
+                $cmd --help=description 2>&1
+            fi
         done >tsduck.commands.txt
         zip -q9 tsduck.commands.zip tsp.version.txt tsp.input.txt tsp.output.txt tsp.packet.txt tsduck.commands.txt
 
