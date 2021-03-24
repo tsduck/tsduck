@@ -245,7 +245,7 @@ ts::SRTSocket::SRTSocket() : _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
 bool ts::SRTSocket::open(SRTSocketMode mode, const ts::SocketAddress& local_addr, const ts::SocketAddress& remote_addr, ts::Report& report) NOSRT_ERROR
 bool ts::SRTSocket::close(ts::Report& report) NOSRT_ERROR
-bool ts::SRTSocket::peerDiconnected() const { return false; }
+bool ts::SRTSocket::peerDisconnected() const { return false; }
 bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args) { return true; }
 bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report) NOSRT_ERROR
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report) NOSRT_ERROR
