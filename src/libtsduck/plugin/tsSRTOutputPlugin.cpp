@@ -36,6 +36,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"srt", ts::SRTOutputPlugin);
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::SRTOutputPlugin::REFERENCE = 0;
 
+// Maximum number of TS packets per message in message mode.
 #define MAX_PKT_MESSAGE_MODE 7
 
 
@@ -45,19 +46,29 @@ const int ts::SRTOutputPlugin::REFERENCE = 0;
 
 ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] address:port"),
+    _multiple(false),
+    _restart_delay(0),
     _local_addr(),
     _remote_addr(),
-    _pkt_count(0),
     _sock(),
     _mode(SRTSocketMode::LISTENER)
 {
     _sock.defineArgs(*this);
 
     option(u"", 0, STRING, 1, 1);
-    help(u"", u"Specify listening IPv4 and port.");
+    help(u"", u"Specify listening IPv4 address and UDP port.");
 
-    option(u"rendezvous", 0, ts::Args::STRING);
-    help(u"rendezvous", u"address:port", u"Specify remote address and port for rendez-vous mode.");
+    option(u"multiple", 'm');
+    help(u"multiple",
+         u"When the receiver peer disconnects, wait for another one and continue.");
+
+    option(u"restart-delay", 0, UNSIGNED);
+    help(u"restart-delay", u"milliseconds",
+         u"With --multiple, wait the specified number of milliseconds before restarting.");
+
+    option(u"rendezvous", 0, STRING);
+    help(u"rendezvous", u"address:port",
+         u"Specify remote IP address and UDP port for rendez-vous mode.");
 }
 
 
@@ -65,8 +76,11 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
 // Output command line options method
 //----------------------------------------------------------------------------
 
-bool ts::SRTOutputPlugin::getOptions(void)
+bool ts::SRTOutputPlugin::getOptions()
 {
+    _multiple = present(u"multiple");
+    getIntValue(_restart_delay, u"restart-delay", 0);
+
     const UString bind_addr(value( u""));
     if (bind_addr.empty() || !_local_addr.resolve(bind_addr)) {
         tsp->error(u"Invalid local address and port: %s", {bind_addr});
@@ -93,15 +107,12 @@ bool ts::SRTOutputPlugin::getOptions(void)
 // Output start method
 //----------------------------------------------------------------------------
 
-bool ts::SRTOutputPlugin::start(void)
+bool ts::SRTOutputPlugin::start()
 {
     if (!_sock.open(_mode, _local_addr, _remote_addr, *tsp)) {
         _sock.close(*tsp);
         return false;
     }
-
-    // Other states.
-    _pkt_count = 0;
     return true;
 }
 
@@ -110,7 +121,7 @@ bool ts::SRTOutputPlugin::start(void)
 // Output stop method
 //----------------------------------------------------------------------------
 
-bool ts::SRTOutputPlugin::stop(void)
+bool ts::SRTOutputPlugin::stop()
 {
     _sock.close(*tsp);
     return true;
@@ -123,19 +134,35 @@ bool ts::SRTOutputPlugin::stop(void)
 
 bool ts::SRTOutputPlugin::send(const ts::TSPacket* pkt, const ts::TSPacketMetadata* pkt_data, size_t packet_count)
 {
-    bool status = false;
-    size_t tmp = packet_count;
-    const ts::TSPacket* tmp_pkt = pkt;
+    // Loop until all packets are sent.
+    while (packet_count > 0) {
 
-    while (tmp > 0) {
-        const size_t to_send = (_sock.getMessageApi() && tmp > MAX_PKT_MESSAGE_MODE) ? MAX_PKT_MESSAGE_MODE : tmp;
-        status = _sock.send(tmp_pkt, to_send * PKT_SIZE, *tsp);
-        if (!status) {
-            break;
+        // Send some packets.
+        const size_t to_send = (_sock.getMessageApi() && packet_count > MAX_PKT_MESSAGE_MODE) ? MAX_PKT_MESSAGE_MODE : packet_count;
+        if (!_sock.send(pkt, to_send * PKT_SIZE, *tsp)) {
+            // Send error.
+            if (!_sock.peerDisconnected()) {
+                // Actual error, not a clean disconnection from the receiver, do not retry, even with --multiple.
+                return false;
+            }
+            tsp->verbose(u"receiver disconnected%s", {_multiple ? u", waiting for another one" : u""});
+            if (!_multiple) {
+                // No multiple sessions, terminate here.
+                return false;
+            }
+            // Multiple sessions, close socket and re-open to acquire another receiver.
+            stop();
+            if (_restart_delay > 0) {
+                SleepThread(_restart_delay);
+            }
+            if (!start()) {
+                return false;
+            }
         }
-        tmp -= to_send;
-        tmp_pkt += to_send;
-        _pkt_count += to_send;
+
+        // Remaining packets.
+        pkt += to_send;
+        packet_count -= to_send;
     }
-    return status;
+    return true;
 }

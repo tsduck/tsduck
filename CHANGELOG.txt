@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2300
+VERSION 3.26-2306
 
 [NEW] New commands and plugins:
 
@@ -24,6 +24,7 @@ VERSION 3.26-2300
     - Options --event-command, --event-udp, --event-ttl and --event-local-address
       to "tsswitch".
     - Options --max-size and --max-duration in output plugin "file".
+    - Options --multiple and --restart-delay in output plugin "srt".
 
 -------------------------------------------------------------------------------
 
