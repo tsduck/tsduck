@@ -124,6 +124,13 @@ namespace ts {
         bool receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report = CERR);
 
         //!
+        //! Check if the connection was disconnected by the peer.
+        //! This can be used after a send/receive error to differentiate between "end of session" and actual error.
+        //! @return True if the connection was closed by the peer.
+        //!
+        bool peerDisconnected() const;
+
+        //!
         //! Get SRT option.
         //! @param [in] optName Option name as enumeration. The possible values for @a optName are given
         //! by the enumeration type SRT_SOCKOPT in libsrt. The profile of this method uses "int" to remain

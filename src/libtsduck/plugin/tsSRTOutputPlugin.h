@@ -52,10 +52,10 @@ namespace ts {
         SRTOutputPlugin(TSP* tsp);
 
         // Implementation of plugin API
-        virtual bool getOptions(void) override;
-        virtual bool start(void) override;
-        virtual bool stop(void) override;
-        virtual bool isRealTime(void) override { return true; }
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool isRealTime() override { return true; }
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
         //! @cond nodoxygen
@@ -64,9 +64,10 @@ namespace ts {
         //! @endcond
 
     private:
-        SocketAddress _local_addr;  // Local address.
-        SocketAddress _remote_addr; // Remote address.
-        PacketCounter _pkt_count;   // Total packet counter for output packets
+        bool          _multiple;       // accept multiple (sequential) connections.
+        MilliSecond   _restart_delay;  // if _multiple, wait before reconnecting.
+        SocketAddress _local_addr;     // Local address.
+        SocketAddress _remote_addr;    // Remote address.
         SRTSocket     _sock;
         SRTSocketMode _mode;
     };

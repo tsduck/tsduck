@@ -52,10 +52,10 @@ namespace ts {
         SRTInputPlugin(TSP* tsp);
 
         // Implementation of plugin API.
-        virtual bool getOptions(void) override;
-        virtual bool start(void) override;
-        virtual bool stop(void) override;
-        virtual bool abortInput(void) override;
+        virtual bool getOptions() override;
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool abortInput() override;
 
         //! @cond nodoxygen
         // A dummy storage value to force inclusion of this module when using the static library.
