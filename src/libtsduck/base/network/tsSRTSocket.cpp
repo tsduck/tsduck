@@ -561,6 +561,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
         case SRTSocketMode::CALLER:
             success = success && _guts->srtConnect(_guts->remote_address, report);
             break;
+        case SRTSocketMode::DEFAULT:
         case SRTSocketMode::LEN:
         default:
             report.error(u"unsupported socket mode");
