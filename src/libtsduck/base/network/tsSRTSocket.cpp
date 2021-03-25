@@ -30,6 +30,8 @@
 #include "tsSRTSocket.h"
 #include "tsSingletonManager.h"
 #include "tsArgs.h"
+#include "tsMutex.h"
+#include "tsGuard.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -278,6 +280,8 @@ TS_POP_WARNING()
 
 //----------------------------------------------------------------------------
 // A global singleton which initializes SRT.
+// The SRT library is initialized when the first SRT socket is opened
+// and terminated when the last socket is closed.
 //----------------------------------------------------------------------------
 
 namespace {
@@ -285,13 +289,41 @@ namespace {
     {
         TS_DECLARE_SINGLETON(SRTInit);
     public:
-        ~SRTInit();
+        void start();
+        void stop();
+    private:
+        ts::Mutex _mutex;
+        size_t    _count;
     };
 
     TS_DEFINE_SINGLETON(SRTInit);
 
-    SRTInit::SRTInit() { srt_startup(); }
-    SRTInit::~SRTInit() { srt_cleanup(); }
+    // Singleton constructor.
+    SRTInit::SRTInit() :
+        _mutex(),
+        _count(0)
+    {
+    }
+
+    // Called each time an SRT socket is opened.
+    void SRTInit::start()
+    {
+        ts::Guard lock(_mutex);
+        if (_count++ == 0) {
+            srt_startup();
+        }
+    }
+
+    // Called each time an SRT socket is closed.
+    void SRTInit::stop()
+    {
+        ts::Guard lock(_mutex);
+        if (_count > 0) {
+            if (--_count == 0) {
+                srt_cleanup();
+            }
+        }
+    }
 }
 
 
@@ -326,14 +358,15 @@ public:
      bool setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report);
      bool setSockOptPre(Report& report);
      bool setSockOptPost(Report& report);
-     int srtListen(const SocketAddress& addr, Report& report);
-     int srtConnect(const SocketAddress& addr, Report& report);
-     int srtBind(const SocketAddress& addr, Report& report);
+     bool srtListen(const SocketAddress& addr, Report& report);
+     bool srtConnect(const SocketAddress& addr, Report& report);
+     bool srtBind(const SocketAddress& addr, Report& report);
 
      // Socket working data.
      SocketAddress default_address;
      SRTSocketMode mode;
-     int           sock;
+     int           sock;       // SRT socket for data transmission
+     int           listener;   // Listener SRT socket when srt_listen() is used.
 
      // Socket options.
      SRT_TRANSTYPE transtype;
@@ -379,7 +412,8 @@ public:
 ts::SRTSocket::Guts::Guts() :
     default_address(),
     mode(SRTSocketMode::LISTENER),
-    sock(-1),  // do not use SYS_SOCKET_INVALID, an SRT socket is not a socket, it is always an int
+    sock(-1),      // do not use SYS_SOCKET_INVALID, an SRT socket is not a socket, it is always an int
+    listener(-1),  // idem
     transtype(SRTT_INVALID),
     packet_filter(),
     passphrase(),
@@ -425,7 +459,6 @@ ts::SRTSocket::SRTSocket() :
     _guts(new Guts)
 {
     CheckNonNull(_guts);
-    SRTInit::Instance();
 }
 
 
@@ -497,11 +530,16 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
                          const ts::SocketAddress& remote_addr,
                          ts::Report& report)
 {
-    int ret = 0;
+    // Filter already open condition.
+    if (_guts->sock >= 0) {
+        report.error(u"SRT socket already open");
+        return false;
+    }
 
-    _guts->mode = mode;
-    _guts->disconnected = false;
+    // Initialize SRT.
+    SRTInit::Instance()->start();
 
+    // Create the SRT socket.
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 1)
     report.debug(u"calling srt_create_socket()");
     _guts->sock = srt_create_socket();
@@ -511,48 +549,40 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     _guts->sock = srt_socket(AF_INET, SOCK_DGRAM, 0);
 #endif
     if (_guts->sock < 0) {
-        report.error(u"error during srt_socket(), msg: %s", {srt_getlasterror_str()});
+        report.error(u"error creating SRT socket: %s", {srt_getlasterror_str()});
+        SRTInit::Instance()->stop();
         return false;
     }
 
-    if (!_guts->setSockOptPre(report)) {
-        goto fail;
-    }
+    // Set initial socket options.
+    _guts->mode = mode;
+    _guts->disconnected = false;
+    bool success = _guts->setSockOptPre(report);
 
+    // Connect / setuo the SRT socket.
     switch (_guts->mode) {
         case SRTSocketMode::LISTENER:
-            ret = _guts->srtListen(local_addr, report);
-            if (ret < 0) {
-                goto fail;
-            }
-            _guts->sock = ret;
+            success = success && _guts->srtListen(local_addr, report);
             break;
         case SRTSocketMode::RENDEZVOUS:
-            ret = _guts->srtBind(local_addr, report);
-            if (ret < 0) {
-                goto fail;
-            }
-            TS_FALLTHROUGH
+            success = success && _guts->srtBind(local_addr, report) && _guts->srtConnect(remote_addr, report);;
+            break;
         case SRTSocketMode::CALLER:
-            ret = _guts->srtConnect(remote_addr, report);
-            if (ret < 0) {
-                goto fail;
-            }
+            success = success && _guts->srtConnect(remote_addr, report);
             break;
         case SRTSocketMode::LEN:
         default:
             report.error(u"unsupported socket mode");
-            goto fail;
+            success = false;
     }
 
-    if (!_guts->setSockOptPost(report)) {
-        goto fail;
-    }
-    return true;
+    // Set final socket options.
+    success = success && _guts->setSockOptPost(report);
 
-fail:
-    close(report);
-    return false;
+    if (!success) {
+        close(report);
+    }
+    return success;
 }
 
 
@@ -563,9 +593,21 @@ fail:
 bool ts::SRTSocket::close(ts::Report& report)
 {
     if (_guts->sock >= 0) {
+
+        // Close the SRT data socket.
         report.debug(u"calling srt_close()");
         srt_close(_guts->sock);
         _guts->sock = -1;
+
+        // Close the SRT listener socket if there is one.
+        if (_guts->listener >= 0) {
+            report.debug(u"calling srt_close() on listener socket");
+            srt_close(_guts->listener);
+            _guts->listener = -1;
+        }
+
+        // Decrement reference count to SRT library.
+        SRTInit::Instance()->stop();
     }
     return true;
 }
@@ -638,8 +680,7 @@ bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const 
     if (report.debug()) {
         report.debug(u"calling srt_setsockflag(%s, %s, %d)", {optNameStr, UString::Dump(optval, optlen, UString::SINGLE_LINE), optlen});
     }
-    const int ret = srt_setsockflag(sock, SRT_SOCKOPT(optName), optval, int(optlen));
-    if (ret < 0) {
+    if (srt_setsockflag(sock, SRT_SOCKOPT(optName), optval, int(optlen)) < 0) {
         report.error(u"error during srt_setsockflag(%s), msg: %s", {optNameStr, srt_getlasterror_str()});
         return false;
     }
@@ -649,8 +690,7 @@ bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const 
 bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, ts::Report& report) const
 {
     report.debug(u"calling srt_getsockflag(%s, ..., %d)", {optNameStr, optlen});
-    const int ret = srt_getsockflag(_guts->sock, SRT_SOCKOPT(optName), optval, &optlen);
-    if (ret < 0) {
+    if (srt_getsockflag(_guts->sock, SRT_SOCKOPT(optName), optval, &optlen) < 0) {
         report.error(u"error during srt_getsockflag(%s), msg: %s", {optNameStr, srt_getlasterror_str()});
         return false;
     }
@@ -722,75 +762,80 @@ bool ts::SRTSocket::Guts::setSockOptPost(Report& report)
     return true;
 }
 
-int ts::SRTSocket::Guts::srtListen(const SocketAddress& addr, Report& report)
+bool ts::SRTSocket::Guts::srtListen(const SocketAddress& addr, Report& report)
 {
-    ::sockaddr sock_addr;
-    addr.copy(sock_addr);
-
-    bool reuse = true;
-    int ret = setSockOpt(SRTO_REUSEADDR, "SRTO_REUSEADDR", &reuse, sizeof(reuse), report);
-    if (ret < 0) {
-        report.error(u"error setting SRT REUSEADDR, msg: %s", {srt_getlasterror_str()});
-        return -1;
+    // The SRT socket will become the listener socket, check that there is none.
+    if (listener >= 0) {
+        report.error(u"internal error, SRT listener socket already set");
     }
 
+    bool reuse = true;
+    if (!setSockOpt(SRTO_REUSEADDR, "SRTO_REUSEADDR", &reuse, sizeof(reuse), report)) {
+        return false;
+    }
+
+    ::sockaddr sock_addr;
+    addr.copy(sock_addr);
     report.debug(u"calling srt_bind(%s)", {addr});
-    ret = srt_bind(sock, &sock_addr, sizeof(sock_addr));
-    if (ret) {
+    if (srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
         report.error(u"error during srt_bind(), msg: %s", {srt_getlasterror_str()});
-        return -1;
+        return false;
     }
 
     // Second parameter is the number of simultaneous connection accepted. For now we only accept one.
     report.debug(u"calling srt_listen()");
-    ret = srt_listen(sock, 1);
-    if (ret) {
+    if (srt_listen(sock, 1) < 0) {
         report.error(u"error during srt_listen(), msg: %s", {srt_getlasterror_str()});
-        return -1;
+        return false;
     }
 
+    // The original SRT socket becomes the listener SRT socket.
     ::sockaddr peer_addr;
     int peer_addr_len = sizeof(peer_addr);
     report.debug(u"calling srt_accept()");
-    ret = srt_accept(sock, &peer_addr, &peer_addr_len);
-    if (ret < 0) {
+    int data_sock = srt_accept(sock, &peer_addr, &peer_addr_len);
+    if (data_sock < 0) {
         report.error(u"error during srt_accept(), msg: %s", {srt_getlasterror_str()});
-        return -1;
+        return false;
     }
+
+    // Now keep the two SRT sockets in the context.
+    listener = sock;
+    sock = data_sock;
 
     SocketAddress p_addr(peer_addr);
     report.debug(u"connected to %s", {p_addr});
-    if (!setDefaultAddress(p_addr, report)) {
-        return -1;
-    }
-
-    return ret;
+    return setDefaultAddress(p_addr, report);
 }
 
-int ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& report)
+bool ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
 
     report.debug(u"calling srt_connect(%s)", {addr});
-    const int ret = srt_connect(sock, &sock_addr, sizeof(sock_addr));
-    if (ret < 0) {
+    if (srt_connect(sock, &sock_addr, sizeof(sock_addr)) < 0) {
         report.error(u"error during srt_connect, msg: %s", {srt_getlasterror_str()});
+        return false;
     }
-    return ret;
+    else {
+        return true;
+    }
 }
 
-int ts::SRTSocket::Guts::srtBind(const ts::SocketAddress& addr, ts::Report& report)
+bool ts::SRTSocket::Guts::srtBind(const ts::SocketAddress& addr, ts::Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
 
     report.debug(u"calling srt_bind(%s)", {addr});
-    const int ret = srt_bind(sock, &sock_addr, sizeof(sock_addr));
-    if (ret < 0) {
+    if (srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
         report.error(u"error during srt_bind, msg: %s", {srt_getlasterror_str()});
+        return false;
     }
-    return ret;
+    else {
+        return true;
+    }
 }
 
 
