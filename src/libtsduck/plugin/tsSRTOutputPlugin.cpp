@@ -45,18 +45,12 @@ const int ts::SRTOutputPlugin::REFERENCE = 0;
 //----------------------------------------------------------------------------
 
 ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] address:port"),
+    OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] [address:port]"),
     _multiple(false),
     _restart_delay(0),
-    _local_addr(),
-    _remote_addr(),
-    _sock(),
-    _mode(SRTSocketMode::LISTENER)
+    _sock()
 {
     _sock.defineArgs(*this);
-
-    option(u"", 0, STRING, 1, 1);
-    help(u"", u"Specify listening IPv4 address and UDP port.");
 
     option(u"multiple", 'm');
     help(u"multiple",
@@ -66,9 +60,12 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     help(u"restart-delay", u"milliseconds",
          u"With --multiple, wait the specified number of milliseconds before restarting.");
 
+    // These options are legacy, now use --listener and/or --caller.
+    option(u"", 0, STRING, 0, 1);
+    help(u"" , u"Local [address:]port. This is a legacy parameter, now use --listener.");
+
     option(u"rendezvous", 0, STRING);
-    help(u"rendezvous", u"address:port",
-         u"Specify remote IP address and UDP port for rendez-vous mode.");
+    help(u"rendezvous", u"address:port", u"Remote address and port. This is a legacy option, now use --caller.");
 }
 
 
@@ -80,26 +77,7 @@ bool ts::SRTOutputPlugin::getOptions()
 {
     _multiple = present(u"multiple");
     getIntValue(_restart_delay, u"restart-delay", 0);
-
-    const UString bind_addr(value( u""));
-    if (bind_addr.empty() || !_local_addr.resolve(bind_addr)) {
-        tsp->error(u"Invalid local address and port: %s", {bind_addr});
-        return false;
-    }
-
-    const UString remote(value(u"rendezvous"));
-    if (remote.empty()) {
-        _mode = SRTSocketMode::LISTENER;
-    }
-    else {
-        _mode = SRTSocketMode::RENDEZVOUS;
-        if (!_remote_addr.resolve(remote)) {
-            tsp->error(u"Invalid remote address and port: %s", {remote});
-            return false;
-        }
-    }
-
-    return _sock.loadArgs(duck, *this);
+    return _sock.setAddresses(value(u""), value(u"rendezvous"), *tsp) && _sock.loadArgs(duck, *this);
 }
 
 
@@ -109,7 +87,7 @@ bool ts::SRTOutputPlugin::getOptions()
 
 bool ts::SRTOutputPlugin::start()
 {
-    if (!_sock.open(_mode, _local_addr, _remote_addr, *tsp)) {
+    if (!_sock.open(*tsp)) {
         _sock.close(*tsp);
         return false;
     }

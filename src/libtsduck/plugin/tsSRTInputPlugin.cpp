@@ -44,24 +44,18 @@ const int ts::SRTInputPlugin::REFERENCE = 0;
 
 ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
-                                u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [address:]port",
+                                u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [[address:]port]",
                                 u"srt", u"SRT source time stamp"),
-    _sock(),
-    _mode(SRTSocketMode::CALLER),
-    _local_addr(),
-    _remote_addr()
+    _sock()
 {
     _sock.defineArgs(*this);
 
-    option(u"", 0, STRING, 1, 1);
-    help(u"",
-         u"The parameter address:port describes the destination for SRT packets. "
-         u"The 'address' specifies a unicast IP address. "
-         u"It can be also a host name that translates to an IP address. "
-         u"The 'port' specifies the destination SRT port.");
+    // These options are legacy, now use --listener and/or --caller.
+    option(u"", 0, STRING, 0, 1);
+    help(u"", u"Remote address:port. This is a legacy parameter, now use --caller.");
 
-    option(u"rendezvous", 0, ts::Args::STRING);
-    help(u"rendezvous", u"address:port", u"Specify local address and port for rendez-vous mode.");
+    option(u"rendezvous", 0, STRING);
+    help(u"rendezvous", u"[address:]port", u"Local address and port. This is a legacy option, now use --listener.");
 }
 
 
@@ -71,26 +65,10 @@ ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
 
 bool ts::SRTInputPlugin::getOptions()
 {
-    const UString source(value( u""));
-    if (source.empty() || !_remote_addr.resolve(source)) {
-        tsp->error(u"Invalid destination address and port: %s", {source});
-        return false;
-    }
-
-    const UString local(value(u"rendezvous"));
-    if (local.empty()) {
-        _mode = SRTSocketMode::CALLER;
-    }
-    else {
-        _mode = SRTSocketMode::RENDEZVOUS;
-        if (!_local_addr.resolve(local)) {
-            tsp->error(u"Invalid local address and port: %s", {local});
-            return false;
-        }
-    }
-
     // Get command line arguments for superclass and socket.
-    return AbstractDatagramInputPlugin::getOptions() && _sock.loadArgs(duck, *this);
+    return AbstractDatagramInputPlugin::getOptions() &&
+           _sock.setAddresses(value(u"rendezvous"), value(u""), *tsp) &&
+           _sock.loadArgs(duck, *this);
 }
 
 
@@ -101,7 +79,7 @@ bool ts::SRTInputPlugin::getOptions()
 bool ts::SRTInputPlugin::start()
 {
     // Initialize superclass and UDP socket.
-    return AbstractDatagramInputPlugin::start() && _sock.open(_mode, _local_addr, _remote_addr, *tsp);
+    return AbstractDatagramInputPlugin::start() && _sock.open(*tsp);
 }
 
 
