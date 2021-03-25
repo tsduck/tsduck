@@ -64,11 +64,8 @@ namespace ts {
         //! @endcond
 
     private:
-        bool          _multiple;       // accept multiple (sequential) connections.
-        MilliSecond   _restart_delay;  // if _multiple, wait before reconnecting.
-        SocketAddress _local_addr;     // Local address.
-        SocketAddress _remote_addr;    // Remote address.
-        SRTSocket     _sock;
-        SRTSocketMode _mode;
+        bool        _multiple;       // accept multiple (sequential) connections.
+        MilliSecond _restart_delay;  // if _multiple, wait before reconnecting.
+        SRTSocket   _sock;
     };
 }

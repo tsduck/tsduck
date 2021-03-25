@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2306
+VERSION 3.26-2311
 
 [NEW] New commands and plugins:
 
@@ -25,6 +25,8 @@ VERSION 3.26-2306
       to "tsswitch".
     - Options --max-size and --max-duration in output plugin "file".
     - Options --multiple and --restart-delay in output plugin "srt".
+    - Options --caller and --listener in "srt" input and output plugins.
+      The address:port parameter and the --rendezvous options are now legacy.
 
 -------------------------------------------------------------------------------
 

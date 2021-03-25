@@ -44,10 +44,11 @@ namespace ts {
     //! Secure Reliable Transport (SRT) socket mode
     //!
     enum class SRTSocketMode : int {
-        LISTENER   = 0,  //!< Listener mode.
-        CALLER     = 1,  //!< Caller mode.
-        RENDEZVOUS = 2,  //!< Rendez-vous mode (unsupported).
-        LEN        = 3,  //!< Unknown.
+        DEFAULT    = -1,  //!< Unspecified, use command line mode.
+        LISTENER   =  0,  //!< Listener mode.
+        CALLER     =  1,  //!< Caller mode.
+        RENDEZVOUS =  2,  //!< Rendez-vous mode (unsupported).
+        LEN        =  3,  //!< Unknown.
     };
 
     //!
@@ -73,14 +74,24 @@ namespace ts {
         ~SRTSocket() override;
 
         //!
-        //! Open the socket.
-        //! @param [in] mode SRT socket mode.
-        //! @param [in] local_addr  Local socket address.
-        //! @param [in] remote_addr Remote socket address.
+        //! Open the socket using parameters from the command line.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(SRTSocketMode mode, const SocketAddress& local_addr, const SocketAddress& remote_addr, Report& report = CERR);
+        bool open(Report& report = CERR)
+        {
+            return open(SRTSocketMode::DEFAULT, SocketAddress(), SocketAddress(), report);
+        }
+
+        //!
+        //! Open the socket.
+        //! @param [in] mode SRT socket mode. If set to DEFAULT, the mode must have been specified in the command line options.
+        //! @param [in] local_address Local socket address. Ignored in DEFAULT and CALLER modes.
+        //! @param [in] remote_address Remote socket address. Ignored in DEFAULT and LISTENER modes.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool open(SRTSocketMode mode, const SocketAddress& local_address, const SocketAddress& remote_address, Report& report = CERR);
 
         //!
         //! Close the socket.
@@ -92,6 +103,23 @@ namespace ts {
         // Implementation of ArgsSupplierInterface.
         virtual void defineArgs(Args& args) const override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
+
+        //!
+        //! Preset local and remote socket addresses in string form.
+        //! - If both strings are empty, the current mode of the socket is reset and local and/or
+        //!   remote addresses must be specified by comand line arguments or trough open().
+        //! - If both strings are not empty, the socket is set in rendezvous mode.
+        //! - If only @a local_address is not empty, the socket is set in listener mode.
+        //! - If only @a remote_address is not empty, the socket is set in caller mode.
+        //! @param [in] local_address Local "[address:]port".
+        //! @param [in] remote_address Remote "address:port".
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool setAddresses(const UString& local_address, const UString& remote_address, Report& report = CERR)
+        {
+            return setAddressesInternal(local_address, remote_address, true, report);
+        }
 
         //!
         //! Send a message to the default destination address and port.
@@ -144,10 +172,9 @@ namespace ts {
         bool getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, Report& report = CERR) const;
 
         //!
-        //! Get the underlying socket device handle (use with care).
-        //! This method is reserved for low-level operations and should
-        //! not be used by normal applications.
-        //! @return The underlying socket system device handle or file descriptor.
+        //! Get the underlying SRT socket handle (use with care).
+        //! This method is reserved for low-level operations and should not be used by normal applications.
+        //! @return The underlying SRT socket handle.
         //!
         int getSocket() const;
 
@@ -167,5 +194,8 @@ namespace ts {
         // The actual implementation is private to the body of the class.
         class Guts;
         Guts* _guts;
+
+        // Internal verson of setAddresses().
+        bool setAddressesInternal(const UString& local_address, const UString& remote_address, bool reset, Report& report);
     };
 }
