@@ -565,7 +565,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
             success = success && _guts->srtListen(local_addr, report);
             break;
         case SRTSocketMode::RENDEZVOUS:
-            success = success && _guts->srtBind(local_addr, report) && _guts->srtConnect(remote_addr, report);;
+            success = success && _guts->srtBind(local_addr, report) && _guts->srtConnect(remote_addr, report);
             break;
         case SRTSocketMode::CALLER:
             success = success && _guts->srtConnect(remote_addr, report);
