@@ -259,17 +259,18 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
 
 ts::SRTSocket::SRTSocket() : _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
-bool ts::SRTSocket::open(SRTSocketMode mode, const ts::SocketAddress& local_addr, const ts::SocketAddress& remote_addr, ts::Report& report) NOSRT_ERROR
-bool ts::SRTSocket::close(ts::Report& report) NOSRT_ERROR
+bool ts::SRTSocket::open(SRTSocketMode, const SocketAddress&, const SocketAddress&, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::close(Report& report) NOSRT_ERROR
 bool ts::SRTSocket::peerDisconnected() const { return false; }
-bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args) { return true; }
-bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report) NOSRT_ERROR
-bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report) NOSRT_ERROR
-bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, ts::Report& report) NOSRT_ERROR
-bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, ts::Report& report) const NOSRT_ERROR
+bool ts::SRTSocket::loadArgs(DuckContext&, Args&) { return true; }
+bool ts::SRTSocket::send(const void*, size_t, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::receive(void*, size_t, size_t&, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::receive(void*, size_t, size_t&, MicroSecond&, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::getSockOpt(int, const char*, void*, int&, Report& report) const NOSRT_ERROR
 int  ts::SRTSocket::getSocket() const { return -1; }
 bool ts::SRTSocket::getMessageApi() const { return false; }
 ts::UString ts::SRTSocket::GetLibraryVersion() { return NOSRT_ERROR_MSG; }
+bool ts::SRTSocket::setAddressesInternal(const UString&, const UString&, bool, Report& report) NOSRT_ERROR
 
 #else
 
@@ -511,9 +512,9 @@ bool ts::SRTSocket::getMessageApi() const
 //----------------------------------------------------------------------------
 
 bool ts::SRTSocket::open(SRTSocketMode mode,
-                         const ts::SocketAddress& local_address,
-                         const ts::SocketAddress& remote_address,
-                         ts::Report& report)
+                         const SocketAddress& local_address,
+                         const SocketAddress& remote_address,
+                         Report& report)
 {
     // Filter already open condition.
     if (_guts->sock >= 0) {
@@ -582,7 +583,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
 // Close the socket
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::close(ts::Report& report)
+bool ts::SRTSocket::close(Report& report)
 {
     // To handle the case where close() would be called from another thread,
     // clear the socket value first, then close.
@@ -673,7 +674,7 @@ bool ts::SRTSocket::setAddressesInternal(const UString& local, const UString& re
 // Load command line arguments.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
+bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
 {
     // Resolve caller/listener/rendezvous addresses.
     if (!setAddressesInternal(args.value(u"listener"), args.value(u"caller"), false, args)) {
@@ -726,7 +727,7 @@ bool ts::SRTSocket::loadArgs(ts::DuckContext& duck, ts::Args& args)
 // Set/get socket option.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, ts::Report& report)
+bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report)
 {
     if (report.debug()) {
         report.debug(u"calling srt_setsockflag(%s, %s, %d)", {optNameStr, UString::Dump(optval, optlen, UString::SINGLE_LINE), optlen});
@@ -738,7 +739,7 @@ bool ts::SRTSocket::Guts::setSockOpt(int optName, const char* optNameStr, const 
     return true;
 }
 
-bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, ts::Report& report) const
+bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval, int& optlen, Report& report) const
 {
     report.debug(u"calling srt_getsockflag(%s, ..., %d)", {optNameStr, optlen});
     if (srt_getsockflag(_guts->sock, SRT_SOCKOPT(optName), optval, &optlen) < 0) {
@@ -748,7 +749,7 @@ bool ts::SRTSocket::getSockOpt(int optName, const char* optNameStr, void* optval
     return true;
 }
 
-bool ts::SRTSocket::Guts::setSockOptPre(ts::Report& report)
+bool ts::SRTSocket::Guts::setSockOptPre(Report& report)
 {
     const bool yes = true;
 
@@ -863,7 +864,7 @@ bool ts::SRTSocket::Guts::srtListen(const SocketAddress& addr, Report& report)
     return true;
 }
 
-bool ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& report)
+bool ts::SRTSocket::Guts::srtConnect(const SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
@@ -878,7 +879,7 @@ bool ts::SRTSocket::Guts::srtConnect(const ts::SocketAddress& addr, ts::Report& 
     }
 }
 
-bool ts::SRTSocket::Guts::srtBind(const ts::SocketAddress& addr, ts::Report& report)
+bool ts::SRTSocket::Guts::srtBind(const SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
@@ -898,12 +899,12 @@ bool ts::SRTSocket::Guts::srtBind(const ts::SocketAddress& addr, ts::Report& rep
 // Send a message to a destination address and port.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::send(const void* data, size_t size, ts::Report& report)
+bool ts::SRTSocket::send(const void* data, size_t size, Report& report)
 {
     return _guts->send(data, size, _guts->remote_address, report);
 }
 
-bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAddress& dest, ts::Report& report)
+bool ts::SRTSocket::Guts::send(const void* data, size_t size, const SocketAddress& dest, Report& report)
 {
     // If socket was disconnected or aborted, silently fail.
     if (disconnected || sock < 0) {
@@ -931,13 +932,13 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const ts::SocketAd
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, ts::Report& report)
+bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Report& report)
 {
     MicroSecond timestamp = 0; // unused
     return receive(data, max_size, ret_size, timestamp, report);
 }
 
-bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, ts::Report& report)
+bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report)
 {
     ret_size = 0;
     timestamp = -1;
