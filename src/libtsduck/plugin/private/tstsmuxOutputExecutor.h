@@ -36,10 +36,6 @@
 #include "tstsmuxPluginExecutor.h"
 #include "tsMuxerArgs.h"
 #include "tsOutputPlugin.h"
-#include "tsTSPacket.h"
-#include "tsTSPacketMetadata.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
 
 namespace ts {
     namespace tsmux {
@@ -65,12 +61,6 @@ namespace ts {
             virtual ~OutputExecutor() override;
 
             //!
-            //! Request the termination of the thread.
-            //! Actual termination will occur after completion of the current output operation if there is one in progress.
-            //!
-            void terminateOutput();
-
-            //!
             //! Copy packets in the output buffer.
             //! @param [in] pkt Address of first packet to send.
             //! @param [in] mdata Address of first packet metadata to send.
@@ -83,15 +73,7 @@ namespace ts {
             virtual size_t pluginIndex() const override;
 
         private:
-            OutputPlugin*          _output;        // Plugin API.
-            Mutex                  _mutex;         // Protects modifications in the buffer.
-            Condition              _to_send;       // Wake-up condition for the output thread: there are packets to send.
-            Condition              _to_fill;       // Wake-up condition for the core thread: there are free packets to fill in the buffer.
-            volatile bool          _terminate;     // Termination request, sometimes accessed outside mutex.
-            size_t                 _output_first;  // Index in the buffer of the first packet to output.
-            size_t                 _output_count;  // Number of packets to output.
-            TSPacketVector         _packets;       // Output packet circular buffer.
-            TSPacketMetadataVector _metadata;      // Output metadata circular buffer.
+            OutputPlugin* _output;  // Plugin API.
 
             // Implementation of Thread.
             virtual void main() override;

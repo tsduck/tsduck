@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxPluginExecutor.h"
+#include "tsGuard.h"
 TSDUCK_SOURCE;
 
 
@@ -44,6 +45,15 @@ ts::tsmux::PluginExecutor::PluginExecutor(const MuxerArgs& opt,
 
     PluginThread(&log, opt.appName, type, pl_options, attributes),
     _opt(opt),
+    _mutex(),
+    _got_packets(),
+    _got_freespace(),
+    _terminate(false),
+    _packets_first(0),
+    _packets_count(0),
+    _buffer_size(type == PluginType::INPUT ? _opt.inBufferPackets : _opt.outBufferPackets),
+    _packets(_buffer_size),
+    _metadata(_buffer_size),
     _handlers(handlers)
 {
 }
@@ -92,4 +102,18 @@ void ts::tsmux::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* p
 {
     const PluginEventContext ctx(event_code, pluginName(), pluginIndex(), pluginCount(), plugin(), plugin_data, bitrate(), pluginPackets(), totalPacketsInThread());
     _handlers.callEventHandlers(ctx);
+}
+
+
+//----------------------------------------------------------------------------
+// Request the termination of the thread.
+//----------------------------------------------------------------------------
+
+void ts::tsmux::PluginExecutor::terminate()
+{
+    // Locked the mutex on behalf of the two conditions.
+    Guard lock(_mutex);
+    _terminate = true;
+    _got_packets.signal();
+    _got_freespace.signal();
 }

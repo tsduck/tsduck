@@ -50,6 +50,7 @@ ts::MuxerArgs::MuxerArgs() :
     appName(),
     inputs(),
     output(),
+    lossyInput(false),
     inputOnce(false),
     outputOnce(false),
     inputRestartDelay(DEFAULT_RESTART_DELAY),
@@ -94,6 +95,12 @@ void ts::MuxerArgs::defineArgs(Args& args) const
               u"The default is " + UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" packets. "
               u"The size of the output buffer is the sum of all input buffers sizes.");
 
+    args.option(u"lossy-input");
+    args.help(u"lossy-input",
+              u"When an input plugin provides packets faster than the output consumes them, "
+              u"drop older buffered input packets in order to read more recent packets. "
+              u"By default, block an input plugin when its buffer is full.");
+
     args.option(u"max-input-packets", 0, Args::POSITIVE);
     args.help(u"max-input-packets",
               u"Specify the maximum number of TS packets to read at a time. "
@@ -132,6 +139,7 @@ void ts::MuxerArgs::defineArgs(Args& args) const
 bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
 {
     appName = args.appName();
+    lossyInput = args.present(u"lossy-input");
     inputOnce = args.present(u"terminate");
     outputOnce = args.present(u"terminate-with-output");
     args.getIntValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
