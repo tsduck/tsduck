@@ -370,7 +370,6 @@
 #include "tsMACAddress.h"
 #include "tsMain.h"
 #include "tsMaximumBitrateDescriptor.h"
-#include "tsMD5.h"
 #include "tsMemory.h"
 #include "tsMemoryInputPlugin.h"
 #include "tsMemoryOutputPlugin.h"
