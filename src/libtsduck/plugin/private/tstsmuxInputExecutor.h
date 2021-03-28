@@ -36,8 +36,6 @@
 #include "tstsmuxPluginExecutor.h"
 #include "tsMuxerArgs.h"
 #include "tsInputPlugin.h"
-#include "tsMutex.h"
-#include "tsCondition.h"
 
 namespace ts {
     namespace tsmux {
@@ -63,19 +61,15 @@ namespace ts {
             //!
             virtual ~InputExecutor() override;
 
-            //!
-            //! Terminate the input executor thread.
-            //!
-            void terminateInput();
-
             // Implementation of TSP.
             virtual size_t pluginIndex() const override;
 
+            // Inherited from PluginExecutor, also abort input in progress when possible.
+            virtual void terminate() override;
+
         private:
-            InputPlugin*           _input;         // Plugin API.
-            const size_t           _pluginIndex;   // Index of this input plugin.
-            TSPacketVector         _packets;       // Output packet circular buffer.
-            TSPacketMetadataVector _metadata;      // Output metadata circular buffer.
+            InputPlugin* _input;         // Plugin API.
+            const size_t _pluginIndex;   // Index of this input plugin.
 
             // Implementation of Thread.
             virtual void main() override;

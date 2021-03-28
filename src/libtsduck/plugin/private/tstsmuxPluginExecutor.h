@@ -36,6 +36,10 @@
 #include "tsPluginThread.h"
 #include "tsMuxerArgs.h"
 #include "tsPluginEventHandlerRegistry.h"
+#include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
+#include "tsMutex.h"
+#include "tsCondition.h"
 
 namespace ts {
     namespace tsmux {
@@ -68,6 +72,12 @@ namespace ts {
             //!
             virtual ~PluginExecutor() override;
 
+            //!
+            //! Request the termination of the thread.
+            //! Actual termination will occur after completion of the current input/output operation if there is one in progress.
+            //!
+            virtual void terminate();
+
             // Implementation of TSP. We do not use "joint termination" in tsmux.
             virtual void useJointTermination(bool) override;
             virtual void jointTerminate() override;
@@ -77,7 +87,16 @@ namespace ts {
             virtual void signalPluginEvent(uint32_t event_code, Object* plugin_data = nullptr) const override;
 
         protected:
-            const MuxerArgs& _opt; //!< Command line options.
+            const MuxerArgs&       _opt;            //!< Command line options.
+            Mutex                  _mutex;          //!< Protects modifications in the buffer.
+            Condition              _got_packets;    //!< Wake-up condition: there are new packets in the buffer.
+            Condition              _got_freespace;  //!< Wake-up condition: there are more free packets in the buffer.
+            volatile bool          _terminate;      //!< Termination request, sometimes accessed outside mutex, goes from false to true only once.
+            size_t                 _packets_first;  //!< Index in the buffer of the first packet.
+            size_t                 _packets_count;  //!< Number of packets to output.
+            const size_t           _buffer_size;    //!< Size of the packet buffer.
+            TSPacketVector         _packets;        //!< Output packet circular buffer.
+            TSPacketMetadataVector _metadata;       //!< Output metadata circular buffer.
 
         private:
             const PluginEventHandlerRegistry& _handlers;  //!< Registry of event handlers.

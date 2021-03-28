@@ -41,9 +41,7 @@ ts::tsmux::InputExecutor::InputExecutor(const MuxerArgs& opt, const PluginEventH
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
     PluginExecutor(opt, handlers, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority()), log),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
-    _pluginIndex(index),
-    _packets(_opt.inBufferPackets),
-    _metadata(opt.inBufferPackets)
+    _pluginIndex(index)
 {
     // Make sure that the input plugins display their index.
     setLogName(UString::Format(u"%s[%d]", {pluginName(), _pluginIndex}));
@@ -66,12 +64,16 @@ size_t ts::tsmux::InputExecutor::pluginIndex() const
 
 
 //----------------------------------------------------------------------------
-// Terminate input.
+// Terminate input, also abort input in progress when possible.
 //----------------------------------------------------------------------------
 
-void ts::tsmux::InputExecutor::terminateInput()
+void ts::tsmux::InputExecutor::terminate()
 {
-    //@@@@@@@@@@@
+    // Signal termination.
+    PluginExecutor::terminate();
+
+    // Then abort input in progress if there is one to avoid blocking.
+    _input->abortInput();
 }
 
 
@@ -83,7 +85,48 @@ void ts::tsmux::InputExecutor::main()
 {
     debug(u"input thread started");
 
-    //@@@@@@@@@@@@@@
+    // Loop until we are instructed to stop.
+    while (!_terminate) {
 
+        // Wait for free space to be available in the output buffer.
+        size_t first = 0;
+        size_t count = 0;
+        {
+            GuardCondition lock(_mutex, _got_freespace);
+            while (!_terminate && _packets_count >= _buffer_size) {
+                lock.waitCondition();
+            }
+            // We can use this contiguous free area at the end of already received packets.
+            first = (_packets_first + _packets_count) % _buffer_size;
+            count = std::min(_buffer_size - _packets_count, _buffer_size - first);
+        }
+
+        // Read some packets.
+        if (!_terminate) {
+            count = _input->receive(&_packets[first], &_metadata[first], std::min(count, _opt.maxInputPackets));
+            if (count > 0) {
+                // Packets successfully received.
+                GuardCondition lock(_mutex, _got_packets);
+                _packets_count += count;
+                // Signal that there are some new packets in the buffer.
+                lock.signal();
+            }
+            else if (_opt.inputOnce) {
+                // Terminates when the input plugin terminates or fails.
+                _terminate = true;
+            }
+            else {
+                // Restart when the plugin terminates or fails.
+                verbose(u"restarting input plugin '%s' after end of stream or failure", {pluginName()});
+                _input->stop();
+                while (!_terminate && !_input->start()) {
+                    SleepThread(_opt.outputRestartDelay);
+                }
+            }
+        }
+    }
+
+    // Stop the plugin.
+    _input->stop();
     debug(u"input thread terminated");
 }
