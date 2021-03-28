@@ -37,7 +37,6 @@
 #include "tsSHA1.h"
 #include "tsSHA256.h"
 #include "tsSHA512.h"
-#include "tsMD5.h"
 #include "tsECB.h"
 #include "tsCBC.h"
 #include "tsCTR.h"
@@ -66,7 +65,6 @@ TSDUCK_SOURCE;
 #include "crypto/tv_sha1.h"
 #include "crypto/tv_sha256.h"
 #include "crypto/tv_sha512.h"
-#include "crypto/tv_md5.h"
 
 
 //----------------------------------------------------------------------------
@@ -99,7 +97,6 @@ public:
     void testSHA1();
     void testSHA256();
     void testSHA512();
-    void testMD5();
 
     TSUNIT_TEST_BEGIN(CryptoTest);
     TSUNIT_TEST(testAES);
@@ -122,7 +119,6 @@ public:
     TSUNIT_TEST(testSHA1);
     TSUNIT_TEST(testSHA256);
     TSUNIT_TEST(testSHA512);
-    TSUNIT_TEST(testMD5);
     TSUNIT_TEST_END();
 
 private:
@@ -574,19 +570,5 @@ void CryptoTest::testSHA512()
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_SHA512* tv = tv_sha512 + tvi;
         testHash(sha512, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
-    }
-}
-
-void CryptoTest::testMD5()
-{
-    ts::MD5 md5;
-
-    TSUNIT_ASSERT(md5.hashSize() == 16);
-    TSUNIT_ASSERT(md5.blockSize() == 64);
-
-    const size_t tv_count = sizeof(tv_md5) / sizeof(TV_MD5);
-    for (size_t tvi = 0; tvi < tv_count; ++tvi) {
-        const TV_MD5* tv = tv_md5 + tvi;
-        testHash(md5, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
     }
 }
