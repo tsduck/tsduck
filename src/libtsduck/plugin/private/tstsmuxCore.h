@@ -28,68 +28,65 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Multiplexer (tsmux) input plugin executor thread.
+//!  Multiplexer (tsmux) core engine.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tstsmuxPluginExecutor.h"
+#include "tsThread.h"
 #include "tsMuxerArgs.h"
-#include "tsInputPlugin.h"
+#include "tstsmuxInputExecutor.h"
+#include "tstsmuxOutputExecutor.h"
 
 namespace ts {
     namespace tsmux {
         //!
-        //! Execution context of a tsmux input plugin.
+        //! Multiplexer (tsmux) core engine.
         //! @ingroup plugin
         //!
-        class InputExecutor : public PluginExecutor
+        class Core: private Thread
         {
-            TS_NOBUILD_NOCOPY(InputExecutor);
+            TS_NOBUILD_NOCOPY(Core);
         public:
             //!
             //! Constructor.
             //! @param [in] opt Command line options.
-            //! @param [in] handlers Registry of event handlers.
-            //! @param [in] index Input plugin index.
+            //! @param [in] handlers Registry of plugin event handlers.
             //! @param [in,out] log Log report.
             //!
-            InputExecutor(const MuxerArgs& opt, const PluginEventHandlerRegistry& handlers, size_t index, Report& log);
+            Core(const MuxerArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log);
 
             //!
-            //! Virtual destructor.
+            //! Destructor.
             //!
-            virtual ~InputExecutor() override;
+            virtual ~Core() override;
 
             //!
-            //! Copy packets from the input buffer.
-            //! @param [out] pkt Address of packet buffer.
-            //! @param [out] mdata Address of packet metadata buffer.
-            //! @param [in] max_count Buffer size in number of packets.
-            //! @param [out] ret_count Returned number of actual packets.
-            //! @param [in] blocking If true, block until at least one packet is available.
-            //! If false, immediately return with @a ret_count being zero if no packet is available.
-            //! @return True on success, false if the output is terminated on error.
+            //! Start the @c tsmux processing.
+            //! @return True on success, false on error.
             //!
-            bool getPackets(TSPacket* pkt, TSPacketMetadata* mdata, size_t max_count, size_t& ret_count, bool blocking);
+            bool start();
 
-            // Implementation of TSP.
-            virtual size_t pluginIndex() const override;
+            //!
+            //! Stop the @c tsmux processing.
+            //!
+            void stop();
 
-            // Inherited from PluginExecutor, also abort input in progress when possible.
-            virtual void terminate() override;
+            //!
+            //! Wait for completion of all plugin threads.
+            //!
+            void waitForTermination();
 
         private:
-            InputPlugin* _input;         // Plugin API.
-            const size_t _pluginIndex;   // Index of this input plugin.
+            Report&             _log;        // Asynchronous log report.
+            const MuxerArgs&    _opt;        // Command line options.
+            volatile bool       _terminate;  // Termination request.
+            BitRate             _bitrate;    // Constant output bitrate.
+            InputExecutorVector _inputs;     // Input plugins threads.
+            OutputExecutor      _output;     // Output plugin thread.
 
             // Implementation of Thread.
             virtual void main() override;
         };
-
-        //!
-        //! Vector of pointers to InputExecutor.
-        //!
-        typedef std::vector<InputExecutor*> InputExecutorVector;
     }
 }

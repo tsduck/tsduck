@@ -41,7 +41,7 @@ TSDUCK_SOURCE;
 
 ts::tsswitch::Core::Core(const InputSwitcherArgs& opt, const PluginEventHandlerRegistry& handlers, Report& log) :
     _log(log),
-    _opt(opt), // consistency enforced by copy constructor
+    _opt(opt),
     _inputs(_opt.inputs.size(), nullptr),
     _output(_opt, handlers, *this, _log), // load output plugin and analyze options
     _eventDispatcher(_opt, _log),

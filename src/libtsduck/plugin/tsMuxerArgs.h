@@ -47,6 +47,7 @@ namespace ts {
         UString             appName;            //!< Application name, for help messages.
         PluginOptionsVector inputs;             //!< Input plugins descriptions.
         PluginOptions       output;             //!< Output plugin description.
+        BitRate             outputBitRate;      //!< Target output bitrate.
         bool                lossyInput;         //!< If true, allow to lose input packet when the buffer is full.
         bool                inputOnce;          //!< Terminate when all input plugins complete, do not restart plugins.
         bool                outputOnce;         //!< Terminate when the output plugin fails, do not restart.

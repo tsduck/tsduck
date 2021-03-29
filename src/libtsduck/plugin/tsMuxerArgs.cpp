@@ -50,6 +50,7 @@ ts::MuxerArgs::MuxerArgs() :
     appName(),
     inputs(),
     output(),
+    outputBitRate(0),
     lossyInput(false),
     inputOnce(false),
     outputOnce(false),
@@ -89,7 +90,15 @@ void ts::MuxerArgs::enforceDefaults()
 
 void ts::MuxerArgs::defineArgs(Args& args) const
 {
-    args.option(u"buffer-packets", 'b', Args::POSITIVE);
+    args.option(u"bitrate", 'b', Args::POSITIVE);
+    args.help(u"bitrate",
+              u"Specify the target constant output bitrate in bits per seconds. "
+              u"In most cases, this is a required parameter. "
+              u"Without explicit bitrate, the output plugin must be able to report "
+              u"its bitrate immediately after starting. "
+              u"This is typically possible on modulators and ASI cards only.");
+
+    args.option(u"buffer-packets", 0, Args::POSITIVE);
     args.help(u"buffer-packets",
               u"Specify the size in TS packets of each input plugin buffer. "
               u"The default is " + UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" packets. "
@@ -142,6 +151,7 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     lossyInput = args.present(u"lossy-input");
     inputOnce = args.present(u"terminate");
     outputOnce = args.present(u"terminate-with-output");
+    args.getIntValue(outputBitRate, u"bitrate");
     args.getIntValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
     outputRestartDelay = inputRestartDelay;
     args.getIntValue(inBufferPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
