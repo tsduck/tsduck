@@ -78,6 +78,46 @@ void ts::tsmux::InputExecutor::terminate()
 
 
 //----------------------------------------------------------------------------
+// Copy packets from the input buffer.
+//----------------------------------------------------------------------------
+
+bool ts::tsmux::InputExecutor::getPackets(TSPacket* pkt, TSPacketMetadata* mdata, size_t max_count, size_t& ret_count, bool blocking)
+{
+    // In blocking mode, loop until there is some packet in the buffer.
+    GuardCondition lock(_mutex, _got_packets);
+    while (!_terminate && (!blocking || _packets_count != 0)) {
+        lock.waitCondition();
+    }
+
+    // Return error if teh input is terminate _and_ there is no more packet to read.
+    if (_terminate && _packets_count == 0) {
+        ret_count = 0;
+        return false;
+    }
+
+    // Fill what can be filled from the buffer. We are still under the mutex protection.
+    assert(_packets_count <= _buffer_size);
+
+    // Number of packets to copy from the buffer:
+    ret_count = std::min(std::min(max_count, _packets_count), _buffer_size - _packets_first);
+
+    // Copy packets if there are some.
+    if (ret_count > 0) {
+        TSPacket::Copy(pkt, &_packets[_packets_first], ret_count);
+        TSPacketMetadata::Copy(mdata, &_metadata[_packets_first], ret_count);
+        _packets_first = (_packets_first + ret_count) % _buffer_size;
+        _packets_count -= ret_count;
+
+        // Signal that there are some free space.
+        // The mutex was initially locked for the _got_packets condition because we needed to wait
+        // for that condition but we can also use it to signal the _got_freespace condition.
+        _got_freespace.signal();
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Invoked in the context of the plugin thread.
 //----------------------------------------------------------------------------
 
