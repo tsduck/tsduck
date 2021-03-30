@@ -98,8 +98,8 @@ dtapi:
 .PHONY: install install-all install-tools install-devel
 install install-all: install-tools install-devel
 install-tools install-devel:
-	$(MAKE) -C src $@
-	$(MAKE) -C build $@
+	$(MAKE) NOTEST=true -C src $@
+	$(MAKE) NOTEST=true -C build $@
 
 # Various build targets are redirected to build subdirectory.
 .PHONY: tarball rpm rpm32 deb
