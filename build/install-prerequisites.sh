@@ -217,6 +217,8 @@ elif [[ -f /etc/gentoo-release ]]; then
     # Gentoo Linux
     pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-apps/pcsc-lite net-libs/srt dev-lang/python dev-java/openjdk"
     sudo emerge -n $PKGOPTS $pkglist
-    # Update command: sudo emerge --update --deep --changed-use @world
+    # Update command: sudo emerge --sync
+    # or (??): sudo emerge -auvND --with-bdeps=y world
+    # or (??): sudo emerge --update --deep --changed-use @world
 
 fi
