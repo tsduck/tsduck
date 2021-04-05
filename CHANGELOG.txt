@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2311
+VERSION 3.26-2323
 
 [NEW] New commands and plugins:
 
@@ -27,6 +27,11 @@ VERSION 3.26-2311
     - Options --multiple and --restart-delay in output plugin "srt".
     - Options --caller and --listener in "srt" input and output plugins.
       The address:port parameter and the --rendezvous options are now legacy.
+
+[BUG] Bug fixes:
+
+  * In the display of SCTE 35 splice information tables, the UTC times in the
+    splice_schedule() commands were incorrectly displayed.
 
 -------------------------------------------------------------------------------
 
