@@ -94,7 +94,7 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
 
             if (ev->program_splice) {
                 // The complete program switches at a given time.
-                disp << margin << UString::Format(u"  UTC: %s", {Time::UnixTimeToUTC(ev->program_utc).format(Time::DATE | Time::TIME)}) << std::endl;
+                disp << margin << UString::Format(u"  UTC: %s", {ToUTCTime(ev->program_utc).format(Time::DATETIME)}) << std::endl;
             }
             if (!ev->program_splice) {
                 // Program components switch individually.
@@ -102,7 +102,7 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
                 for (UTCByComponent::const_iterator it = ev->components_utc.begin(); it != ev->components_utc.end(); ++it) {
                     disp << margin
                          << UString::Format(u"    Component tag: 0x%X (%<d)", {it->first})
-                         << UString::Format(u", UTC: %s", {Time::UnixTimeToUTC(it->second).format(Time::DATE | Time::TIME)})
+                         << UString::Format(u", UTC: %s", {ToUTCTime(it->second).format(Time::DATETIME)})
                          << std::endl;
                 }
             }
@@ -326,4 +326,22 @@ bool ts::SpliceSchedule::analyzeXML(DuckContext& duck, const xml::Element* eleme
         events.push_back(ev);
     }
     return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert between actual UTC time and 32-bit SCTE 35 utc_splice_time.
+//----------------------------------------------------------------------------
+
+// Base time for UTC times in an SCTE 35: "00 hours UTC, January 6th, 1980"
+const ts::Time ts::SpliceSchedule::UTCBase(1980, 1, 6, 0, 0, 0);
+
+ts::Time ts::SpliceSchedule::ToUTCTime(uint32_t value)
+{
+    return UTCBase + Second(value) * MilliSecPerSec;
+}
+
+uint32_t ts::SpliceSchedule::FromUTCTime(const Time& value)
+{
+    return value < UTCBase ? 0 : uint32_t((value - UTCBase) / MilliSecPerSec);
 }
