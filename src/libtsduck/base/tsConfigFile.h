@@ -55,22 +55,26 @@ namespace ts {
         //! Constructor.
         //! @param [in] filename A file name to read. Don't read a file if empty.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] env_disable Optional name of an environment variable. When the corresponding
+        //! environment variable is defined to some non-empty value, the file is not loaded.
         //!
-        explicit ConfigFile(const UString& filename = UString(), Report& report = CERR);
-
-        //!
-        //! Constructor.
-        //! @param [in,out] strm Opened input text stream to read the configuration file.
-        //!
-        explicit ConfigFile(std::istream& strm);
+        explicit ConfigFile(const UString& filename = UString(), Report& report = CERR, const UString env_disable = UString());
 
         //!
         //! Constructor.
         //! @param [in] filename1 A file name to read. Don't read a file if empty.
         //! @param [in] filename2 A file name to read if @a filename1 does not exist. Don't read a file if empty.
         //! @param [in,out] report Where to report errors.
+        //! @param [in] env_disable Optional name of an environment variable. When the corresponding
+        //! environment variable is defined to some non-empty value, the file is not loaded.
         //!
-        ConfigFile(const UString& filename1, const UString& filename2, Report& report = CERR);
+        ConfigFile(const UString& filename1, const UString& filename2, Report& report = CERR, const UString env_disable = UString());
+
+        //!
+        //! Constructor.
+        //! @param [in,out] strm Opened input text stream to read the configuration file.
+        //!
+        explicit ConfigFile(std::istream& strm);
 
         //!
         //! System-specific style of default configuration file name.

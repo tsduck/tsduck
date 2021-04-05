@@ -71,7 +71,6 @@ namespace ts {
         };
 
         // TimeConfigurationFile private fields.
-        const Time              tai_epoch;        // Start of TAI (international atomic time).
         Second                  initial_seconds;  // Initial leap seconds before first leap second.
         std::vector<LeapSecond> leap_seconds;     // Sorted list of defined leap seconds.
     };
