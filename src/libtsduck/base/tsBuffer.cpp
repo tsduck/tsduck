@@ -1018,7 +1018,7 @@ size_t ts::Buffer::putBytes(const ByteBlock& bb, size_t start, size_t count)
 {
     start = std::min(start, bb.size());
     count = std::min(bb.size() - start, count);
-    return putBytes(&bb[start], count);
+    return putBytes(bb.data() + start, count);
 }
 
 size_t ts::Buffer::putBytes(const uint8_t* buffer, size_t bytes)

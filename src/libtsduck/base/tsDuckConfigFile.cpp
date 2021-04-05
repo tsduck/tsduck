@@ -40,6 +40,7 @@ TS_DEFINE_SINGLETON(ts::DuckConfigFile);
 //----------------------------------------------------------------------------
 // Default constructor.
 // On Windows, we use the legacy file name (same as Unix) as fallback.
+// Do not load the configuration if TSDUCK_NO_USER_CONFIG is defined.
 //----------------------------------------------------------------------------
 
 ts::DuckConfigFile::DuckConfigFile() :
@@ -48,7 +49,8 @@ ts::DuckConfigFile::DuckConfigFile() :
         GetEnvironment(u"APPDATA") + u"\\tsduck\\tsduck.ini",
         #endif
         (UserHomeDirectory() + PathSeparator) + u".tsduck",
-        NULLREP),
+        NULLREP,
+        u"TSDUCK_NO_USER_CONFIG"),
     _appName(PathPrefix(BaseName(ExecutableFile())).toLower()),
     _appSection(section(_appName)),
     _mainSection(section(u""))

@@ -42,7 +42,6 @@ TS_DEFINE_SINGLETON(ts::TimeConfigurationFile);
 //-----------------------------------------------------------------------------
 
 ts::TimeConfigurationFile::TimeConfigurationFile() :
-    tai_epoch(1958, 1, 1, 0, 0, 0),  // TAI Epoch is Jan 1st 1958
     initial_seconds(0),
     leap_seconds()
 {
@@ -97,8 +96,10 @@ ts::Second ts::TimeConfigurationFile::leapSeconds(const Time& start, const Time&
         }
 
         // If any date is before 1972 (first leap second), we cannot really know how many leap seconds there are.
-        // If start and end surround TAI Epoch (1958) or first leap second (1972), use initial leap seconds (10).
-        if ((start < leap_seconds[0].after && end >= leap_seconds[0].after) || (start < tai_epoch && end >= tai_epoch)) {
+        // If start and end surround the first leap second (1972), use initial leap seconds (10).
+        // There should be another milestone: the TAI Epoch (1958). But since UNIX systems cannot represent
+        // times before 1970, we just ignore.
+        if (start < leap_seconds[0].after && end >= leap_seconds[0].after) {
             total += initial_seconds;
         }
     }

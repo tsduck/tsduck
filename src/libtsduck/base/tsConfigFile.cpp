@@ -40,26 +40,26 @@ const ts::ConfigSection ts::ConfigFile::_empty;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ConfigFile::ConfigFile(const UString& filename, Report& report) :
-    _filename(filename),
-    _sections()
+ts::ConfigFile::ConfigFile(const UString& filename, Report& report, const UString env_disable) :
+    ConfigFile(filename, UString(), report, env_disable)
 {
-    if (!filename.empty()) {
-        load(filename, report);
-    }
 }
 
-ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, Report& report) :
+ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, Report& report, const UString env_disable) :
     _filename(),
     _sections()
 {
-    // Try to load first file.
-    if (!filename1.empty()) {
-        load(filename1, report);
-    }
-    // If nothing was loaded from first file, try second file.
-    if (!filename2.empty() && _sections.empty()) {
-        load(filename2, report);
+    // Only if not disabled by environment variable.
+    if (env_disable.empty() || GetEnvironment(env_disable).empty()) {
+
+        // Try to load first file.
+        if (!filename1.empty()) {
+            load(filename1, report);
+        }
+        // If nothing was loaded from first file, try second file.
+        if (!filename2.empty() && _sections.empty()) {
+            load(filename2, report);
+        }
     }
 }
 
