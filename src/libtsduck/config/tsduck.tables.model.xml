@@ -29,19 +29,7 @@
                  - - - - - - - - - - - - - - - -
 
  Template for TSDuck XML files describing PSI/SI tables.
-
- It is used to validate user-provided XML files. Since TSDuck uses a simple
- XML parser without DTD or XML-Schema support, there is no formal standard
- definition. This file defines the valid structure of an XML file. Tags or
- attributes which are not present here will be rejected. The content of
- nodes and attributes in this file are just informative comments.
-
- Notes on types and formats:
- - Tags and attributes are not case-sensitive.
- - The names of tags and attributes are copied from ISO or DVB standards.
- - Integer values can be represented in decimal or hexadecimal (0x prefix).
- - Booleans are "true" or "false".
- - Hexa content is a suite of hexa digits. Spaces are ignored.
+ See the TSDuck user's guide, section 2.5.3, "XML model files".
 
 -->
 <tsduck>
@@ -334,14 +322,14 @@
             splice_event_id="uint32, required"
             splice_event_cancel="bool, default=false"
             out_of_network="bool, required when splice_event_cancel is false"
-            utc_splice_time="uint32, required when splice_event_cancel is false and program_splice_flag is to be set"
+            utc_splice_time="YYYY-MM-DD hh:mm:ss or uint32, required when splice_event_cancel is false and program_splice_flag is to be set"
             unique_program_id="uint16, required when splice_event_cancel is false"
             avail_num="uint8, default=0"
             avails_expected="uint8, default=0">
           <!-- Optional -->
           <break_duration auto_return="bool, required" duration="uint33, required"/>
           <!-- One per component when splice_event_cancel is false and utc_splice_time is not specified -->
-          <component component_tag="uint8, required" utc_splice_time="uint32, required"/>
+          <component component_tag="uint8, required" utc_splice_time="YYYY-MM-DD hh:mm:ss or uint32, required"/>
         </splice_event>
       </splice_schedule>
       <splice_insert

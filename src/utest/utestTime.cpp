@@ -60,6 +60,7 @@ public:
     void testDaylightSavingTime();
     void testCAS();
     void testJST();
+    void testLeapSeconds();
 
     TSUNIT_TEST_BEGIN(TimeTest);
     TSUNIT_TEST(testTime);
@@ -75,6 +76,7 @@ public:
     TSUNIT_TEST(testDaylightSavingTime);
     TSUNIT_TEST(testCAS);
     TSUNIT_TEST(testJST);
+    TSUNIT_TEST(testLeapSeconds);
     TSUNIT_TEST_END();
 };
 
@@ -442,4 +444,25 @@ void TimeTest::testJST()
     TSUNIT_EQUAL(u"2020/04/30 03:00:00.000", ts::Time(2020, 4, 30,  12,  0,  0).JSTToUTC().format());
     TSUNIT_EQUAL(u"2020/05/01 05:00:00.000", ts::Time(2020, 4, 30,  20,  0,  0).UTCToJST().format());
     TSUNIT_EQUAL(u"2020/04/29 19:00:00.000", ts::Time(2020, 4, 30,   4,  0,  0).JSTToUTC().format());
+}
+
+void TimeTest::testLeapSeconds()
+{
+    TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time::Epoch));
+    TSUNIT_EQUAL(0, ts::Time::Epoch.leapSecondsTo(ts::Time(1971, 1, 1, 0, 0, 0)));
+    TSUNIT_EQUAL(0, ts::Time(1971, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1972, 1, 1, 0, 0, 0)));
+    TSUNIT_EQUAL(11, ts::Time(1971, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1972, 7, 1, 0, 0, 0)));
+    TSUNIT_EQUAL(37, ts::Time::Epoch.leapSecondsTo(ts::Time(2021, 1, 1, 0, 0, 0)));
+    TSUNIT_EQUAL(18, ts::Time::GPSEpoch.leapSecondsTo(ts::Time(2021, 1, 1, 0, 0, 0)));
+    TSUNIT_EQUAL(5, ts::Time(1985, 1, 1, 0, 0, 0).leapSecondsTo(ts::Time(1992, 7, 1, 0, 0, 0)));
+
+    // Check that system time does NOT include leap seconds.
+    const ts::MilliSecond year = 365 * ts::MilliSecPerDay;
+    const ts::MilliSecond leap_year = 366 * ts::MilliSecPerDay;
+    TSUNIT_EQUAL(year, ts::Time(1987, 1, 1, 0, 0) - ts::Time(1986, 1, 1, 0, 0));
+    TSUNIT_EQUAL(year, ts::Time(1988, 1, 1, 0, 0) - ts::Time(1987, 1, 1, 0, 0));
+    TSUNIT_EQUAL(leap_year, ts::Time(1989, 1, 1, 0, 0) - ts::Time(1988, 1, 1, 0, 0));
+    TSUNIT_EQUAL(year, ts::Time(1990, 1, 1, 0, 0) - ts::Time(1989, 1, 1, 0, 0));
+    TSUNIT_EQUAL(year, ts::Time(1991, 1, 1, 0, 0) - ts::Time(1990, 1, 1, 0, 0));
+    TSUNIT_EQUAL(year, ts::Time(1992, 1, 1, 0, 0) - ts::Time(1991, 1, 1, 0, 0));
 }

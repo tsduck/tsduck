@@ -28,24 +28,15 @@
 
                  - - - - - - - - - - - - - - - -
 
- Template for TSDuck XML files describing VHF and UHF bands.
+ Template for TSDuck configuration file for system time.
  See the TSDuck user's guide, section 2.5.3, "XML model files".
 
 -->
 <tsduck>
-  <!-- HF band description -->
-  <hfband type="string, required">
-    <!-- List of regions or countries where this HF band is valid -->
-    <region name="string, required"/>
-    <!-- Block of contiguous channels -->
-    <channels first_channel="uint32, required"
-              last_channel="uint32, required"
-              base_frequency="uint64, required"
-              channel_width="uint64, required"
-              first_offset="int32, default=0"
-              last_offset="int32, default=0"
-              offset_width="uint64, default=0"
-              even_polarity="horizontal|vertical|left|right|none, default=none"
-              odd_polarity="horizontal|vertical|left|right|none, default=none"/>
-  </hfband>
+
+  <leap_seconds initial="int, required">
+    <!-- one per defined leap second -->
+    <leap after="YYYY-MM-DD hh:mm:ss, required" count="int, required"/>
+  </leap_seconds>
+
 </tsduck>

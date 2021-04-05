@@ -384,6 +384,19 @@ namespace ts {
         UString timeReferenceName() const;
 
         //!
+        //! Set the explicit inclusion of leap seconds where it is needed.
+        //! Currently, this applies to SCTE 35 splice_schedule() commands only.
+        //! @param [in] on True if leap seconds shall be explicitly included (the default), false to ignore leap seconds.
+        //!
+        void setUseLeapSeconds(bool on) { _useLeapSeconds = on; }
+
+        //!
+        //! Check the explicit inclusion of leap seconds where it is needed.
+        //! @return True if leap seconds shall be explicitly included, false to ignore leap seconds.
+        //!
+        bool useLeapSeconds() const  { return _useLeapSeconds; }
+
+        //!
         //! Define character set command line options in an Args.
         //! Defined options: @c -\-default-charset, @c -\-europe.
         //! The context keeps track of defined options so that loadOptions() can parse the appropriate options.
@@ -480,6 +493,7 @@ namespace ts {
         const Charset* _charsetOut;        // Preferred DVB character set to generate strings.
         uint16_t       _casId;             // Preferred CAS id.
         PDS            _defaultPDS;        // Default PDS value if undefined.
+        bool           _useLeapSeconds;    // Explicit use of leap seconds.
         Standards      _cmdStandards;      // Forced standards from the command line.
         Standards      _accStandards;      // Accumulated list of standards in the context.
         UString        _hfDefaultRegion;   // Default region for UHF/VHF band.

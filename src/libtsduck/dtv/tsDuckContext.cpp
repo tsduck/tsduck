@@ -52,6 +52,7 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     _charsetOut(&DVBCharTableSingleByte::DVB_ISO_6937),
     _casId(CASID_NULL),
     _defaultPDS(0),
+    _useLeapSeconds(true),
     _cmdStandards(Standards::NONE),
     _accStandards(Standards::NONE),
     _hfDefaultRegion(),
@@ -70,6 +71,13 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
     // Initialize time reference from configuration file. Ignore errors.
     if (!_timeRefConfig.empty() && !setTimeReference(_timeRefConfig)) {
         CERR.verbose(u"invalid default.time '%s' in %s", {_timeRefConfig, DuckConfigFile::Instance()->fileName()});
+    }
+
+    // Get leap.seconds initial value from configuration file. Default value is true.
+    const UString ls(DuckConfigFile::Instance()->value(u"leap.seconds"));
+    if (!ls.empty() && !ls.toBool(_useLeapSeconds)) {
+        _useLeapSeconds = true;
+        CERR.verbose(u"invalid leap.seconds '%s' in %s", {ls, DuckConfigFile::Instance()->fileName()});
     }
 }
 
@@ -427,6 +435,11 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"automatically detected from their signalization. This option is only "
                   u"useful when ISDB-related stuff are found in the TS before the first "
                   u"ISDB-specific table.");
+
+        args.option(u"ignore-leap-seconds", 0);
+        args.help(u"ignore-leap-seconds",
+                  u"Do not include explicit leap seconds in some UTC computations. "
+                  u"Currently, this applies to SCTE 35 splice_schedule() commands only.");
     }
 
     // Options relating to default UHF/VHF region.
@@ -495,7 +508,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     // Option --philippines triggers different options in different sets of options.
     if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
-        // Build help text. Same principla as --japan.
+        // Build help text. Same principle as --japan.
         UStringList options;
         if (_definedCmdOptions & CMD_STANDARDS) {
             options.push_back(u"--isdb");
@@ -519,7 +532,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     // Option --brazil triggers different options in different sets of options.
     if (cmdOptionsMask & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) {
 
-        // Build help text. Same principla as --japan.
+        // Build help text. Same principle as --japan.
         UStringList options;
         if (_definedCmdOptions & CMD_STANDARDS) {
             options.push_back(u"--isdb");
@@ -543,7 +556,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     // Option --usa triggers different options in different sets of options.
     if (cmdOptionsMask & (CMD_STANDARDS | CMD_HF_REGION)) {
 
-        // Build help text. Same principla as --japan.
+        // Build help text. Same principle as --japan.
         UStringList options;
         if (_definedCmdOptions & CMD_STANDARDS) {
             options.push_back(u"--atsc");
@@ -627,6 +640,7 @@ bool ts::DuckContext::loadArgs(Args& args)
         if (args.present(u"abnt") || args.present(u"brazil") || args.present(u"philippines")) {
             _cmdStandards |= Standards::ISDB | Standards::ABNT;
         }
+        _useLeapSeconds = !args.present(u"ignore-leap-seconds");
     }
     if ((_definedCmdOptions & (CMD_CHARSET | CMD_STANDARDS | CMD_HF_REGION | CMD_TIMEREF)) && args.present(u"japan")) {
         _cmdStandards |= Standards::JAPAN;

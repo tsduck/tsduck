@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2323
+VERSION 3.26-2324
 
 [NEW] New commands and plugins:
 
@@ -27,6 +27,9 @@ VERSION 3.26-2323
     - Options --multiple and --restart-delay in output plugin "srt".
     - Options --caller and --listener in "srt" input and output plugins.
       The address:port parameter and the --rendezvous options are now legacy.
+    - Option --ignore-leap-seconds in "tsanalyze", "tsdate", "tsp", "tspsi",
+      "tstabcomp", "tstabdump", "tstables" and plugins "analyze", "psi",
+      "tables".
 
 [BUG] Bug fixes:
 

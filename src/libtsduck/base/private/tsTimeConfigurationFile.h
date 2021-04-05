@@ -28,32 +28,51 @@
 //-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Declare a singleton for the names file containing Dektec definitions.
+//!  Declare a singleton for the TSDuck time configuration file.
 //!
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsNames.h"
+#include "tsSingletonManager.h"
+#include "tsTime.h"
 
 namespace ts {
     //!
-    //! An instance of names repository containing all Dektec names.
-    //! The corresponding names file is automatically generated.
+    //! A singleton class for the TSDuck time configuration file.
+    //! This class remains hidden inside the TSDuck library.
+    //! Applications and plugins should use the class ts::Time.
     //!
-    class DektecNames : public Names
+    class TimeConfigurationFile
     {
-        TS_DECLARE_SINGLETON(DektecNames);
+        TS_DECLARE_SINGLETON(TimeConfigurationFile);
     public:
         //!
-        //! Get the name of one DtCaps by value.
-        //! @param [in] dtcap DtCaps integer value.
-        //! @return The corresponding string.
+        //! Get the number of leap seconds between two UTC dates.
+        //! @param [in] start Start UTC date.
+        //! @param [in] end End UTC date.
+        //! @return The number of leap seconds between @a start and @a end.
+        //! Return zero if @a start is after @a end.
         //!
-        UString dtCaps(int dtcap);
+        Second leapSeconds(const Time& start, const Time& end) const;
 
-        //!
-        //! Destructor.
-        //!
-        virtual ~DektecNames() override;
+    private:
+        // Definition of a <leap_second> entry.
+        class LeapSecond
+        {
+        public:
+            Time   after;  // Insert leap seconds right after the second in this time.
+            Second count;  // Number of leap second to add (could be negative if necessary).
+
+            // Constructor.
+            LeapSecond() : after(), count(0) {}
+
+            // Comparison for sorting.
+            bool operator<(const LeapSecond& other) const { return this->after < other.after; }
+        };
+
+        // TimeConfigurationFile private fields.
+        const Time              tai_epoch;        // Start of TAI (international atomic time).
+        Second                  initial_seconds;  // Initial leap seconds before first leap second.
+        std::vector<LeapSecond> leap_seconds;     // Sorted list of defined leap seconds.
     };
 }

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ TSDuck - The MPEG Transport Stream Toolkit
+ Copyright (c) 2005-2021, Thierry Lelegard
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
+
+                 - - - - - - - - - - - - - - - -
+
+ TSDuck configuration file for system time.
+
+ About leap seconds, see:
+ - https://en.wikipedia.org/wiki/Leap_second
+ - https://en.wikipedia.org/wiki/International_Atomic_Time
+
+-->
+<tsduck>
+
+  <leap_seconds initial="10">
+    <!--
+        The leap seconds are officially individually allocated in UTC starting June 30, 1972.
+        At that date, the TAI (International Atomic Time) which started in 1958 was already
+        10 seconds ahead of UTC. So, there are 10 leap seconds overall between 1958 and 1972
+        without precise allocation.
+    -->
+    <leap after="1972-06-30 23:59:59" count="1"/>
+    <leap after="1972-12-31 23:59:59" count="1"/>
+    <leap after="1973-12-31 23:59:59" count="1"/>
+    <leap after="1974-12-31 23:59:59" count="1"/>
+    <leap after="1975-12-31 23:59:59" count="1"/>
+    <leap after="1976-12-31 23:59:59" count="1"/>
+    <leap after="1977-12-31 23:59:59" count="1"/>
+    <leap after="1978-12-31 23:59:59" count="1"/>
+    <leap after="1979-12-31 23:59:59" count="1"/>
+    <leap after="1981-06-30 23:59:59" count="1"/>
+    <leap after="1982-06-30 23:59:59" count="1"/>
+    <leap after="1983-06-30 23:59:59" count="1"/>
+    <leap after="1985-06-30 23:59:59" count="1"/>
+    <leap after="1987-12-31 23:59:59" count="1"/>
+    <leap after="1989-12-31 23:59:59" count="1"/>
+    <leap after="1990-12-31 23:59:59" count="1"/>
+    <leap after="1992-06-30 23:59:59" count="1"/>
+    <leap after="1993-06-30 23:59:59" count="1"/>
+    <leap after="1994-06-30 23:59:59" count="1"/>
+    <leap after="1995-12-31 23:59:59" count="1"/>
+    <leap after="1997-06-30 23:59:59" count="1"/>
+    <leap after="1998-12-31 23:59:59" count="1"/>
+    <leap after="2005-12-31 23:59:59" count="1"/>
+    <leap after="2008-12-31 23:59:59" count="1"/>
+    <leap after="2012-06-30 23:59:59" count="1"/>
+    <leap after="2015-06-30 23:59:59" count="1"/>
+    <leap after="2016-12-31 23:59:59" count="1"/>
+  </leap_seconds>
+
+</tsduck>

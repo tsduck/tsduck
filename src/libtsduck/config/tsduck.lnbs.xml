@@ -30,15 +30,15 @@
 
  Reference XML file describing Low Noise Blocks (LNB) for satellite reception.
 
-Notes on LNB descriptions:
-- The last LNB with default="true" is the default one.
-- If there is no explicit default, the first LNB is the default one.
-- The polarization attribute must set on all bands or none.
-- Using polarization attributes indicate a polarization-controlled LNB.
-- Polarization-controlled LNB's must use "stacked" transposition: the transposed
-  bands must not overlap and no tone/voltage/DiSEqC command is needed.
-- For non-polarization-controlled multi-band LNB's, tone/voltage/DiSEqC command
-  is needed. Bands shall be sorted in increasing order of frequency.
+ Notes on LNB descriptions:
+ . The last LNB with default="true" is the default one.
+ . If there is no explicit default, the first LNB is the default one.
+ . The polarization attribute must set on all bands or none.
+ . Using polarization attributes indicate a polarization-controlled LNB.
+ . Polarization-controlled LNB's must use "stacked" transposition: the transposed
+   bands must not overlap and no tone/voltage/DiSEqC command is needed.
+ . For non-polarization-controlled multi-band LNB's, tone/voltage/DiSEqC command
+   is needed. Bands shall be sorted in increasing order of frequency.
 
 -->
 <tsduck>
