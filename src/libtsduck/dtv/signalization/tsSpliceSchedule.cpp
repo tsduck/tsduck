@@ -384,9 +384,9 @@ uint32_t ts::SpliceSchedule::FromUTCTime(const DuckContext& duck, const Time& va
     if (value < Time::GPSEpoch) {
         return 0;
     }
-    uint32_t utc = uint32_t((value - Time::GPSEpoch) / MilliSecPerSec);
+    Second utc = (value - Time::GPSEpoch) / MilliSecPerSec;
     if (duck.useLeapSeconds()) {
         utc += Time::GPSEpoch.leapSecondsTo(value);
     }
-    return utc;
+    return uint32_t(utc);
 }
