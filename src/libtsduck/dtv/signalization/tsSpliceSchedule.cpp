@@ -77,6 +77,16 @@ void ts::SpliceSchedule::clearContent()
 
 
 //----------------------------------------------------------------------------
+// Full dump of utc_splice_time.
+//----------------------------------------------------------------------------
+
+ts::UString ts::SpliceSchedule::DumpSpliceTime(const DuckContext& duck, uint32_t value)
+{
+    return UString::Format(u"0x%X (%s, leap seconds %s)", {value, ToUTCTime(duck, value).format(Time::DATETIME), duck.useLeapSeconds() ? u"included" : u"ignored"});
+}
+
+
+//----------------------------------------------------------------------------
 // Display a SpliceSchedule command.
 //----------------------------------------------------------------------------
 
@@ -94,16 +104,14 @@ void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) con
 
             if (ev->program_splice) {
                 // The complete program switches at a given time.
-                disp << margin << UString::Format(u"  UTC: %s", {ToUTCTime(ev->program_utc).format(Time::DATETIME)}) << std::endl;
+                disp << margin << "  UTC: " << DumpSpliceTime(disp.duck(), ev->program_utc) << std::endl;
             }
             if (!ev->program_splice) {
                 // Program components switch individually.
                 disp << margin << "  Number of components: " << ev->components_utc.size() << std::endl;
                 for (UTCByComponent::const_iterator it = ev->components_utc.begin(); it != ev->components_utc.end(); ++it) {
-                    disp << margin
-                         << UString::Format(u"    Component tag: 0x%X (%<d)", {it->first})
-                         << UString::Format(u", UTC: %s", {ToUTCTime(it->second).format(Time::DATETIME)})
-                         << std::endl;
+                    disp << margin << UString::Format(u"    Component tag: 0x%X (%<d)", {it->first})
+                         << ", UTC: " << DumpSpliceTime(disp.duck(), it->second) << std::endl;
                 }
             }
             if (ev->use_duration) {
@@ -267,17 +275,46 @@ void ts::SpliceSchedule::buildXML(DuckContext& duck, xml::Element* root) const
                 e1->setIntAttribute(u"duration", ev->duration_pts);
             }
             if (ev->program_splice) {
-                e->setIntAttribute(u"utc_splice_time", ev->program_utc);
+                e->setDateTimeAttribute(u"utc_splice_time", ToUTCTime(duck, ev->program_utc));
             }
             else {
                 for (auto it = ev->components_utc.begin(); it != ev->components_utc.end(); ++it) {
                     xml::Element* e1 = e->addElement(u"component");
                     e1->setIntAttribute(u"component_tag", it->first);
-                    e1->setIntAttribute(u"utc_splice_time", it->second);
+                    e1->setDateTimeAttribute(u"utc_splice_time", ToUTCTime(duck, it->second));
                 }
             }
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Dual interpretation of utc_splice_time XML attributes.
+//----------------------------------------------------------------------------
+
+bool ts::SpliceSchedule::GetSpliceTime(const DuckContext& duck, const xml::Element* elem, const UString& attribute, uint32_t& value)
+{
+    // Get required attribute value as a string.
+    UString str;
+    if (!elem->getAttribute(str, attribute, true)) {
+        return false;
+    }
+
+    // If it can be interpreted as a uint32, this is a raw value.
+    if (str.toInteger(value, u",")) {
+        return true;
+    }
+
+    // Now it must be a date-time value.
+    Time utc;
+    if (!elem->getDateTimeAttribute(utc, attribute, true)) {
+        return false;
+    }
+
+    // Convert to 32-bit value.
+    value = FromUTCTime(duck, utc);
+    return true;
 }
 
 
@@ -292,33 +329,33 @@ bool ts::SpliceSchedule::analyzeXML(DuckContext& duck, const xml::Element* eleme
 
     for (size_t i = 0; ok && i < xmlEvents.size(); ++i) {
         Event ev;
-        ok = xmlEvents[i]->getIntAttribute<uint32_t>(ev.event_id, u"splice_event_id", true) &&
+        ok = xmlEvents[i]->getIntAttribute(ev.event_id, u"splice_event_id", true) &&
              xmlEvents[i]->getBoolAttribute(ev.canceled, u"splice_event_cancel", false, false);
 
         if (ok && !ev.canceled) {
             xml::ElementVector children;
             ok = xmlEvents[i]->getBoolAttribute(ev.splice_out, u"out_of_network", true) &&
-                 xmlEvents[i]->getIntAttribute<uint16_t>(ev.program_id, u"unique_program_id", true) &&
-                 xmlEvents[i]->getIntAttribute<uint8_t>(ev.avail_num, u"avail_num", false, 0) &&
-                 xmlEvents[i]->getIntAttribute<uint8_t>(ev.avails_expected, u"avails_expected", false, 0) &&
+                 xmlEvents[i]->getIntAttribute(ev.program_id, u"unique_program_id", true) &&
+                 xmlEvents[i]->getIntAttribute(ev.avail_num, u"avail_num", false, 0) &&
+                 xmlEvents[i]->getIntAttribute(ev.avails_expected, u"avails_expected", false, 0) &&
                  xmlEvents[i]->getChildren(children, u"break_duration", 0, 1);
             ev.use_duration = !children.empty();
             if (ok && ev.use_duration) {
                 assert(children.size() == 1);
                 ok = children[0]->getBoolAttribute(ev.auto_return, u"auto_return", true) &&
-                     children[0]->getIntAttribute<uint64_t>(ev.duration_pts, u"duration", true);
+                     children[0]->getIntAttribute(ev.duration_pts, u"duration", true);
             }
             ev.program_splice = xmlEvents[i]->hasAttribute(u"utc_splice_time");
             if (ok && ev.program_splice) {
-                ok = xmlEvents[i]->getIntAttribute<uint32_t>(ev.program_utc, u"utc_splice_time", true);
+                ok = GetSpliceTime(duck, xmlEvents[i], u"utc_splice_time", ev.program_utc);
             }
             if (ok && !ev.program_splice) {
                 ok = xmlEvents[i]->getChildren(children, u"component", 0, 255);
                 for (size_t i1 = 0; ok && i1 < children.size(); ++i1) {
                     uint8_t tag = 0;
                     uint32_t utc = 0;
-                    ok = children[i1]->getIntAttribute<uint8_t>(tag, u"component_tag", true) &&
-                         children[i1]->getIntAttribute<uint32_t>(utc, u"utc_splice_time", true);
+                    ok = children[i1]->getIntAttribute(tag, u"component_tag", true) &&
+                         GetSpliceTime(duck, children[i1], u"utc_splice_time", utc);
                     ev.components_utc[tag] = utc;
                 }
             }
@@ -333,15 +370,23 @@ bool ts::SpliceSchedule::analyzeXML(DuckContext& duck, const xml::Element* eleme
 // Convert between actual UTC time and 32-bit SCTE 35 utc_splice_time.
 //----------------------------------------------------------------------------
 
-// Base time for UTC times in an SCTE 35: "00 hours UTC, January 6th, 1980"
-const ts::Time ts::SpliceSchedule::UTCBase(1980, 1, 6, 0, 0, 0);
-
-ts::Time ts::SpliceSchedule::ToUTCTime(uint32_t value)
+ts::Time ts::SpliceSchedule::ToUTCTime(const DuckContext& duck, uint32_t value)
 {
-    return UTCBase + Second(value) * MilliSecPerSec;
+    Time utc(Time::GPSEpoch + Second(value) * MilliSecPerSec);
+    if (duck.useLeapSeconds()) {
+        utc -= Time::GPSEpoch.leapSecondsTo(utc) * MilliSecPerSec;
+    }
+    return utc;
 }
 
-uint32_t ts::SpliceSchedule::FromUTCTime(const Time& value)
+uint32_t ts::SpliceSchedule::FromUTCTime(const DuckContext& duck, const Time& value)
 {
-    return value < UTCBase ? 0 : uint32_t((value - UTCBase) / MilliSecPerSec);
+    if (value < Time::GPSEpoch) {
+        return 0;
+    }
+    uint32_t utc = uint32_t((value - Time::GPSEpoch) / MilliSecPerSec);
+    if (duck.useLeapSeconds()) {
+        utc += Time::GPSEpoch.leapSecondsTo(value);
+    }
+    return utc;
 }

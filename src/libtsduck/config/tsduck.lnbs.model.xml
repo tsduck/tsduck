@@ -29,19 +29,7 @@
                  - - - - - - - - - - - - - - - -
 
  Template for TSDuck XML files describing Low Noise Blocks (LNB) for satellite reception.
-
- It is used to validate user-provided XML files. Since TSDuck uses a simple
- XML parser without DTD or XML-Schema support, there is no formal standard
- definition. This file defines the valid structure of an XML file. Tags or
- attributes which are not present here will be rejected. The content of
- nodes and attributes in this file are just informative comments.
-
- Notes on types and formats:
- - Tags and attributes are not case-sensitive.
- - The names of tags and attributes are copied from ISO or DVB standards.
- - Integer values can be represented in decimal or hexadecimal (0x prefix).
- - Booleans are "true" or "false".
- - Hexa content is a suite of hexa digits. Spaces are ignored.
+ See the TSDuck user's guide, section 2.5.3, "XML model files".
 
 -->
 <tsduck>

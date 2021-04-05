@@ -40,7 +40,7 @@ namespace ts {
     //! An instance of names repository containing all Dektec names.
     //! The corresponding names file is automatically generated.
     //!
-    class TSDUCKDLL DektecNames : public Names
+    class DektecNames : public Names
     {
         TS_DECLARE_SINGLETON(DektecNames);
     public:

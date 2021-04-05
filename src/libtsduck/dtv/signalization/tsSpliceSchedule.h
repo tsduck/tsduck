@@ -111,31 +111,32 @@ namespace ts {
         void serialize(ByteBlock& data) const;
 
         //!
-        //! Base time for UTC times in an SCTE 35 SpliceSchedule command.
-        //! From ANSI/SCTE 35, 9.3.2: "utc_splice_time – A 32-bit unsigned integer quantity
-        //! representing the time of the signaled splice event as the number of seconds since
-        //! 00 hours UTC, January 6th, 1980, with the count of intervening leap seconds included."
-        //!
-        static const Time UTCBase;
-
-        //!
         //! Convert a 32-bit SCTE 35 @e utc_splice_time to an actual UTC time.
+        //! @param [in] duck TSDuck execution context.
         //! @param [in] value A 32-bit SCTE 35 @e utc_splice_time.
         //! @return The corresponding UTC time.
         //!
-        static Time ToUTCTime(uint32_t value);
+        static Time ToUTCTime(const DuckContext& duck, uint32_t value);
 
         //!
         //! Convert a UTC time into a 32-bit SCTE 35 @e utc_splice_time.
+        //! @param [in] duck TSDuck execution context.
         //! @param [in] value A UTC time.
         //! @return The corresponding 32-bit SCTE 35 @e utc_splice_time.
         //!
-        static uint32_t FromUTCTime(const Time& value);
+        static uint32_t FromUTCTime(const DuckContext& duck, const Time& value);
 
     protected:
         // Inherited methods
         virtual void clearContent() override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+
+    private:
+        // Full dump of utc_splice_time.
+        static UString DumpSpliceTime(const DuckContext& duck, uint32_t value);
+
+        // Dual interpretation of utc_splice_time XML attributes.
+        static bool GetSpliceTime(const DuckContext& duck, const xml::Element* elem, const UString& attribute, uint32_t& value);
     };
 }

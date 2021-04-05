@@ -369,6 +369,39 @@ namespace ts {
         }
 
         //!
+        //! Get the number of leap seconds between two UTC dates.
+        //!
+        //! Wikipedia: << A leap second is a one-second adjustment that is occasionally applied to Coordinated Universal Time (UTC),
+        //! to accommodate the difference between precise time (as measured by atomic clocks) and imprecise observed solar time
+        //! (known as UT1 and which varies due to irregularities and long-term slowdown in the Earth's rotation).
+        //!
+        //! The UTC time standard, widely used for international timekeeping and as the reference for civil time in most countries,
+        //! uses precise atomic time and consequently would run ahead of observed solar time unless it is reset to UT1 as needed.
+        //! The leap second facility exists to provide this adjustment.
+        //!
+        //! Because the Earth's rotation speed varies in response to climatic and geological events, UTC leap seconds are irregularly
+        //! spaced and unpredictable. Insertion of each UTC leap second is usually decided about six months in advance by the
+        //! International Earth Rotation and Reference Systems Service (IERS), to ensure that the difference between the UTC and UT1
+        //! readings will never exceed 0.9 seconds. >>
+        //!
+        //! TSDuck uses a configuration file (tsduck.time.xml) to define the list of known leap seconds.
+        //!
+        //! The TAI (International Atomic Time) starts Jan 1st 1958. Before this date, there is no leap second.
+        //! Between 1958 and 1972, there are globally 10 leap seconds but they are not precisely allocated.
+        //! On June 30 1972, the first leap second was officially allocated at a precise date and time.
+        //!
+        //! If @a start and @a end date are both before 1958 or both after 1972, this function returns a precise result.
+        //! If one of the dates is between 1958 and 1972, the initial 10 leap seconds may be included (or not).
+        //!
+        //! @param [in] end End UTC date. The time is this object is used as start date.
+        //! @return The number of leap seconds between this object and @a end. Return zero if this object is after @a end.
+        //!
+        //! @see https://en.wikipedia.org/wiki/Leap_second
+        //! @see https://en.wikipedia.org/wiki/International_Atomic_Time
+        //!
+        Second leapSecondsTo(const Time& end) const;
+
+        //!
         //! Static method returning the current UTC time.
         //! @return The current UTC time.
         //! @throw ts::Time::TimeError In case of operating system time error.
