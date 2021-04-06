@@ -229,6 +229,9 @@ bool ts::Time::decode(const ts::UString& str, int fields)
         }
     }
 
+    // Trim spaces to normalize the string.
+    s.trim(true, true, true);
+
     // Decode up to 7 integer fields.
     int f[7];
     size_t count = 0;
