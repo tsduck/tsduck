@@ -1080,14 +1080,12 @@ $(BINDIR)/%.so: $(OBJDIR)/%.o
 $(OBJDIR)/%.dep: %.c
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
-	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_STANDARD) $(CFLAGS_NO_WARNINGS) $< >$@ && \
-	$(SED) -i 's,\($*\)\.o *: *,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_STANDARD) $(CFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
 	rm -f $@
 $(OBJDIR)/%.dep: %.cpp
 	@echo '  [DEP] $<'; \
 	mkdir -p $(OBJDIR); \
-	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) $< >$@ && \
-	$(SED) -i 's,\($*\)\.o *: *,$(OBJDIR)/\1.o $@ : ,g' $@ || \
+	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
