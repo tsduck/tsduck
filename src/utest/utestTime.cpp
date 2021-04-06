@@ -262,6 +262,17 @@ void TimeTest::testDecode()
     TSUNIT_EQUAL(12, f.minute);
     TSUNIT_EQUAL(0, f.second);
     TSUNIT_EQUAL(2, f.millisecond);
+
+    // ISO 8601 date is implicitly accepted.
+    TSUNIT_ASSERT(t.decode(u"2018-10-03T18:27:47.234Z", ts::Time::ALL));
+    f = ts::Time::Fields(t);
+    TSUNIT_EQUAL(2018, f.year);
+    TSUNIT_EQUAL(10, f.month);
+    TSUNIT_EQUAL(3, f.day);
+    TSUNIT_EQUAL(18, f.hour);
+    TSUNIT_EQUAL(27, f.minute);
+    TSUNIT_EQUAL(47, f.second);
+    TSUNIT_EQUAL(234, f.millisecond);
 }
 
 void TimeTest::testEpoch()
