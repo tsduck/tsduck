@@ -47,8 +47,9 @@ execs: $(EXECS)
 $(BINDIR)/tsprofiling: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
 $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
 
-.PHONY: install-tools install-devel
-install-tools: $(EXECS)
+.PHONY: install install-tools install-devel
+install: install-tools install-devel
+install-tools:
 	@true
 install-devel:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin

@@ -42,6 +42,6 @@ NORECURSE_SUBDIRS += $(if $(NOTEST),utest,) $(if $(CROSS),utils,)
 default:
 	+@$(RECURSE)
 
-.PHONY: install-tools install-devel
-install-tools install-devel:
+.PHONY: install install-tools install-devel
+install install-tools install-devel:
 	@$(RECURSE)
