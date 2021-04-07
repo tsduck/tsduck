@@ -37,7 +37,7 @@ OBJSUBDIR := objs-tsplugins
 
 include ../../Makefile.tsduck
 
-.PHONY: shlibs install-tools install-devel
+.PHONY: shlibs install install-tools install-devel
 
 ifndef STATIC
 
@@ -53,6 +53,7 @@ default: shlibs
 shlibs: $(SHLIBS)
 $(SHLIBS): $(SHARED_LIBTSDUCK)
 
+install: install-tools install-devel
 install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck

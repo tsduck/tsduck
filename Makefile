@@ -95,9 +95,8 @@ dtapi:
 	@$(MAKE) -C dektec
 
 # Install files, using SYSROOT as target system root if necessary.
-.PHONY: install install-all install-tools install-devel
-install install-all: install-tools install-devel
-install-tools install-devel:
+.PHONY: install install-tools install-devel
+install install-tools install-devel:
 	$(MAKE) NOTEST=true -C src $@
 	$(MAKE) NOTEST=true -C build $@
 

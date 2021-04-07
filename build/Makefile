@@ -66,7 +66,8 @@ ifneq ($(filter-out doxygen,$(MAKECMDGOALS)),$(MAKECMDGOALS))
 endif
 
 # Install system files.
-.PHONY: install-tools install-devel
+.PHONY: install install-tools install-devel
+install: install-tools install-devel
 ifdef MACOS
 install-tools:
 	@true

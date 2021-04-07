@@ -1102,18 +1102,20 @@ endif
 
 # Cleanup utilities
 .PHONY: clean distclean
+CLEAN_FILES = $(EXTRA_CLEAN) \
+    *~ *.o *.ko *.a *.class *.pyc *.gcov gmon.out *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* \
+    *.stackdump callgrind.out*
+DISTCLEAN_FILES = $(CLEAN_FILES) $(EXTRA_DISTCLEAN) \
+    [Dd]ebug* [Rr]elease* ipch *.exe *.so *.jar .kdbgrc.* *.t2d .vs *.ncb *.suo *.idb *.sdf *.opensdf \
+    *.vcproj.*.user *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk *.VC.db *.VC.opendb \
+    cov-int cov-int.* *.pro.user *.pro.user.* .tmp_versions
 clean:
 	@echo '  [CLEAN] $(CURDIR)'; \
-	rm -rf $(EXTRA_CLEAN) *~ \
-	    *.o *.ko *.a *.class *.pyc *.gcov gmon.out *.dep tmp *.tmp *.out *.log *.tlog core core.* \
-	    vgcore.* *.stackdump callgrind.out*
+	rm -rf $(CLEAN_FILES)
 	+@$(RECURSE)
-distclean: clean
+distclean:
 	@echo '  [DISTCLEAN] $(CURDIR)'; \
-	rm -rf $(EXTRA_DISTCLEAN) [Dd]ebug* [Rr]elease* ipch *.exe *.so *.jar .kdbgrc.* *.t2d \
-	    .vs *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user \
-	    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
-	    *.VC.db *.VC.opendb cov-int cov-int.* *.pro.user *.pro.user.* .tmp_versions
+	rm -rf $(DISTCLEAN_FILES)
 	+@$(RECURSE)
 
 # List of file and directory patterns for non-source files.
