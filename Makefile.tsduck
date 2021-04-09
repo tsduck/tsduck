@@ -80,19 +80,18 @@ SYSROOT =
 static:
 	+@$(MAKE) STATIC=true
 
-ifdef STATIC
-    ifdef MACOS
-        $(error static linking is not supported on macOS)
-    else
-        NOCURL  = true
-        NOPCSC  = true
-        NODTAPI = true
-        NOSRT   = true
-        NOTEST  = true
-        CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
-    endif
-else
+ifeq ($(STATIC),)
+    # Dynamic (default) link
     LDLIBS := -ldl $(LDLIBS)
+else ifdef MACOS
+    $(error static linking is not supported on macOS)
+else
+    NOCURL  = true
+    NOPCSC  = true
+    NODTAPI = true
+    NOSRT   = true
+    NOTEST  = true
+    CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
 endif
 
 # External include directories and libraries.
@@ -137,28 +136,31 @@ endif
 
 ifdef NOPCSC
     CFLAGS_INCLUDES += -DTS_NO_PCSC=1
+else ifeq ($(MACOS),)
+    # PCSC on Linux
+    CFLAGS_INCLUDES += -I/usr/include/PCSC
+    LDLIBS := -lpcsclite $(LDLIBS)
 else
-    ifdef MACOS
-        CFLAGS_INCLUDES += -I/usr/local/opt/pcsc-lite/include/PCSC
-        LDLIBS := -L/usr/local/opt/pcsc-lite/lib/ -lpcsclite $(LDLIBS)
-    else
-        CFLAGS_INCLUDES += -I/usr/include/PCSC
-        LDLIBS := -lpcsclite $(LDLIBS)
-    endif
+    # PCSC on macOS
+    PCSC_ROOT = $(word 1,$(wildcard /opt/homebrew/opt/pcsc-lite /usr/local/opt/pcsc-lite))
+    CFLAGS_INCLUDES += -I$(PCSC_ROOT)/include/PCSC
+    LDLIBS := -L$(PCSC_ROOT)/lib -lpcsclite $(LDLIBS)
 endif
 
 ifdef NODTAPI
     CFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 endif
 
-ifdef MACOS
-    CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
-    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path
-    SOFLAGS = -install_name '@rpath/$(notdir $@)'
-else
+ifeq ($(MACOS),)
+    # Link flags on Linux
     CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
     LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
+else
+    # Link flags on macOS
+    CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
+    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path/../lib
+    SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
 CFLAGS_INCLUDES += $(addprefix -I,$(shell find $(LIBTSDUCKDIR) -type d ! -name private ! -name windows ! -name $(if $(MACOS),linux,mac)))
