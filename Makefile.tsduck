@@ -159,7 +159,7 @@ ifeq ($(MACOS),)
 else
     # Link flags on macOS
     CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
-    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path/../lib
+    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
