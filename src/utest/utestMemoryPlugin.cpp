@@ -36,7 +36,6 @@
 #include "tsTSProcessor.h"
 #include "tsAsyncReport.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

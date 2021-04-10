@@ -34,7 +34,6 @@
 #include "tsSafePtr.h"
 #include "tsMutex.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

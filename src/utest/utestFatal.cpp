@@ -38,7 +38,6 @@
 #include "tsFatal.h"
 #include "tsSysUtils.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

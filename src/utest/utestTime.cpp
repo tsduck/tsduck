@@ -34,7 +34,6 @@
 #include "tsTime.h"
 #include "tsCASDate.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

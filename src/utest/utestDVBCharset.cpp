@@ -34,7 +34,6 @@
 #include "tsDVBCharset.h"
 #include "tsByteBlock.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 //----------------------------------------------------------------------------
 // The test fixture

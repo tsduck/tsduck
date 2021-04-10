@@ -34,7 +34,6 @@
 #include "tsContinuityAnalyzer.h"
 #include "tsReportBuffer.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

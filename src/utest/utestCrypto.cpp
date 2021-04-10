@@ -51,7 +51,6 @@
 #include "tsTSPacket.h"
 #include "tsSystemRandomGenerator.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 #include "crypto/tv_aes.h"
 #include "crypto/tv_aes_chain.h"

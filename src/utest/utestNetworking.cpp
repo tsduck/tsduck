@@ -45,7 +45,6 @@
 #include "tsCerrReport.h"
 #include "utestTSUnitThread.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

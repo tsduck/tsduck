@@ -35,7 +35,6 @@
 #include "tsSysUtils.h"
 #include "tsTime.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

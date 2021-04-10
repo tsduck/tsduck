@@ -33,6 +33,5 @@
 //----------------------------------------------------------------------------
 
 #include "tsStaticReferencesDVB.h"
-TSDUCK_SOURCE;
 
 const ts::StaticReferencesDVB dependenciesForStaticLib;

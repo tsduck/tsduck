@@ -50,7 +50,6 @@
 #include "tsDuckContext.h"
 #include "tsTSPacket.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

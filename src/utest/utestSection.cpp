@@ -35,7 +35,6 @@
 #include "tsBinaryTable.h"
 #include "tsNames.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 #include "tables/psi_tot_tnt_sections.h"
 #include "tables/psi_bat_tvnum_sections.h"
