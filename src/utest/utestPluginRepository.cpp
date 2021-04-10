@@ -35,7 +35,6 @@
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

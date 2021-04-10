@@ -38,7 +38,6 @@
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlatform.h"
-TSDUCK_SOURCE;
 #if defined(TS_WINDOWS)
 
 #include "tsDirectShowTest.h"

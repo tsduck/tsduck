@@ -35,7 +35,6 @@
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 // The ARIB STD-B24 encoder alternates charset switch from GL and GR.
 // Define this if the first charset switch is on GL. Comment it if it's on GR.

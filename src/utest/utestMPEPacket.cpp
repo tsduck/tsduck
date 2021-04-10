@@ -34,7 +34,6 @@
 #include "tsMPEPacket.h"
 #include "tsunit.h"
 #include "tables/psi_mpe_sections.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

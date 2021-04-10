@@ -39,7 +39,6 @@
 #include "tsTime.h"
 #include "tsUID.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_WINDOWS)
 #include "tsWinUtils.h"

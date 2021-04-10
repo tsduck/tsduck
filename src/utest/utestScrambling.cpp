@@ -35,7 +35,6 @@
 #include "tsTSPacket.h"
 #include "tsNames.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

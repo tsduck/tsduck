@@ -37,7 +37,6 @@
 #include "tsSysUtils.h"
 #include "tsunit.h"
 #include "utestTSUnitThread.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

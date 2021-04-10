@@ -43,7 +43,6 @@
 #include "tsTSPacket.h"
 #include "tsCerrReport.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 #include "tables/psi_pat1_xml.h"
 #include "tables/psi_pat1_sections.h"

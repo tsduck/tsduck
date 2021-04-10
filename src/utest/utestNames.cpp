@@ -38,7 +38,6 @@
 #include "tsAVC.h"
 #include "tsPES.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

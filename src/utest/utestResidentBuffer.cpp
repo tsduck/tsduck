@@ -33,7 +33,6 @@
 
 #include "tsResidentBuffer.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

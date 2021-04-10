@@ -39,7 +39,6 @@
 #include "tsGuardCondition.h"
 #include "utestTSUnitThread.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

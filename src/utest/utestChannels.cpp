@@ -34,7 +34,6 @@
 #include "tsChannelFile.h"
 #include "tsNullReport.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

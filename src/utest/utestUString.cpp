@@ -36,7 +36,6 @@
 #include "tsFileUtils.h"
 #include "tsSocketAddress.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 //----------------------------------------------------------------------------
 // The test fixture

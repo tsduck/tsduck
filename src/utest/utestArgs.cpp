@@ -37,7 +37,6 @@
 #include "tsFileUtils.h"
 #include "tsVersion.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

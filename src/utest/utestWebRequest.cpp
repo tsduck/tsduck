@@ -40,7 +40,6 @@
 #include "tsReportBuffer.h"
 #include "tsFileUtils.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

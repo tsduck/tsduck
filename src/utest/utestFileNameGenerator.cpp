@@ -33,7 +33,6 @@
 
 #include "tsFileNameGenerator.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

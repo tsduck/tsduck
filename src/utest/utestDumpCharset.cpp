@@ -34,7 +34,6 @@
 #include "tsDumpCharset.h"
 #include "tsByteBlock.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

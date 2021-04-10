@@ -35,7 +35,6 @@
 #include "tsByteBlock.h"
 #include "tsMemory.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -36,7 +36,6 @@
 #include "tsMGT.h"
 #include "tsLDT.h"
 #include "tsunit.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

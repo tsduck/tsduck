@@ -46,7 +46,6 @@
 #if defined(TS_LINUX)
 #include "tsDTVProperties.h"
 #endif
-TSDUCK_SOURCE;
 
 // Tuners are not supported in macOS and errors are always returned.
 #if !defined(TS_MAC)
