@@ -34,7 +34,7 @@ template <typename INT, const size_t PREC, typename std::enable_if<std::is_integ
 constexpr size_t ts::FixedPoint<INT,PREC,N>::PRECISION;
 
 template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
-constexpr size_t ts::FixedPoint<INT,PREC,N>::FACTOR;
+constexpr INT ts::FixedPoint<INT,PREC,N>::FACTOR;
 #endif
 
 
@@ -50,7 +50,7 @@ ts::UString ts::FixedPoint<INT,PREC,N>::toString(size_t min_width, bool right_ju
 
     TS_PUSH_WARNING()
     TS_MSC_NOWARNING(4127) // conditional expression is constant (here PRECISION)
- 
+
     // Format the decimal part.
     const int_t dec = _value % FACTOR;
     if (PRECISION > 0 && (dec != 0 || force_decimals)) {
@@ -64,7 +64,7 @@ ts::UString ts::FixedPoint<INT,PREC,N>::toString(size_t min_width, bool right_ju
     }
 
     TS_POP_WARNING()
-        
+
     // Adjust string width.
     if (s.size() < min_width) {
         if (right_justified) {
