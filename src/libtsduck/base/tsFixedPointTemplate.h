@@ -44,6 +44,9 @@ ts::UString ts::FixedPoint<INT,PREC,N>::toString(size_t min_width, bool right_ju
     // Format the integral part.
     UString s(UString::Decimal(_value / FACTOR, 0, true, separator, force_sign));
 
+    TS_PUSH_WARNING()
+    TS_MSC_NOWARNING(4127) // conditional expression is constant (here PRECISION)
+ 
     // Format the decimal part.
     const int_t dec = _value % FACTOR;
     if (PRECISION > 0 && (dec != 0 || force_decimals)) {
@@ -55,6 +58,9 @@ ts::UString ts::FixedPoint<INT,PREC,N>::toString(size_t min_width, bool right_ju
             }
         }
     }
+
+    TS_POP_WARNING()
+        
     // Adjust string width.
     if (s.size() < min_width) {
         if (right_justified) {
