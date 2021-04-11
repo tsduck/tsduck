@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsArgsSupplierInterface.h"
-#include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
 #include "tsTextFormatter.h"
 #include "tsxmlRunningDocument.h"

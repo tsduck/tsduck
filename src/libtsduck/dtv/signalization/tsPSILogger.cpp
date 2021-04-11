@@ -29,6 +29,8 @@
 
 #include "tsPSILogger.h"
 #include "tsDuckContext.h"
+#include "tsArgs.h"
+#include "tsTablesDisplay.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
 #include "tsxmlComment.h"

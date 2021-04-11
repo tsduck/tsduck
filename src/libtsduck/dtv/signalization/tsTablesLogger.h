@@ -35,9 +35,7 @@
 #pragma once
 #include "tsArgsSupplierInterface.h"
 #include "tsBinaryTable.h"
-#include "tsTablesDisplay.h"
 #include "tsTablesLoggerFilterInterface.h"
-#include "tsArgs.h"
 #include "tsTime.h"
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"

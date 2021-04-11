@@ -26,49 +26,43 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Collect selected PSI/SI tables plugin for tsp.
-//!
-//----------------------------------------------------------------------------
 
 #pragma once
-#include "tsProcessorPlugin.h"
-#include "tsTablesDisplay.h"
-#include "tsTablesLogger.h"
+#include "tsIntegerUtils.h"
 
-namespace ts {
-    //!
-    //! Collect selected PSI/SI tables plugin for tsp.
-    //! @ingroup plugin
-    //!
-    class TablesPlugin: public ProcessorPlugin, private SectionHandlerInterface
-    {
-        TS_NOBUILD_NOCOPY(TablesPlugin);
-    public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        TablesPlugin(TSP* tsp);
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* N>
+constexpr size_t ts::FixedPoint<INT,PREC,N>::PRECISION;
+#endif
 
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-        // Implementation of SectionHandlerInterface
-        virtual void handleSection(SectionDemux& demux, const Section& section) override;
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* N>
+const INT ts::FixedPoint<INT,PREC,N>::FACTOR = ts::Power10<INT>(PREC);
 
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* N>
+ts::UString ts::FixedPoint<INT,PREC,N>::toString(size_t min_width, bool right_justified, const UString& separator, bool force_sign, bool force_decimals, UChar pad) const
+{
+    // Format the integral part.
+    UString s(UString::Decimal(_value / FACTOR, 0, true, separator, force_sign));
 
-    private:
-        TablesDisplay _display;
-        TablesLogger  _logger;
-        bool          _signal_event;  // Signal a plugin event on section.
-        uint32_t      _event_code;    // Event code to signal.
-    };
+    // Format the decimal part.
+    const int_t dec = _value % FACTOR;
+    if (PRECISION > 0 && (dec != 0 || force_decimals)) {
+        s.append(u'.');
+        s.append(UString::Decimal(dec, PRECISION, true, UString(), false, u'0'));
+        if (!force_decimals) {
+            while (s.back() == u'0') {
+                s.pop_back();
+            }
+        }
+    }
+    // Adjust string width.
+    if (s.size() < min_width) {
+        if (right_justified) {
+            s.insert(0, min_width - s.size(), pad);
+        }
+        else {
+            s.append(min_width - s.size(), pad);
+        }
+    }
+    return s;
 }

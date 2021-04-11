@@ -39,7 +39,6 @@
 #include "tsTablesPtr.h"
 #include "tsCRC32.h"
 #include "tsETID.h"
-#include "tsTLVSyntax.h"
 #include "tsTS.h"
 
 namespace ts {

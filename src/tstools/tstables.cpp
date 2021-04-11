@@ -34,6 +34,7 @@
 #include "tsMain.h"
 #include "tsDuckContext.h"
 #include "tsTSFile.h"
+#include "tsTablesDisplay.h"
 #include "tsTablesLogger.h"
 #include "tsPagerArgs.h"
 TSDUCK_SOURCE;

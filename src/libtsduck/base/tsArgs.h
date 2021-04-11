@@ -37,6 +37,7 @@
 #include "tsException.h"
 #include "tsEnumeration.h"
 #include "tsVariable.h"
+#include "tsFixedPoint.h"
 
 namespace ts {
     //!
@@ -389,6 +390,34 @@ namespace ts {
                      size_t              min_occur = 0,
                      size_t              max_occur = 0,
                      bool                optional = false);
+
+        //!
+        //! Add the definition of an option, the value being from a fixed-precision number type.
+        //!
+        //! This method is typically invoked in the constructor of a subclass.
+        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] short_name Optional one letter short name.
+        //! @param [in] min_occur Minimum number of occurences of this option on the command line.
+        //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
+        //! @param [in] min_value Minimum value, ignored if @a type is not @link INTEGER @endlink.
+        //! @param [in] max_value Maximum value, ignored if @a type is not @link INTEGER @endlink.
+        //! @param [in] optional  When true, the option's value is optional.
+        //! @return A reference to this instance.
+        //!
+        template <class FIXED>
+        Args& option(const UChar* name,
+                     UChar        short_name = 0,
+                     size_t       min_occur = 0,
+                     size_t       max_occur = 0,
+                     FixedPoint<typename FIXED::int_t, FIXED::PRECISION>
+                                  min_value = 0,
+                     FixedPoint<typename FIXED::int_t, FIXED::PRECISION>
+                                  max_value = FixedPoint<typename FIXED::int_t, FIXED::PRECISION>(std::numeric_limits<typename FIXED::int_t>::max(), true),
+                     bool         optional = false)
+        {
+            return option(name, short_name, INTEGER, min_occur, max_occur, min_value.raw(), max_value.raw(), optional, FIXED::PRECISION);
+        }
 
         //!
         //! Add the help text of an existing option.
@@ -902,6 +931,49 @@ namespace ts {
         //! the option is present without value, the returned value is TRUE.
         //!
         Tristate tristateValue(const UChar* name = nullptr, size_t index = 0) const;
+
+        //!
+        //! Get the value of a fixed-precision number option in the last analyzed command line.
+        //!
+        //! If the option has been declared with a fixed-precision number type in the syntax of the command,
+        //! the validity of the supplied option value has been checked by the analyze() method.
+        //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
+        //!
+        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @param [out] value A variable receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        template <class FIXED>
+        void getFixedValue(FixedPoint<typename FIXED::int_t, FIXED::PRECISION>& value,
+                           const UChar* name = nullptr,
+                           FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = 0,
+                           size_t index = 0) const;
+
+        //!
+        //! Get the value of a fixed-precision number option in the last analyzed command line.
+        //!
+        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The integer value of the option or parameter.
+        //!
+        template <class FIXED>
+        FIXED fixedValue(const UChar* name = nullptr,
+                         FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = 0,
+                         size_t index = 0) const;
 
         //!
         //! Exit application when errors were reported in the last analyzed command line.

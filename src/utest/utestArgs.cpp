@@ -74,6 +74,7 @@ public:
     void testTristate();
     void testRanges();
     void testDecimals();
+    void testFixedPoint();
 
     TSUNIT_TEST_BEGIN(ArgsTest);
     TSUNIT_TEST(testAccessors);
@@ -99,6 +100,7 @@ public:
     TSUNIT_TEST(testTristate);
     TSUNIT_TEST(testRanges);
     TSUNIT_TEST(testDecimals);
+    TSUNIT_TEST(testFixedPoint);
     TSUNIT_TEST_END();
 
 private:
@@ -857,4 +859,26 @@ void ArgsTest::testDecimals()
     TSUNIT_EQUAL(2345,  args.intValue<int>(u"opt10", 0, 2));
     TSUNIT_EQUAL(2346,  args.intValue<int>(u"opt10", 0, 3));
     TSUNIT_EQUAL(3000,  args.intValue<int>(u"opt10", 0, 657));
+}
+
+// Test case: fixed point types.
+void ArgsTest::testFixedPoint()
+{
+    typedef ts::FixedPoint<int32_t, 3> Fixed;
+
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+    args.redirectReport(&CERR);
+    args.option<Fixed>(u"");
+
+    TSUNIT_ASSERT(args.analyze(u"test", {u"34", u"0.1", u"12.345678"}));
+    TSUNIT_EQUAL(3, args.count(u""));
+
+    TSUNIT_EQUAL(34000, args.fixedValue<Fixed>(u"", 0, 0).raw());
+    TSUNIT_EQUAL(34,    args.fixedValue<Fixed>(u"", 0, 0).toInt());
+
+    TSUNIT_EQUAL(100,   args.fixedValue<Fixed>(u"", 0, 1).raw());
+    TSUNIT_EQUAL(0,     args.fixedValue<Fixed>(u"", 0, 1).toInt());
+
+    TSUNIT_EQUAL(12345, args.fixedValue<Fixed>(u"", 0, 2).raw());
+    TSUNIT_EQUAL(12,    args.fixedValue<Fixed>(u"", 0, 2).toInt());
 }

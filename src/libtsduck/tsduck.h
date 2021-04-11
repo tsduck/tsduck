@@ -277,6 +277,7 @@
 #include "tsFileOutputPlugin.h"
 #include "tsFilePacketPlugin.h"
 #include "tsFileUtils.h"
+#include "tsFixedPoint.h"
 #include "tsFlexMuxTimingDescriptor.h"
 #include "tsFMCDescriptor.h"
 #include "tsForkInputPlugin.h"
