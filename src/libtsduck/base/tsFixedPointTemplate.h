@@ -28,17 +28,21 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIntegerUtils.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* N>
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
 constexpr size_t ts::FixedPoint<INT,PREC,N>::PRECISION;
+
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
+constexpr size_t ts::FixedPoint<INT,PREC,N>::FACTOR;
 #endif
 
-template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* N>
-const INT ts::FixedPoint<INT,PREC,N>::FACTOR = ts::Power10<INT>(PREC);
 
-template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* N>
+//----------------------------------------------------------------------------
+// Format a string containing the value of this FixedPoint.
+//----------------------------------------------------------------------------
+
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
 ts::UString ts::FixedPoint<INT,PREC,N>::toString(size_t min_width, bool right_justified, const UString& separator, bool force_sign, bool force_decimals, UChar pad) const
 {
     // Format the integral part.

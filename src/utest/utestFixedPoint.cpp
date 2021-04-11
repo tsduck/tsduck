@@ -47,10 +47,13 @@ public:
 
     void testUnit();
     void testSubUnit();
+    void testAssignment();
+    void testComparison();
 
     TSUNIT_TEST_BEGIN(FixedPointTest);
     TSUNIT_TEST(testUnit);
     TSUNIT_TEST(testSubUnit);
+    TSUNIT_TEST(testComparison);
     TSUNIT_TEST_END();
 };
 
@@ -108,11 +111,9 @@ void FixedPointTest::testUnit()
     TSUNIT_EQUAL(42, (Fixed(21) * 2).toInt());
     TSUNIT_EQUAL(10, (Fixed(21) / 2).toInt());
 
-#if !defined(TS_WINDOWS) // Visual C++ bug?
     TSUNIT_EQUAL(30, (9 + Fixed(21)).toInt());
     TSUNIT_EQUAL(-12, (9 - Fixed(21)).toInt());
     TSUNIT_EQUAL(42, (2 * Fixed(21)).toInt());
-#endif
 
     TSUNIT_ASSERT(Fixed::FromString(i, u" 12"));
     TSUNIT_EQUAL(12, i.toInt());
@@ -155,11 +156,9 @@ void FixedPointTest::testSubUnit()
     TSUNIT_EQUAL(42, (Fixed(21) * 2).toInt());
     TSUNIT_EQUAL(10, (Fixed(21) / 2).toInt());
 
-#if !defined(TS_WINDOWS) // Visual C++ bug?
     TSUNIT_EQUAL(30, (9 + Fixed(21)).toInt());
     TSUNIT_EQUAL(-12, (9 - Fixed(21)).toInt());
     TSUNIT_EQUAL(42, (2 * Fixed(21)).toInt());
-#endif
 
     TSUNIT_ASSERT(Fixed::FromString(i, u" 12.3"));
     TSUNIT_EQUAL(12, i.toInt());
@@ -173,4 +172,59 @@ void FixedPointTest::testSubUnit()
     TSUNIT_EQUAL(u"1,234.567", Fixed(1234567, true).toString());
     TSUNIT_EQUAL(u"   -56|789.000", Fixed(-56789).toString(14, true, u"|", true, true));
     TSUNIT_EQUAL(u"   +56|789.000", Fixed(56789).toString(14, true, u"|", true, true));
+}
+
+void FixedPointTest::testAssignment()
+{
+    typedef ts::FixedPoint<int32_t, 3> Fixed;
+
+    Fixed n;
+    TSUNIT_EQUAL(0, n.toInt());
+
+    n = Fixed(1234, true);
+    TSUNIT_EQUAL(1, n.toInt());
+    TSUNIT_EQUAL(1234, n.raw());
+
+    n = -12;
+    TSUNIT_EQUAL(-12, n.toInt());
+    TSUNIT_EQUAL(-12000, n.raw());
+}
+
+void FixedPointTest::testComparison()
+{
+    typedef ts::FixedPoint<int32_t, 3> Fixed;
+
+    TSUNIT_ASSERT(Fixed(-211) == Fixed(-211));
+    TSUNIT_ASSERT(Fixed(1) == Fixed(1000, true));
+    TSUNIT_ASSERT(Fixed(21) == 21);
+    TSUNIT_ASSERT(21 == Fixed(21));
+
+    TSUNIT_ASSERT(Fixed(-211) != Fixed(-212));
+    TSUNIT_ASSERT(Fixed(1) != Fixed(1, true));
+    TSUNIT_ASSERT(Fixed(21) != 22);
+    TSUNIT_ASSERT(20 != Fixed(21));
+
+    TSUNIT_ASSERT(Fixed(-2) < Fixed(2));
+    TSUNIT_ASSERT(Fixed(2) < 3);
+    TSUNIT_ASSERT(3 < Fixed(4));
+
+    TSUNIT_ASSERT(Fixed(2) > Fixed(1));
+    TSUNIT_ASSERT(Fixed(2) > -2);
+    TSUNIT_ASSERT(4 > Fixed(2));
+
+    TSUNIT_ASSERT(Fixed(-2) <= Fixed(2));
+    TSUNIT_ASSERT(Fixed(2) <= 3);
+    TSUNIT_ASSERT(3 <= Fixed(4));
+
+    TSUNIT_ASSERT(Fixed(-2) <= Fixed(-2));
+    TSUNIT_ASSERT(Fixed(2) <= 2);
+    TSUNIT_ASSERT(3 <= Fixed(3));
+
+    TSUNIT_ASSERT(Fixed(2) >= Fixed(1));
+    TSUNIT_ASSERT(Fixed(2) >= -2);
+    TSUNIT_ASSERT(4 >= Fixed(2));
+
+    TSUNIT_ASSERT(Fixed(2) >= Fixed(2));
+    TSUNIT_ASSERT(Fixed(2) >= 2);
+    TSUNIT_ASSERT(4 >= Fixed(4));
 }
