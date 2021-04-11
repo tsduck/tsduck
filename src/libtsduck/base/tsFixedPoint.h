@@ -118,6 +118,8 @@ namespace ts {
         FixedPoint operator-() const { return FixedPoint(- _value, true); }
         FixedPoint operator+(FixedPoint x) const { return FixedPoint(_value + x._value, true); }
         FixedPoint operator-(FixedPoint x) const { return FixedPoint(_value - x._value, true); }
+        FixedPoint operator*(FixedPoint x) const { return FixedPoint((_value * x._value) / FACTOR, true); }
+        FixedPoint operator/(FixedPoint x) const { return FixedPoint((_value * FACTOR) / x._value, true); }
         bool operator==(FixedPoint x) const { return _value == x._value; }
         bool operator!=(FixedPoint x) const { return _value != x._value; }
         bool operator<=(FixedPoint x) const { return _value <= x._value; }
@@ -214,6 +216,11 @@ template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
 ts::FixedPoint<INT2, PREC> operator*(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 * x1; }
+
+template <typename INT1, typename INT2, const size_t PREC,
+          typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
+          typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
+ts::FixedPoint<INT2, PREC> operator/(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return ts::FixedPoint<INT2, PREC>(x1) / x2; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
