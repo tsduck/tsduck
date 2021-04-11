@@ -115,6 +115,17 @@ void FixedPointTest::testUnit()
     TSUNIT_EQUAL(-12, (9 - Fixed(21)).toInt());
     TSUNIT_EQUAL(42, (2 * Fixed(21)).toInt());
 
+    TSUNIT_EQUAL(21, (Fixed(3) * Fixed(7)).toInt());
+    TSUNIT_EQUAL(21, (3 * Fixed(7)).toInt());
+    TSUNIT_EQUAL(21, (Fixed(3) * 7).toInt());
+
+    TSUNIT_EQUAL(2, (Fixed(10) / Fixed(4)).toInt());
+    TSUNIT_EQUAL(2, (Fixed(10) / Fixed(4)).raw());
+    TSUNIT_EQUAL(2, (10 / Fixed(4)).toInt());
+    TSUNIT_EQUAL(2, (10 / Fixed(4)).raw());
+    TSUNIT_EQUAL(2, (Fixed(10) / 4).toInt());
+    TSUNIT_EQUAL(2, (Fixed(10) / 4).raw());
+
     TSUNIT_ASSERT(Fixed::FromString(i, u" 12"));
     TSUNIT_EQUAL(12, i.toInt());
     TSUNIT_ASSERT(!Fixed::FromString(i, u" -12,345 =="));
@@ -159,6 +170,17 @@ void FixedPointTest::testSubUnit()
     TSUNIT_EQUAL(30, (9 + Fixed(21)).toInt());
     TSUNIT_EQUAL(-12, (9 - Fixed(21)).toInt());
     TSUNIT_EQUAL(42, (2 * Fixed(21)).toInt());
+
+    TSUNIT_EQUAL(21, (Fixed(3) * Fixed(7)).toInt());
+    TSUNIT_EQUAL(21, (3 * Fixed(7)).toInt());
+    TSUNIT_EQUAL(21, (Fixed(3) * 7).toInt());
+
+    TSUNIT_EQUAL(2, (Fixed(10) / Fixed(4)).toInt());
+    TSUNIT_EQUAL(2500, (Fixed(10) / Fixed(4)).raw());
+    TSUNIT_EQUAL(2, (10 / Fixed(4)).toInt());
+    TSUNIT_EQUAL(2500, (10 / Fixed(4)).raw());
+    TSUNIT_EQUAL(2, (Fixed(10) / 4).toInt());
+    TSUNIT_EQUAL(2500, (Fixed(10) / 4).raw());
 
     TSUNIT_ASSERT(Fixed::FromString(i, u" 12.3"));
     TSUNIT_EQUAL(12, i.toInt());
