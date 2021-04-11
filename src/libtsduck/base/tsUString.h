@@ -1532,7 +1532,7 @@ namespace ts {
         bool toInteger(INT& value,
                        const UString& thousandSeparators = UString(),
                        size_type decimals = 0,
-                       const UString& decimalSeparators = UString(u".")) const;
+                       const UString& decimalSeparators = u".") const;
 
         //!
         //! Convert a string containing a list of integers into a container of integers.

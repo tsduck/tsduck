@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsAbstractSignalization.h"
-#include "tsTablesDisplay.h"
 #include "tsTime.h"
 
 namespace ts {

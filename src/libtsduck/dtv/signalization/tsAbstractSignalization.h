@@ -40,6 +40,7 @@ namespace ts {
 
     class DuckContext;
     class ByteBlock;
+    class TablesDisplay;
 
     //!
     //! Abstract base class for MPEG PSI/SI tables and descriptors.

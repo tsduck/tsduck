@@ -36,7 +36,6 @@
 #include "tsAbstractDefinedByStandards.h"
 #include "tsTablesPtr.h"
 #include "tsSection.h"
-#include "tsTLVSyntax.h"
 #include "tsTS.h"
 #include "tsxml.h"
 

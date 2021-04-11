@@ -103,6 +103,27 @@ void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool
 
 
 //----------------------------------------------------------------------------
+// Get the fixed-precision value of an option.
+//----------------------------------------------------------------------------
+
+template <class FIXED>
+void ts::Args::getFixedValue(FixedPoint<typename FIXED::int_t, FIXED::PRECISION>& value, const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
+{
+    typename FIXED::int_t i = 0;
+    getIntValue(i, name, def_value.raw(), index);
+    value = FIXED(i, true);
+}
+
+template <class FIXED>
+FIXED ts::Args::fixedValue(const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
+{
+    FIXED value(def_value);
+    getFixedValue<FIXED>(value, name, def_value, index);
+    return value;
+}
+
+
+//----------------------------------------------------------------------------
 // Return all occurences of this option in a vector of integers.
 //----------------------------------------------------------------------------
 

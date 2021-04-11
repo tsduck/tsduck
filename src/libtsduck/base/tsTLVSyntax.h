@@ -37,7 +37,6 @@
 #include "tsCerrReport.h"
 #include "tsSafePtr.h"
 #include "tsMutex.h"
-#include "tsArgs.h"
 
 namespace ts {
     //!

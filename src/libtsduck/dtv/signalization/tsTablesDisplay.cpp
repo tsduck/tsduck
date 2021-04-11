@@ -32,6 +32,7 @@
 #include "tsBinaryTable.h"
 #include "tsPSIBuffer.h"
 #include "tsSection.h"
+#include "tsArgs.h"
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
 #include "tsATSCMultipleString.h"

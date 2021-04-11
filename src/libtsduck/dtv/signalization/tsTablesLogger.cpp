@@ -29,9 +29,11 @@
 
 #include "tsTablesLogger.h"
 #include "tsTablesLoggerFilterRepository.h"
+#include "tsTablesDisplay.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
 #include "tsPAT.h"
+#include "tsArgs.h"
 #include "tstlv.h"
 #include "tsFileUtils.h"
 #include "tsDuckContext.h"
