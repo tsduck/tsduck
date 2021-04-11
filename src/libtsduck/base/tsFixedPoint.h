@@ -220,6 +220,8 @@ namespace ts {
 //! @param [in] x2 A FixedPoint value.
 //! @return @a x1 plus @a x2.
 //!
+//! WARNING: Due to a possible bug in Visual C++, this operator is not correctly recognized on Windows.
+//!
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value>::type* = nullptr,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value>::type* = nullptr>
@@ -234,6 +236,8 @@ ts::FixedPoint<INT2, PREC> operator+(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { r
 //! @param [in] x2 A FixedPoint value.
 //! @return @a x1 minus @a x2.
 //!
+//! WARNING: Due to a possible bug in Visual C++, this operator is not correctly recognized on Windows.
+//!
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value>::type* = nullptr,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value>::type* = nullptr>
@@ -247,6 +251,8 @@ ts::FixedPoint<INT2, PREC> operator-(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { r
 //! @param [in] x1 An integer value to multiply (not converted).
 //! @param [in] x2 A FixedPoint value to multiply.
 //! @return @a x1 times @a x2.
+//!
+//! WARNING: Due to a possible bug in Visual C++, this operator is not correctly recognized on Windows.
 //!
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value>::type* = nullptr,
