@@ -951,9 +951,9 @@ namespace ts {
         //! first occurence.
         //!
         template <class FIXED>
-        void getFixedValue(FixedPoint<typename FIXED::int_t, FIXED::PRECISION>& value,
+        void getFixedValue(FIXED& value,
                            const UChar* name = nullptr,
-                           FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = 0,
+                           FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = FixedPoint<typename FIXED::int_t, FIXED::PRECISION>(0),
                            size_t index = 0) const;
 
         //!
@@ -972,7 +972,7 @@ namespace ts {
         //!
         template <class FIXED>
         FIXED fixedValue(const UChar* name = nullptr,
-                         FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = 0,
+                         FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = FixedPoint<typename FIXED::int_t, FIXED::PRECISION>(0),
                          size_t index = 0) const;
 
         //!

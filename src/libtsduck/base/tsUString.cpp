@@ -1996,7 +1996,7 @@ void ts::UString::ArgMixInContext::processArg()
     //       + : Force a '+' sign with decimal integers.
     //       0 : Zero padding for integers.
     //  digits : Minimum field width.
-    // .digits : Maximum field width or precision for floating point values.
+    // .digits : Maximum field width or precision for floating/fixed point values.
     //       ' : For integer conversions, use a separator for groups of thousands.
     //       * : Can be used instead of @e digits. The integer value is taken from the argument list.
 
@@ -2004,10 +2004,11 @@ void ts::UString::ArgMixInContext::processArg()
     bool forceSign = false;
     bool useSeparator = false;
     bool reusePrevious = false;
+    bool hasDot = false;
     UChar pad = u' ';
     size_t minWidth = 0;
     size_t maxWidth = std::numeric_limits<size_t>::max();
-    size_t precision = 6;
+    size_t precision = 0;
 
     if (*_fmt == u'<') {
         reusePrevious = true;
@@ -2028,6 +2029,7 @@ void ts::UString::ArgMixInContext::processArg()
     getFormatSize(minWidth);
     if (*_fmt == u'.') {
         ++_fmt;
+        hasDot = true;
         getFormatSize(maxWidth);
         precision = maxWidth;
         if (maxWidth < minWidth) {
@@ -2131,7 +2133,7 @@ void ts::UString::ArgMixInContext::processArg()
     }
     else if (cmd == u'x' || cmd == u'X') {
         // Insert an integer in hexadecimal.
-        if (!argit->isInteger() && debugActive()) {
+        if (!argit->isInteger() && !argit->isFixed() && debugActive()) {
             debug(u"type mismatch, not an integer", cmd);
         }
         // Format the hexa string.
@@ -2153,10 +2155,27 @@ void ts::UString::ArgMixInContext::processArg()
     }
     else if (cmd == u'f') {
         // Insert a floating point value
-        if (!argit->isDouble() && debugActive()) {
-            debug(u"type mismatch, not a double", cmd);
+        if (!argit->isDouble() && !argit->isFixed() && debugActive()) {
+            debug(u"type mismatch, not a double or fixed-point", cmd);
         }
-        _result.append(Float(argit->toDouble(), minWidth, precision, forceSign));
+        if (argit->isFixed()) {
+            // Fixed-point, stored as 32 or 64-bit integer.
+            const bool forceDecimals = hasDot;
+            const size_type decimals = precision != 0 ? precision : argit->precision();
+            if (argit->size() > 4) {
+                _result.append(FixedImpl(argit->toInteger<int64_t>(true), argit->precision(),
+                                         minWidth, decimals, !leftJustified, separator, forceSign, forceDecimals, pad));
+            }
+            else {
+                // Fixed-point, stored as 32-bit integer.
+                _result.append(FixedImpl(argit->toInteger<int32_t>(true), argit->precision(),
+                                         minWidth, decimals, !leftJustified, separator, forceSign, forceDecimals, pad));
+            }
+        }
+        else {
+            // Not a fixed-point, get a float or convert an integer to a float. Default to 6 decimal digits.
+            _result.append(Float(argit->toDouble(), minWidth, precision > 0 ? precision : 6, forceSign));
+        }
     }
     else {
         // Insert an integer in decimal.

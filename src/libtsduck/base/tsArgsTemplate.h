@@ -107,7 +107,7 @@ void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool
 //----------------------------------------------------------------------------
 
 template <class FIXED>
-void ts::Args::getFixedValue(FixedPoint<typename FIXED::int_t, FIXED::PRECISION>& value, const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
+void ts::Args::getFixedValue(FIXED& value, const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
 {
     typename FIXED::int_t i = 0;
     getIntValue(i, name, def_value.raw(), index);

@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
 #include "tsIntegerUtils.h"
 
 namespace ts {
@@ -94,13 +93,6 @@ namespace ts {
         FixedPoint(int_t i, bool raw) : _value(raw ? i : i * FACTOR) {}
 
         //!
-        //! Constructor from a string.
-        //! @param [in] str The string to decode.
-        //! @see FromString()
-        //!
-        FixedPoint(const UString& str) : _value(0) { FromString(*this, str); }
-
-        //!
         //! Conversion to integral units.
         //! @return The value in integral units. Underflow or overflow rounding is applied when necessary.
         //!
@@ -112,6 +104,12 @@ namespace ts {
         //!
         int_t raw() const { return _value; }
 
+        //!
+        //! Get the absolute value.
+        //! @return The absolute value of this fixed-point number.
+        //!
+        FixedPoint abs() const { return _value >= 0 ? *this : FixedPoint(- _value, true); }
+
         //! @cond nodoxygen
         // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
@@ -120,6 +118,12 @@ namespace ts {
         FixedPoint operator-(FixedPoint x) const { return FixedPoint(_value - x._value, true); }
         FixedPoint operator*(FixedPoint x) const { return FixedPoint((_value * x._value) / FACTOR, true); }
         FixedPoint operator/(FixedPoint x) const { return FixedPoint((_value * FACTOR) / x._value, true); }
+
+        FixedPoint& operator+=(FixedPoint x) { _value += x._value; return *this; }
+        FixedPoint& operator-=(FixedPoint x) { _value -= x._value; return *this; }
+        FixedPoint& operator*=(FixedPoint x) { _value *= x._value; _value /= FACTOR; return *this; }
+        FixedPoint& operator/=(FixedPoint x) { _value *= FACTOR; _value /= x._value; return *this; }
+
         bool operator==(FixedPoint x) const { return _value == x._value; }
         bool operator!=(FixedPoint x) const { return _value != x._value; }
         bool operator<=(FixedPoint x) const { return _value <= x._value; }
@@ -140,6 +144,18 @@ namespace ts {
         FixedPoint operator/(INT2 x) const { return FixedPoint(_value / int_t(x), true); }
 
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        FixedPoint& operator+=(INT2 x) { _value += int_t(x) * FACTOR; return *this; }
+
+        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        FixedPoint& operator-=(INT2 x) { _value -= int_t(x) * FACTOR; return *this; }
+
+        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        FixedPoint& operator*=(INT2 x) { _value *= int_t(x); return *this; }
+
+        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        FixedPoint& operator/=(INT2 x) { _value /= int_t(x); return *this; }
+
+        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         bool operator==(INT2 x) const { return _value == int_t(x) * FACTOR; }
 
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
@@ -158,44 +174,6 @@ namespace ts {
         bool operator>(INT2 x) const { return _value > int_t(x) * FACTOR; }
 
         //! @endcond
-
-        //!
-        //! Format a string containing the value of this FixedPoint.
-        //! @param [in] min_width Minimum width of the returned string.
-        //! Padded with spaces if larger than the number of characters in the formatted number.
-        //! @param [in] right_justified If true (the default), return a right-justified string.
-        //! When false, return a left-justified string. Ignored if @a min_width is lower than
-        //! the number of characters in the formatted number.
-        //! @param [in] separator Separator string for groups of thousands, a comma by default.
-        //! @param [in] force_sign If true, force a '+' sign for positive values.
-        //! @param [in] force_decimals If true, with positive precision, force a decimal dot
-        //! and the number of decimal digits of the precision. By default, skip non
-        //! significant decimal digits.
-        //! @param [in] pad The padding character to adjust the width.
-        //! @return The formatted string.
-        //!
-        UString toString(size_t min_width = 0,
-                         bool right_justified = true,
-                         const UString& separator = UString::DEFAULT_THOUSANDS_SEPARATOR,
-                         bool force_sign = false,
-                         bool force_decimals = false,
-                         UChar pad = SPACE) const;
-
-        //!
-        //! Convert a string into a FixedPoint.
-        //! @param [out] value The returned decoded value. On error (invalid string), @a value
-        //! contains what could be decoded up to the first invalid character.
-        //! @param [in] str The string to decode. It must contain the representation of an integer
-        //! value in decimal or hexadecimal (prefix @c 0x). Hexadecimal values are case-insensitive,
-        //! including the @c 0x prefix. Leading and trailing spaces are ignored. Optional thousands
-        //! separators are ignored. For FixedPoint with a positive precision, a decimal
-        //! dot and decimal digits are accepted. A decimal dot is allowed only in base 10.
-        //! @return True on success, false on error (invalid string).
-        //!
-        static bool FromString(FixedPoint& value, const UString& str)
-        {
-            return str.toInteger(value._value, u",", PRECISION);
-        }
     };
 }
 
@@ -205,52 +183,52 @@ namespace ts {
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-ts::FixedPoint<INT2, PREC> operator+(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 + x1; }
+inline ts::FixedPoint<INT2, PREC> operator+(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 + x1; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-ts::FixedPoint<INT2, PREC> operator-(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return -(x2 - x1); }
+inline ts::FixedPoint<INT2, PREC> operator-(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return -(x2 - x1); }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-ts::FixedPoint<INT2, PREC> operator*(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 * x1; }
+inline ts::FixedPoint<INT2, PREC> operator*(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 * x1; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-ts::FixedPoint<INT2, PREC> operator/(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return ts::FixedPoint<INT2, PREC>(x1) / x2; }
+inline ts::FixedPoint<INT2, PREC> operator/(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return ts::FixedPoint<INT2, PREC>(x1) / x2; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-bool operator==(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 == x1; }
+inline bool operator==(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 == x1; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-bool operator!=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 != x1; }
+inline bool operator!=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 != x1; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-bool operator<=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 >= x1; }
+inline bool operator<=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 >= x1; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-bool operator>=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 <= x1; }
+inline bool operator>=(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 <= x1; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-bool operator<(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 > x1; }
+inline bool operator<(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 > x1; }
 
 template <typename INT1, typename INT2, const size_t PREC,
           typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0,
           typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-bool operator>(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 < x1; }
+inline bool operator>(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 < x1; }
 
 //! @endcond
 

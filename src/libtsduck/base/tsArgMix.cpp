@@ -42,6 +42,7 @@ const ts::UString ts::ArgMix::uempty;
 ts::ArgMix::ArgMix() :
     _type(0),
     _size(0),
+    _precision(0),
     _value(int32_t(0)),
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
     _string(),
@@ -53,6 +54,7 @@ ts::ArgMix::ArgMix() :
 ts::ArgMix::ArgMix(const ts::ArgMix& other) :
     _type(other._type),
     _size(other._size),
+    _precision(other._precision),
     _value(other._value),
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
     _string(other._string),
@@ -64,6 +66,7 @@ ts::ArgMix::ArgMix(const ts::ArgMix& other) :
 ts::ArgMix::ArgMix(ts::ArgMix&& other) :
     _type(other._type),
     _size(other._size),
+    _precision(other._precision),
     _value(other._value),
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
     _string(std::move(other._string)),
@@ -73,9 +76,10 @@ ts::ArgMix::ArgMix(ts::ArgMix&& other) :
     other._aux = nullptr;
 }
 
-ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const Value value) :
+ts::ArgMix::ArgMix(TypeFlags type, size_t size, const Value value, size_t precision) :
     _type(type),
-    _size(size),
+    _size(uint8_t(size)),
+    _precision(uint8_t(precision)),
     _value(value),
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
     _string(),
