@@ -312,7 +312,7 @@ namespace ts {
         //! @param [in] value Actual value of the argument.
         //! @param [in] precision Decimal digits for fixed-point type.
         //!
-        ArgMix(TypeFlags type, size_t size, const Value value, size_t precision = 0);
+        ArgMix(TypeFlags type, size_t size, const Value value, size_t precision);
 
 #if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
         // Specific constructors without conformant temporary object lifetime.
@@ -459,43 +459,43 @@ namespace ts {
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, Value(s)) {}
+        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, Value(s), 0) {}
         //!
         //! Constructor from a nul-terminated string of 16-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, Value(s)) {}
+        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, Value(s), 0) {}
         //!
         //! Constructor from a C++ string of 8-bit characters.
         //! @param [in] s Reference to a C++ string.
         //!
-        ArgMixIn(const std::string& s) : ArgMix(STRING | BIT8 | CLASS, 0, s) {}
+        ArgMixIn(const std::string& s) : ArgMix(STRING | BIT8 | CLASS, 0, s, 0) {}
         //!
         //! Constructor from a C++ string of 16-bit characters.
         //! @param [in] s Reference to a C++ string.
         //!
-        ArgMixIn(const UString& s) : ArgMix(STRING | BIT16 | CLASS, 0, s) {}
+        ArgMixIn(const UString& s) : ArgMix(STRING | BIT16 | CLASS, 0, s, 0) {}
         //!
         //! Constructor from a stringifiable object.
         //! @param [in] s Reference to a stringifiable object.
         //!
-        ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s) {}
+        ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s, 0) {}
         //!
         //! Constructor from a bool.
         //! @param [in] b Boolean value.
         //!
-        ArgMixIn(bool b) : ArgMix(INTEGER | BIT1, 1, Value(b)) {}
+        ArgMixIn(bool b) : ArgMix(INTEGER | BIT1, 1, Value(b), 0) {}
         //!
         //! Constructor from a double.
         //! @param [in] d double value.
         //!
-        ArgMixIn(double d) : ArgMix(DOUBLE, 0, Value(d)) {}
+        ArgMixIn(double d) : ArgMix(DOUBLE, 0, Value(d), 0) {}
         //!
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value, int>::type = 0>
-        ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
+        ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i), 0) {}
         //!
         //! Constructor from a fixed-point type.
         //! @param [in] x Fixed-point value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
@@ -548,7 +548,7 @@ namespace ts {
         //! @param [in] ptr Address of an integer or enum data.
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
-        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr)) {}
+        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr), 0) {}
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.
