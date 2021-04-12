@@ -125,14 +125,6 @@ void FixedPointTest::testUnit()
     TSUNIT_EQUAL(2, (10 / Fixed(4)).raw());
     TSUNIT_EQUAL(2, (Fixed(10) / 4).toInt());
     TSUNIT_EQUAL(2, (Fixed(10) / 4).raw());
-
-    TSUNIT_ASSERT(Fixed::FromString(i, u" 12"));
-    TSUNIT_EQUAL(12, i.toInt());
-    TSUNIT_ASSERT(!Fixed::FromString(i, u" -12,345 =="));
-    TSUNIT_EQUAL(-12345, i.toInt());
-
-    TSUNIT_EQUAL(u"1,234", Fixed(1234).toString());
-    TSUNIT_EQUAL(u"   -56,789", Fixed(-56789).toString(10));
 }
 
 void FixedPointTest::testSubUnit()
@@ -181,19 +173,6 @@ void FixedPointTest::testSubUnit()
     TSUNIT_EQUAL(2500, (10 / Fixed(4)).raw());
     TSUNIT_EQUAL(2, (Fixed(10) / 4).toInt());
     TSUNIT_EQUAL(2500, (Fixed(10) / 4).raw());
-
-    TSUNIT_ASSERT(Fixed::FromString(i, u" 12.3"));
-    TSUNIT_EQUAL(12, i.toInt());
-    TSUNIT_EQUAL(12300, i.raw());
-    TSUNIT_ASSERT(!Fixed::FromString(i, u" -12,345.6789 =="));
-    TSUNIT_EQUAL(-12345, i.toInt());
-    TSUNIT_EQUAL(-12345678, i.raw());
-
-    TSUNIT_EQUAL(u"1,234", Fixed(1234).toString());
-    TSUNIT_EQUAL(u"1,234.5", Fixed(1234500, true).toString());
-    TSUNIT_EQUAL(u"1,234.567", Fixed(1234567, true).toString());
-    TSUNIT_EQUAL(u"   -56|789.000", Fixed(-56789).toString(14, true, u"|", true, true));
-    TSUNIT_EQUAL(u"   +56|789.000", Fixed(56789).toString(14, true, u"|", true, true));
 }
 
 void FixedPointTest::testAssignment()
@@ -210,6 +189,39 @@ void FixedPointTest::testAssignment()
     n = -12;
     TSUNIT_EQUAL(-12, n.toInt());
     TSUNIT_EQUAL(-12000, n.raw());
+
+    n = 12;
+    n += Fixed(4);
+    TSUNIT_EQUAL(16, n.toInt());
+    TSUNIT_EQUAL(16000, n.raw());
+
+    n += 2;
+    TSUNIT_EQUAL(18, n.toInt());
+    TSUNIT_EQUAL(18000, n.raw());
+
+    n -= Fixed(6);
+    TSUNIT_EQUAL(12, n.toInt());
+    TSUNIT_EQUAL(12000, n.raw());
+
+    n -= 2;
+    TSUNIT_EQUAL(10, n.toInt());
+    TSUNIT_EQUAL(10000, n.raw());
+
+    n *= Fixed(2);
+    TSUNIT_EQUAL(20, n.toInt());
+    TSUNIT_EQUAL(20000, n.raw());
+
+    n *= 3;
+    TSUNIT_EQUAL(60, n.toInt());
+    TSUNIT_EQUAL(60000, n.raw());
+
+    n /= Fixed(2);
+    TSUNIT_EQUAL(30, n.toInt());
+    TSUNIT_EQUAL(30000, n.raw());
+
+    n /= 4;
+    TSUNIT_EQUAL(7, n.toInt());
+    TSUNIT_EQUAL(7500, n.raw());
 }
 
 void FixedPointTest::testComparison()

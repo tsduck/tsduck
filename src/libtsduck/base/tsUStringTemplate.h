@@ -864,6 +864,73 @@ ts::UString ts::UString::HexaMin(INT svalue,
     return s.toReversed();
 }
 
+//----------------------------------------------------------------------------
+// Format a string containing a fixed-point value.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type>
+ts::UString ts::UString::FixedImpl(INT raw_value,
+                                   size_type precision,
+                                   size_type min_width,
+                                   size_type decimals,
+                                   bool right_justified,
+                                   const UString& separator,
+                                   bool force_sign,
+                                   bool force_decimals,
+                                   UChar pad)
+{
+    // Dividing factor from raw value.
+    const INT factor = Power10<INT>(precision);
+
+    // Format the integral part.
+    UString s(Decimal(raw_value / factor, 0, true, separator, force_sign));
+
+    // Get the decimal part.
+    INT dec = raw_value % factor;
+
+    // If requested decimals is smaller than precision, reduce the decimal part.
+    while (precision > decimals) {
+        dec /= 10;
+        precision--;
+    }
+
+    // Format the decimal part.
+    if (precision > 0 && (dec != 0 || force_decimals)) {
+        s.append(u'.');
+        s.append(Decimal(dec, precision, true, UString(), false, u'0'));
+        if (!force_decimals) {
+            while (s.back() == u'0') {
+                s.pop_back();
+            }
+        }
+    }
+
+    // Adjust string width.
+    if (s.size() < min_width) {
+        if (right_justified) {
+            s.insert(0, min_width - s.size(), pad);
+        }
+        else {
+            s.append(min_width - s.size(), pad);
+        }
+    }
+    return s;
+}
+
+
+//----------------------------------------------------------------------------
+// Convert a string into a fixed-point value.
+//----------------------------------------------------------------------------
+
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type>
+bool ts::UString::toFixed(FixedPoint<INT,PREC>& value, const UString& thousandSeparators, const UString& decimalSeparators) const
+{
+    INT i = 0;
+    const bool result = toInteger(i, thousandSeparators, PREC, decimalSeparators);
+    value = FixedPoint<INT,PREC>(i, true);
+    return result;
+}
+
 
 //----------------------------------------------------------------------------
 // Format a percentage string.

@@ -35,38 +35,39 @@
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-INT ts::ArgMix::toInteger() const
+INT ts::ArgMix::toInteger(bool raw) const
 {
     if ((_type & INTEGER) == 0) {
         // Not an integer.
         return static_cast<INT>(0);
     }
-    switch (_type) {
+    const INT factor = raw || (_type & FIXED) == 0 ? 1 : Power10<INT>(_precision);
+    switch (_type & ~FIXED) {
         case INTEGER | BIT32 | SIGNED:
-            return static_cast<INT>(_value.int32);
+            return static_cast<INT>(_value.int32) / factor;
         case INTEGER | BIT1: // bool
         case INTEGER | BIT32:
-            return static_cast<INT>(_value.uint32);
+            return static_cast<INT>(_value.uint32) / factor;
         case INTEGER | BIT64 | SIGNED:
-            return static_cast<INT>(_value.int64);
+            return static_cast<INT>(_value.int64) / factor;
         case INTEGER | BIT64:
-            return static_cast<INT>(_value.uint64);
+            return static_cast<INT>(_value.uint64) / factor;
         case POINTER | INTEGER | BIT8  | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int8_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int8_t*>(_value.intptr)) / factor;
         case POINTER | INTEGER | BIT8:
-            return static_cast<INT>(*reinterpret_cast<uint8_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint8_t*>(_value.intptr)) / factor;
         case POINTER | INTEGER | BIT16 | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int16_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int16_t*>(_value.intptr)) / factor;
         case POINTER | INTEGER | BIT16:
-            return static_cast<INT>(*reinterpret_cast<uint16_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint16_t*>(_value.intptr)) / factor;
         case POINTER | INTEGER | BIT32 | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int32_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int32_t*>(_value.intptr)) / factor;
         case POINTER | INTEGER | BIT32:
-            return static_cast<INT>(*reinterpret_cast<uint32_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint32_t*>(_value.intptr)) / factor;
         case POINTER | INTEGER | BIT64 | SIGNED:
-            return static_cast<INT>(*reinterpret_cast<int64_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<int64_t*>(_value.intptr)) / factor;
         case POINTER | INTEGER | BIT64:
-            return static_cast<INT>(*reinterpret_cast<uint64_t*>(_value.intptr));
+            return static_cast<INT>(*reinterpret_cast<uint64_t*>(_value.intptr)) / factor;
         default:
             // Such a combination of bits should never had been set.
             assert(false);
