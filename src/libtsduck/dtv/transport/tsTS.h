@@ -35,13 +35,13 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsFixedPoint.h"
 
 namespace ts {
-
-    // Base types
-
-    typedef uint16_t PID;      //!< PID value.
-    typedef uint32_t BitRate;  //!< Bitrate in bits/second.
+    //!
+    //! PID value (13 bits).
+    //!
+    typedef uint16_t PID;
 
     //!
     //! MPEG TS packet size in bytes.
@@ -62,6 +62,11 @@ namespace ts {
     //! Size in bytes of a TS packet with trailing Reed-Solomon outer FEC.
     //!
     constexpr size_t PKT_RS_SIZE = PKT_SIZE + RS_SIZE;
+
+    //!
+    //! Size in bits of a TS packet with trailing Reed-Solomon outer FEC.
+    //!
+    constexpr size_t PKT_RS_SIZE_BITS = 8 * PKT_RS_SIZE;
 
     //!
     //! Size in bytes of a timestamp preceeding a TS packet in M2TS files (Blu-ray disc).
@@ -95,73 +100,6 @@ namespace ts {
     //! Number of sections.
     //!
     typedef uint64_t SectionCounter;
-
-    //!
-    //! Convert 188-byte packet bitrate into 204-byte packet bitrate.
-    //! @param [in] bitrate188 Bitrate using 188-byte packet as reference.
-    //! @return Corresponding bitrate using 204-byte packet as reference.
-    //!
-    TSDUCKDLL inline BitRate ToBitrate204(BitRate bitrate188)
-    {
-        return BitRate((uint64_t (bitrate188) * 204L) / 188L);
-    }
-
-    //!
-    //! Convert 204-byte packet bitrate into 188-byte packet bitrate.
-    //! @param [in] bitrate204 Bitrate using 204-byte packet as reference.
-    //! @return Corresponding bitrate using 188-byte packet as reference.
-    //!
-    TSDUCKDLL inline BitRate ToBitrate188(BitRate bitrate204)
-    {
-        return BitRate((uint64_t (bitrate204) * 188L) / 204L);
-    }
-
-    //!
-    //! Compute the interval, in milliseconds, between two packets.
-    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
-    //! @param [in] distance Distance between the two packets: 0 for the same
-    //! packet, 1 for the next packet (the default), etc.
-    //! @return Interval in milliseconds between the first byte of the first packet
-    //! and the first byte of the second packet.
-    //!
-    TSDUCKDLL inline MilliSecond PacketInterval(BitRate bitrate, PacketCounter distance = 1)
-    {
-        return bitrate == 0 ? 0 : (distance * 8 * PKT_SIZE * MilliSecPerSec) / MilliSecond(bitrate);
-    }
-
-    //!
-    //! Compute the number of packets transmitted during a given duration in milliseconds.
-    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
-    //! @param [in] duration Number of milliseconds.
-    //! @return Number of packets during @a duration milliseconds.
-    //!
-    TSDUCKDLL inline PacketCounter PacketDistance(BitRate bitrate, MilliSecond duration)
-    {
-        return (PacketCounter(bitrate) * (duration >= 0 ? duration : -duration)) / (MilliSecPerSec * 8 * PKT_SIZE);
-    }
-
-    //!
-    //! Compute the bitrate from a number of packets transmitted during a given duration in milliseconds.
-    //! @param [in] packets Number of packets during @a duration milliseconds.
-    //! @param [in] duration Number of milliseconds.
-    //! @return TS bitrate in bits/second, based on 188-byte packets.
-    //!
-    TSDUCKDLL inline BitRate PacketBitRate(PacketCounter packets, MilliSecond duration)
-    {
-        return duration == 0 ? 0 : BitRate((packets * 8 * PKT_SIZE * MilliSecPerSec) / duration);
-    }
-
-    //!
-    //! Compute the minimum number of TS packets required to transport a section.
-    //! @param [in] section_size Total section size in bytes.
-    //! @return Number of packets required for the section.
-    //!
-    TSDUCKDLL inline PacketCounter SectionPacketCount(size_t section_size)
-    {
-        // The required size for a section is section_size + 1 (1 for pointer_field
-        // in first packet). In each packet, the useable size is 184 bytes.
-        return PacketCounter((section_size + 184) / 184);
-    }
 
     //!
     //! Value of a sync byte (first byte in a TS packet).
@@ -225,6 +163,94 @@ namespace ts {
         SC_ODD_KEY      = 3   //!< Scrambled with odd key (DVB-defined).
     };
 
+    //---------------------------------------------------------------------
+    // Bitrates computations.
+    //---------------------------------------------------------------------
+
+    //!
+    //! Bitrate in bits/second.
+    //!
+    //! To get more precision over long computations or exotic modulations,
+    //! a bitrate is implemented as a fixed-point value with decimal digits.
+    //!
+    //! The number of decimal digits is customizable using the macro TS_BITRATE_DECIMALS.
+    //!
+    //! By default, bitrates are represented with one decimal digit only.
+    //! Tests with 2 digits were not positive. Intermediate overflows in
+    //! some computations were encountered in some plugins working on large
+    //! window sizes. Automatically detecting the overflow and reducing the
+    //! window size accordingly works fine but the efficiency of the plugins
+    //! is not as good as previously. Using 1 decimal digit is currently the
+    //! best balance.
+    //!
+    typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
+
+    //!
+    //! Convert 188-byte packet bitrate into 204-byte packet bitrate.
+    //! @param [in] bitrate188 Bitrate using 188-byte packet as reference.
+    //! @return Corresponding bitrate using 204-byte packet as reference.
+    //!
+    TSDUCKDLL inline BitRate ToBitrate204(BitRate bitrate188)
+    {
+        return (bitrate188 * 204) / 188;
+    }
+
+    //!
+    //! Convert 204-byte packet bitrate into 188-byte packet bitrate.
+    //! @param [in] bitrate204 Bitrate using 204-byte packet as reference.
+    //! @return Corresponding bitrate using 188-byte packet as reference.
+    //!
+    TSDUCKDLL inline BitRate ToBitrate188(BitRate bitrate204)
+    {
+        return (bitrate204 * 188) / 204;
+    }
+
+    //!
+    //! Compute the interval, in milliseconds, between two packets.
+    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
+    //! @param [in] distance Distance between the two packets: 0 for the same
+    //! packet, 1 for the next packet (the default), etc.
+    //! @return Interval in milliseconds between the first byte of the first packet
+    //! and the first byte of the second packet.
+    //!
+    TSDUCKDLL inline MilliSecond PacketInterval(BitRate bitrate, PacketCounter distance = 1)
+    {
+        return bitrate == 0 ? 0 : ((distance * PKT_SIZE_BITS * MilliSecPerSec) / bitrate).toInt();
+    }
+
+    //!
+    //! Compute the number of packets transmitted during a given duration in milliseconds.
+    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
+    //! @param [in] duration Number of milliseconds.
+    //! @return Number of packets during @a duration milliseconds.
+    //!
+    TSDUCKDLL inline PacketCounter PacketDistance(BitRate bitrate, MilliSecond duration)
+    {
+        return PacketCounter(((bitrate * (duration >= 0 ? duration : -duration)) / (MilliSecPerSec * PKT_SIZE_BITS)).toInt());
+    }
+
+    //!
+    //! Compute the bitrate from a number of packets transmitted during a given duration in milliseconds.
+    //! @param [in] packets Number of packets during @a duration milliseconds.
+    //! @param [in] duration Number of milliseconds.
+    //! @return TS bitrate in bits/second, based on 188-byte packets.
+    //!
+    TSDUCKDLL inline BitRate PacketBitRate(PacketCounter packets, MilliSecond duration)
+    {
+        return duration == 0 ? 0 : BitRate(packets * MilliSecPerSec * PKT_SIZE_BITS) / BitRate(duration);
+    }
+
+    //!
+    //! Compute the minimum number of TS packets required to transport a section.
+    //! @param [in] section_size Total section size in bytes.
+    //! @return Number of packets required for the section.
+    //!
+    TSDUCKDLL inline PacketCounter SectionPacketCount(size_t section_size)
+    {
+        // The required size for a section is section_size + 1 (1 for pointer_field
+        // in first packet). In each packet, the useable size is 184 bytes.
+        return PacketCounter((section_size + 184) / 184);
+    }
 
     //---------------------------------------------------------------------
     //! Predefined PID values

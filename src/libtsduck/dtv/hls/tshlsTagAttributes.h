@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tshls.h"
+#include "tsFixedPoint.h"
 
 namespace ts {
     namespace hls {
@@ -87,6 +88,22 @@ namespace ts {
             void getIntValue(INT& val, const UString& name, INT defValue = static_cast<INT>(0)) const
             {
                 if (!value(name).toInteger(val)) {
+                    val = defValue;
+                }
+            }
+
+            //!
+            //! Get the value of a fixed-point number attribute.
+            //! @tparam INT The underlying signed integer type.
+            //! @tparam PREC The decimal precision in digits.
+            //! @param [out] val Decoded value.
+            //! @param [in] name Attribute name.
+            //! @param [in] defValue Default value if not present.
+            //!
+            template <typename INT, const size_t PREC>
+            void getFixedValue(FixedPoint<INT, PREC>& val, const UString& name, FixedPoint<INT, PREC> defValue = FixedPoint<INT, PREC>(0)) const
+            {
+                if (!value(name).toFixed(val)) {
                     val = defValue;
                 }
             }

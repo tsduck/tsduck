@@ -44,6 +44,7 @@ const int tsduckLibraryVersionMajor = TS_VERSION_MAJOR;
 const int tsduckLibraryVersionMinor = TS_VERSION_MINOR;
 const int tsduckLibraryVersionCommit = TS_COMMIT;
 const int TSDUCK_LIBRARY_VERSION_SYMBOL = TS_VERSION_INTEGER;
+const int TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL = TS_BITRATE_DECIMALS;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({

@@ -152,5 +152,5 @@ bool ts::TSSpeedMetrics::processedPacket(PacketCounter count)
 
 ts::BitRate ts::TSSpeedMetrics::bitrate() const
 {
-    return _total.duration == 0 ? 0 : BitRate((_total.packets * 8 * PKT_SIZE * NanoSecPerSec) / _total.duration);
+    return _total.duration == 0 ? 0 : BitRate(_total.packets * PKT_SIZE_BITS * NanoSecPerSec) / _total.duration;
 }

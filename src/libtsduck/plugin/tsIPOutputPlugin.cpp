@@ -351,7 +351,7 @@ bool ts::IPOutputPlugin::sendDatagram(const TSPacket* pkt, size_t packet_count)
                 // If the bitrate is known and the packet containing the PCR is not the first one,
                 // compute the theoretical timestamp of the first packet in the datagram.
                 if (i > 0 && bitrate > 0) {
-                    pcr -= (i * 8 * PKT_SIZE * uint64_t(SYSTEM_CLOCK_FREQ)) / bitrate;
+                    pcr -= ((i * PKT_SIZE_BITS * uint64_t(SYSTEM_CLOCK_FREQ)) / bitrate).toInt();
                 }
                 break;
             }
@@ -361,7 +361,7 @@ bool ts::IPOutputPlugin::sendDatagram(const TSPacket* pkt, size_t packet_count)
         // This value may be replaced if a valid PCR is present in this datagram.
         uint64_t rtp_pcr = _last_rtp_pcr;
         if (bitrate > 0) {
-            rtp_pcr += ((_pkt_count - _last_rtp_pcr_pkt) * 8 * PKT_SIZE * uint64_t(SYSTEM_CLOCK_FREQ)) / bitrate;
+            rtp_pcr += (((_pkt_count - _last_rtp_pcr_pkt) * PKT_SIZE_BITS * uint64_t(SYSTEM_CLOCK_FREQ)) / bitrate).toInt();
         }
 
         // If the current datagram contains a PCR, recompute the RTP timestamp more precisely.

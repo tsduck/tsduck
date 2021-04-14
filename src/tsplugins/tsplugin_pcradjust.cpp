@@ -161,7 +161,7 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
     _demux(duck, this),
     _pid_contexts()
 {
-    option(u"bitrate", 'b', POSITIVE);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specify a constant bitrate for the transport stream. "
          u"The PCR values will be adjusted according to this bitrate. "
@@ -203,7 +203,7 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
 bool ts::PCRAdjustPlugin::getOptions()
 {
     getIntValues(_pids, u"pid", true);
-    _user_bitrate = intValue<BitRate>(u"bitrate");
+    getFixedValue(_user_bitrate, u"bitrate");
     _ignore_dts = present(u"ignore-dts");
     _ignore_pts = present(u"ignore-pts");
     _ignore_scrambled = present(u"ignore-scrambled");

@@ -255,24 +255,24 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     getValues(inputFiles);
-    maxCycles = intValue<size_t>(u"cycles");
+    getIntValue(maxCycles, u"cycles");
     const ts::UString tcpMux(value(u"mux"));
     const ts::UString udpMux(value(u"udp"));
-    clientId = intValue<uint32_t>(u"client-id", 0);
-    dataId = intValue<uint16_t>(u"data-id", 0);
-    channelId = intValue<uint16_t>(u"channel-id", 1);
-    streamId = intValue<uint16_t>(u"stream-id", 1);
-    dataType = intValue<uint8_t>(u"type", 0);
+    getIntValue(clientId, u"client-id", 0);
+    getIntValue(dataId, u"data-id", 0);
+    getIntValue(channelId, u"channel-id", 1);
+    getIntValue(streamId, u"stream-id", 1);
+    getIntValue(dataType, u"type", 0);
     sectionMode = present(u"section-mode");
-    sendBandwidth = intValue<uint16_t>(u"bandwidth", DEFAULT_BANDWIDTH);
+    getIntValue(sendBandwidth, u"bandwidth", DEFAULT_BANDWIDTH);
     dataBitrate = sendBandwidth * 1000;
-    requestedBandwidth = intValue<uint16_t>(u"requested-bandwidth", sendBandwidth);
+    getIntValue(requestedBandwidth, u"requested-bandwidth", sendBandwidth);
     ignoreAllocatedBW = present(u"ignore-allocated");
-    emmSize = intValue<size_t>(u"emm-size", DEFAULT_EMM_SIZE);
-    emmMinTableId = intValue<ts::TID>(u"emm-min-table-id", DEFAULT_EMM_MIN_TID);
-    emmMaxTableId = intValue<ts::TID>(u"emm-max-table-id", DEFAULT_EMM_MAX_TID);
-    maxBytes = intValue<uint64_t>(u"max-bytes", std::numeric_limits<uint64_t>::max());
-    bytesPerSend = intValue<size_t>(u"bytes-per-send", DEFAULT_BYTES_PER_SEND);
+    getIntValue(emmSize, u"emm-size", DEFAULT_EMM_SIZE);
+    getIntValue(emmMinTableId, u"emm-min-table-id", DEFAULT_EMM_MIN_TID);
+    getIntValue(emmMaxTableId, u"emm-max-table-id", DEFAULT_EMM_MAX_TID);
+    getIntValue(maxBytes, u"max-bytes", std::numeric_limits<uint64_t>::max());
+    getIntValue(bytesPerSend, u"bytes-per-send", DEFAULT_BYTES_PER_SEND);
     const ts::tlv::VERSION protocolVersion = intValue<ts::tlv::VERSION>(u"emmg-mux-version", 2);
 
     // Set logging levels.
@@ -363,7 +363,7 @@ bool EMMGOptions::adjustBandwidth(uint16_t allocated)
     info(u"Target data bitrate: %'d b/s", {dataBitrate});
 
     // Compute interval between two send operations in nanoseconds.
-    sendInterval = std::max<ts::NanoSecond>(MIN_SEND_INTERVAL, (bytesPerSend * 8 * ts::NanoSecPerSec) / dataBitrate);
+    sendInterval = std::max<ts::NanoSecond>(MIN_SEND_INTERVAL, ((bytesPerSend * 8 * ts::NanoSecPerSec) / dataBitrate).toInt());
 
     // Make sure we can have that precision from the system if less than 100 ms.
     if (sendInterval < 100 * ts::NanoSecPerMilliSec) {
@@ -523,7 +523,7 @@ int MainCode(int argc, char *argv[])
         }
         else {
             // Compute the theoretical number of bytes we should have sent up to now.
-            const uint64_t allBytes = (opt.dataBitrate * duration) / (8 * ts::NanoSecPerSec);
+            const uint64_t allBytes = ((opt.dataBitrate * duration) / (8 * ts::NanoSecPerSec)).toInt();
             // We need to send the difference.
             if (allBytes > client.totalBytes()) {
                 targetBytes = allBytes - client.totalBytes();

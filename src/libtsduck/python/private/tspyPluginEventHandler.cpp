@@ -94,7 +94,7 @@ void ts::py::PluginEventHandler::handlePluginEvent(const PluginEventContext& con
                                        name.size() * sizeof(UChar),
                                        context.pluginIndex(),
                                        context.pluginCount(),
-                                       size_t(context.bitrate()),
+                                       size_t(context.bitrate().toInt()),
                                        size_t(context.pluginPackets()),
                                        size_t(context.totalPackets()),
                                        valid_data ? event_data->data() : &dummy,

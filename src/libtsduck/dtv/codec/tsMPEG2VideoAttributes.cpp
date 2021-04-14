@@ -205,7 +205,7 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
         uint8_t cf_code = (data[5] >> 1) & 0x03;
         size_t hsize_ext = (GetUInt16(data + 5) >> 7) & 0x0003;
         size_t vsize_ext = (data[6] >> 5) & 0x03;
-        BitRate bitrate_ext = (GetUInt16(data + 6) >> 1) & 0x0FFF;
+        uint32_t bitrate_ext = (GetUInt16(data + 6) >> 1) & 0x0FFF;
         size_t vbv_ext = data[8];
         size_t fr_ext_n = (data[9] >> 5) & 0x03;
         size_t fr_ext_d = data[9] & 0x1F;
@@ -220,7 +220,7 @@ bool ts::MPEG2VideoAttributes::moreBinaryData(const uint8_t* udata, size_t size)
             fr_num = size_t(_sh_ar_code) * (fr_ext_n + 1);
             fr_div = fr_ext_d + 1;
         }
-        BitRate bitrate = _sh_bitrate | (bitrate_ext << 18);
+        uint32_t bitrate = _sh_bitrate | (bitrate_ext << 18);
         size_t vbv_size = _sh_vbv_size | (vbv_ext << 10);
 
         // Check modification

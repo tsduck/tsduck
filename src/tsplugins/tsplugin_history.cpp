@@ -466,7 +466,7 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     // Make sure we know how long to wait for suspended PID
     if (_suspend_after == 0) {
         // Number of packets in 60 second at current bitrate
-        _suspend_after = (PacketCounter(tsp->bitrate()) * 60) / (PKT_SIZE * 8);
+        _suspend_after = ((tsp->bitrate() * 60) / PKT_SIZE_BITS).toInt();
         if (_suspend_after == 0) {
             tsp->warning(u"bitrate unknown or too low, use option --suspend-packet-threshold");
             return TSP_END;

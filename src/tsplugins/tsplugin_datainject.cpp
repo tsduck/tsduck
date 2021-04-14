@@ -201,7 +201,7 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
     _req_bitrate(0),
     _lost_packets(0)
 {
-    option(u"bitrate-max", 'b', POSITIVE);
+    option<BitRate>(u"bitrate-max", 'b');
     help(u"bitrate-max",
          u"Specifies the maximum bitrate for the data PID in bits / second. "
          u"By default, the data PID bitrate is limited by the stuffing bitrate "
@@ -279,11 +279,11 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
 bool ts::DataInjectPlugin::start()
 {
     // Command line options
-    _max_bitrate = intValue<BitRate>(u"bitrate-max", 0);
-    _data_pid = intValue<PID>(u"pid");
+    getFixedValue(_max_bitrate, u"bitrate-max");
+    getIntValue(_data_pid, u"pid");
     const size_t queue_size = intValue<size_t>(u"queue-size", DEFAULT_QUEUE_SIZE);
     _reuse_port = !present(u"no-reuse-port");
-    _sock_buf_size = intValue<size_t>(u"buffer-size");
+    getIntValue(_sock_buf_size, u"buffer-size");
     _unregulated = present(u"unregulated");
 
     // Set logging levels.
@@ -337,7 +337,7 @@ bool ts::DataInjectPlugin::start()
 
     // Clear client session.
     clearSession();
-    tsp->verbose(u"initial bandwidth allocation is %s", {_req_bitrate == 0 ? u"unlimited" : UString::Decimal(_req_bitrate) + u" b/s"});
+    tsp->verbose(u"initial bandwidth allocation is %'d", {_req_bitrate == 0 ? u"unlimited" : UString::Fixed(_req_bitrate) + u" b/s"});
 
     // TS processing state
     _cc_fixer.reset();
@@ -446,7 +446,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
                 // Otherwise, try to update any null packet (unbounded bitrate).
                 if (!_unregulated || _req_bitrate != 0) {
                     // TODO: refine this, works only for low injection bitrates.
-                    _pkt_next_data += tsp->bitrate() / _req_bitrate;
+                    _pkt_next_data += (tsp->bitrate() / _req_bitrate).toInt();
                 }
             }
         }
@@ -510,7 +510,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
     response.stream_id = m->stream_id;
     response.client_id = m->client_id;
     response.has_bandwidth = _req_bitrate > 0;
-    response.bandwidth = uint16_t(_req_bitrate / 1000); // protocol unit is kb/s
+    response.bandwidth = uint16_t(_req_bitrate.toInt() / 1000); // protocol unit is kb/s
     return true;
 }
 

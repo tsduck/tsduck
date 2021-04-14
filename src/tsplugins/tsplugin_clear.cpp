@@ -338,7 +338,7 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPack
 
     if (_drop_after == 0) {
         // Number of packets in 1 second at current bitrate
-        _drop_after = tsp->bitrate() / (PKT_SIZE * 8);
+        _drop_after = (tsp->bitrate() / PKT_SIZE_BITS).toInt();
         if (_drop_after == 0) {
             tsp->error(u"bitrate unknown or too low, use option --drop-after-packets");
             return TSP_END;

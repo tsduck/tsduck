@@ -157,7 +157,7 @@ ts::BitRate ts::AbstractDatagramInputPlugin::getBitrate()
         // Evaluate bitrate since start of previous evaluation period.
         // The current period may be too short for correct evaluation.
         const MilliSecond ms = Time::CurrentUTC() - _start_0;
-        return ms == 0 ? 0 : BitRate((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms);
+        return ms == 0 ? 0 : BitRate(_packets_0 * PKT_SIZE_BITS * MilliSecPerSec) / ms;
     }
 }
 
@@ -275,11 +275,11 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
             _next_display += _display_time;
             const MilliSecond ms_current = Time::CurrentUTC() - _start_0;
             const MilliSecond ms_total = Time::CurrentUTC() - _start;
-            const BitRate br_current = ms_current == 0 ? 0 : BitRate((_packets_0 * PKT_SIZE * 8 * MilliSecPerSec) / ms_current);
-            const BitRate br_average = ms_total == 0 ? 0 : BitRate((_packets * PKT_SIZE * 8 * MilliSecPerSec) / ms_total);
+            const BitRate br_current = ms_current == 0 ? 0 : BitRate(_packets_0 * PKT_SIZE_BITS * MilliSecPerSec) / ms_current;
+            const BitRate br_average = ms_total == 0 ? 0 : BitRate(_packets * PKT_SIZE_BITS * MilliSecPerSec) / ms_total;
             tsp->info(u"input bitrate: %s, average: %s", {
-                br_current == 0 ? u"undefined" : UString::Decimal(br_current) + u" b/s",
-                br_average == 0 ? u"undefined" : UString::Decimal(br_average) + u" b/s"});
+                br_current == 0 ? u"undefined" : UString::Fixed(br_current) + u" b/s",
+                br_average == 0 ? u"undefined" : UString::Fixed(br_average) + u" b/s"});
         }
     }
 

@@ -33,7 +33,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsFixedPoint.h"
 
 #if defined(DOXYGEN)
 
@@ -243,6 +243,33 @@
     #define _NO_USING_NAMESPACE_DTAPI
     #include "DTAPI.h"
     TS_POP_WARNING()
+
+    namespace ts {
+        //!
+        //! Convert a FixedPoint value into a Dektec-defined fractional int.
+        //! @param [in] value A FixedPoint value.
+        //! @return Corresponding Dektec-defined fractional int.
+        //!
+        template <typename INT, const size_t PREC>
+        Dtapi::DtFractionInt ToDektecFractionInt(FixedPoint<INT, PREC> value)
+        {
+            return Dtapi::DtFractionInt(int(value.raw()), int(FixedPoint<INT, PREC>::FACTOR));
+        }
+
+        //!
+        //! Convert a Dektec-defined fractional int into a FixedPoint value.
+        //! @tparam INT The underlying signed integer type.
+        //! @tparam PREC The decimal precision in digits.
+        //! @param [out] result The converted FixedPoint value.
+        //! @param [in] value A Dektec-defined fractional int.
+        //!
+        template <typename INT, const size_t PREC>
+        void FromDektecFractionInt(FixedPoint<INT, PREC>& result, Dtapi::DtFractionInt value)
+        {
+            result = value.m_Num;
+            result /= value.m_Den;
+        }
+    }
 
 #endif
 

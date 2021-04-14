@@ -444,7 +444,7 @@ std::ostream& ts::CyclingPacketizer::display(std::ostream& strm) const
 {
     Packetizer::display(strm)
         << "  Stuffing policy: " << int(_stuffing) << std::endl
-        << "  Bitrate: " << UString::Decimal(_bitrate) << " b/s" << std::endl
+        << "  Bitrate: " << _bitrate << " b/s" << std::endl
         << "  Current cycle: " << _current_cycle << std::endl
         << "  Remaining sections in cycle: " << _remain_in_cycle << std::endl
         << "  Section cycle end: " << (_cycle_end == UNDEFINED ? u"undefined" : UString::Decimal(_cycle_end)) << std::endl

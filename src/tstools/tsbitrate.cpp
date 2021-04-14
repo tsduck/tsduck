@@ -192,8 +192,8 @@ int MainCode(int argc, char *argv[])
     }
 
     std::cout << "TS bitrate" << (opt.full ? "     " : "") << ": "
-              << ts::UString::Decimal(status.bitrate_188) << " b/s (188-byte), "
-              << ts::UString::Decimal(status.bitrate_204) << " b/s (204-byte)"
+              << ts::UString::Decimal(status.bitrate_188.toInt()) << " b/s (188-byte), "
+              << ts::UString::Decimal(status.bitrate_204.toInt()) << " b/s (204-byte)"
               << std::endl;
 
     if (opt.full) {

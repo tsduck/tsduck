@@ -846,15 +846,15 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Get command line arguments
-    _guts->dev_index = intValue<int>(u"device", -1);
-    _guts->chan_index = intValue<int>(u"channel", -1);
-    _guts->opt_bitrate = intValue<BitRate>(u"bitrate", 0);
+    getIntValue(_guts->dev_index, u"device", -1);
+    getIntValue(_guts->chan_index, u"channel", -1);
+    getFixedValue(_guts->opt_bitrate, u"bitrate", 0);
     _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : DTAPI_WAIT_UNTIL_SENT;
     _guts->mute_on_stop = false;
     _guts->preload_fifo = present(u"preload-fifo");
     _guts->maintain_preload = present(u"maintain-preload");
     _guts->drop_to_maintain = present(u"drop-to-maintain-preload");
-    _guts->power_mode = intValue(u"power-mode", -1);
+    getIntValue(_guts->power_mode, u"power-mode", -1);
 
     // Get initial bitrate
     _guts->cur_bitrate = _guts->opt_bitrate != 0 ? _guts->opt_bitrate : tsp->bitrate();
@@ -1036,7 +1036,7 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Set output bitrate
-    status = _guts->chan.SetTsRateBps(int(_guts->cur_bitrate));
+    status = _guts->chan.SetTsRateBps(ToDektecFractionInt(_guts->cur_bitrate));
     if (status != DTAPI_OK) {
         return startError(u"output device set bitrate error", status);
     }
@@ -1120,11 +1120,11 @@ bool ts::DektecOutputPlugin::setBitrate(int symbol_rate, int dt_modulation, int 
 // Compute and display symbol rate if not explicitly specified by the user.
 //----------------------------------------------------------------------------
 
-void ts::DektecOutputPlugin::displaySymbolRate(int ts_bitrate, int dt_modulation, int param0, int param1, int param2)
+void ts::DektecOutputPlugin::displaySymbolRate(BitRate ts_bitrate, int dt_modulation, int param0, int param1, int param2)
 {
     if (ts_bitrate > 0) {
         int symrate = -1;
-        Dtapi::DTAPI_RESULT status = Dtapi::DtapiModPars2SymRate(symrate, dt_modulation, param0, param1, param2, ts_bitrate);
+        Dtapi::DTAPI_RESULT status = Dtapi::DtapiModPars2SymRate(symrate, dt_modulation, param0, param1, param2, ToDektecFractionInt(ts_bitrate));
         if (status != DTAPI_OK) {
             tsp->verbose(u"error computing symbol rate: ", {DektecStrError(status)});
         }
@@ -1475,7 +1475,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             }
             Dtapi::DtCmmbPars pars;
             pars.m_Bandwidth = intValue<int>(u"cmmb-bandwidth", DTAPI_CMMB_BW_8MHZ);
-            pars.m_TsRate = int(_guts->cur_bitrate);
+            pars.m_TsRate = int(_guts->cur_bitrate.toInt());
             pars.m_TsPid = intValue<int>(u"cmmb-pid", 0);
             pars.m_AreaId = intValue<int>(u"cmmb-area-id", 0);
             pars.m_TxId = intValue<int>(u"cmmb-transmitter-id", 0);
@@ -1586,7 +1586,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
     // when input bitrate changes.
     BitRate new_bitrate;
     if (_guts->opt_bitrate == 0 && _guts->cur_bitrate != (new_bitrate = tsp->bitrate())) {
-        status = _guts->chan.SetTsRateBps(int(new_bitrate));
+        status = _guts->chan.SetTsRateBps(ToDektecFractionInt(new_bitrate));
         if (status != DTAPI_OK) {
             tsp->error(u"error setting output bitrate on Dektec device: " + DektecStrError(status));
         }
@@ -1786,28 +1786,37 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
 
 bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
 {
-    if (_guts->preload_fifo_delay && _guts->cur_bitrate) {
+    if (_guts->preload_fifo_delay && _guts->cur_bitrate != 0) {
         // calculate new preload FIFO size based on new bit rate
         // to calculate the size, in bytes, based on the bit rate and the requested delay, it is:
         // <bit rate (in bits/s)> / <8 bytes / bit> * <delay (in ms)> / <1000 ms / s>
         // converting to uint64_t because multiplying the current bit rate by the delay may exceed the max value for a uint32_t
-        uint64_t prelimPreloadFifoSize = RoundDown<uint64_t>((uint64_t(_guts->cur_bitrate) * _guts->preload_fifo_delay) / 8000, PKT_SIZE);
+        uint64_t prelimPreloadFifoSize = RoundDown<uint64_t>(((_guts->cur_bitrate * _guts->preload_fifo_delay) / 8000).toInt(), PKT_SIZE);
 
         _guts->maintain_threshold = 0;
         if (_guts->maintain_preload && _guts->drop_to_maintain) {
             // use a threshold of 10 ms, which seems to work pretty well in practice
-            _guts->maintain_threshold = RoundDown(int((uint64_t(_guts->cur_bitrate) * 10ULL) / 8000ULL), int(PKT_SIZE));
+            _guts->maintain_threshold = RoundDown(int(((_guts->cur_bitrate * 10) / 8000).toInt()), int(PKT_SIZE));
         }
 
         if ((prelimPreloadFifoSize + uint64_t(_guts->maintain_threshold)) > uint64_t(_guts->fifo_size)) {
             _guts->preload_fifo_size = RoundDown(_guts->fifo_size - _guts->maintain_threshold, int(PKT_SIZE));
             if (_guts->maintain_threshold) {
-                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). Using FIFO size - 10 ms maintain preload threshold for preload size instead (%'d bytes).",
-                {_guts->preload_fifo_delay, prelimPreloadFifoSize, _guts->cur_bitrate, _guts->fifo_size, _guts->preload_fifo_size});
+                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). "
+                             u"Using FIFO size - 10 ms maintain preload threshold for preload size instead (%'d bytes).", {
+                             _guts->preload_fifo_delay,
+                             prelimPreloadFifoSize,
+                             _guts->cur_bitrate,
+                             _guts->fifo_size,
+                             _guts->preload_fifo_size});
             }
             else {
-                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). Using FIFO size for preload size instead.",
-                {_guts->preload_fifo_delay, prelimPreloadFifoSize, _guts->cur_bitrate, _guts->fifo_size});
+                tsp->verbose(u"For --preload-fifo-delay, delay (%d ms) too large (%'d bytes), based on bit rate (%'d b/s) and FIFO size (%'d bytes). "
+                             u"Using FIFO size for preload size instead.", {
+                             _guts->preload_fifo_delay,
+                             prelimPreloadFifoSize,
+                             _guts->cur_bitrate,
+                             _guts->fifo_size});
             }
         }
         else {

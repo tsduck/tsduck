@@ -151,6 +151,10 @@ ifdef NODTAPI
     CFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 endif
 
+ifdef BITRATE_DECIMALS
+    CFLAGS_INCLUDES += -DTS_BITRATE_DECIMALS=$(BITRATE_DECIMALS)
+endif
+
 ifeq ($(MACOS),)
     # Link flags on Linux
     CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux

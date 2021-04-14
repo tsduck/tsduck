@@ -295,7 +295,7 @@ size_t ts::hls::PlayList::selectPlayList(BitRate minBitrate, BitRate maxBitrate,
 size_t ts::hls::PlayList::selectPlayListLowestBitRate() const
 {
     size_t result = NPOS;
-    BitRate ref = std::numeric_limits<BitRate>::max();
+    BitRate ref = BitRate::MAX;
     BitRate val = 0;
     for (size_t i = 0; i < _playlists.size(); ++i) {
         if ((val = _playlists[i].bandwidth) < ref) {
@@ -650,7 +650,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case BITRATE: {
                     // #EXT-X-BITRATE:<rate>
                     BitRate kilobits = 0;
-                    if (tagParams.toInteger(kilobits)) {
+                    if (tagParams.toFixed(kilobits)) {
                         segNext.bitrate = 1024 * kilobits;
                     }
                     else if (strict) {
@@ -689,8 +689,8 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 }
                 case STREAM_INF: {
                     const TagAttributes attr(tagParams);
-                    attr.getIntValue(plNext.bandwidth, u"BANDWIDTH");
-                    attr.getIntValue(plNext.averageBandwidth, u"AVERAGE-BANDWIDTH");
+                    attr.getFixedValue(plNext.bandwidth, u"BANDWIDTH");
+                    attr.getFixedValue(plNext.averageBandwidth, u"AVERAGE-BANDWIDTH");
                     attr.value(u"RESOLUTION").scan(u"%dx%d", {&plNext.width, &plNext.height});
                     attr.getMilliValue(plNext.frameRate, u"FRAME-RATE");
                     plNext.codecs = attr.value(u"CODECS");

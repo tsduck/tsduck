@@ -50,7 +50,7 @@ uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
         return INVALID_PCR;
     }
 
-    uint64_t next_pcr = last_pcr + (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(bitrate);
+    uint64_t next_pcr = last_pcr + (BitRate(distance * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate).toInt();
     if (next_pcr >= PCR_SCALE) {
         next_pcr -= PCR_SCALE;
     }

@@ -95,7 +95,7 @@ Options::Options(int argc, char *argv[]) :
               u"    [-P processor-name [processor-options]] ... \\\n"
               u"    [-O output-name [output-options]]");
 
-    option(u"bitrate", 'b', POSITIVE);
+    option<ts::BitRate>(u"bitrate", 'b');
     help(u"bitrate", u"Specify the input bitrate.");
 
     option(u"packet-buffer", 'p', POSITIVE);
@@ -114,7 +114,7 @@ Options::Options(int argc, char *argv[]) :
     // Load option values.
     duck.loadArgs(*this);
     getIntValue(buffer_size, u"packet-buffer", 1000);
-    getIntValue(fixed_bitrate, u"bitrate");
+    getFixedValue(fixed_bitrate, u"bitrate");
     getPlugin(input, ts::PluginType::INPUT, u"file");
     getPlugin(output, ts::PluginType::OUTPUT, u"drop");
     getPlugins(plugins, ts::PluginType::PROCESSOR);

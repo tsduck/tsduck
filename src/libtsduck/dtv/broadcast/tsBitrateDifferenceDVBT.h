@@ -52,7 +52,7 @@ namespace ts {
     {
     public:
         ModulationArgs tune;          //!< Modulation parameters.
-        int            bitrate_diff;  //!< Difference between a target bitrate and the theoretial bitrate for these tuner parameters.
+        BitRate        bitrate_diff;  //!< Difference between a target bitrate and the theoretial bitrate for these tuner parameters.
 
         //!
         //! Default constructor.

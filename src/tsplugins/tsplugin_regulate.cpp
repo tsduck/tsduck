@@ -75,7 +75,7 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
     _bitrate_regulator(tsp, Severity::Verbose),
     _pcr_regulator(tsp, Severity::Verbose)
 {
-    option(u"bitrate", 'b', POSITIVE);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specify a bitrate in b/s and regulate (slow down only) the TS packets "
          u"flow according to this bitrate. By default, use the \"input\" bitrate, "
@@ -112,7 +112,7 @@ bool ts::RegulatePlugin::start()
 {
     _pcr_synchronous = present(u"pcr-synchronous");
     const bool has_bitrate = present(u"bitrate");
-    const BitRate bitrate = intValue<BitRate>(u"bitrate", 0);
+    const BitRate bitrate = fixedValue<BitRate>(u"bitrate", 0);
     const bool has_pid = present(u"pid-pcr");
     const PID pid = intValue<PID>(u"pid-pcr", PID_NULL);
     const PacketCounter burst = intValue<PacketCounter>(u"packet-burst", DEF_PACKET_BURST);

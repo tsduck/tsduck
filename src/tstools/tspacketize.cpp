@@ -102,7 +102,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"binary", 0);
     help(u"binary", u"Specify that all input files are binary, regardless of their file name.");
 
-    option(u"bitrate", 'b', UNSIGNED);
+    option<ts::BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specifies the bitrate (in bits/second) of the target PID. This "
          u"information is used to schedule sections in the output list of "
@@ -148,9 +148,9 @@ Options::Options(int argc, char *argv[]) :
         stuffing_policy = StuffPolicy::AT_END;
     }
     crc_op = present(u"force-crc") ? ts::CRC32::COMPUTE : ts::CRC32::CHECK;
-    pid = intValue<ts::PID>(u"pid", ts::PID_NULL);
-    bitrate = intValue<ts::BitRate>(u"bitrate");
-    outfile = value(u"output");
+    getIntValue(pid, u"pid", ts::PID_NULL);
+    getFixedValue(bitrate, u"bitrate");
+    getValue(outfile, u"output");
     infiles.getArgs(*this);
     if (present(u"xml")) {
         inType = FType::XML;
@@ -187,7 +187,6 @@ int MainCode(int argc, char *argv[])
     file.setCRCValidation(opt.crc_op);
 
     // Load sections
-
     if (opt.infiles.size() == 0) {
         // Read sections from standard input.
         if (opt.inType != FType::XML && opt.inType != FType::JSON) {
@@ -226,16 +225,13 @@ int MainCode(int argc, char *argv[])
     }
 
     // Generate packets
-
     ts::TSPacket pkt;
     ts::PacketCounter count = 0;
-
     do {
         pzer.getNextPacket(pkt);
         pkt.write(std::cout, opt);
         count++;
     } while (opt.valid() && (opt.continuous || !pzer.atCycleBoundary()));
-
 
     if (opt.verbose()) {
         std::cerr << "* Generated " << ts::UString::Decimal(count) << " TS packets" << std::endl;

@@ -73,8 +73,8 @@ namespace {
 bool ts::BitrateDifferenceDVBT::operator<(const BitrateDifferenceDVBT& other) const
 {
     // If distance from target bitrate is different, use lowest.
-    if (std::abs(bitrate_diff) != std::abs(other.bitrate_diff)) {
-        return std::abs(bitrate_diff) < std::abs(other.bitrate_diff);
+    if (bitrate_diff.abs() != other.bitrate_diff.abs()) {
+        return bitrate_diff.abs() < other.bitrate_diff.abs();
     }
 
     // The two sets of parameters have the same distance from the target bitrate.
@@ -144,7 +144,7 @@ void ts::BitrateDifferenceDVBT::EvaluateToBitrate(BitrateDifferenceDVBTList& lis
                 params.tune.guard_interval = pref_guard[i_guard];
                 for (size_t i_bw = 0; i_bw < pref_bw_size; ++i_bw) {
                     params.tune.bandwidth = pref_bw[i_bw];
-                    params.bitrate_diff = int(bitrate) - int(params.tune.theoreticalBitrate());
+                    params.bitrate_diff = bitrate - params.tune.theoreticalBitrate();
                     list.push_back(params);
                 }
             }

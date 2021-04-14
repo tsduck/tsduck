@@ -352,10 +352,10 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
                 DiffPTS(ps->last_pcr_value, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
                 DiffPCR(ps->last_pcr_value, pcr_dts);
 
-            uint64_t ts_bitrate_188 = diff_values == 0 ? 0 :
-                ((_ts_pkt_cnt - ps->last_pcr_packet) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) / diff_values;
-            uint64_t ts_bitrate_204 = diff_values == 0 ? 0 :
-                ((_ts_pkt_cnt - ps->last_pcr_packet) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE * 8) / diff_values;
+            BitRate ts_bitrate_188 = diff_values == 0 ? 0 :
+                BitRate((_ts_pkt_cnt - ps->last_pcr_packet) * SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS) / diff_values;
+            BitRate ts_bitrate_204 = diff_values == 0 ? 0 :
+                BitRate((_ts_pkt_cnt - ps->last_pcr_packet) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE_BITS) / diff_values;
 
             // Clear out values older than 1 second from _packet_pcr_index_map.
             // Note that this is a map that covers PCR/DTS packets across all PIDs
@@ -396,9 +396,9 @@ bool ts::PCRAnalyzer::feedPacket(const TSPacket& pkt)
                     DiffPTS(_packet_pcr_index_map.begin()->first, pcr_dts) * SYSTEM_CLOCK_SUBFACTOR :
                     DiffPCR(_packet_pcr_index_map.begin()->first, pcr_dts);
                 _inst_ts_bitrate_188 = diff_values == 0 ? 0 :
-                    ((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) / diff_values;
+                    BitRate((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS) / diff_values;
                 _inst_ts_bitrate_204 = diff_values == 0 ? 0 :
-                    ((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE * 8) / diff_values;
+                    BitRate((_ts_pkt_cnt - _packet_pcr_index_map.begin()->second) * SYSTEM_CLOCK_FREQ * PKT_RS_SIZE_BITS) / diff_values;
             }
 
             // Check if we got enough values for this PID

@@ -348,7 +348,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"large spurious files which could clutter memory. The default is " +
          UString::Decimal(DEFAULT_MAX_FILE_SIZE) + u" bytes.");
 
-    option(u"min-bitrate", 0, UNSIGNED);
+    option<BitRate>(u"min-bitrate");
     help(u"min-bitrate",
          u"The minimum bitrate to maintain in the PID carrying the splice information tables. "
          u"By default, the PID remains inactive when there is no splice information. "
@@ -446,7 +446,7 @@ bool ts::SpliceInjectPlugin::getOptions()
     getIntValue(_inject_pid_opt, u"pid", PID_NULL);
     getIntValue(_pcr_pid_opt, u"pcr-pid", PID_NULL);
     getIntValue(_pts_pid_opt, u"pts-pid", PID_NULL);
-    getIntValue(_min_bitrate, u"min-bitrate");
+    getFixedValue(_min_bitrate, u"min-bitrate");
     getIntValue(_min_inter_packet, u"min-inter-packet");
     _delete_files = present(u"delete-files");
     _reuse_port = !present(u"no-reuse-port");
@@ -509,7 +509,7 @@ bool ts::SpliceInjectPlugin::start()
     // Interval between two splice command packets.
     const BitRate initial_bitrate = tsp->bitrate();
     if (_min_bitrate > 0 && initial_bitrate > 0) {
-        _inter_packet = std::max<PacketCounter>(1, initial_bitrate / _min_bitrate);
+        _inter_packet = std::max<PacketCounter>(1, (initial_bitrate / _min_bitrate).toInt());
     }
     else {
         _inter_packet = _min_inter_packet;
@@ -739,7 +739,7 @@ void ts::SpliceInjectPlugin::provideSection(SectionCounter counter, SectionPtr& 
     if (_min_bitrate > 0) {
         const BitRate current_bitrate = tsp->bitrate();
         if (current_bitrate > 0) {
-            _inter_packet = std::max<PacketCounter>(1, current_bitrate / _min_bitrate);
+            _inter_packet = std::max<PacketCounter>(1, (current_bitrate / _min_bitrate).toInt());
         }
     }
 

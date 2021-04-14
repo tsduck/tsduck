@@ -164,7 +164,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"the insertion is accelerated. When set to zero, insertion is never accelerated. "
          u"The default threshold is half the size of the packet queue.");
 
-    option(u"bitrate", 'b', POSITIVE);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specify the target bitrate of the merged stream, in bits/seconds. "
          u"By default, the bitrate of the merged stream is computed from its PCR. "
@@ -302,7 +302,7 @@ bool ts::MergePlugin::getOptions()
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
     _pcr_reset_backwards = present(u"pcr-reset-backwards");
     _terminate = present(u"terminate");
-    getIntValue(_user_bitrate, u"bitrate", 0);
+    getFixedValue(_user_bitrate, u"bitrate");
     tsp->useJointTermination(present(u"joint-termination"));
     getIntValues(_setLabels, u"set-label");
     getIntValues(_resetLabels, u"reset-label");

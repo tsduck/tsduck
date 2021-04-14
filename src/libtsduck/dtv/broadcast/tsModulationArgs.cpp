@@ -384,7 +384,7 @@ ts::BitRate ts::ModulationArgs::TheoreticalBitrateForModulation(Modulation modul
     // Compute bitrate. The estimated bitrate is based on 204-bit packets (include 16-bit Reed-Solomon code).
     // We return a bitrate based on 188-bit packets.
 
-    return fec_div == 0 ? 0 : BitRate((uint64_t(symbol_rate) * bitpersym * fec_mul * 188) / (fec_div * 204));
+    return fec_div == 0 ? 0 : BitRate(symbol_rate * bitpersym * fec_mul * 188) / BitRate(fec_div * 204);
 }
 
 
@@ -421,10 +421,11 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
             const uint32_t symrate = symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS);
             // Let the Dektec API compute the TS rate if we have a Dektec library.
             #if !defined(TS_NO_DTAPI)
-                int brate = 0, mod = 0, param0 = 0, param1 = 0, param2 = 0;
+                int mod = 0, param0 = 0, param1 = 0, param2 = 0;
+                Dtapi::DtFractionInt brate;
                 if (convertToDektecModulation(mod, param0, param1, param2) && Dtapi::DtapiModPars2TsRate(brate, mod, param0, param1, param2, int(symrate)) == DTAPI_OK) {
-                    // Successfully found Dektec modulation parameters and computed TS bitrate
-                    bitrate = BitRate(brate);
+                    // Successfully found Dektec modulation parameters and computed TS bitrate.
+                    FromDektecFractionInt(bitrate, brate);
                 }
             #endif
             // Otherwise, don't know how to compute DVB-S2 bitrate...
@@ -482,7 +483,7 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
             //    = (1137024 * GID * BW * BPS * FECM) / (1462272 * (GID + GIM) * FECD)
             // And 1137024 / 1462272 = 423 / 544
 
-            bitrate = BitRate((423 * guard_div * bw * bitpersym * fec_mul) / (544 * (guard_div + guard_mul) * fec_div));
+            bitrate = BitRate(423 * guard_div * bw * bitpersym * fec_mul) / BitRate(544 * (guard_div + guard_mul) * fec_div);
             break;
         }
         case DS_ISDB_S: {

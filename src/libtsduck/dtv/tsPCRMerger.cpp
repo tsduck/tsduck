@@ -125,7 +125,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
             base_pkt = ctx->last_pcr_pkt;
         }
         assert(base_pkt < main_packet_index);
-        ctx->last_pcr = base_pcr + ((main_packet_index - base_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / uint64_t(main_bitrate);
+        ctx->last_pcr = base_pcr + (((main_packet_index - base_pkt) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / main_bitrate).toInt();
         ctx->last_pcr_pkt = main_packet_index;
 
         // When --pcr-reset-backwards is specified, check if DTS or PTS have moved backwards PCR.
@@ -209,10 +209,10 @@ uint64_t ts::PCRMerger::PIDContext::adjustedPDTS(PacketCounter current_pkt, BitR
     uint64_t pts = last_pts;
     if (bitrate != 0) {
         if (dts != INVALID_DTS) {
-            dts += ((current_pkt - last_dts_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_SUBFREQ) / bitrate;
+            dts += (((current_pkt - last_dts_pkt) * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
         }
         if (pts != INVALID_PTS) {
-            pts += ((current_pkt - last_pts_pkt) * 8 * PKT_SIZE * SYSTEM_CLOCK_SUBFREQ) / bitrate;
+            pts += (((current_pkt - last_pts_pkt) * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
         }
     }
 

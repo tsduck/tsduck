@@ -108,7 +108,7 @@ void ts::jni::PluginEventHandler::handlePluginEvent(const PluginEventContext& co
         const jobject pec = env->NewObject(_pec_class, _pec_constructor,
                                            jint(context.eventCode()), jname,
                                            jint(context.pluginIndex()), jint(context.pluginCount()),
-                                           jint(context.bitrate()),
+                                           jint(context.bitrate().toInt()),
                                            jlong(context.pluginPackets()),
                                            jlong(context.totalPackets()),
                                            jboolean(read_only_data),

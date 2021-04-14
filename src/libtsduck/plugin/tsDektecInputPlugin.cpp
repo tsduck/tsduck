@@ -835,14 +835,14 @@ ts::BitRate ts::DektecInputPlugin::getBitrate()
         return 0;
     }
 
-    int bitrate;
+    int bitrate = 0;
     Dtapi::DTAPI_RESULT status = _guts->chan.GetTsRateBps(bitrate);
 
     if (status != DTAPI_OK) {
         tsp->error(u"error getting Dektec device input bitrate: %s", {DektecStrError(status)});
         return 0;
     }
-    if (_guts->got_bitrate && bitrate != int(_guts->cur_bitrate)) {
+    if (_guts->got_bitrate && bitrate != _guts->cur_bitrate) {
         tsp->verbose(u"new input bitrate: %'d b/s", {bitrate});
     }
 

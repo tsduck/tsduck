@@ -160,7 +160,7 @@ ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
              u"- Above the last threshold, any packet can be dropped.\n\n"
              u"Note: All thresholds, except the last one, can be disabled using a 0 value.\n");
 
-    option(u"bitrate", 'b', INTEGER, 1, 1, 100, UNLIMITED_VALUE);
+    option<BitRate>(u"bitrate", 'b', 1, 1, 100);
     help(u"bitrate",
          u"Limit the overall bitrate of the transport stream to the specified value "
          u"in bits/second. This is a mandatory option, there is no default.");
@@ -205,21 +205,18 @@ bool ts::LimitPlugin::start()
 {
     // Get option values
     _useWallClock = present(u"wall-clock");
-    _maxBitrate = intValue<BitRate>(u"bitrate");
-    _threshold1 = intValue<PacketCounter>(u"threshold1", DEFAULT_THRESHOLD1);
-    _threshold2 = intValue<PacketCounter>(u"threshold2", DEFAULT_THRESHOLD2);
-    _threshold3 = intValue<PacketCounter>(u"threshold3", DEFAULT_THRESHOLD3);
-    _threshold4 = intValue<PacketCounter>(u"threshold4", DEFAULT_THRESHOLD4);
+    getFixedValue(_maxBitrate, u"bitrate");
+    getIntValue(_threshold1, u"threshold1", DEFAULT_THRESHOLD1);
+    getIntValue(_threshold2, u"threshold2", DEFAULT_THRESHOLD2);
+    getIntValue(_threshold3, u"threshold3", DEFAULT_THRESHOLD3);
+    getIntValue(_threshold4, u"threshold4", DEFAULT_THRESHOLD4);
     getIntValues(_pids1, u"pid");
 
     if (_threshold4 < 1) {
         tsp->error(u"the last threshold can't be disabled");
         return false;
     }
-    if (_threshold4 < _threshold1 ||
-        (_threshold4 < _threshold3 && _pids1.any()) ||
-        (_threshold4 < _threshold2 && _pids1.any()))
-    {
+    if (_threshold4 < _threshold1 || (_threshold4 < _threshold3 && _pids1.any()) || (_threshold4 < _threshold2 && _pids1.any())) {
         tsp->error(u"the last threshold can't be less than others");
         return false;
     }
@@ -333,8 +330,8 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 void ts::LimitPlugin::addExcessBits(uint64_t bits)
 {
     _excessBits += bits;
-    _excessPackets += _excessBits / (8 * PKT_SIZE);
-    _excessBits %= 8 * PKT_SIZE;
+    _excessPackets += _excessBits / PKT_SIZE_BITS;
+    _excessBits %= PKT_SIZE_BITS;
 }
 
 
@@ -381,7 +378,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
         _bitsSecond += PKT_SIZE_BITS;
         if (_bitsSecond > _maxBitrate) {
             // This packet is in excess, at least partially.
-            const size_t excess = _bitsSecond - _maxBitrate;
+            const size_t excess = (_bitsSecond - _maxBitrate).toInt();
             addExcessBits(excess < PKT_SIZE_BITS ? excess : PKT_SIZE_BITS);
         }
     }
@@ -394,7 +391,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
         if (pc->pcrValue != INVALID_PCR && pc->pcrValue < pcr) {
             // We compute TS instant bitrate using only two consecutive PCR's
             // in one single PID. This can be not always precise. To be improved maybe.
-            const BitRate newBitrate = BitRate(((_currentPacket - pc->pcrPacket) * 8 * PKT_SIZE * SYSTEM_CLOCK_FREQ) / (pcr - pc->pcrValue));
+            const BitRate newBitrate = BitRate((_currentPacket - pc->pcrPacket) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / BitRate(pcr - pc->pcrValue);
 
             // Report state change.
             if (_curBitrate > _maxBitrate && newBitrate <= _maxBitrate) {
@@ -421,9 +418,9 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
                 assert(_currentPacket > _excessPoint);
                 assert(_curBitrate > 0);
                 // Number of actual bits since the last "excess point":
-                const uint64_t bits = (_currentPacket - _excessPoint) * 8 * PKT_SIZE;
+                const uint64_t bits = (_currentPacket - _excessPoint) * PKT_SIZE_BITS;
                 // Number of bits in excess, based on maximum bandwidth:
-                addExcessBits((bits * (_curBitrate - _maxBitrate)) / _curBitrate);
+                addExcessBits(((bits * (_curBitrate - _maxBitrate)) / _curBitrate).toInt());
                 // Last time we computed the excess packets is remembered.
                 _excessPoint = _currentPacket;
             }

@@ -143,9 +143,12 @@ extern "C" {
     extern const int TSDUCKDLL tsduckLibraryVersionCommit;
 
     //! @cond nodoxygen
+    #define TS_SYM2(a,b) TS_SYM2a(a,b)
+    #define TS_SYM2a(a,b) a##_##b
     #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
     #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
     #define TSDUCK_LIBRARY_VERSION_SYMBOL TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT)
+    #define TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL TS_SYM2(TSDUCK_LIBRARY_BITRATE_DECIMALS,TS_BITRATE_DECIMALS)
     //! @endcond
 
     //!
@@ -162,6 +165,13 @@ extern "C" {
     //! @endcode
     //!
     extern const int TSDUCKDLL TSDUCK_LIBRARY_VERSION_SYMBOL;
+
+    //!
+    //! Generate a dependency on the bitrate precision.
+    //! Enforcing this dependency prevents mixing binaries which
+    //! were compiled using different precisions.
+    //!
+    extern const int TSDUCKDLL TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL;
 }
 
 //!
@@ -180,4 +190,6 @@ extern "C" {
 //!
 //! @hideinitializer
 //!
-#define TS_LIBCHECK() TS_STATIC_REFERENCE(&TSDUCK_LIBRARY_VERSION_SYMBOL)
+#define TS_LIBCHECK() \
+    TS_STATIC_REFERENCE(version, &TSDUCK_LIBRARY_VERSION_SYMBOL); \
+    TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL)
