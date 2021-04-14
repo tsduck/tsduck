@@ -55,6 +55,7 @@ public:
     void testSignExtend();
     void testBitSize();
     void testPower10();
+    void testBoundedCast();
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
     TSUNIT_TEST(testMakeSigned);
@@ -65,6 +66,7 @@ public:
     TSUNIT_TEST(testSignExtend);
     TSUNIT_TEST(testBitSize);
     TSUNIT_TEST(testPower10);
+    TSUNIT_TEST(testBoundedCast);
     TSUNIT_TEST_END();
 };
 
@@ -265,4 +267,16 @@ void IntegerUtilsTest::testPower10()
     TSUNIT_EQUAL(1000000, (ts::static_power10<uint32_t, 6>::value));
     TSUNIT_EQUAL(1000000, (ts::static_power10<uint64_t, 6>::value));
     TSUNIT_EQUAL(TS_UCONST64(1000000000000000), (ts::static_power10<uint64_t, 15>::value));
+}
+
+void IntegerUtilsTest::testBoundedCast()
+{
+    TSUNIT_EQUAL(20, ts::bounded_cast<uint8_t>(int(20)));
+    TSUNIT_EQUAL(0, ts::bounded_cast<uint8_t>(-20));
+    TSUNIT_EQUAL(255, ts::bounded_cast<uint8_t>(2000));
+
+    TSUNIT_EQUAL(-128, ts::bounded_cast<int8_t>(int16_t(-1000)));
+    TSUNIT_EQUAL(-100, ts::bounded_cast<int8_t>(int16_t(-100)));
+    TSUNIT_EQUAL(100, ts::bounded_cast<int8_t>(int16_t(100)));
+    TSUNIT_EQUAL(127, ts::bounded_cast<int8_t>(int16_t(1000)));
 }

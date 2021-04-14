@@ -2208,6 +2208,8 @@ void UStringTest::testFixedPoint()
     TSUNIT_EQUAL(u"1,234",          ts::UString::Fixed(Fix3(1234)));
     TSUNIT_EQUAL(u"1,234.5",        ts::UString::Fixed(Fix3(1234500, true)));
     TSUNIT_EQUAL(u"1,234.567",      ts::UString::Fixed(Fix3(1234567, true)));
+    TSUNIT_EQUAL(u"-1,234.567",     ts::UString::Fixed(Fix3(-1234567, true)));
+    TSUNIT_EQUAL(u"-1,234.432",     ts::UString::Fixed(Fix3(-1234432, true)));
     TSUNIT_EQUAL(u"   -56|789.000", ts::UString::Fixed(Fix3(-56789), 14, true, u"|", true, true));
     TSUNIT_EQUAL(u"   +56|789.000", ts::UString::Fixed(Fix3(56789), 14, true, u"|", true, true));
 

@@ -72,6 +72,16 @@ namespace ts {
         static constexpr int_t FACTOR = ts::static_power10<int_t, PRECISION>::value;
 
         //!
+        //! The minimum representable value of this fixed-point type.
+        //!
+        static const FixedPoint MIN;
+
+        //!
+        //! The maximum representable value of this fixed-point type.
+        //!
+        static const FixedPoint MAX;
+
+        //!
         //! Default constructor, implicitly initialized to zero.
         //!
         FixedPoint() : _value(0) {}
@@ -82,7 +92,7 @@ namespace ts {
         //! @param [in] i Initial value in integral number of units which is converted into the fixed-precision representation.
         //!
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
-        FixedPoint(INT2 i) : _value(int_t(i) * FACTOR) {}
+        FixedPoint(INT2 i) : _value(bounded_cast<int_t>(int64_t(i) * FACTOR)) {}
 
         //!
         //! Constructor.
@@ -109,6 +119,31 @@ namespace ts {
         //! @return The absolute value of this fixed-point number.
         //!
         FixedPoint abs() const { return _value >= 0 ? *this : FixedPoint(- _value, true); }
+
+        //!
+        //! Check if this fixed-point number generates an overflow when multiplied by an integer.
+        //! @tparam INT2 Another integer type.
+        //! @param [in] x An integer of type @a INT2.
+        //! @return True if this fixed-point number generates an overflow when multiplied by @a x.
+        //!
+        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        bool mulOverflow(INT2 x) const {
+            const int_t res = _value * int_t(x);
+            return _value != 0 && res / _value != int_t(x);
+        }
+
+        //!
+        //! Check if this fixed-point number generates an overflow when multiplied by another fixed-point.
+        //! @param [in] x Another fixed-point number.
+        //! @return True if this fixed-point number generates an overflow when multiplied by @a x.
+        //!
+        bool mulOverflow(FixedPoint x) const { return mulOverflow(x._value); }
+
+        //!
+        //! Check if this fixed-point number generates an overflow when divided by any other fixed-point.
+        //! @return True if this fixed-point number generates an overflow when divided by any other fixed-point.
+        //!
+        bool divOverflow() const { return mulOverflow(FACTOR); }
 
         //! @cond nodoxygen
         // The operators are not extensively documented with doxygen (obvious, verbose and redundant).

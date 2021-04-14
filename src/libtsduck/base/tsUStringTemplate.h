@@ -886,7 +886,7 @@ ts::UString ts::UString::FixedImpl(INT raw_value,
     UString s(Decimal(raw_value / factor, 0, true, separator, force_sign));
 
     // Get the decimal part.
-    INT dec = raw_value % factor;
+    INT dec = std::abs(raw_value % factor);
 
     // If requested decimals is smaller than precision, reduce the decimal part.
     while (precision > decimals) {

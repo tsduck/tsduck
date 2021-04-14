@@ -36,3 +36,9 @@ constexpr size_t ts::FixedPoint<INT,PREC,N>::PRECISION;
 template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
 constexpr INT ts::FixedPoint<INT,PREC,N>::FACTOR;
 #endif
+
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
+const ts::FixedPoint<INT,PREC,N> ts::FixedPoint<INT,PREC,N>::MIN(std::numeric_limits<INT>::min(), true);
+
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
+const ts::FixedPoint<INT,PREC,N> ts::FixedPoint<INT,PREC,N>::MAX(std::numeric_limits<INT>::max(), true);

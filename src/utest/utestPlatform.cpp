@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for tsPlatform.h and tsMemory.h
+//  TSUnit test suite for tsPlatform.h, tsRotate.h and tsMemory.h
 //
 //----------------------------------------------------------------------------
 

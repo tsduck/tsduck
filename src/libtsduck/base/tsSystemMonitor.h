@@ -112,11 +112,11 @@ namespace ts {
 
         // Private members
         Report&    _report;
-        PeriodList _periods;    // List of monitoring periods, constant after constructor.
-        bool       _valid;      // Configuration is valid.
+        UString    _config_file;  // XML configuration file name.
+        PeriodList _periods;      // List of monitoring periods.
         Mutex      _mutex;
-        Condition  _wake_up;    // Accessed under mutex.
-        bool       _terminate;  // Accessed under mutex.
+        Condition  _wake_up;      // Accessed under mutex.
+        bool       _terminate;    // Accessed under mutex.
 
         // Inherited from Thread
         virtual void main() override;
