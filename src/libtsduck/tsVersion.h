@@ -44,7 +44,7 @@
 //!
 //! TSDuck commit number (automatically updated by Git hooks).
 //!
-#define TS_COMMIT 2343
+#define TS_COMMIT 2344
 //!
 //! Define the precision (number of decimal digits) of bitrate values.
 //! Bitrates are defined as fixed-point numbers of a given compile-time precision.

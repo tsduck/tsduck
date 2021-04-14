@@ -89,7 +89,7 @@ ts::PacketInsertionController::BitRateControl::BitRateControl(Report& report, co
 
 size_t ts::PacketInsertionController::BitRateControl::diffPercent(BitRate rate) const
 {
-    return size_t(std::abs(((int64_t(rate) - int64_t(_average)) * 100) / int64_t(_average)));
+    return size_t((((rate - _average) * 100) / _average).abs().toInt());
 }
 
 bool ts::PacketInsertionController::BitRateControl::setBitRate(BitRate rate)
@@ -111,17 +111,17 @@ bool ts::PacketInsertionController::BitRateControl::setBitRate(BitRate rate)
             _report.verbose(u"%s bitrate reset to %'d b/s (was %'d b/s)", {_name, rate, _average});
         }
         _count = 1;
-        _value_0 = int64_t(rate);
+        _value_0 = rate;
         _diffs = 0;
         _average = rate;
         return false; // reset
     }
     else {
         _count++;
-        _diffs += int64_t(rate) - _value_0;
-        const int64_t new_average = _value_0 + _diffs / _count;
+        _diffs += rate - _value_0;
+        const BitRate new_average = _value_0 + _diffs / _count;
         if (new_average > 0) {
-            _average = BitRate(new_average);
+            _average = new_average;
         }
         // Report bitrate adjustment over 1% only.
         if (diffPercent(rate) > 1) {

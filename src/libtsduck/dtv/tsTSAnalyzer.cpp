@@ -1518,9 +1518,7 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
         // If last PCR valid, compute transport rate between the two
         if (ps->last_pcr != 0 && ps->last_pcr < pcr) {
             // Compute transport rate in b/s since last PCR
-            uint64_t ts_bitrate =
-                (uint64_t(packet_index - ps->last_pcr_pkt) * SYSTEM_CLOCK_FREQ * PKT_SIZE * 8) /
-                (pcr - ps->last_pcr);
+            BitRate ts_bitrate = BitRate((packet_index - ps->last_pcr_pkt) * SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS) / (pcr - ps->last_pcr);
             // Per-PID statistics:
             ps->ts_bitrate_sum += ts_bitrate;
             ps->ts_bitrate_cnt++;
@@ -1611,7 +1609,7 @@ void ts::TSAnalyzer::recomputeStatistics()
     _ts_pcr_bitrate_188 = _ts_bitrate_cnt == 0 ? 0 : BitRate(_ts_bitrate_sum / _ts_bitrate_cnt);
     _ts_pcr_bitrate_204 = _ts_bitrate_cnt == 0 ? 0 : BitRate((_ts_bitrate_sum * PKT_RS_SIZE) / (_ts_bitrate_cnt * PKT_SIZE));
     _ts_bitrate = _ts_user_bitrate != 0 ? _ts_user_bitrate : _ts_pcr_bitrate_188;
-    _duration = _ts_bitrate == 0 ? 0 : (8000 * PKT_SIZE * uint64_t(_ts_pkt_cnt)) / _ts_bitrate;
+    _duration = _ts_bitrate == 0 ? 0 : ((MilliSecPerSec * PKT_SIZE_BITS * _ts_pkt_cnt) / _ts_bitrate).toInt();
 
     // Reinitialize all service information that will be updated PID by PID
     for (ServiceContextMap::iterator it = _services.begin(); it != _services.end(); ++it) {
@@ -1638,12 +1636,12 @@ void ts::TSAnalyzer::recomputeStatistics()
 
         // Compute TS bitrate from the PCR's of this PID
         if (pc.ts_bitrate_cnt != 0) {
-            pc.ts_pcr_bitrate = uint32_t(pc.ts_bitrate_sum / pc.ts_bitrate_cnt);
+            pc.ts_pcr_bitrate = pc.ts_bitrate_sum / pc.ts_bitrate_cnt;
         }
 
         // Compute average PID bitrate
         if (_ts_pkt_cnt != 0) {
-            pc.bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(pc.ts_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
+            pc.bitrate = (_ts_bitrate * pc.ts_pkt_cnt) / _ts_pkt_cnt;
         }
 
         // Compute average crypto-period for this PID
@@ -1700,9 +1698,9 @@ void ts::TSAnalyzer::recomputeStatistics()
 
     // Complete unreferenced and global PID's bitrates
     if (_ts_pkt_cnt != 0) {
-        _global_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_global_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
-        _psisi_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_psisi_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
-        _unref_bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(_unref_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
+        _global_bitrate = (_ts_bitrate * _global_pkt_cnt) / _ts_pkt_cnt;
+        _psisi_bitrate = (_ts_bitrate * _psisi_pkt_cnt) / _ts_pkt_cnt;
+        _unref_bitrate = (_ts_bitrate * _unref_pkt_cnt) / _ts_pkt_cnt;
     }
 
     // Complete all service information
@@ -1720,7 +1718,7 @@ void ts::TSAnalyzer::recomputeStatistics()
             sci->second->bitrate = 0;
         }
         else {
-            sci->second->bitrate = uint32_t((uint64_t(_ts_bitrate) * uint64_t(sci->second->ts_pkt_cnt)) / uint64_t(_ts_pkt_cnt));
+            sci->second->bitrate = (_ts_bitrate * sci->second->ts_pkt_cnt) / _ts_pkt_cnt;
         }
     }
 

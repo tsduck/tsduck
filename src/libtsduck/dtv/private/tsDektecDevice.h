@@ -54,6 +54,7 @@ namespace ts {
     //! Vector of Dtapi::DtHwFuncDesc.
     //!
     typedef std::vector<Dtapi::DtHwFuncDesc> DektecPortDescVector;
+
     //!
     //! Get the error message corresponding to a DTAPI error code
     //! @param [in] code DTAPI error code.

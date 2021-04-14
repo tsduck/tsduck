@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.26-2326
+VERSION 3.26-2344
 
 [NEW] New commands and plugins:
 
@@ -16,6 +16,8 @@ VERSION 3.26-2326
     CPU or memory misbehavior.
   * When the environment variable TSDUCK_NO_USER_CONFIG is defined to some
     non-empty value, the user's configuration file is not loaded.
+  * Bitrates are now handled, entered and computed with one decimal digit.
+    The increased precision was required by some modulations.
   * New options in exiting commands and plugins:
     - Option --event-code in plugins "mpe", "psi" and "tables".
     - Options --min-bitrate and --min-inter-packet in plugin "spliceinject".

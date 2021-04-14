@@ -158,7 +158,7 @@ void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 
         if (bitrate_flag && buf.canReadBytes(1)) {
             // Bitrate unit is 1/4 Mb/s.
-            const BitRate mbr = buf.getUInt8();
+            const uint32_t mbr = buf.getUInt8();
             disp << margin << UString::Format(u"Maximum bitrate: %d (%'d b/s)", {mbr, mbr * 250000}) << std::endl;
         }
         if (comp_flag) {
@@ -170,7 +170,7 @@ void ts::DigitalCopyControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
                 buf.skipBits(1);
                 disp << margin << UString::Format(u"  User-defined: 0x%1X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
                 if (bflag && buf.canReadBytes(1)) {
-                    const BitRate mbr = buf.getUInt8();
+                    const uint32_t mbr = buf.getUInt8();
                     disp << margin << UString::Format(u"  Maximum bitrate: %d (%'d b/s)", {mbr, mbr * 250000}) << std::endl;
                 }
             }

@@ -146,7 +146,7 @@ ts::BitRate ts::tsp::InputExecutor::getBitrate()
         }
         else {
             // Need to adjust with artificial input stuffing.
-            return BitRate((uint64_t(bitrate) * uint64_t(_options.instuff_nullpkt + _options.instuff_inpkt)) / uint64_t(_options.instuff_inpkt));
+            return (bitrate * (_options.instuff_nullpkt + _options.instuff_inpkt)) / _options.instuff_inpkt;
         }
     }
 

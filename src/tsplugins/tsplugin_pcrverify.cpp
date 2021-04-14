@@ -135,7 +135,7 @@ ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
          u"Use absolute values in PCR unit. By default, use micro-second equivalent "
          u"values (one micro-second = 27 PCR units).");
 
-    option(u"bitrate", 'b', POSITIVE);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Verify the PCR's according to this transport bitrate. "
          u"By default, use the input bitrate as reported by the input device.");
@@ -183,9 +183,9 @@ bool ts::PCRVerifyPlugin::getOptions()
 {
     _absolute = present(u"absolute");
     _input_synch = present(u"input-synchronous");
-    _jitter_max = intValue<int64_t>(u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
-    _jitter_unreal = intValue<int64_t>(u"jitter-unreal", _absolute ? DEFAULT_JITTER_UNREAL : DEFAULT_JITTER_UNREAL_US);
-    _bitrate = intValue<BitRate>(u"bitrate", 0);
+    getIntValue(_jitter_max, u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
+    getIntValue(_jitter_unreal, u"jitter-unreal", _absolute ? DEFAULT_JITTER_UNREAL : DEFAULT_JITTER_UNREAL_US);
+    getFixedValue(_bitrate, u"bitrate", 0);
     _time_stamp = present(u"time-stamp");
     getIntValues(_pid_list, u"pid", true); // all PID's set by default
 
@@ -252,7 +252,7 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
         next_pc.pcr_timesource = pkt_data.getInputTimeSource();
 
         // Current bitrate is needed if not --input-synchronous. Use signed 64-bit for jitter computation.
-        const int64_t bitrate = int64_t(_bitrate != 0 || _input_synch ? _bitrate : tsp->bitrate());
+        const int64_t bitrate = (_bitrate != 0 || _input_synch ? _bitrate : tsp->bitrate()).toInt();
 
         // Compare this PCR with previous one to compute the jitter.
         if (pc.pcr_value == INVALID_PCR) {
@@ -294,12 +294,12 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
                 // Compute jitter based on "locally stable" bitrate.
                 // sysclock = 27 MHz = 27,000,000 = SYSTEM_CLOCK_FREQ
                 // seconds = bits / bitrate
-                // bits = (pkt2 - pkt1) * PKT_SIZE * 8
+                // bits = (pkt2 - pkt1) * PKT_SIZE_BITS
                 // epcr2 = expected pcr2 based on bitrate
                 //       = pcr1 + (seconds * sysclock)
                 //       = pcr1 + (bits * sysclock) / bitrate
-                //       = pcr1 + ((pkt2 - pkt1) * PKT_SIZE * 8 * sysclock) / bitrate
-                const int64_t epcr2 = pcr1 + (int64_t(next_pc.pcr_packet - pc.pcr_packet) * PKT_SIZE * 8 * SYSTEM_CLOCK_FREQ) / bitrate;
+                //       = pcr1 + ((pkt2 - pkt1) * PKT_SIZE_BITS * sysclock) / bitrate
+                const int64_t epcr2 = pcr1 + (int64_t(next_pc.pcr_packet - pc.pcr_packet) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / bitrate;
                 // Jitter = difference between actual and expected pcr2
                 jitter = pcr2 - epcr2;
             }
@@ -316,12 +316,14 @@ ts::ProcessorPlugin::Status ts::PCRVerifyPlugin::processPacket(TSPacket& pkt, TS
                 _nb_pcr_nok++;
                 // Jitter in bits at current bitrate
                 const int64_t bit_jit = (ajit * bitrate) / SYSTEM_CLOCK_FREQ;
-                tsp->info(u"%sPID %d (0x%X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits (%s time)",
-                          {_time_stamp ? (Time::CurrentLocalTime().format(Time::DATE | Time::TIME) + u", ") : u"",
-                           pid, pid,
+                tsp->info(u"%sPID %d (0x%<X), PCR jitter: %'d = %'d micro-seconds = %'d packets + %'d bytes + %'d bits (%s time)", {
+                          _time_stamp ? (Time::CurrentLocalTime().format(Time::DATE | Time::TIME) + u", ") : u"",
+                          pid,
                           jitter,
                           ajit / PCR_PER_MICRO_SEC,
-                          bit_jit / (PKT_SIZE * 8), (bit_jit / 8) % PKT_SIZE, bit_jit % 8,
+                          bit_jit / PKT_SIZE_BITS,
+                          (bit_jit / 8) % PKT_SIZE,
+                          bit_jit % 8,
                           TimeSourceEnum.name(next_pc.pcr_timesource)});
             }
         }

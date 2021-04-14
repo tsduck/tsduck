@@ -68,7 +68,7 @@ namespace ts {
         // the results are not significantly different. We ignore new results
         // which vary only by less than the following factor.
 
-        static constexpr BitRate REPORT_THRESHOLD = 500000; // 100 b/s on a 50 Mb/s stream
+        static constexpr BitRate::int_t REPORT_THRESHOLD = 500000; // 100 b/s on a 50 Mb/s stream
     };
 }
 
@@ -136,7 +136,6 @@ bool ts::PCRBitratePlugin::start()
 
 ts::BitRate ts::PCRBitratePlugin::getBitrate()
 {
-    tsp->debug(u"getBitrate() called, returning %'d b/s", {_bitrate});
     return _bitrate;
 }
 
@@ -155,7 +154,7 @@ ts::ProcessorPlugin::Status ts::PCRBitratePlugin::processPacket(TSPacket& pkt, T
         _pcr_analyzer.reset();
 
         // If the new bitrate is too close to the previous recorded one, no need to signal it.
-        if (new_bitrate != _bitrate && (new_bitrate / ::abs(int32_t(new_bitrate) - int32_t(_bitrate))) < REPORT_THRESHOLD) {
+        if (new_bitrate != _bitrate && (new_bitrate / (new_bitrate - _bitrate)).abs() < REPORT_THRESHOLD) {
             // New bitrate is significantly different, signal it.
             tsp->verbose(u"new bitrate from %s analysis: %'d b/s", {_pcr_name, new_bitrate});
             _bitrate = new_bitrate;

@@ -210,8 +210,8 @@ namespace ts {
             uint8_t  cur_continuity;   // Current continuity counter
             uint64_t last_pcr_value;   // Last PCR/DTS value in this PID
             uint64_t last_pcr_packet;  // Packet index containing last PCR/DTS
-            uint64_t ts_bitrate_188;   // Sum of all computed TS bitrates (188-byte)
-            uint64_t ts_bitrate_204;   // Sum of all computed TS bitrates (204-byte)
+            BitRate  ts_bitrate_188;   // Sum of all computed TS bitrates (188-byte)
+            BitRate  ts_bitrate_204;   // Sum of all computed TS bitrates (204-byte)
             uint64_t ts_bitrate_cnt;   // Count of computed TS bitrates
         };
 
@@ -222,11 +222,11 @@ namespace ts {
         size_t   _min_pcr;             // Min # of PCR per PID
         bool     _bitrate_valid;       // Bitrate evaluation is valid
         uint64_t _ts_pkt_cnt;          // Total TS packets count
-        uint64_t _ts_bitrate_188;      // Sum of all computed TS bitrates (188-byte)
-        uint64_t _ts_bitrate_204;      // Sum of all computed TS bitrates (204-byte)
+        BitRate  _ts_bitrate_188;      // Sum of all computed TS bitrates (188-byte)
+        BitRate  _ts_bitrate_204;      // Sum of all computed TS bitrates (204-byte)
         uint64_t _ts_bitrate_cnt;      // Count of computed bitrates
-        uint64_t _inst_ts_bitrate_188; // Sum of all computed TS bitrates (188-byte) for last second
-        uint64_t _inst_ts_bitrate_204; // Sum of all computed TS bitrates (204-byte) for last second
+        BitRate  _inst_ts_bitrate_188; // Sum of all computed TS bitrates (188-byte) for last second
+        BitRate  _inst_ts_bitrate_204; // Sum of all computed TS bitrates (204-byte) for last second
         size_t   _completed_pids;      // Number of PIDs with enough PCRs
         size_t   _pcr_pids;            // Number of PIDs with PCRs
         size_t   _discontinuities;     // Number of discontinuities

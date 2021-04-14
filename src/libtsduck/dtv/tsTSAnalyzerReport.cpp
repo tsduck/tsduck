@@ -488,7 +488,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
             crypto_period = UString::Format(u"%d pkt", {pc.crypto_period});
         }
         else {
-            crypto_period = UString::Format(u"%d sec", {(pc.crypto_period * PKT_SIZE * 8) / _ts_bitrate});
+            crypto_period = UString::Format(u"%d sec", {((pc.crypto_period * PKT_SIZE_BITS) / _ts_bitrate).toInt()});
         }
 
         // Header lines
@@ -815,12 +815,12 @@ void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::o
         << "transporterrors=" << _transport_errors << ":"
         << "suspectignored=" << _suspect_ignored << ":"
         << "bytes=" << (PKT_SIZE * _ts_pkt_cnt) << ":"
-        << "bitrate=" << _ts_bitrate << ":"
-        << "bitrate204=" << ToBitrate204(_ts_bitrate) << ":"
-        << "userbitrate=" << _ts_user_bitrate << ":"
-        << "userbitrate204=" << ToBitrate204(_ts_user_bitrate) << ":"
-        << "pcrbitrate=" << _ts_pcr_bitrate_188 << ":"
-        << "pcrbitrate204=" << _ts_pcr_bitrate_204 << ":"
+        << "bitrate=" << _ts_bitrate.toInt() << ":"
+        << "bitrate204=" << ToBitrate204(_ts_bitrate).toInt() << ":"
+        << "userbitrate=" << _ts_user_bitrate.toInt() << ":"
+        << "userbitrate204=" << ToBitrate204(_ts_user_bitrate).toInt() << ":"
+        << "pcrbitrate=" << _ts_pcr_bitrate_188.toInt() << ":"
+        << "pcrbitrate204=" << _ts_pcr_bitrate_204.toInt() << ":"
         << "duration=" << (_duration / 1000) << ":";
     if (!_country_code.empty()) {
         stm << "country=" << _country_code << ":";
@@ -845,8 +845,8 @@ void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::o
         << "clearpids=" << (_global_pid_cnt - _global_scr_pids) << ":"
         << "scrambledpids=" << _global_scr_pids << ":"
         << "packets=" << _global_pkt_cnt << ":"
-        << "bitrate=" << _global_bitrate << ":"
-        << "bitrate204=" << ToBitrate204(_global_bitrate) << ":"
+        << "bitrate=" << _global_bitrate.toInt() << ":"
+        << "bitrate204=" << ToBitrate204(_global_bitrate).toInt() << ":"
         << "access=" << (_global_scr_pids > 0 ? "scrambled" : "clear") << ":"
         << "pidlist=";
     bool first = true;
@@ -865,8 +865,8 @@ void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::o
         << "clearpids=" << (_unref_pid_cnt - _unref_scr_pids) << ":"
         << "scrambledpids=" << _unref_scr_pids << ":"
         << "packets=" << _unref_pkt_cnt << ":"
-        << "bitrate=" << _unref_bitrate << ":"
-        << "bitrate204=" << ToBitrate204(_unref_bitrate) << ":"
+        << "bitrate=" << _unref_bitrate.toInt() << ":"
+        << "bitrate204=" << ToBitrate204(_unref_bitrate).toInt() << ":"
         << "access=" << (_unref_scr_pids > 0 ? "scrambled" : "clear") << ":"
         << "pidlist=";
     first = true;
@@ -891,8 +891,8 @@ void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::o
             << "clearpids=" << (sv.pid_cnt - sv.scrambled_pid_cnt) << ":"
             << "scrambledpids=" << sv.scrambled_pid_cnt << ":"
             << "packets=" << sv.ts_pkt_cnt << ":"
-            << "bitrate=" << sv.bitrate << ":"
-            << "bitrate204=" << ToBitrate204(sv.bitrate) << ":"
+            << "bitrate=" << sv.bitrate.toInt() << ":"
+            << "bitrate204=" << ToBitrate204(sv.bitrate).toInt() << ":"
             << "servtype=" << int(sv.service_type) << ":";
         if (sv.carry_ssu) {
             stm << "ssu:";
@@ -945,7 +945,7 @@ void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::o
         }
         stm << "access=" << (pc.scrambled ? "scrambled" : "clear") << ":";
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {
-            stm << "cryptoperiod=" << ((pc.crypto_period * PKT_SIZE * 8) / _ts_bitrate) << ":";
+            stm << "cryptoperiod=" << ((pc.crypto_period * PKT_SIZE_BITS) / _ts_bitrate).toInt() << ":";
         }
         if (pc.same_stream_id) {
             stm << "streamid=" << int(pc.pes_stream_id) << ":";
@@ -995,8 +995,8 @@ void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::o
                 stm << ":";
             }
         }
-        stm << "bitrate=" << pc.bitrate << ":"
-            << "bitrate204=" << ToBitrate204(pc.bitrate) << ":"
+        stm << "bitrate=" << pc.bitrate.toInt() << ":"
+            << "bitrate204=" << ToBitrate204(pc.bitrate).toInt() << ":"
             << "packets=" << pc.ts_pkt_cnt << ":"
             << "clear=" << (pc.ts_pkt_cnt - pc.ts_sc_cnt - pc.inv_ts_sc_cnt) << ":"
             << "scrambled=" << pc.ts_sc_cnt << ":"
@@ -1077,12 +1077,12 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
         root.query(u"ts", true).add(u"id", _ts_id);
     }
     root.query(u"ts", true).add(u"bytes", PKT_SIZE * _ts_pkt_cnt);
-    root.query(u"ts", true).add(u"bitrate", _ts_bitrate);
-    root.query(u"ts", true).add(u"bitrate-204", ToBitrate204(_ts_bitrate));
-    root.query(u"ts", true).add(u"user-bitrate", _ts_user_bitrate);
-    root.query(u"ts", true).add(u"user-bitrate-204", ToBitrate204(_ts_user_bitrate));
-    root.query(u"ts", true).add(u"pcr-bitrate", _ts_pcr_bitrate_188);
-    root.query(u"ts", true).add(u"pcr-bitrate-204", _ts_pcr_bitrate_204);
+    root.query(u"ts", true).add(u"bitrate", _ts_bitrate.toInt());
+    root.query(u"ts", true).add(u"bitrate-204", ToBitrate204(_ts_bitrate).toInt());
+    root.query(u"ts", true).add(u"user-bitrate", _ts_user_bitrate.toInt());
+    root.query(u"ts", true).add(u"user-bitrate-204", ToBitrate204(_ts_user_bitrate).toInt());
+    root.query(u"ts", true).add(u"pcr-bitrate", _ts_pcr_bitrate_188.toInt());
+    root.query(u"ts", true).add(u"pcr-bitrate-204", _ts_pcr_bitrate_204.toInt());
     root.query(u"ts", true).add(u"duration", _duration / 1000);
     if (!_country_code.empty()) {
         root.query(u"ts", true).add(u"country", _country_code);
@@ -1109,8 +1109,8 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
     root.query(u"ts.pids.global", true).add(u"clear", _global_pid_cnt - _global_scr_pids);
     root.query(u"ts.pids.global", true).add(u"scrambled", _global_scr_pids);
     root.query(u"ts.pids.global", true).add(u"packets", _global_pkt_cnt);
-    root.query(u"ts.pids.global", true).add(u"bitrate", _global_bitrate);
-    root.query(u"ts.pids.global", true).add(u"bitrate-204", ToBitrate204(_global_bitrate));
+    root.query(u"ts.pids.global", true).add(u"bitrate", _global_bitrate.toInt());
+    root.query(u"ts.pids.global", true).add(u"bitrate-204", ToBitrate204(_global_bitrate).toInt());
     root.query(u"ts.pids.global", true).add(u"is-scrambled", json::Bool(_global_scr_pids > 0));
     for (auto it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc(*it->second);
@@ -1124,8 +1124,8 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
     root.query(u"ts.pids.unreferenced", true).add(u"clear", _unref_pid_cnt - _unref_scr_pids);
     root.query(u"ts.pids.unreferenced", true).add(u"scrambled", _unref_scr_pids);
     root.query(u"ts.pids.unreferenced", true).add(u"packets", _unref_pkt_cnt);
-    root.query(u"ts.pids.unreferenced", true).add(u"bitrate", _unref_bitrate);
-    root.query(u"ts.pids.unreferenced", true).add(u"bitrate-204", ToBitrate204(_unref_bitrate));
+    root.query(u"ts.pids.unreferenced", true).add(u"bitrate", _unref_bitrate.toInt());
+    root.query(u"ts.pids.unreferenced", true).add(u"bitrate-204", ToBitrate204(_unref_bitrate).toInt());
     root.query(u"ts.pids.unreferenced", true).add(u"is-scrambled", json::Bool(_unref_scr_pids > 0));
     for (auto it = _pids.begin(); it != _pids.end(); ++it) {
         const PIDContext& pc (*it->second);
@@ -1164,8 +1164,8 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
         jv.query(u"components", true).add(u"clear", sv.pid_cnt - sv.scrambled_pid_cnt);
         jv.query(u"components", true).add(u"scrambled", sv.scrambled_pid_cnt);
         jv.add(u"packets", sv.ts_pkt_cnt);
-        jv.add(u"bitrate", sv.bitrate);
-        jv.add(u"bitrate-204", ToBitrate204(sv.bitrate));
+        jv.add(u"bitrate", sv.bitrate.toInt());
+        jv.add(u"bitrate-204", ToBitrate204(sv.bitrate).toInt());
         jv.add(u"ssu", json::Bool(sv.carry_ssu));
         jv.add(u"t2mi", json::Bool(sv.carry_t2mi));
         if (sv.pmt_pid != 0) {
@@ -1204,7 +1204,7 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
         }
         jv.add(u"is-scrambled", json::Bool(pc.scrambled));
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {
-            jv.add(u"crypto-period", (pc.crypto_period * PKT_SIZE * 8) / _ts_bitrate);
+            jv.add(u"crypto-period", ((pc.crypto_period * PKT_SIZE_BITS) / _ts_bitrate).toInt());
         }
         if (pc.same_stream_id) {
             jv.add(u"pes-stream-id", pc.pes_stream_id);
@@ -1225,8 +1225,8 @@ void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream
         for (auto it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
             jv.query(u"plp", true, json::Type::Array).set(it1->first);
         }
-        jv.add(u"bitrate", pc.bitrate);
-        jv.add(u"bitrate-204", ToBitrate204(pc.bitrate));
+        jv.add(u"bitrate", pc.bitrate.toInt());
+        jv.add(u"bitrate-204", ToBitrate204(pc.bitrate).toInt());
         jv.query(u"packets", true).add(u"total", pc.ts_pkt_cnt);
         jv.query(u"packets", true).add(u"clear", pc.ts_pkt_cnt - pc.ts_sc_cnt - pc.inv_ts_sc_cnt);
         jv.query(u"packets", true).add(u"scrambled", pc.ts_sc_cnt);

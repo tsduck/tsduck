@@ -119,7 +119,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Input transport stream file.");
 
-    option(u"bitrate", 'b', UINT32);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specifies the bitrate for the inserted packets, in bits/second. "
          u"By default, all stuffing packets are replaced which means that "
@@ -232,7 +232,7 @@ bool ts::MuxPlugin::start()
     _check_pid_conflict = !present(u"no-pid-conflict-check");
     _force_pid = present(u"pid");
     getIntValue(_force_pid_value, u"pid");
-    getIntValue(_bitrate, u"bitrate", 0);
+    getFixedValue(_bitrate, u"bitrate");
     getIntValue(_inter_pkt, u"inter-packet", 0);
     getIntValue(_inter_time, u"inter-time", 0);
     getIntValue(_min_pts, u"min-pts", 0);
@@ -305,8 +305,8 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
             tsp->error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
             return TSP_END;
         }
-        _inter_pkt = ts_bitrate / _bitrate;
-        tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _inter_pkt});
+        _inter_pkt = (ts_bitrate / _bitrate).toInt();
+        tsp->verbose(u"transport bitrate: %s'd b/s, packet interval: %'d", {ts_bitrate, _inter_pkt});
     }
 
     // Count TS

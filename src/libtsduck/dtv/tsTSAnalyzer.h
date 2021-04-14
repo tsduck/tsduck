@@ -185,7 +185,7 @@ namespace ts {
             size_t         pid_cnt;            //!< Number of PID's.
             size_t         scrambled_pid_cnt;  //!< Number of scrambled PID's.
             uint64_t       ts_pkt_cnt;         //!< Number of TS packets.
-            uint32_t       bitrate;            //!< Average service bitrate in b/s.
+            BitRate        bitrate;            //!< Average service bitrate in b/s.
             bool           carry_ssu;          //!< Carry System Software Update.
             bool           carry_t2mi;         //!< Carry T2-MI encasulated data.
 
@@ -336,8 +336,8 @@ namespace ts {
             uint64_t      inv_pes_start;   //!< Number of invalid PES start code.
             uint64_t      t2mi_cnt;        //!< Number of T2-MI packets.
             uint64_t      pcr_cnt;         //!< Number of PCR's.
-            uint32_t      ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
-            uint32_t      bitrate;         //!< Average PID bitrate in b/s.
+            BitRate       ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
+            BitRate       bitrate;         //!< Average PID bitrate in b/s.
             UString       language;        //!< For audio or subtitles (3 chars).
             uint16_t      cas_id;          //!< For EMM and ECM streams.
             std::set<uint32_t>         cas_operators; //!< Operators for EMM and ECM streams, when applicable.
@@ -355,7 +355,7 @@ namespace ts {
             // Public members - Analysis data: Bitrate evaluation
             uint64_t       last_pcr;        //!< Last PCR value.
             uint64_t       last_pcr_pkt;    //!< Index of packet with last PCR.
-            uint64_t       ts_bitrate_sum;  //!< Sum of all computed TS bitrates.
+            BitRate        ts_bitrate_sum;  //!< Sum of all computed TS bitrates.
             uint64_t       ts_bitrate_cnt;  //!< Number of computed TS bitrates.
 
             //!
@@ -444,19 +444,19 @@ namespace ts {
         size_t       _global_pid_cnt;     //!< Number of global PID's (ref but no service).
         size_t       _global_scr_pids;    //!< Number of scrambled global PID's.
         uint64_t     _global_pkt_cnt;     //!< Number of packets in global PID's.
-        uint32_t     _global_bitrate;     //!< Bitrate for global PID's.
+        BitRate      _global_bitrate;     //!< Bitrate for global PID's.
         size_t       _psisi_pid_cnt;      //!< Number of global PSI/SI PID's (0x00 to 0x1F).
         size_t       _psisi_scr_pids;     //!< Number of scrambled global PSI/SI PID's (normally zero).
         uint64_t     _psisi_pkt_cnt;      //!< Number of packets in global PSI/SI PID's.
-        uint32_t     _psisi_bitrate;      //!< Bitrate for global PSI/SI PID's.
+        BitRate      _psisi_bitrate;      //!< Bitrate for global PSI/SI PID's.
         size_t       _unref_pid_cnt;      //!< Number of unreferenced PID's.
         size_t       _unref_scr_pids;     //!< Number of scrambled unreferenced PID's.
         uint64_t     _unref_pkt_cnt;      //!< Number of packets in unreferenced PID's.
-        uint32_t     _unref_bitrate;      //!< Bitrate for unreferenced PID's.
-        uint32_t     _ts_pcr_bitrate_188; //!< Average TS bitrate in b/s (eval from PCR).
-        uint32_t     _ts_pcr_bitrate_204; //!< Average TS bitrate in b/s (eval from PCR).
-        uint32_t     _ts_user_bitrate;    //!< User-specified TS bitrate (if any).
-        uint32_t     _ts_bitrate;         //!< TS bitrate (either from PCR or options).
+        BitRate      _unref_bitrate;      //!< Bitrate for unreferenced PID's.
+        BitRate      _ts_pcr_bitrate_188; //!< Average TS bitrate in b/s (eval from PCR).
+        BitRate      _ts_pcr_bitrate_204; //!< Average TS bitrate in b/s (eval from PCR).
+        BitRate      _ts_user_bitrate;    //!< User-specified TS bitrate (if any).
+        BitRate      _ts_bitrate;         //!< TS bitrate (either from PCR or options).
         MilliSecond  _duration;           //!< Total broadcast duration.
         Time         _first_utc;          //!< First system UTC time (first packet).
         Time         _last_utc;           //!< Last system UTC time (recomputeStatistics).
@@ -522,15 +522,15 @@ namespace ts {
         virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
 
         // TSAnalyzer private members (state data, used during analysis):
-        bool              _modified;                  // Internal data modified, need recomputeStatistics
-        uint64_t          _ts_bitrate_sum;            // Sum of all computed TS bitrates
-        uint64_t          _ts_bitrate_cnt;            // Number of computed TS bitrates
-        uint64_t          _preceding_errors;          // Number of contiguous invalid packets before current packet
-        uint64_t          _preceding_suspects;        // Number of contiguous suspects packets before current packet
-        uint64_t          _min_error_before_suspect;  // Required number of invalid packets before starting suspect
-        uint64_t          _max_consecutive_suspects;  // Max number of consecutive suspect packets before clearing suspect
-        SectionDemux      _demux;                     // PSI tables analysis
-        PESDemux          _pes_demux;                 // Audio/video analysis
-        T2MIDemux         _t2mi_demux;                // T2-MI analysis
+        bool         _modified;                  // Internal data modified, need recomputeStatistics
+        BitRate      _ts_bitrate_sum;            // Sum of all computed TS bitrates
+        uint64_t     _ts_bitrate_cnt;            // Number of computed TS bitrates
+        uint64_t     _preceding_errors;          // Number of contiguous invalid packets before current packet
+        uint64_t     _preceding_suspects;        // Number of contiguous suspects packets before current packet
+        uint64_t     _min_error_before_suspect;  // Required number of invalid packets before starting suspect
+        uint64_t     _max_consecutive_suspects;  // Max number of consecutive suspect packets before clearing suspect
+        SectionDemux _demux;                     // PSI tables analysis
+        PESDemux     _pes_demux;                 // Audio/video analysis
+        T2MIDemux    _t2mi_demux;                // T2-MI analysis
     };
 }

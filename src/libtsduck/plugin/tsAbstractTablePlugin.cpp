@@ -63,10 +63,10 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
 {
     _patch_xml.defineArgs(*this);
 
-    option(u"bitrate", 'b', POSITIVE);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specifies the bitrate in bits / second of the " + _table_name + " PID if a new one is "
-         u"created. The default is " + UString::Decimal(_default_bitrate) + u" b/s.");
+         u"created. The default is " + UString::Fixed(_default_bitrate) + u" b/s.");
 
     option(u"create", 'c');
     help(u"create",
@@ -106,7 +106,7 @@ bool ts::AbstractTablePlugin::getOptions()
     _incr_version = present(u"increment-version");
     _create_after_ms = present(u"create") ? 1000 : intValue<MilliSecond>(u"create-after", 0);
     _set_version = present(u"new-version");
-    getIntValue(_bitrate, u"bitrate", _default_bitrate);
+    getFixedValue(_bitrate, u"bitrate", _default_bitrate);
     getIntValue(_inter_pkt, u"inter-packet", 0);
     getIntValue(_new_version, u"new-version", 0);
     bool ok = _patch_xml.loadArgs(duck, *this);
@@ -289,7 +289,7 @@ ts::ProcessorPlugin::Status ts::AbstractTablePlugin::processPacket(TSPacket& pkt
                 tsp->error(u"input bitrate unknown or too low, specify --inter-packet instead of --bitrate");
                 return TSP_END;
             }
-            _pkt_insert += ts_bitrate / _bitrate;
+            _pkt_insert += (ts_bitrate / _bitrate).toInt();
         }
     }
     else if (pid == _pid) {

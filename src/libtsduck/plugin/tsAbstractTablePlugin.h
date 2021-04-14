@@ -58,7 +58,7 @@ namespace ts {
         //!
         //! Default bitrate of new PID if a table is created.
         //!
-        static const BitRate DEFAULT_BITRATE = 3000;
+        static constexpr BitRate::int_t DEFAULT_BITRATE = 3000;
 
     protected:
         //!

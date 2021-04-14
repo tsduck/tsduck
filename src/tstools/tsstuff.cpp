@@ -95,7 +95,7 @@ Options::Options(int argc, char *argv[]) :
          u"The input file is a TS file, typically with variable bitrate content. "
          u"By default, the standard input is used.");
 
-    option(u"bitrate", 'b', POSITIVE, 1, 1);
+    option<ts::BitRate>(u"bitrate", 'b', 1, 1, 1);
     help(u"bitrate",
          u"Target constant bitrate of the output file. "
          u"This is mandatory parameter, there is no default.");
@@ -169,8 +169,8 @@ Options::Options(int argc, char *argv[]) :
     getValue(input_file, u"");
     getValue(output_file, u"output-file");
 
-    getIntValue(target_bitrate, u"bitrate", 0);
-    assert (target_bitrate != 0);
+    getFixedValue(target_bitrate, u"bitrate", 0);
+    assert(target_bitrate != 0);
 
     getIntValue(buffer_size, u"buffer-size", DEFAULT_TS_BUFFER_SIZE);
     dts_based = present(u"dts-based");
@@ -414,14 +414,14 @@ void Stuffer::evaluateNextStuffing()
 
         // Actual number of input packets in the segment and corresponding bitrate.
         const uint64_t input_packets = _tstamp2.value().packet - _tstamp1.value().packet;
-        const uint64_t input_bitrate = (input_packets * 8 * ts::PKT_SIZE * ts::SYSTEM_CLOCK_FREQ) / duration;
+        const ts::BitRate input_bitrate = ts::BitRate(input_packets * ts::PKT_SIZE_BITS * ts::SYSTEM_CLOCK_FREQ) / duration;
         _opt.debug(u"segment: %'d ms, %'d packets, %'d b/s", {(duration * 1000) / ts::SYSTEM_CLOCK_FREQ, input_packets, input_bitrate});
 
         // Target output number of bits in segment, plus the previously unstuffed bits (less than one packet).
-        const uint64_t target_bits = _additional_bits + (_opt.target_bitrate * duration) / ts::SYSTEM_CLOCK_FREQ;
+        const uint64_t target_bits = _additional_bits + ((_opt.target_bitrate * duration) / ts::SYSTEM_CLOCK_FREQ).toInt();
 
         // Target output number of packets in the segment.
-        const uint64_t target_packets = target_bits / (8 * ts::PKT_SIZE);
+        const uint64_t target_packets = target_bits / ts::PKT_SIZE_BITS;
 
         // Compute number of stuffing packets to add
         if (input_packets > target_packets) {
@@ -436,7 +436,7 @@ void Stuffer::evaluateNextStuffing()
             _remaining_stuff_count = target_packets - input_packets;
             _current_inter_packet = _remaining_stuff_count / input_packets;
             _current_residue_packets = _remaining_stuff_count % input_packets;
-            _additional_bits = target_bits % (8 * ts::PKT_SIZE);
+            _additional_bits = target_bits % ts::PKT_SIZE_BITS;
         }
     }
     else {

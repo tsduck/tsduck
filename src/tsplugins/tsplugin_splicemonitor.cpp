@@ -436,7 +436,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
                     const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
                     const BitRate bitrate = tsp->bitrate();
                     if (bitrate != 0 && distance != 0) {
-                        current_pts += (distance * 8 * PKT_SIZE * SYSTEM_CLOCK_SUBFREQ) / bitrate;
+                        current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
                     }
                 }
                 if (current_pts > ctx.event_pts) {

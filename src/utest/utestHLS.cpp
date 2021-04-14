@@ -122,8 +122,8 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(u"", pl.playlistType());
 
     TSUNIT_EQUAL(u"v5/prog_index.m3u8", pl.playList(0).relativeURI);
-    TSUNIT_EQUAL(2227464, pl.playList(0).bandwidth);
-    TSUNIT_EQUAL(2218327, pl.playList(0).averageBandwidth);
+    TSUNIT_EQUAL(2227464, pl.playList(0).bandwidth.toInt());
+    TSUNIT_EQUAL(2218327, pl.playList(0).averageBandwidth.toInt());
     TSUNIT_EQUAL(960, pl.playList(0).width);
     TSUNIT_EQUAL(540, pl.playList(0).height);
     TSUNIT_EQUAL(60000, pl.playList(0).frameRate);
@@ -137,8 +137,8 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(u"v5/prog_index.m3u8, 960x540, 2,227,464 b/s, @60 fps", pl.playList(0).toString());
 
     TSUNIT_EQUAL(u"v2/prog_index.m3u8", pl.playList(23).relativeURI);
-    TSUNIT_EQUAL(ts::BitRate(582387), pl.playList(23).bandwidth);
-    TSUNIT_EQUAL(ts::BitRate(570616), pl.playList(23).averageBandwidth);
+    TSUNIT_EQUAL(582387, pl.playList(23).bandwidth.toInt());
+    TSUNIT_EQUAL(570616, pl.playList(23).averageBandwidth.toInt());
     TSUNIT_EQUAL(480, pl.playList(23).width);
     TSUNIT_EQUAL(270, pl.playList(23).height);
     TSUNIT_EQUAL(30000, pl.playList(23).frameRate);
@@ -183,13 +183,13 @@ void HLSTest::testMediaPlaylist()
 
     TSUNIT_EQUAL(u"fileSequence0.ts", pl.segment(0).relativeURI);
     TSUNIT_EQUAL(u"", pl.segment(0).title);
-    TSUNIT_EQUAL(2060 * 1024, pl.segment(0).bitrate);
+    TSUNIT_EQUAL(2060 * 1024, pl.segment(0).bitrate.toInt());
     TSUNIT_EQUAL(6000, pl.segment(0).duration);
     TSUNIT_ASSERT(!pl.segment(0).gap);
 
     TSUNIT_EQUAL(u"fileSequence99.ts", pl.segment(99).relativeURI);
     TSUNIT_EQUAL(u"", pl.segment(99).title);
-    TSUNIT_EQUAL(2055 * 1024, pl.segment(99).bitrate);
+    TSUNIT_EQUAL(2055 * 1024, pl.segment(99).bitrate.toInt());
     TSUNIT_EQUAL(6000, pl.segment(99).duration);
     TSUNIT_ASSERT(!pl.segment(99).gap);
 
@@ -199,7 +199,7 @@ void HLSTest::testMediaPlaylist()
 
     TSUNIT_EQUAL(u"fileSequence0.ts", seg.relativeURI);
     TSUNIT_EQUAL(u"", seg.title);
-    TSUNIT_EQUAL(2060 * 1024, seg.bitrate);
+    TSUNIT_EQUAL(2060 * 1024, seg.bitrate.toInt());
     TSUNIT_EQUAL(6000, seg.duration);
     TSUNIT_ASSERT(!seg.gap);
 }

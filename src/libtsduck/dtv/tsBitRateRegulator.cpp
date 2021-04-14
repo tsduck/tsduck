@@ -102,13 +102,13 @@ void ts::BitRateRegulator::handleNewBitrate()
 
     // Compute corresponding duration (in nano-seconds) between two bursts.
     assert(_cur_bitrate > 0);
-    _burst_duration = (NanoSecPerSec * PKT_SIZE * 8 * _burst_pkt_max) / _cur_bitrate;
+    _burst_duration = ((NanoSecPerSec * PKT_SIZE_BITS * _burst_pkt_max) / _cur_bitrate).toInt();
 
     // If the result is too small for the time precision of the operating
     // system, recompute a larger burst duration
     if (_burst_duration < _burst_min) {
         _burst_duration = _burst_min;
-        _burst_pkt_max = (_burst_duration * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
+        _burst_pkt_max = ((_burst_duration * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
     }
 
     _report->debug(u"new regulation, burst: %'d nano-seconds, %'d packets", {_burst_duration, _burst_pkt_max});
@@ -187,7 +187,7 @@ void ts::BitRateRegulator::regulate(ts::BitRate current_bitrate, bool& flush, bo
             _report->log(_log_level, u"unknown bitrate, cannot regulate.");
         }
         else {
-            _report->log(_log_level, u"regulated at bitrate %'d b/s", {_cur_bitrate});
+            _report->log(_log_level, u"regulated at bitrate %'d b/s", {_cur_bitrate.toInt()});
         }
     }
 
@@ -263,7 +263,7 @@ void ts::BitRateRegulator::regulate(ts::BitRate current_bitrate, bool& flush, bo
                     // Compute haw many packets we should pass for the remaining time,
                     // based on the new bitrate.
                     _burst_end += _burst_min;
-                    _burst_pkt_cnt = ((_burst_min - elapsed) * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE * 8);
+                    _burst_pkt_cnt = (((_burst_min - elapsed) * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
                 }
                 // Report that the bitrate has changed
                 bitrate_changed = true;

@@ -65,23 +65,23 @@ namespace ts {
 
     private:
         // Command line options:
-        FileNameRateList  _infiles;           // @@ Input file names and repetition rates
-        FType             _intype;            // @@ Input files type
-        SectionFileArgs   _sections_opt;      // @@ Section processing options
-        bool              _specific_rates;    // @@ Some input files have specific repetition rates
-        bool              _undefined_rates;   // @@ At least one file has no specific repetition rate.
-        bool              _use_files_bitrate; // @@ Use the bitrate from the repetition rates in files
-        PID               _inject_pid;        // @@ Target PID
-        CRC32::Validation _crc_op;            // @@ Validate/recompute CRC32
-        StuffPolicy       _stuffing_policy;   // @@ Stuffing policy at end of section or cycle
-        bool              _replace;           // @@ Replace existing PID content
-        bool              _terminate;         // @@ Terminate processing when insertion is complete
-        bool              _poll_files;        // @@ Poll the presence of input files at regular intervals
-        MilliSecond       _poll_files_ms;     // @@ Interval in milliseconds between two file polling
-        size_t            _repeat_count;      // @@ Repeat cycle, zero means infinite
-        BitRate           _pid_bitrate;       // @@ Target bitrate for new PID
-        PacketCounter     _pid_inter_pkt;     // @@ # TS packets between 2 new PID packets
-        PacketCounter     _eval_interval;     // @@ PID bitrate re-evaluation interval
+        FileNameRateList  _infiles;           // Input file names and repetition rates
+        FType             _intype;            // Input files type
+        SectionFileArgs   _sections_opt;      // Section processing options
+        bool              _specific_rates;    // Some input files have specific repetition rates
+        bool              _undefined_rates;   // At least one file has no specific repetition rate.
+        bool              _use_files_bitrate; // Use the bitrate from the repetition rates in files
+        PID               _inject_pid;        // Target PID
+        CRC32::Validation _crc_op;            // Validate/recompute CRC32
+        StuffPolicy       _stuffing_policy;   // Stuffing policy at end of section or cycle
+        bool              _replace;           // Replace existing PID content
+        bool              _terminate;         // Terminate processing when insertion is complete
+        bool              _poll_files;        // Poll the presence of input files at regular intervals
+        MilliSecond       _poll_files_ms;     // Interval in milliseconds between two file polling
+        size_t            _repeat_count;      // Repeat cycle, zero means infinite
+        BitRate           _pid_bitrate;       // Target bitrate for new PID
+        PacketCounter     _pid_inter_pkt;     // # TS packets between 2 new PID packets
+        PacketCounter     _eval_interval;     // PID bitrate re-evaluation interval
 
         // Working data:
         Time              _poll_file_next;    // Next UTC time of poll file
@@ -156,7 +156,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     option(u"binary");
     help(u"binary", u"Specify that all input files are binary, regardless of their file name.");
 
-    option(u"bitrate", 'b', UINT32);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate", u"Specifies the bitrate for the new PID, in bits/second.");
 
     option(u"evaluate-interval", 'e', POSITIVE);
@@ -248,7 +248,7 @@ bool ts::InjectPlugin::getOptions()
     _replace = present(u"replace");
     _poll_files = present(u"poll-files");
     _crc_op = present(u"force-crc") ? CRC32::COMPUTE : CRC32::CHECK;
-    getIntValue(_pid_bitrate, u"bitrate", 0);
+    getFixedValue(_pid_bitrate, u"bitrate", 0);
     getIntValue(_pid_inter_pkt, u"inter-packet", 0);
     getIntValue(_eval_interval, u"evaluate-interval", DEF_EVALUATE_INTERVAL);
 
@@ -385,7 +385,7 @@ bool ts::InjectPlugin::reloadFiles()
                 const uint64_t packets = Section::PacketCount(file.sections(), _stuffing_policy != StuffPolicy::ALWAYS);
                 // Contribution of this file in bits every 1000 seconds.
                 // The repetition rate is in milliseconds.
-                bits_per_1000s += (packets * PKT_SIZE * 8 * MilliSecPerSec * 1000) / it->repetition;
+                bits_per_1000s += (packets * PKT_SIZE_BITS * MilliSecPerSec * 1000) / it->repetition;
             }
         }
     }
@@ -424,7 +424,7 @@ bool ts::InjectPlugin::processBitRates()
             tsp->error(u"input bitrate unknown or too low, specify --inter-packet");
             return false;
         }
-        _pid_inter_pkt = ts_bitrate / _pid_bitrate;
+        _pid_inter_pkt = (ts_bitrate / _pid_bitrate).toInt();
         tsp->verbose(u"transport bitrate: %'d b/s, packet interval: %'d", {ts_bitrate, _pid_inter_pkt});
     }
     else if (!_use_files_bitrate && _specific_rates && _pid_inter_pkt != 0) {
@@ -433,7 +433,7 @@ bool ts::InjectPlugin::processBitRates()
         // was specified, this is already done. If --inter-packet was
         // specified, we compute the PID bitrate based on the TS bitrate.
         const BitRate ts_bitrate = tsp->bitrate();
-        _pid_bitrate = BitRate(PacketCounter(ts_bitrate) / _pid_inter_pkt);
+        _pid_bitrate = ts_bitrate / _pid_inter_pkt;
         if (_pid_bitrate == 0) {
             tsp->warning(u"input bitrate unknown or too low, section-specific repetition rates will be ignored");
         }
@@ -481,7 +481,7 @@ ts::ProcessorPlugin::Status ts::InjectPlugin::processPacket(TSPacket& pkt, TSPac
     }
     if (_replace && _specific_rates && _pid_packet_count == _eval_interval && _packet_count > 0) {
         const BitRate ts_bitrate = tsp->bitrate();
-        _pid_bitrate = BitRate((PacketCounter(ts_bitrate) * _pid_packet_count) / _packet_count);
+        _pid_bitrate = (ts_bitrate * _pid_packet_count) / _packet_count;
         if (_pid_bitrate == 0) {
             tsp->warning(u"input bitrate unknown or too low, section-specific repetition rates will be ignored");
         }

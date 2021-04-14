@@ -282,7 +282,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"as specified in the SDT. The name is not case sensitive and blanks are "
          u"ignored. If the input TS does not contain an SDT, use service ids only.");
 
-    option(u"bitrate-ecm", 'b', POSITIVE);
+    option<BitRate>(u"bitrate-ecm", 'b');
     help(u"bitrate-ecm",
          u"Specifies the bitrate for ECM PID's in bits / second. The default is " +
          UString::Decimal(DEFAULT_ECM_BITRATE) + u" b/s.");
@@ -365,10 +365,10 @@ bool ts::ScramblerPlugin::getOptions()
     _scramble_audio = !present(u"no-audio");
     _scramble_video = !present(u"no-video");
     _scramble_subtitles = present(u"subtitles");
-    _partial_scrambling = intValue<PacketCounter>(u"partial-scrambling", 1);
     _ignore_scrambled = present(u"ignore-scrambled");
-    _ecm_pid = intValue<PID>(u"pid-ecm", PID_NULL);
-    _ecm_bitrate = intValue<BitRate>(u"bitrate-ecm", DEFAULT_ECM_BITRATE);
+    getIntValue(_partial_scrambling, u"partial-scrambling", 1);
+    getIntValue(_ecm_pid, u"pid-ecm", PID_NULL);
+    getFixedValue(_ecm_bitrate, u"bitrate-ecm", DEFAULT_ECM_BITRATE);
 
     // Decode hexa data.
     if (!value(u"private-data").hexaDecode(_ca_desc_private)) {
@@ -804,7 +804,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TS
 
         // Compute next insertion point (approximate)
         assert(_ecm_bitrate != 0);
-        _pkt_insert_ecm += BitRate(_ts_bitrate / _ecm_bitrate);
+        _pkt_insert_ecm += BitRate(_ts_bitrate / _ecm_bitrate).toInt();
 
         // Try to exit from degraded mode, if we were in.
         // Note that return false means unrecoverable error here.

@@ -156,7 +156,7 @@ namespace ts {
         //! Maximum bitrate.
         //! @return Maximum bitrate in bits/second.
         //!
-        BitRate maximumBitRate() const {return _is_valid ? _bitrate * 400: 0;}
+        uint32_t maximumBitRate() const {return _is_valid ? _bitrate * 400: 0;}
 
         //!
         //! Video Buffering Verifier size in bits.
@@ -166,25 +166,25 @@ namespace ts {
 
     private:
         // Actual values, when _is_valid == true
-        size_t  _hsize;       // Horizontal size in pixel
-        size_t  _vsize;       // Vertical size in pixel
-        uint8_t _ar_code;     // Aspect ratio code (AR_* from tsMPEG.h)
-        bool    _progressive;
-        bool    _interlaced;
-        uint8_t _cf_code;     // Chroma format code (CHROMA_* from tsMPEG.h)
-        size_t  _fr_num;      // Frame rate numerator
-        size_t  _fr_div;      // Frame rate divider
-        BitRate _bitrate;     // Maximum bit rate
-        size_t  _vbv_size;    // Video Buffering Verifier size in bits
+        size_t   _hsize;       // Horizontal size in pixel
+        size_t   _vsize;       // Vertical size in pixel
+        uint8_t  _ar_code;     // Aspect ratio code (AR_* from tsMPEG.h)
+        bool     _progressive;
+        bool     _interlaced;
+        uint8_t  _cf_code;     // Chroma format code (CHROMA_* from tsMPEG.h)
+        size_t   _fr_num;      // Frame rate numerator
+        size_t   _fr_div;      // Frame rate divider
+        uint32_t _bitrate;     // Maximum bit rate
+        size_t   _vbv_size;    // Video Buffering Verifier size in bits
 
         // Temporary values from a "sequence header" unit
-        bool    _waiting;     // Previous unit was a "sequence header"
-        size_t  _sh_hsize;    // Horizontal size in pixel
-        size_t  _sh_vsize;    // Vertical size in pixel
-        uint8_t _sh_ar_code;  // Aspect ratio code (AR_* from tsMPEG.h)
-        size_t  _sh_fr_code;  // Frame rate code
-        BitRate _sh_bitrate;  // Maximum bit rate
-        size_t  _sh_vbv_size; // Video Buffering Verifier size in bits
+        bool     _waiting;     // Previous unit was a "sequence header"
+        size_t   _sh_hsize;    // Horizontal size in pixel
+        size_t   _sh_vsize;    // Vertical size in pixel
+        uint8_t  _sh_ar_code;  // Aspect ratio code (AR_* from tsMPEG.h)
+        size_t   _sh_fr_code;  // Frame rate code
+        uint32_t _sh_bitrate;  // Maximum bit rate
+        size_t   _sh_vbv_size; // Video Buffering Verifier size in bits
 
         // Extract frame rate fields from frame rate code
         static size_t FRNum(uint8_t);

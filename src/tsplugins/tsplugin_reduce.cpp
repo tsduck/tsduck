@@ -121,7 +121,7 @@ ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
          u"Both 'rempkt' and 'inpkt' must be non-zero integer values. "
          u"Exactly one of --target-bitrate or --fixed-proportion must be specified.");
 
-    option(u"input-bitrate", 'i', POSITIVE);
+    option<BitRate>(u"input-bitrate", 'i');
     help(u"input-bitrate",
          u"Specify the input bitrate in bits/second. "
          u"By default, the input bitrate is permanently evaluated by previous plugins.");
@@ -146,7 +146,7 @@ ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
          u"The option --reference-pcr-pid can be present multiple time. "
          u"By default, PCR's are used from any PID.");
 
-    option(u"target-bitrate", 't', POSITIVE);
+    option<BitRate>(u"target-bitrate", 't');
     help(u"target-bitrate",
          u"Reduce the bitrate to this target value in bits/second. "
          u"Only stuffing packets can be removed. "
@@ -171,8 +171,8 @@ bool ts::ReducePlugin::getOptions()
 {
     bool ok = true;
 
-    getIntValue(_target_bitrate, u"target-bitrate");
-    getIntValue(_input_bitrate, u"input-bitrate");
+    getFixedValue(_target_bitrate, u"target-bitrate");
+    getFixedValue(_input_bitrate, u"input-bitrate");
     getIntValue(_window_pkts, u"packet-window", DEFAULT_PACKET_WINDOW);
     getIntValue(_window_ms, u"time-window");
     getIntValues(_pcr_pids, u"reference-pcr-pid", true);
@@ -328,60 +328,89 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
         return win.size();
     }
 
-    // Compute how many bits should be removed. Added them to remaining late bits.
-    _bits_to_remove += (uint64_t(win.size()) * PKT_SIZE * 8 * (bitrate - _target_bitrate)) / uint64_t(bitrate);
+    // Bitrate to remove.
+    const BitRate removed_bitrate = bitrate - _target_bitrate;
 
-    // Remove as many packets as possible, regularly spaced over the packet window.
-    // We proceed in several passes. In each pass, we process equally-sized slices of the buffer.
-    // In each slice, we remove at most one null packet. If there is at least one null packet per
-    // slice, one pass is enough. Otherwise, re-iterate with larger slices for remaining packets
-    // to remove. Stop when all required packets are removed or there is no more null packet in
-    // the packet window.
-    // To be improved: For drastic reduction, there are so many packets to remove than the slice
-    // size is just one packet. Then, in each window, all removed null packets are at the beginning
-    // of the window and the remaining null packets are at the end of the window. Is this a problem?
-    size_t null_count = 1; // dummy non-null initial value
-    size_t pass_count = 0;
-    while (_bits_to_remove >= PKT_SIZE * 8 && null_count > 0) {
-        // Number of null packets we would like to remove in this pass.
-        size_t pkt_count = std::min(win.size(), size_t(_bits_to_remove / (PKT_SIZE * 8)));
-        // Size of a slice, where one packet should be removed.
-        const size_t slice_size = win.size() / pkt_count;
-        // Number of remaining null packets after this pass.
-        null_count = 0;
-        // In each slice, check if a packet was already dropped.
-        bool slice_done = false;
-        // Count passes.
-        pass_count++;
-        tsp->log(3, u"pass #%d, packets to remove: %'d, slice size: %'d packets", {pass_count, pkt_count, slice_size});
-        // Perform the pass over the packet window.
-        for (size_t i = 0; i < win.size() && pkt_count > 0; ++i) {
-            // Reset at start of slice.
-            if (i % slice_size == 0) {
-                slice_done = false;
-            }
-            // Null packets are either dropped (first one in slice) or counted.
-            if (win.isNullPacket(i)) {
-                if (slice_done) {
-                    null_count++;
+    // Compute how many bits should be removed from this window: window-size-in-bits * removed-bitrate / total-bitrate.
+    // However, there is a risk of intermediate arithmetic overflow, even on 64 bits for bitrate (fixed point type).
+    // This has been seen for window size of 30,000 packets and 45 Mb/s bitrate reduction.
+    // To solve this, we compute a "sub-window size" which can be computed in bits without overflow.
+    // We start by sub-window-size = window-size. In case of overflow, we use half size and iterate.
+    size_t subwin_size = win.size();
+    bool overflow = true;
+    while (overflow && subwin_size > 16) {
+        const size_t subwin_bits = subwin_size * PKT_SIZE_BITS;
+        overflow = removed_bitrate.mulOverflow(subwin_bits) || (removed_bitrate * subwin_bits).divOverflow();
+        if (overflow) {
+            subwin_size /= 2;
+        }
+    }
+
+    // Loop on each sub-window inside the window.
+    size_t subwin_start = 0;
+    while (subwin_start < win.size()) {
+
+        // Reduce size of last sub-window.
+        subwin_size = std::min(subwin_size, win.size() - subwin_start);
+
+        // Compute how many bits should be removed from this sub-window and add them to remaining late bits.
+        _bits_to_remove += (((subwin_size * PKT_SIZE_BITS) * removed_bitrate) / bitrate).toInt();
+
+        // Remove as many packets as possible, regularly spaced over the packet sub-window.
+        // We proceed in several passes. In each pass, we process equally-sized slices of the buffer.
+        // In each slice, we remove at most one null packet. If there is at least one null packet per
+        // slice, one pass is enough. Otherwise, re-iterate with larger slices for remaining packets
+        // to remove. Stop when all required packets are removed or there is no more null packet in
+        // the packet window.
+        // To be improved: For drastic reduction, there are so many packets to remove than the slice
+        // size is just one packet. Then, in each window, all removed null packets are at the beginning
+        // of the window and the remaining null packets are at the end of the window. Is this a problem?
+        size_t null_count = 1; // dummy non-null initial value
+        size_t pass_count = 0;
+        while (_bits_to_remove >= PKT_SIZE_BITS && null_count > 0) {
+            // Number of null packets we would like to remove in this pass.
+            size_t pkt_count = std::min(subwin_size, size_t(_bits_to_remove / PKT_SIZE_BITS));
+            // Size of a slice, where one packet should be removed.
+            const size_t slice_size = subwin_size / pkt_count;
+            // Number of remaining null packets after this pass.
+            null_count = 0;
+            // In each slice, check if a packet was already dropped.
+            bool slice_done = false;
+            // Count passes.
+            pass_count++;
+            tsp->log(3, u"pass #%d, packets to remove: %'d, slice size: %'d packets", {pass_count, pkt_count, slice_size});
+            // Perform the pass over the packet window.
+            for (size_t i = 0; i < subwin_size && pkt_count > 0; ++i) {
+                // Reset at start of slice.
+                if (i % slice_size == 0) {
+                    slice_done = false;
                 }
-                else {
-                    slice_done = true;
-                    win.drop(i);
-                    pkt_count--;
-                    assert(_bits_to_remove >= PKT_SIZE * 8);
-                    _bits_to_remove -= PKT_SIZE * 8;
+                // Null packets are either dropped (first one in slice) or counted.
+                if (win.isNullPacket(subwin_start + i)) {
+                    if (slice_done) {
+                        null_count++;
+                    }
+                    else {
+                        slice_done = true;
+                        win.drop(subwin_start + i);
+                        pkt_count--;
+                        assert(_bits_to_remove >= PKT_SIZE_BITS);
+                        _bits_to_remove -= PKT_SIZE_BITS;
+                    }
                 }
             }
         }
+        tsp->log(2, u"subwindow size: %'d packets, number of passes: %d, remaining null: %'d, remaining bits: %'d", {subwin_size, pass_count, null_count, _bits_to_remove});
+
+        // Iterate to next sub-window.
+        subwin_start += subwin_size;
     }
-    tsp->log(2, u"window size: %'d packets, number of passes: %d, remaining null: %'d, remaining bits: %'d", {win.size(), pass_count, null_count, _bits_to_remove});
 
     // Report overflow if not enough null packets were found in the window.
-    if (_bits_to_remove >= PKT_SIZE * 8) {
+    if (_bits_to_remove >= PKT_SIZE_BITS) {
         if (_error != Error::PKT_OVERFLOW) {
             _error = Error::PKT_OVERFLOW;
-            tsp->error(u"overflow, later by %'d packets", {_bits_to_remove / (PKT_SIZE * 8)});
+            tsp->error(u"overflow, late by %'d packets", {_bits_to_remove / PKT_SIZE_BITS});
         }
     }
     else {

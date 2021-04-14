@@ -90,12 +90,12 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     help(u"list-variants",
          u"When the URL is a master playlist, list all possible streams bitrates and resolutions.");
 
-    option(u"min-bitrate", 0, UINT32);
+    option<BitRate>(u"min-bitrate");
     help(u"min-bitrate",
          u"When the URL is a master playlist, select a content the bitrate of which is higher "
          u"than the specified minimum.");
 
-    option(u"max-bitrate", 0, UINT32);
+    option<BitRate>(u"max-bitrate");
     help(u"max-bitrate",
          u"When the URL is a master playlist, select a content the bitrate of which is lower "
          u"than the specified maximum.");
@@ -167,8 +167,8 @@ bool ts::hls::InputPlugin::getOptions()
     _url.setURL(value(u""));
     const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");
-    getIntValue(_minRate, u"min-bitrate");
-    getIntValue(_maxRate, u"max-bitrate");
+    getFixedValue(_minRate, u"min-bitrate");
+    getFixedValue(_maxRate, u"max-bitrate");
     getIntValue(_minWidth, u"min-width");
     getIntValue(_maxWidth, u"max-width");
     getIntValue(_minHeight, u"min-height");

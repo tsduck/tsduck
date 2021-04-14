@@ -90,7 +90,7 @@ void ts::MuxerArgs::enforceDefaults()
 
 void ts::MuxerArgs::defineArgs(Args& args) const
 {
-    args.option(u"bitrate", 'b', Args::POSITIVE);
+    args.option<BitRate>(u"bitrate", 'b');
     args.help(u"bitrate",
               u"Specify the target constant output bitrate in bits per seconds. "
               u"In most cases, this is a required parameter. "
@@ -151,7 +151,7 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     lossyInput = args.present(u"lossy-input");
     inputOnce = args.present(u"terminate");
     outputOnce = args.present(u"terminate-with-output");
-    args.getIntValue(outputBitRate, u"bitrate");
+    args.getFixedValue(outputBitRate, u"bitrate");
     args.getIntValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
     outputRestartDelay = inputRestartDelay;
     args.getIntValue(inBufferPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);

@@ -54,18 +54,18 @@ namespace ts {
             virtual UString toString() const override;
 
             // Public fields.
-            BitRate     bandwidth;        //!< Peak bandwidth.
-            BitRate     averageBandwidth; //!< Average bandwidth.
-            size_t      width;            //!< Resolution width in pixels.
-            size_t      height;           //!< Resolution height in pixels.
-            size_t      frameRate;        //!< Frame rate in milli-fps.
-            UString     codecs;           //!< List of codecs.
-            UString     hdcp;             //!< HDCP level.
-            UString     videoRange;       //!< Video range description.
-            UString     video;            //!< Video description.
-            UString     audio;            //!< Audio description.
-            UString     subtitles;        //!< Subtitles description.
-            UString     closedCaptions;   //!< Closed-captions description.
+            BitRate bandwidth;        //!< Peak bandwidth.
+            BitRate averageBandwidth; //!< Average bandwidth.
+            size_t  width;            //!< Resolution width in pixels.
+            size_t  height;           //!< Resolution height in pixels.
+            size_t  frameRate;        //!< Frame rate in milli-fps.
+            UString codecs;           //!< List of codecs.
+            UString hdcp;             //!< HDCP level.
+            UString videoRange;       //!< Video range description.
+            UString video;            //!< Video description.
+            UString audio;            //!< Audio description.
+            UString subtitles;        //!< Subtitles description.
+            UString closedCaptions;   //!< Closed-captions description.
         };
     }
 }

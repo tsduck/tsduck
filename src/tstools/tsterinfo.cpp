@@ -117,7 +117,7 @@ Options::Options(int argc, char *argv[]) :
 
     DefineLegacyBandWidthArg(*this, u"bandwidth", 'w', 8000000);
 
-    option(u"bitrate", 'b', UINT32);
+    option<ts::BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Transport stream bitrate in b/s, based on 188-byte packets. Given this "
          u"bitrate, tsterinfo will try to guess the OFDM modulation parameters.");
@@ -174,7 +174,7 @@ Options::Options(int argc, char *argv[]) :
     getIntValue(uhf_channel, u"uhf-channel", 0);
     getIntValue(vhf_channel, u"vhf-channel", 0);
     getIntValue(hf_offset, u"offset-count", 0);
-    getIntValue(bitrate, u"bitrate", 0);
+    getFixedValue(bitrate, u"bitrate");
     getIntValue(max_guess, u"max-guess", 1);
     getIntValue(constellation, u"constellation", ts::QAM_64);
     getIntValue(fec_hp, u"high-priority-fec", ts::FEC_AUTO);
@@ -311,9 +311,7 @@ int MainCode(int argc, char *argv[])
             std::cout << params.theoreticalBitrate() << std::endl;
         }
         else {
-            std::cout << "Transport stream bitrate: "
-                      << ts::UString::Decimal(params.theoreticalBitrate())
-                      << " b/s" << std::endl;
+            std::cout << "Transport stream bitrate: " << params.theoreticalBitrate() << " b/s" << std::endl;
         }
     }
 
@@ -326,10 +324,10 @@ int MainCode(int argc, char *argv[])
 
         // Display all relevant parameters, up to max_guess
         // (in case of equal differences, display them all)
-        int last_diff = 0;
+        ts::BitRate last_diff(0);
         size_t count = 0;
         for (auto it = params_list.begin();
-             it != params_list.end() && (count < opt.max_guess || std::abs(it->bitrate_diff) == std::abs(last_diff));
+             it != params_list.end() && (count < opt.max_guess || it->bitrate_diff.abs() == last_diff.abs());
              ++it, ++count)
         {
             last_diff = it->bitrate_diff;
@@ -344,8 +342,8 @@ int MainCode(int argc, char *argv[])
                 if (count > 0) {
                     std::cout << std::endl;
                 }
-                Display(u"Nominal bitrate", ts::UString::Decimal(it->tune.theoreticalBitrate()), u"b/s");
-                Display(u"Bitrate difference", ts::UString::Decimal(it->bitrate_diff), u"b/s");
+                Display(u"Nominal bitrate", ts::UString::Fixed(it->tune.theoreticalBitrate()), u"b/s");
+                Display(u"Bitrate difference", ts::UString::Fixed(it->bitrate_diff), u"b/s");
                 Display(u"Bandwidth", ts::UString::Decimal(it->tune.bandwidth.value()), u"Hz");
                 Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->tune.fec_hp.value()), u"");
                 Display(u"Constellation", ts::ModulationEnum.name(it->tune.modulation.value()), u"");
