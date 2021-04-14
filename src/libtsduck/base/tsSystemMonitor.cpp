@@ -48,15 +48,12 @@ TSDUCK_SOURCE;
 ts::SystemMonitor::SystemMonitor(Report& report, const UString& config) :
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority()).setStackSize(MONITOR_STACK_SIZE)),
     _report(report),
+    _config_file(config),
     _periods(),
-    _valid(false),
     _mutex(),
     _wake_up(),
     _terminate(false)
 {
-    // Load configuration file, consider as terminated on error.
-    _valid = loadConfigurationFile(config);
-    _terminate = !_valid;
 }
 
 ts::SystemMonitor::~SystemMonitor()
@@ -109,8 +106,9 @@ void ts::SystemMonitor::stop()
 
 void ts::SystemMonitor::main()
 {
-    // If error loading config, do nothing.
-    if (!_valid) {
+    // Load configuration file, consider as terminated on error.
+    if (!loadConfigurationFile(_config_file)) {
+        _report.error(u"monitoring ignored, invalid system monitoring XML file %s", {_config_file});
         return;
     }
 

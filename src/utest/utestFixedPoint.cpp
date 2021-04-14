@@ -49,11 +49,15 @@ public:
     void testSubUnit();
     void testAssignment();
     void testComparison();
+    void testBounds();
+    void testOverflow();
 
     TSUNIT_TEST_BEGIN(FixedPointTest);
     TSUNIT_TEST(testUnit);
     TSUNIT_TEST(testSubUnit);
     TSUNIT_TEST(testComparison);
+    TSUNIT_TEST(testBounds);
+    TSUNIT_TEST(testOverflow);
     TSUNIT_TEST_END();
 };
 
@@ -261,4 +265,33 @@ void FixedPointTest::testComparison()
     TSUNIT_ASSERT(Fixed(2) >= Fixed(2));
     TSUNIT_ASSERT(Fixed(2) >= 2);
     TSUNIT_ASSERT(4 >= Fixed(4));
+}
+
+void FixedPointTest::testBounds()
+{
+    typedef ts::FixedPoint<int16_t, 3> Fixed;
+
+    TSUNIT_EQUAL(-32, Fixed::MIN.toInt());
+    TSUNIT_EQUAL(-32768, Fixed::MIN.raw());
+    TSUNIT_EQUAL(32, Fixed::MAX.toInt());
+    TSUNIT_EQUAL(32767, Fixed::MAX.raw());
+}
+
+void FixedPointTest::testOverflow()
+{
+    typedef ts::FixedPoint<int16_t, 1> Fixed1;
+    typedef ts::FixedPoint<int16_t, 2> Fixed2;
+
+    TSUNIT_ASSERT(!Fixed2(100).mulOverflow(3));
+    TSUNIT_ASSERT(Fixed2(100).mulOverflow(4));
+    TSUNIT_ASSERT(!Fixed2(100).mulOverflow(-3));
+    TSUNIT_ASSERT(Fixed2(100).mulOverflow(-4));
+
+    TSUNIT_ASSERT(!Fixed2(3).divOverflow());
+    TSUNIT_ASSERT(Fixed2(4).divOverflow());
+
+    TSUNIT_ASSERT(!Fixed1(10).mulOverflow(Fixed1(30)));
+    TSUNIT_ASSERT(Fixed1(10).mulOverflow(Fixed1(40)));
+    TSUNIT_ASSERT(!Fixed1(10).mulOverflow(Fixed1(-30)));
+    TSUNIT_ASSERT(Fixed1(10).mulOverflow(Fixed1(-40)));
 }
