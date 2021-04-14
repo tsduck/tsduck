@@ -951,6 +951,12 @@ TS_POP_WARNING()
 #if defined(max)
     #undef max
 #endif
+#if defined(MIN)
+    #undef MIN
+#endif
+#if defined(MAX)
+    #undef MAX
+#endif
 #if defined(TRUE)
     #undef TRUE
 #endif
