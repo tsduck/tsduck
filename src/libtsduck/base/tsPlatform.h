@@ -1483,16 +1483,17 @@ namespace ts {
 //! This macro generates a reference to some address (string literal, external symbol, etc.)
 //! The reference is a unique static symbol which is otherwise unused.
 //! The difficulty is to make sure that the compiler will not optimize away this data (it is local and unused).
+//! @param suffix Some unique suffix if the macro is invoked several times on the same line.
 //! @param addr An address to reference (string literal, external symbol, etc.)
 //! @hideinitializer
 //!
 #if defined(TS_GCC)
-#define TS_STATIC_REFERENCE(addr) \
-    static __attribute__ ((used)) volatile const void* volatile const TS_UNIQUE_NAME(ref) = (addr)
+#define TS_STATIC_REFERENCE(suffix, addr) \
+    static __attribute__ ((used)) volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr)
 #else
 // Keep this definition on one line because of TS_UNIQUE_NAME.
-#define TS_STATIC_REFERENCE(addr) \
-    static volatile const void* volatile const TS_UNIQUE_NAME(ref) = (addr); static volatile const void* volatile const TS_UNIQUE_NAME(ref2) = &TS_UNIQUE_NAME(ref)
+#define TS_STATIC_REFERENCE(suffix, addr) \
+    static volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr); static volatile const void* volatile const TS_UNIQUE_NAME(ref2##suffix) = &TS_UNIQUE_NAME(ref##suffix)
 #endif
 
 #if !defined(DOXYGEN)
@@ -1549,5 +1550,5 @@ namespace ts {
 //!
 #define TSDUCK_SOURCE \
     TSDUCK_SOURCE_BEGIN \
-    TS_STATIC_REFERENCE(TS_BUILD_MARK_PREFIX __DATE__ TS_BUILD_MARK_SEPARATOR __TIME__ TS_BUILD_MARK_SEPARATOR __FILE__ TS_BUILD_MARK_SEPARATOR) \
+    TS_STATIC_REFERENCE(id, TS_BUILD_MARK_PREFIX __DATE__ TS_BUILD_MARK_SEPARATOR __TIME__ TS_BUILD_MARK_SEPARATOR __FILE__ TS_BUILD_MARK_SEPARATOR) \
     TSDUCK_SOURCE_END
