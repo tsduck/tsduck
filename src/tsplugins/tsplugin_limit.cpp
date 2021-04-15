@@ -378,7 +378,7 @@ ts::ProcessorPlugin::Status ts::LimitPlugin::processPacket(TSPacket& pkt, TSPack
         _bitsSecond += PKT_SIZE_BITS;
         if (_bitsSecond > _maxBitrate) {
             // This packet is in excess, at least partially.
-            const size_t excess = (_bitsSecond - _maxBitrate).toInt();
+            const size_t excess = size_t((_bitsSecond - _maxBitrate).toInt());
             addExcessBits(excess < PKT_SIZE_BITS ? excess : PKT_SIZE_BITS);
         }
     }

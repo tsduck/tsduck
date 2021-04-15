@@ -153,6 +153,7 @@
 #include "tsComponentNameDescriptor.h"
 #include "tsCondition.h"
 #include "tsConditionalPlaybackDescriptor.h"
+#include "tsConfigConstants.h"
 #include "tsConfigFile.h"
 #include "tsConfigSection.h"
 #include "tsConsoleState.h"
