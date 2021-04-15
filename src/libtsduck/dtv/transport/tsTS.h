@@ -36,6 +36,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsFixedPoint.h"
+#include "tsConfigConstants.h"
 
 namespace ts {
     //!

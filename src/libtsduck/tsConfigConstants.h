@@ -28,20 +28,17 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  TSDuck configuration constants.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 //!
-//! TSDuck major version.
+//! Define the precision (number of decimal digits) of bitrate values.
+//! Bitrates are defined as fixed-point numbers of a given compile-time precision.
+//! @see ts::FixedPoint
+//! @see ts::BitRate
 //!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 26
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2345
+#if !defined(TS_BITRATE_DECIMALS)
+#define TS_BITRATE_DECIMALS 1
+#endif

@@ -37,6 +37,7 @@
 #include "tsReport.h"
 #include "tsThread.h"
 #include "tsVersion.h"
+#include "tsConfigConstants.h"
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
