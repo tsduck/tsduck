@@ -186,7 +186,7 @@ namespace ts {
         void mergeNIT();
         void mergeBAT(uint16_t bouquet_id);
 
-        // Copy a table into another, preserving the previous version number it the table is valid.
+        // Copy a table into another, preserving the previous version number if the table is valid.
         template<class TABLE, typename std::enable_if<std::is_base_of<AbstractLongTable, TABLE>::value>::type* = nullptr>
         void copyTableKeepVersion(TABLE& dest, const TABLE& src)
         {

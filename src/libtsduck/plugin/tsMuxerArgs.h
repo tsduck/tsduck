@@ -44,19 +44,28 @@ namespace ts {
     class TSDUCKDLL MuxerArgs: public ArgsSupplierInterface
     {
     public:
-        UString             appName;            //!< Application name, for help messages.
-        PluginOptionsVector inputs;             //!< Input plugins descriptions.
-        PluginOptions       output;             //!< Output plugin description.
-        BitRate             outputBitRate;      //!< Target output bitrate.
-        bool                lossyInput;         //!< If true, allow to lose input packet when the buffer is full.
-        bool                inputOnce;          //!< Terminate when all input plugins complete, do not restart plugins.
-        bool                outputOnce;         //!< Terminate when the output plugin fails, do not restart.
-        MilliSecond         inputRestartDelay;  //!< When an input start fails, retry after that delay.
-        MilliSecond         outputRestartDelay; //!< When the output start fails, retry after that delay.
-        size_t              inBufferPackets;    //!< Input buffer size in packets.
-        size_t              outBufferPackets;   //!< Output buffer size in packets (default: N x inBufferPackets).
-        size_t              maxInputPackets;    //!< Maximum input packets to read at a time.
-        size_t              maxOutputPackets;   //!< Maximum output packets to send at a time.
+        UString                appName;            //!< Application name, for help messages.
+        PluginOptionsVector    inputs;             //!< Input plugins descriptions.
+        PluginOptions          output;             //!< Output plugin description.
+        BitRate                outputBitRate;      //!< Target output bitrate.
+        bool                   lossyInput;         //!< If true, allow to lose input packet when the buffer is full.
+        bool                   inputOnce;          //!< Terminate when all input plugins complete, do not restart plugins.
+        bool                   outputOnce;         //!< Terminate when the output plugin fails, do not restart.
+        bool                   ignoreConflicts;    //!< Ignore PID or service conflicts (inconsistent stream).
+        MilliSecond            inputRestartDelay;  //!< When an input start fails, retry after that delay.
+        MilliSecond            outputRestartDelay; //!< When the output start fails, retry after that delay.
+        MicroSecond            cadence;            //!< Internal polling cadence in microseconds.
+        size_t                 inBufferPackets;    //!< Input buffer size in packets.
+        size_t                 outBufferPackets;   //!< Output buffer size in packets (default: N x inBufferPackets).
+        size_t                 maxInputPackets;    //!< Maximum input packets to read at a time.
+        size_t                 maxOutputPackets;   //!< Maximum output packets to send at a time.
+        uint16_t               outputTSId;         //!< Output transport stream id.
+        uint16_t               outputNetwId;       //!< Output original network id.
+        TableScope             nitScope;           //!< Type of NIT to filter.
+        TableScope             sdtScope;           //!< Type of SDT to filter.
+        TableScope             eitScope;           //!< Type of EIT to filter.
+        size_t                 timeInputIndex;     //!< Index of input plugin from which the TDT/TOT PID is used. By default, use the first found.
+        DuckContext::SavedArgs duckArgs;           //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
 
         static constexpr size_t DEFAULT_MAX_INPUT_PACKETS = 128;    //!< Default maximum input packets to read at a time.
         static constexpr size_t MIN_INPUT_PACKETS = 1;              //!< Minimum input packets to read at a time.
@@ -65,6 +74,7 @@ namespace ts {
         static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;     //!< Default input size buffer in packets.
         static constexpr size_t MIN_BUFFERED_PACKETS = 16;          //!< Minimum input size buffer in packets.
         static constexpr MilliSecond DEFAULT_RESTART_DELAY = 2000;  //!< Default input and output restart delay.
+        static constexpr MicroSecond DEFAULT_CADENCE = 10000;       //!< Default cadence in microseconds.
 
         //!
         //! Constructor.

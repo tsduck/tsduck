@@ -95,8 +95,8 @@ namespace ts {
             size_t                 _packets_first;  //!< Index in the buffer of the first packet.
             size_t                 _packets_count;  //!< Number of packets to output.
             const size_t           _buffer_size;    //!< Size of the packet buffer.
-            TSPacketVector         _packets;        //!< Output packet circular buffer.
-            TSPacketMetadataVector _metadata;       //!< Output metadata circular buffer.
+            TSPacketVector         _packets;        //!< Input or output packet circular buffer.
+            TSPacketMetadataVector _metadata;       //!< Input or output metadata circular buffer.
 
         private:
             const PluginEventHandlerRegistry& _handlers;  //!< Registry of event handlers.

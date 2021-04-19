@@ -56,6 +56,10 @@ ts::tsmux::PluginExecutor::PluginExecutor(const MuxerArgs& opt,
     _metadata(_buffer_size),
     _handlers(handlers)
 {
+    // Preset common default options.
+    if (plugin() != nullptr) {
+        plugin()->resetContext(_opt.duckArgs);
+    }
 }
 
 ts::tsmux::PluginExecutor::~PluginExecutor()

@@ -32,6 +32,17 @@ TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
+// Enumeration description of TableScope values.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::TableScopeEnum({
+    {u"none",   int(ts::TableScope::NONE)},
+    {u"actual", int(ts::TableScope::ACTUAL)},
+    {u"all",    int(ts::TableScope::ALL)},
+});
+
+
+//----------------------------------------------------------------------------
 // Enumeration description of PDS values.
 //----------------------------------------------------------------------------
 

@@ -31,6 +31,7 @@
 #include "tsCADescriptor.h"
 #include "tsTSPacket.h"
 #include "tsAlgorithm.h"
+#include "tsEIT.h"
 TSDUCK_SOURCE;
 
 
@@ -399,8 +400,8 @@ void ts::PSIMerger::provideSection(SectionCounter counter, SectionPtr& section)
 void ts::PSIMerger::handleSection(SectionDemux& demux, const Section& section)
 {
     const TID tid = section.tableId();
-    const bool is_eit = tid >= TID_EIT_MIN && tid <= TID_EIT_MAX && section.sourcePID() == PID_EIT;
-    const bool is_actual = tid == TID_EIT_PF_ACT || (tid >= TID_EIT_S_ACT_MIN && tid <= TID_EIT_S_ACT_MAX);
+    const bool is_eit = EIT::IsEIT(tid) && section.sourcePID() == PID_EIT;
+    const bool is_actual = EIT::IsActual(tid);
 
     // Enqueue EIT's from main and merged stream.
     if (is_eit && (_options & MERGE_EIT) != 0) {

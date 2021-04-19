@@ -86,10 +86,5 @@ namespace ts {
             // Implementation of Thread.
             virtual void main() override;
         };
-
-        //!
-        //! Vector of pointers to InputExecutor.
-        //!
-        typedef std::vector<InputExecutor*> InputExecutorVector;
     }
 }
