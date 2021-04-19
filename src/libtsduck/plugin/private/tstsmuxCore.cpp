@@ -307,7 +307,7 @@ bool ts::tsmux::Core::getUTC(Time& utc, const TSPacket& pkt)
                 pl += 1 + pf;
                 pl_size -= 1 + pf;
                 // Get section size.
-                const size_t sect_size = 3 + GetUInt16(pl + 1) & 0x0FFF;
+                const size_t sect_size = 3 + (GetUInt16(pl + 1) & 0x0FFF);
                 if (pl_size >= sect_size) {
                     // A complete section is here, make it a binary table.
                     BinaryTable table;
