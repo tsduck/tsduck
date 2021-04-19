@@ -30,6 +30,7 @@
 #include "tsDescriptor.h"
 #include "tsMemory.h"
 #include "tsAbstractDescriptor.h"
+#include "tsAbstractTable.h"
 #include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
@@ -144,6 +145,11 @@ ts::Descriptor& ts::Descriptor::copy(const Descriptor& desc)
 // Get the extended descriptor id.
 //----------------------------------------------------------------------------
 
+ts::EDID ts::Descriptor::edid(PDS pds, const AbstractTable* table) const
+{
+    return edid(pds, table == nullptr ? TID(TID_NULL) : table->tableId());
+}
+
 ts::EDID ts::Descriptor::edid(PDS pds, TID tid) const
 {
     if (!isValid()) {
@@ -237,6 +243,11 @@ bool ts::Descriptor::operator== (const Descriptor& desc) const
 //----------------------------------------------------------------------------
 // Deserialize the descriptor.
 //----------------------------------------------------------------------------
+
+ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, PDS pds, const AbstractTable* table) const
+{
+    return deserialize(duck, pds, table == nullptr ? TID(TID_NULL) : table->tableId());
+}
 
 ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, PDS pds, TID tid) const
 {

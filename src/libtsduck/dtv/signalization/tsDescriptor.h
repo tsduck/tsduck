@@ -167,6 +167,14 @@ namespace ts {
         EDID edid(PDS pds = 0, TID tid = TID_NULL) const;
 
         //!
+        //! Get the extended descriptor id.
+        //! @param [in] pds Associated private data specifier.
+        //! @param [in] table Check if the descriptor is table-specific for this table.
+        //! @return The extended descriptor id.
+        //!
+        EDID edid(PDS pds, const AbstractTable* table) const;
+
+        //!
         //! Access to the full binary content of the descriptor.
         //! @return Address of the full binary content of the descriptor.
         //!
@@ -264,6 +272,17 @@ namespace ts {
         //! be deserialized.
         //!
         AbstractDescriptorPtr deserialize(DuckContext& duck, PDS pds = 0, TID tid = TID_NULL) const;
+
+        //!
+        //! Deserialize the descriptor.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] pds Associated private data specifier.
+        //! @param [in] table Table containing the descriptor (can be null).
+        //! @return A safe pointer to an instance of a concrete subclass of AbstractDescriptor
+        //! representing this descriptor. Return the null pointer if the descriptor could not
+        //! be deserialized.
+        //!
+        AbstractDescriptorPtr deserialize(DuckContext& duck, PDS pds, const AbstractTable* table) const;
 
         //!
         //! This method converts a descriptor to XML.

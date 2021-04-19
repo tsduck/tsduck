@@ -203,7 +203,7 @@ void ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc
                 case DescriptorDuplication::MERGE: {
                     // New descriptor shall be merged into old one.
                     // We need to deserialize the previous descriptor first.
-                    const AbstractDescriptorPtr dp(_list[index].desc->deserialize(duck, pds, _table == nullptr ? TID_NULL : _table->tableId()));
+                    const AbstractDescriptorPtr dp(_list[index].desc->deserialize(duck, pds, _table));
                     if (!dp.isNull() && dp->merge(desc)) {
                         // Descriptor successfully merged. Reserialize it and replace it.
                         DescriptorPtr newdesc(new Descriptor);
@@ -256,7 +256,7 @@ ts::EDID ts::DescriptorList::edid(size_t index) const
         return EDID(); // invalid value
     }
     else {
-        return _list[index].desc->edid(_list[index].pds, _table != nullptr ? _table->tableId() : TID_NULL);
+        return _list[index].desc->edid(_list[index].pds, _table);
     }
 }
 

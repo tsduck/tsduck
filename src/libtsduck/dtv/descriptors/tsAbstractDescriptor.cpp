@@ -73,9 +73,9 @@ bool ts::AbstractDescriptor::merge(const AbstractDescriptor& desc)
 // Get the extended descriptor id.
 //----------------------------------------------------------------------------
 
-ts::EDID ts::AbstractDescriptor::edid(AbstractTable* table) const
+ts::EDID ts::AbstractDescriptor::edid(const AbstractTable* table) const
 {
-    return edid(table == nullptr ? TID_NULL : table->tableId());
+    return edid(table == nullptr ? TID(TID_NULL) : table->tableId());
 }
 
 ts::EDID ts::AbstractDescriptor::edid(TID tid) const

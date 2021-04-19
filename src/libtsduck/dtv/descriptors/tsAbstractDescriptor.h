@@ -82,7 +82,7 @@ namespace ts {
         //! @param [in] table Check if the descriptor is table-specific for this table.
         //! @return The extended descriptor id.
         //!
-        EDID edid(AbstractTable* table) const;
+        EDID edid(const AbstractTable* table) const;
 
         //!
         //! What to do when a descriptor of the same type is added twice in a descriptor list.
