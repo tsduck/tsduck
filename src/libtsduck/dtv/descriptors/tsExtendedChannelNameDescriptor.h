@@ -62,6 +62,7 @@ namespace ts {
 
         // Inherited methods
         DeclareDisplayDescriptor();
+        virtual DescriptorDuplication duplicationMode() const override;
 
     protected:
         // Inherited methods

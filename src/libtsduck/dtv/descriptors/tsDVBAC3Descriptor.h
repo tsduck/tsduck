@@ -64,14 +64,10 @@ namespace ts {
         //!
         DVBAC3Descriptor(DuckContext& duck, const Descriptor& bin);
 
-        //!
-        //! Merge inside this object missing information which can be found in other object.
-        //! @param [in] other Other object to get missing information from.
-        //!
-        void merge(const DVBAC3Descriptor& other);
-
         // Inherited methods
         DeclareDisplayDescriptor();
+        virtual DescriptorDuplication duplicationMode() const override;
+        virtual bool merge(const AbstractDescriptor& desc) override;
 
     protected:
         // Inherited methods

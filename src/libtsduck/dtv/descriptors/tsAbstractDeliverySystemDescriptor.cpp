@@ -46,3 +46,10 @@ ts::DeliverySystem ts::AbstractDeliverySystemDescriptor::deliverySystem(const Du
     // Default implementation.
     return _system;
 }
+
+ts::DescriptorDuplication ts::AbstractDeliverySystemDescriptor::duplicationMode() const
+{
+    // By default, there is only one system delivery descriptor per descriptor list.
+    // Adding a new one replaces the previous one.
+    return DescriptorDuplication::REPLACE;
+}

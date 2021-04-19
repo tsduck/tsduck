@@ -32,6 +32,7 @@
 #include "tsAbstractDescriptor.h"
 #include "tsPSIRepository.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -149,7 +150,7 @@ ts::EDID ts::Descriptor::edid(PDS pds, TID tid) const
         return EDID();  // invalid value.
     }
     const DID did = tag();
-    if (tid != TID_NULL) {
+    if (tid != TID_NULL && names::HasTableSpecificName(did, tid)) {
         // Table-specific descriptor.
         return EDID::TableSpecific(did, tid);
     }
@@ -234,6 +235,30 @@ bool ts::Descriptor::operator== (const Descriptor& desc) const
 
 
 //----------------------------------------------------------------------------
+// Deserialize the descriptor.
+//----------------------------------------------------------------------------
+
+ts::AbstractDescriptorPtr ts::Descriptor::deserialize(DuckContext& duck, PDS pds, TID tid) const
+{
+    // Do we know how to deserialize this descriptor?
+    PSIRepository::DescriptorFactory fac = PSIRepository::Instance()->getDescriptorFactory(edid(pds), tid);
+    if (fac != nullptr) {
+        // We know how to deserialize it.
+        AbstractDescriptorPtr dp(fac());
+        if (!dp.isNull()) {
+            // Deserialize from binary to object.
+            dp->deserialize(duck, *this);
+            if (dp->isValid()) {
+                // Successfully deserialized.
+                return dp;
+            }
+        }
+    }
+    return AbstractDescriptorPtr(); // null pointer
+}
+
+
+//----------------------------------------------------------------------------
 // This method converts a descriptor to XML.
 //----------------------------------------------------------------------------
 
@@ -249,19 +274,10 @@ ts::xml::Element* ts::Descriptor::toXML(DuckContext& duck, xml::Element* parent,
 
     // Try to generate a specialized XML structure.
     if (!forceGeneric) {
-        // Do we know how to deserialize this descriptor?
-        PSIRepository::DescriptorFactory fac = PSIRepository::Instance()->getDescriptorFactory(edid(pds), tid);
-        if (fac != nullptr) {
-            // We know how to deserialize it.
-            AbstractDescriptorPtr dp = fac();
-            if (!dp.isNull()) {
-                // Deserialize from binary to object.
-                dp->deserialize(duck, *this);
-                if (dp->isValid()) {
-                    // Serialize from object to XML.
-                    node = dp->toXML(duck, parent);
-                }
-            }
+        const AbstractDescriptorPtr dp(deserialize(duck, pds, tid));
+        if (!dp.isNull()) {
+            // Serialize from object to XML.
+            node = dp->toXML(duck, parent);
         }
     }
 

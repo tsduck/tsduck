@@ -72,7 +72,7 @@ namespace ts {
 
     public:
         //!
-        //! Default cnstructor.
+        //! Default constructor.
         //!
         EDID() : _edid(TS_UCONST64(0xFFFFFFFFFFFFFFFF)) {}
 

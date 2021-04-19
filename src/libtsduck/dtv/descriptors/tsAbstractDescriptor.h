@@ -34,6 +34,8 @@
 
 #pragma once
 #include "tsAbstractSignalization.h"
+#include "tsEDID.h"
+#include "tsPSI.h"
 #include "tsTablesPtr.h"
 #include "tsByteBlock.h"
 
@@ -67,6 +69,39 @@ namespace ts {
         //! @return The descriptor tag.
         //!
         DID tag() const { return _tag; }
+
+        //!
+        //! Get the extended descriptor id.
+        //! @param [in] tid Check if the descriptor is table-specific for this table-id.
+        //! @return The extended descriptor id.
+        //!
+        EDID edid(TID tid = TID_NULL) const;
+
+        //!
+        //! Get the extended descriptor id.
+        //! @param [in] table Check if the descriptor is table-specific for this table.
+        //! @return The extended descriptor id.
+        //!
+        EDID edid(AbstractTable* table) const;
+
+        //!
+        //! What to do when a descriptor of the same type is added twice in a descriptor list.
+        //! The default action is DescriptorDuplication::ADD, meaning that descriptors are added to the list.
+        //! Descriptor subclasses should override this method to define a new action.
+        //! @return The descriptor duplication mode for this class of descriptors.
+        //!
+        virtual DescriptorDuplication duplicationMode() const;
+
+        //!
+        //! Merge the content of a descriptor into this object.
+        //! This method implements the duplication mode DescriptorDuplication::MERGE and
+        //! is specific to each descriptor subclass. By default, the merge fails.
+        //! @param [in] desc The other descriptor to merge into this object. Usually,
+        //! @a desc has the same subclass as this object, although this is not required.
+        //! This is up to the implementation of the subclass to decide what to do.
+        //! @return True if the merge succeeded, false if it failed.
+        //!
+        virtual bool merge(const AbstractDescriptor& desc);
 
         //!
         //! For MPEG-defined and DVB-defined extension descriptors, get the extended descriptor tag (first byte in payload).

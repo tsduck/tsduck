@@ -216,6 +216,17 @@ namespace ts {
         void addPrivateDataSpecifier(PDS pds);
 
         //!
+        //! Merge one descriptor in the list.
+        //! If a descriptor of the same type is already present in the list,
+        //! the DescriptorDuplication mode of the descriptor class is applied.
+        //! If there is no descriptor of the same type, the descriptor is added
+        //! at the end of the list.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] desc The descriptor to merge.
+        //!
+        void merge(DuckContext& duck, const AbstractDescriptor& desc);
+
+        //!
         //! Remove the descriptor at the specified index in the list.
         //! A private_data_specifier descriptor can be removed only if
         //! it is not necessary (no private descriptor ahead).

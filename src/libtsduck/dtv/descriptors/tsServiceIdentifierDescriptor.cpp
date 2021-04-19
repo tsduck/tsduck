@@ -65,6 +65,11 @@ ts::ServiceIdentifierDescriptor::ServiceIdentifierDescriptor(DuckContext& duck, 
     deserialize(duck, desc);
 }
 
+ts::DescriptorDuplication ts::ServiceIdentifierDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::REPLACE;
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization

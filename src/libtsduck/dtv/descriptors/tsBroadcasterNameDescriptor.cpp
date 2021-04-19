@@ -66,6 +66,11 @@ ts::BroadcasterNameDescriptor::BroadcasterNameDescriptor(DuckContext& duck, cons
     deserialize(duck, desc);
 }
 
+ts::DescriptorDuplication ts::BroadcasterNameDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::REPLACE;
+}
+
 
 //----------------------------------------------------------------------------
 // Binary serialization
