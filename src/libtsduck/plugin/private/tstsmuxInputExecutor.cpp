@@ -89,7 +89,7 @@ bool ts::tsmux::InputExecutor::getPackets(TSPacket* pkt, TSPacketMetadata* mdata
         lock.waitCondition();
     }
 
-    // Return error if teh input is terminate _and_ there is no more packet to read.
+    // Return error if the input is terminated _and_ there is no more packet to read.
     if (_terminate && _packets_count == 0) {
         ret_count = 0;
         return false;

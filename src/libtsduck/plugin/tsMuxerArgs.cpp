@@ -39,6 +39,7 @@ constexpr size_t ts::MuxerArgs::MIN_OUTPUT_PACKETS;
 constexpr size_t ts::MuxerArgs::DEFAULT_BUFFERED_PACKETS;
 constexpr size_t ts::MuxerArgs::MIN_BUFFERED_PACKETS;
 constexpr ts::MilliSecond ts::MuxerArgs::DEFAULT_RESTART_DELAY;
+constexpr ts::MicroSecond ts::MuxerArgs::DEFAULT_CADENCE;
 #endif
 
 
@@ -54,12 +55,21 @@ ts::MuxerArgs::MuxerArgs() :
     lossyInput(false),
     inputOnce(false),
     outputOnce(false),
+    ignoreConflicts(false),
     inputRestartDelay(DEFAULT_RESTART_DELAY),
     outputRestartDelay(DEFAULT_RESTART_DELAY),
+    cadence(DEFAULT_CADENCE),
     inBufferPackets(DEFAULT_BUFFERED_PACKETS),
     outBufferPackets(DEFAULT_BUFFERED_PACKETS),
     maxInputPackets(DEFAULT_MAX_INPUT_PACKETS),
-    maxOutputPackets(DEFAULT_MAX_OUTPUT_PACKETS)
+    maxOutputPackets(DEFAULT_MAX_OUTPUT_PACKETS),
+    outputTSId(0),
+    outputNetwId(0),
+    nitScope(TableScope::ACTUAL),
+    sdtScope(TableScope::ACTUAL),
+    eitScope(TableScope::ACTUAL),
+    timeInputIndex(NPOS),
+    duckArgs()
 {
 }
 
@@ -104,6 +114,20 @@ void ts::MuxerArgs::defineArgs(Args& args) const
               u"The default is " + UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" packets. "
               u"The size of the output buffer is the sum of all input buffers sizes.");
 
+    args.option(u"cadence", 0, Args::POSITIVE);
+    args.help(u"cadence", u"microseconds",
+              u"Specify the internal polling cadence in microseconds. "
+              u"The default is " + UString::Decimal(DEFAULT_CADENCE) + u" microseconds.");
+
+    args.option(u"eit", 0, TableScopeEnum);
+    args.help(u"eit",
+              u"Specify which type of EIT shall be merged in the output stream. The default is \"actual\".");
+
+    args.option(u"ignore-conflicts", 'i');
+    args.help(u"ignore-conflicts",
+              u"Ignore PID or service conflicts. The resultant output stream will be inconsistent. "
+              u"By default, a PID or service conflict between input stream aborts the processing.");
+
     args.option(u"lossy-input");
     args.help(u"lossy-input",
               u"When an input plugin provides packets faster than the output consumes them, "
@@ -122,12 +146,24 @@ void ts::MuxerArgs::defineArgs(Args& args) const
               u"Specify the maximum number of TS packets to write at a time. "
               u"The default is " + UString::Decimal(DEFAULT_MAX_OUTPUT_PACKETS) + u" packets.");
 
+    args.option(u"nit", 0, TableScopeEnum);
+    args.help(u"nit",
+              u"Specify which type of NIT shall be merged in the output stream. The default is \"actual\".");
+
+    args.option(u"original-network-id", 0, Args::UINT16);
+    args.help(u"original-network-id",
+              u"Specify the original network id of the output stream. The default is 0.");
+
     args.option(u"restart-delay", 0, Args::UNSIGNED);
-    args.help(u"restart-delay",
+    args.help(u"restart-delay", u"milliseconds",
               u"Specify a restart delay in milliseconds for plugins. "
               u"When a plugin fails or terminates, it is immediately restarted. "
               u"In case of initial restart error, wait the specified delay before retrying. "
-              u"The default is " + UString::Decimal(DEFAULT_RESTART_DELAY) + u" ms.");
+              u"The default is " + UString::Decimal(DEFAULT_RESTART_DELAY) + u" milliseconds.");
+
+    args.option(u"sdt", 0, TableScopeEnum);
+    args.help(u"sdt",
+              u"Specify which type of SDT shall be merged in the output stream. The default is \"actual\".");
 
     args.option(u"terminate", 't');
     args.help(u"terminate",
@@ -138,6 +174,16 @@ void ts::MuxerArgs::defineArgs(Args& args) const
     args.help(u"terminate-with-output",
               u"Terminate execution when the output plugin fails, do not restart. "
               u"By default, restart the output plugin when it fails.");
+
+    args.option(u"time-reference-input", 0, Args::UNSIGNED);
+    args.help(u"time-reference-input",
+              u"Specify the index of the input plugin from which the time reference PID (TDT/TOT) is copied into the output stream. "
+              u"The time reference PID of all other input streams is discarded. "
+              u"By default, the first input stream which produces a time reference table will be used.");
+
+    args.option(u"ts-id", 0, Args::UINT16);
+    args.help(u"ts-id",
+              u"Specify the transport stream id of the output stream. The default is 0.");
 }
 
 
@@ -151,12 +197,20 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     lossyInput = args.present(u"lossy-input");
     inputOnce = args.present(u"terminate");
     outputOnce = args.present(u"terminate-with-output");
+    ignoreConflicts = args.present(u"ignore-conflicts");
     args.getFixedValue(outputBitRate, u"bitrate");
     args.getIntValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
+    args.getIntValue(cadence, u"cadence", DEFAULT_CADENCE);
     outputRestartDelay = inputRestartDelay;
     args.getIntValue(inBufferPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
     args.getIntValue(maxInputPackets, u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS);
     args.getIntValue(maxOutputPackets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);
+    args.getIntValue(outputTSId, u"ts-id", 0);
+    args.getIntValue(outputNetwId, u"original-network-id", 0);
+    args.getIntValue(nitScope, u"nit", TableScope::ACTUAL);
+    args.getIntValue(sdtScope, u"sdt", TableScope::ACTUAL);
+    args.getIntValue(eitScope, u"eit", TableScope::ACTUAL);
+    args.getIntValue(timeInputIndex, u"time-reference-input", NPOS);
 
     // Load all plugin descriptions. Default output is the standard output file.
     ArgsWithPlugins* pargs = dynamic_cast<ArgsWithPlugins*>(&args);
@@ -172,9 +226,15 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
         // If no input plugin is used, used only standard input.
         inputs.push_back(PluginOptions(u"file"));
     }
+    if (timeInputIndex != NPOS && timeInputIndex >= inputs.size()) {
+        args.error(u"%d is not a valid input plugin index in --time-reference-input", {timeInputIndex});
+    }
 
     // Default output buffer size is the sum of all input buffer sizes.
     outBufferPackets = inputs.size() * inBufferPackets;
+
+    // Get default options for TSDuck contexts in each plugin.
+    duck.saveArgs(duckArgs);
 
     // Enforce defaults and other invalid values.
     enforceDefaults();
