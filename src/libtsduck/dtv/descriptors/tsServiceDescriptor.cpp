@@ -70,6 +70,11 @@ ts::ServiceDescriptor::ServiceDescriptor(DuckContext& duck, const Descriptor& de
     deserialize(duck, desc);
 }
 
+ts::DescriptorDuplication ts::ServiceDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::REPLACE;
+}
+
 
 //----------------------------------------------------------------------------
 // Binary serialization

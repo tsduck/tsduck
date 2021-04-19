@@ -82,30 +82,6 @@ ts::DVBAC3Descriptor::DVBAC3Descriptor(DuckContext& duck, const Descriptor& desc
 
 
 //----------------------------------------------------------------------------
-// Merge inside this object missing information which can be found in other object
-//----------------------------------------------------------------------------
-
-void ts::DVBAC3Descriptor::merge(const DVBAC3Descriptor& other)
-{
-    if (!component_type.set()) {
-        component_type = other.component_type;
-    }
-    if (!bsid.set()) {
-        bsid = other.bsid;
-    }
-    if (!mainid.set()) {
-        mainid = other.mainid;
-    }
-    if (!asvc.set()) {
-        asvc = other.asvc;
-    }
-    if (additional_info.empty()) {
-        additional_info = other.additional_info;
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -213,4 +189,40 @@ bool ts::DVBAC3Descriptor::analyzeXML(DuckContext& duck, const xml::Element* ele
            element->getOptionalIntAttribute(mainid, u"mainid") &&
            element->getOptionalIntAttribute(asvc, u"asvc") &&
            element->getHexaTextChild(additional_info, u"additional_info", false, 0, MAX_DESCRIPTOR_SIZE - 8);
+}
+
+
+//----------------------------------------------------------------------------
+// These descriptors shall be merged when present in the same list.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::DVBAC3Descriptor::duplicationMode() const
+{
+    return DescriptorDuplication::MERGE;
+}
+
+bool ts::DVBAC3Descriptor::merge(const AbstractDescriptor& desc)
+{
+    const DVBAC3Descriptor* other = dynamic_cast<const DVBAC3Descriptor*>(&desc);
+    if (other == nullptr) {
+        return false;
+    }
+    else {
+        if (!component_type.set()) {
+            component_type = other->component_type;
+        }
+        if (!bsid.set()) {
+            bsid = other->bsid;
+        }
+        if (!mainid.set()) {
+            mainid = other->mainid;
+        }
+        if (!asvc.set()) {
+            asvc = other->asvc;
+        }
+        if (additional_info.empty()) {
+            additional_info = other->additional_info;
+        }
+        return true;
+    }
 }

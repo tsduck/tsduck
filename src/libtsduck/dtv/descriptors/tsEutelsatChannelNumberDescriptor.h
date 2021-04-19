@@ -96,6 +96,8 @@ namespace ts {
 
         // Inherited methods
         DeclareDisplayDescriptor();
+        virtual DescriptorDuplication duplicationMode() const override;
+        virtual bool merge(const AbstractDescriptor& desc) override;
 
     protected:
         // Inherited methods

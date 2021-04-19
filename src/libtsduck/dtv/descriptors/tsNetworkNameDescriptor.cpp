@@ -66,6 +66,11 @@ void ts::NetworkNameDescriptor::clearContent()
     name.clear();
 }
 
+ts::DescriptorDuplication ts::NetworkNameDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::REPLACE;
+}
+
 
 //----------------------------------------------------------------------------
 // Binary serialization / deserialization.

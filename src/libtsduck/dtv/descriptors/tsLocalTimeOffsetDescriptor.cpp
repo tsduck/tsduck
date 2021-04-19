@@ -175,3 +175,44 @@ bool ts::LocalTimeOffsetDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
     }
     return ok;
 }
+
+
+//----------------------------------------------------------------------------
+// These descriptors shall be merged when present in the same list.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::LocalTimeOffsetDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::MERGE;
+}
+
+bool ts::LocalTimeOffsetDescriptor::merge(const AbstractDescriptor& desc)
+{
+    const LocalTimeOffsetDescriptor* other = dynamic_cast<const LocalTimeOffsetDescriptor*>(&desc);
+    if (other == nullptr) {
+        return false;
+    }
+    else {
+        // Loop on all service entries in "other" descriptor.
+        for (auto oth = other->regions.begin(); oth != other->regions.end(); ++oth) {
+            // Replace entry with same service id in "this" descriptor.
+            bool found = false;
+            for (auto th = regions.begin(); !found && th != regions.end(); ++th) {
+                found = th->country == oth->country && th->region_id == oth->region_id;
+                if (found) {
+                    *th = *oth;
+                }
+            }
+            // Add service ids which were not found at end of the list.
+            if (!found) {
+                regions.push_back(*oth);
+            }
+        }
+        // If the result is too large, truncate it.
+        bool success = regions.size() <= MAX_REGION;
+        while (regions.size() > MAX_REGION) {
+            regions.pop_back();
+        }
+        return success;
+    }
+}

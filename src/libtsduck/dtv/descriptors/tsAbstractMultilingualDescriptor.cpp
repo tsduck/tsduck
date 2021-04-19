@@ -134,3 +134,39 @@ bool ts::AbstractMultilingualDescriptor::analyzeXML(DuckContext& duck, const xml
     }
     return ok;
 }
+
+
+//----------------------------------------------------------------------------
+// These descriptors shall be merged when present in the same list.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::AbstractMultilingualDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::MERGE;
+}
+
+bool ts::AbstractMultilingualDescriptor::merge(const AbstractDescriptor& desc)
+{
+    const AbstractMultilingualDescriptor* other = dynamic_cast<const AbstractMultilingualDescriptor*>(&desc);
+    if (other == nullptr) {
+        return false;
+    }
+    else {
+        // Loop on all service entries in "other" descriptor.
+        for (auto oth = other->entries.begin(); oth != other->entries.end(); ++oth) {
+            // Replace entry with same service id in "this" descriptor.
+            bool found = false;
+            for (auto th = entries.begin(); !found && th != entries.end(); ++th) {
+                found = th->language == oth->language;
+                if (found) {
+                    *th = *oth;
+                }
+            }
+            // Add service ids which were not found at end of the list.
+            if (!found) {
+                entries.push_back(*oth);
+            }
+        }
+        return true;
+    }
+}

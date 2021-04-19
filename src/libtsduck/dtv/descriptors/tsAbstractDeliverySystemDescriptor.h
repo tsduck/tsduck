@@ -57,6 +57,9 @@ namespace ts {
         //!
         virtual ~AbstractDeliverySystemDescriptor() override;
 
+        // Inherited methods.
+        virtual DescriptorDuplication duplicationMode() const override;
+
     protected:
         //!
         //! The delivery system can be modified by subclasses only

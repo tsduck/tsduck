@@ -66,6 +66,11 @@ void ts::BouquetNameDescriptor::clearContent()
     name.clear();
 }
 
+ts::DescriptorDuplication ts::BouquetNameDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::REPLACE;
+}
+
 
 //----------------------------------------------------------------------------
 // Binary serialization

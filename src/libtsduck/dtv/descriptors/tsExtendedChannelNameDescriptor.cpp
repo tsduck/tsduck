@@ -66,6 +66,11 @@ ts::ExtendedChannelNameDescriptor::ExtendedChannelNameDescriptor(DuckContext& du
     deserialize(duck, desc);
 }
 
+ts::DescriptorDuplication ts::ExtendedChannelNameDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::REPLACE;
+}
+
 
 //----------------------------------------------------------------------------
 // Serialization

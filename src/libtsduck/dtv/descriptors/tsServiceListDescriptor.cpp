@@ -184,3 +184,44 @@ bool ts::ServiceListDescriptor::analyzeXML(DuckContext& duck, const xml::Element
     }
     return ok;
 }
+
+
+//----------------------------------------------------------------------------
+// These descriptors shall be merged when present in the same list.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::ServiceListDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::MERGE;
+}
+
+bool ts::ServiceListDescriptor::merge(const AbstractDescriptor& desc)
+{
+    const ServiceListDescriptor* other = dynamic_cast<const ServiceListDescriptor*>(&desc);
+    if (other == nullptr) {
+        return false;
+    }
+    else {
+        // Loop on all service entries in "other" descriptor.
+        for (auto oth = other->entries.begin(); oth != other->entries.end(); ++oth) {
+            // Replace entry with same service id in "this" descriptor.
+            bool found = false;
+            for (auto th = entries.begin(); !found && th != entries.end(); ++th) {
+                found = th->service_id == oth->service_id;
+                if (found) {
+                    *th = *oth;
+                }
+            }
+            // Add service ids which were not found at end of the list.
+            if (!found) {
+                entries.push_back(*oth);
+            }
+        }
+        // If the result is too large, truncate it.
+        bool success = entries.size() <= MAX_ENTRIES;
+        while (entries.size() > MAX_ENTRIES) {
+            entries.pop_back();
+        }
+        return success;
+    }
+}

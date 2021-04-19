@@ -165,3 +165,44 @@ bool ts::EutelsatChannelNumberDescriptor::analyzeXML(DuckContext& duck, const xm
     }
     return ok;
 }
+
+
+//----------------------------------------------------------------------------
+// These descriptors shall be merged when present in the same list.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::EutelsatChannelNumberDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::MERGE;
+}
+
+bool ts::EutelsatChannelNumberDescriptor::merge(const AbstractDescriptor& desc)
+{
+    const EutelsatChannelNumberDescriptor* other = dynamic_cast<const EutelsatChannelNumberDescriptor*>(&desc);
+    if (other == nullptr) {
+        return false;
+    }
+    else {
+        // Loop on all service entries in "other" descriptor.
+        for (auto oth = other->entries.begin(); oth != other->entries.end(); ++oth) {
+            // Replace entry with same service id in "this" descriptor.
+            bool found = false;
+            for (auto th = entries.begin(); !found && th != entries.end(); ++th) {
+                found = th->onetw_id == oth->onetw_id && th->ts_id == oth->ts_id && th->service_id == oth->service_id;
+                if (found) {
+                    *th = *oth;
+                }
+            }
+            // Add service ids which were not found at end of the list.
+            if (!found) {
+                entries.push_back(*oth);
+            }
+        }
+        // If the result is too large, truncate it.
+        bool success = entries.size() <= MAX_ENTRIES;
+        while (entries.size() > MAX_ENTRIES) {
+            entries.pop_back();
+        }
+        return success;
+    }
+}

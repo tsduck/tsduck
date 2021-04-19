@@ -33,7 +33,6 @@
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -171,6 +170,71 @@ bool ts::DescriptorList::add(const void* data, size_t size)
 
 
 //----------------------------------------------------------------------------
+// Merge one descriptor in the list.
+//----------------------------------------------------------------------------
+
+void ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc)
+{
+    const PDS pds = desc.requiredPDS();
+    const DescriptorDuplication mode = desc.duplicationMode();
+
+    // We need to search for a identical descriptor only if the duplication mode is not simply ADD.
+    if (mode != DescriptorDuplication::ADD) {
+        const size_t index = search(desc.edid());
+        if (index < count()) {
+            // A similar descriptor has been found.
+            switch (mode) {
+                case DescriptorDuplication::IGNORE: {
+                    // New descriptor shall be ignored.
+                    return;
+                }
+                case DescriptorDuplication::REPLACE: {
+                    // New descriptor shall replace the previous one.
+                    DescriptorPtr newdesc(new Descriptor);
+                    CheckNonNull(newdesc.pointer());
+                    desc.serialize(duck, *newdesc);
+                    if (newdesc->isValid()) {
+                        _list[index].desc = newdesc;
+                    }
+                    // In case of serialization failure, there is nothing we can do.
+                    // The default processing would also use a serialization.
+                    return;
+                }
+                case DescriptorDuplication::MERGE: {
+                    // New descriptor shall be merged into old one.
+                    // We need to deserialize the previous descriptor first.
+                    const AbstractDescriptorPtr dp(_list[index].desc->deserialize(duck, pds, _table == nullptr ? TID_NULL : _table->tableId()));
+                    if (!dp.isNull() && dp->merge(desc)) {
+                        // Descriptor successfully merged. Reserialize it and replace it.
+                        DescriptorPtr newdesc(new Descriptor);
+                        CheckNonNull(newdesc.pointer());
+                        dp->serialize(duck, *newdesc);
+                        if (newdesc->isValid()) {
+                            _list[index].desc = newdesc;
+                            return;
+                        }
+                    }
+                    // In case of merge failure, apply default processing later.
+                    break;
+                }
+                case DescriptorDuplication::ADD:
+                default: {
+                    // Default processing by the end of this method.
+                    break;
+                }
+            }
+        }
+    }
+
+    // The default action is to add the descriptor in the list.
+    // Insert a private_data_specifier_descriptor is necessary.
+    addPrivateDataSpecifier(pds);
+    add(duck, desc);
+}
+
+
+
+//----------------------------------------------------------------------------
 // Get a reference to the descriptor at a specified index.
 //----------------------------------------------------------------------------
 
@@ -191,15 +255,8 @@ ts::EDID ts::DescriptorList::edid(size_t index) const
     if (index >= _list.size() || _list[index].desc.isNull() || !_list[index].desc->isValid()) {
         return EDID(); // invalid value
     }
-
-    const DID did = _list[index].desc->tag();
-
-    if (_table != nullptr && names::HasTableSpecificName(did, _table->tableId())) {
-        // This descriptor is table-specific.
-        return EDID::TableSpecific(did, _table->tableId());
-    }
     else {
-        return _list[index].desc->edid(_list[index].pds);
+        return _list[index].desc->edid(_list[index].pds, _table != nullptr ? _table->tableId() : TID_NULL);
     }
 }
 

@@ -28,9 +28,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDescriptor.h"
+#include "tsAbstractTable.h"
 #include "tsDescriptor.h"
 #include "tsDescriptorList.h"
 #include "tsPSIBuffer.h"
+#include "tsNames.h"
 TSDUCK_SOURCE;
 
 
@@ -47,6 +49,60 @@ ts::AbstractDescriptor::AbstractDescriptor(DID tag, const UChar* xml_name, Stand
 
 ts::AbstractDescriptor::~AbstractDescriptor()
 {
+}
+
+
+//----------------------------------------------------------------------------
+// What to do when a descriptor of the same type is added twice in a list.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::AbstractDescriptor::duplicationMode() const
+{
+    // By default, descriptors are added to the descriptor list.
+    return DescriptorDuplication::ADD;
+}
+
+bool ts::AbstractDescriptor::merge(const AbstractDescriptor& desc)
+{
+    // By default, merging descriptors is not implemented.
+    return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the extended descriptor id.
+//----------------------------------------------------------------------------
+
+ts::EDID ts::AbstractDescriptor::edid(AbstractTable* table) const
+{
+    return edid(table == nullptr ? TID_NULL : table->tableId());
+}
+
+ts::EDID ts::AbstractDescriptor::edid(TID tid) const
+{
+    if (!isValid()) {
+        return EDID();  // invalid value.
+    }
+    else if (tid != TID_NULL && names::HasTableSpecificName(_tag, tid)) {
+        // Table-specific descriptor.
+        return EDID::TableSpecific(_tag, tid);
+    }
+    else if (_required_pds != 0) {
+        // Private descriptor.
+        return EDID::Private(_tag, _required_pds);
+    }
+    else if (_tag == DID_DVB_EXTENSION) {
+        // DVB extension descriptor.
+        return EDID::ExtensionDVB(extendedTag());
+    }
+    else if (_tag == DID_MPEG_EXTENSION) {
+        // MPEG extension descriptor.
+        return EDID::ExtensionMPEG(extendedTag());
+    }
+    else {
+        // Standard descriptor.
+        return EDID::Standard(_tag);
+    }
 }
 
 
