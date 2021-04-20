@@ -227,6 +227,14 @@ namespace ts {
         void merge(DuckContext& duck, const AbstractDescriptor& desc);
 
         //!
+        //! Merge another descriptor list in this list.
+        //! All descriptors are merged one by one.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] other The other descriptor list to merge.
+        //!
+        void merge(DuckContext& duck, const DescriptorList& other);
+
+        //!
         //! Remove the descriptor at the specified index in the list.
         //! A private_data_specifier descriptor can be removed only if
         //! it is not necessary (no private descriptor ahead).

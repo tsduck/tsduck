@@ -40,6 +40,7 @@
 #include "tsTime.h"
 #include "tsSectionDemux.h"
 #include "tsCyclingPacketizer.h"
+#include "tsPCRMerger.h"
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsSDT.h"
@@ -105,6 +106,7 @@ namespace ts {
             DuckContext         _duck;              // TSDuck execution context.
             volatile bool       _terminate;         // Termination request.
             BitRate             _bitrate;           // Constant output bitrate.
+            PacketCounter       _output_packets;    // Count of output packets which were sent.
             size_t              _time_input_index;  // Input plugin index containing time reference (TDT/TOT).
             std::vector<Input*> _inputs;            // Input plugins threads.
             OutputExecutor      _output;            // Output plugin thread.
@@ -170,6 +172,8 @@ namespace ts {
                 InputExecutor _input;         // Input plugin thread.
                 SectionDemux  _demux;         // Demux for PSI/SI (except PMT's and EIT's).
                 SectionDemux  _eit_demux;     // Demux for EIT's.
+                PCRMerger     _pcr_merger;    // Adjust PCR in input packets to be synchronized with the output stream.
+                NIT           _nit;           // NIT waiting to be merged.
 
                 // Receive a PSI/SI table.
                 virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;

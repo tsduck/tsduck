@@ -139,8 +139,9 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
                 if (it->second->pcr_pid == pid) {
                     // Extrapolated current PTS/DTS of this PID at current packet.
                     const uint64_t pdts = it->second->adjustedPDTS(main_packet_index, main_bitrate);
-                    if (pdts != INVALID_DTS && pdts <= subpcr) {
-                        // PTS or DTS moved backwards PCR -> reset PCR restamping.
+                    if (pdts != INVALID_DTS && (pdts <= subpcr || (pdts - subpcr) > SYSTEM_CLOCK_SUBFREQ)) {
+                        // PTS/DTS moved backwards PCR or PCR is far behind PTS/DTS (more than one second).
+                        // Reset PCR restamping.
                         update_pcr = false;
                         ctx->first_pcr = ctx->last_pcr = pcr;
                         ctx->first_pcr_pkt = ctx->last_pcr_pkt = main_packet_index;

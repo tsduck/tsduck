@@ -50,6 +50,7 @@ ts::tsmux::Core::Core(const MuxerArgs& opt, const PluginEventHandlerRegistry& ha
     _duck(&log),
     _terminate(false),
     _bitrate(0),
+    _output_packets(0),
     _time_input_index(opt.timeInputIndex),
     _inputs(_opt.inputs.size(), nullptr),
     _output(_opt, handlers, _log),
@@ -229,19 +230,21 @@ void ts::tsmux::Core::main()
     const Monotonic start(true);
     Monotonic clock(start);
 
-    PacketCounter total_packets = 0;   // How many packets were sent.
-    size_t input_index = 0;            // Next input plugin to read from.
-    TSPacket pkt;
-    TSPacketMetadata pkt_data;
+    // The unit of Monotonic operations is the nanosecond, the command line option is in microseconds.
+    const NanoSecond cadence = _opt.cadence * NanoSecPerMicroSec;
+
+    // Next input plugin to read from.
+    size_t input_index = 0;
 
     // Metadata for null packets.
     TSPacketMetadata null_data;
     null_data.setNullified(true);
 
-    // The unit of Monotonic operations is the nanosecond, the command line option is in microseconds.
-    const NanoSecond cadence = _opt.cadence * NanoSecPerMicroSec;
+    _output_packets = 0;
+    TSPacket pkt;
+    TSPacketMetadata pkt_data;
 
-    // Loop until we are instructed to stop.
+    // Loop until we are instructed to stop. Each iteration is a muxing period at the defined cadence.
     while (!_terminate) {
 
         // End of next time interval.
@@ -251,38 +254,38 @@ void ts::tsmux::Core::main()
         const PacketCounter expected_packets = (((clock - start) * _bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
 
         // Number of packets to send by the end of the time interval.
-        PacketCounter packet_count = expected_packets < total_packets ? 0 : expected_packets - total_packets;
+        PacketCounter packet_count = expected_packets < _output_packets ? 0 : expected_packets - _output_packets;
 
-        // Loop on packets to send.
+        // Loop on packets to send during this time interval.
         while (!_terminate && packet_count > 0) {
 
-            // Get one packet from next input.
-            if (!_inputs[input_index]->getPacket(pkt, pkt_data)) {
+            // Try to get one packet from next input.
+            bool success = _inputs[input_index]->getPacket(pkt, pkt_data);
+            input_index = (input_index + 1) % _inputs.size();
+
+            //
+            if (!success) {
                 // No packet is available from that input plugin.
-                //@@@@@@@@@@@@@@@@
+                //@@@@@@@@@@@@@@@@ get PSI/SI
+            }
+
+            // Output that packet.
+            if (!_output.send(&pkt, &pkt_data, 1)) {
+                _log.error(u"output plugin terminated on error, aborting");
+                _terminate = true;
             }
             else {
-                // Got one packet from that input plugin.
-                //@@@@@@@@@@@@@@@
-                // - handle PSI/SI
-                // - handle PCR
-
-                // Output that packet.
-                if (!_output.send(&pkt, &pkt_data, 1)) {
-                    _log.error(u"output plugin terminated on error, aborting");
-                    _terminate = true;
-                }
-                else {
-                    packet_count--;
-                }
+                _output_packets++;
+                packet_count--;
             }
 
-            // @@@@@ Output PSI/SI
             // @@@@@@@@@
         }
 
-        // Wait until next polling time.
-        clock.wait();
+        // Wait until next muxin period.
+        if (_terminate) {
+            clock.wait();
+        }
     }
 
     _log.debug(u"core thread terminated");
@@ -367,17 +370,30 @@ ts::tsmux::Core::Input::Input(Core& core, size_t index) :
     _ts_id(0),
     _input(_core._opt, core._handlers, index, _core._log),
     _demux(_core._duck, this, nullptr),
-    _eit_demux(_core._duck, nullptr, this)
+    _eit_demux(_core._duck, nullptr, this),
+    _pcr_merger(_core._duck),
+    _nit()
 {
+    // Filter all global PSI/SI for merging in output PSI.
     _demux.addPID(PID_PAT);
     _demux.addPID(PID_CAT);
-    _demux.addPID(PID_NIT);
-    _demux.addPID(PID_SDT); // Also BAT
-    _demux.addPID(PID_TDT); // Also TOT
+    if (_core._opt.nitScope != TableScope::NONE) {
+        _demux.addPID(PID_NIT);
+    }
+    if (_core._opt.sdtScope != TableScope::NONE) {
+        _demux.addPID(PID_SDT);
+    }
 
+    // Filter EIT sections one by one if the output stream shall contain EIT's.
     if (_core._opt.eitScope != TableScope::NONE) {
         _eit_demux.addPID(PID_EIT);
     }
+
+    // Always reset PCR progression when moving ahead of PTS or DTS.
+    _pcr_merger.setResetBackwards(true);
+
+    // The NIT is valid only when waiting to be merged.
+    _nit.invalidate();
 }
 
 
@@ -410,6 +426,9 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
         }
     }
 
+    // Adjust PCR in the packet, assuming it will be the next one to be inserted in the output.
+    _pcr_merger.processPacket(pkt, _core._output_packets, _core._bitrate);
+
     // Don't return packets from predefined PID's, they are separately regenerated.
     return pid > PID_DVB_LAST || (pid == PID_TDT && _core._time_input_index == _plugin_index);
 }
@@ -438,9 +457,11 @@ void ts::tsmux::Core::Input::handleTable(SectionDemux& demux, const BinaryTable&
         }
         case TID_NIT_ACT: {
             if (_core._opt.nitScope != TableScope::NONE && table.sourcePID() == PID_NIT) {
-                const NIT nit(_core._duck, table);
-                if (nit.isValid()) {
-                    handleNIT(nit);
+                // Process the NIT only when the current TS id is known.
+                _nit.deserialize(_core._duck, table);
+                if (_nit.isValid() && _got_ts_id) {
+                    handleNIT(_nit);
+                    _nit.invalidate();
                 }
             }
             break;
@@ -470,10 +491,6 @@ void ts::tsmux::Core::Input::handleTable(SectionDemux& demux, const BinaryTable&
             }
             break;
         }
-        case TID_BAT: {
-            // We currently ignore BAT's.
-            break;
-        }
         default: {
             break;
         }
@@ -492,6 +509,12 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
     // Input TS id is now known.
     _ts_id = pat.ts_id;
     _got_ts_id = true;
+
+    // Now that the TS id is known, we can process a waiting NIT.
+    if (_nit.isValid()) {
+        handleNIT(_nit);
+        _nit.invalidate();
+    }
 
     // Add all services from input PAT into output PAT.
     for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
@@ -611,7 +634,36 @@ void ts::tsmux::Core::Input::handleCAT(const CAT& cat)
 
 void ts::tsmux::Core::Input::handleNIT(const NIT& nit)
 {
-    //@@@@@@@@
+    bool modified = false;
+
+    // Merge initial descriptors.
+    _core._output_nit.descs.merge(_core._duck, nit.descs);
+
+    // Loop on all transport streams in the input NIT.
+    for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
+        const uint16_t tsid = it->first.transport_stream_id;
+        if (tsid == _ts_id) {
+            // This is the description of the input transport stream.
+            // Map it to the description of the output transport stream.
+            NIT::Transport& ts(_core._output_nit.transports[TransportStreamId(_core._opt.outputTSId, _core._opt.outputNetwId)]);
+            ts.descs.merge(_core._duck, it->second.descs);
+            modified = true;
+        }
+        else if (tsid != _core._opt.outputTSId) {
+            // This is the description of a transport stream which does not conflict
+            // with the description of the output transport stream.
+            NIT::Transport& ts(_core._output_nit.transports[TransportStreamId(tsid, _core._opt.outputNetwId)]);
+            ts.descs.merge(_core._duck, it->second.descs);
+            modified = true;
+        }
+    }
+
+    // If the output NIT was modified, increment its version and replace it in the packetizer.
+    if (modified) {
+        _core._output_nit.version = (_core._output_nit.version + 1) & SVERSION_MASK;
+        _core._nit_pzer.removeSections(TID_NIT_ACT);
+        _core._nit_pzer.addTable(_core._duck, _core._output_nit);
+    }
 }
 
 
@@ -669,7 +721,7 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
         }
     }
 
-    // If the output PAT was modified, increment its version and replace it in the packetizer.
+    // If the output SDT was modified, increment its version and replace it in the packetizer.
     if (modified) {
         _core._output_sdt.version = (_core._output_sdt.version + 1) & SVERSION_MASK;
         _core._sdt_bat_pzer.removeSections(TID_SDT_ACT);

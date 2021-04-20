@@ -74,13 +74,19 @@ namespace ts {
         void reset();
 
         //!
-        //! Reset PCR progression when moving ahead of PTS or DTS.
+        //! Reset PCR progression when moving ahead of or far away from PTS or DTS.
         //!
         //! When restamping PCR's, the PCR adjustment is usually small and stays behind the PTS and DTS.
         //! But, after hours of continuous restamping, some inaccuracy my appear and the recomputed PCR
-        //! may move ahead of PCR and DTS. With this option, as soon as a recomputed PCR is ahead of
-        //! the PTS or DTS in the same packet, PCR restamping is reset and restarts from the original
-        //! PCR value in this packet. Note that this creates a small PCR leap in the stream.
+        //! may move ahead of PCR and DTS. Similarly, if there is a leap in the input PCR (such as a TS
+        //! file looping back to the beginning), the difference between the adjusted PCR and input PTS/DTS
+        //! become huge.
+        //!
+        //! With this option, as soon as a recomputed PCR is ahead of the PTS or DTS in the same packet,
+        //! of if the difference between PCR and PTS/DTS is larger than one second, PCR restamping is reset
+        //! and restarts from the original PCR value in this packet. Note that, of course, this creates a
+        //! small PCR leap in the stream.
+        //!
         //! The option has, of course, no effect on scrambled streams.
         //!
         //! @param [in] on If true, reset PCR progression when moving ahead of PTS or DTS.
