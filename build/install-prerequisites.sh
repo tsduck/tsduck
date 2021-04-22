@@ -201,7 +201,7 @@ elif [[ -f /etc/redhat-release ]]; then
 elif [[ -f /etc/arch-release ]]; then
 
     # Arch Linux
-    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz pcsclite srt python jdk11-openjdk"
+    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz pcsclite srt python jdk-openjdk"
     sudo pacman -Syu --noconfirm $PKGOPTS $pkglist
     # Update command: sudo pacman -Syu
 

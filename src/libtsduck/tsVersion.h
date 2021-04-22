@@ -40,8 +40,8 @@
 //!
 //! TSDuck minor version.
 //!
-#define TS_VERSION_MINOR 26
+#define TS_VERSION_MINOR 27
 //!
 //! TSDuck commit number (automatically updated by Git hooks).
 //!
-#define TS_COMMIT 2349
+#define TS_COMMIT 2350
