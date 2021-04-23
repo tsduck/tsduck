@@ -29,8 +29,7 @@
 
 #include "tsMuxer.h"
 #include "tsSystemMonitor.h"
-#include "tstsswitchCore.h"
-#include "tstsswitchCommandListener.h"
+#include "tstsmuxCore.h"
 TSDUCK_SOURCE;
 
 
@@ -82,8 +81,10 @@ bool ts::Muxer::start(const MuxerArgs& args)
         _report.debug(u"starting: %s", {cmd});
     }
 
-
-    return false; //@@@@@@@@@@@@
+    // Allocate a muxer core object.
+    _core = new tsmux::Core(args, *this, _report);
+    CheckNonNull(_core);
+    return _core->start();
 }
 
 
@@ -93,7 +94,9 @@ bool ts::Muxer::start(const MuxerArgs& args)
 
 void ts::Muxer::stop()
 {
-    //@@@@@@@@@@
+    if (_core != nullptr) {
+        _core->stop();
+    }
 }
 
 
@@ -103,5 +106,9 @@ void ts::Muxer::stop()
 
 void ts::Muxer::waitForTermination()
 {
-    //@@@@@@@@@@
+    if (_core != nullptr) {
+        _core->waitForTermination();
+        delete _core;
+        _core = nullptr;
+    }
 }

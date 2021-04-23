@@ -48,6 +48,10 @@ namespace ts {
         PluginOptionsVector    inputs;             //!< Input plugins descriptions.
         PluginOptions          output;             //!< Output plugin description.
         BitRate                outputBitRate;      //!< Target output bitrate.
+        BitRate                patBitRate;         //!< Bitrate of output PAT.
+        BitRate                catBitRate;         //!< Bitrate of output CAT.
+        BitRate                nitBitRate;         //!< Bitrate of output NIT.
+        BitRate                sdtBitRate;         //!< Bitrate of output SDT.
         bool                   lossyInput;         //!< If true, allow to lose input packet when the buffer is full.
         bool                   inputOnce;          //!< Terminate when all input plugins complete, do not restart plugins.
         bool                   outputOnce;         //!< Terminate when the output plugin fails, do not restart.
@@ -67,14 +71,16 @@ namespace ts {
         size_t                 timeInputIndex;     //!< Index of input plugin from which the TDT/TOT PID is used. By default, use the first found.
         DuckContext::SavedArgs duckArgs;           //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
 
-        static constexpr size_t DEFAULT_MAX_INPUT_PACKETS = 128;    //!< Default maximum input packets to read at a time.
-        static constexpr size_t MIN_INPUT_PACKETS = 1;              //!< Minimum input packets to read at a time.
-        static constexpr size_t DEFAULT_MAX_OUTPUT_PACKETS = 128;   //!< Default maximum input packets to send at a time.
-        static constexpr size_t MIN_OUTPUT_PACKETS = 1;             //!< Minimum input packets to send at a time.
-        static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;     //!< Default input size buffer in packets.
-        static constexpr size_t MIN_BUFFERED_PACKETS = 16;          //!< Minimum input size buffer in packets.
-        static constexpr MilliSecond DEFAULT_RESTART_DELAY = 2000;  //!< Default input and output restart delay.
-        static constexpr MicroSecond DEFAULT_CADENCE = 10000;       //!< Default cadence in microseconds.
+        static constexpr size_t DEFAULT_MAX_INPUT_PACKETS = 128;      //!< Default maximum input packets to read at a time.
+        static constexpr size_t MIN_INPUT_PACKETS = 1;                //!< Minimum input packets to read at a time.
+        static constexpr size_t DEFAULT_MAX_OUTPUT_PACKETS = 128;     //!< Default maximum input packets to send at a time.
+        static constexpr size_t MIN_OUTPUT_PACKETS = 1;               //!< Minimum input packets to send at a time.
+        static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;       //!< Default input size buffer in packets.
+        static constexpr size_t MIN_BUFFERED_PACKETS = 16;            //!< Minimum input size buffer in packets.
+        static constexpr MilliSecond DEFAULT_RESTART_DELAY = 2000;    //!< Default input and output restart delay.
+        static constexpr MicroSecond DEFAULT_CADENCE = 10000;         //!< Default cadence in microseconds.
+        static constexpr BitRate::int_t MIN_PSI_BITRATE = 100;        //!< Minimum bitrate for global PSI/SI PID's.
+        static constexpr BitRate::int_t DEFAULT_PSI_BITRATE = 15000;  //!< Default bitrate for global PSI/SI PID's.
 
         //!
         //! Constructor.

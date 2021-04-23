@@ -40,6 +40,8 @@ constexpr size_t ts::MuxerArgs::DEFAULT_BUFFERED_PACKETS;
 constexpr size_t ts::MuxerArgs::MIN_BUFFERED_PACKETS;
 constexpr ts::MilliSecond ts::MuxerArgs::DEFAULT_RESTART_DELAY;
 constexpr ts::MicroSecond ts::MuxerArgs::DEFAULT_CADENCE;
+constexpr ts::BitRate::int_t ts::MuxerArgs::MIN_PSI_BITRATE;
+constexpr ts::BitRate::int_t ts::MuxerArgs::DEFAULT_PSI_BITRATE;
 #endif
 
 
@@ -52,6 +54,10 @@ ts::MuxerArgs::MuxerArgs() :
     inputs(),
     output(),
     outputBitRate(0),
+    patBitRate(DEFAULT_PSI_BITRATE),
+    catBitRate(DEFAULT_PSI_BITRATE),
+    nitBitRate(DEFAULT_PSI_BITRATE),
+    sdtBitRate(DEFAULT_PSI_BITRATE),
     lossyInput(false),
     inputOnce(false),
     outputOnce(false),
@@ -91,6 +97,10 @@ void ts::MuxerArgs::enforceDefaults()
     outBufferPackets = std::max(outBufferPackets, inputs.size() * inBufferPackets);
     maxInputPackets = std::min(std::max(maxInputPackets, MIN_INPUT_PACKETS), inBufferPackets / 2);
     maxOutputPackets = std::max(maxOutputPackets, MIN_OUTPUT_PACKETS);
+    patBitRate = patBitRate.max(MIN_PSI_BITRATE);
+    catBitRate = catBitRate.max(MIN_PSI_BITRATE);
+    nitBitRate = nitBitRate.max(MIN_PSI_BITRATE);
+    sdtBitRate = sdtBitRate.max(MIN_PSI_BITRATE);
 }
 
 
@@ -119,8 +129,12 @@ void ts::MuxerArgs::defineArgs(Args& args) const
               u"Specify the internal polling cadence in microseconds. "
               u"The default is " + UString::Decimal(DEFAULT_CADENCE) + u" microseconds.");
 
+    args.option<BitRate>(u"cat-bitrate", 0, 0, 0, MIN_PSI_BITRATE);
+    args.help(u"cat-bitrate",
+              u"CAT bitrate in output stream. The default is " + UString::Decimal(DEFAULT_PSI_BITRATE) + u" b/s.");
+
     args.option(u"eit", 0, TableScopeEnum);
-    args.help(u"eit",
+    args.help(u"eit", u"type",
               u"Specify which type of EIT shall be merged in the output stream. The default is \"actual\".");
 
     args.option(u"ignore-conflicts", 'i');
@@ -147,12 +161,20 @@ void ts::MuxerArgs::defineArgs(Args& args) const
               u"The default is " + UString::Decimal(DEFAULT_MAX_OUTPUT_PACKETS) + u" packets.");
 
     args.option(u"nit", 0, TableScopeEnum);
-    args.help(u"nit",
+    args.help(u"nit", u"type",
               u"Specify which type of NIT shall be merged in the output stream. The default is \"actual\".");
+
+    args.option<BitRate>(u"nit-bitrate", 0, 0, 0, MIN_PSI_BITRATE);
+    args.help(u"nit-bitrate",
+              u"NIT bitrate in output stream. The default is " + UString::Decimal(DEFAULT_PSI_BITRATE) + u" b/s.");
 
     args.option(u"original-network-id", 0, Args::UINT16);
     args.help(u"original-network-id",
               u"Specify the original network id of the output stream. The default is 0.");
+
+    args.option<BitRate>(u"pat-bitrate", 0, 0, 0, MIN_PSI_BITRATE);
+    args.help(u"pat-bitrate",
+              u"PAT bitrate in output stream. The default is " + UString::Decimal(DEFAULT_PSI_BITRATE) + u" b/s.");
 
     args.option(u"restart-delay", 0, Args::UNSIGNED);
     args.help(u"restart-delay", u"milliseconds",
@@ -162,8 +184,12 @@ void ts::MuxerArgs::defineArgs(Args& args) const
               u"The default is " + UString::Decimal(DEFAULT_RESTART_DELAY) + u" milliseconds.");
 
     args.option(u"sdt", 0, TableScopeEnum);
-    args.help(u"sdt",
+    args.help(u"sdt", u"type",
               u"Specify which type of SDT shall be merged in the output stream. The default is \"actual\".");
+
+    args.option<BitRate>(u"sdt-bitrate", 0, 0, 0, MIN_PSI_BITRATE);
+    args.help(u"sdt-bitrate",
+              u"SDT bitrate in output stream. The default is " + UString::Decimal(DEFAULT_PSI_BITRATE) + u" b/s.");
 
     args.option(u"terminate", 't');
     args.help(u"terminate",
@@ -211,6 +237,10 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(sdtScope, u"sdt", TableScope::ACTUAL);
     args.getIntValue(eitScope, u"eit", TableScope::ACTUAL);
     args.getIntValue(timeInputIndex, u"time-reference-input", NPOS);
+    args.getFixedValue(patBitRate, u"pat-bitrate", DEFAULT_PSI_BITRATE);
+    args.getFixedValue(catBitRate, u"cat-bitrate", DEFAULT_PSI_BITRATE);
+    args.getFixedValue(nitBitRate, u"nit-bitrate", DEFAULT_PSI_BITRATE);
+    args.getFixedValue(sdtBitRate, u"sdt-bitrate", DEFAULT_PSI_BITRATE);
 
     // Load all plugin descriptions. Default output is the standard output file.
     ArgsWithPlugins* pargs = dynamic_cast<ArgsWithPlugins*>(&args);
