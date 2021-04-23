@@ -127,6 +127,10 @@ namespace ts {
             // Implementation of Thread.
             virtual void main() override;
 
+            // Get a packet from plugin at given index. If none is available, try next input and so on.
+            // Update the plugin index. Return false if all input plugins were tried without success.
+            bool getInputPacket(size_t& input_index, TSPacket& pkt, TSPacketMetadata& pkt_data);
+
             // Try to extract a UTC time from a TDT or TOT in one TS packet.
             bool getUTC(Time& utc, const TSPacket& pkt);
 

@@ -121,6 +121,20 @@ namespace ts {
         FixedPoint abs() const { return _value >= 0 ? *this : FixedPoint(- _value, true); }
 
         //!
+        //! Get the maximum value of two fixed-point numbers.
+        //! @param [in] x Another fixed-point number.
+        //! @return The maximum value of this fixed-point number and @a x.
+        //!
+        FixedPoint max(FixedPoint x) const { return FixedPoint(std::max(_value, x._value), true); }
+
+        //!
+        //! Get the minimum value of two fixed-point numbers.
+        //! @param [in] x Another fixed-point number.
+        //! @return The minimum value of this fixed-point number and @a x.
+        //!
+        FixedPoint min(FixedPoint x) const { return FixedPoint(std::min(_value, x._value), true); }
+
+        //!
         //! Check if this fixed-point number generates an overflow when multiplied by an integer.
         //! @tparam INT2 Another integer type.
         //! @param [in] x An integer of type @a INT2.

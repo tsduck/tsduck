@@ -201,7 +201,11 @@ void ts::tsmux::Core::main()
     _pid_origin.clear();
     _service_origin.clear();
 
-    // Reinitialize output PSI/SI.
+    // Reinitialize output PSI/SI. At the beginning, we do not send these empty tables
+    // into their packetizer. When the first table of a given type is encountered in
+    // an input stream, it will be merged into the corresponding output table and will
+    // be sent to the packetizer. Thus, if a table such as a CAT is not present in any
+    // input, it won't be present in output either.
     _output_pat.clear();
     _output_pat.ts_id = _opt.outputTSId;
     _output_pat.nit_pid = PID_NIT;
@@ -220,11 +224,17 @@ void ts::tsmux::Core::main()
     _sdt_bat_pzer.reset();
     _eit_pzer.reset();
 
+    // Insertion interval for signalization.
+    const PacketCounter pat_interval = (_opt.outputBitRate / _opt.patBitRate).toInt();
+    const PacketCounter cat_interval = (_opt.outputBitRate / _opt.catBitRate).toInt();
+    const PacketCounter nit_interval = (_opt.outputBitRate / _opt.nitBitRate).toInt();
+    const PacketCounter sdt_interval = (_opt.outputBitRate / _opt.sdtBitRate).toInt();
+
     // Reset signalization insertion.
-    //@@@ PacketCounter next_pat_packet = 0;
-    //@@@ PacketCounter next_cat_packet = 0;
-    //@@@ PacketCounter next_nit_packet = 0;
-    //@@@ PacketCounter next_sdt_packet = 0;
+    PacketCounter next_pat_packet = 0;
+    PacketCounter next_cat_packet = 0;
+    PacketCounter next_nit_packet = 0;
+    PacketCounter next_sdt_packet = 0;
 
     // Insertion is cadenced using a monotonic clock.
     const Monotonic start(true);
@@ -236,11 +246,9 @@ void ts::tsmux::Core::main()
     // Next input plugin to read from.
     size_t input_index = 0;
 
-    // Metadata for null packets.
-    TSPacketMetadata null_data;
-    null_data.setNullified(true);
-
+    // Reset output packet counter.
     _output_packets = 0;
+
     TSPacket pkt;
     TSPacketMetadata pkt_data;
 
@@ -259,14 +267,37 @@ void ts::tsmux::Core::main()
         // Loop on packets to send during this time interval.
         while (!_terminate && packet_count > 0) {
 
-            // Try to get one packet from next input.
-            bool success = _inputs[input_index]->getPacket(pkt, pkt_data);
-            input_index = (input_index + 1) % _inputs.size();
+            pkt_data.reset();
 
-            //
-            if (!success) {
-                // No packet is available from that input plugin.
-                //@@@@@@@@@@@@@@@@ get PSI/SI
+            // This section selects packets to insert. Initially, the insertion strategy was very basic.
+            // To improve the muxing method, rework this section.
+
+            if (_output_packets >= next_pat_packet && _pat_pzer.getNextPacket(pkt)) {
+                // Got a PAT packet.
+                next_pat_packet += pat_interval;
+            }
+            else if (_output_packets >= next_cat_packet && _cat_pzer.getNextPacket(pkt)) {
+                // Got a CAT packet.
+                next_cat_packet += cat_interval;
+            }
+            else if (_output_packets >= next_nit_packet && _nit_pzer.getNextPacket(pkt)) {
+                // Got a NIT packet.
+                next_nit_packet += nit_interval;
+            }
+            else if (_output_packets >= next_sdt_packet && _sdt_bat_pzer.getNextPacket(pkt)) {
+                // Got an SDT packet.
+                next_sdt_packet += sdt_interval;
+            }
+            else if (getInputPacket(input_index, pkt, pkt_data)) {
+                // Got a packet from an input plugin.
+            }
+            else if (_eit_pzer.getNextPacket(pkt)) {
+                // Got an EIT packet. Note that EIT are muxed, not cycled. So, they are inserted when available.
+            }
+            else {
+                // Nothing is available, insert a null packet.
+                pkt = NullPacket;
+                pkt_data.setNullified(true);
             }
 
             // Output that packet.
@@ -278,17 +309,33 @@ void ts::tsmux::Core::main()
                 _output_packets++;
                 packet_count--;
             }
-
-            // @@@@@@@@@
         }
 
-        // Wait until next muxin period.
+        // Wait until next muxing period.
         if (_terminate) {
             clock.wait();
         }
     }
 
     _log.debug(u"core thread terminated");
+}
+
+
+//----------------------------------------------------------------------------
+// Get a packet from plugin at given index.
+//----------------------------------------------------------------------------
+
+bool ts::tsmux::Core::getInputPacket(size_t& input_index, TSPacket& pkt, TSPacketMetadata& pkt_data)
+{
+    bool success = false;
+    size_t plugin_count = 0;
+    do {
+        // Try to get a packet from current plugin.
+        success = _inputs[input_index]->getPacket(pkt, pkt_data);
+        // Point to next plugin.
+        input_index = (input_index + 1) % _inputs.size();
+    } while (!success && ++plugin_count < _inputs.size());
+    return success;
 }
 
 
