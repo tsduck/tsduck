@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.27-2352
+
+[BUG] Bug fixes:
+
+  * Fixed issue #764: SCTE 35 splice information tables were not correctly
+    deserialized when the command length field was the legacy value 0xFFF.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.26-2344
 
 [NEW] New commands and plugins:

@@ -164,7 +164,9 @@ void ts::SpliceInformationTable::deserializePayload(PSIBuffer& buf, const Sectio
     buf.getBits(pts_adjustment, 33);
     buf.skipBits(8); // skip cw_index
     buf.getBits(tier, 12);
-    const size_t command_length = buf.getBits<size_t>(12);
+
+    // Splice command length and type. Note that the command length can be the legacy value 0x0FFF, meaning unspecified.
+    size_t command_length = buf.getBits<size_t>(12);
     splice_command_type = buf.getUInt8();
 
     // Encrypted sections cannot be deserialized.
@@ -172,35 +174,49 @@ void ts::SpliceInformationTable::deserializePayload(PSIBuffer& buf, const Sectio
         return;
     }
 
-    // Decode splice command.
-    bool success = true;
-    buf.pushReadSize(buf.currentReadByteOffset() + command_length);
+    // Decode splice command. Remember that the command length can be unspecified (0x0FFF).
+    const size_t max_length = command_length == 0x0FFF ? buf.remainingReadBytes() : command_length;
+    int actual_length = -1;
     switch (splice_command_type) {
         case SPLICE_NULL:
         case SPLICE_BANDWIDTH_RESERVATION:
             // These commands are empty.
+            actual_length = 0;
             break;
         case SPLICE_SCHEDULE:
-            success = splice_schedule.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0;
+            actual_length = splice_schedule.deserialize(buf.currentReadAddress(), max_length);
             break;
         case SPLICE_INSERT:
-            success = splice_insert.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0;
+            actual_length = splice_insert.deserialize(buf.currentReadAddress(), max_length);
             break;
         case SPLICE_TIME_SIGNAL:
-            success = time_signal.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0;
+            actual_length = time_signal.deserialize(buf.currentReadAddress(), max_length);
             break;
         case SPLICE_PRIVATE_COMMAND:
-            private_command.identifier = buf.getUInt32();
-            buf.getBytes(private_command.private_bytes, command_length - 4);
+            // A splice private command has no implicit size. It cannot be used with legacy command_length == 0x0FFF.
+            if (command_length != 0x0FFF && command_length >= 4) {
+                private_command.identifier = buf.getUInt32();
+                buf.getBytes(private_command.private_bytes, command_length - 4);
+                actual_length = 0; // already skipped
+                command_length = 0;
+            }
             break;
         default:
             // Invalid command.
             break;
     }
-    buf.popState();  // now point after command_length
-    if (!success) {
+
+    // Handle error in the splice command.
+    if (actual_length < 0) {
         buf.setUserError();
+        if (command_length == 0x0FFF) {
+            // Unknown command length, cannot recover.
+            return;
+        }
     }
+
+    // Point after the splice command.
+    buf.skipBytes(command_length == 0x0FFF ? size_t(actual_length) : command_length);
 
     // Process descriptor list.
     buf.getDescriptorListWithLength(descs, 16);
@@ -411,43 +427,75 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
             // Unencrypted packet, can display everything.
             const size_t cmd_length = buf.getBits<size_t>(12);
             const uint8_t cmd_type = buf.getUInt8();
-            buf.pushReadSize(buf.currentReadByteOffset() + cmd_length);
-            disp << margin << UString::Format(u"Command type: %s, size: %d bytes", {NameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST), cmd_length}) << std::endl;
+            disp << margin
+                 << "Command type: " << NameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST)
+                 << ", size: " << (cmd_length == 0x0FFF ? u"unspecified" : UString::Format(u"%d bytes", {cmd_length}))
+                 << std::endl;
+
+            // If the command length is the legacy value 0x0FFF, it means unspecified. See deserializePayload().
+            const size_t max_length = cmd_length == 0x0FFF ? buf.remainingReadBytes() : cmd_length;
+            int actual_length = -1;
+
             switch (cmd_type) {
+                case SPLICE_NULL:
+                case SPLICE_BANDWIDTH_RESERVATION: {
+                    // These commands are empty.
+                    actual_length = 0;
+                    break;
+                }
                 case SPLICE_SCHEDULE: {
                     SpliceSchedule cmd;
-                    if (cmd.deserialize(buf.currentReadAddress(), buf.remainingReadBytes()) >= 0) {
+                    actual_length = cmd.deserialize(buf.currentReadAddress(), max_length);
+                    if (actual_length >= 0) {
                         cmd.display(disp, margin);
-                        buf.skipBytes(buf.remainingReadBytes());
                     }
                     break;
                 }
                 case SPLICE_INSERT: {
                     SpliceInsert cmd;
-                    if (cmd.deserialize(buf.currentReadAddress(), cmd_length) >= 0) {
+                    actual_length = cmd.deserialize(buf.currentReadAddress(), max_length);
+                    if (actual_length >= 0) {
                         cmd.display(disp, margin);
-                        buf.skipBytes(buf.remainingReadBytes());
                     }
                     break;
                 }
                 case SPLICE_TIME_SIGNAL: {
                     SpliceTime cmd;
-                    if (cmd.deserialize(buf.currentReadAddress(), cmd_length) >= 0) {
-                        buf.skipBytes(buf.remainingReadBytes());
+                    actual_length = cmd.deserialize(buf.currentReadAddress(), max_length);
+                    if (actual_length >= 0) {
                         disp << margin << "Time: " << cmd.toString() << std::endl;
                     }
                     break;
                 }
                 case SPLICE_PRIVATE_COMMAND: {
-                    disp << margin << UString::Format(u"Command identifier: 0x%0X (%<'d)", {buf.getUInt32()}) << std::endl;
+                    // A splice private command has no implicit size. It cannot be used with legacy command_length == 0x0FFF.
+                    if (cmd_length != 0x0FFF && cmd_length >= 4) {
+                        disp << margin << UString::Format(u"Command identifier: 0x%0X (%<'d)", {GetUInt32(buf.currentReadAddress())}) << std::endl;
+                        actual_length = 4;
+                    }
                     break;
                 }
                 default:
                     // Invalid command.
                     break;
             }
-            disp.displayPrivateData(u"Remaining command content", buf, NPOS, margin);
-            buf.popState();  // now point after command_length
+            if (cmd_length != 0x0FFF) {
+                // Total splice command line is known, we can display the extra.
+                if (actual_length > 0) {
+                    // Skipped what was already displayed.
+                    buf.skipBytes(size_t(actual_length));
+                }
+                const size_t extra = cmd_length - std::min(cmd_length, actual_length < 0 ? 0 : size_t(actual_length));
+                disp.displayPrivateData(u"Remaining command content", buf, extra, margin);
+            }
+            else if (actual_length < 0) {
+                // Unknown command length, cannot recover.
+                return;
+            }
+            else {
+                // Need to trust the implicit command length.
+                buf.skipBytes(size_t(actual_length));
+            }
 
             // Splice descriptors.
             disp.displayDescriptorListWithLength(section, buf, margin, UString(), UString(), 16);
