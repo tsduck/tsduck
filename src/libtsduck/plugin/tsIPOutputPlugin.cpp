@@ -57,6 +57,7 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     _pkt_burst(DEF_PACKET_BURST),
     _enforce_burst(false),
     _use_rtp(false),
+    _force_mc_local(false),
     _rtp_pt(RTP_PT_MP2T),
     _rtp_fixed_sequence(false),
     _rtp_start_sequence(0),
@@ -86,6 +87,16 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     help(u"enforce-burst",
          u"Enforce that the number of TS packets per UDP packet is exactly what is specified "
          u"in option --packet-burst. By default, this is only a maximum value.");
+
+    option(u"force-local-multicast-outgoing", 'f');
+    help(u"force-local-multicast-outgoing",
+         u"When the destination is a multicast address and --local-address is specified, "
+         u"force multicast outgoing traffic on this local interface (socket option IP_MULTICAST_IF). "
+         u"Use this option with care. Its usage depends on the operating system. "
+         u"If no route is declared for this destination address, this option may be necessary "
+         u"to force the multicast to the specified local interface. On the other hand, if a route is "
+         u"declared, this option may transfom multicast packets in unicast Ethernet frames "
+         u"to the gateway, preventing multicast reception on the local network (seen on Linux).");
 
     option(u"local-address", 'l', STRING);
     help(u"local-address",
@@ -159,21 +170,24 @@ bool ts::IPOutputPlugin::isRealTime()
 bool ts::IPOutputPlugin::getOptions()
 {
     // Get command line arguments
-    getValue(_destination, u"");
-    getValue(_local_addr, u"local-address");
-    _local_port = intValue<uint16_t>(u"local-port", SocketAddress::AnyPort);
-    _ttl = intValue<int>(u"ttl", 0);
-    _tos = intValue<int>(u"tos", -1);
-    _pkt_burst = intValue<size_t>(u"packet-burst", DEF_PACKET_BURST);
+    bool success = _destination.resolve(value(u""), *tsp);
+    const UString local(value(u"local-address"));
+    _local_addr.clear();
+    success = (local.empty() || _local_addr.resolve(local)) && success;
+    getIntValue(_local_port, u"local-port", SocketAddress::AnyPort);
+    getIntValue(_ttl, u"ttl", 0);
+    getIntValue(_tos, u"tos", -1);
+    getIntValue(_pkt_burst, u"packet-burst", DEF_PACKET_BURST);
     _enforce_burst = present(u"enforce-burst");
+    _force_mc_local = present(u"force-local-multicast-outgoing");
     _use_rtp = present(u"rtp");
-    _rtp_pt = intValue<uint8_t>(u"payload-type", RTP_PT_MP2T);
+    getIntValue(_rtp_pt, u"payload-type", RTP_PT_MP2T);
     _rtp_fixed_sequence = present(u"start-sequence-number");
-    _rtp_start_sequence = intValue<uint16_t>(u"start-sequence-number");
+    getIntValue(_rtp_start_sequence, u"start-sequence-number");
     _rtp_fixed_ssrc = present(u"ssrc-identifier");
-    _rtp_user_ssrc = intValue<uint32_t>(u"ssrc-identifier");
-    _pcr_user_pid = intValue<PID>(u"pcr-pid", PID_NULL);
-    return true;
+    getIntValue(_rtp_user_ssrc, u"ssrc-identifier");
+    getIntValue(_pcr_user_pid, u"pcr-pid", PID_NULL);
+    return success;
 }
 
 
@@ -189,10 +203,11 @@ bool ts::IPOutputPlugin::start()
     }
 
     // Configure socket.
-    const SocketAddress local(IPAddress::AnyAddress, _local_port);
-    if ((_local_port != SocketAddress::AnyPort && (!_sock.reusePort(true, *tsp) || !_sock.bind(local, *tsp))) ||
+    const SocketAddress local(_local_addr, _local_port);
+    if ((_local_port != SocketAddress::AnyPort && !_sock.reusePort(true, *tsp)) ||
+        !_sock.bind(local, *tsp) ||
         !_sock.setDefaultDestination(_destination, *tsp) ||
-        (!_local_addr.empty() && !_sock.setOutgoingMulticast(_local_addr, *tsp)) ||
+        (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr, *tsp)) ||
         (_tos >= 0 && !_sock.setTOS(_tos, *tsp)) ||
         (_ttl > 0 && !_sock.setTTL(_ttl, *tsp)))
     {
