@@ -95,7 +95,7 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
          u"Use this option with care. Its usage depends on the operating system. "
          u"If no route is declared for this destination address, this option may be necessary "
          u"to force the multicast to the specified local interface. On the other hand, if a route is "
-         u"declared, this option may transfom multicast packets in unicast Ethernet frames "
+         u"declared, this option may transport multicast IP packets in unicast Ethernet frames "
          u"to the gateway, preventing multicast reception on the local network (seen on Linux).");
 
     option(u"local-address", 'l', STRING);
