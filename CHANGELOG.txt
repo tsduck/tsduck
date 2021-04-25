@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2352
+VERSION 3.27-2354
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in exiting commands and plugins:
+    - Option --force-local-multicast-outgoing in output plugin "ip".
 
 [BUG] Bug fixes:
 
