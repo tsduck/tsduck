@@ -64,14 +64,15 @@ namespace ts {
         //! @endcond
 
     private:
-        UString        _destination;        // Destination address/port.
-        UString        _local_addr;         // Local address.
+        SocketAddress  _destination;        // Destination address/port.
+        IPAddress      _local_addr;         // Local address.
         uint16_t       _local_port;         // Local UDP source port.
         int            _ttl;                // Time to live option.
         int            _tos;                // Type of service option.
         size_t         _pkt_burst;          // Number of TS packets per UDP message
         bool           _enforce_burst;      // Option --enforce-burst
         bool           _use_rtp;            // Use real-time transport protocol
+        bool           _force_mc_local;     // Force multicast outgoing local interface
         uint8_t        _rtp_pt;             // RTP payload type.
         bool           _rtp_fixed_sequence; // RTP sequence number starts with a fixed value
         uint16_t       _rtp_start_sequence; // RTP starting sequence number
