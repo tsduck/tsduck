@@ -78,6 +78,8 @@ public:
     Dtapi::DtDevice      dtdev;              // Device descriptor
     Dtapi::DtOutpChannel chan;               // Output channel
     int                  detach_mode;        // Detach mode
+    int                  iostd_value;        // Value parameter for SetIoConfig on I/O standard.
+    int                  iostd_subvalue;     // SubValue parameter for SetIoConfig on I/O standard.
     BitRate              opt_bitrate;        // Bitrate option (0 means unspecified)
     BitRate              cur_bitrate;        // Current output bitrate
     int                  max_fifo_size;      // Maximum FIFO size
@@ -102,6 +104,8 @@ ts::DektecOutputPlugin::Guts::Guts() :
     dtdev(),
     chan(),
     detach_mode(DTAPI_WAIT_UNTIL_SENT),
+    iostd_value(-1),
+    iostd_subvalue(-1),
     opt_bitrate(0),
     cur_bitrate(0),
     max_fifo_size(0),
@@ -152,6 +156,8 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     assert(DTAPI_DVBT2_8MHZ == DTAPI_MOD_DTMB_8MHZ);
 
     // Declaration of command-line options
+    DefineDektecIOStandardArgs(*this);
+
     option(u"204");
     help(u"204",
          u"ASI devices: Send 204-byte packets (188 meaningful bytes plus 16 "
@@ -855,6 +861,7 @@ bool ts::DektecOutputPlugin::start()
     _guts->maintain_preload = present(u"maintain-preload");
     _guts->drop_to_maintain = present(u"drop-to-maintain-preload");
     getIntValue(_guts->power_mode, u"power-mode", -1);
+    GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue);
 
     // Get initial bitrate
     _guts->cur_bitrate = _guts->opt_bitrate != 0 ? _guts->opt_bitrate : tsp->bitrate();
@@ -871,14 +878,19 @@ bool ts::DektecOutputPlugin::start()
         return false;
     }
 
-    // Set power mode.
+    // Determine port number.
     const int port = _guts->device.output[_guts->chan_index].m_Port;
+
+    // Set power mode.
     if (_guts->power_mode >= 0) {
         status = _guts->dtdev.SetIoConfig(port, DTAPI_IOCONFIG_PWRMODE, _guts->power_mode);
         if (status != DTAPI_OK) {
             return startError(u"set power mode", status);
         }
     }
+
+    // Determine channel capabilities.
+    Dtapi::DtCaps dt_flags = _guts->device.output[_guts->chan_index].m_Flags;
 
     // Open the channel
     status = _guts->chan.AttachToPort(&_guts->dtdev, port);
@@ -892,11 +904,8 @@ bool ts::DektecOutputPlugin::start()
     const DektecVPD vpd(_guts->dtdev);
 
     // Check if the device is a modulator.
-    const bool is_modulator = (_guts->device.output[_guts->chan_index].m_Flags & DTAPI_CAP_MOD) != 0;
+    const bool is_modulator = (dt_flags & DTAPI_CAP_MOD) != 0;
     _guts->mute_on_stop = false;
-
-    // Determine channel capabilities.
-    Dtapi::DtCaps dt_flags = _guts->device.output[_guts->chan_index].m_Flags;
 
     // Set default modulation for multi-standard modulators.
     // Also adjust device capabilities since m_Flags field is not
@@ -945,6 +954,15 @@ bool ts::DektecOutputPlugin::start()
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
         return startError(u"output device reset error", status);
+    }
+
+    // Configure I/O standard if necessary.
+    if (_guts->iostd_value >= 0) {
+        tsp->debug(u"setting IO config of port %d, group: %d, value: %d, subvalue: %d", {port, DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue});
+        status = _guts->chan.SetIoConfig(DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue);
+        if (status != DTAPI_OK) {
+            return startError(u"error setting I/O standard", status);
+        }
     }
 
     // Set 188/204-byte output packet format and stuffing
@@ -1086,7 +1104,7 @@ bool ts::DektecOutputPlugin::startError(const UString& message, unsigned int sta
         tsp->error(message);
     }
     else {
-        tsp->error(message + u": " + DektecStrError(status));
+        tsp->error(u"%s: %s", {message, DektecStrError(status)});
     }
     _guts->chan.Detach(DTAPI_INSTANT_DETACH);
     _guts->dtdev.Detach();

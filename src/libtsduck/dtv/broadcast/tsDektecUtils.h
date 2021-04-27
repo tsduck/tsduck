@@ -39,6 +39,8 @@
 
 namespace ts {
 
+    class Args;
+
     //!
     //! Safe size in bytes of the FIFO of DTA devices.
     //! This is a legacy value, recent devices can report dynamically.
@@ -87,6 +89,22 @@ namespace ts {
     //! Enumeration (names/values) for Dektec DTU-315 modulator power modes.
     //!
     TSDUCKDLL extern const Enumeration DektecPowerMode;
+
+    //!
+    //! Add command line option definitions in an Args for Dektec --io-standard option.
+    //! @param [in,out] args Command line arguments to update.
+    //!
+    TSDUCKDLL void DefineDektecIOStandardArgs(Args& args);
+
+    //!
+    //! Get command line option for Dektec --io-standard option.
+    //! Args error indicator is set in case of incorrect arguments.
+    //! @param [in,out] args Command line arguments.
+    //! @param [out] value Value argument for DTAPI SetIoConfig() or -1 if option is not specified.
+    //! @param [out] subvalue SubValue argument for DTAPI SetIoConfig() or -1 if option is not specified.
+    //! @return True on success, false if the command line option is not specified.
+    //!
+    TSDUCKDLL bool GetDektecIOStandardArgs(Args& args, int& value, int& subvalue);
 
     //!
     //! Check if this version of TSDuck was built with Dektec support.
