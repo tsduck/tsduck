@@ -29,6 +29,7 @@
 
 #include "tsDektecUtils.h"
 #include "tsDektec.h"
+#include "tsArgs.h"
 TSDUCK_SOURCE;
 
 
@@ -125,6 +126,106 @@ const ts::Enumeration ts::DektecPowerMode({
     {u"high-quality", DTAPI_IOCONFIG_MODHQ},
     {u"low-power", DTAPI_IOCONFIG_LOWPWR},
 });
+
+
+//-----------------------------------------------------------------------------
+// Embed DTAPI SetIoConfig parameters Value and SubValue in one int.
+//-----------------------------------------------------------------------------
+
+namespace {
+    int IoConfigParams(int value, int subvalue = -1) { return (value & 0xFFFF) | (subvalue << 16); }
+    int IoConfigValue(int opt) { return opt & 0xFFFF; }
+    int IoConfigSubValue(int opt) { const int o = (opt >> 16) & 0xFFFF; return o == 0xFFFF ? -1 : o; }
+}
+
+
+//-----------------------------------------------------------------------------
+// Add command line option definitions in an Args for --io-standard option.
+//-----------------------------------------------------------------------------
+
+void ts::DefineDektecIOStandardArgs(Args& args)
+{
+    args.option(u"io-standard", 0, Enumeration({
+        {u"12G-SDI-2160p/50",     IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P50)},      // 12G-SDI, 2160p/50 lvl A
+        {u"12G-SDI-2160p/50B",    IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P50B)},     // 12G-SDI, 2160p/50 lvl B
+        {u"12G-SDI-2160p/59.94",  IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P59_94)},   // 12G-SDI, 2160p/59.94 lvl A
+        {u"12G-SDI-2160p/59.94B", IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P59_94B)},  // 12G-SDI, 2160p/59.94 lvl B
+        {u"12G-SDI-2160p/60",     IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P60)},      // 12G-SDI, 2160p/60 lvl A
+        {u"12G-SDI-2160p/60B",    IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P60B)},     // 12G-SDI, 2160p/60 lvl B
+        {u"3G-SDI-1080p/50",      IoConfigParams(DTAPI_IOCONFIG_3GSDI, DTAPI_IOCONFIG_1080P50)},       // 3G-SDI, 1080p/50 lvl A
+        {u"3G-SDI-1080p/50B",     IoConfigParams(DTAPI_IOCONFIG_3GSDI, DTAPI_IOCONFIG_1080P50B)},      // 3G-SDI, 1080p/50 lvl B
+        {u"3G-SDI-1080p/59.94",   IoConfigParams(DTAPI_IOCONFIG_3GSDI, DTAPI_IOCONFIG_1080P59_94)},    // 3G-SDI, 1080p/59.94 lvl A
+        {u"3G-SDI-1080p/59.94B",  IoConfigParams(DTAPI_IOCONFIG_3GSDI, DTAPI_IOCONFIG_1080P59_94B)},   // 3G-SDI, 1080p/59.94 lvl B
+        {u"3G-SDI-1080p/60",      IoConfigParams(DTAPI_IOCONFIG_3GSDI, DTAPI_IOCONFIG_1080P60)},       // 3G-SDI, 1080p/60 lvl A
+        {u"3G-SDI-1080p/60B",     IoConfigParams(DTAPI_IOCONFIG_3GSDI, DTAPI_IOCONFIG_1080P60B)},      // 3G-SDI, 1080p/60 lvl B
+        {u"6G-SDI-2160p/23.98",   IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P23_98)},    // 6G-SDI, 2160p/23.98
+        {u"6G-SDI-2160p/24",      IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P24)},       // 6G-SDI, 2160p/24
+        {u"6G-SDI-2160p/25",      IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P25)},       // 6G-SDI, 2160p/25
+        {u"6G-SDI-2160p/29.97",   IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P29_97)},    // 6G-SDI, 2160p/29.97
+        {u"6G-SDI-2160p/30",      IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P30)},       // 6G-SDI, 2160p/30
+        {u"ASI",                  IoConfigParams(DTAPI_IOCONFIG_ASI)},                                 // DVB-ASI transport stream
+        {u"encoder",              IoConfigParams(DTAPI_IOCONFIG_AVENC)},                               // Audio/video encoder
+        {u"dektec-streaming",     IoConfigParams(DTAPI_IOCONFIG_DEKTECST)},                            // DekTec Streaming-data Interface
+        {u"demodulator",          IoConfigParams(DTAPI_IOCONFIG_DEMOD)},                               // Demodulation
+        {u"GPS-clock",            IoConfigParams(DTAPI_IOCONFIG_GPSTIME)},                             // 1 PPS and 10 MHz GPS-clock input
+        {u"HDMI",                 IoConfigParams(DTAPI_IOCONFIG_HDMI)},                                // HDMI
+        {u"HD-SDI-1080i/50",      IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080I50)},       // HD-SDI, 1080i/50
+        {u"HD-SDI-1080i/59.94",   IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080I59_94)},    // HD-SDI, 1080i/59.94
+        {u"HD-SDI-1080i/60",      IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080I60)},       // HD-SDI, 1080i/60
+        {u"HD-SDI-1080p/23.98",   IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080P23_98)},    // HD-SDI, 1080p/23.98
+        {u"HD-SDI-1080p/24",      IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080P24)},       // HD-SDI, 1080p/24
+        {u"HD-SDI-1080p/25",      IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080P25)},       // HD-SDI, 1080p/25
+        {u"HD-SDI-1080p/29.97",   IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080P29_97)},    // HD-SDI, 1080p/29.97
+        {u"HD-SDI-1080p/30",      IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080P30)},       // HD-SDI, 1080p/30
+        {u"HD-SDI-1080psf/23.98", IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080PSF23_98)},  // HD-SDI, 1080psf/23.98
+        {u"HD-SDI-1080psf/24",    IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080PSF24)},     // HD-SDI, 1080psf/24
+        {u"HD-SDI-1080psf/25",    IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080PSF25)},     // HD-SDI, 1080psf/25
+        {u"HD-SDI-1080psf/29.97", IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080PSF29_97)},  // HD-SDI, 1080psf/29.97
+        {u"HD-SDI-1080psf/30",    IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080PSF30)},     // HD-SDI, 1080psf/30
+        {u"HD-SDI-720p/23.98",    IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P23_98)},     // HD-SDI, 720p/23.98
+        {u"HD-SDI-720p/24",       IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P24)},        // HD-SDI, 720p/24
+        {u"HD-SDI-720p/25",       IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P25)},        // HD-SDI, 720p/25
+        {u"HD-SDI-720p/29.97",    IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P29_97)},     // HD-SDI, 720p/29.97
+        {u"HD-SDI-720p/30",       IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P30)},        // HD-SDI, 720p/30
+        {u"HD-SDI-720p/50",       IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P50)},        // HD-SDI, 720p/50
+        {u"HD-SDI-720p/59.94",    IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P59_94)},     // HD-SDI, 720p/59.94
+        {u"HD-SDI-720p/60",       IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P60)},        // HD-SDI, 720p/60
+        {u"IF-AD-converter",      IoConfigParams(DTAPI_IOCONFIG_IFADC)},                               // IF A/D converter
+        {u"IP",                   IoConfigParams(DTAPI_IOCONFIG_IP)},                                  // Transport stream over IP
+        {u"modulator",            IoConfigParams(DTAPI_IOCONFIG_MOD)},                                 // Modulator output
+        {u"phase-noise",          IoConfigParams(DTAPI_IOCONFIG_PHASENOISE)},                          // Phase noise injection
+        {u"RS422",                IoConfigParams(DTAPI_IOCONFIG_RS422)},                               // RS422 port
+        {u"SDI-receiver",         IoConfigParams(DTAPI_IOCONFIG_SDIRX)},                               // SDI receiver
+        {u"SDI-525i/59.94",       IoConfigParams(DTAPI_IOCONFIG_SDI, DTAPI_IOCONFIG_525I59_94)},       // SDI, 525i/59.94
+        {u"SDI-625i/50",          IoConfigParams(DTAPI_IOCONFIG_SDI, DTAPI_IOCONFIG_625I50)},          // SDI, 625i/50
+        {u"SPI",                  IoConfigParams(DTAPI_IOCONFIG_SPI)},                                 // DVB-SPI transport stream
+        {u"SPI-SDI-525i/59.94",   IoConfigParams(DTAPI_IOCONFIG_SPISDI, DTAPI_IOCONFIG_SPI525I59_94)}, // SD-SDI on a parallel port, 525i/59.94
+        {u"SPI-SDI-625i/50",      IoConfigParams(DTAPI_IOCONFIG_SPISDI, DTAPI_IOCONFIG_SPI625I50)},    // SD-SDI on a parallel port, 625i/50
+    }));
+    args.help(u"io-standard",
+              u"I/O standard to use on the device port. "
+              u"Which modes are supported depends on the device model. "
+              u"See the Dektec documentation for more details.");
+}
+
+
+//-----------------------------------------------------------------------------
+// Get command line option for Dektec --io-standard option.
+//-----------------------------------------------------------------------------
+
+bool ts::GetDektecIOStandardArgs(Args& args, int& value, int& subvalue)
+{
+    if (args.present(u"io-standard")) {
+        const int opt = args.intValue<int>(u"io-standard");
+        value = IoConfigValue(opt);
+        subvalue = IoConfigSubValue(opt);
+        return true;
+    }
+    else {
+        value = subvalue = -1;
+        return true;
+    }
+}
 
 
 //-----------------------------------------------------------------------------

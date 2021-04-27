@@ -61,23 +61,25 @@ class ts::DektecInputPlugin::Guts
 {
     TS_NOCOPY(Guts);
 public:
-    Guts();                           // Constructor.
-    bool                is_started;   // Device started
-    int                 dev_index;    // Dektec device index
-    int                 chan_index;   // Device input channel index
-    int                 timeout_ms;   // Receive timeout in milliseconds.
-    DektecDevice        device;       // Device characteristics
-    Dtapi::DtDevice     dtdev;        // Device descriptor
-    Dtapi::DtInpChannel chan;         // Input channel
-    int                 init_cnt;     // Count the first inputs
-    BitRate             cur_bitrate;  // Current input bitrate
-    bool                got_bitrate;  // Got bitrate at least once.
-    uint64_t            demod_freq;   // Demodulation frequency in Hz
-    Dtapi::DtDemodPars  demod_pars;   // Demodulation parameters
-    int                 sat_number;   // Satellite number
-    Polarization        polarity;     // Polarity.
-    bool                high_band;    // Use LNB high frequency band.
-    bool                lnb_setup;    // Need LNB setup.
+    Guts();                              // Constructor.
+    bool                is_started;      // Device started
+    int                 dev_index;       // Dektec device index
+    int                 chan_index;      // Device input channel index
+    int                 timeout_ms;      // Receive timeout in milliseconds.
+    int                 iostd_value;     // Value parameter for SetIoConfig on I/O standard.
+    int                 iostd_subvalue;  // SubValue parameter for SetIoConfig on I/O standard.
+    DektecDevice        device;          // Device characteristics
+    Dtapi::DtDevice     dtdev;           // Device descriptor
+    Dtapi::DtInpChannel chan;            // Input channel
+    int                 init_cnt;        // Count the first inputs
+    BitRate             cur_bitrate;     // Current input bitrate
+    bool                got_bitrate;     // Got bitrate at least once.
+    uint64_t            demod_freq;      // Demodulation frequency in Hz
+    Dtapi::DtDemodPars  demod_pars;      // Demodulation parameters
+    int                 sat_number;      // Satellite number
+    Polarization        polarity;        // Polarity.
+    bool                high_band;       // Use LNB high frequency band.
+    bool                lnb_setup;       // Need LNB setup.
 };
 
 ts::DektecInputPlugin::Guts::Guts() :
@@ -85,6 +87,8 @@ ts::DektecInputPlugin::Guts::Guts() :
     dev_index(-1),
     chan_index(-1),
     timeout_ms(-1),
+    iostd_value(-1),
+    iostd_subvalue(-1),
     device(),
     dtdev(),
     chan(),
@@ -132,6 +136,8 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     assert(DTAPI_DVBT2_6MHZ == DTAPI_MOD_DVBT_6MHZ);
     assert(DTAPI_DVBT2_7MHZ == DTAPI_MOD_DVBT_7MHZ);
     assert(DTAPI_DVBT2_8MHZ == DTAPI_MOD_DVBT_8MHZ);
+
+    DefineDektecIOStandardArgs(*this);
 
     option(u"atsc3-bandwidth", 0, Enumeration({
         {u"6-MHz",  DTAPI_ATSC3_6MHZ},
@@ -403,11 +409,6 @@ bool ts::DektecInputPlugin::start()
     return false;
 }
 
-bool ts::DektecInputPlugin::configureLNB()
-{
-    return false;
-}
-
 bool ts::DektecInputPlugin::stop()
 {
     return true;
@@ -439,6 +440,7 @@ bool ts::DektecInputPlugin::getOptions()
     getIntValue(_guts->polarity, u"polarity", POL_VERTICAL);
     _guts->high_band = false;
     _guts->lnb_setup = false;
+    GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue);
 
     // Compute carrier frequency
     if (present(u"frequency") && present(u"satellite-frequency")) {
@@ -638,8 +640,11 @@ bool ts::DektecInputPlugin::start()
         return false;
     }
 
+    // Determine port number.
+    const int port = _guts->device.input[_guts->chan_index].m_Port;
+
     // Open the input channel
-    status = _guts->chan.AttachToPort(&_guts->dtdev, _guts->device.input[_guts->chan_index].m_Port);
+    status = _guts->chan.AttachToPort(&_guts->dtdev, port);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching input channel %d of Dektec device %d: %s", {_guts->chan_index, _guts->dev_index, DektecStrError(status)});
         _guts->dtdev.Detach();
@@ -649,22 +654,25 @@ bool ts::DektecInputPlugin::start()
     // Reset input channel
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
-        tsp->error(u"input device reset error: %s", {DektecStrError(status)});
-        _guts->chan.Detach(0);
-        _guts->dtdev.Detach();
-        return false;
+        return startError(u"input device reset error", status);
     }
 
     status = _guts->chan.SetRxControl(DTAPI_RXCTRL_IDLE);
     if (status != DTAPI_OK) {
-        tsp->error(u"device SetRxControl error: %s", {DektecStrError(status)});
-        _guts->chan.Detach(0);
-        _guts->dtdev.Detach();
-        return false;
+        return startError(u"device SetRxControl error", status);
     }
 
     status = _guts->chan.ClearFifo();            // Clear FIFO (i.e. start with zero load)
     status = _guts->chan.ClearFlags(0xFFFFFFFF); // Clear all flags
+
+    // Configure I/O standard if necessary.
+    if (_guts->iostd_value >= 0) {
+        tsp->debug(u"setting IO config of port %d, group: %d, value: %d, subvalue: %d", {port, DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue});
+        status = _guts->chan.SetIoConfig(DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue);
+        if (status != DTAPI_OK) {
+            return startError(u"error setting I/O standard", status);
+        }
+    }
 
     // Apply demodulation settings
     if (_guts->demod_freq > 0) {
@@ -677,10 +685,7 @@ bool ts::DektecInputPlugin::start()
         // Tune to the frequency and demodulation parameters.
         status = _guts->chan.Tune(int64_t(_guts->demod_freq), &_guts->demod_pars);
         if (status != DTAPI_OK) {
-            tsp->error(u"error tuning Dektec demodulator: %s", {DektecStrError(status)});
-            _guts->chan.Detach(0);
-            _guts->dtdev.Detach();
-            return false;
+            return startError(u"error tuning Dektec demodulator", status);
         }
     }
 
@@ -689,19 +694,13 @@ bool ts::DektecInputPlugin::start()
     // bytes if the transmitted packets are 204-byte).
     status = _guts->chan.SetRxMode(DTAPI_RXMODE_ST188);
     if (status != DTAPI_OK) {
-        tsp->error(u"device SetRxMode error: %s", {DektecStrError(status)});
-        _guts->chan.Detach(0);
-        _guts->dtdev.Detach();
-        return false;
+        return startError(u"device SetRxMode error", status);
     }
 
     // Start the capture on the input device (set receive control to "receive")
     status = _guts->chan.SetRxControl(DTAPI_RXCTRL_RCV);
     if (status != DTAPI_OK) {
-        tsp->error(u"device SetRxControl error: %s", {DektecStrError(status)});
-        _guts->chan.Detach(0);
-        _guts->dtdev.Detach();
-        return false;
+        return startError(u"device SetRxControl error", status);
     }
 
     // Consider that the first 5 inputs are "initialization". If a full input
@@ -710,6 +709,24 @@ bool ts::DektecInputPlugin::start()
     _guts->init_cnt = 5;
     _guts->is_started = true;
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Output start error method
+//----------------------------------------------------------------------------
+
+bool ts::DektecInputPlugin::startError(const UString& message, unsigned int status)
+{
+    if (status == DTAPI_OK) {
+        tsp->error(message);
+    }
+    else {
+        tsp->error(u"%s: %s", {message, DektecStrError(status)});
+    }
+    _guts->chan.Detach(0);
+    _guts->dtdev.Detach();
+    return false;
 }
 
 
@@ -742,22 +759,19 @@ bool ts::DektecInputPlugin::configureLNB()
     // Enable the LNB controller.
     Dtapi::DTAPI_RESULT status = _guts->chan.LnbEnable(true);
     if (status != DTAPI_OK) {
-        tsp->error(u"error enabling Dektec LNB controller: %s", {DektecStrError(status)});
-        return false;
+        return startError(u"error enabling Dektec LNB controller", status);
     }
 
     // Stop 22 kHz continuous tone (was on if previously tuned on high band).
     status = _guts->chan.LnbEnableTone(false);
     if (status != DTAPI_OK) {
-        tsp->error(u"error stopping LNB tone: %s", {DektecStrError(status)});
-        return false;
+        return startError(u"error stopping LNB tone", status);
     }
 
     // Setup polarisation voltage: 13V for vertical polarisation, 18V for horizontal
     status = _guts->chan.LnbSetVoltage(_guts->polarity == POL_VERTICAL ? DTAPI_LNB_13V : DTAPI_LNB_18V);
     if (status != DTAPI_OK) {
-        tsp->error(u"error setting LNB voltage: %s", {DektecStrError(status)});
-        return false;
+        return startError(u"error setting LNB voltage", status);
     }
 
     // Wait at least 15ms. Not sure it is necessary with Dektec. It is necessary with LinuxTV.
@@ -771,8 +785,7 @@ bool ts::DektecInputPlugin::configureLNB()
     // the "send tone burst" command is binary (A or B).
     status = _guts->chan.LnbSendBurst(_guts->sat_number == 0 ? DTAPI_LNB_BURST_A : DTAPI_LNB_BURST_B);
     if (status != DTAPI_OK) {
-        tsp->error(u"error sending LNB burst: %s", {DektecStrError(status)});
-        return false;
+        return startError(u"error sending LNB burst", status);
     }
 
     // Wait 15ms again.
@@ -792,8 +805,7 @@ bool ts::DektecInputPlugin::configureLNB()
 
     status = _guts->chan.LnbSendDiseqcMessage(cmd, int(sizeof(cmd)));
     if (status != DTAPI_OK) {
-        tsp->error(u"error sending DiSeqC command: %s", {DektecStrError(status)});
-        return false;
+        return startError(u"error sending DiSeqC command", status);
     }
 
     // Wait 15ms again.
@@ -802,8 +814,7 @@ bool ts::DektecInputPlugin::configureLNB()
     // Start the 22kHz continuous tone when tuning to a transponder in the high band
     status = _guts->chan.LnbEnableTone(_guts->high_band);
     if (status != DTAPI_OK) {
-        tsp->error(u"error set LNB tone: %s", {DektecStrError(status)});
-        return false;
+        return startError(u"error set LNB tone", status);
     }
 
     return true;

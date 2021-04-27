@@ -74,7 +74,12 @@ namespace ts {
         class Guts;
         Guts* _guts;
 
+#if !defined(TS_NO_DTAPI)
+        // Start error: log error, detach channel & device, return false.
+        bool startError(const UString&, unsigned int); // Dtapi::DTAPI_RESULT
+
         // Configure the LNB. Return true on success.
         bool configureLNB();
+#endif
     };
 }
