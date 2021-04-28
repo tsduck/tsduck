@@ -674,7 +674,11 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
     }
 
     if (_set_input >= 1) {
-        status = dtdev.SetIoConfig(_set_input, DTAPI_IOCONFIG_IODIR, DTAPI_IOCONFIG_INPUT);
+        // Important: according to file CapList.xlsx (coming with DTAPI), the SetIoConfig IODIR with value INPUT
+        // shall also specify INPUT as SubCap (aka SubValue). This is new with devices which are not only
+        // bidirectional but which can also redirect input and output (internal loopback, antenna, etc).
+        // In that case, SubCap INPUT means "input port coming from physical socket".
+        status = dtdev.SetIoConfig(_set_input, DTAPI_IOCONFIG_IODIR, DTAPI_IOCONFIG_INPUT, DTAPI_IOCONFIG_INPUT);
         if (status != DTAPI_OK) {
             std::cerr << "* Error setting port " << _set_input << " to input mode: " << DektecStrError(status) << std::endl;
             return EXIT_FAILURE;
@@ -682,7 +686,8 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
     }
 
     if (_set_output >= 1) {
-        status = dtdev.SetIoConfig(_set_output, DTAPI_IOCONFIG_IODIR, DTAPI_IOCONFIG_OUTPUT);
+        // Important: same comment as INPUT above, specify OUTPUT as SubCap to output physical output port.
+        status = dtdev.SetIoConfig(_set_output, DTAPI_IOCONFIG_IODIR, DTAPI_IOCONFIG_OUTPUT, DTAPI_IOCONFIG_OUTPUT);
         if (status != DTAPI_OK) {
             std::cerr << "* Error setting port " << _set_output << " to output mode: " << DektecStrError(status) << std::endl;
             return EXIT_FAILURE;
