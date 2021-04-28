@@ -38,6 +38,7 @@ constexpr size_t ts::MuxerArgs::DEFAULT_MAX_OUTPUT_PACKETS;
 constexpr size_t ts::MuxerArgs::MIN_OUTPUT_PACKETS;
 constexpr size_t ts::MuxerArgs::DEFAULT_BUFFERED_PACKETS;
 constexpr size_t ts::MuxerArgs::MIN_BUFFERED_PACKETS;
+constexpr size_t ts::MuxerArgs::DEFAULT_LOSSY_INPUT_PACKETS;
 constexpr ts::MilliSecond ts::MuxerArgs::DEFAULT_RESTART_DELAY;
 constexpr ts::MicroSecond ts::MuxerArgs::DEFAULT_CADENCE;
 constexpr ts::BitRate::int_t ts::MuxerArgs::MIN_PSI_BITRATE;
@@ -58,6 +59,7 @@ ts::MuxerArgs::MuxerArgs() :
     catBitRate(DEFAULT_PSI_BITRATE),
     nitBitRate(DEFAULT_PSI_BITRATE),
     sdtBitRate(DEFAULT_PSI_BITRATE),
+    lossyReclaim(DEFAULT_LOSSY_INPUT_PACKETS),
     lossyInput(false),
     inputOnce(false),
     outputOnce(false),
@@ -97,6 +99,7 @@ void ts::MuxerArgs::enforceDefaults()
     outBufferPackets = std::max(outBufferPackets, inputs.size() * inBufferPackets);
     maxInputPackets = std::min(std::max(maxInputPackets, MIN_INPUT_PACKETS), inBufferPackets / 2);
     maxOutputPackets = std::max(maxOutputPackets, MIN_OUTPUT_PACKETS);
+    lossyReclaim = std::min(std::max<size_t>(1, lossyReclaim), inBufferPackets);
     patBitRate = patBitRate.max(MIN_PSI_BITRATE);
     catBitRate = catBitRate.max(MIN_PSI_BITRATE);
     nitBitRate = nitBitRate.max(MIN_PSI_BITRATE);

@@ -110,6 +110,7 @@ namespace ts {
             size_t              _time_input_index;  // Input plugin index containing time reference (TDT/TOT).
             std::vector<Input*> _inputs;            // Input plugins threads.
             OutputExecutor      _output;            // Output plugin thread.
+            std::set<size_t>    _terminated_inputs; // Set of terminated input plugins.
             CyclingPacketizer   _pat_pzer;          // Packetizer for output PAT.
             CyclingPacketizer   _cat_pzer;          // Packetizer for output CAT.
             CyclingPacketizer   _nit_pzer;          // Packetizer for output NIT's.
@@ -160,6 +161,9 @@ namespace ts {
 
                 // Request the executor thread to terminate.
                 void terminate() { _input.terminate(); _terminated = true; }
+
+                // Check if the input is terminated (or terminating).
+                bool isTerminated() const { return _terminated; }
 
                 // Wait for the executor thread to terminate.
                 void waitForTermination() { _input.waitForTermination(); }
