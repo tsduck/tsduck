@@ -85,7 +85,7 @@ bool ts::tsmux::InputExecutor::getPackets(TSPacket* pkt, TSPacketMetadata* mdata
 {
     // In blocking mode, loop until there is some packet in the buffer.
     GuardCondition lock(_mutex, _got_packets);
-    while (!_terminate && (!blocking || _packets_count != 0)) {
+    while (!_terminate && blocking && _packets_count == 0) {
         lock.waitCondition();
     }
 
@@ -128,11 +128,18 @@ void ts::tsmux::InputExecutor::main()
     // Loop until we are instructed to stop.
     while (!_terminate) {
 
-        // Wait for free space to be available in the output buffer.
+        // Wait for free space to be available in the input buffer.
         size_t first = 0;
         size_t count = 0;
         {
             GuardCondition lock(_mutex, _got_freespace);
+            // In case of lossy input, drop oldest packets when the buffer is full.
+            if (_opt.lossyInput && _packets_count >= _buffer_size) {
+                const size_t dropped = std::min(_opt.lossyReclaim, _buffer_size);
+                _packets_first = (_packets_first + dropped) % _buffer_size;
+                _packets_count -= dropped;
+            }
+            // Wait for free space in the buffer.
             while (!_terminate && _packets_count >= _buffer_size) {
                 lock.waitCondition();
             }

@@ -54,6 +54,7 @@ ts::tsmux::Core::Core(const MuxerArgs& opt, const PluginEventHandlerRegistry& ha
     _time_input_index(opt.timeInputIndex),
     _inputs(_opt.inputs.size(), nullptr),
     _output(_opt, handlers, _log),
+    _terminated_inputs(),
     _pat_pzer(_duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &_log),
     _cat_pzer(_duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &_log),
     _nit_pzer(_duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &_log),
@@ -243,6 +244,9 @@ void ts::tsmux::Core::main()
     // The unit of Monotonic operations is the nanosecond, the command line option is in microseconds.
     const NanoSecond cadence = _opt.cadence * NanoSecPerMicroSec;
 
+    // Keep track of terminated input plugins.
+    _terminated_inputs.clear();
+
     // Next input plugin to read from.
     size_t input_index = 0;
 
@@ -312,10 +316,16 @@ void ts::tsmux::Core::main()
         }
 
         // Wait until next muxing period.
-        if (_terminate) {
+        if (!_terminate) {
             clock.wait();
         }
     }
+
+    // Make sure all plugins, input and output, terminates.
+    // It termination was externally triggerd, all plugins are already terminating.
+    // But if all inputs have naturally terminated, we must terminate the output thread.
+    // Or if the output thread terminated on error, we must terminate all input threads.
+    stop();
 
     _log.debug(u"core thread terminated");
 }
@@ -332,9 +342,20 @@ bool ts::tsmux::Core::getInputPacket(size_t& input_index, TSPacket& pkt, TSPacke
     do {
         // Try to get a packet from current plugin.
         success = _inputs[input_index]->getPacket(pkt, pkt_data);
+
+        // Keep track of terminated input plugins.
+        if (!success && _inputs[input_index]->isTerminated()) {
+            _terminated_inputs.insert(input_index);
+            if (_terminated_inputs.size() >= _inputs.size()) {
+                // All input plugins are now terminated. Request global termination.
+                _terminate = true;
+            }
+        }
+
         // Point to next plugin.
         input_index = (input_index + 1) % _inputs.size();
-    } while (!success && ++plugin_count < _inputs.size());
+
+    } while (!_terminate && !success && ++plugin_count < _inputs.size());
     return success;
 }
 

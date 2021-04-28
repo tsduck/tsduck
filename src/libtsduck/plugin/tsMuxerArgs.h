@@ -52,6 +52,7 @@ namespace ts {
         BitRate                catBitRate;         //!< Bitrate of output CAT.
         BitRate                nitBitRate;         //!< Bitrate of output NIT.
         BitRate                sdtBitRate;         //!< Bitrate of output SDT.
+        size_t                 lossyReclaim;       //!< When lossyInput is true and the input buffer is full, number of older packets to drop.
         bool                   lossyInput;         //!< If true, allow to lose input packet when the buffer is full.
         bool                   inputOnce;          //!< Terminate when all input plugins complete, do not restart plugins.
         bool                   outputOnce;         //!< Terminate when the output plugin fails, do not restart.
@@ -77,6 +78,7 @@ namespace ts {
         static constexpr size_t MIN_OUTPUT_PACKETS = 1;               //!< Minimum input packets to send at a time.
         static constexpr size_t DEFAULT_BUFFERED_PACKETS = 512;       //!< Default input size buffer in packets.
         static constexpr size_t MIN_BUFFERED_PACKETS = 16;            //!< Minimum input size buffer in packets.
+        static constexpr size_t DEFAULT_LOSSY_INPUT_PACKETS = 16;     //!< Default number of oldest input packets to drop with lossy input.
         static constexpr MilliSecond DEFAULT_RESTART_DELAY = 2000;    //!< Default input and output restart delay.
         static constexpr MicroSecond DEFAULT_CADENCE = 10000;         //!< Default cadence in microseconds.
         static constexpr BitRate::int_t MIN_PSI_BITRATE = 100;        //!< Minimum bitrate for global PSI/SI PID's.
