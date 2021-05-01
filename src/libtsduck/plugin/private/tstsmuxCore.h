@@ -99,6 +99,15 @@ namespace ts {
                 Origin(size_t index = NPOS) : plugin_index(index), conflict_detected(false) {}
             };
 
+            // Reference clock of a PID in the output stream.
+            class PIDClock
+            {
+            public:
+                uint64_t      pcr_value;   // Last PCR value in this PID.
+                PacketCounter pcr_packet;  // Packet index in output stream of last PCR.
+                PIDClock(uint64_t value = INVALID_PCR, PacketCounter packet = 0) : pcr_value(value), pcr_packet(packet) {}
+            };
+
             // Core private members.
             const PluginEventHandlerRegistry& _handlers;
             Report&             _log;               // Asynchronous log report.
@@ -172,16 +181,23 @@ namespace ts {
                 bool getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data);
 
             private:
-                Core&         _core;          // Reference to the parent Core.
-                const size_t  _plugin_index;  // Input plugin index.
-                bool          _terminated;    // Detected that the executor thread has terminated.
-                bool          _got_ts_id;     // Input transport stream id is known.
-                uint16_t      _ts_id;         // Input transport stream id (when _got_ts_id is true).
-                InputExecutor _input;         // Input plugin thread.
-                SectionDemux  _demux;         // Demux for PSI/SI (except PMT's and EIT's).
-                SectionDemux  _eit_demux;     // Demux for EIT's.
-                PCRMerger     _pcr_merger;    // Adjust PCR in input packets to be synchronized with the output stream.
-                NIT           _nit;           // NIT waiting to be merged.
+                Core&            _core;           // Reference to the parent Core.
+                const size_t     _plugin_index;   // Input plugin index.
+                bool             _terminated;     // Detected that the executor thread has terminated.
+                bool             _got_ts_id;      // Input transport stream id is known.
+                uint16_t         _ts_id;          // Input transport stream id (when _got_ts_id is true).
+                InputExecutor    _input;          // Input plugin thread.
+                SectionDemux     _demux;          // Demux for PSI/SI (except PMT's and EIT's).
+                SectionDemux     _eit_demux;      // Demux for EIT's.
+                PCRMerger        _pcr_merger;     // Adjust PCR in input packets to be synchronized with the output stream.
+                NIT              _nit;            // NIT waiting to be merged.
+                PacketCounter    _next_insertion; // Insertion point of next packet.
+                TSPacket         _next_packet;    // Next packet to insert if already received but not yet inserted.
+                TSPacketMetadata _next_metadata;  // Associated metadata.
+                std::map<PID,PIDClock> _pid_clocks;  // Output clock of each input PID.
+
+                // Adjust the PCR of a packet before insertion.
+                void adjustPCR(TSPacket& pkt);
 
                 // Receive a PSI/SI table.
                 virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;

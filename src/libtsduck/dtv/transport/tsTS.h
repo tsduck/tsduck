@@ -399,7 +399,7 @@ namespace ts {
     //! Check if PCR2 follows PCR1 after wrap up.
     //! @param [in] pcr1 First PCR.
     //! @param [in] pcr2 Second PCR.
-    //! @return True is @a pcr2 is probably following @a pcr1 after wrapping up.
+    //! @return True if @a pcr2 is probably following @a pcr1 after wrapping up.
     //! The exact criteria is that @a pcr2 wraps up after @a pcr1 and their
     //! distance is within 20% of a full PCR range.
     //!
@@ -422,10 +422,28 @@ namespace ts {
     //! Compute the difference between PCR2 and PCR1.
     //! @param [in] pcr1 First PCR.
     //! @param [in] pcr2 Second PCR.
-    //! @return The difference between the two values.
-    //! or INVALID_PCR if a parameter is incorrect.
+    //! @return The difference between the two values or INVALID_PCR if a parameter is incorrect.
     //!
     TSDUCKDLL uint64_t DiffPCR(uint64_t pcr1, uint64_t pcr2);
+
+    //!
+    //! Compute the absolute value of the difference between two PCR's, regardless of their order.
+    //! @param [in] pcr1 First PCR.
+    //! @param [in] pcr2 Second PCR.
+    //! @return The difference between the two values or INVALID_PCR if a parameter is incorrect.
+    //!
+    TSDUCKDLL uint64_t AbsDiffPCR(uint64_t pcr1, uint64_t pcr2);
+
+    //!
+    //! Compute the number of packets transmitted during a given duration in PCR units.
+    //! @param [in] bitrate TS bitrate in bits/second, based on 188-byte packets.
+    //! @param [in] pcr Number of PCR units.
+    //! @return Number of packets during @a pcr time.
+    //!
+    TSDUCKDLL inline PacketCounter PacketDistanceFromPCR(BitRate bitrate, uint64_t pcr)
+    {
+        return PacketCounter(((bitrate * pcr) / (SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS)).toInt());
+    }
 
     //!
     //! Check if PTS2 follows PTS1 after wrap up.
