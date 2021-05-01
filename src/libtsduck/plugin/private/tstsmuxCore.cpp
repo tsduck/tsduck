@@ -440,7 +440,11 @@ ts::tsmux::Core::Input::Input(Core& core, size_t index) :
     _demux(_core._duck, this, nullptr),
     _eit_demux(_core._duck, nullptr, this),
     _pcr_merger(_core._duck),
-    _nit()
+    _nit(),
+    _next_insertion(0),
+    _next_packet(),
+    _next_metadata(),
+    _pid_clocks()
 {
     // Filter all global PSI/SI for merging in output PSI.
     _demux.addPID(PID_PAT);
@@ -471,6 +475,23 @@ ts::tsmux::Core::Input::Input(Core& core, size_t index) :
 
 bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    // If there is a waiting packet, either return that packet or nothing.
+    if (_next_insertion > 0) {
+        if (_next_insertion <= _core._output_packets) {
+            // It is now time to return that packet.
+            _core._log.debug(u"input #%d, PID 0x%X (%<d), output packet %'d, restarting insertion", {_plugin_index, _next_packet.getPID(), _core._output_packets});
+            _next_insertion = 0;
+            pkt = _next_packet;
+            pkt_data = _next_metadata;
+            adjustPCR(pkt);
+            return true;
+        }
+        else {
+            // Not yet time to release a packet from that input stream.
+            return false;
+        }
+    }
+
     // Get one packet from the input executor thread, non-blocking.
     size_t ret_count = 0;
     _terminated = _terminated || !_input.getPackets(&pkt, &pkt_data, 1, ret_count, false);
@@ -490,15 +511,68 @@ bool ts::tsmux::Core::Input::getPacket(TSPacket& pkt, TSPacketMetadata& pkt_data
         if (_core.getUTC(utc, pkt)) {
             // From now on, we will use that input plugin as time reference.
             _core._time_input_index = _plugin_index;
-            _core._log.verbose(u"using input #%d, %s, as TDT/TOT reference", {_plugin_index, _input.pluginName()});
+            _core._log.verbose(u"using input #%d as TDT/TOT reference", {_plugin_index});
         }
     }
 
-    // Adjust PCR in the packet, assuming it will be the next one to be inserted in the output.
-    _pcr_merger.processPacket(pkt, _core._output_packets, _core._bitrate);
+    // If the packet contains a PCR, check if it is time to insert it in the output.
+    // PCR packets are inserted at the same (or similar) PCR interval as in the orginal stream.
+    if (pkt.hasPCR()) {
+        const auto clock = _pid_clocks.find(pid);
+        if (clock != _pid_clocks.end()) {
+            const uint64_t packet_pcr = pkt.getPCR();
+            if (packet_pcr < clock->second.pcr_value && !WrapUpPCR(clock->second.pcr_value, packet_pcr)) {
+                const uint64_t back = DiffPCR(packet_pcr, clock->second.pcr_value);
+                _core._log.verbose(u"input #%d, PID 0x%X (%<d), late packet by PCR %'d, %'s ms", {_plugin_index, pid, back, (back * MilliSecPerSec) / SYSTEM_CLOCK_FREQ});
+            }
+            else {
+                // Compute current PCR for previous packet in the output TS.
+                assert(_core._output_packets > clock->second.pcr_packet);
+                const uint64_t output_pcr = NextPCR(clock->second.pcr_value, _core._output_packets - clock->second.pcr_packet - 1, _core._bitrate);
+
+                // Compute difference between packet's PCR and current output PCR.
+                // If they differ by more than one second, we consider that there was a clock leap and
+                // we just let the packet pass without PCR adjustment. If the difference is less than
+                // one second, we consider that the PCR progression is valid and we synchronize on it.
+                if (AbsDiffPCR(packet_pcr, output_pcr) < SYSTEM_CLOCK_FREQ) {
+                    // Compute the theoretical position of the packet in the output stream.
+                    const PacketCounter target_packet = clock->second.pcr_packet + PacketDistanceFromPCR(_core._bitrate, DiffPCR(clock->second.pcr_value, packet_pcr));
+                    if (target_packet > _core._output_packets) {
+                        // This packet will be inserted later.
+                        _core._log.debug(u"input #%d, PID 0x%X (%<d), output packet %'d, delay packet by %'d packets", {_plugin_index, pid, _core._output_packets, target_packet - _core._output_packets});
+                        _next_insertion = target_packet;
+                        _next_packet = pkt;
+                        _next_metadata = pkt_data;
+                        return false;
+                    }
+                }
+            }
+        }
+    }
+
+    // Adjust and remember PCR values and position.
+    adjustPCR(pkt);
 
     // Don't return packets from predefined PID's, they are separately regenerated.
     return pid > PID_DVB_LAST || (pid == PID_TDT && _core._time_input_index == _plugin_index);
+}
+
+
+//----------------------------------------------------------------------------
+// Adjust the PCR of a packet before insertion.
+//----------------------------------------------------------------------------
+
+void ts::tsmux::Core::Input::adjustPCR(TSPacket& pkt)
+{
+    // Adjust PCR in the packet, assuming it will be the next one to be inserted in the output.
+    _pcr_merger.processPacket(pkt, _core._output_packets, _core._bitrate);
+
+    // Remember PCR insertion point (with adjusted PCR value).
+    if (pkt.hasPCR()) {
+        PIDClock& clock(_pid_clocks[pkt.getPID()]);
+        clock.pcr_value = pkt.getPCR();
+        clock.pcr_packet = _core._output_packets;
+    }
 }
 
 

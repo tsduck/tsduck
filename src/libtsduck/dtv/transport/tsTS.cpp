@@ -73,6 +73,25 @@ uint64_t ts::DiffPCR(uint64_t pcr1, uint64_t pcr2)
     }
 }
 
+uint64_t ts::AbsDiffPCR(uint64_t pcr1, uint64_t pcr2)
+{
+    if (pcr1 > MAX_PCR || pcr2 > MAX_PCR) {
+        return INVALID_PCR;
+    }
+    else if (WrapUpPCR(pcr1, pcr2)) {
+        return PCR_SCALE + pcr2 - pcr1;
+    }
+    else if (WrapUpPCR(pcr2, pcr1)) {
+        return PCR_SCALE + pcr1 - pcr2;
+    }
+    else if (pcr2 >= pcr1) {
+        return pcr2 - pcr1;
+    }
+    else {
+        return pcr1 - pcr2;
+    }
+}
+
 uint64_t ts::DiffPTS(uint64_t pts1, uint64_t pts2)
 {
     if (pts1 > MAX_PTS_DTS || pts2 > MAX_PTS_DTS) {
