@@ -59,7 +59,7 @@ namespace ts {
 
     protected:
         //!
-        //! Constructor.
+        //! Constructor for subclasses.
         //! @param [in] tsp Associated callback to @c tsp executable.
         //! @param [in] buffer_size Size in bytes of input buffer.
         //! Must be large enough to contain the largest datagram.
@@ -68,16 +68,16 @@ namespace ts {
         //! @param [in] system_time_name When the subclass provides timestamps, this is a lowercase name
         //! which is used in option -\-timestamp-priority. When empty, there is no timestamps from the subclass.
         //! @param [in] system_time_description Description of @a system_time_name for help text.
-        //! @param [in] real_time If true (the default), the reception occurs in real-time, typically from
+        //! @param [in] real_time If true, the reception occurs in real-time, typically from
         //! the network. When false, the "reception" can be reading a capture file.
         //!
         AbstractDatagramInputPlugin(TSP* tsp,
                                     size_t buffer_size,
-                                    const UString& description = UString(),
-                                    const UString& syntax = UString(),
-                                    const UString& system_time_name = UString(),
-                                    const UString& system_time_description = UString(),
-                                    bool real_time = true);
+                                    const UString& description,
+                                    const UString& syntax,
+                                    const UString& system_time_name,
+                                    const UString& system_time_description,
+                                    bool real_time);
 
         //!
         //! Receive a datagram message.
@@ -94,12 +94,15 @@ namespace ts {
         // Order of priority for input timestamps. SYSTEM means lower layer from subclass (UDP, SRT, etc).
         enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
 
+        // Configuration and command line options.
         bool          _real_time;             // Real-time reception.
         MilliSecond   _eval_time;             // Bitrate evaluation interval in milli-seconds
         MilliSecond   _display_time;          // Bitrate display interval in milli-seconds
         Enumeration   _time_priority_enum;    // Enumeration values for _time_priority
         TimePriority  _time_priority;         // Priority of time stamps sources.
         TimePriority  _default_time_priority; // Priority of time stamps sources.
+
+        // Working data.
         Time          _next_display;          // Next bitrate display time
         Time          _start;                 // UTC date of first received packet
         PacketCounter _packets;               // Number of received packets since _start

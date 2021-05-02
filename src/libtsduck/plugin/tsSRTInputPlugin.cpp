@@ -45,7 +45,8 @@ const int ts::SRTInputPlugin::REFERENCE = 0;
 ts::SRTInputPlugin::SRTInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
                                 u"Receive TS packets from Secure Reliable Transport (SRT)", u"[options] [[address:]port]",
-                                u"srt", u"SRT source time stamp"),
+                                u"srt", u"SRT source time stamp",
+                                true), // real-time network reception
     _sock()
 {
     _sock.defineArgs(*this);
