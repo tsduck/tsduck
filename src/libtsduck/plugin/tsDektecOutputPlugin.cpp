@@ -181,7 +181,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"DVB-T2 modulators: indicate that the extended carrier mode is used. "
          u"By default, use normal carrier mode.");
 
-    option(u"bitrate", 'b', POSITIVE);
+    option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specify output bitrate in bits/second. By default, use the input "
          u"device bitrate or, if the input device cannot report bitrate, analyze "
@@ -1158,6 +1158,10 @@ void ts::DektecOutputPlugin::displaySymbolRate(BitRate ts_bitrate, int dt_modula
         int symrate = -1;
         Dtapi::DTAPI_RESULT status = Dtapi::DtapiModPars2SymRate(symrate, dt_modulation, param0, param1, param2, ToDektecFractionInt(ts_bitrate));
         if (status != DTAPI_OK) {
+            tsp->debug(u"DtapiModPars2SymRate using DtFractionInt failed (), using int: %'d", {DektecStrError(status), ts_bitrate.toInt()});
+            status = Dtapi::DtapiModPars2SymRate(symrate, dt_modulation, param0, param1, param2, int(ts_bitrate.toInt()));
+        }
+        if (status != DTAPI_OK) {
             tsp->verbose(u"error computing symbol rate: ", {DektecStrError(status)});
         }
         else {
@@ -1627,6 +1631,10 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
     BitRate new_bitrate;
     if (_guts->opt_bitrate == 0 && _guts->cur_bitrate != (new_bitrate = tsp->bitrate())) {
         status = _guts->chan.SetTsRateBps(ToDektecFractionInt(new_bitrate));
+        if (status == DTAPI_E_NOT_SUPPORTED) {
+            tsp->debug(u"setting TsRateBps using DtFractionInt unsupported, using int: %'d", {new_bitrate.toInt()});
+            status = _guts->chan.SetTsRateBps(int(new_bitrate.toInt()));
+        }
         if (status != DTAPI_OK) {
             tsp->error(u"error setting output bitrate on Dektec device: " + DektecStrError(status));
         }
