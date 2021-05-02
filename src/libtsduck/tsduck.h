@@ -33,6 +33,7 @@
 #include "tsAbstractAudioVideoAttributes.h"
 #include "tsAbstractAVCAccessUnit.h"
 #include "tsAbstractDatagramInputPlugin.h"
+#include "tsAbstractDatagramOutputPlugin.h"
 #include "tsAbstractDefinedByStandards.h"
 #include "tsAbstractDeliverySystemDescriptor.h"
 #include "tsAbstractDemux.h"

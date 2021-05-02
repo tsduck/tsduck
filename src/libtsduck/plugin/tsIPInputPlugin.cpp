@@ -45,7 +45,8 @@ const int ts::IPInputPlugin::REFERENCE = 0;
 
 ts::IPInputPlugin::IPInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE, u"Receive TS packets from UDP/IP, multicast or unicast", u"[options] [address:]port",
-                                u"kernel", u"A kernel-provided time-stamp for the packet, when available (Linux only)"),
+                                u"kernel", u"A kernel-provided time-stamp for the packet, when available (Linux only)",
+                                true), // real-time network reception
     _sock(*tsp_)
 {
     // Add UDP receiver common options.

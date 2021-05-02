@@ -36,16 +36,13 @@ TS_REGISTER_OUTPUT_PLUGIN(u"srt", ts::SRTOutputPlugin);
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::SRTOutputPlugin::REFERENCE = 0;
 
-// Maximum number of TS packets per message in message mode.
-#define MAX_PKT_MESSAGE_MODE 7
-
 
 //----------------------------------------------------------------------------
 // Output constructor
 //----------------------------------------------------------------------------
 
 ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] [address:port]"),
+    AbstractDatagramOutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] [address:port]", NONE),
     _multiple(false),
     _restart_delay(0),
     _sock()
@@ -70,6 +67,16 @@ ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Simple virtual methods.
+//----------------------------------------------------------------------------
+
+bool ts::SRTOutputPlugin::isRealTime()
+{
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Output command line options method
 //----------------------------------------------------------------------------
 
@@ -77,7 +84,9 @@ bool ts::SRTOutputPlugin::getOptions()
 {
     _multiple = present(u"multiple");
     getIntValue(_restart_delay, u"restart-delay", 0);
-    return _sock.setAddresses(value(u""), value(u"rendezvous"), *tsp) && _sock.loadArgs(duck, *this);
+    return _sock.setAddresses(value(u""), value(u"rendezvous"), *tsp) &&
+           _sock.loadArgs(duck, *this) &&
+           AbstractDatagramOutputPlugin::getOptions();
 }
 
 
@@ -87,11 +96,8 @@ bool ts::SRTOutputPlugin::getOptions()
 
 bool ts::SRTOutputPlugin::start()
 {
-    if (!_sock.open(*tsp)) {
-        _sock.close(*tsp);
-        return false;
-    }
-    return true;
+    // Call superclass first, then initialize SRT socket.
+    return AbstractDatagramOutputPlugin::start() && _sock.open(*tsp);
 }
 
 
@@ -101,46 +107,42 @@ bool ts::SRTOutputPlugin::start()
 
 bool ts::SRTOutputPlugin::stop()
 {
+    // Call superclass first, then close SRT socket.
+    AbstractDatagramOutputPlugin::stop();
     _sock.close(*tsp);
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Output method
+// Implementation of AbstractDatagramOutputPlugin: send one datagram.
 //----------------------------------------------------------------------------
 
-bool ts::SRTOutputPlugin::send(const ts::TSPacket* pkt, const ts::TSPacketMetadata* pkt_data, size_t packet_count)
+bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size)
 {
-    // Loop until all packets are sent.
-    while (packet_count > 0) {
-
-        // Send some packets.
-        const size_t to_send = (_sock.getMessageApi() && packet_count > MAX_PKT_MESSAGE_MODE) ? MAX_PKT_MESSAGE_MODE : packet_count;
-        if (!_sock.send(pkt, to_send * PKT_SIZE, *tsp)) {
-            // Send error.
-            if (!_sock.peerDisconnected()) {
-                // Actual error, not a clean disconnection from the receiver, do not retry, even with --multiple.
-                return false;
-            }
-            tsp->verbose(u"receiver disconnected%s", {_multiple ? u", waiting for another one" : u""});
-            if (!_multiple) {
-                // No multiple sessions, terminate here.
-                return false;
-            }
-            // Multiple sessions, close socket and re-open to acquire another receiver.
-            stop();
-            if (_restart_delay > 0) {
-                SleepThread(_restart_delay);
-            }
-            if (!start()) {
-                return false;
-            }
+    // Loop on restart with multiple sessions.
+    for (;;) {
+        // Send the datagram.
+        if (_sock.send(address, size, *tsp)) {
+            return true;
         }
-
-        // Remaining packets.
-        pkt += to_send;
-        packet_count -= to_send;
+        // Send error.
+        if (!_sock.peerDisconnected()) {
+            // Actual error, not a clean disconnection from the receiver, do not retry, even with --multiple.
+            return false;
+        }
+        tsp->verbose(u"receiver disconnected%s", {_multiple ? u", waiting for another one" : u""});
+        if (!_multiple) {
+            // No multiple sessions, terminate here.
+            return false;
+        }
+        // Multiple sessions, close socket and re-open to acquire another receiver.
+        stop();
+        if (_restart_delay > 0) {
+            SleepThread(_restart_delay);
+        }
+        if (!start()) {
+            return false;
+        }
     }
-    return true;
 }

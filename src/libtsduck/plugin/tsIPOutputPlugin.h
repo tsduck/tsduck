@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsOutputPlugin.h"
+#include "tsAbstractDatagramOutputPlugin.h"
 #include "tsUDPSocket.h"
 
 namespace ts {
@@ -41,7 +41,7 @@ namespace ts {
     //! IP output plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL IPOutputPlugin: public OutputPlugin
+    class TSDUCKDLL IPOutputPlugin: public AbstractDatagramOutputPlugin
     {
         TS_NOBUILD_NOCOPY(IPOutputPlugin);
     public:
@@ -56,42 +56,23 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override;
-        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
         //! @cond nodoxygen
         // A dummy storage value to force inclusion of this module when using the static library.
         static const int REFERENCE;
         //! @endcond
 
-    private:
-        SocketAddress  _destination;        // Destination address/port.
-        IPAddress      _local_addr;         // Local address.
-        uint16_t       _local_port;         // Local UDP source port.
-        int            _ttl;                // Time to live option.
-        int            _tos;                // Type of service option.
-        size_t         _pkt_burst;          // Number of TS packets per UDP message
-        bool           _enforce_burst;      // Option --enforce-burst
-        bool           _use_rtp;            // Use real-time transport protocol
-        bool           _force_mc_local;     // Force multicast outgoing local interface
-        uint8_t        _rtp_pt;             // RTP payload type.
-        bool           _rtp_fixed_sequence; // RTP sequence number starts with a fixed value
-        uint16_t       _rtp_start_sequence; // RTP starting sequence number
-        uint16_t       _rtp_sequence;       // RTP current sequence number
-        bool           _rtp_fixed_ssrc;     // RTP SSRC id has a fixed value
-        uint32_t       _rtp_user_ssrc;      // RTP user-specified SSRC id
-        uint32_t       _rtp_ssrc;           // RTP current SSRC id (constant during a session)
-        PID            _pcr_user_pid;       // User-specified PCR PID.
-        PID            _pcr_pid;            // Current PCR PID.
-        uint64_t       _last_pcr;           // Last PCR value in PCR PID
-        uint64_t       _last_rtp_pcr;       // Last RTP timestamp in PCR units (in last datagram)
-        PacketCounter  _last_rtp_pcr_pkt;   // Packet index of last datagram
-        uint64_t       _rtp_pcr_offset;     // Value to substract from PCR to get RTP timestamp
-        PacketCounter  _pkt_count;          // Total packet counter for output packets
-        UDPSocket      _sock;               // Outgoing socket
-        size_t         _out_count;          // Number of packets in _out_buffer
-        TSPacketVector _out_buffer;         // Buffered packets for output with --enforce-burst
+    protected:
+        // Implementation of AbstractDatagramOutputPlugin
+        virtual bool sendDatagram(const void* address, size_t size) override;
 
-        // Send contiguous packets in one single datagram.
-        bool sendDatagram(const TSPacket* pkt, size_t packet_count);
+    private:
+        SocketAddress _destination;     // Destination address/port.
+        IPAddress     _local_addr;      // Local address.
+        uint16_t      _local_port;      // Local UDP source port.
+        int           _ttl;             // Time to live option.
+        int           _tos;             // Type of service option.
+        bool          _force_mc_local;  // Force multicast outgoing local interface
+        UDPSocket     _sock;            // Outgoing socket
     };
 }

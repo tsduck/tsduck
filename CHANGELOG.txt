@@ -2,18 +2,21 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2355
+VERSION 3.27-2361
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in exiting commands and plugins:
     - Option --force-local-multicast-outgoing in output plugin "ip".
     - Option --io-standard in input and output plugins "dektec".
+    - Options --enforce-burst and --packet-burst in output plugin "srt".
 
 [BUG] Bug fixes:
 
   * Fixed issue #764: SCTE 35 splice information tables were not correctly
     deserialized when the command length field was the legacy value 0xFFF.
+  * Fixed issue #771: Multi-standard ASI Dektec devices surch as DTA-2174B
+    did not work properly.
 
 -------------------------------------------------------------------------------
 

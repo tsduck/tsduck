@@ -65,7 +65,7 @@ namespace ts {
     //!
     TSDUCKDLL inline uint8_t EncodeBCD(int i)
     {
-        return uint8_t(((i / 10) % 10) << 4) | (i % 10);
+        return uint8_t(((i / 10) % 10) << 4) | uint8_t(i % 10);
     }
 
     //!
