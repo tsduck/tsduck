@@ -157,7 +157,7 @@ namespace ts {
         }
 
         //!
-        //! Set an integer address and optional port.
+        //! Set an integer address and port.
         //! @param [in] addr The IP v4 address as an integer in host byte order.
         //! @param [in] port The port number as an integer in host byte order.
         //!
@@ -168,7 +168,7 @@ namespace ts {
         }
 
         //!
-        //! Set address from 4 bytes (classical IPv4 notation) and optional port.
+        //! Set address from 4 bytes (classical IPv4 notation) and port.
         //! @param [in] b1 First address byte.
         //! @param [in] b2 Second address byte.
         //! @param [in] b3 Third address byte.

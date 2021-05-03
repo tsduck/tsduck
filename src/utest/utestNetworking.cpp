@@ -36,6 +36,7 @@
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
 #include "tsSocketAddress.h"
+#include "tsIPv6SocketAddress.h"
 #include "tsTCPConnection.h"
 #include "tsTCPServer.h"
 #include "tsUDPSocket.h"
@@ -66,6 +67,7 @@ public:
     void testGetLocalIPAddresses();
     void testSocketAddressConstructors();
     void testSocketAddress();
+    void testIPv6SocketAddress();
     void testTCPSocket();
     void testUDPSocket();
     void testIPHeader();
@@ -78,6 +80,7 @@ public:
     TSUNIT_TEST(testGetLocalIPAddresses);
     TSUNIT_TEST(testSocketAddressConstructors);
     TSUNIT_TEST(testSocketAddress);
+    TSUNIT_TEST(testIPv6SocketAddress);
     TSUNIT_TEST(testTCPSocket);
     TSUNIT_TEST(testUDPSocket);
     TSUNIT_TEST(testIPHeader);
@@ -456,6 +459,39 @@ void NetworkingTest::testSocketAddress()
     a1.clearPort();
     const ts::UString s2(a1.toString());
     TSUNIT_ASSERT(s2 == u"2.3.4.5");
+}
+
+void NetworkingTest::testIPv6SocketAddress()
+{
+    TSUNIT_ASSERT(ts::IPInitialize());
+
+    ts::IPv6SocketAddress sa1;
+    TSUNIT_ASSERT(!sa1.hasAddress());
+    TSUNIT_ASSERT(!sa1.hasPort());
+
+    sa1.set(0, 1, 2, 3, 4, 5, 6, 7, 1234);
+    TSUNIT_ASSERT(sa1.hasAddress());
+    TSUNIT_ASSERT(sa1.hasPort());
+    TSUNIT_EQUAL(TS_UCONST64(0x0000000100020003), sa1.networkPrefix());
+    TSUNIT_EQUAL(TS_UCONST64(0x0004000500060007), sa1.interfaceIdentifier());
+    TSUNIT_EQUAL(u"[0:1:2:3:4:5:6:7]:1234", sa1.toString());
+    TSUNIT_EQUAL(u"[0000:0001:0002:0003:0004:0005:0006:0007]:1234", sa1.toFullString());
+
+    TSUNIT_ASSERT(sa1.resolve(u"fe80::93a3:dea0:2108:b81e"));
+    TSUNIT_ASSERT(sa1.hasAddress());
+    TSUNIT_ASSERT(!sa1.hasPort());
+    TSUNIT_EQUAL(TS_UCONST64(0xFE80000000000000), sa1.networkPrefix());
+    TSUNIT_EQUAL(TS_UCONST64(0x93A3DEA02108B81E), sa1.interfaceIdentifier());
+    TSUNIT_EQUAL(u"fe80::93a3:dea0:2108:b81e", sa1.toString());
+    TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", sa1.toFullString());
+
+    ts::IPv6SocketAddress sa2(u"[FE80::93A3:DEA0:2108:B81E]:1234");
+    TSUNIT_ASSERT(sa2.hasAddress());
+    TSUNIT_ASSERT(sa2.hasPort());
+    TSUNIT_EQUAL(TS_UCONST64(0xFE80000000000000), sa2.networkPrefix());
+    TSUNIT_EQUAL(TS_UCONST64(0x93A3DEA02108B81E), sa2.interfaceIdentifier());
+    TSUNIT_EQUAL(u"[fe80::93a3:dea0:2108:b81e]:1234", sa2.toString());
+    TSUNIT_EQUAL(u"[fe80:0000:0000:0000:93a3:dea0:2108:b81e]:1234", sa2.toFullString());
 }
 
 // A thread class which implements a TCP/IP client.

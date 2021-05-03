@@ -287,6 +287,11 @@
     #define DTAPI_IOCONFIG_625I50        0
     #define DTAPI_IOCONFIG_SPI525I59_94  0
     #define DTAPI_IOCONFIG_SPI625I50     0
+    #define DTAPI_FEC_DISABLE            0
+    #define DTAPI_FEC_2D_M1              0
+    #define DTAPI_FEC_2D_M1_B            0
+    #define DTAPI_FEC_2D_M2              0
+    #define DTAPI_FEC_2D_M2_B            0
 
 #else
 
