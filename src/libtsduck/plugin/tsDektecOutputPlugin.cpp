@@ -33,9 +33,11 @@
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
+#include "tsDektecArgsUtils.h"
 #include "tsHFBand.h"
 #include "tsBitrateDifferenceDVBT.h"
 #include "tsModulation.h"
+#include "tsSocketAddress.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
@@ -157,6 +159,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 
     // Declaration of command-line options
     DefineDektecIOStandardArgs(*this);
+    DefineDektecIPArgs(*this, false); // false = transmit
 
     option(u"204");
     help(u"204",
@@ -803,7 +806,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 ts::DektecOutputPlugin::~DektecOutputPlugin()
 {
     if (_guts != nullptr) {
-        stop();
+        DektecOutputPlugin::stop();
         delete _guts;
         _guts = nullptr;
     }
@@ -879,8 +882,9 @@ bool ts::DektecOutputPlugin::start()
         return false;
     }
 
-    // Determine port number.
+    // Determine port number and channel capabilities.
     const int port = _guts->device.output[_guts->chan_index].m_Port;
+    Dtapi::DtCaps dt_flags = _guts->device.output[_guts->chan_index].m_Flags;
 
     // Set power mode.
     if (_guts->power_mode >= 0) {
@@ -890,9 +894,6 @@ bool ts::DektecOutputPlugin::start()
             return startError(u"set power mode", status);
         }
     }
-
-    // Determine channel capabilities.
-    Dtapi::DtCaps dt_flags = _guts->device.output[_guts->chan_index].m_Flags;
 
     // Open the channel
     tsp->debug(u"attaching to port %d", {port});
@@ -906,7 +907,7 @@ bool ts::DektecOutputPlugin::start()
     // Get the Vital Product Data (VPD)
     const DektecVPD vpd(_guts->dtdev);
 
-    // Check if the device is a modulator.
+    // Check if the device is a modulator or a TS-over-IP.
     const bool is_modulator = (dt_flags & DTAPI_CAP_MOD) != 0;
     _guts->mute_on_stop = false;
 
@@ -983,6 +984,19 @@ bool ts::DektecOutputPlugin::start()
         return false;
     }
 
+    // Set IP parameters for TS-over-IP.
+    if ((dt_flags & DTAPI_CAP_IP) != 0) {
+        Dtapi::DtIpPars2 ip_pars;
+        if (!GetDektecIPArgs(*this, false, ip_pars)) {
+            return startError(u"invalid TS-over-IP parameters", DTAPI_OK);
+        }
+        tsp->debug(u"setting IP parameters");
+        status = _guts->chan.SetIpPars(&ip_pars);
+        if (status != DTAPI_OK) {
+            return startError(u"output device SetIpPars error", status);
+        }
+    }
+
     // Set output level.
     if (present(u"level")) {
         const int level = intValue<int>(u"level");
@@ -992,7 +1006,7 @@ bool ts::DektecOutputPlugin::start()
             // In case of error, report it but do not fail.
             // This feature is not supported on all modulators and
             // it seems severe to fail if unsupported.
-            tsp->error(u"set modulator output level: " + DektecStrError(status));
+            tsp->error(u"set modulator output level: %s", {DektecStrError(status)});
         }
     }
 

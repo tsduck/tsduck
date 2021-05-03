@@ -247,7 +247,7 @@ namespace ts {
         //! Convert to a string object in numeric format without the default compaction.
         //! @return This object, converted as a string.
         //!
-        UString toFullString() const;
+        virtual UString toFullString() const;
 
         //!
         //! Get the IP address as a byte block.
@@ -268,4 +268,9 @@ namespace ts {
     //! Vector of IPv6 addresses.
     //!
     typedef std::vector<IPv6Address> IPv6AddressVector;
+
+    //!
+    //! Set of IPv6 addresses.
+    //!
+    typedef std::set<IPv6Address> IPv6AddressSet;
 }

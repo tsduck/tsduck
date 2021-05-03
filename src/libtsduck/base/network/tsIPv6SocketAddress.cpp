@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSocketAddress.h"
+#include "tsIPv6SocketAddress.h"
 TSDUCK_SOURCE;
 
 
@@ -35,44 +35,26 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::SocketAddress::SocketAddress(const ::sockaddr& s) :
-    IPAddress(s),
-    _port(AnyPort)
-{
-    if (s.sa_family == AF_INET) {
-        assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
-        const ::sockaddr_in* sp = reinterpret_cast<const ::sockaddr_in*>(&s);
-        _port = ntohs(sp->sin_port);
-    }
-}
-
-ts::SocketAddress::SocketAddress(const ::sockaddr_in& s) :
-    IPAddress(s),
-    _port(s.sin_family == AF_INET ? ntohs(s.sin_port) : AnyPort)
-{
-}
-
-ts::SocketAddress::~SocketAddress()
+ts::IPv6SocketAddress::~IPv6SocketAddress()
 {
 }
 
 
 //----------------------------------------------------------------------------
-// Decode a string "addr[:port]" or "[addr:]port".
-// Addr can also be a hostname which is resolved.
-// Return true on success, false on error.
+// Decode a string "[addr]:port".
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::resolve(const UString& name, Report& report)
+bool ts::IPv6SocketAddress::resolve(const UString& name, Report& report)
 {
     // Clear address & port
     clear();
 
-    // Locate last colon in string
-    const size_t colon = name.rfind(':');
+    // Locate square brackets.
+    const size_t br1 = name.find('[');
+    const size_t br2 = name.rfind(']');
 
-    if (colon == NPOS) {
-        // No colon in string, can be an address alone or a port alone.
+    if (br1 == NPOS && br2 == NPOS) {
+        // No square brackets in string, can be an address alone or a port alone.
         if (name.toInteger(_port)) {
             // This is an integer, this is a port alone.
             return true;
@@ -80,19 +62,26 @@ bool ts::SocketAddress::resolve(const UString& name, Report& report)
         else {
             // Not a valid integer, this is an address alone
             _port = AnyPort;
-            return IPAddress::resolve(name, report);
+            return IPv6Address::resolve(name, report);
         }
     }
 
-    // If there is something after the colon, this must be a port number
-    if (colon < name.length() - 1 && !name.substr(colon + 1).toInteger(_port)) {
-        report.error(u"invalid port value in \"%s\"", {name});
-        return false;
+    // If there a square bracket, both of them must be present.
+    bool ok = br1 == 0 && br2 != NPOS;
+
+    // If there is something after the closing square bracket, it must be ":port".
+    if (ok && br2 < name.length() - 1) {
+        ok = name[br2 + 1] == ':' && (br2 == name.length() - 1 || name.substr(br2 + 2).toInteger(_port));
     }
 
-    // If there is something before the colon, this must be an address.
-    // Try to decode name as IP address or resolve it as DNS host name.
-    return colon == 0 || IPAddress::resolve(name.substr(0, colon), report);
+    // Decode the IPv6 address.
+    if (ok) {
+        return IPv6Address::resolve(name.substr(1, br2 - 1), report);
+    }
+    else {
+        report.error(u"invalid IPv6 socket address \"%s\"", {name});
+        return false;
+    }
 }
 
 
@@ -100,9 +89,9 @@ bool ts::SocketAddress::resolve(const UString& name, Report& report)
 // Check if this address "matches" another one.
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::match(const SocketAddress& other) const
+bool ts::IPv6SocketAddress::match(const IPv6SocketAddress& other) const
 {
-    return IPAddress::match(other) && (_port == AnyPort || other._port == AnyPort || _port == other._port);
+    return IPv6Address::match(other) && (_port == AnyPort || other._port == AnyPort || _port == other._port);
 }
 
 
@@ -110,9 +99,14 @@ bool ts::SocketAddress::match(const SocketAddress& other) const
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::UString ts::SocketAddress::toString() const
+ts::UString ts::IPv6SocketAddress::toString() const
 {
-    return IPAddress::toString() + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
+    return _port == AnyPort ? IPv6Address::toString() : UString::Format(u"[%s]:%d", {IPv6Address::toString(), _port});
+}
+
+ts::UString ts::IPv6SocketAddress::toFullString() const
+{
+    return _port == AnyPort ? IPv6Address::toFullString() : UString::Format(u"[%s]:%d", {IPv6Address::toFullString(), _port});
 }
 
 
@@ -120,7 +114,7 @@ ts::UString ts::SocketAddress::toString() const
 // Comparison "less than" operator.
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::operator<(const SocketAddress& other) const
+bool ts::IPv6SocketAddress::operator<(const IPv6SocketAddress& other) const
 {
-    return address() < other.address() || (address() == other.address() && _port < other._port);
+    return IPv6Address::operator<(other) || (IPv6Address::operator==(other) && _port < other._port);
 }

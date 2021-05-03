@@ -30,6 +30,7 @@
 #include "tsDektecInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsDektecUtils.h"
+#include "tsDektecArgsUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
 #include "tsModulation.h"
@@ -76,6 +77,7 @@ public:
     bool                got_bitrate;     // Got bitrate at least once.
     uint64_t            demod_freq;      // Demodulation frequency in Hz
     Dtapi::DtDemodPars  demod_pars;      // Demodulation parameters
+    Dtapi::DtIpPars2    ip_pars;         // TS-over-IP parameters
     int                 sat_number;      // Satellite number
     Polarization        polarity;        // Polarity.
     bool                high_band;       // Use LNB high frequency band.
@@ -97,6 +99,7 @@ ts::DektecInputPlugin::Guts::Guts() :
     got_bitrate(false),
     demod_freq(0),
     demod_pars(),
+    ip_pars(),
     sat_number(0),
     polarity(POL_VERTICAL),
     high_band(false),
@@ -137,7 +140,9 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     assert(DTAPI_DVBT2_7MHZ == DTAPI_MOD_DVBT_7MHZ);
     assert(DTAPI_DVBT2_8MHZ == DTAPI_MOD_DVBT_8MHZ);
 
+    // Declaration of command-line options
     DefineDektecIOStandardArgs(*this);
+    DefineDektecIPArgs(*this, true); // true = receive
 
     option(u"atsc3-bandwidth", 0, Enumeration({
         {u"6-MHz",  DTAPI_ATSC3_6MHZ},
@@ -440,12 +445,14 @@ bool ts::DektecInputPlugin::getOptions()
     getIntValue(_guts->polarity, u"polarity", POL_VERTICAL);
     _guts->high_band = false;
     _guts->lnb_setup = false;
-    GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue);
+
+    bool success = GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue) &&
+                   GetDektecIPArgs(*this, true, _guts->ip_pars);
 
     // Compute carrier frequency
     if (present(u"frequency") && present(u"satellite-frequency")) {
         tsp->error(u"options --frequency and --satellite-frequency are mutually exclusive");
-        return false;
+        success = false;
     }
     uint64_t sat_frequency = intValue<uint64_t>(u"satellite-frequency", 0);
     if (sat_frequency > 0) {
@@ -454,7 +461,7 @@ bool ts::DektecInputPlugin::getOptions()
         LNB::Transposition transposition;
         if (!lnb.isValid() || !lnb.transpose(transposition, sat_frequency, _guts->polarity, *tsp)) {
             tsp->error(u"invalid LNB / satellite frequency");
-            return false;
+            success = false;
         }
         _guts->demod_freq = transposition.intermediate_frequency;
         _guts->high_band = transposition.band_index > 0;
@@ -469,23 +476,23 @@ bool ts::DektecInputPlugin::getOptions()
         Dtapi::DTAPI_RESULT status = _guts->demod_pars.SetModType(intValue<int>(u"modulation", DTAPI_MOD_DVBS_QPSK));
         if (status != DTAPI_OK) {
             tsp->error(u"error setting modulation type: %s", {DektecStrError(status)});
-            return false;
+            success = false;
         }
 
-        bool ok = true;
+        bool mod_ok = true;
         switch (_guts->demod_pars.GetModType()) {
             case DTAPI_MOD_ATSC: {
                 Dtapi::DtDemodParsAtsc* atsc = _guts->demod_pars.Atsc();
-                ok = atsc != nullptr;
-                if (ok) {
+                mod_ok = atsc != nullptr;
+                if (mod_ok) {
                     atsc->m_Constellation = intValue<int>(u"vsb", DTAPI_MOD_ATSC_VSB8);
                 }
                 break;
             }
             case DTAPI_MOD_ATSC3: {
                 Dtapi::DtDemodParsAtsc3* atsc3 = _guts->demod_pars.Atsc3();
-                ok = atsc3 != nullptr;
-                if (ok) {
+                mod_ok = atsc3 != nullptr;
+                if (mod_ok) {
                     atsc3->m_Bandwidth = intValue<int>(u"atsc3-bandwidth", DTAPI_ATSC3_8MHZ);
                     atsc3->m_AlpLenIncludesAhSi = false;
                 }
@@ -494,13 +501,13 @@ bool ts::DektecInputPlugin::getOptions()
             case DTAPI_MOD_DAB: {
                 // There is no parameter for DAB in Dektec demodulators (empty structure).
                 Dtapi::DtDemodParsDab* dab = _guts->demod_pars.Dab();
-                ok = dab != nullptr;
+                mod_ok = dab != nullptr;
                 break;
             }
             case DTAPI_MOD_DVBC2: {
                 Dtapi::DtDemodParsDvbC2* dvbc2 = _guts->demod_pars.DvbC2();
-                ok = dvbc2 != nullptr;
-                if (ok) {
+                mod_ok = dvbc2 != nullptr;
+                if (mod_ok) {
                     dvbc2->m_Bandwidth = intValue<int>(u"c2-bandwidth", DTAPI_DVBC2_8MHZ);
                     dvbc2->m_ScanL1Part2Data = false;
                 }
@@ -508,8 +515,8 @@ bool ts::DektecInputPlugin::getOptions()
             }
             case DTAPI_MOD_DVBS_QPSK: {
                 Dtapi::DtDemodParsDvbS* dvbs = _guts->demod_pars.DvbS();
-                ok = dvbs != nullptr;
-                if (ok) {
+                mod_ok = dvbs != nullptr;
+                if (mod_ok) {
                     dvbs->m_CodeRate = intValue<int>(u"code-rate", DTAPI_MOD_CR_AUTO);
                     dvbs->m_SymRate = intValue<int>(u"symbol-rate", DTAPI_MOD_SYMRATE_AUTO);
                     dvbs->m_SpecInv = DTAPI_MOD_S_S2_SPECINV_AUTO;
@@ -522,8 +529,8 @@ bool ts::DektecInputPlugin::getOptions()
             case DTAPI_MOD_DVBS2_32APSK:
             case DTAPI_MOD_DVBS2_QPSK: {
                 Dtapi::DtDemodParsDvbS2* dvbs2 = _guts->demod_pars.DvbS2();
-                ok = dvbs2 != nullptr;
-                if (ok) {
+                mod_ok = dvbs2 != nullptr;
+                if (mod_ok) {
                     dvbs2->m_CodeRate = intValue<int>(u"code-rate", DTAPI_MOD_CR_AUTO);
                     dvbs2->m_SymRate = intValue<int>(u"symbol-rate", DTAPI_MOD_SYMRATE_AUTO);
                     dvbs2->m_FecFrame = DTAPI_MOD_S2_FRM_AUTO;
@@ -535,8 +542,8 @@ bool ts::DektecInputPlugin::getOptions()
             }
             case DTAPI_MOD_DVBT: {
                 Dtapi::DtDemodParsDvbT* dvbt = _guts->demod_pars.DvbT();
-                ok = dvbt != nullptr;
-                if (ok) {
+                mod_ok = dvbt != nullptr;
+                if (mod_ok) {
                     dvbt->m_Bandwidth = intValue<int>(u"dvbt-bandwidth", DTAPI_MOD_DVBT_8MHZ);
                     dvbt->m_CodeRate = intValue<int>(u"code-rate", DTAPI_MOD_CR_AUTO);
                     dvbt->m_Constellation = intValue<int>(u"constellation", DTAPI_MOD_DVBT_CO_AUTO);
@@ -548,8 +555,8 @@ bool ts::DektecInputPlugin::getOptions()
             }
             case DTAPI_MOD_DVBT2: {
                 Dtapi::DtDemodParsDvbT2* dvbt2 = _guts->demod_pars.DvbT2();
-                ok = dvbt2 != nullptr;
-                if (ok) {
+                mod_ok = dvbt2 != nullptr;
+                if (mod_ok) {
                     dvbt2->m_Bandwidth = intValue<int>(u"dvbt-bandwidth", DTAPI_DVBT2_8MHZ);
                     dvbt2->m_T2Profile = intValue<int>(u"t2-profile", DTAPI_DVBT2_PROFILE_BASE);
                 }
@@ -557,8 +564,8 @@ bool ts::DektecInputPlugin::getOptions()
             }
             case DTAPI_MOD_ISDBT: {
                 Dtapi::DtDemodParsIsdbt* isdbt = _guts->demod_pars.Isdbt();
-                ok = isdbt != nullptr;
-                if (ok) {
+                mod_ok = isdbt != nullptr;
+                if (mod_ok) {
                     isdbt->m_Bandwidth = intValue<int>(u"isdbt-bandwidth", DTAPI_ISDBT_BW_8MHZ);
                     isdbt->m_SubChannel = intValue<int>(u"isdbt-subchannel", 22); // 0..41, channel 22 is the default
                     isdbt->m_NumberOfSegments = intValue<int>(u"isdbt-segments", DTAPI_ISDBT_SEGM_1);
@@ -572,8 +579,8 @@ bool ts::DektecInputPlugin::getOptions()
             case DTAPI_MOD_QAM256:
             case DTAPI_MOD_QAM_AUTO: {
                 Dtapi::DtDemodParsQam* qam = _guts->demod_pars.Qam();
-                ok = qam != nullptr;
-                if (ok) {
+                mod_ok = qam != nullptr;
+                if (mod_ok) {
                     qam->m_SymRate = intValue<int>(u"symbol-rate", DTAPI_MOD_SYMRATE_AUTO);
                     qam->m_Annex = intValue<int>(u"j83", DTAPI_MOD_J83_A);
                     qam->m_Interleaving = intValue<int>(u"qam-b", DTAPI_MOD_QAMB_IL_AUTO);
@@ -582,25 +589,26 @@ bool ts::DektecInputPlugin::getOptions()
             }
             default: {
                 tsp->error(u"invalid Dektec demodulation type");
-                return false;
+                success = false;
+                break;
             }
         }
 
         // Check if any parameter structure was inaccessible.
-        if (!ok) {
+        if (!mod_ok) {
             tsp->error(u"internal Dektec library error, no parameter for modulation type");
-            return false;
+            success = false;
         }
 
         // Check consistency of demodulation parameters.
         status = _guts->demod_pars.CheckValidity();
         if (status != DTAPI_OK) {
             tsp->error(u"invalid Dektec demodulation parameters: %s", {DektecStrError(status)});
-            return false;
+            success = false;
         }
     }
 
-    return true;
+    return success;
 }
 
 
@@ -640,8 +648,9 @@ bool ts::DektecInputPlugin::start()
         return false;
     }
 
-    // Determine port number.
+    // Determine port number and channel capabilities.
     const int port = _guts->device.input[_guts->chan_index].m_Port;
+    Dtapi::DtCaps dt_flags = _guts->device.input[_guts->chan_index].m_Flags;
 
     // Open the input channel
     status = _guts->chan.AttachToPort(&_guts->dtdev, port);
@@ -662,8 +671,8 @@ bool ts::DektecInputPlugin::start()
         return startError(u"device SetRxControl error", status);
     }
 
-    status = _guts->chan.ClearFifo();            // Clear FIFO (i.e. start with zero load)
-    status = _guts->chan.ClearFlags(0xFFFFFFFF); // Clear all flags
+    _guts->chan.ClearFifo();            // Clear FIFO (i.e. start with zero load)
+    _guts->chan.ClearFlags(0xFFFFFFFF); // Clear all flags
 
     // Configure I/O standard if necessary.
     if (_guts->iostd_value >= 0) {
@@ -686,6 +695,19 @@ bool ts::DektecInputPlugin::start()
         status = _guts->chan.Tune(int64_t(_guts->demod_freq), &_guts->demod_pars);
         if (status != DTAPI_OK) {
             return startError(u"error tuning Dektec demodulator", status);
+        }
+    }
+
+    // Set IP parameters for TS-over-IP.
+    if ((dt_flags & DTAPI_CAP_IP) != 0) {
+        Dtapi::DtIpPars2 ip_pars;
+        if (!GetDektecIPArgs(*this, true, ip_pars)) {
+            return startError(u"invalid TS-over-IP parameters", DTAPI_OK);
+        }
+        tsp->debug(u"setting IP parameters");
+        status = _guts->chan.SetIpPars(&ip_pars);
+        if (status != DTAPI_OK) {
+            return startError(u"output device SetIpPars error", status);
         }
     }
 

@@ -344,6 +344,7 @@
 #include "tsIPSignallingDescriptor.h"
 #include "tsIPUtils.h"
 #include "tsIPv6Address.h"
+#include "tsIPv6SocketAddress.h"
 #include "tsISDBAccessControlDescriptor.h"
 #include "tsISDBTerrestrialDeliverySystemDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
