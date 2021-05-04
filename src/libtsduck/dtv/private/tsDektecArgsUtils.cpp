@@ -33,15 +33,18 @@
 #include "tsMemory.h"
 TSDUCK_SOURCE;
 
+// Depending on TS_NO_DTAPI, some code may be unused.
+TS_LLVM_NOWARNING(unused-function)
+
 
 //-----------------------------------------------------------------------------
 // Embed DTAPI SetIoConfig parameters Value and SubValue in one int.
 //-----------------------------------------------------------------------------
 
 namespace {
-    int TS_UNUSED IoConfigParams(int value, int subvalue = -1) { return (value & 0xFFFF) | (subvalue << 16); }
-    int TS_UNUSED IoConfigValue(int opt) { return opt & 0xFFFF; }
-    int TS_UNUSED IoConfigSubValue(int opt) { const int o = (opt >> 16) & 0xFFFF; return o == 0xFFFF ? -1 : o; }
+    int IoConfigParams(int value, int subvalue = -1) { return (value & 0xFFFF) | (subvalue << 16); }
+    int IoConfigValue(int opt) { return opt & 0xFFFF; }
+    int IoConfigSubValue(int opt) { const int o = (opt >> 16) & 0xFFFF; return o == 0xFFFF ? -1 : o; }
 }
 
 
