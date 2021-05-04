@@ -39,9 +39,9 @@ TSDUCK_SOURCE;
 //-----------------------------------------------------------------------------
 
 namespace {
-    int IoConfigParams(int value, int subvalue = -1) { return (value & 0xFFFF) | (subvalue << 16); }
-    int IoConfigValue(int opt) { return opt & 0xFFFF; }
-    int IoConfigSubValue(int opt) { const int o = (opt >> 16) & 0xFFFF; return o == 0xFFFF ? -1 : o; }
+    int TS_UNUSED IoConfigParams(int value, int subvalue = -1) { return (value & 0xFFFF) | (subvalue << 16); }
+    int TS_UNUSED IoConfigValue(int opt) { return opt & 0xFFFF; }
+    int TS_UNUSED IoConfigSubValue(int opt) { const int o = (opt >> 16) & 0xFFFF; return o == 0xFFFF ? -1 : o; }
 }
 
 
@@ -251,6 +251,7 @@ void ts::DefineDektecIPArgs(Args& args, bool receive)
 // Decode an IP address and/or port and store it into binary data.
 //-----------------------------------------------------------------------------
 
+#if !defined(TS_NO_DTAPI)
 namespace {
     bool DecodeAddress(ts::Args& args, const ts::UChar* option_name, size_t option_index,
                        ts::AbstractNetworkAddress& instance,
@@ -283,7 +284,6 @@ namespace {
         return true;
     }
 
-    #if !defined(TS_NO_DTAPI)
     bool DecodeSSM(ts::Args& args, const ts::UChar* option_name,
                    ts::AbstractNetworkAddress& instance,
                    std::vector<Dtapi::DtIpSrcFlt>& filters)
@@ -300,8 +300,8 @@ namespace {
         }
         return true;
     }
-    #endif
 }
+#endif
 
 
 //-----------------------------------------------------------------------------
