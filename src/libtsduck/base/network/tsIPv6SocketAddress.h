@@ -40,14 +40,16 @@ namespace ts {
     //! IP v6 socket address class (IP v6 address & port).
     //! @ingroup net
     //!
+    //! The string representation is "[addr]:port".
+    //! In the template string "[addr]:port", the square brackets do not mean
+    //! that "addr" is optional. According to IPv6 URL representation, the
+    //! square brackets are actual characters in the string.
+    //! The address and port fields are optional. If the address is specified alone,
+    //! without port, the square brackets may be omitted.
+    //!
     class TSDUCKDLL IPv6SocketAddress: public IPv6Address
     {
     public:
-        //!
-        //! Wildcard integer value for "any port".
-        //!
-        static const uint16_t AnyPort = 0;
-
         //!
         //! Default constructor
         //!
@@ -127,21 +129,13 @@ namespace ts {
 
         //!
         //! Constructor from a string "[addr]:port".
-        //!
-        //! Important: In the template string "[addr]:port", the square brackets do not
-        //! mean that "addr" is optional. According to IPv6 URL representation, the
-        //! square brackets are actual characters in the string.
-        //!
-        //! The address and port fields are optional. If the address is specified alone,
-        //! without port, the square brackets may be omitted.
-        //!
         //! @param [in] name A string containing either a host name or a numerical
         //! representation of the address and optional port.
         //! In case of error, the integer value of the address is
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //! @param [in] report Where to report errors.
         //!
-        IPv6SocketAddress(const UString& name, Report& report = CERR) :
+        IPv6SocketAddress(const UString& name, Report& report) :
             IPv6Address(),
             _port(0)
         {
@@ -153,23 +147,12 @@ namespace ts {
         //!
         virtual ~IPv6SocketAddress() override;
 
-        //!
-        //! Get the port.
-        //! @return The port.
-        //!
-        uint16_t port() const
-        {
-            return _port;
-        }
-
-        //!
-        //! Set the port.
-        //! @param [in] port The port number as an integer in host byte order.
-        //!
-        void setPort(uint16_t port)
-        {
-            _port = port;
-        }
+        // Inherited methods.
+        virtual Port port() const override;
+        virtual void setPort(Port port) override;
+        virtual bool resolve(const UString& name, Report& report) override;
+        virtual UString toString() const override;
+        virtual UString toFullString() const override;
 
         //!
         //! Set the socket address from 16 bytes andport.
@@ -229,69 +212,12 @@ namespace ts {
         }
 
         //!
-        //! Check if port is set.
-        //! @return True if port is set.
-        //!
-        bool hasPort() const
-        {
-            return _port != AnyPort;
-        }
-
-        //!
-        //! Clear address.
-        //!
-        void clearAddress()
-        {
-            IPv6Address::clear();
-        }
-
-        //!
-        //! Clear port.
-        //!
-        void clearPort()
-        {
-            _port = AnyPort;
-        }
-
-        //!
-        //! Clear address and port
-        //!
-        void clear()
-        {
-            IPv6Address::clear();
-            _port = AnyPort;
-        }
-
-        //!
-        //! Decode a string "[addr]:port".
-        //!
-        //! Important: In the template string "[addr]:port", the square brackets do not
-        //! mean that "addr" is optional. According to IPv6 URL representation, the
-        //! square brackets are actual characters in the string.
-        //!
-        //! The address and port fields are optional. If the address is specified alone,
-        //! without port, the square brackets may be omitted.
-        //!
-        //! @param [in] name A string containing either a host name or a numerical
-        //! representation of the address and optional port.
-        //! @param [in] report Where to report errors.
-        //! @return True if @a name was successfully resolved, false otherwise.
-        //! In the later case, the integer value of the address is
-        //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
-        //!
-        bool resolve(const UString& name, Report& report = CERR);
-
-        //!
         //! Check if this socket address "matches" another one.
         //! @param [in] other Another instance to compare.
         //! @return False if this and @a other addresses are both specified and
         //! are different or if the two ports are specified and different. True otherwise.
         //!
         bool match(const IPv6SocketAddress& other) const;
-
-        // Implementation of StringifyInterface.
-        virtual UString toString() const override;
-        virtual UString toFullString() const override;
 
         //!
         //! Comparison "less than" operator.

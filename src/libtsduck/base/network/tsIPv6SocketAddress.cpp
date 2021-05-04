@@ -41,6 +41,21 @@ ts::IPv6SocketAddress::~IPv6SocketAddress()
 
 
 //----------------------------------------------------------------------------
+// Get/set port
+//----------------------------------------------------------------------------
+
+ts::IPv6SocketAddress::Port ts::IPv6SocketAddress::port() const
+{
+    return _port;
+}
+
+void ts::IPv6SocketAddress::setPort(Port port)
+{
+    _port = port;
+}
+
+
+//----------------------------------------------------------------------------
 // Decode a string "[addr]:port".
 //----------------------------------------------------------------------------
 
