@@ -42,14 +42,11 @@ namespace ts {
     //!
     //! Note: all address and port are used in host byte order.
     //!
+    //! The string representation is "addr[:port]" or "[addr:]port".
+    //!
     class TSDUCKDLL SocketAddress: public IPAddress
     {
     public:
-        //!
-        //! Wildcard integer value for "any port".
-        //!
-        static const uint16_t AnyPort = 0;
-
         //!
         //! Default constructor
         //!
@@ -126,7 +123,7 @@ namespace ts {
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //! @param [in] report Where to report errors.
         //!
-        SocketAddress(const UString& name, Report& report = CERR) :
+        SocketAddress(const UString& name, Report& report) :
             IPAddress(),
             _port(0)
         {
@@ -138,23 +135,11 @@ namespace ts {
         //!
         virtual ~SocketAddress() override;
 
-        //!
-        //! Get the port.
-        //! @return The port.
-        //!
-        uint16_t port() const
-        {
-            return _port;
-        }
-
-        //!
-        //! Set the port.
-        //! @param [in] port The port number as an integer in host byte order.
-        //!
-        void setPort(uint16_t port)
-        {
-            _port = port;
-        }
+        // Inherited methods.
+        virtual Port port() const override;
+        virtual void setPort(Port port) override;
+        virtual bool resolve(const UString& name, Report& report) override;
+        virtual UString toString() const override;
 
         //!
         //! Set an integer address and port.
@@ -179,40 +164,6 @@ namespace ts {
         {
             setAddress(b1, b2, b3, b4);
             _port = port;
-        }
-
-        //!
-        //! Check if port is set.
-        //! @return True if port is set.
-        //!
-        bool hasPort() const
-        {
-            return _port != AnyPort;
-        }
-
-        //!
-        //! Clear address.
-        //!
-        void clearAddress()
-        {
-            IPAddress::clear();
-        }
-
-        //!
-        //! Clear port.
-        //!
-        void clearPort()
-        {
-            _port = AnyPort;
-        }
-
-        //!
-        //! Clear address and port
-        //!
-        void clear()
-        {
-            IPAddress::clear();
-            _port = AnyPort;
         }
 
         //!
@@ -243,26 +194,12 @@ namespace ts {
         }
 
         //!
-        //! Decode a string "addr[:port]" or "[addr:]port".
-        //! @param [in] name A string containing either a host name or a numerical
-        //! representation of the address and optional port.
-        //! @param [in] report Where to report errors.
-        //! @return True if @a name was successfully resolved, false otherwise.
-        //! In the later case, the integer value of the address is
-        //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
-        //!
-        bool resolve(const UString& name, Report& report = CERR);
-
-        //!
         //! Check if this socket address "matches" another one.
         //! @param [in] other Another instance to compare.
         //! @return False if this and @a other addresses are both specified and
         //! are different or if the two ports are specified and different. True otherwise.
         //!
         bool match(const SocketAddress& other) const;
-
-        // Implementation of StringifyInterface.
-        virtual UString toString() const override;
 
         //!
         //! Comparison "less than" operator.

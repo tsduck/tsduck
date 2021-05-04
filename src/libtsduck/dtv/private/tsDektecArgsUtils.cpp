@@ -28,6 +28,9 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDektecArgsUtils.h"
+#include "tsSocketAddress.h"
+#include "tsIPv6SocketAddress.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 
@@ -116,6 +119,7 @@ void ts::DefineDektecIOStandardArgs(Args& args)
 // Get command line option for Dektec --io-standard option.
 //-----------------------------------------------------------------------------
 
+#if !defined(TS_NO_DTAPI)
 bool ts::GetDektecIOStandardArgs(Args& args, int& value, int& subvalue)
 {
     if (args.present(u"io-standard")) {
@@ -129,6 +133,7 @@ bool ts::GetDektecIOStandardArgs(Args& args, int& value, int& subvalue)
         return true;
     }
 }
+#endif
 
 
 //-----------------------------------------------------------------------------
@@ -243,62 +248,186 @@ void ts::DefineDektecIPArgs(Args& args, bool receive)
 
 
 //-----------------------------------------------------------------------------
+// Decode an IP address and/or port and store it into binary data.
+//-----------------------------------------------------------------------------
+
+namespace {
+    bool DecodeAddress(ts::Args& args, const ts::UChar* option_name, size_t option_index,
+                       ts::AbstractNetworkAddress& instance,
+                       void* addr, size_t addr_size, ts::AbstractNetworkAddress::Port* port,
+                       bool require_addr, bool require_port)
+    {
+        if (args.count(option_name) <= option_index) {
+            // Option not present, not an error, do nothing.
+            return true;
+        }
+        const ts::UString value(args.value(option_name, u"", option_index));
+        if (!instance.resolve(value, args)) {
+            // Invalid parameter string, error already reported.
+            return false;
+        }
+        if (instance.hasAddress()) {
+            instance.getAddress(addr, addr_size);
+        }
+        else if (require_addr) {
+            args.error(u"IP address missing in --%s %s", {option_name, value});
+            return false;
+        }
+        if (instance.hasPort() && port != nullptr) {
+            *port = instance.port();
+        }
+        else if (require_port) {
+            args.error(u"port number missing in --%s %s", {option_name, value});
+            return false;
+        }
+        return true;
+    }
+
+    #if !defined(TS_NO_DTAPI)
+    bool DecodeSSM(ts::Args& args, const ts::UChar* option_name,
+                   ts::AbstractNetworkAddress& instance,
+                   std::vector<Dtapi::DtIpSrcFlt>& filters)
+    {
+        const size_t count = args.count(option_name);
+        for (size_t i = 0; i < count; ++i) {
+            Dtapi::DtIpSrcFlt flt;
+            TS_ZERO(flt.m_SrcFltIp);
+            flt.m_SrcFltPort = 0;
+            if (!DecodeAddress(args, option_name, i, instance, flt.m_SrcFltIp, sizeof(flt.m_SrcFltIp), &flt.m_SrcFltPort, true, false)) {
+                return false;
+            }
+            filters.push_back(flt);
+        }
+        return true;
+    }
+    #endif
+}
+
+
+//-----------------------------------------------------------------------------
 // Get command line option for Dektec TS-over-IP options.
 //-----------------------------------------------------------------------------
 
 #if !defined(TS_NO_DTAPI)
 bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
 {
-/*
-struct DtIpPars2
-{
-public:
-    // Primary link
-    unsigned char  m_Ip[16];        // IP address (IPv4/IPv6)
-    unsigned short  m_Port;         // Port number
-    unsigned char  m_Gateway[16];   // Override default gateway
-    std::vector<DtIpSrcFlt>  m_SrcFlt;
-                                    // Source filter
-    int  m_VlanId;                  // VLAN ID
-    int  m_VlanPriority;            // VLAN priority
+    // Clear previous content.
+    TS_ZERO(dtpars.m_Ip);
+    dtpars.m_Port = 0;
+    TS_ZERO(dtpars.m_Gateway);
+    dtpars.m_SrcFlt.clear();
+    dtpars.m_VlanId = 0;
+    dtpars.m_VlanPriority = 0;
+    TS_ZERO(dtpars.m_Ip2);
+    dtpars.m_Port2 = 0;
+    TS_ZERO(dtpars.m_Gateway2);
+    dtpars.m_SrcFlt2.clear();
+    dtpars.m_VlanId2 = 0;
+    dtpars.m_VlanPriority2 = 0;
+    dtpars.m_TimeToLive = 0;  // means use default
+    dtpars.m_NumTpPerIp = 7;  // default value
+    dtpars.m_Protocol = 0;
+    dtpars.m_DiffServ = 0;    // means use default
+    dtpars.m_FecMode = 0;
+    dtpars.m_FecNumRows = 0;
+    dtpars.m_FecNumCols = 0;
+    dtpars.m_Flags = 0;       // default, implicitly IPv4.
+    dtpars.m_Mode = 0;
+    dtpars.m_IpProfile.m_Profile = DTAPI_IP_PROF_NOT_DEFINED;
+    dtpars.m_IpProfile.m_MaxBitrate = 0;
+    dtpars.m_IpProfile.m_MaxSkew = 0;
+    dtpars.m_IpProfile.m_VideoStandard = DTAPI_VIDSTD_UNKNOWN;
 
-    // Redundant link (path 2 in SMPTE 2022-7 mode)
-    unsigned char  m_Ip2[16];       // IP address (IPv4/IPv6)
-    unsigned short  m_Port2;        // Port number
-    unsigned char  m_Gateway2[16];  // Override default gateway
-    std::vector<DtIpSrcFlt>  m_SrcFlt2;
-                                    // Source filter
+    // Use IPv4 or IPv6.
+    const bool ipv4 = args.present(u"ip4");
+    dtpars.m_Flags = ipv4 ? DTAPI_IP_V4 : DTAPI_IP_V6;
 
-    int  m_VlanId2;                 // VLAN ID
-    int  m_VlanPriority2;           // VLAN priority
+    // Number of links (single or redundant).
+    const size_t link_count = std::max(args.count(u"ip4"), args.count(u"ip6"));
+    dtpars.m_Mode = link_count == 1 ? DTAPI_IP_NORMAL : (receive ? DTAPI_IP_RX_2022_7 : DTAPI_IP_TX_2022_7);
 
-    int  m_TimeToLive;              // Time-to-Live setting for IP Tx
-    int  m_NumTpPerIp;              // Number of transport packets per IP packet
-    int  m_Protocol;                // Protocol: DTAPI_PROTO_UDP/RTP
-    int  m_DiffServ;                // Differentiated services
-    int  m_FecMode;                 // Error correction mode: DTAPI_FEC_DISABLE/2D
-    int  m_FecNumRows;              // 'D' = #rows in FEC matrix
-    int  m_FecNumCols;              // 'L' = #columns in FEC matrix
+    // Check consistency of IPv4 vs. IPv6 and number of links.
+    bool ok = args.present(u"ip4") + args.present(u"ip6") == 1 && args.count(u"vlan-id") <= link_count;
+    if (ok && receive) {
+        ok = (ipv4 || args.count(u"ssm4-filter") == 0) &&
+             (!ipv4 || args.count(u"ssm6-filter") == 0);
+    }
+    if (ok && !receive) {
+        ok = args.count(u"gw4") <= args.count(u"ip4") &&
+             args.count(u"gw6") <= args.count(u"ip6") &&
+             args.count(u"source-port") <= link_count &&
+             args.count(u"vlan-priority") <= link_count;
+    }
+    if (!ok) {
+        args.error(u"inconsistent IP parameters, check IPv4 vs. IPv6 and number of links (single vs. redundant)");
+        return false;
+    }
 
-    // Control and status flags: DTAPI_IP_V4, DTAPI_IP_V6, DTAPI_IP_TX_MANSRCPORT
-    int  m_Flags;
+    // Get IP addresses and ports. Valid for receive and transmit.
+    IPAddress ip4;
+    SocketAddress sock4;
+    IPv6Address ip6;
+    IPv6SocketAddress sock6;
+    if ((ipv4 && !DecodeAddress(args, u"ip4", 0, sock4, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||
+        (ipv4 && !DecodeAddress(args, u"ip4", 1, sock4, dtpars.m_Ip2, sizeof(dtpars.m_Ip2), &dtpars.m_Port2, !receive, true)) ||
+        (!ipv4 && !DecodeAddress(args, u"ip6", 0, sock6, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||
+        (!ipv4 && !DecodeAddress(args, u"ip6", 1, sock6, dtpars.m_Ip2, sizeof(dtpars.m_Ip2), &dtpars.m_Port2, !receive, true)) ||
+        (!receive && ipv4 && !DecodeAddress(args, u"gw4", 0, ip4, dtpars.m_Gateway, sizeof(dtpars.m_Gateway), nullptr, true, false)) ||
+        (!receive && ipv4 && !DecodeAddress(args, u"gw4", 1, ip4, dtpars.m_Gateway2, sizeof(dtpars.m_Gateway2), nullptr, true, false)) ||
+        (!receive && !ipv4 && !DecodeAddress(args, u"gw6", 0, ip6, dtpars.m_Gateway, sizeof(dtpars.m_Gateway), nullptr, true, false)) ||
+        (!receive && !ipv4 && !DecodeAddress(args, u"gw6", 1, ip6, dtpars.m_Gateway2, sizeof(dtpars.m_Gateway2), nullptr, true, false)))
+    {
+        return false;
+    }
 
-    // Seamless Protection Switching of IP Datagrams (SMPTE 2022-7)
+    // VLAN ids are used in receive and transmit.
+    args.getIntValue(dtpars.m_VlanId, u"vlan-id", 0, 0);
+    args.getIntValue(dtpars.m_VlanId2, u"vlan-id", 0, 1);
 
-    // Transmission- or reception mode. It determines whether "seamless protection
-    // switching of IP datagrams" according to SMPTE 2022-7 is applied.
-    //  DTAPI_IP_NORMAL     Default value for non-redundant Rx or Tx.
-    //  DTAPI_IP_TX_2022_7  Apply SMPTE 2022-7 for Tx. IP packets will be duplicated to
-    //                      path 1 (primary link) and path 2 (redundant link)
-    //  DTAPI_IP_RX_2022_7  Apply SMPTE 2022-7 for Rx. IP packets from path 1 and path 2
-    //                      will be seamlessly combined into a single logical stream.
-    int  m_Mode;
+    // Other parameters are interpreted differently from transmit and receive.
+    if (receive) {
+        // List of SSM filters.
+        if ((ipv4 && !DecodeSSM(args, u"ssm4-filter", sock4, dtpars.m_SrcFlt)) ||
+            (!ipv4 && !DecodeSSM(args, u"ssm6-filter", sock6, dtpars.m_SrcFlt)))
+        {
+            return false;
+        }
+        // Same list of SSM filters on both links.
+        dtpars.m_SrcFlt2 = dtpars.m_SrcFlt;
 
-    // The IP transmission profile determines the maximum bitrate and the maximum skew
-    // between transmission path 1 and path 2.
-    DtIpProfile  m_IpProfile;
-};
- */
-    return false; //@@@@@@@@@@@@@@@@
+        // Other options.
+        dtpars.m_Protocol = DTAPI_PROTO_AUTO;
+        dtpars.m_FecMode = args.present(u"smpte-2022-fec") ? DTAPI_FEC_2D : DTAPI_FEC_DISABLE;
+    }
+    else {
+        // Transmit. Optional source ports.
+        Dtapi::DtIpSrcFlt flt;
+        TS_ZERO(flt.m_SrcFltIp);
+        args.getIntValue(flt.m_SrcFltPort, u"source-port", 0, 0);
+        if (flt.m_SrcFltPort != 0) {
+            dtpars.m_SrcFlt.push_back(flt);
+        }
+        args.getIntValue(flt.m_SrcFltPort, u"source-port", 0, 1);
+        if (flt.m_SrcFltPort != 0) {
+            dtpars.m_SrcFlt2.push_back(flt);
+        }
+        if (args.present(u"source-port")) {
+            dtpars.m_Flags |= DTAPI_IP_TX_MANSRCPORT;
+        }
+
+        // Other options.
+        args.getIntValue(dtpars.m_VlanPriority, u"vlan-priority", 0, 0);
+        args.getIntValue(dtpars.m_VlanPriority2, u"vlan-priority", 0, 1);
+        args.getIntValue(dtpars.m_TimeToLive, u"ttl", 0);
+        args.getIntValue(dtpars.m_DiffServ, u"tos", 0);
+        args.getIntValue(dtpars.m_NumTpPerIp, u"ts-per-ip", 7); // default: 7
+        dtpars.m_Protocol = args.present(u"rtp") ? DTAPI_PROTO_RTP : DTAPI_PROTO_UDP;
+        dtpars.m_FecMode = DTAPI_FEC_DISABLE;
+        args.getIntValue(dtpars.m_FecMode, u"smpte-2022-fec", DTAPI_FEC_DISABLE);
+        args.getIntValue(dtpars.m_FecNumRows, u"smpte-2022-d", 0);
+        args.getIntValue(dtpars.m_FecNumCols, u"smpte-2022-l", 0);
+    }
+
+    return true;
 }
 #endif

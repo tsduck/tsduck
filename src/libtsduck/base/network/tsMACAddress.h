@@ -33,8 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsStringifyInterface.h"
-#include "tsCerrReport.h"
+#include "tsAbstractNetworkAddress.h"
 #include "tsIPAddress.h"
 
 namespace ts {
@@ -42,13 +41,20 @@ namespace ts {
     //! A basic representation of a MAC address.
     //! @ingroup net
     //!
-    class TSDUCKDLL MACAddress: public StringifyInterface
+    //! The string representation is "hh:hh:hh:hh:hh:hh".
+    //!
+    class TSDUCKDLL MACAddress: public AbstractNetworkAddress
     {
     public:
         //!
         //! Size in bits of a MAC address.
         //!
         static constexpr size_t BITS = 48;
+
+        //!
+        //! Size in bytes of a MAC address.
+        //!
+        static constexpr size_t BYTES = 6;
 
         //!
         //! Mask of meaningful bits in a MAC address.
@@ -102,11 +108,21 @@ namespace ts {
         //! @param [in] name A string in "a:b:c:d:e:f" format.
         //! @param [in] report Where to report errors.
         //!
-        MACAddress(const UString& name, Report& report = CERR) :
+        MACAddress(const UString& name, Report& report) :
             _addr(0)
         {
             resolve(name, report);
         }
+
+        // Inherited methods.
+        virtual size_t binarySize() const override;
+        virtual bool hasAddress() const override;
+        virtual size_t getAddress(void* addr, size_t size) const override;
+        virtual bool setAddress(const void* addr, size_t size) override;
+        virtual void clearAddress() override;
+        virtual bool isMulticast() const override;
+        virtual bool resolve(const UString& name, Report& report) override;
+        virtual UString toString() const override;
 
         //!
         //! Get the MAC address as a 48-bit integer value.
@@ -143,41 +159,11 @@ namespace ts {
         void getAddress(uint8_t& b1, uint8_t& b2, uint8_t& b3, uint8_t& b4, uint8_t& b5, uint8_t& b6) const;
 
         //!
-        //! Check if the address is a multicast address for IPv4.
-        //! @return True if the address is a multicast address, false otherwise.
-        //!
-        bool isMulticast() const { return (_addr & MULTICAST_MASK) == MULTICAST_PREFIX; }
-
-        //!
         //! Get the multicast MAC address for a given IPv4 address.
         //! @param [in] ip IPv4 multicast address.
         //! @return True if the @a ip is a multicast address, false otherwise.
         //!
         bool toMulticast(const IPAddress& ip);
-
-        //!
-        //! Check if this object is set to a valid address (ie not zero, as in a default-constructed MACAddress object).
-        //! @return True if this object is set to a valid address (ie not zero),
-        //! false otherwise.
-        //!
-        bool hasAddress() const { return _addr != 0; }
-
-        //!
-        //! Clear address (set it to zero, as in a default-constructed MACAddress object).
-        //!
-        void clear() { _addr = 0; }
-
-        //!
-        //! Decode a string in "a:b:c:d:e:f" format.
-        //! @param [in] name A string in "a:b:c:d:e:f" format.
-        //! @param [in] report Where to report errors.
-        //! @return True if @a name was successfully resolved, false otherwise.
-        //! In the later case, the integer value of the address is cleared.
-        //!
-        bool resolve(const UString& name, Report& report = CERR);
-
-        // Implementation of StringifyInterface.
-        virtual UString toString() const override;
 
         //!
         //! Comparison "less than" operator.

@@ -33,8 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsStringifyInterface.h"
-#include "tsCerrReport.h"
+#include "tsAbstractNetworkAddress.h"
 
 namespace ts {
     //!
@@ -48,9 +47,21 @@ namespace ts {
     //! is required, the internal guts of this class will do it for you (and hide
     //! it from you).
     //!
-    class TSDUCKDLL IPAddress: public StringifyInterface
+    //! The string representation is "int.int.int.int".
+    //!
+    class TSDUCKDLL IPAddress: public AbstractNetworkAddress
     {
     public:
+        //!
+        //! Size in bits of an IPv4 address.
+        //!
+        static constexpr size_t BITS = 32;
+
+        //!
+        //! Size in bytes of an IPv4 address.
+        //!
+        static constexpr size_t BYTES = 4;
+
         //!
         //! Wildcard integer value for "any IP address".
         //!
@@ -136,11 +147,21 @@ namespace ts {
         //! representation of the address "a.b.c.d".
         //! @param [in] report Where to report errors.
         //!
-        IPAddress(const UString& name, Report& report = CERR) :
+        IPAddress(const UString& name, Report& report) :
             _addr (0)
         {
             resolve(name, report);
         }
+
+        // Inherited methods.
+        virtual size_t binarySize() const override;
+        virtual bool hasAddress() const override;
+        virtual size_t getAddress(void* addr, size_t size) const override;
+        virtual bool setAddress(const void* addr, size_t size) override;
+        virtual void clearAddress() override;
+        virtual bool isMulticast() const override;
+        virtual bool resolve(const UString& name, Report& report) override;
+        virtual UString toString() const override;
 
         //!
         //! Get the IP address as a 32-bit integer value in host byte order.
@@ -171,29 +192,11 @@ namespace ts {
         void setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
 
         //!
-        //! Check if the address is a multicast address.
-        //! @return True if the address is a multicast address, false otherwise.
-        //!
-        bool isMulticast() const { return IN_MULTICAST(_addr); }
-
-        //!
         //! Check if the address is a source specific multicast (SSM) address.
         //! Note: SSM addresses are in the range 232.0.0.0/8.
         //! @return True if the address is an SSM address, false otherwise.
         //!
         bool isSSM() const { return (_addr & 0xFF000000) == 0xE8000000; }
-
-        //!
-        //! Check if this object is set to a valid address (ie not AnyAddress).
-        //! @return True if this object is set to a valid address (ie not AnyAddress),
-        //! false otherwise.
-        //!
-        bool hasAddress() const { return _addr != AnyAddress; }
-
-        //!
-        //! Clear address (set it to AnyAddress).
-        //!
-        void clear() { _addr = AnyAddress; }
 
         //!
         //! Copy the address into a system "struct sockaddr" structure (socket API).
@@ -216,26 +219,12 @@ namespace ts {
         void copy(::in_addr& a) const { a.s_addr = htonl(_addr); }
 
         //!
-        //! Decode a string, numeric address or hostname which is resolved.
-        //! @param [in] name A string containing either a host name or a numerical
-        //! representation of the address "a.b.c.d".
-        //! @param [in] report Where to report errors.
-        //! @return True if @a name was successfully resolved, false otherwise.
-        //! In the later case, the integer value of the address is
-        //! set to @link AnyAddress @endlink.
-        //!
-        bool resolve(const UString& name, Report& report = CERR);
-
-        //!
         //! Check if this address "matches" another one.
         //! @param [in] other Another instance to compare.
         //! @return False if this and @a other addresses are both specified and
         //! are different. True otherwise.
         //!
         bool match(const IPAddress& other) const;
-
-        // Implementation of StringifyInterface.
-        virtual UString toString() const override;
 
         //!
         //! Comparison "less than" operator.

@@ -36,24 +36,56 @@ const ts::IPv6Address ts::IPv6Address::LocalHost(0, 0, 0, 0, 0, 0, 0, 1);
 
 
 //----------------------------------------------------------------------------
-// Set the IP address from various components.
+// Set/get address
 //----------------------------------------------------------------------------
 
-void ts::IPv6Address::setAddress(const uint8_t *addr, size_t size)
+size_t ts::IPv6Address::binarySize() const
 {
-    // Safely consider a null pointer as an empty buffer.
-    if (addr == nullptr) {
-        size = 0;
-    }
+    return BYTES;
+}
 
-    if (size >= sizeof(_bytes)) {
-        // Ignore extra bytes, if any.
-        ::memcpy(_bytes, addr, sizeof(_bytes));
+void ts::IPv6Address::clearAddress()
+{
+    TS_ZERO(_bytes);
+}
+
+bool ts::IPv6Address::hasAddress() const
+{
+    return ::memcmp(_bytes, AnyAddress._bytes, sizeof(_bytes)) != 0;
+}
+
+bool ts::IPv6Address::isMulticast() const
+{
+    return _bytes[0] == 0xFF;
+}
+
+size_t ts::IPv6Address::getAddress(void* addr, size_t size) const
+{
+    if (addr == nullptr || size < BYTES) {
+        return 0;
     }
     else {
-        // Pad MSB with zeroes.
-        clear();
-        ::memcpy(_bytes + sizeof(_bytes) - size, addr, size);
+        ::memcpy(addr, _bytes, BYTES);
+        return BYTES;
+    }
+}
+
+bool ts::IPv6Address::setAddress(const void *addr, size_t size)
+{
+    if (addr == nullptr) {
+        TS_ZERO(_bytes);
+        return false;
+    }
+    else if (size >= BYTES) {
+        // Ignore extra bytes, if any.
+        ::memcpy(_bytes, addr, BYTES);
+        return true;
+    }
+    else {
+        // Truncated address, pad MSB with zeroes.
+        TS_ZERO(_bytes);
+        ::memcpy(_bytes + BYTES - size, addr, size);
+        return false;
     }
 }
 

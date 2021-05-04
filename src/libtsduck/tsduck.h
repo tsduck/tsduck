@@ -46,6 +46,7 @@
 #include "tsAbstractLogicalChannelDescriptor.h"
 #include "tsAbstractLongTable.h"
 #include "tsAbstractMultilingualDescriptor.h"
+#include "tsAbstractNetworkAddress.h"
 #include "tsAbstractOutputStream.h"
 #include "tsAbstractPacketizer.h"
 #include "tsAbstractPreferredNameIdentifierDescriptor.h"

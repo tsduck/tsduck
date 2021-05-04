@@ -26,22 +26,43 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 27
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2363
+#include "tsAbstractNetworkAddress.h"
+TSDUCK_SOURCE;
+
+// All methods here are default implementations,
+// when a subclass does not implement the corresponding method.
+
+ts::AbstractNetworkAddress::~AbstractNetworkAddress()
+{
+}
+
+void ts::AbstractNetworkAddress::clear()
+{
+    clearAddress();
+    clearPort();
+}
+
+bool ts::AbstractNetworkAddress::hasPort() const
+{
+    return port() != AnyPort;
+}
+
+ts::AbstractNetworkAddress::Port ts::AbstractNetworkAddress::port() const
+{
+    return AnyPort;
+}
+
+void ts::AbstractNetworkAddress::setPort(Port port)
+{
+}
+
+void ts::AbstractNetworkAddress::clearPort()
+{
+    setPort(AnyPort);
+}
+
+ts::UString ts::AbstractNetworkAddress::toFullString() const
+{
+    return toString();
+}

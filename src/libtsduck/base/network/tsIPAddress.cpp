@@ -92,8 +92,50 @@ void ts::IPAddress::copy(::sockaddr_in& s, uint16_t port) const
 
 
 //----------------------------------------------------------------------------
-// Set address
+// Set/get address
 //----------------------------------------------------------------------------
+
+size_t ts::IPAddress::binarySize() const
+{
+    return BYTES;
+}
+
+void ts::IPAddress::clearAddress()
+{
+    _addr = AnyAddress;
+}
+
+bool ts::IPAddress::hasAddress() const
+{
+    return _addr != AnyAddress;
+}
+
+bool ts::IPAddress::isMulticast() const
+{
+    return IN_MULTICAST(_addr);
+}
+
+bool ts::IPAddress::setAddress(const void* addr, size_t size)
+{
+    if (addr == nullptr || size < BYTES) {
+        return false;
+    }
+    else {
+        _addr = GetUInt32BE(addr);
+        return true;
+    }
+}
+
+size_t ts::IPAddress::getAddress(void* addr, size_t size) const
+{
+    if (addr == nullptr || size < BYTES) {
+        return 0;
+    }
+    else {
+        PutUInt32BE(addr, _addr);
+        return BYTES;
+    }
+}
 
 void ts::IPAddress::setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
 {
@@ -103,7 +145,6 @@ void ts::IPAddress::setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
 
 //----------------------------------------------------------------------------
 // Decode a string or hostname which is resolved.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::IPAddress::resolve(const UString& name, Report& report)

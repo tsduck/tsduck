@@ -33,8 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsStringifyInterface.h"
-#include "tsCerrReport.h"
+#include "tsAbstractNetworkAddress.h"
 #include "tsByteBlock.h"
 #include "tsMemory.h"
 
@@ -42,6 +41,7 @@ namespace ts {
     //!
     //! A basic representation of an IPv6 address.
     //! @ingroup net
+    //! @see https://en.wikipedia.org/wiki/IPv6_address
     //!
     //! An IPv6 address is made of 128 bits (16 bytes). It can be manipulated as
     //! - 16 bytes
@@ -51,12 +51,14 @@ namespace ts {
     //! This class is incomplete. Currently, it does not allow IPv6 networking.
     //! It is only designed to manipulate IPv6 addresses in DVB signalization.
     //!
-    class TSDUCKDLL IPv6Address: public StringifyInterface
+    class TSDUCKDLL IPv6Address: public AbstractNetworkAddress
     {
-    private:
-        uint8_t _bytes[16]; // Raw content of the IPv6 address.
-
     public:
+        //!
+        //! Size in bits of an IPv6 address.
+        //!
+        static constexpr size_t BITS = 128;
+
         //!
         //! Size in bytes of an IPv6 address.
         //!
@@ -77,7 +79,7 @@ namespace ts {
         //! Default constructor.
         //! The default value is AnyAddress.
         //!
-        IPv6Address() { clear(); }
+        IPv6Address() { clearAddress(); }
 
         //!
         //! Constructor from 16 bytes.
@@ -119,6 +121,17 @@ namespace ts {
         //!
         IPv6Address(uint64_t net, uint64_t ifid) { setAddress(net, ifid); }
 
+        // Inherited methods.
+        virtual size_t binarySize() const override;
+        virtual bool hasAddress() const override;
+        virtual size_t getAddress(void* addr, size_t size) const override;
+        virtual bool setAddress(const void* addr, size_t size) override;
+        virtual void clearAddress() override;
+        virtual bool isMulticast() const override;
+        virtual bool resolve(const UString& name, Report& report) override;
+        virtual UString toString() const override;
+        virtual UString toFullString() const override;
+
         //!
         //! Equality operator.
         //! @param [in] a Another instance to compare with.
@@ -140,7 +153,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @see https://en.wikipedia.org/wiki/IPv6_address
         //!
-        IPv6Address(const UString& name, Report& report = CERR) { resolve(name, report); }
+        IPv6Address(const UString& name, Report& report) { resolve(name, report); }
 
         //!
         //! Get the IP address as a byte block.
@@ -166,15 +179,6 @@ namespace ts {
         //! @return The corresponding hexlet or zero if @a i is out of range.
         //!
         uint16_t hexlet(size_t i) const;
-
-        //!
-        //! Set the IP address from 16 bytes.
-        //! @param [in] addr Address of the memory area containing the IPv6 bytes.
-        //! @param [in] size Size of the memory area. If the size is shorter than 16,
-        //! the IPv6 is padded on the left (most significant bytes) with zeroes.
-        //! If the size is larger than 16, extra bytes are ignored.
-        //!
-        void setAddress(const uint8_t *addr, size_t size);
 
         //!
         //! Set the IP address from 16 bytes.
@@ -205,49 +209,12 @@ namespace ts {
         void setAddress(uint64_t net, uint64_t ifid);
 
         //!
-        //! Check if the address is a multicast address.
-        //! @return True if the address is a multicast address, false otherwise.
-        //!
-        bool isMulticast() const { return _bytes[0] == 0xFF; }
-
-        //!
-        //! Check if this object is set to a valid address (ie not AnyAddress).
-        //! @return True if this object is set to a valid address (ie not AnyAddress),
-        //! false otherwise.
-        //!
-        bool hasAddress() const { return ::memcmp(_bytes, AnyAddress._bytes, sizeof(_bytes)) != 0; }
-
-        //!
-        //! Clear address (set it to AnyAddress).
-        //!
-        void clear() { TS_ZERO(_bytes); }
-
-        //!
-        //! Decode a string in standard IPv6 numerical format.
-        //! @param [in] name A string containing a string in standard IPv6 numerical format.
-        //! @param [in] report Where to report errors.
-        //! @return True if @a name was successfully resolved, false otherwise.
-        //! In the later case, the address is set to @link AnyAddress @endlink.
-        //! @see https://en.wikipedia.org/wiki/IPv6_address
-        //!
-        bool resolve(const UString& name, Report& report = CERR);
-
-        //!
         //! Check if this address "matches" another one.
         //! @param [in] other Another instance to compare.
         //! @return False if this and @a other addresses are both specified and
         //! are different. True otherwise.
         //!
         bool match(const IPv6Address& other) const;
-
-        // Implementation of StringifyInterface.
-        virtual UString toString() const override;
-
-        //!
-        //! Convert to a string object in numeric format without the default compaction.
-        //! @return This object, converted as a string.
-        //!
-        virtual UString toFullString() const;
 
         //!
         //! Get the IP address as a byte block.
@@ -262,6 +229,9 @@ namespace ts {
         //! @return True if this instance is less than to @a other.
         //!
         bool operator<(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) < 0; }
+
+    private:
+        uint8_t _bytes[BYTES]; // Raw content of the IPv6 address.
     };
 
     //!

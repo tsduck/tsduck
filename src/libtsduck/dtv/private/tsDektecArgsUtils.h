@@ -27,9 +27,14 @@
 //
 //-----------------------------------------------------------------------------
 //!
-//!  @file
-//!  @ingroup hardware
-//!  Some basic command line utilities for Dektec API.
+//! @file
+//! @ingroup hardware
+//! Some basic command line utilities for Dektec API.
+//! The definition of command line options is done even without DTAPI so
+//! that the syntax of commands and plugins does not change. The extraction
+//! of the command line options is done only when DTAPI is present because
+//! 1) it may involve DTAPI types, 2) it is called by actual Dektec code
+//! which is not compiled without DTAPI.
 //!
 //-----------------------------------------------------------------------------
 
@@ -45,6 +50,14 @@ namespace ts {
     void DefineDektecIOStandardArgs(Args& args);
 
     //!
+    //! Add command line option definitions in an Args for Dektec TS-over-IP options.
+    //! @param [in,out] args Command line arguments to update.
+    //! @param [in] receive True to define receive options, false to define transmit options.
+    //!
+    void DefineDektecIPArgs(Args& args, bool receive);
+
+#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
+    //!
     //! Get command line option for Dektec --io-standard option.
     //! Args error indicator is set in case of incorrect arguments.
     //! @param [in,out] args Command line arguments.
@@ -54,14 +67,6 @@ namespace ts {
     //!
     bool GetDektecIOStandardArgs(Args& args, int& value, int& subvalue);
 
-    //!
-    //! Add command line option definitions in an Args for Dektec TS-over-IP options.
-    //! @param [in,out] args Command line arguments to update.
-    //! @param [in] receive True to define receive options, false to define transmit options.
-    //!
-    void DefineDektecIPArgs(Args& args, bool receive);
-
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
     //!
     //! Get command line option for Dektec TS-over-IP options.
     //! Args error indicator is set in case of incorrect arguments.

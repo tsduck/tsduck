@@ -58,9 +58,22 @@ ts::SocketAddress::~SocketAddress()
 
 
 //----------------------------------------------------------------------------
+// Get/set port
+//----------------------------------------------------------------------------
+
+ts::SocketAddress::Port ts::SocketAddress::port() const
+{
+    return _port;
+}
+
+void ts::SocketAddress::setPort(Port port)
+{
+    _port = port;
+}
+
+
+//----------------------------------------------------------------------------
 // Decode a string "addr[:port]" or "[addr:]port".
-// Addr can also be a hostname which is resolved.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SocketAddress::resolve(const UString& name, Report& report)

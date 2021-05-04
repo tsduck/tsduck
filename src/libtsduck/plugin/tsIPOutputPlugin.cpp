@@ -116,7 +116,7 @@ bool ts::IPOutputPlugin::getOptions()
     success = _destination.resolve(value(u""), *tsp) && success;
     const UString local(value(u"local-address"));
     _local_addr.clear();
-    success = (local.empty() || _local_addr.resolve(local)) && success;
+    success = (local.empty() || _local_addr.resolve(local, *tsp)) && success;
     getIntValue(_local_port, u"local-port", SocketAddress::AnyPort);
     getIntValue(_ttl, u"ttl", 0);
     getIntValue(_tos, u"tos", -1);

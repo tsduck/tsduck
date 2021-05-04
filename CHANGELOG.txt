@@ -2,13 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2361
+VERSION 3.27-2363
 
 [IMP] Improvements on existing commands and plugins:
 
+  * Added support for Dektec Ethernet devices (eg. DTA-2162).
   * New options in exiting commands and plugins:
     - Option --force-local-multicast-outgoing in output plugin "ip".
-    - Option --io-standard in input and output plugins "dektec".
+    - Option --io-standard and all TS-over-IP options in input and output
+      plugins "dektec".
     - Options --enforce-burst and --packet-burst in output plugin "srt".
 
 [BUG] Bug fixes:
