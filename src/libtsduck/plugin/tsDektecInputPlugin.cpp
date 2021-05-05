@@ -713,7 +713,7 @@ bool ts::DektecInputPlugin::start()
 
         // Report actual parameters in debug mode
         tsp->debug(u"setting IP parameters: DtIpPars2 = {");
-        DektecDevice::ReportIpPars(ip_pars, *tsp, Severity::Debug, u"");
+        DektecDevice::ReportIpPars(ip_pars, *tsp, Severity::Debug, u"  ");
         tsp->debug(u"}");
 
         status = _guts->chan.SetIpPars(&ip_pars);
