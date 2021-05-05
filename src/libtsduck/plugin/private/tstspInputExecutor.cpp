@@ -284,11 +284,11 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
             // (one packet before lost of sync and 3 packets starting at lost of sync).
             if (maxSeverity() >= 1) {
                 if (n > 0) {
-                    debug(u"content of packet before lost of synchronization:\n%s",
+                    debug(u"content of packet before loss of synchronization:\n%s",
                           {UString::Dump(pkt[n-1].b, PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16)});
                 }
                 const size_t dump_count = std::min<size_t>(3, count - n);
-                debug(u"data at lost of synchronization:\n%s",
+                debug(u"data at loss of synchronization:\n%s",
                       {UString::Dump(pkt[n].b, dump_count * PKT_SIZE, UString::HEXA | UString::OFFSET | UString::ASCII | UString::BPL, 4, 16)});
             }
             // Ignore subsequent packets

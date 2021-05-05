@@ -642,6 +642,7 @@ bool ts::DektecInputPlugin::start()
     }
 
     // Open the device
+    tsp->debug(u"attaching to device %s serial 0x%X", {_guts->device.model, _guts->device.desc.m_Serial});
     Dtapi::DTAPI_RESULT status = _guts->dtdev.AttachToSerial(_guts->device.desc.m_Serial);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching input Dektec device %d: %s", {_guts->dev_index, DektecStrError(status)});
@@ -652,7 +653,8 @@ bool ts::DektecInputPlugin::start()
     const int port = _guts->device.input[_guts->chan_index].m_Port;
     Dtapi::DtCaps dt_flags = _guts->device.input[_guts->chan_index].m_Flags;
 
-    // Open the input channel
+    // Open the input channel.
+    tsp->debug(u"attaching to port %d", {port});
     status = _guts->chan.AttachToPort(&_guts->dtdev, port);
     if (status != DTAPI_OK) {
         tsp->error(u"error attaching input channel %d of Dektec device %d: %s", {_guts->chan_index, _guts->dev_index, DektecStrError(status)});
@@ -661,16 +663,19 @@ bool ts::DektecInputPlugin::start()
     }
 
     // Reset input channel
+    tsp->debug(u"resetting channel, mode: %d", {DTAPI_FULL_RESET});
     status = _guts->chan.Reset(DTAPI_FULL_RESET);
     if (status != DTAPI_OK) {
         return startError(u"input device reset error", status);
     }
 
+    tsp->debug(u"setting RxControl, mode: %d", {DTAPI_RXCTRL_IDLE});
     status = _guts->chan.SetRxControl(DTAPI_RXCTRL_IDLE);
     if (status != DTAPI_OK) {
         return startError(u"device SetRxControl error", status);
     }
 
+    tsp->debug(u"clearing FIFO and flags");
     _guts->chan.ClearFifo();            // Clear FIFO (i.e. start with zero load)
     _guts->chan.ClearFlags(0xFFFFFFFF); // Clear all flags
 
@@ -692,6 +697,7 @@ bool ts::DektecInputPlugin::start()
         }
 
         // Tune to the frequency and demodulation parameters.
+        tsp->debug(u"tuning to frequency %'d", {_guts->demod_freq});
         status = _guts->chan.Tune(int64_t(_guts->demod_freq), &_guts->demod_pars);
         if (status != DTAPI_OK) {
             return startError(u"error tuning Dektec demodulator", status);
@@ -704,7 +710,12 @@ bool ts::DektecInputPlugin::start()
         if (!GetDektecIPArgs(*this, true, ip_pars)) {
             return startError(u"invalid TS-over-IP parameters", DTAPI_OK);
         }
-        tsp->debug(u"setting IP parameters");
+
+        // Report actual parameters in debug mode
+        tsp->debug(u"setting IP parameters: DtIpPars2 = {");
+        DektecDevice::ReportIpPars(ip_pars, *tsp, Severity::Debug, u"");
+        tsp->debug(u"}");
+
         status = _guts->chan.SetIpPars(&ip_pars);
         if (status != DTAPI_OK) {
             return startError(u"output device SetIpPars error", status);
@@ -714,12 +725,14 @@ bool ts::DektecInputPlugin::start()
     // Set the receiving packet size to 188 bytes (the size of the packets
     // which are returned by the board to the application, dropping extra 16
     // bytes if the transmitted packets are 204-byte).
+    tsp->debug(u"setting RxMode, mode: %d", {DTAPI_RXMODE_ST188});
     status = _guts->chan.SetRxMode(DTAPI_RXMODE_ST188);
     if (status != DTAPI_OK) {
         return startError(u"device SetRxMode error", status);
     }
 
     // Start the capture on the input device (set receive control to "receive")
+    tsp->debug(u"setting RxControl, mode: %d", {DTAPI_RXCTRL_RCV});
     status = _guts->chan.SetRxControl(DTAPI_RXCTRL_RCV);
     if (status != DTAPI_OK) {
         return startError(u"device SetRxControl error", status);
