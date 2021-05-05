@@ -42,6 +42,10 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"dektec", ts::DektecInputPlugin);
 
+// Consider that the first 5 receive() are "initialization". If a full input FIFO is
+// observed here, ignore it. Later, a full FIFO indicates a potential packet loss.
+#define INIT_RECEIVE_COUNT 5
+
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::DektecInputPlugin::REFERENCE = 0;
 
@@ -69,6 +73,10 @@ public:
     int                 timeout_ms;      // Receive timeout in milliseconds.
     int                 iostd_value;     // Value parameter for SetIoConfig on I/O standard.
     int                 iostd_subvalue;  // SubValue parameter for SetIoConfig on I/O standard.
+    int                 max_fifo_size;   // Maximum FIFO size
+    int                 opt_fifo_size;   // Requested FIFO size option
+    int                 cur_fifo_size;   // Actual current FIFO size
+    bool                preload_fifo;    // Preload FIFO before starting reception
     DektecDevice        device;          // Device characteristics
     Dtapi::DtDevice     dtdev;           // Device descriptor
     Dtapi::DtInpChannel chan;            // Input channel
@@ -91,6 +99,10 @@ ts::DektecInputPlugin::Guts::Guts() :
     timeout_ms(-1),
     iostd_value(-1),
     iostd_subvalue(-1),
+    max_fifo_size(DTA_FIFO_SIZE),
+    opt_fifo_size(0),
+    cur_fifo_size(0),
+    preload_fifo(false),
     device(),
     dtdev(),
     chan(),
@@ -215,6 +227,15 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     help(u"dvbt-bandwidth",
          u"DVB-T/T2 demodulators: indicate the bandwidth in MHz. The default is 8 MHz. "
          u"The bandwidth values 1.7, 5 and 10 MHz are valid for DVB-T2 only.");
+
+    option(u"fifo-size", 0, INTEGER, 0, 1, 1024, UNLIMITED_VALUE);
+    help(u"fifo-size",
+         u"Set the FIFO size in bytes of the input channel in the Dektec device. "
+         u"The default value depends on the device type.");
+
+    option(u"preload-fifo");
+    help(u"preload-fifo",
+         u"Wait for the reception FIFO (hardware buffer) to be half-full before starting reception.");
 
     option(u"frequency", 'f', POSITIVE);
     help(u"frequency",
@@ -385,7 +406,7 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 ts::DektecInputPlugin::~DektecInputPlugin()
 {
     if (_guts != nullptr) {
-        stop();
+        DektecInputPlugin::stop();
         delete _guts;
         _guts = nullptr;
     }
@@ -443,6 +464,8 @@ bool ts::DektecInputPlugin::getOptions()
     getIntValue(_guts->timeout_ms, u"receive-timeout", _guts->timeout_ms); // preserve previous value
     getIntValue(_guts->sat_number, u"satellite-number", 0);
     getIntValue(_guts->polarity, u"polarity", POL_VERTICAL);
+    getIntValue(_guts->opt_fifo_size, u"fifo-size", 0);
+    _guts->preload_fifo = present(u"preload-fifo");
     _guts->high_band = false;
     _guts->lnb_setup = false;
 
@@ -679,6 +702,31 @@ bool ts::DektecInputPlugin::start()
     _guts->chan.ClearFifo();            // Clear FIFO (i.e. start with zero load)
     _guts->chan.ClearFlags(0xFFFFFFFF); // Clear all flags
 
+    // Get max FIFO size.
+    _guts->max_fifo_size = 0;
+    tsp->debug(u"getting FIFO max size");
+    status = _guts->chan.GetMaxFifoSize(_guts->max_fifo_size);
+    if (status != DTAPI_OK || _guts->max_fifo_size == 0) {
+        // Not supported on this device, use hard-coded value.
+        _guts->max_fifo_size = int(DTA_FIFO_SIZE);
+        tsp->debug(u"retrieving max FIFO size is not supported");
+    }
+    tsp->debug(u"max FIFO size: %'d bytes", {_guts->max_fifo_size});
+
+    // Get/set actual FIFO size.
+    _guts->cur_fifo_size = _guts->max_fifo_size;
+    if (_guts->opt_fifo_size > 0) {
+        tsp->debug(u"setting FIFO size to %'d", {_guts->opt_fifo_size});
+        status = _guts->chan.SetFifoSize(_guts->opt_fifo_size);
+        if (status == DTAPI_OK) {
+            _guts->cur_fifo_size = _guts->opt_fifo_size;
+        }
+        else {
+            tsp->error(u"error setting FIFO size: %s", {DektecStrError(status)});
+        }
+    }
+    tsp->debug(u"using FIFO size: %'d bytes", {_guts->cur_fifo_size});
+
     // Configure I/O standard if necessary.
     if (_guts->iostd_value >= 0) {
         tsp->debug(u"setting IO config of port %d, group: %d, value: %d, subvalue: %d", {port, DTAPI_IOCONFIG_IOSTD, _guts->iostd_value, _guts->iostd_subvalue});
@@ -738,10 +786,8 @@ bool ts::DektecInputPlugin::start()
         return startError(u"device SetRxControl error", status);
     }
 
-    // Consider that the first 5 inputs are "initialization". If a full input
-    // fifo is observed here, ignore it. Later, a full fifo indicates potential
-    // packet loss.
-    _guts->init_cnt = 5;
+    // Count number of receive() operations in "initialization" phase.
+    _guts->init_cnt = INIT_RECEIVE_COUNT;
     _guts->is_started = true;
     return true;
 }
@@ -909,24 +955,38 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
 
     Dtapi::DTAPI_RESULT status = DTAPI_OK;
 
-    // After initialization, we check the receive FIFO load before reading it.
-    // If the FIFO is full, we have lost packets.
-    if (_guts->init_cnt > 0) {
-        _guts->init_cnt--;
-    }
-    if (_guts->init_cnt == 0) {
-        int fifo_load;
-        status = _guts->chan.GetFifoLoad(fifo_load);
-        if (status != DTAPI_OK) {
-            tsp->error(u"error getting input fifo load: %s", {DektecStrError(status)});
+    // If --preload-fifo is specified, wait for a half-full FIFO at the first receive().
+    if (_guts->init_cnt == INIT_RECEIVE_COUNT && _guts->preload_fifo) {
+        int fifo_load = 0;
+        while ((status = _guts->chan.GetFifoLoad(fifo_load)) == DTAPI_OK && fifo_load < _guts->cur_fifo_size / 2) {
+            SleepThread(10);
         }
-        if (fifo_load >= int(DTA_FIFO_SIZE)) {
-            // Input overflow.
-            tsp->warning(u"input fifo full, possible packet loss");
+        if (status != DTAPI_OK) {
+            tsp->error(u"error getting input initial FIFO load: %s", {DektecStrError(status)});
+        }
+        else {
+            tsp->debug(u"initial FIFO load: %'d bytes", {fifo_load});
         }
     }
 
-    // Do not read more than what a DTA device accepts
+    // Count "initial" receive operations.
+    if (_guts->init_cnt > 0) {
+        _guts->init_cnt--;
+    }
+
+    // After initialization, we check the receive FIFO load before reading it.
+    if (_guts->init_cnt == 0) {
+        int fifo_load = 0;
+        status = _guts->chan.GetFifoLoad(fifo_load);
+        if (status != DTAPI_OK) {
+            tsp->error(u"error getting input FIFO load: %s", {DektecStrError(status)});
+        }
+        else if (fifo_load >= _guts->cur_fifo_size) {
+            tsp->warning(u"input FIFO full, possible packet loss");
+        }
+    }
+
+    // Do not read more than what a DTA device accepts (is this still useful?)
     size_t size = RoundDown(std::min(max_packets * PKT_SIZE, DTA_MAX_IO_SIZE), PKT_SIZE);
 
     // Receive packets.
