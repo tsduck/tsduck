@@ -386,7 +386,7 @@ ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
 void ts::DektecDevice::ReportDvbT2Pars(const Dtapi::DtDvbT2Pars& pars, Report& report, int severity, const UString& margin)
 {
     // Don't lose time on multiple reports which won't do anything.
-    if (report.maxSeverity() <= severity) {
+    if (report.maxSeverity() >= severity) {
         report.log(severity, u"%sm_T2Version = %d", {margin, pars.m_T2Version});
         report.log(severity, u"%sm_Bandwidth = %d", {margin, pars.m_Bandwidth});
         report.log(severity, u"%sm_FftMode = %d", {margin, pars.m_FftMode});
@@ -425,7 +425,7 @@ void ts::DektecDevice::ReportDvbT2Pars(const Dtapi::DtDvbT2Pars& pars, Report& r
 void ts::DektecDevice::ReportDvbT2PlpPars(const Dtapi::DtDvbT2PlpPars& pars, Report& report, int severity, const UString& margin)
 {
     // Don't lose time on multiple reports which won't do anything.
-    if (report.maxSeverity() <= severity) {
+    if (report.maxSeverity() >= severity) {
         report.log(severity, u"%sm_Hem = %d", {margin, pars.m_Hem});
         report.log(severity, u"%sm_Npd = %d", {margin, pars.m_Npd});
         report.log(severity, u"%sm_Issy = %d", {margin, pars.m_Issy});
@@ -459,7 +459,7 @@ void ts::DektecDevice::ReportDvbT2PlpPars(const Dtapi::DtDvbT2PlpPars& pars, Rep
 void ts::DektecDevice::ReportDvbT2ParamInfo(const Dtapi::DtDvbT2ParamInfo& pars, Report& report, int severity, const UString& margin)
 {
     // Don't lose time on multiple reports which won't do anything.
-    if (report.maxSeverity() <= severity) {
+    if (report.maxSeverity() >= severity) {
         report.log(severity, u"%sm_TotalCellsPerFrame = %d", {margin, pars.m_TotalCellsPerFrame});
         report.log(severity, u"%sm_L1CellsPerFrame = %d", {margin, pars.m_L1CellsPerFrame});
         report.log(severity, u"%sm_DummyCellsPerFrame = %d", {margin, pars.m_DummyCellsPerFrame});
@@ -469,7 +469,7 @@ void ts::DektecDevice::ReportDvbT2ParamInfo(const Dtapi::DtDvbT2ParamInfo& pars,
 void ts::DektecDevice::ReportIpPars(const Dtapi::DtIpPars2& pars, Report& report, int severity, const UString& margin)
 {
     // Don't lose time on multiple reports which won't do anything.
-    if (report.maxSeverity() <= severity) {
+    if (report.maxSeverity() >= severity) {
         report.log(severity, u"%sm_Ip = %s", {margin, UString::Dump(pars.m_Ip, sizeof(pars.m_Ip), UString::SINGLE_LINE)});
         report.log(severity, u"%sm_Port = %d", {margin, pars.m_Port});
         report.log(severity, u"%sm_Gateway = %s", {margin, UString::Dump(pars.m_Gateway, sizeof(pars.m_Gateway), UString::SINGLE_LINE)});
