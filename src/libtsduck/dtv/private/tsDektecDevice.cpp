@@ -385,76 +385,123 @@ ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
 
 void ts::DektecDevice::ReportDvbT2Pars(const Dtapi::DtDvbT2Pars& pars, Report& report, int severity, const UString& margin)
 {
-    report.log(severity, u"%sm_T2Version = %d", {margin, pars.m_T2Version});
-    report.log(severity, u"%sm_Bandwidth = %d", {margin, pars.m_Bandwidth});
-    report.log(severity, u"%sm_FftMode = %d", {margin, pars.m_FftMode});
-    report.log(severity, u"%sm_Miso = %d", {margin, pars.m_Miso});
-    report.log(severity, u"%sm_GuardInterval = %d", {margin, pars.m_GuardInterval});
-    report.log(severity, u"%sm_Papr = %d", {margin, pars.m_Papr});
-    report.log(severity, u"%sm_BwtExt = %d", {margin, pars.m_BwtExt});
-    report.log(severity, u"%sm_PilotPattern = %d", {margin, pars.m_PilotPattern});
-    report.log(severity, u"%sm_L1Modulation = %d", {margin, pars.m_L1Modulation});
-    report.log(severity, u"%sm_CellId = %d", {margin, pars.m_CellId});
-    report.log(severity, u"%sm_NetworkId = %d", {margin, pars.m_NetworkId});
-    report.log(severity, u"%sm_T2SystemId = %d", {margin, pars.m_T2SystemId});
-    report.log(severity, u"%sm_L1Repetition = %d", {margin, pars.m_L1Repetition});
-    report.log(severity, u"%sm_NumT2Frames = %d", {margin, pars.m_NumT2Frames});
-    report.log(severity, u"%sm_NumDataSyms = %d", {margin, pars.m_NumDataSyms});
-    report.log(severity, u"%sm_NumSubslices = %d", {margin, pars.m_NumSubslices});
-    report.log(severity, u"%sm_FefEnable = %d", {margin, pars.m_FefEnable});
-    report.log(severity, u"%sm_FefType = %d", {margin, pars.m_FefType});
-    report.log(severity, u"%sm_FefS1 = %d", {margin, pars.m_FefS1});
-    report.log(severity, u"%sm_FefS2 = %d", {margin, pars.m_FefS2});
-    report.log(severity, u"%sm_FefSignal = %d", {margin, pars.m_FefSignal});
-    report.log(severity, u"%sm_FefLength = %d", {margin, pars.m_FefLength});
-    report.log(severity, u"%sm_FefInterval = %d", {margin, pars.m_FefInterval});
-    report.log(severity, u"%sm_NumRfChans = %d", {margin, pars.m_NumRfChans});
-    for (int i = 0; i < DTAPI_DVBT2_NUM_RF_MAX && i < pars.m_NumRfChans; i++) {
-        report.log(severity, u"%sm_RfChanFreqs[%d] = %d", {margin, i, pars.m_RfChanFreqs[i]});
-    }
-    report.log(severity, u"%sm_StartRfIdx = %d", {margin, pars.m_StartRfIdx});
-    report.log(severity, u"%sm_NumPlps = %d", {margin, pars.m_NumPlps});
-    for (int i = 0; i < DTAPI_DVBT2_NUM_PLP_MAX && i < pars.m_NumPlps; i++) {
-        ReportDvbT2PlpPars(pars.m_Plps[i], report, severity, UString::Format(u"%sm_Plps[%d].", {margin, i}));
+    // Don't lose time on multiple reports which won't do anything.
+    if (report.maxSeverity() <= severity) {
+        report.log(severity, u"%sm_T2Version = %d", {margin, pars.m_T2Version});
+        report.log(severity, u"%sm_Bandwidth = %d", {margin, pars.m_Bandwidth});
+        report.log(severity, u"%sm_FftMode = %d", {margin, pars.m_FftMode});
+        report.log(severity, u"%sm_Miso = %d", {margin, pars.m_Miso});
+        report.log(severity, u"%sm_GuardInterval = %d", {margin, pars.m_GuardInterval});
+        report.log(severity, u"%sm_Papr = %d", {margin, pars.m_Papr});
+        report.log(severity, u"%sm_BwtExt = %d", {margin, pars.m_BwtExt});
+        report.log(severity, u"%sm_PilotPattern = %d", {margin, pars.m_PilotPattern});
+        report.log(severity, u"%sm_L1Modulation = %d", {margin, pars.m_L1Modulation});
+        report.log(severity, u"%sm_CellId = %d", {margin, pars.m_CellId});
+        report.log(severity, u"%sm_NetworkId = %d", {margin, pars.m_NetworkId});
+        report.log(severity, u"%sm_T2SystemId = %d", {margin, pars.m_T2SystemId});
+        report.log(severity, u"%sm_L1Repetition = %d", {margin, pars.m_L1Repetition});
+        report.log(severity, u"%sm_NumT2Frames = %d", {margin, pars.m_NumT2Frames});
+        report.log(severity, u"%sm_NumDataSyms = %d", {margin, pars.m_NumDataSyms});
+        report.log(severity, u"%sm_NumSubslices = %d", {margin, pars.m_NumSubslices});
+        report.log(severity, u"%sm_FefEnable = %d", {margin, pars.m_FefEnable});
+        report.log(severity, u"%sm_FefType = %d", {margin, pars.m_FefType});
+        report.log(severity, u"%sm_FefS1 = %d", {margin, pars.m_FefS1});
+        report.log(severity, u"%sm_FefS2 = %d", {margin, pars.m_FefS2});
+        report.log(severity, u"%sm_FefSignal = %d", {margin, pars.m_FefSignal});
+        report.log(severity, u"%sm_FefLength = %d", {margin, pars.m_FefLength});
+        report.log(severity, u"%sm_FefInterval = %d", {margin, pars.m_FefInterval});
+        report.log(severity, u"%sm_NumRfChans = %d", {margin, pars.m_NumRfChans});
+        for (int i = 0; i < DTAPI_DVBT2_NUM_RF_MAX && i < pars.m_NumRfChans; i++) {
+            report.log(severity, u"%sm_RfChanFreqs[%d] = %d", {margin, i, pars.m_RfChanFreqs[i]});
+        }
+        report.log(severity, u"%sm_StartRfIdx = %d", {margin, pars.m_StartRfIdx});
+        report.log(severity, u"%sm_NumPlps = %d", {margin, pars.m_NumPlps});
+        for (int i = 0; i < DTAPI_DVBT2_NUM_PLP_MAX && i < pars.m_NumPlps; i++) {
+            ReportDvbT2PlpPars(pars.m_Plps[i], report, severity, UString::Format(u"%sm_Plps[%d].", {margin, i}));
+        }
     }
 }
 
 void ts::DektecDevice::ReportDvbT2PlpPars(const Dtapi::DtDvbT2PlpPars& pars, Report& report, int severity, const UString& margin)
 {
-    report.log(severity, u"%sm_Hem = %d", {margin, pars.m_Hem});
-    report.log(severity, u"%sm_Npd = %d", {margin, pars.m_Npd});
-    report.log(severity, u"%sm_Issy = %d", {margin, pars.m_Issy});
-    report.log(severity, u"%sm_IssyBufs = %d", {margin, pars.m_IssyBufs});
-    report.log(severity, u"%sm_IssyTDesign = %d", {margin, pars.m_IssyTDesign});
-    report.log(severity, u"%sm_CompensatingDelay = %d", {margin, pars.m_CompensatingDelay});
-    report.log(severity, u"%sm_TsRate = %d", {margin, pars.m_TsRate});
-    report.log(severity, u"%sm_Id = %d", {margin, pars.m_Id});
-    report.log(severity, u"%sm_GroupId = %d", {margin, pars.m_GroupId});
-    report.log(severity, u"%sm_Type = %d", {margin, pars.m_Type});
-    report.log(severity, u"%sm_CodeRate = %d", {margin, pars.m_CodeRate});
-    report.log(severity, u"%sm_Modulation = %d", {margin, pars.m_Modulation});
-    report.log(severity, u"%sm_Rotation = %d", {margin, pars.m_Rotation});
-    report.log(severity, u"%sm_FecType = %d", {margin, pars.m_FecType});
-    report.log(severity, u"%sm_FrameInterval = %d", {margin, pars.m_FrameInterval});
-    report.log(severity, u"%sm_FirstFrameIdx = %d", {margin, pars.m_FirstFrameIdx});
-    report.log(severity, u"%sm_TimeIlLength = %d", {margin, pars.m_TimeIlLength});
-    report.log(severity, u"%sm_TimeIlType = %d", {margin, pars.m_TimeIlType});
-    report.log(severity, u"%sm_InBandAFlag = %d", {margin, pars.m_InBandAFlag});
-    report.log(severity, u"%sm_InBandBFlag = %d", {margin, pars.m_InBandBFlag});
-    report.log(severity, u"%sm_NumBlocks = %d", {margin, pars.m_NumBlocks});
-    report.log(severity, u"%sm_NumOtherPlpInBand = %d", {margin, pars.m_NumOtherPlpInBand});
-    for (int i = 0; i < DTAPI_DVBT2_NUM_PLP_MAX - 1 && i < pars.m_NumOtherPlpInBand; i++) {
-        report.log(severity, u"%sm_OtherPlpInBand[%d] = %d", {margin, i, pars.m_OtherPlpInBand[i]});
+    // Don't lose time on multiple reports which won't do anything.
+    if (report.maxSeverity() <= severity) {
+        report.log(severity, u"%sm_Hem = %d", {margin, pars.m_Hem});
+        report.log(severity, u"%sm_Npd = %d", {margin, pars.m_Npd});
+        report.log(severity, u"%sm_Issy = %d", {margin, pars.m_Issy});
+        report.log(severity, u"%sm_IssyBufs = %d", {margin, pars.m_IssyBufs});
+        report.log(severity, u"%sm_IssyTDesign = %d", {margin, pars.m_IssyTDesign});
+        report.log(severity, u"%sm_CompensatingDelay = %d", {margin, pars.m_CompensatingDelay});
+        report.log(severity, u"%sm_TsRate = %d", {margin, pars.m_TsRate});
+        report.log(severity, u"%sm_Id = %d", {margin, pars.m_Id});
+        report.log(severity, u"%sm_GroupId = %d", {margin, pars.m_GroupId});
+        report.log(severity, u"%sm_Type = %d", {margin, pars.m_Type});
+        report.log(severity, u"%sm_CodeRate = %d", {margin, pars.m_CodeRate});
+        report.log(severity, u"%sm_Modulation = %d", {margin, pars.m_Modulation});
+        report.log(severity, u"%sm_Rotation = %d", {margin, pars.m_Rotation});
+        report.log(severity, u"%sm_FecType = %d", {margin, pars.m_FecType});
+        report.log(severity, u"%sm_FrameInterval = %d", {margin, pars.m_FrameInterval});
+        report.log(severity, u"%sm_FirstFrameIdx = %d", {margin, pars.m_FirstFrameIdx});
+        report.log(severity, u"%sm_TimeIlLength = %d", {margin, pars.m_TimeIlLength});
+        report.log(severity, u"%sm_TimeIlType = %d", {margin, pars.m_TimeIlType});
+        report.log(severity, u"%sm_InBandAFlag = %d", {margin, pars.m_InBandAFlag});
+        report.log(severity, u"%sm_InBandBFlag = %d", {margin, pars.m_InBandBFlag});
+        report.log(severity, u"%sm_NumBlocks = %d", {margin, pars.m_NumBlocks});
+        report.log(severity, u"%sm_NumOtherPlpInBand = %d", {margin, pars.m_NumOtherPlpInBand});
+        for (int i = 0; i < DTAPI_DVBT2_NUM_PLP_MAX - 1 && i < pars.m_NumOtherPlpInBand; i++) {
+            report.log(severity, u"%sm_OtherPlpInBand[%d] = %d", {margin, i, pars.m_OtherPlpInBand[i]});
+        }
+        report.log(severity, u"%sm_FfFlag = %d", {margin, pars.m_FfFlag});
+        report.log(severity, u"%sm_FirstRfIdx = %d", {margin, pars.m_FirstRfIdx});
     }
-    report.log(severity, u"%sm_FfFlag = %d", {margin, pars.m_FfFlag});
-    report.log(severity, u"%sm_FirstRfIdx = %d", {margin, pars.m_FirstRfIdx});
 }
 
 void ts::DektecDevice::ReportDvbT2ParamInfo(const Dtapi::DtDvbT2ParamInfo& pars, Report& report, int severity, const UString& margin)
 {
-    report.log(severity, u"%sm_TotalCellsPerFrame = %d", {margin, pars.m_TotalCellsPerFrame});
-    report.log(severity, u"%sm_L1CellsPerFrame = %d", {margin, pars.m_L1CellsPerFrame});
-    report.log(severity, u"%sm_DummyCellsPerFrame = %d", {margin, pars.m_DummyCellsPerFrame});
+    // Don't lose time on multiple reports which won't do anything.
+    if (report.maxSeverity() <= severity) {
+        report.log(severity, u"%sm_TotalCellsPerFrame = %d", {margin, pars.m_TotalCellsPerFrame});
+        report.log(severity, u"%sm_L1CellsPerFrame = %d", {margin, pars.m_L1CellsPerFrame});
+        report.log(severity, u"%sm_DummyCellsPerFrame = %d", {margin, pars.m_DummyCellsPerFrame});
+    }
+}
+
+void ts::DektecDevice::ReportIpPars(const Dtapi::DtIpPars2& pars, Report& report, int severity, const UString& margin)
+{
+    // Don't lose time on multiple reports which won't do anything.
+    if (report.maxSeverity() <= severity) {
+        report.log(severity, u"%sm_Ip = %s", {margin, UString::Dump(pars.m_Ip, sizeof(pars.m_Ip), UString::SINGLE_LINE)});
+        report.log(severity, u"%sm_Port = %d", {margin, pars.m_Port});
+        report.log(severity, u"%sm_Gateway = %s", {margin, UString::Dump(pars.m_Gateway, sizeof(pars.m_Gateway), UString::SINGLE_LINE)});
+        for (size_t i = 0; i < pars.m_SrcFlt.size(); ++i) {
+            report.log(severity, u"%sm_SrcFlt[%d].m_SrcFltIp = %s", {margin, i, UString::Dump(pars.m_SrcFlt[i].m_SrcFltIp, sizeof(pars.m_SrcFlt[i].m_SrcFltIp), UString::SINGLE_LINE)});
+
+        }
+        report.log(severity, u"%sm_VlanId = %d", {margin, pars.m_VlanId});
+        report.log(severity, u"%sm_VlanPriority = %d", {margin, pars.m_VlanPriority});
+        report.log(severity, u"%sm_Ip2 = %s", {margin, UString::Dump(pars.m_Ip2, sizeof(pars.m_Ip2), UString::SINGLE_LINE)});
+        report.log(severity, u"%sm_Port2 = %d", {margin, pars.m_Port2});
+        report.log(severity, u"%sm_Gateway2 = %s", {margin, UString::Dump(pars.m_Gateway2, sizeof(pars.m_Gateway2), UString::SINGLE_LINE)});
+        for (size_t i = 0; i < pars.m_SrcFlt2.size(); ++i) {
+            report.log(severity, u"%sm_SrcFlt2[%d].m_SrcFltIp = %s", {margin, i, UString::Dump(pars.m_SrcFlt2[i].m_SrcFltIp, sizeof(pars.m_SrcFlt2[i].m_SrcFltIp), UString::SINGLE_LINE)});
+
+        }
+        report.log(severity, u"%sm_VlanId2 = %d", {margin, pars.m_VlanId2});
+        report.log(severity, u"%sm_VlanPriority2 = %d", {margin, pars.m_VlanPriority2});
+        report.log(severity, u"%sm_TimeToLive = %d", {margin, pars.m_TimeToLive});
+        report.log(severity, u"%sm_NumTpPerIp = %d", {margin, pars.m_NumTpPerIp});
+        report.log(severity, u"%sm_Protocol = %d", {margin, pars.m_Protocol});
+        report.log(severity, u"%sm_DiffServ = %d", {margin, pars.m_DiffServ});
+        report.log(severity, u"%sm_FecMode = %d", {margin, pars.m_FecMode});
+        report.log(severity, u"%sm_FecNumRows = %d", {margin, pars.m_FecNumRows});
+        report.log(severity, u"%sm_FecNumCols = %d", {margin, pars.m_FecNumCols});
+        report.log(severity, u"%sm_Flags = 0x%X", {margin, pars.m_Flags});
+        report.log(severity, u"%sm_Mode = %d", {margin, pars.m_Mode});
+        report.log(severity, u"%sm_IpProfile.m_Profile = %d", {margin, pars.m_IpProfile.m_Profile});
+        report.log(severity, u"%sm_IpProfile.m_MaxBitrate = %d", {margin, pars.m_IpProfile.m_MaxBitrate});
+        report.log(severity, u"%sm_IpProfile.m_MaxSkew = %d", {margin, pars.m_IpProfile.m_MaxSkew});
+        report.log(severity, u"%sm_IpProfile.m_VideoStandard = %d", {margin, pars.m_IpProfile.m_VideoStandard});
+    }
 }
 
 #endif // TS_NO_DTAPI

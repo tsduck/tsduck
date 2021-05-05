@@ -339,7 +339,7 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
     dtpars.m_IpProfile.m_Profile = DTAPI_IP_PROF_NOT_DEFINED;
     dtpars.m_IpProfile.m_MaxBitrate = 0;
     dtpars.m_IpProfile.m_MaxSkew = 0;
-    dtpars.m_IpProfile.m_VideoStandard = DTAPI_VIDSTD_UNKNOWN;
+    dtpars.m_IpProfile.m_VideoStandard = DTAPI_VIDSTD_TS;
 
     // Use IPv4 or IPv6.
     const bool ipv4 = args.present(u"ip4");

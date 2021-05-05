@@ -990,7 +990,12 @@ bool ts::DektecOutputPlugin::start()
         if (!GetDektecIPArgs(*this, false, ip_pars)) {
             return startError(u"invalid TS-over-IP parameters", DTAPI_OK);
         }
-        tsp->debug(u"setting IP parameters");
+
+        // Report actual parameters in debug mode
+        tsp->debug(u"setting IP parameters: DtIpPars2 = {");
+        DektecDevice::ReportIpPars(ip_pars, *tsp, Severity::Debug, u"");
+        tsp->debug(u"}");
+
         status = _guts->chan.SetIpPars(&ip_pars);
         if (status != DTAPI_OK) {
             return startError(u"output device SetIpPars error", status);
