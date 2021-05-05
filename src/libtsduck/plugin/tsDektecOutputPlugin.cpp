@@ -1080,6 +1080,9 @@ bool ts::DektecOutputPlugin::start()
     }
 
     // Set output bitrate.
+    if (_guts->cur_bitrate == 0) {
+        tsp->warning(u"no input bitrate is available, use --bitrate in case of output error");
+    }
     tsp->debug(u"setting TsRateBps using DtFractionInt: %f", {_guts->cur_bitrate});
     status = _guts->chan.SetTsRateBps(ToDektecFractionInt(_guts->cur_bitrate));
     if (status == DTAPI_E_NOT_SUPPORTED) {
