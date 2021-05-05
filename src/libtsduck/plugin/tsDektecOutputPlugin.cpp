@@ -993,7 +993,7 @@ bool ts::DektecOutputPlugin::start()
 
         // Report actual parameters in debug mode
         tsp->debug(u"setting IP parameters: DtIpPars2 = {");
-        DektecDevice::ReportIpPars(ip_pars, *tsp, Severity::Debug, u"");
+        DektecDevice::ReportIpPars(ip_pars, *tsp, Severity::Debug, u"  ");
         tsp->debug(u"}");
 
         status = _guts->chan.SetIpPars(&ip_pars);
@@ -1651,7 +1651,7 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
     // If no bitrate was specified on the command line, adjust the bitrate
     // when input bitrate changes.
     BitRate new_bitrate;
-    if (_guts->opt_bitrate == 0 && _guts->cur_bitrate != (new_bitrate = tsp->bitrate())) {
+    if (_guts->opt_bitrate == 0 && _guts->cur_bitrate != (new_bitrate = tsp->bitrate()) && new_bitrate != 0) {
         status = _guts->chan.SetTsRateBps(ToDektecFractionInt(new_bitrate));
         if (status == DTAPI_E_NOT_SUPPORTED) {
             tsp->debug(u"setting TsRateBps using DtFractionInt unsupported, using int: %'d", {new_bitrate.toInt()});
