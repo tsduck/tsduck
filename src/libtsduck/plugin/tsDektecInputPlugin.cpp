@@ -42,6 +42,10 @@ TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"dektec", ts::DektecInputPlugin);
 
+// Depending on TS_NO_DTAPI, some code may be unused.
+TS_LLVM_NOWARNING(unused-macros)
+TS_LLVM_NOWARNING(unused-function)
+
 // Consider that the first 5 receive() are "initialization". If a full input FIFO is
 // observed here, ignore it. Later, a full FIFO indicates a potential packet loss.
 #define INIT_RECEIVE_COUNT 5
