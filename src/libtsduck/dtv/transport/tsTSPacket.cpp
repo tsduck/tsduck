@@ -741,7 +741,7 @@ bool ts::TSPacket::reserveStuffing(size_t size, bool shift_payload, bool enforce
         return false;
     }
     else {
-        // Shrink payload, enlargs or create AF.
+        // Shrink payload, enlarge or create AF.
         setPayloadSize(payload - moreAF, true);
         return true;
     }
