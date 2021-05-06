@@ -55,6 +55,16 @@ namespace ts {
     constexpr size_t PKT_SIZE_BITS = 8 * PKT_SIZE;
 
     //!
+    //! MPEG TS packet header size in bytes.
+    //!
+    constexpr size_t PKT_HEADER_SIZE = 4;
+
+    //!
+    //! MPEG TS packet maximum payload size in bytes.
+    //!
+    constexpr size_t PKT_MAX_PAYLOAD_SIZE = PKT_SIZE - PKT_HEADER_SIZE;
+
+    //!
     //! Size in bytes of a Reed-Solomon outer FEC.
     //!
     constexpr size_t RS_SIZE = 16;
