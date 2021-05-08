@@ -61,7 +61,7 @@ namespace ts {
         //!
         //! Virtual destructor.
         //!
-        virtual ~AbstractNetworkAddress();
+        virtual ~AbstractNetworkAddress() override;
 
         //!
         //! Get the maximum binary size for an address of that class.

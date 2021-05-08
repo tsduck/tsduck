@@ -7,7 +7,7 @@
     <ClCompile Include="..\..\src\tsplugins\tsplugin_pcrcopy.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{BD1EC3F4-507B-4400-9C84-DE70FCF15C96}</ProjectGuid>
+    <ProjectGuid>{D6FD3CD9-F84B-465F-BE76-CBE684AF2B28}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>tsplugin_pcrcopy</RootNamespace>
   </PropertyGroup>
