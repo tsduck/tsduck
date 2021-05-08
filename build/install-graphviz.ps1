@@ -54,8 +54,9 @@ param(
 )
 
 Write-Output "Graphviz download and installation procedure"
-$DownloadPage = "https://graphviz.gitlab.io/_pages/Download/Download_windows.html"
-$FallbackURL = "https://graphviz.gitlab.io/_pages/Download/windows/graphviz-2.38.msi"
+$DownloadPage = "http://graphviz.org/download/"
+$FallbackURL = "https://gitlab.com/graphviz/graphviz/-/package_files/9574245/download"
+$FallbackName = "stable_windows_10_cmake_Release_x64_graphviz-install-2.47.1-win64.exe"
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")
@@ -104,19 +105,22 @@ if ($status -ne 1 -and $status -ne 2) {
 }
 else {
     # Parse HTML page to locate the latest installer.
-    $Ref = $response.Links.href | Where-Object { $_ -like "*/graphviz-*.msi" } | Select-Object -First 1
+    $Link = $response.links | Where-Object { $_.outerHTML -like "*stable_windows*Release*win64.exe*" } | Select-Object -First 1
+    $Name = $Link.outerHTML -replace '<[^>]*>',''
+    $Ref = $Link.href
 }
 
 if (-not $Ref) {
     # Could not find a reference to installer.
     $Url = [System.Uri]$FallbackURL
+    $Name = $FallbackName
 }
 else {
     # Build the absolute URL's from base URL (the download page) and href links.
     $Url = New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DownloadPage, $Ref)
 }
 
-$InstallerName = (Split-Path -Leaf $Url.LocalPath)
+$InstallerName = $Name
 $InstallerPath = "$ExtDir\$InstallerName"
 
 # Download installer
@@ -134,7 +138,7 @@ else {
 # Install product
 if (-not $NoInstall) {
     Write-Output "Installing $InstallerName"
-    Start-Process -Verb runas -FilePath msiexec.exe -ArgumentList @("/i", $InstallerPath, "/quiet", "/qn", "/norestart") -Wait
+    Start-Process -FilePath $InstallerPath -ArgumentList @("/S") -Wait
 }
 
 Exit-Script
