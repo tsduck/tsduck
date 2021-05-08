@@ -206,13 +206,13 @@ ts::ProcessorPlugin::Status ts::PCRCopyPlugin::processPacket(TSPacket& pkt, TSPa
     const PID pid = pkt.getPID();
 
     // Process PID switching according to labels.
-    if (pkt_data.hasLabel(_ref_label) && pid != _ref_pid) {
+    if (pkt_data.hasLabel(_ref_label) && pid != _ref_pid && pid != PID_NULL) {
         // Switch to a new reference PID.
         tsp->verbose(u"using PID 0x%X (%<d) as PCR reference", {pid});
         _ref_pid = pid;
         _ref_pcr = INVALID_PCR;
     }
-    if (pkt_data.hasLabel(_target_label) && pid != _target_pid) {
+    if (pkt_data.hasLabel(_target_label) && pid != _target_pid && pid != PID_NULL) {
         // Switch to a new target PID.
         tsp->verbose(u"using PID 0x%X (%<d) to insert copied PCR", {pid});
         _target_pid = pid;
@@ -234,7 +234,7 @@ ts::ProcessorPlugin::Status ts::PCRCopyPlugin::processPacket(TSPacket& pkt, TSPa
         processTargetPacket(pkt);
     }
     else if (pid == PID_NULL && (_shift_buffer.size() >= PKT_MAX_PAYLOAD_SIZE || _shift_pusi != NPOS)) {
-        // Steal null packet to copy a full shifted payload.
+        // Steal null packet to copy a full shifted payload or end of shifted PES packet.
         processTargetPacket(pkt);
     }
 
@@ -251,7 +251,8 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
     // At the start of a PES packet, check the overflow status of the shift buffer.
     if (pkt.getPUSI()) {
         if (_shift_overflow) {
-            // We had a shift overflow and this TS packet starts a new PES packet => forget the overflown shift.
+            // We had a shift overflow and this TS packet starts a new PES packet,
+            // forget the overflown shift and restart on the current PES packet.
             _shift_buffer.clear();
             _shift_pusi = NPOS;
             _shift_overflow = false;
@@ -286,19 +287,19 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
     const uint8_t cc = pkt.getCC();
     const bool discontinuity = !new_packet && _target_cc_in < CC_MAX && cc != ((_target_cc_in + 1) & CC_MASK);
 
-    // Keep track if input continuity counters.
+    // Keep track of input continuity counters.
     if (!new_packet) {
         _target_cc_in = cc;
     }
 
     // Compute next continuity counters.
-    if (discontinuity) {
-        // Recreate a discontinuity.
-        _target_cc_out = (_target_cc_out + 2) & CC_MASK;
-    }
-    else if (_target_cc_out >= CC_MAX) {
+    if (_target_cc_out >= CC_MAX) {
         // First output packet on target PID, use first input CC.
         _target_cc_out = _target_cc_in;
+    }
+    else if (discontinuity) {
+        // Recreate a discontinuity by adding 2 to CC instead of 1.
+        _target_cc_out = (_target_cc_out + 2) & CC_MASK;
     }
     else {
         // Normal packet, preserve output continuity.
@@ -314,16 +315,16 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
     if (!unused_payload && (!_shift_buffer.empty() || (set_pcr && !pkt.hasPCR()))) {
         // Shift the payload only if there was no previous overflow.
         if (!_shift_overflow) {
-            // Mark the start of a PES packet in the shift buffer.
-            // Note that we previously checked that there was none (or we removed it).
             if (pkt.getPUSI()) {
+                // Mark the start of a PES packet in the shift buffer.
+                // Note that we previously checked that there was none (or we removed it).
                 _shift_pusi = _shift_buffer.size();
                 pkt.clearPUSI();
             }
             // Append the packet payload in the shift buffer.
             _shift_buffer.append(pkt.getPayload(), pkt.getPayloadSize());
         }
-        // Mark the packet payload as empty since it moved into the shift buffer.
+        // Mark the packet payload as unused since it was moved into the shift buffer.
         unused_payload = true;
     }
 
@@ -336,14 +337,14 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
 
         // Replace the PCR value. We know that we can safely overwrite the payload if the
         // adaptation field must be extended since we saved the payload in the shift buffer.
-        pkt.setPCR(pcr);
+        pkt.setPCR(pcr, true);
     }
 
-    // Fill the packet payload. There is no need to do that if the payload is not empty
+    // Fill the packet payload. There is no need to do that if the payload is not unused
     // because is means that the shift buffer was empty and the payload was not resized,
     // meaning there is nothing to do.
     if (unused_payload) {
-        // How much space can we get in the packet?
+        // How much space can we get in the packet for an updated payload?
         const size_t available = pkt.getAFStuffingSize() + pkt.getPayloadSize();
         // Maximum space we can get from the shift buffer (not crossing a PUSI).
         const size_t max_from_shift = (_shift_pusi == 0 || _shift_pusi == NPOS) ? _shift_buffer.size() : _shift_pusi;
@@ -355,7 +356,7 @@ void ts::PCRCopyPlugin::processTargetPacket(TSPacket& pkt)
             ::memcpy(pkt.getPayload(), _shift_buffer.data(), size);
             _shift_buffer.erase(0, size);
             if (_shift_pusi == 0) {
-                // The PUSI has move from the shift buffer to the packet.
+                // The PUSI has moved from the shift buffer to the packet.
                 pkt.setPUSI();
                 _shift_pusi = NPOS;
             }
