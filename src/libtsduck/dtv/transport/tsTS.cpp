@@ -49,7 +49,10 @@ const ts::Enumeration ts::PIDClassEnum({
     {u"PSI/SI",    int(ts::PIDClass::PSI)},
     {u"EMM",       int(ts::PIDClass::EMM)},
     {u"ECM",       int(ts::PIDClass::ECM)},
-    {u"component", int(ts::PIDClass::COMPONENT)},
+    {u"video",     int(ts::PIDClass::VIDEO)},
+    {u"audio",     int(ts::PIDClass::AUDIO)},
+    {u"subtitles", int(ts::PIDClass::SUBTITLES)},
+    {u"data",      int(ts::PIDClass::DATA)},
     {u"stuffing",  int(ts::PIDClass::STUFFING)},
 });
 
