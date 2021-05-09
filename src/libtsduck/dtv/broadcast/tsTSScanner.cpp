@@ -178,7 +178,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
     if (!_nit.isNull()) {
         LogicalChannelNumbers lcn_store(_duck);
         lcn_store.addFromNIT(*_nit);
-        lcn_store.updateServices(services, true);
+        lcn_store.updateServices(services, true, false);
     }
 
     return true;

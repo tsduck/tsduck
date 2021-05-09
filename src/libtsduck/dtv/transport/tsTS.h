@@ -37,6 +37,7 @@
 #include "tsUString.h"
 #include "tsFixedPoint.h"
 #include "tsConfigConstants.h"
+#include "tsEnumeration.h"
 
 namespace ts {
     //!
@@ -325,6 +326,24 @@ namespace ts {
 
         PID_NULL       = 0x1FFF, //!< PID for Null packets (stuffing)
     };
+
+    //---------------------------------------------------------------------
+    //! Classification of PID's.
+    //---------------------------------------------------------------------
+
+    enum class PIDClass {
+        UNDEFINED,  //!< Undefined PID class.
+        PSI,        //!< Signalization (PAT, CAT, PMT, etc).
+        EMM,        //!< PID carrying EMM's.
+        ECM,        //!< PID carrying ECM's.
+        COMPONENT,  //!< Component of a service.
+        STUFFING,   //!< Null packets.
+    };
+
+    //!
+    //! Enumeration description of ts::PIDClass.
+    //!
+    TSDUCKDLL extern const Enumeration PIDClassEnum;
 
     //---------------------------------------------------------------------
     // MPEG clock representation:
