@@ -291,21 +291,21 @@ bool ts::ZapPlugin::start()
     // If the service id is not yet known (only the service name is known), we do not know
     // how to modify the PAT. We will handle it after receiving the DVB-SDT or ATSC-VCT.
     if (_service.hasId()) {
-        _demux.addTableId(TID_PAT);
-        _demux.addServiceId(_service.getId());
+        _demux.addFilteredTableId(TID_PAT);
+        _demux.addFilteredServiceId(_service.getId());
     }
 
     // Replace the PAT PID with modified PAT.
     _pid_state[PID_PAT] = TSPID_PAT;
 
     // Always handle the SDT Actual and replace the SDT/BAT PID with modified SDT Actual.
-    _demux.addTableId(TID_SDT_ACT);
+    _demux.addFilteredTableId(TID_SDT_ACT);
     _pid_state[PID_SDT] = TSPID_SDT;
 
     // Handle the ATSC-VCT only when the service is specified by name.
     if (!_spec_by_id) {
-        _demux.addTableId(TID_CVCT);
-        _demux.addTableId(TID_TVCT);
+        _demux.addFilteredTableId(TID_CVCT);
+        _demux.addFilteredTableId(TID_TVCT);
     }
 
     // Unlike the DVB-SDT, the ATSC-VCT is not modified to include only the zapped channel
@@ -316,7 +316,7 @@ bool ts::ZapPlugin::start()
 
     // Include CAT and EMM if required
     if (_include_cas) {
-        _demux.addTableId(TID_CAT);
+        _demux.addFilteredTableId(TID_CAT);
         _pid_state[PID_CAT] = TSPID_PASS;
     }
 
@@ -388,13 +388,13 @@ void ts::ZapPlugin::serviceNotPresent(const UChar* table_name)
         // Service not present is not an error, waiting for it to reappear.
         tsp->verbose(u"service %s not found in %s, waiting for the service...", {_service_spec, table_name});
         // Make sure the service PMT will be notified again if on the same PID.
-        _demux.removeAllServiceIds();
+        _demux.removeAllFilteredServiceIds();
         // Forget components that may change when the service reappears.
         forgetServiceComponents();
         _service.clearPMTPID();
         if (_spec_by_id) {
             _service.clearName();
-            _demux.addServiceId(_service.getId());
+            _demux.addFilteredServiceId(_service.getId());
         }
         else {
             _service.clearId();
@@ -420,7 +420,7 @@ void ts::ZapPlugin::setServiceId(uint16_t service_id)
     if (!_service.hasId(service_id)) {
 
         // Forget previous service.
-        _demux.removeAllServiceIds();
+        _demux.removeAllFilteredServiceIds();
         if (_service.hasId()) {
             _service.clearPMTPID();
             forgetServiceComponents();
@@ -428,8 +428,8 @@ void ts::ZapPlugin::setServiceId(uint16_t service_id)
 
         // Make sure the new service is monitored.
         _service.setId(service_id);
-        _demux.addTableId(TID_PAT);
-        _demux.addServiceId(_service.getId());
+        _demux.addFilteredTableId(TID_PAT);
+        _demux.addFilteredServiceId(_service.getId());
         tsp->verbose(u"found service %s", {_service});
 
         // Reset the EIT processor on the new service.

@@ -221,7 +221,7 @@ uint16_t ts::LogicalChannelNumbers::getLCN(uint16_t srv_id, uint16_t ts_id, uint
 
 bool ts::LogicalChannelNumbers::updateService(Service& srv, bool replace) const
 {
-    if (srv.hasId() && srv.hasTSId() && (replace || !srv.hasONId())) {
+    if (srv.hasId() && srv.hasTSId() && (replace || !srv.hasLCN())) {
         const uint16_t onid = srv.hasONId() ? srv.getONId() : 0xFFFF;
         const uint16_t lcn = getLCN(srv.getId(), srv.getTSId(), onid);
         if (lcn != 0xFFFF) {
@@ -237,11 +237,55 @@ bool ts::LogicalChannelNumbers::updateService(Service& srv, bool replace) const
 // Update a list of service descriptions with LCN's.
 //----------------------------------------------------------------------------
 
-size_t ts::LogicalChannelNumbers::updateServices(ServiceList& srv, bool replace) const
+size_t ts::LogicalChannelNumbers::updateServices(ServiceList& srv_list, bool replace, bool add) const
 {
+    // Coudn of updated/added services.
     size_t count = 0;
-    for (auto it = srv.begin(); it != srv.end(); ++it) {
-        count += updateService(*it, replace);
+
+    // Build a copy of the internal LCN map, remove them one by one when used.
+    LCNMap lcns(_lcn_map);
+
+    // Update LCN's in existing services.
+    for (auto lcn_it = lcns.begin(); lcn_it != lcns.end(); ) {
+        bool found = false;
+
+        // Loop on all services and update matching ones.
+        for (auto srv_it = srv_list.begin(); srv_it != srv_list.end(); ++srv_it) {
+            // Check if this service match the current LCN (onet id must match or be unspecified).
+            if (srv_it->hasId(lcn_it->first) &&
+                srv_it->hasTSId(lcn_it->second.ts_id) &&
+                (lcn_it->second.onet_id == 0xFFFF || !srv_it->hasONId() || srv_it->hasONId(lcn_it->second.onet_id)))
+            {
+                found = true;
+                if (!srv_it->hasLCN(lcn_it->second.lcn)) {
+                    srv_it->setLCN(lcn_it->second.lcn);
+                    ++count;
+                }
+            }
+        }
+
+        // Move to next LCN. Remove current from the list if found in the list of services.
+        if (found) {
+            lcn_it = lcns.erase(lcn_it);
+        }
+        else {
+            ++lcn_it;
+        }
     }
+
+    // Add remaining LCN's in the list of services.
+    if (add) {
+        for (auto lcn_it = lcns.begin(); lcn_it != lcns.end(); ++lcn_it) {
+            auto srv = srv_list.emplace(srv_list.end());
+            srv->setId(lcn_it->first);
+            srv->setLCN(lcn_it->second.lcn);
+            srv->setTSId(lcn_it->second.ts_id);
+            if (lcn_it->second.onet_id != 0xFFFF) {
+                srv->setONId(lcn_it->second.onet_id);
+            }
+            ++count;
+        }
+    }
+
     return count;
 }

@@ -36,6 +36,11 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
+ts::SignalizationDemux::SignalizationDemux(DuckContext& duck) :
+    SignalizationDemux(duck, nullptr, {TID_PAT, TID_CAT, TID_PMT, TID_NIT_ACT, TID_SDT_ACT, TID_TDT, TID_TOT, TID_MGT, TID_CVCT, TID_TVCT, TID_STT})
+{
+}
+
 ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandlerInterface* handler, std::initializer_list<TID> tids) :
     _duck(duck),
     _demux(duck, this, this),
@@ -43,11 +48,12 @@ ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandl
     _tids(),
     _service_ids(),
     _last_pat(),
-    _last_pat_handled(false)
+    _last_pat_handled(false),
+    _last_utc()
 {
     _last_pat.invalidate();
     for (auto it = tids.begin(); it != tids.end(); ++it) {
-        addTableId(*it);
+        addFilteredTableId(*it);
     }
 }
 
@@ -74,6 +80,7 @@ void ts::SignalizationDemux::reset()
     _service_ids.clear();
     _last_pat.invalidate();
     _last_pat_handled = false;
+    _last_utc.clear();
 }
 
 
@@ -81,10 +88,10 @@ void ts::SignalizationDemux::reset()
 // Add a signalization table id to filter.
 //----------------------------------------------------------------------------
 
-bool ts::SignalizationDemux::addTableId(TID tid)
+bool ts::SignalizationDemux::addFilteredTableId(TID tid)
 {
     // Do not repeat already filtered table ids.
-    if (hasTableId(tid)) {
+    if (isFilteredTableId(tid)) {
         return true;
     }
 
@@ -167,10 +174,10 @@ bool ts::SignalizationDemux::addTableId(TID tid)
 // Remove a signalization table id to filter.
 //----------------------------------------------------------------------------
 
-bool ts::SignalizationDemux::removeTableId(TID tid)
+bool ts::SignalizationDemux::removeFilteredTableId(TID tid)
 {
     // Do nothing if the table id was not filtered.
-    if (!hasTableId(tid)) {
+    if (!isFilteredTableId(tid)) {
         return false;
     }
 
@@ -181,7 +188,7 @@ bool ts::SignalizationDemux::removeTableId(TID tid)
     switch (tid) {
         case TID_PAT: {
             // Stop monitoring the PAT only when there is no need to get PMT's or NIT.
-            if (!hasTableId(TID_PMT) && _service_ids.empty() && !hasTableId(TID_NIT_ACT) && !hasTableId(TID_NIT_OTH)) {
+            if (!isFilteredTableId(TID_PMT) && _service_ids.empty() && !isFilteredTableId(TID_NIT_ACT) && !isFilteredTableId(TID_NIT_OTH)) {
                 _demux.removePID(PID_PAT);
             }
             break;
@@ -194,7 +201,7 @@ bool ts::SignalizationDemux::removeTableId(TID tid)
             // If a PAT is known, remove all PMT PID's which are not specifically monitored by service id.
             if (_last_pat.isValid()) {
                 for (auto it = _last_pat.pmts.begin(); it != _last_pat.pmts.end(); ++it) {
-                    if (!hasServiceId(it->first)) {
+                    if (!isFilteredServiceId(it->first)) {
                         _demux.removePID(it->second);
                     }
                 }
@@ -208,7 +215,7 @@ bool ts::SignalizationDemux::removeTableId(TID tid)
         case TID_NIT_ACT:
         case TID_NIT_OTH: {
             // Remove the PID only if no type of NIT is monitored.
-            if (!hasTableId(TID_NIT_ACT) && !hasTableId(TID_NIT_OTH)) {
+            if (!isFilteredTableId(TID_NIT_ACT) && !isFilteredTableId(TID_NIT_OTH)) {
                 _demux.removePID(nitPID());
             }
             break;
@@ -217,7 +224,7 @@ bool ts::SignalizationDemux::removeTableId(TID tid)
         case TID_SDT_OTH:
         case TID_BAT: {
             // SDT and BAT share the same PID. Remove the PID only if none is monitored.
-            if (!hasTableId(TID_SDT_ACT) && !hasTableId(TID_SDT_OTH) && !hasTableId(TID_BAT)) {
+            if (!isFilteredTableId(TID_SDT_ACT) && !isFilteredTableId(TID_SDT_OTH) && !isFilteredTableId(TID_BAT)) {
                 _demux.removePID(PID_SDT);
             }
             break;
@@ -229,7 +236,7 @@ bool ts::SignalizationDemux::removeTableId(TID tid)
         case TID_TDT:
         case TID_TOT: {
             // TDT and TOT share the same PID. Remove the PID only if none is monitored.
-            if (!hasTableId(TID_TDT) && !hasTableId(TID_TOT)) {
+            if (!isFilteredTableId(TID_TDT) && !isFilteredTableId(TID_TOT)) {
                 _demux.removePID(PID_TDT);
             }
             break;
@@ -240,7 +247,7 @@ bool ts::SignalizationDemux::removeTableId(TID tid)
         case TID_RRT:
         case TID_STT: {
             // With ATSC, the PSIP base PID contains almost all tables.
-            if (!hasTableId(TID_MGT) && !hasTableId(TID_CVCT) && !hasTableId(TID_TVCT) && !hasTableId(TID_RRT) && !hasTableId(TID_STT)) {
+            if (!isFilteredTableId(TID_MGT) && !isFilteredTableId(TID_CVCT) && !isFilteredTableId(TID_TVCT) && !isFilteredTableId(TID_RRT) && !isFilteredTableId(TID_STT)) {
                 _demux.removePID(PID_PSIP);
             }
             break;
@@ -260,10 +267,10 @@ bool ts::SignalizationDemux::removeTableId(TID tid)
 // Add a service id to filter its PMT.
 //----------------------------------------------------------------------------
 
-void ts::SignalizationDemux::addServiceId(uint16_t sid)
+void ts::SignalizationDemux::addFilteredServiceId(uint16_t sid)
 {
     // Do something only when the service is not yet monitored.
-    if (!hasServiceId(sid)) {
+    if (!isFilteredServiceId(sid)) {
 
         // Remember the service id to monitor.
         _service_ids.insert(sid);
@@ -286,17 +293,17 @@ void ts::SignalizationDemux::addServiceId(uint16_t sid)
 // Remove a service id to filter its PMT.
 //----------------------------------------------------------------------------
 
-void ts::SignalizationDemux::removeServiceId(uint16_t sid)
+void ts::SignalizationDemux::removeFilteredServiceId(uint16_t sid)
 {
     // Do something only when the service is currently monitored.
-    if (hasServiceId(sid)) {
+    if (isFilteredServiceId(sid)) {
 
         // Forget the service id to monitor.
         _service_ids.erase(sid);
 
         // If a PAT is known and references the service, remove its PMT PID.
         // If all PMT's are still monitored, don't change anything.
-        if (_last_pat.isValid() && !hasTableId(TID_PMT)) {
+        if (_last_pat.isValid() && !isFilteredTableId(TID_PMT)) {
             const auto it(_last_pat.pmts.find(sid));
             if (it != _last_pat.pmts.end()) {
                 _demux.removePID(it->second);
@@ -310,11 +317,11 @@ void ts::SignalizationDemux::removeServiceId(uint16_t sid)
 // Remove all service ids to filter PMT's.
 //----------------------------------------------------------------------------
 
-void ts::SignalizationDemux::removeAllServiceIds()
+void ts::SignalizationDemux::removeAllFilteredServiceIds()
 {
     // If a PAT is known, remove all PMT PID's.
     // If all PMT's are still monitored, don't change anything.
-    if (_last_pat.isValid() && !hasTableId(TID_PMT)) {
+    if (_last_pat.isValid() && !isFilteredTableId(TID_PMT)) {
         for (auto it = _last_pat.pmts.begin(); it != _last_pat.pmts.end(); ++it) {
             _demux.removePID(it->second);
         }
@@ -340,7 +347,7 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
         if (pat.isValid()) {
 
             // Check if all PMT's are monitored.
-            const bool all_pmts = hasTableId(TID_PMT);
+            const bool all_pmts = isFilteredTableId(TID_PMT);
 
             // If a previous PAT was there, remove unused PMT PID's.
             if (_last_pat.isValid() && (all_pmts || !_service_ids.empty())) {
@@ -360,18 +367,18 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
 
             // Then, monitor new PMT PID's. Some of them may be already monitored.
             for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                if (all_pmts || hasServiceId(it->first)) {
+                if (all_pmts || isFilteredServiceId(it->first)) {
                     _demux.addPID(it->second);
                 }
             }
 
             // Monitor non-standard NIT PID.
-            if (hasTableId(TID_NIT_ACT) || hasTableId(TID_NIT_OTH)) {
+            if (isFilteredTableId(TID_NIT_ACT) || isFilteredTableId(TID_NIT_OTH)) {
                 _demux.addPID(nitPID());
             }
 
             // Notify the PAT to the application.
-            if (_handler != nullptr && hasTableId(TID_PAT)) {
+            if (_handler != nullptr && isFilteredTableId(TID_PAT)) {
                 _last_pat_handled = true;
                 _handler->handlePAT(pat, pid);
             }
@@ -380,7 +387,7 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
 
     // Other tables have no special treatment. They are directly passed to the application.
     // PMT may be selectively filtered by service id (table id extention).
-    else if (_handler != nullptr && (hasTableId(tid) || (tid == TID_PMT && hasServiceId(table.tableIdExtension())))) {
+    else if (_handler != nullptr && (isFilteredTableId(tid) || (tid == TID_PMT && isFilteredServiceId(table.tableIdExtension())))) {
         switch (tid) {
             case TID_CAT: {
                 const CAT cat(_duck, table);
@@ -436,6 +443,7 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
             case TID_TDT: {
                 const TDT tdt(_duck, table);
                 if (tdt.isValid() && pid == PID_TDT) {
+                    _last_utc = tdt.utc_time;
                     _handler->handleTDT(tdt, pid);
                 }
                 break;
@@ -443,6 +451,7 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
             case TID_TOT: {
                 const TOT tot(_duck, table);
                 if (tot.isValid() && pid == PID_TOT) {
+                    _last_utc = tot.utc_time;
                     _handler->handleTOT(tot, pid);
                 }
                 break;
@@ -496,9 +505,10 @@ void ts::SignalizationDemux::handleSection(SectionDemux&, const Section& section
 {
     // We use this handler for ATSC System Time Table (STT) only.
     // This table violates the common usage rules of MPEG sections, see file tsSTT.h.
-    if (_handler != nullptr && section.tableId() == TID_STT && hasTableId(TID_STT) && section.sourcePID() == PID_PSIP) {
+    if (_handler != nullptr && section.tableId() == TID_STT && isFilteredTableId(TID_STT) && section.sourcePID() == PID_PSIP) {
         const STT stt(_duck, section);
         if (stt.isValid()) {
+            _last_utc = stt.utcTime();
             _handler->handleSTT(stt, PID_PSIP);
         }
     }

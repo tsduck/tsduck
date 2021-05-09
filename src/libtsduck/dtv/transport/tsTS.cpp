@@ -41,6 +41,20 @@ const ts::PIDSet ts::AllPIDs (~NoPID);
 
 
 //----------------------------------------------------------------------------
+// Enumeration description of ts::PIDClass.
+//----------------------------------------------------------------------------
+
+const ts::Enumeration ts::PIDClassEnum({
+    {u"undefined", int(ts::PIDClass::UNDEFINED)},
+    {u"PSI/SI",    int(ts::PIDClass::PSI)},
+    {u"EMM",       int(ts::PIDClass::EMM)},
+    {u"ECM",       int(ts::PIDClass::ECM)},
+    {u"component", int(ts::PIDClass::COMPONENT)},
+    {u"stuffing",  int(ts::PIDClass::STUFFING)},
+});
+
+
+//----------------------------------------------------------------------------
 // Compute the PCR of a packet, based on the PCR of a previous packet.
 //----------------------------------------------------------------------------
 

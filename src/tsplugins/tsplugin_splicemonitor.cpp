@@ -257,7 +257,7 @@ bool ts::SpliceMonitorPlugin::start()
     _splice_contexts.clear();
     _splice_pids.clear();
     _sig_demux.reset();
-    _sig_demux.addTableId(TID_PMT);
+    _sig_demux.addFilteredTableId(TID_PMT);
     _section_demux.reset();
     _section_demux.setPIDFilter(NoPID);
 

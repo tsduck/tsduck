@@ -45,7 +45,7 @@ ts::PCRMerger::PCRMerger(DuckContext& duck) :
 
 {
     // Capture all PMT's from the merged stream.
-    _demux.addTableId(TID_PMT);
+    _demux.addFilteredTableId(TID_PMT);
 }
 
 ts::PCRMerger::PIDContext::PIDContext(PID p) :
@@ -70,7 +70,7 @@ ts::PCRMerger::PIDContext::PIDContext(PID p) :
 void ts::PCRMerger::reset()
 {
     _demux.reset();
-    _demux.addTableId(TID_PMT);
+    _demux.addFilteredTableId(TID_PMT);
     _pid_ctx.clear();
 }
 

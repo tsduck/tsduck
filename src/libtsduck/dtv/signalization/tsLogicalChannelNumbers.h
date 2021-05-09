@@ -131,11 +131,12 @@ namespace ts {
 
         //!
         //! Update a list of service descriptions with LCN's.
-        //! @param [in,out] srv The list of service description to update.
+        //! @param [in,out] services The list of service description to update.
         //! @param [in] replace If a service already has an LCN and @a replace is false, don't search.
-        //! @return Number of updated LCN.
+        //! @param [in] add If true, add in @a services all missing services for which an LCN is known.
+        //! @return Number of updated or added LCN.
         //!
-        size_t updateServices(ServiceList& srv, bool replace) const;
+        size_t updateServices(ServiceList& services, bool replace, bool add) const;
 
     private:
         // Storage of one LCN, except the service id which is used as an index.

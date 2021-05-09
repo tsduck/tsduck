@@ -40,7 +40,6 @@
 namespace ts {
     //!
     //! General-purpose signalization demux.
-    //! The list of demuxed tables are given by SignalizationHandlerInterface.
     //! @ingroup mpeg
     //!
     class TSDUCKDLL SignalizationDemux:
@@ -50,7 +49,25 @@ namespace ts {
         TS_NOBUILD_NOCOPY(SignalizationDemux);
     public:
         //!
-        //! Constructor.
+        //! Constructor for full services and PID's analysis.
+        //!
+        //! All signalization is demuxed. A full map of services and PID's is internally built.
+        //! This is the typical constructor to use the application only needs to query the
+        //! structure of services and PID's. It is still possible to add a handler for
+        //! signalization tables later.
+        //!
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
+        //! Contextual information (such as standards) are accumulated in the context from demuxed sections.
+        //!
+        explicit SignalizationDemux(DuckContext& duck);
+
+        //!
+        //! Constructor with handler and selected signalization.
+        //!
+        //! This is the typical constructor to use when the application wants to be notified of some
+        //! signalization tables only. The internal map of services and PID's may be incomplete,
+        //! depending on the selected signalization.
+        //!
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! Contextual information (such as standards) are accumulated in the context from demuxed sections.
         //! @param [in] handler The object to invoke when a new complete signalization table is extracted.
@@ -59,7 +76,7 @@ namespace ts {
         //! selected services, use addServiceId().
         //!
         explicit SignalizationDemux(DuckContext& duck,
-                                    SignalizationHandlerInterface* handler = nullptr,
+                                    SignalizationHandlerInterface* handler,
                                     std::initializer_list<TID> tids = std::initializer_list<TID>());
 
         //!
@@ -86,45 +103,45 @@ namespace ts {
         //! selected services, use addServiceId().
         //! @return True if the table id is filtered, false if this table id is not supported.
         //!
-        bool addTableId(TID tid);
+        bool addFilteredTableId(TID tid);
 
         //!
         //! Remove a signalization table id to filter.
         //! @param [in] tid The table id to remove. Unsupported table ids are ignored.
         //! @return True if the table id was actually removed, false if this table id was not filtered or not supported.
         //!
-        bool removeTableId(TID tid);
+        bool removeFilteredTableId(TID tid);
 
         //!
         //! Check if a signalization table id is filtered.
         //! @param [in] tid The table id to check.
         //! @return True if @a tid is filtered, false otherwise.
         //!
-        bool hasTableId(TID tid) const { return Contains(_tids, tid); }
+        bool isFilteredTableId(TID tid) const { return Contains(_tids, tid); }
 
         //!
         //! Add a service id to filter its PMT.
         //! @param [in] sid The service id to add.
         //!
-        void addServiceId(uint16_t sid);
+        void addFilteredServiceId(uint16_t sid);
 
         //!
         //! Remove a service id to filter its PMT.
         //! @param [in] sid The service id to remove.
         //!
-        void removeServiceId(uint16_t sid);
+        void removeFilteredServiceId(uint16_t sid);
 
         //!
         //! Remove all service ids to filter PMT's.
         //!
-        void removeAllServiceIds();
+        void removeAllFilteredServiceIds();
 
         //!
         //! Check if a service id is filtered.
         //! @param [in] sid The service id to check.
         //! @return True if @a sid is filtered, false otherwise.
         //!
-        bool hasServiceId(uint16_t sid) const { return Contains(_service_ids, sid); }
+        bool isFilteredServiceId(uint16_t sid) const { return Contains(_service_ids, sid); }
 
         //!
         //! Check if a PAT has been received.
@@ -138,6 +155,18 @@ namespace ts {
         //!
         const PAT& lastPAT() const { return _last_pat; }
 
+        //!
+        //! Get the NIT PID, either from last PAT or default PID.
+        //! @return The NIT PID.
+        //!
+        PID nitPID() const;
+
+        //!
+        //! Get the last UTC time from a TOT/TDT (DVB, ISDB) or STT (ATSC).
+        //! @return The last received UTC time or Time::Epoch if there was none.
+        //!
+        Time lastUTC() const { return _last_utc; }
+
     private:
         DuckContext&                   _duck;
         SectionDemux                   _demux;
@@ -146,9 +175,7 @@ namespace ts {
         std::set<uint16_t>             _service_ids;      // Set of filtered service id's.
         PAT                            _last_pat;         // Last received PAT.
         bool                           _last_pat_handled; // Last received PAT was handled by application.
-
-        // Get the NIT PID, either from last PAT or default PID.
-        PID nitPID() const;
+        Time                           _last_utc;         // Last received UTC time.
 
         // Implementation of table and section interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
