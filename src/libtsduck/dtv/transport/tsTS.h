@@ -336,7 +336,10 @@ namespace ts {
         PSI,        //!< Signalization (PAT, CAT, PMT, etc).
         EMM,        //!< PID carrying EMM's.
         ECM,        //!< PID carrying ECM's.
-        COMPONENT,  //!< Component of a service.
+        VIDEO,      //!< Video component of a service.
+        AUDIO,      //!< Audio component of a service.
+        SUBTITLES,  //!< Subtitles component of a service.
+        DATA,       //!< Data component of a service.
         STUFFING,   //!< Null packets.
     };
 

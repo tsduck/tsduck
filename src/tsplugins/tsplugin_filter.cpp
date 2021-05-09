@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsSignalizationDemux.h"
 #include "tsPESPacket.h"
 #include "tsAlgorithm.h"
 #include "tsMemory.h"
@@ -63,6 +64,7 @@ namespace ts {
         // Command line options:
         Status          _drop_status;        // Return status for unselected packets
         int             _scrambling_ctrl;    // Scrambling control value (<0: no filter)
+        bool            _need_demux;         // Need the help of the signalization demux.
         bool            _with_payload;       // Packets with payload
         bool            _with_af;            // Packets with adaptation field
         bool            _with_pes;           // Packets with clear PES headers
@@ -74,6 +76,9 @@ namespace ts {
         bool            _input_stuffing;     // Null packets which were artificially inserted
         bool            _valid;              // Packets with valid sync byte and error ind
         bool            _negate;             // Negate filter (exclude selected packets)
+        bool            _video;              // Part of a video PID
+        bool            _audio;              // Part of a audio PID
+        bool            _subtitles;          // Part of a subtitles PID
         int             _min_payload;        // Minimum payload size (<0: no filter)
         int             _max_payload;        // Maximum payload size (<0: no filter)
         int             _min_af;             // Minimum adaptation field size (<0: no filter)
@@ -83,14 +88,15 @@ namespace ts {
         int             _max_splice;         // Maximum splice_countdown value (<-128: no filter)
         PacketCounter   _after_packets;      // Number of initial packets to skip
         PacketCounter   _every_packets;      // Filter 1 out of this number of packets
-        CodecType       _default_codec;      // Default codec for intra-frame detection
+        CodecType       _codec;              // Filter on codec type
         PIDSet          _explicit_pid;       // Explicit PID values to filter
         ByteBlock       _pattern;            // Byte pattern to search.
-        bool            _search_payload;     // Search pattern in payload only.
-        bool            _use_search_offset;  // Search at specified offset only.
+        bool            _search_payload;     // Search pattern in payload only
+        bool            _use_search_offset;  // Search at specified offset only
         size_t          _search_offset;      // Offset where to search.
         PacketRangeList _ranges;             // Ranges of packets to filter.
         std::set<uint8_t>          _stream_ids;        // PES stream ids to filter
+        std::set<uint16_t>         _service_ids;       // Services to filter
         TSPacketMetadata::LabelSet _labels;            // Select packets with any of these labels
         TSPacketMetadata::LabelSet _set_labels;        // Labels to set on filtered packets
         TSPacketMetadata::LabelSet _reset_labels;      // Labels to reset on filtered packets
@@ -98,8 +104,9 @@ namespace ts {
         TSPacketMetadata::LabelSet _reset_perm_labels; // Labels to reset on all packets after getting one packet
 
         // Working data:
-        PacketCounter   _filtered_packets;   // Number of filtered packets
-        PIDSet          _stream_id_pid;      // PID values selected from stream ids.
+        PacketCounter      _filtered_packets;  // Number of filtered packets
+        PIDSet             _stream_id_pid;     // PID values selected from stream ids.
+        SignalizationDemux _demux;             // Full signalization demux.
     };
 }
 
@@ -114,6 +121,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions", u"[options]"),
     _drop_status(TSP_DROP),
     _scrambling_ctrl(0),
+    _need_demux(false),
     _with_payload(false),
     _with_af(false),
     _with_pes(false),
@@ -125,6 +133,9 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _input_stuffing(false),
     _valid(false),
     _negate(false),
+    _video(false),
+    _audio(false),
+    _subtitles(false),
     _min_payload(0),
     _max_payload(0),
     _min_af(0),
@@ -134,7 +145,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _max_splice(0),
     _after_packets(0),
     _every_packets(0),
-    _default_codec(CodecType::UNDEFINED),
+    _codec(CodecType::UNDEFINED),
     _explicit_pid(),
     _pattern(),
     _search_payload(false),
@@ -142,13 +153,15 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _search_offset(0),
     _ranges(),
     _stream_ids(),
+    _service_ids(),
     _labels(),
     _set_labels(),
     _reset_labels(),
     _set_perm_labels(),
     _reset_perm_labels(),
     _filtered_packets(0),
-    _stream_id_pid()
+    _stream_id_pid(),
+    _demux(duck)
 {
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");
@@ -158,14 +171,17 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Let the first 'count' packets pass transparently without filtering. Start "
          u"to apply the filtering criteria after that number of packets.");
 
+    option(u"audio");
+    help(u"audio", u"Select packets from an audio PID.");
+
     option(u"clear", 'c');
     help(u"clear",
          u"Select clear (unscrambled) packets. "
          u"Equivalent to --scrambling-control 0.");
 
-    option(u"codec-default", 0, CodecTypeArgEnum);
-    help(u"codec-default", u"name",
-         u"With --intra-frame, specify the default codec type if it cannot be automatically detected.");
+    option(u"codec", 0, CodecTypeArgEnum);
+    help(u"codec", u"name",
+         u"Select packets from PID's which were encoded with the specified codec format.");
 
     option(u"every", 0, UNSIGNED);
     help(u"every", u"count", u"Select one packet every that number of packets.");
@@ -297,6 +313,11 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"With --pattern, only search the set of bytes in the payload of the packet. "
          u"Do not search the pattern in the header or adaptation field.");
 
+    option(u"service-id", 0, UINT16, 0, UNLIMITED_COUNT);
+    help(u"service-id", u"id1[-id2]",
+         u"Select packets belonging to any of the specified services as PMT, component or ECM. "
+         u"Several --service options may be specified.");
+
     option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"set-label", u"label1[-label2]",
          u"Set the specified labels on the selected packets. "
@@ -324,6 +345,9 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Replace excluded packets with stuffing (null packets) instead "
          u"of removing them. Useful to preserve bitrate.");
 
+    option(u"subtitles");
+    help(u"subtitles", u"Select packets from a subtitles PID.");
+
     option(u"unit-start");
     help(u"unit-start", u"Select packets with payload unit start indicator.");
 
@@ -331,6 +355,9 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     help(u"valid",
          u"Select valid packets. A valid packet starts with 0x47 and has "
          u"its transport_error_indicator cleared.");
+
+    option(u"video");
+    help(u"video", u"Select packets from a video PID.");
 }
 
 
@@ -351,6 +378,9 @@ bool ts::FilterPlugin::getOptions()
     _nullified = present(u"nullified");
     _input_stuffing = present(u"input-stuffing");
     _valid = present(u"valid");
+    _audio = present(u"audio");
+    _video = present(u"video");
+    _subtitles = present(u"subtitles");
     _negate = present(u"negate");
     getIntValue(_min_payload, u"min-payload-size", -1);
     getIntValue(_max_payload, u"max-payload-size", -1);
@@ -361,9 +391,10 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(_max_splice, u"max-splice-countdown", INT_MIN);
     getIntValue(_after_packets, u"after-packets");
     getIntValue(_every_packets, u"every");
-    getIntValue(_default_codec, u"codec-default", CodecType::UNDEFINED);
+    getIntValue(_codec, u"codec", CodecType::UNDEFINED);
     getIntValues(_explicit_pid, u"pid");
     getIntValues(_stream_ids, u"stream-id");
+    getIntValues(_service_ids, u"service-id");
     getIntValues(_labels, u"label");
     getIntValues(_set_labels, u"set-label");
     getIntValues(_reset_labels, u"reset-label");
@@ -420,6 +451,9 @@ bool ts::FilterPlugin::getOptions()
         _drop_status = TSP_DROP;
     }
 
+    // These options need the assistance of a full signalization demux:
+    _need_demux = _audio || _video || _subtitles || _intra_frame || _codec != CodecType::UNDEFINED || !_service_ids.empty();
+
     return true;
 }
 
@@ -432,6 +466,7 @@ bool ts::FilterPlugin::start()
 {
     _filtered_packets = 0;
     _stream_id_pid.reset();
+    _demux.reset();
     return true;
 }
 
@@ -455,6 +490,11 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
 {
     const PID pid = pkt.getPID();
 
+    // Pass packets in the signalization demux only if needed.
+    if (_need_demux) {
+        _demux.feedPacket(pkt);
+    }
+
     // Pass initial packets without filtering.
     const PacketCounter packetIndex = tsp->pluginPackets();
     if (packetIndex < _after_packets) {
@@ -471,11 +511,18 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
 
     // Check if the packet matches one of the selected criteria.
     bool ok = _explicit_pid[pid] ||
+        pkt_data.hasAnyLabel(_labels) ||
         _stream_id_pid[pid] ||
+        _demux.inAnyService(pid, _service_ids) ||
         (_with_payload && pkt.hasPayload()) ||
         (_with_af && pkt.hasAF()) ||
         (_unit_start && pkt.getPUSI()) ||
-        (_intra_frame && pkt.getPUSI() && pkt.hasPayload() && PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), ST_NULL, _default_codec) != NPOS) ||
+        (_codec != CodecType::UNDEFINED && _demux.codecType(pid) == _codec) ||
+        (_audio && _demux.pidClass(pid) == PIDClass::AUDIO) ||
+        (_video && _demux.pidClass(pid) == PIDClass::VIDEO) ||
+        (_subtitles && _demux.pidClass(pid) == PIDClass::SUBTITLES) ||
+        (_intra_frame && pkt.getPUSI() && pkt.hasPayload() &&
+         PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), _demux.streamType(pid), _demux.codecType(pid)) != NPOS) ||
         (_nullified && pkt_data.getNullified()) ||
         (_input_stuffing && pkt_data.getInputStuffing()) ||
         (_valid && pkt.hasValidSync() && !pkt.getTEI()) ||
@@ -489,7 +536,6 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (int(pkt.getPayloadSize()) <= _max_payload) ||
         (_min_af >= 0 && int(pkt.getAFSize()) >= _min_af) ||
         (int(pkt.getAFSize()) <= _max_af) ||
-        pkt_data.hasAnyLabel(_labels) ||
         (_every_packets > 0 && (tsp->pluginPackets() - _after_packets) % _every_packets == 0) ||
         (_with_pes && pkt.startPES());
 

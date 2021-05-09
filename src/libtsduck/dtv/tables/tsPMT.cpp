@@ -274,6 +274,27 @@ bool ts::PMT::Stream::isSubtitles(const DuckContext& duck) const
 
 
 //----------------------------------------------------------------------------
+// Get the PID class of the stream.
+//----------------------------------------------------------------------------
+
+ts::PIDClass ts::PMT::Stream::getClass(const DuckContext& duck) const
+{
+    if (isVideo(duck)) {
+        return PIDClass::VIDEO;
+    }
+    else if (isAudio(duck)) {
+        return PIDClass::AUDIO;
+    }
+    else if (isSubtitles(duck)) {
+        return PIDClass::SUBTITLES;
+    }
+    else {
+        return PIDClass::DATA;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Try to determine the codec which is used in the stream.
 //----------------------------------------------------------------------------
 

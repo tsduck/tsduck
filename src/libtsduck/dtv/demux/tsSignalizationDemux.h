@@ -35,6 +35,7 @@
 #pragma once
 #include "tsSignalizationHandlerInterface.h"
 #include "tsSectionDemux.h"
+#include "tsSafePtr.h"
 #include "tsAlgorithm.h"
 
 namespace ts {
@@ -55,6 +56,8 @@ namespace ts {
         //! This is the typical constructor to use the application only needs to query the
         //! structure of services and PID's. It is still possible to add a handler for
         //! signalization tables later.
+        //!
+        //! When the demux is reset, the full filtered are restored.
         //!
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! Contextual information (such as standards) are accumulated in the context from demuxed sections.
@@ -83,7 +86,7 @@ namespace ts {
         //! This method feeds the demux with a TS packet.
         //! @param [in] pkt A TS packet.
         //!
-        void feedPacket(const TSPacket& pkt) { _demux.feedPacket(pkt); }
+        void feedPacket(const TSPacket& pkt);
 
         //!
         //! Replace the signalization handler.
@@ -94,7 +97,16 @@ namespace ts {
         //!
         //! Reset the demux, remove all signalization filters.
         //!
+        //! If this object was built using the first constructor (one parameter),
+        //! full filtering is reset to its default state.
+        //!
         void reset();
+
+        //!
+        //! Add table filtering for full services and PID's analysis.
+        //! All signalization is demuxed. A full map of services and PID's is internally built.
+        //!
+        void addFullFilters();
 
         //!
         //! Add a signalization table id to filter.
@@ -106,11 +118,23 @@ namespace ts {
         bool addFilteredTableId(TID tid);
 
         //!
+        //! Add signalization table ids to filter.
+        //! @param [in] tids The table ids to add.
+        //!
+        void addFilteredTableIds(std::initializer_list<TID> tids);
+
+        //!
         //! Remove a signalization table id to filter.
         //! @param [in] tid The table id to remove. Unsupported table ids are ignored.
         //! @return True if the table id was actually removed, false if this table id was not filtered or not supported.
         //!
         bool removeFilteredTableId(TID tid);
+
+        //!
+        //! Remove signalization table ids to filter.
+        //! @param [in] tids The table ids to remove.
+        //!
+        void removeFilteredTableIds(std::initializer_list<TID> tids);
 
         //!
         //! Check if a signalization table id is filtered.
@@ -156,6 +180,36 @@ namespace ts {
         const PAT& lastPAT() const { return _last_pat; }
 
         //!
+        //! Check if a NIT Actual has been received.
+        //! @return True if a NIT Actual has been received, false otherwise.
+        //!
+        bool hasNIT() const { return _last_nit.isValid(); }
+
+        //!
+        //! Return a constant reference to the last NIT Actual which has been received.
+        //! @return A constant reference to the last NIT Actual.
+        //!
+        const NIT& lastNIT() const { return _last_nit; }
+
+        //!
+        //! Get the transport stream id.
+        //! @return The transport stream id or 0xFFFF if unknown.
+        //!
+        uint16_t transportStreamId() const { return _ts_id; }
+
+        //!
+        //! Get the original network id (from the SDT).
+        //! @return The original network id or 0xFFFF if unknown.
+        //!
+        uint16_t originalNetworkId() const { return _orig_network_id; }
+
+        //!
+        //! Get the actual network id (from the NIT).
+        //! @return The original network id or 0xFFFF if unknown.
+        //!
+        uint16_t networkId() const { return _network_id; }
+
+        //!
         //! Get the NIT PID, either from last PAT or default PID.
         //! @return The NIT PID.
         //!
@@ -167,18 +221,122 @@ namespace ts {
         //!
         Time lastUTC() const { return _last_utc; }
 
+        //!
+        //! Get the set of PID's in the TS.
+        //! @param [out] pids The set of PID's in the TS.
+        //!
+        void getPIDs(PIDSet& pids) const;
+
+        //!
+        //! Get the class of a PID in the TS.
+        //! @param [in] pid The PID to check.
+        //! @param [in] defclass The default PID class to use if the actual one is unknown.
+        //! @return The PID class.
+        //!
+        PIDClass pidClass(PID pid, PIDClass defclass = PIDClass::UNDEFINED) const;
+
+        //!
+        //! Get the codec which is used in PID in the TS.
+        //! @param [in] pid The PID to check.
+        //! @param [in] deftype The default codec type to use if the actual type is unknown.
+        //! @return The codec type.
+        //!
+        CodecType codecType(PID pid, CodecType deftype = CodecType::UNDEFINED) const;
+
+        //!
+        //! Get the stream type (from PMT) of a PID in the TS.
+        //! @param [in] pid The PID to check.
+        //! @param [in] deftype The default stream type to use if the actual type is unknown.
+        //! @return The stream type (from PMT).
+        //!
+        uint8_t streamType(PID pid, uint8_t deftype = ST_NULL) const;
+
+        //!
+        //! Check if a PID is a component of a service.
+        //! @param [in] pid The PID to check.
+        //! @param [in] service_id Service id.
+        //! @return True is @a pid is part of @a service_id.
+        //!
+        bool inService(PID pid, uint16_t service_id) const;
+
+        //!
+        //! Check if a PID is a component of any service in a set of services.
+        //! @param [in] pid The PID to check.
+        //! @param [in] service_ids A set of service ids.
+        //! @return True is @a pid is part of any service in @a service_ids.
+        //!
+        bool inAnyService(PID pid, std::set<uint16_t> service_ids) const;
+
+        //!
+        //! Get the service of a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The first service in which @a pid was found or 0xFFFF if there was none.
+        //!
+        uint16_t serviceId(PID pid) const;
+
+        //!
+        //! Get the services of a PID.
+        //! @param [in] pid The PID to check.
+        //! @param [out] services The set of services in which @a pid was found.
+        //!
+        void getServiceIds(PID pid, std::set<uint16_t> services) const;
+
     private:
+        // Description of a PID.
+        class PIDContext
+        {
+            TS_NOBUILD_NOCOPY(PIDContext);
+        public:
+            const PID          pid;          // PID value (cannot change).
+            PIDClass           pid_class;    // Class of PID.
+            CodecType          codec;        // Codec type (if any).
+            uint8_t            stream_type;  // Stream type from PMT or ST_NULL.
+            uint16_t           cas_id;       // CAS id for ECM or EMM PID's.
+            PacketCounter      packets;      // Number of packets in this PID.
+            std::set<uint16_t> services;     // List of services owning this PID.
+
+            // Constructor.
+            PIDContext(PID);
+
+            // Register a CAS type from a table.
+            void setCAS(const AbstractTable* table, uint16_t cas_id);
+        };
+        typedef SafePtr<PIDContext> PIDContextPtr;
+
+        // SignalizationDemux private fields.
         DuckContext&                   _duck;
         SectionDemux                   _demux;
         SignalizationHandlerInterface* _handler;
+        bool                           _full_filters;     // Use full filters by default.
         std::set<TID>                  _tids;             // Set of filtered table id's.
         std::set<uint16_t>             _service_ids;      // Set of filtered service id's.
         PAT                            _last_pat;         // Last received PAT.
         bool                           _last_pat_handled; // Last received PAT was handled by application.
+        NIT                            _last_nit;         // Last received NIT.
+        bool                           _last_nit_handled; // Last received NIT was handled by application.
+        uint16_t                       _ts_id;            // Transport stream id.
+        uint16_t                       _orig_network_id;  // Original network id.
+        uint16_t                       _network_id;       // Actual network id.
         Time                           _last_utc;         // Last received UTC time.
+        std::map<PID,PIDContextPtr>    _pids;             // Descriptions of PID's.
+        ServiceList                    _services;         // Descriptions of services.
+
+        // Get the context for a PID.
+        PIDContextPtr getPIDContext(PID);
 
         // Implementation of table and section interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
+
+        // Process specific tables.
+        void handlePAT(const PAT&, PID);
+        void handleCAT(const CAT&, PID);
+        void handlePMT(const PMT&, PID);
+        void handleNIT(const NIT&, PID);
+        void handleSDT(const SDT&, PID);
+        void handleVCT(const VCT&, PID);
+
+        // Process a descriptor list, looking for useful information.
+        void handleDescriptors(const DescriptorList&, PID);
     };
 }

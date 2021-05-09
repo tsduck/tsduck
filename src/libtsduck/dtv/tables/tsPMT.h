@@ -92,6 +92,14 @@ namespace ts {
             bool isSubtitles(const DuckContext& duck) const;
 
             //!
+            //! Get the PID class of the stream.
+            //! Look at the stream type and the descriptor list.
+            //! @param [in] duck TSDuck execution context.
+            //! @return The PID class (PIDClass::DATA if unknown component type).
+            //!
+            PIDClass getClass(const DuckContext& duck) const;
+
+            //!
             //! Try to determine the codec which is used in the stream.
             //! Look at the stream type and the descriptor list.
             //! @param [in] duck TSDuck execution context.
