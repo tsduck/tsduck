@@ -33,8 +33,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
-#include "tsMemory.h"
+#include "tsPESPacket.h"
 #include "tsAlgorithm.h"
+#include "tsMemory.h"
 TSDUCK_SOURCE;
 
 
@@ -68,6 +69,7 @@ namespace ts {
         bool            _with_pcr;           // Packets with PCR or OPCR
         bool            _with_splice;        // Packets with splice_countdown in adaptation field
         bool            _unit_start;         // Packets with payload unit start
+        bool            _intra_frame;        // Packets with start of video intra-frame
         bool            _nullified;          // Packets which were nullified by a previous plugin
         bool            _input_stuffing;     // Null packets which were artificially inserted
         bool            _valid;              // Packets with valid sync byte and error ind
@@ -81,6 +83,7 @@ namespace ts {
         int             _max_splice;         // Maximum splice_countdown value (<-128: no filter)
         PacketCounter   _after_packets;      // Number of initial packets to skip
         PacketCounter   _every_packets;      // Filter 1 out of this number of packets
+        CodecType       _default_codec;      // Default codec for intra-frame detection
         PIDSet          _explicit_pid;       // Explicit PID values to filter
         ByteBlock       _pattern;            // Byte pattern to search.
         bool            _search_payload;     // Search pattern in payload only.
@@ -117,6 +120,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _with_pcr(false),
     _with_splice(false),
     _unit_start(false),
+    _intra_frame(false),
     _nullified(false),
     _input_stuffing(false),
     _valid(false),
@@ -130,6 +134,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _max_splice(0),
     _after_packets(0),
     _every_packets(0),
+    _default_codec(CodecType::UNDEFINED),
     _explicit_pid(),
     _pattern(),
     _search_payload(false),
@@ -158,8 +163,22 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select clear (unscrambled) packets. "
          u"Equivalent to --scrambling-control 0.");
 
+    option(u"codec-default", 0, CodecTypeArgEnum);
+    help(u"codec-default", u"name",
+         u"With --intra-frame, specify the default codec type if it cannot be automatically detected.");
+
     option(u"every", 0, UNSIGNED);
     help(u"every", u"count", u"Select one packet every that number of packets.");
+
+    option(u"has-splice-countdown");
+    help(u"has-splice-countdown", u"Select packets which contain a splice_countdown value in adaptation field.");
+
+    option(u"input-stuffing");
+    help(u"input-stuffing",
+         u"Select packets which were articially inserted as stuffing before the input "
+         u"plugin (using tsp options --add-start-stuffing, --add-input-stuffing and "
+         u"--add-stop-stuffing). Be aware that these packets may no longer be null "
+         u"packets if some previous plugin injected data, replacing stuffing.");
 
     option(u"interval", 'i', STRING, 0, UNLIMITED_COUNT);
     help(u"interval", u"index1[-[index2]]",
@@ -169,6 +188,12 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"In the form 'index1-index2', all packets in the specified range of indexes, inclusive, are selected. "
          u"In the form 'index1-', all packets starting at the specified index are selected, up to the end of the stream. "
          u"Several options --interval can be specified.");
+
+    option(u"intra-frame");
+    help(u"intra-frame",
+         u"Select packets which contain the start of a video intra-frame. "
+         u"The accurate detection of intra-frame depends on the codec. "
+         u"There is also a minimal risk of false positive on non-video PID's.");
 
     option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"label", u"label1[-label2]",
@@ -192,6 +217,11 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select packets with no payload or with a payload the size (in bytes) of "
          u"which is not greater than the specified value.");
 
+    option(u"max-splice-countdown", 0, INT8);
+    help(u"max-splice-countdown",
+         u"Select packets with a splice_countdown value in adaptation field which is "
+         u"lower than or equal to the specified value.");
+
     option(u"min-adaptation-field-size", 0, INTEGER, 0, 1, 0, 184);
     help(u"min-adaptation-field-size",
          u"Select packets with an adaptation field the size (in bytes) of which "
@@ -202,6 +232,11 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select packets with a payload the size (in bytes) of which is equal "
          u"to or greater than the specified value.");
 
+    option(u"min-splice-countdown", 0, INT8);
+    help(u"min-splice-countdown",
+         u"Select packets with a splice_countdown value in adaptation field which is "
+         u"greater than or equal to the specified value.");
+
     option(u"negate", 'n');
     help(u"negate", u"Negate the filter: specified packets are excluded.");
 
@@ -210,12 +245,16 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select packets which were explicitly turned into null packets by some previous "
          u"plugin in the chain (typically using a --stuffing option).");
 
-    option(u"input-stuffing");
-    help(u"input-stuffing",
-         u"Select packets which were articially inserted as stuffing before the input "
-         u"plugin (using tsp options --add-start-stuffing, --add-input-stuffing and "
-         u"--add-stop-stuffing). Be aware that these packets may no longer be null "
-         u"packets if some previous plugin injected data, replacing stuffing.");
+    option(u"pattern", 0, STRING);
+    help(u"pattern",
+         u"Select packets containing the specified pattern bytes. "
+         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+         u"By default, the packet is selected when the value is anywhere inside the packet. "
+         u"With option --search-payload, only search the pattern in the payload of the packet. "
+         u"With option --search-offset, the packet is selected only if the pattern "
+         u"is at the specified offset in the packet. "
+         u"When --search-payload and --search-offset are both specified, the packet "
+         u"is selected only if the pattern is at the specified offset in the payload.");
 
     option(u"payload");
     help(u"payload", u"Select packets with a payload.");
@@ -231,38 +270,32 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"PID filter: select packets with these PID values. "
          u"Several -p or --pid options may be specified.");
 
-    option(u"pattern", 0, STRING);
-    help(u"pattern",
-         u"Select packets containing the specified pattern bytes. "
-         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
-         u"By default, the packet is selected when the value is anywhere inside the packet. "
-         u"With option --search-payload, only search the pattern in the payload of the packet. "
-         u"With option --search-offset, the packet is selected only if the pattern "
-         u"is at the specified offset in the packet. "
-         u"When --search-payload and --search-offset are both specified, the packet "
-         u"is selected only if the pattern is at the specified offset in the payload.");
+    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    help(u"reset-label", u"label1[-label2]",
+         u"Clear the specified labels on the selected packets. "
+         u"Do not drop unselected packets, simply clear labels on selected ones. "
+         u"Several --reset-label options may be specified.");
 
-    option(u"search-payload");
-    help(u"search-payload",
-         u"With --pattern, only search the set of bytes in the payload of the packet. "
-         u"Do not search the pattern in the header or adaptation field.");
-
-    option(u"search-offset", 0, INTEGER, 0, 1, 0, PKT_SIZE - 1);
-    help(u"search-offset",
-         u"With --pattern, only search the set of bytes at the specified offset in the packet "
-         u"(the default) or in the payload (with --search-payload).");
+    option(u"reset-permanent-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    help(u"reset-permanent-label", u"label1[-label2]",
+         u"Clear the specified labels on all packets, selected and unselected ones, after at least one was selected. "
+         u"Do not drop unselected packets, simply use selected ones as trigger. "
+         u"Several --reset-permanent-label options may be specified.");
 
     option(u"scrambling-control", 0, INTEGER, 0, 1, 0, 3);
     help(u"scrambling-control",
          u"Select packets with the specified scrambling control value. Valid "
          u"values are 0 (clear), 1 (reserved), 2 (even key), 3 (odd key).");
 
-    option(u"stream-id", 0, UINT8, 0, UNLIMITED_COUNT);
-    help(u"stream-id", u"id1[-id2]",
-         u"Select PES PID's with any of the specified stream ids. "
-         u"A PID starts to be selected when a specified stream id appears. "
-         u"Such a PID is no longer selected when non-specified stream id is found. "
-         u"Several --stream-id options may be specified.");
+    option(u"search-offset", 0, INTEGER, 0, 1, 0, PKT_SIZE - 1);
+    help(u"search-offset",
+         u"With --pattern, only search the set of bytes at the specified offset in the packet "
+         u"(the default) or in the payload (with --search-payload).");
+
+    option(u"search-payload");
+    help(u"search-payload",
+         u"With --pattern, only search the set of bytes in the payload of the packet. "
+         u"Do not search the pattern in the header or adaptation field.");
 
     option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"set-label", u"label1[-label2]",
@@ -270,39 +303,21 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Do not drop unselected packets, simply mark selected ones. "
          u"Several --set-label options may be specified.");
 
-    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
-    help(u"reset-label", u"label1[-label2]",
-         u"Clear the specified labels on the selected packets. "
-         u"Do not drop unselected packets, simply clear labels on selected ones. "
-         u"Several --reset-label options may be specified.");
-
     option(u"set-permanent-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"set-permanent-label", u"label1[-label2]",
          u"Set the specified labels on all packets, selected and unselected ones, after at least one was selected. "
          u"Do not drop unselected packets, simply use selected ones as trigger. "
          u"Several --set-permanent-label options may be specified.");
 
-    option(u"has-splice-countdown");
-    help(u"has-splice-countdown", u"Select packets which contain a splice_countdown value in adaptation field.");
-
     option(u"splice-countdown", 0, INT8);
     help(u"splice-countdown", u"Select packets with the specified splice_countdown value in adaptation field.");
 
-    option(u"min-splice-countdown", 0, INT8);
-    help(u"min-splice-countdown",
-         u"Select packets with a splice_countdown value in adaptation field which is "
-         u"greater than or equal to the specified value.");
-
-    option(u"max-splice-countdown", 0, INT8);
-    help(u"max-splice-countdown",
-         u"Select packets with a splice_countdown value in adaptation field which is "
-         u"lower than or equal to the specified value.");
-
-    option(u"reset-permanent-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
-    help(u"reset-permanent-label", u"label1[-label2]",
-         u"Clear the specified labels on all packets, selected and unselected ones, after at least one was selected. "
-         u"Do not drop unselected packets, simply use selected ones as trigger. "
-         u"Several --reset-permanent-label options may be specified.");
+    option(u"stream-id", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"stream-id", u"id1[-id2]",
+         u"Select PES PID's with any of the specified stream ids. "
+         u"A PID starts to be selected when a specified stream id appears. "
+         u"Such a PID is no longer selected when non-specified stream id is found. "
+         u"Several --stream-id options may be specified.");
 
     option(u"stuffing", 's');
     help(u"stuffing",
@@ -332,6 +347,7 @@ bool ts::FilterPlugin::getOptions()
     _with_pcr = present(u"pcr");
     _with_splice = present(u"has-splice-countdown");
     _unit_start = present(u"unit-start");
+    _intra_frame = present(u"intra-frame");
     _nullified = present(u"nullified");
     _input_stuffing = present(u"input-stuffing");
     _valid = present(u"valid");
@@ -345,6 +361,7 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(_max_splice, u"max-splice-countdown", INT_MIN);
     getIntValue(_after_packets, u"after-packets");
     getIntValue(_every_packets, u"every");
+    getIntValue(_default_codec, u"codec-default", CodecType::UNDEFINED);
     getIntValues(_explicit_pid, u"pid");
     getIntValues(_stream_ids, u"stream-id");
     getIntValues(_labels, u"label");
@@ -458,6 +475,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (_with_payload && pkt.hasPayload()) ||
         (_with_af && pkt.hasAF()) ||
         (_unit_start && pkt.getPUSI()) ||
+        (_intra_frame && pkt.getPUSI() && pkt.hasPayload() && PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), ST_NULL, _default_codec) != NPOS) ||
         (_nullified && pkt_data.getNullified()) ||
         (_input_stuffing && pkt_data.getInputStuffing()) ||
         (_valid && pkt.hasValidSync() && !pkt.getTEI()) ||

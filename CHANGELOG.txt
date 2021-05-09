@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-232
+VERSION 3.27-2374
 
 [NEW] New commands and plugins:
 
@@ -16,7 +16,8 @@ VERSION 3.27-232
     - Options --fifo-size, --preload-fifo in input plugin "dektec".
     - Option --io-standard and all TS-over-IP options in input and output
       plugins "dektec".
-    - Options --enforce-burst and --packet-burst in output plugin "srt".
+    - Options --enforce-burst, --packet-burst in output plugin "srt".
+    - Options --intra-frame, --codec-default in plugin "filter".
 
 [BUG] Bug fixes:
 

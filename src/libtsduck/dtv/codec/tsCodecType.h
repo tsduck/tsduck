@@ -69,7 +69,16 @@ namespace ts {
     };
 
     //!
-    //! Enumeration description of ts::CodecType.
+    //! Enumeration description of ts::CodecType (display).
+    //! The version is suitable to display codec names.
+    //! @see CodecTypeArgEnum
     //!
     TSDUCKDLL extern const Enumeration CodecTypeEnum;
+
+    //!
+    //! Enumeration description of ts::CodecType (command line argument).
+    //! The version is suitable to define command line arguments taking codec names as parameter.
+    //! @see CodecTypeEnum
+    //!
+    TSDUCKDLL extern const Enumeration CodecTypeArgEnum;
 }
