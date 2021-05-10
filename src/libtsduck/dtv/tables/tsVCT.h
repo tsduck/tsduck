@@ -153,6 +153,15 @@ namespace ts {
         //!
         bool findService(Service& service, bool exact_match = false, bool same_ts = true) const;
 
+        //!
+        //! Collect all informations about all services in the VCT.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] services A list of service descriptions. Existing services
+        //! are updated with the informations from the SDT. New entries are created for
+        //! other services.
+        //!
+        void updateServices(DuckContext& duck, ServiceList& services) const;
+
         // Inherited methods
         virtual uint16_t tableIdExtension() const override;
         DeclareDisplaySection();
