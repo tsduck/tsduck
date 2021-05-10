@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 // Depending on TS_NO_DTAPI, some code may be unused.
 TS_LLVM_NOWARNING(unused-macros)
 TS_LLVM_NOWARNING(unused-function)
+TS_GCC_NOWARNING(unused-function)
 
 
 //-----------------------------------------------------------------------------
