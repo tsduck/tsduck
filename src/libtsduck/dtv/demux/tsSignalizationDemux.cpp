@@ -79,6 +79,8 @@ ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandl
 
 void ts::SignalizationDemux::reset()
 {
+    const bool had_services = !_services.empty();
+
     _demux.reset();
     _demux.setPIDFilter(NoPID);
     _tids.clear();
@@ -95,6 +97,11 @@ void ts::SignalizationDemux::reset()
     // Apply full filters when set by default.
     if (_full_filters) {
         addFullFilters();
+    }
+
+    // Notify the new (empty) list of services.
+    if (had_services && _handler != nullptr) {
+        _handler->handleServiceList(_services, _ts_id);
     }
 }
 
@@ -563,32 +570,22 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
         }
         case TID_MGT: {
             const MGT mgt(_duck, table);
-            if (mgt.isValid() && pid == PID_PSIP && _handler != nullptr && isFilteredTableId(tid)) {
-                _handler->handleMGT(mgt, pid);
+            if (mgt.isValid() && pid == PID_PSIP) {
+                handleMGT(mgt, pid);
             }
             break;
         }
         case TID_CVCT: {
             const CVCT vct(_duck, table);
             if (vct.isValid() && pid == PID_PSIP) {
-                vct.updateServices(_duck, _services);
-                if (_handler != nullptr && isFilteredTableId(tid)) {
-                    // Call specific and generic form of VCT handler.
-                    _handler->handleCVCT(vct, pid);
-                    _handler->handleVCT(vct, pid);
-                }
+                handleVCT(vct, pid, &SignalizationHandlerInterface::handleCVCT);
             }
             break;
         }
         case TID_TVCT: {
             const TVCT vct(_duck, table);
             if (vct.isValid() && pid == PID_PSIP) {
-                vct.updateServices(_duck, _services);
-                if (_handler != nullptr && isFilteredTableId(tid)) {
-                    // Call specific and generic form of VCT handler.
-                    _handler->handleTVCT(vct, pid);
-                    _handler->handleVCT(vct, pid);
-                }
+                handleVCT(vct, pid, &SignalizationHandlerInterface::handleTVCT);
             }
             break;
         }
@@ -704,8 +701,13 @@ void ts::SignalizationDemux::handlePAT(const PAT& pat, PID pid)
     }
 
     // Reprocess the last NIT in case of PAT change (TS id may have changed).
-    if (_last_nit.isValid()) {
+    if (_last_nit.isValid() && !_last_nit_handled) {
         handleNIT(_last_nit, nitPID());
+    }
+    else if (_handler != nullptr) {
+        // Notify that the list of services may have changed.
+        // Also done in handleNIT(), so call in an "else" branch.
+        _handler->handleServiceList(_services, _ts_id);
     }
 }
 
@@ -798,6 +800,11 @@ void ts::SignalizationDemux::handleNIT(const NIT& nit, PID pid)
         _last_nit_handled = _last_nit_handled || nit.isActual();
         _handler->handleNIT(nit, pid);
     }
+
+    // Notify that the list of services may have changed.
+    if (_handler != nullptr && nit.isActual()) {
+        _handler->handleServiceList(_services, _ts_id);
+    }
 }
 
 
@@ -818,9 +825,55 @@ void ts::SignalizationDemux::handleSDT(const SDT& sdt, PID pid)
         sdt.updateServices(_duck, _services);
     }
 
-    // Notify the NIT to the application.
+    // Notify the SDT to the application.
     if (_handler != nullptr && isFilteredTableId(sdt.tableId())) {
         _handler->handleSDT(sdt, pid);
+    }
+
+    // Notify that the list of services may have changed.
+    if (_handler != nullptr && sdt.isActual()) {
+        _handler->handleServiceList(_services, _ts_id);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process an MGT.
+//----------------------------------------------------------------------------
+
+void ts::SignalizationDemux::handleMGT(const MGT& mgt, PID pid)
+{
+    // Locate all additional ATSC signalization PID's.
+    for (auto it = mgt.tables.begin(); it != mgt.tables.end(); ++it) {
+        getPIDContext(it->second.table_type_PID)->pid_class = PIDClass::PSI;
+    }
+
+    // Notify the MGT to the application.
+    if (_handler != nullptr && isFilteredTableId(TID_MGT)) {
+        _handler->handleMGT(mgt, pid);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a VCT (TVCT or CVCT).
+//----------------------------------------------------------------------------
+
+template <class XVCT, typename std::enable_if<std::is_base_of<ts::VCT, XVCT>::value, int>::type>
+void ts::SignalizationDemux::handleVCT(const XVCT& vct, PID pid, void (SignalizationHandlerInterface::*handle)(const XVCT&, PID))
+{
+    // Update the service list (names, channel numbers, etc)
+    vct.updateServices(_duck, _services);
+
+    // Call specific and generic form of VCT handler.
+    if (_handler != nullptr && isFilteredTableId(vct.tableId())) {
+        (_handler->*handle)(vct, pid);
+        _handler->handleVCT(vct, pid);
+    }
+
+    // Notify that the list of services may have changed.
+    if (_handler != nullptr) {
+        _handler->handleServiceList(_services, _ts_id);
     }
 }
 
