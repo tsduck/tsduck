@@ -92,7 +92,7 @@ namespace ts {
         //! Replace the signalization handler.
         //! @param [in] handler The new handler.
         //!
-        void setTableHandler(SignalizationHandlerInterface* handler) { _handler = handler; }
+        void setHandler(SignalizationHandlerInterface* handler) { _handler = handler; }
 
         //!
         //! Reset the demux, remove all signalization filters.
@@ -228,6 +228,12 @@ namespace ts {
         void getPIDs(PIDSet& pids) const;
 
         //!
+        //! Get the list of all services in the TS.
+        //! @param [out] services The list of all services in the TS, as found so far.
+        //!
+        void getServices(ServiceList& services) const { services = _services; }
+
+        //!
         //! Get the class of a PID in the TS.
         //! @param [in] pid The PID to check.
         //! @param [in] defclass The default PID class to use if the actual one is unknown.
@@ -334,6 +340,11 @@ namespace ts {
         void handlePMT(const PMT&, PID);
         void handleNIT(const NIT&, PID);
         void handleSDT(const SDT&, PID);
+        void handleMGT(const MGT&, PID);
+
+        // Template common version for CVCT and TVCT.
+        template <class XVCT, typename std::enable_if<std::is_base_of<VCT, XVCT>::value, int>::type = 0>
+        void handleVCT(const XVCT&, PID, void (SignalizationHandlerInterface::*)(const XVCT&, PID));
 
         // Process a descriptor list, looking for useful information.
         void handleDescriptors(const DescriptorList&, PID);

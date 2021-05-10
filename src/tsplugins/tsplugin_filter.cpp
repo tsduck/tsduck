@@ -45,7 +45,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class FilterPlugin: public ProcessorPlugin
+    class FilterPlugin: public ProcessorPlugin, private SignalizationHandlerInterface
     {
         TS_NOBUILD_NOCOPY(FilterPlugin);
     public:
@@ -77,8 +77,11 @@ namespace ts {
         bool            _valid;              // Packets with valid sync byte and error ind
         bool            _negate;             // Negate filter (exclude selected packets)
         bool            _video;              // Part of a video PID
-        bool            _audio;              // Part of a audio PID
+        bool            _audio;              // Part of an audio PID
         bool            _subtitles;          // Part of a subtitles PID
+        bool            _ecm;                // Part of an ECM PID
+        bool            _emm;                // Part of an EMM PID
+        bool            _psi;                // Part of global PSI/SI PID.
         int             _min_payload;        // Minimum payload size (<0: no filter)
         int             _max_payload;        // Maximum payload size (<0: no filter)
         int             _min_af;             // Minimum adaptation field size (<0: no filter)
@@ -96,7 +99,8 @@ namespace ts {
         size_t          _search_offset;      // Offset where to search.
         PacketRangeList _ranges;             // Ranges of packets to filter.
         std::set<uint8_t>          _stream_ids;        // PES stream ids to filter
-        std::set<uint16_t>         _service_ids;       // Services to filter
+        std::set<uint16_t>         _service_ids;       // Service ids to filter
+        UStringVector              _service_names;     // Service names to filter.
         TSPacketMetadata::LabelSet _labels;            // Select packets with any of these labels
         TSPacketMetadata::LabelSet _set_labels;        // Labels to set on filtered packets
         TSPacketMetadata::LabelSet _reset_labels;      // Labels to reset on filtered packets
@@ -105,8 +109,12 @@ namespace ts {
 
         // Working data:
         PacketCounter      _filtered_packets;  // Number of filtered packets
-        PIDSet             _stream_id_pid;     // PID values selected from stream ids.
-        SignalizationDemux _demux;             // Full signalization demux.
+        PIDSet             _stream_id_pid;     // PID values selected from stream ids
+        std::set<uint16_t> _all_service_ids;   // All service ids to filter, after service name resolution
+        SignalizationDemux _demux;             // Full signalization demux
+
+        // Implementation of SignalizationHandlerInterface
+        virtual void handleServiceList(const ServiceList& services, uint16_t ts_id) override;
     };
 }
 
@@ -136,6 +144,9 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _video(false),
     _audio(false),
     _subtitles(false),
+    _ecm(false),
+    _emm(false),
+    _psi(false),
     _min_payload(0),
     _max_payload(0),
     _min_af(0),
@@ -154,6 +165,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _ranges(),
     _stream_ids(),
     _service_ids(),
+    _service_names(),
     _labels(),
     _set_labels(),
     _reset_labels(),
@@ -161,6 +173,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     _reset_perm_labels(),
     _filtered_packets(0),
     _stream_id_pid(),
+    _all_service_ids(),
     _demux(duck)
 {
     option(u"adaptation-field");
@@ -183,8 +196,17 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
     help(u"codec", u"name",
          u"Select packets from PID's which were encoded with the specified codec format.");
 
+    option(u"ecm");
+    help(u"ecm", u"Select packets from any ECM PID.");
+
+    option(u"emm");
+    help(u"emm", u"Select packets from any EMM PID.");
+
     option(u"every", 0, UNSIGNED);
     help(u"every", u"count", u"Select one packet every that number of packets.");
+
+    option(u"psi-si");
+    help(u"psi-si", u"Select packets from any PSI/SI PID.");
 
     option(u"has-splice-countdown");
     help(u"has-splice-countdown", u"Select packets which contain a splice_countdown value in adaptation field.");
@@ -313,9 +335,11 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"With --pattern, only search the set of bytes in the payload of the packet. "
          u"Do not search the pattern in the header or adaptation field.");
 
-    option(u"service-id", 0, UINT16, 0, UNLIMITED_COUNT);
-    help(u"service-id", u"id1[-id2]",
+    option(u"service", 0, STRING, 0, UNLIMITED_COUNT);
+    help(u"service", u"id-or-name",
          u"Select packets belonging to any of the specified services as PMT, component or ECM. "
+         u"If the argument is an integer, it is considered as a service id. "
+         u"Otherwise, this is a service name. "
          u"Several --service options may be specified.");
 
     option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
@@ -381,7 +405,11 @@ bool ts::FilterPlugin::getOptions()
     _audio = present(u"audio");
     _video = present(u"video");
     _subtitles = present(u"subtitles");
+    _ecm = present(u"ecm");
+    _emm = present(u"emm");
+    _psi = present(u"psi-si");
     _negate = present(u"negate");
+    getValues(_service_names, u"service");
     getIntValue(_min_payload, u"min-payload-size", -1);
     getIntValue(_max_payload, u"max-payload-size", -1);
     getIntValue(_min_af, u"min-adaptation-field-size", -1);
@@ -394,7 +422,6 @@ bool ts::FilterPlugin::getOptions()
     getIntValue(_codec, u"codec", CodecType::UNDEFINED);
     getIntValues(_explicit_pid, u"pid");
     getIntValues(_stream_ids, u"stream-id");
-    getIntValues(_service_ids, u"service-id");
     getIntValues(_labels, u"label");
     getIntValues(_set_labels, u"set-label");
     getIntValues(_reset_labels, u"reset-label");
@@ -451,8 +478,28 @@ bool ts::FilterPlugin::getOptions()
         _drop_status = TSP_DROP;
     }
 
+    // Sort service names and service ids.
+    _service_ids.clear();
+    for (auto it = _service_names.begin(); it != _service_names.end(); ) {
+        uint16_t srvid = 0;
+        if (it->toInteger(srvid, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+            // This is a service id, remove it from service names.
+            _service_ids.insert(srvid);
+            it = _service_names.erase(it);
+        }
+        else {
+            // Keep service name, move to next.
+            ++it;
+        }
+    }
+
     // These options need the assistance of a full signalization demux:
-    _need_demux = _audio || _video || _subtitles || _intra_frame || _codec != CodecType::UNDEFINED || !_service_ids.empty();
+    _need_demux =
+        _audio || _video || _subtitles || _ecm || _emm || _psi || _intra_frame ||
+        _codec != CodecType::UNDEFINED || !_service_ids.empty() || !_service_names.empty();
+
+    // If we look for service names, we also need to be notified of changes in service list.
+    _demux.setHandler(_service_names.empty() ? nullptr : this);
 
     return true;
 }
@@ -465,6 +512,7 @@ bool ts::FilterPlugin::getOptions()
 bool ts::FilterPlugin::start()
 {
     _filtered_packets = 0;
+    _all_service_ids = _service_ids;
     _stream_id_pid.reset();
     _demux.reset();
     return true;
@@ -510,17 +558,21 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
     }
 
     // Check if the packet matches one of the selected criteria.
+    const PIDClass pidclass = _demux.pidClass(pid);
     bool ok = _explicit_pid[pid] ||
         pkt_data.hasAnyLabel(_labels) ||
         _stream_id_pid[pid] ||
-        _demux.inAnyService(pid, _service_ids) ||
+        _demux.inAnyService(pid, _all_service_ids) ||
         (_with_payload && pkt.hasPayload()) ||
         (_with_af && pkt.hasAF()) ||
         (_unit_start && pkt.getPUSI()) ||
         (_codec != CodecType::UNDEFINED && _demux.codecType(pid) == _codec) ||
-        (_audio && _demux.pidClass(pid) == PIDClass::AUDIO) ||
-        (_video && _demux.pidClass(pid) == PIDClass::VIDEO) ||
-        (_subtitles && _demux.pidClass(pid) == PIDClass::SUBTITLES) ||
+        (_audio && pidclass == PIDClass::AUDIO) ||
+        (_video && pidclass == PIDClass::VIDEO) ||
+        (_subtitles && pidclass == PIDClass::SUBTITLES) ||
+        (_ecm && pidclass == PIDClass::ECM) ||
+        (_emm && pidclass == PIDClass::EMM) ||
+        (_psi && pidclass == PIDClass::PSI) ||
         (_intra_frame && pkt.getPUSI() && pkt.hasPayload() &&
          PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), _demux.streamType(pid), _demux.codecType(pid)) != NPOS) ||
         (_nullified && pkt_data.getNullified()) ||
@@ -576,4 +628,34 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
     }
 
     return ok ? TSP_OK : _drop_status;
+}
+
+
+//----------------------------------------------------------------------------
+// Handle potential changes in the service list.
+//----------------------------------------------------------------------------
+
+void ts::FilterPlugin::handleServiceList(const ServiceList& services, uint16_t ts_id)
+{
+    tsp->debug(u"handling new list of services, TS id: 0x%X (%<d), %d services", {ts_id, services.size()});
+
+    // Reset list of service ids to those which were specified by id on the command line.
+    _all_service_ids =_service_ids;
+
+    // Search service names from command line in the new list of services.
+    // Do not report an error if a name is not found, an update of the list
+    // does not mean that all service names are found.
+    for (auto name = _service_names.begin(); name != _service_names.end(); ++name) {
+        bool found = false;
+        for (auto srv = services.begin(); !found && srv != services.end(); ++srv) {
+            if (srv->hasId() && srv->hasName() && name->similar(srv->getName())) {
+                found = true;
+                _all_service_ids.insert(srv->getId());
+                tsp->debug(u"service \"%s\" found, id: 0x%X (%<d)", {*name, srv->getId()});
+            }
+        }
+        if (!found) {
+            tsp->debug(u"service \"%s\" not found yet", {*name});
+        }
+    }
 }

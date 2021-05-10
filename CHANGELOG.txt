@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2375
+VERSION 3.27-2379
 
 [NEW] New commands and plugins:
 
@@ -17,7 +17,8 @@ VERSION 3.27-2375
     - Option --io-standard and all TS-over-IP options in input and output
       plugins "dektec".
     - Options --enforce-burst, --packet-burst in output plugin "srt".
-    - Options --codec, --intra-frame in plugin "filter".
+    - Options --audio, --codec, --ecm, --emm, --intra-frame, --psi-si,
+      --service, --subtitles, --video in plugin "filter".
 
 [BUG] Bug fixes:
 

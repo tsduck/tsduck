@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsService.h"
 // MPEG-defined tables:
 #include "tsPAT.h"
 #include "tsCAT.h"
@@ -160,6 +161,13 @@ namespace ts {
         //! @param [in] pid The PID on which the table was found.
         //!
         virtual void handleSTT(const STT& table, PID pid);
+        //!
+        //! This hook is invoked when the list of services in the transport stream may have changed.
+        //! The change can be minor, such as adding the name or logical channel number of a few services.
+        //! @param [in] services The updated list of services.
+        //! @param [in] ts_id The transport stream id or 0xFFFF if it is unknown.
+        //!
+        virtual void handleServiceList(const ServiceList& services, uint16_t ts_id);
         //!
         //! Virtual destructor.
         //!
