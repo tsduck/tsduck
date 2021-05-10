@@ -72,7 +72,7 @@ ts::SDT::SDT(const SDT& other) :
 {
 }
 
-ts::SDT::Service::Service(const AbstractTable* table) :
+ts::SDT::ServiceEntry::ServiceEntry(const AbstractTable* table) :
     EntryWithDescriptors(table),
     EITs_present(false),
     EITpf_present(false),
@@ -144,7 +144,7 @@ bool ts::SDT::findService(DuckContext& duck, const UString& name, uint16_t& serv
     return false;
 }
 
-bool ts::SDT::findService(DuckContext& duck, ts::Service& service, bool exact_match) const
+bool ts::SDT::findService(DuckContext& duck, Service& service, bool exact_match) const
 {
     uint16_t service_id = 0;
     if (!service.hasName() || !findService(duck, service.getName(), service_id, exact_match)) {
@@ -153,6 +153,49 @@ bool ts::SDT::findService(DuckContext& duck, ts::Service& service, bool exact_ma
     else {
         service.setId(service_id);
         return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Collect all informations about all services in the SDT.
+//----------------------------------------------------------------------------
+
+void ts::SDT::updateServices(DuckContext& duck, ServiceList& slist) const
+{
+    // Loop on all services in the SDT.
+    for (auto sdt_it = services.begin(); sdt_it != services.end(); ++sdt_it) {
+
+        // Service id is the index in the service map.
+        const uint16_t service_id = sdt_it->first;
+        const ServiceEntry& service(sdt_it->second);
+
+        // Try to find an existing matching service. The service id must match.
+        // The TS is and orig. netw. id must either not exist or match.
+        auto srv = slist.begin();
+        while (srv != slist.end() && (!srv->hasId(service_id) || (srv->hasTSId() && !srv->hasTSId(ts_id)) || (srv->hasONId() && !srv->hasONId(onetw_id)))) {
+            ++srv;
+        }
+        if (srv == slist.end()) {
+            // Service was not found, create one at end of list.
+            srv = slist.emplace(srv, service_id);
+        }
+
+        // Now fill the service with known information.
+        srv->setTSId(ts_id);
+        srv->setONId(onetw_id);
+        srv->setRunningStatus(service.running_status);
+        srv->setCAControlled(service.CA_controlled);
+        srv->setEITpfPresent(service.EITpf_present);
+        srv->setEITsPresent(service.EITs_present);
+
+        // Look for more information in the descriptors of the service entry.
+        ServiceDescriptor srv_desc;
+        if (service.locateServiceDescriptor(duck, srv_desc)) {
+            srv->setName(srv_desc.service_name);
+            srv->setProvider(srv_desc.provider_name);
+            srv->setTypeDVB(srv_desc.service_type);
+        }
     }
 }
 
@@ -170,7 +213,7 @@ void ts::SDT::deserializePayload(PSIBuffer& buf, const Section& section)
 
     // Get services description
     while (buf.canRead()) {
-        Service& serv(services[buf.getUInt16()]);
+        ServiceEntry& serv(services[buf.getUInt16()]);
         buf.skipBits(6);
         serv.EITs_present = buf.getBool();
         serv.EITpf_present = buf.getBool();
@@ -222,7 +265,7 @@ void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 // Locate and deserialize the first DVB service_descriptor inside the entry.
 //----------------------------------------------------------------------------
 
-bool ts::SDT::Service::locateServiceDescriptor(DuckContext& duck, ServiceDescriptor& desc) const
+bool ts::SDT::ServiceEntry::locateServiceDescriptor(DuckContext& duck, ServiceDescriptor& desc) const
 {
     const size_t index = descs.search(DID_SERVICE);
 
@@ -243,19 +286,19 @@ bool ts::SDT::Service::locateServiceDescriptor(DuckContext& duck, ServiceDescrip
 // the first DVB "service descriptor", if there is one in the list).
 //----------------------------------------------------------------------------
 
-uint8_t ts::SDT::Service::serviceType(DuckContext& duck) const
+uint8_t ts::SDT::ServiceEntry::serviceType(DuckContext& duck) const
 {
     ServiceDescriptor sd;
     return locateServiceDescriptor(duck, sd) ? sd.service_type : 0; // 0 is a "reserved" service_type value
 }
 
-ts::UString ts::SDT::Service::providerName(DuckContext& duck) const
+ts::UString ts::SDT::ServiceEntry::providerName(DuckContext& duck) const
 {
     ServiceDescriptor sd;
     return locateServiceDescriptor(duck, sd) ? sd.provider_name : UString();
 }
 
-ts::UString ts::SDT::Service::serviceName(DuckContext& duck) const
+ts::UString ts::SDT::ServiceEntry::serviceName(DuckContext& duck) const
 {
     ServiceDescriptor sd;
     return locateServiceDescriptor(duck, sd) ? sd.service_name : UString();
@@ -266,7 +309,7 @@ ts::UString ts::SDT::Service::serviceName(DuckContext& duck) const
 // Set a string value (typically provider or service name).
 //----------------------------------------------------------------------------
 
-void ts::SDT::Service::setString(DuckContext& duck, UString ServiceDescriptor::* field, const UString& value, uint8_t service_type)
+void ts::SDT::ServiceEntry::setString(DuckContext& duck, UString ServiceDescriptor::* field, const UString& value, uint8_t service_type)
 {
     // Locate the service descriptor
     const size_t index = descs.search(DID_SERVICE);
@@ -299,7 +342,7 @@ void ts::SDT::Service::setString(DuckContext& duck, UString ServiceDescriptor::*
 // Modify the service_descriptor with the new service type.
 //----------------------------------------------------------------------------
 
-void ts::SDT::Service::setType(uint8_t service_type)
+void ts::SDT::ServiceEntry::setType(uint8_t service_type)
 {
     // Locate the service descriptor
     const size_t index(descs.search(DID_SERVICE));

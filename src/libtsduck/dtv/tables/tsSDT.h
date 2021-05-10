@@ -53,7 +53,7 @@ namespace ts {
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
-        class TSDUCKDLL Service : public EntryWithDescriptors
+        class TSDUCKDLL ServiceEntry : public EntryWithDescriptors
         {
         public:
             // Public members
@@ -66,7 +66,7 @@ namespace ts {
             //! Constructor.
             //! @param [in] table Parent SDT.
             //!
-            Service(const AbstractTable* table);
+            ServiceEntry(const AbstractTable* table);
 
             //!
             //! Get the service type.
@@ -158,14 +158,14 @@ namespace ts {
             void setString(DuckContext& duck, UString ServiceDescriptor::* field, const UString& value, uint8_t service_type);
 
             // Inaccessible operations.
-            Service() = delete;
-            Service(const Service&) = delete;
+            ServiceEntry() = delete;
+            ServiceEntry(const ServiceEntry&) = delete;
         };
 
         //!
         //! List of services, indexed by service_id.
         //!
-        typedef EntryWithDescriptorsMap<uint16_t, Service> ServiceMap;
+        typedef EntryWithDescriptorsMap<uint16_t, ServiceEntry> ServiceMap;
 
         // SDT public members:
         uint16_t   ts_id;     //!< Transport stream_id.
@@ -237,7 +237,7 @@ namespace ts {
         bool findService(DuckContext& duck, const UString& name, uint16_t& service_id, bool exact_match = false) const;
 
         //!
-        //! Search a service by name, using a ts::Service class.
+        //! Search a service by name, using a Service class.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] service Service description. Use service name to search.
         //! Set the service id if found.
@@ -246,7 +246,16 @@ namespace ts {
         //! and blanks are ignored.
         //! @return True if the service is found, false if not found.
         //!
-        bool findService(DuckContext& duck, ts::Service& service, bool exact_match = false) const;
+        bool findService(DuckContext& duck, Service& service, bool exact_match = false) const;
+
+        //!
+        //! Collect all informations about all services in the SDT.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] services A list of service descriptions. Existing services
+        //! are updated with the informations from the SDT. New entries are created for
+        //! other services.
+        //!
+        void updateServices(DuckContext& duck, ServiceList& services) const;
 
         // Inherited methods
         virtual uint16_t tableIdExtension() const override;

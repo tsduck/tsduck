@@ -334,7 +334,6 @@ namespace ts {
         void handlePMT(const PMT&, PID);
         void handleNIT(const NIT&, PID);
         void handleSDT(const SDT&, PID);
-        void handleVCT(const VCT&, PID);
 
         // Process a descriptor list, looking for useful information.
         void handleDescriptors(const DescriptorList&, PID);

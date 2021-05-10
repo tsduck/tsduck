@@ -266,7 +266,7 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         // Create new service is not existing
         if (!Contains(sdt.services, _service.getId())) {
             // Service did not exist, create a new one with all defaults
-            SDT::Service& sv(sdt.services[_service.getId()]);
+            SDT::ServiceEntry& sv(sdt.services[_service.getId()]);
             sv.EITs_present = false;
             sv.EITpf_present = false;
             sv.running_status = 4; // running
@@ -275,7 +275,7 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         }
 
         // Locate service to modify
-        SDT::Service& sv(sdt.services[_service.getId()]);
+        SDT::ServiceEntry& sv(sdt.services[_service.getId()]);
 
         // Modify service characteristics
         if (_service.hasEITpfPresent()) {

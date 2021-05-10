@@ -31,6 +31,7 @@
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
+#include "tsLogicalChannelNumbers.h"
 #include "tsCADescriptor.h"
 #include "tsISDBAccessControlDescriptor.h"
 TSDUCK_SOURCE;
@@ -570,7 +571,7 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
         case TID_CVCT: {
             const CVCT vct(_duck, table);
             if (vct.isValid() && pid == PID_PSIP) {
-                handleVCT(vct, pid);
+                vct.updateServices(_duck, _services);
                 if (_handler != nullptr && isFilteredTableId(tid)) {
                     // Call specific and generic form of VCT handler.
                     _handler->handleCVCT(vct, pid);
@@ -582,7 +583,7 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
         case TID_TVCT: {
             const TVCT vct(_duck, table);
             if (vct.isValid() && pid == PID_PSIP) {
-                handleVCT(vct, pid);
+                vct.updateServices(_duck, _services);
                 if (_handler != nullptr && isFilteredTableId(tid)) {
                     // Call specific and generic form of VCT handler.
                     _handler->handleTVCT(vct, pid);
@@ -786,8 +787,10 @@ void ts::SignalizationDemux::handleNIT(const NIT& nit, PID pid)
             return;
         }
 
-        // Process services (LCN).
-        //@@@
+        // Process services logical channel numbers.
+        LogicalChannelNumbers lcn(_duck);
+        lcn.addFromNIT(nit);
+        lcn.updateServices(_services, true, true);
     }
 
     // Notify the NIT to the application.
@@ -806,24 +809,19 @@ void ts::SignalizationDemux::handleSDT(const SDT& sdt, PID pid)
 {
     // Extract information on this TS only on the SDT Actual.
     if (sdt.isActual()) {
+
+        // Get transport stream identification.
+        _ts_id = sdt.ts_id;
         _orig_network_id = sdt.onetw_id;
-        //@@@
+
+        // Collect service information.
+        sdt.updateServices(_duck, _services);
     }
 
     // Notify the NIT to the application.
     if (_handler != nullptr && isFilteredTableId(sdt.tableId())) {
         _handler->handleSDT(sdt, pid);
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Process a TVCT or CVCT.
-//----------------------------------------------------------------------------
-
-void ts::SignalizationDemux::handleVCT(const VCT& vct, PID pid)
-{
-    //@@@
 }
 
 
