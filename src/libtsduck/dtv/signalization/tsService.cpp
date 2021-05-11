@@ -36,6 +36,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::Service::Service() :
+    _modified(false),
     _id(),
     _tsid(),
     _onid(),
@@ -84,18 +85,46 @@ void ts::Service::set(const UString& desc)
     uint16_t id = 0;
     uint16_t minor = 0;
 
-    if (desc.toInteger(id)) {
+    if (desc.toInteger(id, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
         // Found a service id.
-        _id = id;
+        setId(id);
     }
     else if (desc.scan(u"%d.%d", {&id, &minor})) {
         // Found an ATSC major.minor id.
-        _major_id_atsc = id;
-        _minor_id_atsc = minor;
+        setMajorIdATSC(id);
+        setMinorIdATSC(minor);
     }
     else if (!desc.empty()) {
         // Finally, just a service name.
-        _name = desc;
+        setName(desc);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if a service matches a string identification.
+//----------------------------------------------------------------------------
+
+bool ts::Service::match(const UString& ident, bool exact_match) const
+{
+    uint16_t id = 0;
+    uint16_t minor = 0;
+
+    if (ident.toInteger(id, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+        // This is a service id.
+        return _id.set() && id ==_id.value();
+    }
+    else if (ident.scan(u"%d.%d", {&id, &minor})) {
+        // Found an ATSC major.minor id.
+        return _major_id_atsc.set() && _minor_id_atsc.set() && id == _major_id_atsc.value() && minor == _minor_id_atsc.value();
+    }
+    else if (exact_match) {
+        // This is an exact service name.
+        return _name.set() && ident == _name.value();
+    }
+    else {
+        // This is a fuzzy service name.
+        return _name.set() && ident.similar(_name.value());
     }
 }
 
@@ -106,21 +135,21 @@ void ts::Service::set(const UString& desc)
 
 void ts::Service::clear()
 {
-    _id.clear();
-    _tsid.clear();
-    _onid.clear();
-    _pmt_pid.clear();
-    _lcn.clear();
-    _type_dvb.clear();
-    _type_atsc.clear();
-    _name.clear();
-    _provider.clear();
-    _eits_present.clear();
-    _eitpf_present.clear();
-    _ca_controlled.clear();
-    _running_status.clear();
-    _major_id_atsc.clear();
-    _minor_id_atsc.clear();
+    clearId();
+    clearTSId();
+    clearONId();
+    clearPMTPID();
+    clearLCN();
+    clearTypeDVB();
+    clearTypeATSC();
+    clearName();
+    clearProvider();
+    clearEITsPresent();
+    clearEITpfPresent();
+    clearCAControlled();
+    clearRunningStatus();
+    clearMajorIdATSC();
+    clearMajorIdATSC();
 }
 
 

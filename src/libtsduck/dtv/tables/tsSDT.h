@@ -147,6 +147,13 @@ namespace ts {
             //!
             bool locateServiceDescriptor(DuckContext& duck, ServiceDescriptor& desc) const;
 
+            //!
+            //! Collect all informations about the service.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @param [in,out] service A service description to update.
+            //!
+            void updateService(DuckContext& duck, Service& service) const;
+
         private:
             //!
             //! Set a string value (typically provider or service name).

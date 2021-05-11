@@ -388,7 +388,7 @@ void ts::ZapPlugin::serviceNotPresent(const UChar* table_name)
         // Service not present is not an error, waiting for it to reappear.
         tsp->verbose(u"service %s not found in %s, waiting for the service...", {_service_spec, table_name});
         // Make sure the service PMT will be notified again if on the same PID.
-        _demux.removeAllFilteredServiceIds();
+        _demux.removeAllFilteredServices();
         // Forget components that may change when the service reappears.
         forgetServiceComponents();
         _service.clearPMTPID();
@@ -420,7 +420,7 @@ void ts::ZapPlugin::setServiceId(uint16_t service_id)
     if (!_service.hasId(service_id)) {
 
         // Forget previous service.
-        _demux.removeAllFilteredServiceIds();
+        _demux.removeAllFilteredServices();
         if (_service.hasId()) {
             _service.clearPMTPID();
             forgetServiceComponents();

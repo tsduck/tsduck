@@ -88,9 +88,11 @@ namespace ts {
         //!
         //! Collect all LCN which are declared in a NIT.
         //! @param [in] nit The NIT to analyze.
+        //! @param [in] ts_id If not 0xFFFF, get services from that TS id only.
+        //! @param [in] onet_id If not 0xFFFF, get services from that original network id only.
         //! @return The number of collected LCN.
         //!
-        size_t addFromNIT(const NIT& nit);
+        size_t addFromNIT(const NIT& nit, uint16_t ts_id = 0xFFFF, uint16_t onet_id = 0xFFFF);
 
         //!
         //! Collect all LCN which are declared in a list of descriptors.
@@ -118,6 +120,14 @@ namespace ts {
         //! @return The LCN of the service or 0xFFFF if not found.
         //!
         uint16_t getLCN(const ServiceIdTriplet& srv) const;
+
+        //!
+        //! Get all known services by logical channel number.
+        //! @param [out] lcns A map of all known LCN's, key: LCN, value: service id triplet.
+        //! @param [in] ts_id If not 0xFFFF, get services from that TS id only.
+        //! @param [in] onet_id If not 0xFFFF, get services from that original network id only.
+        //!
+        void getLCNs(std::map<uint16_t,ServiceIdTriplet>& lcns, uint16_t ts_id = 0xFFFF, uint16_t onet_id = 0xFFFF) const;
 
         //!
         //! Update a service description with its LCN.

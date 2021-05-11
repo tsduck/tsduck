@@ -119,7 +119,7 @@ void ts::VCT::clearContent()
 // Set all known values in a Service object.
 //----------------------------------------------------------------------------
 
-void ts::VCT::Channel::setService(Service& service) const
+void ts::VCT::Channel::updateService(Service& service) const
 {
     service.setId(program_number);
     service.setTSId(channel_TSID);
@@ -200,7 +200,7 @@ ts::VCT::ChannelList::const_iterator ts::VCT::findServiceInternal(Service& servi
 
     if (srv != channels.end()) {
         // Service found, set known fields.
-        srv->second.setService(service);
+        srv->second.updateService(service);
     }
 
     return srv;
@@ -231,7 +231,7 @@ void ts::VCT::updateServices(DuckContext& duck, ServiceList& slist) const
             }
 
             // Now fill the service with known information.
-            chan.setService(*srv);
+            chan.updateService(*srv);
         }
     }
 }

@@ -102,6 +102,10 @@ namespace ts {
         //!
         void reset();
 
+        //--------------------------------------------------------------------
+        // Filtering by table id.
+        //--------------------------------------------------------------------
+
         //!
         //! Add table filtering for full services and PID's analysis.
         //! All signalization is demuxed. A full map of services and PID's is internally built.
@@ -141,31 +145,62 @@ namespace ts {
         //! @param [in] tid The table id to check.
         //! @return True if @a tid is filtered, false otherwise.
         //!
-        bool isFilteredTableId(TID tid) const { return Contains(_tids, tid); }
+        bool isFilteredTableId(TID tid) const { return Contains(_filtered_tids, tid); }
+
+        //--------------------------------------------------------------------
+        // Filtering services by id.
+        //--------------------------------------------------------------------
 
         //!
-        //! Add a service id to filter its PMT.
+        //! Add a service id to filter.
         //! @param [in] sid The service id to add.
         //!
         void addFilteredServiceId(uint16_t sid);
 
         //!
-        //! Remove a service id to filter its PMT.
+        //! Remove a service id to filter.
         //! @param [in] sid The service id to remove.
         //!
         void removeFilteredServiceId(uint16_t sid);
-
-        //!
-        //! Remove all service ids to filter PMT's.
-        //!
-        void removeAllFilteredServiceIds();
 
         //!
         //! Check if a service id is filtered.
         //! @param [in] sid The service id to check.
         //! @return True if @a sid is filtered, false otherwise.
         //!
-        bool isFilteredServiceId(uint16_t sid) const { return Contains(_service_ids, sid); }
+        bool isFilteredServiceId(uint16_t sid) const { return Contains(_filtered_srv_ids, sid); }
+
+        //!
+        //! Remove all services to filter.
+        //!
+        void removeAllFilteredServices();
+
+        //--------------------------------------------------------------------
+        // Filtering services by name.
+        //--------------------------------------------------------------------
+
+        //!
+        //! Add a service to filter, by name or by id.
+        //! @param [in] name The service name or id to add.
+        //!
+        void addFilteredService(const UString& name);
+
+        //!
+        //! Remove a service to filter, by name or by id.
+        //! @param [in] name The service name or id to remove.
+        //!
+        void removeFilteredService(const UString& name);
+
+        //!
+        //! Check if a service name is filtered.
+        //! @param [in] name The service name or id to check.
+        //! @return True if @a name is filtered, false otherwise.
+        //!
+        bool isFilteredServiceName(const UString& name) const;
+
+        //--------------------------------------------------------------------
+        // Accessing global TS information.
+        //--------------------------------------------------------------------
 
         //!
         //! Check if a PAT has been received.
@@ -221,17 +256,31 @@ namespace ts {
         //!
         Time lastUTC() const { return _last_utc; }
 
+        //--------------------------------------------------------------------
+        // Accessing service information.
+        //--------------------------------------------------------------------
+
         //!
-        //! Get the set of PID's in the TS.
-        //! @param [out] pids The set of PID's in the TS.
+        //! Get the list of all service ids in the TS.
+        //! @param [out] services The set of all services ids in the TS, as found so far.
         //!
-        void getPIDs(PIDSet& pids) const;
+        void getServiceIds(std::set<uint16_t>& services) const;
 
         //!
         //! Get the list of all services in the TS.
         //! @param [out] services The list of all services in the TS, as found so far.
         //!
-        void getServices(ServiceList& services) const { services = _services; }
+        void getServices(ServiceList& services) const;
+
+        //--------------------------------------------------------------------
+        // Accessing PID information.
+        //--------------------------------------------------------------------
+
+        //!
+        //! Get the set of PID's in the TS.
+        //! @param [out] pids The set of PID's in the TS.
+        //!
+        void getPIDs(PIDSet& pids) const;
 
         //!
         //! Get the class of a PID in the TS.
@@ -308,27 +357,49 @@ namespace ts {
             void setCAS(const AbstractTable* table, uint16_t cas_id);
         };
         typedef SafePtr<PIDContext> PIDContextPtr;
+        typedef std::map<PID, PIDContextPtr> PIDContextMap;
+
+        // Description of a Service.
+        class ServiceContext
+        {
+            TS_NOBUILD_NOCOPY(ServiceContext);
+        public:
+            Service service;  // Service description. The service id is always present and constant.
+            PMT     pmt;      // Last PMT (invalidated if not yet received).
+
+            // Constructor.
+            ServiceContext(uint16_t service_id);
+        };
+        typedef SafePtr<ServiceContext> ServiceContextPtr;
+        typedef std::map<uint16_t, ServiceContextPtr> ServiceContextMap;
 
         // SignalizationDemux private fields.
         DuckContext&                   _duck;
         SectionDemux                   _demux;
         SignalizationHandlerInterface* _handler;
-        bool                           _full_filters;     // Use full filters by default.
-        std::set<TID>                  _tids;             // Set of filtered table id's.
-        std::set<uint16_t>             _service_ids;      // Set of filtered service id's.
-        PAT                            _last_pat;         // Last received PAT.
-        bool                           _last_pat_handled; // Last received PAT was handled by application.
-        NIT                            _last_nit;         // Last received NIT.
-        bool                           _last_nit_handled; // Last received NIT was handled by application.
-        uint16_t                       _ts_id;            // Transport stream id.
-        uint16_t                       _orig_network_id;  // Original network id.
-        uint16_t                       _network_id;       // Actual network id.
-        Time                           _last_utc;         // Last received UTC time.
-        std::map<PID,PIDContextPtr>    _pids;             // Descriptions of PID's.
-        ServiceList                    _services;         // Descriptions of services.
+        bool                           _full_filters;       // Use full filters by default.
+        std::set<TID>                  _filtered_tids;      // Set of filtered table id's.
+        std::set<uint16_t>             _filtered_srv_ids;   // Set of services which are filtered by id.
+        std::set<UString>              _filtered_srv_names; // Set of services which are filtered by name.
+        PAT                            _last_pat;           // Last received PAT.
+        bool                           _last_pat_handled;   // Last received PAT was handled by application.
+        NIT                            _last_nit;           // Last received NIT.
+        bool                           _last_nit_handled;   // Last received NIT was handled by application.
+        uint16_t                       _ts_id;              // Transport stream id.
+        uint16_t                       _orig_network_id;    // Original network id.
+        uint16_t                       _network_id;         // Actual network id.
+        Time                           _last_utc;           // Last received UTC time.
+        PIDContextMap                  _pids;               // Descriptions of PID's.
+        ServiceContextMap              _services;           // Descriptions of services.
 
-        // Get the context for a PID.
-        PIDContextPtr getPIDContext(PID);
+        // Get the context for a PID. Create if not existent.
+        PIDContextPtr getPIDContext(PID pid);
+
+        // When to create a service description.
+        enum class CreateService {ALWAYS, IF_MAY_EXIST, NEVER};
+
+        // Get the context for a service. Create if not existent and known in the PAT.
+        ServiceContextPtr getServiceContext(uint16_t service_id, CreateService create);
 
         // Implementation of table and section interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
