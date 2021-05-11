@@ -158,6 +158,27 @@ bool ts::SDT::findService(DuckContext& duck, Service& service, bool exact_match)
 
 
 //----------------------------------------------------------------------------
+// Collect all informations about the service.
+//----------------------------------------------------------------------------
+
+void ts::SDT::ServiceEntry::updateService(DuckContext& duck, Service& service) const
+{
+    service.setRunningStatus(running_status);
+    service.setCAControlled(CA_controlled);
+    service.setEITpfPresent(EITpf_present);
+    service.setEITsPresent(EITs_present);
+
+    // Look for more information in the descriptors of the service entry.
+    ServiceDescriptor srv_desc;
+    if (locateServiceDescriptor(duck, srv_desc)) {
+        service.setName(srv_desc.service_name);
+        service.setProvider(srv_desc.provider_name);
+        service.setTypeDVB(srv_desc.service_type);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Collect all informations about all services in the SDT.
 //----------------------------------------------------------------------------
 
@@ -184,18 +205,7 @@ void ts::SDT::updateServices(DuckContext& duck, ServiceList& slist) const
         // Now fill the service with known information.
         srv->setTSId(ts_id);
         srv->setONId(onetw_id);
-        srv->setRunningStatus(service.running_status);
-        srv->setCAControlled(service.CA_controlled);
-        srv->setEITpfPresent(service.EITpf_present);
-        srv->setEITsPresent(service.EITs_present);
-
-        // Look for more information in the descriptors of the service entry.
-        ServiceDescriptor srv_desc;
-        if (service.locateServiceDescriptor(duck, srv_desc)) {
-            srv->setName(srv_desc.service_name);
-            srv->setProvider(srv_desc.provider_name);
-            srv->setTypeDVB(srv_desc.service_type);
-        }
+        service.updateService(duck, *srv);
     }
 }
 

@@ -78,10 +78,10 @@ namespace ts {
             explicit Channel(const AbstractTable* table);
 
             //!
-            //! Set all known values in a Service object.
-            //! @param [in,out] service Service object to update.
+            //! Collect all informations about the service.
+            //! @param [in,out] service A service description to update.
             //!
-            void setService(Service& service) const;
+            void updateService(Service& service) const;
 
         private:
             // Inaccessible operations.

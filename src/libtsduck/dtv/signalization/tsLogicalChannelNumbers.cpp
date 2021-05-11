@@ -174,12 +174,16 @@ size_t ts::LogicalChannelNumbers::addFromAbstractLCN(const AbstractLogicalChanne
 // Collect all LCN which are declared in a NIT.
 //----------------------------------------------------------------------------
 
-size_t ts::LogicalChannelNumbers::addFromNIT(const NIT& nit)
+size_t ts::LogicalChannelNumbers::addFromNIT(const NIT& nit, uint16_t ts_id, uint16_t onet_id)
 {
     size_t count = 0;
     if (nit.isValid()) {
         for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-            count += addFromDescriptors(it->second.descs, it->first.transport_stream_id, it->first.original_network_id);
+            if ((ts_id == 0xFFFF || it->first.transport_stream_id == 0xFFFF || ts_id == it->first.transport_stream_id) &&
+                (onet_id == 0xFFFF || it->first.original_network_id == 0xFFFF || onet_id == it->first.original_network_id))
+            {
+                count += addFromDescriptors(it->second.descs, it->first.transport_stream_id, it->first.original_network_id);
+            }
         }
     }
     return count;
@@ -212,6 +216,23 @@ uint16_t ts::LogicalChannelNumbers::getLCN(uint16_t srv_id, uint16_t ts_id, uint
         }
     }
     return lcn;
+}
+
+
+//----------------------------------------------------------------------------
+// Get all known services by logical channel number.
+//----------------------------------------------------------------------------
+
+void ts::LogicalChannelNumbers::getLCNs(std::map<uint16_t,ServiceIdTriplet>& lcns, uint16_t ts_id, uint16_t onet_id) const
+{
+    lcns.clear();
+    for (auto it = _lcn_map.begin(); it != _lcn_map.end(); ++it) {
+        if ((ts_id == 0xFFFF || it->second.ts_id == 0xFFFF || ts_id == it->second.ts_id) &&
+            (onet_id == 0xFFFF || it->second.onet_id == 0xFFFF || onet_id == it->second.onet_id))
+        {
+            lcns.insert(std::make_pair(it->second.lcn, ServiceIdTriplet(it->first, it->second.ts_id, it->second.onet_id)));
+        }
+    }
 }
 
 

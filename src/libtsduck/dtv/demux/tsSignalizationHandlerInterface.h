@@ -162,12 +162,20 @@ namespace ts {
         //!
         virtual void handleSTT(const STT& table, PID pid);
         //!
-        //! This hook is invoked when the list of services in the transport stream may have changed.
-        //! The change can be minor, such as adding the name or logical channel number of a few services.
-        //! @param [in] services The updated list of services.
-        //! @param [in] ts_id The transport stream id or 0xFFFF if it is unknown.
+        //! This hook is invoked when a new UTC time is available.
+        //! @param [in] utc The new UTC time.
+        //! @param [in] tid The table id into which the time was found.
         //!
-        virtual void handleServiceList(const ServiceList& services, uint16_t ts_id);
+        virtual void handleUTC(const Time& utc, TID tid);
+        //!
+        //! This hook is invoked when a service in the transport stream has changed.
+        //! The change can be minor, such as name or LCN.
+        //! @param [in] ts_id The transport stream id or 0xFFFF if it is unknown.
+        //! @param [in] service The description of the service.
+        //! @param [in] pmt The last PMT of the service. Can be invalid if unknown.
+        //! @param [in] removed If true, the service is removed. Otherwise, it is new or changed.
+        //!
+        virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed);
         //!
         //! Virtual destructor.
         //!

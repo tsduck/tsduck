@@ -307,7 +307,7 @@ void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
     }
 
     // Now collect suitable information from the VCT.
-    srv->second.setService(*this);
+    srv->second.updateService(*this);
 }
 
 

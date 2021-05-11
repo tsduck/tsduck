@@ -87,6 +87,18 @@ namespace ts {
         //!
         virtual void clear();
 
+        //!
+        //! Clear the "modified" indicator.
+        //! This indicator is set whenever a field is updated with a different value.
+        //!
+        void clearModified() { _modified = false; };
+
+        //!
+        //! Check if any field was modified since the last call to clearModified().
+        //! @return True if a field was modified since the last call to clearModified().
+        //!
+        bool isModified() const { return _modified; };
+
         // Implementation of StringifyInterface.
         virtual UString toString() const override;
 
@@ -101,15 +113,17 @@ namespace ts {
         //! @param fullname Explanatory description of the property.
         //! @hideinitializer
         //!
-#define SERVICE_PROPERTY(type,suffix,field,defvalue,fullname)           \
-        /** Check if the fullname is present.                        */ \
-        /** @return True if the fullname is present.                 */ \
-        bool has##suffix() const {return field.set();}                  \
-        /** Clear the fullname.                                      */ \
-        void clear##suffix() {field.clear();}                           \
-        /** Get the fullname.                                        */ \
-        /** @return The fullname or defvalue if unset.               */ \
-        type get##suffix() const {return field.set() ? field.value() : type(defvalue);}
+#define SERVICE_PROPERTY(type,suffix,field,defvalue,fullname)      \
+        /** Check if the fullname is present.                   */ \
+        /** @return True if the fullname is present.            */ \
+        bool has##suffix() const {return field.set();}             \
+        /** Clear the fullname.                                 */ \
+        void clear##suffix()                                       \
+            {_modified = _modified || field.set(); field.clear();} \
+        /** Get the fullname.                                   */ \
+        /** @return The fullname or defvalue if unset.          */ \
+        type get##suffix() const                                   \
+            {return field.set() ? field.value() : type(defvalue);}
 
         //!
         //! Define an integer service property accessors, class internal use only.
@@ -120,15 +134,17 @@ namespace ts {
         //! @param fullname Explanatory description of the property.
         //! @hideinitializer
         //!
-#define SERVICE_PROPERTY_INT(type,suffix,field,defvalue,fullname)       \
-        SERVICE_PROPERTY(type, suffix, field, defvalue, fullname)       \
-        /** Set the fullname.                                        */ \
-        /** @param [in] value The fullname.                          */ \
-        void set##suffix(type value) {field = value;}                   \
-        /** Check if the fullname has a given value.                 */ \
-        /** @param [in] value The fullname to check.                 */ \
-        /** @return True if the fullname is equal to @a value.       */ \
-        bool has##suffix(type value) const {return field.set() && field == value;}
+#define SERVICE_PROPERTY_INT(type,suffix,field,defvalue,fullname)     \
+        SERVICE_PROPERTY(type, suffix, field, defvalue, fullname)     \
+        /** Set the fullname.                                      */ \
+        /** @param [in] value The fullname.                        */ \
+        void set##suffix(type value)                                  \
+            {_modified = _modified || field != value; field = value;} \
+        /** Check if the fullname has a given value.               */ \
+        /** @param [in] value The fullname to check.               */ \
+        /** @return True if the fullname is equal to @a value.     */ \
+        bool has##suffix(type value) const                            \
+            {return field.set() && field == value;}
 
         //!
         //! Define a string service property accessors, class internal use only.
@@ -137,16 +153,18 @@ namespace ts {
         //! @param fullname Explanatory description of the property.
         //! @hideinitializer
         //!
-#define SERVICE_PROPERTY_STRING(suffix,field,fullname)                  \
-        SERVICE_PROPERTY(UString, suffix, field, UString(), fullname)   \
-        /** Set the fullname.                                        */ \
-        /** @param [in] value The fullname.                          */ \
-        void set##suffix(const UString& value) {field = value;}         \
-        /** Check if the fullname has a given value.                 */ \
-        /** @param [in] value The fullname to check.                 */ \
-        /** @return True if the fullname is similar to @a value,     */ \
-        /** case insensitive and ignoring blanks.                    */ \
-        bool has##suffix(const UString& value) const {return field.set() && value.similar(field.value());}
+#define SERVICE_PROPERTY_STRING(suffix,field,fullname)                \
+        SERVICE_PROPERTY(UString, suffix, field, UString(), fullname) \
+        /** Set the fullname.                                      */ \
+        /** @param [in] value The fullname.                        */ \
+        void set##suffix(const UString& value)                        \
+            {_modified = _modified || field != value; field = value;} \
+        /** Check if the fullname has a given value.               */ \
+        /** @param [in] value The fullname to check.               */ \
+        /** @return True if the fullname is similar to @a value,   */ \
+        /** case insensitive and ignoring blanks.                  */ \
+        bool has##suffix(const UString& value) const                  \
+            {return field.set() && value.similar(field.value());}
 
         SERVICE_PROPERTY_INT(uint16_t, Id,            _id,             0,        Service Id)
         SERVICE_PROPERTY_INT(uint16_t, TSId,          _tsid,           0,        Transport Stream Id)
@@ -197,6 +215,15 @@ namespace ts {
         //! an or'ed mask of ServiceField values.
         //!
         uint32_t getFields() const;
+
+        //!
+        //! Check if a service matches a string identification.
+        //! @param [in] ident Service identification, either an integer (service id) or service name.
+        //! @param [in] exact_match If true, the service name must be exactly identical to @a ident.
+        //! If it is false, the search is case-insensitive and blanks are ignored.
+        //! @return True if the service matches @a ident.
+        //!
+        bool match(const UString& ident, bool exact_match = false) const;
 
         //!
         //! Sorting criterion method, used by std::sort().
@@ -273,6 +300,7 @@ namespace ts {
         }
 
     private:
+        bool               _modified;
         Variable<uint16_t> _id;
         Variable<uint16_t> _tsid;
         Variable<uint16_t> _onid;

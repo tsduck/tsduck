@@ -114,7 +114,7 @@ namespace ts {
         SignalizationDemux _demux;             // Full signalization demux
 
         // Implementation of SignalizationHandlerInterface
-        virtual void handleServiceList(const ServiceList& services, uint16_t ts_id) override;
+        virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed) override;
     };
 }
 
@@ -635,27 +635,16 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
 // Handle potential changes in the service list.
 //----------------------------------------------------------------------------
 
-void ts::FilterPlugin::handleServiceList(const ServiceList& services, uint16_t ts_id)
+void ts::FilterPlugin::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
 {
-    tsp->debug(u"handling new list of services, TS id: 0x%X (%<d), %d services", {ts_id, services.size()});
+    const UString service_name(service.getName());
+    tsp->debug(u"handling updated services, TS id: 0x%X (%<d), service: 0x%X (%<d), \"%s\"", {ts_id, service.getId(), service_name});
 
-    // Reset list of service ids to those which were specified by id on the command line.
-    _all_service_ids =_service_ids;
-
-    // Search service names from command line in the new list of services.
-    // Do not report an error if a name is not found, an update of the list
-    // does not mean that all service names are found.
+    // If the service is filtered by name from the command line, add its service id in the filters.
     for (auto name = _service_names.begin(); name != _service_names.end(); ++name) {
-        bool found = false;
-        for (auto srv = services.begin(); !found && srv != services.end(); ++srv) {
-            if (srv->hasId() && srv->hasName() && name->similar(srv->getName())) {
-                found = true;
-                _all_service_ids.insert(srv->getId());
-                tsp->debug(u"service \"%s\" found, id: 0x%X (%<d)", {*name, srv->getId()});
-            }
-        }
-        if (!found) {
-            tsp->debug(u"service \"%s\" not found yet", {*name});
+        if (service.hasId() && name->similar(service_name)) {
+            _all_service_ids.insert(service.getId());
+            break;
         }
     }
 }
