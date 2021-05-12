@@ -91,13 +91,13 @@ namespace ts {
         //! Clear the "modified" indicator.
         //! This indicator is set whenever a field is updated with a different value.
         //!
-        void clearModified() { _modified = false; };
+        void clearModified() { _modified = false; }
 
         //!
         //! Check if any field was modified since the last call to clearModified().
         //! @return True if a field was modified since the last call to clearModified().
         //!
-        bool isModified() const { return _modified; };
+        bool isModified() const { return _modified; }
 
         // Implementation of StringifyInterface.
         virtual UString toString() const override;
