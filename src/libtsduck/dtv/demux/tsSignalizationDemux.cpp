@@ -80,7 +80,12 @@ ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandl
 
 void ts::SignalizationDemux::reset()
 {
-    const bool had_services = !_services.empty();
+    // Notify that all services disappear.
+    if (!_services.empty() && _handler != nullptr) {
+        for (auto it = _services.begin(); it != _services.end(); ) {
+            _handler->handleService(_ts_id, it->second->service, it->second->pmt, true);
+        }
+    }
 
     _demux.reset();
     _demux.setPIDFilter(NoPID);
@@ -99,11 +104,6 @@ void ts::SignalizationDemux::reset()
     // Apply full filters when set by default.
     if (_full_filters) {
         addFullFilters();
-    }
-
-    // Notify the new (empty) list of services.
-    if (had_services && _handler != nullptr) {
-        //@@@@ _handler->handleServiceList(_services, _ts_id);
     }
 }
 
