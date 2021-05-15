@@ -98,7 +98,8 @@ void ts::tsp::ProcessorExecutor::main()
         processPacketWindows(window_size);
     }
 
-    // Close the packet processor
+    // Close the packet processor.
+    debug(u"stopping the plugin");
     _processor->stop();
 }
 

@@ -1295,6 +1295,7 @@ class TSProcessor(PluginEventHandlerRegistry):
             ("buffer_size", ctypes.c_long),               # Size in bytes of the global TS packet buffer.
             ("max_flushed_packets", ctypes.c_long),       # Max processed packets before flush.
             ("max_input_packets", ctypes.c_long),         # Max packets per input operation.
+            ("max_output_packets", ctypes.c_long),        # Max packets per output operation.
             ("initial_input_packets", ctypes.c_long),     # Initial number of input packets to read before starting the processing.
             ("add_input_stuffing_0", ctypes.c_long),      # Add input stuffing: add instuff_nullpkt null packets ...
             ("add_input_stuffing_1", ctypes.c_long),      # ...  every @a instuff_inpkt input packets.
@@ -1335,6 +1336,8 @@ class TSProcessor(PluginEventHandlerRegistry):
         self.max_flushed_packets = 0
         ## Option -\-max-input-packets (zero means default).
         self.max_input_packets = 0
+        ## Option -\-max-output-packets (zero means unlimited).
+        self.max_output_packets = 0
         ## Option -\-initial-input-packets (zero means default).
         self.initial_input_packets = 0
         ## Option -\-add-input-stuffing nullpkt/inpkt (two values).
@@ -1379,6 +1382,7 @@ class TSProcessor(PluginEventHandlerRegistry):
         args.buffer_size = ctypes.c_long(self.buffer_size)
         args.max_flushed_packets = ctypes.c_long(self.max_flushed_packets)
         args.max_input_packets = ctypes.c_long(self.max_input_packets)
+        args.max_output_packets = ctypes.c_long(self.max_output_packets)
         args.initial_input_packets = ctypes.c_long(self.initial_input_packets)
         args.add_input_stuffing_0 = ctypes.c_long(self.add_input_stuffing[0])
         args.add_input_stuffing_1 = ctypes.c_long(self.add_input_stuffing[1])
@@ -1676,6 +1680,20 @@ class InputSwitcher(PluginEventHandlerRegistry):
 
 
 #-----------------------------------------------------------------------------
+# VersionMismatch: Exception class for TSDuck version mismatch
+#-----------------------------------------------------------------------------
+
+##
+# A Python exception class which is thrown in case of TSDuck version mismatch.
+# There is a incompatibility between the TSDuck Python module and the TSDuck
+# binary library, probably due to an installation error.
+# @ingroup python
+#
+class VersionMismatch(Exception):
+    pass
+
+
+#-----------------------------------------------------------------------------
 # Module initialization
 #-----------------------------------------------------------------------------
 
@@ -1684,5 +1702,13 @@ class InputSwitcher(PluginEventHandlerRegistry):
 __author__ = 'Thierry Lelegard'
 __copyright__ = '2005-2021, Thierry Lelegard'
 __version__ = version()
+
+# Minimum required version for TSDuck library. Must be incremented when
+# binary incompatibilities are introduced between tsduck.py and the library.
+
+__min_version__ = 32702383
+
+if intVersion() < __min_version__:
+    raise VersionMismatch("TSDuck version mismatch, requires %d.%d-%d, this one is %s" % (__min_version__ // 10000000, (__min_version__ // 100000) % 100, __min_version__ % 100000, __version__))
 
 ## @endcond

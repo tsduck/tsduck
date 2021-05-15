@@ -48,6 +48,7 @@ TSDUCKPY struct tspyTSProcessorArgs
     long buffer_size;              // Size in bytes of the global TS packet buffer.
     long max_flushed_packets;      // Max processed packets before flush.
     long max_input_packets;        // Max packets per input operation.
+    long max_output_packets;       // Max packets per output operation.
     long initial_input_packets;    // Initial number of input packets to read before starting the processing (zero means default).
     long add_input_stuffing_0;     // Add input stuffing: add @a add_input_stuffing_0 null packets ...
     long add_input_stuffing_1;     // ... every @a add_input_stuffing_1 input packets.
@@ -109,6 +110,7 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
     args.ts_buffer_size = pyargs->buffer_size == 0 ? ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE : size_t(pyargs->buffer_size);
     args.max_flush_pkt = size_t(pyargs->max_flushed_packets);
     args.max_input_pkt = size_t(pyargs->max_input_packets);
+    args.max_output_pkt = pyargs->max_output_packets == 0 ? ts::NPOS : size_t(pyargs->max_output_packets);
     args.init_input_pkt = size_t(pyargs->initial_input_packets);
     args.instuff_nullpkt = size_t(pyargs->add_input_stuffing_0);
     args.instuff_inpkt = size_t(pyargs->add_input_stuffing_1);

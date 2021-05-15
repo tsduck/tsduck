@@ -57,6 +57,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     ts_buffer_size(DEFAULT_BUFFER_SIZE),
     max_flush_pkt(0),
     max_input_pkt(0),
+    max_output_pkt(NPOS), // unlimited
     init_input_pkt(0),
     instuff_nullpkt(0),
     instuff_inpkt(0),
@@ -201,6 +202,13 @@ void ts::TSProcessorArgs::defineArgs(Args& args) const
               u"as it can, depending on the free space in the buffer. In real-time mode, "
               u"the default is " + UString::Decimal(DEF_MAX_INPUT_PKT_RT) + u" packets.");
 
+    args.option(u"max-output-packets", 0, Args::POSITIVE);
+    args.help(u"max-output-packets",
+              u"Specify the maximum number of packets to be sent at a time by the output plugin. "
+              u"By default, tsp sends as many packets as available. "
+              u"This option is useful only when an output plugin or device has problems with large output requests. "
+              u"This option forces multiple smaller send operations.");
+
     args.option(u"realtime", 'r', Args::TRISTATE, 0, 1, -255, 256, true);
     args.help(u"realtime",
               u"Specifies if tsp and all plugins should use default values for real-time "
@@ -226,6 +234,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     args.getIntValue(max_flush_pkt, u"max-flushed-packets", 0);
     args.getIntValue(max_input_pkt, u"max-input-packets", 0);
+    args.getIntValue(max_output_pkt, u"max-output-packets", NPOS); // unlimited by default
     args.getIntValue(init_input_pkt, u"initial-input-packets", 0);
     args.getIntValue(instuff_start, u"add-start-stuffing", 0);
     args.getIntValue(instuff_stop, u"add-stop-stuffing", 0);

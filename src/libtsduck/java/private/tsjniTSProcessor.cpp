@@ -115,6 +115,10 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
     }
     args.max_flush_pkt = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxFlushedPackets")));
     args.max_input_pkt = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxInputPackets")));
+    args.max_output_pkt = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "maxOutputPackets")));
+    if (args.max_output_pkt == 0) {
+        args.max_output_pkt = ts::NPOS;  // zero means unlimited
+    }
     args.init_input_pkt = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "initialInputPackets")));
     args.instuff_nullpkt = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "addInputStuffingNull")));
     args.instuff_inpkt = size_t(std::max<jint>(0, ts::jni::GetIntField(env, obj, "addInputStuffingInput")));
