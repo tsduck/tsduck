@@ -48,6 +48,7 @@ public final class TSProcessor extends PluginEventHandlerRegistry {
     public int bufferSize = 16 * 1024 * 1024;       //!< Option -\-buffer-size-mb (in bytes here)
     public int maxFlushedPackets = 0;               //!< Option -\-max-flushed-packets (zero means default)
     public int maxInputPackets = 0;                 //!< Option -\-max-input-packets (zero means default)
+    public int maxOutputPackets = 0;                //!< Option -\-max-output-packets (zero means unlimited)
     public int initialInputPackets = 0;             //!< Option -\-initial-input-packets (zero means default)
     public int addInputStuffingNull = 0;            //!< The nullpkt in option -\-add-input-stuffing nullpkt/inpkt
     public int addInputStuffingInput = 0;           //!< The inpkt in option -\-add-input-stuffing nullpkt/inpkt

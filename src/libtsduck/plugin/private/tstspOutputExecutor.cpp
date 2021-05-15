@@ -125,7 +125,7 @@ void ts::tsp::OutputExecutor::main()
         TSPacketMetadata* data = _metadata->base() + pkt_first;
         size_t pkt_remain = pkt_cnt;
 
-        while (pkt_remain > 0) {
+        while (!aborted && pkt_remain > 0) {
 
             // Skip dropped packets
             size_t drop_cnt;
@@ -142,25 +142,27 @@ void ts::tsp::OutputExecutor::main()
                 out_cnt++;
             }
 
-            // Output a contiguous range of non-dropped packets.
-            if (out_cnt > 0) {
+            // Output contiguous ranges of non-dropped packets with repesct to --max-output-packets.
+            while (!aborted && out_cnt > 0) {
+                const size_t out_subcnt = std::min(out_cnt, _options.max_output_pkt);
                 if (_suspended) {
                     // Don't output packet when the plugin is suspended.
-                    addNonPluginPackets(out_cnt);
+                    addNonPluginPackets(out_subcnt);
                 }
-                else if (_output->send(pkt, data, out_cnt)) {
+                else if (_output->send(pkt, data, out_subcnt)) {
                     // Packet successfully sent.
-                    addPluginPackets(out_cnt);
-                    output_packets += out_cnt;
+                    addPluginPackets(out_subcnt);
+                    output_packets += out_subcnt;
                 }
                 else {
                     // Send error.
                     aborted = true;
                     break;
                 }
-                pkt += out_cnt;
-                data += out_cnt;
-                pkt_remain -= out_cnt;
+                pkt += out_subcnt;
+                data += out_subcnt;
+                pkt_remain -= out_subcnt;
+                out_cnt -= out_subcnt;
             }
         }
 
@@ -170,7 +172,8 @@ void ts::tsp::OutputExecutor::main()
 
     } while (!aborted);
 
-    // Close the output processor
+    // Close the output processor.
+    debug(u"stopping the output plugin");
     _output->stop();
 
     debug(u"output thread %s after %'d packets (%'d output)", {aborted ? u"aborted" : u"terminated", totalPacketsInThread(), output_packets});

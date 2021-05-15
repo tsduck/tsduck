@@ -485,7 +485,8 @@ void ts::tsp::InputExecutor::main()
 
     } while (!input_end);
 
-    // Close the input processor
+    // Close the input processor.
+    debug(u"stopping the input plugin");
     _input->stop();
 
     debug(u"input thread %s after %'d packets", {aborted ? u"aborted" : u"terminated", totalPacketsInThread()});
