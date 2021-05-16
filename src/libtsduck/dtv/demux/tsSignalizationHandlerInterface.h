@@ -171,7 +171,8 @@ namespace ts {
         //! This hook is invoked when a service in the transport stream has changed.
         //! The change can be minor, such as name or LCN.
         //! @param [in] ts_id The transport stream id or 0xFFFF if it is unknown.
-        //! @param [in] service The description of the service.
+        //! @param [in] service The description of the service. The service id is always set.
+        //! Other fields may not be present, check before use.
         //! @param [in] pmt The last PMT of the service. Can be invalid if unknown.
         //! @param [in] removed If true, the service is removed. Otherwise, it is new or changed.
         //!

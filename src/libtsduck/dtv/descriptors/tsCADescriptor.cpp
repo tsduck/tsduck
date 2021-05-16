@@ -76,6 +76,16 @@ ts::CADescriptor::CADescriptor(DuckContext& duck, const Descriptor& desc) :
 
 
 //----------------------------------------------------------------------------
+// Exactly identical CA_descriptors shall not be dumplicated.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::CADescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::ADD_OTHER;
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 

@@ -29,17 +29,20 @@
 #
 #  GitHub Actions configuration file : Nightly builds
 #
+#  Builds installers for Windows and Ubuntu. Build programmer's doc package.
+#  Upload them all as artifacts of this workflow.
+#
 #-----------------------------------------------------------------------------
 
 name: Nightly build
 
-# Trigger the workflow every day at 01:10 GMT. Also allow manual trigger (workflow_dispatch).
+# Trigger the workflow every day at 01:10 GMT.
+# Also allow manual trigger (workflow_dispatch).
 on:
   schedule:
     - cron:  '10 1 * * *'
   workflow_dispatch:
 
-# We currently build on Windows only. If is easy for users to rebuild on Unix.
 jobs:
   windows:
     name: Windows build

@@ -59,7 +59,7 @@ ts::AbstractDescriptor::~AbstractDescriptor()
 ts::DescriptorDuplication ts::AbstractDescriptor::duplicationMode() const
 {
     // By default, descriptors are added to the descriptor list.
-    return DescriptorDuplication::ADD;
+    return DescriptorDuplication::ADD_ALWAYS;
 }
 
 bool ts::AbstractDescriptor::merge(const AbstractDescriptor& desc)

@@ -31,6 +31,7 @@
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
+#include "tsPESPacket.h"
 #include "tsLogicalChannelNumbers.h"
 #include "tsCADescriptor.h"
 #include "tsISDBAccessControlDescriptor.h"
@@ -114,7 +115,27 @@ void ts::SignalizationDemux::reset()
 
 void ts::SignalizationDemux::feedPacket(const TSPacket& pkt)
 {
-    getPIDContext(pkt.getPID())->packets++;
+    // Keep statistics on the PID.
+    auto ctx(getPIDContext(pkt.getPID()));
+    if (pkt.getPUSI()) {
+        // The packet contains a payload unit start.
+        if (ctx->first_pusi == INVALID_PACKET_COUNTER) {
+            ctx->first_pusi = ctx->packets;
+        }
+        ctx->last_pusi = ctx->packets;
+        ctx->pusi_count++;
+        if (pkt.hasPayload() && PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), ctx->stream_type, ctx->codec) != NPOS) {
+            // The payload contains the start of an intra image.
+            if (ctx->first_intra == INVALID_PACKET_COUNTER) {
+                ctx->first_intra = ctx->packets;
+            }
+            ctx->last_intra = ctx->packets;
+            ctx->intra_count++;
+        }
+    }
+    ctx->packets++;
+
+    // Feed to table demux to collect signalization.
     _demux.feedPacket(pkt);
 }
 
@@ -158,6 +179,54 @@ uint8_t ts::SignalizationDemux::streamType(PID pid, uint8_t deftype) const
     auto ctx = _pids.find(pid);
     const uint8_t type = ctx == _pids.end() ? uint8_t(ST_NULL) : ctx->second->stream_type;
     return type == ST_NULL ? deftype : type;
+}
+
+ts::PacketCounter ts::SignalizationDemux::packetCount(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? 0 : ctx->second->packets;
+}
+
+ts::PacketCounter ts::SignalizationDemux::pusiCount(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? 0 : ctx->second->pusi_count;
+}
+
+ts::PacketCounter ts::SignalizationDemux::pusiFirstIndex(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->first_pusi;
+}
+
+ts::PacketCounter ts::SignalizationDemux::pusiLastIndex(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->last_pusi;
+}
+
+ts::PacketCounter ts::SignalizationDemux::intraFrameCount(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? 0 : ctx->second->intra_count;
+}
+
+ts::PacketCounter ts::SignalizationDemux::intraFrameFirstIndex(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->first_intra;
+}
+
+ts::PacketCounter ts::SignalizationDemux::intraFrameLastIndex(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx == _pids.end() ? INVALID_PACKET_COUNTER : ctx->second->last_intra;
+}
+
+bool ts::SignalizationDemux::atIntraFrame(PID pid) const
+{
+    auto ctx = _pids.find(pid);
+    return ctx != _pids.end() && ctx->second->intra_count > 0 && ctx->second->packets - 1 == ctx->second->last_intra;
 }
 
 bool ts::SignalizationDemux::inService(PID pid, uint16_t service_id) const
@@ -1070,6 +1139,12 @@ ts::SignalizationDemux::PIDContext::PIDContext(PID pid_) :
     stream_type(ST_NULL),
     cas_id(CASID_NULL),
     packets(0),
+    pusi_count(0),
+    first_pusi(INVALID_PACKET_COUNTER),
+    last_pusi(INVALID_PACKET_COUNTER),
+    intra_count(0),
+    first_intra(INVALID_PACKET_COUNTER),
+    last_intra(INVALID_PACKET_COUNTER),
     services()
 {
     if (pid == PID_NULL) {

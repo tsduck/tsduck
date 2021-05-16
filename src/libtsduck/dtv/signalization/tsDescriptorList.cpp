@@ -186,16 +186,11 @@ void ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc
     const PDS pds = desc.requiredPDS();
     const DescriptorDuplication mode = desc.duplicationMode();
 
-    // We need to search for a identical descriptor only if the duplication mode is not simply ADD.
-    if (mode != DescriptorDuplication::ADD) {
+    // We need to search for a descriptor of same type only if the duplication mode is not simply ADD_ALWAYS.
+    if (mode != DescriptorDuplication::ADD_ALWAYS) {
         const size_t index = search(desc.edid());
         if (index < count()) {
-            // A similar descriptor has been found.
-            // In case the two binary descriptors are exactly identical, do nothing.
-            if (*_list[index].desc == *bindesc) {
-                return;
-            }
-            // The descriptors are of same type but not identical.
+            // A descriptor of same type has been found.
             switch (mode) {
                 case DescriptorDuplication::IGNORE: {
                     // New descriptor shall be ignored.
@@ -223,7 +218,14 @@ void ts::DescriptorList::merge(DuckContext& duck, const AbstractDescriptor& desc
                     // In case of merge failure, apply default processing later.
                     break;
                 }
-                case DescriptorDuplication::ADD:
+                case DescriptorDuplication::ADD_OTHER: {
+                    // In case the two binary descriptors are exactly identical, do nothing.
+                    if (*_list[index].desc == *bindesc) {
+                        return;
+                    }
+                    break;
+                }
+                case DescriptorDuplication::ADD_ALWAYS:
                 default: {
                     // Default processing by the end of this method.
                     break;
@@ -250,7 +252,7 @@ void ts::DescriptorList::merge(DuckContext& duck, const DescriptorList& other)
         for (size_t index = 0; index < other._list.size(); ++index) {
             // The descriptor from the other list must be deserialized to be merged.
             const AbstractDescriptorPtr dp(other._list[index].desc->deserialize(duck, other._list[index].pds, other._table));
-            if (dp.isNull() || dp->duplicationMode() == DescriptorDuplication::ADD) {
+            if (dp.isNull() || dp->duplicationMode() == DescriptorDuplication::ADD_ALWAYS) {
                 // Cannot be deserialized or simply add the descriptor.
                 addPrivateDataSpecifier(other._list[index].pds);
                 add(other._list[index].desc);
