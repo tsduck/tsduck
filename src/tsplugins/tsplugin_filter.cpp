@@ -573,8 +573,7 @@ ts::ProcessorPlugin::Status ts::FilterPlugin::processPacket(TSPacket& pkt, TSPac
         (_ecm && pidclass == PIDClass::ECM) ||
         (_emm && pidclass == PIDClass::EMM) ||
         (_psi && pidclass == PIDClass::PSI) ||
-        (_intra_frame && pkt.getPUSI() && pkt.hasPayload() &&
-         PESPacket::FindIntraImage(pkt.getPayload(), pkt.getPayloadSize(), _demux.streamType(pid), _demux.codecType(pid)) != NPOS) ||
+        (_intra_frame && _demux.atIntraFrame(pid)) ||
         (_nullified && pkt_data.getNullified()) ||
         (_input_stuffing && pkt_data.getInputStuffing()) ||
         (_valid && pkt.hasValidSync() && !pkt.getTEI()) ||

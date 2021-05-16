@@ -307,6 +307,66 @@ namespace ts {
         uint8_t streamType(PID pid, uint8_t deftype = ST_NULL) const;
 
         //!
+        //! Get the number of TS packets in a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The number of packets in that PID.
+        //!
+        PacketCounter packetCount(PID pid) const;
+
+        //!
+        //! Get the number of TS packets with payload unit start indicator (PUSI) in a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The number of PUSI in that PID.
+        //!
+        PacketCounter pusiCount(PID pid) const;
+
+        //!
+        //! Get the number of TS packets in a PID before its first payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The number of TS packets in the PID before its first payload unit start indicator (PUSI)
+        //! or INVALID_PACKET_COUNTER if there is no PUSI in the PID.
+        //!
+        PacketCounter pusiFirstIndex(PID pid) const;
+
+        //!
+        //! Get the number of TS packets in a PID before its last payload unit start indicator (PUSI).
+        //! @param [in] pid The PID to check.
+        //! @return The number of TS packets in the PID before its last payload unit start indicator (PUSI)
+        //! or INVALID_PACKET_COUNTER if there is no PUSI in the PID.
+        //!
+        PacketCounter pusiLastIndex(PID pid) const;
+
+        //!
+        //! Get the number of video intra-frames in a PID.
+        //! @param [in] pid The PID to check.
+        //! @return The number of video intra-frames in that PID.
+        //!
+        PacketCounter intraFrameCount(PID pid) const;
+
+        //!
+        //! Get the number of TS packets in a PID before its first video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The number of TS packets in the PID before its first video intra-frame
+        //! or INVALID_PACKET_COUNTER if there is no video intra-frame in the PID.
+        //!
+        PacketCounter intraFrameFirstIndex(PID pid) const;
+
+        //!
+        //! Get the number of TS packets in a PID before its last video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return The number of TS packets in the PID before its last video intra-frame
+        //! or INVALID_PACKET_COUNTER if there is no video intra-frame in the PID.
+        //!
+        PacketCounter intraFrameLastIndex(PID pid) const;
+
+        //!
+        //! Check if the past packet of a PID contained the start of a video intra-frame.
+        //! @param [in] pid The PID to check.
+        //! @return True if the past packet of a PID contained the start of a video intra-frame.
+        //!
+        bool atIntraFrame(PID pid) const;
+
+        //!
         //! Check if a PID is a component of a service.
         //! @param [in] pid The PID to check.
         //! @param [in] service_id Service id.
@@ -348,6 +408,12 @@ namespace ts {
             uint8_t            stream_type;  // Stream type from PMT or ST_NULL.
             uint16_t           cas_id;       // CAS id for ECM or EMM PID's.
             PacketCounter      packets;      // Number of packets in this PID.
+            PacketCounter      pusi_count;   // Number of packets with PUSI.
+            PacketCounter      first_pusi;   // Number of packets before first PUSI.
+            PacketCounter      last_pusi;    // Number of packets before last PUSI.
+            PacketCounter      intra_count;  // Number of packets with PUSI.
+            PacketCounter      first_intra;  // Number of packets before first PUSI.
+            PacketCounter      last_intra;   // Number of packets before last PUSI.
             std::set<uint16_t> services;     // List of services owning this PID.
 
             // Constructor.

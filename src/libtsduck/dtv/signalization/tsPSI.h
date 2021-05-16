@@ -811,14 +811,15 @@ namespace ts {
 
 
     //---------------------------------------------------------------------
-    //! What to do when the same descriptor is added twice in a list.
+    //! What to do when a descriptor of same type is added twice in a list.
     //---------------------------------------------------------------------
 
     enum class DescriptorDuplication {
-        ADD,      //!< Add new descriptor, multiple occurrences of the same descriptor is normal. This is the default.
-        REPLACE,  //!< Replace the old descriptor of same type with the new one.
-        IGNORE,   //!< Ignore the new descriptor of same type.
-        MERGE,    //!< Merge the new descriptor into the old one using a descriptor-specific method.
+        ADD_ALWAYS,  //!< Always add new descriptor, multiple occurrences of descriptor of same type is normal. This is the default.
+        ADD_OTHER,   //!< Add new descriptor of same type if not the exact same content.
+        REPLACE,     //!< Replace the old descriptor of same type with the new one.
+        IGNORE,      //!< Ignore the new descriptor of same type.
+        MERGE,       //!< Merge the new descriptor into the old one using a descriptor-specific method.
     };
 
 

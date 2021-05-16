@@ -74,6 +74,16 @@ ts::CAIdentifierDescriptor::CAIdentifierDescriptor(std::initializer_list<uint16_
 
 
 //----------------------------------------------------------------------------
+// Exactly identical descriptors shall not be dumplicated.
+//----------------------------------------------------------------------------
+
+ts::DescriptorDuplication ts::CAIdentifierDescriptor::duplicationMode() const
+{
+    return DescriptorDuplication::ADD_OTHER;
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
