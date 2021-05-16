@@ -618,7 +618,7 @@ first: default
 
 # Some nerds define exotic shells as default. Stay to a known shell.
 # Skip initialization files to speed up and reproduceability.
-SHELL := /bin/bash --noprofile --norc
+SHELL := /usr/bin/env bash --noprofile --norc
 
 # Enforce English locale by default.
 export LANGUAGE = en_US.UTF-8

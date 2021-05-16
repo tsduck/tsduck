@@ -6,7 +6,7 @@ Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
 Depends: tsduck,
- libsrt1 | libsrt1-openssl,
+ libsrt | libsrt1 | libsrt1-openssl | libsrt1.4-openssl,
  libsrt-dev | libsrt-openssl-dev,
  libpcsclite1,
  libpcsclite-dev,

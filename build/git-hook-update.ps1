@@ -43,7 +43,7 @@
 
   The template for a hook script is:
 
-    #!/bin/bash
+    #!/usr/bin/env bash
     exec $GIT_DIR/../build/git-hook.sh <hook-name>
 
  .PARAMETER NoPause
@@ -70,7 +70,7 @@ $GitLooksList | ForEach-Object {
         Write-Output "  [GIT] updating $name hook"
         # We use IO.File methods to enforce LF as end of line.
         if (-not $fileOK) {
-            [IO.File]::WriteAllText($file, "#!/bin/bash`n")
+            [IO.File]::WriteAllText($file, "#!/usr/bin/env bash`n")
         }
         [IO.File]::AppendAllText($file, "$line`n")
     }
