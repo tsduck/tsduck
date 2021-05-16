@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # TSDuck post-installation script on Ubuntu and Debian systems.
 
 if [[ "$1" = "configure" ]]; then

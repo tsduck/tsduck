@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # This script generates the file signalization.md
 
 SCRIPT=$(basename $BASH_SOURCE)

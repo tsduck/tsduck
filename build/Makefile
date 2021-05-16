@@ -49,7 +49,7 @@ GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/
 # A rule to create a git hook script.
 $(GITHOOKS_TARGETS): Makefile
 	@echo '  [GIT] updating $(notdir $@) hook'; \
-	 echo '#!/bin/bash' >$@; \
+	 echo '#!/usr/bin/env bash' >$@; \
 	 echo 'exec $$(dirname $$0)/../../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
 	 chmod a+x "$@"
 
