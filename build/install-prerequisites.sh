@@ -49,6 +49,7 @@
 #  - Arch Linux
 #  - Alpine Linux
 #  - Gentoo
+#  - Linux Mint
 #
 #-----------------------------------------------------------------------------
 
@@ -129,6 +130,14 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     elif [[ "$VERSION" -ge 1904 ]]; then
         pkglist="$pkglist libsrt-dev"
     fi
+    sudo apt update
+    sudo apt install -y $PKGOPTS $pkglist
+    # Update command: sudo apt update; sudo apt upgrade
+
+elif [[ "$DISTRO" == "Linuxmint" ]]; then
+
+    # Linux Mint
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev libsrt-dev"
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     # Update command: sudo apt update; sudo apt upgrade
