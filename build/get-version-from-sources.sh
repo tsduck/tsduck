@@ -43,7 +43,7 @@ commit() { grep '\#define *TS_COMMIT ' "$VERSFILE" | sed -e 's/.* //'; }
 distro()
 {
     if [[ -n "$(which lsb_release 2>/dev/null)" ]]; then
-        dis=$(lsb_release -si 2>/dev/null | tr A-Z a-z)$(lsb_release -sr 2>/dev/null | sed 's/\..*//')
+        dis=$(lsb_release -si 2>/dev/null | tr A-Z a-z | sed 's/linuxmint/mint/')$(lsb_release -sr 2>/dev/null | sed 's/\..*//')
         [[ -n "$dis" ]] && dis=".$dis"
     elif [[ -e /etc/fedora-release ]]; then
         dis=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\).*$/\1/')
