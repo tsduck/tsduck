@@ -66,7 +66,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     option(u"all", 'a');
     help(u"all", u"List all Dektec devices available on the system. ");
 
-    option(u"input", 'i', UNSIGNED);
+    option(u"input", 'i', POSITIVE);
     help(u"input", u"port-number",
          u"Set the specified port in input mode. This applies to bidirectional "
          u"ports which can be either set in input or output mode.");
@@ -91,7 +91,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     option(u"normalized", 'n');
     help(u"normalized", u"With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).");
 
-    option(u"output", 'o', UNSIGNED);
+    option(u"output", 'o', POSITIVE);
     help(u"output", u"port-number",
          u"Set the specified port in output mode. This applies to bidirectional "
          u"ports which can be either set in input or output mode.");
