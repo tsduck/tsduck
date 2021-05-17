@@ -78,10 +78,6 @@ $CurrentMonth = $en.TextInfo.ToTitleCase($en.DateTimeFormat.MonthNames[(Get-Date
 
 # Load types from Microsoft Word automation.
 Add-Type -AssemblyName Microsoft.Office.Interop.Word
-$WdInformation = "Microsoft.Office.Interop.Word.WdInformation" -as [Type]
-$WdSaveFormat = "Microsoft.Office.Interop.Word.WdSaveFormat" -as [Type]
-$WdSaveOptions = "Microsoft.Office.Interop.Word.WdSaveOptions" -as [Type]
-$WdOriginalFormat = "Microsoft.Office.Interop.Word.WdOriginalFormat" -as [Type]
 $BindingFlags = "System.Reflection.BindingFlags" -as [Type]
 
 # A function to set the value a custom document property.
@@ -142,12 +138,26 @@ foreach ($table in $doc.TablesOfFigures) {
 # Save as PDF. Make sure true type fonts are embedded in the document.
 $doc.EmbedTrueTypeFonts = $true
 Write-Output "Saving $DocOut"
-$doc.SaveAs([ref]$DocOut.ToString(), [ref]$WdSaveFormat::wdFormatPDF)
+$doc.ExportAsFixedFormat($DocOut.ToString(),
+                         [Microsoft.Office.Interop.Word.WdExportFormat]::wdExportFormatPDF,
+                         $false,  # open after export
+                         [Microsoft.Office.Interop.Word.WdExportOptimizeFor]::wdExportOptimizeForOnScreen,
+                         [Microsoft.Office.Interop.Word.WdExportRange]::wdExportAllDocument,
+                         0,       # from (unused with "all document")
+                         0,       # to
+                         [Microsoft.Office.Interop.Word.WdExportItem]::wdExportDocumentContent,
+                         $true,   # include document properties
+                         $true,   # keep IRM (XPS only)
+                         [Microsoft.Office.Interop.Word.WdExportCreateBookmarks]::wdExportCreateHeadingBookmarks,
+                         $true,   # include doc structure tags
+                         $false,  # include missing fonts as bitmaps
+                         $false)  # restrict to PDF/A (ISO 19005-1)
 
 # Save as Word document. Do not embed true type fonts here.
 $doc.EmbedTrueTypeFonts = $false
 Write-Output "Saving $DocIn"
-$doc.Close([ref]$WdSaveOptions::wdSaveChanges, [ref]$WdOriginalFormat::wdOriginalDocumentFormat)
+$doc.Close([Microsoft.Office.Interop.Word.WdSaveOptions]::wdSaveChanges,
+           [Microsoft.Office.Interop.Word.WdOriginalFormat]::wdOriginalDocumentFormat)
 
 # Quite Word and cleanup spurious process.
 $word.Quit()
