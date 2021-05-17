@@ -2,10 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2383
+VERSION 3.27-2389
 
 [NEW] New commands and plugins:
 
+  * Added command "tsfclean" (cleanup TS files).
   * Added plugin "pcrcopy" (copy and synchronize PCR from one PID to another).
   * Added plugin "svresync" (resynchronize the clock of a service based on
     another service).
