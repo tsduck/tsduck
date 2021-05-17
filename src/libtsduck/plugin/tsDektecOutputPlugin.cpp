@@ -105,7 +105,7 @@ ts::DektecOutputPlugin::Guts::Guts() :
     device(),
     dtdev(),
     chan(),
-    detach_mode(DTAPI_WAIT_UNTIL_SENT),
+    detach_mode(0),
     iostd_value(-1),
     iostd_subvalue(-1),
     opt_bitrate(0),
@@ -408,9 +408,9 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
     option(u"instant-detach");
     help(u"instant-detach",
          u"At end of stream, perform an \"instant detach\" of the output channel. "
-         u"The default is to wait until all bytes are sent. The default is fine "
-         u"for ASI devices. With modulators, the \"wait until sent\" mode may "
-         u"hang at end of stream and --instant-detach avoids this.");
+         u"The transmit FIFO is immediately cleared without waiting for all data to be transmitted. "
+         u"With some Dektec devices, the default mode may hang at end of stream and --instant-detach avoids this. "
+         u"The options --instant-detach and --wait-detach are mutually exclusive.");
 
     option(u"inversion");
     help(u"inversion", u"All modulators devices: enable spectral inversion.");
@@ -796,6 +796,11 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"improves the spectrum, but increases processor overhead. The recommend "
          u"(and default) number of taps is 64 taps. If insufficient CPU power is "
          u"available, 32 taps produces acceptable results, too. ");
+
+    option(u"wait-detach");
+    help(u"wait-detach",
+         u"At end of stream, the plugin waits until all bytes in the transmit FIFO are sent. "
+         u"The options --instant-detach and --wait-detach are mutually exclusive.");
 }
 
 
@@ -858,13 +863,19 @@ bool ts::DektecOutputPlugin::start()
     getIntValue(_guts->dev_index, u"device", -1);
     getIntValue(_guts->chan_index, u"channel", -1);
     getFixedValue(_guts->opt_bitrate, u"bitrate", 0);
-    _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : DTAPI_WAIT_UNTIL_SENT;
+    _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : (present(u"wait-detach") ? DTAPI_WAIT_UNTIL_SENT : 0);
     _guts->mute_on_stop = false;
     _guts->preload_fifo = present(u"preload-fifo");
     _guts->maintain_preload = present(u"maintain-preload");
     _guts->drop_to_maintain = present(u"drop-to-maintain-preload");
     getIntValue(_guts->power_mode, u"power-mode", -1);
     GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue);
+
+    // Check options consistency.
+    if (present(u"instant-detach") && present(u"wait-detach")) {
+        tsp->error(u"options --instant-detach and --wait-detach are mutually exclusive.");
+        return false;
+    }
 
     // Get initial bitrate
     _guts->cur_bitrate = _guts->opt_bitrate != 0 ? _guts->opt_bitrate : tsp->bitrate();

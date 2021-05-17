@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2389
+VERSION 3.27-2391
 
 [NEW] New commands and plugins:
 
@@ -18,6 +18,7 @@ VERSION 3.27-2389
     - Option --max-output-packets in "tsp".
     - Option --force-local-multicast-outgoing in output plugin "ip".
     - Options --fifo-size, --preload-fifo in input plugin "dektec".
+    - Option --wait-detach in output plugin "dektec".
     - Option --io-standard and all TS-over-IP options in input and output
       plugins "dektec".
     - Options --enforce-burst, --packet-burst in output plugin "srt".
