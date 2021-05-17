@@ -35,6 +35,7 @@
 #include "tsDuckContext.h"
 #include "tsSignalizationDemux.h"
 #include "tsCyclingPacketizer.h"
+#include "tsEITProcessor.h"
 #include "tsTSFile.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
@@ -66,7 +67,7 @@ namespace ts {
 }
 
 ts::FileCleanOptions::FileCleanOptions(int argc, char *argv[]) :
-    Args(u"Cleanup an MPEG transport stream file", u"[options] filename ..."),
+    Args(u"Cleanup the structure and boundaries of a transport stream file", u"[options] filename ..."),
     duck(this),
     in_files(),
     out_file(),
@@ -141,7 +142,6 @@ namespace ts {
         FileCleanOptions&  _opt;
         TSFile             _in_file;
         TSFile             _out_file;
-        SignalizationDemux _demux;
         PAT                _pat;
         CyclingPacketizer  _pat_pzer;
         CAT                _cat;
@@ -154,10 +154,16 @@ namespace ts {
         virtual void handlePAT(const PAT& pat, PID pid) override;
         virtual void handleCAT(const CAT& cat, PID pid) override;
         virtual void handleSDT(const SDT& sdt, PID pid) override;
-        virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed) override;
+        virtual void handlePMT(const PMT& pmt, PID pid) override;
+
+        // Close and delete the output file, set error status.
+        void errorCleanup();
 
         // Initialize a packetizer with one table and output the first cycle.
-        void initCycle(AbstractTable& table, CyclingPacketizer& pzer);
+        void initCycle(AbstractLongTable& table, CyclingPacketizer& pzer);
+
+        // Write one packet from a packetizer.
+        void writeFromPacketizer(Packetizer& pzer);
     };
 }
 
@@ -171,7 +177,6 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) 
     _opt(opt),
     _in_file(),
     _out_file(),
-    _demux(_opt.duck, this, {TID_PAT, TID_CAT, TID_PMT, TID_SDT_ACT}),
     _pat(),
     _pat_pzer(_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &_opt),
     _cat(),
@@ -196,20 +201,38 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) 
 
     // Open the input file in rewindable mode.
     if (!_in_file.openRead(infile_name, 0, _opt)) {
-        _success = false;
+        errorCleanup();
         return;
     }
 
     // Create output file before first pass to avoid spending time on first pass in case of error when creating output.
     if (!_out_file.open(outfile_name, TSFile::WRITE, _opt)) {
-        _success = false;
+        errorCleanup();
         return;
     }
 
     // First pass: read all packets, process TS structure.
+    SignalizationDemux sig(_opt.duck, this, {TID_PAT, TID_CAT, TID_PMT, TID_SDT_ACT});
     TSPacket pkt;
-    while (_in_file.readPackets(&pkt, nullptr, 1, _opt) == 1) {
-        _demux.feedPacket(pkt);
+    while (_success && _in_file.readPackets(&pkt, nullptr, 1, _opt) == 1) {
+        sig.feedPacket(pkt);
+    }
+
+    // Rewind input file to prepare for second pass.
+    _success = _success && _in_file.rewind(_opt);
+
+    // Delete output file in case of error in first pass.
+    if (!_success) {
+        errorCleanup();
+        return;
+    }
+
+    // Process EIT's in the second pass: keep only EITp/f Actual for known services.
+    EITProcessor eit_proc(_opt.duck);
+    eit_proc.removeOther();
+    eit_proc.removeSchedule();
+    for (auto it = _pmts.begin(); it != _pmts.end(); ++it) {
+        eit_proc.keepService(it->second->pmt.service_id);
     }
 
     // Start output file. First, issue a full cycle of each PSI/SI.
@@ -220,18 +243,77 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) 
         initCycle(it->second->pmt, it->second->pzer);
     }
 
+    // In second pass, count input packets per PID.
+    std::map<PID,PacketCounter> pkt_count;
+
     // Second pass: read input file again, write output file.
-    if (!_in_file.rewind(_opt)) {
-        _success = false;
-        return;
-    }
-    while (_in_file.readPackets(&pkt, nullptr, 1, _opt) == 1) {
-        //@@@@@@@@@
+    while (_success && _in_file.readPackets(&pkt, nullptr, 1, _opt) == 1) {
+
+        // Count input packets per PID.
+        const PacketCounter pkt_index = pkt_count[pkt.getPID()]++;
+
+        // Process EIT's. The packet may be nullified (some EIT's are removed).
+        eit_proc.processPacket(pkt);
+
+        const PID pid = pkt.getPID();
+        const PIDClass pid_class = sig.pidClass(pid);
+
+        if (pid == PID_PAT) {
+            writeFromPacketizer(_pat_pzer);
+        }
+        else if (pid == PID_CAT) {
+            writeFromPacketizer(_cat_pzer);
+        }
+        else if (pid == PID_SDT) {
+            writeFromPacketizer(_sdt_pzer);
+        }
+        else if (pid == PID_EIT || pid_class == PIDClass::ECM || pid_class == PIDClass::EMM) {
+            // Write these packets transparently.
+            _success = _success && _out_file.writePackets(&pkt, nullptr, 1, _opt);
+        }
+        else if (pid_class == PIDClass::PSI && Contains(_pmts, pid)) {
+            writeFromPacketizer(_pmts[pid]->pzer);
+        }
+        else if (pid_class == PIDClass::AUDIO || pid_class == PIDClass::SUBTITLES || pid_class == PIDClass::DATA) {
+            // Write these packets transparently after the first payload unit start.
+            const PacketCounter first_index = sig.pusiFirstIndex(pid);
+            if (first_index == INVALID_PACKET_COUNTER || pkt_index >= first_index) {
+                _success = _success && _out_file.writePackets(&pkt, nullptr, 1, _opt);
+            }
+        }
+        else if (pid_class == PIDClass::VIDEO) {
+            // Write these packets transparently after the first intra-frame (or payload unit start if no IF was found).
+            PacketCounter first_index = sig.intraFrameFirstIndex(pid);
+            if (first_index == INVALID_PACKET_COUNTER) {
+                first_index = sig.pusiFirstIndex(pid);
+            }
+            if (first_index == INVALID_PACKET_COUNTER || pkt_index >= first_index) {
+                _success = _success && _out_file.writePackets(&pkt, nullptr, 1, _opt);
+            }
+        }
     }
 
     // Close files.
     _success = _in_file.close(_opt) && _success;
     _success = _out_file.close(_opt) && _success;
+}
+
+
+//----------------------------------------------------------------------------
+// Close and delete the output file, set error status.
+//----------------------------------------------------------------------------
+
+void ts::FileCleaner::errorCleanup()
+{
+    if (_in_file.isOpen()) {
+        _in_file.close(_opt);
+    }
+    if (_out_file.isOpen()) {
+        const UString filename(_out_file.getFileName());
+        _out_file.close(_opt);
+        DeleteFile(filename, _opt);
+    }
+    _success = false;
 }
 
 
@@ -320,9 +402,33 @@ void ts::FileCleaner::handleSDT(const SDT& sdt, PID pid)
 // Invoke each time a service is modified in the first pass.
 //----------------------------------------------------------------------------
 
-void ts::FileCleaner::handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed)
+void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
 {
-    //@@@@@@@@@@@@@@
+    _opt.debug(u"got PMT version %d, PID 0x%X (%<d), service id 0x%X (%<d)", {pmt.version, pid, pmt.service_id});
+
+    // Get or create context for this PMT.
+    auto ctx = getPMTContext(pid, true);
+
+    if (!ctx->pmt.isValid()) {
+        // First PMT on this PID.
+        ctx->pmt = pmt;
+    }
+    else {
+        // Updated PMT, add new components, merge others.
+        _opt.verbose(u"got PMT update version %d, PID 0x%X (%<d), service id 0x%X (%<d)", {pmt.version, pid, pmt.service_id});
+        for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+            const auto cur = ctx->pmt.streams.find(it->first);
+            if (cur == ctx->pmt.streams.end()) {
+                // Add new component in PMT update.
+                _opt.verbose(u"added component PID 0x%X (%<d) from PMT update", {it->first});
+                ctx->pmt.streams[it->first] = it->second;
+            }
+            else {
+                // Existing component, merge descriptors.
+                cur->second.descs.merge(_opt.duck, it->second.descs);
+            }
+        }
+    }
 }
 
 
@@ -357,17 +463,28 @@ ts::FileCleaner::PMTContextPtr ts::FileCleaner::getPMTContext(PID pmt_pid, bool 
 // Initialize a packetizer with one table and output the first cycle.
 //----------------------------------------------------------------------------
 
-void ts::FileCleaner::initCycle(AbstractTable& table, CyclingPacketizer& pzer)
+void ts::FileCleaner::initCycle(AbstractLongTable& table, CyclingPacketizer& pzer)
 {
     if (table.isValid()) {
+        table.version = 0;
+        table.is_current = true;
         pzer.addTable(_opt.duck, table);
-        TSPacket pkt;
         do {
-            if (pzer.getNextPacket(pkt) && !_out_file.writePackets(&pkt, nullptr, 1, _opt)) {
-                _success = false;
-                break;
-            }
-        } while (!pzer.atCycleBoundary());
+            writeFromPacketizer(pzer);
+        } while (_success && !pzer.atCycleBoundary());
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Write one packet from a packetizer.
+//----------------------------------------------------------------------------
+
+void ts::FileCleaner::writeFromPacketizer(Packetizer& pzer)
+{
+    TSPacket pkt;
+    if (_success && pzer.getNextPacket(pkt) && !_out_file.writePackets(&pkt, nullptr, 1, _opt)) {
+        _success = false;
     }
 }
 

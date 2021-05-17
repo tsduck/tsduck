@@ -69,9 +69,11 @@ bool ts::DebugPlugin::getOptions()
 
 ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    tsp->verbose(u"%sPID: 0x%0X, labels: %s, timestamp: %s", {
+    tsp->verbose(u"%sPID: 0x%0X, labels: %s, timestamp: %s, packets in plugin: %'d, in thread: %'d", {
                  _tag, pkt.getPID(),
                  pkt_data.labelsString(),
-                 pkt_data.inputTimeStampString()});
+                 pkt_data.inputTimeStampString(),
+                 tsp->pluginPackets(),
+                 tsp->totalPacketsInThread()});
     return TSP_OK;
 }
