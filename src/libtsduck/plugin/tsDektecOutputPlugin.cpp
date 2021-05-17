@@ -1599,6 +1599,7 @@ bool ts::DektecOutputPlugin::stop()
 
         // Mute output signal for modulators which support this
         if (_guts->mute_on_stop) {
+            tsp->debug(u"setting RF mode to %d", {DTAPI_UPCONV_MUTE});
             Dtapi::DTAPI_RESULT status = _guts->chan.SetRfMode(DTAPI_UPCONV_MUTE);
             if (status != DTAPI_OK) {
                 tsp->error(u"error muting modulator output: " + DektecStrError(status));
@@ -1606,7 +1607,9 @@ bool ts::DektecOutputPlugin::stop()
         }
 
         // Detach the channel and the device
+        tsp->debug(u"detach channel, mode: %d", {_guts->detach_mode});
         _guts->chan.Detach(_guts->detach_mode);
+        tsp->debug(u"detach device");
         _guts->dtdev.Detach();
 
         _guts->is_started = false;
