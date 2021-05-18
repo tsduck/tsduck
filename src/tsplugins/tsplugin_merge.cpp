@@ -43,6 +43,7 @@
 #include "tsTSPacketQueue.h"
 #include "tsPacketInsertionController.h"
 #include "tsThread.h"
+#include "tsGuard.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -60,7 +61,7 @@ namespace ts {
         TS_NOBUILD_NOCOPY(MergePlugin);
     public:
         // Implementation of plugin API
-        MergePlugin (TSP*);
+        MergePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
@@ -80,17 +81,23 @@ namespace ts {
         bool           _ignore_conflicts;    // Ignore PID conflicts.
         bool           _pcr_reset_backwards; // Reset PCR restamping when DTS/PTD move backwards the PCR.
         bool           _terminate;           // Terminate processing after last merged packet.
+        bool           _restart;             // Restart command after termination.
+        MilliSecond    _restart_interval;    // Interval before restarting the merge command.
         BitRate        _user_bitrate;        // User-specified bitrate of the merged stream.
         PIDSet         _allowed_pids;        // List of PID's to merge (other PID's from the merged stream are dropped).
-        TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
-        TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
+        TSPacketMetadata::LabelSet _set_labels;    // Labels to set on output packets.
+        TSPacketMetadata::LabelSet _reset_labels;  // Labels to reset on output packets.
+
+        // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
+        typedef SafePtr<TSForkPipe> TSForkPipePtr;
 
         // Working data.
         bool          _got_eof;            // Got end of merged stream.
+        volatile bool _stopping;           // Plugin stop in progress.
         PacketCounter _merged_count;       // Number of merged packets.
         PacketCounter _hold_count;         // Number of times we didn't try to merge to perform smoothing insertion.
         PacketCounter _empty_count;        // Number of times we could merge but there was no packet to merge.
-        TSForkPipe    _pipe;               // Executed command.
+        TSForkPipePtr _pipe;               // Executed command.
         TSPacketQueue _queue;              // TS packet queur from merge to main.
         PIDSet        _main_pids;          // Set of detected PID's in main stream.
         PIDSet        _merge_pids;         // Set of detected PID's in merged stream that we pass in main stream.
@@ -100,6 +107,9 @@ namespace ts {
 
         // Process a --drop or --pass option.
         bool processDropPassOption(const UChar* option, bool allowed);
+
+        // Start/restart/stop the merge command.
+        bool startStopCommand(bool do_close, bool do_start);
 
         // There is one thread which receives packet from the created process and passes
         // them to the main plugin thread. The following method is the thread main code.
@@ -132,11 +142,14 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _ignore_conflicts(false),
     _pcr_reset_backwards(false),
     _terminate(false),
+    _restart(false),
+    _restart_interval(0),
     _user_bitrate(0),
     _allowed_pids(),
-    _setLabels(),
-    _resetLabels(),
+    _set_labels(),
+    _reset_labels(),
     _got_eof(false),
+    _stopping(false),
     _merged_count(0),
     _hold_count(0),
     _empty_count(0),
@@ -178,7 +191,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --drop can be specified.");
 
-    option(u"format", 0, TSPacketFormatEnum);
+    option(u"format", 'f', TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input stream. "
          u"By default, the format is automatically detected. "
@@ -186,7 +199,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
          u"Using this option forces a specific format.");
 
-    option(u"ignore-conflicts");
+    option(u"ignore-conflicts", 'i');
     help(u"ignore-conflicts",
          u"Ignore PID conflicts. By default, when packets with the same PID are "
          u"present in the two streams, the PID is dropped from the merged stream. "
@@ -206,7 +219,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
         u"Perform a \"joint termination\" when the merged stream is terminated. "
         u"See \"tsp --help\" for more details on \"joint termination\".");
 
-    option(u"max-queue", 0, POSITIVE);
+    option(u"max-queue", 'm', POSITIVE);
     help(u"max-queue",
          u"Specify the maximum number of queued TS packets before their "
          u"insertion into the stream. The default is " +
@@ -258,11 +271,22 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"PCR value in this packet. Note that this creates a small PCR leap in the stream. "
          u"The option has, of course, no effect on scrambled streams.");
 
+    option(u"restart", 'r');
+    help(u"restart",
+         u"Restart the merge command whenever it terminates or fails. "
+         u"By default, when packet insertion is complete, the transmission continues and the stuffing is no longer modified. "
+         u"The options --restart and --terminate are mutually exclusive.");
+
+    option(u"restart-interval", 0, POSITIVE);
+    help(u"restart-interval", u"milliseconds",
+         u"With --restart, specify the number of milliseconds to wait before restarting the merge command. "
+         u"By default, with --restart, the merge command is restarted immediately after termination.");
+
     option(u"terminate");
     help(u"terminate",
         u"Terminate packet processing when the merged stream is terminated. "
-        u"By default, when packet insertion is complete, the transmission "
-        u"continues and the stuffing is no longer modified.");
+        u"By default, when packet insertion is complete, the transmission continues and the stuffing is no longer modified. "
+        u"The options --restart and --terminate are mutually exclusive.");
 
     option(u"transparent", 't');
     help(u"transparent",
@@ -302,13 +326,15 @@ bool ts::MergePlugin::getOptions()
     _ignore_conflicts = transparent || present(u"ignore-conflicts");
     _pcr_reset_backwards = present(u"pcr-reset-backwards");
     _terminate = present(u"terminate");
+    _restart = present(u"restart");
+    getIntValue(_restart_interval, u"restart-interval", 0);
     getFixedValue(_user_bitrate, u"bitrate");
     tsp->useJointTermination(present(u"joint-termination"));
-    getIntValues(_setLabels, u"set-label");
-    getIntValues(_resetLabels, u"reset-label");
+    getIntValues(_set_labels, u"set-label");
+    getIntValues(_reset_labels, u"reset-label");
 
-    if (_terminate && tsp->useJointTermination()) {
-        tsp->error(u"--terminate and --joint-termination are mutually exclusive");
+    if (_restart + _terminate + tsp->useJointTermination() > 1) {
+        tsp->error(u"--restart, --terminate and --joint-termination are mutually exclusive");
         return false;
     }
 
@@ -371,6 +397,57 @@ bool ts::MergePlugin::processDropPassOption(const UChar* option, bool allowed)
 
 
 //----------------------------------------------------------------------------
+// Start/restart the merge command.
+//----------------------------------------------------------------------------
+
+bool ts::MergePlugin::startStopCommand(bool do_close, bool do_restart)
+{
+    // Multi-threading warning: Closing the pipe can be done from the main plugin thread while the merge
+    // thread is reading the pipe or restarting the command (this method). Manipulating the safe pointer
+    // is protected by an internal mutex. Here, the safe pointer shall never be set to a null pointer to
+    // ensure that all calls are valid.
+
+    if (do_close) {
+        tsp->debug(u"closing merge process pipe");
+        _pipe->close(*tsp);
+    }
+
+    if (_stopping || !do_restart) {
+        // Stopping or no restart requested, stop here.
+        return true;
+    }
+
+    // At this point, a start is requested.
+    if (do_close) {
+        // This is a restart, not a simple initial start. Optionally wait before restart.
+        SleepThread(_restart_interval);
+        // Because of the previous failure, we probably had error messages.
+        // Inform the user that we restart and the error is not permanent.
+        tsp->info(u"restarting merge command");
+    }
+
+    // Allocate the new object. Atomically swap the safe pointer. This action
+    // will synchronously deallocate the previous object.
+    _pipe = new TSForkPipe;
+    CheckNonNull(_pipe.pointer());
+
+    // Note on buffer size: we use DEFAULT_MAX_QUEUED_PACKETS instead of _max_queue
+    // because this is the size of the system pipe buffer (Windows only). This is
+    // a limited resource and we cannot let a user set an arbitrary large value for it.
+    // The user can only change the queue size in tsp's virtual memory.
+
+    // Start the command.
+    return _pipe->open(_command,
+                       _no_wait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
+                       PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
+                       *tsp,
+                       ForkPipe::STDOUT_PIPE,
+                       ForkPipe::STDIN_NONE,
+                       _format);
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
@@ -404,27 +481,10 @@ bool ts::MergePlugin::start()
     _main_pids.reset();
     _merge_pids.reset();
     _merged_count = _hold_count = _empty_count = 0;
-    _got_eof = false;
+    _got_eof = _stopping = false;
 
-    // Create pipe & process.
-    // Note on buffer size: we use DEFAULT_MAX_QUEUED_PACKETS instead of _max_queue
-    // because this is the size of the system pipe buffer (Windows only). This is
-    // a limited resource and we cannot let a user set an arbitrary large value for it.
-    // The user can only change the queue size in tsp's virtual memory.
-    const bool ok = _pipe.open(_command,
-                               _no_wait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
-                               PKT_SIZE * DEFAULT_MAX_QUEUED_PACKETS,
-                               *tsp,
-                               ForkPipe::STDOUT_PIPE,
-                               ForkPipe::STDIN_NONE,
-                               _format);
-
-    // Start the internal thread which receives the TS to merge.
-    if (ok) {
-        Thread::start();
-    }
-
-    return ok;
+    // Create pipe & process, then start the internal thread which receives the TS to merge.
+    return startStopCommand(false, true) && Thread::start();
 }
 
 
@@ -442,7 +502,8 @@ bool ts::MergePlugin::stop()
     _queue.stop();
 
     // Close the pipe and terminate the created process.
-    _pipe.close(*tsp);
+    _stopping = true;
+    startStopCommand(true, false);
 
     // Wait for actual thread termination.
     Thread::waitForTermination();
@@ -464,7 +525,8 @@ void ts::MergePlugin::main()
     _queue.setBitrate(_user_bitrate);
 
     // Loop on packet reception until the plugin request to stop.
-    while (!_queue.stopped()) {
+    bool success = true;
+    while (success && !_queue.stopped()) {
 
         TSPacket* buffer = nullptr;
         size_t buffer_size = 0;  // In TS packets.
@@ -481,14 +543,26 @@ void ts::MergePlugin::main()
         assert(buffer_size > 0);
 
         // Read TS packets from the pipe, up to buffer size (but maybe less).
-        // We request to read only multiples of 188 bytes (the packet size).
-        if (!_pipe.readStreamChunks(buffer, PKT_SIZE * buffer_size, PKT_SIZE, read_size, *tsp)) {
-            // Read error or end of file, cannot continue in all cases.
-            // Signal end-of-file to plugin thread.
-            _queue.setEOF();
-            break;
-        }
+        // Loop on error / restart.
+        while (success) {
+            // Perform one read. Multi-threading warning: a close operation can occur
+            // in the meantime (when the plugin stops) but no one will restart it.
+            // So, the object which is pointed to by _pipe does not change.
 
+            // We request to read only multiples of 188 bytes (the packet size).
+            success = _pipe->readStreamChunks(buffer, PKT_SIZE * buffer_size, PKT_SIZE, read_size, *tsp);
+
+            if (!success) {
+                // Read error or end of file.
+                if (_restart && !_stopping) {
+                    success = startStopCommand(true, true);
+                }
+                else {
+                    // Signal end-of-file to plugin thread.
+                    _queue.setEOF();
+                }
+            }
+        }
         assert(read_size % PKT_SIZE == 0);
 
         // Pass the read packets to the inter-thread queue.
@@ -610,8 +684,8 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
     }
 
     // Apply labels on merged packets.
-    pkt_data.setLabels(_setLabels);
-    pkt_data.clearLabels(_resetLabels);
+    pkt_data.setLabels(_set_labels);
+    pkt_data.clearLabels(_reset_labels);
 
     return TSP_OK;
 }

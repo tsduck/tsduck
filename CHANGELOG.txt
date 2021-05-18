@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2391
+VERSION 3.27-2393
 
 [NEW] New commands and plugins:
 
@@ -24,6 +24,7 @@ VERSION 3.27-2391
     - Options --enforce-burst, --packet-burst in output plugin "srt".
     - Options --audio, --codec, --ecm, --emm, --intra-frame, --psi-si,
       --service, --subtitles, --video in plugin "filter".
+    - Options --restart and --restart-interval in plugin "merge".
 
 [BUG] Bug fixes:
 
