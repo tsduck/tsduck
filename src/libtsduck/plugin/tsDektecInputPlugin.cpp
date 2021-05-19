@@ -758,17 +758,16 @@ bool ts::DektecInputPlugin::start()
 
     // Set IP parameters for TS-over-IP.
     if ((dt_flags & DTAPI_CAP_IP) != 0) {
-        Dtapi::DtIpPars2 ip_pars;
-        if (!GetDektecIPArgs(*this, true, ip_pars)) {
+        if (!CheckDektecIPArgs(true, _guts->ip_pars, *tsp)) {
             return startError(u"invalid TS-over-IP parameters", DTAPI_OK);
         }
 
         // Report actual parameters in debug mode
         tsp->debug(u"setting IP parameters: DtIpPars2 = {");
-        DektecDevice::ReportIpPars(ip_pars, *tsp, Severity::Debug, u"  ");
+        DektecDevice::ReportIpPars(_guts->ip_pars, *tsp, Severity::Debug, u"  ");
         tsp->debug(u"}");
 
-        status = _guts->chan.SetIpPars(&ip_pars);
+        status = _guts->chan.SetIpPars(&_guts->ip_pars);
         if (status != DTAPI_OK) {
             return startError(u"output device SetIpPars error", status);
         }
