@@ -544,7 +544,7 @@ void ts::MergePlugin::main()
 
         // Read TS packets from the pipe, up to buffer size (but maybe less).
         // Loop on error / restart.
-        while (success) {
+        while (success && read_size == 0) {
             // Perform one read. Multi-threading warning: a close operation can occur
             // in the meantime (when the plugin stops) but no one will restart it.
             // So, the object which is pointed to by _pipe does not change.
