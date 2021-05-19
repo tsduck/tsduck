@@ -123,8 +123,8 @@ bool ts::PacketInsertionController::BitRateControl::setBitRate(BitRate rate)
         if (new_average > 0) {
             _average = new_average;
         }
-        // Report bitrate adjustment over 1% only.
-        if (diffPercent(rate) > 1) {
+        // Report bitrate adjustment over 5% only.
+        if (diffPercent(rate) > 5) {
             _report.verbose(u"%s bitrate set to %'d b/s, adjusted to %'d b/s", {_name, rate, _average});
         }
         return true; // continue

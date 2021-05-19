@@ -69,6 +69,8 @@ bool ts::AbstractReadStreamInterface::readStreamComplete(void* addr, size_t max_
 
 bool ts::AbstractReadStreamInterface::readStreamChunks(void* addr, size_t max_size, size_t chunk_size, size_t& ret_size, Report& report)
 {
+    ret_size = 0;
+
     // Can read only an integral number of chunks.
     if (chunk_size > 0) {
         if (max_size < chunk_size) {
