@@ -76,5 +76,14 @@ namespace ts {
     //! @return True on success, false if the command line option is not specified.
     //!
     bool GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars);
+
+    //!
+    //! Check if Dektec TS-over-IP options are valid.
+    //! @param [in] receive True to get receive options, false to get transmit options.
+    //! @param [in] dtpars IP parameters for DTAPI.
+    //! @param [in,out] report Where to report errors in case of invalid parameters.
+    //! @return True on success, false in case of invalid parameters.
+    //!
+    bool CheckDektecIPArgs(bool receive, const Dtapi::DtIpPars2& dtpars, Report& report);
 #endif
 }

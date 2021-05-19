@@ -345,25 +345,23 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
 
     // Use IPv4 or IPv6.
     const bool ipv4 = args.present(u"ip4");
-    dtpars.m_Flags = ipv4 ? DTAPI_IP_V4 : DTAPI_IP_V6;
+    const bool ipv6 = args.present(u"ip6");
+    dtpars.m_Flags = ipv6 ? DTAPI_IP_V6 : DTAPI_IP_V4;
 
     // Number of links (single or redundant).
     const size_t link_count = std::max(args.count(u"ip4"), args.count(u"ip6"));
-    dtpars.m_Mode = link_count == 1 ? DTAPI_IP_NORMAL : (receive ? DTAPI_IP_RX_2022_7 : DTAPI_IP_TX_2022_7);
+    dtpars.m_Mode = link_count <= 1 ? DTAPI_IP_NORMAL : (receive ? DTAPI_IP_RX_2022_7 : DTAPI_IP_TX_2022_7);
 
     // Check consistency of IPv4 vs. IPv6 and number of links.
-    bool ok = args.present(u"ip4") + args.present(u"ip6") == 1 && args.count(u"vlan-id") <= link_count;
-    if (ok && receive) {
-        ok = (ipv4 || args.count(u"ssm4-filter") == 0) &&
-             (!ipv4 || args.count(u"ssm6-filter") == 0);
-    }
-    if (ok && !receive) {
-        ok = args.count(u"gw4") <= args.count(u"ip4") &&
-             args.count(u"gw6") <= args.count(u"ip6") &&
-             args.count(u"source-port") <= link_count &&
-             args.count(u"vlan-priority") <= link_count;
-    }
-    if (!ok) {
+    if ((ipv4 && ipv6) ||
+        (args.count(u"vlan-id") > link_count) ||
+        (receive && !ipv4 && args.present(u"ssm4-filter")) ||
+        (receive && !ipv6 && args.present(u"ssm6-filter")) ||
+        (!receive && args.count(u"gw4") > args.count(u"ip4")) ||
+        (!receive && args.count(u"gw6") > args.count(u"ip6")) ||
+        (!receive && args.count(u"source-port") > link_count) ||
+        (!receive && args.count(u"vlan-priority") > link_count))
+    {
         args.error(u"inconsistent IP parameters, check IPv4 vs. IPv6 and number of links (single vs. redundant)");
         return false;
     }
@@ -375,12 +373,12 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
     IPv6SocketAddress sock6;
     if ((ipv4 && !DecodeAddress(args, u"ip4", 0, sock4, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||
         (ipv4 && !DecodeAddress(args, u"ip4", 1, sock4, dtpars.m_Ip2, sizeof(dtpars.m_Ip2), &dtpars.m_Port2, !receive, true)) ||
-        (!ipv4 && !DecodeAddress(args, u"ip6", 0, sock6, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||
-        (!ipv4 && !DecodeAddress(args, u"ip6", 1, sock6, dtpars.m_Ip2, sizeof(dtpars.m_Ip2), &dtpars.m_Port2, !receive, true)) ||
+        (ipv6 && !DecodeAddress(args, u"ip6", 0, sock6, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||
+        (ipv6 && !DecodeAddress(args, u"ip6", 1, sock6, dtpars.m_Ip2, sizeof(dtpars.m_Ip2), &dtpars.m_Port2, !receive, true)) ||
         (!receive && ipv4 && !DecodeAddress(args, u"gw4", 0, ip4, dtpars.m_Gateway, sizeof(dtpars.m_Gateway), nullptr, true, false)) ||
         (!receive && ipv4 && !DecodeAddress(args, u"gw4", 1, ip4, dtpars.m_Gateway2, sizeof(dtpars.m_Gateway2), nullptr, true, false)) ||
-        (!receive && !ipv4 && !DecodeAddress(args, u"gw6", 0, ip6, dtpars.m_Gateway, sizeof(dtpars.m_Gateway), nullptr, true, false)) ||
-        (!receive && !ipv4 && !DecodeAddress(args, u"gw6", 1, ip6, dtpars.m_Gateway2, sizeof(dtpars.m_Gateway2), nullptr, true, false)))
+        (!receive && ipv6 && !DecodeAddress(args, u"gw6", 0, ip6, dtpars.m_Gateway, sizeof(dtpars.m_Gateway), nullptr, true, false)) ||
+        (!receive && ipv6 && !DecodeAddress(args, u"gw6", 1, ip6, dtpars.m_Gateway2, sizeof(dtpars.m_Gateway2), nullptr, true, false)))
     {
         return false;
     }
@@ -393,7 +391,7 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
     if (receive) {
         // List of SSM filters.
         if ((ipv4 && !DecodeSSM(args, u"ssm4-filter", sock4, dtpars.m_SrcFlt)) ||
-            (!ipv4 && !DecodeSSM(args, u"ssm6-filter", sock6, dtpars.m_SrcFlt)))
+            (ipv6 && !DecodeSSM(args, u"ssm6-filter", sock6, dtpars.m_SrcFlt)))
         {
             return false;
         }
@@ -433,6 +431,34 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
         args.getIntValue(dtpars.m_FecNumCols, u"smpte-2022-l", 0);
     }
 
+    return true;
+}
+#endif
+
+
+//-----------------------------------------------------------------------------
+// Check if Dektec TS-over-IP options are valid.
+//-----------------------------------------------------------------------------
+
+#if !defined(TS_NO_DTAPI)
+bool ts::CheckDektecIPArgs(bool receive, const Dtapi::DtIpPars2& dtpars, Report& report)
+{
+    // The port is always mandatory. The IP address is optional for receive (unicast).
+    if (dtpars.m_Port == 0) {
+        report.error(u"missing UDP port number");
+        return false;
+    }
+    if (!receive) {
+        const size_t ip_size = (dtpars.m_Flags & DTAPI_IP_V6) != 0 ? 16 : 4;
+        bool ok = false;
+        for (size_t i = 0; !ok && i < ip_size; ++i) {
+            ok = dtpars.m_Ip[i] != 0;
+        }
+        if (!ok) {
+            report.error(u"missing IP address");
+            return false;
+        }
+    }
     return true;
 }
 #endif
