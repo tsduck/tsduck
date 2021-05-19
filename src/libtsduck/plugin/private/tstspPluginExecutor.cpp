@@ -30,7 +30,7 @@
 #include "tstspPluginExecutor.h"
 #include "tsPluginRepository.h"
 #include "tsGuardCondition.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 
@@ -100,7 +100,7 @@ void ts::tsp::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* plu
 
 void ts::tsp::PluginExecutor::setAbort()
 {
-    Guard lock(_global_mutex);
+    GuardMutex lock(_global_mutex);
     _tsp_aborting = true;
     ringPrevious<PluginExecutor>()->_to_do.signal();
 }
@@ -153,7 +153,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, BitRate bitrate, bool in
     log(10, u"passPackets(count = %'d, bitrate = %'d, input_end = %s, aborted = %s)", {count, bitrate, input_end, aborted});
 
     // We access data under the protection of the global mutex.
-    Guard lock(_global_mutex);
+    GuardMutex lock(_global_mutex);
 
     // Update our buffer: we remove the first 'count' packets from the beginning of our slice of the buffer.
     _pkt_first = (_pkt_first + count) % _buffer->count();
@@ -315,7 +315,7 @@ void ts::tsp::PluginExecutor::restart(const RestartDataPtr& rd)
 
 bool ts::tsp::PluginExecutor::pendingRestart()
 {
-    Guard lock(_global_mutex);
+    GuardMutex lock(_global_mutex);
     return _restart && !_restart_data.isNull();
 }
 
@@ -328,7 +328,7 @@ bool ts::tsp::PluginExecutor::processPendingRestart(bool& restarted)
 {
     // Run under the protection of the global mutex.
     // To avoid deadlocks, always acquire the global mutex first, then a RestartData mutex.
-    Guard lock1(_global_mutex);
+    GuardMutex lock1(_global_mutex);
 
     // If there is no pending restart, immediate success.
     if (!_restart || _restart_data.isNull()) {

@@ -33,7 +33,7 @@
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
 #include "tsTelnetConnection.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
@@ -62,7 +62,7 @@ ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, Mut
 {
     // Locate output plugin, count packet processor plugins.
     if (_input != nullptr) {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
 
         // The output plugin "precedes" the input plugin in the ring.
         _output = _input->ringPrevious<OutputExecutor>();
@@ -235,7 +235,7 @@ void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& response)
     _log.log(level, u"set log level to %s", {Severity::Enums.name(level)});
 
     // Also set the log severity on each individual plugin.
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     PluginExecutor* proc = _input;
     do {
         proc->setMaxSeverity(level);

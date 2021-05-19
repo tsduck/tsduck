@@ -29,7 +29,7 @@
 
 #include "tsTCPSocket.h"
 #include "tsIPUtils.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsMemory.h"
 #include "tsException.h"
 TSDUCK_SOURCE;
@@ -71,7 +71,7 @@ void ts::TCPSocket::handleClosed(Report& report)
 bool ts::TCPSocket::open(Report& report)
 {
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         if (!createSocket(PF_INET, SOCK_STREAM, IPPROTO_TCP, report)) {
             return false;
         }
@@ -88,7 +88,7 @@ bool ts::TCPSocket::open(Report& report)
 void ts::TCPSocket::declareOpened(SysSocketType sock, Report& report)
 {
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         Socket::declareOpened(sock, report);
     }
     handleOpened(report);
@@ -103,7 +103,7 @@ bool ts::TCPSocket::close(Report& report)
 {
     bool ok = true;
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         // Close socket, without proper disconnection
         ok = Socket::close(report);
     }

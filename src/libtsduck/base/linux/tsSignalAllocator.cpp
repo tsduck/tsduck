@@ -61,7 +61,7 @@ ts::SignalAllocator::SignalAllocator() :
 
 int ts::SignalAllocator::allocate()
 {
-    Guard lock (_mutex);
+    GuardMutex lock (_mutex);
     for (size_t n = 0; n < _signal_count; ++n) {
         if (!_signals[n]) {
             _signals[n] = true;
@@ -79,7 +79,7 @@ int ts::SignalAllocator::allocate()
 void ts::SignalAllocator::release (int sig)
 {
     if (sig >= _signal_min && sig <= _signal_max) {
-        Guard lock (_mutex);
+        GuardMutex lock (_mutex);
         _signals[size_t (sig - _signal_min)] = false;
     }
 }

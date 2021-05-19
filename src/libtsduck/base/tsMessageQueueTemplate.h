@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsTime.h"
 
 
@@ -58,14 +58,14 @@ ts::MessageQueue<MSG, MUTEX>::~MessageQueue<MSG, MUTEX>()
 template <typename MSG, class MUTEX>
 size_t ts::MessageQueue<MSG, MUTEX>::getMaxMessages() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _maxMessages;
 }
 
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::setMaxMessages(size_t max)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _maxMessages = max;
 }
 
@@ -196,7 +196,7 @@ bool ts::MessageQueue<MSG, MUTEX>::enqueue(MSG* msg, MilliSecond timeout)
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MessagePtr& msg)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     {
         // Transfer ownership of the pointed object inside a code block which guarantees
         // that the new safe pointer will be destructed before releasing the lock.
@@ -208,7 +208,7 @@ void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MessagePtr& msg)
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::forceEnqueue(MSG* msg)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     {
         // Create a safe pointer to the pointed object inside a code block which guarantees
         // that the safe pointer will be destructed before releasing the lock.
@@ -279,7 +279,7 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
 template <typename MSG, class MUTEX>
 typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::peek()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     const typename MessageList::iterator it(dequeuePlacement(_queue));
     return it == _queue.end() ? MessagePtr() : *it;
 }
@@ -292,7 +292,7 @@ typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::
 template <typename MSG, class MUTEX>
 void ts::MessageQueue<MSG, MUTEX>::clear()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     if (!_queue.empty()) {
         _queue.clear();
         // Signal that messages have been dequeued (dropped in fact).

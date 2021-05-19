@@ -31,7 +31,7 @@
 #include "tsSingletonManager.h"
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 // Define singleton instance
@@ -98,7 +98,7 @@ ts::UString ts::BetterSystemRandomGenerator::name() const
 
 bool ts::BetterSystemRandomGenerator::ready() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _ready && SystemRandomGenerator::ready();
 }
 
@@ -166,7 +166,7 @@ bool ts::BetterSystemRandomGenerator::updatePool()
 
 bool ts::BetterSystemRandomGenerator::read(void* buffer, size_t size)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Filter trivial cases.
     if (!_ready || buffer == nullptr) {

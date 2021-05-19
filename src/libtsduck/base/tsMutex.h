@@ -106,7 +106,7 @@ namespace ts {
         //! acquire() leads to random memory corruptions and crashes.
         //!
         //! For this reason, it is recommended to never use acquire() and release() directly
-        //! and use the Guard class instead.
+        //! and use the GuardMutex class instead.
         //!
         //! @return true on success and false on error.
         //!

@@ -35,7 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsFatal.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsMutex.h"
 #include "tsNullMutex.h"
 
@@ -509,7 +509,7 @@ namespace ts {
             // Perform a class downcast (cast to a subclass).
             template <typename ST> SafePtr<ST,MUTEX> downcast()
             {
-                Guard lock(_mutex);
+                GuardMutex lock(_mutex);
                 ST* sp = dynamic_cast<ST*>(_ptr);
                 if (sp != nullptr) {
                     // Successful downcast, the original safe pointer must be released.
@@ -521,7 +521,7 @@ namespace ts {
             // Perform a class upcast.
             template <typename ST> SafePtr<ST,MUTEX> upcast()
             {
-                Guard lock(_mutex);
+                GuardMutex lock(_mutex);
                 ST* sp = _ptr;
                 _ptr = nullptr;
                 return SafePtr<ST,MUTEX>(sp);
@@ -530,7 +530,7 @@ namespace ts {
             // Change mutex type.
             template <typename NEWMUTEX> SafePtr<T,NEWMUTEX> changeMutex()
             {
-                Guard lock(_mutex);
+                GuardMutex lock(_mutex);
                 T* sp = _ptr;
                 _ptr = nullptr;
                 return SafePtr<T,NEWMUTEX>(sp);

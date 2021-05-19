@@ -43,7 +43,7 @@
 #include "tsTSPacketQueue.h"
 #include "tsPacketInsertionController.h"
 #include "tsThread.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 

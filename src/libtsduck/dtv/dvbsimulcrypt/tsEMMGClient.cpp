@@ -29,7 +29,7 @@
 
 #include "tsEMMGClient.h"
 #include "tsIPUtils.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 #include "tsOneShotPacketizer.h"
 #include "tstlvSerializer.h"
@@ -124,7 +124,7 @@ bool ts::EMMGClient::abortConnection(const UString& message)
 
 void ts::EMMGClient::cleanupResponse()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _last_response = 0;
 }
 
@@ -171,7 +171,7 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
 {
     // Initial state check
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         // Start receiver thread if first time
         if (_state == INITIAL) {
             _state = DISCONNECTED;
@@ -273,7 +273,7 @@ bool ts::EMMGClient::connect(const SocketAddress& mux,
     // Data stream now established
     _total_bytes = 0;
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         _state = CONNECTED;
     }
 
@@ -290,7 +290,7 @@ bool ts::EMMGClient::disconnect()
     // Mark disconnection in progress
     State previous_state;
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         previous_state = _state;
         if (_state == CONNECTING || _state == CONNECTED) {
             _state = DISCONNECTING;
@@ -389,7 +389,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
 
 uint16_t ts::EMMGClient::allocatedBandwidth()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _allocated_bw;
 }
 
@@ -487,7 +487,7 @@ bool ts::EMMGClient::dataProvision(const SectionPtrVector& sections)
 
 void ts::EMMGClient::getLastErrorResponse(std::vector<uint16_t>& error_status, std::vector<uint16_t>& error_information)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     error_status = _error_status;
     error_information = _error_info;
 }
@@ -547,7 +547,7 @@ void ts::EMMGClient::main()
                     emmgmux::StreamBWAllocation* const resp = dynamic_cast<emmgmux::StreamBWAllocation*>(msg.pointer());
                     assert(resp != nullptr);
                     {
-                        Guard lock(_mutex);
+                        GuardMutex lock(_mutex);
                         _allocated_bw = resp->has_bandwidth ? resp->bandwidth : 0;
                     }
                     break;
@@ -557,7 +557,7 @@ void ts::EMMGClient::main()
                     emmgmux::StreamError* const resp = dynamic_cast<emmgmux::StreamError*>(msg.pointer());
                     assert(resp != nullptr);
                     {
-                        Guard lock(_mutex);
+                        GuardMutex lock(_mutex);
                         _error_status = resp->error_status;
                         _error_info = resp->error_information;
                     }
@@ -568,7 +568,7 @@ void ts::EMMGClient::main()
                     emmgmux::ChannelError* const resp = dynamic_cast<emmgmux::ChannelError*>(msg.pointer());
                     assert(resp != nullptr);
                     {
-                        Guard lock(_mutex);
+                        GuardMutex lock(_mutex);
                         _error_status = resp->error_status;
                         _error_info = resp->error_information;
                     }
@@ -590,7 +590,7 @@ void ts::EMMGClient::main()
 
         // Error while receiving messages, most likely a disconnection
         {
-            Guard lock(_mutex);
+            GuardMutex lock(_mutex);
             if (_state == DESTRUCTING) {
                 return;
             }

@@ -38,7 +38,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsUID.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 #include "tsTime.h"
 TSDUCK_SOURCE;
@@ -64,6 +64,6 @@ ts::UID::UID() :
 
 uint64_t ts::UID::newUID()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _next_uid++;
 }

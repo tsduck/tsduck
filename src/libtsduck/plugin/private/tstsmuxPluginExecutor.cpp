@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxPluginExecutor.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 
@@ -116,7 +116,7 @@ void ts::tsmux::PluginExecutor::signalPluginEvent(uint32_t event_code, Object* p
 void ts::tsmux::PluginExecutor::terminate()
 {
     // Locked the mutex on behalf of the two conditions.
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _terminate = true;
     _got_packets.signal();
     _got_freespace.signal();

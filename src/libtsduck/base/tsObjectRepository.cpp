@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsObjectRepository.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::ObjectRepository);
@@ -51,7 +51,7 @@ ts::ObjectRepository::ObjectRepository() :
 
 ts::ObjectPtr ts::ObjectRepository::store(const UString &name, const ObjectPtr &value)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     const ObjectPtr previous = _repository[name];
     if (value.isNull()) {
         _repository.erase(name);
@@ -69,7 +69,7 @@ ts::ObjectPtr ts::ObjectRepository::store(const UString &name, const ObjectPtr &
 
 ts::ObjectPtr ts::ObjectRepository::retrieve(const UString &name)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     const std::map <UString, ObjectPtr>::const_iterator pos = _repository.find(name);
     return pos != _repository.end() ? pos->second : ObjectPtr();
 }
@@ -81,6 +81,6 @@ ts::ObjectPtr ts::ObjectRepository::retrieve(const UString &name)
 
 void ts::ObjectRepository::erase(const UString& name)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _repository.erase(name);
 }

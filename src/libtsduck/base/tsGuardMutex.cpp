@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -36,14 +36,14 @@ TSDUCK_SOURCE;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Guard::Guard(MutexInterface& mutex, MilliSecond timeout) :
+ts::GuardMutex::GuardMutex(MutexInterface& mutex, MilliSecond timeout) :
     _mutex(mutex),
     _is_locked(false)
 {
     _is_locked = mutex.acquire(timeout);
 
     if (timeout == Infinite && !_is_locked) {
-        throw GuardError(u"failed to acquire mutex");
+        throw GuardMutexError(u"failed to acquire mutex");
     }
 }
 
@@ -51,13 +51,13 @@ ts::Guard::Guard(MutexInterface& mutex, MilliSecond timeout) :
 // Destructor
 //----------------------------------------------------------------------------
 
-ts::Guard::~Guard()
+ts::GuardMutex::~GuardMutex()
 {
     if (_is_locked) {
         _is_locked = !_mutex.release();
         if (_is_locked) {
             // With C++11, destructors are no longer allowed to throw an exception.
-            static const char err[] = "\n\n*** Fatal error: Guard failed to release mutex in destructor, aborting...\n\n";
+            static const char err[] = "\n\n*** Fatal error: GuardMutex failed to release mutex in destructor, aborting...\n\n";
             static const size_t err_size = sizeof(err) - 1;
             FatalError(err, err_size);
         }
@@ -68,7 +68,7 @@ ts::Guard::~Guard()
 // Force an early unlock of the mutex.
 //----------------------------------------------------------------------------
 
-bool ts::Guard::unlock()
+bool ts::GuardMutex::unlock()
 {
     if (_is_locked) {
         _is_locked = !_mutex.release();

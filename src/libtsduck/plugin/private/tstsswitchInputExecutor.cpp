@@ -29,7 +29,7 @@
 
 #include "tstsswitchInputExecutor.h"
 #include "tstsswitchCore.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 TSDUCK_SOURCE;
 
@@ -128,7 +128,7 @@ bool ts::tsswitch::InputExecutor::abortInput()
 
 void ts::tsswitch::InputExecutor::setCurrent(bool isCurrent)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _isCurrent = isCurrent;
 }
 
@@ -287,7 +287,7 @@ void ts::tsswitch::InputExecutor::main()
 
             // Signal the presence of received packets.
             {
-                Guard lock(_mutex);
+                GuardMutex lock(_mutex);
                 _outCount += inCount;
             }
             _core.inputReceived(_pluginIndex);

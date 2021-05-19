@@ -33,7 +33,7 @@
 #include "tstspProcessorExecutor.h"
 #include "tstspControlServer.h"
 #include "tsMonotonic.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 
@@ -117,7 +117,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 {
     // Initial sequence under mutex protection.
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
 
         // Check if we are already started.
         if (_input != nullptr || _terminating) {
@@ -252,7 +252,7 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
 
 bool ts::TSProcessor::isStarted()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _input != nullptr && !_terminating;
 }
 
@@ -265,7 +265,7 @@ void ts::TSProcessor::abort()
 {
     _report.debug(u"aborting all plugins...");
 
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     if (_input != nullptr) {
         // Place all threads in "aborted" state so that each thread will see its

@@ -42,7 +42,7 @@ ts::DoubleCheckLock::DoubleCheckLock() :
 }
 
 ts::DoubleCheckLock::Writer::Writer(DoubleCheckLock& lock) :
-    Guard(lock._mutex)
+    GuardMutex(lock._mutex)
 {
     assert(isLocked());
     lock._changed = true;
@@ -53,7 +53,7 @@ ts::DoubleCheckLock::Writer::~Writer()
 }
 
 ts::DoubleCheckLock::Reader::Reader(DoubleCheckLock& lock) :
-    Guard(lock._mutex)
+    GuardMutex(lock._mutex)
 {
     assert(isLocked());
     lock._changed = false;

@@ -29,7 +29,7 @@
 
 #include "tstsmuxOutputExecutor.h"
 #include "tsGuardCondition.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 

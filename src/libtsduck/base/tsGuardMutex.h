@@ -84,14 +84,14 @@ namespace ts {
     //! } // guard's destructor invoked, mutex always released
     //! @endcode
     //!
-    class TSDUCKDLL Guard
+    class TSDUCKDLL GuardMutex
     {
-        TS_NOBUILD_NOCOPY(Guard);
+        TS_NOBUILD_NOCOPY(GuardMutex);
     public:
         //!
         //! Fatal low-level mutex guard error.
         //!
-        TS_DECLARE_EXCEPTION(GuardError);
+        TS_DECLARE_EXCEPTION(GuardMutexError);
 
         //!
         //! Constructor, automatically acquire the mutex with a timeout.
@@ -102,21 +102,21 @@ namespace ts {
         //!
         //! @param [in,out] mutex A reference on the mutex object to acquire.
         //! @param [in] timeout Maximum number of milliseconds to wait for the mutex.
-        //! @exception ts::Guard::GuardError Thrown whenever an error occurs
+        //! @exception ts::GuardMutex::GuardMutexError Thrown whenever an error occurs
         //! during the acquisition of the mutex. Exceeding the timeout is not
         //! error, the object is successfully constructed but isLocked() will
         //! return false.
         //!
-        Guard(MutexInterface& mutex, MilliSecond timeout = Infinite);
+        GuardMutex(MutexInterface& mutex, MilliSecond timeout = Infinite);
 
         //!
         //! Destructor, automatically release the mutex.
         //!
-        //! @exception ts::Guard::GuardError Thrown whenever an error occurs
+        //! @exception ts::GuardMutex::GuardMutexError Thrown whenever an error occurs
         //! during the release of the mutex, i.e. when
         //! ts::MutexInterface::release() returns false.
         //!
-        virtual ~Guard();
+        virtual ~GuardMutex();
 
         //!
         //! Check if the mutex was actually locked.

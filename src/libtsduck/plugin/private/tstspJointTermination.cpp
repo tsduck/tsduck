@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tstspJointTermination.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 
@@ -85,14 +85,14 @@ void ts::tsp::JointTermination::useJointTermination(bool on)
 {
     if (on && !_use_jt) {
         _use_jt = true;
-        Guard lock (_global_mutex);
+        GuardMutex lock (_global_mutex);
         _jt_users++;
         _jt_remaining++;
         debug(u"using \"joint termination\", now %d plugins use it", {_jt_users});
     }
     else if (!on && _use_jt) {
         _use_jt = false;
-        Guard lock (_global_mutex);
+        GuardMutex lock (_global_mutex);
         _jt_users--;
         _jt_remaining--;
         assert (_jt_users >= 0);
@@ -112,7 +112,7 @@ void ts::tsp::JointTermination::jointTerminate()
 {
     if (_use_jt && !_jt_completed) {
         _jt_completed = true;
-        Guard lock(_global_mutex);
+        GuardMutex lock(_global_mutex);
         _jt_remaining--;
         assert(_jt_remaining >= 0);
         if (totalPacketsInThread() > _jt_hightest_pkt) {
@@ -130,6 +130,6 @@ void ts::tsp::JointTermination::jointTerminate()
 
 ts::PacketCounter ts::tsp::JointTermination::totalPacketsBeforeJointTermination() const
 {
-    Guard lock (_global_mutex);
+    GuardMutex lock (_global_mutex);
     return !_options.ignore_jt && _jt_users > 0 && _jt_remaining <= 0 ? _jt_hightest_pkt : std::numeric_limits<PacketCounter>::max();
 }
