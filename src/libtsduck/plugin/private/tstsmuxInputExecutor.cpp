@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tstsmuxInputExecutor.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 TSDUCK_SOURCE;
 

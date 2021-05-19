@@ -328,7 +328,7 @@ and @e wait() primitives.
 TSDuck relies on C++ mechanisms to track the usage of resources. The library provides
 mechanisms to ensure that no dangling lock is lost through the _guard design pattern_.
 It recommended to never explicitly use @e acquire() or @e release() primitives.
-Instead, use the classes ts::Guard for mutexes and ts::GuardCondition for condition
+Instead, use the classes ts::GuardMutex for mutexes and ts::GuardCondition for condition
 variables.
 
 ## Virtual memory {#virtmem}

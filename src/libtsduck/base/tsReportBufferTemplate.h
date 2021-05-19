@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------
@@ -51,7 +51,7 @@ ts::ReportBuffer<MUTEX>::ReportBuffer(int max_severity) :
 template <class MUTEX>
 void ts::ReportBuffer<MUTEX>::resetMessages()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _buffer.clear();
 }
 
@@ -63,7 +63,7 @@ void ts::ReportBuffer<MUTEX>::resetMessages()
 template <class MUTEX>
 bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _buffer.empty();
 }
 
@@ -75,7 +75,7 @@ bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 template <class MUTEX>
 ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _buffer;
 }
 
@@ -87,7 +87,7 @@ ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
 template <class MUTEX>
 void ts::ReportBuffer<MUTEX>::writeLog(int severity, const UString& message)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     if (!_buffer.empty()) {
         _buffer.append(u'\n');
     }

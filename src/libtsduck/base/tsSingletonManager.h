@@ -35,7 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsMutex.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 
 namespace ts {
     //!
@@ -116,23 +116,23 @@ namespace ts {
 //! @endcode
 //! @see TS_DECLARE_SINGLETON()
 //!
-#define TS_DEFINE_SINGLETON(fullclassname)                           \
-    fullclassname* fullclassname::Instance()                         \
-    {                                                                \
-        if (_instance == nullptr) {                                  \
-            ts::Guard lock(ts::SingletonManager::Instance()->mutex); \
-            if (_instance == nullptr) {                              \
-                _instance = new fullclassname();                     \
-                ::atexit(fullclassname::CleanupSingleton);           \
-            }                                                        \
-        }                                                            \
-        return _instance;                                            \
-    }                                                                \
-    void fullclassname::CleanupSingleton()                           \
-    {                                                                \
-        if (_instance != nullptr) {                                  \
-            delete _instance;                                        \
-            _instance = nullptr;                                     \
-        }                                                            \
-    }                                                                \
+#define TS_DEFINE_SINGLETON(fullclassname)                                \
+    fullclassname* fullclassname::Instance()                              \
+    {                                                                     \
+        if (_instance == nullptr) {                                       \
+            ts::GuardMutex lock(ts::SingletonManager::Instance()->mutex); \
+            if (_instance == nullptr) {                                   \
+                _instance = new fullclassname();                          \
+                ::atexit(fullclassname::CleanupSingleton);                \
+            }                                                             \
+        }                                                                 \
+        return _instance;                                                 \
+    }                                                                     \
+    void fullclassname::CleanupSingleton()                                \
+    {                                                                     \
+        if (_instance != nullptr) {                                       \
+            delete _instance;                                             \
+            _instance = nullptr;                                          \
+        }                                                                 \
+    }                                                                     \
     fullclassname* volatile fullclassname::_instance = nullptr

@@ -115,7 +115,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
 {
     // Initial state check
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         // Start receiver thread if first time
         if (_state == INITIAL) {
             _state = DISCONNECTED;
@@ -190,7 +190,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
 
     // ECM stream now established
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         _state = CONNECTED;
     }
 
@@ -207,7 +207,7 @@ bool ts::ECMGClient::disconnect()
     // Mark disconnection in progress
     State previous_state;
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         previous_state = _state;
         if (_state == CONNECTING || _state == CONNECTED) {
             _state = DISCONNECTING;
@@ -343,7 +343,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
 
     // Register an asynchronous request
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         _async_requests.insert(std::make_pair(cp_number, ecm_handler));
     }
 
@@ -352,7 +352,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
 
     // Clear asynchronous request on error
     if (!ok) {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         _async_requests.erase(cp_number);
     }
 
@@ -410,7 +410,7 @@ void ts::ECMGClient::main()
                     assert(resp != nullptr);
                     ECMGClientHandlerInterface* handler = nullptr;
                     {
-                        Guard lock(_mutex);
+                        GuardMutex lock(_mutex);
                         AsyncRequests::iterator it = _async_requests.find(resp->CP_number);
                         if (it != _async_requests.end()) {
                             handler = it->second;
@@ -437,7 +437,7 @@ void ts::ECMGClient::main()
 
         // Error while receiving messages, most likely a disconnection
         {
-            Guard lock(_mutex);
+            GuardMutex lock(_mutex);
             if (_state == DESTRUCTING) {
                 return;
             }

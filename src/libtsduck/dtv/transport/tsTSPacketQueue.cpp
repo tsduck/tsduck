@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacketQueue.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 TSDUCK_SOURCE;
 
@@ -59,7 +59,7 @@ ts::TSPacketQueue::TSPacketQueue(size_t size) :
 
 void ts::TSPacketQueue::reset(size_t size)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Resize the buffer if requested.
     if (size != NPOS) {
@@ -82,13 +82,13 @@ void ts::TSPacketQueue::reset(size_t size)
 
 size_t ts::TSPacketQueue::bufferSize() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _buffer.size();
 }
 
 size_t ts::TSPacketQueue::currentSize() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _inCount;
 }
 
@@ -179,7 +179,7 @@ void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
 
 void ts::TSPacketQueue::setBitrate(BitRate bitrate)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Remember the bitrate value.
     _bitrate = bitrate;
@@ -197,7 +197,7 @@ void ts::TSPacketQueue::setBitrate(BitRate bitrate)
 
 bool ts::TSPacketQueue::eof() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _eof && _inCount == 0;
 }
 

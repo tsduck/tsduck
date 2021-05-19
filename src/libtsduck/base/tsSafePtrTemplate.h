@@ -106,7 +106,7 @@ ts::SafePtr<T,MUTEX>::SafePtrShared::~SafePtrShared()
 template <typename T, class MUTEX>
 T* ts::SafePtr<T,MUTEX>::SafePtrShared::release()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     T* previous = _ptr;
     _ptr = nullptr;
     return previous;
@@ -120,7 +120,7 @@ T* ts::SafePtr<T,MUTEX>::SafePtrShared::release()
 template <typename T, class MUTEX>
 void ts::SafePtr<T,MUTEX>::SafePtrShared::reset(T* p)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     if (_ptr != nullptr) {
         delete _ptr;
     }
@@ -135,7 +135,7 @@ void ts::SafePtr<T,MUTEX>::SafePtrShared::reset(T* p)
 template <typename T, class MUTEX>
 T* ts::SafePtr<T,MUTEX>::SafePtrShared::pointer()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _ptr;
 }
 
@@ -147,7 +147,7 @@ T* ts::SafePtr<T,MUTEX>::SafePtrShared::pointer()
 template <typename T, class MUTEX>
 int ts::SafePtr<T,MUTEX>::SafePtrShared::count()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _ref_count;
 }
 
@@ -159,7 +159,7 @@ int ts::SafePtr<T,MUTEX>::SafePtrShared::count()
 template <typename T, class MUTEX>
 bool ts::SafePtr<T,MUTEX>::SafePtrShared::isNull()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     return _ptr == nullptr;
 }
 
@@ -171,7 +171,7 @@ bool ts::SafePtr<T,MUTEX>::SafePtrShared::isNull()
 template <typename T, class MUTEX>
 typename ts::SafePtr<T,MUTEX>::SafePtrShared* ts::SafePtr<T,MUTEX>::SafePtrShared::attach()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _ref_count++;
     return this;
 }
@@ -187,7 +187,7 @@ bool ts::SafePtr<T,MUTEX>::SafePtrShared::detach()
 {
     int refcount;
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         refcount = --_ref_count;
     }
     if (refcount == 0) {

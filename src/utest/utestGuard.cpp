@@ -27,11 +27,11 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for class ts::Guard
+//  TSUnit test suite for class ts::GuardMutex
 //
 //----------------------------------------------------------------------------
 
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 #include "tsunit.h"
 
@@ -52,7 +52,7 @@ public:
 
     TSUNIT_TEST_BEGIN(GuardTest);
     TSUNIT_TEST(testGuard);
-    TSUNIT_TEST_EXCEPTION(testAcquireFailed, ts::Guard::GuardError);
+    TSUNIT_TEST_EXCEPTION(testAcquireFailed, ts::GuardMutex::GuardMutexError);
     TSUNIT_TEST(testReleaseFailed);
     TSUNIT_TEST_END();
 };
@@ -132,10 +132,10 @@ void GuardTest::testGuard()
     MutexTest mutex;
     TSUNIT_ASSERT(mutex.count() == 0);
     {
-        ts::Guard gard1(mutex);
+        ts::GuardMutex gard1(mutex);
         TSUNIT_ASSERT(mutex.count() == 1);
         {
-            ts::Guard gard2(mutex);
+            ts::GuardMutex gard2(mutex);
             TSUNIT_ASSERT(mutex.count() == 2);
         }
         TSUNIT_ASSERT(mutex.count() == 1);
@@ -149,7 +149,7 @@ void GuardTest::testAcquireFailed()
     MutexTest mutex(false, true);
     TSUNIT_ASSERT(mutex.count() == 0);
     {
-        ts::Guard gard(mutex);
+        ts::GuardMutex gard(mutex);
         TSUNIT_FAIL("mutex.acquire() passed, should not get there");
     }
 }
@@ -158,17 +158,17 @@ void GuardTest::testAcquireFailed()
 void GuardTest::testReleaseFailed()
 {
     if (ts::EnvironmentExists(u"UTEST_FATAL_CRASH_ALLOWED")) {
-        std::cerr << "FatalTest: Guard destructor should fail !" << std::endl
+        std::cerr << "FatalTest: GuardMutex destructor should fail !" << std::endl
                   << "Unset UTEST_FATAL_CRASH_ALLOWED to skip the crash test" << std::endl;
         MutexTest mutex(true, false);
         TSUNIT_ASSERT(mutex.count() == 0);
         {
-            ts::Guard gard(mutex);
+            ts::GuardMutex gard(mutex);
             TSUNIT_ASSERT(mutex.count() == 1);
         }
         TSUNIT_FAIL("mutex.release() passed, should not get there");
     }
     else {
-        debug() << "FatalTest: crash test for failing Guard destructor skipped, define UTEST_FATAL_CRASH_ALLOWED to force it" << std::endl;
+        debug() << "FatalTest: crash test for failing GuardMutex destructor skipped, define UTEST_FATAL_CRASH_ALLOWED to force it" << std::endl;
     }
 }

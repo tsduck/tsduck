@@ -29,7 +29,7 @@
 
 #include "tsThread.h"
 #include "tsThreadLocalObjects.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsMemory.h"
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
@@ -70,7 +70,7 @@ ts::Thread::~Thread()
 {
     // Make sure that the parent class has completed the waitForTermination() or has never started the thread.
     // First, get the started attribute but release
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     if (_started) {
         std::cerr << std::endl
                   << "*** Internal error, Thread subclass \"" << _typename
@@ -88,14 +88,14 @@ ts::Thread::~Thread()
 
 ts::UString ts::Thread::getTypeName() const
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     const UString name(_typename);
     return name;
 }
 
 void ts::Thread::setTypeName(const UString& name)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     if (!name.empty()) {
         // An actual name is given, use it.
         _typename = name;
@@ -129,7 +129,7 @@ void ts::Thread::Yield()
 
 void ts::Thread::getAttributes(ThreadAttributes& attributes)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     attributes = _attributes;
 }
 
@@ -140,7 +140,7 @@ void ts::Thread::getAttributes(ThreadAttributes& attributes)
 
 bool ts::Thread::setAttributes(const ThreadAttributes& attributes)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // New attributes are accepted as long as we did not start
     if (_started) {
@@ -160,7 +160,7 @@ bool ts::Thread::setAttributes(const ThreadAttributes& attributes)
 bool ts::Thread::isCurrentThread() const
 {
     // Critical section on flags
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // We cannot be running in the thread if it is not started
     return _started && isCurrentThreadUnchecked();
@@ -188,7 +188,7 @@ bool ts::Thread::isCurrentThreadUnchecked() const
 bool ts::Thread::start()
 {
     // Critical section on flags
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Void if already started
     if (_started) {
@@ -287,7 +287,7 @@ bool ts::Thread::waitForTermination()
 {
     // Critical section on flags
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
 
         // Void if already terminated
         if (!_started) {
@@ -324,7 +324,7 @@ bool ts::Thread::waitForTermination()
 
     // Critical section on flags
     {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         _started = false;
         _waiting = false;
     }

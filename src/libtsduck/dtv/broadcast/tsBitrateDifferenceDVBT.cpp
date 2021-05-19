@@ -29,7 +29,7 @@
 
 #include "tsBitrateDifferenceDVBT.h"
 #include "tsModulation.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 

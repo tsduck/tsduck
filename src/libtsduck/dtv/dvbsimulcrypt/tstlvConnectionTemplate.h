@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tstlvMessageFactory.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -90,7 +90,7 @@ bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Logger& logger)
     Serializer serial(bbp);
     msg.serialize(serial);
 
-    Guard lock(_send_mutex);
+    GuardMutex lock(_send_mutex);
     return SuperClass::send(bbp->data(), bbp->size(), logger.report());
 }
 
@@ -119,7 +119,7 @@ bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* 
 
         // Receive complete message
         {
-            Guard lock(_receive_mutex);
+            GuardMutex lock(_receive_mutex);
 
             // Read message header
             if (!SuperClass::receive(bb.data(), header_size, abort, logger.report())) {

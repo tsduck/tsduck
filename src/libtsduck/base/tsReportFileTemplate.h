@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include <iostream>
 
 
@@ -73,7 +73,7 @@ ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, bool append, int max_sev
 template <class MUTEX>
 ts::ReportFile<MUTEX>::~ReportFile<MUTEX>()
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Close the file if it was explicitly open by constructor
     if (_named_file.is_open()) {
@@ -89,6 +89,6 @@ ts::ReportFile<MUTEX>::~ReportFile<MUTEX>()
 template <class MUTEX>
 void ts::ReportFile<MUTEX>::writeLog(int severity, const UString& message)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _file << Severity::Header(severity) << message << std::endl;
 }

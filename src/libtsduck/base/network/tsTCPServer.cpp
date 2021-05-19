@@ -29,7 +29,7 @@
 
 #include "tsTCPServer.h"
 #include "tsIPUtils.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsMemory.h"
 TSDUCK_SOURCE;
 
@@ -72,7 +72,7 @@ bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address
     SysSocketType client_sock = ::accept(getSocket(), &sock_addr, &len);
 
     if (client_sock == SYS_SOCKET_INVALID) {
-        Guard lock(_mutex);
+        GuardMutex lock(_mutex);
         if (isOpen()) {
             report.error(u"error accepting TCP client: %s", {SysSocketErrorCodeMessage()});
         }

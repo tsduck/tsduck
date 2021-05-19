@@ -32,7 +32,7 @@
 #include "tsMediaTypeUtils.h"
 #include "tsWinUtils.h"
 #include "tsTime.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
 TSDUCK_SOURCE;
@@ -270,7 +270,7 @@ void ts::SinkFilter::SetMaxMessages(size_t maxMessages)
 void ts::SinkFilter::Flush()
 {
     TRACE(1, u"SinkFilter::Flush");
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _sample_buffer.clear();
     _sample_offset = 0;
     while (_queue.size() > 0) {

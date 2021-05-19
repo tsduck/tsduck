@@ -44,7 +44,7 @@ namespace ts {
     //! @ingroup thread
     //!
     //! This class implements the @e guard design pattern for conditions.
-    //! See ts::Guard for other usages of the guard design pattern.
+    //! See ts::GuardMutex for other usages of the guard design pattern.
     //!
     //! Example (writer thread):
     //! @code

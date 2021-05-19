@@ -35,7 +35,7 @@
 #include "tsThread.h"
 #include "tsMutex.h"
 #include "tsCondition.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 #include "utestTSUnitThread.h"
 #include "tsunit.h"

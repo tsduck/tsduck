@@ -35,7 +35,7 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsMutex.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 
 namespace ts {
 
@@ -123,7 +123,7 @@ namespace ts {
         //!
         //! Guard class for writer threads.
         //!
-        class TSDUCKDLL Writer : private Guard
+        class TSDUCKDLL Writer : private GuardMutex
         {
             TS_NOBUILD_NOCOPY(Writer);
         public:
@@ -143,7 +143,7 @@ namespace ts {
         //!
         //! Guard class for the reader thread.
         //!
-        class TSDUCKDLL Reader : private Guard
+        class TSDUCKDLL Reader : private GuardMutex
         {
             TS_NOBUILD_NOCOPY(Reader);
         public:

@@ -31,7 +31,7 @@
 #include "tsSingletonManager.h"
 #include "tsArgs.h"
 #include "tsMutex.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsFatal.h"
 TSDUCK_SOURCE;
 
@@ -323,7 +323,7 @@ namespace {
     // Called each time an SRT socket is opened.
     void SRTInit::start()
     {
-        ts::Guard lock(_mutex);
+        ts::GuardMutex lock(_mutex);
         if (_count++ == 0) {
             srt_startup();
         }
@@ -332,7 +332,7 @@ namespace {
     // Called each time an SRT socket is closed.
     void SRTInit::stop()
     {
-        ts::Guard lock(_mutex);
+        ts::GuardMutex lock(_mutex);
         if (_count > 0) {
             if (--_count == 0) {
                 srt_cleanup();

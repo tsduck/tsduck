@@ -277,7 +277,7 @@ ECMGSharedData::ECMGSharedData(const ECMGOptions& opt) :
 // Declare a new ECM_channel_id. Return false if already active.
 bool ECMGSharedData::openChannel(uint16_t id)
 {
-    ts::Guard lock(_mutex);
+    ts::GuardMutex lock(_mutex);
     const bool ok = _channels.count(id) == 0;
     _channels.insert(id);
     return ok;
@@ -286,7 +286,7 @@ bool ECMGSharedData::openChannel(uint16_t id)
 // Release a ECM_channel_id. Return false if not active.
 bool ECMGSharedData::closeChannel(uint16_t id)
 {
-    ts::Guard lock(_mutex);
+    ts::GuardMutex lock(_mutex);
     const bool ok = _channels.count(id) != 0;
     _channels.erase(id);
     return ok;

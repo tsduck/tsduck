@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginEventHandlerRegistry.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 
@@ -82,7 +82,7 @@ ts::PluginEventHandlerRegistry::Criteria::Criteria(const UString& name) :
 
 void ts::PluginEventHandlerRegistry::registerEventHandler(PluginEventHandlerInterface* handler, const Criteria& criteria)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Don't register null handlers, don't call from an event handler.
     if (handler != nullptr && !_calling_handlers) {
@@ -112,7 +112,7 @@ void ts::PluginEventHandlerRegistry::registerEventHandler(PluginEventHandlerInte
 
 void ts::PluginEventHandlerRegistry::unregisterEventHandler(PluginEventHandlerInterface* handler)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Don't call from an event handler.
     if (!_calling_handlers) {
@@ -142,7 +142,7 @@ void ts::PluginEventHandlerRegistry::unregisterEventHandler(PluginEventHandlerIn
 void ts::PluginEventHandlerRegistry::callEventHandlers(const PluginEventContext& context) const
 {
     // Keep the global lock all along the list lookup and handler executions...
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Don't recurse.
     if (context.plugin() != nullptr && !_calling_handlers) {

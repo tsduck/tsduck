@@ -30,7 +30,7 @@
 #include "tsSysUtils.h"
 #include "tsStaticInstance.h"
 #include "tsMutex.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 #include "tsTime.h"
 #include "tsArgs.h"
 TSDUCK_SOURCE;
@@ -466,7 +466,7 @@ bool ts::SetBinaryModeStdout(Report& report)
 
 bool ts::EnvironmentExists(const UString& name)
 {
-    Guard lock(EnvironmentMutex::Instance());
+    GuardMutex lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     std::array <::WCHAR, 2> unused;
@@ -485,7 +485,7 @@ bool ts::EnvironmentExists(const UString& name)
 
 ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 {
-    Guard lock(EnvironmentMutex::Instance());
+    GuardMutex lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     std::vector<::WCHAR> value;
@@ -510,7 +510,7 @@ ts::UString ts::GetEnvironment(const UString& name, const UString& def)
 
 bool ts::SetEnvironment(const UString& name, const UString& value)
 {
-    Guard lock(EnvironmentMutex::Instance());
+    GuardMutex lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     return ::SetEnvironmentVariableW(name.wc_str(), value.wc_str()) != 0;
@@ -527,7 +527,7 @@ bool ts::SetEnvironment(const UString& name, const UString& value)
 
 bool ts::DeleteEnvironment(const UString& name)
 {
-    Guard lock(EnvironmentMutex::Instance());
+    GuardMutex lock(EnvironmentMutex::Instance());
 
 #if defined(TS_WINDOWS)
     return ::SetEnvironmentVariableW(name.wc_str(), nullptr) != 0;
@@ -658,7 +658,7 @@ namespace {
 
 void ts::GetEnvironment(Environment& env)
 {
-    Guard lock(EnvironmentMutex::Instance());
+    GuardMutex lock(EnvironmentMutex::Instance());
     env.clear();
 
 #if defined(TS_WINDOWS)

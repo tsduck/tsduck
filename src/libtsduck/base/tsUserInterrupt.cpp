@@ -204,7 +204,7 @@ void ts::UserInterrupt::activate()
     }
 
     // Ensure that there is only one active instance at a time
-    Guard lock(ActivationMutex::Instance());
+    GuardMutex lock(ActivationMutex::Instance());
     if (_active_instance != nullptr) {
         return;
     }
@@ -273,7 +273,7 @@ void ts::UserInterrupt::activate()
 void ts::UserInterrupt::deactivate()
 {
     // Deactivate only if active.
-    Guard lock(ActivationMutex::Instance());
+    GuardMutex lock(ActivationMutex::Instance());
     if (!_active) {
         return;
     }

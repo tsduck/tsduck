@@ -360,7 +360,7 @@ bool ts::DataInjectPlugin::start()
 void ts::DataInjectPlugin::clearSession()
 {
     // Work on some protected data
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // No client session is established.
     _channel_established = false;
@@ -420,7 +420,7 @@ ts::ProcessorPlugin::Status ts::DataInjectPlugin::processPacket(TSPacket& pkt, T
         // Try to insert data
         if (_unregulated || _pkt_next_data <= _pkt_current) {
             // Time to insert data packet, if any is available immediately.
-            Guard lock(_mutex);
+            GuardMutex lock(_mutex);
 
             // Get next packet to insert.
             bool got_packet = false;
@@ -495,7 +495,7 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
         return false;
     }
 
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Compute new bandwidth
     if (m->has_bandwidth) {
@@ -534,7 +534,7 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
         return false;
     }
 
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
 
     // Check that the client and data id are expected.
     if (m->client_id != _client_id) {
@@ -671,7 +671,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         channel_status.client_id = m->client_id;
                         channel_status.section_TSpkt_flag = m->section_TSpkt_flag;
                         ok = _client.send(channel_status, _plugin->_logger);
-                        Guard lock(_plugin->_mutex);
+                        GuardMutex lock(_plugin->_mutex);
                         _plugin->_client_id = m->client_id;
                         _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
                         _plugin->_channel_established = true;
@@ -716,7 +716,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                         stream_status.data_id = m->data_id;
                         stream_status.data_type = m->data_type;
                         ok = _client.send(stream_status, _plugin->_logger);
-                        Guard lock(_plugin->_mutex);
+                        GuardMutex lock(_plugin->_mutex);
                         _plugin->_data_id = m->data_id;
                         _plugin->_stream_established = true;
                     }

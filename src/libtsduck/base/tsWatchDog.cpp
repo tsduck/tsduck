@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsWatchDog.h"
-#include "tsGuard.h"
+#include "tsGuardMutex.h"
 TSDUCK_SOURCE;
 
 
@@ -65,7 +65,7 @@ ts::WatchDog::~WatchDog()
 
 void ts::WatchDog::setWatchDogHandler(WatchDogHandlerInterface* h)
 {
-    Guard lock(_mutex);
+    GuardMutex lock(_mutex);
     _handler = h;
 }
 
