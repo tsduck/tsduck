@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2393
+VERSION 3.27-2398
 
 [NEW] New commands and plugins:
 
@@ -14,6 +14,7 @@ VERSION 3.27-2393
 [IMP] Improvements on existing commands and plugins:
 
   * Added support for Dektec Ethernet devices (eg. DTA-2162).
+  * The plugin "zap" can now select more than one service.
   * New options in exiting commands and plugins:
     - Option --max-output-packets in "tsp".
     - Option --force-local-multicast-outgoing in output plugin "ip".

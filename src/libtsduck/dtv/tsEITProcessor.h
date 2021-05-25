@@ -172,6 +172,12 @@ namespace ts {
         void removeService(const Service& service);
 
         //!
+        //! Check if some service filtering is set (keep or remove specific services).
+        //! @return True if some service filtering is set (keep or remove specific services).
+        //!
+        bool filterServices() const { return !_kept.empty() || !_removed.empty(); }
+
+        //!
         //! Rename all EIT's for a given service.
         //! @param [in] old_service Description of the service to rename.
         //! @param [in] new_service New description of the service.
