@@ -106,19 +106,33 @@ void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool
 // Get the fixed-precision value of an option.
 //----------------------------------------------------------------------------
 
-template <class FIXED>
-void ts::Args::getFixedValue(FIXED& value, const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
+template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
+void ts::Args::getFixedValue(FixedPoint<INT,PREC>& value, const UChar* name, FixedPoint<INT,PREC> def_value, size_t index) const
 {
-    typename FIXED::int_t i = 0;
+    INT i = 0;
     getIntValue(i, name, def_value.raw(), index);
-    value = FIXED(i, true);
+    value = FixedPoint<INT,PREC>(i, true);
+}
+
+template <typename INT, const size_t PREC, typename INT2, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && std::is_integral<INT2>::value, int>::type N>
+void ts::Args::getFixedValue(FixedPoint<INT,PREC>& value, const UChar* name, INT2 def_value, size_t index) const
+{
+    getFixedValue<INT,PREC>(value, name, FixedPoint<INT,PREC>(def_value), index);
 }
 
 template <class FIXED>
 FIXED ts::Args::fixedValue(const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
 {
     FIXED value(def_value);
-    getFixedValue<FIXED>(value, name, def_value, index);
+    getFixedValue<typename FIXED::int_t, FIXED::PRECISION>(value, name, def_value, index);
+    return value;
+}
+
+template <class FIXED, typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type N>
+FIXED ts::Args::fixedValue(const UChar* name, INT2 def_value, size_t index) const
+{
+    FIXED value(def_value);
+    getFixedValue<typename FIXED::int_t, FIXED::PRECISION>(value, name, FIXED(def_value), index);
     return value;
 }
 
