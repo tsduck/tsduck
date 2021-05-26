@@ -51,12 +51,20 @@ namespace ts {
     public:
         // Implementation of plugin API
         RegulatePlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool isRealTime() override {return true;}
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool             _pcr_synchronous;
+        // Command line options:
+        bool          _pcr_synchronous;
+        BitRate       _bitrate;
+        PacketCounter _burst;
+        MilliSecond   _wait_min;
+        PID           _pid_pcr;
+
+        // Working data:
         BitRateRegulator _bitrate_regulator;
         PCRRegulator     _pcr_regulator;
     };
@@ -72,6 +80,10 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"regulate", ts::RegulatePlugin);
 ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Regulate the TS packets flow based on PCR or bitrate", u"[options]"),
     _pcr_synchronous(false),
+    _bitrate(),
+    _burst(0),
+    _wait_min(0),
+    _pid_pcr(PID_NULL),
     _bitrate_regulator(tsp, Severity::Verbose),
     _pcr_regulator(tsp, Severity::Verbose)
 {
@@ -105,38 +117,45 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
+// Get command line options.
+//----------------------------------------------------------------------------
+
+bool ts::RegulatePlugin::getOptions()
+{
+    getFixedValue(_bitrate, u"bitrate", 0);
+    getIntValue(_burst, u"packet-burst", DEF_PACKET_BURST);
+    getIntValue(_wait_min, u"wait-min", PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec);
+    getIntValue(_pid_pcr, u"pid-pcr", PID_NULL);
+    _pcr_synchronous = present(u"pcr-synchronous");
+
+    if (present(u"bitrate") && _pcr_synchronous) {
+        tsp->error(u"--bitrate cannot be used with --pcr-synchronous");
+        return false;
+    }
+    if (present(u"pid-pcr") && !_pcr_synchronous) {
+        tsp->error(u"--pid-pcr cannot be used without --pcr-synchronous");
+        return false;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Start method
 //----------------------------------------------------------------------------
 
 bool ts::RegulatePlugin::start()
 {
-    _pcr_synchronous = present(u"pcr-synchronous");
-    const bool has_bitrate = present(u"bitrate");
-    const BitRate bitrate = fixedValue<BitRate>(u"bitrate", 0);
-    const bool has_pid = present(u"pid-pcr");
-    const PID pid = intValue<PID>(u"pid-pcr", PID_NULL);
-    const PacketCounter burst = intValue<PacketCounter>(u"packet-burst", DEF_PACKET_BURST);
-    const MilliSecond wait_min = intValue<MilliSecond>(u"wait-min", PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec);
-
-    if (has_bitrate && _pcr_synchronous) {
-        tsp->error(u"--bitrate cannot be used with --pcr-synchronous");
-        return false;
-    }
-    if (has_pid && !_pcr_synchronous) {
-        tsp->error(u"--pid-pcr cannot be used without --pcr-synchronous");
-        return false;
-    }
-
     // Initialize the appropriate regulator.
     if (_pcr_synchronous) {
         _pcr_regulator.reset();
-        _pcr_regulator.setBurstPacketCount(burst);
-        _pcr_regulator.setReferencePID(pid);
-        _pcr_regulator.setMinimimWait(wait_min * NanoSecPerMilliSec);
+        _pcr_regulator.setBurstPacketCount(_burst);
+        _pcr_regulator.setReferencePID(_pid_pcr);
+        _pcr_regulator.setMinimimWait(_wait_min * NanoSecPerMilliSec);
     }
     else {
-        _bitrate_regulator.setBurstPacketCount(burst);
-        _bitrate_regulator.setFixedBitRate(bitrate);
+        _bitrate_regulator.setBurstPacketCount(_burst);
+        _bitrate_regulator.setFixedBitRate(_bitrate);
         _bitrate_regulator.start();
     }
     return true;

@@ -939,7 +939,8 @@ namespace ts {
         //! the validity of the supplied option value has been checked by the analyze() method.
         //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
         //!
-        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @tparam INT The underlying signed integer type for FixedPoint.
+        //! @tparam PREC The decimal precision in digits for FixedPoint.
         //! @param [out] value A variable receiving the value of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
@@ -950,10 +951,35 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <class FIXED>
-        void getFixedValue(FIXED& value,
+        template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+        void getFixedValue(FixedPoint<INT,PREC>& value,
                            const UChar* name = nullptr,
-                           FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = FixedPoint<typename FIXED::int_t, FIXED::PRECISION>(0),
+                           FixedPoint<INT,PREC> def_value = FixedPoint<INT,PREC>(0),
+                           size_t index = 0) const;
+
+        //!
+        //! Get the value of a fixed-precision number option in the last analyzed command line.
+        //!
+        //! If the option has been declared with a fixed-precision number type in the syntax of the command,
+        //! the validity of the supplied option value has been checked by the analyze() method.
+        //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
+        //!
+        //! @tparam INT The underlying signed integer type for FixedPoint.
+        //! @tparam PREC The decimal precision in digits for FixedPoint.
+        //! @param [out] value A variable receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        template <typename INT, const size_t PREC, typename INT2, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && std::is_integral<INT2>::value, int>::type = 0>
+        void getFixedValue(FixedPoint<INT,PREC>& value,
+                           const UChar* name = nullptr,
+                           INT2 def_value = static_cast<INT2>(0),
                            size_t index = 0) const;
 
         //!
@@ -973,6 +999,25 @@ namespace ts {
         template <class FIXED>
         FIXED fixedValue(const UChar* name = nullptr,
                          FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = FixedPoint<typename FIXED::int_t, FIXED::PRECISION>(0),
+                         size_t index = 0) const;
+
+        //!
+        //! Get the value of a fixed-precision number option in the last analyzed command line.
+        //!
+        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The integer value of the option or parameter.
+        //!
+        template <class FIXED, typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        FIXED fixedValue(const UChar* name = nullptr,
+                         INT2 def_value = static_cast<INT2>(0),
                          size_t index = 0) const;
 
         //!
