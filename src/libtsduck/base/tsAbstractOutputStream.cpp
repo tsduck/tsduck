@@ -53,7 +53,7 @@ ts::AbstractOutputStream::~AbstractOutputStream()
 // This is called when buffer becomes full.
 //----------------------------------------------------------------------------
 
-int ts::AbstractOutputStream::overflow(int c)
+ts::AbstractOutputStream::int_type ts::AbstractOutputStream::overflow(int_type c)
 {
     // Flush content of the buffer.
     bool ok = writeStreamBuffer(pbase(), pptr() - pbase());
