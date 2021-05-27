@@ -95,7 +95,7 @@ namespace ts {
         // Inherited from std::basic_streambuf<char>.
         // This is called when buffer becomes full.
         // If buffer is not used, then this is called every time when characters are put to stream.
-        virtual int overflow(int c = traits_type::eof()) override;
+        virtual int_type overflow(int_type c = traits_type::eof()) override;
 
         // Inherited from std::basic_streambuf<char>.
         // This function is called when stream is flushed, for example when std::endl is put to stream.
