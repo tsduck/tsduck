@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2398
+VERSION 3.27-2400
 
 [NEW] New commands and plugins:
 
@@ -10,6 +10,7 @@ VERSION 3.27-2398
   * Added plugin "pcrcopy" (copy and synchronize PCR from one PID to another).
   * Added plugin "svresync" (resynchronize the clock of a service based on
     another service).
+  * Added plugin "pidshift" (shift selected PID's forward inside the TS).
 
 [IMP] Improvements on existing commands and plugins:
 
