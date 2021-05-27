@@ -45,7 +45,7 @@ MSVCDIR="$BUILDDIR/msvc"
 # List of tools and plugins.
 TOOLS=$(cd "$SRCDIR/tstools"; ls ts*.cpp 2>/dev/null | sed 's/\.cpp$//')
 PLUGINS=$(cd "$SRCDIR/tsplugins"; ls tsplugin_*.cpp 2>/dev/null | sed 's/\.cpp$//')
-OTHER="utests-tsduckdll utests-tsducklib tsduckdll tsducklib tsp_static tsprofiling setpath"
+OTHERS="utests-tsduckdll utests-tsducklib tsduckdll tsducklib tsp_static tsprofiling setpath"
 
 # Visual Studio solution description.
 SLNFILE="$MSVCDIR/tsduck.sln"
@@ -169,10 +169,10 @@ gen-project() {
 }
 
 # Generate all project descriptions.
-for project in $OTHER; do
+for project in $OTHERS; do
     gen-project $project ${DEP[$project]}
 done >>"$SLNFILE"
-for project in $PLUGIN $TOOLS; do
+for project in $PLUGINS $TOOLS; do
     gen-project $project tsduckdll ${DEP[$project]}
 done >>"$SLNFILE"
 
@@ -188,7 +188,7 @@ Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 EOF
 
-for project in $OTHER $PLUGIN $TOOLS; do
+for project in $OTHERS $PLUGINS $TOOLS; do
     guid=$(get-guid $project)
     cat <<EOF >>"$SLNFILE"
 		{$guid}.Debug|Win32.ActiveCfg = Debug|Win32
