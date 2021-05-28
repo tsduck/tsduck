@@ -134,6 +134,10 @@ if (-not $NoLowPriority) {
 # Find MSBuild
 $MSBuild = (Find-MSBuild)
 
+# Compute MSBuild version on 6 digits (e.g. 161001 for version 16.10.1)
+$VFields = ((& $MSBuild -version | Select-String -Pattern '^\d*\.\d*').ToString() -split "[-\. ]") + @("0", "0", "0") | Select-String -Pattern '^\d*$'
+$MSBuildVersion = (10000 * [int]$VFields[0].ToString()) + (100 * [int]$VFields[1].ToString()) + [int]$VFields[2].ToString()
+
 # Update git repository if requested.
 if ($GitPull) {
     # Search git command.
@@ -155,13 +159,18 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
         $OptTeletext = "/property:NoTeletext=true"
     }
     else {
-        $OptTeletext =""
+        $OptTeletext = ""
     }
     if ($Parallel -gt 0) {
         $OptCPU = "/maxcpucount:$Parallel"
     }
     else {
         $OptCPU = "/maxcpucount"
+    }
+    if (($MSBuildVersion -eq 161000) -and (-not -not $target)) {
+        # There is some kind of bug in MSBuild 16.10.0. Rebuilding with /target=projname fails.
+        # Adding :Rebuild to each project name works. Supposed to be fixed in 16.10.1.
+        $target = ($target -replace ';',':Rebuild;') + ':Rebuild'
     }
     & $MSBuild $SolutionFileName /nologo $OptCPU /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target
     if ($LastExitCode -ne 0) {

@@ -59,7 +59,7 @@ namespace ts {
     private:
         // Command line options:
         bool            _ignore_errors;  // Ignore evaluation errors.
-        PacketCounter   _shift_packets;  // Shift buffer size in packets.
+        size_t          _shift_packets;  // Shift buffer size in packets.
         MilliSecond     _shift_ms;       // Shift buffer size in milliseconds.
         MilliSecond     _eval_ms;        // Initial evaluation phase duration in milliseconds.
         PIDSet          _pids;           // List of PID's to shift forward.
@@ -243,7 +243,7 @@ ts::ProcessorPlugin::Status ts::PIDShiftPlugin::processPacket(TSPacket& pkt, TSP
             }
 
             tsp->verbose(u"setting shift buffer size to %'d packets", {count});
-            _buffer.setTotalPackets(count);
+            _buffer.setTotalPackets(size_t(count));
 
             // Open the shift buffer.
             if (!_buffer.open(*tsp)) {
