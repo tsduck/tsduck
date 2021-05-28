@@ -12,8 +12,8 @@
   <!-- Locate all directories in libtsduck (for inclusion of header files) -->
 
   <ItemGroup>
-    <LibPublicFiles Include="$(TSDuckRootDir)src\libtsduck\**\*" Exclude="**\unix\**;**\linux\**;**\mac\**;**\private\**"/>
-    <LibPrivateFiles Include="$(TSDuckRootDir)src\libtsduck\**\private\**\*"/>
+    <LibPublicFiles Include="$(TSDuckRootDir)src\libtsduck\**\*.h" Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**;$(TSDuckRootDir)src\libtsduck\**\private\**;$(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
+    <LibPrivateFiles Include="$(TSDuckRootDir)src\libtsduck\**\private\**\*.h"/>
     <LibPublicDirs Include="@(LibPublicFiles->'%(RootDir)%(Directory)'->Distinct())"/>
     <LibPrivateDirs Include="@(LibPrivateFiles->'%(RootDir)%(Directory)'->Distinct())"/>
   </ItemGroup>
