@@ -63,8 +63,9 @@ namespace ts {
         bool              _update_tdt;        // Update the TDT
         bool              _update_tot;        // Update the TOT
         bool              _update_eit;        // Update the EIT's
-        bool              _eit_date_only;     // Update date field only in EIT.
+        bool              _eit_date_only;     // Update date field only in EIT
         bool              _use_timeref;       // Use a new time reference
+        bool              _system_sync;       // Synchronous with system clock.
         bool              _update_local;      // Update local time info, not only UTC
         MilliSecond       _add_milliseconds;  // Add this to all time values
         Time              _startref;          // Starting value of new time reference
@@ -102,6 +103,7 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     _update_eit(false),
     _eit_date_only(false),
     _use_timeref(false),
+    _system_sync(false),
     _update_local(false),
     _add_milliseconds(0),
     _startref(Time::Epoch),
@@ -116,7 +118,7 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
     _eit_active(false)
 {
     option(u"add", 'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-    help(u"add",
+    help(u"add", u"seconds",
          u"Add the specified number of seconds to all UTC time. Specify a negative "
          u"value to make the time reference go backward.");
 
@@ -175,6 +177,16 @@ ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
          u"of packets and the bitrate. The time value can be in the format "
          u"\"year/month/day:hour:minute:second\", or use the predefined name "
          u"\"system\" for getting current time from the system clock.");
+
+    option(u"system-synchronous");
+    help(u"system-synchronous",
+         u"Keep the TDT and TOT time synchronous with the system clock. "
+         u"Each time a TDT or TOT is updated, the system clock value is used. "
+         u"It implicitely uses '--start system'. "
+         u"If --start is specified with a specific date, the difference between that date and the initial UTC system clock is stored. "
+         u"This offset is then consistently applied to the current system clock in all TDT and TOT. "
+         u"Note: this option is meaningful on live streams only. "
+         u"It is useless on offline file processing.");
 }
 
 
@@ -188,28 +200,33 @@ bool ts::TimeRefPlugin::getOptions()
     _update_tot = !present(u"notot");
     _eit_date_only = present(u"eit-date-only");
     _update_eit = _eit_date_only || present(u"eit");
-    _use_timeref = present(u"start");
+    _system_sync = present(u"system-synchronous");
+    _use_timeref = _system_sync || present(u"start");
     _add_milliseconds = MilliSecPerSec * intValue<int>(u"add", 0);
     _local_offset = intValue<int>(u"local-time-offset", INT_MAX);
     _next_offset = intValue<int>(u"next-time-offset", INT_MAX);
     getIntValues(_only_regions, u"only-region");
 
+    if (_add_milliseconds != 0 && _use_timeref) {
+        tsp->error(u"--add cannot be used with --start or --system-synchronous");
+        return false;
+    }
+
     if (_use_timeref) {
         const UString start(value(u"start"));
-        // Decode an absolute time string
-        if (start == u"system") {
+        // Decode an absolute time string (or "system", implicit with --system-synchronous).
+        if (start.empty() || start == u"system") {
             _startref = Time::CurrentUTC();
+            _add_milliseconds = 0; // for --system-synchronous
             tsp->verbose(u"current system clock is %s", {ts::UString(_startref)});
         }
         else if (!_startref.decode(start)) {
             tsp->error(u"invalid --start time value \"%s\" (use \"year/month/day:hour:minute:second\")", {start});
             return false;
         }
-    }
-
-    if (_add_milliseconds != 0 && _use_timeref) {
-        tsp->error(u"--add and --start are mutually exclusive");
-        return false;
+        else if (_system_sync) {
+            _add_milliseconds = _startref - Time::CurrentUTC();
+        }
     }
 
     // In a local_time_offset_descriptor, the sign of the time offsets is stored once only.
@@ -354,13 +371,18 @@ void ts::TimeRefPlugin::processSection(uint8_t* section, size_t size)
     if (_use_timeref) {
 
         // Compute updated time reference.
-        const BitRate bitrate = tsp->bitrate();
-        if (bitrate == 0) {
-            tsp->warning(u"unknown bitrate cannot reliably update TDT/TOT");
-            return;
+        if (_system_sync) {
+            _timeref = Time::CurrentUTC() + _add_milliseconds;
         }
-        _timeref += PacketInterval(bitrate, tsp->pluginPackets() - _timeref_pkt);
-        _timeref_pkt = tsp->pluginPackets();
+        else {
+            const BitRate bitrate = tsp->bitrate();
+            if (bitrate == 0) {
+                tsp->warning(u"unknown bitrate cannot reliably update TDT/TOT");
+                return;
+            }
+            _timeref += PacketInterval(bitrate, tsp->pluginPackets() - _timeref_pkt);
+            _timeref_pkt = tsp->pluginPackets();
+        }
 
         // Configure EIT processor if time offset not yet known.
         if (_update_eit && !_eit_active) {
