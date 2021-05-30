@@ -43,8 +43,8 @@ SRCDIR="$ROOTDIR/src"
 MSVCDIR="$BUILDDIR/msvc"
 
 # List of tools and plugins.
-TOOLS=$(cd "$SRCDIR/tstools"; ls ts*.cpp 2>/dev/null | sed 's/\.cpp$//')
-PLUGINS=$(cd "$SRCDIR/tsplugins"; ls tsplugin_*.cpp 2>/dev/null | sed 's/\.cpp$//')
+TOOLS=$(cd "$SRCDIR/tstools"; ls -v ts*.cpp 2>/dev/null | sed 's/\.cpp$//')
+PLUGINS=$(cd "$SRCDIR/tsplugins"; ls -v tsplugin_*.cpp 2>/dev/null | sed 's/\.cpp$//')
 OTHERS="utests-tsduckdll utests-tsducklib tsduckdll tsducklib tsp_static tsprofiling setpath"
 
 # Visual Studio solution description.
