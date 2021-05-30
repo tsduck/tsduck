@@ -39,9 +39,8 @@ TSDUCK_SOURCE;
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::PSIMerger::PSIMerger(DuckContext& duck, Options options, Report& report) :
+ts::PSIMerger::PSIMerger(DuckContext& duck, Options options) :
     _duck(duck),
-    _report(report),
     _options(options),
     _main_demux(_duck, this),                // Complete table handler only
     _main_eit_demux(_duck, nullptr, this),   // Section handler only, do not accumulate incomplete sections.
@@ -356,7 +355,7 @@ bool ts::PSIMerger::checkEITs()
 {
     // Fool-proof check.
     if (_eits.size() > _max_eits) {
-        _report.error(u"too many accumulated EIT sections, not enough space in output EIT PID");
+        _duck.report().error(u"too many accumulated EIT sections, not enough space in output EIT PID");
         // Drop oldest EIT's.
         while (_eits.size() > _max_eits) {
             _eits.pop_front();
@@ -592,7 +591,7 @@ void ts::PSIMerger::mergePAT()
         return;
     }
 
-    _report.debug(u"merging PAT");
+    _duck.report().debug(u"merging PAT");
 
     // Build a new PAT based on last main PAT with incremented version number.
     PAT pat(_main_pat);
@@ -602,11 +601,11 @@ void ts::PSIMerger::mergePAT()
     for (auto merge = _merge_pat.pmts.begin(); merge != _merge_pat.pmts.end(); ++merge) {
         // Check if the service already exists in the main PAT.
         if (Contains(pat.pmts, merge->first)) {
-            _report.error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
         }
         else {
             pat.pmts[merge->first] = merge->second;
-            _report.verbose(u"adding service 0x%X (%d) in PAT from merged stream", {merge->first, merge->first});
+            _duck.report().verbose(u"adding service 0x%X (%d) in PAT from merged stream", {merge->first, merge->first});
         }
     }
 
@@ -630,7 +629,7 @@ void ts::PSIMerger::mergeCAT()
         return;
     }
 
-    _report.debug(u"merging CAT");
+    _duck.report().debug(u"merging CAT");
 
     // Build a new CAT based on last main CAT with incremented version number.
     CAT cat(_main_cat);
@@ -641,11 +640,11 @@ void ts::PSIMerger::mergeCAT()
         const CADescriptor ca(_duck, *_merge_cat.descs[index]);
         // Check if the same EMM PID already exists in the main CAT.
         if (CADescriptor::SearchByPID(_main_cat.descs, ca.ca_pid) < _main_cat.descs.count()) {
-            _report.error(u"EMM PID conflict, PID 0x%X (%d) referenced in the two streams, dropping from merged stream", {ca.ca_pid, ca.ca_pid});
+            _duck.report().error(u"EMM PID conflict, PID 0x%X (%d) referenced in the two streams, dropping from merged stream", {ca.ca_pid, ca.ca_pid});
         }
         else {
             cat.descs.add(_merge_cat.descs[index]);
-            _report.verbose(u"adding EMM PID 0x%X (%d) in CAT from merged stream", {ca.ca_pid, ca.ca_pid});
+            _duck.report().verbose(u"adding EMM PID 0x%X (%d) in CAT from merged stream", {ca.ca_pid, ca.ca_pid});
         }
     }
 
@@ -669,7 +668,7 @@ void ts::PSIMerger::mergeSDT()
         return;
     }
 
-    _report.debug(u"merging SDT");
+    _duck.report().debug(u"merging SDT");
 
     // Build a new SDT based on last main SDT with incremented version number.
     SDT sdt(_main_sdt);
@@ -679,11 +678,11 @@ void ts::PSIMerger::mergeSDT()
     for (auto merge = _merge_sdt.services.begin(); merge != _merge_sdt.services.end(); ++merge) {
         // Check if the service already exists in the main SDT.
         if (Contains(sdt.services, merge->first)) {
-            _report.error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
         }
         else {
             sdt.services[merge->first] = merge->second;
-            _report.verbose(u"adding service \"%s\", id 0x%X (%d) in SDT from merged stream", {merge->second.serviceName(_duck), merge->first, merge->first});
+            _duck.report().verbose(u"adding service \"%s\", id 0x%X (%d) in SDT from merged stream", {merge->second.serviceName(_duck), merge->first, merge->first});
         }
     }
 
@@ -710,7 +709,7 @@ void ts::PSIMerger::mergeNIT()
         return;
     }
 
-    _report.debug(u"merging NIT");
+    _duck.report().debug(u"merging NIT");
 
     // Build a new NIT based on last main NIT with incremented version number.
     NIT nit(_main_nit);
@@ -761,7 +760,7 @@ void ts::PSIMerger::mergeBAT(uint16_t bouquet_id)
         return;
     }
 
-    _report.debug(u"merging BAT for bouquet id 0x%X (%d)", {bouquet_id, bouquet_id});
+    _duck.report().debug(u"merging BAT for bouquet id 0x%X (%d)", {bouquet_id, bouquet_id});
 
     // Build a new BAT based on last main BAT with incremented version number.
     BAT bat(main->second);

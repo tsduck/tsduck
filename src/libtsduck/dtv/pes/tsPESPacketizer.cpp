@@ -37,8 +37,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PESPacketizer::PESPacketizer(const DuckContext& duck, PID pid, PESProviderInterface* provider, Report* report) :
-    AbstractPacketizer(duck, pid, report),
+ts::PESPacketizer::PESPacketizer(const DuckContext& duck, PID pid, PESProviderInterface* provider) :
+    AbstractPacketizer(duck, pid),
     _provider(provider),
     _pes(nullptr),
     _next_byte(0),

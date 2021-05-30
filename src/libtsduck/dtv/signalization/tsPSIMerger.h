@@ -86,7 +86,7 @@ namespace ts {
             NULL_MERGED    = 0x00000100,  //!< Nullify packets from the merged stream when they carried merged PSI (PAT, NIT, SDT, BAT).
             NULL_UNMERGED  = 0x00000200,  //!< Nullify packets from the merged stream when they carry unmerged PSI (PAT, NIT, SDT, BAT, EIT).
             DEFAULT        = MERGE_PAT | MERGE_CAT | MERGE_NIT | MERGE_SDT | MERGE_BAT | MERGE_EIT | NULL_MERGED | NULL_UNMERGED,
-                                         //!< Default options: merge all.
+                                          //!< Default options: merge all.
         };
 
         //!
@@ -95,9 +95,8 @@ namespace ts {
         //! Contextual information (such as standards) are accumulated in the context from demuxed
         //! sections, from both streams.
         //! @param [in] options Bitmask of option values.
-        //! @param [in] report Where to report errors.
         //!
-        explicit PSIMerger(DuckContext& duck, Options options = DEFAULT, Report& report = CERR);
+        explicit PSIMerger(DuckContext& duck, Options options = DEFAULT);
 
         //!
         //! Feed a packet from the main stream.
@@ -129,7 +128,6 @@ namespace ts {
 
     private:
         DuckContext&       _duck;             // Reference to TSDuck context.
-        Report&            _report;           // Where to report errors.
         Options            _options;          // Merging options.
         SectionDemux       _main_demux;       // Demux on main transport stream.
         SectionDemux       _main_eit_demux;   // Demux on main transport stream for EIT's.

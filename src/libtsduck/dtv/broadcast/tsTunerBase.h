@@ -33,12 +33,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSafePtr.h"
+#include "tsDuckContext.h"
 
 namespace ts {
 
     class TunerBase;
-    class DuckContext;
     class AbortInterface;
     class Report;
     class ModulationArgs;
@@ -84,10 +83,9 @@ namespace ts {
         //! Get the list of all existing physical tuners.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [out] tuners Returned list of physical tuners on the system.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        static bool GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report);
+        static bool GetAllTuners(DuckContext& duck, TunerPtrVector& tuners);
 
         //!
         //! Constructor.
@@ -105,17 +103,16 @@ namespace ts {
         //! @param [in] device_name Tuner device name. If name is empty, use "first" or "default" tuner.
         //! @param [in] info_only If true, we will only fetch the properties of the tuner, we won't use it to
         //! receive streams. Thus, it is possible to open tuners which are already used to actually receive a stream.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool open(const UString& device_name, bool info_only, Report& report);
+        virtual bool open(const UString& device_name, bool info_only);
 
         //!
         //! Close the tuner.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] silent When true, do not report close errors.
         //! @return True on success, false on error.
         //!
-        virtual bool close(Report& report);
+        virtual bool close(bool silent = false);
 
         //!
         //! Check if the tuner is open.
@@ -156,55 +153,51 @@ namespace ts {
 
         //!
         //! Check if a signal is present and locked.
-        //! @param [in,out] report Where to report errors.
         //! @return True if a signal is present and locked.
         //!
-        virtual bool signalLocked(Report& report);
+        virtual bool signalLocked();
 
         //!
         //! Get the signal strength.
-        //! @param [in,out] report Where to report errors.
         //! @return The signal strength in percent (0=bad, 100=good).
         //! Return a negative value on error.
         //!
-        virtual int signalStrength(Report& report);
+        virtual int signalStrength();
 
         //!
         //! Get the signal quality.
-        //! @param [in,out] report Where to report errors.
         //! @return The signal quality in percent (0=bad, 100=good).
         //! Return a negative value on error.
         //!
-        virtual int signalQuality(Report& report);
+        virtual int signalQuality();
 
         //!
         //! Tune to the specified parameters.
         //! @param [in,out] params Tuning parameters. Updated with missing default values.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool tune(ModulationArgs& params, Report& report);
+        virtual bool tune(ModulationArgs& params);
 
         //!
         //! Start receiving packets.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool start(Report& report);
+        virtual bool start();
 
         //!
         //! Stop receiving packets.
-        //! @param [in,out] report Where to report errors.
+        //! @param [in] silent When true, do not report close errors.
         //! @return True on success, false on error.
         //!
-        virtual bool stop(Report& report);
+        virtual bool stop(bool silent = false);
 
         //!
         //! Abort any pending or blocked reception.
         //! This unblocks a blocked reader but leaves the tuner in an undefined state.
         //! The only safe option after this is a close().
+        //! @param [in] silent When true, do not report close errors.
         //!
-        virtual void abort();
+        virtual void abort(bool silent = false);
 
         //!
         //! Receive packets.
@@ -213,11 +206,10 @@ namespace ts {
         //! @param [in] max_packets Maximum number of packets to read in @a buffer.
         //! @param [in] abort If non-zero, invoked when I/O is interrupted
         //! (in case of user-interrupt, return, otherwise retry).
-        //! @param [in,out] report Where to report errors.
         //! @return The number of actually received packets (in the range 1 to @a max_packets).
         //! Returning zero means error or end of input.
         //!
-        virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report);
+        virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort = nullptr);
 
         //!
         //! Get the current tuning parameters.
@@ -226,10 +218,9 @@ namespace ts {
         //! @param [in] reset_unknown If true, the unknown values (those
         //! which are not reported by the tuner) are reset to unknown/zero/auto
         //! values. Otherwise, they are left unmodified.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report);
+        virtual bool getCurrentTuning(ModulationArgs& params, bool reset_unknown);
 
         //!
         //! Default timeout before getting a signal on start.
@@ -247,8 +238,7 @@ namespace ts {
         //!
         //! Set if an error should be reported on timeout before getting a signal on start.
         //! Must be set before start().
-        //! @param [in] silent If true, no error message will be reported if no signal is
-        //! received after the timeout on start.
+        //! @param [in] silent If true, no error message will be reported if no signal is received after the timeout on start.
         //!
         virtual void setSignalTimeoutSilent(bool silent);
 
@@ -257,10 +247,9 @@ namespace ts {
         //! @param [in] t Number of milliseconds to wait before receiving
         //! packets in a receive() operation. If zero (the default), no
         //! timeout is applied.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        virtual bool setReceiveTimeout(MilliSecond t, Report& report);
+        virtual bool setReceiveTimeout(MilliSecond t);
 
         //!
         //! Get the timeout for receive operation.
@@ -323,11 +312,16 @@ namespace ts {
         //! Display the characteristics and status of the tuner.
         //! @param [in,out] strm Output text stream.
         //! @param [in] margin Left margin to display.
-        //! @param [in,out] report Where to report errors.
         //! @param [in] extended Display "extended" information. Can be very verbose.
         //! @return A reference to @a strm.
         //!
-        virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended = false);
+        virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin = UString(), bool extended = false);
+
+        //!
+        //! Get a reference to the error report.
+        //! @return A reference to the error report.
+        //!
+        Report& report() const { return _duck.report(); }
 
     protected:
         DuckContext& _duck; //!< TSDuck execution context for subclasses.
@@ -335,9 +329,8 @@ namespace ts {
         //!
         //! Check the consistency of tune() parameters.
         //! @param [in,out] params Modulation parameters. Updated with default values.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool checkTuneParameters(ModulationArgs& params, Report& report) const;
+        bool checkTuneParameters(ModulationArgs& params) const;
     };
 }

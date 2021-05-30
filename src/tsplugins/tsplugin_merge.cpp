@@ -158,7 +158,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _main_pids(),
     _merge_pids(),
     _pcr_merger(duck),
-    _psi_merger(duck, PSIMerger::NONE, *tsp),
+    _psi_merger(duck, PSIMerger::NONE),
     _insert_control(*tsp)
 {
     _insert_control.setMainStreamName(u"main stream");

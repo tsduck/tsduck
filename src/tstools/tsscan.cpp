@@ -394,7 +394,7 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
         }
 
         // Finally, tune back to best offset
-        _signal_found = tune(_best_offset, _best_params) && _tuner.getCurrentTuning(_best_params, false, _opt);
+        _signal_found = tune(_best_offset, _best_params) && _tuner.getCurrentTuning(_best_params, false);
     }
 }
 
@@ -421,7 +421,7 @@ void OffsetScanner::buildTuningParameters(ts::ModulationArgs& params, int32_t of
 bool OffsetScanner::tune(int32_t offset, ts::ModulationArgs& params)
 {
     buildTuningParameters(params, offset);
-    return _tuner.tune(params, _opt);
+    return _tuner.tune(params);
 }
 
 
@@ -436,12 +436,12 @@ bool OffsetScanner::tryOffset(int32_t offset)
     // Tune to transponder and start signal acquisition.
     // Signal locking timeout is applied in start().
     ts::ModulationArgs params;
-    if (!tune(offset, params) || !_tuner.start(_opt)) {
+    if (!tune(offset, params) || !_tuner.start()) {
         return false;
     }
 
     // Double-check that the signal was locked.
-    bool ok = _tuner.signalLocked(_opt);
+    bool ok = _tuner.signalLocked();
 
     // If we get a signal and we wee need to scan offsets, check signal strength and quality.
     // Note that if we don't scan offsets, there is no need to consider signal strength
@@ -449,8 +449,8 @@ bool OffsetScanner::tryOffset(int32_t offset)
     if (ok && !_opt.no_offset) {
 
         // Get signal quality & strength
-        const int strength = _tuner.signalStrength(_opt);
-        const int quality = _tuner.signalQuality(_opt);
+        const int strength = _tuner.signalStrength();
+        const int quality = _tuner.signalQuality();
         _opt.verbose(_opt.hfband->description(_channel, offset, strength, quality));
 
         if (strength >= 0 && strength <= _opt.min_strength) {
@@ -461,7 +461,7 @@ bool OffsetScanner::tryOffset(int32_t offset)
             // Best offset so far for signal strength
             _best_strength = strength;
             _best_strength_offset = offset;
-            _tuner.getCurrentTuning(params, false, _opt);
+            _tuner.getCurrentTuning(params, false);
         }
 
         if (quality >= 0 && quality <= _opt.min_quality) {
@@ -472,7 +472,7 @@ bool OffsetScanner::tryOffset(int32_t offset)
             // Best offset so far for signal quality
             _best_quality = quality;
             _best_quality_offset = offset;
-            _tuner.getCurrentTuning(params, false, _opt);
+            _tuner.getCurrentTuning(params, false);
         }
     }
 
@@ -491,7 +491,7 @@ bool OffsetScanner::tryOffset(int32_t offset)
     }
 
     // Stop signal acquisition
-    _tuner.stop(_opt);
+    _tuner.stop();
 
     return ok;
 }
@@ -624,7 +624,7 @@ void ScanContext::hfBandScan()
         if (offscan.signalFound()) {
 
             // A channel was found, report its characteristics.
-            std::cout << "* " << _opt.hfband->description(chan, offscan.bestOffset(), _tuner.signalStrength(_opt), _tuner.signalQuality(_opt)) << std::endl;
+            std::cout << "* " << _opt.hfband->description(chan, offscan.bestOffset(), _tuner.signalStrength(), _tuner.signalQuality()) << std::endl;
 
             // Analyze PSI/SI if required.
             ts::ModulationArgs tparams;
@@ -642,7 +642,7 @@ void ScanContext::hfBandScan()
 void ScanContext::nitScan()
 {
     // Tune to the reference transponder.
-    if (!_tuner.tune(_opt.tuner_args, _opt)) {
+    if (!_tuner.tune(_opt.tuner_args)) {
         return;
     }
 
@@ -670,9 +670,9 @@ void ScanContext::nitScan()
                 // Got a delivery descriptor, this is the description of one transponder.
                 // Tune to this transponder.
                 _opt.debug(u"* tuning to " + params.toPluginOptions(true));
-                if (_tuner.tune(params, _opt)) {
+                if (_tuner.tune(params)) {
                     // Report channel characteristics
-                    std::cout << "* Frequency: " << params.shortDescription(_opt.duck, _tuner.signalStrength(_opt), _tuner.signalQuality(_opt)) << std::endl;
+                    std::cout << "* Frequency: " << params.shortDescription(_opt.duck, _tuner.signalStrength(), _tuner.signalQuality()) << std::endl;
                     // Analyze PSI/SI if required
                     scanTS(std::cout, u"  ", params);
                 }
@@ -690,7 +690,7 @@ void ScanContext::main()
 {
     // Initialize tuner.
     _tuner.setSignalTimeoutSilent(true);
-    if (!_opt.tuner_args.configureTuner(_tuner, _opt)) {
+    if (!_opt.tuner_args.configureTuner(_tuner)) {
         return;
     }
 

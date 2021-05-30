@@ -44,7 +44,6 @@ TSDUCK_SOURCE;
 
 ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, bool pat_only):
     _duck(duck),
-    _report(duck.report()),
     _pat_only(pat_only),
     _completed(false),
     _demux(_duck, this),
@@ -64,7 +63,7 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
     }
 
     // Start packet acquisition
-    if (!tuner.start(_report)) {
+    if (!tuner.start()) {
         return;
     }
 
@@ -76,8 +75,8 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
 
     // Read packets and analyze tables until completed
     while (!_completed && Time::CurrentUTC() < deadline) {
-        const size_t pcount = tuner.receive(buffer.data(), buffer.size(), nullptr, _report);
-        _report.debug(u"got %d packets", {pcount});
+        const size_t pcount = tuner.receive(buffer.data(), buffer.size(), nullptr);
+        _duck.report().debug(u"got %d packets", {pcount});
         if (pcount == 0) { // error
             break;
         }
@@ -88,12 +87,12 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
 
     // Get current tuning parameters before finishing.
     // Some tuners may take a while to update their internal status.
-    if (!tuner.getCurrentTuning(_tparams, true, _report)) {
+    if (!tuner.getCurrentTuning(_tparams, true)) {
         _tparams.reset();
     }
 
     // Stop packet acquisition
-    tuner.stop(_report);
+    tuner.stop();
 }
 
 
@@ -106,12 +105,12 @@ bool ts::TSScanner::getServices(ServiceList& services) const
     services.clear();
 
     if (_pat.isNull()) {
-        _report.warning(u"No PAT found, services are unknown");
+        _duck.report().warning(u"No PAT found, services are unknown");
         return false;
     }
 
     if (_sdt.isNull() && _vct.isNull() && !_pat_only) {
-        _report.warning(u"No SDT or VCT found, services names are unknown");
+        _duck.report().warning(u"No SDT or VCT found, services names are unknown");
         // do not return, collect service ids.
     }
 
@@ -191,7 +190,7 @@ bool ts::TSScanner::getServices(ServiceList& services) const
 
 void ts::TSScanner::handleTable(SectionDemux&, const BinaryTable& table)
 {
-    _report.debug(u"got table id 0x%X on PID 0x%X", {table.tableId(), table.sourcePID()});
+    _duck.report().debug(u"got table id 0x%X on PID 0x%X", {table.tableId(), table.sourcePID()});
 
     // Store known tables
     switch (table.tableId()) {

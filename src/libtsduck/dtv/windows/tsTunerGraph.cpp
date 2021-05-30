@@ -459,17 +459,17 @@ bool ts::TunerGraph::installTIF(const ComPtr<::IBaseFilter>& demux, const ComPtr
 // Send a tune request.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& params, Report& report)
+bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& params)
 {
     // Check if we have a corresponding network type.
     if (!params.delivery_system.set()) {
-        report.error(u"no delivery system specified");
+        duck.report().error(u"no delivery system specified");
         return false;
     }
     const TunerType ttype = TunerTypeOf(params.delivery_system.value());
     const auto it = _net_types.find(ttype);
     if (it == _net_types.end()) {
-        report.error(u"tuner \"%s\" does not support %s", {_tuner_name, TunerTypeEnum.name(ttype)});
+        duck.report().error(u"tuner \"%s\" does not support %s", {_tuner_name, TunerTypeEnum.name(ttype)});
         return false;
     }
 
@@ -479,18 +479,18 @@ bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& pa
 
     // Set the tuning space for this network type as current tuning space in the network provider.
     ::HRESULT hr = _ituner->put_TuningSpace(net.tuningSpace());
-    if (!ComSuccess(hr, u"setting tuning space " + net.tuningSpaceName(), report)) {
+    if (!ComSuccess(hr, u"setting tuning space " + net.tuningSpaceName(), duck.report())) {
         return false;
     }
 
     // Create a DirectShow tune request
     ComPtr<::ITuneRequest> tune_request;
-    if (!CreateTuneRequest(duck, tune_request, net.tuningSpace(), params, report)) {
+    if (!CreateTuneRequest(duck, tune_request, net.tuningSpace(), params, duck.report())) {
         return false;
     }
     assert(!tune_request.isNull());
 
     // Send the tune request to the network provider.
     hr = _ituner->put_TuneRequest(tune_request.pointer());
-    return ComSuccess(hr, u"DirectShow tuning error", report);
+    return ComSuccess(hr, u"DirectShow tuning error", duck.report());
 }

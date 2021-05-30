@@ -38,8 +38,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::Packetizer::Packetizer(const DuckContext& duck, PID pid, SectionProviderInterface* provider, Report* report) :
-    AbstractPacketizer(duck, pid, report),
+ts::Packetizer::Packetizer(const DuckContext& duck, PID pid, SectionProviderInterface* provider) :
+    AbstractPacketizer(duck, pid),
     _provider(provider),
     _split_headers(false),
     _section(nullptr),

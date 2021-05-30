@@ -119,7 +119,7 @@ void PESPacketizerTest::testPacketizer()
 
     // Packetize the two PES packets at once.
     ts::DuckContext duck;
-    ts::PESOneShotPacketizer zer(duck, 100, &CERR);
+    ts::PESOneShotPacketizer zer(duck, 100);
     TSUNIT_ASSERT(zer.empty());
 
     zer.addPES(pes1, ts::ShareMode::SHARE);

@@ -27,90 +27,51 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsPESStreamPacketizer.h"
-#include "tsNullReport.h"
-#include "tsTSPacket.h"
+#include "tsEITGenerator.h"
+#include "tsDuckContext.h"
 TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
+// Constructor.
 //----------------------------------------------------------------------------
 
-ts::PESStreamPacketizer::PESStreamPacketizer(const DuckContext& duck, PID pid) :
-    PESPacketizer(duck, pid, this),
-    _max_queued(0),
-    _pes_queue()
+ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid) :
+    _duck(duck),
+    _eit_pid(pid),
+    _demux(_duck, nullptr, this),
+    _packetizer(_duck, _eit_pid, CyclingPacketizer::StuffingPolicy::ALWAYS),
+    _sections()
 {
-}
-
-ts::PESStreamPacketizer::~PESStreamPacketizer()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Reset the content of a packetizer. Becomes empty.
-//----------------------------------------------------------------------------
-
-void ts::PESStreamPacketizer::reset()
-{
-    _pes_queue.clear();
-    PESPacketizer::reset();
+    _demux.addPID(_eit_pid);
 }
 
 
 //----------------------------------------------------------------------------
-// Implementation of PESProviderInterface
+// Reset the EIT generator to default state.
 //----------------------------------------------------------------------------
 
-void ts::PESStreamPacketizer::providePESPacket(PacketCounter counter, PESPacketPtr& pes)
+void ts::EITGenerator::reset()
 {
-    if (_pes_queue.empty()) {
-        pes.clear();
-    }
-    else {
-        pes = _pes_queue.front();
-        _pes_queue.pop_front();
-    }
+    //@@@
 }
 
 
 //----------------------------------------------------------------------------
-// Add a PES packet to packetize.
+// Process one packet from the stream.
 //----------------------------------------------------------------------------
 
-bool ts::PESStreamPacketizer::addPES(const PESPacketPtr& pes)
+void ts::EITGenerator::processPacket(TSPacket& pkt)
 {
-    if (_max_queued != 0 && _pes_queue.size() >= _max_queued) {
-        return false;
-    }
-    else {
-        _pes_queue.push_back(pes);
-        return true;
-    }
-}
-
-
-bool ts::PESStreamPacketizer::addPES(const PESPacket& pes, ShareMode mode)
-{
-    if (_max_queued != 0 && _pes_queue.size() >= _max_queued) {
-        return false;
-    }
-    else {
-        _pes_queue.push_back(PESPacketPtr(new PESPacket(pes, mode)));
-        return true;
-    }
+    //@@@
 }
 
 
 //----------------------------------------------------------------------------
-// Display the internal state of the packetizer, mainly for debug
+// Implementation of SectionHandlerInterface.
 //----------------------------------------------------------------------------
 
-std::ostream& ts::PESStreamPacketizer::display(std::ostream& strm) const
+void ts::EITGenerator::handleSection(SectionDemux& demux, const Section& section)
 {
-    return AbstractPacketizer::display(strm)
-        << UString::Format(u"  Additional queued PES packets: %'d", {_pes_queue.size()}) << std::endl
-        << UString::Format(u"  Enqueue limit: %'d", {_max_queued}) << std::endl;
+    //@@@
 }

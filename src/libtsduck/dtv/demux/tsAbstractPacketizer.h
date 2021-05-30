@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsTS.h"
-#include "tsReport.h"
+#include "tsDuckContext.h"
 
 namespace ts {
 
@@ -101,7 +101,7 @@ namespace ts {
         //! Get a reference to the debugging report.
         //! @return A reference to the debugging report.
         //!
-        Report& report() const { return _report; }
+        Report& report() const { return _duck.report(); }
 
         //!
         //! Get a reference to the TSDuck execution context.
@@ -121,9 +121,8 @@ namespace ts {
         //! Constructor.
         //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
         //! @param [in] pid PID for generated TS packets.
-        //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        AbstractPacketizer(const DuckContext& duck, PID pid = PID_NULL, Report* report = nullptr);
+        AbstractPacketizer(const DuckContext& duck, PID pid = PID_NULL);
 
         //!
         //! Destructor
@@ -140,7 +139,6 @@ namespace ts {
 
     private:
         const DuckContext& _duck;              // TSDuck execution context.
-        Report&            _report;            // Report object for debug.
         PID                _pid;               // PID for injected sections.
         uint8_t            _continuity;        // Continuity counter for next packet
         PacketCounter      _packet_count;      // Number of generated packets

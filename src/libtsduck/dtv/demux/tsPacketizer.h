@@ -52,9 +52,8 @@ namespace ts {
         //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
         //! @param [in] pid PID for generated TS packets.
         //! @param [in] provider An object which will be called each time a section is required.
-        //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        Packetizer(const DuckContext& duck, PID pid = PID_NULL, SectionProviderInterface* provider = nullptr, Report* report = nullptr);
+        Packetizer(const DuckContext& duck, PID pid = PID_NULL, SectionProviderInterface* provider = nullptr);
 
         //!
         //! Destructor

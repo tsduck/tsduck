@@ -94,9 +94,8 @@ namespace ts {
         //! @param [in] policy TS packet stuffing policy at end of packet.
         //! @param [in] bitrate Output bitrate, zero if undefined.
         //! Useful only when using specific repetition rates for sections
-        //! @param [in] report Optional address of a Report object for debug and trace messages.
         //!
-        CyclingPacketizer(const DuckContext& duck, PID pid = PID_NULL, StuffingPolicy policy = StuffingPolicy::AT_END, BitRate bitrate = 0, Report* report = nullptr);
+        CyclingPacketizer(const DuckContext& duck, PID pid = PID_NULL, StuffingPolicy policy = StuffingPolicy::AT_END, BitRate bitrate = 0);
 
         //!
         //! Destructor
@@ -187,6 +186,15 @@ namespace ts {
         void removeSections(TID tid, uint16_t tid_ext);
 
         //!
+        //! Remove all sections with the specified table id, table id extension and section number.
+        //! If one such section is currently being packetized, the rest of the section will be packetized.
+        //! @param [in] tid The table id of the sections to remove.
+        //! @param [in] tid_ext The table id extension of the sections to remove.
+        //! @param [in] sec_number The section number of the sections to remove.
+        //!
+        void removeSections(TID tid, uint16_t tid_ext, uint8_t sec_number);
+
+        //!
         //! Remove all sections in the packetizer.
         //! If a section is currently being packetized, the rest of the section will be packetized.
         //!
@@ -258,7 +266,7 @@ namespace ts {
         void addScheduledSection(const SectionDescPtr&);
 
         // Remove all sections with the specified tid/tid_ext in the specified list.
-        void removeSections(SectionDescList&, TID, uint16_t tid_ext, bool use_tid_ext, bool scheduled);
+        void removeSections(SectionDescList&, TID tid, uint16_t tid_ext, uint8_t sec_number, bool use_tid_ext, bool use_sec_number, bool scheduled);
 
         // Inherited from SectionProviderInterface
         virtual void provideSection(SectionCounter, SectionPtr&) override;

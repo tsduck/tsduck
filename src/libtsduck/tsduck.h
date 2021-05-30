@@ -256,6 +256,7 @@
 #include "tsECMRepetitionRateDescriptor.h"
 #include "tsEDID.h"
 #include "tsEIT.h"
+#include "tsEITGenerator.h"
 #include "tsEITProcessor.h"
 #include "tsEmergencyInformationDescriptor.h"
 #include "tsEMMGClient.h"

@@ -112,7 +112,6 @@ namespace ts {
 
     private:
         DuckContext&   _duck;
-        Report&        _report;
         bool           _pat_only;
         bool           _completed;
         SectionDemux   _demux;

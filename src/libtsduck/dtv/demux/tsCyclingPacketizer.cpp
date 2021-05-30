@@ -36,8 +36,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::CyclingPacketizer::CyclingPacketizer(const DuckContext& duck, PID pid, StuffingPolicy stuffing, BitRate bitrate, Report* report) :
-    Packetizer(duck, pid, this, report),
+ts::CyclingPacketizer::CyclingPacketizer(const DuckContext& duck, PID pid, StuffingPolicy stuffing, BitRate bitrate) :
+    Packetizer(duck, pid, this),
     _stuffing(stuffing),
     _bitrate(bitrate),
     _section_count(0),
@@ -191,19 +191,20 @@ void ts::CyclingPacketizer::addSection(const SectionPtr& sect, MilliSecond rep_r
 
 void ts::CyclingPacketizer::removeSections(TID tid)
 {
-    removeSections(_sched_sections, tid, 0, false, true);
-    removeSections(_other_sections, tid, 0, false, false);
+    removeSections(_sched_sections, tid, 0, 0, false, false, true);
+    removeSections(_other_sections, tid, 0, 0, false, false, false);
 }
-
-
-//----------------------------------------------------------------------------
-// Remove all sections with the specified table id and table id extension.
-//----------------------------------------------------------------------------
 
 void ts::CyclingPacketizer::removeSections(TID tid, uint16_t tid_ext)
 {
-    removeSections(_sched_sections, tid, tid_ext, true, true);
-    removeSections(_other_sections, tid, tid_ext, true, false);
+    removeSections(_sched_sections, tid, tid_ext, 0, true, false, true);
+    removeSections(_other_sections, tid, tid_ext, 0, true, false, false);
+}
+
+void ts::CyclingPacketizer::removeSections(TID tid, uint16_t tid_ext, uint8_t sec_number)
+{
+    removeSections(_sched_sections, tid, tid_ext, sec_number, true, true, true);
+    removeSections(_other_sections, tid, tid_ext, sec_number, true, true, false);
 }
 
 
@@ -211,13 +212,13 @@ void ts::CyclingPacketizer::removeSections(TID tid, uint16_t tid_ext)
 // Remove all sections with the specified tid/tid_ext in the specified list.
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::removeSections(SectionDescList& list, TID tid, uint16_t tid_ext, bool use_tid_ext, bool scheduled)
+void ts::CyclingPacketizer::removeSections(SectionDescList& list, TID tid, uint16_t tid_ext, uint8_t sec_number, bool use_tid_ext, bool use_sec_number, bool scheduled)
 {
     SectionDescList::iterator it(list.begin());
     while (it != list.end()) {
         const SectionDescPtr& sp(*it);
         const Section& sect(*sp->section);
-        if (sect.tableId() == tid && (!use_tid_ext || sect.tableIdExtension() == tid_ext)) {
+        if (sect.tableId() == tid && (!use_tid_ext || sect.tableIdExtension() == tid_ext) && (!use_sec_number || sect.sectionNumber() == sec_number)) {
             // Section match, remove it
             assert(_section_count > 0);
             _section_count--;

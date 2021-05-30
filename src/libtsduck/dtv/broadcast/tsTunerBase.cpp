@@ -28,7 +28,6 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerBase.h"
-#include "tsDuckContext.h"
 #include "tsReport.h"
 #include "tsModulationArgs.h"
 #include "tsDeliverySystem.h"
@@ -59,39 +58,39 @@ ts::TunerBase::~TunerBase()
 // Unimplemented methods, return an error.
 //-----------------------------------------------------------------------------
 
-#define UNIMPLEMENTED(ret) report.error(u"Digital tuners are not implemented"); return (ret)
+#define UNIMPLEMENTED(ret) _duck.report().error(u"Digital tuners are not implemented"); return (ret)
 
-bool ts::TunerBase::open(const UString& device_name, bool info_only, Report& report)
+bool ts::TunerBase::open(const UString& device_name, bool info_only)
 {
     UNIMPLEMENTED(false);
 }
 
-bool ts::TunerBase::close(Report& report)
+bool ts::TunerBase::close(bool silent)
 {
     UNIMPLEMENTED(false);
 }
 
-bool ts::TunerBase::tune(ModulationArgs& params, Report& report)
+bool ts::TunerBase::tune(ModulationArgs& params)
 {
     UNIMPLEMENTED(false);
 }
 
-bool ts::TunerBase::start(Report& report)
+bool ts::TunerBase::start()
 {
     UNIMPLEMENTED(false);
 }
 
-bool ts::TunerBase::stop(Report& report)
+bool ts::TunerBase::stop(bool silent)
 {
     UNIMPLEMENTED(false);
 }
 
-size_t ts::TunerBase::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
+size_t ts::TunerBase::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort)
 {
     UNIMPLEMENTED(false);
 }
 
-bool ts::TunerBase::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
+bool ts::TunerBase::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
 {
     UNIMPLEMENTED(false);
 }
@@ -133,22 +132,22 @@ ts::UString ts::TunerBase::devicePath() const
     return UString();
 }
 
-bool ts::TunerBase::signalLocked(Report& report)
+bool ts::TunerBase::signalLocked()
 {
     return false;
 }
 
-int ts::TunerBase::signalStrength(Report& report)
+int ts::TunerBase::signalStrength()
 {
     return -1;
 }
 
-int ts::TunerBase::signalQuality(Report& report)
+int ts::TunerBase::signalQuality()
 {
     return -1;
 }
 
-void ts::TunerBase::abort()
+void ts::TunerBase::abort(bool silent)
 {
 }
 
@@ -160,7 +159,7 @@ void ts::TunerBase::setSignalTimeoutSilent(bool silent)
 {
 }
 
-bool ts::TunerBase::setReceiveTimeout(MilliSecond timeout, Report& report)
+bool ts::TunerBase::setReceiveTimeout(MilliSecond timeout)
 {
     return true;
 }
@@ -170,7 +169,7 @@ ts::MilliSecond ts::TunerBase::receiveTimeout() const
     return 0;
 }
 
-std::ostream& ts::TunerBase::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
+std::ostream& ts::TunerBase::displayStatus(std::ostream& strm, const UString& margin, bool extended)
 {
     return strm;
 }
@@ -206,11 +205,11 @@ void ts::TunerBase::setReceiverFilterName(const UString&)
 // Check the consistency of tune() parameters from in_params.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerBase::checkTuneParameters(ModulationArgs& params, Report& report) const
+bool ts::TunerBase::checkTuneParameters(ModulationArgs& params) const
 {
     // Cannot tune if the device is not open.
     if (!isOpen()) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return false;
     }
 
@@ -219,17 +218,17 @@ bool ts::TunerBase::checkTuneParameters(ModulationArgs& params, Report& report) 
     if (params.delivery_system.value(DS_UNDEFINED) == DS_UNDEFINED) {
         params.delivery_system = delivery_systems.preferred();
         if (params.delivery_system == DS_UNDEFINED) {
-            report.error(u"no tuning delivery system specified");
+            _duck.report().error(u"no tuning delivery system specified");
             return false;
         }
         else if (delivery_systems.size() > 1) {
-            report.verbose(u"using default deliver system %s", {DeliverySystemEnum.name(params.delivery_system.value())});
+            _duck.report().verbose(u"using default deliver system %s", {DeliverySystemEnum.name(params.delivery_system.value())});
         }
     }
 
     // Check if the delivery system is supported by this tuner.
     if (!delivery_systems.contains(params.delivery_system.value())) {
-        report.error(u"deliver system %s not supported on tuner %s", {DeliverySystemEnum.name(params.delivery_system.value()), deviceName()});
+        _duck.report().error(u"deliver system %s not supported on tuner %s", {DeliverySystemEnum.name(params.delivery_system.value()), deviceName()});
         return false;
     }
 
@@ -241,14 +240,14 @@ bool ts::TunerBase::checkTuneParameters(ModulationArgs& params, Report& report) 
 
     // Check if all specified values are supported on the operating system.
     return
-        CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) &&
-        CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) &&
-        CheckModVar(params.modulation, u"modulation", ModulationEnum, report) &&
-        CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, report) &&
-        CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, report) &&
-        CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) &&
-        CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, report) &&
-        CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, report) &&
-        CheckModVar(params.pilots, u"pilots", PilotEnum, report) &&
-        CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, report);
+        CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, _duck.report()) &&
+        CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, _duck.report()) &&
+        CheckModVar(params.modulation, u"modulation", ModulationEnum, _duck.report()) &&
+        CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, _duck.report()) &&
+        CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, _duck.report()) &&
+        CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, _duck.report()) &&
+        CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, _duck.report()) &&
+        CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, _duck.report()) &&
+        CheckModVar(params.pilots, u"pilots", PilotEnum, _duck.report()) &&
+        CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, _duck.report());
 }

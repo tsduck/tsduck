@@ -113,7 +113,7 @@ void TunerTest::testListTuners()
     ts::DuckContext duck;
     ts::TunerPtrVector tuners;
 
-    TSUNIT_ASSERT(ts::Tuner::GetAllTuners(duck, tuners, CERR));
+    TSUNIT_ASSERT(ts::Tuner::GetAllTuners(duck, tuners));
     debug() << "TunerTest::testListTuners: found " << tuners.size() << " tuners" << std::endl;
     for (size_t i = 0; i < tuners.size(); ++i) {
         debug() << "  Tuner #" << i << ": name: \"" << tuners[i]->deviceName() << "\"" << std::endl;
@@ -149,7 +149,7 @@ void TunerTest::testScanDVBT()
 
         if (i == 0 || reopen) {
             debug() << " opening tuner " << name << std::endl;
-            TSUNIT_ASSERT(tuner.open(name, false, CERR));
+            TSUNIT_ASSERT(tuner.open(name, false));
             TSUNIT_ASSERT(tuner.isOpen());
         }
 
@@ -160,7 +160,7 @@ void TunerTest::testScanDVBT()
         args.setDefaultValues();
         debug() << "  tuning options: " << args.toPluginOptions() << std::endl;
 
-        TSUNIT_ASSERT(tuner.tune(args, CERR));
+        TSUNIT_ASSERT(tuner.tune(args));
         ts::TSScanner scan(duck, tuner, 5000);
 
         ts::ServiceList services;
@@ -173,7 +173,7 @@ void TunerTest::testScanDVBT()
 
         if (i == channels.size() - 1 || reopen) {
             debug() << " closing tuner " << std::endl;
-            TSUNIT_ASSERT(tuner.close(CERR));
+            TSUNIT_ASSERT(tuner.close());
             TSUNIT_ASSERT(!tuner.isOpen());
         }
     }

@@ -50,21 +50,21 @@ ts::Tuner::Tuner(DuckContext& duck) :
     CheckNonNull(_device);
 }
 
-ts::Tuner::Tuner(DuckContext& duck, const UString& device_name, bool info_only, Report& report) :
+ts::Tuner::Tuner(DuckContext& duck, const UString& device_name, bool info_only) :
     Tuner(duck)
 {
-    this->open(device_name, info_only, report);
+    this->open(device_name, info_only);
 }
 
 ts::Tuner::~Tuner()
 {
     if (_device != nullptr) {
-        _device->close(NULLREP);
+        _device->close(true);
         delete _device;
         _device = nullptr;
     }
     if (_emulator != nullptr) {
-        _emulator->close(NULLREP);
+        _emulator->close(true);
         delete _emulator;
         _emulator = nullptr;
     }
@@ -76,10 +76,10 @@ ts::Tuner::~Tuner()
 // Open the tuner, switch to physical or emulated tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
+bool ts::Tuner::open(const UString& device_name, bool info_only)
 {
     if (_current->isOpen()) {
-        report.error(u"internal error, tuner already open");
+        _duck.report().error(u"internal error, tuner already open");
         return false;
     }
     else if (device_name.endWith(u".xml", CASE_INSENSITIVE)) {
@@ -89,7 +89,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
             _emulator = new TunerEmulator(_duck);
             CheckNonNull(_emulator);
         }
-        if (_emulator->open(device_name, info_only, report)) {
+        if (_emulator->open(device_name, info_only)) {
             // Use the emulator as current device only when successfully used.
             _current = _emulator;
             return true;
@@ -103,7 +103,7 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
     else {
         // Assume a physical device.
         _current = _device;
-        return _device->open(device_name, info_only, report);
+        return _device->open(device_name, info_only);
     }
 }
 
@@ -112,10 +112,10 @@ bool ts::Tuner::open(const UString& device_name, bool info_only, Report& report)
 // Close the tuner, reset to physical tuner (in closed state).
 //-----------------------------------------------------------------------------
 
-bool ts::Tuner::close(Report& report)
+bool ts::Tuner::close(bool silent)
 {
     // Close the current tuner, whichever it is.
-    const bool status = _current->close(report);
+    const bool status = _current->close(silent);
 
     // Switch back to (closed) physical tuner device.
     _current = _device;
@@ -158,49 +158,49 @@ ts::UString ts::Tuner::devicePath() const
     return _current->devicePath();
 }
 
-bool ts::Tuner::signalLocked(Report& report)
+bool ts::Tuner::signalLocked()
 {
-    return _current->signalLocked(report);
+    return _current->signalLocked();
 }
 
-int ts::Tuner::signalStrength(Report& report)
+int ts::Tuner::signalStrength()
 {
-    return _current->signalStrength(report);
+    return _current->signalStrength();
 }
 
-int ts::Tuner::signalQuality(Report& report)
+int ts::Tuner::signalQuality()
 {
-    return _current->signalQuality(report);
+    return _current->signalQuality();
 }
 
-bool ts::Tuner::tune(ModulationArgs& params, Report& report)
+bool ts::Tuner::tune(ModulationArgs& params)
 {
-    return _current->tune(params, report);
+    return _current->tune(params);
 }
 
-bool ts::Tuner::start(Report& report)
+bool ts::Tuner::start()
 {
-    return _current->start(report);
+    return _current->start();
 }
 
-bool ts::Tuner::stop(Report& report)
+bool ts::Tuner::stop(bool silent)
 {
-    return _current->stop(report);
+    return _current->stop(silent);
 }
 
-void ts::Tuner::abort()
+void ts::Tuner::abort(bool silent)
 {
-    _current->abort();
+    _current->abort(silent);
 }
 
-size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
+size_t ts::Tuner::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort)
 {
-    return _current->receive(buffer, max_packets, abort, report);
+    return _current->receive(buffer, max_packets, abort);
 }
 
-bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
+bool ts::Tuner::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
 {
-    return _current->getCurrentTuning(params, reset_unknown, report);
+    return _current->getCurrentTuning(params, reset_unknown);
 }
 
 void ts::Tuner::setSignalTimeout(MilliSecond t)
@@ -213,9 +213,9 @@ void ts::Tuner::setSignalTimeoutSilent(bool silent)
     return _current->setSignalTimeoutSilent(silent);
 }
 
-bool ts::Tuner::setReceiveTimeout(MilliSecond t, Report& report)
+bool ts::Tuner::setReceiveTimeout(MilliSecond t)
 {
-    return _current->setReceiveTimeout(t, report);
+    return _current->setReceiveTimeout(t);
 }
 
 ts::MilliSecond ts::Tuner::receiveTimeout() const
@@ -243,7 +243,7 @@ void ts::Tuner::setReceiverFilterName(const UString& name)
     return _current->setReceiverFilterName(name);
 }
 
-std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
+std::ostream& ts::Tuner::displayStatus(std::ostream& strm, const UString& margin, bool extended)
 {
-    return _current->displayStatus(strm, margin, report, extended);
+    return _current->displayStatus(strm, margin, extended);
 }
