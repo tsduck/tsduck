@@ -84,9 +84,10 @@ void ts::AccessUnitIterator::reset()
     if (_valid) {
         // Point to the beginning of area, before the first access unit.
         // Calling next() will find the first one (if any).
-        _nalunit_index = 0;
         _nalunit = _data;
         next();
+        // Reset NALunit index since we point to the first one.
+        _nalunit_index = 0;
     }
 }
 
@@ -130,7 +131,7 @@ bool ts::AccessUnitIterator::next()
 
     // Remaining size in data area.
     assert(_nalunit >= _data);
-    assert(_nalunit < _data + _data_size);
+    assert(_nalunit <= _data + _data_size);
     size_t remain = _data + _data_size - _nalunit;
 
     // Preset access unit type to an invalid value.
@@ -185,5 +186,7 @@ bool ts::AccessUnitIterator::next()
         _nalunit_type = (_nalunit[1] >> 3) & 0x1F;
     }
 
+    // Count NALunits.
+    _nalunit_index++;
     return true;
 }
