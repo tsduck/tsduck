@@ -124,7 +124,7 @@ namespace ts {
             TS_NOBUILD_NOCOPY(PMTContext);
         public:
             // Constructor:
-            PMTContext(const DuckContext& duck, PID pmt_pid, Report& report);
+            PMTContext(const DuckContext& duck, PID pmt_pid);
 
             // Public fields:
             const PID         pmt_pid;
@@ -178,11 +178,11 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) 
     _in_file(),
     _out_file(),
     _pat(),
-    _pat_pzer(_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &_opt),
+    _pat_pzer(_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
     _cat(),
-    _cat_pzer(_opt.duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &_opt),
+    _cat_pzer(_opt.duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
     _sdt(),
-    _sdt_pzer(_opt.duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &_opt),
+    _sdt_pzer(_opt.duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
     _pmts()
 {
     // Mark all tables as invalid. The first occurrence in the input file will initialize them.
@@ -436,10 +436,10 @@ void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
 // Context of a PMT PID.
 //----------------------------------------------------------------------------
 
-ts::FileCleaner::PMTContext::PMTContext(const DuckContext& duck, PID pid, Report& report) :
+ts::FileCleaner::PMTContext::PMTContext(const DuckContext& duck, PID pid) :
     pmt_pid(pid),
     pmt(),
-    pzer(duck, pmt_pid, CyclingPacketizer::StuffingPolicy::ALWAYS, 0, &report)
+    pzer(duck, pmt_pid, CyclingPacketizer::StuffingPolicy::ALWAYS)
 {
     pmt.invalidate();
 }
@@ -451,7 +451,7 @@ ts::FileCleaner::PMTContextPtr ts::FileCleaner::getPMTContext(PID pmt_pid, bool 
         return it->second;
     }
     else if (create) {
-        return _pmts[pmt_pid] = PMTContextPtr(new PMTContext(_opt.duck, pmt_pid, _opt));
+        return _pmts[pmt_pid] = PMTContextPtr(new PMTContext(_opt.duck, pmt_pid));
     }
     else {
         return PMTContextPtr();

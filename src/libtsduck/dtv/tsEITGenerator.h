@@ -28,20 +28,55 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Perform various transformations on an EIT PID.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 27
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2408
+#include "tsSectionDemux.h"
+#include "tsCyclingPacketizer.h"
+#include "tsTSPacket.h"
+#include "tsReport.h"
+
+namespace ts {
+    //!
+    //! Generate and inserts EIT sections based on an EPG content.
+    //! @ingroup mpeg
+    //!
+    //! The object is continuously invoked for all packets in a TS.
+    //! Packets from the EIT PID or the stuffing PID are replaced.
+    //!
+    class TSDUCKDLL EITGenerator : private SectionHandlerInterface
+    {
+        TS_NOBUILD_NOCOPY(EITGenerator);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in,out] duck TSDuck execution context. The reference is kept inside this object.
+        //! @param [in] pid The PID containing EIT's to insert.
+        //!
+        explicit EITGenerator(DuckContext& duck, PID pid = PID_EIT);
+
+        //!
+        //! Reset the EIT generator to default state.
+        //!
+        void reset();
+
+        //!
+        //! Process one packet from the stream.
+        //! @param [in,out] pkt A TS packet from the stream. If the packet belongs
+        //! to the EIT PID or the null PID, it may be updated with new content.
+        //!
+        void processPacket(TSPacket& pkt);
+
+    private:
+        DuckContext&          _duck;
+        const PID             _eit_pid;
+        SectionDemux          _demux;
+        CyclingPacketizer     _packetizer;
+        std::list<SectionPtr> _sections;
+
+        // Implementation of SectionHandlerInterface.
+        virtual void handleSection(SectionDemux& demux, const Section& section) override;
+    };
+}

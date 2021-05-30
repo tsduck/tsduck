@@ -244,7 +244,7 @@ ts::UString ts::DVBSystemTypeName(::DVBSystemType type)
 // Create a DirectShow tune request object from tuning parameters.
 //-----------------------------------------------------------------------------
 
-bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const ModulationArgs& params, Report& report)
+bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, ::ITuningSpace* tuning_space, const ModulationArgs& params)
 {
     if (tuning_space == 0) {
         return false;
@@ -253,13 +253,13 @@ bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, :
     // Create a DirectShow tune request
     ComPtr<::ITuneRequest> tune_request;
     ::HRESULT hr = tuning_space->CreateTuneRequest(tune_request.creator());
-    if (!ComSuccess(hr, u"cannot create DirectShow tune request", report)) {
+    if (!ComSuccess(hr, u"cannot create DirectShow tune request", duck.report())) {
         return false;
     }
     assert(!tune_request.isNull());
 
     // Report to use when errors shall be reported in debug mode only
-    Report& debug_report(report.debug() ? report : NULLREP);
+    Report& debug_report(duck.report().debug() ? duck.report() : NULLREP);
 
     // If this is a DVB tuning space, get DVB interface of tune request and set ids to wildcards.
     ComPtr<::IDVBTuneRequest> dvb_request;
@@ -285,14 +285,14 @@ bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, :
 
     // Create a locator (where to find the physical TS, ie. tuning params).
     ComPtr<::IDigitalLocator> locator;
-    if (!CreateLocator(duck, locator, params, report)) {
+    if (!CreateLocator(duck, locator, params, duck.report())) {
         return false;
     }
     assert(!locator.isNull());
 
     // Set the locator in the tune request
     hr = tune_request->put_Locator(locator.pointer());
-    if (!ComSuccess(hr, u"ITuneRequest::put_Locator", report)) {
+    if (!ComSuccess(hr, u"ITuneRequest::put_Locator", duck.report())) {
         return false;
     }
 
@@ -306,7 +306,7 @@ bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, :
 // Create a Locator object for tuning parameters.
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
+bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params)
 {
     const DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
     const TunerType ttype = TunerTypeOf(delsys);
@@ -314,20 +314,20 @@ bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, co
     // Create the locator depending on the type.
     switch (ttype) {
         case TT_DVB_S:
-            return CreateLocatorDVBS(duck, locator, params, report);
+            return CreateLocatorDVBS(duck, locator, params);
         case TT_DVB_T:
-            return CreateLocatorDVBT(duck, locator, params, report);
+            return CreateLocatorDVBT(duck, locator, params);
         case TT_DVB_C:
-            return CreateLocatorDVBC(duck, locator, params, report);
+            return CreateLocatorDVBC(duck, locator, params);
         case TT_ATSC:
-            return CreateLocatorATSC(duck, locator, params, report);
+            return CreateLocatorATSC(duck, locator, params);
         case TT_ISDB_S:
-            return CreateLocatorISDBS(duck, locator, params, report);
+            return CreateLocatorISDBS(duck, locator, params);
         case TT_ISDB_T:
         case TT_ISDB_C:
         case TT_UNDEFINED:
         default:
-            report.error(u"cannot convert %s parameters to DirectShow tuning parameters", {DeliverySystemEnum.name(delsys)});
+            duck.report().error(u"cannot convert %s parameters to DirectShow tuning parameters", {DeliverySystemEnum.name(delsys)});
             return false;
     }
 }
@@ -337,18 +337,18 @@ bool ts::CreateLocator(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, co
 // Create an IDigitalLocator object for DVB-T parameters
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
+bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params)
 {
-    ComPtr<::IDVBTLocator2> loc(CLSID_DVBTLocator2, ::IID_IDVBTLocator2, report);
+    ComPtr<::IDVBTLocator2> loc(CLSID_DVBTLocator2, ::IID_IDVBTLocator2, duck.report());
 
     if (loc.isNull() ||
-        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.modulation, u"constellation", ModulationEnum, report) ||
-        !CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, report) ||
-        !CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, report) ||
-        !CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, report) ||
+        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, duck.report()) ||
+        !CheckModVar(params.fec_hp, u"FEC", InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.fec_lp, u"FEC", InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.modulation, u"constellation", ModulationEnum, duck.report()) ||
+        !CheckModVar(params.transmission_mode, u"transmission mode", TransmissionModeEnum, duck.report()) ||
+        !CheckModVar(params.guard_interval, u"guard interval", GuardIntervalEnum, duck.report()) ||
+        !CheckModVar(params.hierarchy, u"hierarchy", HierarchyEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation.value())) ||
         !PUT(loc, Bandwidth, long(params.bandwidth.value() / 1000000)) || // bandwidth in MHz
@@ -377,14 +377,14 @@ bool ts::CreateLocatorDVBT(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 // Create an IDigitalLocator object for DVB-C parameters
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorDVBC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
+bool ts::CreateLocatorDVBC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params)
 {
-    ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, report);
+    ComPtr<::IDVBCLocator> loc(CLSID_DVBCLocator, ::IID_IDVBCLocator, duck.report());
 
     if (loc.isNull() ||
-        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
+        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, duck.report()) ||
+        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.modulation, u"modulation", ModulationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation.value())) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||
@@ -406,7 +406,7 @@ bool ts::CreateLocatorDVBC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 // Create an IDigitalLocator object for DVB-S/S2 parameters
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
+bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params)
 {
     // Specify DiSEqC satellite number.
     // Note however that most drivers ignore it...
@@ -441,7 +441,7 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     // Starting with TSDuck 3.x, we decided to completely drop support for versions
     // of Windows before Windows 7. We now require IDVBSLocator2.
 
-    ComPtr<::IDVBSLocator2> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator2, report);
+    ComPtr<::IDVBSLocator2> loc(CLSID_DVBSLocator, ::IID_IDVBSLocator2, duck.report());
 
     //
     // Microsoft oddity, part 3...
@@ -463,9 +463,9 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
     }
 
     if (loc.isNull() ||
-        !CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
-        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.polarity, u"polarity", PolarizationEnum, report) ||
+        !CheckModVar(params.modulation, u"modulation", ModulationEnum, duck.report()) ||
+        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.polarity, u"polarity", PolarizationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, Modulation, ::ModulationType(params.modulation.value())) ||
         !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity.value())) ||
@@ -483,8 +483,8 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 
     // DVB-S2 specific parameters
     if (params.delivery_system == DS_DVB_S2 &&
-        (!CheckModVar(params.pilots, u"pilot", PilotEnum, report) ||
-         !CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, report) ||
+        (!CheckModVar(params.pilots, u"pilot", PilotEnum, duck.report()) ||
+         !CheckModVar(params.roll_off, u"roll-off factor", RollOffEnum, duck.report()) ||
          !PUT(loc, SignalPilot, ::Pilot(params.pilots.value())) ||
          !PUT(loc, SignalRollOff, ::RollOff(params.roll_off.value()))))
     {
@@ -500,9 +500,9 @@ bool ts::CreateLocatorDVBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 // Create an IDigitalLocator object for ATSC parameters
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
+bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params)
 {
-    ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, report);
+    ComPtr<::IATSCLocator> loc(CLSID_ATSCLocator, ::IID_IATSCLocator, duck.report());
 
     // Get UHF and VHF band descriptions in the default region.
     const HFBand* uhf = duck.uhfBand();
@@ -522,15 +522,15 @@ bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
         physical_channel = vhf->channelNumber(freq);
     }
     else {
-        report.error(u"frequency %'d Hz is in neither the UHF nor VHF band", {freq});
+        duck.report().error(u"frequency %'d Hz is in neither the UHF nor VHF band", {freq});
         return false;
     }
 
-    report.debug(u"mapped frequency %'d to physical channel %d", {freq, physical_channel});
+    duck.report().debug(u"mapped frequency %'d to physical channel %d", {freq, physical_channel});
 
     if (loc.isNull() ||
-        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, report) ||
-        !CheckModVar(params.modulation, u"modulation", ModulationEnum, report) ||
+        !CheckModVar(params.inversion, u"spectral inversion", SpectralInversionEnum, duck.report()) ||
+        !CheckModVar(params.modulation, u"modulation", ModulationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, -1) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_METHOD_NOT_SET) ||
         !PUT(loc, InnerFECRate, ::BDA_BCC_RATE_NOT_SET) ||
@@ -553,13 +553,13 @@ bool ts::CreateLocatorATSC(DuckContext& duck, ComPtr<::IDigitalLocator>& locator
 // Create an IDigitalLocator object for ISDB-S parameters
 //-----------------------------------------------------------------------------
 
-bool ts::CreateLocatorISDBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params, Report& report)
+bool ts::CreateLocatorISDBS(DuckContext& duck, ComPtr<::IDigitalLocator>& locator, const ModulationArgs& params)
 {
-    ComPtr<::IISDBSLocator> loc(CLSID_ISDBSLocator, ::IID_IISDBSLocator, report);
+    ComPtr<::IISDBSLocator> loc(CLSID_ISDBSLocator, ::IID_IISDBSLocator, duck.report());
 
     if (loc.isNull() ||
-        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, report) ||
-        !CheckModVar(params.polarity, u"polarity", PolarizationEnum, report) ||
+        !CheckModVar(params.inner_fec, u"FEC", InnerFECEnum, duck.report()) ||
+        !CheckModVar(params.polarity, u"polarity", PolarizationEnum, duck.report()) ||
         !PUT(loc, CarrierFrequency, long(params.frequency.value() / 1000)) ||  // frequency in kHz
         !PUT(loc, SignalPolarisation, ::Polarisation(params.polarity.value())) ||
         !PUT(loc, InnerFEC, ::BDA_FEC_VITERBI) ||

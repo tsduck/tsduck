@@ -110,7 +110,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     _sock(*tsp_),
     _terminate(false),
     _section_queue(DEFAULT_MAX_QUEUED_SECTION),
-    _packetizer(duck, PID_NULL, this, tsp)
+    _packetizer(duck, PID_NULL, this)
 {
     // UDP receiver common options.
     _sock.defineArgs(*this);

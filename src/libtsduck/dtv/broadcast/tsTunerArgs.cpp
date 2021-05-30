@@ -153,9 +153,9 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
                 ChannelFile file;
                 Tuner tuner(duck);
                 _info_only = true;
-                if (file.load(args.value(u"tuning-file"), duck.report()) && configureTuner(tuner, duck.report())) {
+                if (file.load(args.value(u"tuning-file"), duck.report()) && configureTuner(tuner)) {
                     channel_found = file.serviceToTuning(*this, tuner.deliverySystems(), channel_name, false, duck.report());
-                    tuner.close(duck.report());
+                    tuner.close();
                 }
                 _info_only = false;
             }
@@ -280,10 +280,10 @@ void ts::TunerArgs::defineArgs(Args& args) const
 // Open a tuner and configure it according to the parameters in this object.
 //----------------------------------------------------------------------------
 
-bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
+bool ts::TunerArgs::configureTuner(Tuner& tuner) const
 {
     if (tuner.isOpen()) {
-        report.error(u"tuner is already open");
+        tuner.report().error(u"tuner is already open");
         return false;
     }
 
@@ -291,16 +291,16 @@ bool ts::TunerArgs::configureTuner(Tuner& tuner, Report& report) const
     tuner.setReceiverFilterName(receiver_name);
 
     // Open DVB tuner. Use first device by default (if device name is empty).
-    if (!tuner.open(device_name, _info_only, report)) {
+    if (!tuner.open(device_name, _info_only)) {
         return false;
     }
 
     // Set configuration parameters.
     if (!_info_only) {
         tuner.setSignalTimeout(signal_timeout);
-        if (!tuner.setReceiveTimeout(receive_timeout, report)) {
-            report.error(u"failed to set tuner receive timeout");
-            tuner.close(NULLREP);
+        if (!tuner.setReceiveTimeout(receive_timeout)) {
+            tuner.report().error(u"failed to set tuner receive timeout");
+            tuner.close(true);
             return false;
         }
         tuner.setSignalPoll(Tuner::DEFAULT_SIGNAL_POLL);

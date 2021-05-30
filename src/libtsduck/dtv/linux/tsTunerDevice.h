@@ -64,30 +64,30 @@ namespace ts {
         virtual ~TunerDevice() override;
 
         // Implementation of TunerBase.
-        virtual bool open(const UString& device_name, bool info_only, Report& report) override;
-        virtual bool close(Report& report) override;
+        virtual bool open(const UString& device_name, bool info_only) override;
+        virtual bool close(bool silent = false) override;
         virtual bool isOpen() const override;
         virtual bool infoOnly() const override;
         virtual const DeliverySystemSet& deliverySystems() const override;
         virtual UString deviceName() const override;
         virtual UString deviceInfo() const override;
         virtual UString devicePath() const override;
-        virtual bool signalLocked(Report& report) override;
-        virtual int signalStrength(Report& report) override;
-        virtual int signalQuality(Report& report) override;
-        virtual bool tune(ModulationArgs& params, Report& report) override;
-        virtual bool start(Report& report) override;
-        virtual bool stop(Report& report) override;
-        virtual void abort() override;
-        virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report) override;
-        virtual bool getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report) override;
+        virtual bool signalLocked() override;
+        virtual int signalStrength() override;
+        virtual int signalQuality() override;
+        virtual bool tune(ModulationArgs& params) override;
+        virtual bool start() override;
+        virtual bool stop(bool silent = false) override;
+        virtual void abort(bool silent = false) override;
+        virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort = nullptr) override;
+        virtual bool getCurrentTuning(ModulationArgs& params, bool reset_unknown) override;
         virtual void setSignalTimeout(MilliSecond t) override;
         virtual void setSignalTimeoutSilent(bool silent) override;
-        virtual bool setReceiveTimeout(MilliSecond t, Report& report) override;
+        virtual bool setReceiveTimeout(MilliSecond t) override;
         virtual MilliSecond receiveTimeout() const override;
         virtual void setSignalPoll(MilliSecond t) override;
         virtual void setDemuxBufferSize(size_t s) override;
-        virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended = false) override;
+        virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin = UString(), bool extended = false) override;
 
     private:
         bool                _is_open;
@@ -115,21 +115,21 @@ namespace ts {
         bool                _rt_timer_valid;   // Receive timeout timer was created
 
         // Clear tuner, return true on success, false on error
-        bool dtvClear(Report&);
+        bool dtvClear();
 
         // Perform a tune operation.
-        bool dtvTune(DTVProperties&, Report&);
+        bool dtvTune(DTVProperties&);
 
         // Discard all pending frontend events
-        void discardFrontendEvents(Report&);
+        void discardFrontendEvents();
 
         // Get frontend status, encapsulate weird error management.
-        bool getFrontendStatus(::fe_status_t&, Report&);
+        bool getFrontendStatus(::fe_status_t&);
 
         // Hard close of the tuner, report can be null.
         void hardClose(Report*);
 
         // Setup the dish for satellite tuners.
-        bool dishControl(const ModulationArgs&, const LNB::Transposition&, Report&);
+        bool dishControl(const ModulationArgs&, const LNB::Transposition&);
     };
 }

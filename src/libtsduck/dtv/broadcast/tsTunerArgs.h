@@ -74,10 +74,9 @@ namespace ts {
         //!
         //! Open a tuner and configure it according to the parameters in this object.
         //! @param [in,out] tuner The tuner to open and configure.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool configureTuner(Tuner& tuner, Report& report) const;
+        bool configureTuner(Tuner& tuner) const;
 
     private:
         bool _info_only;

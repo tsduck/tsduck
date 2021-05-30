@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractPacketizer.h"
-#include "tsNullReport.h"
 #include "tsTSPacket.h"
 TSDUCK_SOURCE;
 
@@ -37,9 +36,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::AbstractPacketizer::AbstractPacketizer(const DuckContext& duck, PID pid, Report* report) :
+ts::AbstractPacketizer::AbstractPacketizer(const DuckContext& duck, PID pid) :
     _duck(duck),
-    _report(report == nullptr ? NULLREP : *report),
     _pid(pid),
     _continuity(0),
     _packet_count(0)

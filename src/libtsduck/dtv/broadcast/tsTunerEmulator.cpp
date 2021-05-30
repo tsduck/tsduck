@@ -98,11 +98,11 @@ int ts::TunerEmulator::Channel::strength(uint64_t freq) const
 // Open the tuner emulator.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report& report)
+bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
 {
     // Check state.
     if (_state != State::CLOSED) {
-        report.error(u"internal error, tuner emulator is not in closed state");
+        _duck.report().error(u"internal error, tuner emulator is not in closed state");
         return false;
     }
 
@@ -114,9 +114,9 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
     _channels.clear();
 
     // Open and validate the XML file describing the tuner emulator.
-    xml::Document doc(report);
-    xml::ModelDocument model(report);
-    report.debug(u"load tuner emulator from %s", {device_name});
+    xml::Document doc(_duck.report());
+    xml::ModelDocument model(_duck.report());
+    _duck.report().debug(u"load tuner emulator from %s", {device_name});
     if (!doc.load(device_name, false) || !model.load(u"tsduck.etuner.model.xml", true) || !model.validate(doc)) {
         return false;
     }
@@ -141,7 +141,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         else {
             def_directory = AbsoluteFilePath(def_directory, base_directory);
         }
-        report.debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", {DeliverySystemEnum.name(def_delivery), def_bandwidth, def_directory});
+        _duck.report().debug(u"defaults: delivery: %s, bandwidth: %'d Hz, directory: %s", {DeliverySystemEnum.name(def_delivery), def_bandwidth, def_directory});
     }
 
     // Get all channel descriptions.
@@ -158,7 +158,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         chan.file.trim();
         chan.pipe.trim();
         if (success && (chan.file.empty() + chan.pipe.empty()) != 1) {
-            report.error(u"%s, line %d: exactly one of file or pipe must be set in <channel>", {device_name, (*it)->lineNumber()});
+            _duck.report().error(u"%s, line %d: exactly one of file or pipe must be set in <channel>", {device_name, (*it)->lineNumber()});
             success = false;
         }
         if (success && !chan.file.empty()) {
@@ -167,7 +167,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         _delivery_systems.insert(chan.delivery);
         _channels.push_back(chan);
     }
-    report.debug(u"loaded %d emulated channels", {_channels.size()});
+    _duck.report().debug(u"loaded %d emulated channels", {_channels.size()});
 
     if (success) {
         _xml_file_path = device_name;
@@ -176,7 +176,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
         return true;
     }
     else {
-        report.error(u"error opening tuner emulator at %s", {device_name});
+        _duck.report().error(u"error opening tuner emulator at %s", {device_name});
         _delivery_systems.clear();
         _channels.clear();
         return false;
@@ -188,10 +188,10 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only, Report&
 // Close the tuner emulator.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::close(Report& report)
+bool ts::TunerEmulator::close(bool silent)
 {
     // Stop reception (close resources).
-    stop(report);
+    stop(silent);
 
     // Cleanup internal state.
     _channels.clear();
@@ -245,17 +245,17 @@ ts::UString ts::TunerEmulator::devicePath() const
 // Emulated signal characteristics.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::signalLocked(Report& report)
+bool ts::TunerEmulator::signalLocked()
 {
     return _state == State::TUNED || _state == State::STARTED;
 }
 
-int ts::TunerEmulator::signalStrength(Report& report)
+int ts::TunerEmulator::signalStrength()
 {
     return _strength;
 }
 
-int ts::TunerEmulator::signalQuality(Report& report)
+int ts::TunerEmulator::signalQuality()
 {
     // Use same percentage as signal strength.
     return _strength;
@@ -266,11 +266,11 @@ int ts::TunerEmulator::signalQuality(Report& report)
 // Tune to a frequency
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::tune(ModulationArgs& params, Report& report)
+bool ts::TunerEmulator::tune(ModulationArgs& params)
 {
     // Cannot tune if closed or started.
     if (_state == State::CLOSED || _state == State::STARTED) {
-        report.error(u"cannot tune, wrong tuner emulator state");
+        _duck.report().error(u"cannot tune, wrong tuner emulator state");
         return false;
     }
 
@@ -278,7 +278,7 @@ bool ts::TunerEmulator::tune(ModulationArgs& params, Report& report)
     const uint64_t freq = params.frequency.value(0);
     const DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
     if (freq == 0) {
-        report.error(u"frequency unspecified");
+        _duck.report().error(u"frequency unspecified");
         return false;
     }
 
@@ -288,11 +288,11 @@ bool ts::TunerEmulator::tune(ModulationArgs& params, Report& report)
         index++;
     }
     if (index >= _channels.size()) {
-        report.error(u"no signal at %'d Hz", {freq});
+        _duck.report().error(u"no signal at %'d Hz", {freq});
         return false;
     }
     else if (delsys != DS_UNDEFINED && _channels[index].delivery != DS_UNDEFINED && delsys != _channels[index].delivery) {
-        report.error(u"delivery system at %'d Hz is %s, %s requested ", {freq, DeliverySystemEnum.name(_channels[index].delivery), DeliverySystemEnum.name(delsys)});
+        _duck.report().error(u"delivery system at %'d Hz is %s, %s requested ", {freq, DeliverySystemEnum.name(_channels[index].delivery), DeliverySystemEnum.name(delsys)});
         return false;
     }
 
@@ -309,10 +309,10 @@ bool ts::TunerEmulator::tune(ModulationArgs& params, Report& report)
 // Start / stop reception.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::start(Report& report)
+bool ts::TunerEmulator::start()
 {
     if (_state != State::TUNED) {
-        report.error(u"cannot start reception, wrong tuner emulator state");
+        _duck.report().error(u"cannot start reception, wrong tuner emulator state");
         return false;
     }
 
@@ -322,17 +322,17 @@ bool ts::TunerEmulator::start(Report& report)
 
     const Channel& chan(_channels[_tune_index]);
     if (!chan.file.empty()) {
-        if (!_file.openRead(chan.file, 0, 0, report)) {
+        if (!_file.openRead(chan.file, 0, 0, _duck.report())) {
             return false;
         }
     }
     else if (!chan.pipe.empty()) {
-        if (!_pipe.open(chan.pipe, ForkPipe::SYNCHRONOUS, 0, report, ForkPipe::STDOUT_PIPE, ForkPipe::STDIN_NONE)) {
+        if (!_pipe.open(chan.pipe, ForkPipe::SYNCHRONOUS, 0, _duck.report(), ForkPipe::STDOUT_PIPE, ForkPipe::STDIN_NONE)) {
             return false;
         }
     }
     else {
-        report.error(u"empty file and pipe names for channel at %'d Hz", {chan.frequency});
+        _duck.report().error(u"empty file and pipe names for channel at %'d Hz", {chan.frequency});
         return false;
     }
 
@@ -341,14 +341,14 @@ bool ts::TunerEmulator::start(Report& report)
     return true;
 }
 
-bool ts::TunerEmulator::stop(Report& report)
+bool ts::TunerEmulator::stop(bool silent)
 {
     // Close resources, regardless of state.
     if (_file.isOpen()) {
-        _file.close(report);
+        _file.close(silent ? NULLREP : _duck.report());
     }
     if (_pipe.isOpen()) {
-        _pipe.close(report);
+        _pipe.close(silent ? NULLREP : _duck.report());
     }
     // Change state only if started.
     if (_state == State::STARTED) {
@@ -362,16 +362,16 @@ bool ts::TunerEmulator::stop(Report& report)
 // Packet reception.
 //-----------------------------------------------------------------------------
 
-size_t ts::TunerEmulator::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
+size_t ts::TunerEmulator::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort)
 {
     if (_state != State::STARTED) {
         return 0;  // error
     }
     else if (_file.isOpen()) {
-        return _file.readPackets(buffer, nullptr, max_packets, report);
+        return _file.readPackets(buffer, nullptr, max_packets, _duck.report());
     }
     else if (_pipe.isOpen()) {
-        return _pipe.readPackets(buffer, nullptr, max_packets, report);
+        return _pipe.readPackets(buffer, nullptr, max_packets, _duck.report());
     }
     else {
         return 0;  // error
@@ -383,7 +383,7 @@ size_t ts::TunerEmulator::receive(TSPacket* buffer, size_t max_packets, const Ab
 // Get the current "tuning" parameters.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
+bool ts::TunerEmulator::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
 {
     if (reset_unknown) {
         params.reset();
@@ -404,7 +404,7 @@ bool ts::TunerEmulator::getCurrentTuning(ModulationArgs& params, bool reset_unkn
 // Display the current tuner emulator state.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::TunerEmulator::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
+std::ostream& ts::TunerEmulator::displayStatus(std::ostream& strm, const UString& margin, bool extended)
 {
     if (_state == State::TUNED || _state == State::STARTED) {
         assert(_tune_index < _channels.size());

@@ -68,7 +68,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"psimerge", ts::PSIMergePlugin);
 
 ts::PSIMergePlugin::PSIMergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge PSI/SI from mixed streams", u"[options]"),
-    _psi_merger(duck, PSIMerger::NONE, *tsp),
+    _psi_merger(duck, PSIMerger::NONE),
     _main_label(TSPacketMetadata::LABEL_MAX + 1),
     _merge_label(TSPacketMetadata::LABEL_MAX + 1)
 {

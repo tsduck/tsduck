@@ -137,7 +137,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     _packet_count(0),
     _pid_packet_count(0),
     _cycle_count(0),
-    _pzer(duck, PID_NULL, StuffPolicy::NEVER, 0, tsp)
+    _pzer(duck, PID_NULL, StuffPolicy::NEVER)
 {
     duck.defineArgsForCharset(*this);
     _sections_opt.defineArgs(*this);

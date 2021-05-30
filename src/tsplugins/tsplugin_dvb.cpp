@@ -142,13 +142,13 @@ bool ts::DVBInputPlugin::start()
     _previous_bitrate = 0;
 
     // Open DVB tuner
-    if (!_tuner_args.configureTuner(_tuner, *tsp)) {
+    if (!_tuner_args.configureTuner(_tuner)) {
         return false;
     }
     tsp->verbose(u"using %s (%s)", {_tuner.deviceName(), _tuner.deliverySystems().toString()});
 
     // Tune to the specified frequency.
-    if (!_tuner.tune(_tuner_args, *tsp)) {
+    if (!_tuner.tune(_tuner_args)) {
         stop();
         return false;
     }
@@ -162,18 +162,18 @@ bool ts::DVBInputPlugin::start()
 
     // Start receiving packets
     tsp->debug(u"starting tuner reception");
-    if (!_tuner.start(*tsp)) {
+    if (!_tuner.start()) {
         stop();
         return false;
     }
     tsp->debug(u"tuner reception started");
 
-    UString signal(UString::Format(u"signal locked: %s", {UString::YesNo(_tuner.signalLocked(*tsp))}));
-    int strength = _tuner.signalStrength(*tsp);
+    UString signal(UString::Format(u"signal locked: %s", {UString::YesNo(_tuner.signalLocked())}));
+    int strength = _tuner.signalStrength();
     if (strength >= 0) {
         signal += UString::Format(u", strength: %d%%", {strength});
     }
-    int quality = _tuner.signalQuality(*tsp);
+    int quality = _tuner.signalQuality();
     if (quality >= 0) {
         signal += UString::Format(u", quality: %d%%", {quality});
     }
@@ -189,8 +189,8 @@ bool ts::DVBInputPlugin::start()
 
 bool ts::DVBInputPlugin::stop()
 {
-    _tuner.stop(*tsp);
-    _tuner.close(*tsp);
+    _tuner.stop();
+    _tuner.close();
     return true;
 }
 
@@ -206,7 +206,7 @@ ts::BitRate ts::DVBInputPlugin::getBitrate()
     // number of used bits vs. transported bits (FEC), etc.
 
     // Get current tuning information
-    if (!_tuner.getCurrentTuning(_tuner_args, false, *tsp)) {
+    if (!_tuner.getCurrentTuning(_tuner_args, false)) {
         return 0; // error
     }
 
@@ -232,5 +232,5 @@ ts::BitRate ts::DVBInputPlugin::getBitrate()
 
 size_t ts::DVBInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
-    return _tuner.receive(buffer, max_packets, tsp, *tsp);
+    return _tuner.receive(buffer, max_packets, tsp);
 }

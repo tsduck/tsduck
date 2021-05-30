@@ -103,10 +103,9 @@ namespace ts {
         //! Send a tune request.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] params Modulation parameters.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool sendTuneRequest(DuckContext& duck, const ModulationArgs& params, Report& report);
+        bool sendTuneRequest(DuckContext& duck, const ModulationArgs& params);
 
         //!
         //! Search criteria for properties.

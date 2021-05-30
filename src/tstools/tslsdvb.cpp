@@ -160,7 +160,7 @@ namespace {
 
             // Display system-specific status (very verbose).
             std::cout << std::endl;
-            tuner.displayStatus(std::cout, u"  ", opt, opt.extended);
+            tuner.displayStatus(std::cout, u"  ", opt.extended);
             std::cout << std::endl;
         }
     }
@@ -187,14 +187,14 @@ int MainCode(int argc, char *argv[])
     if (!opt.tuner_args.device_name.empty()) {
         // One device name specified.
         ts::Tuner tuner(opt.duck);
-        if (opt.tuner_args.configureTuner(tuner, opt)) {
+        if (opt.tuner_args.configureTuner(tuner)) {
             ListTuner(opt.duck, tuner, -1, opt);
         }
     }
     else {
         // List all tuners.
         ts::TunerPtrVector tuners;
-        if (!ts::Tuner::GetAllTuners(opt.duck, tuners, opt)) {
+        if (!ts::Tuner::GetAllTuners(opt.duck, tuners)) {
             return EXIT_FAILURE;
         }
         else if (tuners.empty()) {

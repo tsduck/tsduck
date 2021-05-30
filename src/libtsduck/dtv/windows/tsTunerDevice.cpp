@@ -75,9 +75,9 @@ ts::TunerDevice::~TunerDevice()
 // Get the list of all existing DVB tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
+bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners)
 {
-    return TunerDevice::FindTuners(duck, nullptr, &tuners, report);
+    return TunerDevice::FindTuners(duck, nullptr, &tuners);
 }
 
 
@@ -145,14 +145,14 @@ void ts::TunerDevice::setReceiverFilterName(const UString& name)
 // Open the tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::open(const UString& device_name, bool info_only, Report& report)
+bool ts::TunerDevice::open(const UString& device_name, bool info_only)
 {
     if (_is_open) {
-        report.error(u"tuner already open");
+        _duck.report().error(u"tuner already open");
         return false;
     }
     _device_name = device_name;
-    if (!FindTuners(_duck, this, nullptr, report)) {
+    if (!FindTuners(_duck, this, nullptr)) {
         return false;
     }
     else if (_is_open) {
@@ -160,11 +160,11 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only, Report& r
         return true;
     }
     else if (device_name.empty()) {
-        report.error(u"No tuner device");
+        _duck.report().error(u"No tuner device");
         return false;
     }
     else {
-        report.error(u"device \"%s\" not found", {device_name});
+        _duck.report().error(u"device \"%s\" not found", {device_name});
         return false;
     }
 }
@@ -174,14 +174,14 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only, Report& r
 // Close tuner.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::close(Report& report)
+bool ts::TunerDevice::close(bool silent)
 {
     _is_open = false;
     _device_name.clear();
     _device_info.clear();
     _device_path.clear();
     _delivery_systems.clear();
-    _graph.clear(report);
+    _graph.clear(silent ? NULLREP : _duck.report());
     return true;
 }
 
@@ -190,10 +190,10 @@ bool ts::TunerDevice::close(Report& report)
 // Check if a signal is present and locked
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::signalLocked(Report& report)
+bool ts::TunerDevice::signalLocked()
 {
     if (!_is_open) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return false;
     }
 
@@ -226,10 +226,10 @@ bool ts::TunerDevice::getSignalStrength_mdB(::LONG& strength)
 // Return signal strength, in percent (0=bad, 100=good)
 //-----------------------------------------------------------------------------
 
-int ts::TunerDevice::signalStrength(Report& report)
+int ts::TunerDevice::signalStrength()
 {
     if (!_is_open) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return false;
     }
     else {
@@ -244,10 +244,10 @@ int ts::TunerDevice::signalStrength(Report& report)
 // Return a negative value on error.
 //-----------------------------------------------------------------------------
 
-int ts::TunerDevice::signalQuality(Report& report)
+int ts::TunerDevice::signalQuality()
 {
     if (!_is_open) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return false;
     }
 
@@ -263,10 +263,10 @@ int ts::TunerDevice::signalQuality(Report& report)
 // Get the current tuning parameters
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknown, Report& report)
+bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
 {
     if (!_is_open) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return false;
     }
 
@@ -424,7 +424,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
         case TT_UNDEFINED:
         default: {
-            report.error(u"cannot convert BDA tuning parameters to %s parameters", {TunerTypeEnum.name(ttype)});
+            _duck.report().error(u"cannot convert BDA tuning parameters to %s parameters", {TunerTypeEnum.name(ttype)});
             return false;
         }
     }
@@ -443,9 +443,9 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 // Tune to the specified parameters and start receiving.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::tune(ModulationArgs& params, Report& report)
+bool ts::TunerDevice::tune(ModulationArgs& params)
 {
-    return checkTuneParameters(params, report) && _graph.sendTuneRequest(_duck, params, report);
+    return checkTuneParameters(params) && _graph.sendTuneRequest(_duck, params);
 }
 
 
@@ -454,7 +454,7 @@ bool ts::TunerDevice::tune(ModulationArgs& params, Report& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::start(Report& report)
+bool ts::TunerDevice::start()
 {
     SinkFilter* const sink = _graph.sinkFilter();
 
@@ -508,7 +508,7 @@ bool ts::TunerDevice::start(Report& report)
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::stop(Report& report)
+bool ts::TunerDevice::stop()
 {
     return _is_open && _graph.stop(report);
 }
@@ -547,7 +547,7 @@ void ts::TunerDevice::abort()
 // Returning zero means error or end of input.
 //-----------------------------------------------------------------------------
 
-size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort, Report& report)
+size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort)
 {
     SinkFilter* const sink = _graph.sinkFilter();
 
@@ -580,7 +580,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
 // Display the characteristics and status of the tuner.
 //-----------------------------------------------------------------------------
 
-std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& margin, Report& report, bool extended)
+std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& margin, bool extended)
 {
     if (!_is_open) {
         report.error(u"tuner not open");
@@ -611,9 +611,10 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& 
 // Private static method: Find one or more tuners.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtrVector* tuner_list, Report& report)
+bool ts::TunerDevice::FindTuners(DuckContext& duck, TunerDevice* tuner, TunerPtrVector* tuner_list)
 {
     // Report to use when errors shall be reported in debug mode only
+    Report& report(duck.report());
     Report& debug_report(report.debug() ? report : NULLREP);
 
     // Exactly one of Tuner* or TunerPtrVector* must be non-zero.

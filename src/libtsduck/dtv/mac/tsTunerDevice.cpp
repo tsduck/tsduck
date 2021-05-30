@@ -36,8 +36,8 @@ TSDUCK_SOURCE;
 // MacOS implementation of services from ts::TunerBase.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners, Report& report)
+bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners)
 {
-    report.error(u"Digital tuners are not implemented on macOS");
+    duck.report().error(u"Digital tuners are not implemented on macOS");
     return false;
 }

@@ -37,8 +37,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PESOneShotPacketizer::PESOneShotPacketizer(const DuckContext& duck, PID pid, Report* report) :
-    PESStreamPacketizer(duck, pid, report)
+ts::PESOneShotPacketizer::PESOneShotPacketizer(const DuckContext& duck, PID pid) :
+    PESStreamPacketizer(duck, pid)
 {
 }
 
