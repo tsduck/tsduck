@@ -332,5 +332,12 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         bool checkTuneParameters(ModulationArgs& params) const;
+
+        //!
+        //! Helper for unimplemented methods.
+        //! Display a standard error message.
+        //! @return False.
+        //!
+        bool unimplemented() const;
     };
 }

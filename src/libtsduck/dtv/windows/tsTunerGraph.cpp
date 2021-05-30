@@ -28,6 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerGraph.h"
+#include "tsDuckContext.h"
 #include "tsDirectShowUtils.h"
 TSDUCK_SOURCE;
 
@@ -485,7 +486,7 @@ bool ts::TunerGraph::sendTuneRequest(DuckContext& duck, const ModulationArgs& pa
 
     // Create a DirectShow tune request
     ComPtr<::ITuneRequest> tune_request;
-    if (!CreateTuneRequest(duck, tune_request, net.tuningSpace(), params, duck.report())) {
+    if (!CreateTuneRequest(duck, tune_request, net.tuningSpace(), params)) {
         return false;
     }
     assert(!tune_request.isNull());

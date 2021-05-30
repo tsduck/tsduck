@@ -77,9 +77,9 @@ namespace ts {
         virtual int signalQuality() override;
         virtual bool tune(ModulationArgs& params) override;
         virtual bool start() override;
-        virtual bool stop() override;
-        virtual void abort() override;
-        virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort) override;
+        virtual bool stop(bool silent = false) override;
+        virtual void abort(bool silent = false) override;
+        virtual size_t receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort = nullptr) override;
         virtual bool getCurrentTuning(ModulationArgs& params, bool reset_unknown) override;
         virtual void setSignalTimeout(MilliSecond t) override;
         virtual void setSignalTimeoutSilent(bool silent) override;

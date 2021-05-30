@@ -459,7 +459,7 @@ bool ts::TunerDevice::start()
     SinkFilter* const sink = _graph.sinkFilter();
 
     if (!_is_open || sink == nullptr) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return false;
     }
 
@@ -472,7 +472,7 @@ bool ts::TunerDevice::start()
     sink->SetMaxMessages(_sink_queue_size);
 
     // Run the graph.
-    if (!_graph.run(report)) {
+    if (!_graph.run(_duck.report())) {
         return false;
     }
 
@@ -493,7 +493,7 @@ bool ts::TunerDevice::start()
         TSPacket pack;
         if (sink->Read(&pack, sizeof(pack), _signal_timeout) == 0) {
             if (!_signal_timeout_silent) {
-                report.error(u"no input DVB signal after %'d milliseconds", {_signal_timeout});
+                _duck.report().error(u"no input DVB signal after %'d milliseconds", {_signal_timeout});
             }
             return false;
         }
@@ -508,9 +508,9 @@ bool ts::TunerDevice::start()
 // Return true on success, false on errors
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::stop()
+bool ts::TunerDevice::stop(bool silent)
 {
-    return _is_open && _graph.stop(report);
+    return _is_open && _graph.stop(silent ? NULLREP : _duck.report());
 }
 
 
@@ -520,7 +520,7 @@ bool ts::TunerDevice::stop()
 // Return true on success, false on errors.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout, Report&)
+bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout)
 {
     _receive_timeout = timeout;
     return true;
@@ -531,7 +531,7 @@ bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout, Report&)
 // Abort any pending or blocked reception.
 //-----------------------------------------------------------------------------
 
-void ts::TunerDevice::abort()
+void ts::TunerDevice::abort(bool silent)
 {
     SinkFilter* const sink = _graph.sinkFilter();
     if (_is_open && sink != nullptr) {
@@ -552,7 +552,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
     SinkFilter* const sink = _graph.sinkFilter();
 
     if (!_is_open || sink == nullptr) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return 0;
     }
     if (_aborted) {
@@ -568,7 +568,7 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
         const Time limit(Time::CurrentUTC() + _receive_timeout);
         got_size = sink->Read(buffer, max_packets * PKT_SIZE, _receive_timeout);
         if (got_size == 0 && Time::CurrentUTC() >= limit) {
-            report.error(u"receive timeout on " + _device_name);
+            _duck.report().error(u"receive timeout on " + _device_name);
         }
     }
 
@@ -583,12 +583,12 @@ size_t ts::TunerDevice::receive(TSPacket* buffer, size_t max_packets, const Abor
 std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& margin, bool extended)
 {
     if (!_is_open) {
-        report.error(u"tuner not open");
+        _duck.report().error(u"tuner not open");
         return strm;
     }
 
-    strm << margin << "Signal locked:    " << UString::YesNo(signalLocked(report)) << std::endl;
-    int quality = signalQuality(report);
+    strm << margin << "Signal locked:    " << UString::YesNo(signalLocked()) << std::endl;
+    int quality = signalQuality();
     if (quality >= 0) {
         strm << margin << "Signal quality:   " << quality << " %" << std::endl;
     }
@@ -600,7 +600,7 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& 
     // The DirectSho graph can be very verbose.
     if (extended) {
         strm << std::endl << margin << "DirectShow graph:" << std::endl;
-        _graph.display(strm, report, margin + u"  ", true);
+        _graph.display(strm, _duck.report(), margin + u"  ", true);
     }
 
     return strm;

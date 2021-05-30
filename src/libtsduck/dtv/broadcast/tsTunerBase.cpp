@@ -58,41 +58,35 @@ ts::TunerBase::~TunerBase()
 // Unimplemented methods, return an error.
 //-----------------------------------------------------------------------------
 
-#define UNIMPLEMENTED(ret) _duck.report().error(u"Digital tuners are not implemented"); return (ret)
+bool ts::TunerBase::unimplemented() const
+{
+    _duck.report().error(u"Digital tuners are not implemented");
+    return false;
+}
 
 bool ts::TunerBase::open(const UString& device_name, bool info_only)
 {
-    UNIMPLEMENTED(false);
-}
-
-bool ts::TunerBase::close(bool silent)
-{
-    UNIMPLEMENTED(false);
+    return unimplemented();
 }
 
 bool ts::TunerBase::tune(ModulationArgs& params)
 {
-    UNIMPLEMENTED(false);
+    return unimplemented();
 }
 
 bool ts::TunerBase::start()
 {
-    UNIMPLEMENTED(false);
-}
-
-bool ts::TunerBase::stop(bool silent)
-{
-    UNIMPLEMENTED(false);
+    return unimplemented();
 }
 
 size_t ts::TunerBase::receive(TSPacket* buffer, size_t max_packets, const AbortInterface* abort)
 {
-    UNIMPLEMENTED(false);
+    return unimplemented();
 }
 
 bool ts::TunerBase::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
 {
-    UNIMPLEMENTED(false);
+    return unimplemented();
 }
 
 
@@ -147,8 +141,18 @@ int ts::TunerBase::signalQuality()
     return -1;
 }
 
+bool ts::TunerBase::stop(bool silent)
+{
+    return false;
+}
+
 void ts::TunerBase::abort(bool silent)
 {
+}
+
+bool ts::TunerBase::close(bool silent)
+{
+    return false;
 }
 
 void ts::TunerBase::setSignalTimeout(MilliSecond t)
