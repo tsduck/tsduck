@@ -147,6 +147,7 @@ bool ts::AccessUnitIterator::next()
     if (p1 == nullptr) {
         // No next access unit.
         _nalunit = nullptr;
+        _nalunit_index++;
         return false;
     }
 
