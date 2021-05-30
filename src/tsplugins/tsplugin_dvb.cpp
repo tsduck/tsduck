@@ -122,7 +122,7 @@ bool ts::DVBInputPlugin::setReceiveTimeout(MilliSecond timeout)
 
 bool ts::DVBInputPlugin::abortInput()
 {
-    _tuner.abort();
+    _tuner.abort(true);
     return true;
 }
 

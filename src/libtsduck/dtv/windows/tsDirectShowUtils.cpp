@@ -37,9 +37,9 @@
 TSDUCK_SOURCE;
 
 // Put the value of a property (named "type") into a COM object.
-// Report errors through a variable named report (must be accessible).
+// Report errors through a CucjContext variable named duck (must be accessible).
 // Return true on success, false on error.
-#define PUT(obj,type,value) ts::ComSuccess((obj)->put_##type(value), u"error setting " #type, report)
+#define PUT(obj,type,value) ts::ComSuccess((obj)->put_##type(value), u"error setting " #type, duck.report())
 
 // Same with a variable value. Silently return true if the variable is unset.
 #define PUTVAR(obj,type,var) ((var).set() ? PUT(obj,type,(var).value()) : true)
@@ -285,7 +285,7 @@ bool ts::CreateTuneRequest(DuckContext& duck, ComPtr<::ITuneRequest>& request, :
 
     // Create a locator (where to find the physical TS, ie. tuning params).
     ComPtr<::IDigitalLocator> locator;
-    if (!CreateLocator(duck, locator, params, duck.report())) {
+    if (!CreateLocator(duck, locator, params)) {
         return false;
     }
     assert(!locator.isNull());
