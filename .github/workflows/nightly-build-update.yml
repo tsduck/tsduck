@@ -41,10 +41,19 @@
 
 name: Nightly build update
 
-# Trigger the workflow every day at 04:10 GMT. Also allow manual trigger (workflow_dispatch).
 on:
-  schedule:
-    - cron:  '10 4 * * *'
+  # Trigger when the workflow named "Nightly build" completes.
+  workflow_run:
+    workflows:
+      - Nightly build
+    types:
+      - completed
+  # Trigger the workflow every day at 10:15 GMT.
+  # As a fallback method when the artifacts were not fully ready.
+  # --> commented out for now
+  #### schedule:
+  ####   - cron:  '15 10 * * *'
+  # Allow manual trigger.
   workflow_dispatch:
 
 jobs:
