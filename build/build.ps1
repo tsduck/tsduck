@@ -135,8 +135,10 @@ if (-not $NoLowPriority) {
 $MSBuild = (Find-MSBuild)
 
 # Compute MSBuild version on 6 digits (e.g. 161001 for version 16.10.1)
-$VFields = ((& $MSBuild -version | Select-String -Pattern '^\d*\.\d*').ToString() -split "[-\. ]") + @("0", "0", "0") | Select-String -Pattern '^\d*$'
+$MSBuildVersionString = (& $MSBuild -version | Select-String -Pattern '^\d*\.\d*').ToString()
+$VFields = ($MSBuildVersionString -split "[-\. ]") + @("0", "0", "0") | Select-String -Pattern '^\d*$'
 $MSBuildVersion = (10000 * [int]$VFields[0].ToString()) + (100 * [int]$VFields[1].ToString()) + [int]$VFields[2].ToString()
+Write-Output "MSBuild version $MSBuildVersionString ($MSBuildVersion)"
 
 # Update git repository if requested.
 if ($GitPull) {
@@ -170,6 +172,7 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
     if (($MSBuildVersion -eq 161000) -and (-not -not $target)) {
         # There is some kind of bug in MSBuild 16.10.0. Rebuilding with /target=projname fails.
         # Adding :Rebuild to each project name works. Supposed to be fixed in 16.10.1.
+        Write-Output "Bug in MSBuild version $MSBuildVersionString ($MSBuildVersion), forcing rebuild"
         $target = ($target -replace ';',':Rebuild;') + ':Rebuild'
     }
     & $MSBuild $SolutionFileName /nologo $OptCPU /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target
