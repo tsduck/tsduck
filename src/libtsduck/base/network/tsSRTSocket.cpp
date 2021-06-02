@@ -871,7 +871,13 @@ bool ts::SRTSocket::Guts::srtConnect(const SocketAddress& addr, Report& report)
 
     report.debug(u"calling srt_connect(%s)", {addr});
     if (srt_connect(sock, &sock_addr, sizeof(sock_addr)) < 0) {
-        report.error(u"error during srt_connect: %s", {srt_getlasterror_str()});
+        const int err = srt_getlasterror(&errno);
+        std::string err_str(srt_strerror(err, errno));
+        if (err == SRT_ECONNREJ) {
+            err_str.append(", reject reason: ");
+            err_str.append(srt_rejectreason_str(srt_getrejectreason(sock)));
+        }
+        report.error(u"error during srt_connect: %s", {err_str});
         return false;
     }
     else {
