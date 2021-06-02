@@ -93,6 +93,7 @@ namespace ts {
         private:
             InputPlugin* _input;                  // Plugin API
             bool         _in_sync_lost;           // Input synchronization lost (no 0x47 at start of packet)
+            bool         _plugin_completed;       // Input plugin reported termination.
             size_t       _instuff_start_remain;
             size_t       _instuff_stop_remain;
             size_t       _instuff_nullpkt_remain;
