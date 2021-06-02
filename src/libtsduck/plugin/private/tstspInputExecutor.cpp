@@ -51,6 +51,7 @@ ts::tsp::InputExecutor::InputExecutor(const TSProcessorArgs& options,
     PluginExecutor(options, handlers, PluginType::INPUT, pl_options, attributes, global_mutex, report),
     _input(dynamic_cast<InputPlugin*>(PluginThread::plugin())),
     _in_sync_lost(false),
+    _plugin_completed(false),
     _instuff_start_remain(options.instuff_start),
     _instuff_stop_remain(options.instuff_stop),
     _instuff_nullpkt_remain(0),
@@ -254,6 +255,7 @@ size_t ts::tsp::InputExecutor::receiveAndValidate(size_t index, size_t max_packe
         _watchdog.restart();
     }
     size_t count = _input->receive(pkt, data, max_packets);
+    _plugin_completed = _plugin_completed || count == 0;
     if (_use_watchdog) {
         _watchdog.suspend();
     }
@@ -310,10 +312,6 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
 {
     size_t pkt_done = 0;              // Number of received packets in buffer
     size_t pkt_remain = max_packets;  // Remaining number of packets to read
-    size_t pkt_from_input = 0;        // Number of packets actually read from plugin
-
-    // Check if the remaining initial null packets will fill the buffer.
-    const bool instuff_start_only = _instuff_start_remain >= max_packets;
 
     // If initial stuffing not yet completed, add initial stuffing.
     while (_instuff_start_remain > 0 && pkt_remain > 0) {
@@ -330,8 +328,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
     // Now read real packets.
     if (_options.instuff_inpkt == 0) {
         // There is no --add-input-stuffing option, simply call the plugin
-        pkt_from_input = receiveAndValidate(index, pkt_remain);
-        pkt_done += pkt_from_input;
+        pkt_done += receiveAndValidate(index, pkt_remain);
     }
     else {
         // Otherwise, we have to alternate input packets and null packets.
@@ -360,7 +357,6 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
             index += count;
             pkt_remain -= count;
             pkt_done += count;
-            pkt_from_input += count;
             _instuff_inpkt_remain -= count;
 
             // Restart sequence of null packets to stuff after reading chunk of input packets.
@@ -374,11 +370,7 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
             }
         }
     }
-
-    // Return number of packets which were added into the packet buffer.
-    // In case of end of input (pkt_from_input == 0), no need to return initial null packets (if any).
-    // Except if there are so many initial null packets that they did not yet let space for the actual input.
-    return pkt_from_input == 0 && !instuff_start_only ? 0 : pkt_done;
+    return pkt_done;
 }
 
 
@@ -393,10 +385,10 @@ void ts::tsp::InputExecutor::main()
     Time current_time(Time::CurrentUTC());
     Time bitrate_due_time(current_time + _options.bitrate_adj);
     PacketCounter bitrate_due_packet = _options.init_bitrate_adj;
-    bool plugin_completed = false;
     bool input_end = false;
     bool aborted = false;
     bool restarted = false;
+    _plugin_completed = false;
 
     do {
         size_t pkt_first = 0;
@@ -436,20 +428,19 @@ void ts::tsp::InputExecutor::main()
         size_t pkt_read = 0;
 
         // Read from the plugin if not already terminated.
-        if (!plugin_completed) {
+        if (!_plugin_completed) {
             pkt_read = receiveAndStuff(pkt_first, pkt_max);
-            plugin_completed = pkt_read == 0;
         }
 
         // Read additional trailing stuffing after completion of the input plugin.
-        if (plugin_completed && _instuff_stop_remain > 0 && pkt_read < pkt_max) {
+        if (_plugin_completed && _instuff_stop_remain > 0 && pkt_read < pkt_max) {
             const size_t count = receiveNullPackets(pkt_first + pkt_read, std::min(_instuff_stop_remain, pkt_max - pkt_read));
             pkt_read += count;
             _instuff_stop_remain -= count;
         }
 
         // Overall input is completed when input plugin and trailing stuffing are completed.
-        input_end = plugin_completed && _instuff_stop_remain == 0;
+        input_end = _plugin_completed && _instuff_stop_remain == 0;
 
         // Process periodic bitrate adjustment.
         // In initial phase, as long as the bitrate is unknown, retry every init_bitrate_adj packets.
