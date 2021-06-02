@@ -26,22 +26,26 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 27
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2414
+#include "tsEITRepetitionProfile.h"
+TSDUCK_SOURCE;
+
+const ts::EITRepetitionProfile ts::EITRepetitionProfile::SatelliteCable{
+    2,   // eit_pf_actual_seconds
+    10,  // eit_pf_actual_other
+    8,   // eit_sched_prime_days
+    10,  // eit_sched_actual_prime_seconds
+    10,  // eit_sched_other_prime_seconds
+    30,  // eit_sched_actual_later_seconds
+    30   // eit_sched_other_later_seconds
+};
+
+const ts::EITRepetitionProfile ts::EITRepetitionProfile::Terrestrial{
+    2,   // eit_pf_actual_seconds
+    20,  // eit_pf_actual_other
+    1,   // eit_sched_prime_days
+    10,  // eit_sched_actual_prime_seconds
+    60,  // eit_sched_other_prime_seconds
+    30,  // eit_sched_actual_later_seconds
+    300  // eit_sched_other_later_seconds
+};

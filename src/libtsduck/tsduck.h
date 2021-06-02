@@ -258,6 +258,7 @@
 #include "tsEIT.h"
 #include "tsEITGenerator.h"
 #include "tsEITProcessor.h"
+#include "tsEITRepetitionProfile.h"
 #include "tsEmergencyInformationDescriptor.h"
 #include "tsEMMGClient.h"
 #include "tsEMMGMUX.h"

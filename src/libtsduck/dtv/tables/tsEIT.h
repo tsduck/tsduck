@@ -90,6 +90,8 @@ namespace ts {
         static constexpr size_t SECTIONS_PER_SEGMENT = 8;
         //!
         //! Number of logical segments over all EIT schedule of one type (actual or other).
+        //! There are 16 different table ids for EIT schedule (0x50-0x5F for actual, 0x60-0x6F for other).
+        //! Each table id can have up to 256 sections, i.e. 32 segments.
         //!
         static constexpr size_t SEGMENTS_COUNT = 512;
         //!
@@ -98,6 +100,18 @@ namespace ts {
         //! Each segment contains the events for a given duration.
         //!
         static constexpr MilliSecond SEGMENT_DURATION = 3 * MilliSecPerHour;
+        //!
+        //! Section header size of an EIT section.
+        //!
+        constexpr static size_t EIT_HEADER_SIZE = LONG_SECTION_HEADER_SIZE;
+        //!
+        //! Minimum payload size of an EIT section before event loop.
+        //!
+        constexpr static size_t EIT_PAYLOAD_FIXED_SIZE = 6;
+        //!
+        //! Minimum size of an event structure in an EIT section before descriptor loop.
+        //!
+        constexpr static size_t EIT_EVENT_FIXED_SIZE = 12;
 
         //!
         //! Description of an event.
@@ -241,6 +255,13 @@ namespace ts {
         static bool IsSchedule(TID tid) { return tid >= TID_EIT_S_ACT_MIN && tid <= TID_EIT_S_OTH_MAX; }
 
         //!
+        //! Extract the service id triplet from an EIT section.
+        //! @param [in] section An EIT section.
+        //! @return The service id triplet.
+        //!
+        static ServiceIdTriplet GetService(const Section& section);
+
+        //!
         //! Default constructor.
         //! @param [in] is_actual True for EIT Actual TS, false for EIT Other TS.
         //! @param [in] is_pf True for EIT present/following, false for EIT schedule.
@@ -370,9 +391,6 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        constexpr static size_t EIT_HEADER_SIZE        = LONG_SECTION_HEADER_SIZE;
-        constexpr static size_t EIT_PAYLOAD_FIXED_SIZE = 6;   // Payload size before event loop.
-        constexpr static size_t EIT_EVENT_FIXED_SIZE   = 12;  // Event size before descriptor loop.
 
         // Get the table id from XML element.
         bool getTableId(const xml::Element*);
@@ -380,9 +398,6 @@ namespace ts {
         // Build an empty EIT section for a given service. Return null pointer on error.
         // Do not compute the CRC32 of the section. Also insert the section in a vector of sections.
         static SectionPtr BuildEmptySection(TID tid, uint8_t section_number, const ServiceIdTriplet& serv, SectionPtrVector& sections);
-
-        // Extract the service id triplet from an EIT section.
-        static ServiceIdTriplet GetService(const SectionPtr&);
 
         // An internal structure to store binary events from sections.
         struct BinaryEvent
