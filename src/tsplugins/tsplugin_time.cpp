@@ -207,12 +207,12 @@ bool ts::TimePlugin::start()
 // Return false if a time string is invalid
 //----------------------------------------------------------------------------
 
-bool ts::TimePlugin::addEvents(const UChar* option, Status status)
+bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
 {
     const Time start_time(Time::CurrentLocalTime());
 
-    for (size_t index = 0; index < count(option); ++index) {
-        const UString timeString(value(option, u"", index));
+    for (size_t index = 0; index < count(opt); ++index) {
+        const UString timeString(value(opt, u"", index));
         if (timeString.empty()) {
             // If the time string is empty, this is the initial action
             _status = status;

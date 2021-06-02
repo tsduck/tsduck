@@ -184,10 +184,10 @@ bool ts::SlicePlugin::start()
 // Add events in the list fro one option.
 //----------------------------------------------------------------------------
 
-void ts::SlicePlugin::addEvents(const UChar* option, Status status)
+void ts::SlicePlugin::addEvents(const UChar* opt, Status status)
 {
-    for (size_t index = 0; index < count(option); ++index) {
-        uint64_t value = intValue<uint64_t>(option, 0, index);
+    for (size_t index = 0; index < count(opt); ++index) {
+        uint64_t value = intValue<uint64_t>(opt, 0, index);
         if (value == 0) {
             // First packet, this is the initial action
             _status = status;

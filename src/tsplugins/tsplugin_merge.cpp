@@ -365,16 +365,16 @@ bool ts::MergePlugin::getOptions()
 // Process a --drop or --pass option.
 //----------------------------------------------------------------------------
 
-bool ts::MergePlugin::processDropPassOption(const UChar* option, bool allowed)
+bool ts::MergePlugin::processDropPassOption(const UChar* opt, bool allowed)
 {
-    const size_t max = count(option);
+    const size_t max = count(opt);
     bool status = true;
 
     // Loop on all occurences of the option.
     for (size_t i = 0; i < max; ++i) {
 
         // Next occurence of the option.
-        const UString str(value(option, u"", i));
+        const UString str(value(opt, u"", i));
         PID pid1 = PID_NULL;
         PID pid2 = PID_NULL;
         size_t num = 0;
@@ -383,7 +383,7 @@ bool ts::MergePlugin::processDropPassOption(const UChar* option, bool allowed)
         // The accepted format is: pid[-pid]
         str.scan(num, last, u"%d-%d", {&pid1, &pid2});
         if (num < 1 || last != str.size() || pid1 >= PID_MAX || pid2 >= PID_MAX || (num == 2 && pid1 > pid2)) {
-            tsp->error(u"invalid PID range \"%s\" for --%s, use \"pid[-pid]\"", {str, option});
+            tsp->error(u"invalid PID range \"%s\" for --%s, use \"pid[-pid]\"", {str, opt});
             status = false;
         }
         else {
