@@ -624,14 +624,14 @@ ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const
 // Extract the service id triplet from an EIT section.
 //----------------------------------------------------------------------------
 
-ts::ServiceIdTriplet ts::EIT::GetService(const SectionPtr& section)
+ts::ServiceIdTriplet ts::EIT::GetService(const Section& section)
 {
-    if (section->payloadSize() < EIT_PAYLOAD_FIXED_SIZE) {
+    if (!section.isValid() || !IsEIT(section.tableId()) || section.payloadSize() < EIT_PAYLOAD_FIXED_SIZE) {
         return ServiceIdTriplet();
     }
     else {
-        const uint8_t* data = section->payload();
-        return ServiceIdTriplet(section->tableIdExtension(), GetUInt16(data), GetUInt16(data + 2), section->version());
+        const uint8_t* data = section.payload();
+        return ServiceIdTriplet(section.tableIdExtension(), GetUInt16(data), GetUInt16(data + 2), section.version());
     }
 }
 
@@ -648,7 +648,7 @@ void ts::EIT::ExtractBinaryEvents(const SectionPtr& section, BinaryEventPtrMap& 
         size_t size = section->payloadSize();
 
         // Build the service id triplet.
-        const ServiceIdTriplet servid(GetService(section));
+        const ServiceIdTriplet servid(GetService(*section));
 
         // Loop on all events in the EIT payload.
         data += EIT_PAYLOAD_FIXED_SIZE;
@@ -821,7 +821,7 @@ void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime
 
     for (auto it = out_sections.rbegin(); it != out_sections.rend() && IsSchedule((*it)->tableId()); ++it) {
 
-        const ServiceIdTriplet this_service(GetService(*it));
+        const ServiceIdTriplet this_service(GetService(**it));
         const TID this_table_id = (*it)->tableId();
         const uint8_t this_section_number = (*it)->sectionNumber();
 
