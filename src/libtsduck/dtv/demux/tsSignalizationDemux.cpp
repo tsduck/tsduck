@@ -1109,7 +1109,7 @@ void ts::SignalizationDemux::handleDescriptors(const DescriptorList& dlist, PID 
                     getPIDContext(desc.ca_pid)->setCAS(dlist.table(), desc.cas_id);
                 }
             }
-            else if ((_duck.standards() & Standards::ISDB) != Standards::NONE && did == DID_ISDB_CA) {
+            else if (bool(_duck.standards() & Standards::ISDB) && did == DID_ISDB_CA) {
                 const ISDBAccessControlDescriptor desc(_duck, *ptr);
                 if (desc.isValid()) {
                     getPIDContext(desc.pid)->setCAS(dlist.table(), desc.CA_system_id);

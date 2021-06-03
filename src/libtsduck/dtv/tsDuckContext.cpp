@@ -183,12 +183,12 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
         // A default PDS was specified.
         return _defaultPDS;
     }
-    else if ((_accStandards & Standards::ATSC) == Standards::ATSC) {
+    else if (bool(_accStandards & Standards::ATSC)) {
         // We have previously found ATSC signalization, use the fake PDS for ATSC.
         // This allows interpretation of ATSC descriptors in MPEG-defined tables (eg. PMT).
         return PDS_ATSC;
     }
-    else if ((_accStandards & Standards::ISDB) == Standards::ISDB) {
+    else if (bool(_accStandards & Standards::ISDB)) {
         // Same principle for ISDB.
         return PDS_ISDB;
     }

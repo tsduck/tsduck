@@ -137,7 +137,7 @@ FUNCTION ts::PSIRepository::getTableFunction(TID tid, Standards standards, PID p
             const bool casMatch = cas >= it->second.minCAS && cas <= it->second.maxCAS;
 
             // Standard match: at least one standard of the table is current, or standard-agnostic table (Standards::NONE).
-            const bool stdMatch = (standards & it->second.standards) != Standards::NONE || it->second.standards == Standards::NONE;
+            const bool stdMatch = bool(standards & it->second.standards) || it->second.standards == Standards::NONE;
 
             if (stdMatch && casMatch) {
                 // Found an exact match, no need to search further.

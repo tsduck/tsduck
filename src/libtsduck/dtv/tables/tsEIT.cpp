@@ -624,14 +624,14 @@ ts::SectionPtr ts::EIT::BuildEmptySection(TID tid, uint8_t section_number, const
 // Extract the service id triplet from an EIT section.
 //----------------------------------------------------------------------------
 
-ts::ServiceIdTriplet ts::EIT::GetService(const Section& section)
+ts::ServiceIdTriplet ts::EIT::GetService(const Section& section, bool include_version)
 {
     if (!section.isValid() || !IsEIT(section.tableId()) || section.payloadSize() < EIT_PAYLOAD_FIXED_SIZE) {
         return ServiceIdTriplet();
     }
     else {
         const uint8_t* data = section.payload();
-        return ServiceIdTriplet(section.tableIdExtension(), GetUInt16(data), GetUInt16(data + 2), section.version());
+        return ServiceIdTriplet(section.tableIdExtension(), GetUInt16(data), GetUInt16(data + 2), include_version ? section.version() : 0);
     }
 }
 
