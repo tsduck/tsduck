@@ -573,8 +573,8 @@ size_t ts::DescriptorList::searchLanguage(const DuckContext& duck, const UString
 
     // Standards of the context and the parent table.
     const Standards standards = duck.standards() | (_table == nullptr ? Standards::NONE : _table->definingStandards());
-    const bool atsc = (standards & Standards::ATSC) != Standards::NONE;
-    const bool isdb = (standards & Standards::ISDB) != Standards::NONE;
+    const bool atsc = bool(standards & Standards::ATSC);
+    const bool isdb = bool(standards & Standards::ISDB);
 
     // Seach all known types of descriptors containing languages.
     for (size_t index = start_index; index < _list.size(); index++) {

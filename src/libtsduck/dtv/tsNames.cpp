@@ -82,7 +82,7 @@ ts::UString ts::names::TID(const DuckContext& duck, uint8_t tid, uint16_t cas, F
             // TID value with mask for this standard:
             const Names::Value value = Names::Value(tid) | (Names::Value(mask) << 16);
             // Check if this standard is currently in TSDuck context.
-            const bool supportedStandard = (duck.standards() & mask) != Standards::NONE;
+            const bool supportedStandard = bool(duck.standards() & mask);
             // Lookup name only if supported standard or no previous standard was found.
             if (!foundOnce || supportedStandard) {
                 bool foundHere = repo->nameExists(section, value | casMask);
@@ -162,7 +162,7 @@ ts::UString ts::names::CASFamily(ts::CASFamily cas)
 
 ts::UString ts::names::CASId(const DuckContext& duck, uint16_t id, Flags flags)
 {
-    const UChar* section = (duck.standards() & Standards::ISDB) == Standards::ISDB ? u"ARIBCASystemId" : u"CASystemId";
+    const UChar* section = bool(duck.standards() & Standards::ISDB) ? u"ARIBCASystemId" : u"CASystemId";
     return NamesMain::Instance()->nameFromSection(section, Names::Value(id), flags, 16);
 }
 
@@ -333,7 +333,7 @@ ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, Fla
     // Value to display:
     const uint16_t dType = sc >= 1 && sc <= 8 ? (type & 0x0FFF) : type;
 
-    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
+    if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
         return NamesMain::Instance()->nameFromSection(u"ComponentTypeJapan", Names::Value(nType), flags | names::ALTERNATE, 16, dType);
     }
@@ -355,11 +355,11 @@ ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, Fla
 
 ts::UString ts::names::Content(const DuckContext& duck, uint8_t x, Flags flags)
 {
-    if ((duck.standards() & Standards::JAPAN) == Standards::JAPAN) {
+    if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
         return NamesMain::Instance()->nameFromSection(u"ContentIdJapan", Names::Value(x), flags, 8);
     }
-    else if ((duck.standards() & Standards::ABNT) == Standards::ABNT) {
+    else if (bool(duck.standards() & Standards::ABNT)) {
         // ABNT (Brazil) / ISDB uses a completely different mapping.
         return NamesMain::Instance()->nameFromSection(u"ContentIdABNT", Names::Value(x), flags, 8);
     }

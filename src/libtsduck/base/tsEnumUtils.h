@@ -111,6 +111,19 @@ inline constexpr ENUM operator~(ENUM a)
 }
 
 //!
+//! Boolean "not" operator on enumeration types.
+//! @tparam ENUM An enumeration type or enumeration class.
+//! @param [in] a Enumeration value. Typically an expression uing bitmask "and" or "or" operators on @a ENUM.
+//! @return True if @a a is zero (no flag set).
+//!
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value && ts::EnableBitMaskOperators<ENUM>::value>::type* = nullptr>
+inline constexpr bool operator!(ENUM a)
+{
+    using IENUM = typename std::underlying_type<ENUM>::type;
+    return static_cast<IENUM>(a) == 0;
+}
+
+//!
 //! Bitmask "or" operator on enumeration types.
 //! @tparam ENUM An enumeration type or enumeration class.
 //! @param [in] a First operand.

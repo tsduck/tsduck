@@ -44,7 +44,7 @@ ts::UString ts::StandardsNames(Standards standards)
     else {
         UString list;
         for (Standards mask = Standards(1); mask != Standards::NONE; mask <<= 1) {
-            if ((standards & mask) != Standards::NONE) {
+            if (bool(standards & mask)) {
                 if (!list.empty()) {
                     list.append(u", ");
                 }

@@ -257,9 +257,11 @@ namespace ts {
         //!
         //! Extract the service id triplet from an EIT section.
         //! @param [in] section An EIT section.
+        //! @param [in] include_version If true, include the version of the EIT section in the
+        //! ServiceIdTriplet. If false, set the version field of the ServiceIdTriplet to zero.
         //! @return The service id triplet.
         //!
-        static ServiceIdTriplet GetService(const Section& section);
+        static ServiceIdTriplet GetService(const Section& section, bool include_version = false);
 
         //!
         //! Default constructor.

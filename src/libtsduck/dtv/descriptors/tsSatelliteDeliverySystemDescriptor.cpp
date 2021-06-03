@@ -90,7 +90,7 @@ ts::DeliverySystem ts::SatelliteDeliverySystemDescriptor::ResolveDeliverySystem(
     if (system == DS_DVB_S || system == DS_DVB_S2 || system == DS_ISDB_S) {
         return system;
     }
-    else if ((duck.standards() & Standards::ISDB) == Standards::ISDB) {
+    else if (bool(duck.standards() & Standards::ISDB)) {
         return DS_ISDB_S;
     }
     else {
@@ -149,7 +149,7 @@ void ts::SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     east_not_west = buf.getBool();
     buf.getBits(polarization, 2);
 
-    if ((buf.duck().standards() & Standards::ISDB) == Standards::ISDB) {
+    if (bool(buf.duck().standards() & Standards::ISDB)) {
         // ISDB-S variant.
         _system = DS_ISDB_S;
         buf.getBits(modulation, 5);
@@ -181,7 +181,7 @@ void ts::SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& dis
         disp << UString::Format(u".%d degree, ", {buf.getBCD<uint32_t>(1)});
         disp << (buf.getBool() ? "east" : "west") << std::endl;
         disp << margin << "Polarization: " << NameFromSection(u"SatellitePolarization", buf.getBits<uint8_t>(2), names::VALUE | names::DECIMAL) << std::endl;
-        const bool isdb = (disp.duck().standards() & Standards::ISDB) == Standards::ISDB;
+        const bool isdb = bool(disp.duck().standards() & Standards::ISDB);
         if (isdb) {
             disp << margin << "Delivery system: " << DeliverySystemEnum.name(DS_ISDB_S) << std::endl;
             disp << margin << "Modulation: " << NameFromSection(u"ISDBSatelliteModulationType", buf.getBits<uint8_t>(5), names::VALUE | names::DECIMAL) << std::endl;
