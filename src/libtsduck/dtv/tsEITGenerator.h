@@ -71,12 +71,12 @@ namespace ts {
     //! | EIT sched other (later)  | 30 sec    | 300 sec
     //!
     enum class EITProfile {
-        PF_ACTUAL          = 0,   //! EIT present/following actual.
-        PF_OTHER           = 1,   //! EIT present/following other.
-        SCHED_ACTUAL_PRIME = 2,   //! EIT schedule actual in the "prime" period.
-        SCHED_OTHER_PRIME  = 3,   //! EIT schedule other in the "prime" period.
-        SCHED_ACTUAL_LATER = 4,   //! EIT schedule actual after the "prime" period.
-        SCHED_OTHER_LATER  = 5,   //! EIT schedule other after the "prime" period.
+        PF_ACTUAL          = 0,   //!< EIT present/following actual.
+        PF_OTHER           = 1,   //!< EIT present/following other.
+        SCHED_ACTUAL_PRIME = 2,   //!< EIT schedule actual in the "prime" period.
+        SCHED_OTHER_PRIME  = 3,   //!< EIT schedule other in the "prime" period.
+        SCHED_ACTUAL_LATER = 4,   //!< EIT schedule actual after the "prime" period.
+        SCHED_OTHER_LATER  = 5,   //!< EIT schedule other after the "prime" period.
     };
 
     //!
@@ -337,6 +337,9 @@ namespace ts {
             // Indicate that the section will be modified. It the section is or has recently been used in a
             // packetizer, a copy of the section is created first to avoid corrupting the section being packetized.
             void startModifying();
+
+            // Toogle the actual/other status for the section.
+            void toggleActual(bool actual);
         };
 
         typedef SafePtr<ESection> ESectionPtr;
@@ -377,6 +380,9 @@ namespace ts {
             ESectionPtr  present;     // EIT p/f section 0 ("present").
             ESectionPtr  following;   // EIT p/f section 1 ("following").
             ESegmentList segments;    // List of 3 hours segments.
+
+            // Constructor.
+            EService();
         };
 
         // -------------------
