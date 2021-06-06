@@ -93,13 +93,24 @@ namespace ts {
         //! There are 16 different table ids for EIT schedule (0x50-0x5F for actual, 0x60-0x6F for other).
         //! Each table id can have up to 256 sections, i.e. 32 segments.
         //!
-        static constexpr size_t SEGMENTS_COUNT = 512;
+        static constexpr size_t TOTAL_SEGMENTS_COUNT = 512;
         //!
-        //! Number of millisecond per logical segments in EIT schedule.
+        //! Number of milliseconds per logical segments in EIT schedule.
         //! EIT schedule are logically divided into 32 segments.
-        //! Each segment contains the events for a given duration.
+        //! Each segment contains the events for a duration of 3 hours.
         //!
         static constexpr MilliSecond SEGMENT_DURATION = 3 * MilliSecPerHour;
+        //!
+        //! Number of milliseconds per EIT schedule table id.
+        //! EIT schedule are logically divided into 32 segments of 3 hours each.
+        //! One table id consequently covers events for 4 complete days.
+        //!
+        static constexpr MilliSecond TABLE_DURATION = SEGMENTS_PER_TABLE * SEGMENT_DURATION;
+        //!
+        //! Number of milliseconds for all EIT schedule of one type (actual or other).
+        //! All EIT schedule cover events for 64 complete days max.
+        //!
+        static constexpr MilliSecond TOTAL_DURATION = TOTAL_SEGMENTS_COUNT * SEGMENT_DURATION;
         //!
         //! Section header size of an EIT section.
         //!
@@ -210,6 +221,13 @@ namespace ts {
         //! @return The corresponding segment number, from 0 to SEGMENTS_COUNT - 1.
         //!
         static size_t TimeToSegment(const Time& last_midnight, const Time& event_start_time);
+
+        //!
+        //! Compute the segment start time of an event in an EIT schedule.
+        //! @param [in] event_start_time UTC start time of event.
+        //! @return The starting time of the corresponding segment.
+        //!
+        static Time SegmentStart(const Time& event_start_time);
 
         //!
         //! Toggle an EIT table id between Actual and Other.

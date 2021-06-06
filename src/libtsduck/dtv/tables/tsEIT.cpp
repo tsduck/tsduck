@@ -181,7 +181,7 @@ ts::TID ts::EIT::ComputeTableId(bool is_actual, bool is_pf, uint8_t eits_index)
 ts::TID ts::EIT::SegmentToTableId(bool is_actual, size_t segment)
 {
     // Each table id has 32 segments (SEGMENTS_PER_TABLE).
-    return TID((is_actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN) + (std::min(segment, SEGMENTS_COUNT - 1) / SEGMENTS_PER_TABLE));
+    return TID((is_actual ? TID_EIT_S_ACT_MIN : TID_EIT_S_OTH_MIN) + (std::min(segment, TOTAL_SEGMENTS_COUNT - 1) / SEGMENTS_PER_TABLE));
 }
 
 
@@ -199,6 +199,20 @@ size_t ts::EIT::TimeToSegment(const Time& last_midnight, const Time& event_start
         // Each segment covers 3 hours (SEGMENT_DURATION).
         return size_t((event_start_time - last_midnight) / SEGMENT_DURATION);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Compute the segment start time of an event in an EIT schedule.
+//----------------------------------------------------------------------------
+
+ts::Time ts::EIT::SegmentStart(const Time& event_start_time)
+{
+    // A segment is a range of 3 hours.
+    Time::Fields f(event_start_time);
+    f.hour -= f.hour % 3;
+    f.minute = f.second = f.millisecond = 0;
+    return Time(f);
 }
 
 

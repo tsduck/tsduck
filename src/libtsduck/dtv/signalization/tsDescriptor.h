@@ -57,8 +57,8 @@ namespace ts {
         //!
         //! Copy constructor.
         //! @param [in] desc Another instance to copy.
-        //! @param [in] mode The descriptors' data are either shared (ts::SHARE) between the
-        //! two descriptors or duplicated (ts::COPY).
+        //! @param [in] mode The descriptors' data are either shared (ShareMode::SHARE) between the
+        //! two descriptors or duplicated (ShareMode::COPY).
         //!
         Descriptor(const Descriptor& desc, ShareMode mode);
 
@@ -104,8 +104,8 @@ namespace ts {
         //! Constructor from full binary content.
         //! The content is copied into the section if valid.
         //! @param [in] bb Descriptor binary data.
-        //! @param [in] mode The data are either shared (ts::SHARE) between the
-        //! descriptor and @a bb or duplicated (ts::COPY).
+        //! @param [in] mode The data are either shared (ShareMode::SHARE) between the
+        //! descriptor and @a bb or duplicated (ShareMode::COPY).
         //!
         Descriptor(const ByteBlockPtr& bb, ShareMode mode);
 

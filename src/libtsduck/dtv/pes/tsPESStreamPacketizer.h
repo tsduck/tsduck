@@ -79,8 +79,8 @@ namespace ts {
         //!
         //! Add a PES packet to packetize.
         //! @param [in] pes The PES packet.
-        //! @param [in] mode The enqueue PES packet's data are either shared (ts::ShareMode::SHARE) between
-        //! the provided @a pes or duplicated (ts::ShareMode::COPY).
+        //! @param [in] mode The enqueue PES packet's data are either shared (ShareMode::SHARE) between
+        //! the provided @a pes or duplicated (ShareMode::COPY).
         //! @return True on success, false if the enqueue limit is reached.
         //!
         bool addPES(const PESPacket& pes, ShareMode mode);

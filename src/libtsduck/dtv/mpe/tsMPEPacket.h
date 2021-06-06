@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Copy constructor.
         //! @param [in] other Another instance to copy.
-        //! @param [in] mode The datagram contents are either shared (ts::SHARE) between the two instances or duplicated (ts::COPY).
+        //! @param [in] mode The datagram contents are either shared (ShareMode::SHARE) between the two instances or duplicated (ts::ShareMode::COPY).
         //!
         MPEPacket(const MPEPacket& other, ShareMode mode);
 
@@ -77,8 +77,8 @@ namespace ts {
         //! @param [in] datagram Smart pointer to the complete datagram content.
         //! The datagram typically includes the IP and UDP headers. The datagram
         //! is analyzed and marked invalid if no valid UDP/IP header is found.
-        //! @param [in] mode The datagram contents are either shared (ts::SHARE)
-        //! between the two instances or duplicated (ts::COPY).
+        //! @param [in] mode The datagram contents are either shared (ShareMode::SHARE)
+        //! between the two instances or duplicated (ShareMode::COPY).
         //! @param [in] mac Destination MAC address. If unspecified and the destination
         //! IP address is multicast, the corresponding MAC address is used.
         //! @param [in] pid PID from which the DSM-CC section was read.
