@@ -108,7 +108,7 @@ namespace ts {
         //!
         //! Feed a packet from the merged stream.
         //! @param [in,out] pkt A packet from the first stream. When the packet contains tables which can be merged,
-        //! it can be replaced byt null packets or EIT sections, depending on options.
+        //! it can be replaced by null packets or EIT sections, depending on options.
         //! @return True on success, false if an error was reported.
         //!
         bool feedMergedPacket(TSPacket& pkt);

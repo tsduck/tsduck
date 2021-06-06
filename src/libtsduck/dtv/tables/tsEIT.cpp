@@ -50,6 +50,18 @@ TS_REGISTER_TABLE(MY_CLASS, ts::Range<ts::TID>(ts::TID_EIT_MIN, ts::TID_EIT_MAX)
                   // DVB has only one standard PID for EIT, ISDB adds two others.
                   {ts::PID_EIT, ts::PID_ISDB_EIT_2, ts::PID_ISDB_EIT_3});
 
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+constexpr size_t ts::EIT::SEGMENTS_PER_TABLE;
+constexpr size_t ts::EIT::SECTIONS_PER_SEGMENT;
+constexpr size_t ts::EIT::TOTAL_SEGMENTS_COUNT;
+constexpr ts::MilliSecond ts::EIT::SEGMENT_DURATION;
+constexpr ts::MilliSecond ts::EIT::TABLE_DURATION;
+constexpr ts::MilliSecond ts::EIT::TOTAL_DURATION;
+constexpr size_t ts::EIT::EIT_HEADER_SIZE;
+constexpr size_t ts::EIT::EIT_PAYLOAD_FIXED_SIZE;
+constexpr size_t ts::EIT::EIT_EVENT_FIXED_SIZE;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructors

@@ -396,6 +396,16 @@ bool ts::Section::hasDiversifiedPayload() const
 // Modifiable properties.
 //----------------------------------------------------------------------------
 
+void ts::Section::setTableId(uint8_t tid, bool recompute_crc)
+{
+    if (_is_valid) {
+        (*_data)[0] = tid;
+        if (recompute_crc) {
+            recomputeCRC();
+        }
+    }
+}
+
 void ts::Section::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 {
     if (isLongSection()) {

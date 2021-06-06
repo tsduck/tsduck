@@ -295,11 +295,11 @@ namespace ts {
 
         //!
         //! Get the table id.
-        //! @return The table id.
+        //! @return The table id or TID_NULL if the table is invalid.
         //!
         TID tableId() const
         {
-            return _is_valid ? (*_data)[0] : 0xFF;
+            return _is_valid ? (*_data)[0] : uint8_t(TID_NULL);
         }
 
         //!
@@ -469,6 +469,13 @@ namespace ts {
         //! @return The minimum number of TS packets required to transport the section.
         //!
         PacketCounter packetCount() const {return SectionPacketCount(size());}
+
+        //!
+        //! Set the table id.
+        //! @param [in] tid The table id.
+        //! @param [in] recompute_crc If true, immediately recompute the CRC32 of the section.
+        //!
+        void setTableId(uint8_t tid, bool recompute_crc = true);
 
         //!
         //! Set the table id extension (long section only).

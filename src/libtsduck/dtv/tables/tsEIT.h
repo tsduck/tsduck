@@ -114,15 +114,15 @@ namespace ts {
         //!
         //! Section header size of an EIT section.
         //!
-        constexpr static size_t EIT_HEADER_SIZE = LONG_SECTION_HEADER_SIZE;
+        static constexpr size_t EIT_HEADER_SIZE = LONG_SECTION_HEADER_SIZE;
         //!
         //! Minimum payload size of an EIT section before event loop.
         //!
-        constexpr static size_t EIT_PAYLOAD_FIXED_SIZE = 6;
+        static constexpr size_t EIT_PAYLOAD_FIXED_SIZE = 6;
         //!
         //! Minimum size of an event structure in an EIT section before descriptor loop.
         //!
-        constexpr static size_t EIT_EVENT_FIXED_SIZE = 12;
+        static constexpr size_t EIT_EVENT_FIXED_SIZE = 12;
 
         //!
         //! Description of an event.
