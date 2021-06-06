@@ -132,7 +132,6 @@ namespace ts {
 
         // Private fields.
         DuckContext&       _duck;
-        Report&            _report;
         bool               _incremental_pcr;      // Use incremental method to restamp PCR's.
         bool               _pcr_reset_backwards;  // Reset PCR restamping when DTS/PTD move backwards the PCR.
         PIDContextMap      _pid_ctx;              // Description of PID's from the merged stream.

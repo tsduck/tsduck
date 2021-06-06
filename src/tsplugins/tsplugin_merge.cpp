@@ -651,14 +651,14 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
     _insert_control.declareSubPackets(1);
     _merged_count++;
 
-    // Collect and merge PSI/SI when needed.
-    if (_merge_psi) {
-        _psi_merger.feedMergedPacket(pkt);
-    }
-
     // Adjust PCR when needed.
     if (_pcr_restamp) {
         _pcr_merger.processPacket(pkt, current_pkt, main_bitrate);
+    }
+
+    // Collect and merge PSI/SI when needed.
+    if (_merge_psi) {
+        _psi_merger.feedMergedPacket(pkt);
     }
 
     // Drop selected PID's from merged stream. Replace them with a null packet.
