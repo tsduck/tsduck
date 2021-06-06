@@ -35,7 +35,7 @@
 #pragma once
 #include "tsSectionFile.h"
 #include "tsSectionDemux.h"
-#include "tsCyclingPacketizer.h"
+#include "tsPacketizer.h"
 #include "tsServiceIdTriplet.h"
 #include "tsTSPacket.h"
 #include "tsEnumUtils.h"
@@ -116,9 +116,7 @@ namespace ts {
         //!
         static const EITRepetitionProfile Terrestrial;
     };
-}
 
-namespace ts {
     //!
     //! EIT generation options.
     //! The options can be specified as a byte mask.
@@ -146,15 +144,18 @@ namespace ts {
     //! These events will be used to fill the generated EIT sections.
     //!
     //! The object is continuously invoked for all packets in a TS.
-    //! Packets from the EIT PID or the stuffing PID are replaced.
+    //! Packets from the EIT PID or the stuffing PID are replaced by EIT packets.
     //!
-    class TSDUCKDLL EITGenerator : private SectionHandlerInterface
+    class TSDUCKDLL EITGenerator :
+        private SectionHandlerInterface,
+        private SectionProviderInterface
     {
         TS_NOBUILD_NOCOPY(EITGenerator);
     public:
 
         //!
         //! Constructor.
+        //!
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside this object.
         //! @param [in] pid The PID containing EIT's to insert.
         //! @param [in] options EIT generation options.
@@ -167,7 +168,7 @@ namespace ts {
 
         //!
         //! Reset the EIT generator to default state.
-        //! The EPG content is deleted. The TS id is forgotten.
+        //! The EPG content is deleted. The TS id and current time are forgotten.
         //!
         void reset();
 
@@ -196,31 +197,46 @@ namespace ts {
         void setTransportStreamId(uint16_t ts_id);
 
         //!
+        //! Set the maximum bitrate of the EIT PID.
+        //! If set to zero (the default), EIT's are injected according to their cycle
+        //! time, within the limits of the input PID and the stuffing.
+        //! The PID bitrate limitation is effective only if the transport stream bitrate
+        //! is specified.
+        //! @param [in] bitrate Maximum bitrate of the EIT PID.
+        //! @see setTransportStreamBitRate()
+        //!
+        void setMaxBitRate(BitRate bitrate) { setBitRateField(&EITGenerator::_max_bitrate, bitrate); }
+
+        //!
         //! Set the current time in the stream processing.
+        //!
         //! By default, the current time is synchronized on each input TDT or TOT.
         //! Calling this method is useful only when there is no TDT/TOT or to set
         //! a time reference before the first TDT or TOT.
+        //!
         //! @param [in] current_utc Current UTC time in the context of the stream.
         //!
         void setCurrentTime(Time current_utc);
 
         //!
         //! Get the current time in the stream processing.
+        //!
         //! The current time starts from the last reference clock (TDT, TOT or setCurrentTime())
         //! and is maintained from the declared bitrate and number of processed packets.
         //! If there is no declared bitrate, the last reference time is returned.
-        //! @param [in] current_utc Current UTC time in the context of the stream.
         //!
-        Time getCurrentTime(Time current_utc) const;
+        //! @return Current UTC time in the context of the stream.
+        //!
+        Time getCurrentTime();
 
         //!
-        //! Set the current bitrate of the stream.
+        //! Set the current bitrate of the transport stream.
         //! The bitrate is used to update the current time, packet after packet,
         //! from the last reference clock (TDT, TOT or setCurrentTime()).
         //! @param [in] bitrate Current transport stream bitrate in bits per second.
         //! @see setCurrentTime()
         //!
-        void setBitRate(BitRate bitrate) { _bitrate = bitrate; }
+        void setTransportStreamBitRate(BitRate bitrate) { setBitRateField(&EITGenerator::_ts_bitrate, bitrate); }
 
         //!
         //! Process one packet from the stream.
@@ -228,6 +244,24 @@ namespace ts {
         //! to the EIT PID or the null PID, it may be updated with new content.
         //!
         void processPacket(TSPacket& pkt);
+
+        //!
+        //! Load EPG data from binary events descriptions.
+        //!
+        //! If the TS id is not yet defined, all events are ignored.
+        //! If the current clock is defined, events which are older (already terminated) are ignored.
+        //! If the clock is not yet defined, all events are stored and obsolete events will be discarded
+        //! when the clock is defined for the first time.
+        //!
+        //! @param [in] service Service id triplet for all events in the binary data.
+        //! @param [in] data Address of binary events data. Each event is described using
+        //! the same format as in an EIT section, from the @a event_id field to the end of the
+        //! descriptor list. Several events can be concatenated. All events are individually extracted.
+        //! @param [in] size Size in bytes of the event binary data.
+        //! @see ETSI EN 300 468
+        //! @see setCurrentTime()
+        //!
+        void loadEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size);
 
         //!
         //! Load EPG data from an EIT section.
@@ -254,44 +288,175 @@ namespace ts {
 
         //!
         //! Save all current EIT sections in a section file.
-        //! @param [in,out] sections A section file object into which all current
-        //! EIT sections are saved.
+        //! EIT p/f are saved first. Then EIT schedule.
+        //! @param [in,out] sections A section file object into which all current EIT sections are saved.
         //!
-        void saveEITs(SectionFile& sections) const;
+        void saveEITs(SectionFile& sections);
 
     private:
-        // An internal structure to store binary events from sections.
-        struct BinaryEvent
+
+        // -----------------------
+        // Description of an event
+        // -----------------------
+
+        class Event
         {
+            TS_NOBUILD_NOCOPY(Event);
+        public:
+            uint16_t  event_id;    // Event id.
             Time      start_time;  // Decoded event start time.
             Time      end_time;    // Decoded event end time.
             ByteBlock event_data;  // Binary event data, from event_id to end of descriptor loop.
 
             // Constructor based on EIT section payload. The data and size are updated after building the event.
-            BinaryEvent(const uint8_t*& data, size_t& size);
+            Event(const uint8_t*& data, size_t& size);
         };
 
-        // Use a map from service id to list of safe pointers to BinaryEvent (sorted by start time).
-        typedef SafePtr<BinaryEvent> BinaryEventPtr;
-        typedef std::list<BinaryEventPtr> BinaryEventList;
-        typedef std::map<ServiceIdTriplet, BinaryEventList> BinaryEventMap;
+        typedef SafePtr<Event> EventPtr;
+        typedef std::list<EventPtr> EventList;
 
-        // EITGenerator private fields.
-        DuckContext&          _duck;          // TSDuck execution context.
-        const PID             _eit_pid;       // PID for input and generated EIT's.
-        uint16_t              _ts_id;         // Transport stream id (to differentiate EIT actual and others).
-        bool                  _ts_id_set;     // Boolean: value in _ts_id is valid.
-        PacketCounter         _packet_index;  // Packet counter in the TS.
-        BitRate               _bitrate;       // Declared TS bitrate.
-        Time                  _ref_time;      // Last reference time.
-        PacketCounter         _ref_time_pkt;  // Packet index at last reference time.
-        EITOption             _options;       // EIT generation options flags.
-        EITRepetitionProfile  _profile;       // EIT repetition profile.
-        SectionDemux          _demux;         // Section demux for input stream, get PAT, TDT, TOT, EIT.
-        CyclingPacketizer     _packetizer;    // Packetizer for generated EIT's.
-        std::list<SectionPtr> _sections;
+        // -----------------------------
+        // Description of an EIT section
+        // -----------------------------
+
+        class ESection
+        {
+            TS_NOBUILD_NOCOPY(ESection);
+        public:
+            bool       obsolete;     // The section is obsolete, discard it when found in an injection list.
+            bool       regenerate;   // Regenerate all EIT schedule in the segment (3 hours, up to 8 sections).
+            bool       injected;     // Indicate that the data part of the section is used in a packetizer.
+            Time       next_inject;  // Date of next injection.
+            Time       start_time;   // First event start time.
+            Time       end_time;     // Last event end time.
+            SectionPtr section;      // Safe pointer to the EIT section.
+
+            // Constructor, build an empty section for the specified service (CRC32 not set).
+            ESection(const ServiceIdTriplet& service_id, TID tid, uint8_t section_number, uint8_t last_section_number);
+
+            // Indicate that the section will be modified. It the section is or has recently been used in a
+            // packetizer, a copy of the section is created first to avoid corrupting the section being packetized.
+            void startModifying();
+        };
+
+        typedef SafePtr<ESection> ESectionPtr;
+        typedef std::list<ESectionPtr> ESectionList;
+
+        // ------------------------------------------------------------------
+        // Description of an EIT schedule segment (3 hours, up to 8 sections)
+        // ------------------------------------------------------------------
+
+        // When the list of events is changed in the segment, mark all sections as "regenerate".
+        // Next time a section will be selected for injection, all sections in the segment will
+        // be regenerated.
+
+        class ESegment
+        {
+            TS_NOBUILD_NOCOPY(ESegment);
+        public:
+            const Time   start_time;      // Segment start time (a multiple of 3 hours). Never change.
+            uint8_t      table_id;        // Current table id. May change after midnight.
+            uint8_t      section_number;  // First section number in the segment. May change after midnight.
+            EventList    events;          // List of events in the segment, sorted by start time.
+            ESectionList sections;        // Current list of sections in the segment, sorted by start time.
+
+            // Constructor. Build one empty section (all segments must have one empty section at least).
+            ESegment(EITGenerator& eit_gen, const ServiceIdTriplet& service_id, const Time& seg_start_time);
+        };
+
+        typedef SafePtr<ESegment> ESegmentPtr;
+        typedef std::list<ESegmentPtr> ESegmentList;
+
+        // ------------------------
+        // Description of a service
+        // ------------------------
+
+        class EService
+        {
+        public:
+            ESectionPtr  present;     // EIT p/f section 0 ("present").
+            ESectionPtr  following;   // EIT p/f section 1 ("following").
+            ESegmentList segments;    // List of 3 hours segments.
+        };
+
+        // -------------------
+        // Event database root
+        // -------------------
+
+        // There are two main data roots, the event database and the injection lists.
+        //
+        // The event database is a map of EService, indexed by ServiceIdTriplet. This is
+        // a static structure where new events are stored and obsolete events are removed.
+        //
+        // The injection lists are organized by repetition profile, in order of profile
+        // priority (from EIT p/f actual to EID sched other/later). In each list, all
+        // sections have the same profile and, consequently, the same repetition rate.
+        // The sections are sorted in order of next injection. When a section is ready
+        // to inject, it is passed to the packetizer and requeued at the end of the list
+        // for the next injection.
+
+        typedef std::map<ServiceIdTriplet, EService> EServiceMap;
+        typedef std::array<ESectionList, EITRepetitionProfile::PROFILE_COUNT> ESectionListArray;
+
+        // ---------------------------
+        // EITGenerator private fields
+        // ---------------------------
+
+        DuckContext&         _duck;            // TSDuck execution context.
+        const PID            _eit_pid;         // PID for input and generated EIT's.
+        uint16_t             _ts_id;           // Transport stream id (to differentiate EIT actual and others).
+        bool                 _ts_id_set;       // Boolean: value in _ts_id is valid.
+        PacketCounter        _packet_index;    // Packet counter in the TS.
+        BitRate              _max_bitrate;     // Max EIT bitrate.
+        BitRate              _ts_bitrate;      // Declared TS bitrate.
+        Time                 _next_midnight;   // Time after which all EIT schedule shall be reorganized.
+        Time                 _ref_time;        // Last reference time.
+        PacketCounter        _ref_time_pkt;    // Packet index at last reference time.
+        PacketCounter        _eit_inter_pkt;   // Inter-packet distance in the EIT PID (zero if unbound).
+        PacketCounter        _last_eit_pkt;    // Packet index at last EIT insertion.
+        EITOption            _options;         // EIT generation options flags.
+        EITRepetitionProfile _profile;         // EIT repetition profile.
+        SectionDemux         _demux;           // Section demux for input stream, get PAT, TDT, TOT, EIT.
+        Packetizer           _packetizer;      // Packetizer for generated EIT's.
+        EServiceMap          _services;        // Map of services -> segments -> events and sections.
+        ESectionListArray    _injects;         // Arrays of sections for injection.
+        size_t               _obsolete_count;  // Number of obsolete sections in the injection lists.
+
+        // Set a bitrate field and update EIT inter-packet.
+        void setBitRateField(BitRate EITGenerator::* field, BitRate bitrate);
+
+        // If the reference time is not set, force it to the start time of the oldest event in the database.
+        void forceReferenceTime();
+
+        // Update the EIT database according to the current time.
+        // Obsolete events, sections and segments are discarded.
+        // Segments which must be regenerated are marked as such (will be actually regenerated later, when used).
+        // In case of "midnight effect" (moving to another day), reorganize all EIT schedule.
+        void updateForNewTime(Time now);
+
+        // Regenerate, if necessary, EIT p/f in a service.
+        void regeneratePresentFollowing(const ServiceIdTriplet& service_id, const Time& now);
+        void regeneratePresentFollowing(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event);
+
+        // Regenerate all EIT schedule in a segment.
+        void regenerateSegment(const ServiceIdTriplet& service_id, Time segment_start_time);
+        void regenerateSegment(const ServiceIdTriplet& service_id, ESegment& segment);
+
+        // Mark a section as obsolete, garbage collect obsolete sections if too many were not
+        // naturally discarded from the injection lists.
+        void markObsoleteSection(ESection& sec);
+
+        // Mark all sections in a segment as to be regenerated. This shall be invoked when
+        // an event is updated in a segment. We don't want to regenerate all section each
+        // time an event is updated (which usually happen in blasts). We simply mark the
+        // sections for regeneration. They will be regenerated when the sections are needed.
+        void markRegenerateSegment(ESegment& seg);
 
         // Implementation of SectionHandlerInterface.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
+
+        // Implementation of SectionProviderInterface.
+        virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
+        virtual bool doStuffing() override;
     };
 }

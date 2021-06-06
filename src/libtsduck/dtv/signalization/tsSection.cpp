@@ -508,6 +508,34 @@ void ts::Section::appendPayload(const void* data, size_t size, bool recompute_cr
 
 
 //----------------------------------------------------------------------------
+// Truncate the payload of the section.
+//----------------------------------------------------------------------------
+
+void ts::Section::truncatePayload(size_t size, bool recompute_crc)
+{
+    const size_t previous_size = payloadSize();
+
+    // Do something only if the payload is really truncated.
+    if (_is_valid && size < previous_size) {
+
+        // Size to be removed from section:
+        const size_t remove = previous_size - size;
+
+        // Update section size in header.
+        PutUInt16(_data->data() + 1, (GetUInt16(_data->data() + 1) & 0xF000) | uint16_t((_data->size() - remove - 3) & 0x0FFF));
+
+        // Truncate the section.
+        _data->resize(_data->size() - remove);
+
+        // Optionally recompute it.
+        if (recompute_crc && isLongSection()) {
+            recomputeCRC();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Write section on standard streams.
 //----------------------------------------------------------------------------
 

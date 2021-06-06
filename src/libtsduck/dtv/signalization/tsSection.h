@@ -68,8 +68,8 @@ namespace ts {
         //!
         //! Copy constructor.
         //! @param [in] other Another instance to copy.
-        //! @param [in] mode The section's data are either shared (ts::SHARE) between the
-        //! two instances or duplicated (ts::COPY).
+        //! @param [in] mode The section's data are either shared (ShareMode::SHARE) between the
+        //! two instances or duplicated (ShareMode::COPY).
         //!
         Section(const Section& other, ShareMode mode);
 
@@ -546,6 +546,14 @@ namespace ts {
         {
             appendPayload(data.data(), data.size(), recompute_crc);
         }
+
+        //!
+        //! Truncate the payload of the section.
+        //! @param [in] size New size in bytes of the payload. If larger than the current
+        //! payload size, does nothing.
+        //! @param [in] recompute_crc If true, immediately recompute the CRC32 of the section.
+        //!
+        void truncatePayload(size_t size, bool recompute_crc = true);
 
         //!
         //! Set the source PID.

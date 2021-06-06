@@ -644,51 +644,51 @@ ts::Time::operator Fields() const
 
 ts::Time ts::Time::thisHour() const
 {
-    ts::Time::Fields f (*this);
+    Fields f(*this);
     f.minute = f.second = f.millisecond = 0;
-    return ts::Time (f);
+    return Time(f);
 }
 
 ts::Time ts::Time::thisDay() const
 {
-    ts::Time::Fields f (*this);
+    Fields f(*this);
     f.hour = f.minute = f.second = f.millisecond = 0;
-    return ts::Time (f);
+    return Time(f);
 }
 
 ts::Time ts::Time::thisMonth() const
 {
-    ts::Time::Fields f (*this);
+    Fields f(*this);
     f.day = 1;
     f.hour = f.minute = f.second = f.millisecond = 0;
-    return ts::Time (f);
+    return Time(f);
 }
 
 ts::Time ts::Time::nextMonth() const
 {
-    ts::Time::Fields f (*this);
+    Fields f(*this);
     f.day = 1;
     f.hour = f.minute = f.second = f.millisecond = 0;
     if (f.month++ == 12) {
         f.month = 1;
         f.year++;
     }
-    return ts::Time (f);
+    return Time(f);
 }
 
 ts::Time ts::Time::thisYear() const
 {
-    ts::Time::Fields f (*this);
+    Fields f(*this);
     f.month = f.day = 1;
     f.hour = f.minute = f.second = f.millisecond = 0;
-    return ts::Time (f);
+    return Time(f);
 }
 
 ts::Time ts::Time::nextYear() const
 {
-    ts::Time::Fields f (*this);
+    Fields f(*this);
     f.year++;
     f.month = f.day = 1;
     f.hour = f.minute = f.second = f.millisecond = 0;
-    return ts::Time (f);
+    return Time(f);
 }

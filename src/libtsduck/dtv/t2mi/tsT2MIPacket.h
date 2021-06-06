@@ -67,8 +67,8 @@ namespace ts {
         //!
         //! Copy constructor.
         //! @param [in] other Another instance to copy.
-        //! @param [in] mode The packet's data are either shared (ts::SHARE) between the
-        //! two instances or duplicated (ts::COPY).
+        //! @param [in] mode The packet's data are either shared (ShareMode::SHARE) between the
+        //! two instances or duplicated (ShareMode::COPY).
         //!
         T2MIPacket(const T2MIPacket& other, ShareMode mode);
 
