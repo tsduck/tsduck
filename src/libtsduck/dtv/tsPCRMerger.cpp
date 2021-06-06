@@ -37,7 +37,6 @@ TSDUCK_SOURCE;
 
 ts::PCRMerger::PCRMerger(DuckContext& duck) :
     _duck(duck),
-    _report(_duck.report()),
     _incremental_pcr(false),
     _pcr_reset_backwards(false),
     _pid_ctx(),
@@ -145,7 +144,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
                         update_pcr = false;
                         ctx->first_pcr = ctx->last_pcr = pcr;
                         ctx->first_pcr_pkt = ctx->last_pcr_pkt = main_packet_index;
-                        _report.verbose(u"resetting PCR restamping in PID 0x%X (%<d) after DTS/PTS moved backwards restamped PCR", {pid});
+                        _duck.report().verbose(u"resetting PCR restamping in PID 0x%X (%<d) after DTS/PTS moved backwards restamped PCR", {pid});
                     }
                 }
             }
@@ -158,7 +157,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
             // This may go back and forth around zero but should never diverge (--pcr-reset-backwards case).
             // Report it at debug level 2 only since it occurs on almost all merged packets with PCR.
             const SubSecond moved = SubSecond(ctx->last_pcr) - SubSecond(pcr);
-            _report.log(2, u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid});
+            _duck.report().log(2, u"adjusted PCR by %+'d (%+'d ms) in PID 0x%X (%<d)", {moved, (moved * MilliSecPerSec) / SYSTEM_CLOCK_FREQ, pid});
         }
     }
 }
@@ -170,11 +169,14 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
 
 void ts::PCRMerger::handlePMT(const PMT& pmt, PID pid)
 {
+    _duck.report().debug(u"got PMT for service 0x%X (%<d), PMT PID 0x%X (%<d), PCR PID 0x%X (%<d)", {pmt.service_id, pid, pmt.pcr_pid});
+
     // Record the PCR PID for each component in the service.
     if (pmt.pcr_pid != PID_NULL) {
         for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
             // it->first is the PID of the component
             getContext(it->first)->pcr_pid = pmt.pcr_pid;
+            _duck.report().debug(u"associating PID 0x%X (%<d) to PCR PID 0x%X (%<d)", {it->first, pmt.pcr_pid});
         }
     }
 }
