@@ -138,13 +138,75 @@ namespace ts {
     //! Generate and insert EIT sections based on an EPG content.
     //! @ingroup mpeg
     //!
-    //! The EPG content is filled with generic EIT sections, either in binary or XML form.
-    //! The structure of EIT (p/f or schedule), the number and order of events, do not
-    //! matter. The events are extracted and will be stored and sorted independently.
-    //! These events will be used to fill the generated EIT sections.
+    //! EPG database
+    //! ------------
+    //! The EPG database is entirely in memory. It is initially empty and emptied using
+    //! EITGenerator::reset(). Events are loaded in EPG using EITGenerator::loadEvents()
+    //! (various flavours exist).
     //!
-    //! The object is continuously invoked for all packets in a TS.
-    //! Packets from the EIT PID or the stuffing PID are replaced by EIT packets.
+    //! The EPG can be saved in a SectionFile object using EITGenerator::saveEITs().
+    //! This object can later be saved in binary or XML format.
+    //!
+    //! The EPG content is filled with generic EIT sections, either in binary or XML form.
+    //! The structure of these EIT sections, p/f or schedule, the number and order of events,
+    //! do not matter. The events are individually extracted and will be stored and sorted
+    //! independently. These events will be used to fill the generated EIT sections.
+    //! In short, EIT section is just a convenient storage format for EPG events.
+    //!
+    //! Events can also be individually loaded, outside EIT sections but using the same binary
+    //! format as in EIT, from field @a event_id to end of descriptor list.
+    //!
+    //! Principle of operation
+    //! ----------------------
+    //! The EITGenerator object is continuously invoked for all packets in a TS. Packets from
+    //! the EIT PID or the stuffing PID are replaced by EIT packets, when necessary.
+    //!
+    //! It is important that the application passes all packets from the TS, not only the
+    //! packets that the application wishes to replace. This is required so that the EITGenerator
+    //! object can evaluate the bitrate and repetition rate of the generated EIT sections.
+    //!
+    //! EIT sections from the input EIT PID can also be used to populate the EPG database if
+    //! the option EITOption::INPUT is set. This is a convenient way to generate EIT p/f in
+    //! addition to (or in replacement to) an input stream of EIT schedule.
+    //!
+    //! Basic EIT generation rules
+    //! --------------------------
+    //! - Using a bit-mask of EITOption, the EITGenerator object can selectively generate
+    //!   any combination of EIT p/f (present/following) and/or EIT schedule, EIT actual
+    //!   and/or EIT other.
+    //! - We call "subtable" the collection of sections with same table id and same table
+    //!   id extension (the service id in the case of an EIT). This is a general MPEG/DVB
+    //!   definition.
+    //! - The EIT syntax and semantics are specified in ETSI EN 300 468, section 5.2.4.
+    //!   The usage guidelines are specified in ETSI TS 101 211, section 4.1.4.
+    //! - An EIT p/f, when present, must have two sections. The present event is in section 0.
+    //!   The next event is in section 1. If there is no event, the EIT section must be present
+    //!   but empty (no event).
+    //! - EIT schedule are structured as follow:
+    //!   - The structure is based on a "reference midnight", typically the current day at 00:00:00.
+    //!   - The total duration of an EPG is 64 days maximum, over 16 subtables per service.
+    //!   - Each subtable covers a duration of 4 days. The first subtable starts at the reference
+    //!     midnight.
+    //!   - Each subtable (4 days) is divided in 32 "segments" of 3 hours.
+    //!   - A segment spans over 8 sections (sections 0-7, 8-15, 16-23, 24-31, etc.)
+    //!   - In each subtable, all segments from 0 to the last used one shall be present. Unused
+    //!     segments after the last used one are optional.
+    //!   - In each segment, all sections from 0 to the last non-empty one shall be present. Unused
+    //!     segments after the last used one are optional. Empty segment shall be represented with
+    //!     one empty section. The last section in each segment is set in the EIT field
+    //!     segment_last_section_number.
+    //!   - The last EIT schedule table id is set in the field last_table_id in all EIT sections.
+    //!   - As a consequence, an EIT schedule is not a complete table in MPEG terms since some
+    //!     sections are intentionally missing.
+    //! - EIT schedule are divided into two periods with potentially distinct repetition rates:
+    //!   - The "prime" period extends over the next few days. The repetition rate of those EIT's
+    //!     is typically longer than EIT present/following but still reasonably fast. The duration
+    //!     in days of the prime period depends on the type of network.
+    //!   - The "later" period includes all events after the prime period. The repetition rate of
+    //!     those EIT's is typically longer that in the prime period.
+    //!
+    //! @see ETSI EN 300 468, 5.2.4
+    //! @see ETSI TS 101 211, 4.1.4
     //!
     class TSDUCKDLL EITGenerator :
         private SectionHandlerInterface,
@@ -248,7 +310,6 @@ namespace ts {
         //!
         //! Load EPG data from binary events descriptions.
         //!
-        //! If the TS id is not yet defined, all events are ignored.
         //! If the current clock is defined, events which are older (already terminated) are ignored.
         //! If the clock is not yet defined, all events are stored and obsolete events will be discarded
         //! when the clock is defined for the first time.
@@ -280,14 +341,23 @@ namespace ts {
         void loadEvents(const Section& section);
 
         //!
+        //! Load EPG data from a vector of EIT sections.
+        //! @param [in] sections A vector of sections. Non-EIT sections are ignored.
+        //! @see loadEvents(const Section&)
+        //!
+        void loadEvents(const SectionPtrVector& sections);
+
+        //!
         //! Load EPG data from all EIT sections in a section file.
         //! @param [in] sections A section file object. Non-EIT sections are ignored.
         //! @see loadEvents(const Section&)
         //!
-        void loadEvents(const SectionFile& sections);
+        void loadEvents(const SectionFile& sections) { loadEvents(sections.sections()); }
 
         //!
         //! Save all current EIT sections in a section file.
+        //! If the current time is not set, the oldest event time in the EPG database is used.
+        //! An EIT sections are regenerated when necessary.
         //! EIT p/f are saved first. Then EIT schedule.
         //! @param [in,out] sections A section file object into which all current EIT sections are saved.
         //!
@@ -379,7 +449,7 @@ namespace ts {
         public:
             ESectionPtr  present;     // EIT p/f section 0 ("present").
             ESectionPtr  following;   // EIT p/f section 1 ("following").
-            ESegmentList segments;    // List of 3 hours segments.
+            ESegmentList segments;    // List of 3-hour segments (EPG events and EIT schedule sections).
 
             // Constructor.
             EService();
@@ -444,13 +514,13 @@ namespace ts {
         void regeneratePresentFollowing(const ServiceIdTriplet& service_id, const Time& now);
         void regeneratePresentFollowing(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event);
 
-        // Regenerate all EIT schedule in a segment.
-        void regenerateSegment(const ServiceIdTriplet& service_id, Time segment_start_time);
-        void regenerateSegment(const ServiceIdTriplet& service_id, ESegment& segment);
+        // Regenerate all EIT schedule in a segment, create missing segments and sections.
+        void regenerateSegment(const ServiceIdTriplet& service_id, Time now, Time segment_start_time);
 
         // Mark a section as obsolete, garbage collect obsolete sections if too many were not
-        // naturally discarded from the injection lists.
+        // naturally discarded from the injection lists. Also apply to entire segments.
         void markObsoleteSection(ESection& sec);
+        void markObsoleteSegment(ESegment& seg);
 
         // Mark all sections in a segment as to be regenerated. This shall be invoked when
         // an event is updated in a segment. We don't want to regenerate all section each

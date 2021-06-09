@@ -89,6 +89,11 @@ namespace ts {
         //!
         static constexpr size_t SECTIONS_PER_SEGMENT = 8;
         //!
+        //! Number of EIT schedule tables of one type (actual or other).
+        //! There are 16 different table ids for EIT schedule (0x50-0x5F for actual, 0x60-0x6F for other).
+        //!
+        static constexpr size_t TOTAL_TABLES_COUNT = 16;
+        //!
         //! Number of logical segments over all EIT schedule of one type (actual or other).
         //! There are 16 different table ids for EIT schedule (0x50-0x5F for actual, 0x60-0x6F for other).
         //! Each table id can have up to 256 sections, i.e. 32 segments.
@@ -227,7 +232,15 @@ namespace ts {
         //! @param [in] event_start_time UTC start time of event.
         //! @return The starting time of the corresponding segment.
         //!
-        static Time SegmentStart(const Time& event_start_time);
+        static Time SegmentStartTime(const Time& event_start_time);
+
+        //!
+        //! Compute the start time of EIT schedule table id for an event.
+        //! @param [in] last_midnight Reference time of "last midnight".
+        //! @param [in] event_start_time UTC start time of event.
+        //! @return The starting time of the first segment in the table id of the event.
+        //!
+        static Time TableStartTime(const Time& last_midnight, const Time& event_start_time);
 
         //!
         //! Toggle an EIT table id between Actual and Other.

@@ -33,14 +33,14 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     //!
     //! Full identification of a DVB transport stream.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL TransportStreamId
+    class TSDUCKDLL TransportStreamId: public StringifyInterface
     {
     public:
         // Public members:
@@ -52,19 +52,12 @@ namespace ts {
         //! @param [in] tsid Transport stream id.
         //! @param [in] onid Original network id.
         //!
-        TransportStreamId(uint16_t tsid = 0, uint16_t onid = 0) :
-            transport_stream_id(tsid),
-            original_network_id(onid)
-        {
-        }
+        TransportStreamId(uint16_t tsid = 0, uint16_t onid = 0);
 
         //!
         //! Clear the content of this object.
         //!
-        void clear()
-        {
-            transport_stream_id = original_network_id = 0;
-        }
+        virtual void clear();
 
         //!
         //! Get a "normalized" 32-bit identifier.
@@ -136,6 +129,9 @@ namespace ts {
         {
             return normalized() >= tsid.normalized();
         }
+
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
     };
 
     // Containers:

@@ -53,6 +53,7 @@ TS_REGISTER_TABLE(MY_CLASS, ts::Range<ts::TID>(ts::TID_EIT_MIN, ts::TID_EIT_MAX)
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::EIT::SEGMENTS_PER_TABLE;
 constexpr size_t ts::EIT::SECTIONS_PER_SEGMENT;
+constexpr size_t ts::EIT::TOTAL_TABLES_COUNT;
 constexpr size_t ts::EIT::TOTAL_SEGMENTS_COUNT;
 constexpr ts::MilliSecond ts::EIT::SEGMENT_DURATION;
 constexpr ts::MilliSecond ts::EIT::TABLE_DURATION;
@@ -218,13 +219,29 @@ size_t ts::EIT::TimeToSegment(const Time& last_midnight, const Time& event_start
 // Compute the segment start time of an event in an EIT schedule.
 //----------------------------------------------------------------------------
 
-ts::Time ts::EIT::SegmentStart(const Time& event_start_time)
+ts::Time ts::EIT::SegmentStartTime(const Time& event_start_time)
 {
     // A segment is a range of 3 hours.
     Time::Fields f(event_start_time);
     f.hour -= f.hour % 3;
     f.minute = f.second = f.millisecond = 0;
     return Time(f);
+}
+
+
+//----------------------------------------------------------------------------
+// Compute the start time of EIT schedule table id for an event.
+//----------------------------------------------------------------------------
+
+ts::Time ts::EIT::TableStartTime(const Time& last_midnight, const Time& event_start_time)
+{
+    if (event_start_time < last_midnight) {
+        // Should not happen, last midnight is the start time of the reference period.
+        return last_midnight;
+    }
+    else {
+        return event_start_time - (event_start_time - last_midnight) % TABLE_DURATION;
+    }
 }
 
 
