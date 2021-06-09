@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2415
+VERSION 3.27-2421
 
 [NEW] New commands and plugins:
 
@@ -37,6 +37,8 @@ VERSION 3.27-2415
     did not work properly.
   * Fixed a rare issue where tsp with option --add-input-stuffing silently
     terminated after some long random time.
+  * Fixed issue #811: In plugin "merge", the options --drop and --pass were
+    not correctly handled when they had one single value (not a range).
 
 -------------------------------------------------------------------------------
 
