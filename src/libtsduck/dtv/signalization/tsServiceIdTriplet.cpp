@@ -26,22 +26,40 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsServiceIdTriplet.h"
+#include "tsUString.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 27
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2420
+ts::ServiceIdTriplet::ServiceIdTriplet(uint16_t svid, uint16_t tsid, uint16_t onid, uint8_t vers) :
+    TransportStreamId(tsid, onid),
+    service_id(svid),
+    version(vers)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Clear the content of this object.
+//----------------------------------------------------------------------------
+
+void ts::ServiceIdTriplet::clear()
+{
+    transport_stream_id = original_network_id = service_id = 0;
+    version = 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of StringifyInterface.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ServiceIdTriplet::toString() const
+{
+    return UString::Format(u"service: 0x%X (%<d), TS: 0x%X (%<d), O.Net:0x%X (%<d), version: %d", {service_id, transport_stream_id, original_network_id, version});
+}

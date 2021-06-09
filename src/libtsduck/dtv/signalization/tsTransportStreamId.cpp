@@ -26,22 +26,38 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tsTransportStreamId.h"
+#include "tsUString.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 27
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2420
+ts::TransportStreamId::TransportStreamId(uint16_t tsid, uint16_t onid) :
+    transport_stream_id(tsid),
+    original_network_id(onid)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Clear the content of this object.
+//----------------------------------------------------------------------------
+
+void ts::TransportStreamId::clear()
+{
+    transport_stream_id = original_network_id = 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of StringifyInterface.
+//----------------------------------------------------------------------------
+
+ts::UString ts::TransportStreamId::toString() const
+{
+    return UString::Format(u"TS: 0x%X (%<d), O.Net:0x%X (%<d)", {transport_stream_id, original_network_id});
+}

@@ -54,21 +54,7 @@ namespace ts {
         //! @param [in] onid Original network id.
         //! @param [in] vers Optional version.
         //!
-        ServiceIdTriplet(uint16_t svid = 0, uint16_t tsid = 0, uint16_t onid = 0, uint8_t vers = 0) :
-            TransportStreamId(tsid, onid),
-            service_id(svid),
-            version(vers)
-        {
-        }
-
-        //!
-        //! Clear the content of this object.
-        //!
-        void clear()
-        {
-            transport_stream_id = original_network_id = service_id = 0;
-            version = 0;
-        }
+        ServiceIdTriplet(uint16_t svid = 0, uint16_t tsid = 0, uint16_t onid = 0, uint8_t vers = 0);
 
         //!
         //! Constructor.
@@ -152,6 +138,12 @@ namespace ts {
         {
             return normalized() >= svid.normalized();
         }
+
+        // Inherited methods.
+        virtual void clear() override;
+
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
     };
 
     // Containers:
