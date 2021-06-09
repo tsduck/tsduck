@@ -105,9 +105,6 @@ namespace ts {
         PSIMerger     _psi_merger;         // Used to merge PSI/SI from both streams.
         PacketInsertionController _insert_control;  // Used to control insertion points for the merge
 
-        // Process a --drop or --pass option.
-        bool processDropPassOption(const UChar* option, bool allowed);
-
         // Start/restart/stop the merge command.
         bool startStopCommand(bool do_close, bool do_start);
 
@@ -184,7 +181,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"The bitrate of the merged stream is used to smoothen packet insertion "
          u"in the main stream.");
 
-    option(u"drop", 'd', STRING, 0, UNLIMITED_COUNT);
+    option(u"drop", 'd', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"drop", u"pid[-pid]",
          u"Drop the specified PID or range of PID's from the merged stream. By "
          u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
@@ -255,7 +252,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     help(u"no-wait",
          u"Do not wait for child process termination at end of processing.");
 
-    option(u"pass", 'p', STRING, 0, UNLIMITED_COUNT);
+    option(u"pass", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pass", u"pid[-pid]",
          u"Pass the specified PID or range of PID's from the merged stream. By "
          u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
@@ -338,19 +335,26 @@ bool ts::MergePlugin::getOptions()
         return false;
     }
 
-    // Compute list of allowed PID's from the merged stream.
+    // Compute list of allowed PID's from the merged stream. Start with all PID's allowed.
     _allowed_pids.set();
+
+    // By default (without --transparent), drop all base PSI/SI (PID 0x00 to 0x1F).
     if (!transparent) {
-        // By default, drop all base PSI/SI (PID 0x00 to 0x1F).
         for (PID pid = 0x00; pid <= PID_DVB_LAST; ++pid) {
             _allowed_pids.reset(pid);
         }
     }
-    if (!processDropPassOption(u"drop", false) || !processDropPassOption(u"pass", true)) {
-        return false;
-    }
+
+    // Process --drop and --pass options.
+    PIDSet pids;
+    getIntValues(pids, u"drop");
+    _allowed_pids &= ~pids;
+    pids.reset();
+    getIntValues(pids, u"pass");
+    _allowed_pids |= pids;
+
+    // By defaul (without --no-psi-merge), let the PSI Merger manage the packets from the merged PID's.
     if (_merge_psi) {
-        // Let the PSI Merger manage the packets from the merged PID's.
         _allowed_pids.set(PID_PAT);
         _allowed_pids.set(PID_CAT);
         _allowed_pids.set(PID_SDT);
@@ -358,41 +362,6 @@ bool ts::MergePlugin::getOptions()
     }
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Process a --drop or --pass option.
-//----------------------------------------------------------------------------
-
-bool ts::MergePlugin::processDropPassOption(const UChar* opt, bool allowed)
-{
-    const size_t max = count(opt);
-    bool status = true;
-
-    // Loop on all occurences of the option.
-    for (size_t i = 0; i < max; ++i) {
-
-        // Next occurence of the option.
-        const UString str(value(opt, u"", i));
-        PID pid1 = PID_NULL;
-        PID pid2 = PID_NULL;
-        size_t num = 0;
-        size_t last = 0;
-
-        // The accepted format is: pid[-pid]
-        str.scan(num, last, u"%d-%d", {&pid1, &pid2});
-        if (num < 1 || last != str.size() || pid1 >= PID_MAX || pid2 >= PID_MAX || (num == 2 && pid1 > pid2)) {
-            tsp->error(u"invalid PID range \"%s\" for --%s, use \"pid[-pid]\"", {str, opt});
-            status = false;
-        }
-        else {
-            while (pid1 <= pid2) {
-                _allowed_pids.set(pid1++, allowed);
-            }
-        }
-    }
-    return status;
 }
 
 
