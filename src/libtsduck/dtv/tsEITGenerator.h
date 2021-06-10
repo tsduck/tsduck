@@ -122,13 +122,14 @@ namespace ts {
     //! The options can be specified as a byte mask.
     //!
     enum class EITOption {
-        NONE   = 0x0000,   //!< Generate nothing.
-        ACTUAL = 0x0001,   //!< Generate EIT actual.
-        OTHER  = 0x0002,   //!< Generate EIT other.
-        PF     = 0x0004,   //!< Generate EIT present/following.
-        SCHED  = 0x0008,   //!< Generate EIT schedule.
-        ALL    = 0x000F,   //!< Generate all EIT's.
-        INPUT  = 0x0010,   //!< Use input EIT's as EPG data.
+        NONE     = 0x0000,   //!< Generate nothing.
+        ACTUAL   = 0x0001,   //!< Generate EIT actual.
+        OTHER    = 0x0002,   //!< Generate EIT other.
+        PF       = 0x0004,   //!< Generate EIT present/following.
+        SCHED    = 0x0008,   //!< Generate EIT schedule.
+        ALL      = 0x000F,   //!< Generate all EIT's.
+        INPUT    = 0x0010,   //!< Use input EIT's as EPG data.
+        STUFFING = 0x0020,   //!< Insert stuffing inside TS packet at end of EIT section. Do not pack EIT sections.
     };
 }
 TS_ENABLE_BITMASK_OPERATORS(ts::EITOption);
@@ -204,6 +205,39 @@ namespace ts {
     //!     in days of the prime period depends on the type of network.
     //!   - The "later" period includes all events after the prime period. The repetition rate of
     //!     those EIT's is typically longer that in the prime period.
+    //!
+    //! Implementation notes
+    //! --------------------
+    //! The number and content of the EIT sections depend on the EPG data and the time.
+    //!
+    //! The public methods which may trigger EIT sections modifications are:
+    //! - loadEvents() : new events in the EPG.
+    //! - setCurrentTime() : obsoletes events, creates / removes segments.
+    //! - processPacket() : increase time, load events from input EIT's.
+    //! - setOptions() : may change the types of EIT to generate.
+    //! - setTransportStreamId() : toggles EIT actual or some EIT other.
+    //! - setProfile() : change the repetition rates, ignored, used only when a section is requeued.
+    //!
+    //! The EIT regeneration takes time, so we need to limit the operations.
+    //! - Changing the options, the transport stream id and the repetition profile is not supposed to
+    //!   happen more than once and the processing time is not important.
+    //! - Setting the time to a completely new reference is not frequent either.
+    //! - Setting the time to a small increment is extremely frequent (each packet in fact). Impact:
+    //!   - Update EIT p/f on some services.
+    //!   - Remove a segment and associated EIT schedule sections when crossing a 3-hour segment.
+    //!     We do not remove obsolete events in EIT schedule sections inside the current segment
+    //!     unless the segment is forced to be regenerated.
+    //!   - Midnight effect: When crossing 00:00:00, all EIT schedule sections must change.
+    //!     Affected fields: table_id, section_number, last_section_number, segment_last_section_number,
+    //!     last_table_id. These are only a few fields to patch "in place" (and recompute the CRC).
+    //! - Loading events is usually performed in batch (load files) or the same events are loaded
+    //!   again and again (input EIT sections). We use the following method:
+    //!   - Existing events with same content are silently ignored.
+    //!   - When a new event is loaded, the "regenerate" flag is set 1) globally, 2) on the service
+    //!     and 3) on the 3-hour segment.
+    //!   - When an EIT section needs to be injected, we check the global "regenerate" flag. When
+    //!     set, all services and segments are inspected and regenerated when necessary. All "regenerate"
+    //!     flags are then cleared.
     //!
     //! @see ETSI EN 300 468, 5.2.4
     //! @see ETSI TS 101 211, 4.1.4
@@ -326,16 +360,6 @@ namespace ts {
 
         //!
         //! Load EPG data from an EIT section.
-        //!
-        //! All events are individually extracted.
-        //! Events which are older than the current stream clock are ignored.
-        //!
-        //! If the transport stream id is known, event are stored as actual or other based on their
-        //! service DVB triplet only, regardless of the EIT type (actual or other).
-        //! If the TS id is not yet defined and the section is an EIT actual, then the TS id of the EIT
-        //! becomes the TS id of the current transport stream.
-        //! If the TS id is not yet defined, the section is ignored if this is an EIT Other.
-        //!
         //! @param [in] section A section object. Non-EIT sections are ignored.
         //!
         void loadEvents(const Section& section);
@@ -378,7 +402,8 @@ namespace ts {
             Time      end_time;    // Decoded event end time.
             ByteBlock event_data;  // Binary event data, from event_id to end of descriptor loop.
 
-            // Constructor based on EIT section payload. The data and size are updated after building the event.
+            // Constructor based on EIT section payload: extract the next event.
+            // The data and size are updated after building the event.
             Event(const uint8_t*& data, size_t& size);
         };
 
@@ -394,7 +419,6 @@ namespace ts {
             TS_NOBUILD_NOCOPY(ESection);
         public:
             bool       obsolete;     // The section is obsolete, discard it when found in an injection list.
-            bool       regenerate;   // Regenerate all EIT schedule in the segment (3 hours, up to 8 sections).
             bool       injected;     // Indicate that the data part of the section is used in a packetizer.
             Time       next_inject;  // Date of next injection.
             Time       start_time;   // First event start time.
@@ -413,28 +437,26 @@ namespace ts {
         };
 
         typedef SafePtr<ESection> ESectionPtr;
-        typedef std::list<ESectionPtr> ESectionList;
+        typedef std::list<ESectionPtr> ESectionList;      // a list of EIT schedule sections
+        typedef std::array<ESectionPtr, 2> ESectionPair;  // a pair of EIT p/f sections
 
         // ------------------------------------------------------------------
         // Description of an EIT schedule segment (3 hours, up to 8 sections)
         // ------------------------------------------------------------------
-
-        // When the list of events is changed in the segment, mark all sections as "regenerate".
-        // Next time a section will be selected for injection, all sections in the segment will
-        // be regenerated.
 
         class ESegment
         {
             TS_NOBUILD_NOCOPY(ESegment);
         public:
             const Time   start_time;      // Segment start time (a multiple of 3 hours). Never change.
+            bool         regenerate;      // Regenerate all EIT schedule sections in the segment.
             uint8_t      table_id;        // Current table id. May change after midnight.
             uint8_t      section_number;  // First section number in the segment. May change after midnight.
             EventList    events;          // List of events in the segment, sorted by start time.
             ESectionList sections;        // Current list of sections in the segment, sorted by start time.
 
-            // Constructor. Build one empty section (all segments must have one empty section at least).
-            ESegment(EITGenerator& eit_gen, const ServiceIdTriplet& service_id, const Time& seg_start_time);
+            // Constructor.
+            ESegment(const Time& seg_start_time);
         };
 
         typedef SafePtr<ESegment> ESegmentPtr;
@@ -447,8 +469,8 @@ namespace ts {
         class EService
         {
         public:
-            ESectionPtr  present;     // EIT p/f section 0 ("present").
-            ESectionPtr  following;   // EIT p/f section 1 ("following").
+            bool         regenerate;  // Some segments must be regenerated in the service.
+            ESectionPair pf;          // EIT p/f sections (0: present, 1: following).
             ESegmentList segments;    // List of 3-hour segments (EPG events and EIT schedule sections).
 
             // Constructor.
@@ -482,6 +504,7 @@ namespace ts {
         const PID            _eit_pid;         // PID for input and generated EIT's.
         uint16_t             _ts_id;           // Transport stream id (to differentiate EIT actual and others).
         bool                 _ts_id_set;       // Boolean: value in _ts_id is valid.
+        bool                 _regenerate;      // Some segments must be regenerated in some services.
         PacketCounter        _packet_index;    // Packet counter in the TS.
         BitRate              _max_bitrate;     // Max EIT bitrate.
         BitRate              _ts_bitrate;      // Declared TS bitrate.
@@ -508,25 +531,20 @@ namespace ts {
         // Obsolete events, sections and segments are discarded.
         // Segments which must be regenerated are marked as such (will be actually regenerated later, when used).
         // In case of "midnight effect" (moving to another day), reorganize all EIT schedule.
-        void updateForNewTime(Time now);
+        void updateForNewTime(const Time& now);
 
         // Regenerate, if necessary, EIT p/f in a service.
         void regeneratePresentFollowing(const ServiceIdTriplet& service_id, const Time& now);
         void regeneratePresentFollowing(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event);
 
-        // Regenerate all EIT schedule in a segment, create missing segments and sections.
+        // Regenerate all EIT schedule, create missing segments and sections.
+        void regenerateSchedule(const Time& now);
         void regenerateSegment(const ServiceIdTriplet& service_id, Time now, Time segment_start_time);
 
         // Mark a section as obsolete, garbage collect obsolete sections if too many were not
         // naturally discarded from the injection lists. Also apply to entire segments.
         void markObsoleteSection(ESection& sec);
         void markObsoleteSegment(ESegment& seg);
-
-        // Mark all sections in a segment as to be regenerated. This shall be invoked when
-        // an event is updated in a segment. We don't want to regenerate all section each
-        // time an event is updated (which usually happen in blasts). We simply mark the
-        // sections for regeneration. They will be regenerated when the sections are needed.
-        void markRegenerateSegment(ESegment& seg);
 
         // Implementation of SectionHandlerInterface.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
