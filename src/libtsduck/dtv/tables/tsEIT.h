@@ -84,6 +84,11 @@ namespace ts {
         //!
         static constexpr size_t SEGMENTS_PER_TABLE = 32;
         //!
+        //! Number of logical segments per day.
+        //! Each segment covers 3 hours.
+        //!
+        static constexpr size_t SEGMENTS_PER_DAY = 8;
+        //!
         //! Number of sections per logical segment in EIT schedule.
         //! EIT schedule are logically divided into 32 segments of up to 8 sections each.
         //!
@@ -99,6 +104,11 @@ namespace ts {
         //! Each table id can have up to 256 sections, i.e. 32 segments.
         //!
         static constexpr size_t TOTAL_SEGMENTS_COUNT = 512;
+        //!
+        //! Number of days for all EIT schedule of one type (actual or other).
+        //! All EIT schedule cover events for 64 complete days max.
+        //!
+        static constexpr size_t TOTAL_DAYS = 64;
         //!
         //! Number of milliseconds per logical segments in EIT schedule.
         //! EIT schedule are logically divided into 32 segments.
@@ -392,15 +402,16 @@ namespace ts {
         //!
         //! Non-EIT sections are left unmodified.
         //!
+        //! @param [in,out] duck TSDuck execution context.
         //! @param [in,out] sections A vector of safe pointers to sections. Only valid EIT
         //! sections are used. On output, a completely new list of sections is built.
-        //! @param [in] reftime Reference time for EIT schedule. Only the date part is used.
+        //! @param [in] reftime Reference UTC time for EIT schedule. Only the date part is used.
         //! This is the "last midnight" according to which EIT segments are assigned. By
         //! default, the oldest event start time is used.
         //!
         //! @see ETSI TS 101 211, 4.1.4
         //!
-        static void ReorganizeSections(SectionPtrVector& sections, const Time& reftime = Time());
+        static void ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, const Time& reftime = Time());
 
         //!
         //! Modify an EIT-schedule section to make it "standalone", outside any other table.

@@ -28,11 +28,12 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Perform various transformations on an EIT PID.
+//!  Generate and insert EIT sections based on an EPG content.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsEITRepetitionProfile.h"
 #include "tsSectionFile.h"
 #include "tsSectionDemux.h"
 #include "tsPacketizer.h"
@@ -41,82 +42,6 @@
 #include "tsEnumUtils.h"
 
 namespace ts {
-    //!
-    //! List of EIT sections repetition profiles.
-    //! @ingroup mpeg
-    //!
-    //! The EIT sections shall be repeated according to the type of EIT and the type of network.
-    //!
-    //! The enumeration values are sorted in order of importance. For instance, it is more important
-    //! to reliably broadcast EIT p/f actual than others, EIT p/f than schedule, etc.
-    //!
-    //! EIT schedule are divided into two periods:
-    //! - The "prime" period extends over the next few days. The repetition rate of those EIT's
-    //!   is typically longer than EIT present/following but still reasonably fast. The duration
-    //!   in days of the prime period depends on the type of network.
-    //! - The "later" period includes all events after the prime period. The repetition rate of
-    //!   those EIT's is typically longer that in the prime period.
-    //!
-    //! Standard EIT repetition rates
-    //! -----------------------------
-    //!
-    //! | %EIT section type        | Sat/cable | Terrestrial
-    //! | ------------------------ | --------- | -----------
-    //! | EIT p/f actual           | 2 sec     | 2 sec
-    //! | EIT p/f other            | 10 sec    | 20 sec
-    //! | EIT sched prime days     | 8 days    | 1 day
-    //! | EIT sched actual (prime) | 10 sec    | 10 sec
-    //! | EIT sched other (prime)  | 10 sec    | 60 sec
-    //! | EIT sched actual (later) | 30 sec    | 30 sec
-    //! | EIT sched other (later)  | 30 sec    | 300 sec
-    //!
-    enum class EITProfile {
-        PF_ACTUAL          = 0,   //!< EIT present/following actual.
-        PF_OTHER           = 1,   //!< EIT present/following other.
-        SCHED_ACTUAL_PRIME = 2,   //!< EIT schedule actual in the "prime" period.
-        SCHED_OTHER_PRIME  = 3,   //!< EIT schedule other in the "prime" period.
-        SCHED_ACTUAL_LATER = 4,   //!< EIT schedule actual after the "prime" period.
-        SCHED_OTHER_LATER  = 5,   //!< EIT schedule other after the "prime" period.
-    };
-
-    //!
-    //! EIT sections repetition profile.
-    //! @ingroup mpeg
-    //!
-    class TSDUCKDLL EITRepetitionProfile
-    {
-    public:
-        //!
-        //! Number of EIT sections repetition profiles.
-        //!
-        static constexpr size_t PROFILE_COUNT = size_t(EITProfile::SCHED_OTHER_LATER) + 1;
-
-        //!
-        //! Duration in days of the "prime" period for EIT schedule.
-        //! EIT schedule for events in the prime period (i.e. the next few days)
-        //! are repeated more often than for later events.
-        //!
-        size_t prime_days;
-
-        //!
-        //! Cycle time in seconds of each EIT sections repetition profile.
-        //! The array is indexed by EITProfile.
-        //!
-        size_t cycle_seconds[PROFILE_COUNT];
-
-        //!
-        //! Standard EIT repetition profile for satellite and cable networks.
-        //! @see ETSI TS 101 211, section 4.1.4
-        //!
-        static const EITRepetitionProfile SatelliteCable;
-
-        //!
-        //! Standard EIT repetition profile for terrestrial networks.
-        //! @see ETSI TS 101 211, section 4.1.4
-        //!
-        static const EITRepetitionProfile Terrestrial;
-    };
-
     //!
     //! EIT generation options.
     //! The options can be specified as a byte mask.
@@ -139,6 +64,28 @@ namespace ts {
     //! Generate and insert EIT sections based on an EPG content.
     //! @ingroup mpeg
     //!
+    //! To generate EIT sections, an instance of EITGenerator needs:
+    //! - The identity of the actual TS. Set using EITGenerator::setTransportStreamId() or
+    //!   using EITGenerator::processPacket() after a PAT is found.
+    //! - The current UTC time. Set using EITGenerator::setCurrentTime() or using
+    //!   EITGenerator::processPacket() after a TDT or TOT is found.
+    //! - Events in the EPG database. Loaded using EITGenerator::loadEvents() or using
+    //!   EITGenerator::processPacket() from incoming EIT's (if EITOption::INPUT is
+    //!   selected in the generation options).
+    //!
+    //! The current time is automatically updated packet after packet, based on the last
+    //! UTC time, the number of packets since then and the transport stream bitrate (shall
+    //! be set using EITGenerator::setTransportStreamBitRate()).
+    //!
+    //! Generated EIT section can be saved in a SectionFile object (see EITGenerator::saveEITs())
+    //! or inserted in the transport stream using EITGenerator::processPacket(). In the latter
+    //! case, input null packets and EIT packets are replaced with packets for the generated
+    //! EIT's (or null packets when necessary).
+    //!
+    //! EIT packet insertion is performed depending on cycle time of the various EIT sections
+    //! (see EITGenerator::setProfile()). The maximum EIT bandwidth can be limited using
+    //! EITGenerator::setMaxBitRate().
+    //!
     //! EPG database
     //! ------------
     //! The EPG database is entirely in memory. It is initially empty and emptied using
@@ -146,7 +93,8 @@ namespace ts {
     //! (various flavours exist).
     //!
     //! The EPG can be saved in a SectionFile object using EITGenerator::saveEITs().
-    //! This object can later be saved in binary or XML format.
+    //! This object can later be saved in binary or XML format. It can be reloaded later
+    //! in another instance of EITGenerator.
     //!
     //! The EPG content is filled with generic EIT sections, either in binary or XML form.
     //! The structure of these EIT sections, p/f or schedule, the number and order of events,
@@ -293,6 +241,12 @@ namespace ts {
         void setTransportStreamId(uint16_t ts_id);
 
         //!
+        //! Get the "actual" transport stream id for generated EIT's.
+        //! @return Actual transport stream id or 0xFFFF if unset.
+        //!
+        uint16_t getTransportStreamId() { return _actual_ts_id_set ? _actual_ts_id : 0xFFFF; }
+
+        //!
         //! Set the maximum bitrate of the EIT PID.
         //! If set to zero (the default), EIT's are injected according to their cycle
         //! time, within the limits of the input PID and the stuffing.
@@ -321,7 +275,7 @@ namespace ts {
         //! and is maintained from the declared bitrate and number of processed packets.
         //! If there is no declared bitrate, the last reference time is returned.
         //!
-        //! @return Current UTC time in the context of the stream.
+        //! @return Current UTC time in the context of the stream or Time::Epoch if the current time is not set.
         //!
         Time getCurrentTime();
 
@@ -353,30 +307,49 @@ namespace ts {
         //! the same format as in an EIT section, from the @a event_id field to the end of the
         //! descriptor list. Several events can be concatenated. All events are individually extracted.
         //! @param [in] size Size in bytes of the event binary data.
+        //! @return True in case of success, false on error.
         //! @see ETSI EN 300 468
         //! @see setCurrentTime()
         //!
-        void loadEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size);
+        bool loadEvents(const ServiceIdTriplet& service, const uint8_t* data, size_t size);
 
         //!
         //! Load EPG data from an EIT section.
         //! @param [in] section A section object. Non-EIT sections are ignored.
+        //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
+        //! and the section is an EIT actual, set the actual TS.
+        //! @return True in case of success, false on error.
         //!
-        void loadEvents(const Section& section);
+        bool loadEvents(const Section& section, bool get_actual_ts = false);
 
         //!
         //! Load EPG data from a vector of EIT sections.
         //! @param [in] sections A vector of sections. Non-EIT sections are ignored.
+        //! @return True in case of success, false on error.
+        //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
+        //! use the first EIT actual section to set the actual TS.
         //! @see loadEvents(const Section&)
         //!
-        void loadEvents(const SectionPtrVector& sections);
+        bool loadEvents(const SectionPtrVector& sections, bool get_actual_ts = false);
 
         //!
         //! Load EPG data from all EIT sections in a section file.
         //! @param [in] sections A section file object. Non-EIT sections are ignored.
+        //! @param [in] get_actual_ts If true and the actual transport stream id is not yet defined
+        //! use the first EIT actual section to set the actual TS.
+        //! @return True in case of success, false on error.
         //! @see loadEvents(const Section&)
         //!
-        void loadEvents(const SectionFile& sections) { loadEvents(sections.sections()); }
+        bool loadEvents(const SectionFile& sections, bool get_actual_ts = false) { return loadEvents(sections.sections(), get_actual_ts); }
+
+        //!
+        //! Save all current EIT sections.
+        //! If the current time is not set, the oldest event time in the EPG database is used.
+        //! An EIT sections are regenerated when necessary.
+        //! EIT p/f are saved first. Then EIT schedule.
+        //! @param [in,out] sections A vector of safe pointers to sections into which all current EIT sections are saved.
+        //!
+        void saveEITs(SectionPtrVector& sections);
 
         //!
         //! Save all current EIT sections in a section file.
@@ -421,8 +394,6 @@ namespace ts {
             bool       obsolete;     // The section is obsolete, discard it when found in an injection list.
             bool       injected;     // Indicate that the data part of the section is used in a packetizer.
             Time       next_inject;  // Date of next injection.
-            Time       start_time;   // First event start time.
-            Time       end_time;     // Last event end time.
             SectionPtr section;      // Safe pointer to the EIT section.
 
             // Constructor, build an empty section for the specified service (CRC32 not set).
@@ -450,8 +421,6 @@ namespace ts {
         public:
             const Time   start_time;      // Segment start time (a multiple of 3 hours). Never change.
             bool         regenerate;      // Regenerate all EIT schedule sections in the segment.
-            uint8_t      table_id;        // Current table id. May change after midnight.
-            uint8_t      section_number;  // First section number in the segment. May change after midnight.
             EventList    events;          // List of events in the segment, sorted by start time.
             ESectionList sections;        // Current list of sections in the segment, sorted by start time.
 
@@ -500,32 +469,28 @@ namespace ts {
         // EITGenerator private fields
         // ---------------------------
 
-        DuckContext&         _duck;            // TSDuck execution context.
-        const PID            _eit_pid;         // PID for input and generated EIT's.
-        uint16_t             _ts_id;           // Transport stream id (to differentiate EIT actual and others).
-        bool                 _ts_id_set;       // Boolean: value in _ts_id is valid.
-        bool                 _regenerate;      // Some segments must be regenerated in some services.
-        PacketCounter        _packet_index;    // Packet counter in the TS.
-        BitRate              _max_bitrate;     // Max EIT bitrate.
-        BitRate              _ts_bitrate;      // Declared TS bitrate.
-        Time                 _next_midnight;   // Time after which all EIT schedule shall be reorganized.
-        Time                 _ref_time;        // Last reference time.
-        PacketCounter        _ref_time_pkt;    // Packet index at last reference time.
-        PacketCounter        _eit_inter_pkt;   // Inter-packet distance in the EIT PID (zero if unbound).
-        PacketCounter        _last_eit_pkt;    // Packet index at last EIT insertion.
-        EITOption            _options;         // EIT generation options flags.
-        EITRepetitionProfile _profile;         // EIT repetition profile.
-        SectionDemux         _demux;           // Section demux for input stream, get PAT, TDT, TOT, EIT.
-        Packetizer           _packetizer;      // Packetizer for generated EIT's.
-        EServiceMap          _services;        // Map of services -> segments -> events and sections.
-        ESectionListArray    _injects;         // Arrays of sections for injection.
-        size_t               _obsolete_count;  // Number of obsolete sections in the injection lists.
+        DuckContext&         _duck;              // TSDuck execution context.
+        const PID            _eit_pid;           // PID for input and generated EIT's.
+        uint16_t             _actual_ts_id;      // Actual transport stream id (to differentiate EIT actual and others).
+        bool                 _actual_ts_id_set;  // Boolean: value in _actual_ts_id is valid.
+        bool                 _regenerate;        // Some segments must be regenerated in some services.
+        PacketCounter        _packet_index;      // Packet counter in the TS.
+        BitRate              _max_bitrate;       // Max EIT bitrate.
+        BitRate              _ts_bitrate;        // Declared TS bitrate.
+        Time                 _ref_time;          // Last reference time.
+        PacketCounter        _ref_time_pkt;      // Packet index at last reference time.
+        PacketCounter        _eit_inter_pkt;     // Inter-packet distance in the EIT PID (zero if unbound).
+        PacketCounter        _last_eit_pkt;      // Packet index at last EIT insertion.
+        EITOption            _options;           // EIT generation options flags.
+        EITRepetitionProfile _profile;           // EIT repetition profile.
+        SectionDemux         _demux;             // Section demux for input stream, get PAT, TDT, TOT, EIT.
+        Packetizer           _packetizer;        // Packetizer for generated EIT's.
+        EServiceMap          _services;          // Map of services -> segments -> events and sections.
+        ESectionListArray    _injects;           // Arrays of sections for injection.
+        size_t               _obsolete_count;    // Number of obsolete sections in the injection lists.
 
         // Set a bitrate field and update EIT inter-packet.
         void setBitRateField(BitRate EITGenerator::* field, BitRate bitrate);
-
-        // If the reference time is not set, force it to the start time of the oldest event in the database.
-        void forceReferenceTime();
 
         // Update the EIT database according to the current time.
         // Obsolete events, sections and segments are discarded.
@@ -535,11 +500,10 @@ namespace ts {
 
         // Regenerate, if necessary, EIT p/f in a service.
         void regeneratePresentFollowing(const ServiceIdTriplet& service_id, const Time& now);
-        void regeneratePresentFollowing(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event);
+        void regeneratePresentFollowingSection(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event);
 
         // Regenerate all EIT schedule, create missing segments and sections.
         void regenerateSchedule(const Time& now);
-        void regenerateSegment(const ServiceIdTriplet& service_id, Time now, Time segment_start_time);
 
         // Mark a section as obsolete, garbage collect obsolete sections if too many were not
         // naturally discarded from the injection lists. Also apply to entire segments.

@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsEIT.h"
+#include "tsEITGenerator.h"
 #include "tsAlgorithm.h"
 #include "tsNames.h"
 #include "tsRST.h"
@@ -52,9 +53,11 @@ TS_REGISTER_TABLE(MY_CLASS, ts::Range<ts::TID>(ts::TID_EIT_MIN, ts::TID_EIT_MAX)
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::EIT::SEGMENTS_PER_TABLE;
+constexpr size_t ts::EIT::SEGMENTS_PER_DAY;
 constexpr size_t ts::EIT::SECTIONS_PER_SEGMENT;
 constexpr size_t ts::EIT::TOTAL_TABLES_COUNT;
 constexpr size_t ts::EIT::TOTAL_SEGMENTS_COUNT;
+constexpr size_t ts::EIT::TOTAL_DAYS;
 constexpr ts::MilliSecond ts::EIT::SEGMENT_DURATION;
 constexpr ts::MilliSecond ts::EIT::TABLE_DURATION;
 constexpr ts::MilliSecond ts::EIT::TOTAL_DURATION;
@@ -733,20 +736,22 @@ void ts::EIT::SortEvents(BinaryEventPtrMap& events, Time& oldest)
 // Static method to reorganize EIT sections according to ETSI TS 101 211.
 //----------------------------------------------------------------------------
 
-void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime)
+void ts::EIT::ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, const Time& reftime)
 {
-    SectionPtrVector out_sections;   // List of output sections.
-    BinaryEventPtrMap events_pf;     // Set of all events from EIT p/f.
-    BinaryEventPtrMap events_sched;  // Set of all events from EIT schedule.
+    SectionPtrVector out_sections;
+    EITGenerator eit_gen(duck);
 
-    // Pass 1: Analyze all input EIT sections and extract binary events.
+    if (reftime != Time::Epoch) {
+        eit_gen.setCurrentTime(reftime);
+    }
+
     // Non-EIT sections are copied into the output vector of sections.
     for (size_t isec = 0; isec < sections.size(); ++isec) {
         const SectionPtr& sec(sections[isec]);
         if (!sec.isNull() && sec->isValid()) {
             if (IsEIT(sec->tableId())) {
-                // This is a valid EIT section.
-                ExtractBinaryEvents(sec, IsPresentFollowing(sec->tableId()) ? events_pf : events_sched);
+                // This is a valid EIT section. Use TS id from first EIT actual to define the TS id.
+                eit_gen.loadEvents(*sec, true);
             }
             else {
                 // This is a valid non-EIT section.
@@ -755,147 +760,16 @@ void ts::EIT::ReorganizeSections(SectionPtrVector& sections, const Time& reftime
         }
     }
 
-    // Pass 2: Sort events per service, get oldest start time.
-    Time last_midnight;
-    SortEvents(events_pf, last_midnight);
-    SortEvents(events_sched, last_midnight);
-
-    // Get the reference time ("last midnight").
-    if (reftime != Time::Epoch) {
-        last_midnight = reftime;
-    }
-    last_midnight = last_midnight.thisDay();
-
-    // Pass 3: EIT p/f processing according to ETSI TS 101 211:
-    // For each service, create exactly two sections: one for present and one for following event, possibly empty.
-    // If more than 2 events exist for the service, keep only the last two. If only one exist, use it as present
-    for (auto it = events_pf.begin(); it != events_pf.end(); ++it) {
-
-        // Get ordered list of events for a given service. Cannot be empty.
-        const BinaryEventPtrVector& events(it->second);
-        const size_t evcount = events.size();
-        assert(evcount > 0);
-
-        // Build present and following sections.
-        const TID tid = events[0]->actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
-        const SectionPtr psec(BuildEmptySection(tid, 0, it->first, out_sections));
-        const SectionPtr fsec(BuildEmptySection(tid, 1, it->first, out_sections));
-        if (evcount == 1) {
-            // Only a current event.
-            psec->appendPayload(events[0]->event_data, false);
-        }
-        else {
-            // Use last two events as present and following.
-            psec->appendPayload(events[evcount - 2]->event_data, false);
-            fsec->appendPayload(events[evcount - 1]->event_data, false);
-        }
-
-        // Fix last_section_number in both sections. Don't recompute CRC yet.
-        psec->setLastSectionNumber(1, false);
-        fsec->setLastSectionNumber(1, false);
-
-        // Fix segment_last_section_number (offset 4 in payload). Recompute CRC now.
-        psec->setUInt8(4, 1, true);
-        fsec->setUInt8(4, 1, true);
-    }
-
-    // Pass 4: EIT schedule processing according to ETSI TS 101 211.
-    for (auto it = events_sched.begin(); it != events_sched.end(); ++it) {
-
-        // Get ordered list of events for a given service. Cannot be empty.
-        const BinaryEventPtrVector& events(it->second);
-        const size_t evcount = events.size();
-        assert(evcount > 0);
-
-        // Characteristics of the service.
-        const ServiceIdTriplet service(it->first);
-        const bool actual = events[0]->actual;
-
-        // Create the section for segment 0. It can be empty, but all segments shall
-        // have at least an empty section, until the last event in the service.
-        size_t cur_segment = 0;
-        SectionPtr cur_section(BuildEmptySection(SegmentToTableId(actual, cur_segment), SegmentToSection(cur_segment), service, out_sections));
-
-        // Loop on all events for this service.
-        for (size_t i = 0; i < events.size(); ++i)  {
-
-            // If the event is before the reference "last midnight", it can't be scheduled and is ignored.
-            if (events[i]->start_time < last_midnight) {
-                continue;
-            }
-
-            // Compute the segment number of this event.
-            const size_t segment = TimeToSegment(last_midnight, events[i]->start_time);
-
-            // If we have changed segment, we need to create all intermediate segments as empty.
-            while (cur_segment < segment) {
-                cur_segment++;
-                cur_section = BuildEmptySection(SegmentToTableId(actual, cur_segment), SegmentToSection(cur_segment), service, out_sections);
-            }
-
-            // Check if the current event can fit into the current section.
-            if (cur_section->payloadSize() + events[i]->event_data.size() > MAX_PRIVATE_LONG_SECTION_PAYLOAD_SIZE) {
-                // Need to create another section in this segment.
-                const uint8_t secnum = cur_section->sectionNumber() + 1;
-                if (secnum >= SegmentToSection(cur_segment) + SECTIONS_PER_SEGMENT) {
-                    // Too many events in that segment, drop this event.
-                    continue;
-                }
-                cur_section = BuildEmptySection(SegmentToTableId(actual, cur_segment), secnum, service, out_sections);
-            }
-
-            // Now append the event to the section payload.
-            cur_section->appendPayload(events[i]->event_data, false);
-        }
-    }
-
-    // Pass 5: Fix synthetic fields in EIT-schedule sections: last_section_number, segment_last_section_number, last_table_id.
-    // Browse through the list of sections from the end since sections are sorted and we need to fix "last" fields.
-    // Although recompute CRC of all sections. Stop when a non-EIT-schedule section is found.
-
-    uint8_t last_section_number = 0;          // last_section_number field in EIT
-    uint8_t segment_last_section_number = 0;  // segment_last_section_number field in EIT
-    TID last_table_id = TID_NULL;             // last_table_id field in EIT
-    ServiceIdTriplet cur_service;             // current service id
-    TID cur_table_id = TID_NULL;              // current table id
-    bool new_service = true;                  // next iteration starts a new service
-    bool new_table = true;                    // next iteration starts a new table id
-    bool new_segment = true;                  // next iteration starts a new segment
-
-    for (auto it = out_sections.rbegin(); it != out_sections.rend() && IsSchedule((*it)->tableId()); ++it) {
-
-        const ServiceIdTriplet this_service(GetService(**it));
-        const TID this_table_id = (*it)->tableId();
-        const uint8_t this_section_number = (*it)->sectionNumber();
-
-        // Update current data.
-        if (new_service || cur_service != this_service) {
-            cur_service = this_service;
-            last_table_id = this_table_id;
-            new_service = false;
-            new_table = true;
-        }
-        if (new_table || cur_table_id != this_table_id) {
-            cur_table_id = this_table_id;
-            last_section_number = this_section_number;
-            new_table = false;
-            new_segment = true;
-        }
-        if (new_segment) {
-            segment_last_section_number = this_section_number;
-            new_segment = false;
-        }
-        new_segment = this_section_number % SECTIONS_PER_SEGMENT == 0;
-
-        // Update the fields in the section. Recompute CRC the last time only.
-        (*it)->setLastSectionNumber(last_section_number, false);
-        (*it)->setUInt8(4, segment_last_section_number, false);
-        (*it)->setUInt8(5, last_table_id, true);
+    // If the TS id was not set (not EIT actual), set a dummy unused value.
+    if (eit_gen.getTransportStreamId() == 0xFFFF) {
+        eit_gen.setTransportStreamId(0xFFFF);
     }
 
     // Return the list of output sections.
+    eit_gen.saveEITs(out_sections);
     sections.swap(out_sections);
 }
+
 
 //----------------------------------------------------------------------------
 // Modify an EIT-schedule section to make it standalone, outside any table.

@@ -271,7 +271,7 @@ void ts::SectionFile::collectLastTable()
 
 void ts::SectionFile::reorganizeEITs(const ts::Time& reftime)
 {
-    EIT::ReorganizeSections(_sections, reftime);
+    EIT::ReorganizeSections(_duck, _sections, reftime);
     rebuildTables();
 }
 
