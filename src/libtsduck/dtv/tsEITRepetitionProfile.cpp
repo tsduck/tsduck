@@ -91,5 +91,36 @@ ts::Time ts::EITRepetitionProfile::laterPeriod(const Time& now) const
 
 ts::TID ts::EITRepetitionProfile::laterTableId(bool actual) const
 {
-    return EIT::SegmentToTableId(actual, prime_days / EIT::SEGMENTS_PER_DAY);
+    return EIT::SegmentToTableId(actual, prime_days * EIT::SEGMENTS_PER_DAY);
+}
+
+uint8_t ts::EITRepetitionProfile::laterSectionNumber() const
+{
+    return EIT::SegmentToSection(prime_days * EIT::SEGMENTS_PER_DAY);
+}
+
+
+//----------------------------------------------------------------------------
+// Determine the repetition profile of an EIT section.
+//----------------------------------------------------------------------------
+
+ts::EITProfile ts::EITRepetitionProfile::sectionToProfile(const Section& section)
+{
+    const TID tid = section.tableId();
+    const bool actual = EIT::IsActual(tid);
+    if (EIT::IsPresentFollowing(tid)) {
+        return actual ? EITProfile::PF_ACTUAL : EITProfile::PF_OTHER;
+    }
+    const TID later_tid = laterTableId(actual);
+    if (tid < later_tid || (tid == later_tid && section.sectionNumber() < laterSectionNumber())) {
+        return actual ? EITProfile::SCHED_ACTUAL_PRIME : EITProfile::SCHED_OTHER_PRIME;
+    }
+    else {
+        return actual ? EITProfile::SCHED_ACTUAL_LATER : EITProfile::SCHED_OTHER_LATER;
+    }
+}
+
+size_t ts::EITRepetitionProfile::repetitionSeconds(const Section& section)
+{
+    return cycle_seconds[size_t(sectionToProfile(section))];
 }

@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsSection.h"
 #include "tsTime.h"
 #include "tsPSI.h"
 
@@ -130,9 +131,34 @@ namespace ts {
 
         //!
         //! Compute the first EIT table id in the "later" period.
+        //! If a table id is equal this one, this is not sufficient to determine if the corresponding
+        //! section is in the "prime" or "later" period. Check the section number as well.
         //! @param [in] actual True for EIT actual, false for EIT other.
         //! @return First EIT table id in the "later" period.
+        //! @see laterSectionNumber()
         //!
         TID laterTableId(bool actual) const;
+
+        //!
+        //! Compute the first section number in the "later" period.
+        //! @return First section number in the "later" period.
+        //!
+        uint8_t laterSectionNumber() const;
+
+        //!
+        //! Determine the repetition profile of an EIT section.
+        //! @param [in] section A valid EIT section.
+        //! @return The repetition profile of @a section.
+        //! Undefined if the section is not a valid EIT.
+        //!
+        EITProfile sectionToProfile(const Section& section);
+
+        //!
+        //! Determine the repetition cycle of an EIT section.
+        //! @param [in] section A valid EIT section.
+        //! @return The repetition cycle in seconds of @a section.
+        //! Undefined if the section is not a valid EIT.
+        //!
+        size_t repetitionSeconds(const Section& section);
     };
 }
