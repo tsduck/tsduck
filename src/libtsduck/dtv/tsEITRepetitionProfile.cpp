@@ -27,39 +27,69 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsServiceIdTriplet.h"
-#include "tsUString.h"
+#include "tsEITRepetitionProfile.h"
+#include "tsEIT.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Predefined EIT repetition profiles.
+//----------------------------------------------------------------------------
+
+const ts::EITRepetitionProfile ts::EITRepetitionProfile::SatelliteCable{
+    8,       // prime_days
+    {        // cycle_seconds
+        2,   // PF_ACTUAL
+        10,  // PF_OTHER
+        10,  // SCHED_ACTUAL_PRIME
+        10,  // SCHED_OTHER_PRIME
+        30,  // SCHED_ACTUAL_LATER
+        30   // SCHED_OTHER_LATER
+    }
+};
+
+const ts::EITRepetitionProfile ts::EITRepetitionProfile::Terrestrial{
+    1,       // prime_days
+    {        // cycle_seconds
+        2,   // PF_ACTUAL
+        20,  // PF_OTHER
+        10,  // SCHED_ACTUAL_PRIME
+        60,  // SCHED_OTHER_PRIME
+        30,  // SCHED_ACTUAL_LATER
+        300  // SCHED_OTHER_LATER
+    }
+};
 
 
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::ServiceIdTriplet::ServiceIdTriplet(uint16_t svid, uint16_t tsid, uint16_t onid, uint8_t vers) :
-    TransportStreamId(tsid, onid),
-    service_id(svid),
-    version(vers)
+ts::EITRepetitionProfile::EITRepetitionProfile(size_t days, std::initializer_list<size_t> cycles) :
+    prime_days(std::min(days, EIT::TOTAL_DAYS)),
+    cycle_seconds()
 {
+    auto it = cycles.begin();
+    size_t previous = 10;  // default cycle
+    for (size_t index = 0; index < cycle_seconds.size(); ++index) {
+        if (it != cycles.end()) {
+            previous = *it++;
+        }
+        cycle_seconds[index] = previous;
+    }
 }
 
 
 //----------------------------------------------------------------------------
-// Clear the content of this object.
+// Starting date and first table id of the "later" period.
 //----------------------------------------------------------------------------
 
-void ts::ServiceIdTriplet::clear()
+ts::Time ts::EITRepetitionProfile::laterPeriod(const Time& now) const
 {
-    transport_stream_id = original_network_id = service_id = 0;
-    version = 0;
+    return now.thisDay() + std::min(prime_days, EIT::TOTAL_DAYS) * MilliSecPerDay;
 }
 
-
-//----------------------------------------------------------------------------
-// Implementation of StringifyInterface.
-//----------------------------------------------------------------------------
-
-ts::UString ts::ServiceIdTriplet::toString() const
+ts::TID ts::EITRepetitionProfile::laterTableId(bool actual) const
 {
-    return UString::Format(u"service: 0x%X (%<d), TS: 0x%X (%<d), network: 0x%X (%<d)", {service_id, transport_stream_id, original_network_id});
+    return EIT::SegmentToTableId(actual, prime_days / EIT::SEGMENTS_PER_DAY);
 }
