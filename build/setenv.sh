@@ -33,6 +33,7 @@
 #  the path. Other options:
 #
 #     --display : only display the binary directory, don't set PATH
+#     --all : display all current variables, don't set PATH
 #     --debug : use debug build
 #     --bin dirname : use that directory as binary
 #
@@ -44,11 +45,15 @@ usage() { echo >&2 "syntax: $SCRIPT [--bin dir] [--debug] [--display]"; exit 1; 
 # Default options.
 TARGET=release
 SHOW_PATH=false
+SHOW_ALL=false
 BINDIR=
 
 # Decode command line options.
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --all)
+            SHOW_ALL=true
+            ;;
         --bin)
             [[ $# -gt 1 ]] || usage; shift
             BINDIR=$(cd "$1" && pwd)
@@ -72,15 +77,28 @@ if [[ -z "$BINDIR" ]]; then
     BINDIR="$ROOTDIR/bin/$TARGET-$ARCH-$HOST"
 fi
 
+# Safely add a directory at the beginning of a path.
+addpath() {
+    local varname=$1
+    local bindir="$2"
+    export $varname=$(sed <<<":${!varname}:" -e "s|:$bindir:|:|g" -e "s|::*|:|g" -e "s|\([^:]\)$|\1:|" -e "s|^:*|$bindir:|")
+}
+
 # Display or set path.
 if $SHOW_PATH; then
     echo "$BINDIR"
+elif $SHOW_ALL; then
+    echo "PATH=$PATH"
+    echo "TSPLUGINS_PATH=$TSPLUGINS_PATH"
+    echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH"
+    echo "PYTHONPATH=$PYTHONPATH"
+    echo "CLASSPATH=$CLASSPATH"
 else
-    [[ ":$PATH:" != *:$BINDIR:* ]] && export PATH="$BINDIR:$PATH"
-    [[ ":$TSPLUGINS_PATH:" != *:$BINDIR:* ]] && export TSPLUGINS_PATH="$BINDIR:$TSPLUGINS_PATH"
-    [[ ":$LD_LIBRARY_PATH:" != *:$BINDIR:* ]] && export LD_LIBRARY_PATH="$BINDIR:$LD_LIBRARY_PATH"
-    [[ ":$PYTHONPATH:" != *:$TSPYDIR:* ]] && export PYTHONPATH="$TSPYDIR:$PYTHONPATH"
-    [[ ":$CLASSPATH:" != *:$BINDIR/tsduck.jar:* ]] && export CLASSPATH="$BINDIR/tsduck.jar:$CLASSPATH"
+    addpath PATH "$BINDIR"
+    addpath TSPLUGINS_PATH "$BINDIR"
+    addpath LD_LIBRARY_PATH "$BINDIR"
+    addpath PYTHONPATH "$TSPYDIR"
+    addpath CLASSPATH "$BINDIR/tsduck.jar"
     # For macOS only: LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
     # Define a backup version which can be explicitly checked in scripts (typically Python bindings).
     export LD_LIBRARY_PATH2="$LD_LIBRARY_PATH"

@@ -47,14 +47,14 @@ namespace ts {
     //! The options can be specified as a byte mask.
     //!
     enum class EITOption {
-        NONE     = 0x0000,   //!< Generate nothing.
+        GEN_NONE = 0x0000,   //!< Generate nothing.
         ACTUAL   = 0x0001,   //!< Generate EIT actual.
         OTHER    = 0x0002,   //!< Generate EIT other.
         PF       = 0x0004,   //!< Generate EIT present/following.
         SCHED    = 0x0008,   //!< Generate EIT schedule.
-        ALL      = 0x000F,   //!< Generate all EIT's.
-        INPUT    = 0x0010,   //!< Use input EIT's as EPG data.
-        STUFFING = 0x0020,   //!< Insert stuffing inside TS packet at end of EIT section. Do not pack EIT sections.
+        GEN_ALL         = 0x000F,   //!< Generate all EIT's.
+        LOAD_INPUT      = 0x0010,   //!< Use input EIT's as EPG data.
+        PACKET_STUFFING = 0x0020,   //!< Insert stuffing inside TS packet at end of EIT section. Do not pack EIT sections.
     };
 }
 TS_ENABLE_BITMASK_OPERATORS(ts::EITOption);
@@ -207,7 +207,7 @@ namespace ts {
         //!
         explicit EITGenerator(DuckContext& duck,
                               PID pid = PID_EIT,
-                              EITOption options = EITOption::ALL | EITOption::INPUT,
+                              EITOption options = EITOption::GEN_ALL | EITOption::LOAD_INPUT,
                               const EITRepetitionProfile& profile = EITRepetitionProfile::SatelliteCable);
 
         //!
@@ -360,6 +360,12 @@ namespace ts {
         //!
         void saveEITs(SectionFile& sections);
 
+        //!
+        //! Dump the internal state of the EIT generator on the DuckContext Report object.
+        //! @param [in] level Severity level at which the state is dumped.
+        //!
+        void dumpInternalState(int level) const;
+
     private:
 
         // -----------------------
@@ -437,6 +443,7 @@ namespace ts {
 
         class EService
         {
+            TS_NOCOPY(EService);
         public:
             bool         regenerate;  // Some segments must be regenerated in the service.
             ESectionPair pf;          // EIT p/f sections (0: present, 1: following).
@@ -509,6 +516,12 @@ namespace ts {
         // naturally discarded from the injection lists. Also apply to entire segments.
         void markObsoleteSection(ESection& sec);
         void markObsoleteSegment(ESegment& seg);
+
+        // Enqueue a section for injection.
+        void enqueueInjectSection(const ESectionPtr& sec, const Time& next_inject, bool try_front);
+
+        // Helper for dumpInternalState()
+        void dumpSection(int level, const UString& margin, const ESectionPtr& section) const;
 
         // Implementation of SectionHandlerInterface.
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
