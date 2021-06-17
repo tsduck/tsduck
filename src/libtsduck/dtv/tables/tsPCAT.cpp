@@ -277,7 +277,7 @@ void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
             // Display schedule loop.
             while (buf.canReadBytes(8)) {
                 // See [Warning #2] above.
-                disp << margin << "  Schedule start: " << buf.getFullMJD().format(Time::DATE | Time::TIME);
+                disp << margin << "  Schedule start: " << buf.getFullMJD().format(Time::DATETIME);
                 disp << UString::Format(u", duration: %02d", {buf.getBCD<int>(2)});
                 disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
                 disp << UString::Format(u":%02d", {buf.getBCD<int>(2)}) << std::endl;

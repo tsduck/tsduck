@@ -218,7 +218,7 @@ bool ts::TimeRefPlugin::getOptions()
         if (start.empty() || start == u"system") {
             _startref = Time::CurrentUTC();
             _add_milliseconds = 0; // for --system-synchronous
-            tsp->verbose(u"current system clock is %s", {ts::UString(_startref)});
+            tsp->verbose(u"current system clock is %s", {_startref});
         }
         else if (!_startref.decode(start)) {
             tsp->error(u"invalid --start time value \"%s\" (use \"year/month/day:hour:minute:second\")", {start});

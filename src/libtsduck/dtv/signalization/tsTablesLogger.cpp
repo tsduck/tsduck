@@ -1058,8 +1058,7 @@ void ts::TablesLogger::logSection(const Section& sect)
 
     // Display time stamp if required.
     if (_time_stamp) {
-        header += Time::CurrentLocalTime();
-        header += u": ";
+        header.format(u"%s: ", {Time::CurrentLocalTime()});
     }
 
     // Display packet index if required.

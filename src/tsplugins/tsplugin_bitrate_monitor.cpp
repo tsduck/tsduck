@@ -319,7 +319,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     // Periodic bitrate display.
     if (_periodic_bitrate > 0 && --_periodic_countdown <= 0) {
         _periodic_countdown = _periodic_bitrate;
-        tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATE | Time::TIME), _alarm_prefix, bitrate});
+        tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate});
     }
 
     // Check the bitrate value, regarding the allowed range.

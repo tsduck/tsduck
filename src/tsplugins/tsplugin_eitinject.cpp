@@ -77,7 +77,7 @@ namespace ts {
             TS_NOBUILD_NOCOPY(FileListener);
         public:
             FileListener(EITInjectPlugin* plugin);
-            ~FileListener();
+            virtual ~FileListener() override;
             void stop();
 
         private:

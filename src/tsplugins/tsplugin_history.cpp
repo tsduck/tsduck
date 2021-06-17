@@ -314,7 +314,7 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
                 _last_tdt_reported = false;
                 // Report TDT only if --time-all
                 if (_time_all && _last_tdt.isValid()) {
-                    report(u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATE | Time::TIME)});
+                    report(u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATETIME)});
                 }
             }
             break;
@@ -326,10 +326,10 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
                     TOT tot(duck, table);
                     if (tot.isValid()) {
                         if (tot.regions.empty()) {
-                            report(u"TOT: %s UTC", {tot.utc_time.format(Time::DATE | Time::TIME)});
+                            report(u"TOT: %s UTC", {tot.utc_time.format(Time::DATETIME)});
                         }
                         else {
-                            report(u"TOT: %s LOCAL", {tot.localTime(tot.regions[0]).format(Time::DATE | Time::TIME)});
+                            report(u"TOT: %s LOCAL", {tot.localTime(tot.regions[0]).format(Time::DATETIME)});
                         }
                     }
                 }
@@ -549,7 +549,7 @@ void ts::HistoryPlugin::report(PacketCounter pkt, const UChar* fmt, const std::i
     // Reports the last TDT if required
     if (!_time_all && _last_tdt.isValid() && !_last_tdt_reported) {
         _last_tdt_reported = true;
-        report(_last_tdt_pkt, u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATE | Time::TIME)});
+        report(_last_tdt_pkt, u"TDT: %s UTC", {_last_tdt.utc_time.format(Time::DATETIME)});
     }
 
     // Convert pkt number in playback time when necessary.
