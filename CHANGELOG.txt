@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2421
+VERSION 3.27-2425
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,7 @@ VERSION 3.27-2421
   * Added plugin "svresync" (resynchronize the clock of a service based on
     another service).
   * Added plugin "pidshift" (shift selected PID's forward inside the TS).
+  * Added plugin "eitinject" (generate and inject EIT's inside the TS).
 
 [IMP] Improvements on existing commands and plugins:
 

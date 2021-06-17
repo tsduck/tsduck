@@ -388,11 +388,15 @@ namespace ts {
         //! @param [in,out] table The table to fix. Ignored if it is not valid or not an EIT.
         //! @param [in] mode The type of fix to apply.
         //! @see ReorganizeSections()
+        //! @see EITGenerator
         //!
         static void Fix(BinaryTable& table, FixMode mode);
 
         //!
         //! Static method to reorganize a set of EIT sections according to ETSI TS 101 211.
+        //!
+        //! Warning: This method is no longer the preferred way to generate clean and
+        //! organized EIT's. It is recommended to use the more generic class EITGenerator.
         //!
         //! Only one EITp/f subtable is kept per service. It is split in two sections if two
         //! events (present and following) are specified.
@@ -410,6 +414,7 @@ namespace ts {
         //! default, the oldest event start time is used.
         //!
         //! @see ETSI TS 101 211, 4.1.4
+        //! @see EITGenerator
         //!
         static void ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, const Time& reftime = Time());
 

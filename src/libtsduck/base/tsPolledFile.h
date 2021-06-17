@@ -63,28 +63,31 @@ namespace ts {
         //! Get the file name.
         //! @return The file name.
         //!
-        const UString& getFileName() const
-        {
-            return _name;
-        }
+        const UString& getFileName() const { return _name; }
 
         //!
         //! Get file status since last notification.
         //! @return The file status since last notification.
         //!
-        Status getStatus() const
-        {
-            return _status;
-        }
+        Status getStatus() const { return _status; }
+
+        //!
+        //! Check if the file has been updated (created or modified) since last notification.
+        //! @return True if the file has been updated.
+        //!
+        bool updated() const { return _status == MODIFIED || _status == ADDED; }
+
+        //!
+        //! Check if the file has been deleted since last notification.
+        //! @return True if the file has been deleted.
+        //!
+        bool deleted() const { return _status == DELETED; }
 
         //!
         //! Get file size in bytes.
         //! @return The file size in bytes.
         //!
-        int64_t getSize() const
-        {
-            return _file_size;
-        }
+        int64_t getSize() const { return _file_size; }
 
     private:
         friend class PollFiles;

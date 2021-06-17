@@ -47,11 +47,11 @@ namespace ts {
     //! The options can be specified as a byte mask.
     //!
     enum class EITOption {
-        GEN_NONE = 0x0000,   //!< Generate nothing.
-        ACTUAL   = 0x0001,   //!< Generate EIT actual.
-        OTHER    = 0x0002,   //!< Generate EIT other.
-        PF       = 0x0004,   //!< Generate EIT present/following.
-        SCHED    = 0x0008,   //!< Generate EIT schedule.
+        GEN_NONE        = 0x0000,   //!< Generate nothing.
+        GEN_ACTUAL      = 0x0001,   //!< Generate EIT actual.
+        GEN_OTHER       = 0x0002,   //!< Generate EIT other.
+        GEN_PF          = 0x0004,   //!< Generate EIT present/following.
+        GEN_SCHED       = 0x0008,   //!< Generate EIT schedule.
         GEN_ALL         = 0x000F,   //!< Generate all EIT's.
         LOAD_INPUT      = 0x0010,   //!< Use input EIT's as EPG data.
         PACKET_STUFFING = 0x0020,   //!< Insert stuffing inside TS packet at end of EIT section. Do not pack EIT sections.
@@ -502,12 +502,11 @@ namespace ts {
         // Update the EIT database according to the current time.
         // Obsolete events, sections and segments are discarded.
         // Segments which must be regenerated are marked as such (will be actually regenerated later, when used).
-        // In case of "midnight effect" (moving to another day), reorganize all EIT schedule.
         void updateForNewTime(const Time& now);
 
         // Regenerate, if necessary, EIT p/f in a service.
-        void regeneratePresentFollowing(const ServiceIdTriplet& service_id, const Time& now);
-        void regeneratePresentFollowingSection(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event);
+        void regeneratePresentFollowing(const ServiceIdTriplet& service_id, EService& srv, const Time& now);
+        void regeneratePresentFollowingSection(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event, const Time&inject_time);
 
         // Regenerate all EIT schedule, create missing segments and sections.
         void regenerateSchedule(const Time& now);

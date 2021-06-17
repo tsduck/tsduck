@@ -211,7 +211,7 @@ namespace ts {
 
         bool             _abort;            // Error found, abort asap.
         ServiceDiscovery _service;          // Service holding the SCTE 35 injection.
-        FileListener     _file_listener;    // TCP listener thread.
+        FileListener     _file_listener;    // File listener thread.
         UDPListener      _udp_listener;     // UDP listener thread.
         CommandQueue     _queue;            // Queue for splice commands.
         Packetizer       _packetizer;       // Packetizer for Splice Information sections.
