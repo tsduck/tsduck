@@ -222,7 +222,7 @@ bool ts::EITPlugin::stop()
         out << UString::Format(u"TS id:         %d (0x%04X)", {_ts_id.value(), _ts_id.value()}) << std::endl;
     }
     if (_last_utc != Time::Epoch) {
-        out << "Last UTC:      " << _last_utc.format(Time::DATE | Time::TIME) << std::endl;
+        out << "Last UTC:      " << _last_utc.format(Time::DATETIME) << std::endl;
     }
     out << "EITp/f actual: " << UString::Decimal(_eitpf_act_count) << std::endl
         << "EITp/f other:  " << UString::Decimal(_eitpf_oth_count) << std::endl

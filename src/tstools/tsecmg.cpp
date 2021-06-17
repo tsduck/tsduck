@@ -340,7 +340,7 @@ private:
     // Format a timestamp.
     static ts::UString TimeStamp()
     {
-        return ts::Time::CurrentLocalTime().format(ts::Time::DATE | ts::Time::TIME);
+        return ts::Time::CurrentLocalTime().format(ts::Time::DATETIME);
     }
 };
 

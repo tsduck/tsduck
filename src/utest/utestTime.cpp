@@ -289,7 +289,7 @@ void TimeTest::testUnixTime()
         << "          and " <<(1523624074 / (24 * 3600)) << " days from UNIX Epoch" << std::endl;
 
     TSUNIT_ASSERT(ts::Time::UnixTimeToUTC(0) == ts::Time::UnixEpoch);
-    TSUNIT_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074));
+    TSUNIT_EQUAL(u"2018/04/13 12:54:34.000", ts::Time::UnixTimeToUTC(1523624074).format());
 }
 
 void TimeTest::testDaylightSavingTime()

@@ -300,7 +300,7 @@ ts::ProcessorPlugin::Status ts::CountPlugin::processPacket(TSPacket& pkt, TSPack
                 totalBitRate = PacketBitRate(now.total_packets - _last_report.total_packets, duration);
             }
             report(u"%s%s, counted: %'d packets, %'d b/s, total: %'d packets, %'d b/s",
-                   {_tag, UString(Time::CurrentLocalTime()), now.counted_packets, countedBitRate, now.total_packets, totalBitRate});
+                   {_tag, Time::CurrentLocalTime(), now.counted_packets, countedBitRate, now.total_packets, totalBitRate});
 
             // Save current report.
             _last_report = now;

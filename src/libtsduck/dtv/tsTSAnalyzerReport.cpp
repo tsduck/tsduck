@@ -205,7 +205,7 @@ ts::UString ts::TSAnalyzerReport::reportToString(const TSAnalyzerOptions & opt, 
 
 void ts::TSAnalyzerReport::reportTimeStamp(Grid& grid, const UString& name, const Time& value) const
 {
-    grid.putLayout({{name, value == Time::Epoch ? u"Unknown" : value.format(Time::DATE | Time::TIME)}});
+    grid.putLayout({{name, value == Time::Epoch ? u"Unknown" : value.format(Time::DATETIME)}});
 }
 
 

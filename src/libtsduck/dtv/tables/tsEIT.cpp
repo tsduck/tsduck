@@ -504,7 +504,7 @@ void ts::EIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
         while (buf.canReadBytes(12)) {
             disp << margin << UString::Format(u"- Event Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-            disp << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATE | Time::TIME) << std::endl;
+            disp << margin << "  Start " << zone << ": " << buf.getFullMJD().format(Time::DATETIME) << std::endl;
             disp << margin << UString::Format(u"  Duration: %02d", {buf.getBCD<int>(2)});
             disp << UString::Format(u":%02d", {buf.getBCD<int>(2)});
             disp << UString::Format(u":%02d", {buf.getBCD<int>(2)}) << std::endl;

@@ -143,7 +143,7 @@ void ts::AsyncReport::asyncThreadLog(int severity, const UString& message)
     // The default implementation logs on stderr.
     std::cerr << "* ";
     if (_time_stamp) {
-        std::cerr << ts::Time::CurrentLocalTime().format(ts::Time::DATE | ts::Time::TIME) << " - ";
+        std::cerr << ts::Time::CurrentLocalTime().format(ts::Time::DATETIME) << " - ";
     }
     std::cerr << Severity::Header(severity) << message << std::endl;
 }

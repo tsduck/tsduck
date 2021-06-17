@@ -109,7 +109,7 @@ void ts::SpliceTimeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
         // Sometimes, the identifiers are made of ASCII characters. Try to display them.
         disp.displayIntAndASCII(u"Identifier: 0x%08X", buf, 4, margin);
         const uint64_t tai = buf.getUInt48();
-        disp << margin << UString::Format(u"TAI: %'d seconds (%s)", {tai, Time::UnixTimeToUTC(uint32_t(tai)).format(Time::DATE | Time::TIME)});
+        disp << margin << UString::Format(u"TAI: %'d seconds (%s)", {tai, Time::UnixTimeToUTC(uint32_t(tai)).format(Time::DATETIME)});
         disp << UString::Format(u" + %'d ns", {buf.getUInt32()});
         disp << UString::Format(u", UTC offset: %'d", {buf.getUInt16()}) << std::endl;
     }

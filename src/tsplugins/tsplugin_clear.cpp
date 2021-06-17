@@ -357,7 +357,7 @@ ts::ProcessorPlugin::Status ts::ClearPlugin::processPacket(TSPacket& pkt, TSPack
     if (_pass_packets != previous_pass && tsp->verbose()) {
         // State has changed
         const UString curtime(_last_tot.isValid() && !_last_tot.regions.empty() ?
-                              _last_tot.localTime(_last_tot.regions[0]).format(Time::DATE | Time::TIME) :
+                              _last_tot.localTime(_last_tot.regions[0]).format(Time::DATETIME) :
                               u"unknown");
         tsp->verbose(u"now %s all packets, last TOT local time: %s, current packet: %'d", {_pass_packets ? u"passing" : u"dropping", curtime, _current_pkt});
     }

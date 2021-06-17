@@ -104,7 +104,7 @@ void ts::VersionInfo::startNewVersionDetection()
     const Time curtime(Time::CurrentUTC());
     if (lasttime != Time::Epoch && curtime != Time::Epoch && curtime >= lasttime && (curtime - lasttime) < MilliSecPerDay) {
         // Last check was done less than one day ago, don't try again.
-        _debug.debug(u"last new version check done %s, not done again", {lasttime.UTCToLocal().format()});
+        _debug.debug(u"last new version check done %s, not done again", {lasttime.UTCToLocal()});
         return;
     }
 

@@ -185,7 +185,7 @@ bool ts::TimePlugin::start()
     if (tsp->verbose()) {
         tsp->verbose(u"initial packet processing: %s", {_status_names.name(_status)});
         for (TimeEventVector::iterator it = _events.begin(); it != _events.end(); ++it) {
-            tsp->verbose(u"packet %s after %s", {_status_names.name(it->status), it->time.format(Time::DATE | Time::TIME)});
+            tsp->verbose(u"packet %s after %s", {_status_names.name(it->status), it->time.format(Time::DATETIME)});
         }
     }
 
@@ -281,7 +281,7 @@ ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, TSPacke
         _next_index++;
 
         if (tsp->verbose()) {
-            tsp->verbose(u"%s: new packet processing: %s", {_last_time.format(Time::DATE | Time::TIME), _status_names.name(_status)});
+            tsp->verbose(u"%s: new packet processing: %s", {_last_time.format(Time::DATETIME), _status_names.name(_status)});
         }
     }
 

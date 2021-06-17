@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsStringifyInterface.h"
 #include "tsException.h"
 #include "tsUString.h"
 
@@ -58,7 +58,7 @@ namespace ts {
     //! The class is not polymorphic, there is no virtual methods and no vtable.
     //! In fact, the actual representation is only a 64-bit integer.
     //!
-    class TSDUCKDLL Time
+    class TSDUCKDLL Time final: public StringifyInterface
     {
     public:
         //!
@@ -342,6 +342,9 @@ namespace ts {
         //!
         UString format(int fields = ALL) const;
 
+        // Implementation of StringifyInterface.
+        virtual UString toString() const override;
+
         //!
         //! Decode a time from a string.
         //! The resulting decoded time is stored in this object.
@@ -356,17 +359,6 @@ namespace ts {
         //! @return True on success, false if the string cannot be decoded.
         //!
         bool decode(const UString& str, int fields = DATE | TIME);
-
-        //!
-        //! Conversion operator from @c Time to @c UString.
-        //! Equivalent to <code>format (ALL)</code>.
-        //! @return A string containing the formatted date.
-        //! @throw ts::Time::TimeError In case of operating system time error.
-        //!
-        operator UString() const
-        {
-            return format(ALL);
-        }
 
         //!
         //! Get the number of leap seconds between two UTC dates.
@@ -798,16 +790,4 @@ namespace ts {
         };
 #endif
     };
-}
-
-//!
-//! Output operator for the class @link ts::Time @endlink on standard text streams.
-//! @param [in,out] strm An standard stream in output mode.
-//! @param [in] time A @link ts::Time @endlink object.
-//! @return A reference to the @a strm object.
-//! @throw ts::Time::TimeError In case of operating system time error.
-//!
-TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Time& time)
-{
-    return strm << ts::UString(time);
 }
