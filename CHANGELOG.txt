@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2425
+VERSION 3.27-2428
 
 [NEW] New commands and plugins:
 
@@ -29,6 +29,8 @@ VERSION 3.27-2425
       --service, --subtitles, --video in plugin "filter".
     - Options --restart and --restart-interval in plugin "merge".
     - Option --system-synchronous in plugin "timeref".
+    - Options --no-repeat, --payload-and, --payload-or, --payload-xor in packet
+      processing plugin "craft".
 
 [BUG] Bug fixes:
 

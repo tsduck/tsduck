@@ -291,6 +291,7 @@
 #include "tsForkPipe.h"
 #include "tsFrequencyListDescriptor.h"
 #include "tsFTAContentManagementDescriptor.h"
+#include "tsFunctors.h"
 #include "tsGenreDescriptor.h"
 #include "tsGitHubRelease.h"
 #include "tsGraphicsConstraintsDescriptor.h"

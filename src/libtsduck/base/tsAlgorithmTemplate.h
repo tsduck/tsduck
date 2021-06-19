@@ -44,11 +44,11 @@ namespace ts {
     // invoked.
     //
     template <typename T, class UnaryPredicate>
-    bool _EnumerateCombinationsImpl (typename std::set<T>::const_iterator begin,
-                                     typename std::set<T>::const_iterator end,
-                                     typename std::set<T>& current,
-                                     UnaryPredicate predicate,
-                                     size_t level)
+    bool _EnumerateCombinationsImpl(typename std::set<T>::const_iterator begin,
+                                    typename std::set<T>::const_iterator end,
+                                    typename std::set<T>& current,
+                                    UnaryPredicate predicate,
+                                    size_t level)
     {
         if (level == 0) {
             // We have built a complete combination, invoke user's predicate.
@@ -61,7 +61,7 @@ namespace ts {
             while (more && it != end) {
                 const T& x (*it);
                 current.insert (x);
-                more = _EnumerateCombinationsImpl (++it, end, current, predicate, level - 1);
+                more = _EnumerateCombinationsImpl(++it, end, current, predicate, level - 1);
                 current.erase (x);
             }
             return more;
@@ -75,9 +75,9 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 template <typename T, class UnaryPredicate>
-bool ts::EnumerateCombinations (const std::set<T>& values,
-                                  const std::set<T>& fixed,
-                                  size_t size,
+bool ts::EnumerateCombinations(const std::set<T>& values,
+                               const std::set<T>& fixed,
+                               size_t size,
                                UnaryPredicate predicate)
 {
     // There is no possible combination in the following cases:
@@ -85,7 +85,7 @@ bool ts::EnumerateCombinations (const std::set<T>& values,
     // - The set of fixed values is larger than the requested combination size.
     // - The set of fixed values is not included into the set of all values.
     // In any of these cases, there is no need to search anything.
-    if (size > values.size() || fixed.size() > size || !std::includes (values.begin(), values.end(), fixed.begin(), fixed.end())) {
+    if (size > values.size() || fixed.size() > size || !std::includes(values.begin(), values.end(), fixed.begin(), fixed.end())) {
         // Return true since the user's predicate did not force a premature ending.
         return true;
     }
@@ -93,19 +93,19 @@ bool ts::EnumerateCombinations (const std::set<T>& values,
     // The set which is used to build the various combinations is 'current'.
     // The user's predicate will be invoked using this set.
     // Its initial content (and constant subset) is made of the set of fixed values.
-    std::set<T> current (fixed);
+    std::set<T> current(fixed);
 
     // Invoke the recursive combination function.
     if (current.empty()) {
         // No fixed values, the combinations are build directly on values.
-        return _EnumerateCombinationsImpl (values.begin(), values.end(), current, predicate, size);
+        return _EnumerateCombinationsImpl(values.begin(), values.end(), current, predicate, size);
     }
     else {
         // There are some fixed values. The combinations are build on the subset
         // of values which excludes all fixed values.
         std::set<T> sub;
-        std::set_difference (values.begin(), values.end(), current.begin(), current.end(), std::inserter (sub, sub.begin()));
-        return _EnumerateCombinationsImpl (sub.begin(), sub.end(), current, predicate, size - current.size());
+        std::set_difference(values.begin(), values.end(), current.begin(), current.end(), std::inserter(sub, sub.begin()));
+        return _EnumerateCombinationsImpl(sub.begin(), sub.end(), current, predicate, size - current.size());
     }
 }
 

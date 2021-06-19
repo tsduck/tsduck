@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsFunctors.h"
 TSDUCK_SOURCE;
 
 
@@ -91,10 +92,14 @@ namespace ts {
         bool      _setESPriority;
         bool      _clearESPriority;
         bool      _resizePayload;
+        bool      _noRepeat;
         size_t    _payloadSize;
         bool      _noPayload;
         bool      _pesPayload;
         ByteBlock _payloadPattern;
+        ByteBlock _payloadAnd;
+        ByteBlock _payloadOr;
+        ByteBlock _payloadXor;
         size_t    _offsetPattern;
         ByteBlock _privateData;
         bool      _clearPrivateData;
@@ -119,6 +124,10 @@ namespace ts {
 
         // Perform --pack-pes-header on a packet.
         void packPESHeader(TSPacket&);
+
+        // Perform payload operations such as --payload-pattern, --payload-and, etc.
+        template <typename Op>
+        void updatePayload(TSPacket& pkt, size_t payloadBase, const ByteBlock& pattern, Op assign);
     };
 }
 
@@ -451,10 +460,14 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
     _setESPriority(false),
     _clearESPriority(false),
     _resizePayload(false),
+    _noRepeat(false),
     _payloadSize(0),
     _noPayload(false),
     _pesPayload(false),
     _payloadPattern(),
+    _payloadAnd(),
+    _payloadOr(),
+    _payloadXor(),
     _offsetPattern(0),
     _privateData(),
     _clearPrivateData(false),
@@ -509,11 +522,35 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
     option(u"no-payload");
     help(u"no-payload", u"Remove the payload.");
 
+    option(u"no-repeat");
+    help(u"no-repeat",
+         u"Do not repeat payload pattern operations as specified by options "
+         u"--payload-pattern, --payload-and, --payload-or, --payload-xor. "
+         u"The operation is performed once only.");
+
     option(u"payload-pattern", 0, STRING);
-    help(u"payload-pattern",
-         u"Overwrite the payload and specify the binary pattern to apply. "
+    help(u"payload-pattern", u"hexa-data",
+         u"Overwrite the payload with the specified binary pattern. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
-         u"The pattern is repeated to fill the payload.");
+         u"The pattern is repeated to fill the payload (unless --no-repeat is specified).");
+
+    option(u"payload-and", 0, STRING);
+    help(u"payload-and", u"hexa-data",
+         u"Apply a binary \"and\" operation on the payload using the specified binary pattern. "
+         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+         u"The \"and\" operation is repeated up to the end of the payload (unless --no-repeat is specified).");
+
+    option(u"payload-or", 0, STRING);
+    help(u"payload-or", u"hexa-data",
+         u"Apply a binary \"or\" operation on the payload using the specified binary pattern. "
+         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+         u"The \"or\" operation is repeated up to the end of the payload (unless --no-repeat is specified).");
+
+    option(u"payload-xor", 0, STRING);
+    help(u"payload-xor", u"hexa-data",
+         u"Apply a binary \"exclusive or\" operation on the payload using the specified binary pattern. "
+         u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+         u"The \"exclusive or\" operation is repeated up to the end of the payload (unless --no-repeat is specified).");
 
     option(u"payload-size", 0, INTEGER, 0, 1, 0, PKT_SIZE - 4);
     help(u"payload-size", u"size",
@@ -612,28 +649,29 @@ bool ts::CraftPlugin::getOptions()
     _setESPriority = present(u"es-priority");
     _clearESPriority = present(u"clear-es-priority");
     _noPayload = present(u"no-payload");
+    _noRepeat = present(u"no-repeat");
     _resizePayload = present(u"payload-size") || _noPayload;
-    _payloadSize = intValue<size_t>(u"payload-size", 0);
+    getIntValue(_payloadSize, u"payload-size", 0);
     _pesPayload = present(u"pes-payload");
-    _offsetPattern = intValue<size_t>(u"offset-pattern", 0);
+    getIntValue(_offsetPattern, u"offset-pattern", 0);
     _clearPCR = present(u"no-pcr");
-    _newPCR = intValue<uint64_t>(u"pcr", INVALID_PCR);
+    getIntValue(_newPCR, u"pcr", INVALID_PCR);
     _clearOPCR = present(u"no-opcr");
-    _newOPCR = intValue<uint64_t>(u"opcr", INVALID_PCR);
+    getIntValue(_newOPCR, u"opcr", INVALID_PCR);
     _setPID = present(u"pid");
-    _newPID = intValue<PID>(u"pid");
+    getIntValue(_newPID, u"pid");
     _setPUSI = present(u"pusi");
     _clearPUSI = present(u"clear-pusi");
     _setRandomAccess = present(u"random-access");
     _clearRandomAccess = present(u"clear-random-access");
     _packPESHeader = present(u"pack-pes-header");
     _setScrambling = present(u"scrambling");
-    _newScrambling = intValue<uint8_t>(u"scrambling");
+    getIntValue(_newScrambling, u"scrambling");
     _setCC = present(u"continuity-counter");
-    _newCC = intValue<uint8_t>(u"continuity-counter");
+    getIntValue(_newCC, u"continuity-counter");
     _setSpliceCountdown = present(u"splice-countdown");
     _clearSpliceCountdown = present(u"no-splice-countdown");
-    _newSpliceCountdown = intValue<uint8_t>(u"splice-countdown");
+    getIntValue(_newSpliceCountdown, u"splice-countdown");
     _clearPrivateData = present(u"no-private-data");
 
     if (_payloadSize > 0 && _noPayload) {
@@ -641,13 +679,13 @@ bool ts::CraftPlugin::getOptions()
         return false;
     }
 
-    if (!value(u"payload-pattern").hexaDecode(_payloadPattern)) {
-        tsp->error(u"invalid hexadecimal payload pattern");
-        return false;
-    }
-
-    if (!value(u"private-data").hexaDecode(_privateData)) {
-        tsp->error(u"invalid hexadecimal private data");
+    if (!value(u"payload-pattern").hexaDecode(_payloadPattern) ||
+        !value(u"payload-and").hexaDecode(_payloadAnd) ||
+        !value(u"payload-or").hexaDecode(_payloadOr) ||
+        !value(u"payload-xor").hexaDecode(_payloadXor) ||
+        !value(u"private-data").hexaDecode(_privateData))
+    {
+        tsp->error(u"invalid hexadecimal data");
         return false;
     }
 
@@ -760,13 +798,11 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
     }
 
     // Fill payload with pattern.
-    if (mayUpdatePayload && !_payloadPattern.empty()) {
-        uint8_t* data = pkt.getPayload() + payloadBase + _offsetPattern;
-        while (data < pkt.b + PKT_SIZE) {
-            const size_t size = std::min<size_t>(_payloadPattern.size(), pkt.b + PKT_SIZE - data);
-            ::memcpy(data, _payloadPattern.data(), size);
-            data += size;
-        }
+    if (mayUpdatePayload) {
+        updatePayload(pkt, payloadBase, _payloadPattern, Assign<uint8_t>{});
+        updatePayload(pkt, payloadBase, _payloadAnd, AssignAnd<uint8_t>{});
+        updatePayload(pkt, payloadBase, _payloadOr, AssignOr<uint8_t>{});
+        updatePayload(pkt, payloadBase, _payloadXor, AssignXor<uint8_t>{});
     }
 
     // If the payload was explicitly resized to zero, set or reset payload presence.
@@ -782,6 +818,32 @@ ts::ProcessorPlugin::Status ts::CraftPlugin::processPacket(TSPacket& pkt, TSPack
     }
 
     return TSP_OK;
+}
+
+
+//----------------------------------------------------------------------------
+// Perform payload operations such as --payload-pattern, --payload-and, etc.
+//----------------------------------------------------------------------------
+
+template <typename Op>
+void ts::CraftPlugin::updatePayload(TSPacket& pkt, size_t payloadBase, const ByteBlock& pattern, Op assign)
+{
+    if (!pattern.empty()) {
+        const uint8_t* pat = pattern.data();
+        const uint8_t* const endpat = pattern.data() + pattern.size();
+        uint8_t* data = pkt.getPayload() + payloadBase + _offsetPattern;
+        while (data < pkt.b + PKT_SIZE) {
+            assign(*data++, *pat++);
+            if (pat >= endpat) {
+                if (_noRepeat) {
+                    break;
+                }
+                else {
+                    pat = pattern.data();
+                }
+            }
+        }
+    }
 }
 
 
