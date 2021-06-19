@@ -81,7 +81,7 @@ fi
 addpath() {
     local varname=$1
     local bindir="$2"
-    export $varname=$(sed <<<":${!varname}:" -e "s|:$bindir:|:|g" -e "s|::*|:|g" -e "s|\([^:]\)$|\1:|" -e "s|^:*|$bindir:|")
+    export $varname=$(sed <<<":${!varname}:" -e "s|:$bindir:|:|g" -e 's|::*|:|g' -e 's|\([^:]\)$|\1:|' -e "s|^:*|$bindir:|")
 }
 
 # Display or set path.
