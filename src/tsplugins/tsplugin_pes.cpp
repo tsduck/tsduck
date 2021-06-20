@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsFileNameGenerator.h"
 #include "tsPESDemux.h"
 #include "tsAVCAccessUnitDelimiter.h"
 #include "tsAVCSequenceParameterSet.h"
@@ -78,6 +79,7 @@ namespace ts {
         bool      _audio_attributes;
         bool      _intra_images;
         bool      _negate_nal_unit_filter;
+        bool      _multiple_files;
         uint32_t  _hexa_flags;
         size_t    _hexa_bpl;
         size_t    _max_dump_size;
@@ -94,14 +96,16 @@ namespace ts {
         std::list<ByteBlock> _sei_uuid_filter;
 
         // Working data.
-        bool          _abort;
-        std::ofstream _out_file;
-        std::ostream* _out;
-        std::ofstream _pes_file;
-        std::ostream* _pes_stream;
-        std::ofstream _es_file;
-        std::ostream* _es_stream;
-        PESDemux      _demux;
+        bool              _abort;
+        std::ofstream     _out_file;
+        std::ostream*     _out;
+        std::ofstream     _pes_file;
+        std::ostream*     _pes_stream;
+        std::ofstream     _es_file;
+        std::ostream*     _es_stream;
+        PESDemux          _demux;
+        FileNameGenerator _pes_name_gen;
+        FileNameGenerator _es_name_gen;
 
         // Open output file.
         bool openOutput(const UString&, std::ofstream*, std::ostream**, bool binary);
@@ -114,6 +118,9 @@ namespace ts {
 
         // Process dump count. Return true when terminated. Also process error on output.
         bool lastDump(std::ostream&);
+
+        // Save one file using --multiple-file. Set _abort on error.
+        void saveOnePES(FileNameGenerator& namegen, const uint8_t* data, size_t size);
 
         // Implementation of PESHandlerInterface.
         virtual void handlePESPacket(PESDemux&, const PESPacket&) override;
@@ -149,6 +156,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _audio_attributes(false),
     _intra_images(false),
     _negate_nal_unit_filter(false),
+    _multiple_files(false),
     _hexa_flags(0),
     _hexa_bpl(0),
     _max_dump_size(0),
@@ -170,7 +178,9 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     _pes_stream(nullptr),
     _es_file(),
     _es_stream(nullptr),
-    _demux(duck, this)
+    _demux(duck, this),
+    _pes_name_gen(),
+    _es_name_gen()
 {
     option(u"audio-attributes", 'a');
     help(u"audio-attributes", u"Display audio attributes.");
@@ -225,6 +235,16 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     help(u"min-payload-size",
          u"Display PES packets with a payload the size (in bytes) of which is equal "
          u"to or greater than the specified value.");
+
+    option(u"multiple-files");
+    help(u"multiple-files",
+         u"With options --save-pes and --save-es, save each PES packet in a distinct file. "
+         u"The specified file name in --save-pes or --save-es is considered as a template and a unique "
+         u"number is automatically added to the name part so that successive files receive distinct names. "
+         u"Example: if the specified file name is base.pes, the various files are named base-000000.pes, base-000001.pes, etc. "
+         u"If the specified template already contains trailing digits, this unmodified name is used for the first file. "
+         u"Then, the integer part is incremented. "
+         u"Example: if the specified file name is base-027.pes, the various files are named base-027.pes, base-028.pes, etc.");
 
     option(u"nal-unit-type", 0, UINT8, 0, UNLIMITED_COUNT);
     help(u"nal-unit-type",
@@ -320,6 +340,7 @@ bool ts::PESPlugin::getOptions()
     _video_attributes = present(u"video-attributes");
     _audio_attributes = present(u"audio-attributes");
     _intra_images = present(u"intra-image");
+    _multiple_files = present(u"multiple-files");
     getIntValue(_max_dump_size, u"max-dump-size", 0);
     getIntValue(_max_dump_count, u"max-dump-count", 0);
     getIntValue(_min_payload, u"min-payload-size", -1);
@@ -388,10 +409,15 @@ bool ts::PESPlugin::start()
     _demux.setDefaultCodec(_default_h26x);
 
     // Create output files.
-    const bool ok =
-        openOutput(_out_filename, &_out_file, &_out, false) &&
-        openOutput(_pes_filename, &_pes_file, &_pes_stream, true) &&
-        openOutput(_es_filename, &_es_file, &_es_stream, true);
+    bool ok = openOutput(_out_filename, &_out_file, &_out, false);
+    if (_multiple_files) {
+        _pes_name_gen.initCounter(_pes_filename);
+        _es_name_gen.initCounter(_es_filename);
+    }
+    else {
+        ok = ok && openOutput(_pes_filename, &_pes_file, &_pes_stream, true) && openOutput(_es_filename, &_es_file, &_es_stream, true);
+    }
+
     if (!ok) {
         // Close files which were open before failure
         stop();
@@ -430,6 +456,26 @@ bool ts::PESPlugin::openOutput(const UString& filename, std::ofstream* file, std
         *stream = file;
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Save one file using --multiple-file. Set _abort on error.
+//----------------------------------------------------------------------------
+
+void ts::PESPlugin::saveOnePES(FileNameGenerator& namegen, const uint8_t* data, size_t size)
+{
+    const UString filename(namegen.newFileName());
+    tsp->debug(u"creating %s", {filename});
+    std::ofstream file(filename.toUTF8().c_str(), std::ios::out | std::ios::binary);
+    if (!file) {
+        error(u"cannot create %s", {filename});
+        _abort = false;
+    }
+    else {
+        file.write(reinterpret_cast<const char*>(data), size);
+        file.close();
+    }
 }
 
 
@@ -560,18 +606,28 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
     }
 
     // Save binary PES packet and payload.
-    if (_pes_stream != nullptr) {
-        _pes_stream->write(reinterpret_cast<const char*>(pkt.content()), pkt.size());
-        if (!(*_pes_stream)) {
-            tsp->error(u"error writing PES packet to %s", {_pes_filename == u"-" ? u"standard output" : _pes_filename});
-            _abort = true;
+    if (_multiple_files) {
+        if (!_pes_filename.empty()) {
+            saveOnePES(_pes_name_gen, pkt.content(), pkt.size());
+        }
+        if (!_es_filename.empty()) {
+            saveOnePES(_es_name_gen, pkt.payload(), pkt.payloadSize());
         }
     }
-    if (_es_stream != nullptr) {
-        _es_stream->write(reinterpret_cast<const char*>(pkt.payload()), pkt.payloadSize());
-        if (!(*_es_stream)) {
-            tsp->error(u"error writing ES data to %s", {_es_filename == u"-" ? u"standard output" : _es_filename});
-            _abort = true;
+    else {
+        if (_pes_stream != nullptr) {
+            _pes_stream->write(reinterpret_cast<const char*>(pkt.content()), pkt.size());
+            if (!(*_pes_stream)) {
+                tsp->error(u"error writing PES packet to %s", {_pes_filename == u"-" ? u"standard output" : _pes_filename});
+                _abort = true;
+            }
+        }
+        if (_es_stream != nullptr) {
+            _es_stream->write(reinterpret_cast<const char*>(pkt.payload()), pkt.payloadSize());
+            if (!(*_es_stream)) {
+                tsp->error(u"error writing ES data to %s", {_es_filename == u"-" ? u"standard output" : _es_filename});
+                _abort = true;
+            }
         }
     }
 }
