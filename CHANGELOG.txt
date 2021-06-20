@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2428
+VERSION 3.27-2429
 
 [NEW] New commands and plugins:
 
@@ -31,6 +31,7 @@ VERSION 3.27-2428
     - Option --system-synchronous in plugin "timeref".
     - Options --no-repeat, --payload-and, --payload-or, --payload-xor in packet
       processing plugin "craft".
+    - Option --multiple-files in plugin "pes".
 
 [BUG] Bug fixes:
 
