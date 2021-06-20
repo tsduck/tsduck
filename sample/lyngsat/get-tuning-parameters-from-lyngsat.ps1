@@ -91,7 +91,7 @@ function ElementText($elem)
         return ""
     }
     else {
-        return $elem.innerText -replace '&nbsp;',' ' -replace '\s+',' ' -replace '^ *','' -replace ' *$',''
+        return $elem.innerText -ireplace '&nbsp;',' ' -ireplace '<br>',' ' -ireplace '<br/>',' ' -replace '\s+',' ' -replace '^\s+','' -replace '\s+$',''
     }
 }
 
@@ -115,7 +115,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
     foreach ($row in $page.ParsedHtml.getElementsByTagName("tr")) {
 
         # Get second column in the row
-        $col = GetNextChild (GetFirstChild $row "td") "td"
+        $col = GetFirstChild $row "td"
         $desc = ElementText $col
 
         # Get if the text matches "frequence polarity"
@@ -143,6 +143,10 @@ function ParseLyngSat([string] $url, [string] $outFile)
                     $fields = $text -split '[\s-]'
                     $symbols = $fields[0]
                     $fec = $fields[1]
+                }
+                if ($text -match '.* \d+ \d+/\d+.*') {
+                    $symbols = $text -replace '^.* (\d+) \d+/\d+.*$','$1'
+                    $fec = $text -replace '^.* \d+ (\d+/\d+).*$','$1'
                 }
             }
 
