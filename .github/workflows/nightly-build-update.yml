@@ -29,13 +29,31 @@
 #
 #  GitHub Actions configuration file : Nightly builds update
 #
-#  The "nightly build" workflow runs every night at 01:10 GMT. It builds
-#  installers and documentations and uploads them as artifacts. These
-#  artifacts are made available only when the "nightly build" workflow
-#  completes. The present workflow runs three hours after "nightly build".
-#  We expect the artifacts to be available at that time. This workflow
-#  triggers an action at tsduck.io which downloads the new installers and
-#  documentation and make them available on the Web site.
+#  The "nightly build" workflow runs every night. It builds installers and
+#  documentations and uploads them as artifacts. These artifacts are made
+#  available only when the "nightly build" workflow completes.
+#
+#  The present workflow runs after "nightly build". We expect the artifacts
+#  to be available at that time. This workflow triggers an action at
+#  tsduck.io which downloads the new installers and documentation and make
+#  them available on the Web site.
+#
+#  The challenge is to make sure that the artifacts are actually publicly
+#  available. This is not as simple as it seems. The artifacts of the
+#  "nightly build" workflow are uploaded in the GitHub Actions pipeline at
+#  the end of the workflow but they are asynchronously published on the
+#  public front. This workflow is synchronized to run after the completion
+#  of the "nightly build" workflow ("on workflow_run" trigger). But the
+#  experience demonstrates that it does not always work, probably because
+#  the artifacts are still in the pipeline. To survive in all situations,
+#  we use dirty hacks:
+#
+#  - A 5 minutes wait is executed before attempting to access the artifacts.
+#    We hope that the artifacts have been made public in the meantime.
+#  - An additional run is scheduled at 11:15 UTC. It won't do anything if
+#    the artifacts were successfully loaded before. Note that workflows are
+#    sometimes run after a delay of several hours. So, there is no guarantee
+#    either that is will work.
 #
 #-----------------------------------------------------------------------------
 
@@ -48,11 +66,10 @@ on:
       - Nightly build
     types:
       - completed
-  # Trigger the workflow every day at 10:15 GMT.
-  # As a fallback method when the artifacts were not fully ready.
-  # --> commented out for now
-  #### schedule:
-  ####   - cron:  '15 10 * * *'
+  # Trigger the workflow every day at 11:15 UTC.
+  # As a fallback method when the artifacts were not fully ready (it happens).
+  schedule:
+    - cron:  '15 11 * * *'
   # Allow manual trigger.
   workflow_dispatch:
 
@@ -65,5 +82,6 @@ jobs:
       run: sudo apt install -y curl jq
     - name: Trigger download
       run: |
+        sleep 300 # wait 5 minutes, hoping that the artifacts are published
         curl -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/download/prerelease/get-nightly-builds -o update.log
         jq . update.log || cat update.log
