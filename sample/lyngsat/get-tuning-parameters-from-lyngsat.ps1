@@ -116,7 +116,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
 
         # Get second column in the row
         $col = GetFirstChild $row "td"
-        $desc = ElementText $col
+        $desc = ElementText $col -replace '(\d+)\s*\.\s*(\d+)','$1.$2'
 
         # Get if the text matches "frequence polarity"
         if ($desc -match '\d+ [HV] .*') {
@@ -128,6 +128,9 @@ function ParseLyngSat([string] $url, [string] $outFile)
             $modulation = "QPSK"
             $symbols = $null
             $fec = $null
+
+            # Frequences are in MHz, handle decimals.
+            $freq = [string]([double]$freq * 1000000)
 
             # Search other parameters in subsequent columns
             for ($e = (GetNextChild $col "td"); ($e -ne $null) -and (-not $symbols -or -not $fec); $e = (GetNextChild $e "td")) {
@@ -152,7 +155,7 @@ function ParseLyngSat([string] $url, [string] $outFile)
 
             # Check if we found all parameters.
             if ($symbols -and $fec) {
-                $line = "--frequency ${freq}000000 --polarity $polarity --symbol-rate ${symbols}000 --fec $fec --delivery $system --modulation $modulation"
+                $line = "--frequency ${freq} --polarity $polarity --symbol-rate ${symbols}000 --fec $fec --delivery $system --modulation $modulation"
                 $output += $line
                 Write-Output "${desc}: $line"
             }
@@ -172,7 +175,8 @@ function ParseLyngSat([string] $url, [string] $outFile)
 # Get the description of a few satellites.
 ParseLyngSat "https://www.lyngsat.com/Astra-1KR-1L-1M-1N.html" "LyngSat-Astra-19.2E.txt"
 ParseLyngSat "https://www.lyngsat.com/Hotbird-13B-13C-13E.html" "LyngSat-HotBird-13E.txt"
-ParseLyngSat "https://www.lyngsat.com/Eutelsat-5-West-A.html" "LyngSat-AtlanticBird-5W.txt"
+ParseLyngSat "https://www.lyngsat.com/Eutelsat-5-West-A.html" "LyngSat-AtlanticBird-5W-A.txt"
+ParseLyngSat "https://www.lyngsat.com/Eutelsat-5-West-B.html" "LyngSat-AtlanticBird-5W-B.txt"
 
 # Exit script.
 if (-not $NoPause) {
