@@ -421,11 +421,19 @@ ts::BitRate ts::ModulationArgs::theoreticalBitrate() const
             const uint32_t symrate = symbol_rate.value(DEFAULT_SYMBOL_RATE_DVBS);
             // Let the Dektec API compute the TS rate if we have a Dektec library.
             #if !defined(TS_NO_DTAPI)
-                int mod = 0, param0 = 0, param1 = 0, param2 = 0;
-                Dtapi::DtFractionInt brate;
-                if (convertToDektecModulation(mod, param0, param1, param2) && Dtapi::DtapiModPars2TsRate(brate, mod, param0, param1, param2, int(symrate)) == DTAPI_OK) {
-                    // Successfully found Dektec modulation parameters and computed TS bitrate.
-                    FromDektecFractionInt(bitrate, brate);
+                int mod = 0, param0 = 0, param1 = 0, param2 = 0, irate = 0;
+                Dtapi::DtFractionInt frate;
+                if (convertToDektecModulation(mod, param0, param1, param2)) {
+                    // Successfully found Dektec modulation parameters. Compute the bitrate in fractional form first.
+                    // It has been observed that the values from the DtFractionInt are sometimes negative.
+                    // This is a DTAPI bug, probably due to some internal integer overflow.
+                    if (Dtapi::DtapiModPars2TsRate(frate, mod, param0, param1, param2, int(symrate)) == DTAPI_OK && frate.m_Num > 0 && frate.m_Den > 0) {
+                        FromDektecFractionInt(bitrate, frate);
+                    }
+                    else if (Dtapi::DtapiModPars2TsRate(irate, mod, param0, param1, param2, int(symrate)) == DTAPI_OK && irate > 0) {
+                        // The fractional version failed or returned a negative value. Used the int version.
+                        bitrate = irate;
+                    }
                 }
             #endif
             // Otherwise, don't know how to compute DVB-S2 bitrate...
