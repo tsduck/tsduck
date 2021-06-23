@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPCSC.h"
+#include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsMemory.h"
 TSDUCK_SOURCE;
@@ -271,141 +272,143 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
 // Return an error message for a PC/SC error.
 //----------------------------------------------------------------------------
 
-const char* ts::pcsc::StrError(::LONG status)
+ts::UString ts::pcsc::StrError(::LONG status)
 {
     switch (status) {
         case SCARD_S_SUCCESS:
-            return "Success";
+            return u"Success";
         case SCARD_F_INTERNAL_ERROR:
-            return "INTERNAL_ERROR, An internal consistency check failed";
+            return u"INTERNAL_ERROR, An internal consistency check failed";
         case SCARD_E_CANCELLED:
-            return "CANCELLED, The action was cancelled by an SCardCancel request";
+            return u"CANCELLED, The action was cancelled by an SCardCancel request";
         case SCARD_E_INVALID_HANDLE:
-            return "INVALID_HANDLE, The supplied handle was invalid";
+            return u"INVALID_HANDLE, The supplied handle was invalid";
         case SCARD_E_INVALID_PARAMETER:
-            return "INVALID_PARAMETER, One or more of the supplied parameters could not be properly interpreted";
+            return u"INVALID_PARAMETER, One or more of the supplied parameters could not be properly interpreted";
         case SCARD_E_INVALID_TARGET:
-            return "INVALID_TARGET, Registry startup information is missing or invalid";
+            return u"INVALID_TARGET, Registry startup information is missing or invalid";
         case SCARD_E_NO_MEMORY:
-            return "NO_MEMORY, Not enough memory available to complete this command";
+            return u"NO_MEMORY, Not enough memory available to complete this command";
         case SCARD_F_WAITED_TOO_LONG:
-            return "WAITED_TOO_LONG, An internal consistency timer has expired";
+            return u"WAITED_TOO_LONG, An internal consistency timer has expired";
         case SCARD_E_INSUFFICIENT_BUFFER:
-            return "INSUFFICIENT_BUFFER, The data buffer to receive returned data is too small for the returned data";
+            return u"INSUFFICIENT_BUFFER, The data buffer to receive returned data is too small for the returned data";
         case SCARD_E_UNKNOWN_READER:
-            return "UNKNOWN_READER, The specified reader name is not recognized";
+            return u"UNKNOWN_READER, The specified reader name is not recognized";
         case SCARD_E_TIMEOUT:
-            return "TIMEOUT, The user-specified timeout value has expired";
+            return u"TIMEOUT, The user-specified timeout value has expired";
         case SCARD_E_SHARING_VIOLATION:
-            return "SHARING_VIOLATION, The smart card cannot be accessed because of other connections outstanding";
+            return u"SHARING_VIOLATION, The smart card cannot be accessed because of other connections outstanding";
         case SCARD_E_NO_SMARTCARD:
-            return "NO_SMARTCARD, The operation requires a Smart Card, but no Smart Card is currently in the device";
+            return u"NO_SMARTCARD, The operation requires a Smart Card, but no Smart Card is currently in the device";
         case SCARD_E_UNKNOWN_CARD:
-            return "UNKNOWN_CARD, The specified smart card name is not recognized";
+            return u"UNKNOWN_CARD, The specified smart card name is not recognized";
         case SCARD_E_CANT_DISPOSE:
-            return "CANT_DISPOSE, The system could not dispose of the media in the requested manner";
+            return u"CANT_DISPOSE, The system could not dispose of the media in the requested manner";
         case SCARD_E_PROTO_MISMATCH:
-            return "PROTO_MISMATCH, The requested protocols are incompatible with the protocol currently in use with the smart card";
+            return u"PROTO_MISMATCH, The requested protocols are incompatible with the protocol currently in use with the smart card";
         case SCARD_E_NOT_READY:
-            return "NOT_READY, The reader or smart card is not ready to accept commands";
+            return u"NOT_READY, The reader or smart card is not ready to accept commands";
         case SCARD_E_INVALID_VALUE:
-            return "INVALID_VALUE, One or more of the supplied parameters values could not be properly interpreted";
+            return u"INVALID_VALUE, One or more of the supplied parameters values could not be properly interpreted";
         case SCARD_E_SYSTEM_CANCELLED:
-            return "SYSTEM_CANCELLED, The action was cancelled by the system, presumably to log off or shut down";
+            return u"SYSTEM_CANCELLED, The action was cancelled by the system, presumably to log off or shut down";
         case SCARD_F_COMM_ERROR:
-            return "COMM_ERROR, An internal communications error has been detected";
+            return u"COMM_ERROR, An internal communications error has been detected";
         case SCARD_F_UNKNOWN_ERROR:
-            return "UNKNOWN_ERROR, An internal error has been detected, but the source is unknown";
+            return u"UNKNOWN_ERROR, An internal error has been detected, but the source is unknown";
         case SCARD_E_INVALID_ATR:
-            return "INVALID_ATR, An ATR obtained from the registry is not a valid ATR string";
+            return u"INVALID_ATR, An ATR obtained from the registry is not a valid ATR string";
         case SCARD_E_NOT_TRANSACTED:
-            return "NOT_TRANSACTED, An attempt was made to end a non-existent transaction";
+            return u"NOT_TRANSACTED, An attempt was made to end a non-existent transaction";
         case SCARD_E_READER_UNAVAILABLE:
-            return "READER_UNAVAILABLE, The specified reader is not currently available for use";
+            return u"READER_UNAVAILABLE, The specified reader is not currently available for use";
         case SCARD_E_PCI_TOO_SMALL:
-            return "PCI_TOO_SMALL, The PCI Receive buffer was too small";
+            return u"PCI_TOO_SMALL, The PCI Receive buffer was too small";
         case SCARD_E_READER_UNSUPPORTED:
-            return "READER_UNSUPPORTED, The reader driver does not meet minimal requirements for support";
+            return u"READER_UNSUPPORTED, The reader driver does not meet minimal requirements for support";
         case SCARD_E_DUPLICATE_READER:
-            return "DUPLICATE_READER, The reader driver did not produce a unique reader name";
+            return u"DUPLICATE_READER, The reader driver did not produce a unique reader name";
         case SCARD_E_CARD_UNSUPPORTED:
-            return "CARD_UNSUPPORTED, The smart card does not meet minimal requirements for support";
+            return u"CARD_UNSUPPORTED, The smart card does not meet minimal requirements for support";
         case SCARD_E_NO_SERVICE:
-            return "NO_SERVICE, The Smart card resource manager is not running";
+            return u"NO_SERVICE, The Smart card resource manager is not running";
         case SCARD_E_SERVICE_STOPPED:
-            return "SERVICE_STOPPED, The Smart card resource manager has shut down";
+            return u"SERVICE_STOPPED, The Smart card resource manager has shut down";
 #if defined(SCARD_E_NO_READERS_AVAILABLE)
         case SCARD_E_NO_READERS_AVAILABLE:
-            return "NO_READERS_AVAILABLE, Cannot find a smart card reader";
+            return u"NO_READERS_AVAILABLE, Cannot find a smart card reader";
 #endif
         case SCARD_E_UNSUPPORTED_FEATURE:
-            return "UNSUPPORTED_FEATURE, This smart card does not support the requested feature";
+            return u"UNSUPPORTED_FEATURE, This smart card does not support the requested feature";
         case SCARD_W_UNSUPPORTED_CARD:
-            return "UNSUPPORTED_CARD, The reader cannot communicate with the smart card, due to ATR configuration conflicts";
+            return u"UNSUPPORTED_CARD, The reader cannot communicate with the smart card, due to ATR configuration conflicts";
         case SCARD_W_UNRESPONSIVE_CARD:
-            return "UNRESPONSIVE_CARD, The smart card is not responding to a reset";
+            return u"UNRESPONSIVE_CARD, The smart card is not responding to a reset";
         case SCARD_W_UNPOWERED_CARD:
-            return "UNPOWERED_CARD, Power has been removed from the smart card, so that further communication is not possible";
+            return u"UNPOWERED_CARD, Power has been removed from the smart card, so that further communication is not possible";
         case SCARD_W_RESET_CARD:
-            return "RESET_CARD, The smart card has been reset, so any shared state information is invalid";
+            return u"RESET_CARD, The smart card has been reset, so any shared state information is invalid";
         case SCARD_W_REMOVED_CARD:
-            return "REMOVED_CARD, The smart card has been removed, so that further communication is not possible";
+            return u"REMOVED_CARD, The smart card has been removed, so that further communication is not possible";
 #if defined(TS_WINDOWS)
         case SCARD_P_SHUTDOWN:
-            return "SHUTDOWN, The operation has been aborted to allow the server application to exit";
+            return u"SHUTDOWN, The operation has been aborted to allow the server application to exit";
         case SCARD_E_UNEXPECTED:
-            return "UNEXPECTED, An unexpected card error has occurred";
+            return u"UNEXPECTED, An unexpected card error has occurred";
         case SCARD_E_ICC_INSTALLATION:
-            return "ICC_INSTALLATION, No Primary Provider can be found for the smart card";
+            return u"ICC_INSTALLATION, No Primary Provider can be found for the smart card";
         case SCARD_E_ICC_CREATEORDER:
-            return "ICC_CREATEORDER, The requested order of object creation is not supported";
+            return u"ICC_CREATEORDER, The requested order of object creation is not supported";
         case SCARD_E_DIR_NOT_FOUND:
-            return "DIR_NOT_FOUND, The identified directory does not exist in the smart card";
+            return u"DIR_NOT_FOUND, The identified directory does not exist in the smart card";
         case SCARD_E_FILE_NOT_FOUND:
-            return "FILE_NOT_FOUND, The identified file does not exist in the smart card";
+            return u"FILE_NOT_FOUND, The identified file does not exist in the smart card";
         case SCARD_E_NO_DIR:
-            return "NO_DIR, The supplied path does not represent a smart card directory";
+            return u"NO_DIR, The supplied path does not represent a smart card directory";
         case SCARD_E_NO_FILE:
-            return "NO_FILE, The supplied path does not represent a smart card file";
+            return u"NO_FILE, The supplied path does not represent a smart card file";
         case SCARD_E_NO_ACCESS:
-            return "NO_ACCESS, Access is denied to this file";
+            return u"NO_ACCESS, Access is denied to this file";
         case SCARD_E_WRITE_TOO_MANY:
-            return "WRITE_TOO_MANY, The smartcard does not have enough memory to store the information";
+            return u"WRITE_TOO_MANY, The smartcard does not have enough memory to store the information";
         case SCARD_E_BAD_SEEK:
-            return "BAD_SEEK, There was an error trying to set the smart card file object pointer";
+            return u"BAD_SEEK, There was an error trying to set the smart card file object pointer";
         case SCARD_E_INVALID_CHV:
-            return "INVALID_CHV, The supplied PIN is incorrect";
+            return u"INVALID_CHV, The supplied PIN is incorrect";
         case SCARD_E_UNKNOWN_RES_MNG:
-            return "UNKNOWN_RES_MNG, An unrecognized error code was returned from a layered component";
+            return u"UNKNOWN_RES_MNG, An unrecognized error code was returned from a layered component";
         case SCARD_E_NO_SUCH_CERTIFICATE:
-            return "NO_SUCH_CERTIFICATE, The requested certificate does not exist";
+            return u"NO_SUCH_CERTIFICATE, The requested certificate does not exist";
         case SCARD_E_CERTIFICATE_UNAVAILABLE:
-            return "CERTIFICATE_UNAVAILABLE, The requested certificate could not be obtained";
+            return u"CERTIFICATE_UNAVAILABLE, The requested certificate could not be obtained";
         case SCARD_E_COMM_DATA_LOST:
-            return "COMM_DATA_LOST, A communications error with the smart card has been detected.  Retry the operation";
+            return u"COMM_DATA_LOST, A communications error with the smart card has been detected.  Retry the operation";
         case SCARD_E_NO_KEY_CONTAINER:
-            return "NO_KEY_CONTAINER, The requested key container does not exist on the smart card";
+            return u"NO_KEY_CONTAINER, The requested key container does not exist on the smart card";
         case SCARD_E_SERVER_TOO_BUSY:
-            return "SERVER_TOO_BUSY, The Smart card resource manager is too busy to complete this operation";
+            return u"SERVER_TOO_BUSY, The Smart card resource manager is too busy to complete this operation";
         case SCARD_W_SECURITY_VIOLATION:
-            return "SECURITY_VIOLATION, Access was denied because of a security violation";
+            return u"SECURITY_VIOLATION, Access was denied because of a security violation";
         case SCARD_W_WRONG_CHV:
-            return "WRONG_CHV, The card cannot be accessed because the wrong PIN was presented";
+            return u"WRONG_CHV, The card cannot be accessed because the wrong PIN was presented";
         case SCARD_W_CHV_BLOCKED:
-            return "CHV_BLOCKED, The card cannot be accessed because the maximum number of PIN entry attempts has been reached";
+            return u"CHV_BLOCKED, The card cannot be accessed because the maximum number of PIN entry attempts has been reached";
         case SCARD_W_EOF:
-            return "EOF, The end of the smart card file has been reached";
+            return u"EOF, The end of the smart card file has been reached";
         case SCARD_W_CANCELLED_BY_USER:
-            return "CANCELLED_BY_USER, The action was cancelled by the user";
+            return u"CANCELLED_BY_USER, The action was cancelled by the user";
         case SCARD_W_CARD_NOT_AUTHENTICATED:
-            return "CARD_NOT_AUTHENTICATED, No PIN was presented to the smart card";
+            return u"CARD_NOT_AUTHENTICATED, No PIN was presented to the smart card";
 #endif
         default:
 #if defined(TS_LINUX) || defined(TS_MAC)
             // pcsc_stringify_error is specific to pcsc-lite.
-            return pcsc_stringify_error(status);
+            return UString(pcsc_stringify_error(status));
+#elif defined(TS_WINDOWS)
+            return SysErrorCodeMessage(status);
 #else
-            return "Unknown PC/SC error code";
+            return UString::Format(u"unknown PC/SC error code 0x%X (%<d)", {status});
 #endif
     }
 }

@@ -58,7 +58,7 @@ namespace ts {
         //! @param [in] status A PC/SC error code.
         //! @return An error message for @a status.
         //!
-        TSDUCKDLL const char* StrError(::LONG status);
+        TSDUCKDLL UString StrError(::LONG status);
 
         //!
         //! Check a PC/SC status.
