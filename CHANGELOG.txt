@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.27-2429
+VERSION 3.27-2434
 
 [NEW] New commands and plugins:
 
@@ -32,6 +32,7 @@ VERSION 3.27-2429
     - Options --no-repeat, --payload-and, --payload-or, --payload-xor in packet
       processing plugin "craft".
     - Option --multiple-files in plugin "pes".
+    - Options --apdu and --continue-on-error in "tssmartcard".
 
 [BUG] Bug fixes:
 

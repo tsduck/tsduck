@@ -51,23 +51,39 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::UString reader;        // Optional reader name
-        uint32_t    timeout_ms;    // Timeout in milliseconds
-        uint32_t    reset_action;  // Type of reset to apply
+        bool        continue_on_error;    // Continue sending APDU's after an error.
+        ts::UString reader;               // Optional reader name
+        uint32_t    timeout_ms;           // Timeout in milliseconds
+        uint32_t    reset_action;         // Type of reset to apply
+        std::vector<ts::ByteBlock> apdu;  // List of APDU to send
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     Args(u"List or control smartcards", u"[options] [reader-name]"),
+    continue_on_error(false),
     reader(),
     timeout_ms(0),
-    reset_action(0)
+    reset_action(0),
+    apdu()
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",
          u"The optional reader-name parameter indicates the smartcard reader device "
          u"name to list or reset. Without any option or parameter, the command lists "
          u"all smartcard reader devices in the system.");
+
+    option(u"apdu", 'a', STRING, 0, UNLIMITED_COUNT);
+    help(u"apdu", u"hex-data",
+         u"Send an APDU to the smartcard. "
+         u"The APDU shall be specified using an even number of hexadecimal digits. "
+         u"In verbose mode, the APDU, the status word and the response are displayed. "
+         u"Several --apdu options can be specified. All APDU's are sent in sequence.");
+
+    option(u"continue-on-error");
+    help(u"continue-on-error",
+         u"With --apdu, continue sending next APDU's after a PC/SC error. "
+         u"By default, stop when an APDU triggered an error.");
 
     option(u"cold-reset", 'c');
     help(u"cold-reset", u"Perfom a cold reset on the smartcard.");
@@ -83,8 +99,9 @@ Options::Options(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    reader = value(u"");
-    timeout_ms = intValue<uint32_t>(u"timeout", 1000);
+    getValue(reader, u"");
+    getIntValue(timeout_ms, u"timeout", 1000);
+    continue_on_error = present(u"continue-on-error");
 
     if (present(u"eject")) {
         reset_action = SCARD_EJECT_CARD;
@@ -97,6 +114,15 @@ Options::Options(int argc, char *argv[]) :
     }
     else {
         reset_action = SCARD_LEAVE_CARD;
+    }
+
+    // Decode all user-specified APDU.
+    apdu.resize(count(u"apdu"));
+    for (size_t i = 0; i < apdu.size(); ++i) {
+        const ts::UString arg(value(u"apdu", u"", i));
+        if (!arg.hexaDecode(apdu[i])) {
+            error(u"invalid hexadecimal value '%s' as APDU", {arg});
+        }
     }
 
     exitOnError();
@@ -187,6 +213,56 @@ namespace {
 
 
 //----------------------------------------------------------------------------
+//  Send a list of APDU.
+//----------------------------------------------------------------------------
+
+namespace {
+    bool SendAPDU(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
+    {
+        // Connect to the card.
+        ::SCARDHANDLE handle;
+        ::DWORD protocol;
+        ::LONG sc_status = ::SCardConnect(pcsc_context,
+                                          reader.toUTF8().c_str(),
+                                          SCARD_SHARE_SHARED,
+                                          SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1 | SCARD_PROTOCOL_RAW,
+                                          &handle,
+                                          &protocol);
+        if (!Check(sc_status, opt, reader)) {
+            return false;
+        }
+
+        // Send all APDU, one by one.
+        std::array<uint8_t, 1024> response;
+        size_t resp_len = 0;
+        uint16_t sw = 0;
+        bool success = true;
+
+        for (size_t i = 0; i < opt.apdu.size(); ++i) {
+            if (opt.verbose()) {
+                std::cout << std::endl << "Sending APU: " << ts::UString::Dump(opt.apdu[i], ts::UString::SINGLE_LINE) << std::endl;
+            }
+            sc_status = ts::pcsc::Transmit(handle, protocol, opt.apdu[i].data(), opt.apdu[i].size(), response.data(), response.size(), sw, resp_len);
+            if (!Check(sc_status, opt, reader)) {
+                success = false;
+                if (!opt.continue_on_error) {
+                    break;
+                }
+            }
+            if (opt.verbose()) {
+                std::cout << ts::UString::Format(u"SW: %04X, response (%d bytes): %s", {sw, resp_len, ts::UString::Dump(response.data(), resp_len, ts::UString::SINGLE_LINE)})
+                          << std:: endl;
+            }
+        }
+
+        // Disconnect from the card.
+        sc_status = ::SCardDisconnect(handle, ::DWORD(opt.reset_action));
+        return Check(sc_status, opt, reader) && success;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 //  Reset a smartcard
 //----------------------------------------------------------------------------
 
@@ -254,11 +330,17 @@ int MainCode(int argc, char *argv[])
             reader_found = true;
             if (opt.reset_action != SCARD_LEAVE_CARD) {
                 // Reset the smartcard if one is present
-                if ((it->event_state & SCARD_STATE_PRESENT) && !Reset (opt, pcsc_context, it->reader)) {
+                if ((it->event_state & SCARD_STATE_PRESENT) && !Reset(opt, pcsc_context, it->reader)) {
                     status = EXIT_FAILURE;
                 }
             }
-            else {
+            if (!opt.apdu.empty()) {
+                // Send a list of APDU.
+                if (!SendAPDU(opt, pcsc_context, it->reader)) {
+                    status = EXIT_FAILURE;
+                }
+            }
+            else if (opt.reset_action == SCARD_LEAVE_CARD) {
                 // Default action: list the smartcard
                 List(opt, *it);
             }
@@ -266,14 +348,12 @@ int MainCode(int argc, char *argv[])
     }
 
     // If one reader was specified on the command line, check that is was found
-
     if (!opt.reader.empty() && !reader_found) {
         opt.error(u"smartcard reader \"%s\" not found", {opt.reader});
         status = EXIT_FAILURE;
     }
 
     // Release communication with PC/SC
-
     sc_status = ::SCardReleaseContext(pcsc_context);
     if (!Check(sc_status, opt, u"SCardReleaseContext")) {
         status = EXIT_FAILURE;
