@@ -220,8 +220,8 @@ namespace {
     bool SendAPDU(Options& opt, ::SCARDCONTEXT pcsc_context, const ts::UString& reader)
     {
         // Connect to the card.
-        ::SCARDHANDLE handle;
-        ::DWORD protocol;
+        ::SCARDHANDLE handle = 0;
+        ::DWORD protocol = 0;
         ::LONG sc_status = ::SCardConnect(pcsc_context,
                                           reader.toUTF8().c_str(),
                                           SCARD_SHARE_SHARED,
@@ -242,7 +242,7 @@ namespace {
             if (opt.verbose()) {
                 std::cout << std::endl << "Sending APU: " << ts::UString::Dump(opt.apdu[i], ts::UString::SINGLE_LINE) << std::endl;
             }
-            sc_status = ts::pcsc::Transmit(handle, protocol, opt.apdu[i].data(), opt.apdu[i].size(), response.data(), response.size(), sw, resp_len);
+            sc_status = ts::pcsc::Transmit(handle, uint32_t(protocol), opt.apdu[i].data(), opt.apdu[i].size(), response.data(), response.size(), sw, resp_len);
             if (!Check(sc_status, opt, reader)) {
                 success = false;
                 if (!opt.continue_on_error) {
