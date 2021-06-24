@@ -404,7 +404,7 @@ ts::UString ts::pcsc::StrError(::LONG status)
         default:
 #if defined(TS_LINUX) || defined(TS_MAC)
             // pcsc_stringify_error is specific to pcsc-lite.
-            return UString(pcsc_stringify_error(status));
+            return UString::FromUTF8(pcsc_stringify_error(status));
 #elif defined(TS_WINDOWS)
             return SysErrorCodeMessage(status);
 #else
