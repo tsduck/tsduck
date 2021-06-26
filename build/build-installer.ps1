@@ -155,11 +155,6 @@ if (-not $NoInstaller -or -not $NoPortable) {
     }
 }
 
-# Get version name.
-$GetVersion = (Join-Path $PSScriptRoot get-version-from-sources.ps1)
-$Version = (& $GetVersion)
-$VersionInfo = (& $GetVersion -Windows)
-
 # Lower process priority so that the build does not eat up all CPU.
 if (-not $NoLowPriority) {
     (Get-Process -Id $PID).PriorityClass = "BelowNormal"
@@ -176,6 +171,11 @@ if (-not $NoBuild) {
         Exit-Script -NoPause:$NoPause "Error building the product"
     }
 }
+
+# Get version name.
+$GetVersion = (Join-Path $PSScriptRoot get-version-from-sources.ps1)
+$Version = (& $GetVersion)
+$VersionInfo = (& $GetVersion -Windows)
 
 # A function to build a binary installer.
 function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [string]$HeadersDir)
