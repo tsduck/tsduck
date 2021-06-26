@@ -239,22 +239,22 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 # Build remote installers.
 (
     if $REMOTE_WIN; then
-        # Build on Windows.
+        # Build on Windows. Important: assume PowerShell by default.
         # Cleanup repository, rebuild from scratch.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             ". '$REMOTE_DIR/build/cleanup.ps1' -NoPause"
 
         # Create a remote timestamp in installers subdirectory.
         # Newer files will be the installers we build.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             "[void](New-Item -Type File '$REMOTE_DIR/installers/timestamp.tmp' -Force)"
 
         # Build installers after updating the repository.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             ". '$REMOTE_DIR/build/build-installer.ps1' -GitPull -NoSource -NoPause"
 
         # Get all files from installers directory which are newer than the timestamp.
-        files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+        files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             "Get-ChildItem '$REMOTE_DIR/installers' |
              Where-Object { \$_.LastWriteTime -gt (Get-Item '$REMOTE_DIR/installers/timestamp.tmp').LastWriteTime } |
              ForEach-Object { \$_.Name }" | tr '\r' ' ')
@@ -266,7 +266,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
         done
 
         # Delete the temporary timestamp.
-        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" PowerShell \
+        ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
             "[void](Remove-Item -Force '$REMOTE_DIR/installers/timestamp.tmp' -ErrorAction Ignore)"
     else
         # Build on Unix.
