@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.28-2440
+
+[BUG] Bug fixes:
+
+  * Fixed issue #791: In plugin "merge", the PCR were not correcty adjusted
+    when the input PCR had a discontinuity in the future.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.27-2434
 
 [NEW] New commands and plugins:
