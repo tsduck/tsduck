@@ -81,7 +81,12 @@ fi
 addpath() {
     local varname=$1
     local bindir="$2"
-    export $varname=$(sed <<<":${!varname}:" -e "s|:$bindir:|:|g" -e 's|::*|:|g' -e 's|\([^:]\)$|\1:|' -e "s|^:*|$bindir:|")
+    local npath=":${!varname}:"
+    npath="${npath//:$bindir:/:}"
+    npath="${npath//::/:}"
+    npath="${npath/#:/}"
+    npath="${npath/%:/}"
+    [[ -z "$npath" ]] && export $varname="$bindir:" || export $varname="$bindir:$npath:"
 }
 
 # Display or set path.
