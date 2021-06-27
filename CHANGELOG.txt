@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2440
+VERSION 3.28-2441
+
+[NEW] New commands and plugins:
+
+  * Added plugin "pcredit" (edit PCR, PTS and DTS values in various ways).
 
 [BUG] Bug fixes:
 
