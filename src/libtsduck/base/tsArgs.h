@@ -324,10 +324,12 @@ namespace ts {
             UINT8,    //!< Integer 0..0xFF.
             UINT16,   //!< Integer 0..0xFFFF.
             UINT32,   //!< Integer 0..0xFFFFFFFF.
+            UINT63,   //!< 63-bit unsigned (cannot represent 2^63 and higher).
             PIDVAL,   //!< Integer 0..0x1FFF (an MPEG PID value).
             INT8,     //!< Integer -128..127.
             INT16,    //!< Integer -32,768..32,767.
             INT32,    //!< Integer -2,147,483,648..2,147,483,647.
+            INT64,    //!< 64-bit signed.
             TRISTATE, //!< Tristate value, ts::MAYBE if absent.
         };
 

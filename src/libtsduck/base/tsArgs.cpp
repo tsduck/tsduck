@@ -146,6 +146,11 @@ ts::Args::IOption::IOption(const UChar* name_,
             max_value = 0xFFFFFFFF;
             type = INTEGER;
             break;
+        case UINT63:
+            min_value = 0;
+            max_value = std::numeric_limits<int64_t>::max(); // 63-bit unsigned in practice
+            type = INTEGER;
+            break;
         case PIDVAL:
             min_value = 0;
             max_value = 0x1FFF;
@@ -164,6 +169,11 @@ ts::Args::IOption::IOption(const UChar* name_,
         case INT32:
             min_value = -TS_CONST64(0x80000000);
             max_value = 0x7FFFFFFF;
+            type = INTEGER;
+            break;
+        case INT64:
+            min_value = std::numeric_limits<int64_t>::min();
+            max_value = std::numeric_limits<int64_t>::max();
             type = INTEGER;
             break;
         default:
