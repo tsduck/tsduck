@@ -2,11 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2441
+VERSION 3.28-2442
 
 [NEW] New commands and plugins:
 
   * Added plugin "pcredit" (edit PCR, PTS and DTS values in various ways).
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in exiting commands and plugins:
+    - Option --install-dvb-firmware in "tsconfig".
 
 [BUG] Bug fixes:
 

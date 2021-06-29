@@ -35,6 +35,8 @@
 
 TSCONFIG=${BASH_SOURCE[0]}
 SCRIPT=$(basename $TSCONFIG)
+SYSTEM=$(uname -s)
+info()  { echo >&2 "$SCRIPT: $*"; }
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 usage() { error "invalid option $*, try --help"; }
 
@@ -62,6 +64,12 @@ Syntax: $SCRIPT [options]
   --vernum      output the version information as a number
 
 EOF
+    if [[ $SYSTEM == Linux ]]; then
+        cat >&2 <<EOF
+  --install-dvb-firmware   download and install additional DVB firmware
+
+EOF
+    fi
     exit
 }
 
@@ -141,6 +149,19 @@ cmd_vernum() {
     echo $(( ($(version_major) * 10000000) + ($(version_minor) * 100000) + $(version_commit) ))
 }
 
+cmd_install_firmware() {
+    [[ $SYSTEM == Linux ]] || error "DVB firmware is available on Linux only"
+    [[ $(id -u) -eq 0 ]] || error "must be root to install firmware"
+    FWDIR="$SYSROOT/lib/firmware"
+    [[ -d "$FWDIR" ]] || error "directory $FWDIR does not exist, maybe not the right system"
+
+    # OpenELEC project: The firmware files are directly downloaded from the GitHut repository.
+    # Exclude the first two levels of directory (down to "firmware" directory).
+    info "downloading firmware from OpenELEC project ..."
+    curl -sL https://github.com/OpenELEC/dvb-firmware/tarball/master | \
+        tar -C "$FWDIR" -xzpvf - --strip-components=2 --wildcards 'OpenELEC-dvb-firmware-*/firmware'
+}
+
 if [ $# -eq 0 ]; then
     # No option, display everything.
     echo "version: $(cmd_version)"
@@ -173,6 +194,7 @@ else
             --static-libs) cmd_staticlibs ;;
             --version) cmd_version ;;
             --vernum) cmd_vernum ;;
+            --install-dvb*) cmd_install_firmware ;;
             *) usage "$arg" ;;
         esac
         shift

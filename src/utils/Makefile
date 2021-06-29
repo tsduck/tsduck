@@ -50,7 +50,7 @@ $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
 .PHONY: install install-tools install-devel
 install: install-tools install-devel
 install-tools:
-	@true
-install-devel:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
 	install -m 755 tsconfig $(SYSROOT)$(SYSPREFIX)/bin
+install-devel:
+	@true
