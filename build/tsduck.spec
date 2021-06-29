@@ -64,7 +64,6 @@ rm -rf $RPM_BUILD_ROOT
 %files
 %defattr(-,root,root,-)
 %{_bindir}/ts*
-%exclude %{_bindir}/tsconfig
 %{_libdir}/libtsduck.so
 %{_libdir}/tsduck
 %{_datadir}/tsduck
@@ -74,7 +73,6 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %defattr(-,root,root,-)
-%{_bindir}/tsconfig
 %{_libdir}/libtsduck.a
 %{_includedir}/tsduck
 %doc LICENSE.txt

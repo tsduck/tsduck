@@ -11,6 +11,7 @@ Depends: libc6,
  libcurl3 | libcurl4,
  libstdc++6,
  libgcc1
+Conflicts: tsduck-dev (<= 2.28.2441)
 Description: MPEG Transport Stream Toolkit
  TSDuck, the MPEG Transport Stream Toolkit, provides some simple utilities to
  process MPEG Transport Streams (TS), either as recorded files or live streams.
