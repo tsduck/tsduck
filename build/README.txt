@@ -159,9 +159,6 @@ Configuration files for Linux
 - tsduck-dev.postinst : Template for post-installation script in .deb packages
   for TSDuck development environment.
 
-- install-openelec-dvb-firmware.sh : Utility to download and install DVB device
-  firmware from the OpenELEC project.
-
 Doxygen documentation
 ---------------------
 - Doxyfile : Project file to configure Doxygen.
