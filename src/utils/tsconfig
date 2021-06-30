@@ -155,6 +155,22 @@ cmd_install_firmware() {
     FWDIR="$SYSROOT/lib/firmware"
     [[ -d "$FWDIR" ]] || error "directory $FWDIR does not exist, maybe not the right system"
 
+    # linux-firmware package: standard package (depends on distro).
+    if [[ -n $(which apt 2>/dev/null) ]]; then
+        if ! (apt -qq list linux-firmware 2>/dev/null | grep -q installed); then
+            info "installing package linux-firmware ..."
+            apt install -y linux-firmware
+        fi
+    fi
+    DNF=$(which dnf 2>/dev/null)
+    [[ -z "$DNF" ]] && DNF=$(which yum 2>/dev/null)
+    if [[ -n "$DNF" ]]; then
+        if ! rpm -q linux-firmware &>/dev/null; then
+            info "installing package linux-firmware ..."
+            "$DNF" install -y linux-firmware
+        fi
+    fi
+
     # OpenELEC project: The firmware files are directly downloaded from the GitHut repository.
     # Exclude the first two levels of directory (down to "firmware" directory).
     info "downloading firmware from OpenELEC project ..."
