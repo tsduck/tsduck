@@ -1451,6 +1451,9 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
         case DTAPI_MOD_DVBT2: {
             Dtapi::DtDvbT2Pars pars;
             pars.Init(); // default values
+            // m_T2Version
+            // m_T2Profile
+            // m_T2BaseLite
             pars.m_Bandwidth = intValue<int>(u"bandwidth", DTAPI_DVBT2_8MHZ);
             pars.m_FftMode = intValue<int>(u"fft-mode", DTAPI_DVBT2_FFT_32K);
             pars.m_Miso = intValue<int>(u"miso", DTAPI_DVBT2_MISO_OFF);
@@ -1460,16 +1463,24 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             pars.m_PilotPattern = intValue<int>(u"pilot-pattern", DTAPI_DVBT2_PP_7);
             pars.m_NumT2Frames = intValue<int>(u"t2-fpsf", 2);
             pars.m_L1Modulation = intValue<int>(u"t2-l1-modulation", DTAPI_DVBT2_QAM16);
-            pars.m_FefEnable = present(u"fef");
-            pars.m_FefType = intValue<int>(u"fef-type", 0);
-            pars.m_FefLength = intValue<int>(u"fef-length", 1);
-            pars.m_FefS1 = intValue<int>(u"fef-s1", 2);
-            pars.m_FefS2 = intValue<int>(u"fef-s2", 1);
-            pars.m_FefInterval = intValue<int>(u"fef-interval", 1);
-            pars.m_FefSignal = intValue<int>(u"fef-signal", DTAPI_DVBT2_FEF_ZERO);
             pars.m_CellId = intValue<int>(u"cell-id", 0);
             pars.m_NetworkId = intValue<int>(u"t2-network-id", 0);
             pars.m_T2SystemId = intValue<int>(u"t2-system-id", 0);
+            // m_L1Repetition
+            // m_NumT2Frames
+            // m_NumDataSyms
+            // m_NumSubslices
+            // m_ComponentStartTime
+            pars.m_FefEnable = present(u"fef");
+            pars.m_FefType = intValue<int>(u"fef-type", 0);
+            pars.m_FefS1 = intValue<int>(u"fef-s1", 2);
+            pars.m_FefS2 = intValue<int>(u"fef-s2", 1);
+            pars.m_FefSignal = intValue<int>(u"fef-signal", DTAPI_DVBT2_FEF_ZERO);
+            pars.m_FefLength = intValue<int>(u"fef-length", 1);
+            pars.m_FefInterval = intValue<int>(u"fef-interval", 1);
+            // m_NumRfChans
+            // m_RfChanFreqs
+            // m_StartRfIdx
             // Obsolete field in DTAPI 4.10.0.145:
             // pars.m_Frequency = int(frequency);
             pars.m_NumPlps = 1; // This version supports single-PLP only
