@@ -388,6 +388,8 @@ void ts::DektecDevice::ReportDvbT2Pars(const Dtapi::DtDvbT2Pars& pars, Report& r
     // Don't lose time on multiple reports which won't do anything.
     if (report.maxSeverity() >= severity) {
         report.log(severity, u"%sm_T2Version = %d", {margin, pars.m_T2Version});
+        report.log(severity, u"%sm_T2Profile = %d", {margin, pars.m_T2Profile});
+        report.log(severity, u"%sm_T2BaseLite = %d", {margin, pars.m_T2BaseLite});
         report.log(severity, u"%sm_Bandwidth = %d", {margin, pars.m_Bandwidth});
         report.log(severity, u"%sm_FftMode = %d", {margin, pars.m_FftMode});
         report.log(severity, u"%sm_Miso = %d", {margin, pars.m_Miso});
@@ -403,6 +405,7 @@ void ts::DektecDevice::ReportDvbT2Pars(const Dtapi::DtDvbT2Pars& pars, Report& r
         report.log(severity, u"%sm_NumT2Frames = %d", {margin, pars.m_NumT2Frames});
         report.log(severity, u"%sm_NumDataSyms = %d", {margin, pars.m_NumDataSyms});
         report.log(severity, u"%sm_NumSubslices = %d", {margin, pars.m_NumSubslices});
+        report.log(severity, u"%sm_ComponentStartTime = %d", {margin, pars.m_ComponentStartTime});
         report.log(severity, u"%sm_FefEnable = %d", {margin, pars.m_FefEnable});
         report.log(severity, u"%sm_FefType = %d", {margin, pars.m_FefType});
         report.log(severity, u"%sm_FefS1 = %d", {margin, pars.m_FefS1});
@@ -433,9 +436,11 @@ void ts::DektecDevice::ReportDvbT2PlpPars(const Dtapi::DtDvbT2PlpPars& pars, Rep
         report.log(severity, u"%sm_IssyTDesign = %d", {margin, pars.m_IssyTDesign});
         report.log(severity, u"%sm_CompensatingDelay = %d", {margin, pars.m_CompensatingDelay});
         report.log(severity, u"%sm_TsRate = %d", {margin, pars.m_TsRate});
+        report.log(severity, u"%sm_GseLabelType = %d", {margin, pars.m_GseLabelType});
         report.log(severity, u"%sm_Id = %d", {margin, pars.m_Id});
         report.log(severity, u"%sm_GroupId = %d", {margin, pars.m_GroupId});
         report.log(severity, u"%sm_Type = %d", {margin, pars.m_Type});
+        report.log(severity, u"%sm_PayloadType = %d", {margin, pars.m_PayloadType});
         report.log(severity, u"%sm_CodeRate = %d", {margin, pars.m_CodeRate});
         report.log(severity, u"%sm_Modulation = %d", {margin, pars.m_Modulation});
         report.log(severity, u"%sm_Rotation = %d", {margin, pars.m_Rotation});
@@ -447,6 +452,7 @@ void ts::DektecDevice::ReportDvbT2PlpPars(const Dtapi::DtDvbT2PlpPars& pars, Rep
         report.log(severity, u"%sm_InBandAFlag = %d", {margin, pars.m_InBandAFlag});
         report.log(severity, u"%sm_InBandBFlag = %d", {margin, pars.m_InBandBFlag});
         report.log(severity, u"%sm_NumBlocks = %d", {margin, pars.m_NumBlocks});
+        report.log(severity, u"%sm_PlpMute = %d", {margin, pars.m_PlpMute});
         report.log(severity, u"%sm_NumOtherPlpInBand = %d", {margin, pars.m_NumOtherPlpInBand});
         for (int i = 0; i < DTAPI_DVBT2_NUM_PLP_MAX - 1 && i < pars.m_NumOtherPlpInBand; i++) {
             report.log(severity, u"%sm_OtherPlpInBand[%d] = %d", {margin, i, pars.m_OtherPlpInBand[i]});
