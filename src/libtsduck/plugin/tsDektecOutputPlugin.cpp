@@ -990,7 +990,8 @@ bool ts::DektecOutputPlugin::start()
         return startError(u"output device SetTxMode error", status);
     }
 
-    // Set modulation parameters for modulators
+    // Set modulation parameters for modulators.
+    // Overwrite _guts->cur_bitrate and _guts->opt_bitrate with computed values from modulation parameters.
     if (is_modulator && !setModulation(modulation_type)) {
         return false;
     }
@@ -1506,7 +1507,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             }
             // Report actual parameters in debug mode
             tsp->debug(u"DVB-T2: DtDvbT2Pars = {");
-            DektecDevice::ReportDvbT2Pars(pars, *tsp, Severity::Debug, u"");
+            DektecDevice::ReportDvbT2Pars(pars, *tsp, Severity::Debug, u"  ");
             tsp->debug(u"}");
             tsp->debug(u"DVB-T2: DtDvbT2ParamInfo = {");
             DektecDevice::ReportDvbT2ParamInfo(info, *tsp, Severity::Debug, u"  ");
@@ -1516,6 +1517,23 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             if (status != DTAPI_OK) {
                 return startError(u"invalid combination of DVB-T2 parameters", status);
             }
+            // Compute exact bitrate from DVB-T2 parameters.
+            Dtapi::DtFractionInt frate;
+            status = Dtapi::DtapiModPars2TsRate(frate, pars);
+            if (status == DTAPI_OK && frate.m_Num > 0 && frate.m_Den > 0) {
+                FromDektecFractionInt(_guts->cur_bitrate, frate);
+                _guts->opt_bitrate = _guts->cur_bitrate;
+            }
+            else {
+                // Fractional bitrate unsupported or incorrect.
+                int irate = 0;
+                status = Dtapi::DtapiModPars2TsRate(irate, pars);
+                if (status != DTAPI_OK) {
+                    return startError(u"Error computing bitrate from DVB-T2 parameters", status);
+                }
+                _guts->opt_bitrate = _guts->cur_bitrate = BitRate(irate);
+            }
+            tsp->verbose(u"setting output TS bitrate to %'d b/s", {_guts->cur_bitrate});
             // Set modulation parameters
             status = _guts->chan.SetModControl(pars);
             break;
@@ -1671,10 +1689,9 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
 
     char* data = reinterpret_cast<char*>(const_cast<TSPacket*>(buffer));
     int remain = int(packet_count * PKT_SIZE);
-    Dtapi::DTAPI_RESULT status;
+    Dtapi::DTAPI_RESULT status = DTAPI_OK;
 
-    // If no bitrate was specified on the command line, adjust the bitrate
-    // when input bitrate changes.
+    // If no bitrate was specified on the command line, adjust the bitrate when input bitrate changes.
     BitRate new_bitrate;
     if (_guts->opt_bitrate == 0 && _guts->cur_bitrate != (new_bitrate = tsp->bitrate()) && new_bitrate != 0) {
         status = _guts->chan.SetTsRateBps(ToDektecFractionInt(new_bitrate));
