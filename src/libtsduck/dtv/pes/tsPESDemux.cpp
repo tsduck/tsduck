@@ -328,7 +328,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
         const size_t len = GetUInt16(pc.ts->data() + 4);
         // If the size is zero, the PES packet is "unbounded", meaning it ends at the next PUSI.
         // But if the PES packet size is specified, check if we have the complete PES packet.
-        if (len != 0 && pc.ts->size() >= 4 + len) {
+        if (len != 0 && pc.ts->size() >= 6 + len) {
             // We have the complete PES packet.
             processPESPacket(pid, pc);
             // Reset PES buffer.
