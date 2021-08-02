@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2442
+VERSION 3.28-2450
 
 [NEW] New commands and plugins:
 
@@ -17,6 +17,9 @@ VERSION 3.28-2442
 
   * Fixed issue #791: In plugin "merge", the PCR were not correcty adjusted
     when the input PCR had a discontinuity in the future.
+  * Fixed issue #830: Incorrect formatting of HEVC HRD parameters.
+  * Fixed issue #830: Incorrect handling of PES packets with 1 or 2 bytes in
+    last TS packet.
 
 -------------------------------------------------------------------------------
 
