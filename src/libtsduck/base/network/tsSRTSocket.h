@@ -111,7 +111,7 @@ namespace ts {
         //! - If both strings are not empty, the socket is set in rendezvous mode.
         //! - If both strings are empty, the current mode of the socket is reset and local and/or
         //!   remote addresses must be specified by command line arguments or through open().
-        //! @param [in] local_address Local "[address:]port".
+        //! @param [in] listener_address Local "[address:]port".
         //! @param [in] caller_address Remote "address:port".
         //! @param [in] local_interface Optional, can be empty. In caller mode, specify the local outgoing IP address.
         //! @param [in,out] report Where to report error.
