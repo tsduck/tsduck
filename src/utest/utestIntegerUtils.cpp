@@ -55,7 +55,9 @@ public:
     void testSignExtend();
     void testBitSize();
     void testPower10();
+    void testBoundCheck();
     void testBoundedCast();
+    void testGCD();
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
     TSUNIT_TEST(testMakeSigned);
@@ -66,7 +68,9 @@ public:
     TSUNIT_TEST(testSignExtend);
     TSUNIT_TEST(testBitSize);
     TSUNIT_TEST(testPower10);
+    TSUNIT_TEST(testBoundCheck);
     TSUNIT_TEST(testBoundedCast);
+    TSUNIT_TEST(testGCD);
     TSUNIT_TEST_END();
 };
 
@@ -269,6 +273,24 @@ void IntegerUtilsTest::testPower10()
     TSUNIT_EQUAL(TS_UCONST64(1000000000000000), (ts::static_power10<uint64_t, 15>::value));
 }
 
+void IntegerUtilsTest::testBoundCheck()
+{
+    TSUNIT_ASSERT(ts::bound_check<uint8_t>(int(20)));
+    TSUNIT_ASSERT(ts::bound_check<uint8_t>(int(255)));
+    TSUNIT_ASSERT(!ts::bound_check<uint8_t>(int(256)));
+    TSUNIT_ASSERT(!ts::bound_check<uint8_t>(int(-1)));
+
+    TSUNIT_ASSERT(ts::bound_check<int8_t>(uint32_t(20)));
+    TSUNIT_ASSERT(ts::bound_check<int8_t>(int32_t(20)));
+    TSUNIT_ASSERT(ts::bound_check<int8_t>(int32_t(-20)));
+    TSUNIT_ASSERT(!ts::bound_check<int8_t>(int32_t(-200)));
+    TSUNIT_ASSERT(!ts::bound_check<int8_t>(int32_t(200)));
+    TSUNIT_ASSERT(ts::bound_check<int8_t>(int32_t(-128)));
+    TSUNIT_ASSERT(!ts::bound_check<int8_t>(int32_t(-129)));
+    TSUNIT_ASSERT(ts::bound_check<int8_t>(uint32_t(127)));
+    TSUNIT_ASSERT(!ts::bound_check<int8_t>(uint32_t(128)));
+}
+
 void IntegerUtilsTest::testBoundedCast()
 {
     TSUNIT_EQUAL(20, ts::bounded_cast<uint8_t>(int(20)));
@@ -279,4 +301,21 @@ void IntegerUtilsTest::testBoundedCast()
     TSUNIT_EQUAL(-100, ts::bounded_cast<int8_t>(int16_t(-100)));
     TSUNIT_EQUAL(100, ts::bounded_cast<int8_t>(int16_t(100)));
     TSUNIT_EQUAL(127, ts::bounded_cast<int8_t>(int16_t(1000)));
+}
+
+void IntegerUtilsTest::testGCD()
+{
+    TSUNIT_EQUAL(0,  ts::GCD(0, 0));
+    TSUNIT_EQUAL(12, ts::GCD(0, 12));
+    TSUNIT_EQUAL(12, ts::GCD(12, 0));
+    TSUNIT_EQUAL(1,  ts::GCD(-7 * 3 * 2, 11 * 5));
+    TSUNIT_EQUAL(3,  ts::GCD(7 * 3 * 2, 11 * 5 * 3));
+    TSUNIT_EQUAL(14, ts::GCD(7 * 3 * 2, -7 * 5 * 2));
+
+    TSUNIT_EQUAL(0,  ts::GCD<uint32_t>(0, 0));
+    TSUNIT_EQUAL(12, ts::GCD<uint32_t>(0, 12));
+    TSUNIT_EQUAL(12, ts::GCD<uint32_t>(12, 0));
+    TSUNIT_EQUAL(1,  ts::GCD<uint32_t>(7 * 3 * 2, 11 * 5));
+    TSUNIT_EQUAL(3,  ts::GCD<uint32_t>(7 * 3 * 2, 11 * 5 * 3));
+    TSUNIT_EQUAL(14, ts::GCD<uint32_t>(7 * 3 * 2, 7 * 5 * 2));
 }

@@ -289,6 +289,7 @@
 #include "tsForkOutputPlugin.h"
 #include "tsForkPacketPlugin.h"
 #include "tsForkPipe.h"
+#include "tsFraction.h"
 #include "tsFrequencyListDescriptor.h"
 #include "tsFTAContentManagementDescriptor.h"
 #include "tsFunctors.h"

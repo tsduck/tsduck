@@ -36,6 +36,27 @@
 #pragma once
 #include "tsPlatform.h"
 
+//!
+//! A convenience macro to declare a template with complex @c std::enable_if conditions on two integer types.
+//! This macro declares two template integer types @a INT1 and @a INT2. It expands to:
+//! @code
+//! template <typename INT1, typename INT2, typename std::enable_if<...>::type = 0>
+//! @endcode
+//!
+//! @param sign1 Either @a signed or @a unsigned, condition on first integer type INT1.
+//! @param op A comparison operator ('==', '<', '>=', etc) to apply on the sizes of @a INT1 and @a INT2.
+//! @param sign2 Either @a signed or @a unsigned, condition on second integer type INT2.
+//!
+#define TS_TEMPLATE_IF_INTS(sign1, op, sign2)                          \
+    template <typename INT1,                                           \
+              typename INT2,                                           \
+              typename std::enable_if<std::is_integral<INT1>::value && \
+                                      std::is_integral<INT2>::value && \
+                                      std::is_##sign1<INT1>::value &&  \
+                                      std::is_##sign2<INT2>::value &&  \
+                                      (sizeof(INT1) op sizeof(INT2)),  \
+                                      int>::type = 0>
+
 namespace ts {
     //
     // Implementation tools for make_signed.
@@ -63,6 +84,52 @@ namespace ts {
 
 #if defined(DOXYGEN)
     //!
+    //! Integer cross-type bound check.
+    //! @tparam INT1 An integer type.
+    //! @tparam INT2 An integer type.
+    //! @param [in] x An integer value of type @a INT2.
+    //! @return True if the value of @a x is within the limits of type @a INT1.
+    //!
+    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+    bool bound_check(INT2 x);
+#else
+    // Actual implementations of bound_check, depending on type profiles.
+
+    // signed <-- unsigned of same or larger size (test: higher bound).
+    TS_TEMPLATE_IF_INTS(signed, <=, unsigned)
+    inline bool bound_check(INT2 x) { return x <= INT2(std::numeric_limits<INT1>::max()); }
+
+    // signed <-- unsigned of smaller size (always fit).
+    TS_TEMPLATE_IF_INTS(signed, >, unsigned)
+    inline bool bound_check(INT2 x) { return true; }
+
+    // unsigned <-- signed of larger size (test: lower and higher bounds).
+    TS_TEMPLATE_IF_INTS(unsigned, <, signed)
+    inline bool bound_check(INT2 x) { return x >= 0 && x <= INT2(std::numeric_limits<INT1>::max()); }
+
+    // unsigned <-- signed of same or smaller size (test: lower bound).
+    TS_TEMPLATE_IF_INTS(unsigned, >=, signed)
+    inline bool bound_check(INT2 x) { return x >= 0; }
+
+    // unsigned <-- unsigned of larger size (test: higher bound).
+    TS_TEMPLATE_IF_INTS(unsigned, <, unsigned)
+    inline bool bound_check(INT2 x) { return x <= INT2(std::numeric_limits<INT1>::max()); }
+
+    // unsigned <-- unsigned of smaller size (always fit).
+    TS_TEMPLATE_IF_INTS(unsigned, >=, unsigned)
+    inline bool bound_check(INT2 x) { return true; }
+
+    // signed <-- signed of smaller size (always fit).
+    TS_TEMPLATE_IF_INTS(signed, >=, signed)
+    inline bool bound_check(INT2 x) { return true; }
+
+    // signed <-- signed of larger size (test: lower and higher bounds).
+    TS_TEMPLATE_IF_INTS(signed, <, signed)
+    inline bool bound_check(INT2 x) { return x >= INT2(std::numeric_limits<INT1>::min()) && x <= INT2(std::numeric_limits<INT1>::max()); }
+#endif
+
+#if defined(DOXYGEN)
+    //!
     //! Bounded integer cast.
     //! @tparam INT1 An integer type.
     //! @tparam INT2 An integer type.
@@ -70,59 +137,44 @@ namespace ts {
     //! @return The value of @a x, within the limits of type @a INT1.
     //!
     template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-    inline INT1 bounded_cast(INT2 x)
-    {
-        return INT1(x);
-    }
+    INT1 bounded_cast(INT2 x);
 #else
     // Actual implementations of bounded_cast, depending on type profiles.
-    // Temporary macro to select signed/unsigned versions of INT1 and INT2, and the relation between their sizes.
-    #define ONLY(sign1, op, sign2)                                         \
-        template <typename INT1,                                           \
-                  typename INT2,                                           \
-                  typename std::enable_if<std::is_integral<INT1>::value && \
-                                          std::is_integral<INT2>::value && \
-                                          std::is_##sign1<INT1>::value &&  \
-                                          std::is_##sign2<INT2>::value &&  \
-                                          (sizeof(INT1) op sizeof(INT2)),  \
-                                          int>::type = 0>
 
     // signed <-- unsigned of same or larger size (test: higher bound).
-    ONLY(signed, <=, unsigned)
+    TS_TEMPLATE_IF_INTS(signed, <=, unsigned)
     inline INT1 bounded_cast(INT2 x) { return INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))); }
 
     // signed <-- unsigned of smaller size (always fit).
-    ONLY(signed, >, unsigned)
+    TS_TEMPLATE_IF_INTS(signed, >, unsigned)
     inline INT1 bounded_cast(INT2 x) { return INT1(x); }
 
     // unsigned <-- signed of larger size (test: lower and higher bounds).
-    ONLY(unsigned, <, signed)
+    TS_TEMPLATE_IF_INTS(unsigned, <, signed)
     inline INT1 bounded_cast(INT2 x) { return x < 0 ? 0 : INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))); }
 
     // unsigned <-- signed of same or smaller size (test: lower bound).
-    ONLY(unsigned, >=, signed)
+    TS_TEMPLATE_IF_INTS(unsigned, >=, signed)
     inline INT1 bounded_cast(INT2 x) { return x < 0 ? 0 : INT1(x); }
 
     // unsigned <-- unsigned of larger size (test: higher bound).
-    ONLY(unsigned, <, unsigned)
+    TS_TEMPLATE_IF_INTS(unsigned, <, unsigned)
     inline INT1 bounded_cast(INT2 x) { return INT1(std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))); }
 
     // unsigned <-- unsigned of smaller size (always fit).
-    ONLY(unsigned, >=, unsigned)
+    TS_TEMPLATE_IF_INTS(unsigned, >=, unsigned)
     inline INT1 bounded_cast(INT2 x) { return INT1(x); }
 
     // signed <-- signed of smaller size (always fit).
-    ONLY(signed, >=, signed)
+    TS_TEMPLATE_IF_INTS(signed, >=, signed)
     inline INT1 bounded_cast(INT2 x) { return INT1(x); }
 
     // signed <-- signed of larger size (test: lower and higher bounds).
-    ONLY(signed, <, signed)
+    TS_TEMPLATE_IF_INTS(signed, <, signed)
     inline INT1 bounded_cast(INT2 x)
     {
         return INT1(std::max<INT2>(INT2(std::numeric_limits<INT1>::min()), std::min<INT2>(x, INT2(std::numeric_limits<INT1>::max()))));
     }
-
-    #undef ONLY
 #endif
 
     //!
@@ -233,6 +285,22 @@ namespace ts {
     size_t BitSize(INT x); // signed version
     //! @endcond
 
+    //!
+    //! Compute a greatest common denominator (GCD).
+    //!
+    //! @tparam INT An integer type.
+    //! @param [in] x An integer.
+    //! @param [in] y An integer.
+    //! @return The greatest common denominator (GCD) of @a x and @a y. Always positive.
+    //!
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    INT GCD(INT x, INT y);
+
+    //! @cond nodoxygen
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    INT GCD(INT x, INT y); // signed version
+
+    //! @endcond
     //!
     //! Get a power of 10 using a fast lookup table.
     //!
