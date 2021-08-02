@@ -161,14 +161,17 @@ bool ts::HEVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint3
         }
         if (valid && sl.low_delay_hrd_flag == 0) {
             valid = parser.ue(sl.cpb_cnt_minus1);
-            if (valid && nal_hrd_parameters_present_flag == 1) {
-                sl.nal_hrd_parameters.resize(sl.cpb_cnt_minus1 + 1);
-                valid = parse_sub_layer_hrd_parameters(parser, sl.nal_hrd_parameters);
-            }
-            if (valid && vcl_hrd_parameters_present_flag == 1) {
-                sl.vcl_hrd_parameters.resize(sl.cpb_cnt_minus1 + 1);
-                valid = parse_sub_layer_hrd_parameters(parser, sl.vcl_hrd_parameters);
-            }
+        }
+        else {
+            sl.cpb_cnt_minus1 = 0;
+        }
+        if (valid && nal_hrd_parameters_present_flag == 1) {
+            sl.nal_hrd_parameters.resize(sl.cpb_cnt_minus1 + 1);
+            valid = parse_sub_layer_hrd_parameters(parser, sl.nal_hrd_parameters);
+        }
+        if (valid && vcl_hrd_parameters_present_flag == 1) {
+            sl.vcl_hrd_parameters.resize(sl.cpb_cnt_minus1 + 1);
+            valid = parse_sub_layer_hrd_parameters(parser, sl.vcl_hrd_parameters);
         }
     }
 
@@ -237,12 +240,12 @@ std::ostream& ts::HEVCHRDParameters::display(std::ostream& out, const UString& m
             }
             if (sl.low_delay_hrd_flag == 0) {
                 DISP(sl.cpb_cnt_minus1);
-                if (nal_hrd_parameters_present_flag == 1) {
-                    display_sub_layer_hrd_parameters(out, margin + u"nal_hrd_parameters", sl.nal_hrd_parameters);
-                }
-                if (vcl_hrd_parameters_present_flag == 1) {
-                    display_sub_layer_hrd_parameters(out, margin + u"vcl_hrd_parameters", sl.vcl_hrd_parameters);
-                }
+            }
+            if (nal_hrd_parameters_present_flag == 1) {
+                display_sub_layer_hrd_parameters(out, margin + u"nal_hrd_parameters", sl.nal_hrd_parameters);
+            }
+            if (vcl_hrd_parameters_present_flag == 1) {
+                display_sub_layer_hrd_parameters(out, margin + u"vcl_hrd_parameters", sl.vcl_hrd_parameters);
             }
         }
     }
