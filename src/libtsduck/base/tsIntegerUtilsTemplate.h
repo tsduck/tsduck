@@ -206,3 +206,37 @@ size_t ts::BitSize(INT x)
     typedef typename std::make_unsigned<INT>::type UNS_INT;
     return BitSize<UNS_INT>(UNS_INT(x));
 }
+
+//----------------------------------------------------------------------------
+// Compute a greatest common denominator (GCD).
+//----------------------------------------------------------------------------
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
+INT ts::GCD(INT x, INT y)
+{
+    INT z;
+    while (y != 0) {
+        z = x % y;
+        x = y;
+        y = z;
+    }
+    return x;
+}
+
+template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
+INT ts::GCD(INT x, INT y)
+{
+    INT z;
+    if (x < 0) {
+        x = -x;
+    }
+    if (y < 0) {
+        y = -y;
+    }
+    while (y != 0) {
+        z = x % y;
+        x = y;
+        y = z;
+    }
+    return x;
+}

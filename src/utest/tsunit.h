@@ -490,7 +490,10 @@ namespace tsunit {
     template<typename T>
     std::string toStringImpl(T value, const char* format);
 
-    template<typename T, typename std::enable_if<std::is_signed<typename underlying_type<T>::type>::value>::type* = nullptr>
+    template<typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+    std::string toString(T value) { return toStringImpl(static_cast<double>(value), "%lf"); }
+
+    template<typename T, typename std::enable_if<!std::is_floating_point<T>::value && std::is_signed<typename underlying_type<T>::type>::value>::type* = nullptr>
     std::string toString(T value) { return toStringImpl(static_cast<long long>(value), "%lld"); }
 
     template<typename T, typename std::enable_if<std::is_unsigned<typename underlying_type<T>::type>::value>::type* = nullptr>
@@ -534,6 +537,13 @@ namespace tsunit {
                  typename ATYPE,
                  typename std::enable_if<is_intenum<ETYPE>::value>::type* = nullptr,
                  typename std::enable_if<is_intenum<ATYPE>::value>::type* = nullptr>
+        static void equal(const ETYPE& expected, const ATYPE& actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
+
+        // Assert equal for two floating-point types. Always compare according to actual value.
+        template<typename ETYPE,
+                 typename ATYPE,
+                 typename std::enable_if<std::is_floating_point<ETYPE>::value>::type* = nullptr,
+                 typename std::enable_if<std::is_floating_point<ATYPE>::value>::type* = nullptr>
         static void equal(const ETYPE& expected, const ATYPE& actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
 
         // Assert equal for string types.
@@ -647,6 +657,23 @@ void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const
 {
     typedef typename underlying_type<ATYPE>::type valuetype;
     if (valuetype(expected) == valuetype(actual)) {
+        ++_passedCount;
+    }
+    else {
+        ++_failedAssertionsCount;
+        const std::string details1("expected: " + toString(expected) + " (\"" + estr + "\")");
+        const std::string details2("actual:   " + toString(actual) + " (\"" + astr + "\")");
+        throw Failure("incorrect value", details1 + "\n" + details2, file, line);
+    }
+}
+
+template<typename ETYPE,
+         typename ATYPE,
+         typename std::enable_if<std::is_floating_point<ETYPE>::value>::type*,
+         typename std::enable_if<std::is_floating_point<ATYPE>::value>::type*>
+void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const std::string& estr, const std::string& astr, const char* file, int line)
+{
+    if (std::abs(static_cast<double>(expected) - static_cast<double>(actual)) < 0.000001) { // precision ?
         ++_passedCount;
     }
     else {

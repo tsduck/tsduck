@@ -907,6 +907,7 @@ TS_MSC_NOWARNING(5204)
 #include <sstream>
 #include <iostream>
 #include <exception>
+#include <stdexcept>
 #include <atomic>
 #include <typeinfo>
 

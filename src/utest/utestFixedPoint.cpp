@@ -55,6 +55,7 @@ public:
     TSUNIT_TEST_BEGIN(FixedPointTest);
     TSUNIT_TEST(testUnit);
     TSUNIT_TEST(testSubUnit);
+    TSUNIT_TEST(testAssignment);
     TSUNIT_TEST(testComparison);
     TSUNIT_TEST(testBounds);
     TSUNIT_TEST(testOverflow);
