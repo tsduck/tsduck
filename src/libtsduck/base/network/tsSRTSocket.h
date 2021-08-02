@@ -86,7 +86,7 @@ namespace ts {
         //!
         //! Open the socket.
         //! @param [in] mode SRT socket mode. If set to DEFAULT, the mode must have been specified in the command line options.
-        //! @param [in] local_address Local socket address. Ignored in DEFAULT and CALLER modes.
+        //! @param [in] local_address Local socket address. Ignored in DEFAULT mode. Optional local IP address used in CALLER mode.
         //! @param [in] remote_address Remote socket address. Ignored in DEFAULT and LISTENER modes.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
@@ -106,19 +106,20 @@ namespace ts {
 
         //!
         //! Preset local and remote socket addresses in string form.
-        //! - If both strings are empty, the current mode of the socket is reset and local and/or
-        //!   remote addresses must be specified by comand line arguments or trough open().
+        //! - If only @a listener_address is not empty, the socket is set in listener mode.
+        //! - If only @a caller_address is not empty, the socket is set in caller mode.
         //! - If both strings are not empty, the socket is set in rendezvous mode.
-        //! - If only @a local_address is not empty, the socket is set in listener mode.
-        //! - If only @a remote_address is not empty, the socket is set in caller mode.
+        //! - If both strings are empty, the current mode of the socket is reset and local and/or
+        //!   remote addresses must be specified by command line arguments or through open().
         //! @param [in] local_address Local "[address:]port".
-        //! @param [in] remote_address Remote "address:port".
+        //! @param [in] caller_address Remote "address:port".
+        //! @param [in] local_interface Optional, can be empty. In caller mode, specify the local outgoing IP address.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool setAddresses(const UString& local_address, const UString& remote_address, Report& report = CERR)
+        bool setAddresses(const UString& listener_address, const UString& caller_address, const UString& local_interface = UString(), Report& report = CERR)
         {
-            return setAddressesInternal(local_address, remote_address, true, report);
+            return setAddressesInternal(listener_address, caller_address, local_interface, true, report);
         }
 
         //!
@@ -196,6 +197,6 @@ namespace ts {
         Guts* _guts;
 
         // Internal verson of setAddresses().
-        bool setAddressesInternal(const UString& local_address, const UString& remote_address, bool reset, Report& report);
+        bool setAddressesInternal(const UString& listener_address, const UString& caller_address, const UString& local_interface, bool reset, Report& report);
     };
 }

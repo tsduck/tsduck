@@ -56,6 +56,11 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
               u"The address is optional, the port is mandatory. "
               u"If --caller is also specified, the SRT socket works in rendezvous mode.");
 
+    args.option(u"local-interface", 0, Args::STRING);
+    args.help(u"local-interface", u"address",
+              u"In caller mode, use the specified local IP interface for outgoing connections. "
+              u"This option is incompatible with --listener.");
+
     args.option(u"conn-timeout", 0, Args::INTEGER, 0, 1, 0, (1 << 20));
     args.help(u"conn-timeout",
               u"Connect timeout. SRT cannot connect for RTT > 1500 msec (2 handshake exchanges) "
@@ -270,7 +275,7 @@ bool ts::SRTSocket::getSockOpt(int, const char*, void*, int&, Report& report) co
 int  ts::SRTSocket::getSocket() const { return -1; }
 bool ts::SRTSocket::getMessageApi() const { return false; }
 ts::UString ts::SRTSocket::GetLibraryVersion() { return NOSRT_ERROR_MSG; }
-bool ts::SRTSocket::setAddressesInternal(const UString&, const UString&, bool, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::setAddressesInternal(const UString&, const UString&, const UString&, bool, Report& report) NOSRT_ERROR
 
 #else
 
@@ -554,13 +559,18 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     // Connect / setuo the SRT socket.
     switch (_guts->mode) {
         case SRTSocketMode::LISTENER:
-            success = success && _guts->srtListen(_guts->local_address, report);
+            success = success &&
+                      _guts->srtListen(_guts->local_address, report);
             break;
         case SRTSocketMode::RENDEZVOUS:
-            success = success && _guts->srtBind(_guts->local_address, report) && _guts->srtConnect(_guts->remote_address, report);
+            success = success &&
+                      _guts->srtBind(_guts->local_address, report) &&
+                      _guts->srtConnect(_guts->remote_address, report);
             break;
         case SRTSocketMode::CALLER:
-            success = success && _guts->srtConnect(_guts->remote_address, report);
+            success = success &&
+                      (!_guts->local_address.hasAddress() || _guts->srtBind(_guts->local_address, report)) &&
+                      _guts->srtConnect(_guts->remote_address, report);
             break;
         case SRTSocketMode::DEFAULT:
         case SRTSocketMode::LEN:
@@ -624,7 +634,7 @@ bool ts::SRTSocket::peerDisconnected() const
 // Preset local and remote socket addresses in string form.
 //----------------------------------------------------------------------------
 
-bool ts::SRTSocket::setAddressesInternal(const UString& local, const UString& remote, bool reset, Report& report)
+bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const UString& caller_addr, const UString& local_addr, bool reset, Report& report)
 {
     // Reset the addresses if needed.
     if (reset) {
@@ -633,39 +643,58 @@ bool ts::SRTSocket::setAddressesInternal(const UString& local, const UString& re
         _guts->remote_address.clear();
     }
 
-    // Select SRT mode.
-    if (remote.empty() && local.empty()) {
-        return true;  // unmodified
+    // Nothing more than reset when neither listener nor caller are specified.
+    if (caller_addr.empty() && listener_addr.empty()) {
+        return true;
     }
-    else if (remote.empty()) {
+
+    // Resolve communication mode.
+    if (caller_addr.empty()) {
         _guts->mode = SRTSocketMode::LISTENER;
     }
-    else if (local.empty()) {
+    else if (listener_addr.empty()) {
         _guts->mode = SRTSocketMode::CALLER;
     }
     else {
         _guts->mode = SRTSocketMode::RENDEZVOUS;
     }
 
-    // Resolve address strings.
-    if (!local.empty()) {
-        if (!_guts->local_address.resolve(local, report)) {
+    // Local interface in caller mode.
+    if (!local_addr.empty()) {
+        if (!listener_addr.empty()) {
+            report.error(u"specify either a listener address or a local outgoing interface for caller mode but not both");
+            return false;
+        }
+        IPAddress local_ip;
+        if (!local_ip.resolve(local_addr, report)) {
+            return false;
+        }
+        _guts->local_address.setAddress(local_ip);
+        _guts->local_address.clearPort();
+    }
+
+    // Listener address, also used in rendezvous mode.
+    if (!listener_addr.empty()) {
+        if (!_guts->local_address.resolve(listener_addr, report)) {
             return false;
         }
         else if (!_guts->local_address.hasPort()) {
-            report.error(u"missing port number in local listener address '%s'", {local});
+            report.error(u"missing port number in local listener address '%s'", {listener_addr});
             return false;
         }
     }
-    if (!remote.empty()) {
-        if (!_guts->remote_address.resolve(remote, report)) {
+
+    // Caller address, also used in rendezvous mode.
+    if (!caller_addr.empty()) {
+        if (!_guts->remote_address.resolve(caller_addr, report)) {
             return false;
         }
         else if (!_guts->remote_address.hasAddress() || !_guts->remote_address.hasPort()) {
-            report.error(u"missing address or port in remote caller address '%s'", {remote});
+            report.error(u"missing address or port in remote caller address '%s'", {caller_addr});
             return false;
         }
     }
+
     return true;
 }
 
@@ -677,7 +706,7 @@ bool ts::SRTSocket::setAddressesInternal(const UString& local, const UString& re
 bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
 {
     // Resolve caller/listener/rendezvous addresses.
-    if (!setAddressesInternal(args.value(u"listener"), args.value(u"caller"), false, args)) {
+    if (!setAddressesInternal(args.value(u"listener"), args.value(u"caller"), args.value(u"local-interface"), false, args)) {
         return false;
     }
 

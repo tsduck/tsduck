@@ -68,7 +68,7 @@ bool ts::SRTInputPlugin::getOptions()
 {
     // Get command line arguments for superclass and socket.
     return AbstractDatagramInputPlugin::getOptions() &&
-           _sock.setAddresses(value(u"rendezvous"), value(u""), *tsp) &&
+           _sock.setAddresses(value(u"rendezvous"), value(u""), UString(), *tsp) &&
            _sock.loadArgs(duck, *this);
 }
 

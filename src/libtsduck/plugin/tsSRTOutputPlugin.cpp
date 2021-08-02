@@ -84,7 +84,7 @@ bool ts::SRTOutputPlugin::getOptions()
 {
     _multiple = present(u"multiple");
     getIntValue(_restart_delay, u"restart-delay", 0);
-    return _sock.setAddresses(value(u""), value(u"rendezvous"), *tsp) &&
+    return _sock.setAddresses(value(u""), value(u"rendezvous"), UString(), *tsp) &&
            _sock.loadArgs(duck, *this) &&
            AbstractDatagramOutputPlugin::getOptions();
 }
