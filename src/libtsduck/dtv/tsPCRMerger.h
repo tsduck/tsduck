@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in] main_bitrate Current bitrate of the main stream. If the main
         //! bitrate is variable, the PCR adjustment may not be accurate.
         //!
-        void processPacket(TSPacket& pkt, PacketCounter main_packet_index, BitRate main_bitrate);
+        void processPacket(TSPacket& pkt, PacketCounter main_packet_index, const BitRate& main_bitrate);
 
     private:
         // Each PID in the merged stream is described by a structure like this. The map is indexed by PID.
@@ -165,7 +165,7 @@ namespace ts {
             // Get the DTS or PTS (whichever is defined and early).
             // Adjust it according to a bitrate and current packet.
             // Return INVALID_DTS if none defined.
-            uint64_t adjustedPDTS(PacketCounter, BitRate) const;
+            uint64_t adjustedPDTS(PacketCounter, const BitRate&) const;
         };
     };
 }

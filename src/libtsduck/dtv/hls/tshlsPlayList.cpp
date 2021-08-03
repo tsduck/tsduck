@@ -272,7 +272,7 @@ bool ts::hls::PlayList::addPlayList(const ts::hls::MediaPlayList& pl, ts::Report
 // Select a media playlist with specific constraints.
 //----------------------------------------------------------------------------
 
-size_t ts::hls::PlayList::selectPlayList(BitRate minBitrate, BitRate maxBitrate, size_t minWidth, size_t maxWidth, size_t minHeight, size_t maxHeight) const
+size_t ts::hls::PlayList::selectPlayList(const BitRate& minBitrate, const BitRate& maxBitrate, size_t minWidth, size_t maxWidth, size_t minHeight, size_t maxHeight) const
 {
     for (size_t i = 0; i < _playlists.size(); ++i) {
         const MediaPlayList& pl(_playlists[i]);
@@ -650,7 +650,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case BITRATE: {
                     // #EXT-X-BITRATE:<rate>
                     BitRate kilobits = 0;
-                    if (tagParams.toFixed(kilobits)) {
+                    if (StringToBitRate(kilobits, tagParams)) {
                         segNext.bitrate = 1024 * kilobits;
                     }
                     else if (strict) {
@@ -689,8 +689,8 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 }
                 case STREAM_INF: {
                     const TagAttributes attr(tagParams);
-                    attr.getFixedValue(plNext.bandwidth, u"BANDWIDTH");
-                    attr.getFixedValue(plNext.averageBandwidth, u"AVERAGE-BANDWIDTH");
+                    attr.getValue(plNext.bandwidth, u"BANDWIDTH");
+                    attr.getValue(plNext.averageBandwidth, u"AVERAGE-BANDWIDTH");
                     attr.value(u"RESOLUTION").scan(u"%dx%d", {&plNext.width, &plNext.height});
                     attr.getMilliValue(plNext.frameRate, u"FRAME-RATE");
                     plNext.codecs = attr.value(u"CODECS");
@@ -956,9 +956,9 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                     // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
                     // Take care about string parameters: some are documented as quoted-string and
                     // some as enumerated-string. The former shall be quoted, the latter shall not.
-                    text.append(UString::Format(u"#%s:BANDWIDTH=%d", {TagNames.name(STREAM_INF), it->bandwidth}));
+                    text.append(UString::Format(u"#%s:BANDWIDTH=%d", {TagNames.name(STREAM_INF), it->bandwidth.toInt()}));
                     if (it->averageBandwidth > 0) {
-                        text.append(UString::Format(u",AVERAGE-BANDWIDTH=%d", {it->averageBandwidth}));
+                        text.append(UString::Format(u",AVERAGE-BANDWIDTH=%d", {it->averageBandwidth.toInt()}));
                     }
                     if (it->frameRate > 0) {
                         text.append(UString::Format(u",FRAME-RATE=%d.%03d", {it->frameRate / 1000, it->frameRate % 1000}));
@@ -1015,7 +1015,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 if (!it->relativeURI.empty()) {
                     text.append(UString::Format(u"#%s:%d.%03d,%s\n", {TagNames.name(EXTINF), it->duration / MilliSecPerSec, it->duration % MilliSecPerSec, it->title}));
                     if (it->bitrate > 1024) {
-                        text.append(UString::Format(u"#%s:%d\n", {TagNames.name(BITRATE), it->bitrate / 1024}));
+                        text.append(UString::Format(u"#%s:%d\n", {TagNames.name(BITRATE), (it->bitrate / 1024).toInt()}));
                     }
                     if (it->gap) {
                         text.append(UString::Format(u"#%s\n", {TagNames.name(GAP)}));

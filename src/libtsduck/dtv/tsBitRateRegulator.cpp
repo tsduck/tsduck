@@ -172,7 +172,7 @@ void ts::BitRateRegulator::regulate()
 // Regulate the flow, to be called at each packet.
 //----------------------------------------------------------------------------
 
-void ts::BitRateRegulator::regulate(ts::BitRate current_bitrate, bool& flush, bool& bitrate_changed)
+void ts::BitRateRegulator::regulate(const BitRate& current_bitrate, bool& flush, bool& bitrate_changed)
 {
     // Output parameters.
     flush = bitrate_changed = false;

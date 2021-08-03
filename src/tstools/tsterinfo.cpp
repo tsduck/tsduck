@@ -174,7 +174,7 @@ Options::Options(int argc, char *argv[]) :
     getIntValue(uhf_channel, u"uhf-channel", 0);
     getIntValue(vhf_channel, u"vhf-channel", 0);
     getIntValue(hf_offset, u"offset-count", 0);
-    getFixedValue(bitrate, u"bitrate");
+    getValue(bitrate, u"bitrate");
     getIntValue(max_guess, u"max-guess", 1);
     getIntValue(constellation, u"constellation", ts::QAM_64);
     getIntValue(fec_hp, u"high-priority-fec", ts::FEC_AUTO);
@@ -342,8 +342,8 @@ int MainCode(int argc, char *argv[])
                 if (count > 0) {
                     std::cout << std::endl;
                 }
-                Display(u"Nominal bitrate", ts::UString::Fixed(it->tune.theoreticalBitrate()), u"b/s");
-                Display(u"Bitrate difference", ts::UString::Fixed(it->bitrate_diff), u"b/s");
+                Display(u"Nominal bitrate", ts::BitRateToString(it->tune.theoreticalBitrate()), u"b/s");
+                Display(u"Bitrate difference", ts::BitRateToString(it->bitrate_diff), u"b/s");
                 Display(u"Bandwidth", ts::UString::Decimal(it->tune.bandwidth.value()), u"Hz");
                 Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->tune.fec_hp.value()), u"");
                 Display(u"Constellation", ts::ModulationEnum.name(it->tune.modulation.value()), u"");

@@ -302,7 +302,7 @@ bool ts::EITInjectPlugin::getOptions()
 {
     duck.loadArgs(*this);
     getValue(_files, u"files");
-    getFixedValue(_eit_bitrate, u"bitrate");
+    getValue(_eit_bitrate, u"bitrate");
     getIntValue(_poll_interval, u"poll-interval", DEFAULT_POLL_INTERVAL);
     getIntValue(_min_stable_delay, u"min-stable-delay", DEFAULT_MIN_STABLE_DELAY);
     getIntValue(_ts_id, u"ts-id", -1);

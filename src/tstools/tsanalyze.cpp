@@ -103,7 +103,7 @@ Options::Options(int argc, char *argv[]) :
     analysis.loadArgs(duck, *this);
 
     getValue(infile, u"");
-    getFixedValue(bitrate, u"bitrate");
+    getValue(bitrate, u"bitrate");
     getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
 
     exitOnError();

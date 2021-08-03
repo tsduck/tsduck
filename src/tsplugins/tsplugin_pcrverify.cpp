@@ -185,7 +185,7 @@ bool ts::PCRVerifyPlugin::getOptions()
     _input_synch = present(u"input-synchronous");
     getIntValue(_jitter_max, u"jitter-max", _absolute ? DEFAULT_JITTER_MAX : DEFAULT_JITTER_MAX_US);
     getIntValue(_jitter_unreal, u"jitter-unreal", _absolute ? DEFAULT_JITTER_UNREAL : DEFAULT_JITTER_UNREAL_US);
-    getFixedValue(_bitrate, u"bitrate", 0);
+    getValue(_bitrate, u"bitrate", 0);
     _time_stamp = present(u"time-stamp");
     getIntValues(_pid_list, u"pid", true); // all PID's set by default
 

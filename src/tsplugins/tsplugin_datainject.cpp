@@ -279,7 +279,7 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
 bool ts::DataInjectPlugin::start()
 {
     // Command line options
-    getFixedValue(_max_bitrate, u"bitrate-max");
+    getValue(_max_bitrate, u"bitrate-max");
     getIntValue(_data_pid, u"pid");
     const size_t queue_size = intValue<size_t>(u"queue-size", DEFAULT_QUEUE_SIZE);
     _reuse_port = !present(u"no-reuse-port");
@@ -337,7 +337,7 @@ bool ts::DataInjectPlugin::start()
 
     // Clear client session.
     clearSession();
-    tsp->verbose(u"initial bandwidth allocation is %'d", {_req_bitrate == 0 ? u"unlimited" : UString::Fixed(_req_bitrate) + u" b/s"});
+    tsp->verbose(u"initial bandwidth allocation is %'d", {_req_bitrate == 0 ? u"unlimited" : BitRateToString(_req_bitrate) + u" b/s"});
 
     // TS processing state
     _cc_fixer.reset();

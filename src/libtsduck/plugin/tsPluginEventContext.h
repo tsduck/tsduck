@@ -78,15 +78,15 @@ namespace ts {
         //! at the time of the event. It can be more than @a plugin_packets if some packets were not
         //! submitted to the plugin (deleted or excluded packets).
         //!
-        PluginEventContext(uint32_t      event_code,
-                           UString       plugin_name,
-                           size_t        plugin_index,
-                           size_t        plugin_count,
-                           Plugin*       plugin,
-                           Object*       plugin_data = nullptr,
-                           BitRate       bitrate = 0,
-                           PacketCounter plugin_packets = 0,
-                           PacketCounter total_packets = 0);
+        PluginEventContext(uint32_t       event_code,
+                           UString        plugin_name,
+                           size_t         plugin_index,
+                           size_t         plugin_count,
+                           Plugin*        plugin,
+                           Object*        plugin_data = nullptr,
+                           const BitRate& bitrate = 0,
+                           PacketCounter  plugin_packets = 0,
+                           PacketCounter  total_packets = 0);
 
         //!
         //! Get the event code.

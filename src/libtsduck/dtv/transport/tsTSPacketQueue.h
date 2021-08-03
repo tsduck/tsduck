@@ -122,7 +122,7 @@ namespace ts {
         //! @param [in] bitrate Input bitrate. If zero, the input bitrate is unknown
         //! and will be computed from PCR's.
         //!
-        void setBitrate(BitRate bitrate);
+        void setBitrate(const BitRate& bitrate);
 
         //!
         //! Called by the writer thread to report the end of input thread.

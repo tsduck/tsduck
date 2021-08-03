@@ -29,6 +29,12 @@
 
 #pragma once
 
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+const ts::Fraction<INT,N> ts::Fraction<INT,N>::MIN(std::numeric_limits<INT>::min(), 1, true);
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+const ts::Fraction<INT,N> ts::Fraction<INT,N>::MAX(std::numeric_limits<INT>::max(), 1, true);
+
 
 //----------------------------------------------------------------------------
 // Manipulation on fraction sign.

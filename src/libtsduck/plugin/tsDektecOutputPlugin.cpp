@@ -862,7 +862,7 @@ bool ts::DektecOutputPlugin::start()
     // Get command line arguments
     getIntValue(_guts->dev_index, u"device", -1);
     getIntValue(_guts->chan_index, u"channel", -1);
-    getFixedValue(_guts->opt_bitrate, u"bitrate", 0);
+    getValue(_guts->opt_bitrate, u"bitrate", 0);
     _guts->detach_mode = present(u"instant-detach") ? DTAPI_INSTANT_DETACH : (present(u"wait-detach") ? DTAPI_WAIT_UNTIL_SENT : 0);
     _guts->mute_on_stop = false;
     _guts->preload_fifo = present(u"preload-fifo");
@@ -1186,7 +1186,7 @@ bool ts::DektecOutputPlugin::setBitrate(int symbol_rate, int dt_modulation, int 
 // Compute and display symbol rate if not explicitly specified by the user.
 //----------------------------------------------------------------------------
 
-void ts::DektecOutputPlugin::displaySymbolRate(BitRate ts_bitrate, int dt_modulation, int param0, int param1, int param2)
+void ts::DektecOutputPlugin::displaySymbolRate(const BitRate& ts_bitrate, int dt_modulation, int param0, int param1, int param2)
 {
     if (ts_bitrate > 0) {
         int symrate = -1;

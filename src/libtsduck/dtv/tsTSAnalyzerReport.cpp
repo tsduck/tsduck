@@ -65,7 +65,7 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzerReport::TSAnalyzerReport(DuckContext& duck, BitRate bitrate_hint) :
+ts::TSAnalyzerReport::TSAnalyzerReport(DuckContext& duck, const BitRate& bitrate_hint) :
     TSAnalyzer(duck, bitrate_hint)
 {
 }
@@ -297,7 +297,7 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
 // Display header of a service PID list
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const
+void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, const BitRate& bitrate, const BitRate& ts_bitrate, bool wide) const
 {
     grid.subSection();
     grid.setLayout({wide ? grid.both(WIDE_PID_COL1) : grid.right(DEF_PID_COL1),
@@ -315,7 +315,7 @@ void ts::TSAnalyzerReport::reportServiceHeader(Grid& grid, const UString& usage,
 // Display one line of a subtotal
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const
+void ts::TSAnalyzerReport::reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, const BitRate& bitrate, const BitRate& ts_bitrate, bool wide) const
 {
     grid.putLayout({{header, u""}, {usage, scrambled ? u"S " : u"C "}, {ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {bitrate})}});
 }

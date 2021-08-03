@@ -36,7 +36,7 @@ TSDUCK_SOURCE;
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::CyclingPacketizer::CyclingPacketizer(const DuckContext& duck, PID pid, StuffingPolicy stuffing, BitRate bitrate) :
+ts::CyclingPacketizer::CyclingPacketizer(const DuckContext& duck, PID pid, StuffingPolicy stuffing, const BitRate& bitrate) :
     Packetizer(duck, pid, this),
     _stuffing(stuffing),
     _bitrate(bitrate),
@@ -271,7 +271,7 @@ void ts::CyclingPacketizer::reset()
 // Useful only when using specific repetition rates for sections
 //----------------------------------------------------------------------------
 
-void ts::CyclingPacketizer::setBitRate(BitRate new_bitrate)
+void ts::CyclingPacketizer::setBitRate(const BitRate& new_bitrate)
 {
     if (_bitrate == new_bitrate) {
         // Do not do anything if bitrate unchanged.

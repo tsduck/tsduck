@@ -135,10 +135,10 @@ namespace ts {
             uint64_t lastPCR() const;
 
             // Compute the theoretical updated PCR at the given packet index. INVALID_PCR if unknown.
-            uint64_t updatedPCR(PacketCounter packet_index, BitRate bitrate) const;
+            uint64_t updatedPCR(PacketCounter packet_index, const BitRate& bitrate) const;
 
             // Compute an updated PTS or DTS at the given packet index. Unchanged if unknown.
-            uint64_t updatedPDTS(PacketCounter packet_index, BitRate bitrate, uint64_t original_pdts);
+            uint64_t updatedPDTS(PacketCounter packet_index, const BitRate& bitrate, uint64_t original_pdts);
         };
     };
 }
@@ -203,7 +203,7 @@ ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
 bool ts::PCRAdjustPlugin::getOptions()
 {
     getIntValues(_pids, u"pid", true);
-    getFixedValue(_user_bitrate, u"bitrate");
+    getValue(_user_bitrate, u"bitrate");
     _ignore_dts = present(u"ignore-dts");
     _ignore_pts = present(u"ignore-pts");
     _ignore_scrambled = present(u"ignore-scrambled");
@@ -272,7 +272,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::lastPCR() const
 // Compute the theoretical updated PCR at the given packet index.
 //----------------------------------------------------------------------------
 
-uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPCR(PacketCounter packet_index, BitRate bitrate) const
+uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPCR(PacketCounter packet_index, const BitRate& bitrate) const
 {
     if (last_updated_pcr != INVALID_PCR && (last_created_pcr == INVALID_PCR || last_created_packet < last_pcr_packet)) {
         // The most recent is an original packet with a previous PCR.
@@ -293,7 +293,7 @@ uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPCR(PacketCounter packet_index,
 // Compute an updated PTS or DTS at the given packet index.
 //----------------------------------------------------------------------------
 
-uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index, BitRate bitrate, uint64_t original_pdts)
+uint64_t ts::PCRAdjustPlugin::PIDContext::updatedPDTS(PacketCounter packet_index, const BitRate& bitrate, uint64_t original_pdts)
 {
     // If the PCR PID is unknown, we cannot compute anything and keep the original PTS/DTS.
     if (pcr_ctx.isNull()) {

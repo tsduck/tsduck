@@ -205,7 +205,7 @@ bool ts::LimitPlugin::start()
 {
     // Get option values
     _useWallClock = present(u"wall-clock");
-    getFixedValue(_maxBitrate, u"bitrate");
+    getValue(_maxBitrate, u"bitrate");
     getIntValue(_threshold1, u"threshold1", DEFAULT_THRESHOLD1);
     getIntValue(_threshold2, u"threshold2", DEFAULT_THRESHOLD2);
     getIntValue(_threshold3, u"threshold3", DEFAULT_THRESHOLD3);
