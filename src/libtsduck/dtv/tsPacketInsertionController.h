@@ -69,13 +69,13 @@ namespace ts {
         //! Declare a new value for the bitrate of the main transport stream.
         //! @param [in] rate New bitrate value. Zero means unknown bitrate.
         //!
-        void setMainBitRate(BitRate rate);
+        void setMainBitRate(const BitRate& rate);
 
         //!
         //! Declare a new value for the bitrate of the sub-stream.
         //! @param [in] rate New bitrate value. Zero means unknown bitrate.
         //!
-        void setSubBitRate(BitRate rate);
+        void setSubBitRate(const BitRate& rate);
 
         //!
         //! Get current bitrate of the main transport stream.
@@ -179,11 +179,11 @@ namespace ts {
             TS_NOBUILD_NOCOPY(BitRateControl);
         public:
             BitRateControl(Report& report, const UString& name);
-            bool setBitRate(BitRate rate); // return false on reset
+            bool setBitRate(const BitRate& rate); // return false on reset
             BitRate getBitRate() const { return _average; }
             void setResetThreshold(size_t percent) { _reset_percent = percent; }
         private:
-            size_t diffPercent(BitRate rate) const;
+            size_t diffPercent(const BitRate& rate) const;
         private:
             Report&        _report;
             const UString& _name;

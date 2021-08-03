@@ -171,8 +171,8 @@ bool ts::ReducePlugin::getOptions()
 {
     bool ok = true;
 
-    getFixedValue(_target_bitrate, u"target-bitrate");
-    getFixedValue(_input_bitrate, u"input-bitrate");
+    getValue(_target_bitrate, u"target-bitrate");
+    getValue(_input_bitrate, u"input-bitrate");
     getIntValue(_window_pkts, u"packet-window", DEFAULT_PACKET_WINDOW);
     getIntValue(_window_ms, u"time-window");
     getIntValues(_pcr_pids, u"reference-pcr-pid", true);
@@ -332,11 +332,13 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
     const BitRate removed_bitrate = bitrate - _target_bitrate;
 
     // Compute how many bits should be removed from this window: window-size-in-bits * removed-bitrate / total-bitrate.
-    // However, there is a risk of intermediate arithmetic overflow, even on 64 bits for bitrate (fixed point type).
-    // This has been seen for window size of 30,000 packets and 45 Mb/s bitrate reduction.
-    // To solve this, we compute a "sub-window size" which can be computed in bits without overflow.
-    // We start by sub-window-size = window-size. In case of overflow, we use half size and iterate.
+    // However, when BitRate is implemented as a fixed-point types, there is a risk of intermediate arithmetic overflow,
+    // even on 64 bits for bitrate. This has been seen for window size of 30,000 packets and 45 Mb/s bitrate reduction.
+    // To solve this, we compute a "sub-window size" which can be computed in bits without overflow. We start by
+    // sub-window-size = window-size. In case of overflow, we use half size and iterate. This problem does not exist
+    // with fractions instead of fixed-point.
     size_t subwin_size = win.size();
+#if !defined(TS_BITRATE_FRACTION)
     bool overflow = true;
     while (overflow && subwin_size > 16) {
         const size_t subwin_bits = subwin_size * PKT_SIZE_BITS;
@@ -345,6 +347,7 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
             subwin_size /= 2;
         }
     }
+#endif
 
     // Loop on each sub-window inside the window.
     size_t subwin_start = 0;

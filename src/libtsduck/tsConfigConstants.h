@@ -33,11 +33,25 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+
+#if defined(DOXYGEN)
+//!
+//! If this symbol is defined, bitrate values are represented as fractions of 64-bit integers.
+//! Without this symbol, bitrates are represented as fixed-point numbers of a given compile-time precision.
+//! Using fraction instead of fixed-point numbers gives a better precision but seriously impacts the
+//! overall performance os computations involving bitrates.
+//! @see ts::Fraction
+//! @see ts::BitRate
+//!
+#define TS_BITRATE_FRACTION 1
+#endif
+
 //!
 //! Define the precision (number of decimal digits) of bitrate values.
-//! Bitrates are defined as fixed-point numbers of a given compile-time precision.
+//! This is used when bitrates are reprensented as fixed-point numbers instead of fractions.
 //! @see ts::FixedPoint
 //! @see ts::BitRate
+//! @see TS_BITRATE_FRACTION
 //!
 #if !defined(TS_BITRATE_DECIMALS)
 #define TS_BITRATE_DECIMALS 1

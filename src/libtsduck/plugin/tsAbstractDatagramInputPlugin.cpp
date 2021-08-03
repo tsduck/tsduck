@@ -278,8 +278,8 @@ size_t ts::AbstractDatagramInputPlugin::receive(TSPacket* buffer, TSPacketMetada
             const BitRate br_current = ms_current == 0 ? 0 : BitRate(_packets_0 * PKT_SIZE_BITS * MilliSecPerSec) / ms_current;
             const BitRate br_average = ms_total == 0 ? 0 : BitRate(_packets * PKT_SIZE_BITS * MilliSecPerSec) / ms_total;
             tsp->info(u"input bitrate: %s, average: %s", {
-                br_current == 0 ? u"undefined" : UString::Fixed(br_current) + u" b/s",
-                br_average == 0 ? u"undefined" : UString::Fixed(br_average) + u" b/s"});
+                br_current == 0 ? u"undefined" : BitRateToString(br_current) + u" b/s",
+                br_average == 0 ? u"undefined" : BitRateToString(br_average) + u" b/s"});
         }
     }
 

@@ -248,7 +248,7 @@ bool ts::InjectPlugin::getOptions()
     _replace = present(u"replace");
     _poll_files = present(u"poll-files");
     _crc_op = present(u"force-crc") ? CRC32::COMPUTE : CRC32::CHECK;
-    getFixedValue(_pid_bitrate, u"bitrate", 0);
+    getValue(_pid_bitrate, u"bitrate", 0);
     getIntValue(_pid_inter_pkt, u"inter-packet", 0);
     getIntValue(_eval_interval, u"evaluate-interval", DEF_EVALUATE_INTERVAL);
 

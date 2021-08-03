@@ -107,7 +107,7 @@ void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool
 //----------------------------------------------------------------------------
 
 template <class FIXED, typename INT, const size_t PREC, typename std::enable_if<std::is_base_of<ts::FixedPoint<INT,PREC>, FIXED>::value, int>::type N>
-void ts::Args::getFixedValue(FIXED& value, const UChar* name, FIXED def_value, size_t index) const
+void ts::Args::getValue(FIXED& value, const UChar* name, FIXED def_value, size_t index) const
 {
     INT i = 0;
     getIntValue(i, name, def_value.raw(), index);
@@ -116,16 +116,16 @@ void ts::Args::getFixedValue(FIXED& value, const UChar* name, FIXED def_value, s
 
 template <class FIXED, typename INT2, typename INT, const size_t PREC,
           typename std::enable_if<std::is_base_of<ts::FixedPoint<INT,PREC>, FIXED>::value && std::is_integral<INT2>::value, int>::type N>
-void ts::Args::getFixedValue(FIXED& value, const UChar* name, INT2 def_value, size_t index) const
+void ts::Args::getValue(FIXED& value, const UChar* name, INT2 def_value, size_t index) const
 {
-    getFixedValue<FIXED>(value, name, FIXED(def_value), index);
+    getValue<FIXED>(value, name, FIXED(def_value), index);
 }
 
 template <class FIXED, typename INT, const size_t PREC, typename std::enable_if<std::is_base_of<ts::FixedPoint<INT,PREC>, FIXED>::value, int>::type N>
 FIXED ts::Args::fixedValue(const UChar* name, FIXED def_value, size_t index) const
 {
     FIXED value(def_value);
-    getFixedValue<FIXED>(value, name, def_value, index);
+    getValue<FIXED>(value, name, def_value, index);
     return value;
 }
 
@@ -134,7 +134,7 @@ template <class FIXED, typename INT2, typename INT, const size_t PREC,
 FIXED ts::Args::fixedValue(const UChar* name, INT2 def_value, size_t index) const
 {
     FIXED value(def_value);
-    getFixedValue<FIXED>(value, name, FIXED(def_value), index);
+    getValue<FIXED>(value, name, FIXED(def_value), index);
     return value;
 }
 
@@ -144,7 +144,7 @@ FIXED ts::Args::fixedValue(const UChar* name, INT2 def_value, size_t index) cons
 //----------------------------------------------------------------------------
 
 template <class FRAC, typename INT, typename std::enable_if<std::is_base_of<ts::Fraction<INT>, FRAC>::value, int>::type N>
-void ts::Args::getFractionValue(FRAC& val, const UChar* name, const FRAC& def_value, size_t index) const
+void ts::Args::getValue(FRAC& val, const UChar* name, const FRAC& def_value, size_t index) const
 {
     if (!val.fromString(value(name, u"", index))) {
         val = def_value;
@@ -152,16 +152,16 @@ void ts::Args::getFractionValue(FRAC& val, const UChar* name, const FRAC& def_va
 }
 
 template <class FRAC, typename INT2, typename INT, typename std::enable_if<std::is_base_of<ts::Fraction<INT>, FRAC>::value && std::is_integral<INT2>::value, int>::type N>
-void ts::Args::getFractionValue(FRAC& value, const UChar* name, INT2 def_value, size_t index) const
+void ts::Args::getValue(FRAC& value, const UChar* name, INT2 def_value, size_t index) const
 {
-    getFractionValue<FRAC>(value, name, FRAC(def_value), index);
+    getValue<FRAC>(value, name, FRAC(def_value), index);
 }
 
 template <class FRAC, typename INT, typename std::enable_if<std::is_base_of<ts::Fraction<INT>, FRAC>::value, int>::type N>
 FRAC ts::Args::fractionValue(const UChar* name, const FRAC& def_value, size_t index) const
 {
     FRAC value(def_value);
-    getFractionValue<FRAC>(value, name, def_value, index);
+    getValue<FRAC>(value, name, def_value, index);
     return value;
 }
 
@@ -169,7 +169,7 @@ template <class FRAC, typename INT2, typename INT, typename std::enable_if<std::
 FRAC ts::Args::fractionValue(const UChar* name, INT2 def_value, size_t index) const
 {
     FRAC value(def_value);
-    getFractionValue<FRAC>(value, name, FRAC(def_value), index);
+    getValue<FRAC>(value, name, FRAC(def_value), index);
     return value;
 }
 

@@ -368,7 +368,7 @@ bool ts::ScramblerPlugin::getOptions()
     _ignore_scrambled = present(u"ignore-scrambled");
     getIntValue(_partial_scrambling, u"partial-scrambling", 1);
     getIntValue(_ecm_pid, u"pid-ecm", PID_NULL);
-    getFixedValue(_ecm_bitrate, u"bitrate-ecm", DEFAULT_ECM_BITRATE);
+    getValue(_ecm_bitrate, u"bitrate-ecm", DEFAULT_ECM_BITRATE);
 
     // Decode hexa data.
     if (!value(u"private-data").hexaDecode(_ca_desc_private)) {

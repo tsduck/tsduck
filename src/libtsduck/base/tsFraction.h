@@ -83,6 +83,16 @@ namespace ts {
         typedef INT int_t;
 
         //!
+        //! The minimum representable value of this fraction type.
+        //!
+        static const Fraction MIN;
+
+        //!
+        //! The maximum representable value of this fraction type.
+        //!
+        static const Fraction MAX;
+
+        //!
         //! Default constructor, implicitly initialized to zero.
         //!
         Fraction() : _num(0), _den(1) {}

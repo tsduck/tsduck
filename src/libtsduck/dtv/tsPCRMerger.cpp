@@ -78,7 +78,7 @@ void ts::PCRMerger::reset()
 // Process one packet from the TS to merge.
 //----------------------------------------------------------------------------
 
-void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_packet_index, ts::BitRate main_bitrate)
+void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_packet_index, const BitRate& main_bitrate)
 {
     // Collect PMT's from the merged TS.
     _demux.feedPacket(pkt);
@@ -217,7 +217,7 @@ ts::PCRMerger::PIDContextPtr ts::PCRMerger::getContext(PID pid)
 // Get the adjusted DTS or PTS according to a bitrate and current packet.
 //----------------------------------------------------------------------------
 
-uint64_t ts::PCRMerger::PIDContext::adjustedPDTS(PacketCounter current_pkt, BitRate bitrate) const
+uint64_t ts::PCRMerger::PIDContext::adjustedPDTS(PacketCounter current_pkt, const BitRate& bitrate) const
 {
     // Compute adjusted DTS and PTS.
     uint64_t dts = last_dts;

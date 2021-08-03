@@ -43,7 +43,7 @@ const ts::UString ts::TSAnalyzer::UNREFERENCED(u"Unreferenced");
 // Constructor for the TS analyzer
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, BitRate bitrate_hint) :
+ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint) :
     _duck(duck),
     _ts_id(0),
     _ts_id_valid(false),
@@ -1583,7 +1583,7 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
 // optional: if specified as zero, the analysis is based on the PCR values.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::setBitrateHint(BitRate bitrate)
+void ts::TSAnalyzer::setBitrateHint(const BitRate& bitrate)
 {
     _ts_user_bitrate = bitrate;
     _modified = true;

@@ -574,7 +574,7 @@ void ts::EITGenerator::setOptions(EITOption options)
 // Set TS bitrate and maximum EIT bitrate of the EIT PID.
 //----------------------------------------------------------------------------
 
-void ts::EITGenerator::setBitRateField(BitRate EITGenerator::* field, BitRate bitrate)
+void ts::EITGenerator::setBitRateField(BitRate EITGenerator::* field, const BitRate& bitrate)
 {
     // Update the target field (_ts_bitrate or _max_bitrate) if modified.
     if (this->*field != bitrate) {

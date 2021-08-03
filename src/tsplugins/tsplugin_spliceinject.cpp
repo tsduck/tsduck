@@ -446,7 +446,7 @@ bool ts::SpliceInjectPlugin::getOptions()
     getIntValue(_inject_pid_opt, u"pid", PID_NULL);
     getIntValue(_pcr_pid_opt, u"pcr-pid", PID_NULL);
     getIntValue(_pts_pid_opt, u"pts-pid", PID_NULL);
-    getFixedValue(_min_bitrate, u"min-bitrate");
+    getValue(_min_bitrate, u"min-bitrate");
     getIntValue(_min_inter_packet, u"min-inter-packet");
     _delete_files = present(u"delete-files");
     _reuse_port = !present(u"no-reuse-port");

@@ -239,8 +239,8 @@ bool ts::BitrateMonitorPlugin::getOptions()
     getValue(_tag, u"tag");
     getValue(_alarm_command, u"alarm-command");
     getIntValue(_window_size, u"time-interval", DEFAULT_TIME_WINDOW_SIZE);
-    getFixedValue(_min_bitrate, u"min", DEFAULT_BITRATE_MIN);
-    getFixedValue(_max_bitrate, u"max", DEFAULT_BITRATE_MAX);
+    getValue(_min_bitrate, u"min", DEFAULT_BITRATE_MIN);
+    getValue(_max_bitrate, u"max", DEFAULT_BITRATE_MAX);
     getIntValue(_periodic_bitrate, u"periodic-bitrate", 0);
     getIntValues(_labels_below, u"set-label-below");
     getIntValues(_labels_normal, u"set-label-normal");

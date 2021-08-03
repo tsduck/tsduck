@@ -255,7 +255,7 @@ namespace ts {
         //! @param [in] bitrate Maximum bitrate of the EIT PID.
         //! @see setTransportStreamBitRate()
         //!
-        void setMaxBitRate(BitRate bitrate) { setBitRateField(&EITGenerator::_max_bitrate, bitrate); }
+        void setMaxBitRate(const BitRate& bitrate) { setBitRateField(&EITGenerator::_max_bitrate, bitrate); }
 
         //!
         //! Set the current time in the stream processing.
@@ -497,7 +497,7 @@ namespace ts {
         size_t               _obsolete_count;    // Number of obsolete sections in the injection lists.
 
         // Set a bitrate field and update EIT inter-packet.
-        void setBitRateField(BitRate EITGenerator::* field, BitRate bitrate);
+        void setBitRateField(BitRate EITGenerator::* field, const BitRate& bitrate);
 
         // Update the EIT database according to the current time.
         // Obsolete events, sections and segments are discarded.

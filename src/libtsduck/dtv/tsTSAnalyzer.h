@@ -72,7 +72,7 @@ namespace ts {
         //! packets. The bitrate hint is optional: if specified as zero, the
         //! analysis is based on the PCR values.
         //!
-        explicit TSAnalyzer(DuckContext& duck, BitRate bitrate_hint = 0);
+        explicit TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint = 0);
 
         //!
         //! Destructor.
@@ -98,7 +98,7 @@ namespace ts {
         //! packets. The bitrate hint is optional: if specified as zero, the
         //! analysis is based on the PCR values.
         //!
-        void setBitrateHint(BitRate bitrate_hint = 0);
+        void setBitrateHint(const BitRate& bitrate_hint = 0);
 
         //!
         //! Set the number of consecutive packet errors threshold.

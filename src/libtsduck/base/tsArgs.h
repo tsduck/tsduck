@@ -991,10 +991,10 @@ namespace ts {
                   typename INT = typename FIXED::int_t,
                   const size_t PREC = FIXED::PRECISION,
                   typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
-        void getFixedValue(FIXED& value,
-                           const UChar* name = nullptr,
-                           FIXED def_value = FIXED(0),
-                           size_t index = 0) const;
+        void getValue(FIXED& value,
+                      const UChar* name = nullptr,
+                      FIXED def_value = FIXED(0),
+                      size_t index = 0) const;
 
         //!
         //! Get the value of a fixed-precision number option in the last analyzed command line.
@@ -1020,10 +1020,10 @@ namespace ts {
                   typename INT = typename FIXED::int_t,
                   const size_t PREC = FIXED::PRECISION,
                   typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value && std::is_integral<INT2>::value, int>::type = 0>
-        void getFixedValue(FIXED& value,
-                           const UChar* name = nullptr,
-                           INT2 def_value = static_cast<INT2>(0),
-                           size_t index = 0) const;
+        void getValue(FIXED& value,
+                      const UChar* name = nullptr,
+                      INT2 def_value = static_cast<INT2>(0),
+                      size_t index = 0) const;
 
         //!
         //! Get the value of a fixed-precision number option in the last analyzed command line.
@@ -1090,10 +1090,10 @@ namespace ts {
         template <class FRAC,
                   typename INT = typename FRAC::int_t,
                   typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
-        void getFractionValue(FRAC& value,
-                              const UChar* name = nullptr,
-                              const FRAC& def_value = FRAC(0),
-                              size_t index = 0) const;
+        void getValue(FRAC& value,
+                      const UChar* name = nullptr,
+                      const FRAC& def_value = FRAC(0),
+                      size_t index = 0) const;
 
         //!
         //! Get the value of a fraction option in the last analyzed command line.
@@ -1114,10 +1114,10 @@ namespace ts {
                   typename INT2,
                   typename INT = typename FRAC::int_t,
                   typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value && std::is_integral<INT2>::value, int>::type = 0>
-        void getFractionValue(FRAC& value,
-                              const UChar* name = nullptr,
-                              INT2 def_value = static_cast<INT2>(0),
-                              size_t index = 0) const;
+        void getValue(FRAC& value,
+                      const UChar* name = nullptr,
+                      INT2 def_value = static_cast<INT2>(0),
+                      size_t index = 0) const;
 
         //!
         //! Get the value of a fraction option in the last analyzed command line.

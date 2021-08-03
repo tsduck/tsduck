@@ -35,6 +35,7 @@
 #pragma once
 #include "tshls.h"
 #include "tsFixedPoint.h"
+#include "tsFraction.h"
 
 namespace ts {
     namespace hls {
@@ -63,7 +64,7 @@ namespace ts {
             void clear() { _map.clear(); }
 
             //!
-            //! Chek if an attribute is present.
+            //! Check if an attribute is present.
             //! @param [in] name Attribute name.
             //! @return True if the attribute is present.
             //!
@@ -94,16 +95,37 @@ namespace ts {
 
             //!
             //! Get the value of a fixed-point number attribute.
-            //! @tparam INT The underlying signed integer type.
-            //! @tparam PREC The decimal precision in digits.
+            //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+            //! to enforce a fixed-point type and should be left to their default values.
             //! @param [out] val Decoded value.
             //! @param [in] name Attribute name.
             //! @param [in] defValue Default value if not present.
             //!
-            template <typename INT, const size_t PREC>
-            void getFixedValue(FixedPoint<INT, PREC>& val, const UString& name, FixedPoint<INT, PREC> defValue = FixedPoint<INT, PREC>(0)) const
+            template <class FIXED,
+                      typename INT = typename FIXED::int_t,
+                      const size_t PREC = FIXED::PRECISION,
+                      typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
+            void getValue(FIXED& val, const UString& name, FIXED defValue = FIXED(0)) const
             {
                 if (!value(name).toFixed(val)) {
+                    val = defValue;
+                }
+            }
+
+            //!
+            //! Get the value of a fraction attribute.
+            //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+            //! to enforce a fraction type and should be left to their default values.
+            //! @param [out] val Decoded value.
+            //! @param [in] name Attribute name.
+            //! @param [in] defValue Default value if not present.
+            //!
+            template <class FRAC,
+                      typename INT = typename FRAC::int_t,
+                      typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+            void getValue(FRAC& val, const UString& name, const FRAC& defValue = FRAC(0)) const
+            {
+                if (!val.fromString(value(name))) {
                     val = defValue;
                 }
             }
