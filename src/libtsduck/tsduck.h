@@ -445,6 +445,7 @@
 #include "tsPacketizer.h"
 #include "tsPagerArgs.h"
 #include "tsParentalRatingDescriptor.h"
+#include "tsParseInterface.h"
 #include "tsPartialReceptionDescriptor.h"
 #include "tsPartialTransportStreamDescriptor.h"
 #include "tsPAT.h"

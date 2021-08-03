@@ -238,3 +238,37 @@ bool ts::Fraction<INT,N>::operator>(const Fraction& x) const
 {
     return (_den == x._den) ? (_num > x._num) : (_num * x._den > x._num * _den);
 }
+
+
+//----------------------------------------------------------------------------
+// Implementation of interfaces from/to string.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+ts::UString ts::Fraction<INT,N>::toString() const
+{
+    return _den == 1 ? UString::Decimal(_num) : UString::Decimal(_num) + u'/' + UString::Decimal(_den);
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+bool ts::Fraction<INT,N>::fromString(const UString& str)
+{
+    const size_t slash = str.find(u'/');
+    if (slash == NPOS) {
+        _den = 1;
+        return str.toInteger(_num, UString::DEFAULT_THOUSANDS_SEPARATOR);
+    }
+    else {
+        if (str.substr(0, slash).toInteger(_num, UString::DEFAULT_THOUSANDS_SEPARATOR) &&
+            str.substr(slash + 1).toInteger(_den, UString::DEFAULT_THOUSANDS_SEPARATOR) &&
+            _den != 0)
+        {
+            reduce();
+            return true;
+        }
+        else {
+            _den = 1; // enforce != 0
+            return false;
+        }
+    }
+}

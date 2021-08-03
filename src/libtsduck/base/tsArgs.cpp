@@ -117,6 +117,7 @@ ts::Args::IOption::IOption(const UChar* name_,
             max_value = 0;
             break;
         case INTEGER:
+        case FRACTION:
             if (max_value < min_value) {
                 throw ArgsError(u"invalid value range for " + display());
             }
@@ -1090,6 +1091,25 @@ bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
         Tristate t;
         if (!val.value().toTristate(t)) {
             error(u"invalid value %s for %s, use one of %s", {val.value(), opt.display(), UString::TristateNamesList()});
+            return false;
+        }
+    }
+    else if (opt.type == FRACTION) {
+        // We have not remembered the original fraction type but we limited the min and max values
+        // to the integer type of the fraction. So, we may simply analyze it as an int64_t fraction
+        // and then check the bounds. We keep the arg as a string value and will parse it again
+        // when the value is queried later.
+        Fraction<int64_t> f;
+        if (!f.fromString(val.value())) {
+            error(u"invalid fraction value %s for %s", {val.value(), opt.display()});
+            return false;
+        }
+        else if (f < opt.min_value) {
+            error(u"value for %s must be >= %'d", {opt.display(), opt.min_value});
+            return false;
+        }
+        else if (f > opt.max_value) {
+            error(u"value for %s must be <= %'d", {opt.display(), opt.max_value});
             return false;
         }
     }

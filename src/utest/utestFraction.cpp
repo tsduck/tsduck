@@ -54,6 +54,8 @@ public:
     void testMax();
     void testComparison();
     void testArithmetics();
+    void testToString();
+    void testFromString();
     [[noreturn]] void testDivideZero();
     [[noreturn]] void testDivideZeroInt();
 
@@ -69,6 +71,8 @@ public:
     TSUNIT_TEST(testArithmetics);
     TSUNIT_TEST_EXCEPTION(testDivideZero, std::underflow_error);
     TSUNIT_TEST_EXCEPTION(testDivideZeroInt, std::underflow_error);
+    TSUNIT_TEST(testToString);
+    TSUNIT_TEST(testFromString);
     TSUNIT_TEST_END();
 };
 
@@ -358,4 +362,38 @@ void FractionTest::testDivideZeroInt()
     int i = 2;
     a = Frac(1, 2) / (i - 2);
     TSUNIT_FAIL("should not get there");
+}
+
+void FractionTest::testToString()
+{
+    typedef ts::Fraction<int32_t> Frac;
+    TSUNIT_EQUAL(u"12,345", Frac(12345).toString());
+    TSUNIT_EQUAL(u"12,345/4", Frac(12345, 4).toString());
+    TSUNIT_EQUAL(u"0", Frac().toString());
+    TSUNIT_EQUAL(u"-1/2", Frac(1, -2).toString());
+}
+
+void FractionTest::testFromString()
+{
+    ts::Fraction<int32_t> a;
+
+    TSUNIT_ASSERT(!a.fromString(u""));
+    TSUNIT_ASSERT(!a.fromString(u"a1"));
+    TSUNIT_ASSERT(!a.fromString(u"1/3a"));
+
+    TSUNIT_ASSERT(a.fromString(u"0"));
+    TSUNIT_EQUAL(0, a.numerator());
+    TSUNIT_EQUAL(1, a.denominator());
+
+    TSUNIT_ASSERT(a.fromString(u" -12,345 / 56,789"));
+    TSUNIT_EQUAL(-12345, a.numerator());
+    TSUNIT_EQUAL(56789, a.denominator());
+
+    TSUNIT_ASSERT(a.fromString(u"56789/12345"));
+    TSUNIT_EQUAL(56789, a.numerator());
+    TSUNIT_EQUAL(12345, a.denominator());
+
+    TSUNIT_ASSERT(a.fromString(u" 123456 "));
+    TSUNIT_EQUAL(123456, a.numerator());
+    TSUNIT_EQUAL(1, a.denominator());
 }

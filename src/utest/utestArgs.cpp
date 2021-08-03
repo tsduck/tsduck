@@ -75,6 +75,7 @@ public:
     void testRanges();
     void testDecimals();
     void testFixedPoint();
+    void testFraction();
 
     TSUNIT_TEST_BEGIN(ArgsTest);
     TSUNIT_TEST(testAccessors);
@@ -101,6 +102,7 @@ public:
     TSUNIT_TEST(testRanges);
     TSUNIT_TEST(testDecimals);
     TSUNIT_TEST(testFixedPoint);
+    TSUNIT_TEST(testFraction);
     TSUNIT_TEST_END();
 
 private:
@@ -881,4 +883,35 @@ void ArgsTest::testFixedPoint()
 
     TSUNIT_EQUAL(12345, args.fixedValue<Fixed>(u"", 0, 2).raw());
     TSUNIT_EQUAL(12,    args.fixedValue<Fixed>(u"", 0, 2).toInt());
+}
+
+// Test case: fraction types.
+void ArgsTest::testFraction()
+{
+    typedef ts::Fraction<int32_t> Frac;
+
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+    args.redirectReport(&CERR);
+    args.option<Frac>(u"");
+
+    TSUNIT_ASSERT(args.analyze(u"test", {u"1", u" -2", u"12/345", u" -6/12"}));
+    TSUNIT_EQUAL(4, args.count(u""));
+
+    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 0, 0).numerator());
+    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 0, 0).denominator());
+
+    TSUNIT_EQUAL(-2, args.fractionValue<Frac>(u"", 0, 1).numerator());
+    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 0, 1).denominator());
+
+    TSUNIT_EQUAL(4, args.fractionValue<Frac>(u"", 0, 2).numerator());
+    TSUNIT_EQUAL(115, args.fractionValue<Frac>(u"", 0, 2).denominator());
+
+    TSUNIT_EQUAL(-1, args.fractionValue<Frac>(u"", 0, 3).numerator());
+    TSUNIT_EQUAL(2, args.fractionValue<Frac>(u"", 0, 3).denominator());
+
+    TSUNIT_EQUAL(5, args.fractionValue<Frac>(u"", 5, 4).numerator());
+    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 5, 4).denominator());
+
+    TSUNIT_EQUAL(3, args.fractionValue<Frac>(u"", Frac(3, 4), 4).numerator());
+    TSUNIT_EQUAL(4, args.fractionValue<Frac>(u"", Frac(3, 4), 4).denominator());
 }

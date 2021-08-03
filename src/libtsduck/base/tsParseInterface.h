@@ -28,20 +28,37 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Abstract interface converting a UString to the object which implements it.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 28
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2453
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class UString;
+
+    //!
+    //! An interface to be implemented by classes supporting a conversion from UString.
+    //! @ingroup cpp
+    //! @see StringifyInterface
+    //!
+    class TSDUCKDLL ParseInterface
+    {
+    public:
+        //!
+        //! Convert from a string object.
+        //! The content of this object is updated from the parsed string.
+        //! @param [in] str A string to parse, representing this object.
+        //! @return True if the @a str is valid, false otherwise.
+        //! In case of parsing error, the content of this object is undefined.
+        //!
+        virtual bool fromString(const UString& str) = 0;
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~ParseInterface();
+    };
+}

@@ -38,6 +38,7 @@
 #include "tsEnumeration.h"
 #include "tsVariable.h"
 #include "tsFixedPoint.h"
+#include "tsFraction.h"
 
 namespace ts {
     //!
@@ -330,6 +331,7 @@ namespace ts {
             INT16,    //!< Integer -32,768..32,767.
             INT32,    //!< Integer -2,147,483,648..2,147,483,647.
             INT64,    //!< 64-bit signed.
+            FRACTION, //!< A fraction value, see template type Fraction.
             TRISTATE, //!< Tristate value, ts::MAYBE if absent.
         };
 
@@ -397,28 +399,59 @@ namespace ts {
         //! Add the definition of an option, the value being from a fixed-precision number type.
         //!
         //! This method is typically invoked in the constructor of a subclass.
-        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+        //! to enforce a fixed-point type and should be left to their default values.
         //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
         //! @param [in] short_name Optional one letter short name.
         //! @param [in] min_occur Minimum number of occurences of this option on the command line.
         //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
-        //! @param [in] min_value Minimum value, ignored if @a type is not @link INTEGER @endlink.
-        //! @param [in] max_value Maximum value, ignored if @a type is not @link INTEGER @endlink.
+        //! @param [in] min_value Minimum value.
+        //! @param [in] max_value Maximum value.
         //! @param [in] optional  When true, the option's value is optional.
         //! @return A reference to this instance.
         //!
-        template <class FIXED>
+        template <class FIXED,
+                  typename INT = typename FIXED::int_t,
+                  const size_t PREC = FIXED::PRECISION,
+                  typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
         Args& option(const UChar* name,
                      UChar        short_name = 0,
                      size_t       min_occur = 0,
                      size_t       max_occur = 0,
-                     FixedPoint<typename FIXED::int_t, FIXED::PRECISION>
-                                  min_value = 0,
-                     FixedPoint<typename FIXED::int_t, FIXED::PRECISION>
-                                  max_value = FixedPoint<typename FIXED::int_t, FIXED::PRECISION>(std::numeric_limits<typename FIXED::int_t>::max(), true),
+                     FIXED        min_value = 0,
+                     FIXED        max_value = FIXED(std::numeric_limits<typename FIXED::int_t>::max(), true),
                      bool         optional = false)
         {
             return option(name, short_name, INTEGER, min_occur, max_occur, min_value.raw(), max_value.raw(), optional, FIXED::PRECISION);
+        }
+
+        //!
+        //! Add the definition of an option, the value being a fraction type.
+        //!
+        //! This method is typically invoked in the constructor of a subclass.
+        //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+        //! to enforce a fraction type and should be left to their default values.
+        //! @param [in] name Long name of option. 0 or "" means a parameter, not an option.
+        //! @param [in] short_name Optional one letter short name.
+        //! @param [in] min_occur Minimum number of occurences of this option on the command line.
+        //! @param [in] max_occur Maximum number of occurences. 0 means default : 1 for an option, unlimited for a parameters.
+        //! @param [in] min_value Minimum value. Use an integer value, not a fraction.
+        //! @param [in] max_value Maximum value. Use an integer value, not a fraction.
+        //! @param [in] optional  When true, the option's value is optional.
+        //! @return A reference to this instance.
+        //!
+        template <class FRAC,
+                  typename INT = typename FRAC::int_t,
+                  typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+        Args& option(const UChar* name,
+                     UChar        short_name = 0,
+                     size_t       min_occur = 0,
+                     size_t       max_occur = 0,
+                     int64_t      min_value = bounded_cast<int64_t>(std::numeric_limits<INT>::min()),
+                     int64_t      max_value = bounded_cast<int64_t>(std::numeric_limits<INT>::max()),
+                     bool         optional = false)
+        {
+            return option(name, short_name, FRACTION, min_occur, max_occur, min_value, max_value, optional);
         }
 
         //!
@@ -941,7 +974,8 @@ namespace ts {
         //! the validity of the supplied option value has been checked by the analyze() method.
         //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
         //!
-        //! @tparam INT The underlying signed integer type for FixedPoint.
+        //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+        //! to enforce a fixed-point type and should be left to their default values.
         //! @tparam PREC The decimal precision in digits for FixedPoint.
         //! @param [out] value A variable receiving the value of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
@@ -953,10 +987,13 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-        void getFixedValue(FixedPoint<INT,PREC>& value,
+        template <class FIXED,
+                  typename INT = typename FIXED::int_t,
+                  const size_t PREC = FIXED::PRECISION,
+                  typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
+        void getFixedValue(FIXED& value,
                            const UChar* name = nullptr,
-                           FixedPoint<INT,PREC> def_value = FixedPoint<INT,PREC>(0),
+                           FIXED def_value = FIXED(0),
                            size_t index = 0) const;
 
         //!
@@ -966,8 +1003,8 @@ namespace ts {
         //! the validity of the supplied option value has been checked by the analyze() method.
         //! If analyze() did not fail, the option value is guaranteed to be in the declared range.
         //!
-        //! @tparam INT The underlying signed integer type for FixedPoint.
-        //! @tparam PREC The decimal precision in digits for FixedPoint.
+        //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+        //! to enforce a fixed-point type and should be left to their default values.
         //! @param [out] value A variable receiving the value of the option or parameter.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
@@ -978,8 +1015,12 @@ namespace ts {
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
-        template <typename INT, const size_t PREC, typename INT2, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && std::is_integral<INT2>::value, int>::type = 0>
-        void getFixedValue(FixedPoint<INT,PREC>& value,
+        template <class FIXED,
+                  typename INT2,
+                  typename INT = typename FIXED::int_t,
+                  const size_t PREC = FIXED::PRECISION,
+                  typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value && std::is_integral<INT2>::value, int>::type = 0>
+        void getFixedValue(FIXED& value,
                            const UChar* name = nullptr,
                            INT2 def_value = static_cast<INT2>(0),
                            size_t index = 0) const;
@@ -987,7 +1028,8 @@ namespace ts {
         //!
         //! Get the value of a fixed-precision number option in the last analyzed command line.
         //!
-        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+        //! to enforce a fixed-point type and should be left to their default values.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
@@ -998,15 +1040,19 @@ namespace ts {
         //! first occurence.
         //! @return The integer value of the option or parameter.
         //!
-        template <class FIXED>
+        template <class FIXED,
+                  typename INT = typename FIXED::int_t,
+                  const size_t PREC = FIXED::PRECISION,
+                  typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
         FIXED fixedValue(const UChar* name = nullptr,
-                         FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value = FixedPoint<typename FIXED::int_t, FIXED::PRECISION>(0),
+                         FIXED def_value = FIXED(0),
                          size_t index = 0) const;
 
         //!
         //! Get the value of a fixed-precision number option in the last analyzed command line.
         //!
-        //! @tparam FIXED An instantiation of FixedPoint.
+        //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+        //! to enforce a fixed-point type and should be left to their default values.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
@@ -1017,10 +1063,106 @@ namespace ts {
         //! first occurence.
         //! @return The integer value of the option or parameter.
         //!
-        template <class FIXED, typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        template <class FIXED,
+                  typename INT2,
+                  typename INT = typename FIXED::int_t,
+                  const size_t PREC = FIXED::PRECISION,
+                  typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value && std::is_integral<INT2>::value, int>::type = 0>
         FIXED fixedValue(const UChar* name = nullptr,
                          INT2 def_value = static_cast<INT2>(0),
                          size_t index = 0) const;
+
+        //!
+        //! Get the value of a fraction option in the last analyzed command line.
+        //!
+        //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+        //! to enforce a fraction type and should be left to their default values.
+        //! @param [out] value A variable receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        template <class FRAC,
+                  typename INT = typename FRAC::int_t,
+                  typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+        void getFractionValue(FRAC& value,
+                              const UChar* name = nullptr,
+                              const FRAC& def_value = FRAC(0),
+                              size_t index = 0) const;
+
+        //!
+        //! Get the value of a fraction option in the last analyzed command line.
+        //!
+        //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+        //! to enforce a fraction type and should be left to their default values.
+        //! @param [out] value A variable receiving the value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return in @a value if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        template <class FRAC,
+                  typename INT2,
+                  typename INT = typename FRAC::int_t,
+                  typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value && std::is_integral<INT2>::value, int>::type = 0>
+        void getFractionValue(FRAC& value,
+                              const UChar* name = nullptr,
+                              INT2 def_value = static_cast<INT2>(0),
+                              size_t index = 0) const;
+
+        //!
+        //! Get the value of a fraction option in the last analyzed command line.
+        //!
+        //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+        //! to enforce a fraction type and should be left to their default values.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The integer value of the option or parameter.
+        //!
+        template <class FRAC,
+                  typename INT = typename FRAC::int_t,
+                  typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+        FRAC fractionValue(const UChar* name = nullptr,
+                           const FRAC& def_value = FRAC(0),
+                           size_t index = 0) const;
+
+        //!
+        //! Get the value of a fraction option in the last analyzed command line.
+        //!
+        //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+        //! to enforce a fraction type and should be left to their default values.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The value to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The integer value of the option or parameter.
+        //!
+        template <class FRAC,
+                  typename INT2,
+                  typename INT = typename FRAC::int_t,
+                  typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value && std::is_integral<INT2>::value, int>::type = 0>
+        FRAC fractionValue(const UChar* name = nullptr,
+                           INT2 def_value = static_cast<INT2>(0),
+                           size_t index = 0) const;
 
         //!
         //! Exit application when errors were reported in the last analyzed command line.
