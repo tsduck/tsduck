@@ -46,6 +46,7 @@ namespace ts {
     //!
     //! An interface to be implemented by classes supporting a conversion to UString.
     //! @ingroup cpp
+    //! @see ParseInterface
     //!
     class TSDUCKDLL StringifyInterface
     {

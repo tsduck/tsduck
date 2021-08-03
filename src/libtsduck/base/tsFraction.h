@@ -34,6 +34,9 @@
 
 #pragma once
 #include "tsIntegerUtils.h"
+#include "tsStringifyInterface.h"
+#include "tsParseInterface.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -43,10 +46,13 @@ namespace ts {
     //! Fraction are always reduced so that the numerator and denominator have no common divisor other than 1.
     //! For signed integer types, the signed is carried by the numerator and the denominator is always positive.
     //!
+    //! All arithmetic and comparison operators are defined between fraction values
+    //! and between a fraction value and an integer value, both directions.
+    //!
     //! @tparam INT The integer type for numerator and denominator.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    class Fraction final
+    class Fraction: public StringifyInterface, public ParseInterface
     {
     private:
         // Numerator and denominator. Always reduced. Only _num can be negative.
@@ -85,6 +91,7 @@ namespace ts {
         //! Constructor from an integer value.
         //! @tparam INT1 Some other integer type (signed or unsigned).
         //! @param [in] numerator Initial numerator value.
+        //! @throw std::overflow_error When @a numerator is out of range.
         //!
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
         Fraction(INT1 numerator);
@@ -95,9 +102,15 @@ namespace ts {
         //! @tparam INT2 Some other integer type (signed or unsigned).
         //! @param [in] numerator Initial numerator value.
         //! @param [in] denominator Initial denominator value.
+        //! @throw std::underflow_error When @a denominator is zero.
+        //! @throw std::overflow_error When @a numerator or @a denominator are out of range.
         //!
         template<typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
         Fraction(INT1 numerator, INT2 denominator);
+
+        // Implementation of interfaces.
+        virtual UString toString() const override;
+        virtual bool fromString(const UString& str) override;
 
         //!
         //! Get the numerator part of the fraction.

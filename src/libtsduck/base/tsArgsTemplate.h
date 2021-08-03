@@ -106,33 +106,70 @@ void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool
 // Get the fixed-precision value of an option.
 //----------------------------------------------------------------------------
 
-template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
-void ts::Args::getFixedValue(FixedPoint<INT,PREC>& value, const UChar* name, FixedPoint<INT,PREC> def_value, size_t index) const
+template <class FIXED, typename INT, const size_t PREC, typename std::enable_if<std::is_base_of<ts::FixedPoint<INT,PREC>, FIXED>::value, int>::type N>
+void ts::Args::getFixedValue(FIXED& value, const UChar* name, FIXED def_value, size_t index) const
 {
     INT i = 0;
     getIntValue(i, name, def_value.raw(), index);
-    value = FixedPoint<INT,PREC>(i, true);
+    value = FIXED(i, true);
 }
 
-template <typename INT, const size_t PREC, typename INT2, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && std::is_integral<INT2>::value, int>::type N>
-void ts::Args::getFixedValue(FixedPoint<INT,PREC>& value, const UChar* name, INT2 def_value, size_t index) const
+template <class FIXED, typename INT2, typename INT, const size_t PREC,
+          typename std::enable_if<std::is_base_of<ts::FixedPoint<INT,PREC>, FIXED>::value && std::is_integral<INT2>::value, int>::type N>
+void ts::Args::getFixedValue(FIXED& value, const UChar* name, INT2 def_value, size_t index) const
 {
-    getFixedValue<INT,PREC>(value, name, FixedPoint<INT,PREC>(def_value), index);
+    getFixedValue<FIXED>(value, name, FIXED(def_value), index);
 }
 
-template <class FIXED>
-FIXED ts::Args::fixedValue(const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
+template <class FIXED, typename INT, const size_t PREC, typename std::enable_if<std::is_base_of<ts::FixedPoint<INT,PREC>, FIXED>::value, int>::type N>
+FIXED ts::Args::fixedValue(const UChar* name, FIXED def_value, size_t index) const
 {
     FIXED value(def_value);
-    getFixedValue<typename FIXED::int_t, FIXED::PRECISION>(value, name, def_value, index);
+    getFixedValue<FIXED>(value, name, def_value, index);
     return value;
 }
 
-template <class FIXED, typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type N>
+template <class FIXED, typename INT2, typename INT, const size_t PREC,
+          typename std::enable_if<std::is_base_of<ts::FixedPoint<INT,PREC>, FIXED>::value && std::is_integral<INT2>::value, int>::type N>
 FIXED ts::Args::fixedValue(const UChar* name, INT2 def_value, size_t index) const
 {
     FIXED value(def_value);
-    getFixedValue<typename FIXED::int_t, FIXED::PRECISION>(value, name, FIXED(def_value), index);
+    getFixedValue<FIXED>(value, name, FIXED(def_value), index);
+    return value;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the fraction value of an option.
+//----------------------------------------------------------------------------
+
+template <class FRAC, typename INT, typename std::enable_if<std::is_base_of<ts::Fraction<INT>, FRAC>::value, int>::type N>
+void ts::Args::getFractionValue(FRAC& val, const UChar* name, const FRAC& def_value, size_t index) const
+{
+    if (!val.fromString(value(name, u"", index))) {
+        val = def_value;
+    }
+}
+
+template <class FRAC, typename INT2, typename INT, typename std::enable_if<std::is_base_of<ts::Fraction<INT>, FRAC>::value && std::is_integral<INT2>::value, int>::type N>
+void ts::Args::getFractionValue(FRAC& value, const UChar* name, INT2 def_value, size_t index) const
+{
+    getFractionValue<FRAC>(value, name, FRAC(def_value), index);
+}
+
+template <class FRAC, typename INT, typename std::enable_if<std::is_base_of<ts::Fraction<INT>, FRAC>::value, int>::type N>
+FRAC ts::Args::fractionValue(const UChar* name, const FRAC& def_value, size_t index) const
+{
+    FRAC value(def_value);
+    getFractionValue<FRAC>(value, name, def_value, index);
+    return value;
+}
+
+template <class FRAC, typename INT2, typename INT, typename std::enable_if<std::is_base_of<ts::Fraction<INT>, FRAC>::value && std::is_integral<INT2>::value, int>::type N>
+FRAC ts::Args::fractionValue(const UChar* name, INT2 def_value, size_t index) const
+{
+    FRAC value(def_value);
+    getFractionValue<FRAC>(value, name, FRAC(def_value), index);
     return value;
 }
 
