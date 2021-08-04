@@ -49,18 +49,18 @@ namespace ts {
     //! All arithmetic and comparison operators are defined between fraction values
     //! and between a fraction value and an integer value, both directions.
     //!
-    //! @tparam INT The integer type for numerator and denominator.
+    //! @tparam INT_T The integer type for numerator and denominator.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type = 0>
     class Fraction: public StringifyInterface, public ParseInterface
     {
     private:
         // Numerator and denominator. Always reduced. Only _num can be negative.
-        INT _num, _den;
+        INT_T _num, _den;
 
         // Fast private unchecked constructor. The parameters must be valid.
         // The dummy parameter is here to disambiguate with the public constructor.
-        Fraction(INT num, INT den, bool dummy) : _num(num), _den(den) {}
+        Fraction(INT_T num, INT_T den, bool dummy) : _num(num), _den(den) {}
 
         // Reduce the fraction.
         void reduce();
@@ -71,16 +71,16 @@ namespace ts {
         template <bool is_signed, bool dummy = true>
         struct SignWrapper {
             // Reduce the sign of elements of a fraction.
-            static inline void reduce(INT& num, INT& den);
+            static inline void reduce(INT_T& num, INT_T& den);
             // Absolute value of the numerator.
-            static inline INT abs(INT num);
+            static inline INT_T abs(INT_T num);
         };
 
     public:
         //!
         //! The underlying integer type.
         //!
-        typedef INT int_t;
+        typedef INT_T int_t;
 
         //!
         //! The minimum representable value of this fraction type.
@@ -212,22 +212,22 @@ namespace ts {
         Fraction& operator/=(INT1 x) { return *this = *this / x; }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator==(INT1 x) const { return _den == 1 && bound_check<INT>(x) && _num == INT(x); }
+        bool operator==(INT1 x) const { return _den == 1 && bound_check<INT_T>(x) && _num == INT_T(x); }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator!=(INT1 x) const { return _den != 1 || !bound_check<INT>(x) || _num != INT(x); }
+        bool operator!=(INT1 x) const { return _den != 1 || !bound_check<INT_T>(x) || _num != INT_T(x); }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator<=(INT1 x) const { return _num <= INT(x) * _den; }
+        bool operator<=(INT1 x) const { return _num <= INT_T(x) * _den; }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator>=(INT1 x) const { return _num >= INT(x) * _den; }
+        bool operator>=(INT1 x) const { return _num >= INT_T(x) * _den; }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator<(INT1 x) const { return _num < INT(x) * _den; }
+        bool operator<(INT1 x) const { return _num < INT_T(x) * _den; }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator>(INT1 x) const { return _num > INT(x) * _den; }
+        bool operator>(INT1 x) const { return _num > INT_T(x) * _den; }
 
         //! @endcond
     };

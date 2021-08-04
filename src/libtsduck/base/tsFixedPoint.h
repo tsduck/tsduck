@@ -46,20 +46,20 @@ namespace ts {
     //! All arithmetic and comparison operators are defined between fixed-point type values
     //! and between a fixed-point value and an integer value, both directions.
     //!
-    //! @tparam INT The underlying signed integer type.
+    //! @tparam INT_T The underlying signed integer type.
     //! @tparam PREC The decimal precision in digits.
     //!
-    template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+    template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type = 0>
     class FixedPoint final
     {
     private:
-        INT _value;
+        INT_T _value;
 
     public:
         //!
         //! The underlying signed integer type.
         //!
-        typedef INT int_t;
+        typedef INT_T int_t;
 
         //!
         //! The precision of the fixed number type (number of decimal digits).
