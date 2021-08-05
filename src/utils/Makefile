@@ -43,9 +43,15 @@ default: execs
 .PHONY: execs
 execs: $(EXECS)
 
-# We build tsprofiling with the static library
-$(BINDIR)/tsprofiling: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
-$(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
+# We always build tsprofiling with the static library.
+STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
+ifndef STATIC
+    $(BINDIR)/tsprofiling: $(STATIC_DEPS)
+    $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
+else
+    LDFLAGS_EXTRA = -static
+    $(EXECS): $(STATIC_DEPS)
+endif
 
 .PHONY: install install-tools install-devel
 install: install-tools install-devel

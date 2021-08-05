@@ -38,8 +38,14 @@
 //!
 //! If this symbol is defined, bitrate values are represented as fractions of 64-bit integers.
 //! Without this symbol, bitrates are represented as fixed-point numbers of a given compile-time precision.
-//! Using fraction instead of fixed-point numbers gives a better precision but seriously impacts the
-//! overall performance os computations involving bitrates.
+//!
+//! Using fractions instead of fixed-point numbers gives a better precision but seriously impacts the
+//! overall performance of computations involving bitrates. The experience also demonstractes that using
+//! fractions for bitrates introduces intermediate overflows, making long computations on bitrates
+//! unusable in practice. Using fractions for bitrates is therefore currenly discouraged, until a new
+//! implementation of fractions absorbs intermediate overflows using approximated fraction reduction,
+//! at the expense of a loss of precision.
+//!
 //! @see ts::Fraction
 //! @see ts::BitRate
 //!
