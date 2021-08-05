@@ -178,6 +178,248 @@ namespace ts {
 #endif
 
     //!
+    //! Throw an exception if an integer value does not fall into the range of another integer type.
+    //! @tparam INT1 An integer type.
+    //! @tparam INT2 An integer type.
+    //! @param [in] x An integer value of type @a INT2.
+    //! @throw std::out_of_range When the value of @a x is ouside the limits of type @a INT1.
+    //!
+    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+    void throw_bound_check(INT2 x) {
+        if (!bound_check<INT1>(x)) {
+            throw std::out_of_range("integer value out of range");
+        }
+    }
+
+#if defined(DEBUG) || defined(DOXYGEN)
+    //!
+    //! In debug mode, throw an exception if an integer value does not fall into the range of another integer type.
+    //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @tparam INT1 An integer type.
+    //! @tparam INT2 An integer type.
+    //! @param [in] x An integer value of type @a INT2.
+    //! @throw std::out_of_range When the value of @a x is ouside the limits of type @a INT1.
+    //!
+    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+    inline void debug_throw_bound_check(INT2 x) { throw_bound_check<INT1>(x); }
+#else
+    template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
+    inline void debug_throw_bound_check(INT2 x) {}
+#endif
+
+    //!
+    //! Check if an integer addition generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a + @a b.
+    //! @return True if @a a + @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
+    inline bool add_overflow(INT a, INT b, INT res) { return a > res; } // unsigned version
+
+    //! @cond nodoxygen
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+    inline bool add_overflow(INT a, INT b, INT res) { // signed version
+        // A mask with sign bit set for the INT type.
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(shift-negative-value)
+        TS_LLVM_NOWARNING(shift-sign-overflow)
+        constexpr INT sign_bit = static_cast<INT>(1) << (8 * sizeof(INT) - 1);
+        TS_POP_WARNING()
+        // MSB of (x ^ y) is set when x and y have distinct signs.
+        // If a and b have distinct signs, never overflow.
+        // If a and b have same sign, overflow when the result has a different sign.
+        return ((~(a ^ b)) & (a ^ res) & sign_bit) != 0;
+    }
+    //! @endcond
+
+    //!
+    //! Check if an integer substraction generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a - @a b.
+    //! @return True if @a a - @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
+    inline bool sub_overflow(INT a, INT b, INT res) { return a < b; } // unsigned version
+
+    //! @cond nodoxygen
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+    inline bool sub_overflow(INT a, INT b, INT res) { return add_overflow(a, -b, res); } // signed version
+    //! @endcond
+
+    //!
+    //! Check if the negation (opposite sign) of an integer generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a An integer value.
+    //! @return True if @a -a generates an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
+    inline bool neg_overflow(INT a) { return a != 0; } // unsigned version
+
+    //! @cond nodoxygen
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+    inline bool neg_overflow(INT a) { return a == std::numeric_limits<INT>::min(); } // signed version
+    //! @endcond
+
+    //!
+    //! Check if an integer multiplication generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a * @a b.
+    //! @return True if @a a * @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline bool mul_overflow(INT a, INT b, INT res) { return a != 0 && res / a != b; }
+
+    //!
+    //! Throw an exception if an integer addition generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a + @a b.
+    //! @throw std::overflow_error When @a a + @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void throw_add_overflow(INT a, INT b, INT res) {
+        if (add_overflow(a, b, res)) {
+            throw std::overflow_error("addition overflow");
+        }
+    }
+
+    //!
+    //! Throw an exception if an integer substraction generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a - @a b.
+    //! @throw std::overflow_error When @a a - @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void throw_sub_overflow(INT a, INT b, INT res) {
+        if (sub_overflow(a, b, res)) {
+            throw std::overflow_error("substraction overflow");
+        }
+    }
+
+    //!
+    //! Throw an exception if the negation (opposite sign) of an integer generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a An integer value.
+    //! @throw std::overflow_error When @a -a generates an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void thow_neg_overflow(INT a) {
+        if (neg_overflow(a)) {
+            throw std::overflow_error("sign negation overflow");
+        }
+    }
+
+    //!
+    //! Throw an exception if an integer multiplication generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a * @a b.
+    //! @throw std::overflow_error When @a a * @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void throw_mul_overflow(INT a, INT b, INT res) {
+        if (mul_overflow(a, b, res)) {
+            throw std::overflow_error("multiplication overflow");
+        }
+    }
+
+    //!
+    //! Throw an exception if the denominator of an integer division is zero.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] den The denominator of an integer division.
+    //! @throw std::underflow_error When @a den is zero.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void throw_div_zero(INT den) {
+        if (den == INT(0)) {
+            throw std::underflow_error("divide by zero");
+        }
+    }
+
+#if defined(DEBUG) || defined(DOXYGEN)
+    //!
+    //! In debug mode, throw an exception if an integer addition generates an overflow.
+    //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a + @a b.
+    //! @throw std::overflow_error When @a a + @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_add_overflow(INT a, INT b, INT res) { throw_add_overflow(a, b, res); }
+
+    //!
+    //! In debug mode, throw an exception if an integer substraction generates an overflow.
+    //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a - @a b.
+    //! @throw std::overflow_error When @a a - @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_sub_overflow(INT a, INT b, INT res) { throw_sub_overflow(a, b, res); }
+
+    //!
+    //! In debug mode, throw an exception if the negation (opposite sign) of an integer generates an overflow.
+    //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a An integer value.
+    //! @throw std::overflow_error When @a -a generates an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_thow_neg_overflow(INT a) { thow_neg_overflow(a); }
+
+    //!
+    //! In debug mode, throw an exception if an integer multiplication generates an overflow.
+    //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @param [in] res The result of @a a * @a b.
+    //! @throw std::overflow_error When @a a * @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_mul_overflow(INT a, INT b, INT res) { throw_mul_overflow(a, b, res); }
+
+    //!
+    //! In debug mode, throw an exception if the denominator of an integer division is zero.
+    //! If the macro @c DEBUG is not defined, this function does nothing.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] den The denominator of an integer division.
+    //! @throw std::underflow_error When @a den is zero.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_div_zero(INT den) { throw_div_zero(den); }
+#else
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_add_overflow(INT a, INT b, INT res) {}
+
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_sub_overflow(INT a, INT b, INT res) {}
+
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_thow_neg_overflow(INT a) {}
+
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_mul_overflow(INT a, INT b, INT res) {}
+
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    inline void debug_throw_div_zero(INT den) {}
+#endif
+
+    //!
     //! Perform a bounded addition without overflow.
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
@@ -299,8 +541,8 @@ namespace ts {
     //! @cond nodoxygen
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
     INT GCD(INT x, INT y); // signed version
-
     //! @endcond
+
     //!
     //! Get a power of 10 using a fast lookup table.
     //!

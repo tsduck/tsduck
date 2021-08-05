@@ -46,31 +46,25 @@ public:
     virtual void afterTest() override;
 
     void testConstructor();
-    [[noreturn]] void testConstructorZero();
-    [[noreturn]] void testConstructorRange();
     void testDouble();
     void testAbs();
     void testMin();
     void testMax();
+    void testProper();
     void testComparison();
     void testArithmetics();
     void testToString();
     void testFromString();
-    [[noreturn]] void testDivideZero();
-    [[noreturn]] void testDivideZeroInt();
 
     TSUNIT_TEST_BEGIN(FractionTest);
     TSUNIT_TEST(testConstructor);
-    TSUNIT_TEST_EXCEPTION(testConstructorZero, std::underflow_error);
-    TSUNIT_TEST_EXCEPTION(testConstructorRange, std::overflow_error);
     TSUNIT_TEST(testDouble);
     TSUNIT_TEST(testAbs);
     TSUNIT_TEST(testMin);
     TSUNIT_TEST(testMax);
+    TSUNIT_TEST(testProper);
     TSUNIT_TEST(testComparison);
     TSUNIT_TEST(testArithmetics);
-    TSUNIT_TEST_EXCEPTION(testDivideZero, std::underflow_error);
-    TSUNIT_TEST_EXCEPTION(testDivideZeroInt, std::underflow_error);
     TSUNIT_TEST(testToString);
     TSUNIT_TEST(testFromString);
     TSUNIT_TEST_END();
@@ -138,18 +132,6 @@ void FractionTest::testConstructor()
     TSUNIT_EQUAL(1, a1.denominator());
 }
 
-void FractionTest::testConstructorZero()
-{
-    ts::Fraction<uint16_t> x(12, 0);
-    TSUNIT_FAIL("should not get there");
-}
-
-void FractionTest::testConstructorRange()
-{
-    ts::Fraction<int8_t> x(128);
-    TSUNIT_FAIL("should not get there");
-}
-
 void FractionTest::testDouble()
 {
     TSUNIT_EQUAL(0.0, ts::Fraction<int>(0).toDouble());
@@ -199,6 +181,21 @@ void FractionTest::testMax()
     a1 = Frac(1, -2).max(Frac(-2, 3));
     TSUNIT_EQUAL(-1, a1.numerator());
     TSUNIT_EQUAL(2, a1.denominator());
+}
+
+void FractionTest::testProper()
+{
+    typedef ts::Fraction<int32_t> Frac;
+
+    Frac a1(Frac(28, 6));
+    TSUNIT_EQUAL(4, a1.proper());
+    TSUNIT_EQUAL(2, a1.numerator());
+    TSUNIT_EQUAL(3, a1.denominator());
+
+    a1 = Frac(-14, 3);
+    TSUNIT_EQUAL(-4, a1.proper());
+    TSUNIT_EQUAL(-2, a1.numerator());
+    TSUNIT_EQUAL(3, a1.denominator());
 }
 
 void FractionTest::testComparison()
@@ -345,23 +342,6 @@ void FractionTest::testArithmetics()
     a1 /= 4;
     TSUNIT_EQUAL(8, a1.numerator());
     TSUNIT_EQUAL(15, a1.denominator());
-}
-
-void FractionTest::testDivideZero()
-{
-    typedef ts::Fraction<int32_t> Frac;
-    Frac a;
-    a = Frac(1, 2) / Frac(0);
-    TSUNIT_FAIL("should not get there");
-}
-
-void FractionTest::testDivideZeroInt()
-{
-    typedef ts::Fraction<int32_t> Frac;
-    Frac a;
-    int i = 2;
-    a = Frac(1, 2) / (i - 2);
-    TSUNIT_FAIL("should not get there");
 }
 
 void FractionTest::testToString()

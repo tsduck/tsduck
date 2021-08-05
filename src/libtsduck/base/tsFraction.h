@@ -49,6 +49,11 @@ namespace ts {
     //! All arithmetic and comparison operators are defined between fraction values
     //! and between a fraction value and an integer value, both directions.
     //!
+    //! In debug mode (when the macro @c DEBUG is defined), the arithmetic operators throw an exception
+    //! in case of overflow. Without debug mode, the arithmetic overflow are ignored, which may lead to
+    //! inconsistent values after a large number of operations (typically additions and substractions with
+    //! distinct denominators).
+    //!
     //! @tparam INT_T The integer type for numerator and denominator.
     //!
     template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type = 0>
@@ -153,6 +158,20 @@ namespace ts {
         Fraction abs() const;
 
         //!
+        //! Converts to a proper fraction (a fraction that is less than 1).
+        //! The previous integer part is returned. This means that:
+        //! @code
+        //!   typedef Fraction<...> Frac;
+        //!   Frac f(..);
+        //!   Frac old(f);
+        //!   Frac::int_t i = f.proper();
+        //!   // then old == i + f, with f.abs() < 1
+        //! @endcode
+        //! @returns The previous integer part of the fraction.
+        //!
+        int_t proper();
+
+        //!
         //! Get the maximum value of two fractions.
         //! @param [in] x Another fraction.
         //! @return The maximum value of this fraction and @a x.
@@ -169,7 +188,7 @@ namespace ts {
         //! @cond nodoxygen
         // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
-        Fraction operator-() const { return Fraction(-_num, _den, true); }
+        Fraction operator-() const;
         Fraction operator+(const Fraction& x) const;
         Fraction operator-(const Fraction& x) const;
         Fraction operator*(const Fraction& x) const;
@@ -212,22 +231,22 @@ namespace ts {
         Fraction& operator/=(INT1 x) { return *this = *this / x; }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator==(INT1 x) const { return _den == 1 && bound_check<INT_T>(x) && _num == INT_T(x); }
+        bool operator==(INT1 x) const { return _den == 1 && bound_check<int_t>(x) && _num == int_t(x); }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator!=(INT1 x) const { return _den != 1 || !bound_check<INT_T>(x) || _num != INT_T(x); }
+        bool operator!=(INT1 x) const { return _den != 1 || !bound_check<int_t>(x) || _num != int_t(x); }
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator<=(INT1 x) const { return _num <= INT_T(x) * _den; }
+        bool operator<=(INT1 x) const;
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator>=(INT1 x) const { return _num >= INT_T(x) * _den; }
+        bool operator>=(INT1 x) const;
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator<(INT1 x) const { return _num < INT_T(x) * _den; }
+        bool operator<(INT1 x) const;
 
         template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type = 0>
-        bool operator>(INT1 x) const { return _num > INT_T(x) * _den; }
+        bool operator>(INT1 x) const;
 
         //! @endcond
     };
