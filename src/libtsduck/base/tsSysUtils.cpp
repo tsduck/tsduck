@@ -104,7 +104,13 @@ ts::UString ts::ExecutableFile()
 
 ts::UString ts::CallerLibraryFile()
 {
-#if defined(TS_MSC)
+#if defined(TSDUCK_STATIC)
+
+    // In case of static build, there is no shared library.
+    // All code is in the main executable.
+    return ExecutableFile();
+
+#elif defined(TS_MSC)
 
     // Window implementation.
     // Get return address of current function (in caller code).

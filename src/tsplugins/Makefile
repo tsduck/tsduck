@@ -31,8 +31,6 @@
 #
 #-----------------------------------------------------------------------------
 
-# With static link, we compile in a specific directory.
-BINDIR_SUFFIX := $(if $(STATIC),-static,)
 OBJSUBDIR := objs-tsplugins
 
 include ../../Makefile.tsduck

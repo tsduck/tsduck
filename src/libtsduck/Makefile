@@ -31,6 +31,7 @@
 #
 #-----------------------------------------------------------------------------
 
+OBJSUBDIR = objs-libtsduck
 
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
@@ -59,10 +60,6 @@ endif
 # JNI headers (or disable JNI)
 JNI_CFLAGS := $(shell ../../build/java-config.sh --cflags)
 CXXFLAGS_INCLUDES += $(JNI_CFLAGS)
-
-# With static link, we compile in a specific directory.
-BINDIR_SUFFIX = $(if $(STATIC),-static,)
-OBJSUBDIR = objs-libtsduck
 
 # Now, we can include the common makefile.
 include ../../Makefile.tsduck
@@ -134,7 +131,7 @@ endif
 #   the dynamic library. In fact, it would only slow down application startup.
 
 .PHONY: libs
-libs: $(STATIC_LIBTSDUCK) $(SHARED_LIBTSDUCK) $(DYLIB_LIBTSDUCK)
+libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK) $(DYLIB_LIBTSDUCK))
 
 $(STATIC_LIBTSDUCK): $(OBJS)
 	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
