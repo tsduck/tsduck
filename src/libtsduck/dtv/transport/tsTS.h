@@ -35,10 +35,14 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsFraction.h"
-#include "tsFixedPoint.h"
 #include "tsConfigConstants.h"
 #include "tsEnumeration.h"
+
+#if defined(TS_BITRATE_FRACTION)
+#include "tsFraction.h"
+#else
+#include "tsFixedPoint.h"
+#endif
 
 namespace ts {
     //!

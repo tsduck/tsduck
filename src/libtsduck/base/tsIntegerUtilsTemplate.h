@@ -176,6 +176,7 @@ INT ts::SignExtend(INT x, size_t bits)
         // A mask with all one's in MSB unused bits.
         TS_PUSH_WARNING()
         TS_GCC_NOWARNING(shift-negative-value)
+        TS_LLVM_NOWARNING(shift-sign-overflow)
         const INT mask = static_cast<INT>(~static_cast<INT>(0) << bits);
         TS_POP_WARNING()
 
