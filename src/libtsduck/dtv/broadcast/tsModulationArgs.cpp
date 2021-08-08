@@ -177,6 +177,27 @@ void ts::ModulationArgs::reset()
 
 
 //----------------------------------------------------------------------------
+//! Reset or copy the local reception parameters.
+//----------------------------------------------------------------------------
+
+void ts::ModulationArgs::resetLocalReceptionParameters()
+{
+    lnb.clear();
+    satellite_number.clear();
+}
+
+void ts::ModulationArgs::copyLocalReceptionParameters(const ModulationArgs& other)
+{
+    if (other.lnb.set()) {
+        lnb = other.lnb;
+    }
+    if (other.satellite_number.set()) {
+        satellite_number = other.satellite_number;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Check if any modulation options is set.
 //----------------------------------------------------------------------------
 
@@ -672,9 +693,6 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
 
 bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id)
 {
-    // Completely clear previous content.
-    reset();
-
     // Filter out invalid descriptors.
     if (!desc.isValid()) {
         return false;
