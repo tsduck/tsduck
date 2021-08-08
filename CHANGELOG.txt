@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2450
+VERSION 3.28-2458
 
 [NEW] New commands and plugins:
 
@@ -13,6 +13,7 @@ VERSION 3.28-2450
   * New options in exiting commands and plugins:
     - Option --install-dvb-firmware in "tsconfig".
     - Option --local-interface in plugin "srt" (input and output).
+    - Options --abnt, --atsc, --isdb in "tsscan".
 
 [BUG] Bug fixes:
 

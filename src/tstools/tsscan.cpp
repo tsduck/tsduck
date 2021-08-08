@@ -115,9 +115,10 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     update_channel_file(false),
     default_channel_file(false)
 {
-    duck.defineArgsForHFBand(*this);
     duck.defineArgsForCharset(*this);
+    duck.defineArgsForHFBand(*this);
     duck.defineArgsForPDS(*this);
+    duck.defineArgsForStandards(*this);
     tuner_args.defineArgs(*this);
 
     setIntro(u"There are three mutually exclusive types of network scanning. "

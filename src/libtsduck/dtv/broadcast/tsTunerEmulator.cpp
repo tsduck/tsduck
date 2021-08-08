@@ -152,7 +152,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         Channel chan;
         success = (*it)->getIntAttribute(chan.frequency, u"frequency", true) &&
                   (*it)->getIntAttribute(chan.bandwidth, u"bandwidth", false, def_bandwidth) &&
-                  (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
+                (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
                   (*it)->getAttribute(chan.file, u"file", false) &&
                   (*it)->getAttribute(chan.pipe, u"pipe", false);
         chan.file.trim();
@@ -294,6 +294,18 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
     else if (delsys != DS_UNDEFINED && _channels[index].delivery != DS_UNDEFINED && delsys != _channels[index].delivery) {
         _duck.report().error(u"delivery system at %'d Hz is %s, %s requested ", {freq, DeliverySystemEnum.name(_channels[index].delivery), DeliverySystemEnum.name(delsys)});
         return false;
+    }
+
+    // Update delivery system if undefined in parameters.
+    params.delivery_system = _channels[index].delivery;
+
+    if (IsSatelliteDelivery(params.delivery_system.value())) {
+        if (!params.lnb.set()) {
+            _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
+        }
+        else {
+            _duck.report().debug(u"using LNB %s", {params.lnb.value()});
+        }
     }
 
     // Found a valid entry for the frequency.
