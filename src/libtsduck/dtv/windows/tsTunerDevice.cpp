@@ -289,6 +289,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.frequency.clear();
                 params.satellite_number.clear();
                 params.lnb.clear();
+                params.polarity.clear();
             }
             // Spectral inversion
             _graph.searchVarProperty<::SpectralInversion>(
