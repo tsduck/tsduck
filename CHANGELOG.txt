@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2460
+VERSION 3.28-2461
 
 [NEW] New commands and plugins:
 
@@ -24,6 +24,8 @@ VERSION 3.28-2460
     last TS packet.
   * Fixed issue #840: In "tsscan", the --lnb and --satellite-number parameters
     were not correctly passed when scanning each transport.
+  * Fixed issue #841: In "tsscan", when generating channel files, the
+    frequency was incorrectly set to zero on satellite networks.
   * In "tsp", the global default options for plugins (--atsc, --isdb, etc)
     were not correctly passed to plugins "tables" and "psi".
 

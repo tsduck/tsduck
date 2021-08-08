@@ -551,7 +551,12 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
     ts::TSScanner info(_opt.duck, _tuner, _opt.psi_timeout, !get_services && _opt.channel_file.empty());
 
     // Get tuning parameters again, as TSScanner waits for a lock.
+    // Also keep the original frequency since satellite tuners can only report the intermediate frequency.
+    const ts::Variable<uint64_t> saved_frequency(tparams.frequency);
     info.getTunerParameters(tparams);
+    if (!tparams.frequency.set() || tparams.frequency.value() == 0) {
+        tparams.frequency = saved_frequency;
+    }
 
     ts::SafePtr<ts::PAT> pat;
     ts::SafePtr<ts::SDT> sdt;
