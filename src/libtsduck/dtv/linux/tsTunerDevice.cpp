@@ -1107,22 +1107,31 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
     uint32_t freq = uint32_t(params.frequency.value());
 
     // In case of satellite delivery, we need to control the dish.
-    if (IsSatelliteDelivery(params.delivery_system.value()) && params.lnb.set()) {
-        // Compute transposition information from the LNB.
-        LNB::Transposition trans;
-        if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), _duck.report())) {
-            return false;
+    if (IsSatelliteDelivery(params.delivery_system.value())) {
+        if (!params.lnb.set()) {
+            _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
         }
-        // For satellite, Linux DVB API uses an intermediate frequency in kHz
-        freq = uint32_t(trans.intermediate_frequency / 1000);
-        // We need to control the dish only if this is not a "stacked" transposition.
-        if (!trans.stacked) {
-            // Setup the dish (polarity, band).
-            if (!dishControl(params, trans)) {
+        else {
+            _duck.report().debug(u"using LNB %s", {params.lnb.value()});
+            // Compute transposition information from the LNB.
+            LNB::Transposition trans;
+            if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), _duck.report())) {
                 return false;
             }
-            // Clear tuner state again.
-            discardFrontendEvents();
+            // For satellite, Linux DVB API uses an intermediate frequency in kHz
+            freq = uint32_t(trans.intermediate_frequency / 1000);
+            // We need to control the dish only if this is not a "stacked" transposition.
+            if (trans.stacked) {
+                _duck.report().debug(u"LNB uses stacked transposition, no dish control required");
+            }
+            else {
+                // Setup the dish (polarity, band).
+                if (!dishControl(params, trans)) {
+                    return false;
+                }
+                // Clear tuner state again.
+                discardFrontendEvents();
+            }
         }
     }
 
