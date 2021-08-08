@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2458
+VERSION 3.28-2459
 
 [NEW] New commands and plugins:
 
@@ -22,6 +22,8 @@ VERSION 3.28-2458
   * Fixed issue #830: Incorrect formatting of HEVC HRD parameters.
   * Fixed issue #830: Incorrect handling of PES packets with 1 or 2 bytes in
     last TS packet.
+  * Fixed issue #840: In "tsscan", the --lnb and --satellite-number parameters
+    were not correctly passed when scanning each transport.
 
 -------------------------------------------------------------------------------
 

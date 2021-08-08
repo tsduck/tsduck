@@ -462,6 +462,22 @@ namespace ts {
         void setDefaultValues();
 
         //!
+        //! Reset the local reception parameters, they become "unset"
+        //! The "local reception parameters" configure the receiving equipment (typically the dish)
+        //! without affecting the received carrier signal.
+        //!
+        void resetLocalReceptionParameters();
+
+        //!
+        //! Copy the local reception parameters from another instance.
+        //! The "local reception parameters" configure the receiving equipment (typically the dish)
+        //! without affecting the received carrier signal.
+        //! @param [in] other Another instance from which the local reception parameters are copied.
+        //! Local reception parameters which are not set in @^a other are left unmodified in this instance.
+        //!
+        void copyLocalReceptionParameters(const ModulationArgs& other);
+
+        //!
         //! Theoretical bitrate computation.
         //! @return The theoretical useful bitrate of a transponder, based on 188-bytes packets,
         //! in bits/second. If the characteristics of the transponder are not sufficient to compute
@@ -471,6 +487,7 @@ namespace ts {
 
         //!
         //! Fill modulation parameters from a delivery system descriptor.
+        //! This method only sets the modulation parameters from the descriptor. Other parameters are unchanged.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
         //! @param [in] ts_id Tranport stream id of the TS which is described by the delivery system descriptor.

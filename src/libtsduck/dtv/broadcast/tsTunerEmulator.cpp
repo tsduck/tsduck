@@ -274,6 +274,11 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
         return false;
     }
 
+    // Initial parameter checks.
+    if (!checkTuneParameters(params)) {
+        return false;
+    }
+
     // We only look as those parameters:
     const uint64_t freq = params.frequency.value(0);
     const DeliverySystem delsys = params.delivery_system.value(DS_UNDEFINED);
