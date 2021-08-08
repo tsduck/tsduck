@@ -635,7 +635,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
                 params.frequency.clear();
                 params.satellite_number.clear();
                 params.lnb.clear();
-                params.polarity = ModulationArgs::DEFAULT_POLARITY;
+                params.polarity.clear();
             }
 
             props.clear();
