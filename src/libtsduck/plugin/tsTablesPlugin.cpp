@@ -72,7 +72,6 @@ ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
 
 bool ts::TablesPlugin::getOptions()
 {
-    duck.reset();
     _signal_event = present(u"event-code");
     getIntValue(_event_code, u"event-code");
     _logger.setSectionHandler(_signal_event ? this : nullptr);
@@ -81,7 +80,6 @@ bool ts::TablesPlugin::getOptions()
 
 bool ts::TablesPlugin::start()
 {
-    duck.resetStandards();  // reset accumulated standards (not command line ones).
     return _logger.open();
 }
 
