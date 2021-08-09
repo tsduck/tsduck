@@ -337,7 +337,7 @@ bool ts::DataInjectPlugin::start()
 
     // Clear client session.
     clearSession();
-    tsp->verbose(u"initial bandwidth allocation is %'d", {_req_bitrate == 0 ? u"unlimited" : BitRateToString(_req_bitrate) + u" b/s"});
+    tsp->verbose(u"initial bandwidth allocation is %'d", {_req_bitrate == 0 ? u"unlimited" : _req_bitrate.toString() + u" b/s"});
 
     // TS processing state
     _cc_fixer.reset();

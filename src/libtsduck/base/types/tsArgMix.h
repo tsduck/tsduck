@@ -36,24 +36,36 @@
 #include "tsPlatform.h"
 #include "tsUChar.h"
 #include "tsEnumUtils.h"
-#include "tsFixedPoint.h"
+#include "tsAbstractNumber.h"
 #include "tsStringifyInterface.h"
 
+//
 // There is a problem here with Microsoft C/C++.
 //
 // In some cases, typically in std::initializer_list of ArgMixIn, the lifetime
-// of temporary string objects is not conformant with the C++11 standard
-// (discovered the hard way as you may imagine...)
-//
-// So, with MSC only, instead of storing a reference to the external string
-// object, we will keep a copy of it. This has a significant performance penalty,
-// so this method is used only with MSC.
+// of temporary string objects is not conformant with the C++11 standard.
+// The result is incorrect generated code which leads to incorrect behaviour.
+// This is a very dangerous class of bug. Not only for TSDuck but for all
+// applications. This is the kind of latent bug which stays dormant in your
+// code, until it blows up your application after modifying some innocent
+// part of your application.
 //
 // A fix was first introduced with Visual Studio 2019 16.4.0 Preview 1.0
 // (_MSC_FULL_VER = 192428117, _MSC_VER = 1924, _MSC_BUILD = 0).
-
-#if defined(_MSC_VER) && (_MSC_VER < 1924) && !defined(NON_CONFORMANT_CXX11_TEMPLIFE) && !defined(DOXYGEN)
-#define NON_CONFORMANT_CXX11_TEMPLIFE 1
+//
+// Until TSDuck version 3.28-2463, it was possible to use older versions
+// of MSC, with conditional compilation, at the expense of some horrible hack
+// and a significant performance penalty. After that version of TSDuck, new
+// code was added and the previous (horrible) workaround was no longer possible.
+// As a consequence, we now relunctantly no longer support older versions of MSC.
+// If you think that you are obliged to use such an old version of MSC, you are
+// left with two choices only: either stay with an old version of TSDuck or
+// upgrade MSC. Please consider that the MSC bug is potentially dangerous for
+// all applications, including yours. Consequently, you should _really_ upgrade
+// MSC, even for your own application. You have been warned...
+//
+#if defined(_MSC_VER) && (_MSC_VER < 1924)
+#error "unsupported version of MSC compiler, use Visual Studio 2019 16.4.0 or higher"
 #endif
 
 namespace ts {
@@ -76,17 +88,12 @@ namespace ts {
         //! Check if the argument value is an integer, either input or output.
         //! @return True if the argument value is an integer.
         //!
-        bool isInteger() const { return (_type & (INTEGER | FIXED)) == INTEGER; }
-        //!
-        //! Check if the argument value is a fixed-point.
-        //! @return True if the argument value is a fixed-point.
-        //!
-        bool isFixed() const { return (_type & (INTEGER | FIXED)) == (INTEGER | FIXED); }
+        bool isInteger() const { return (_type & INTEGER) == INTEGER; }
         //!
         //! Check if the argument value is an output integer.
         //! @return True if the argument value is an output integer.
         //!
-        bool isOutputInteger() const { return (_type & (INTEGER | FIXED | POINTER)) == (INTEGER | POINTER); }
+        bool isOutputInteger() const { return (_type & (INTEGER | POINTER)) == (INTEGER | POINTER); }
         //!
         //! Check if the argument value is a signed integer, either input or output.
         //! @return True if the argument value is a signed integer.
@@ -143,15 +150,15 @@ namespace ts {
         //!
         bool isDouble() const { return (_type & DOUBLE) == DOUBLE; }
         //!
+        //! Check if the argument value is an AbstractNumber value, either input or output.
+        //! @return True if the argument value is an AbstractNumber.
+        //!
+        bool isAbstractNumber() const { return (_type & ANUMBER) == ANUMBER; }
+        //!
         //! Get the original integer size in bytes of the argument data.
         //! @return The original integer size in bytes of the argument data or zero for a string or double.
         //!
         size_t size() const { return _size; }
-        //!
-        //! Get the original precision of a fixed-point value.
-        //! @return The original precision of a fixed-point argument data or zero for other types.
-        //!
-        size_t precision() const { return _precision; }
 
         //!
         //! Get the argument data value as an integer.
@@ -212,6 +219,11 @@ namespace ts {
         //! @return The argument data as a double or zero for a string. Integers are converted to double.
         //!
         double toDouble() const;
+        //!
+        //! Get the argument data value as constant reference to an AbstractNumber instance.
+        //! @return Reference to the AbstractNumber.
+        //!
+        const AbstractNumber& toAbstractNumber() const;
 
         //!
         //! Store an integer value in the argument data, for pointers to integer.
@@ -261,13 +273,13 @@ namespace ts {
             POINTER   = 0x0200,  //!< A pointer to a writeable data (data type is given by other bits).
             STRINGIFY = 0x0400,  //!< A pointer to a StringifyInterface object.
             DOUBLE    = 0x0800,  //!< Double floating point type.
-            FIXED     = 0x1000,  //!< With INTEGER, fixed-precision type.
+            ANUMBER   = 0x1000,  //!< A pointer to an AbstractNumber object.
         };
 
 #if !defined(DOXYGEN)
-        //!
-        //! Storage of an argument.
-        //!
+        //
+        // Storage of an argument.
+        //
         union Value {
             int32_t                   int32;
             uint32_t                  uint32;
@@ -277,11 +289,11 @@ namespace ts {
             const char*               charptr;
             const UChar*              ucharptr;
             void*                     intptr;  // output
-#if !defined(NON_CONFORMANT_CXX11_TEMPLIFE)
             const std::string*        string;
             const UString*            ustring;
             const StringifyInterface* stringify;
-#endif
+            const AbstractNumber*     anumber;
+
             Value(void* p)              : intptr(p) {}
             Value(bool b)               : uint32(b) {}
             Value(int32_t i)            : int32(i) {}
@@ -291,11 +303,10 @@ namespace ts {
             Value(double d)             : dbl(d) {}
             Value(const char* s)        : charptr(s) {}
             Value(const UChar* s)       : ucharptr(s) {}
-#if !defined(NON_CONFORMANT_CXX11_TEMPLIFE)
             Value(const std::string& s) : string(&s) {}
             Value(const UString& s)     : ustring(&s) {}
             Value(const StringifyInterface& s) : stringify(&s) {}
-#endif
+            Value(const AbstractNumber& s) : anumber(&s) {}
         };
 #endif // DOXYGEN
 
@@ -310,16 +321,8 @@ namespace ts {
         //! @param [in] type Indicate which overlay to use in _value.
         //! @param [in] size Original size for integer type.
         //! @param [in] value Actual value of the argument.
-        //! @param [in] precision Decimal digits for fixed-point type.
         //!
-        ArgMix(TypeFlags type, size_t size, const Value value, size_t precision);
-
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-        // Specific constructors without conformant temporary object lifetime.
-        ArgMix(TypeFlags type, uint16_t size, const std::string& value);
-        ArgMix(TypeFlags type, uint16_t size, const UString& value);
-        ArgMix(TypeFlags type, uint16_t size, const StringifyInterface& value);
-#endif
+        ArgMix(TypeFlags type, size_t size, const Value value);
 
 #if !defined(DOXYGEN)
         // Warning: The rest of this class is carefully crafted template meta-programming (aka. Black Magic).
@@ -407,14 +410,10 @@ namespace ts {
 
     private:
         // Implementation of an ArgMix.
-        const TypeFlags        _type;      //!< Indicate which overlay to use in _value.
-        const uint8_t          _size;      //!< Original size for integer type (not greater than 8).
-        const uint8_t          _precision; //!< Decimal digits for fixed-point type (not greater than 8).
-        const Value            _value;     //!< Actual value of the argument.
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-        const std::string      _string;    //!< String copy because of non-conformant life time.
-#endif
-        mutable const UString* _aux;       //!< Auxiliary string (for StringifyInterface).
+        const TypeFlags  _type;      //!< Indicate which overlay to use in _value.
+        const uint8_t    _size;      //!< Original size for integer type (not greater than 8).
+        const Value      _value;     //!< Actual value of the argument.
+        mutable UString* _aux;       //!< Auxiliary string (for StringifyInterface and character pointers).
 
         // Static data used to return references to constant empty string class objects.
         static const std::string empty;
@@ -459,49 +458,48 @@ namespace ts {
         //! Constructor from a nul-terminated string of 8-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, Value(s), 0) {}
+        ArgMixIn(const char* s) : ArgMix(STRING | BIT8, 0, Value(s)) {}
         //!
         //! Constructor from a nul-terminated string of 16-bit characters.
         //! @param [in] s Address of nul-terminated string.
         //!
-        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, Value(s), 0) {}
+        ArgMixIn(const UChar* s) : ArgMix(STRING | BIT16, 0, Value(s)) {}
         //!
         //! Constructor from a C++ string of 8-bit characters.
         //! @param [in] s Reference to a C++ string.
         //!
-        ArgMixIn(const std::string& s) : ArgMix(STRING | BIT8 | CLASS, 0, s, 0) {}
+        ArgMixIn(const std::string& s) : ArgMix(STRING | BIT8 | CLASS, 0, s) {}
         //!
         //! Constructor from a C++ string of 16-bit characters.
         //! @param [in] s Reference to a C++ string.
         //!
-        ArgMixIn(const UString& s) : ArgMix(STRING | BIT16 | CLASS, 0, s, 0) {}
+        ArgMixIn(const UString& s) : ArgMix(STRING | BIT16 | CLASS, 0, s) {}
         //!
         //! Constructor from a stringifiable object.
         //! @param [in] s Reference to a stringifiable object.
         //!
-        ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s, 0) {}
+        ArgMixIn(const StringifyInterface& s) : ArgMix(STRING | BIT16 | CLASS | STRINGIFY, 0, s) {}
+        //!
+        //! Constructor from an AbstractNumber object.
+        //! @param [in] s Reference to an AbstractNumber object.
+        //!
+        ArgMixIn(const AbstractNumber& s) : ArgMix(ANUMBER, 0, s) {}
         //!
         //! Constructor from a bool.
         //! @param [in] b Boolean value.
         //!
-        ArgMixIn(bool b) : ArgMix(INTEGER | BIT1, 1, Value(b), 0) {}
+        ArgMixIn(bool b) : ArgMix(INTEGER | BIT1, 1, Value(b)) {}
         //!
         //! Constructor from a double.
         //! @param [in] d double value.
         //!
-        ArgMixIn(double d) : ArgMix(DOUBLE, 0, Value(d), 0) {}
+        ArgMixIn(double d) : ArgMix(DOUBLE, 0, Value(d)) {}
         //!
         //! Constructor from an integer or enum type.
         //! @param [in] i Integer value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value, int>::type = 0>
-        ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i), 0) {}
-        //!
-        //! Constructor from a fixed-point type.
-        //! @param [in] x Fixed-point value of the ArgMix. Internally stored as a 32-bit or 64-bit integer.
-        //!
-        template <typename T, const size_t PREC, typename std::enable_if<std::is_integral<T>::value && std::is_signed<T>::value, int>::type = 0>
-        ArgMixIn(FixedPoint<T, PREC> x) : ArgMix(storage_type<T>::value | FIXED, sizeof(T), static_cast<typename storage_type<T>::type>(x.raw()), PREC) {}
+        ArgMixIn(T i) : ArgMix(storage_type<T>::value, sizeof(i), static_cast<typename storage_type<T>::type>(i)) {}
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.
@@ -548,7 +546,7 @@ namespace ts {
         //! @param [in] ptr Address of an integer or enum data.
         //!
         template<typename T, typename std::enable_if<std::is_integral<T>::value || std::is_enum<T>::value>::type* = nullptr>
-        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr), 0) {}
+        ArgMixOut(T* ptr) : ArgMix(reference_type<T>::value, sizeof(T), Value(ptr)) {}
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.

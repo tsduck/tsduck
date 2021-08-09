@@ -420,6 +420,21 @@ namespace ts {
 #endif
 
     //!
+    //! Check if an integer value is negative, optimized for signed or unsigned type.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a An integer.
+    //! @return True if @a a is negative.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    bool IsNegative(INT a) { return false; } // unsigned version
+
+    //! @cond nodoxygen
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    bool IsNegative(INT a) { return a < 0; } // signed version
+    //! @endcond
+
+
+    //!
     //! Perform a bounded addition without overflow.
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.

@@ -102,7 +102,6 @@ public:
     void testToQuotedLine();
     void testFromQuotedLine();
     void testIndent();
-    void testFixedPoint();
 
     TSUNIT_TEST_BEGIN(UStringTest);
     TSUNIT_TEST(testIsSpace);
@@ -157,7 +156,6 @@ public:
     TSUNIT_TEST(testToQuotedLine);
     TSUNIT_TEST(testFromQuotedLine);
     TSUNIT_TEST(testIndent);
-    TSUNIT_TEST(testFixedPoint);
     TSUNIT_TEST_END();
 
 private:
@@ -1511,9 +1509,9 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_EQUAL(0, it->toInt64());
     TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("foo", it->toCharPtr());
-    TSUNIT_EQUAL(u"", it->toUCharPtr());
+    TSUNIT_EQUAL(u"foo", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
-    TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(u"foo", it->toUString());
     ++it;
 
     // ok = "ok"
@@ -1534,9 +1532,9 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_EQUAL(0, it->toInt64());
     TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("ok", it->toCharPtr());
-    TSUNIT_EQUAL(u"", it->toUCharPtr());
+    TSUNIT_EQUAL(u"ok", it->toUCharPtr());
     TSUNIT_EQUAL("ok", it->toString());
-    TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(u"ok", it->toUString());
     ++it;
 
     // u"bar"
@@ -1559,7 +1557,7 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_EQUAL("", it->toCharPtr());
     TSUNIT_EQUAL(u"bar", it->toUCharPtr());
     TSUNIT_EQUAL("", it->toString());
-    TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(u"bar", it->toUString());
     ++it;
 
     // us = u"an UString"
@@ -1603,9 +1601,9 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_EQUAL(0, it->toInt64());
     TSUNIT_EQUAL(0, it->toUInt64());
     TSUNIT_EQUAL("ok 2", it->toCharPtr());
-    TSUNIT_EQUAL(u"", it->toUCharPtr());
+    TSUNIT_EQUAL(u"ok 2", it->toUCharPtr());
     TSUNIT_EQUAL("ok 2", it->toString());
-    TSUNIT_EQUAL(u"", it->toUString());
+    TSUNIT_EQUAL(u"ok 2", it->toUString());
     ++it;
 
     // us + u" 2"
@@ -2177,51 +2175,4 @@ void UStringTest::testIndent()
     TSUNIT_EQUAL(u"  ", ts::UString(u"  ").toIndented(4));
     TSUNIT_EQUAL(u"      a", ts::UString(u"  a").toIndented(4));
     TSUNIT_EQUAL(u"    a\n\n  b\n  c d", ts::UString(u"  a\n\nb\nc d").toIndented(2));
-}
-
-void UStringTest::testFixedPoint()
-{
-    typedef ts::FixedPoint<int32_t, 0> Fix0;
-    typedef ts::FixedPoint<int32_t, 3> Fix3;
-
-    Fix0 f0;
-    Fix3 f3;
-
-    TSUNIT_ASSERT(ts::UString(u" 12").toFixed(f0));
-    TSUNIT_EQUAL(12, f0.toInt());
-
-    TSUNIT_ASSERT(!ts::UString(u" -12,345 ==").toFixed(f0, ts::UString::DEFAULT_THOUSANDS_SEPARATOR));
-    TSUNIT_EQUAL(-12345, f0.toInt());
-
-    TSUNIT_EQUAL(u"1,234", ts::UString::Fixed(Fix0(1234)));
-    TSUNIT_EQUAL(u"   -56,789", ts::UString::Fixed(Fix0(-56789), 10));
-
-
-    TSUNIT_ASSERT(ts::UString(u" 12.3").toFixed(f3));
-    TSUNIT_EQUAL(12, f3.toInt());
-    TSUNIT_EQUAL(12300, f3.raw());
-
-    TSUNIT_ASSERT(!ts::UString(u" -12,345.6789 ==").toFixed(f3, ts::UString::DEFAULT_THOUSANDS_SEPARATOR));
-    TSUNIT_EQUAL(-12345, f3.toInt());
-    TSUNIT_EQUAL(-12345678, f3.raw());
-
-    TSUNIT_EQUAL(u"1,234",          ts::UString::Fixed(Fix3(1234)));
-    TSUNIT_EQUAL(u"1,234.5",        ts::UString::Fixed(Fix3(1234500, true)));
-    TSUNIT_EQUAL(u"1,234.567",      ts::UString::Fixed(Fix3(1234567, true)));
-    TSUNIT_EQUAL(u"-1,234.567",     ts::UString::Fixed(Fix3(-1234567, true)));
-    TSUNIT_EQUAL(u"-1,234.432",     ts::UString::Fixed(Fix3(-1234432, true)));
-    TSUNIT_EQUAL(u"   -56|789.000", ts::UString::Fixed(Fix3(-56789), 14, true, u"|", true, true));
-    TSUNIT_EQUAL(u"   +56|789.000", ts::UString::Fixed(Fix3(56789), 14, true, u"|", true, true));
-
-    TSUNIT_EQUAL(u"1234",     ts::UString::Format(u"%d",   {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1,234",    ts::UString::Format(u"%'d",  {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"04D2",     ts::UString::Format(u"%04X", {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234",     ts::UString::Format(u"%f",   {Fix3(1234)}));
-    TSUNIT_EQUAL(u"1234.5",   ts::UString::Format(u"%f",   {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.000", ts::UString::Format(u"%.f",  {Fix3(1234)}));
-    TSUNIT_EQUAL(u"1234.500", ts::UString::Format(u"%.f",  {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.50",  ts::UString::Format(u"%.2f", {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.500", ts::UString::Format(u"%.8f", {Fix3(1234500, true)}));
-    TSUNIT_EQUAL(u"1234.52",  ts::UString::Format(u"%f",   {Fix3(1234520, true)}));
-    TSUNIT_EQUAL(u"1234.546", ts::UString::Format(u"%f",   {Fix3(1234546, true)}));
 }

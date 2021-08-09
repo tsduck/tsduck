@@ -94,36 +94,14 @@ namespace ts {
             }
 
             //!
-            //! Get the value of a fixed-point number attribute.
-            //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
-            //! to enforce a fixed-point type and should be left to their default values.
+            //! Get the value of an AbstractNumber attribute.
+            //! @tparam NUMBER A subclass of AbstractNumber.
             //! @param [out] val Decoded value.
             //! @param [in] name Attribute name.
             //! @param [in] defValue Default value if not present.
             //!
-            template <class FIXED,
-                      typename INT = typename FIXED::int_t,
-                      const size_t PREC = FIXED::PRECISION,
-                      typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
-            void getValue(FIXED& val, const UString& name, FIXED defValue = FIXED(0)) const
-            {
-                if (!value(name).toFixed(val)) {
-                    val = defValue;
-                }
-            }
-
-            //!
-            //! Get the value of a fraction attribute.
-            //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
-            //! to enforce a fraction type and should be left to their default values.
-            //! @param [out] val Decoded value.
-            //! @param [in] name Attribute name.
-            //! @param [in] defValue Default value if not present.
-            //!
-            template <class FRAC,
-                      typename INT = typename FRAC::int_t,
-                      typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
-            void getValue(FRAC& val, const UString& name, const FRAC& defValue = FRAC(0)) const
+            template <class NUMBER, typename std::enable_if<std::is_base_of<AbstractNumber, NUMBER>::value, int>::type = 0>
+            void getValue(NUMBER& val, const UString& name, const NUMBER& defValue = NUMBER()) const
             {
                 if (!val.fromString(value(name))) {
                     val = defValue;

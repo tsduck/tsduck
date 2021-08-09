@@ -2043,6 +2043,7 @@ void ts::UString::ArgMixInContext::processArg()
 
     // The thousands separator to use.
     const UString& separator(useSeparator ? DEFAULT_THOUSANDS_SEPARATOR : EMPTY);
+    const UChar separatorChar = useSeparator ? COMMA : CHAR_NULL;
 
     // The available '%' sequences are:
     // - %s : String.
@@ -2123,6 +2124,10 @@ void ts::UString::ArgMixInContext::processArg()
             _result.append(minWidth - wid, pad);
         }
     }
+    else if (argit->isAbstractNumber() && cmd == u's') {
+        // An AbstractNumber using the most general string format.
+        _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, precision > 0 ? precision : NPOS, false, FULL_STOP, pad));
+    }
     else if (cmd == u'c') {
         // Use an integer value as an Unicode code point.
         if (!argit->isInteger() && debugActive()) {
@@ -2133,47 +2138,41 @@ void ts::UString::ArgMixInContext::processArg()
     }
     else if (cmd == u'x' || cmd == u'X') {
         // Insert an integer in hexadecimal.
-        if (!argit->isInteger() && !argit->isFixed() && debugActive()) {
+        if (!argit->isInteger() && !argit->isAbstractNumber() && debugActive()) {
             debug(u"type mismatch, not an integer", cmd);
         }
         // Format the hexa string.
         const bool upper = cmd == u'X';
-        switch (argit->size()) {
-            case 1:
-                _result.append(HexaMin(argit->toInteger<uint8_t>(), minWidth, separator, false, upper));
-                break;
-            case 2:
-                _result.append(HexaMin(argit->toInteger<uint16_t>(), minWidth, separator, false, upper));
-                break;
-            case 4:
-                _result.append(HexaMin(argit->toInteger<uint32_t>(), minWidth, separator, false, upper));
-                break;
-            default:
-                _result.append(HexaMin(argit->toInteger<uint64_t>(), minWidth, separator, false, upper));
-                break;
+        if (argit->isAbstractNumber()) {
+            _result.append(HexaMin(argit->toInteger<uint64_t>(), minWidth, separator, false, upper));
+        }
+        else {
+            switch (argit->size()) {
+                case 1:
+                    _result.append(HexaMin(argit->toInteger<uint8_t>(), minWidth, separator, false, upper));
+                    break;
+                case 2:
+                    _result.append(HexaMin(argit->toInteger<uint16_t>(), minWidth, separator, false, upper));
+                    break;
+                case 4:
+                    _result.append(HexaMin(argit->toInteger<uint32_t>(), minWidth, separator, false, upper));
+                    break;
+                default:
+                    _result.append(HexaMin(argit->toInteger<uint64_t>(), minWidth, separator, false, upper));
+                    break;
+            }
         }
     }
     else if (cmd == u'f') {
         // Insert a floating point value
-        if (!argit->isDouble() && !argit->isFixed() && debugActive()) {
+        if (!argit->isDouble() && !argit->isAbstractNumber() && debugActive()) {
             debug(u"type mismatch, not a double or fixed-point", cmd);
         }
-        if (argit->isFixed()) {
-            // Fixed-point, stored as 32 or 64-bit integer.
-            const bool forceDecimals = hasDot;
-            const size_type decimals = precision != 0 ? precision : argit->precision();
-            if (argit->size() > 4) {
-                _result.append(FixedImpl(argit->toInteger<int64_t>(true), argit->precision(),
-                                         minWidth, decimals, !leftJustified, separator, forceSign, forceDecimals, pad));
-            }
-            else {
-                // Fixed-point, stored as 32-bit integer.
-                _result.append(FixedImpl(argit->toInteger<int32_t>(true), argit->precision(),
-                                         minWidth, decimals, !leftJustified, separator, forceSign, forceDecimals, pad));
-            }
+        if (argit->isAbstractNumber()) {
+            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, precision > 0 ? precision : 6, hasDot, FULL_STOP, pad));
         }
         else {
-            // Not a fixed-point, get a float or convert an integer to a float. Default to 6 decimal digits.
+            // Get a float or convert an integer to a float. Default to 6 decimal digits.
             _result.append(Float(argit->toDouble(), minWidth, precision > 0 ? precision : 6, forceSign));
         }
     }
@@ -2182,7 +2181,11 @@ void ts::UString::ArgMixInContext::processArg()
         if (cmd != u'd' && debugActive()) {
             debug(u"type mismatch, got an integer", cmd);
         }
-        if (argit->size() > 4) {
+        if (argit->isAbstractNumber()) {
+            // Format AbstractNumber without decimals.
+            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, 0, true, FULL_STOP, pad));
+        }
+        else if (argit->size() > 4) {
             // Stored as 64-bit integer.
             if (argit->isSigned()) {
                 _result.append(Decimal(argit->toInt64(), minWidth, !leftJustified, separator, forceSign, pad));

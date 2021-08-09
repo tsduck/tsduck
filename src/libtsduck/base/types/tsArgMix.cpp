@@ -42,11 +42,7 @@ const ts::UString ts::ArgMix::uempty;
 ts::ArgMix::ArgMix() :
     _type(0),
     _size(0),
-    _precision(0),
     _value(int32_t(0)),
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-    _string(),
-#endif
     _aux(nullptr)
 {
 }
@@ -54,11 +50,7 @@ ts::ArgMix::ArgMix() :
 ts::ArgMix::ArgMix(const ts::ArgMix& other) :
     _type(other._type),
     _size(other._size),
-    _precision(other._precision),
     _value(other._value),
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-    _string(other._string),
-#endif
     _aux(other._aux == nullptr ? nullptr : new UString(*other._aux))
 {
 }
@@ -66,63 +58,19 @@ ts::ArgMix::ArgMix(const ts::ArgMix& other) :
 ts::ArgMix::ArgMix(ts::ArgMix&& other) :
     _type(other._type),
     _size(other._size),
-    _precision(other._precision),
     _value(other._value),
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-    _string(std::move(other._string)),
-#endif
     _aux(other._aux)
 {
     other._aux = nullptr;
 }
 
-ts::ArgMix::ArgMix(TypeFlags type, size_t size, const Value value, size_t precision) :
+ts::ArgMix::ArgMix(TypeFlags type, size_t size, const Value value) :
     _type(type),
     _size(uint8_t(size)),
-    _precision(uint8_t(precision)),
     _value(value),
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-    _string(),
-#endif
     _aux(nullptr)
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Specific constructors without conformant temporary object lifetime.
-//----------------------------------------------------------------------------
-
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-
-ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const std::string& value) :
-    _type(type),
-    _size(size),
-    _value(int32_t(0)),
-    _string(value),
-    _aux(0)
-{
-}
-
-ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const UString& value) :
-    _type(type),
-    _size(size),
-    _value(int32_t(0)),
-    _string(),
-    _aux(new UString(value))
-{
-}
-
-ts::ArgMix::ArgMix(TypeFlags type, uint16_t size, const StringifyInterface& value) :
-    _type(type),
-    _size(size),
-    _value(int32_t(0)),
-    _string(),
-    _aux(new UString(value.toString()))
-{
-}
-
-#endif
 
 
 //----------------------------------------------------------------------------
@@ -146,15 +94,13 @@ ts::ArgMix::~ArgMix()
 const char* ts::ArgMix::toCharPtr() const
 {
     switch (_type) {
-        case STRING | BIT8 | CLASS: {
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-            return _string.c_str();
-#else
-            return _value.string == nullptr ? "" : _value.string->c_str();
-#endif
-        }
         case STRING | BIT8: {
+            // A pointer to char.
             return _value.charptr == nullptr ? "" : _value.charptr;
+        }
+        case STRING | BIT8 | CLASS: {
+            // A pointer to std::string.
+            return _value.string == nullptr ? "" : _value.string->c_str();
         }
         default: {
             return "";
@@ -170,25 +116,38 @@ const ts::UChar* ts::ArgMix::toUCharPtr() const
             return _value.ucharptr == nullptr ? u"" : _value.ucharptr;
         }
         case STRING | BIT16 | CLASS: {
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-            assert(_aux != 0);
-            return _aux->c_str();
-#else
             // A pointer to UString.
             return _value.ustring == nullptr ? u"" : _value.ustring->c_str();
-#endif
+        }
+        case STRING | BIT8: {
+            // A pointer to char. Need to allocate an auxiliary string.
+            if (_value.charptr != nullptr && _aux == nullptr) {
+                _aux = new UString;
+                _aux->assignFromUTF8(_value.charptr);
+            }
+            return _aux == nullptr ? u"" : _aux->c_str();
+        }
+        case STRING | BIT8 | CLASS: {
+            // A pointer to std::string. Need to allocate an auxiliary string.
+            if (_value.string != nullptr && _aux == nullptr) {
+                _aux = new UString;
+                _aux->assignFromUTF8(*_value.string);
+            }
+            return _aux == nullptr ? u"" : _aux->c_str();
         }
         case STRING | BIT16 | CLASS | STRINGIFY: {
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-            assert(_aux != 0);
-            return _aux->c_str();
-#else
             // A pointer to StringifyInterface. Need to allocate an auxiliary string.
             if (_value.stringify != nullptr && _aux == nullptr) {
                 _aux = new UString(_value.stringify->toString());
             }
             return _aux == nullptr ? u"" : _aux->c_str();
-#endif
+        }
+        case ANUMBER: {
+            // A pointer to AbstractNumer. Need to allocate an auxiliary string.
+            if (_value.anumber != nullptr && _aux == nullptr) {
+                _aux = new UString(_value.anumber->toString());
+            }
+            return _aux == nullptr ? u"" : _aux->c_str();
         }
         default: {
             return u"";
@@ -199,11 +158,7 @@ const ts::UChar* ts::ArgMix::toUCharPtr() const
 const std::string& ts::ArgMix::toString() const
 {
     if (_type == (STRING | BIT8 | CLASS)) {
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-        return _string;
-#else
         return _value.string != nullptr ? *_value.string : empty;
-#endif
     }
     else {
         return empty;
@@ -213,26 +168,46 @@ const std::string& ts::ArgMix::toString() const
 const ts::UString& ts::ArgMix::toUString() const
 {
     switch (_type) {
+        case STRING | BIT8: {
+            // A pointer to char. Need to allocate an auxiliary string.
+            if (_value.charptr != nullptr && _aux == nullptr) {
+                _aux = new UString;
+                _aux->assignFromUTF8(_value.charptr);
+            }
+            return _aux == nullptr ? uempty : *_aux;
+        }
+        case STRING | BIT8 | CLASS: {
+            // A pointer to std::string. Need to allocate an auxiliary string.
+            if (_value.string != nullptr && _aux == nullptr) {
+                _aux = new UString;
+                _aux->assignFromUTF8(*_value.string);
+            }
+            return _aux == nullptr ? uempty : *_aux;
+        }
+        case STRING | BIT16: {
+            // A pointer to UChar. Need to allocate an auxiliary string.
+            if (_value.charptr != nullptr && _aux == nullptr) {
+                _aux = new UString(_value.ucharptr);
+            }
+            return _aux == nullptr ? uempty : *_aux;
+        }
         case STRING | BIT16 | CLASS: {
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-            assert(_aux != nullptr);
-            return *_aux;
-#else
             // A pointer to UString.
             return _value.ustring == nullptr ? uempty : *_value.ustring;
-#endif
         }
         case STRING | BIT16 | CLASS | STRINGIFY: {
-#if defined(NON_CONFORMANT_CXX11_TEMPLIFE)
-            assert(_aux != nullptr);
-            return *_aux;
-#else
             // A pointer to StringifyInterface. Need to allocate an auxiliary string.
             if (_value.stringify != nullptr && _aux == nullptr) {
                 _aux = new UString(_value.stringify->toString());
             }
             return _aux == nullptr ? uempty : *_aux;
-#endif
+        }
+        case ANUMBER: {
+            // A pointer to AbstractNumer. Need to allocate an auxiliary string.
+            if (_value.anumber != nullptr && _aux == nullptr) {
+                _aux = new UString(_value.anumber->toString());
+            }
+            return _aux == nullptr ? uempty : *_aux;
         }
         default: {
             return uempty;
@@ -247,8 +222,11 @@ const ts::UString& ts::ArgMix::toUString() const
 
 double ts::ArgMix::toDouble() const
 {
-    if ((_type & DOUBLE) != 0) {
+    if ((_type & DOUBLE) == DOUBLE) {
         return _value.dbl;
+    }
+    else if ((_type & ANUMBER) == ANUMBER) {
+        return _value.anumber->toDouble();
     }
     else if (isSigned()) {
         return double(toInt64());
@@ -258,5 +236,22 @@ double ts::ArgMix::toDouble() const
     }
     else {
         return 0.0;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Return ArgMix value as an AbstractNumber.
+//----------------------------------------------------------------------------
+
+const ts::AbstractNumber& ts::ArgMix::toAbstractNumber() const
+{
+    switch (_type) {
+        case ANUMBER: {
+            return _value.anumber != nullptr ? *_value.anumber : *AbstractNumber::INVALID;
+        }
+        default: {
+            return *AbstractNumber::INVALID;
+        }
     }
 }

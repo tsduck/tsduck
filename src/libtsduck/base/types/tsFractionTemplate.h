@@ -119,6 +119,23 @@ ts::Fraction<INT_T,N>::Fraction(INT1 numerator, INT2 denominator) :
 
 
 //----------------------------------------------------------------------------
+// Virtual numeric conversions.
+//----------------------------------------------------------------------------
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+int64_t ts::Fraction<INT_T,N>::toInt64() const
+{
+    return int64_t(_num / _den);
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+double ts::Fraction<INT_T,N>::toDouble() const
+{
+    return double(_num) / double(_den);
+}
+
+
+//----------------------------------------------------------------------------
 // Converts to a proper fraction (a fraction that is less than 1).
 //----------------------------------------------------------------------------
 
@@ -313,28 +330,51 @@ _TS_FRACTION_COMPARE(>)
 #undef _TS_FRACTION_COMPARE
 
 //----------------------------------------------------------------------------
-// Implementation of interfaces from/to string.
+// Convert the fraction to a string object.
 //----------------------------------------------------------------------------
 
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-ts::UString ts::Fraction<INT_T,N>::toString() const
+ts::UString ts::Fraction<INT_T,N>::toString(size_t min_width,
+                                            bool right_justified,
+                                            UChar separator,
+                                            bool force_sign,
+                                            size_t decimals,
+                                            bool force_decimals,
+                                            UChar decimal_dot,
+                                            UChar pad) const
 {
-    return _den == 1 ? UString::Decimal(_num) : UString::Decimal(_num) + u'/' + UString::Decimal(_den);
+    UString sep;
+    if (separator != CHAR_NULL) {
+        sep.append(separator);
+    }
+    UString str(UString::Decimal(_num, 0, true, sep, force_sign));
+    if (_den != 1) {
+        str.append(u'/');
+        str.append(UString::Decimal(_den, 0, true, sep));
+    }
+    const size_t str_len = str.length();
+    if (str_len < min_width) {
+        str.insert(right_justified ? 0 : str_len, min_width - str_len, pad);
+    }
+    return str;
 }
 
+
+//----------------------------------------------------------------------------
+// Parse a string and interpret it as a fraction.
+//----------------------------------------------------------------------------
+
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-bool ts::Fraction<INT_T,N>::fromString(const UString& str)
+bool ts::Fraction<INT_T,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
 {
+    const UString sep(1, separator);
     const size_t slash = str.find(u'/');
     if (slash == NPOS) {
         _den = 1;
-        return str.toInteger(_num, UString::DEFAULT_THOUSANDS_SEPARATOR);
+        return str.toInteger(_num, sep);
     }
     else {
-        if (str.substr(0, slash).toInteger(_num, UString::DEFAULT_THOUSANDS_SEPARATOR) &&
-            str.substr(slash + 1).toInteger(_den, UString::DEFAULT_THOUSANDS_SEPARATOR) &&
-            _den != 0)
-        {
+        if (str.substr(0, slash).toInteger(_num, sep) && str.substr(slash + 1).toInteger(_den, sep) && _den != 0) {
             reduce();
             return true;
         }
