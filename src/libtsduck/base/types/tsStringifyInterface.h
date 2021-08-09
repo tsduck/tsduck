@@ -26,10 +26,41 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  Abstract interface converting an object to UString.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsParseInterface.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsPlatform.h"
 
-ts::ParseInterface::~ParseInterface()
-{
+namespace ts {
+
+    class UString;
+
+    // Weird LLVM message: error: definition of implicit copy assignment operator for 'StringifyInterface' is deprecated because it has a user-declared destructor
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(deprecated)
+
+    //!
+    //! An interface to be implemented by classes supporting a conversion to UString.
+    //! @ingroup cpp
+    //!
+    class TSDUCKDLL StringifyInterface
+    {
+    public:
+        //!
+        //! Convert to a string object.
+        //! @return This object, converted as a string.
+        //!
+        virtual UString toString() const = 0;
+
+        //!
+        //! Virtual destructor
+        //!
+        virtual ~StringifyInterface();
+    };
+
+    TS_POP_WARNING()
 }

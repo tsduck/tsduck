@@ -66,7 +66,7 @@ ts::AbstractTablePlugin::AbstractTablePlugin(TSP* tsp_,
     option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
          u"Specifies the bitrate in bits / second of the " + _table_name + " PID if a new one is "
-         u"created. The default is " + BitRateToString(_default_bitrate) + u" b/s.");
+         u"created. The default is " + _default_bitrate.toString() + u" b/s.");
 
     option(u"create", 'c');
     help(u"create",

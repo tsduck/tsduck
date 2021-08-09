@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractNumber.h"
 #include "tsIntegerUtils.h"
 
 namespace ts {
@@ -50,7 +51,7 @@ namespace ts {
     //! @tparam PREC The decimal precision in digits.
     //!
     template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type = 0>
-    class FixedPoint final
+    class FixedPoint: public AbstractNumber
     {
     private:
         INT_T _value;
@@ -101,6 +102,19 @@ namespace ts {
         //! If false, the value @a i is an integral number of units which is converted into the fixed-precision representation.
         //!
         FixedPoint(int_t i, bool raw) : _value(raw ? i : i * FACTOR) {}
+
+        // Implementation of interfaces.
+        virtual int64_t toInt64() const override;
+        virtual double toDouble() const override;
+        virtual bool fromString(const UString& str, UChar separator = COMMA, UChar decimal_dot = FULL_STOP) override;
+        virtual UString toString(size_t min_width = 0,
+                                 bool right_justified = true,
+                                 UChar separator = COMMA,
+                                 bool force_sign = false,
+                                 size_t decimals = NPOS,
+                                 bool force_decimals = false,
+                                 UChar decimal_dot = FULL_STOP,
+                                 UChar pad = SPACE) const override;
 
         //!
         //! Conversion to integral units.

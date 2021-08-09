@@ -1629,59 +1629,6 @@ namespace ts {
                                bool use_upper = true);
 
         //!
-        //! Format a string containing a fixed-point value.
-        //! @tparam INT The underlying signed integer type for the fixed-point type.
-        //! @tparam PREC The fixed-point decimal precision in digits.
-        //! @param [in] value The fixed-point value to format.
-        //! @param [in] min_width Minimum width of the returned string.
-        //! Padded with spaces if larger than the number of characters in the formatted number.
-        //! @param [in] right_justified If true (the default), return a right-justified string.
-        //! When false, return a left-justified string. Ignored if @a min_width is lower than
-        //! the number of characters in the formatted number.
-        //! @param [in] separator Separator string for groups of thousands, a comma by default.
-        //! @param [in] force_sign If true, force a '+' sign for positive values.
-        //! @param [in] force_decimals If true, with positive precision, force a decimal dot
-        //! and the number of decimal digits of the precision. By default, skip non
-        //! significant decimal digits.
-        //! @param [in] pad The padding character to adjust the width.
-        //! @return The formatted string.
-        //!
-        template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-        static UString Fixed(FixedPoint<INT,PREC> value,
-                             size_type min_width = 0,
-                             bool right_justified = true,
-                             const UString& separator = UString::DEFAULT_THOUSANDS_SEPARATOR,
-                             bool force_sign = false,
-                             bool force_decimals = false,
-                             UChar pad = SPACE)
-        {
-            return FixedImpl(value.raw(), PREC, min_width, PREC, right_justified, separator, force_sign, force_decimals, pad);
-        }
-
-        //!
-        //! Convert a string into a fixed-point value.
-        //! The string to decode must contain the representation of an integer value in decimal
-        //! with optional decimal digits or a hexadecimal value (prefix @c 0x). Hexadecimal
-        //! values are case-insensitive, including the @c 0x prefix. Leading and trailing spaces
-        //! are ignored. Optional thousands separators are ignored.
-        //! @tparam INT The underlying signed integer type for the fixed-point type.
-        //! @tparam PREC The fixed-point decimal precision in digits.
-        //! @param [out] value The returned decoded value. On error (invalid string), @a value
-        //! contains what could be decoded up to the first invalid character.
-        //! @param [in] thousandSeparators A string of characters which are interpreted as thousands
-        //! separators and are ignored. <i>Any character</i> from the @a thousandSeparators string
-        //! is interpreted as a separator. Note that this implies that the optional thousands separators
-        //! may have one character only.
-        //! @param [in] decimalSeparators A string of characters which are interpreted as decimal point.
-        //! A decimal point is allowed only in base 10.
-        //! @return True on success, false on error (invalid string).
-        //!
-        template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-        bool toFixed(FixedPoint<INT,PREC>& value,
-                     const UString& thousandSeparators = UString(),
-                     const UString& decimalSeparators = u".") const;
-
-        //!
         //! Format a string containing a floating point value.
         //! @param [in] value The floating point value to format.
         //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
@@ -2324,19 +2271,6 @@ namespace ts {
             // Return true on match, false on error.
             bool processField();
         };
-
-    private:
-        // Format a string containing a fixed-point value, internal implementations
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-        static UString FixedImpl(INT raw_value,
-                                 size_type precision,
-                                 size_type min_width,
-                                 size_type decimals,
-                                 bool right_justified,
-                                 const UString& separator,
-                                 bool force_sign,
-                                 bool force_decimals,
-                                 UChar pad);
     };
 }
 
@@ -2376,17 +2310,14 @@ TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::Stringif
 }
 
 //!
-//! Output operator for fixed-point numbers on standard text streams.
-//! @tparam INT The underlying signed integer type for the fixed-point type.
-//! @tparam PREC The decimal precision in digits or the fixed-point type.
+//! Output operator for AbstractNumber objects on standard text streams.
 //! @param [in,out] strm A standard stream in output mode.
-//! @param [in] obj A fixed-point value.
+//! @param [in] obj An AbstractNumber object.
 //! @return A reference to the @a strm object.
 //!
-template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
-inline std::ostream& operator<<(std::ostream& strm, ts::FixedPoint<INT, PREC> obj)
+TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::AbstractNumber& obj)
 {
-    return strm << ts::UString::Fixed(obj, 0, true, ts::UString());
+    return strm << obj.toString();
 }
 
 //

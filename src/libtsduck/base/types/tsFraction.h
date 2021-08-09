@@ -33,9 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsAbstractNumber.h"
 #include "tsIntegerUtils.h"
-#include "tsStringifyInterface.h"
-#include "tsParseInterface.h"
 #include "tsUString.h"
 
 namespace ts {
@@ -57,7 +56,7 @@ namespace ts {
     //! @tparam INT_T The integer type for numerator and denominator.
     //!
     template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type = 0>
-    class Fraction: public StringifyInterface, public ParseInterface
+    class Fraction: public AbstractNumber
     {
     private:
         // Numerator and denominator. Always reduced. Only _num can be negative.
@@ -124,8 +123,17 @@ namespace ts {
         Fraction(INT1 numerator, INT2 denominator);
 
         // Implementation of interfaces.
-        virtual UString toString() const override;
-        virtual bool fromString(const UString& str) override;
+        virtual int64_t toInt64() const override;
+        virtual double toDouble() const override;
+        virtual bool fromString(const UString& str, UChar separator = COMMA, UChar decimal_dot = FULL_STOP) override;
+        virtual UString toString(size_t min_width = 0,
+                                 bool right_justified = true,
+                                 UChar separator = COMMA,
+                                 bool force_sign = false,
+                                 size_t decimals = NPOS,
+                                 bool force_decimals = false,
+                                 UChar decimal_dot = FULL_STOP,
+                                 UChar pad = SPACE) const override;
 
         //!
         //! Get the numerator part of the fraction.
@@ -144,12 +152,6 @@ namespace ts {
         //! @return The value in integral units. Underflow or overflow rounding is applied when necessary.
         //!
         int_t toInt() const { return _num / _den; }
-
-        //!
-        //! Conversion to double value.
-        //! @return The value as a double.
-        //!
-        double toDouble() const { return double(_num) / double(_den); }
 
         //!
         //! Get the absolute value.

@@ -650,7 +650,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case BITRATE: {
                     // #EXT-X-BITRATE:<rate>
                     BitRate kilobits = 0;
-                    if (StringToBitRate(kilobits, tagParams)) {
+                    if (kilobits.fromString(tagParams)) {
                         segNext.bitrate = 1024 * kilobits;
                     }
                     else if (strict) {

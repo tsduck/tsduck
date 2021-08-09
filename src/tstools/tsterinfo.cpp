@@ -342,8 +342,8 @@ int MainCode(int argc, char *argv[])
                 if (count > 0) {
                     std::cout << std::endl;
                 }
-                Display(u"Nominal bitrate", ts::BitRateToString(it->tune.theoreticalBitrate()), u"b/s");
-                Display(u"Bitrate difference", ts::BitRateToString(it->bitrate_diff), u"b/s");
+                Display(u"Nominal bitrate", it->tune.theoreticalBitrate().toString(), u"b/s");
+                Display(u"Bitrate difference", it->bitrate_diff.toString(), u"b/s");
                 Display(u"Bandwidth", ts::UString::Decimal(it->tune.bandwidth.value()), u"Hz");
                 Display(u"FEC (high priority)", ts::InnerFECEnum.name(it->tune.fec_hp.value()), u"");
                 Display(u"Constellation", ts::ModulationEnum.name(it->tune.modulation.value()), u"");

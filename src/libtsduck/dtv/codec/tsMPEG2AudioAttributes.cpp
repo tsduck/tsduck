@@ -239,7 +239,7 @@ ts::UString ts::MPEG2AudioAttributes::toString() const
 
     if (_bitrate != 0) {
         desc += u", ";
-        desc += BitRateToString(_bitrate);
+        desc += _bitrate.toString();
         desc += u" kb/s";
     }
 

@@ -212,37 +212,6 @@ namespace ts {
 #endif
 
     //!
-    //! Convert a bitrate into a string.
-    //! This function encapsulates the various representations of a bitrate.
-    //! @param [in] bitrate Bitrate value.
-    //! @return Corresponding string representation.
-    //!
-    TSDUCKDLL inline UString BitRateToString(const BitRate& bitrate)
-    {
-#if defined(TS_BITRATE_FRACTION)
-        return bitrate.toString();
-#else
-        return UString::Fixed(bitrate);
-#endif
-    }
-
-    //!
-    //! Convert a string into a bitrate.
-    //! This function encapsulates the various representations of a bitrate.
-    //! @param [out] bitrate Bitrate value.
-    //! @param [in] str String representation.
-    //! @return True in case of success, false on error.
-    //!
-    TSDUCKDLL inline bool StringToBitRate(BitRate& bitrate, const UString& str)
-    {
-#if defined(TS_BITRATE_FRACTION)
-        return bitrate.fromString(str);
-#else
-        return str.toFixed(bitrate);
-#endif
-    }
-
-    //!
     //! Convert 188-byte packet bitrate into 204-byte packet bitrate.
     //! @param [in] bitrate188 Bitrate using 188-byte packet as reference.
     //! @return Corresponding bitrate using 204-byte packet as reference.
