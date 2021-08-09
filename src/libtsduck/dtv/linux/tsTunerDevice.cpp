@@ -755,10 +755,10 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
         case DS_ISDB_S: {
             // Note: same remark about the frequency as DVB-S tuner.
             if (reset_unknown) {
-                params.frequency = 0;
-                params.polarity = ModulationArgs::DEFAULT_POLARITY;
-                params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
+                params.frequency.clear();
+                params.satellite_number.clear();
                 params.lnb.clear();
+                params.polarity.clear();
             }
 
             props.clear();
