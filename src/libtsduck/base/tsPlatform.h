@@ -919,6 +919,7 @@ TS_MSC_NOWARNING(5204)
 #include <cstring>
 #include <cctype>
 #include <cstddef>     // size_t
+#include <cmath>
 #include <fcntl.h>
 
 TS_POP_WARNING()

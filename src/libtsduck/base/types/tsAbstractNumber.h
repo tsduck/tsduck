@@ -103,6 +103,21 @@ namespace ts {
         virtual double toDouble() const = 0;
 
         //!
+        //! Check if the value of the number is within a range of integer value.
+        //! @param [in] min Minimum integer value (inclusive).
+        //! @param [in] max Maximum integer value (inclusive).
+        //! @return True if this number is within the range @a min to @a max, inclusive.
+        //!
+        virtual bool inRange(int64_t min, int64_t max) const = 0;
+
+        //!
+        //! Get a textual description of the values of that type.
+        //! This is typically used in help texts.
+        //! @return A textual description of the values of that type.
+        //!
+        virtual UString description() const = 0;
+
+        //!
         //! Virtual destructor
         //!
         virtual ~AbstractNumber();

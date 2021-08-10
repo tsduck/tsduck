@@ -52,13 +52,26 @@ const ts::FixedPoint<INT_T,PREC,N> ts::FixedPoint<INT_T,PREC,N>::MAX(std::numeri
 template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
 int64_t ts::FixedPoint<INT_T,PREC,N>::toInt64() const
 {
-    return int64_t(_value / FACTOR);
+    return bounded_cast<int64_t>(_value / FACTOR);
 }
 
 template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
 double ts::FixedPoint<INT_T,PREC,N>::toDouble() const
 {
     return double(_value) / FACTOR;
+}
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+bool ts::FixedPoint<INT_T,PREC,N>::inRange(int64_t min, int64_t max) const
+{
+    const int64_t r = bounded_cast<int64_t>(_value / FACTOR);
+    return r >= min && r <= max;
+}
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+ts::UString ts::FixedPoint<INT_T,PREC,N>::description() const
+{
+    return UString::Format(u"a fixed-point value with up to %d meaningful decimal digits", {PRECISION});
 }
 
 

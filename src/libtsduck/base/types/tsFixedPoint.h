@@ -104,6 +104,8 @@ namespace ts {
         FixedPoint(int_t i, bool raw) : _value(raw ? i : i * FACTOR) {}
 
         // Implementation of interfaces.
+        virtual ts::UString description() const override;
+        virtual bool inRange(int64_t min, int64_t max) const override;
         virtual int64_t toInt64() const override;
         virtual double toDouble() const override;
         virtual bool fromString(const UString& str, UChar separator = COMMA, UChar decimal_dot = FULL_STOP) override;

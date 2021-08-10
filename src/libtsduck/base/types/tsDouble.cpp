@@ -45,12 +45,22 @@ constexpr double ts::Double::EQUAL_PRECISION;
 
 int64_t ts::Double::toInt64() const
 {
-    return int64_t(_value);
+    return int64_t(std::round(_value));
 }
 
 double ts::Double::toDouble() const
 {
     return _value;
+}
+
+bool ts::Double::inRange(int64_t min, int64_t max) const
+{
+    return _value >= double(min) && _value <= double(max);
+}
+
+ts::UString ts::Double::description() const
+{
+    return u"a floating-point value with an optional decimal part";
 }
 
 

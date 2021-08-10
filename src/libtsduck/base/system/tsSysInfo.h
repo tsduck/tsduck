@@ -113,6 +113,11 @@ namespace ts {
         //!
         UString hostName() const { return _hostName; }
         //!
+        //! Get the name of the CPU architecure.
+        //! @return The name of the CPU architecure.
+        //!
+        UString cpuName() const { return _cpuName; }
+        //!
         //! Get system memory page size.
         //! @return The system memory page size in bytes.
         //!
@@ -132,6 +137,7 @@ namespace ts {
         UString _systemVersion;
         UString _systemName;
         UString _hostName;
+        UString _cpuName;
         size_t  _memoryPageSize;
     };
 }

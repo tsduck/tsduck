@@ -83,10 +83,12 @@ namespace ts {
             LONG,     //!< Full explanatory format.
             INTEGER,  //!< Integer format XXYYRRRRR.
             DATE,     //!< Build date.
+            COMPILER, //!< Version of the compiler which was used to build the code.
+            SYSTEM,   //!< Type of system and platform.
+            BITRATE,  //!< Representation of bitrate values.
             NSIS,     //!< Output NSIS @c !define directives.
             DEKTEC,   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
             HTTP,     //!< Version of HTTP library which is used.
-            COMPILER, //!< Version of the compiler which was used to build the code.
             SRT,      //!< Version of SRT library which is used.
             ALL,      //!< Multi-line output with full details.
         };
@@ -123,6 +125,12 @@ namespace ts {
 
         // Build a string representing the version of the compiler which built this module.
         static ts::UString GetCompilerVersion();
+
+        // Build a string representing the system on which the application runs.
+        static ts::UString GetSystemVersion();
+
+        // Build a string describing the bitrate representation.
+        static ts::UString GetBitRateRepresentation();
 
         // Convert a version string into a vector of integers.
         static void VersionToInts(std::vector<int>& ints, const ts::UString& version);

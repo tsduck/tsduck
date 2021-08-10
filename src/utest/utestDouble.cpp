@@ -49,6 +49,7 @@ public:
     void testConstructor();
     void testComparison();
     void testArithmetics();
+    void testToInt();
     void testToString();
     void testFromString();
 
@@ -56,6 +57,7 @@ public:
     TSUNIT_TEST(testConstructor);
     TSUNIT_TEST(testComparison);
     TSUNIT_TEST(testArithmetics);
+    TSUNIT_TEST(testToInt);
     TSUNIT_TEST(testToString);
     TSUNIT_TEST(testFromString);
     TSUNIT_TEST_END();
@@ -209,6 +211,19 @@ void DoubleTest::testArithmetics()
 
     a1 /= 4;
     TSUNIT_EQUAL(0.5625, a1.toDouble());
+}
+
+void DoubleTest::testToInt()
+{
+    TSUNIT_EQUAL(3, ts::Double(3.4999).toInt());
+    TSUNIT_EQUAL(4, ts::Double(3.5001).toInt());
+    TSUNIT_EQUAL(-3, ts::Double(-3.4999).toInt());
+    TSUNIT_EQUAL(-4, ts::Double(-3.5001).toInt());
+
+    TSUNIT_EQUAL(3, ts::Double(3.4999).toInt64());
+    TSUNIT_EQUAL(4, ts::Double(3.5001).toInt64());
+    TSUNIT_EQUAL(-3, ts::Double(-3.4999).toInt64());
+    TSUNIT_EQUAL(-4, ts::Double(-3.5001).toInt64());
 }
 
 void DoubleTest::testToString()

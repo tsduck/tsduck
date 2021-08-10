@@ -79,7 +79,8 @@ ts::Args::IOption::IOption(const UChar* name_,
                            int64_t      min_value_,
                            int64_t      max_value_,
                            size_t       decimals_,
-                           uint32_t     flags_) :
+                           uint32_t     flags_,
+                           AbstractNumber* anumber_) :
 
     name(name_ == nullptr ? UString() : name_),
     short_name(short_name_),
@@ -94,7 +95,8 @@ ts::Args::IOption::IOption(const UChar* name_,
     syntax(),
     help(),
     values(),
-    value_count(0)
+    value_count(0),
+    anumber(anumber_)
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -117,7 +119,7 @@ ts::Args::IOption::IOption(const UChar* name_,
             max_value = 0;
             break;
         case INTEGER:
-        case FRACTION:
+        case ANUMBER:
             if (max_value < min_value) {
                 throw ArgsError(u"invalid value range for " + display());
             }
@@ -202,7 +204,8 @@ ts::Args::IOption::IOption(const UChar*       name_,
     syntax(),
     help(),
     values(),
-    value_count(0)
+    value_count(0),
+    anumber()
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -318,6 +321,12 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
     // Document decimal values (with a decimal point).
     if (decimals > 0) {
         text += HelpLines(indent_desc, UString::Format(u"The value may include up to %d meaningful decimal digits.", {decimals}), line_width);
+    }
+    if (type == ANUMBER && !anumber.isNull()) {
+        const UString desc(anumber->description());
+        if (!desc.empty()) {
+            text += HelpLines(indent_desc, UString::Format(u"The value must be %s.", {desc}), line_width);
+        }
     }
 
     return text;
@@ -504,43 +513,8 @@ void ts::Args::addOption(const IOption& opt)
 
 
 //----------------------------------------------------------------------------
-// Add an option definition
-//----------------------------------------------------------------------------
-
-ts::Args& ts::Args::option(const UChar* name,
-                           UChar        short_name,
-                           ArgType      type,
-                           size_t       min_occur,
-                           size_t       max_occur,
-                           int64_t      min_value,
-                           int64_t      max_value,
-                           bool         optional,
-                           size_t       decimals)
-{
-    addOption(IOption(name, short_name, type, min_occur, max_occur, min_value, max_value, decimals, optional ? uint32_t(IOPT_OPTVALUE) : 0));
-    return *this;
-}
-
-ts::Args& ts::Args::option(const UChar*       name,
-                           UChar              short_name,
-                           const Enumeration& enumeration,
-                           size_t             min_occur,
-                           size_t             max_occur,
-                           bool               optional)
-{
-    addOption(IOption(name, short_name, enumeration, min_occur, max_occur, optional ? uint32_t(IOPT_OPTVALUE) : 0));
-    return *this;
-}
-
-
-//----------------------------------------------------------------------------
 // Add the help text of an exiting option.
 //----------------------------------------------------------------------------
-
-ts::Args& ts::Args::help(const UChar* name, const UString& text)
-{
-    return help(name, UString(), text);
-}
 
 ts::Args& ts::Args::help(const UChar* name, const UString& syntax, const UString& text)
 {
@@ -1094,22 +1068,18 @@ bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
             return false;
         }
     }
-    else if (opt.type == FRACTION) {
-        // We have not remembered the original fraction type but we limited the min and max values
-        // to the integer type of the fraction. So, we may simply analyze it as an int64_t fraction
-        // and then check the bounds. We keep the arg as a string value and will parse it again
-        // when the value is queried later.
-        Fraction<int64_t> f;
-        if (!f.fromString(val.value())) {
-            error(u"invalid fraction value %s for %s", {val.value(), opt.display()});
+    else if (opt.type == ANUMBER) {
+        // We keep the arg as a string value after validation and will parse it again when the value is queried later.
+        if (opt.anumber.isNull()) {
+            error(u"internal error, option %s has no abstract number instance for validation", {opt.display()});
             return false;
         }
-        else if (f < opt.min_value) {
-            error(u"value for %s must be >= %'d", {opt.display(), opt.min_value});
+        else if (!opt.anumber->fromString(val.value())) {
+            error(u"invalid value %s for %s", {val.value(), opt.display()});
             return false;
         }
-        else if (f > opt.max_value) {
-            error(u"value for %s must be <= %'d", {opt.display(), opt.max_value});
+        else if (!opt.anumber->inRange(opt.min_value, opt.max_value)) {
+            error(u"value for %s must be in range %'d to %'d", {opt.display(), opt.min_value, opt.max_value});
             return false;
         }
     }

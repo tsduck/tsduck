@@ -40,6 +40,8 @@
 
 #if defined(TS_BITRATE_FRACTION)
 #include "tsFraction.h"
+#elif defined(TS_BITRATE_FLOAT)
+#include "tsDouble.h"
 #else
 #include "tsFixedPoint.h"
 #endif
@@ -189,8 +191,9 @@ namespace ts {
     //!
     //! To get more precision over long computations or exotic modulations,
     //! a bitrate is implemented either as a fixed-point value with decimal
-    //! digits or a fraction of integers. This is a compile-time decision
-    //! which is based on the macro TS_BITRATE_FRACTION.
+    //! digits, a fraction of integers or a floating point value. This is a
+    //! compile-time decision which is based on the macros TS_BITRATE_FRACTION
+    //! and TS_BITRATE_FLOAT.
     //!
     //! When implemented as a fixed-point value, the number of decimal digits
     //! is customizable using the macro TS_BITRATE_DECIMALS.
@@ -202,11 +205,15 @@ namespace ts {
     //! window size accordingly works fine but the efficiency of the plugins
     //! is not as good as previously. Using 1 decimal digit is currently the
     //! best balance.
+    //!
     //! @see TS_BITRATE_DECIMALS
     //! @see TS_BITRATE_FRACTION
+    //! @see TS_BITRATE_FLOAT
     //!
 #if defined(TS_BITRATE_FRACTION)
     typedef Fraction<uint64_t> BitRate;
+#elif defined(TS_BITRATE_FLOAT)
+    typedef Double BitRate;
 #else
     typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
 #endif
