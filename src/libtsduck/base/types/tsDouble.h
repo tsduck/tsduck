@@ -41,7 +41,7 @@ namespace ts {
     //! Encapsulation of a double floating-point as an AbstractNumber.
     //! @ingroup cpp
     //!
-    class Double: public AbstractNumber
+    class TSDUCKDLL Double: public AbstractNumber
     {
     private:
         double _value;
