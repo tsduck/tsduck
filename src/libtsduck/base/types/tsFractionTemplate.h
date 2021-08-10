@@ -125,13 +125,26 @@ ts::Fraction<INT_T,N>::Fraction(INT1 numerator, INT2 denominator) :
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 int64_t ts::Fraction<INT_T,N>::toInt64() const
 {
-    return int64_t(_num / _den);
+    return bounded_cast<int64_t>(_num / _den);
 }
 
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 double ts::Fraction<INT_T,N>::toDouble() const
 {
     return double(_num) / double(_den);
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+bool ts::Fraction<INT_T,N>::inRange(int64_t min, int64_t max) const
+{
+    const int64_t r = bounded_cast<int64_t>(_num / _den);
+    return r >= min && r <= max;
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+ts::UString ts::Fraction<INT_T,N>::description() const
+{
+    return u"an integer or a fraction of integers (e.g. \"123/2\")";
 }
 
 

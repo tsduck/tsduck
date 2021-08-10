@@ -35,6 +35,9 @@
 #include "tsReportBuffer.h"
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
+#include "tsFixedPoint.h"
+#include "tsFraction.h"
+#include "tsDouble.h"
 #include "tsVersion.h"
 #include "tsunit.h"
 
@@ -76,6 +79,9 @@ public:
     void testDecimals();
     void testFixedPoint();
     void testFraction();
+    void testDouble();
+    void testInvalidFraction();
+    void testInvalidDouble();
 
     TSUNIT_TEST_BEGIN(ArgsTest);
     TSUNIT_TEST(testAccessors);
@@ -103,6 +109,9 @@ public:
     TSUNIT_TEST(testDecimals);
     TSUNIT_TEST(testFixedPoint);
     TSUNIT_TEST(testFraction);
+    TSUNIT_TEST(testDouble);
+    TSUNIT_TEST(testInvalidFraction);
+    TSUNIT_TEST(testInvalidDouble);
     TSUNIT_TEST_END();
 
 private:
@@ -875,14 +884,14 @@ void ArgsTest::testFixedPoint()
     TSUNIT_ASSERT(args.analyze(u"test", {u"34", u"0.1", u"12.345678"}));
     TSUNIT_EQUAL(3, args.count(u""));
 
-    TSUNIT_EQUAL(34000, args.fixedValue<Fixed>(u"", 0, 0).raw());
-    TSUNIT_EQUAL(34,    args.fixedValue<Fixed>(u"", 0, 0).toInt());
+    TSUNIT_EQUAL(34000, args.numValue<Fixed>(u"", 0, 0).raw());
+    TSUNIT_EQUAL(34,    args.numValue<Fixed>(u"", 0, 0).toInt());
 
-    TSUNIT_EQUAL(100,   args.fixedValue<Fixed>(u"", 0, 1).raw());
-    TSUNIT_EQUAL(0,     args.fixedValue<Fixed>(u"", 0, 1).toInt());
+    TSUNIT_EQUAL(100,   args.numValue<Fixed>(u"", 0, 1).raw());
+    TSUNIT_EQUAL(0,     args.numValue<Fixed>(u"", 0, 1).toInt());
 
-    TSUNIT_EQUAL(12345, args.fixedValue<Fixed>(u"", 0, 2).raw());
-    TSUNIT_EQUAL(12,    args.fixedValue<Fixed>(u"", 0, 2).toInt());
+    TSUNIT_EQUAL(12345, args.numValue<Fixed>(u"", 0, 2).raw());
+    TSUNIT_EQUAL(12,    args.numValue<Fixed>(u"", 0, 2).toInt());
 }
 
 // Test case: fraction types.
@@ -897,21 +906,67 @@ void ArgsTest::testFraction()
     TSUNIT_ASSERT(args.analyze(u"test", {u"1", u" -2", u"12/345", u" -6/12"}));
     TSUNIT_EQUAL(4, args.count(u""));
 
-    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 0, 0).numerator());
-    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 0, 0).denominator());
+    TSUNIT_EQUAL(1, args.numValue<Frac>(u"", 0, 0).numerator());
+    TSUNIT_EQUAL(1, args.numValue<Frac>(u"", 0, 0).denominator());
 
-    TSUNIT_EQUAL(-2, args.fractionValue<Frac>(u"", 0, 1).numerator());
-    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 0, 1).denominator());
+    TSUNIT_EQUAL(-2, args.numValue<Frac>(u"", 0, 1).numerator());
+    TSUNIT_EQUAL(1, args.numValue<Frac>(u"", 0, 1).denominator());
 
-    TSUNIT_EQUAL(4, args.fractionValue<Frac>(u"", 0, 2).numerator());
-    TSUNIT_EQUAL(115, args.fractionValue<Frac>(u"", 0, 2).denominator());
+    TSUNIT_EQUAL(4, args.numValue<Frac>(u"", 0, 2).numerator());
+    TSUNIT_EQUAL(115, args.numValue<Frac>(u"", 0, 2).denominator());
 
-    TSUNIT_EQUAL(-1, args.fractionValue<Frac>(u"", 0, 3).numerator());
-    TSUNIT_EQUAL(2, args.fractionValue<Frac>(u"", 0, 3).denominator());
+    TSUNIT_EQUAL(-1, args.numValue<Frac>(u"", 0, 3).numerator());
+    TSUNIT_EQUAL(2, args.numValue<Frac>(u"", 0, 3).denominator());
 
-    TSUNIT_EQUAL(5, args.fractionValue<Frac>(u"", 5, 4).numerator());
-    TSUNIT_EQUAL(1, args.fractionValue<Frac>(u"", 5, 4).denominator());
+    TSUNIT_EQUAL(5, args.numValue<Frac>(u"", 5, 4).numerator());
+    TSUNIT_EQUAL(1, args.numValue<Frac>(u"", 5, 4).denominator());
 
-    TSUNIT_EQUAL(3, args.fractionValue<Frac>(u"", Frac(3, 4), 4).numerator());
-    TSUNIT_EQUAL(4, args.fractionValue<Frac>(u"", Frac(3, 4), 4).denominator());
+    TSUNIT_EQUAL(3, args.numValue<Frac>(u"", Frac(3, 4), 4).numerator());
+    TSUNIT_EQUAL(4, args.numValue<Frac>(u"", Frac(3, 4), 4).denominator());
+}
+
+// Test case: floating-point types.
+void ArgsTest::testDouble()
+{
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+    args.redirectReport(&CERR);
+    args.option<ts::Double>(u"");
+
+    TSUNIT_ASSERT(args.analyze(u"test", {u"1", u"2.56", u"0", u" -6.12"}));
+    TSUNIT_EQUAL(4, args.count(u""));
+
+    TSUNIT_EQUAL(1.0,   args.numValue<ts::Double>(u"", 0, 0).toDouble());
+    TSUNIT_EQUAL(2.56,  args.numValue<ts::Double>(u"", 0, 1).toDouble());
+    TSUNIT_EQUAL(0.0,   args.numValue<ts::Double>(u"", 0, 2).toDouble());
+    TSUNIT_EQUAL(-6.12, args.numValue<ts::Double>(u"", 0, 3).toDouble());
+}
+
+// Test case:
+void ArgsTest::testInvalidFraction()
+{
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+
+    ts::ReportBuffer<> log;
+    args.redirectReport(&log);
+
+    typedef ts::Fraction<int32_t> Frac;
+    args.option<Frac>(u"opt");
+
+    TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"foo"}));
+    debug() << "ArgsTest: testInvalidFraction: \"" << log << "\"" << std::endl;
+    TSUNIT_EQUAL(u"Error: invalid value foo for option --opt", log.getMessages());
+}
+
+// Test case:
+void ArgsTest::testInvalidDouble()
+{
+    ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
+
+    ts::ReportBuffer<> log;
+    args.redirectReport(&log);
+    args.option<ts::Double>(u"opt", 0, 0, 1, 12, 15);
+
+    TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"2.3"}));
+    debug() << "ArgsTest: testInvalidDouble: \"" << log << "\"" << std::endl;
+    TSUNIT_EQUAL(u"Error: value for option --opt must be in range 12 to 15", log.getMessages());
 }

@@ -32,10 +32,12 @@
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
+#include "tsSysInfo.h"
 #include "tsFileUtils.h"
 #include "tsDektecUtils.h"
 #include "tsWebRequest.h"
 #include "tsSRTSocket.h"
+#include "tsTS.h"
 TSDUCK_SOURCE;
 
 // Exported version of the TSDuck library.
@@ -52,10 +54,12 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
     {u"long",     int(ts::VersionInfo::Format::LONG)},
     {u"integer",  int(ts::VersionInfo::Format::INTEGER)},
     {u"date",     int(ts::VersionInfo::Format::DATE)},
+    {u"compiler", int(ts::VersionInfo::Format::COMPILER)},
+    {u"system",   int(ts::VersionInfo::Format::SYSTEM)},
+    {u"bitrate",  int(ts::VersionInfo::Format::BITRATE)},
     {u"nsis",     int(ts::VersionInfo::Format::NSIS)},
     {u"dektec",   int(ts::VersionInfo::Format::DEKTEC)},
     {u"http",     int(ts::VersionInfo::Format::HTTP)},
-    {u"compiler", int(ts::VersionInfo::Format::COMPILER)},
     {u"srt",      int(ts::VersionInfo::Format::SRT)},
     {u"all",      int(ts::VersionInfo::Format::ALL)},
 });
@@ -201,6 +205,49 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 
 
 //----------------------------------------------------------------------------
+// Build a string representing the system on which the application runs.
+//----------------------------------------------------------------------------
+
+ts::UString ts::VersionInfo::GetSystemVersion()
+{
+    UString name(SysInfo::Instance()->systemName());
+    const UString version(SysInfo::Instance()->systemVersion());
+    if (!version.empty()) {
+        name.format(u" (%s)", {version});
+    }
+    name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes",
+                {SysInfo::Instance()->cpuName(),
+                 TS_ADDRESS_BITS,
+                 #if defined(TS_LITTLE_ENDIAN)
+                     u"little",
+                 #elif defined(TS_BIG_ENDIAN)
+                    u"big",
+                 #else
+                     u"unknown",
+                 #endif
+                 SysInfo::Instance()->memoryPageSize()});
+    return name;
+}
+
+
+//----------------------------------------------------------------------------
+// Build a string describing the bitrate representation.
+//----------------------------------------------------------------------------
+
+ts::UString ts::VersionInfo::GetBitRateRepresentation()
+{
+#if defined(TS_BITRATE_FRACTION)
+    return UString::Format(u"fraction of two %d-bit integers", {8 * sizeof(BitRate::int_t)});
+#elif defined(TS_BITRATE_FLOAT)
+    return UString::Format(u"%d-bit floating-point", {8 * sizeof(BitRate::float_t)});
+#else
+    return UString::Format(u"%d-bit fixed-point with %d decimals", {8 * sizeof(BitRate::int_t), BitRate::PRECISION});
+#endif
+}
+
+
+
+//----------------------------------------------------------------------------
 // Build version string.
 //----------------------------------------------------------------------------
 
@@ -230,6 +277,15 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             return UString::Format(u"%s - %s", {__DATE__, __TIME__});
             TS_POP_WARNING()
         }
+        case Format::COMPILER: {
+            return GetCompilerVersion();
+        }
+        case Format::SYSTEM: {
+            return GetSystemVersion();
+        }
+        case Format::BITRATE: {
+            return GetBitRateRepresentation();
+        }
         case Format::NSIS: {
             // A definition directive for NSIS.
             // The name tsduckVersion contains the visible version.
@@ -245,9 +301,6 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The version of the HTTP library.
             return WebRequest::GetLibraryVersion();
         }
-        case Format::COMPILER: {
-            return GetCompilerVersion();
-        }
         case Format::SRT: {
             // The version of the SRT library.
             return SRTSocket::GetLibraryVersion();
@@ -256,6 +309,8 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +
                 u"Built " + GetVersion(Format::DATE) + LINE_FEED +
                 u"Using " + GetVersion(Format::COMPILER) + LINE_FEED +
+                u"System: " + GetVersion(Format::SYSTEM) + LINE_FEED +
+                u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
                 u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
                 u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
                 u"Dektec: " + GetVersion(Format::DEKTEC);

@@ -79,6 +79,27 @@ ts::SysInfo::SysInfo() :
     _systemVersion(),
     _systemName(),
     _hostName(),
+#if defined(TS_I386)
+    _cpuName(u"Intel x86"),
+#elif defined(TS_X86_64)
+    _cpuName(u"Intel x86-64"),
+#elif defined(TS_ARM64)
+    _cpuName(u"ARM-64"),
+#elif defined(TS_ARM)
+    _cpuName(u"ARM"),
+#elif defined(TS_MIPS)
+    _cpuName(u"MIPS"),
+#elif defined(TS_SPARC)
+    _cpuName(u"SPARC"),
+#elif defined(TS_ALPHA)
+    _cpuName(u"Alpha"),
+#elif defined(TS_POWERPC64)
+    _cpuName(u"PowerPC-64"),
+#elif defined(TS_POWERPC)
+    _cpuName(u"PowerPC"),
+#else
+    _cpuName(u"unknown CPU"),
+#endif
     _memoryPageSize(0)
 {
     //

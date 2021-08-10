@@ -35,6 +35,7 @@
 #pragma once
 #include "tsFixedPoint.h"
 #include "tsFraction.h"
+#include "tsDouble.h"
 
 #if defined(DOXYGEN)
 
@@ -380,6 +381,27 @@
         void FromDektecFractionInt(FRAC& result, Dtapi::DtFractionInt value)
         {
             result = FRAC(value.m_Num, value.m_Den);
+        }
+
+        //!
+        //! Convert a Double value into a Dektec-defined fractional int.
+        //! @param [in] value A Double value.
+        //! @return Corresponding Dektec-defined fractional int.
+        //!
+        inline Dtapi::DtFractionInt ToDektecFractionInt(const Double& value)
+        {
+            // Use 1/100 precision (arbitrary).
+            return Dtapi::DtFractionInt(int(100.0 * value.toDouble()), 100);
+        }
+
+        //!
+        //! Convert a Dektec-defined fractional integer into a Double value.
+        //! @param [out] result The converted Double value.
+        //! @param [in] value A Dektec-defined fractional int.
+        //!
+        inline void FromDektecFractionInt(Double& result, Dtapi::DtFractionInt value)
+        {
+            result = Double(double(value.m_Num) / double(value.m_Den));
         }
     }
 

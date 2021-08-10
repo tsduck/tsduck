@@ -50,11 +50,21 @@ namespace {
     {
     public:
         InvalidNumber() {}
+        virtual ts::UString description() const override;
+        virtual bool inRange(int64_t min, int64_t max) const override;
         virtual int64_t toInt64() const override;
         virtual double toDouble() const override;
         virtual ts::UString toString(size_t, bool, ts::UChar, bool, size_t, bool, ts::UChar, ts::UChar) const override;
         virtual bool fromString(const ts::UString&, ts::UChar, ts::UChar) override;
     };
+    ts::UString InvalidNumber::description() const
+    {
+        return ts::UString();
+    }
+    bool InvalidNumber::inRange(int64_t min, int64_t max) const
+    {
+        return false;
+    }
     int64_t InvalidNumber::toInt64() const
     {
         return 0;

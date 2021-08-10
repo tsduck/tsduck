@@ -88,6 +88,8 @@ namespace ts {
         Double(double x) : _value(x) {}
 
         // Implementation of interfaces.
+        virtual ts::UString description() const override;
+        virtual bool inRange(int64_t min, int64_t max) const override;
         virtual int64_t toInt64() const override;
         virtual double toDouble() const override;
         virtual bool fromString(const UString& str, UChar separator = COMMA, UChar decimal_dot = FULL_STOP) override;
@@ -104,7 +106,7 @@ namespace ts {
         //! Conversion to integral value.
         //! @return The value in integral units. Underflow or overflow rounding is applied when necessary.
         //!
-        int_t toInt() const { return int_t(_value); }
+        int_t toInt() const { return int_t(std::round(_value)); }
 
         //!
         //! Get the absolute value.
