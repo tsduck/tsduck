@@ -114,7 +114,7 @@ void ts::Args::getValue(NUMTYPE& val, const UChar* name, const NUMTYPE& def_valu
     }
 }
 
-template <class NUMTYPE, typename std::enable_if<std::is_base_of<ts::AbstractNumber, NUMTYPE>::value, int>::type = 0>
+template <class NUMTYPE, typename std::enable_if<std::is_base_of<ts::AbstractNumber, NUMTYPE>::value, int>::type N>
 NUMTYPE ts::Args::numValue(const UChar* name, const NUMTYPE& def_value, size_t index) const
 {
     NUMTYPE val;
