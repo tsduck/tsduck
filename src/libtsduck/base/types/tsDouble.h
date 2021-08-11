@@ -87,6 +87,14 @@ namespace ts {
         //!
         Double(double x) : _value(x) {}
 
+        //!
+        //! Constructor from an integer value.
+        //! @tparam INT_T Some integer type (signed or unsigned).
+        //! @param [in] x Initial integer value.
+        //!
+        template<typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type = 0>
+        Double(INT_T x) : _value(float_t(x)) {}
+
         // Implementation of interfaces.
         virtual ts::UString description() const override;
         virtual bool inRange(int64_t min, int64_t max) const override;
