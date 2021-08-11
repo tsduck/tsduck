@@ -1047,7 +1047,7 @@ namespace ts {
 
     private:
         // Representation of an option value.
-        class ArgValue
+        class TSDUCKDLL ArgValue
         {
         public:
             Variable<UString> string;     // Orginal string value from command line (unset if option is present without value).
@@ -1072,7 +1072,7 @@ namespace ts {
         typedef SafePtr<AbstractNumber> AbstractNumberPtr;
 
         // Internal representation of Option
-        class IOption
+        class TSDUCKDLL IOption
         {
         public:
             UString        name;        // Long name (u"verbose" for --verbose)

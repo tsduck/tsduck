@@ -37,7 +37,6 @@
 #include "tsDektecUtils.h"
 #include "tsWebRequest.h"
 #include "tsSRTSocket.h"
-#include "tsTS.h"
 TSDUCK_SOURCE;
 
 // Exported version of the TSDuck library.
@@ -45,8 +44,13 @@ TSDUCK_SOURCE;
 const int tsduckLibraryVersionMajor = TS_VERSION_MAJOR;
 const int tsduckLibraryVersionMinor = TS_VERSION_MINOR;
 const int tsduckLibraryVersionCommit = TS_COMMIT;
+
+// Exported symbols, the names of which depend on the TSDuck version or BitRate implementation.
+// When an executable or shared library references these symbols, it is guaranteed that a
+// compatible TSDuck library is activated. Otherwise, the dynamic references would have failed.
+// Only the symbol names matter, the value is just unimportant.
 const int TSDUCK_LIBRARY_VERSION_SYMBOL = TS_VERSION_INTEGER;
-const int TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL = TS_BITRATE_DECIMALS;
+const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({
@@ -240,8 +244,10 @@ ts::UString ts::VersionInfo::GetBitRateRepresentation()
     return UString::Format(u"fraction of two %d-bit integers", {8 * sizeof(BitRate::int_t)});
 #elif defined(TS_BITRATE_FLOAT)
     return UString::Format(u"%d-bit floating-point", {8 * sizeof(BitRate::float_t)});
-#else
+#elif defined(TS_BITRATE_FIXED)
     return UString::Format(u"%d-bit fixed-point with %d decimals", {8 * sizeof(BitRate::int_t), BitRate::PRECISION});
+#else
+    return u"unknown";
 #endif
 }
 

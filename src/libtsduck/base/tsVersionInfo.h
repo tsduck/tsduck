@@ -37,7 +37,7 @@
 #include "tsReport.h"
 #include "tsThread.h"
 #include "tsVersion.h"
-#include "tsConfigConstants.h"
+#include "tsBitRate.h"
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
@@ -157,7 +157,15 @@ extern "C" {
     #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
     #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
     #define TSDUCK_LIBRARY_VERSION_SYMBOL TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT)
-    #define TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL TS_SYM2(TSDUCK_LIBRARY_BITRATE_DECIMALS,TS_BITRATE_DECIMALS)
+    #if defined(TS_BITRATE_FRACTION)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FRACTION
+    #elif defined(TS_BITRATE_FLOAT)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FLOAT
+    #elif defined(TS_BITRATE_FIXED)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TS_SYM2(TSDUCK_LIBRARY_BITRATE_FIXED,TS_BITRATE_DECIMALS)
+    #else
+        #error "undefined implementation of BitRate"
+    #endif
     //! @endcond
 
     //!
@@ -176,11 +184,11 @@ extern "C" {
     extern const int TSDUCKDLL TSDUCK_LIBRARY_VERSION_SYMBOL;
 
     //!
-    //! Generate a dependency on the bitrate precision.
+    //! Generate a dependency on the bitrate implementation.
     //! Enforcing this dependency prevents mixing binaries which
-    //! were compiled using different precisions.
+    //! were compiled using different implementations of BitRate.
     //!
-    extern const int TSDUCKDLL TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL;
+    extern const int TSDUCKDLL TSDUCK_LIBRARY_BITRATE_SYMBOL;
 }
 
 //!
@@ -201,4 +209,4 @@ extern "C" {
 //!
 #define TS_LIBCHECK() \
     TS_STATIC_REFERENCE(version, &TSDUCK_LIBRARY_VERSION_SYMBOL); \
-    TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL)
+    TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_SYMBOL)
