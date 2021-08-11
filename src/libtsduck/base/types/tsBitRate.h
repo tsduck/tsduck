@@ -131,9 +131,12 @@ namespace ts {
     //! @see TS_BITRATE_FRACTION
     //! @see TS_BITRATE_FLOAT
     //!
-#if defined(TS_BITRATE_FRACTION)
+#if defined(DOXYGEN)
+    typedef user_defined BitRate;
+#elif defined(TS_BITRATE_FRACTION)
     typedef Fraction<uint64_t> BitRate;
 #elif defined(TS_BITRATE_FLOAT)
+    TS_LLVM_NOWARNING(implicit-int-float-conversion)
     typedef Double BitRate;
 #elif defined(TS_BITRATE_FIXED)
     typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
