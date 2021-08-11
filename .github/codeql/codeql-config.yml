@@ -1,0 +1,6 @@
+# Configuration file for CodeQL security analysis.
+
+paths:
+- src
+paths-ignore:
+- src/utest
