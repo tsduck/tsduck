@@ -35,16 +35,8 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsConfigConstants.h"
+#include "tsBitRate.h"
 #include "tsEnumeration.h"
-
-#if defined(TS_BITRATE_FRACTION)
-#include "tsFraction.h"
-#elif defined(TS_BITRATE_FLOAT)
-#include "tsDouble.h"
-#else
-#include "tsFixedPoint.h"
-#endif
 
 namespace ts {
     //!
@@ -185,38 +177,6 @@ namespace ts {
     //---------------------------------------------------------------------
     // Bitrates computations.
     //---------------------------------------------------------------------
-
-    //!
-    //! Bitrate in bits/second.
-    //!
-    //! To get more precision over long computations or exotic modulations,
-    //! a bitrate is implemented either as a fixed-point value with decimal
-    //! digits, a fraction of integers or a floating point value. This is a
-    //! compile-time decision which is based on the macros TS_BITRATE_FRACTION
-    //! and TS_BITRATE_FLOAT.
-    //!
-    //! When implemented as a fixed-point value, the number of decimal digits
-    //! is customizable using the macro TS_BITRATE_DECIMALS.
-    //!
-    //! When using fixed-point values, bitrates are represented with one decimal
-    //! digit only. Tests with 2 digits were not positive. Intermediate overflows
-    //! in some computations were encountered in some plugins working on large
-    //! window sizes. Automatically detecting the overflow and reducing the
-    //! window size accordingly works fine but the efficiency of the plugins
-    //! is not as good as previously. Using 1 decimal digit is currently the
-    //! best balance.
-    //!
-    //! @see TS_BITRATE_DECIMALS
-    //! @see TS_BITRATE_FRACTION
-    //! @see TS_BITRATE_FLOAT
-    //!
-#if defined(TS_BITRATE_FRACTION)
-    typedef Fraction<uint64_t> BitRate;
-#elif defined(TS_BITRATE_FLOAT)
-    typedef Double BitRate;
-#else
-    typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
-#endif
 
     //!
     //! Convert 188-byte packet bitrate into 204-byte packet bitrate.
