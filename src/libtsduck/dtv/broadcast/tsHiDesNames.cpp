@@ -26,34 +26,29 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //-----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Declare a singleton for the names file containing Dektec definitions.
-//!
+
+#include "tsHiDesNames.h"
+TSDUCK_SOURCE;
+
+
+//-----------------------------------------------------------------------------
+// Singleton definition.
 //-----------------------------------------------------------------------------
 
-#pragma once
-#include "tsNames.h"
+TS_DEFINE_SINGLETON(ts::HiDesNames);
+ts::HiDesNames::HiDesNames() : Names(u"tsduck.hides.names") {}
+ts::HiDesNames::~HiDesNames() {}
 
-namespace ts {
-    //!
-    //! An instance of names repository containing all Dektec names.
-    //! The corresponding names file is automatically generated.
-    //!
-    class DektecNames : public Names
-    {
-        TS_DECLARE_SINGLETON(DektecNames);
-    public:
-        //!
-        //! Get the name of one DtCaps by value.
-        //! @param [in] dtcap DtCaps integer value.
-        //! @return The corresponding string.
-        //!
-        UString dtCaps(int dtcap);
 
-        //!
-        //! Destructor.
-        //!
-        virtual ~DektecNames() override;
-    };
+//-----------------------------------------------------------------------------
+// Get the name of a HiDes error code by value.
+//-----------------------------------------------------------------------------
+
+ts::UString ts::HiDesNames::error(uint32_t code)
+{
+#if defined(TS_LINUX)
+    return nameFromSection(u"HiDesErrorLinux", code, names::HEXA_FIRST);
+#else
+    return UString::Format(u"HiDes error code 0x%X", {code});
+#endif
 }
