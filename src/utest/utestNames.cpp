@@ -32,6 +32,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsNames.h"
+#include "tsDektecNames.h"
+#include "tsHiDesNames.h"
 #include "tsFileUtils.h"
 #include "tsDuckContext.h"
 #include "tsMPEG2.h"
@@ -86,6 +88,8 @@ public:
     void testAudioType();
     void testT2MIPacketType();
     void testPlatformId();
+    void testDektec();
+    void testHiDes();
 
     TSUNIT_TEST_BEGIN(NamesTest);
     TSUNIT_TEST(testConfigFile);
@@ -124,6 +128,8 @@ public:
     TSUNIT_TEST(testAudioType);
     TSUNIT_TEST(testT2MIPacketType);
     TSUNIT_TEST(testPlatformId);
+    TSUNIT_TEST(testDektec);
+    TSUNIT_TEST(testHiDes);
     TSUNIT_TEST_END();
 };
 
@@ -410,4 +416,16 @@ void NamesTest::testPlatformId()
     TSUNIT_EQUAL(u"Horizonsat", ts::names::PlatformId(10));
     TSUNIT_EQUAL(u"0x000004 (TV digitale mobile, Telecom Italia)", ts::names::PlatformId(4, ts::names::FIRST));
     TSUNIT_EQUAL(u"VTC Mobile TV (0x704001)", ts::names::PlatformId(0x704001, ts::names::VALUE));
+}
+
+void NamesTest::testDektec()
+{
+    // Just check that the names file is correctly read and valid.
+    TSUNIT_ASSERT(!ts::DektecNames::Instance()->dtCaps(0).empty());
+}
+
+void NamesTest::testHiDes()
+{
+    // Just check that the names file is correctly read and valid.
+    TSUNIT_ASSERT(!ts::HiDesNames::Instance()->error(0).empty());
 }

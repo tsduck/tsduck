@@ -81,6 +81,7 @@
 
 #include "tsIT950x.h"
 #include "tsHiDesDevice.h"
+#include "tsHiDesNames.h"
 #include "tsNullReport.h"
 #include "tsMemory.h"
 #include "tsFileUtils.h"
@@ -177,7 +178,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
 
     // HiDes status can be a negative value. Zero means no error.
     if (driver_status != 0) {
-        msg = NameFromSection(u"HiDesError", std::abs(driver_status), names::HEXA_FIRST);
+        msg = HiDesNames::Instance()->error(uint32_t(std::abs(driver_status)));
     }
 
     // In case errno was also set.
@@ -264,35 +265,31 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
     }
 
     // After this point, we don't return on error, but we report the final status.
+    // Some informational data are not really used elsewhere and, in case of error, the driver
+    // returns a generic type. So, we report errors in verbose mode only and don't fail.
     bool status = true;
 
-    // Get chip type.
+    // Get chip type. Informational only.
     ite::TxGetChipTypeRequest chipTypeRequest;
     TS_ZERO(chipTypeRequest);
     errno = 0;
 
     if (::ioctl(fd, IOCTL_ITE_MOD_GETCHIPTYPE, &chipTypeRequest) < 0 || chipTypeRequest.error != 0) {
         const int err = errno;
-        report.error(u"error getting chip type on %s: %s", {info.path, HiDesErrorMessage(chipTypeRequest.error, err)});
-        status = false;
+        report.verbose(u"ignoring error getting chip type on %s: %s", {info.path, HiDesErrorMessage(chipTypeRequest.error, err)});
     }
-    else {
-        info.chip_type = uint16_t(chipTypeRequest.chipType);
-    }
+    info.chip_type = uint16_t(chipTypeRequest.chipType);
 
-    // Get device type
+    // Get device type. Informational only.
     ite::TxGetDeviceTypeRequest devTypeRequest;
     TS_ZERO(devTypeRequest);
     errno = 0;
 
     if (::ioctl(fd, IOCTL_ITE_MOD_GETDEVICETYPE, &devTypeRequest) < 0 || devTypeRequest.error != 0) {
         const int err = errno;
-        report.error(u"error getting device type on %s: %s", {info.path, HiDesErrorMessage(devTypeRequest.error, err)});
-        status = false;
+        report.verbose(u"ignoring error getting device type on %s: %s", {info.path, HiDesErrorMessage(devTypeRequest.error, err)});
     }
-    else {
-        info.device_type = int(devTypeRequest.DeviceType);
-    }
+    info.device_type = int(devTypeRequest.DeviceType);
 
     // Get driver information.
     ite::TxModDriverInfo driverRequest;
@@ -319,6 +316,8 @@ bool ts::HiDesDevice::Guts::open(int index, const UString& name, Report& report)
         TS_ZCOPY(ofdm_fw_version, FWVerionOFDM);
         TS_ZCOPY(company, Company);
         TS_ZCOPY(hw_info, SupportHWInfo);
+
+#undef TS_ZCOPY
 
         // The patched driver, implementing waiting wait, has a patched version number ending with "w".
         // Updates of this driver kit may add 'w.number" (these are not updates of the driver itself).
