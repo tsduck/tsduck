@@ -90,6 +90,14 @@ namespace ts {
         bool readIPv4(uint8_t* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report);
 
         //!
+        //! Get the number of captured packets so far.
+        //! This includes all packets, not only IPv4 packets.
+        //! This value is the number of the last returned packet, as seen in the left-most column in Wireshark interface.
+        //! @return The number of captured packets so far.
+        //!
+        size_t packetCount() const { return _packet_count; }
+
+        //!
         //! Close the file.
         //!
         void close();
@@ -115,6 +123,7 @@ namespace ts {
         bool          _ng;               // Pcapng format (not pcap).
         uint16_t      _major;            // File format major version.
         uint16_t      _minor;            // File format minor version.
+        size_t        _packet_count;     // Count of captured packets.
         std::vector<InterfaceDesc> _if;  // Capture interfaces by index, only one in pcap files.
 
         // Report an error (if fmt is not empty), set error indicator, return false.

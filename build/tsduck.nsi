@@ -158,7 +158,7 @@ Section "Tools & Plugins" SectionTools
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
-    File /x *_static.exe /x tsprofiling.exe "${BinDir}\ts*.exe"
+    File /x *_static.exe /x tsprofiling.exe /x tsmux.exe "${BinDir}\ts*.exe"
     !ifdef NoTeletext
         Delete "$INSTDIR\bin\tsplugin_teletext.dll"
         File /x tsplugin_teletext.dll "${BinDir}\ts*.dll"
