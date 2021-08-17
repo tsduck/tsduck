@@ -39,6 +39,7 @@
 #include "tsIPAddress.h"
 #include "tsIPAddressMask.h"
 #include "tsIPv6Address.h"
+#include "tsSocketAddress.h"
 
 namespace ts {
     //!
@@ -472,6 +473,25 @@ namespace ts {
     //!
     TSDUCKDLL bool UpdateIPHeaderChecksum(void* data, size_t size);
 
+    //!
+    //! Validate and analyze an IPv4 packet.
+    //! @param [in] data Address of the IP packet.
+    //! @param [in] size Size of the IP packet.
+    //! @param [out] protocol Protocol number (IPv4_PROTO_TCP, IPv4_PROTO_UDP, etc.)
+    //! @param [out] ip_header_size Size of the IP header.
+    //! @param [out] protocol_header_size Size of the protocol header (zero if neither TCP nor UDP).
+    //! @param [out] source Source IPv4 address. The port is present for TCP or UDP only.
+    //! @param [out] destination Destination IPv4 address. The port is present for TCP or UDP only.
+    //! @return True if the packet is valid, false otherwise.
+    //!
+    TSDUCKDLL bool AnalyzeIPPacket(const void* data,
+                                   size_t size,
+                                   uint8_t& protocol,
+                                   size_t& ip_header_size,
+                                   size_t& protocol_header_size,
+                                   SocketAddress& source,
+                                   SocketAddress& destination);
+
     //------------------------------------------------------------------------
     // Ethernet II link layer.
     //------------------------------------------------------------------------
@@ -505,6 +525,15 @@ namespace ts {
     constexpr size_t UDP_LENGTH_OFFSET    = 4;   //!< Offset of packet length (UDP header + UDP payload) in a UDP header.
     constexpr size_t UDP_CHECKSUM_OFFSET  = 6;   //!< Offset of checksum in a UDP header.
     constexpr size_t UDP_HEADER_SIZE      = 8;   //!< Size of a UDP header.
+
+    //------------------------------------------------------------------------
+    // User Datagram Protocol (TCP)
+    //------------------------------------------------------------------------
+
+    constexpr size_t TCP_SRC_PORT_OFFSET      =  0;   //!< Offset of source port in a TCP header.
+    constexpr size_t TCP_DEST_PORT_OFFSET     =  2;   //!< Offset of destination port in a TCP header.
+    constexpr size_t TCP_HEADER_LENGTH_OFFSET = 12;   //!< Offset of TCP header length in a TCP header (number of 32-bit words).
+    constexpr size_t TCP_MIN_HEADER_SIZE      = 20;   //!< Minimum size in bytes of a TCP header.
 
     //------------------------------------------------------------------------
     // Real-time Transport Protocol (RTP)

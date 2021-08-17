@@ -273,3 +273,70 @@ bool ts::UpdateIPHeaderChecksum(void* data, size_t size)
     }
     return ok;
 }
+
+
+//----------------------------------------------------------------------------
+// Validate and analyze an IPv4 packet.
+//----------------------------------------------------------------------------
+
+bool ts::AnalyzeIPPacket(const void* data,
+                         size_t ip_size,
+                         uint8_t& proto,
+                         size_t& ip_header_size,
+                         size_t& proto_header_size,
+                         SocketAddress& source,
+                         SocketAddress& destination)
+{
+    const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
+
+    // For invalid IP packets.
+    proto = 0;
+    proto_header_size = 0;
+    source.clear();
+    destination.clear();
+
+    // Check that this looks like an IPv4 packet.
+    if ((ip_header_size = IPHeaderSize(ip, ip_size)) == 0 ||
+        GetUInt16(ip + IPv4_CHECKSUM_OFFSET) != IPHeaderChecksum(ip, ip_header_size))
+    {
+        return false; // not a valid IP packet.
+    }
+
+    // Get IP addresses and protocal from IP header.
+    proto = ip[IPv4_PROTOCOL_OFFSET];
+    source.setAddress(GetUInt32(ip + IPv4_SRC_ADDR_OFFSET));
+    destination.setAddress(GetUInt32(ip + IPv4_DEST_ADDR_OFFSET));
+
+    // Validate and filter by protocol.
+    switch (proto) {
+        case IPv4_PROTO_TCP: {
+            const size_t hsize = 4 * size_t(ip[ip_header_size + TCP_HEADER_LENGTH_OFFSET]);
+            if (ip_size < ip_header_size + hsize || hsize < TCP_MIN_HEADER_SIZE) {
+                return false; // packet too short
+            }
+            source.setPort(GetUInt16(ip + ip_header_size + TCP_SRC_PORT_OFFSET));
+            destination.setPort(GetUInt16(ip + ip_header_size + TCP_DEST_PORT_OFFSET));
+            proto_header_size = hsize;
+            break;
+        }
+        case IPv4_PROTO_UDP: {
+            if (ip_size < ip_header_size + UDP_HEADER_SIZE) {
+                return false; // packet too short
+            }
+            const size_t udp_length = GetUInt16BE(ip + ip_header_size + UDP_LENGTH_OFFSET);
+            if (ip_size < ip_header_size + udp_length ) {
+                return false; // packet too short
+            }
+            source.setPort(GetUInt16(ip + ip_header_size + UDP_SRC_PORT_OFFSET));
+            destination.setPort(GetUInt16(ip + ip_header_size + UDP_DEST_PORT_OFFSET));
+            proto_header_size = UDP_HEADER_SIZE;
+            break;
+        }
+        default:
+            proto_header_size = 0;
+            break;
+    }
+
+    // Packet is valid.
+    return true;
+}

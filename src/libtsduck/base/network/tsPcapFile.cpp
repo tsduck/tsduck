@@ -50,6 +50,7 @@ ts::PcapFile::PcapFile() :
     _ng(false),
     _major(0),
     _minor(0),
+    _packet_count(0),
     _if()
 {
 }
@@ -121,6 +122,7 @@ bool ts::PcapFile::open(const UString& filename, Report& report)
 
     report.debug(u"opened %s, %s format version %d.%d, %s endian", {_name, _ng ? u"pcap-ng" : u"pcap", _major, _minor, _be ? u"big" : u"little"});
     _error = false;
+    _packet_count = 0;
     return true;
 }
 
@@ -389,32 +391,41 @@ bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& re
                 }
                 continue; // loop to next packet block
             }
-            else if (type == PCAPNG_ENHANCED_PACKET && buffer.size() >= 20) {
+            else if ((type == PCAPNG_ENHANCED_PACKET || type == PCAPNG_OBSOLETE_PACKET) && buffer.size() >= 20) {
+                _packet_count++;
                 cap_start = 20;
                 cap_size = std::min<size_t>(get32(buffer.data() + 12), buffer.size() - 20);
                 orig_size = get32(buffer.data() + 16);
-                if_index = get32(buffer.data());
+                if_index = type == PCAPNG_OBSOLETE_PACKET ? get16(buffer.data()) : get32(buffer.data());
                 if (if_index < _if.size() && _if[if_index].time_units != 0) {
                     const SubSecond units = _if[if_index].time_units;
-                    const uint64_t tstamp = (uint64_t(get32(buffer.data() + 4)) << 32) + get32(buffer.data() + 8);
-                    timestamp = MicroSecond((tstamp * MilliSecPerSec) / units);
+                    const SubSecond tstamp = SubSecond(uint64_t(get32(buffer.data() + 4)) << 32) + SubSecond(get32(buffer.data() + 8));
+                    // Take care to overflow in tstamp * MilliSecPerSec. Sometimes, the timestamp is a full time
+                    // since 1970 with time unit being 1,000,000,000. The value is close to the 64-bit max.
+                    if (units == MicroSecPerSec) {
+                        timestamp = tstamp;
+                    }
+                    else if (units > MicroSecPerSec && units % MicroSecPerSec == 0) {
+                        timestamp = tstamp / (units / MicroSecPerSec);
+
+                    }
+                    else if (units < MicroSecPerSec && MicroSecPerSec % units == 0) {
+                        timestamp = tstamp * (MicroSecPerSec / units);
+
+                    }
+                    else if (mul_overflow(tstamp, MicroSecPerSec, tstamp * MicroSecPerSec)) {
+                        timestamp = SubSecond((double(tstamp) * double(MicroSecPerSec)) / double(units));
+                    }
+                    else {
+                        timestamp = (tstamp * MicroSecPerSec) / units;
+                    }
                 }
             }
             else if (type == PCAPNG_SIMPLE_PACKET && buffer.size() >= 4) {
+                _packet_count++;
                 cap_start = 4;
                 orig_size = get32(buffer.data());
                 cap_size = std::min(orig_size, buffer.size() - 4);
-            }
-            else if (type == PCAPNG_OBSOLETE_PACKET && buffer.size() >= 20) {
-                cap_start = 20;
-                cap_size = std::min<size_t>(get32(buffer.data() + 12), buffer.size() - 20);
-                orig_size = get32(buffer.data() + 16);
-                if_index = get16(buffer.data());
-                if (if_index < _if.size() && _if[if_index].time_units != 0) {
-                    const SubSecond units = _if[if_index].time_units;
-                    const uint64_t tstamp = (uint64_t(get32(buffer.data() + 4)) << 32) + get32(buffer.data() + 8);
-                    timestamp = MicroSecond((tstamp * MilliSecPerSec) / units);
-                }
             }
             else {
                 // This data block does not contain a captured packet, ignore it.
@@ -423,6 +434,7 @@ bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& re
         }
         else {
             // Pcap file, beginning of a packet block. Read the 16-byte header.
+            _packet_count++;
             uint8_t header[16];
             if (!readall(header, sizeof(header), report)) {
                 return error(report);
@@ -433,7 +445,7 @@ bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& re
             orig_size = get32(header + 12);
 
             // Compute time stamp. Time units is never null in pcap format.
-            timestamp = (MicroSecond(tstamp) * MicroSecPerSec) + (SubSecond(sub_tstamp) * MilliSecPerSec) / _if[0].time_units;
+            timestamp = (MicroSecond(tstamp) * MicroSecPerSec) + (SubSecond(sub_tstamp) * MicroSecPerSec) / _if[0].time_units;
 
             // Read packet data.
             buffer.resize(cap_size);
