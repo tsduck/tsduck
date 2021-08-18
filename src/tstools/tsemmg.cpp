@@ -505,7 +505,7 @@ int MainCode(int argc, char *argv[])
     ts::Packetizer packetizer(opt.duck, ts::PID_NULL, &sectionProvider);
 
     // Start time.
-    const ts::Monotonic startTime(true);
+    ts::Monotonic startTime(true);
 
     // This clock will be our reference.
     ts::Monotonic currentTime(startTime);
@@ -515,19 +515,27 @@ int MainCode(int argc, char *argv[])
     while (ok && client.totalBytes() < opt.maxBytes) {
 
         // Compute the number of bytes we need to send now.
+        // Use microseconds instead of nanoseconds to avoid too frequent overflows
+        // (the difference between two Monotonic clock values are in nanoseconds).
         uint64_t targetBytes = 0;
-        ts::NanoSecond duration = currentTime - startTime;
+        ts::MicroSecond duration = (currentTime - startTime) / ts::NanoSecPerMicroSec;
         if (duration <= 0) {
             // First interval, send initial burst.
             targetBytes = opt.bytesPerSend;
         }
-        else {
-            // Compute the theoretical number of bytes we should have sent up to now.
-            const uint64_t allBytes = ((opt.dataBitrate * duration) / (8 * ts::NanoSecPerSec)).toInt();
+        else if (!opt.dataBitrate.mulOverflow(duration) && !(opt.dataBitrate * duration).divOverflow(8 * ts::MicroSecPerSec)) {
+            // Compute the theoretical number of bytes we should have sent up to now. No overflow.
+            const uint64_t allBytes = ((opt.dataBitrate * duration) / (8 * ts::MicroSecPerSec)).toInt();
             // We need to send the difference.
             if (allBytes > client.totalBytes()) {
                 targetBytes = allBytes - client.totalBytes();
             }
+        }
+        else {
+            // Overflow if we count from the beginning, restart the count.
+            opt.debug(u"overflow in bitrate computation, resetting bitrate accumulation, bitrate: %'d b/s, duration: %'d ns", {opt.dataBitrate, duration});
+            startTime = currentTime;
+            targetBytes = opt.bytesPerSend;
         }
 
         // Send the data we need to send now. Split in several send operations if needed.
@@ -558,7 +566,7 @@ int MainCode(int argc, char *argv[])
             }
             else {
                 // Get TS packets from the packetizer.
-                sendSize = ts::RoundUp<uint64_t>(targetSendSize, ts::PKT_SIZE);
+                sendSize = ts::round_up<uint64_t>(targetSendSize, ts::PKT_SIZE);
                 ts::TSPacketVector packets(size_t(sendSize / ts::PKT_SIZE));
                 for (size_t i = 0; ok && i < packets.size(); ++i) {
                     ok = packetizer.getNextPacket(packets[i]);
