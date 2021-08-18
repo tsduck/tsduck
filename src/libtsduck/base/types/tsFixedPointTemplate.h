@@ -71,7 +71,7 @@ bool ts::FixedPoint<INT_T,PREC,N>::inRange(int64_t min, int64_t max) const
 template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
 ts::UString ts::FixedPoint<INT_T,PREC,N>::description() const
 {
-    return UString::Format(u"a fixed-point value with up to %d meaningful decimal digits", {PRECISION});
+    return UString::Format(u"%d-bit fixed-point value with up to %d decimals", {8 * sizeof(int_t), PRECISION});
 }
 
 
@@ -92,7 +92,7 @@ ts::UString ts::FixedPoint<INT_T,PREC,N>::toString(size_t min_width,
     UString str(UString::Decimal(_value / FACTOR, 0, true, UString()));
     str.append(u'.');
     str.append(UString::Decimal(std::abs(_value % FACTOR), PRECISION, true, UString(), false, u'0'));
-    Format(str, min_width, right_justified, separator, force_sign && !IsNegative(_value),  decimals == NPOS ? PRECISION : decimals, force_decimals, decimal_dot, pad);
+    Format(str, min_width, right_justified, separator, force_sign && !is_negative(_value),  decimals == NPOS ? PRECISION : decimals, force_decimals, decimal_dot, pad);
     return str;
 }
 

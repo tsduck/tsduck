@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUChar.h"
 
 //!
 //! A convenience macro to declare a template with complex @c std::enable_if conditions on two integer types.
@@ -81,6 +81,20 @@ namespace ts {
         //! The equivalent signed type.
         typedef typename make_signed_impl<T, sizeof(T), std::is_signed<T>::value>::type type;
     };
+
+    //!
+    //! Absolute value of integer types, also working on unsigned types.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a An integer value.
+    //! @return Ansolute value of @a a.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
+    inline INT abs(INT a) { return a; } // unsigned version
+
+    //! @cond nodoxygen
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+    inline INT abs(INT a) { return a < 0 ? -a : a; } // signed version
+    //! @endcond
 
 #if defined(DOXYGEN)
     //!
@@ -450,19 +464,33 @@ namespace ts {
 #endif
 
     //!
+    //! Integer division with rounding to closest value (instead of truncating).
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a An integer.
+    //! @param [in] b An integer.
+    //! @return The value of @a a / @a b, rounded to closest value.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
+    INT rounded_div(INT a, INT b) { return (a + b/2) / b; } // unsigned version
+
+    //! @cond nodoxygen
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
+    INT rounded_div(INT a, INT b) { return ((a < 0) ^ (b < 0)) ? ((a - b/2) / b) : ((a + b/2) / b); } // signed version
+    //! @endcond
+
+    //!
     //! Check if an integer value is negative, optimized for signed or unsigned type.
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a An integer.
     //! @return True if @a a is negative.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    bool IsNegative(INT a) { return false; } // unsigned version
+    bool is_negative(INT a) { return false; } // unsigned version
 
     //! @cond nodoxygen
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    bool IsNegative(INT a) { return a < 0; } // signed version
+    bool is_negative(INT a) { return a < 0; } // signed version
     //! @endcond
-
 
     //!
     //! Perform a bounded addition without overflow.
@@ -474,11 +502,11 @@ namespace ts {
     //! value of the type, respectively.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT BoundedAdd(INT a, INT b); // unsigned version
+    INT bounded_add(INT a, INT b); // unsigned version
 
     //! @cond nodoxygen
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT BoundedAdd(INT a, INT b); // signed version
+    INT bounded_add(INT a, INT b); // signed version
     //! @endcond
 
     //!
@@ -491,11 +519,11 @@ namespace ts {
     //! value of the type, respectively.
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT BoundedSub(INT a, INT b); // unsigned version
+    INT bounded_sub(INT a, INT b); // unsigned version
 
     //! @cond nodoxygen
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT BoundedSub(INT a, INT b); // signed version
+    INT bounded_sub(INT a, INT b); // signed version
     //! @endcond
 
     //!
@@ -506,11 +534,11 @@ namespace ts {
     //! @return The value @a x rounded down to previous multiple of @a f.
     //!
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT RoundDown(INT x, INT f); // unsigned version
+    INT round_down(INT x, INT f); // unsigned version
 
     //! @cond nodoxygen
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT RoundDown(INT x, INT f); // signed version
+    INT round_down(INT x, INT f); // signed version
     //! @endcond
 
     //!
@@ -521,11 +549,11 @@ namespace ts {
     //! @return The value @a x rounded up to next multiple of @a f.
     //!
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type* = nullptr>
-    INT RoundUp(INT x, INT f); // unsigned version
+    INT round_up(INT x, INT f); // unsigned version
 
     //! @cond nodoxygen
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
-    INT RoundUp(INT x, INT f); // signed version
+    INT round_up(INT x, INT f); // signed version
     //! @endcond
 
     //!
@@ -570,6 +598,20 @@ namespace ts {
     //! @cond nodoxygen
     template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type* = nullptr>
     size_t BitSize(INT x); // signed version
+    //! @endcond
+
+    //!
+    //! Get the signed/unsigned qualifier of an integer type as a string.
+    //!
+    //! @tparam INT An integer type.
+    //! @return Either u"signed" or u"unsigned".
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
+    inline const UChar* SignedDescription() { return u"unsigned"; } // unsigned version
+
+    //! @cond nodoxygen
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+    inline const UChar* SignedDescription() { return u"signed"; } // signed version
     //! @endcond
 
     //!

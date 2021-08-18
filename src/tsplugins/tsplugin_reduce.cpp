@@ -338,16 +338,14 @@ size_t ts::ReducePlugin::processPacketWindow(TSPacketWindow& win)
     // sub-window-size = window-size. In case of overflow, we use half size and iterate. This problem does not exist
     // with fractions instead of fixed-point.
     size_t subwin_size = win.size();
-#if defined(TS_BITRATE_FIXED)
     bool overflow = true;
     while (overflow && subwin_size > 16) {
         const size_t subwin_bits = subwin_size * PKT_SIZE_BITS;
-        overflow = removed_bitrate.mulOverflow(subwin_bits) || (removed_bitrate * subwin_bits).divOverflow();
+        overflow = removed_bitrate.mulOverflow(subwin_bits) || (removed_bitrate * subwin_bits).divOverflow(bitrate);
         if (overflow) {
             subwin_size /= 2;
         }
     }
-#endif
 
     // Loop on each sub-window inside the window.
     size_t subwin_start = 0;

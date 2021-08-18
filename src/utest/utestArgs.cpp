@@ -37,7 +37,7 @@
 #include "tsFileUtils.h"
 #include "tsFixedPoint.h"
 #include "tsFraction.h"
-#include "tsDouble.h"
+#include "tsFloatingPoint.h"
 #include "tsVersion.h"
 #include "tsunit.h"
 
@@ -115,6 +115,7 @@ public:
     TSUNIT_TEST_END();
 
 private:
+    typedef ts::FloatingPoint<double> Double;
     typedef ts::UStringVector USV;
     ts::UString _tempFile1;
     ts::UString _tempFile2;
@@ -930,15 +931,15 @@ void ArgsTest::testDouble()
 {
     ts::Args args(u"{description}", u"{syntax}", ts::Args::NO_EXIT_ON_ERROR | ts::Args::NO_EXIT_ON_HELP | ts::Args::NO_EXIT_ON_VERSION | ts::Args::HELP_ON_THIS);
     args.redirectReport(&CERR);
-    args.option<ts::Double>(u"");
+    args.option<Double>(u"");
 
     TSUNIT_ASSERT(args.analyze(u"test", {u"1", u"2.56", u"0", u" -6.12"}));
     TSUNIT_EQUAL(4, args.count(u""));
 
-    TSUNIT_EQUAL(1.0,   args.numValue<ts::Double>(u"", 0, 0).toDouble());
-    TSUNIT_EQUAL(2.56,  args.numValue<ts::Double>(u"", 0, 1).toDouble());
-    TSUNIT_EQUAL(0.0,   args.numValue<ts::Double>(u"", 0, 2).toDouble());
-    TSUNIT_EQUAL(-6.12, args.numValue<ts::Double>(u"", 0, 3).toDouble());
+    TSUNIT_EQUAL(1.0,   args.numValue<Double>(u"", 0, 0).toDouble());
+    TSUNIT_EQUAL(2.56,  args.numValue<Double>(u"", 0, 1).toDouble());
+    TSUNIT_EQUAL(0.0,   args.numValue<Double>(u"", 0, 2).toDouble());
+    TSUNIT_EQUAL(-6.12, args.numValue<Double>(u"", 0, 3).toDouble());
 }
 
 // Test case:
@@ -964,7 +965,7 @@ void ArgsTest::testInvalidDouble()
 
     ts::ReportBuffer<> log;
     args.redirectReport(&log);
-    args.option<ts::Double>(u"opt", 0, 0, 1, 12, 15);
+    args.option<Double>(u"opt", 0, 0, 1, 12, 15);
 
     TSUNIT_ASSERT(!args.analyze(u"test", {u"--opt", u"2.3"}));
     debug() << "ArgsTest: testInvalidDouble: \"" << log << "\"" << std::endl;

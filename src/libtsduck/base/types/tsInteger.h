@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Template representation of integer numbers as AbstractNumber.
+//!  Encapsulation of an integer type as an AbstractNumber.
 //!
 //----------------------------------------------------------------------------
 
@@ -39,7 +39,7 @@
 
 namespace ts {
     //!
-    //! Template representation of integer numbers as AbstractNumber.
+    //! Encapsulation of an integer type as an AbstractNumber.
     //! @ingroup cpp
     //!
     //! @tparam INT_T The underlying integer type.
@@ -49,12 +49,6 @@ namespace ts {
     {
     private:
         INT_T _value;
-
-        template <typename INT2, typename std::enable_if<std::is_integral<INT2>::value && std::is_signed<INT2>::value, int>::type = 0>
-        static inline UString SignedDescription() { return u"a signed"; }
-
-        template <typename INT2, typename std::enable_if<std::is_integral<INT2>::value && std::is_unsigned<INT2>::value, int>::type = 0>
-        static inline UString SignedDescription() { return u"an unsigned"; }
 
     public:
         //!
@@ -110,42 +104,66 @@ namespace ts {
         //! Get the absolute value.
         //! @return The absolute value of this fixed-point number.
         //!
-        Integer abs() const { return Integer(std::abs(_value)); }
+        Integer abs() const { return Integer(ts::abs(_value)); }
 
         //!
         //! Get the maximum value of two fixed-point numbers.
         //! @param [in] x Another fixed-point number.
         //! @return The maximum value of this fixed-point number and @a x.
         //!
-        Integer max(Integer x) const { return Integer(std::max(_value, x._value)); }
+        Integer max(const Integer& x) const { return Integer(std::max(_value, x._value)); }
 
         //!
         //! Get the minimum value of two fixed-point numbers.
         //! @param [in] x Another fixed-point number.
         //! @return The minimum value of this fixed-point number and @a x.
         //!
-        Integer min(Integer x) const { return Integer(std::min(_value, x._value)); }
+        Integer min(const Integer& x) const { return Integer(std::min(_value, x._value)); }
+
+        //!
+        //! Check if this Integer number generates an overflow when multiplied by an integer.
+        //! @tparam INT2 Another integer type.
+        //! @param [in] x An integer of type @a INT2.
+        //! @return True if this Integer number generates an overflow when multiplied by @a x.
+        //!
+        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        bool mulOverflow(INT2 x) const { return !bound_check<int_t>(x) || mul_overflow(_value, int_t(x)); }
+
+        //!
+        //! Check if this Integer number generates an overflow when multiplied by another Integer.
+        //! @param [in] x Another Integer number.
+        //! @return True if this Integer number generates an overflow when multiplied by @a x.
+        //!
+        bool mulOverflow(const Integer& x) const { return mul_overflow(_value, x._value); }
+
+        //!
+        //! Check if this Integer number generates an overflow when divided by another Integer.
+        //! The method is present for compliance with other AbstractNumber subclasses.
+        //! @param [in] x Another Integer.
+        //! @return Always false. There is no possible division overflow with Integer.
+        //!
+        bool divOverflow(const Integer& x) const { return false; }
 
         //! @cond nodoxygen
         // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
         Integer operator-() const { return Integer(- _value); }
-        Integer operator+(Integer x) const { return Integer(_value + x._value); }
-        Integer operator-(Integer x) const { return Integer(_value - x._value); }
-        Integer operator*(Integer x) const { return Integer(_value * x._value); }
-        Integer operator/(Integer x) const { return Integer(_value / x._value); }
+        Integer operator+(const Integer& x) const { return Integer(_value + x._value); }
+        Integer operator-(const Integer& x) const { return Integer(_value - x._value); }
+        Integer operator*(const Integer& x) const { return Integer(_value * x._value); }
+        Integer operator/(const Integer& x) const { return Integer(_value / x._value); }
 
-        Integer& operator+=(Integer x) { _value += x._value; return *this; }
-        Integer& operator-=(Integer x) { _value -= x._value; return *this; }
-        Integer& operator*=(Integer x) { _value *= x._value; return *this; }
-        Integer& operator/=(Integer x) { _value /= x._value; return *this; }
+        Integer& operator+=(const Integer& x) { _value += x._value; return *this; }
+        Integer& operator-=(const Integer& x) { _value -= x._value; return *this; }
+        Integer& operator*=(const Integer& x) { _value *= x._value; return *this; }
+        Integer& operator/=(const Integer& x) { _value /= x._value; return *this; }
 
-        bool operator==(Integer x) const { return _value == x._value; }
-        bool operator!=(Integer x) const { return _value != x._value; }
-        bool operator<=(Integer x) const { return _value <= x._value; }
-        bool operator>=(Integer x) const { return _value >= x._value; }
-        bool operator<(Integer x) const { return _value < x._value; }
-        bool operator>(Integer x) const { return _value > x._value; }
+        bool operator==(const Integer& x) const { return _value == x._value; }
+        bool operator!=(const Integer& x) const { return _value != x._value; }
+        bool operator<=(const Integer& x) const { return _value <= x._value; }
+        bool operator>=(const Integer& x) const { return _value >= x._value; }
+        bool operator<(const Integer& x) const { return _value < x._value; }
+        bool operator>(const Integer& x) const { return _value > x._value; }
 
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         Integer operator+(INT2 x) const { return Integer(_value + int_t(x)); }
@@ -197,34 +215,34 @@ namespace ts {
 // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline ts::Integer<INT2> operator+(INT1 x1, ts::Integer<INT2> x2) { return x2 + x1; }
+inline ts::Integer<INT2> operator+(INT1 x1, const ts::Integer<INT2>& x2) { return x2 + x1; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline ts::Integer<INT2> operator-(INT1 x1, ts::Integer<INT2> x2) { return ts::Integer<INT2>(x1) - x2; }
+inline ts::Integer<INT2> operator-(INT1 x1, const ts::Integer<INT2>& x2) { return ts::Integer<INT2>(x1) - x2; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline ts::Integer<INT2> operator*(INT1 x1, ts::Integer<INT2> x2) { return x2 * x1; }
+inline ts::Integer<INT2> operator*(INT1 x1, const ts::Integer<INT2>& x2) { return x2 * x1; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline ts::Integer<INT2> operator/(INT1 x1, ts::Integer<INT2> x2) { return ts::Integer<INT2>(x1) / x2; }
+inline ts::Integer<INT2> operator/(INT1 x1, const ts::Integer<INT2>& x2) { return ts::Integer<INT2>(x1) / x2; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator==(INT1 x1, ts::Integer<INT2> x2) { return x2 == x1; }
+inline bool operator==(INT1 x1, const ts::Integer<INT2>& x2) { return x2 == x1; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator!=(INT1 x1, ts::Integer<INT2> x2) { return x2 != x1; }
+inline bool operator!=(INT1 x1, const ts::Integer<INT2>& x2) { return x2 != x1; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator<=(INT1 x1, ts::Integer<INT2> x2) { return x2 >= x1; }
+inline bool operator<=(INT1 x1, const ts::Integer<INT2>& x2) { return x2 >= x1; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator>=(INT1 x1, ts::Integer<INT2> x2) { return x2 <= x1; }
+inline bool operator>=(INT1 x1, const ts::Integer<INT2>& x2) { return x2 <= x1; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator<(INT1 x1, ts::Integer<INT2> x2) { return x2 > x1; }
+inline bool operator<(INT1 x1, const ts::Integer<INT2>& x2) { return x2 > x1; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator>(INT1 x1, ts::Integer<INT2> x2) { return x2 < x1; }
+inline bool operator>(INT1 x1, const ts::Integer<INT2>& x2) { return x2 < x1; }
 
 //! @endcond
 

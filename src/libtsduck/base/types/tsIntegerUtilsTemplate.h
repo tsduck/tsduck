@@ -85,7 +85,7 @@ bool ts::mul_overflow(INT a, INT b)
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-INT ts::BoundedAdd(INT a, INT b)
+INT ts::bounded_add(INT a, INT b)
 {
     // Unsigned addition.
     if (a > std::numeric_limits<INT>::max() - b) {
@@ -98,7 +98,7 @@ INT ts::BoundedAdd(INT a, INT b)
 }
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::BoundedAdd(INT a, INT b)
+INT ts::bounded_add(INT a, INT b)
 {
     // Signed addition.
     const INT c = a + b;
@@ -121,7 +121,7 @@ INT ts::BoundedAdd(INT a, INT b)
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-INT ts::BoundedSub(INT a, INT b)
+INT ts::bounded_sub(INT a, INT b)
 {
     // Unsigned subtraction.
     if (a < b) {
@@ -134,7 +134,7 @@ INT ts::BoundedSub(INT a, INT b)
 }
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::BoundedSub(INT a, INT b)
+INT ts::bounded_sub(INT a, INT b)
 {
     // Signed subtraction.
     const INT c = a - b;
@@ -157,26 +157,26 @@ INT ts::BoundedSub(INT a, INT b)
 //----------------------------------------------------------------------------
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-INT ts::RoundDown(INT x, INT f)
+INT ts::round_down(INT x, INT f)
 {
     return f == 0 ? x : x - x % f;
 }
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::RoundDown(INT x, INT f)
+INT ts::round_down(INT x, INT f)
 {
     f = INT(std::abs(f));
     return f == 0 ? x : (x >= 0 ? x - x % f : x - (f + x % f) % f);
 }
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value>::type*>
-INT ts::RoundUp(INT x, INT f)
+INT ts::round_up(INT x, INT f)
 {
     return f == 0 ? x : x + (f - x % f) % f;
 }
 
 template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value>::type*>
-INT ts::RoundUp(INT x, INT f)
+INT ts::round_up(INT x, INT f)
 {
     f = INT(std::abs(f));
     return f == 0 ? x : (x >= 0 ? x + (f - x % f) % f : x - x % f);

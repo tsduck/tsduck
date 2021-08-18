@@ -74,10 +74,7 @@ namespace ts {
         // code which is correctly handled by gcc, clang and msvc.
         template <bool is_signed, bool dummy = true>
         struct SignWrapper {
-            // Reduce the sign of elements of a fraction.
             static inline void reduce(INT_T& num, INT_T& den);
-            // Absolute value of the numerator.
-            static inline INT_T abs(INT_T num);
         };
 
     public:
@@ -159,7 +156,7 @@ namespace ts {
         //! Get the absolute value.
         //! @return The absolute value of this fraction number.
         //!
-        Fraction abs() const;
+        Fraction abs() const { return Fraction(ts::abs(_num), _den, true); }
 
         //!
         //! Converts to a proper fraction (a fraction that is less than 1).
@@ -188,6 +185,29 @@ namespace ts {
         //! @return The minimum value of this fraction and @a x.
         //!
         Fraction min(const Fraction& x) const { return *this <= x ? *this : x; }
+
+        //!
+        //! Check if this Fraction generates an overflow when multiplied by an integer.
+        //! @tparam INT2 Another integer type.
+        //! @param [in] x An integer of type @a INT2.
+        //! @return True if this Fraction generates an overflow when multiplied by @a x.
+        //!
+        template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
+        bool mulOverflow(INT2 x) const;
+
+        //!
+        //! Check if this Fraction generates an overflow when multiplied by another Fraction.
+        //! @param [in] x Another Fraction.
+        //! @return True if this Fraction generates an overflow when multiplied by @a x.
+        //!
+        bool mulOverflow(const Fraction& x) const;
+
+        //!
+        //! Check if this Fraction generates an overflow when divided by another Fraction.
+        //! @param [in] x Another Fraction.
+        //! @return True if this Fraction generates an overflow when divided by @a x.
+        //!
+        bool divOverflow(const Fraction& x) const;
 
         //! @cond nodoxygen
         // The operators are not extensively documented with doxygen (obvious, verbose and redundant).

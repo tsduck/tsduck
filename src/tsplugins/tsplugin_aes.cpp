@@ -440,7 +440,7 @@ ts::ProcessorPlugin::Status ts::AESPlugin::processPacket(TSPacket& pkt, TSPacket
         // The chaining mode does not allow a residue.
         // Round the payload size down to a multiple of the block size.
         // Leave the residue clear.
-        pl_size = RoundDown(pl_size, _chain->blockSize());
+        pl_size = round_down(pl_size, _chain->blockSize());
     }
     if (pl_size < _chain->minMessageSize()) {
         // The payload is too short to be scrambled, leave the packet clear

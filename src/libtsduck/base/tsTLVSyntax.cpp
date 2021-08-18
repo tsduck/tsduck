@@ -191,7 +191,7 @@ size_t ts::TLVSyntax::longestTLV(const uint8_t * data, size_t dataSize, size_t t
     size_t index = tlvStart;
     while (index + headerSize <= dataSize) {
         const size_t len = getInt(data + index + _tagSize, _lengthSize);
-        const size_t next = BoundedAdd(index, BoundedAdd(headerSize, len));
+        const size_t next = bounded_add(index, bounded_add(headerSize, len));
         if (next > dataSize) {
             break; // would overflow data area
         }

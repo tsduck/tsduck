@@ -235,27 +235,6 @@ ts::UString ts::VersionInfo::GetSystemVersion()
 
 
 //----------------------------------------------------------------------------
-// Build a string describing the bitrate representation.
-//----------------------------------------------------------------------------
-
-ts::UString ts::VersionInfo::GetBitRateRepresentation()
-{
-#if defined(TS_BITRATE_FRACTION)
-    return UString::Format(u"fraction of two %d-bit integers", {8 * sizeof(BitRate::int_t)});
-#elif defined(TS_BITRATE_INTEGER)
-    return UString::Format(u"%d-bit unsigned integer", {8 * sizeof(BitRate::int_t)});
-#elif defined(TS_BITRATE_FLOAT)
-    return UString::Format(u"%d-bit floating-point", {8 * sizeof(BitRate::float_t)});
-#elif defined(TS_BITRATE_FIXED)
-    return UString::Format(u"%d-bit fixed-point with %d decimals", {8 * sizeof(BitRate::int_t), BitRate::PRECISION});
-#else
-    return u"unknown";
-#endif
-}
-
-
-
-//----------------------------------------------------------------------------
 // Build version string.
 //----------------------------------------------------------------------------
 
@@ -292,7 +271,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             return GetSystemVersion();
         }
         case Format::BITRATE: {
-            return GetBitRateRepresentation();
+            return BitRate().description();
         }
         case Format::NSIS: {
             // A definition directive for NSIS.

@@ -45,7 +45,6 @@ template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value
 template <bool dummy>
 struct ts::Fraction<INT_T,N>::SignWrapper<false, dummy> {
     static inline void reduce(INT_T& num, INT_T& den) {}
-    static inline INT_T abs(INT_T num) { return num; }
 };
 
 // Signed version.
@@ -53,15 +52,7 @@ template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value
 template <bool dummy>
 struct ts::Fraction<INT_T,N>::SignWrapper<true, dummy> {
     static inline void reduce(INT_T& num, INT_T& den) { if (den < 0) { num = -num; den = -den; } }
-    static inline INT_T abs(INT_T num) { return num < 0 ? -num : num; }
 };
-
-// Public version of abs() on fraction.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::abs() const
-{
-    return Fraction(SignWrapper<std::is_signed<int_t>::value>::abs(_num), _den, true);
-}
 
 
 //----------------------------------------------------------------------------
@@ -144,7 +135,7 @@ bool ts::Fraction<INT_T,N>::inRange(int64_t min, int64_t max) const
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 ts::UString ts::Fraction<INT_T,N>::description() const
 {
-    return u"an integer or a fraction of integers (e.g. \"123/2\")";
+    return UString::Format(u"fraction of two %d-bit integers", {8 * sizeof(int_t)});
 }
 
 
@@ -242,10 +233,29 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator*(const Fraction& 
 }
 
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+bool ts::Fraction<INT_T,N>::mulOverflow(const Fraction& x) const
+{
+    // Cross-reduce first to limit the risk of overflow.
+    int_t gcd = GCD(_num, x._den);
+    const int_t num1 = _num / gcd;
+    const int_t den1 = x._den / gcd;
+    gcd = GCD(x._num, _den);
+    const int_t num2 = x._num / gcd;
+    const int_t den2 = _den / gcd;
+    return mul_overflow(num1, num2) || mul_overflow(den1, den2);
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator/(const Fraction& x) const
 {
     debug_throw_div_zero(x._num);
     return operator*(Fraction(x._den, x._num, true));
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+bool ts::Fraction<INT_T,N>::divOverflow(const Fraction& x) const
+{
+    return x._num == 0 || mulOverflow(Fraction(x._den, x._num, true));
 }
 
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
@@ -286,6 +296,13 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator*(INT1 x) const
 }
 
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+template<typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
+bool ts::Fraction<INT_T,N>::mulOverflow(INT1 x) const
+{
+    return !bound_check<int_t>(x) || mul_overflow(_num, int_t(x));
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
 typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator/(INT1 x) const
 {
@@ -296,6 +313,7 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator/(INT1 x) const
     res.reduce();
     return res;
 }
+
 
 //----------------------------------------------------------------------------
 // Comparison operations.

@@ -259,7 +259,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
         }
 
         // Point to next option. Pad length to 4 bytes.
-        data += RoundUp<uint16_t>(len, 4);
+        data += round_up<uint16_t>(len, 4);
     }
 
     report.debug(u"pcap-ng interface#%d: link type: %d, time units/second: %'d, time offset: %'d microsec, FCS length: %d bytes",
