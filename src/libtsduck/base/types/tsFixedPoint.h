@@ -157,23 +157,20 @@ namespace ts {
         //! @return True if this fixed-point number generates an overflow when multiplied by @a x.
         //!
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
-        bool mulOverflow(INT2 x) const {
-            const int_t res = _value * int_t(x);
-            return _value != 0 && res / _value != int_t(x);
-        }
+        bool mulOverflow(INT2 x) const { return !bound_check<int_t>(x) || mul_overflow(_value, int_t(x)); }
 
         //!
         //! Check if this fixed-point number generates an overflow when multiplied by another fixed-point.
         //! @param [in] x Another fixed-point number.
         //! @return True if this fixed-point number generates an overflow when multiplied by @a x.
         //!
-        bool mulOverflow(FixedPoint x) const { return mulOverflow(x._value); }
+        bool mulOverflow(FixedPoint x) const { return mul_overflow(_value, x._value); }
 
         //!
         //! Check if this fixed-point number generates an overflow when divided by any other fixed-point.
         //! @return True if this fixed-point number generates an overflow when divided by any other fixed-point.
         //!
-        bool divOverflow() const { return mulOverflow(FACTOR); }
+        bool divOverflow() const { return mul_overflow(_value, FACTOR); }
 
         //! @cond nodoxygen
         // The operators are not extensively documented with doxygen (obvious, verbose and redundant).

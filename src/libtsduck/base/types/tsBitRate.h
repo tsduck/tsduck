@@ -37,6 +37,15 @@
 
 #if defined(DOXYGEN)
 //!
+//! If this symbol is defined, bitrate values are represented as unsigned 64-bit integers.
+//! Without this symbol, bitrates are represented as fixed-point numbers of a given compile-time precision.
+//!
+//! @see ts::Integer
+//! @see ts::BitRate
+//!
+#define TS_BITRATE_INTEGER 1
+
+//!
 //! If this symbol is defined, bitrate values are represented as fractions of 64-bit integers.
 //! Without this symbol, bitrates are represented as fixed-point numbers of a given compile-time precision.
 //!
@@ -75,10 +84,8 @@
 #else
 
 // Default representation for BitRate values is fixed-point.
-#if !defined(TS_BITRATE_FRACTION) && !defined(TS_BITRATE_FLOAT) && !defined(TS_BITRATE_FIXED)
+#if !defined(TS_BITRATE_INTEGER) && !defined(TS_BITRATE_FRACTION) && !defined(TS_BITRATE_FLOAT) && !defined(TS_BITRATE_FIXED)
 #define TS_BITRATE_FIXED 1
-#elif (defined(TS_BITRATE_FRACTION) && defined(TS_BITRATE_FLOAT)) || (defined(TS_BITRATE_FRACTION) && defined(TS_BITRATE_FIXED)) || (defined(TS_BITRATE_FLOAT) && defined(TS_BITRATE_FIXED))
-#error "define at most one of TS_BITRATE_FRACTION, TS_BITRATE_FLOAT, TS_BITRATE_FIXED"
 #endif
 
 #endif
@@ -89,6 +96,7 @@
 //!
 //! @see ts::FixedPoint
 //! @see ts::BitRate
+//! @see TS_BITRATE_INTEGER
 //! @see TS_BITRATE_FRACTION
 //! @see TS_BITRATE_FLOAT
 //! @see TS_BITRATE_FIXED
@@ -98,7 +106,9 @@
 #endif
 
 // Required header for implementation of BitRate.
-#if defined(TS_BITRATE_FRACTION)
+#if defined(TS_BITRATE_INTEGER)
+#include "tsInteger.h"
+#elif defined(TS_BITRATE_FRACTION)
 #include "tsFraction.h"
 #elif defined(TS_BITRATE_FLOAT)
 #include "tsDouble.h"
@@ -111,10 +121,10 @@ namespace ts {
     //! Bitrate in bits/second.
     //!
     //! To get more precision over long computations or exotic modulations,
-    //! a bitrate is implemented either as a fixed-point value with decimal
-    //! digits, a fraction of integers or a floating point value. This is a
-    //! compile-time decision which is based on the macros TS_BITRATE_FRACTION
-    //! TS_BITRATE_FLOAT and TS_BITRATE_FIXED.
+    //! a bitrate is implemented either as a 64-bit unsigned integer, a fixed-point
+    //! value with decimal digits, a fraction of integers or a floating point value.
+    //! This is a compile-time decision which is based on the macros TS_BITRATE_INTEGER,
+    //! TS_BITRATE_FRACTION, TS_BITRATE_FLOAT and TS_BITRATE_FIXED.
     //!
     //! When implemented as a fixed-point value, the number of decimal digits
     //! is customizable using the macro TS_BITRATE_DECIMALS.
@@ -127,12 +137,15 @@ namespace ts {
     //! is not as good as previously. Using 1 decimal digit is currently the
     //! best balance.
     //!
+    //! @see TS_BITRATE_INTEGER
     //! @see TS_BITRATE_DECIMALS
     //! @see TS_BITRATE_FRACTION
     //! @see TS_BITRATE_FLOAT
     //!
 #if defined(DOXYGEN)
     typedef user_defined BitRate;
+#elif defined(TS_BITRATE_INTEGER)
+    typedef Integer<uint64_t> BitRate;
 #elif defined(TS_BITRATE_FRACTION)
     typedef Fraction<uint64_t> BitRate;
 #elif defined(TS_BITRATE_FLOAT)

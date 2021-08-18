@@ -55,6 +55,32 @@ template <typename INT> constexpr INT ts::static_power10<INT,19>::value;
 
 
 //----------------------------------------------------------------------------
+// Not inlined to avoid optimization which breaks the code.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+bool ts::add_overflow(INT a, INT b)
+{
+    INT res = a + b;
+    return add_overflow<INT>(a, b, res);
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+bool ts::sub_overflow(INT a, INT b)
+{
+    INT res = a - b;
+    return sub_overflow<INT>(a, b, res);
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
+bool ts::mul_overflow(INT a, INT b)
+{
+    INT res = a * b;
+    return mul_overflow<INT>(a, b, res);
+}
+
+
+//----------------------------------------------------------------------------
 // Perform a bounded addition without overflow.
 //----------------------------------------------------------------------------
 

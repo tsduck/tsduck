@@ -235,6 +235,16 @@ namespace ts {
     //! @endcond
 
     //!
+    //! Check if an integer addition generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @return True if @a a + @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    bool add_overflow(INT a, INT b) TS_NO_OPTIMIZE;
+
+    //!
     //! Check if an integer substraction generates an overflow.
     //! @tparam INT An integer type, any size, signed or unsigned.
     //! @param [in] a First integer.
@@ -249,6 +259,16 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
     inline bool sub_overflow(INT a, INT b, INT res) { return add_overflow(a, -b, res); } // signed version
     //! @endcond
+
+    //!
+    //! Check if an integer substraction generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @return True if @a a - @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    bool sub_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
     //! Check if the negation (opposite sign) of an integer generates an overflow.
@@ -274,6 +294,16 @@ namespace ts {
     //!
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
     inline bool mul_overflow(INT a, INT b, INT res) { return a != 0 && res / a != b; }
+
+    //!
+    //! Check if an integer multiplication generates an overflow.
+    //! @tparam INT An integer type, any size, signed or unsigned.
+    //! @param [in] a First integer.
+    //! @param [in] b Second integer.
+    //! @return True if @a a * @a b generated an overflow.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    bool mul_overflow(INT a, INT b) TS_NO_OPTIMIZE;
 
     //!
     //! Throw an exception if an integer addition generates an overflow.
