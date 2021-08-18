@@ -48,10 +48,10 @@ public:
     virtual void afterTest() override;
 
     void testMakeSigned();
-    void testBoundedAdd();
-    void testBoundedSub();
-    void testRoundDown();
-    void testRoundUp();
+    void testbounded_add();
+    void testbounded_sub();
+    void testround_down();
+    void testround_up();
     void testSignExtend();
     void testBitSize();
     void testPower10();
@@ -62,10 +62,10 @@ public:
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
     TSUNIT_TEST(testMakeSigned);
-    TSUNIT_TEST(testBoundedAdd);
-    TSUNIT_TEST(testBoundedSub);
-    TSUNIT_TEST(testRoundDown);
-    TSUNIT_TEST(testRoundUp);
+    TSUNIT_TEST(testbounded_add);
+    TSUNIT_TEST(testbounded_sub);
+    TSUNIT_TEST(testround_down);
+    TSUNIT_TEST(testround_up);
     TSUNIT_TEST(testSignExtend);
     TSUNIT_TEST(testBitSize);
     TSUNIT_TEST(testPower10);
@@ -131,102 +131,102 @@ void IntegerUtilsTest::testMakeSigned()
     TSUNIT_EQUAL(sizeof(double), sizeof(ts::make_signed<double>::type));
 }
 
-void IntegerUtilsTest::testBoundedAdd()
+void IntegerUtilsTest::testbounded_add()
 {
-    TSUNIT_EQUAL(201, ts::BoundedAdd(uint8_t(1),   uint8_t(200)));
-    TSUNIT_EQUAL(255, ts::BoundedAdd(uint8_t(0),   uint8_t(255)));
-    TSUNIT_EQUAL(255, ts::BoundedAdd(uint8_t(1),   uint8_t(255)));
-    TSUNIT_EQUAL(255, ts::BoundedAdd(uint8_t(100), uint8_t(200)));
+    TSUNIT_EQUAL(201, ts::bounded_add(uint8_t(1),   uint8_t(200)));
+    TSUNIT_EQUAL(255, ts::bounded_add(uint8_t(0),   uint8_t(255)));
+    TSUNIT_EQUAL(255, ts::bounded_add(uint8_t(1),   uint8_t(255)));
+    TSUNIT_EQUAL(255, ts::bounded_add(uint8_t(100), uint8_t(200)));
 
-    TSUNIT_EQUAL(120,  ts::BoundedAdd(int8_t(10),   int8_t(110)));
-    TSUNIT_EQUAL(127,  ts::BoundedAdd(int8_t(100),  int8_t(80)));
-    TSUNIT_EQUAL(80,   ts::BoundedAdd(int8_t(100),  int8_t(-20)));
-    TSUNIT_EQUAL(-120, ts::BoundedAdd(int8_t(-100), int8_t(-20)));
-    TSUNIT_EQUAL(-128, ts::BoundedAdd(int8_t(-100), int8_t(-60)));
+    TSUNIT_EQUAL(120,  ts::bounded_add(int8_t(10),   int8_t(110)));
+    TSUNIT_EQUAL(127,  ts::bounded_add(int8_t(100),  int8_t(80)));
+    TSUNIT_EQUAL(80,   ts::bounded_add(int8_t(100),  int8_t(-20)));
+    TSUNIT_EQUAL(-120, ts::bounded_add(int8_t(-100), int8_t(-20)));
+    TSUNIT_EQUAL(-128, ts::bounded_add(int8_t(-100), int8_t(-60)));
 }
 
-void IntegerUtilsTest::testBoundedSub()
+void IntegerUtilsTest::testbounded_sub()
 {
-    TSUNIT_EQUAL(80,  ts::BoundedSub(uint8_t(100), uint8_t(20)));
-    TSUNIT_EQUAL(0,   ts::BoundedSub(uint8_t(100), uint8_t(200)));
-    TSUNIT_EQUAL(10,  ts::BoundedSub(uint8_t(10),  uint8_t(0)));
-    TSUNIT_EQUAL(0,   ts::BoundedSub(uint8_t(0),   uint8_t(10)));
-    TSUNIT_EQUAL(255, ts::BoundedSub(uint8_t(255), uint8_t(0)));
+    TSUNIT_EQUAL(80,  ts::bounded_sub(uint8_t(100), uint8_t(20)));
+    TSUNIT_EQUAL(0,   ts::bounded_sub(uint8_t(100), uint8_t(200)));
+    TSUNIT_EQUAL(10,  ts::bounded_sub(uint8_t(10),  uint8_t(0)));
+    TSUNIT_EQUAL(0,   ts::bounded_sub(uint8_t(0),   uint8_t(10)));
+    TSUNIT_EQUAL(255, ts::bounded_sub(uint8_t(255), uint8_t(0)));
 
-    TSUNIT_EQUAL(10,   ts::BoundedSub(int8_t(20),   int8_t(10)));
-    TSUNIT_EQUAL(-10,  ts::BoundedSub(int8_t(20),   int8_t(30)));
-    TSUNIT_EQUAL(-50,  ts::BoundedSub(int8_t(-20),  int8_t(30)));
-    TSUNIT_EQUAL(127,  ts::BoundedSub(int8_t(100),  int8_t(-50)));
-    TSUNIT_EQUAL(-128, ts::BoundedSub(int8_t(-100), int8_t(40)));
+    TSUNIT_EQUAL(10,   ts::bounded_sub(int8_t(20),   int8_t(10)));
+    TSUNIT_EQUAL(-10,  ts::bounded_sub(int8_t(20),   int8_t(30)));
+    TSUNIT_EQUAL(-50,  ts::bounded_sub(int8_t(-20),  int8_t(30)));
+    TSUNIT_EQUAL(127,  ts::bounded_sub(int8_t(100),  int8_t(-50)));
+    TSUNIT_EQUAL(-128, ts::bounded_sub(int8_t(-100), int8_t(40)));
 }
 
-void IntegerUtilsTest::testRoundDown()
+void IntegerUtilsTest::testround_down()
 {
     TSUNIT_EQUAL(-1, -11 % 5);
     TSUNIT_EQUAL(-4, -14 % 5);
     TSUNIT_EQUAL(0,  -15 % 5);
 
-    TSUNIT_EQUAL(20, ts::RoundDown(20, 5));
-    TSUNIT_EQUAL(20, ts::RoundDown(24, 5));
+    TSUNIT_EQUAL(20, ts::round_down(20, 5));
+    TSUNIT_EQUAL(20, ts::round_down(24, 5));
 
-    TSUNIT_EQUAL(-20, ts::RoundDown(-20, 5));
-    TSUNIT_EQUAL(-25, ts::RoundDown(-21, 5));
-    TSUNIT_EQUAL(-25, ts::RoundDown(-24, -5));
-    TSUNIT_EQUAL(-25, ts::RoundDown(-25, 5));
+    TSUNIT_EQUAL(-20, ts::round_down(-20, 5));
+    TSUNIT_EQUAL(-25, ts::round_down(-21, 5));
+    TSUNIT_EQUAL(-25, ts::round_down(-24, -5));
+    TSUNIT_EQUAL(-25, ts::round_down(-25, 5));
 
-    TSUNIT_EQUAL(10, ts::RoundDown(uint32_t(10), uint32_t(5)));
-    TSUNIT_EQUAL(10, ts::RoundDown(uint32_t(14), uint32_t(5)));
+    TSUNIT_EQUAL(10, ts::round_down(uint32_t(10), uint32_t(5)));
+    TSUNIT_EQUAL(10, ts::round_down(uint32_t(14), uint32_t(5)));
 
-    TSUNIT_EQUAL(10, ts::RoundDown(int8_t(10), int8_t(5)));
-    TSUNIT_EQUAL(10, ts::RoundDown(int8_t(14), int8_t(5)));
+    TSUNIT_EQUAL(10, ts::round_down(int8_t(10), int8_t(5)));
+    TSUNIT_EQUAL(10, ts::round_down(int8_t(14), int8_t(5)));
 
-    TSUNIT_EQUAL(-10, ts::RoundDown(int8_t(-10), int8_t(5)));
-    TSUNIT_EQUAL(-15, ts::RoundDown(int8_t(-11), int8_t(5)));
-    TSUNIT_EQUAL(-15, ts::RoundDown(int8_t(-14), int8_t(5)));
-    TSUNIT_EQUAL(-15, ts::RoundDown(int8_t(-15), int8_t(5)));
+    TSUNIT_EQUAL(-10, ts::round_down(int8_t(-10), int8_t(5)));
+    TSUNIT_EQUAL(-15, ts::round_down(int8_t(-11), int8_t(5)));
+    TSUNIT_EQUAL(-15, ts::round_down(int8_t(-14), int8_t(5)));
+    TSUNIT_EQUAL(-15, ts::round_down(int8_t(-15), int8_t(5)));
 
-    TSUNIT_EQUAL(10, ts::RoundDown(10, 0));
-    TSUNIT_EQUAL(10, ts::RoundDown(10, 1));
-    TSUNIT_EQUAL(-10, ts::RoundDown(-10, 0));
-    TSUNIT_EQUAL(-10, ts::RoundDown(-10, 1));
+    TSUNIT_EQUAL(10, ts::round_down(10, 0));
+    TSUNIT_EQUAL(10, ts::round_down(10, 1));
+    TSUNIT_EQUAL(-10, ts::round_down(-10, 0));
+    TSUNIT_EQUAL(-10, ts::round_down(-10, 1));
 
-    TSUNIT_EQUAL(0, ts::RoundDown(0, 0));
-    TSUNIT_EQUAL(0, ts::RoundDown(0, 1));
-    TSUNIT_EQUAL(0, ts::RoundDown(0, -27));
+    TSUNIT_EQUAL(0, ts::round_down(0, 0));
+    TSUNIT_EQUAL(0, ts::round_down(0, 1));
+    TSUNIT_EQUAL(0, ts::round_down(0, -27));
 }
 
-void IntegerUtilsTest::testRoundUp()
+void IntegerUtilsTest::testround_up()
 {
-    TSUNIT_EQUAL(20, ts::RoundUp(20, 5));
-    TSUNIT_EQUAL(25, ts::RoundUp(21, 5));
-    TSUNIT_EQUAL(25, ts::RoundUp(24, -5));
+    TSUNIT_EQUAL(20, ts::round_up(20, 5));
+    TSUNIT_EQUAL(25, ts::round_up(21, 5));
+    TSUNIT_EQUAL(25, ts::round_up(24, -5));
 
-    TSUNIT_EQUAL(-20, ts::RoundUp(-20, 5));
-    TSUNIT_EQUAL(-20, ts::RoundUp(-21, 5));
-    TSUNIT_EQUAL(-20, ts::RoundUp(-24, 5));
-    TSUNIT_EQUAL(-25, ts::RoundUp(-25, 5));
+    TSUNIT_EQUAL(-20, ts::round_up(-20, 5));
+    TSUNIT_EQUAL(-20, ts::round_up(-21, 5));
+    TSUNIT_EQUAL(-20, ts::round_up(-24, 5));
+    TSUNIT_EQUAL(-25, ts::round_up(-25, 5));
 
-    TSUNIT_EQUAL(10, ts::RoundUp(uint32_t(10), uint32_t(5)));
-    TSUNIT_EQUAL(15, ts::RoundUp(uint32_t(11), uint32_t(5)));
-    TSUNIT_EQUAL(15, ts::RoundUp(uint32_t(14), uint32_t(5)));
+    TSUNIT_EQUAL(10, ts::round_up(uint32_t(10), uint32_t(5)));
+    TSUNIT_EQUAL(15, ts::round_up(uint32_t(11), uint32_t(5)));
+    TSUNIT_EQUAL(15, ts::round_up(uint32_t(14), uint32_t(5)));
 
-    TSUNIT_EQUAL(10, ts::RoundUp(int8_t(10), int8_t(5)));
-    TSUNIT_EQUAL(15, ts::RoundUp(int8_t(11), int8_t(5)));
-    TSUNIT_EQUAL(15, ts::RoundUp(int8_t(14), int8_t(5)));
+    TSUNIT_EQUAL(10, ts::round_up(int8_t(10), int8_t(5)));
+    TSUNIT_EQUAL(15, ts::round_up(int8_t(11), int8_t(5)));
+    TSUNIT_EQUAL(15, ts::round_up(int8_t(14), int8_t(5)));
 
-    TSUNIT_EQUAL(-10, ts::RoundUp(int8_t(-10), int8_t(5)));
-    TSUNIT_EQUAL(-10, ts::RoundUp(int8_t(-11), int8_t(5)));
-    TSUNIT_EQUAL(-10, ts::RoundUp(int8_t(-14), int8_t(5)));
-    TSUNIT_EQUAL(-15, ts::RoundUp(int8_t(-15), int8_t(5)));
+    TSUNIT_EQUAL(-10, ts::round_up(int8_t(-10), int8_t(5)));
+    TSUNIT_EQUAL(-10, ts::round_up(int8_t(-11), int8_t(5)));
+    TSUNIT_EQUAL(-10, ts::round_up(int8_t(-14), int8_t(5)));
+    TSUNIT_EQUAL(-15, ts::round_up(int8_t(-15), int8_t(5)));
 
-    TSUNIT_EQUAL(10, ts::RoundUp(10, 0));
-    TSUNIT_EQUAL(10, ts::RoundUp(10, 1));
-    TSUNIT_EQUAL(-10, ts::RoundUp(-10, 0));
-    TSUNIT_EQUAL(-10, ts::RoundUp(-10, 1));
+    TSUNIT_EQUAL(10, ts::round_up(10, 0));
+    TSUNIT_EQUAL(10, ts::round_up(10, 1));
+    TSUNIT_EQUAL(-10, ts::round_up(-10, 0));
+    TSUNIT_EQUAL(-10, ts::round_up(-10, 1));
 
-    TSUNIT_EQUAL(0, ts::RoundUp(0, 0));
-    TSUNIT_EQUAL(0, ts::RoundUp(0, 1));
-    TSUNIT_EQUAL(0, ts::RoundUp(0, -27));
+    TSUNIT_EQUAL(0, ts::round_up(0, 0));
+    TSUNIT_EQUAL(0, ts::round_up(0, 1));
+    TSUNIT_EQUAL(0, ts::round_up(0, -27));
 }
 
 void IntegerUtilsTest::testSignExtend()

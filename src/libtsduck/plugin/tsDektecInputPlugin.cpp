@@ -990,7 +990,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
     }
 
     // Do not read more than what a DTA device accepts (is this still useful?)
-    size_t size = RoundDown(std::min(max_packets * PKT_SIZE, DTA_MAX_IO_SIZE), PKT_SIZE);
+    size_t size = round_down(std::min(max_packets * PKT_SIZE, DTA_MAX_IO_SIZE), PKT_SIZE);
 
     // Receive packets.
     if (_guts->timeout_ms < 0) {

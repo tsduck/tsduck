@@ -69,8 +69,8 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     // to perform arithmetics on pointers because we use modulo operations.
 
     assert(sizeof(size_t) == sizeof(char_ptr));
-    _locked_base = char_ptr(RoundUp(size_t(_allocated_base), page_size));
-    _locked_size = RoundUp(requested_size, page_size);
+    _locked_base = char_ptr(round_up(size_t(_allocated_base), page_size));
+    _locked_size = round_up(requested_size, page_size);
 
     _base = new (_locked_base) T[elem_count];
 

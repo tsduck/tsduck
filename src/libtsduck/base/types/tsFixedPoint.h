@@ -141,14 +141,14 @@ namespace ts {
         //! @param [in] x Another fixed-point number.
         //! @return The maximum value of this fixed-point number and @a x.
         //!
-        FixedPoint max(FixedPoint x) const { return FixedPoint(std::max(_value, x._value), true); }
+        FixedPoint max(const FixedPoint& x) const { return FixedPoint(std::max(_value, x._value), true); }
 
         //!
         //! Get the minimum value of two fixed-point numbers.
         //! @param [in] x Another fixed-point number.
         //! @return The minimum value of this fixed-point number and @a x.
         //!
-        FixedPoint min(FixedPoint x) const { return FixedPoint(std::min(_value, x._value), true); }
+        FixedPoint min(const FixedPoint& x) const { return FixedPoint(std::min(_value, x._value), true); }
 
         //!
         //! Check if this fixed-point number generates an overflow when multiplied by an integer.
@@ -164,34 +164,35 @@ namespace ts {
         //! @param [in] x Another fixed-point number.
         //! @return True if this fixed-point number generates an overflow when multiplied by @a x.
         //!
-        bool mulOverflow(FixedPoint x) const { return mul_overflow(_value, x._value); }
+        bool mulOverflow(const FixedPoint& x) const { return mul_overflow(_value, x._value); }
 
         //!
-        //! Check if this fixed-point number generates an overflow when divided by any other fixed-point.
-        //! @return True if this fixed-point number generates an overflow when divided by any other fixed-point.
+        //! Check if this fixed-point number generates an overflow when divided by another fixed-point.
+        //! @param [in] x Another fixed-point.
+        //! @return True if this fixed-point generates an overflow when divided by @a x.
         //!
-        bool divOverflow() const { return mul_overflow(_value, FACTOR); }
+        bool divOverflow(const FixedPoint& x) const { return mul_overflow(_value, FACTOR); }
 
         //! @cond nodoxygen
         // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
         FixedPoint operator-() const { return FixedPoint(- _value, true); }
-        FixedPoint operator+(FixedPoint x) const { return FixedPoint(_value + x._value, true); }
-        FixedPoint operator-(FixedPoint x) const { return FixedPoint(_value - x._value, true); }
-        FixedPoint operator*(FixedPoint x) const { return FixedPoint((_value * x._value) / FACTOR, true); }
-        FixedPoint operator/(FixedPoint x) const { return FixedPoint((_value * FACTOR) / x._value, true); }
+        FixedPoint operator+(const FixedPoint& x) const { return FixedPoint(_value + x._value, true); }
+        FixedPoint operator-(const FixedPoint& x) const { return FixedPoint(_value - x._value, true); }
+        FixedPoint operator*(const FixedPoint& x) const { return FixedPoint((_value * x._value) / FACTOR, true); }
+        FixedPoint operator/(const FixedPoint& x) const { return FixedPoint((_value * FACTOR) / x._value, true); }
 
-        FixedPoint& operator+=(FixedPoint x) { _value += x._value; return *this; }
-        FixedPoint& operator-=(FixedPoint x) { _value -= x._value; return *this; }
-        FixedPoint& operator*=(FixedPoint x) { _value *= x._value; _value /= FACTOR; return *this; }
-        FixedPoint& operator/=(FixedPoint x) { _value *= FACTOR; _value /= x._value; return *this; }
+        FixedPoint& operator+=(const FixedPoint& x) { _value += x._value; return *this; }
+        FixedPoint& operator-=(const FixedPoint& x) { _value -= x._value; return *this; }
+        FixedPoint& operator*=(const FixedPoint& x) { _value *= x._value; _value /= FACTOR; return *this; }
+        FixedPoint& operator/=(const FixedPoint& x) { _value *= FACTOR; _value /= x._value; return *this; }
 
-        bool operator==(FixedPoint x) const { return _value == x._value; }
-        bool operator!=(FixedPoint x) const { return _value != x._value; }
-        bool operator<=(FixedPoint x) const { return _value <= x._value; }
-        bool operator>=(FixedPoint x) const { return _value >= x._value; }
-        bool operator<(FixedPoint x) const { return _value < x._value; }
-        bool operator>(FixedPoint x) const { return _value > x._value; }
+        bool operator==(const FixedPoint& x) const { return _value == x._value; }
+        bool operator!=(const FixedPoint& x) const { return _value != x._value; }
+        bool operator<=(const FixedPoint& x) const { return _value <= x._value; }
+        bool operator>=(const FixedPoint& x) const { return _value >= x._value; }
+        bool operator<(const FixedPoint& x) const { return _value < x._value; }
+        bool operator>(const FixedPoint& x) const { return _value > x._value; }
 
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         FixedPoint operator+(INT2 x) const { return FixedPoint(_value + (int_t(x) * FACTOR), true); }

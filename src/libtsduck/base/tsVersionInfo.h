@@ -129,9 +129,6 @@ namespace ts {
         // Build a string representing the system on which the application runs.
         static ts::UString GetSystemVersion();
 
-        // Build a string describing the bitrate representation.
-        static ts::UString GetBitRateRepresentation();
-
         // Convert a version string into a vector of integers.
         static void VersionToInts(std::vector<int>& ints, const ts::UString& version);
     };

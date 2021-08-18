@@ -62,7 +62,7 @@ bool ts::Integer<INT_T,N>::inRange(int64_t min, int64_t max) const
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 ts::UString ts::Integer<INT_T,N>::description() const
 {
-    return UString::Format(u"%s %d-bit integer value", {SignedDescription<int_t>(), 8 * sizeof(int_t)});
+    return UString::Format(u"%d-bit %s integer value", {8 * sizeof(int_t), SignedDescription<int_t>()});
 }
 
 

@@ -288,8 +288,8 @@ void FixedPointTest::testOverflow()
     TSUNIT_ASSERT(!Fixed2(100).mulOverflow(-3));
     TSUNIT_ASSERT(Fixed2(100).mulOverflow(-4));
 
-    TSUNIT_ASSERT(!Fixed2(3).divOverflow());
-    TSUNIT_ASSERT(Fixed2(4).divOverflow());
+    TSUNIT_ASSERT(!Fixed2(3).divOverflow(Fixed2(1)));
+    TSUNIT_ASSERT(Fixed2(4).divOverflow(Fixed2(1)));
 
     TSUNIT_ASSERT(!Fixed1(10).mulOverflow(Fixed1(30)));
     TSUNIT_ASSERT(Fixed1(10).mulOverflow(Fixed1(40)));

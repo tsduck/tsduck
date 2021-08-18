@@ -325,7 +325,7 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
     if (type == ANUMBER && !anumber.isNull()) {
         const UString desc(anumber->description());
         if (!desc.empty()) {
-            text += HelpLines(indent_desc, UString::Format(u"The value must be %s.", {desc}), line_width);
+            text += HelpLines(indent_desc, UString::Format(u"The value must be a %s.", {desc}), line_width);
         }
     }
 

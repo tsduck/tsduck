@@ -111,7 +111,7 @@
 #elif defined(TS_BITRATE_FRACTION)
 #include "tsFraction.h"
 #elif defined(TS_BITRATE_FLOAT)
-#include "tsDouble.h"
+#include "tsFloatingPoint.h"
 #elif defined(TS_BITRATE_FIXED)
 #include "tsFixedPoint.h"
 #endif
@@ -150,7 +150,7 @@ namespace ts {
     typedef Fraction<uint64_t> BitRate;
 #elif defined(TS_BITRATE_FLOAT)
     TS_LLVM_NOWARNING(implicit-int-float-conversion)
-    typedef Double BitRate;
+    typedef FloatingPoint<double> BitRate;
 #elif defined(TS_BITRATE_FIXED)
     typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
 #else

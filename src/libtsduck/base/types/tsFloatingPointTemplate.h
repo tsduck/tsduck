@@ -27,40 +27,47 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDouble.h"
+#pragma once
 #include "tsUString.h"
-TSDUCK_SOURCE;
-
-const ts::Double ts::Double::MIN(std::numeric_limits<float_t>::lowest());
-const ts::Double ts::Double::MAX(std::numeric_limits<float_t>::max());
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr double ts::Double::EQUAL_PRECISION;
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+constexpr FLOAT_T ts::FloatingPoint<FLOAT_T,N>::EQUAL_PRECISION;
 #endif
+
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+const ts::FloatingPoint<FLOAT_T,N> ts::FloatingPoint<FLOAT_T,N>::MIN(std::numeric_limits<FLOAT_T>::lowest());
+
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+const ts::FloatingPoint<FLOAT_T,N> ts::FloatingPoint<FLOAT_T,N>::MAX(std::numeric_limits<FLOAT_T>::max());
 
 
 //----------------------------------------------------------------------------
 // Virtual numeric conversions.
 //----------------------------------------------------------------------------
 
-int64_t ts::Double::toInt64() const
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+int64_t ts::FloatingPoint<FLOAT_T,N>::toInt64() const
 {
     return int64_t(std::round(_value));
 }
 
-double ts::Double::toDouble() const
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+double ts::FloatingPoint<FLOAT_T,N>::toDouble() const
 {
-    return _value;
+    return double(_value);
 }
 
-bool ts::Double::inRange(int64_t min, int64_t max) const
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+bool ts::FloatingPoint<FLOAT_T,N>::inRange(int64_t min, int64_t max) const
 {
-    return _value >= double(min) && _value <= double(max);
+    return _value >= float_t(min) && _value <= float_t(max);
 }
 
-ts::UString ts::Double::description() const
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+ts::UString ts::FloatingPoint<FLOAT_T,N>::description() const
 {
-    return u"a floating-point value with an optional decimal part";
+    return UString::Format(u"%d-bit floating-point value", {8 * sizeof(float_t)});
 }
 
 
@@ -68,14 +75,15 @@ ts::UString ts::Double::description() const
 // Convert the number to a string object.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Double::toString(size_t min_width,
-                                 bool right_justified,
-                                 UChar separator,
-                                 bool force_sign,
-                                 size_t decimals,
-                                 bool force_decimals,
-                                 UChar decimal_dot,
-                                 UChar pad) const
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+ts::UString ts::FloatingPoint<FLOAT_T,N>::toString(size_t min_width,
+                                                 bool right_justified,
+                                                 UChar separator,
+                                                 bool force_sign,
+                                                 size_t decimals,
+                                                 bool force_decimals,
+                                                 UChar decimal_dot,
+                                                 UChar pad) const
 {
     // 6 decimal digits by default.
     if (decimals == NPOS) {
@@ -83,8 +91,8 @@ ts::UString ts::Double::toString(size_t min_width,
     }
 
     // Format the floating point number in a slightly oversized UTF-8 buffer.
-    std::string str8(std::numeric_limits<float_t>::max_digits10 + decimals + 10, CHAR_NULL);
-    std::snprintf(&str8[0], str8.length() - 1, "%.*f", int(decimals), _value);
+    std::string str8(std::numeric_limits<float_t>::max_digits10 + decimals + 10, '\0');
+    std::snprintf(&str8[0], str8.length() - 1, "%.*f", int(decimals), double(_value));
 
     // Work on UString from now on.
     UString str;
@@ -98,13 +106,16 @@ ts::UString ts::Double::toString(size_t min_width,
 // Parse a string and interpret it as a number.
 //----------------------------------------------------------------------------
 
-bool ts::Double::fromString(const UString& str, UChar separator, UChar decimal_dot)
+template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+bool ts::FloatingPoint<FLOAT_T,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
 {
     UString str16(str);
     Deformat(str16, separator, decimal_dot);
     const std::string str8(str16.toUTF8());
 
     int len = 0;
-    const int count = std::sscanf(str8.c_str(), "%lf%n", &_value, &len);
+    double d = 0.0;
+    const int count = std::sscanf(str8.c_str(), "%lf%n", &d, &len);
+    _value = float_t(d);
     return count == 1 && len == int(str8.length());
 }
