@@ -340,6 +340,7 @@
 #include "tsInputSwitcher.h"
 #include "tsInputSwitcherArgs.h"
 #include "tsINT.h"
+#include "tsInteger.h"
 #include "tsIntegerUtils.h"
 #include "tsInterruptHandler.h"
 #include "tsIPAddress.h"

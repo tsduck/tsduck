@@ -242,6 +242,8 @@ ts::UString ts::VersionInfo::GetBitRateRepresentation()
 {
 #if defined(TS_BITRATE_FRACTION)
     return UString::Format(u"fraction of two %d-bit integers", {8 * sizeof(BitRate::int_t)});
+#elif defined(TS_BITRATE_INTEGER)
+    return UString::Format(u"%d-bit unsigned integer", {8 * sizeof(BitRate::int_t)});
 #elif defined(TS_BITRATE_FLOAT)
     return UString::Format(u"%d-bit floating-point", {8 * sizeof(BitRate::float_t)});
 #elif defined(TS_BITRATE_FIXED)

@@ -58,6 +58,7 @@ public:
     void testBoundCheck();
     void testBoundedCast();
     void testGCD();
+    void testOverflow();
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
     TSUNIT_TEST(testMakeSigned);
@@ -71,6 +72,7 @@ public:
     TSUNIT_TEST(testBoundCheck);
     TSUNIT_TEST(testBoundedCast);
     TSUNIT_TEST(testGCD);
+    TSUNIT_TEST(testOverflow);
     TSUNIT_TEST_END();
 };
 
@@ -318,4 +320,14 @@ void IntegerUtilsTest::testGCD()
     TSUNIT_EQUAL(1,  ts::GCD<uint32_t>(7 * 3 * 2, 11 * 5));
     TSUNIT_EQUAL(3,  ts::GCD<uint32_t>(7 * 3 * 2, 11 * 5 * 3));
     TSUNIT_EQUAL(14, ts::GCD<uint32_t>(7 * 3 * 2, 7 * 5 * 2));
+}
+
+void IntegerUtilsTest::testOverflow()
+{
+    int64_t a = 292021270;
+    int64_t b = 31590000000;
+    int64_t res = a * b;
+    TSUNIT_ASSERT(res < 0);
+    TSUNIT_ASSERT(ts::mul_overflow(a, b, res));
+    TSUNIT_ASSERT(ts::mul_overflow(a, b));
 }

@@ -295,6 +295,12 @@ void FixedPointTest::testOverflow()
     TSUNIT_ASSERT(Fixed1(10).mulOverflow(Fixed1(40)));
     TSUNIT_ASSERT(!Fixed1(10).mulOverflow(Fixed1(-30)));
     TSUNIT_ASSERT(Fixed1(10).mulOverflow(Fixed1(-40)));
+
+    typedef ts::FixedPoint<int64_t, 1> Fixed64;
+
+    Fixed64 a(29202127);
+    int64_t b = TS_CONST64(31590000000);
+    TSUNIT_ASSERT(a.mulOverflow(b));
 }
 
 void FixedPointTest::testToString()

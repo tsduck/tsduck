@@ -1065,6 +1065,26 @@ TS_POP_WARNING()
 #endif
 
 //!
+//! Attribute to explicitly disable optimization in a function.
+//!
+//! Example:
+//! @code
+//! void f() TS_NO_OPTIMIZE;
+//! @endcode
+//!
+#if defined(DOXYGEN)
+    #define TS_NO_OPTIMIZE platform_specific
+#elif defined(TS_MSC)
+    #define TS_NO_OPTIMIZE __attribute__((optnone))
+#elif defined(TS_LLVM)
+    #define TS_NO_OPTIMIZE __attribute__((optnone))
+#elif defined(TS_GCC)
+    #define TS_NO_OPTIMIZE __attribute__((optimize("-O0")))
+#else
+    #error "New unknown compiler, please update TS_NO_OPTIMIZE in tsPlatform.h"
+#endif
+
+//!
 //! Definition of the name of the current function.
 //! This is typically __func__ but recent compilers have "pretty" names for C++.
 //!
