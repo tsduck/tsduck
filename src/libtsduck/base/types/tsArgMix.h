@@ -280,7 +280,7 @@ namespace ts {
         //
         // Storage of an argument.
         //
-        union Value {
+        union TSDUCKDLL Value {
             int32_t                   int32;
             uint32_t                  uint32;
             int64_t                   int64;

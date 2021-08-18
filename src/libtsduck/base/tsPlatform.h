@@ -1075,7 +1075,7 @@ TS_POP_WARNING()
 #if defined(DOXYGEN)
     #define TS_NO_OPTIMIZE platform_specific
 #elif defined(TS_MSC)
-    #define TS_NO_OPTIMIZE __attribute__((optnone))
+    #define TS_NO_OPTIMIZE
 #elif defined(TS_LLVM)
     #define TS_NO_OPTIMIZE __attribute__((optnone))
 #elif defined(TS_GCC)
