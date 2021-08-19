@@ -426,6 +426,7 @@
 #include "tsMVCExtensionDescriptor.h"
 #include "tsMVCOperationPointDescriptor.h"
 #include "tsNames.h"
+#include "tsNamesFile.h"
 #include "tsNBIT.h"
 #include "tsNetworkChangeNotifyDescriptor.h"
 #include "tsNetworkNameDescriptor.h"

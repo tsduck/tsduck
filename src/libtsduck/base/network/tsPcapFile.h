@@ -35,6 +35,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsMemory.h"
+#include "tsIPv4Packet.h"
 
 namespace ts {
     //!
@@ -80,14 +81,12 @@ namespace ts {
         //! Read the next IPv4 packet (headers included).
         //! Skip intermediate metadata and other types of packets.
         //!
-        //! @param [out] data Address of the buffer for the received IPv4 packet.
-        //! @param [in] max_size Size in bytes of the reception buffer.
-        //! @param [out] ret_size Size in bytes of the received message. Will never be larger than @a max_size.
+        //! @param [out] packet Received IPv4 packet.
         //! @param [out] timestamp Capture timestamp in microseconds since Unix epoch or -1 if none is available.
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool readIPv4(uint8_t* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report);
+        bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report);
 
         //!
         //! Get the number of captured packets so far.
