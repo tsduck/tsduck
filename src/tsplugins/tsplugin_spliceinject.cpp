@@ -109,7 +109,7 @@ namespace ts {
         PacketCounter _min_inter_packet;
         UString       _files;
         UString       _service_ref;       // Service name or id.
-        SocketAddress _server_address;
+        IPv4SocketAddress _server_address;
         size_t        _sock_buf_size;
         size_t        _inject_count;
         MilliSecond   _inject_interval;
@@ -1106,8 +1106,8 @@ void ts::SpliceInjectPlugin::UDPListener::main()
 
     uint8_t inbuf[65536];
     size_t insize = 0;
-    SocketAddress sender;
-    SocketAddress destination;
+    IPv4SocketAddress sender;
+    IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<NullMutex> error(_tsp->maxSeverity());

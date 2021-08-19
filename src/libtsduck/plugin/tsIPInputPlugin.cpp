@@ -118,7 +118,7 @@ bool ts::IPInputPlugin::setReceiveTimeout(MilliSecond timeout)
 
 bool ts::IPInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
 {
-    SocketAddress sender;
-    SocketAddress destination;
+    IPv4SocketAddress sender;
+    IPv4SocketAddress destination;
     return _sock.receive(buffer, buffer_size, ret_size, sender, destination, tsp, *tsp, &timestamp);
 }

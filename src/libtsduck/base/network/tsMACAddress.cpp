@@ -151,7 +151,7 @@ bool ts::MACAddress::isMulticast() const
 // Get the multicast MAC address for a given IPv4 address.
 //----------------------------------------------------------------------------
 
-bool ts::MACAddress::toMulticast(const IPAddress& ip)
+bool ts::MACAddress::toMulticast(const IPv4Address& ip)
 {
     if (ip.isMulticast()) {
         _addr = MULTICAST_PREFIX | (ip.address() & ~MULTICAST_MASK);

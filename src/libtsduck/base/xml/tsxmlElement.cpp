@@ -639,7 +639,7 @@ bool ts::xml::Element::getTimeAttribute(Second& value, const UString& name, bool
 // Get an IPv4/v6 or MAC address attribute of an XML element.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Element::getIPAttribute(IPAddress& value, const UString& name, bool required, const IPAddress& defValue) const
+bool ts::xml::Element::getIPAttribute(IPv4Address& value, const UString& name, bool required, const IPv4Address& defValue) const
 {
     UString str;
     if (!getAttribute(str, name, required)) {

@@ -259,7 +259,7 @@ void ts::UDPReceiver::setReceiveTimeoutArg(MilliSecond timeout)
 // Set application-specified parameters to receive unicast traffic.
 //----------------------------------------------------------------------------
 
-void ts::UDPReceiver::setParameters(const SocketAddress& localAddress, bool reusePort, size_t bufferSize)
+void ts::UDPReceiver::setParameters(const IPv4SocketAddress& localAddress, bool reusePort, size_t bufferSize)
 {
     _receiver_specified = true;
     _use_ssm = false;
@@ -291,7 +291,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
     // Except on Linux, macOS and probably most Unix, when listening to a multicast group.
     // In that case, we bind to the multicast group, not the local interface.
     // Note that if _dest_addr has an address, it is a multicast one (checked in load()).
-    SocketAddress local_addr(
+    IPv4SocketAddress local_addr(
 #if defined(TS_UNIX)
         _dest_addr.hasAddress() ? _dest_addr.address() : _local_address,
 #else
@@ -310,7 +310,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
         bind(local_addr, report);
 
     // Optional SSM source address.
-    IPAddress ssm_source;
+    IPv4Address ssm_source;
     if (_use_ssm) {
         ssm_source = _use_source;
     }
@@ -343,8 +343,8 @@ bool ts::UDPReceiver::open(ts::Report& report)
 bool ts::UDPReceiver::receive(void* data,
                               size_t max_size,
                               size_t& ret_size,
-                              ts::SocketAddress& sender,
-                              ts::SocketAddress& destination,
+                              ts::IPv4SocketAddress& sender,
+                              ts::IPv4SocketAddress& destination,
                               const ts::AbortInterface* abort,
                               ts::Report& report,
                               MicroSecond* timestamp)

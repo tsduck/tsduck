@@ -125,8 +125,8 @@ namespace ts {
         ContinuityAnalyzer _cc_fixer;             // To fix continuity counters in injected PID
         BitRate            _max_bitrate;          // Max data PID's bitrate (constant after start)
         bool               _unregulated;          // Insert data packet as soon as received.
-        SocketAddress      _tcp_address;          // TCP port and optional local address.
-        SocketAddress      _udp_address;          // UDP port and optional local address.
+        IPv4SocketAddress      _tcp_address;          // TCP port and optional local address.
+        IPv4SocketAddress      _udp_address;          // UDP port and optional local address.
         bool               _reuse_port;           // Reuse port option.
         size_t             _sock_buf_size;        // Socket receive buffer size.
         TCPServer          _server;               // EMMG/PDG <=> MUX TCP server
@@ -634,7 +634,7 @@ void ts::DataInjectPlugin::TCPListener::main()
 {
     _plugin->tsp->debug(u"TCP server thread started");
 
-    SocketAddress client_address;
+    IPv4SocketAddress client_address;
     emmgmux::ChannelStatus channel_status;
     emmgmux::StreamStatus stream_status;
 
@@ -817,8 +817,8 @@ void ts::DataInjectPlugin::UDPListener::main()
 
     uint8_t inbuf[65536];
     size_t insize = 0;
-    SocketAddress sender;
-    SocketAddress destination;
+    IPv4SocketAddress sender;
+    IPv4SocketAddress destination;
 
     // Loop on incoming messages.
     while (_client.receive(inbuf, sizeof(inbuf), insize, sender, destination, _plugin->tsp, _report)) {

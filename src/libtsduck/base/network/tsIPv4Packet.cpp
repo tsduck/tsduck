@@ -26,45 +26,15 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Command line arguments for the class ECMGClient.
-//!
+
+#include "tsIPv4Packet.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructors.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsArgsSupplierInterface.h"
-#include "tsByteBlock.h"
-#include "tsIPv4SocketAddress.h"
-#include "tstlv.h"
-
-namespace ts {
-    //!
-    //! Command line arguments for the class ECMGClient.
-    //! @ingroup mpeg
-    //!
-    class TSDUCKDLL ECMGClientArgs : public ArgsSupplierInterface
-    {
-    public:
-        //!
-        //! Constructor.
-        //!
-        ECMGClientArgs();
-
-        // Public fields, by options.
-        IPv4SocketAddress ecmg_address;     //!< -\-ecmg, ECMG socket address (required or optional)
-        uint32_t      super_cas_id;     //!< -\-super-cas-id, CA system & subsystem id
-        ByteBlock     access_criteria;  //!< -\-access-criteria
-        MilliSecond   cp_duration;      //!< -\-cp-duration, crypto-period duration
-        tlv::VERSION  dvbsim_version;   //!< -\-ecmg-scs-version
-        uint16_t      ecm_channel_id;   //!< -\-channel-id
-        uint16_t      ecm_stream_id;    //!< -\-stream-id
-        uint16_t      ecm_id;           //!< -\-ecm-id
-        int           log_protocol;     //!< -\-log-protocol
-        int           log_data;         //!< -\-log-data
-
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) const override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
-    };
+ts::IPv4Packet::IPv4Packet()
+{
 }

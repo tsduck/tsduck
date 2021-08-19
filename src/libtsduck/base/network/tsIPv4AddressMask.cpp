@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsIPAddressMask.h"
+#include "tsIPv4AddressMask.h"
 TSDUCK_SOURCE;
 
 
@@ -35,7 +35,7 @@ TSDUCK_SOURCE;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::IPAddressMask::IPAddressMask(const IPAddress& a, const IPAddress& m) :
+ts::IPv4AddressMask::IPv4AddressMask(const IPv4Address& a, const IPv4Address& m) :
     address(a),
     mask(m)
 {
@@ -46,7 +46,7 @@ ts::IPAddressMask::IPAddressMask(const IPAddress& a, const IPAddress& m) :
 // Get the network mask size in bits.
 //----------------------------------------------------------------------------
 
-int ts::IPAddressMask::maskSize() const
+int ts::IPv4AddressMask::maskSize() const
 {
     int size = 0;
     for (uint32_t m = mask.address(); m != 0; m = m << 1) {
@@ -60,9 +60,9 @@ int ts::IPAddressMask::maskSize() const
 // Get the associated broadcast address.
 //----------------------------------------------------------------------------
 
-ts::IPAddress ts::IPAddressMask::broadcastAddress() const
+ts::IPv4Address ts::IPv4AddressMask::broadcastAddress() const
 {
-    return IPAddress(address.address() | ~mask.address());
+    return IPv4Address(address.address() | ~mask.address());
 }
 
 
@@ -70,7 +70,7 @@ ts::IPAddress ts::IPAddressMask::broadcastAddress() const
 // Convert to a string object in numeric format "a.b.c.d".
 //----------------------------------------------------------------------------
 
-ts::UString ts::IPAddressMask::toString() const
+ts::UString ts::IPv4AddressMask::toString() const
 {
     return UString::Format(u"%s/%d", {address, maskSize()});
 }

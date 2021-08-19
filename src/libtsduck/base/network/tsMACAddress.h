@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsAbstractNetworkAddress.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 
 namespace ts {
     //!
@@ -163,7 +163,7 @@ namespace ts {
         //! @param [in] ip IPv4 multicast address.
         //! @return True if the @a ip is a multicast address, false otherwise.
         //!
-        bool toMulticast(const IPAddress& ip);
+        bool toMulticast(const IPv4Address& ip);
 
         //!
         //! Comparison "less than" operator.

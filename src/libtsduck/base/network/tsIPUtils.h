@@ -36,10 +36,10 @@
 #pragma once
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
-#include "tsIPAddress.h"
-#include "tsIPAddressMask.h"
+#include "tsIPv4Address.h"
+#include "tsIPv4AddressMask.h"
 #include "tsIPv6Address.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 
 namespace ts {
     //!
@@ -390,22 +390,22 @@ namespace ts {
 
     //!
     //! Get the list of all local IPv4 addresses in the system with their network masks.
-    //! @param [out] addresses A vector of IPAddressMask which receives the list
-    //! of all local IPv4 addresses in the system, except @link ts::IPAddress::LocalHost @endlink.
+    //! @param [out] addresses A vector of IPv4AddressMask which receives the list
+    //! of all local IPv4 addresses in the system, except IPv4Address::LocalHost.
     //! @param [in] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPAddressMaskVector& addresses, Report& report = CERR);
+    TSDUCKDLL bool GetLocalIPAddresses(IPv4AddressMaskVector& addresses, Report& report = CERR);
 
     //!
     //! Get the list of all local IPv4 addresses in the system.
     //!
-    //! @param [out] addresses A vector of IPAddress which receives the list
-    //! of all local IPv4 addresses in the system, except @link ts::IPAddress::LocalHost @endlink.
+    //! @param [out] addresses A vector of IPv4Address which receives the list
+    //! of all local IPv4 addresses in the system, except ts::IPv4Address::LocalHost.
     //! @param [in] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPAddressVector& addresses, Report& report = CERR);
+    TSDUCKDLL bool GetLocalIPAddresses(IPv4AddressVector& addresses, Report& report = CERR);
 
     //!
     //! Check if a local system interface has a specified IP address.
@@ -413,7 +413,7 @@ namespace ts {
     //! @param [in] address The IP address to check.
     //! @return True is @a address is the address of a local system interface, false otherwise.
     //!
-    TSDUCKDLL bool IsLocalIPAddress(const IPAddress& address);
+    TSDUCKDLL bool IsLocalIPAddress(const IPv4Address& address);
 
     //------------------------------------------------------------------------
     // Internals of the IPv4 protocol.
@@ -489,8 +489,8 @@ namespace ts {
                                    uint8_t& protocol,
                                    size_t& ip_header_size,
                                    size_t& protocol_header_size,
-                                   SocketAddress& source,
-                                   SocketAddress& destination);
+                                   IPv4SocketAddress& source,
+                                   IPv4SocketAddress& destination);
 
     //------------------------------------------------------------------------
     // Ethernet II link layer.

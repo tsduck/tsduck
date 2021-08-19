@@ -79,8 +79,8 @@ namespace {
         ts::UStringVector    inputFiles;          // Input file names.
         ts::SectionPtrVector sections;            // Loaded sections from input files.
         size_t               maxCycles;           // Maximum number of cycles of section files.
-        ts::SocketAddress    tcpMuxAddress;       // TCP server address for MUX.
-        ts::SocketAddress    udpMuxAddress;       // UDP server address for MUX.
+        ts::IPv4SocketAddress    tcpMuxAddress;       // TCP server address for MUX.
+        ts::IPv4SocketAddress    udpMuxAddress;       // UDP server address for MUX.
         bool                 useUDP;              // Use UDP to send data provisions.
         uint32_t             clientId;            // Client id, see EMMG/PDG <=> MUX protocol.
         uint16_t             channelId;           // Data_channel_id, see EMMG/PDG <=> MUX protocol.

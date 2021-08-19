@@ -87,8 +87,8 @@ void ts::tsswitch::CommandListener::main()
 
     char inbuf[1024];
     size_t insize = 0;
-    SocketAddress sender;
-    SocketAddress destination;
+    IPv4SocketAddress sender;
+    IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<NullMutex> error(_log.maxSeverity());

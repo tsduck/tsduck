@@ -33,7 +33,7 @@
 
 #include "tsMain.h"
 #include "tsPcapFile.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsIPUtils.h"
 #include "tsTime.h"
 #include "tsBitRate.h"
@@ -53,8 +53,8 @@ namespace {
         Options(int argc, char *argv[]);
 
         ts::UString       input_file;
-        ts::SocketAddress source_filter;
-        ts::SocketAddress dest_filter;
+        ts::IPv4SocketAddress source_filter;
+        ts::IPv4SocketAddress dest_filter;
         size_t            first_packet;
         size_t            last_packet;
         bool              tcp_filter;
@@ -153,8 +153,8 @@ namespace {
         uint8_t proto = 0;
         size_t ip_header_size = 0;
         size_t proto_header_size = 0;
-        ts::SocketAddress source;
-        ts::SocketAddress destination;
+        ts::IPv4SocketAddress source;
+        ts::IPv4SocketAddress destination;
 
         // Validate the IP packet.
         if (!ts::AnalyzeIPPacket(ip, ip_size, proto, ip_header_size, proto_header_size, source, destination)) {

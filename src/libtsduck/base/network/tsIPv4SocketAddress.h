@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 
 namespace ts {
     //!
@@ -44,14 +44,14 @@ namespace ts {
     //!
     //! The string representation is "addr[:port]" or "[addr:]port".
     //!
-    class TSDUCKDLL SocketAddress: public IPAddress
+    class TSDUCKDLL IPv4SocketAddress: public IPv4Address
     {
     public:
         //!
         //! Default constructor
         //!
-        SocketAddress() :
-            IPAddress(),
+        IPv4SocketAddress() :
+            IPv4Address(),
             _port(0)
         {
         }
@@ -61,8 +61,8 @@ namespace ts {
         //! @param [in] addr The IP v4 address.
         //! @param [in] port The port number as an integer in host byte order.
         //!
-        SocketAddress(const IPAddress& addr, uint16_t port = AnyPort) :
-            IPAddress(addr),
+        IPv4SocketAddress(const IPv4Address& addr, uint16_t port = AnyPort) :
+            IPv4Address(addr),
             _port(port)
         {
         }
@@ -72,8 +72,8 @@ namespace ts {
         //! @param [in] addr The IP v4 address as an integer in host byte order.
         //! @param [in] port The port number as an integer in host byte order.
         //!
-        SocketAddress(uint32_t addr, uint16_t port = AnyPort) :
-            IPAddress(addr),
+        IPv4SocketAddress(uint32_t addr, uint16_t port = AnyPort) :
+            IPv4Address(addr),
             _port(port)
         {
         }
@@ -86,8 +86,8 @@ namespace ts {
         //! @param [in] b4 Fourth address byte.
         //! @param [in] port The port number as an integer in host byte order.
         //!
-        SocketAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint16_t port = AnyPort) :
-            IPAddress(b1, b2, b3, b4),
+        IPv4SocketAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4, uint16_t port = AnyPort) :
+            IPv4Address(b1, b2, b3, b4),
             _port(port)
         {
         }
@@ -97,8 +97,8 @@ namespace ts {
         //! @param [in] a A system "struct in_addr" structure.
         //! @param [in] port The port number as an integer in host byte order.
         //!
-        SocketAddress(const ::in_addr& a, uint16_t port = AnyPort) :
-            IPAddress(a),
+        IPv4SocketAddress(const ::in_addr& a, uint16_t port = AnyPort) :
+            IPv4Address(a),
             _port(port)
         {
         }
@@ -107,13 +107,13 @@ namespace ts {
         //! Constructor from a system "struct sockaddr" structure (socket API).
         //! @param [in] s A system "struct sockaddr" structure.
         //!
-        SocketAddress(const ::sockaddr& s);
+        IPv4SocketAddress(const ::sockaddr& s);
 
         //!
         //! Constructor from a system "struct sockaddr_in" structure (socket API).
         //! @param [in] s A system "struct sockaddr_in" structure.
         //!
-        SocketAddress(const ::sockaddr_in& s);
+        IPv4SocketAddress(const ::sockaddr_in& s);
 
         //!
         //! Constructor from a string "addr[:port]" or "[addr:]port".
@@ -123,8 +123,8 @@ namespace ts {
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //! @param [in] report Where to report errors.
         //!
-        SocketAddress(const UString& name, Report& report) :
-            IPAddress(),
+        IPv4SocketAddress(const UString& name, Report& report) :
+            IPv4Address(),
             _port(0)
         {
             resolve(name, report);
@@ -133,7 +133,7 @@ namespace ts {
         //!
         //! Virtual destructor
         //!
-        virtual ~SocketAddress() override;
+        virtual ~IPv4SocketAddress() override;
 
         // Inherited methods.
         virtual Port port() const override;
@@ -172,7 +172,7 @@ namespace ts {
         //!
         void copy(::sockaddr& s) const
         {
-            IPAddress::copy(s, _port);
+            IPv4Address::copy(s, _port);
         }
 
         //!
@@ -181,7 +181,7 @@ namespace ts {
         //!
         void copy(::sockaddr_in& s) const
         {
-            IPAddress::copy(s, _port);
+            IPv4Address::copy(s, _port);
         }
 
         //!
@@ -190,7 +190,7 @@ namespace ts {
         //!
         void copy(::in_addr& a) const
         {
-            IPAddress::copy(a);
+            IPv4Address::copy(a);
         }
 
         //!
@@ -199,7 +199,7 @@ namespace ts {
         //! @return False if this and @a other addresses are both specified and
         //! are different or if the two ports are specified and different. True otherwise.
         //!
-        bool match(const SocketAddress& other) const;
+        bool match(const IPv4SocketAddress& other) const;
 
         //!
         //! Comparison "less than" operator.
@@ -207,7 +207,7 @@ namespace ts {
         //! @param [in] other Other instance to compare.
         //! @return True if this instance is less than to @a other.
         //!
-        bool operator<(const SocketAddress& other) const;
+        bool operator<(const IPv4SocketAddress& other) const;
 
     private:
         uint16_t _port;  // Port in host byte order
@@ -216,10 +216,17 @@ namespace ts {
     //!
     //! Vector of socket addresses.
     //!
-    typedef std::vector<SocketAddress> SocketAddressVector;
+    typedef std::vector<IPv4SocketAddress> IPv4SocketAddressVector;
 
     //!
     //! Set of socket addresses.
     //!
-    typedef std::set<SocketAddress> SocketAddressSet;
+    typedef std::set<IPv4SocketAddress> IPv4SocketAddressSet;
+
+    //! @cond nodoxygen
+    // Legacy definitions.
+    typedef IPv4SocketAddress IPSocketAddress;
+    typedef IPv4SocketAddressVector IPSocketAddressVector;
+    typedef IPv4SocketAddressSet IPSocketAddressSet;
+    //! @endcond
 }

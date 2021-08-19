@@ -66,7 +66,7 @@ void ts::TargetIPSourceSlashDescriptor::clearContent()
     addresses.clear();
 }
 
-ts::TargetIPSourceSlashDescriptor::Address::Address(const IPAddress& addr1, uint8_t mask1, const IPAddress& addr2, uint8_t mask2) :
+ts::TargetIPSourceSlashDescriptor::Address::Address(const IPv4Address& addr1, uint8_t mask1, const IPv4Address& addr2, uint8_t mask2) :
     IPv4_source_addr(addr1),
     IPv4_source_slash_mask(mask1),
     IPv4_dest_addr(addr2),
@@ -98,9 +98,9 @@ void ts::TargetIPSourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
         Address addr;
-        addr.IPv4_source_addr = IPAddress(buf.getUInt32());
+        addr.IPv4_source_addr = IPv4Address(buf.getUInt32());
         addr.IPv4_source_slash_mask = buf.getUInt8();
-        addr.IPv4_dest_addr = IPAddress(buf.getUInt32());
+        addr.IPv4_dest_addr = IPv4Address(buf.getUInt32());
         addr.IPv4_dest_slash_mask = buf.getUInt8();
         addresses.push_back(addr);
     }
@@ -114,9 +114,9 @@ void ts::TargetIPSourceSlashDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetIPSourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(10)) {
-        disp << margin << "- Source:      " << IPAddress(buf.getUInt32());
+        disp << margin << "- Source:      " << IPv4Address(buf.getUInt32());
         disp << "/" << int(buf.getUInt8()) << std::endl;
-        disp << margin << "  Destination: " << IPAddress(buf.getUInt32());
+        disp << margin << "  Destination: " << IPv4Address(buf.getUInt32());
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
 }

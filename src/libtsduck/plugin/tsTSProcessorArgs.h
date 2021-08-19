@@ -36,7 +36,7 @@
 #include "tsArgsSupplierInterface.h"
 #include "tsPluginOptions.h"
 #include "tsDuckContext.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 
 namespace ts {
     //!
@@ -64,9 +64,9 @@ namespace ts {
         Tristate        realtime;         //!< Use real-time options.
         MilliSecond     receive_timeout;  //!< Timeout on input operations.
         uint16_t        control_port;     //!< TCP server port for control commands.
-        IPAddress       control_local;    //!< Local interface on which to listen for control commands.
+        IPv4Address       control_local;    //!< Local interface on which to listen for control commands.
         bool            control_reuse;    //!< Set the 'reuse port' socket option on the control TCP server port.
-        IPAddressVector control_sources;  //!< Remote IP addresses which are allowed to send control commands.
+        IPv4AddressVector control_sources;  //!< Remote IP addresses which are allowed to send control commands.
         MilliSecond     control_timeout;  //!< Reception timeout in milliseconds for control commands.
         DuckContext::SavedArgs duck_args; //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
         PluginOptions          input;     //!< Input plugin description.

@@ -35,7 +35,7 @@
 #pragma once
 #include "tsArgsSupplierInterface.h"
 #include "tsPluginOptions.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 
 namespace ts {
     //!
@@ -57,12 +57,12 @@ namespace ts {
         size_t              maxInputPackets;   //!< Maximum input packets to read at a time.
         size_t              maxOutputPackets;  //!< Maximum output packets to send at a time.
         UString             eventCommand;      //!< External shell command to run on an event.
-        SocketAddress       eventUDP;          //!< Remote UDP socket address for event description.
-        IPAddress           eventLocalAddress; //!< Outgoing local interface for UDP event description.
+        IPv4SocketAddress       eventUDP;          //!< Remote UDP socket address for event description.
+        IPv4Address           eventLocalAddress; //!< Outgoing local interface for UDP event description.
         int                 eventTTL;          //!< Time-to-live socket option for event UDP.
         size_t              sockBuffer;        //!< Socket buffer size.
-        SocketAddress       remoteServer;      //!< UDP server address for remote control.
-        IPAddressSet        allowedRemote;     //!< Set of allowed remotes.
+        IPv4SocketAddress       remoteServer;      //!< UDP server address for remote control.
+        IPv4AddressSet        allowedRemote;     //!< Set of allowed remotes.
         MilliSecond         receiveTimeout;    //!< Receive timeout before switch (0=none).
         PluginOptionsVector inputs;            //!< Input plugins descriptions.
         PluginOptions       output;            //!< Output plugin description.

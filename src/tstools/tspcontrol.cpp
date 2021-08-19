@@ -52,7 +52,7 @@ namespace {
 
         ts::TSPControlCommand command_reference;
         ts::UString           command_line;
-        ts::SocketAddress     tsp_address;
+        ts::IPv4SocketAddress     tsp_address;
 
         // Inherited methods.
         virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
@@ -96,7 +96,7 @@ Options::Options(int argc, char *argv[]) :
         error(u"invalid tsp address or port, use --tsp [address:]port");
     }
     if (!tsp_address.hasAddress()) {
-        tsp_address.setAddress(ts::IPAddress::LocalHost);
+        tsp_address.setAddress(ts::IPv4Address::LocalHost);
     }
 
     exitOnError();
@@ -128,7 +128,7 @@ int MainCode(int argc, char *argv[])
 
     // Open a text connection to the tsp server.
     ts::TelnetConnection conn;
-    ts::SocketAddress addr;
+    ts::IPv4SocketAddress addr;
     ts::UString resp;
 
     if (conn.open(opt) &&

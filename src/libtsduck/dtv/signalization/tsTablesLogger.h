@@ -40,7 +40,7 @@
 #include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsTextFormatter.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsUDPSocket.h"
 #include "tsCASMapper.h"
 #include "tsxmlTweaks.h"
