@@ -29,7 +29,7 @@
 
 #include "tsPcapFile.h"
 #include "tsPcap.h"
-#include "tsIPUtils.h"
+#include "tsIPv4Packet.h"
 #include "tsByteBlock.h"
 #include "tsNullReport.h"
 #include "tsIntegerUtils.h"
@@ -335,10 +335,10 @@ bool ts::PcapFile::readNgBlockBody(uint32_t block_type, ByteBlock& body, Report&
 // Read the next IPv4 packet (headers included).
 //----------------------------------------------------------------------------
 
-bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& ret_size, MicroSecond& timestamp, Report& report)
+bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report)
 {
     // Clear output values.
-    ret_size = 0;
+    packet.clear();
     timestamp = -1;
 
     // Check that the file is open.
@@ -348,9 +348,6 @@ bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& re
     }
     if (_error) {
         report.debug(u"pcap file already in error state");
-        return false;
-    }
-    if (user_data == nullptr) {
         return false;
     }
 
@@ -498,12 +495,14 @@ bool ts::PcapFile::readIPv4(uint8_t* user_data, size_t user_max_size, size_t& re
             cap_size = 0;
         }
 
-        // A possible IPv4 datagram was found. Check that it starts with something that looks like
-        // an IPv4 header and copy it into the user's buffer.
-        if (IPHeaderSize(buffer.data() + cap_start, cap_size) != 0) {
-            ret_size = std::min(user_max_size, cap_size);
-            ::memcpy(user_data, buffer.data() + cap_start, ret_size);
-            return true;
+        // A possible IPv4 datagram was found.
+        if (cap_size > 0) {
+            if (packet.reset(buffer.data() + cap_start, cap_size)) {
+                return true;
+            }
+            else {
+                report.warning(u"invalid IPv4 datagram in pcap file, %d bytes (original: %d bytes), link type: %d", {cap_size, orig_size, ifd.link_type});
+            }
         }
     }
 }

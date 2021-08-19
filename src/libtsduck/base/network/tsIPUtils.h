@@ -431,66 +431,14 @@ namespace ts {
     //! Selected IP protocol identifiers.
     //!
     enum : uint8_t {
-        IPv4_PROTO_ICMP = 1,   //!< Protocol identifier for ICMP.
-        IPv4_PROTO_IGMP = 2,   //!< Protocol identifier for IGMP.
-        IPv4_PROTO_TCP  = 6,   //!< Protocol identifier for TCP.
-        IPv4_PROTO_UDP  = 17,  //!< Protocol identifier for UDP.
+        IPv4_PROTO_ICMP     =   1,  //!< IPv4 protocol identifier for Internet Control Message Protocol (ICMP).
+        IPv4_PROTO_IGMP     =   2,  //!< IPv4 protocol identifier for Internet Group Management Protocol (IGMP).
+        IPv4_PROTO_TCP      =   6,  //!< IPv4 protocol identifier for Transmission Control Protocol (TCP).
+        IPv4_PROTO_UDP      =  17,  //!< IPv4 protocol identifier for User Datagram Protocol (UDP).
+        IPv4_PROTO_V6_ENCAP =  41,  //!< IPv4 protocol identifier for IPv6 encapsulation.
+        IPv4_PROTO_OSPF     =  89,  //!< IPv4 protocol identifier for Open Shortest Path First (OSPF).
+        IPv4_PROTO_SCTP     = 132,  //!< IPv4 protocol identifier for Stream Control Transmission Protocol (SCTP).
     };
-
-    //!
-    //! Get the size in bytes of an IPv4 header.
-    //!
-    //! @param [in] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return The size in bytes of the IP header or zero on error.
-    //!
-    TSDUCKDLL size_t IPHeaderSize(const void* data, size_t size);
-
-    //!
-    //! Compute the checksum of an IPv4 header.
-    //!
-    //! @param [in] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return The computed checksum of the header.
-    //!
-    TSDUCKDLL uint16_t IPHeaderChecksum(const void* data, size_t size);
-
-    //!
-    //! Verify the checksum of an IPv4 header.
-    //!
-    //! @param [in] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return True if the checksum of the header if correct, false otherwise.
-    //!
-    TSDUCKDLL bool VerifyIPHeaderChecksum(const void* data, size_t size);
-
-    //!
-    //! Update the checksum of an IPv4 header.
-    //!
-    //! @param [in,out] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return True if the checksum was update, false on incorrect buffer.
-    //!
-    TSDUCKDLL bool UpdateIPHeaderChecksum(void* data, size_t size);
-
-    //!
-    //! Validate and analyze an IPv4 packet.
-    //! @param [in] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet.
-    //! @param [out] protocol Protocol number (IPv4_PROTO_TCP, IPv4_PROTO_UDP, etc.)
-    //! @param [out] ip_header_size Size of the IP header.
-    //! @param [out] protocol_header_size Size of the protocol header (zero if neither TCP nor UDP).
-    //! @param [out] source Source IPv4 address. The port is present for TCP or UDP only.
-    //! @param [out] destination Destination IPv4 address. The port is present for TCP or UDP only.
-    //! @return True if the packet is valid, false otherwise.
-    //!
-    TSDUCKDLL bool AnalyzeIPPacket(const void* data,
-                                   size_t size,
-                                   uint8_t& protocol,
-                                   size_t& ip_header_size,
-                                   size_t& protocol_header_size,
-                                   IPv4SocketAddress& source,
-                                   IPv4SocketAddress& destination);
 
     //------------------------------------------------------------------------
     // Ethernet II link layer.
@@ -527,7 +475,7 @@ namespace ts {
     constexpr size_t UDP_HEADER_SIZE      = 8;   //!< Size of a UDP header.
 
     //------------------------------------------------------------------------
-    // User Datagram Protocol (TCP)
+    // Transmission Control Protocol (TCP)
     //------------------------------------------------------------------------
 
     constexpr size_t TCP_SRC_PORT_OFFSET      =  0;   //!< Offset of source port in a TCP header.

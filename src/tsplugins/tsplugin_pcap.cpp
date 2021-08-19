@@ -36,7 +36,7 @@
 #include "tsPluginRepository.h"
 #include "tsPcapFile.h"
 #include "tsIPv4SocketAddress.h"
-#include "tsIPUtils.h"
+#include "tsIPv4Packet.h"
 TSDUCK_SOURCE;
 
 
@@ -177,33 +177,24 @@ bool ts::PcapInputPlugin::stop()
 
 bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
 {
+    IPv4Packet ip;
+
     // Loop on IPv4 datagrams from the pcap file until a matching UDP packet is found (or end of file).
     for (;;) {
 
         // Read one IPv4 datagram.
-        if (!_pcap.readIPv4(buffer, buffer_size, ret_size, timestamp, *tsp)) {
+        if (!_pcap.readIPv4(ip, timestamp, *tsp)) {
             return 0; // end of file, invalid pcap file format or other i/o error
         }
 
         // Check that this looks like an IPv4 packet with a UDP transport.
-        const size_t ip_header_size = IPHeaderSize(buffer, ret_size);
-        if (ip_header_size == 0 || ret_size < ip_header_size + UDP_HEADER_SIZE) {
+        if (!ip.isUDP()) {
             continue; // not valid IP + UDP headers.
         }
 
-        // Total size of UDP packet, including header.
-        size_t udp_length = GetUInt16BE(buffer + ip_header_size + UDP_LENGTH_OFFSET);
-        if (udp_length < UDP_HEADER_SIZE || ret_size < ip_header_size + udp_length) {
-            continue; // truncated UDP packet.
-        }
-
-        // Address and length of UDP payload.
-        const uint8_t* udp_payload = buffer + ip_header_size + UDP_HEADER_SIZE;
-        udp_length -= UDP_HEADER_SIZE;
-
         // Get IP addresses and UDP ports.
-        const IPv4SocketAddress src(GetUInt32(buffer + IPv4_SRC_ADDR_OFFSET), GetUInt16(buffer + ip_header_size + UDP_SRC_PORT_OFFSET));
-        const IPv4SocketAddress dst(GetUInt32(buffer + IPv4_DEST_ADDR_OFFSET), GetUInt16(buffer + ip_header_size + UDP_DEST_PORT_OFFSET));
+        const IPv4SocketAddress src(ip.sourceSocketAddress());
+        const IPv4SocketAddress dst(ip.destinationSocketAddress());
 
         // Filter source or destination socket address if one was specified.
         if (!src.match(_source) || !dst.match(_act_destination)) {
@@ -222,7 +213,7 @@ bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, s
             // Is there any TS packet in this one?
             size_t start_index = 0;
             size_t packet_count = 0;
-            if (!TSPacket::Locate(udp_payload, udp_length, start_index, packet_count)) {
+            if (!TSPacket::Locate(ip.protocolData(), ip.protocolDataSize(), start_index, packet_count)) {
                 continue; // no TS packet in this UDP datagram.
             }
             // We just found the first UDP datagram with TS packets, now use this destination address all the time.
@@ -237,10 +228,9 @@ bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, s
             _all_sources.insert(src);
         }
 
-        // Now we have a valid UDP packet. Pack the returned data to remove the IP and UDP headers.
-        // Note that memmove() supports overlapping source and destination.
-        ::memmove(buffer, udp_payload, udp_length);
-        ret_size = udp_length;
+        // Now we have a valid UDP packet.
+        ret_size = std::min(ip.protocolDataSize(), buffer_size);
+        ::memmove(buffer, ip.protocolData(), ret_size);
 
         // Adjust time stamps according to first one.
         if (timestamp >= 0) {

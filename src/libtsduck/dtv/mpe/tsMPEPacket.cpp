@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMPEPacket.h"
-#include "tsIPUtils.h"
+#include "tsIPv4Packet.h"
 #include "tsMemory.h"
 TSDUCK_SOURCE;
 
@@ -126,7 +126,7 @@ bool ts::MPEPacket::findUDP(uint8_t** udpHeader, uint8_t** udpAddress, size_t* u
 bool ts::MPEPacket::FindUDP(const uint8_t* dgAddress, size_t dgSize, const uint8_t** udpHeader, const uint8_t** udpAddress, size_t* udpSize)
 {
     // Validate presence of header and get its size.
-    const size_t ipHeaderSize = IPHeaderSize(dgAddress, dgSize);
+    const size_t ipHeaderSize = IPv4Packet::IPHeaderSize(dgAddress, dgSize);
     if (ipHeaderSize == 0) {
         return false;
     }
@@ -333,7 +333,7 @@ void ts::MPEPacket::configureUDP(bool force, size_t udpSize)
         ip[9] = IPv4_PROTO_UDP;
 
         // Recompute IP header checksum.
-        UpdateIPHeaderChecksum(ip, IPv4_MIN_HEADER_SIZE);
+        IPv4Packet::UpdateIPHeaderChecksum(ip, IPv4_MIN_HEADER_SIZE);
 
         // Set required UDP header fields.
         PutUInt16(ip + IPv4_MIN_HEADER_SIZE + 4, uint16_t(totalSize - IPv4_MIN_HEADER_SIZE));
@@ -369,7 +369,7 @@ void ts::MPEPacket::setSourceIPAddress(const IPv4Address& ip)
     PutUInt32(_datagram->data() + IPv4_SRC_ADDR_OFFSET, ip.address());
 
     // Recompute IP header checksum.
-    UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
+    IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
 }
 
 
@@ -399,7 +399,7 @@ void ts::MPEPacket::setDestinationIPAddress(const IPv4Address& ip)
     PutUInt32(_datagram->data() + IPv4_DEST_ADDR_OFFSET, ip.address());
 
     // Recompute IP header checksum.
-    UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
+    IPv4Packet::UpdateIPHeaderChecksum(_datagram->data(), _datagram->size());
 }
 
 

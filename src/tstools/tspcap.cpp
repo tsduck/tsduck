@@ -33,8 +33,7 @@
 
 #include "tsMain.h"
 #include "tsPcapFile.h"
-#include "tsIPv4SocketAddress.h"
-#include "tsIPUtils.h"
+#include "tsIPv4Packet.h"
 #include "tsTime.h"
 #include "tsBitRate.h"
 TSDUCK_SOURCE;
@@ -52,27 +51,27 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::UString       input_file;
+        ts::UString input_file;
+        size_t      first_packet;
+        size_t      last_packet;
+        bool        tcp_filter;
+        bool        udp_filter;
+        bool        others_filter;
         ts::IPv4SocketAddress source_filter;
         ts::IPv4SocketAddress dest_filter;
-        size_t            first_packet;
-        size_t            last_packet;
-        bool              tcp_filter;
-        bool              udp_filter;
-        bool              others_filter;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze pcap and pcap-ng files", u"[options] [input-file]"),
     input_file(),
-    source_filter(),
-    dest_filter(),
     first_packet(0),
     last_packet(0),
     tcp_filter(false),
     udp_filter(false),
-    others_filter(false)
+    others_filter(false),
+    source_filter(),
+    dest_filter()
 {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"file-name",
@@ -142,33 +141,78 @@ Options::Options(int argc, char *argv[]) :
 
 
 //----------------------------------------------------------------------------
-// Check if an IPv4 packet is valid and matches input filters.
-// Return true if the packet must be analyzed.
-// Return offset of payload (IP, TCP or UDP).
+// Read next IPv4 packet matching input filters.
 //----------------------------------------------------------------------------
 
 namespace {
-    bool FilterPacket(Options& opt, const uint8_t* ip, size_t ip_size, size_t& payload_offset)
+    bool ReadPacket(Options& opt, ts::PcapFile& file, ts::IPv4Packet& ip, ts::MicroSecond& timestamp)
     {
-        uint8_t proto = 0;
-        size_t ip_header_size = 0;
-        size_t proto_header_size = 0;
-        ts::IPv4SocketAddress source;
-        ts::IPv4SocketAddress destination;
-
-        // Validate the IP packet.
-        if (!ts::AnalyzeIPPacket(ip, ip_size, proto, ip_header_size, proto_header_size, source, destination)) {
-            payload_offset = 0;
-            return false;
+        while (file.readIPv4(ip, timestamp, opt)) {
+            // Do not read before --first-packet and after --last-packet.
+            if (file.packetCount() < opt.first_packet) {
+                continue;
+            }
+            if (file.packetCount() > opt.last_packet) {
+                return false;
+            }
+            // Check if the packet shall be analyzed.
+            if ((!ip.isTCP() || opt.tcp_filter) &&
+                (!ip.isUDP() || opt.udp_filter) &&
+                (ip.isUDP() || ip.isTCP() || opt.others_filter) &&
+                opt.source_filter.match(ip.sourceSocketAddress()) &&
+                opt.dest_filter.match(ip.destinationSocketAddress()))
+            {
+                opt.debug(u"packet: ip size: %'d, data size: %'d, timestamp: %'d", {ip.size(), ip.protocolDataSize(), timestamp});
+                return true;
+            }
         }
+        return false;
+    }
+}
 
-        // Validate the filters.
-        payload_offset = ip_header_size + proto_header_size;
-        return  (proto != ts::IPv4_PROTO_TCP || opt.tcp_filter) &&
-                (proto != ts::IPv4_PROTO_UDP || opt.udp_filter) &&
-                (proto == ts::IPv4_PROTO_UDP || proto == ts::IPv4_PROTO_TCP || opt.others_filter) &&
-                opt.source_filter.match(source) &&
-                opt.dest_filter.match(destination);
+
+//----------------------------------------------------------------------------
+// Statistics data for a set of IP packets.
+//----------------------------------------------------------------------------
+
+namespace {
+    class StatBlock {
+    public:
+        // Constructor.
+        StatBlock();
+
+        // Add statistics from one packet.
+        void addPacket(const ts::IPv4Packet&, ts::MicroSecond);
+
+        size_t          packet_count;      // number of IP packets in the data set
+        size_t          total_ip_size;     // total size in bytes of IP packets, headers included
+        size_t          total_data_size;   // total data size in bytes (TCP o UDP payload)
+        ts::MicroSecond first_timestamp;   // negative if none found
+        ts::MicroSecond last_timestamp;    // negative if none found
+    };
+}
+
+// Constructor.
+StatBlock::StatBlock() :
+    packet_count(0),
+    total_ip_size(0),
+    total_data_size(0),
+    first_timestamp(-1),
+    last_timestamp(-1)
+{
+}
+
+// Add statistics from one packet.
+void StatBlock::addPacket(const ts::IPv4Packet& ip, ts::MicroSecond timestamp)
+{
+    packet_count++;
+    total_ip_size += ip.size();
+    total_data_size += ip.protocolDataSize();
+    if (timestamp >= 0) {
+        if (first_timestamp < 0) {
+            first_timestamp = timestamp;
+        }
+        last_timestamp = timestamp;
     }
 }
 
@@ -188,59 +232,35 @@ int MainCode(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
-    // Statistics data.
-    size_t packet_count = 0;
-    size_t total_ip_size = 0;
-    size_t total_data_size = 0;
-    ts::MicroSecond first_timestamp = -1;
-    ts::MicroSecond last_timestamp = -1;
-
     // Read all IPv4 packets from the file.
-    std::array<uint8_t, ts::IP_MAX_PACKET_SIZE> packet;
-    size_t ip_size = 0;
-    size_t payload_offset = 0;
+    StatBlock stats;
+    ts::IPv4Packet ip;;
     ts::MicroSecond timestamp = 0;
-    while (file.readIPv4(packet.data(), packet.size(), ip_size, timestamp, opt)) {
-        // Do not read after --last-packet.
-        if (file.packetCount() > opt.last_packet) {
-            break;
-        }
-        // Check if the packet shall be analyzed.
-        if (file.packetCount() >= opt.first_packet && FilterPacket(opt, packet.data(), ip_size, payload_offset)) {
-            opt.debug(u"packet: ip size: %'d, payload offset: %'d, timestamp: %'d", {ip_size, payload_offset, timestamp});
-            assert(payload_offset <= ip_size);
-            packet_count++;
-            total_ip_size += ip_size;
-            total_data_size += ip_size - payload_offset;
-            if (timestamp >= 0) {
-                if (first_timestamp < 0) {
-                    first_timestamp = timestamp;
-                }
-                last_timestamp = timestamp;
-            }
-        }
+    while (ReadPacket(opt, file, ip, timestamp)) {
+        stats.addPacket(ip, timestamp);
     }
+    const size_t file_packet_count = file.packetCount();
+    file.close();
 
     // Display statistics.
-    std::cout << ts::UString::Format(u"IPv4 packets: %'d (out of %'d)", {packet_count, file.packetCount()}) << std::endl;
-    std::cout << ts::UString::Format(u"Total packets size: %'d bytes", {total_ip_size}) << std::endl;
-    std::cout << ts::UString::Format(u"Total data size: %'d bytes", {total_data_size}) << std::endl;
-    if (first_timestamp < 0 || last_timestamp < 0) {
+    std::cout << ts::UString::Format(u"IPv4 packets:       %'d (out of %'d captured packets)", {stats.packet_count, file_packet_count}) << std::endl;
+    std::cout << ts::UString::Format(u"Total packets size: %'d bytes", {stats.total_ip_size}) << std::endl;
+    std::cout << ts::UString::Format(u"Total data size:    %'d bytes", {stats.total_data_size}) << std::endl;
+    if (stats.first_timestamp < 0 || stats.last_timestamp < 0) {
         std::cout << "No timestamp available" << std::endl;
     }
     else {
-        ts::Time start(ts::Time::UnixEpoch + first_timestamp / ts::MicroSecPerMilliSec);
-        ts::Time end(ts::Time::UnixEpoch + last_timestamp / ts::MicroSecPerMilliSec);
-        std::cout << "Start time: " << start << std::endl;
-        std::cout << "End time:   " << end << std::endl;
-        const ts::MicroSecond duration = last_timestamp - first_timestamp;
+        ts::Time start(ts::Time::UnixEpoch + stats.first_timestamp / ts::MicroSecPerMilliSec);
+        ts::Time end(ts::Time::UnixEpoch + stats.last_timestamp / ts::MicroSecPerMilliSec);
+        std::cout << "Start time:         " << start << std::endl;
+        std::cout << "End time:           " << end << std::endl;
+        const ts::MicroSecond duration = stats.last_timestamp - stats.first_timestamp;
         if (duration > 0) {
-            std::cout << ts::UString::Format(u"Duration: %'d micro-seconds", {duration}) << std::endl;
-            std::cout << "IP bitrate:   " << (ts::BitRate(total_ip_size * 8 * ts::MicroSecPerSec) / duration) << " b/s" << std::endl;
-            std::cout << "Data bitrate: " << (ts::BitRate(total_data_size * 8 * ts::MicroSecPerSec) / duration) << " b/s" << std::endl;
+            std::cout << ts::UString::Format(u"Duration:           %'d micro-seconds", {duration}) << std::endl;
+            std::cout << "IP bitrate:         " << (ts::BitRate(stats.total_ip_size * 8 * ts::MicroSecPerSec) / duration) << " b/s" << std::endl;
+            std::cout << "Data bitrate:       " << (ts::BitRate(stats.total_data_size * 8 * ts::MicroSecPerSec) / duration) << " b/s" << std::endl;
         }
     }
 
-    file.close();
     return EXIT_SUCCESS;
 }
