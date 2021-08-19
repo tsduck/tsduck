@@ -27,25 +27,25 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 #include "tsIPUtils.h"
 #include "tsMemory.h"
 TSDUCK_SOURCE;
 
 // Local host address
-const ts::IPAddress ts::IPAddress::LocalHost(127, 0, 0, 1);
+const ts::IPv4Address ts::IPv4Address::LocalHost(127, 0, 0, 1);
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors
 //----------------------------------------------------------------------------
 
-ts::IPAddress::IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) :
+ts::IPv4Address::IPv4Address(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) :
     _addr((uint32_t(b1) << 24) | (uint32_t(b2) << 16) | (uint32_t(b3) << 8) | uint32_t(b4))
 {
 }
 
-ts::IPAddress::IPAddress(const ::sockaddr& s) :
+ts::IPv4Address::IPv4Address(const ::sockaddr& s) :
     _addr(AnyAddress)
 {
     if (s.sa_family == AF_INET) {
@@ -55,7 +55,7 @@ ts::IPAddress::IPAddress(const ::sockaddr& s) :
     }
 }
 
-ts::IPAddress::IPAddress(const ::sockaddr_in& s) :
+ts::IPv4Address::IPv4Address(const ::sockaddr_in& s) :
     _addr(AnyAddress)
 {
     if (s.sin_family == AF_INET) {
@@ -63,7 +63,7 @@ ts::IPAddress::IPAddress(const ::sockaddr_in& s) :
     }
 }
 
-ts::IPAddress::~IPAddress()
+ts::IPv4Address::~IPv4Address()
 {
 }
 
@@ -72,7 +72,7 @@ ts::IPAddress::~IPAddress()
 // Copy into socket structures
 //----------------------------------------------------------------------------
 
-void ts::IPAddress::copy(::sockaddr& s, uint16_t port) const
+void ts::IPv4Address::copy(::sockaddr& s, uint16_t port) const
 {
     TS_ZERO(s);
     assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
@@ -82,7 +82,7 @@ void ts::IPAddress::copy(::sockaddr& s, uint16_t port) const
     sp->sin_port = htons(port);
 }
 
-void ts::IPAddress::copy(::sockaddr_in& s, uint16_t port) const
+void ts::IPv4Address::copy(::sockaddr_in& s, uint16_t port) const
 {
     TS_ZERO(s);
     s.sin_family = AF_INET;
@@ -95,27 +95,27 @@ void ts::IPAddress::copy(::sockaddr_in& s, uint16_t port) const
 // Set/get address
 //----------------------------------------------------------------------------
 
-size_t ts::IPAddress::binarySize() const
+size_t ts::IPv4Address::binarySize() const
 {
     return BYTES;
 }
 
-void ts::IPAddress::clearAddress()
+void ts::IPv4Address::clearAddress()
 {
     _addr = AnyAddress;
 }
 
-bool ts::IPAddress::hasAddress() const
+bool ts::IPv4Address::hasAddress() const
 {
     return _addr != AnyAddress;
 }
 
-bool ts::IPAddress::isMulticast() const
+bool ts::IPv4Address::isMulticast() const
 {
     return IN_MULTICAST(_addr);
 }
 
-bool ts::IPAddress::setAddress(const void* addr, size_t size)
+bool ts::IPv4Address::setAddress(const void* addr, size_t size)
 {
     if (addr == nullptr || size < BYTES) {
         return false;
@@ -126,7 +126,7 @@ bool ts::IPAddress::setAddress(const void* addr, size_t size)
     }
 }
 
-size_t ts::IPAddress::getAddress(void* addr, size_t size) const
+size_t ts::IPv4Address::getAddress(void* addr, size_t size) const
 {
     if (addr == nullptr || size < BYTES) {
         return 0;
@@ -137,7 +137,7 @@ size_t ts::IPAddress::getAddress(void* addr, size_t size) const
     }
 }
 
-void ts::IPAddress::setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
+void ts::IPv4Address::setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
 {
     _addr = (uint32_t(b1) << 24) | (uint32_t(b2) << 16) | (uint32_t(b3) << 8) | uint32_t(b4);
 }
@@ -147,7 +147,7 @@ void ts::IPAddress::setAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4)
 // Decode a string or hostname which is resolved.
 //----------------------------------------------------------------------------
 
-bool ts::IPAddress::resolve(const UString& name, Report& report)
+bool ts::IPv4Address::resolve(const UString& name, Report& report)
 {
     _addr = AnyAddress;
 
@@ -221,7 +221,7 @@ bool ts::IPAddress::resolve(const UString& name, Report& report)
 // Check if this address "matches" another one.
 //----------------------------------------------------------------------------
 
-bool ts::IPAddress::match(const IPAddress& other) const
+bool ts::IPv4Address::match(const IPv4Address& other) const
 {
     return _addr == AnyAddress || other._addr == AnyAddress || _addr == other._addr;
 }
@@ -231,7 +231,7 @@ bool ts::IPAddress::match(const IPAddress& other) const
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::UString ts::IPAddress::toString() const
+ts::UString ts::IPv4Address::toString() const
 {
     return UString::Format(u"%d.%d.%d.%d", {(_addr >> 24) & 0xFF, (_addr >> 16) & 0xFF, (_addr >> 8) & 0xFF, _addr & 0xFF});
 }

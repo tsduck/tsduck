@@ -34,7 +34,7 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsFileUtils.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsunit.h"
 
 //----------------------------------------------------------------------------
@@ -1387,7 +1387,7 @@ void UStringTest::testArgMixIn()
 
     enum : uint16_t {EA = 7, EB = 48};
     enum : int8_t {EC = 4, ED = 8};
-    const ts::SocketAddress sock(ts::IPAddress(10, 20, 30, 40), 12345);
+    const ts::IPv4SocketAddress sock(ts::IPv4Address(10, 20, 30, 40), 12345);
 
     testArgMixInCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock});
 }
@@ -1698,7 +1698,7 @@ void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>&
     TSUNIT_EQUAL(u"", it->toUString());
     ++it;
 
-    // SocketAddress (ts::IPAddress(10, 20, 30, 40), 12345);
+    // IPv4SocketAddress (ts::IPv4Address(10, 20, 30, 40), 12345);
     TSUNIT_ASSERT(!it->isOutputInteger());
     TSUNIT_ASSERT(!it->isInteger());
     TSUNIT_ASSERT(!it->isSigned());
@@ -1804,8 +1804,8 @@ void UStringTest::testFormat()
     TSUNIT_EQUAL(u"|abcdefghijklmnop|", ts::UString::Format(u"|%-*s|", {8, u"abcdefghijklmnop"}));
 
     // Stringifiable.
-    TSUNIT_EQUAL(u"|1.2.3.4|", ts::UString::Format(u"|%s|", {ts::IPAddress(1, 2, 3, 4)}));
-    TSUNIT_EQUAL(u"|11.22.33.44:678|", ts::UString::Format(u"|%s|", {ts::SocketAddress(ts::IPAddress(11, 22, 33, 44), 678)}));
+    TSUNIT_EQUAL(u"|1.2.3.4|", ts::UString::Format(u"|%s|", {ts::IPv4Address(1, 2, 3, 4)}));
+    TSUNIT_EQUAL(u"|11.22.33.44:678|", ts::UString::Format(u"|%s|", {ts::IPv4SocketAddress(ts::IPv4Address(11, 22, 33, 44), 678)}));
 
     // Boolean.
     bool b = false;

@@ -49,7 +49,7 @@ namespace ts {
     //!
     //! The string representation is "int.int.int.int".
     //!
-    class TSDUCKDLL IPAddress: public AbstractNetworkAddress
+    class TSDUCKDLL IPv4Address: public AbstractNetworkAddress
     {
     public:
         //!
@@ -71,12 +71,12 @@ namespace ts {
         //! Local host address.
         //! Usually resolves to the host name "localhost".
         //!
-        static const IPAddress LocalHost;
+        static const IPv4Address LocalHost;
 
         //!
         //! Default constructor
         //!
-        IPAddress() :
+        IPv4Address() :
             _addr(0)
         {
         }
@@ -85,7 +85,7 @@ namespace ts {
         //! Constructor from an integer address.
         //! @param [in] addr The IP v4 address as an integer in host byte order.
         //!
-        IPAddress(uint32_t addr) :
+        IPv4Address(uint32_t addr) :
             _addr(addr)
         {
         }
@@ -97,13 +97,13 @@ namespace ts {
         //! @param [in] b3 Third address byte.
         //! @param [in] b4 Fourth address byte.
         //!
-        IPAddress(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
+        IPv4Address(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4);
 
         //!
         //! Constructor from a system "struct in_addr" structure (socket API).
         //! @param [in] a A system "struct in_addr" structure.
         //!
-        IPAddress(const ::in_addr& a) :
+        IPv4Address(const ::in_addr& a) :
             _addr(ntohl(a.s_addr))
         {
         }
@@ -112,32 +112,32 @@ namespace ts {
         //! Constructor from a system "struct sockaddr" structure (socket API).
         //! @param [in] a A system "struct sockaddr" structure.
         //!
-        IPAddress(const ::sockaddr& a);
+        IPv4Address(const ::sockaddr& a);
 
         //!
         //! Constructor from a system "struct sockaddr_in" structure (socket API).
         //! @param [in] a A system "struct sockaddr_in" structure.
         //!
-        IPAddress(const ::sockaddr_in& a);
+        IPv4Address(const ::sockaddr_in& a);
 
         //!
         //! Virtual destructor.
         //!
-        virtual ~IPAddress() override;
+        virtual ~IPv4Address() override;
 
         //!
         //! Equality operator.
         //! @param [in] a Another instance to compare with.
         //! @return True if both object contains the same address, false otherwise.
         //!
-        bool operator==(const IPAddress& a) const { return _addr == a._addr; }
+        bool operator==(const IPv4Address& a) const { return _addr == a._addr; }
 
         //!
         //! Unequality operator.
         //! @param [in] a Another instance to compare with.
         //! @return True if both object contains distinct addresses, false otherwise.
         //!
-        bool operator!=(const IPAddress& a) const {return _addr != a._addr;}
+        bool operator!=(const IPv4Address& a) const {return _addr != a._addr;}
 
         //!
         //! Constructor from a string, host name or "a.b.c.d" integer format.
@@ -147,7 +147,7 @@ namespace ts {
         //! representation of the address "a.b.c.d".
         //! @param [in] report Where to report errors.
         //!
-        IPAddress(const UString& name, Report& report) :
+        IPv4Address(const UString& name, Report& report) :
             _addr (0)
         {
             resolve(name, report);
@@ -176,11 +176,11 @@ namespace ts {
         void setAddress(uint32_t addr) { _addr = addr; }
 
         //!
-        //! Set the IP address from another IPAddress object.
+        //! Set the IP address from another IPv4Address object.
         //! Useful for subclasses.
         //! @param [in] addr Another IP address.
         //!
-        void setAddress(const IPAddress& addr) { _addr = addr._addr; }
+        void setAddress(const IPv4Address& addr) { _addr = addr._addr; }
 
         //!
         //! Set the IP address from 4 bytes (classical IPv4 notation).
@@ -224,7 +224,7 @@ namespace ts {
         //! @return False if this and @a other addresses are both specified and
         //! are different. True otherwise.
         //!
-        bool match(const IPAddress& other) const;
+        bool match(const IPv4Address& other) const;
 
         //!
         //! Comparison "less than" operator.
@@ -232,7 +232,7 @@ namespace ts {
         //! @param [in] other Other instance to compare.
         //! @return True if this instance is less than to @a other.
         //!
-        bool operator<(const IPAddress& other) const { return _addr < other._addr; }
+        bool operator<(const IPv4Address& other) const { return _addr < other._addr; }
 
     private:
         uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
@@ -241,10 +241,17 @@ namespace ts {
     //!
     //! Vector of IP addresses.
     //!
-    typedef std::vector<IPAddress> IPAddressVector;
+    typedef std::vector<IPv4Address> IPv4AddressVector;
 
     //!
     //! Set of IP addresses.
     //!
-    typedef std::set<IPAddress> IPAddressSet;
+    typedef std::set<IPv4Address> IPv4AddressSet;
+
+    //! @cond nodoxygen
+    // Legacy definitions.
+    typedef IPv4Address IPAddress;
+    typedef IPv4AddressVector IPAddressVector;
+    typedef IPv4AddressSet IPAddressSet;
+    //! @endcond
 }

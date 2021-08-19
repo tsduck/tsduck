@@ -35,7 +35,7 @@
 #include "tsAbstractDatagramInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPcapFile.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsIPUtils.h"
 TSDUCK_SOURCE;
 
@@ -62,15 +62,15 @@ namespace ts {
     private:
         // Command line options:
         UString       _file_name;    // Pcap file name.
-        SocketAddress _destination;  // Selected destination UDP socket address.
-        SocketAddress _source;       // Selected source UDP socket address.
+        IPv4SocketAddress _destination;  // Selected destination UDP socket address.
+        IPv4SocketAddress _source;       // Selected source UDP socket address.
         bool          _multicast;    // Use multicast destinations only.
 
         // Working data:
         PcapFile         _pcap;             // Pcap file processing.
         MicroSecond      _first_tstamp;     // Time stamp of first datagram.
-        SocketAddress    _act_destination;  // Actual destination UDP socket address.
-        SocketAddressSet _all_sources;      // All source addresses.
+        IPv4SocketAddress    _act_destination;  // Actual destination UDP socket address.
+        IPv4SocketAddressSet _all_sources;      // All source addresses.
     };
 }
 
@@ -202,8 +202,8 @@ bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, s
         udp_length -= UDP_HEADER_SIZE;
 
         // Get IP addresses and UDP ports.
-        const SocketAddress src(GetUInt32(buffer + IPv4_SRC_ADDR_OFFSET), GetUInt16(buffer + ip_header_size + UDP_SRC_PORT_OFFSET));
-        const SocketAddress dst(GetUInt32(buffer + IPv4_DEST_ADDR_OFFSET), GetUInt16(buffer + ip_header_size + UDP_DEST_PORT_OFFSET));
+        const IPv4SocketAddress src(GetUInt32(buffer + IPv4_SRC_ADDR_OFFSET), GetUInt16(buffer + ip_header_size + UDP_SRC_PORT_OFFSET));
+        const IPv4SocketAddress dst(GetUInt32(buffer + IPv4_DEST_ADDR_OFFSET), GetUInt16(buffer + ip_header_size + UDP_DEST_PORT_OFFSET));
 
         // Filter source or destination socket address if one was specified.
         if (!src.match(_source) || !dst.match(_act_destination)) {

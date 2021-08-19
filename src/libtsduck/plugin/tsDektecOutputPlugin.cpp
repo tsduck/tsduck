@@ -37,7 +37,7 @@
 #include "tsHFBand.h"
 #include "tsBitrateDifferenceDVBT.h"
 #include "tsModulation.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;

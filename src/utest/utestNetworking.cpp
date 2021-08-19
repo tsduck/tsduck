@@ -32,10 +32,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPUtils.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsIPv6SocketAddress.h"
 #include "tsTCPConnection.h"
 #include "tsTCPServer.h"
@@ -60,26 +60,26 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
-    void testIPAddressConstructors();
-    void testIPAddress();
+    void testIPv4AddressConstructors();
+    void testIPv4Address();
     void testIPv6Address();
     void testMACAddress();
     void testGetLocalIPAddresses();
-    void testSocketAddressConstructors();
-    void testSocketAddress();
+    void testIPv4SocketAddressConstructors();
+    void testIPv4SocketAddress();
     void testIPv6SocketAddress();
     void testTCPSocket();
     void testUDPSocket();
     void testIPHeader();
 
     TSUNIT_TEST_BEGIN(NetworkingTest);
-    TSUNIT_TEST(testIPAddressConstructors);
-    TSUNIT_TEST(testIPAddress);
+    TSUNIT_TEST(testIPv4AddressConstructors);
+    TSUNIT_TEST(testIPv4Address);
     TSUNIT_TEST(testIPv6Address);
     TSUNIT_TEST(testMACAddress);
     TSUNIT_TEST(testGetLocalIPAddresses);
-    TSUNIT_TEST(testSocketAddressConstructors);
-    TSUNIT_TEST(testSocketAddress);
+    TSUNIT_TEST(testIPv4SocketAddressConstructors);
+    TSUNIT_TEST(testIPv4SocketAddress);
     TSUNIT_TEST(testIPv6SocketAddress);
     TSUNIT_TEST(testTCPSocket);
     TSUNIT_TEST(testUDPSocket);
@@ -123,25 +123,25 @@ void NetworkingTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void NetworkingTest::testIPAddressConstructors()
+void NetworkingTest::testIPv4AddressConstructors()
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
-    TSUNIT_ASSERT(ts::IPAddress::AnyAddress == 0);
-    TSUNIT_ASSERT(ts::IPAddress::LocalHost.address() == 0x7F000001); // 127.0.0.1
+    TSUNIT_ASSERT(ts::IPv4Address::AnyAddress == 0);
+    TSUNIT_ASSERT(ts::IPv4Address::LocalHost.address() == 0x7F000001); // 127.0.0.1
 
-    ts::IPAddress a1;
-    TSUNIT_ASSERT(a1.address() == ts::IPAddress::AnyAddress);
+    ts::IPv4Address a1;
+    TSUNIT_ASSERT(a1.address() == ts::IPv4Address::AnyAddress);
 
-    ts::IPAddress a2(0x01020304);
+    ts::IPv4Address a2(0x01020304);
     TSUNIT_ASSERT(a2.address() == 0x01020304);
 
-    ts::IPAddress a3(1, 2, 3, 4);
+    ts::IPv4Address a3(1, 2, 3, 4);
     TSUNIT_ASSERT(a3.address() == 0x01020304);
 
     ::in_addr ia4;
     ia4.s_addr = htonl(0x01020304);
-    ts::IPAddress a4(ia4);
+    ts::IPv4Address a4(ia4);
     TSUNIT_ASSERT(a4.address() == 0x01020304);
 
     ::sockaddr sa5;
@@ -150,31 +150,31 @@ void NetworkingTest::testIPAddressConstructors()
     sai5->sin_family = AF_INET;
     sai5->sin_addr.s_addr = htonl (0x01020304);
     sai5->sin_port = 0;
-    ts::IPAddress a5 (sa5);
+    ts::IPv4Address a5 (sa5);
     TSUNIT_ASSERT(a5.address() == 0x01020304);
 
     ::sockaddr_in sa6;
     sa6.sin_family = AF_INET;
     sa6.sin_addr.s_addr = htonl (0x01020304);
     sa6.sin_port = 0;
-    ts::IPAddress a6 (sa6);
+    ts::IPv4Address a6 (sa6);
     TSUNIT_ASSERT(a6.address() == 0x01020304);
 
-    ts::IPAddress a7(u"2.3.4.5", CERR);
+    ts::IPv4Address a7(u"2.3.4.5", CERR);
     TSUNIT_ASSERT(a7.address() == 0x02030405);
 
-    ts::IPAddress a8(u"localhost", CERR);
+    ts::IPv4Address a8(u"localhost", CERR);
     TSUNIT_ASSERT(a8.address() == 0x7F000001); // 127.0.0.1
-    TSUNIT_ASSERT(a8 == ts::IPAddress::LocalHost);
+    TSUNIT_ASSERT(a8 == ts::IPv4Address::LocalHost);
 }
 
-void NetworkingTest::testIPAddress()
+void NetworkingTest::testIPv4Address()
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
-    ts::IPAddress a1 (1, 2, 3, 4);
-    ts::IPAddress a2 (1, 2, 3, 4);
-    ts::IPAddress a3 (2, 3, 4, 5);
+    ts::IPv4Address a1 (1, 2, 3, 4);
+    ts::IPv4Address a2 (1, 2, 3, 4);
+    ts::IPv4Address a3 (2, 3, 4, 5);
 
     TSUNIT_ASSERT(a1 == a2);
     TSUNIT_ASSERT(a1 != a3);
@@ -192,7 +192,7 @@ void NetworkingTest::testIPAddress()
     TSUNIT_ASSERT(a1.hasAddress());
     a1.clear();
     TSUNIT_ASSERT(!a1.hasAddress());
-    TSUNIT_ASSERT(a1.address() == ts::IPAddress::AnyAddress);
+    TSUNIT_ASSERT(a1.address() == ts::IPv4Address::AnyAddress);
 
     a1.setAddress(1, 2, 3, 4);
     ::in_addr ia;
@@ -217,16 +217,16 @@ void NetworkingTest::testIPAddress()
 
     TSUNIT_ASSERT(a1.resolve(u"localhost", CERR));
     TSUNIT_ASSERT(a1.address() == 0x7F000001); // 127.0.0.1
-    TSUNIT_ASSERT(a1 == ts::IPAddress::LocalHost);
+    TSUNIT_ASSERT(a1 == ts::IPv4Address::LocalHost);
 
     a1.setAddress(2, 3, 4, 5);
     const ts::UString s1(a1.toString());
     TSUNIT_ASSERT(s1 == u"2.3.4.5");
 
-    debug() << "NetworkingTest: localhost = " << ts::IPAddress(u"localhost", CERR) << std::endl;
+    debug() << "NetworkingTest: localhost = " << ts::IPv4Address(u"localhost", CERR) << std::endl;
 
     // Note: fail if not connected to a network.
-    debug() << "NetworkingTest: www.google.com = " << ts::IPAddress(u"www.google.com", CERR) << std::endl;
+    debug() << "NetworkingTest: www.google.com = " << ts::IPv4Address(u"www.google.com", CERR) << std::endl;
 }
 
 void NetworkingTest::testIPv6Address()
@@ -294,13 +294,13 @@ void NetworkingTest::testMACAddress()
     TSUNIT_EQUAL(TS_UCONST64(0x23B3A6BE564D), a1.address());
     TSUNIT_EQUAL(u"23:B3:A6:BE:56:4D", a1.toString());
 
-    TSUNIT_ASSERT(a1.toMulticast(ts::IPAddress(225, 1, 2, 3)));
+    TSUNIT_ASSERT(a1.toMulticast(ts::IPv4Address(225, 1, 2, 3)));
     TSUNIT_ASSERT(a1.hasAddress());
     TSUNIT_ASSERT(a1.isMulticast());
     TSUNIT_EQUAL(TS_UCONST64(0x01005E010203), a1.address());
     TSUNIT_EQUAL(u"01:00:5E:01:02:03", a1.toString());
 
-    TSUNIT_ASSERT(!a1.toMulticast(ts::IPAddress(192, 168, 2, 3)));
+    TSUNIT_ASSERT(!a1.toMulticast(ts::IPv4Address(192, 168, 2, 3)));
     TSUNIT_ASSERT(!a1.hasAddress());
     TSUNIT_ASSERT(!a1.isMulticast());
 }
@@ -311,10 +311,10 @@ void NetworkingTest::testGetLocalIPAddresses()
 
     // We cannot assume that the local system has any local address.
     // We only requires that the call does not fail.
-    ts::IPAddressVector addr;
+    ts::IPv4AddressVector addr;
     TSUNIT_ASSERT(ts::GetLocalIPAddresses(addr));
 
-    ts::IPAddressMaskVector addrMask;
+    ts::IPv4AddressMaskVector addrMask;
     TSUNIT_ASSERT(ts::GetLocalIPAddresses(addrMask));
 
     // The two calls must return the same number of addresses.
@@ -338,32 +338,32 @@ void NetworkingTest::testGetLocalIPAddresses()
     }
 }
 
-void NetworkingTest::testSocketAddressConstructors()
+void NetworkingTest::testIPv4SocketAddressConstructors()
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
-    TSUNIT_ASSERT(ts::SocketAddress::AnyAddress == 0);
-    TSUNIT_ASSERT(ts::SocketAddress::LocalHost.address() == 0x7F000001); // 127.0.0.1
+    TSUNIT_ASSERT(ts::IPv4SocketAddress::AnyAddress == 0);
+    TSUNIT_ASSERT(ts::IPv4SocketAddress::LocalHost.address() == 0x7F000001); // 127.0.0.1
 
-    ts::SocketAddress a1;
-    TSUNIT_ASSERT(a1.address() == ts::SocketAddress::AnyAddress);
-    TSUNIT_ASSERT(a1.port() == ts::SocketAddress::AnyPort);
+    ts::IPv4SocketAddress a1;
+    TSUNIT_ASSERT(a1.address() == ts::IPv4SocketAddress::AnyAddress);
+    TSUNIT_ASSERT(a1.port() == ts::IPv4SocketAddress::AnyPort);
 
-    ts::SocketAddress a2a (ts::IPAddress(0x01020304), 80);
+    ts::IPv4SocketAddress a2a (ts::IPv4Address(0x01020304), 80);
     TSUNIT_ASSERT(a2a.address() == 0x01020304);
     TSUNIT_ASSERT(a2a.port() == 80);
 
-    ts::SocketAddress a2b (0x01020304, 80);
+    ts::IPv4SocketAddress a2b (0x01020304, 80);
     TSUNIT_ASSERT(a2b.address() == 0x01020304);
     TSUNIT_ASSERT(a2b.port() == 80);
 
-    ts::SocketAddress a3 (1, 2, 3, 4, 80);
+    ts::IPv4SocketAddress a3 (1, 2, 3, 4, 80);
     TSUNIT_ASSERT(a3.address() == 0x01020304);
     TSUNIT_ASSERT(a3.port() == 80);
 
     ::in_addr ia4;
     ia4.s_addr = htonl (0x01020304);
-    ts::SocketAddress a4 (ia4, 80);
+    ts::IPv4SocketAddress a4 (ia4, 80);
     TSUNIT_ASSERT(a4.address() == 0x01020304);
     TSUNIT_ASSERT(a4.port() == 80);
 
@@ -373,7 +373,7 @@ void NetworkingTest::testSocketAddressConstructors()
     sai5->sin_family = AF_INET;
     sai5->sin_addr.s_addr = htonl (0x01020304);
     sai5->sin_port = htons (80);
-    ts::SocketAddress a5 (sa5);
+    ts::IPv4SocketAddress a5 (sa5);
     TSUNIT_ASSERT(a5.address() == 0x01020304);
     TSUNIT_ASSERT(a5.port() == 80);
 
@@ -381,35 +381,35 @@ void NetworkingTest::testSocketAddressConstructors()
     sa6.sin_family = AF_INET;
     sa6.sin_addr.s_addr = htonl(0x01020304);
     sa6.sin_port = htons(80);
-    ts::SocketAddress a6(sa6);
+    ts::IPv4SocketAddress a6(sa6);
     TSUNIT_ASSERT(a6.address() == 0x01020304);
     TSUNIT_ASSERT(a6.port() == 80);
 
-    ts::SocketAddress a7(u"2.3.4.5", CERR);
+    ts::IPv4SocketAddress a7(u"2.3.4.5", CERR);
     TSUNIT_ASSERT(a7.address() == 0x02030405);
-    TSUNIT_ASSERT(a7.port() == ts::SocketAddress::AnyPort);
+    TSUNIT_ASSERT(a7.port() == ts::IPv4SocketAddress::AnyPort);
 
-    ts::SocketAddress a8(u"localhost", CERR);
+    ts::IPv4SocketAddress a8(u"localhost", CERR);
     TSUNIT_ASSERT(a8.address() == 0x7F000001); // 127.0.0.1
-    TSUNIT_ASSERT(a8 == ts::IPAddress::LocalHost);
-    TSUNIT_ASSERT(a8.port() == ts::SocketAddress::AnyPort);
+    TSUNIT_ASSERT(a8 == ts::IPv4Address::LocalHost);
+    TSUNIT_ASSERT(a8.port() == ts::IPv4SocketAddress::AnyPort);
 
-    ts::SocketAddress a9(u"2.3.4.5:80", CERR);
+    ts::IPv4SocketAddress a9(u"2.3.4.5:80", CERR);
     TSUNIT_ASSERT(a9.address() == 0x02030405);
     TSUNIT_ASSERT(a9.port() == 80);
 
-    ts::SocketAddress a10(u":80", CERR);
-    TSUNIT_ASSERT(a10.address() == ts::IPAddress::AnyAddress);
+    ts::IPv4SocketAddress a10(u":80", CERR);
+    TSUNIT_ASSERT(a10.address() == ts::IPv4Address::AnyAddress);
     TSUNIT_ASSERT(a10.port() == 80);
 }
 
-void NetworkingTest::testSocketAddress()
+void NetworkingTest::testIPv4SocketAddress()
 {
     TSUNIT_ASSERT(ts::IPInitialize());
 
-    ts::SocketAddress a1(1, 2, 3, 4, 80);
-    ts::SocketAddress a2(1, 2, 3, 4, 80);
-    ts::SocketAddress a3(1, 3, 4, 5, 81);
+    ts::IPv4SocketAddress a1(1, 2, 3, 4, 80);
+    ts::IPv4SocketAddress a2(1, 2, 3, 4, 80);
+    ts::IPv4SocketAddress a3(1, 3, 4, 5, 81);
 
     TSUNIT_ASSERT(a1 == a2);
     TSUNIT_ASSERT(a1 != a3);
@@ -431,8 +431,8 @@ void NetworkingTest::testSocketAddress()
     a2.clear();
     TSUNIT_ASSERT(!a2.hasAddress());
     TSUNIT_ASSERT(!a2.hasPort());
-    TSUNIT_ASSERT(a2.address() == ts::IPAddress::AnyAddress);
-    TSUNIT_ASSERT(a2.port() == ts::SocketAddress::AnyPort);
+    TSUNIT_ASSERT(a2.address() == ts::IPv4Address::AnyAddress);
+    TSUNIT_ASSERT(a2.port() == ts::IPv4SocketAddress::AnyPort);
 
     a1.set(1, 2, 3, 4, 80);
     ::in_addr ia;
@@ -523,8 +523,8 @@ namespace {
             CERR.debug(u"TCPSocketTest: client thread: started");
 
             // Connect to the server.
-            const ts::SocketAddress serverAddress(ts::IPAddress::LocalHost, _portNumber);
-            const ts::SocketAddress clientAddress(ts::IPAddress::LocalHost, ts::SocketAddress::AnyPort);
+            const ts::IPv4SocketAddress serverAddress(ts::IPv4Address::LocalHost, _portNumber);
+            const ts::IPv4SocketAddress clientAddress(ts::IPv4Address::LocalHost, ts::IPv4SocketAddress::AnyPort);
             ts::TCPConnection session;
             TSUNIT_ASSERT(!session.isOpen());
             TSUNIT_ASSERT(!session.isConnected());
@@ -536,10 +536,10 @@ namespace {
             TSUNIT_ASSERT(session.isOpen());
             TSUNIT_ASSERT(session.isConnected());
 
-            ts::SocketAddress peer;
+            ts::IPv4SocketAddress peer;
             TSUNIT_ASSERT(session.getPeer(peer, CERR));
             TSUNIT_ASSERT(peer == serverAddress);
-            TSUNIT_ASSERT(ts::IPAddress(peer) == ts::IPAddress::LocalHost);
+            TSUNIT_ASSERT(ts::IPv4Address(peer) == ts::IPv4Address::LocalHost);
             TSUNIT_ASSERT(peer.port() == _portNumber);
 
             // Send a message
@@ -580,7 +580,7 @@ void NetworkingTest::testTCPSocket()
 
     // Create server socket
     CERR.debug(u"TCPSocketTest: main thread: create server");
-    const ts::SocketAddress serverAddress(ts::IPAddress::LocalHost, portNumber);
+    const ts::IPv4SocketAddress serverAddress(ts::IPv4Address::LocalHost, portNumber);
     ts::TCPServer server;
     TSUNIT_ASSERT(!server.isOpen());
     TSUNIT_ASSERT(server.open(CERR));
@@ -598,13 +598,13 @@ void NetworkingTest::testTCPSocket()
 
     CERR.debug(u"TCPSocketTest: main thread: waiting for a client");
     ts::TCPConnection session;
-    ts::SocketAddress clientAddress;
+    ts::IPv4SocketAddress clientAddress;
     TSUNIT_ASSERT(server.accept(session, clientAddress, CERR));
     CERR.debug(u"TCPSocketTest: main thread: got a client");
-    TSUNIT_ASSERT(ts::IPAddress(clientAddress) == ts::IPAddress::LocalHost);
+    TSUNIT_ASSERT(ts::IPv4Address(clientAddress) == ts::IPv4Address::LocalHost);
 
     CERR.debug(u"TCPSocketTest: main thread: waiting for data");
-    ts::SocketAddress sender;
+    ts::IPv4SocketAddress sender;
     char buffer [1024];
     size_t size = 0;
     while (session.receive(buffer, sizeof(buffer), size, nullptr, CERR)) {
@@ -652,9 +652,9 @@ namespace {
             TSUNIT_ASSERT(sock.isOpen());
             TSUNIT_ASSERT(sock.setSendBufferSize(1024, CERR));
             TSUNIT_ASSERT(sock.setReceiveBufferSize(1024, CERR));
-            TSUNIT_ASSERT(sock.bind(ts::SocketAddress(ts::IPAddress::LocalHost, ts::SocketAddress::AnyPort), CERR));
-            TSUNIT_ASSERT(sock.setDefaultDestination(ts::SocketAddress(ts::IPAddress::LocalHost, _portNumber), CERR));
-            TSUNIT_ASSERT(ts::IPAddress(sock.getDefaultDestination()) == ts::IPAddress::LocalHost);
+            TSUNIT_ASSERT(sock.bind(ts::IPv4SocketAddress(ts::IPv4Address::LocalHost, ts::IPv4SocketAddress::AnyPort), CERR));
+            TSUNIT_ASSERT(sock.setDefaultDestination(ts::IPv4SocketAddress(ts::IPv4Address::LocalHost, _portNumber), CERR));
+            TSUNIT_ASSERT(ts::IPv4Address(sock.getDefaultDestination()) == ts::IPv4Address::LocalHost);
             TSUNIT_ASSERT(sock.getDefaultDestination().port() == _portNumber);
 
             // Send a message
@@ -664,15 +664,15 @@ namespace {
             CERR.debug(u"UDPSocketTest: client thread: request sent");
 
             // Wait for a reply
-            ts::SocketAddress sender;
-            ts::SocketAddress destination;
+            ts::IPv4SocketAddress sender;
+            ts::IPv4SocketAddress destination;
             char buffer [1024];
             size_t size;
             TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
             CERR.debug(u"UDPSocketTest: client thread: reply received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
             TSUNIT_ASSERT(size == sizeof(message));
             TSUNIT_ASSERT(::memcmp(message, buffer, size) == 0);
-            TSUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);
+            TSUNIT_ASSERT(ts::IPv4Address(sender) == ts::IPv4Address::LocalHost);
             TSUNIT_ASSERT(sender.port() == _portNumber);
 
             CERR.debug(u"UDPSocketTest: client thread terminated");
@@ -696,20 +696,20 @@ void NetworkingTest::testUDPSocket()
     TSUNIT_ASSERT(sock.setReceiveBufferSize(1024, CERR));
     TSUNIT_ASSERT(sock.reusePort(true, CERR));
     TSUNIT_ASSERT(sock.setTTL(1, false, CERR));
-    TSUNIT_ASSERT(sock.bind(ts::SocketAddress(ts::IPAddress::LocalHost, portNumber), CERR));
+    TSUNIT_ASSERT(sock.bind(ts::IPv4SocketAddress(ts::IPv4Address::LocalHost, portNumber), CERR));
 
     CERR.debug(u"UDPSocketTest: main thread: starting client thread");
     UDPClient client(portNumber);
     client.start();
 
     CERR.debug(u"UDPSocketTest: main thread: waiting for message");
-    ts::SocketAddress sender;
-    ts::SocketAddress destination;
+    ts::IPv4SocketAddress sender;
+    ts::IPv4SocketAddress destination;
     char buffer [1024];
     size_t size;
     TSUNIT_ASSERT(sock.receive(buffer, sizeof(buffer), size, sender, destination, nullptr, CERR));
     CERR.debug(u"UDPSocketTest: main thread: request received, %d bytes, sender: %s, destination: %s", {size, sender, destination});
-    TSUNIT_ASSERT(ts::IPAddress(sender) == ts::IPAddress::LocalHost);
+    TSUNIT_ASSERT(ts::IPv4Address(sender) == ts::IPv4Address::LocalHost);
 
     TSUNIT_ASSERT(sock.send(buffer, size, sender, CERR));
     CERR.debug(u"UDPSocketTest: main thread: reply sent");

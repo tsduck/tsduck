@@ -184,7 +184,7 @@ bool ts::TCPSocket::setNoDelay(bool active, Report& report)
 // Bind to a local address and port.
 //----------------------------------------------------------------------------
 
-bool ts::TCPSocket::bind(const SocketAddress& addr, Report& report)
+bool ts::TCPSocket::bind(const IPv4SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy(sock_addr);

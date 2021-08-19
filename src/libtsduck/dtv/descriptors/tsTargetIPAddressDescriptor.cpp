@@ -91,7 +91,7 @@ void ts::TargetIPAddressDescriptor::deserializePayload(PSIBuffer& buf)
 {
     IPv4_addr_mask.setAddress(buf.getUInt32());
     while (buf.canRead()) {
-        IPv4_addr.push_back(IPAddress(buf.getUInt32()));
+        IPv4_addr.push_back(IPv4Address(buf.getUInt32()));
     }
 }
 
@@ -104,7 +104,7 @@ void ts::TargetIPAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 {
     const char* header = "Address mask: ";
     while (buf.canReadBytes(4)) {
-        disp << margin << header << IPAddress(buf.getUInt32()) << std::endl;
+        disp << margin << header << IPv4Address(buf.getUInt32()) << std::endl;
         header = "Address: ";
     }
 }
@@ -135,7 +135,7 @@ bool ts::TargetIPAddressDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
         element->getChildren(children, u"address", 0, MAX_ENTRIES);
 
     for (size_t i = 0; ok && i < children.size(); ++i) {
-        IPAddress addr;
+        IPv4Address addr;
         ok = children[i]->getIPAttribute(addr, u"IPv4_addr", true);
         IPv4_addr.push_back(addr);
     }

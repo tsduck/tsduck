@@ -264,7 +264,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
 
 ts::SRTSocket::SRTSocket() : _guts(nullptr) {}
 ts::SRTSocket::~SRTSocket() {}
-bool ts::SRTSocket::open(SRTSocketMode, const SocketAddress&, const SocketAddress&, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::open(SRTSocketMode, const IPv4SocketAddress&, const IPv4SocketAddress&, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::close(Report& report) NOSRT_ERROR
 bool ts::SRTSocket::peerDisconnected() const { return false; }
 bool ts::SRTSocket::loadArgs(DuckContext&, Args&) { return true; }
@@ -372,20 +372,20 @@ public:
      // Default constructor.
      Guts();
 
-     bool send(const void* data, size_t size, const SocketAddress& dest, Report& report);
+     bool send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report);
      bool setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report);
      bool setSockOptPre(Report& report);
      bool setSockOptPost(Report& report);
-     bool srtListen(const SocketAddress& addr, Report& report);
-     bool srtConnect(const SocketAddress& addr, Report& report);
-     bool srtBind(const SocketAddress& addr, Report& report);
+     bool srtListen(const IPv4SocketAddress& addr, Report& report);
+     bool srtConnect(const IPv4SocketAddress& addr, Report& report);
+     bool srtBind(const IPv4SocketAddress& addr, Report& report);
 
      // Socket working data.
-     SocketAddress local_address;
-     SocketAddress remote_address;
-     SRTSocketMode mode;
-     volatile int  sock;       // SRT socket for data transmission
-     volatile int  listener;   // Listener SRT socket when srt_listen() is used.
+     IPv4SocketAddress local_address;
+     IPv4SocketAddress remote_address;
+     SRTSocketMode     mode;
+     volatile int      sock;       // SRT socket for data transmission
+     volatile int      listener;   // Listener SRT socket when srt_listen() is used.
 
      // Socket options.
      SRT_TRANSTYPE transtype;
@@ -517,8 +517,8 @@ bool ts::SRTSocket::getMessageApi() const
 //----------------------------------------------------------------------------
 
 bool ts::SRTSocket::open(SRTSocketMode mode,
-                         const SocketAddress& local_address,
-                         const SocketAddress& remote_address,
+                         const IPv4SocketAddress& local_address,
+                         const IPv4SocketAddress& remote_address,
                          Report& report)
 {
     // Filter already open condition.
@@ -665,7 +665,7 @@ bool ts::SRTSocket::setAddressesInternal(const UString& listener_addr, const USt
             report.error(u"specify either a listener address or a local outgoing interface for caller mode but not both");
             return false;
         }
-        IPAddress local_ip;
+        IPv4Address local_ip;
         if (!local_ip.resolve(local_addr, report)) {
             return false;
         }
@@ -843,7 +843,7 @@ bool ts::SRTSocket::Guts::setSockOptPost(Report& report)
     return true;
 }
 
-bool ts::SRTSocket::Guts::srtListen(const SocketAddress& addr, Report& report)
+bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& report)
 {
     // The SRT socket will become the listener socket, check that there is none.
     if (listener >= 0) {
@@ -885,7 +885,7 @@ bool ts::SRTSocket::Guts::srtListen(const SocketAddress& addr, Report& report)
     sock = data_sock;
 
     // In listener mode, keep the address of the remote peer.
-    SocketAddress p_addr(peer_addr);
+    IPv4SocketAddress p_addr(peer_addr);
     report.debug(u"connected to %s", {p_addr});
     if (mode == SRTSocketMode::LISTENER) {
         remote_address = p_addr;
@@ -893,7 +893,7 @@ bool ts::SRTSocket::Guts::srtListen(const SocketAddress& addr, Report& report)
     return true;
 }
 
-bool ts::SRTSocket::Guts::srtConnect(const SocketAddress& addr, Report& report)
+bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
@@ -914,7 +914,7 @@ bool ts::SRTSocket::Guts::srtConnect(const SocketAddress& addr, Report& report)
     }
 }
 
-bool ts::SRTSocket::Guts::srtBind(const SocketAddress& addr, Report& report)
+bool ts::SRTSocket::Guts::srtBind(const IPv4SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
@@ -939,7 +939,7 @@ bool ts::SRTSocket::send(const void* data, size_t size, Report& report)
     return _guts->send(data, size, _guts->remote_address, report);
 }
 
-bool ts::SRTSocket::Guts::send(const void* data, size_t size, const SocketAddress& dest, Report& report)
+bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report)
 {
     // If socket was disconnected or aborted, silently fail.
     if (disconnected || sock < 0) {

@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPUtils.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 #if defined(TS_MAC)
 #include <ifaddrs.h>
 #endif
@@ -64,10 +64,10 @@ bool ts::IPInitialize(Report& report)
 // Check if a local system interface has a specified IP address.
 //----------------------------------------------------------------------------
 
-bool ts::IsLocalIPAddress(const IPAddress& address)
+bool ts::IsLocalIPAddress(const IPv4Address& address)
 {
-    IPAddressVector locals;
-    return address == IPAddress::LocalHost || (GetLocalIPAddresses(locals) && std::find(locals.begin(), locals.end(), address) != locals.end());
+    IPv4AddressVector locals;
+    return address == IPv4Address::LocalHost || (GetLocalIPAddresses(locals) && std::find(locals.begin(), locals.end(), address) != locals.end());
 }
 
 
@@ -76,7 +76,7 @@ bool ts::IsLocalIPAddress(const IPAddress& address)
 // with their network mask.
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
 {
     bool status = true;
     list.clear();
@@ -93,9 +93,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
     // Browse the list of interfaces.
     for (::ifaddrs* ifa = start; ifa != nullptr; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr != nullptr) {
-            IPAddress addr(*ifa->ifa_addr);
-            if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back(IPAddressMask(addr, IPAddress(*ifa->ifa_netmask)));
+            IPv4Address addr(*ifa->ifa_addr);
+            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
+                list.push_back(IPv4AddressMask(addr, IPv4Address(*ifa->ifa_netmask)));
             }
         }
     }
@@ -126,9 +126,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
         retsize = std::max<::DWORD>(0, std::min(retsize, ::DWORD(sizeof(info))));
         size_t count = retsize / sizeof(::INTERFACE_INFO);
         for (size_t i = 0; i < count; ++i) {
-            IPAddress addr(info[i].iiAddress.Address);
-            if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back(IPAddressMask(addr, IPAddress(info[i].iiNetmask.Address)));
+            IPv4Address addr(info[i].iiAddress.Address);
+            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
+                list.push_back(IPv4AddressMask(addr, IPv4Address(info[i].iiNetmask.Address)));
             }
         }
     }
@@ -151,9 +151,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
         ifc.ifc_len = std::max(0, std::min(ifc.ifc_len, int(sizeof(info))));
         size_t count = ifc.ifc_len / sizeof(::ifreq);
         for (size_t i = 0; i < count; ++i) {
-            IPAddress addr(info[i].ifr_addr);
-            IPAddress mask;
-            if (addr.hasAddress() && addr != IPAddress::LocalHost) {
+            IPv4Address addr(info[i].ifr_addr);
+            IPv4Address mask;
+            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
                 // Get network mask for this interface.
                 ::ifreq req;
                 req = info[i];
@@ -162,9 +162,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
                     report.error(u"error getting network mask for %s: %s", {addr, SysSocketErrorCodeMessage(err)});
                 }
                 else {
-                    mask = IPAddress(req.ifr_netmask);
+                    mask = IPv4Address(req.ifr_netmask);
                 }
-                list.push_back(IPAddressMask(addr, mask));
+                list.push_back(IPv4AddressMask(addr, mask));
             }
         }
     }
@@ -189,9 +189,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
 // This method returns the list of all local IPv4 addresses in the system
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPv4AddressVector& list, Report& report)
 {
-    IPAddressMaskVector full_list;
+    IPv4AddressMaskVector full_list;
     list.clear();
 
     if (GetLocalIPAddresses(full_list, report)) {
@@ -284,8 +284,8 @@ bool ts::AnalyzeIPPacket(const void* data,
                          uint8_t& proto,
                          size_t& ip_header_size,
                          size_t& proto_header_size,
-                         SocketAddress& source,
-                         SocketAddress& destination)
+                         IPv4SocketAddress& source,
+                         IPv4SocketAddress& destination)
 {
     const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
 

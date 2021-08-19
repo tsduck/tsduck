@@ -103,7 +103,7 @@ bool ts::tsp::ControlServer::open()
     }
     else {
         // Open the TCP server.
-        const SocketAddress addr(_options.control_local, _options.control_port);
+        const IPv4SocketAddress addr(_options.control_local, _options.control_port);
         if (!_server.open(_log) ||
             !_server.reusePort(_options.control_reuse, _log) ||
             !_server.bind(addr, _log) ||
@@ -146,7 +146,7 @@ void ts::tsp::ControlServer::main()
     ReportBuffer<NullMutex> error(_log.maxSeverity());
 
     // Client address and connection.
-    SocketAddress source;
+    IPv4SocketAddress source;
     TelnetConnection conn;
     UString line;
 

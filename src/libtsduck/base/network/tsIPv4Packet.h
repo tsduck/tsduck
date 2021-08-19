@@ -28,51 +28,24 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  IP output plugin for tsp.
+//!  Representation of a raw IPv4 packet.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDatagramOutputPlugin.h"
-#include "tsUDPSocket.h"
+#include "tsIPv4Address.h"
 
 namespace ts {
     //!
-    //! IP output plugin for tsp.
-    //! @ingroup plugin
+    //! Representation of a raw IPv4 packet.
+    //! @ingroup net
     //!
-    class TSDUCKDLL IPOutputPlugin: public AbstractDatagramOutputPlugin
+    class TSDUCKDLL IPv4Packet
     {
-        TS_NOBUILD_NOCOPY(IPOutputPlugin);
     public:
         //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
+        //! Default constructor.
         //!
-        IPOutputPlugin(TSP* tsp);
-
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual bool isRealTime() override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
-
-    protected:
-        // Implementation of AbstractDatagramOutputPlugin
-        virtual bool sendDatagram(const void* address, size_t size) override;
-
-    private:
-        IPv4SocketAddress _destination;     // Destination address/port.
-        IPv4Address     _local_addr;      // Local address.
-        uint16_t      _local_port;      // Local UDP source port.
-        int           _ttl;             // Time to live option.
-        int           _tos;             // Type of service option.
-        bool          _force_mc_local;  // Force multicast outgoing local interface
-        UDPSocket     _sock;            // Outgoing socket
+        IPv4Packet();
     };
 }

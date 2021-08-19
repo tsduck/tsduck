@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsUString.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
@@ -80,7 +80,7 @@ namespace ts {
         //!
         bool open(Report& report = CERR)
         {
-            return open(SRTSocketMode::DEFAULT, SocketAddress(), SocketAddress(), report);
+            return open(SRTSocketMode::DEFAULT, IPv4SocketAddress(), IPv4SocketAddress(), report);
         }
 
         //!
@@ -91,7 +91,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool open(SRTSocketMode mode, const SocketAddress& local_address, const SocketAddress& remote_address, Report& report = CERR);
+        bool open(SRTSocketMode mode, const IPv4SocketAddress& local_address, const IPv4SocketAddress& remote_address, Report& report = CERR);
 
         //!
         //! Close the socket.

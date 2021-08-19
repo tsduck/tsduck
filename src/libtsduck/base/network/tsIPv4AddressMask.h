@@ -33,25 +33,26 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
+#include "tsStringifyInterface.h"
 
 namespace ts {
     //!
     //! A combination of IP v4 address and network mask.
     //! @ingroup net
     //!
-    class TSDUCKDLL IPAddressMask
+    class TSDUCKDLL IPv4AddressMask: public StringifyInterface
     {
     public:
-        IPAddress address;  //!< IPv4 address.
-        IPAddress mask;     //!< Network mask.
+        IPv4Address address;  //!< IPv4 address.
+        IPv4Address mask;     //!< Network mask.
 
         //!
         //! Default constructor.
         //! @param [in] a IPv4 address.
         //! @param [in] m Network mask.
         //!
-        IPAddressMask(const IPAddress& a = IPAddress(), const IPAddress& m = IPAddress());
+        IPv4AddressMask(const IPv4Address& a = IPv4Address(), const IPv4Address& m = IPv4Address());
 
         //!
         //! Get the network mask size in bits.
@@ -63,28 +64,20 @@ namespace ts {
         //! Get the associated broadcast address.
         //! @return The associated broadcast address.
         //!
-        IPAddress broadcastAddress() const;
+        IPv4Address broadcastAddress() const;
 
-        //!
-        //! Convert to a string object in numeric format "a.b.c.d".
-        //! @return This object, converted as a string.
-        //!
-        UString toString() const;
+        // Implementation of StringifyInterface
+        virtual UString toString() const override;
     };
 
     //!
     //! Vector of IP addresses and network masks.
     //!
-    typedef std::vector<IPAddressMask> IPAddressMaskVector;
-}
+    typedef std::vector<IPv4AddressMask> IPv4AddressMaskVector;
 
-//!
-//! Output operator for the class @link ts::IPAddressMask @endlink on standard text streams.
-//! @param [in,out] strm An standard stream in output mode.
-//! @param [in] addr The IP address/mask object.
-//! @return A reference to the @a strm object.
-//!
-inline std::ostream& operator<< (std::ostream& strm, const ts::IPAddressMask& addr)
-{
-    return strm << addr.toString();
+    //! @cond nodoxygen
+    // Legacy definitions.
+    typedef IPv4AddressMask IPAddressMask;
+    typedef IPv4AddressMaskVector IPAddressMaskVector;
+    //! @endcond
 }

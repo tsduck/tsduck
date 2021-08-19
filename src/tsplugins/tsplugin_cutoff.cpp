@@ -67,7 +67,7 @@ namespace ts {
         // Plugin private fields.
         volatile bool _terminate;      // Force termination flag for thread.
         size_t        _max_queued;     // Max number of queued commands.
-        IPAddressSet  _allowedRemote;  // Set of allowed remotes.
+        IPv4AddressSet  _allowedRemote;  // Set of allowed remotes.
         UDPReceiver   _sock;           // Incoming socket with associated command line options
         CommandQueue  _command_queue;  // Queue of commands between the UDP server and the plugin thread.
         TSPacketMetadata::LabelSet _set_labels;  // Labels to set on all packets.
@@ -123,7 +123,7 @@ bool ts::CutoffPlugin::getOptions()
     getValues(remotes, u"allow");
     _allowedRemote.clear();
     for (auto it = remotes.begin(); it != remotes.end(); ++it) {
-        const IPAddress addr(*it, *tsp);
+        const IPv4Address addr(*it, *tsp);
         if (addr.hasAddress()) {
             _allowedRemote.insert(addr);
         }
@@ -234,8 +234,8 @@ void ts::CutoffPlugin::main()
 
     char inbuf[1024];
     size_t insize = 0;
-    SocketAddress sender;
-    SocketAddress destination;
+    IPv4SocketAddress sender;
+    IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<NullMutex> error(tsp->maxSeverity());

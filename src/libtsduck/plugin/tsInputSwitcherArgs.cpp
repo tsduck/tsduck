@@ -267,7 +267,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     args.getValues(remotes, u"allow");
     allowedRemote.clear();
     for (auto it = remotes.begin(); it != remotes.end(); ++it) {
-        const IPAddress addr(*it, args);
+        const IPv4Address addr(*it, args);
         if (addr.hasAddress()) {
             allowedRemote.insert(addr);
         }

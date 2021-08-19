@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 TSDUCK_SOURCE;
 
 
@@ -35,8 +35,8 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::SocketAddress::SocketAddress(const ::sockaddr& s) :
-    IPAddress(s),
+ts::IPv4SocketAddress::IPv4SocketAddress(const ::sockaddr& s) :
+    IPv4Address(s),
     _port(AnyPort)
 {
     if (s.sa_family == AF_INET) {
@@ -46,13 +46,13 @@ ts::SocketAddress::SocketAddress(const ::sockaddr& s) :
     }
 }
 
-ts::SocketAddress::SocketAddress(const ::sockaddr_in& s) :
-    IPAddress(s),
+ts::IPv4SocketAddress::IPv4SocketAddress(const ::sockaddr_in& s) :
+    IPv4Address(s),
     _port(s.sin_family == AF_INET ? ntohs(s.sin_port) : AnyPort)
 {
 }
 
-ts::SocketAddress::~SocketAddress()
+ts::IPv4SocketAddress::~IPv4SocketAddress()
 {
 }
 
@@ -61,12 +61,12 @@ ts::SocketAddress::~SocketAddress()
 // Get/set port
 //----------------------------------------------------------------------------
 
-ts::SocketAddress::Port ts::SocketAddress::port() const
+ts::IPv4SocketAddress::Port ts::IPv4SocketAddress::port() const
 {
     return _port;
 }
 
-void ts::SocketAddress::setPort(Port port)
+void ts::IPv4SocketAddress::setPort(Port port)
 {
     _port = port;
 }
@@ -76,7 +76,7 @@ void ts::SocketAddress::setPort(Port port)
 // Decode a string "addr[:port]" or "[addr:]port".
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::resolve(const UString& name, Report& report)
+bool ts::IPv4SocketAddress::resolve(const UString& name, Report& report)
 {
     // Clear address & port
     clear();
@@ -93,7 +93,7 @@ bool ts::SocketAddress::resolve(const UString& name, Report& report)
         else {
             // Not a valid integer, this is an address alone
             _port = AnyPort;
-            return IPAddress::resolve(name, report);
+            return IPv4Address::resolve(name, report);
         }
     }
 
@@ -105,7 +105,7 @@ bool ts::SocketAddress::resolve(const UString& name, Report& report)
 
     // If there is something before the colon, this must be an address.
     // Try to decode name as IP address or resolve it as DNS host name.
-    return colon == 0 || IPAddress::resolve(name.substr(0, colon), report);
+    return colon == 0 || IPv4Address::resolve(name.substr(0, colon), report);
 }
 
 
@@ -113,9 +113,9 @@ bool ts::SocketAddress::resolve(const UString& name, Report& report)
 // Check if this address "matches" another one.
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::match(const SocketAddress& other) const
+bool ts::IPv4SocketAddress::match(const IPv4SocketAddress& other) const
 {
-    return IPAddress::match(other) && (_port == AnyPort || other._port == AnyPort || _port == other._port);
+    return IPv4Address::match(other) && (_port == AnyPort || other._port == AnyPort || _port == other._port);
 }
 
 
@@ -123,9 +123,9 @@ bool ts::SocketAddress::match(const SocketAddress& other) const
 // Convert to a string object
 //----------------------------------------------------------------------------
 
-ts::UString ts::SocketAddress::toString() const
+ts::UString ts::IPv4SocketAddress::toString() const
 {
-    return IPAddress::toString() + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
+    return IPv4Address::toString() + (_port == AnyPort ? u"" : UString::Format(u":%d", {_port}));
 }
 
 
@@ -133,7 +133,7 @@ ts::UString ts::SocketAddress::toString() const
 // Comparison "less than" operator.
 //----------------------------------------------------------------------------
 
-bool ts::SocketAddress::operator<(const SocketAddress& other) const
+bool ts::IPv4SocketAddress::operator<(const IPv4SocketAddress& other) const
 {
     return address() < other.address() || (address() == other.address() && _port < other._port);
 }

@@ -366,7 +366,7 @@ and can be used to pass an entire transport stream when necessary.
 
 ## Networking {#networking}
 
-The classes ts::IPAddress and ts::SocketAddress define an IPv4 address and
+The classes ts::IPv4Address and ts::IPv4SocketAddress define an IPv4 address and
 a corresponding socket address (an IPv4 address and a port number). Host
 name resolution and multicast are supported.
 
