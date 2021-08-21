@@ -372,7 +372,7 @@ ts::UString ts::DektecDevice::DtCapsToString(const Dtapi::DtCaps& flags)
             if (!caps.empty()) {
                 caps += u", ";
             }
-            caps += NamesFile::Instance(NamesFile::Predefined::DEKTEC)->nameFromSection(u"DtCaps", c, NamesFlags:::NAME_OR_VALUE | NamesFlags::DECIMAL);
+            caps += NamesFile::Instance(NamesFile::Predefined::DEKTEC)->nameFromSection(u"DtCaps", c, NamesFlags::NAME_OR_VALUE | NamesFlags::DECIMAL);
         }
     }
     return caps;
