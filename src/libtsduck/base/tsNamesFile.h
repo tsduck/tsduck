@@ -36,6 +36,7 @@
 #include "tsUString.h"
 #include "tsEnumUtils.h"
 #include "tsReport.h"
+#include "tsVersionInfo.h"
 
 namespace ts {
     //!
@@ -62,7 +63,7 @@ TS_ENABLE_BITMASK_OPERATORS(ts::NamesFlags);
 namespace ts {
     //!
     //! Representation of a ".names" file, containing names for identifiers.
-    //! All names are loaded from one configuration file.
+    //! In an instance of NamesFile, all names are loaded from one configuration file.
     //! @ingroup app
     //!
     class TSDUCKDLL NamesFile
@@ -71,9 +72,12 @@ namespace ts {
     public:
         //!
         //! Constructor.
+        //! Using this constructor directly is discouraged. Use Instance() instead.
         //! @param [in] fileName Configuration file name. Typically without directory name.
         //! Without directory, the file is automatically searched in the TSDuck configuration directory.
         //! @param [in] mergeExtensions If true, merge the content of names files from TSDuck extensions.
+        //! @see Instance(const UString&, bool);
+        //! @see Instance(Predefined, bool);
         //!
         NamesFile(const UString& fileName, bool mergeExtensions = false);
 
@@ -81,6 +85,52 @@ namespace ts {
         //! Virtual destructor.
         //!
         virtual ~NamesFile();
+
+        //!
+        //! Get a common instance of NamesFile for a given configuration file.
+        //! The file is loaded once and the instance is created the first time.
+        //! When the same file is requested again, the same instance is returned.
+        //! @param [in] fileName Configuration file name without directory name.
+        //! The file is searched in the TSDuck configuration directory.
+        //! @param [in] mergeExtensions If true, merge the content of names files
+        //! from TSDuck extensions when the file is loaded the first time.
+        //! @return A pointer to the NamesFile instance for that file. Never return
+        //! a null pointer. In case of error (non existent file for instance), an
+        //! empty instance is returned for that file.
+        //!
+        static const NamesFile* Instance(const UString& fileName, bool mergeExtensions = false);
+
+        //!
+        //! Identifiers for some predefined TSDuck names files.
+        //! Using an idenfier is faster than looking for a file name.
+        //!
+        enum class Predefined {
+            DTV    = 0,  //!< All Digital TV definitions (MPEG, DVB, ATSC, ISDB).
+            IP     = 1,  //!< Internet protocols definitions.
+            OUI    = 2,  //!< IEEE Organizationally Unique Identifiers.
+            DEKTEC = 3,  //!< Dektec devices definitions.
+            HIDES  = 4   //!< HiDes modulators definitions.
+        };
+
+        //!
+        //! Get a common instance of NamesFile for a predefined configuration file.
+        //! The file is loaded once and the instance is created the first time.
+        //! When the same file is requested again, the same instance is returned.
+        //! @param [in] index Identifier of the predefined file to get.
+        //! @return A pointer to the NamesFile instance for that file. Never return
+        //! a null pointer. In case of error (non existent file for instance), an
+        //! empty instance is returned for that file.
+        //!
+        static const NamesFile* Instance(Predefined index);
+
+        //!
+        //! Delete a common instance of NamesFile for a predefined configuration file.
+        //! This should never be necessary unless TSDuck extensions are loaded on the fly.
+        //! This never happen since extensions are registered in macro TS_REGISTER_NAMES_FILE.
+        //! This is useful in test programs only.
+        //! @param [in] index Identifier of the predefined file to get.
+        //!
+        static void DeleteInstance(Predefined index);
 
         //!
         //! Largest integer type we manage in the repository of names.
@@ -141,6 +191,33 @@ namespace ts {
         //!
         static UString Formatted(Value value, const UString& name, NamesFlags flags, size_t bits, Value alternateValue = 0);
 
+        //!
+        //! A class to register additional names files to merge with the TSDuck names file.
+        //! The registration is performed using constructors.
+        //! Thus, it is possible to perform a registration in the declaration of a static object.
+        //!
+        class TSDUCKDLL RegisterExtensionFile
+        {
+            TS_NOBUILD_NOCOPY(RegisterExtensionFile);
+        public:
+            //!
+            //! Register an additional names file.
+            //! This file will be merged with the main names files.
+            //! @param [in] filename Name of the names file. This should be a simple file name,
+            //! without directory. This file will be searched in the same directory as the executable,
+            //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
+            //! then from $PATH.
+            //! @see TS_REGISTER_NAMES_FILE
+            //!
+            RegisterExtensionFile(const UString& filename);
+        };
+
+        //!
+        //! Unregister a previously registered extension.
+        //! @param [in] filename Name of the names file to unregister,
+        //!
+        static void UnregisterExtensionFile(const UString& filename);
+
     private:
         // Description of a configuration entry.
         // The first value of the range is the key in a map.
@@ -198,20 +275,13 @@ namespace ts {
         size_t           _configErrors;  // Number of errors in configuration file.
         ConfigSectionMap _sections;      // Configuration sections.
     };
-
-    //!
-    //! Get a name from a specified section in the DVB names file.
-    //! @tparam INT An integer name.
-    //! @param [in] sectionName Name of section to search. Not case-sensitive.
-    //! @param [in] value Value to get the name for.
-    //! @param [in] flags Presentation flags.
-    //! @param [in] bits Nominal size in bits of the data, optional.
-    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
-    //! @return The corresponding name.
-    //!
-    //@@@ template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    //@@@ UString NameFromSection(const UString& sectionName, INT value, names::Flags flags = names::NAME, size_t bits = 0, INT alternateValue = 0)
-    //@@@ {
-    //@@@     return NamesMain::Instance()->nameFromSection(sectionName, Names::Value(value), flags, bits, Names::Value(alternateValue));
-    //@@@ }
 }
+
+//!
+//! @hideinitializer
+//! Registration of an extension names file inside the ts::PSIRepository singleton.
+//! This macro is typically used in the .cpp file of a TSDuck extension.
+//!
+#define TS_REGISTER_NAMES_FILE(filename) \
+    TS_LIBCHECK(); \
+    static ts::NamesFile::RegisterExtensionFile TS_UNIQUE_NAME(_Registrar)(filename)

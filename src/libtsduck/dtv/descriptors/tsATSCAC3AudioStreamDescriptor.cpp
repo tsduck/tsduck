@@ -247,15 +247,15 @@ void ts::ATSCAC3AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 {
     if (buf.canReadBytes(3)) {
         // Fixed initial size: 3 bytes.
-        disp << margin << "Sample rate: " << NameFromSection(u"ATSCAC3SampleRateCode", buf.getBits<uint8_t>(3), names::VALUE) << std::endl;
+        disp << margin << "Sample rate: " << NameFromSection(u"ATSCAC3SampleRateCode", buf.getBits<uint8_t>(3), NamesFlags::VALUE) << std::endl;
         disp << margin << UString::Format(u"AC-3 coding version: 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
         const uint8_t bitrate = buf.getBits<uint8_t>(6);
-        disp << margin << "Bit rate: " << NameFromSection(u"ATSCAC3BitRateCode", bitrate & 0x1F, names::VALUE) << ((bitrate & 0x20) == 0 ? "" : " max") << std::endl;
-        disp << margin << "Surround mode: " << NameFromSection(u"ATSCAC3SurroundMode", buf.getBits<uint8_t>(2), names::VALUE) << std::endl;
+        disp << margin << "Bit rate: " << NameFromSection(u"ATSCAC3BitRateCode", bitrate & 0x1F, NamesFlags::VALUE) << ((bitrate & 0x20) == 0 ? "" : " max") << std::endl;
+        disp << margin << "Surround mode: " << NameFromSection(u"ATSCAC3SurroundMode", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
         const uint8_t bsmod = buf.getBits<uint8_t>(3);
-        disp << margin << "Bitstream mode: " << NameFromSection(u"AC3BitStreamMode", bsmod, names::VALUE) << std::endl;
+        disp << margin << "Bitstream mode: " << NameFromSection(u"AC3BitStreamMode", bsmod, NamesFlags::VALUE) << std::endl;
         const uint8_t channels = buf.getBits<uint8_t>(4);
-        disp << margin << "Num. channels: " << NameFromSection(u"ATSCAC3NumChannels", channels, names::VALUE) << std::endl;
+        disp << margin << "Num. channels: " << NameFromSection(u"ATSCAC3NumChannels", channels, NamesFlags::VALUE) << std::endl;
         disp << margin << UString::Format(u"Full service: %s", {buf.getBool()}) << std::endl;
 
         // Ignore langcode and langcode2, deprecated

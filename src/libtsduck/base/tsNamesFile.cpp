@@ -31,7 +31,197 @@
 #include "tsFileUtils.h"
 #include "tsCerrReport.h"
 #include "tsFatal.h"
+#include "tsMutex.h"
+#include "tsGuardMutex.h"
+#include "tsSingletonManager.h"
 TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Predefined names files.
+//----------------------------------------------------------------------------
+
+namespace {
+    struct Predef {
+        const ts::NamesFile* volatile instance;
+        const ts::UChar* name;
+        bool merge;
+    };
+    Predef PredefData[] = {
+        {nullptr, u"tsduck.names", true},          // DTV
+        {nullptr, u"tsduck.ip.names", false},      // IP
+        {nullptr, u"tsduck.oui.names", false},     // OUI
+        {nullptr, u"tsduck.dektec.names", false},  // DEKTEC
+        {nullptr, u"tsduck.hides.names", false},   // HIDES
+    };
+    constexpr size_t PredefDataCount = sizeof(PredefData) / sizeof(Predef);
+}
+
+
+//----------------------------------------------------------------------------
+// A singleton which manages all NamesFile instances (thread-safe).
+//----------------------------------------------------------------------------
+
+namespace {
+    class AllInstances
+    {
+        TS_DECLARE_SINGLETON(AllInstances);
+    public:
+        ~AllInstances();
+        const ts::NamesFile* getFile(const ts::UString& fileName, bool mergeExtensions);
+        void deleteInstance(const ts::NamesFile* instance);
+        void addExtensionFile(const ts::UString& fileName);
+        void removeExtensionFile(const ts::UString& fileName);
+        void getExtensionFiles(ts::UStringList& fileNames);
+    private:
+        ts::Mutex                                    _mutex;     // Protected access to other fiekds.
+        std::map <ts::UString, const ts::NamesFile*> _files;     // Loaded instances by name.
+        ts::UStringList                              _extFiles;  // Additional names files.
+    };
+}
+
+TS_DEFINE_SINGLETON(AllInstances);
+
+// Constructor
+AllInstances::AllInstances() :
+    _mutex(),
+    _files(),
+    _extFiles()
+{
+}
+
+// Destructor
+AllInstances::~AllInstances()
+{
+    // Forget all predefined load.
+    for (size_t i = 0; i < PredefDataCount; ++i) {
+        PredefData[i].instance = nullptr;
+    }
+    // Deallocate all loaded files.
+    for (auto it = _files.begin(); it != _files.end(); ++it) {
+        delete it->second;
+        it->second = nullptr;
+    }
+    _files.clear();
+}
+
+// Lookup / load a names file.
+const ts::NamesFile* AllInstances::getFile(const ts::UString& fileName, bool mergeExtensions)
+{
+    ts::GuardMutex lock(_mutex);
+    auto it = _files.find(fileName);
+    if (it != _files.end() && it->second != nullptr) {
+        return it->second;
+    }
+    else {
+        return _files[fileName] = new ts::NamesFile(fileName, mergeExtensions);
+    }
+}
+
+// Delete one instance.
+void AllInstances::deleteInstance(const ts::NamesFile* instance)
+{
+    if (instance != nullptr) {
+        for (size_t i = 0; i < PredefDataCount; ++i) {
+            if (instance == PredefData[i].instance) {
+                PredefData[i].instance = nullptr;
+                break;
+            }
+        }
+        // Deallocate all loaded files.
+        for (auto it = _files.begin(); it != _files.end(); ++it) {
+            if (instance == it->second) {
+                delete it->second;
+                _files.erase(it);
+                break;
+            }
+        }
+    }
+}
+
+// Add an extension file name (check that there is no duplicate).
+void AllInstances::addExtensionFile(const ts::UString& fileName)
+{
+    ts::GuardMutex lock(_mutex);
+    for (auto it = _extFiles.begin(); it != _extFiles.end(); ++it) {
+        if (*it == fileName) {
+            return;
+        }
+    }
+    _extFiles.push_back(fileName);
+}
+
+// Remove an extension file name.
+void AllInstances::removeExtensionFile(const ts::UString& fileName)
+{
+    ts::GuardMutex lock(_mutex);
+    for (auto it = _extFiles.begin(); it != _extFiles.end(); ++it) {
+        if (*it == fileName) {
+            _extFiles.erase(it);
+            return;
+        }
+    }
+}
+
+// Get the list of all extension files.
+void AllInstances::getExtensionFiles(ts::UStringList& fileNames)
+{
+    ts::GuardMutex lock(_mutex);
+    fileNames = _extFiles;
+}
+
+
+//----------------------------------------------------------------------------
+// Get a common instance of NamesFile for a given configuration file.
+//----------------------------------------------------------------------------
+
+const ts::NamesFile* ts::NamesFile::Instance(const UString& fileName, bool mergeExtensions)
+{
+    return AllInstances::Instance()->getFile(fileName, mergeExtensions);
+}
+
+
+const ts::NamesFile* ts::NamesFile::Instance(Predefined index)
+{
+    // Using predefined indexes of file names saves string lookup and thread synchronization.
+    // The pointer is initially null and then always holds the same value. Even if the first
+    // two call are simultaneous, the instance field is overwritten with the same value.
+    if (size_t(index) >= PredefDataCount) {
+        CERR.error(u"internal error, invalid predefined .names file index");
+        return nullptr; // and the application will likely crash...
+    }
+    Predef* pr = PredefData + size_t(index);
+    if (pr->instance != nullptr) {
+        return pr->instance;
+    }
+    else {
+        return pr->instance = AllInstances::Instance()->getFile(pr->name, pr->merge);
+    }
+}
+
+void ts::NamesFile::DeleteInstance(Predefined index)
+{
+    if (size_t(index) < PredefDataCount) {
+        AllInstances::Instance()->deleteInstance(PredefData[size_t(index)].instance);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// A class to register additional names files to merge with the TSDuck names file.
+//----------------------------------------------------------------------------
+
+ts::NamesFile::RegisterExtensionFile::RegisterExtensionFile(const UString& filename)
+{
+    CERR.debug(u"registering names file %s", {filename});
+    AllInstances::Instance()->addExtensionFile(filename);
+}
+
+void ts::NamesFile::UnregisterExtensionFile(const UString& filename)
+{
+    CERR.debug(u"unregistering names file %s", {filename});
+    AllInstances::Instance()->removeExtensionFile(filename);
+}
 
 
 //----------------------------------------------------------------------------
@@ -57,7 +247,7 @@ ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
     if (mergeExtensions) {
         // Get list of extension names.
         UStringList files;
-        //@@@@ PSIRepository::Instance()->getRegisteredNamesFiles(files);
+        AllInstances::Instance()->getExtensionFiles(files);
         for (auto name = files.begin(); name != files.end(); ++name) {
             const UString path(SearchConfigurationFile(*name));
             if (path.empty()) {
@@ -77,9 +267,12 @@ ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
 
 void ts::NamesFile::loadFile(const UString& fileName)
 {
+    _log.debug(u"loading names file %s", {fileName});
+
     // Open configuration file.
     std::ifstream strm(fileName.toUTF8().c_str());
     if (!strm) {
+        _configErrors++;
         _log.error(u"error opening file %s", {fileName});
         return;
     }

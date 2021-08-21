@@ -440,6 +440,15 @@ namespace ts {
         IPv4_PROTO_SCTP     = 132,  //!< IPv4 protocol identifier for Stream Control Transmission Protocol (SCTP).
     };
 
+    //!
+    //! Get the name of an IP protocol (UDP, TCP, etc).
+    //! @param [in] protocol Protocol identifier, as set in IP header.
+    //! @param [in] long_format If false (the default), return a simple acronym.
+    //! When true, return a full description string.
+    //! @return The protocol name with optional description.
+    //!
+    TSDUCKDLL UString IPProtocolName(uint8_t protocol, bool long_format = false);
+
     //------------------------------------------------------------------------
     // Ethernet II link layer.
     //------------------------------------------------------------------------

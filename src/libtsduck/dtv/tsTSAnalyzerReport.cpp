@@ -403,7 +403,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.section();
         grid.putLine(UString::Format(u"Service: 0x%X (%d), TS: 0x%X (%d), Original Netw: 0x%X (%d)", {sv.service_id, sv.service_id, _ts_id, _ts_id, sv.orig_netw_id, sv.orig_netw_id}));
         grid.putLine(UString::Format(u"Service name: %s, provider: %s", {sv.getName(), sv.getProvider()}));
-        grid.putLine(u"Service type: " + names::ServiceType(sv.service_type, names::FIRST));
+        grid.putLine(u"Service type: " + names::ServiceType(sv.service_type, NamesFlags::FIRST));
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {sv.ts_pkt_cnt, sv.pid_cnt, sv.pid_cnt - sv.scrambled_pid_cnt, sv.scrambled_pid_cnt}));
         grid.putLine(u"PMT PID: " +
                      (sv.pmt_pid == 0 || sv.pmt_pid == PID_NULL ? u"Unknown in PAT" : UString::Format(u"0x%X (%d)", {sv.pmt_pid, sv.pmt_pid})) +
@@ -497,7 +497,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // Type of PES data, if available
         if (pc.same_stream_id) {
-            grid.putLine(u"PES stream id: " + names::StreamId(pc.pes_stream_id, names::FIRST));
+            grid.putLine(u"PES stream id: " + names::StreamId(pc.pes_stream_id, NamesFlags::FIRST));
         }
 
         // Audio/video attributes
@@ -512,7 +512,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // List of System Software Update OUI's on this PID
         for (std::set<uint32_t>::const_iterator it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            grid.putLine(u"SSU OUI: " + names::OUI(*it1, names::FIRST));
+            grid.putLine(u"SSU OUI: " + names::OUI(*it1, NamesFlags::FIRST));
         }
         grid.subSection();
 
@@ -622,7 +622,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
 
             // Header line: TID
             grid.subSection();
-            grid.putLine(names::TID(_duck, tid, pc.cas_id, names::BOTH_FIRST) +
+            grid.putLine(names::TID(_duck, tid, pc.cas_id, NamesFlags::BOTH_FIRST) +
                          (isShort ? u"" : UString::Format(u", TID ext: 0x%X (%d)", {etc.etid.tidExt(), etc.etid.tidExt()})));
 
             // 4-columns output, first column remains empty.

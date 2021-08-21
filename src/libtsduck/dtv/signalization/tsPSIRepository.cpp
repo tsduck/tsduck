@@ -48,8 +48,7 @@ ts::PSIRepository::PSIRepository() :
     _descriptorNames(),
     _descriptorTablesIds(),
     _casIdDescriptorDisplays(),
-    _xmlModelFiles(),
-    _namesFiles()
+    _xmlModelFiles()
 {
 }
 
@@ -190,12 +189,6 @@ ts::PSIRepository::RegisterXML::RegisterXML(const UString& filename)
 {
     CERR.debug(u"registering XML file %s", {filename});
     PSIRepository::Instance()->_xmlModelFiles.push_back(filename);
-}
-
-ts::PSIRepository::RegisterNames::RegisterNames(const UString& filename)
-{
-    CERR.debug(u"registering names file %s", {filename});
-    PSIRepository::Instance()->_namesFiles.push_back(filename);
 }
 
 
@@ -406,7 +399,7 @@ ts::UString ts::PSIRepository::descriptorTables(const DuckContext& duck, const U
         if (!result.empty()) {
             result.append(u", ");
         }
-        result.append(names::TID(duck, it->second, CASID_NULL, names::NAME | names::HEXA));
+        result.append(names::TID(duck, it->second, CASID_NULL, NamesFlags::NAME | NamesFlags::HEXA));
         ++it;
     }
 
@@ -452,9 +445,4 @@ void ts::PSIRepository::getRegisteredDescriptorNames(UStringList& names) const
 void ts::PSIRepository::getRegisteredTablesModels(UStringList& names) const
 {
     names = _xmlModelFiles;
-}
-
-void ts::PSIRepository::getRegisteredNamesFiles(UStringList &names) const
-{
-    names = _namesFiles;
 }

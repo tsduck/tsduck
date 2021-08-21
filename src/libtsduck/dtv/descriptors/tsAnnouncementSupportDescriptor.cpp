@@ -164,8 +164,8 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& disp, P
             // Clear types one by one in announcement_support_indicator.
             indicator &= ~uint16_t(1 << type);
 
-            disp << margin << "- Announcement type: " << NameFromSection(u"AnnouncementType", type, names::DECIMAL_FIRST) << std::endl;
-            disp << margin << "  Reference type: " << NameFromSection(u"AnnouncementReferenceType", ref, names::DECIMAL_FIRST) << std::endl;
+            disp << margin << "- Announcement type: " << NameFromSection(u"AnnouncementType", type, NamesFlags::DECIMAL_FIRST) << std::endl;
+            disp << margin << "  Reference type: " << NameFromSection(u"AnnouncementReferenceType", ref, NamesFlags::DECIMAL_FIRST) << std::endl;
             if (ref >= 1 && ref <= 3 && buf.canReadBytes(7)) {
                 disp << margin << UString::Format(u"  Original network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
                 disp << margin << UString::Format(u"  Transport stream id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
@@ -179,7 +179,7 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& disp, P
             const uint16_t mask = uint16_t(1 << type);
             if ((indicator & mask) != 0) {
                 indicator &= ~mask;
-                disp << margin << "- Missing announcement type: " << NameFromSection(u"AnnouncementType", type, names::DECIMAL_FIRST) << std::endl;
+                disp << margin << "- Missing announcement type: " << NameFromSection(u"AnnouncementType", type, NamesFlags::DECIMAL_FIRST) << std::endl;
             }
         }
     }

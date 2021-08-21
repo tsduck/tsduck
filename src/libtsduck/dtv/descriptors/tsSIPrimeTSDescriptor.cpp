@@ -133,7 +133,7 @@ void ts::SIPrimeTSDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << margin << UString::Format(u"SI prime TS network id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"SI prime TS id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         while (buf.canReadBytes(2)) {
-            disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, names::HEXA_FIRST) << std::endl;
+            disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
             disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");
         }
     }

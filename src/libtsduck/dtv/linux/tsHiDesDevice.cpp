@@ -81,11 +81,10 @@
 
 #include "tsIT950x.h"
 #include "tsHiDesDevice.h"
-#include "tsHiDesNames.h"
 #include "tsNullReport.h"
 #include "tsMemory.h"
 #include "tsFileUtils.h"
-#include "tsNames.h"
+#include "tsNamesFile.h"
 TSDUCK_SOURCE;
 
 // Maximum size of our transfers. See comments above.
@@ -178,7 +177,7 @@ ts::UString ts::HiDesDevice::Guts::HiDesErrorMessage(ssize_t driver_status, int 
 
     // HiDes status can be a negative value. Zero means no error.
     if (driver_status != 0) {
-        msg = HiDesNames::Instance()->error(uint32_t(std::abs(driver_status)));
+        msg = NamesFile::Instance(NamesFile::Predefined::HIDES)->nameFromSection(u"HiDesErrorLinux", std::abs(driver_status), NamesFlags::HEXA_FIRST);
     }
 
     // In case errno was also set.

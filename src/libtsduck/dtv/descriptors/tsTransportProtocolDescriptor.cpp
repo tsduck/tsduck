@@ -272,7 +272,7 @@ void ts::TransportProtocolDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 {
     if (buf.canReadBytes(3)) {
         const uint16_t proto = buf.getUInt16();
-        disp << margin << "Protocol id: " << NameFromSection(u"MHPTransportProtocolId", proto, names::BOTH_FIRST) << std::endl;
+        disp << margin << "Protocol id: " << NameFromSection(u"MHPTransportProtocolId", proto, NamesFlags::BOTH_FIRST) << std::endl;
         disp << margin << UString::Format(u"Transport protocol label: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
 
         switch (proto) {

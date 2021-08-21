@@ -27,13 +27,12 @@
 //
 //----------------------------------------------------------------------------
 //
-//  TSUnit test suite for class ts::Names
+//  TSUnit test suite for class ts::NamesFile
 //
 //----------------------------------------------------------------------------
 
+#include "tsNamesFile.h"
 #include "tsNames.h"
-#include "tsDektecNames.h"
-#include "tsHiDesNames.h"
 #include "tsFileUtils.h"
 #include "tsDuckContext.h"
 #include "tsMPEG2.h"
@@ -90,6 +89,8 @@ public:
     void testPlatformId();
     void testDektec();
     void testHiDes();
+    void testIP();
+    void testExtension();
 
     TSUNIT_TEST_BEGIN(NamesTest);
     TSUNIT_TEST(testConfigFile);
@@ -130,6 +131,8 @@ public:
     TSUNIT_TEST(testPlatformId);
     TSUNIT_TEST(testDektec);
     TSUNIT_TEST(testHiDes);
+    TSUNIT_TEST(testIP);
+    TSUNIT_TEST(testExtension);
     TSUNIT_TEST_END();
 };
 
@@ -157,16 +160,36 @@ void NamesTest::afterTest()
 
 void NamesTest::testConfigFile()
 {
-    debug() << "NamesTest: DVB configuration file: " << ts::NamesMain::Instance()->configurationFile() << std::endl
-            << "NamesTest: OUI configuration file: " << ts::NamesOUI::Instance()->configurationFile() << std::endl;
+    const ts::NamesFile* const dtv = ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV);
+    debug() << "NamesTest: DTV configuration file: " << dtv->configurationFile() << std::endl;
+    TSUNIT_EQUAL(dtv, ts::names::File());
+    TSUNIT_ASSERT(!dtv->configurationFile().empty());
+    TSUNIT_ASSERT(ts::FileExists(dtv->configurationFile()));
+    TSUNIT_EQUAL(0, dtv->errorCount());
 
-    TSUNIT_ASSERT(!ts::NamesMain::Instance()->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(ts::NamesMain::Instance()->configurationFile()));
-    TSUNIT_EQUAL(0, ts::NamesMain::Instance()->errorCount());
+    const ts::NamesFile* const oui = ts::NamesFile::Instance(ts::NamesFile::Predefined::OUI);
+    debug() << "NamesTest: OUI configuration file: " << oui->configurationFile() << std::endl;
+    TSUNIT_ASSERT(!oui->configurationFile().empty());
+    TSUNIT_ASSERT(ts::FileExists(oui->configurationFile()));
+    TSUNIT_EQUAL(0, oui->errorCount());
 
-    TSUNIT_ASSERT(!ts::NamesOUI::Instance()->configurationFile().empty());
-    TSUNIT_ASSERT(ts::FileExists(ts::NamesOUI::Instance()->configurationFile()));
-    TSUNIT_EQUAL(0, ts::NamesOUI::Instance()->errorCount());
+    const ts::NamesFile* const ip = ts::NamesFile::Instance(ts::NamesFile::Predefined::IP);
+    debug() << "NamesTest: IP configuration file: " << ip->configurationFile() << std::endl;
+    TSUNIT_ASSERT(!ip->configurationFile().empty());
+    TSUNIT_ASSERT(ts::FileExists(ip->configurationFile()));
+    TSUNIT_EQUAL(0, ip->errorCount());
+
+    const ts::NamesFile* const dektec = ts::NamesFile::Instance(ts::NamesFile::Predefined::DEKTEC);
+    debug() << "NamesTest: Dektec configuration file: " << dektec->configurationFile() << std::endl;
+    TSUNIT_ASSERT(!dektec->configurationFile().empty());
+    TSUNIT_ASSERT(ts::FileExists(dektec->configurationFile()));
+    TSUNIT_EQUAL(0, dektec->errorCount());
+
+    const ts::NamesFile* const hides = ts::NamesFile::Instance(ts::NamesFile::Predefined::HIDES);
+    debug() << "NamesTest: HiDes configuration file: " << hides->configurationFile() << std::endl;
+    TSUNIT_ASSERT(!hides->configurationFile().empty());
+    TSUNIT_ASSERT(ts::FileExists(hides->configurationFile()));
+    TSUNIT_EQUAL(0, hides->errorCount());
 }
 
 void NamesTest::testTID()
@@ -179,7 +202,7 @@ void NamesTest::testTID()
     TSUNIT_EQUAL(u"EIT schedule Actual", ts::names::TID(duck, ts::TID_EIT_S_ACT_MIN + 4));
     TSUNIT_EQUAL(u"ECM (odd)", ts::names::TID(duck, ts::TID_ECM_81));
     TSUNIT_EQUAL(u"Nagravision ECM (odd)", ts::names::TID(duck, ts::TID_ECM_81, ts::CASID_NAGRA_MIN));
-    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(duck, ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::names::VALUE));
+    TSUNIT_EQUAL(u"SafeAccess EMM-A (0x86)", ts::names::TID(duck, ts::TID_SA_EMM_A, ts::CASID_SAFEACCESS, ts::NamesFlags::VALUE));
     TSUNIT_EQUAL(u"Logiways DMT", ts::names::TID(duck, ts::TID_LW_DMT, ts::CASID_SAFEACCESS));
     TSUNIT_EQUAL(u"unknown (0x90)", ts::names::TID(duck, ts::TID_LW_DMT));
 }
@@ -208,17 +231,17 @@ void NamesTest::testPrivateDataSpecifier()
     TSUNIT_EQUAL(u"EACEM/EICTA", ts::names::PrivateDataSpecifier(0x28));
     TSUNIT_EQUAL(tdfRef, ts::names::PrivateDataSpecifier(0x1A));
 
-    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028)", ts::names::PrivateDataSpecifier(0x28, ts::names::VALUE));
-    TSUNIT_EQUAL(u"0x00000028 (EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::names::FIRST));
-    TSUNIT_EQUAL(u"40 (EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::names::DECIMAL_FIRST));
-    TSUNIT_EQUAL(u"0x00000028 (40, EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::names::FIRST | ts::names::BOTH));
-    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028, 40)", ts::names::PrivateDataSpecifier(0x28, ts::names::VALUE | ts::names::BOTH));
-    TSUNIT_EQUAL(u"EACEM/EICTA (40)", ts::names::PrivateDataSpecifier(0x28, ts::names::VALUE | ts::names::DECIMAL));
+    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::VALUE));
+    TSUNIT_EQUAL(u"0x00000028 (EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"40 (EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::DECIMAL_FIRST));
+    TSUNIT_EQUAL(u"0x00000028 (40, EACEM/EICTA)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::FIRST | ts::NamesFlags::BOTH));
+    TSUNIT_EQUAL(u"EACEM/EICTA (0x00000028, 40)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::VALUE | ts::NamesFlags::BOTH));
+    TSUNIT_EQUAL(u"EACEM/EICTA (40)", ts::names::PrivateDataSpecifier(0x28, ts::NamesFlags::VALUE | ts::NamesFlags::DECIMAL));
 
     TSUNIT_EQUAL(u"unknown (0x00008123)", ts::names::PrivateDataSpecifier(0x8123));
-    TSUNIT_EQUAL(u"unknown (33059)", ts::names::PrivateDataSpecifier(0x8123, ts::names::DECIMAL));
-    TSUNIT_EQUAL(u"33059 (unknown)", ts::names::PrivateDataSpecifier(0x8123, ts::names::DECIMAL_FIRST));
-    TSUNIT_EQUAL(u"unknown (0x00008123, 33059)", ts::names::PrivateDataSpecifier(0x8123, ts::names::DECIMAL | ts::names::HEXA));
+    TSUNIT_EQUAL(u"unknown (33059)", ts::names::PrivateDataSpecifier(0x8123, ts::NamesFlags::DECIMAL));
+    TSUNIT_EQUAL(u"33059 (unknown)", ts::names::PrivateDataSpecifier(0x8123, ts::NamesFlags::DECIMAL_FIRST));
+    TSUNIT_EQUAL(u"unknown (0x00008123, 33059)", ts::names::PrivateDataSpecifier(0x8123, ts::NamesFlags::DECIMAL | ts::NamesFlags::HEXA));
 }
 
 void NamesTest::testCASFamily()
@@ -281,7 +304,7 @@ void NamesTest::testDID()
     TSUNIT_EQUAL(u"Data Broadcast Id", ts::names::DID(ts::DID_DATA_BROADCAST_ID));
     TSUNIT_EQUAL(u"unknown (0x83)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM));
     TSUNIT_EQUAL(u"Logical Channel Number", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM));
-    TSUNIT_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM, ts::TID_NULL, ts::names::FIRST));
+    TSUNIT_EQUAL(u"0x83 (Logical Channel Number)", ts::names::DID(ts::DID_LOGICAL_CHANNEL_NUM, ts::PDS_EACEM, ts::TID_NULL, ts::NamesFlags::FIRST));
 }
 
 void NamesTest::testEDID()
@@ -364,7 +387,7 @@ void NamesTest::testDTSSampleRateCode()
 void NamesTest::testAC3ComponentType()
 {
     TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::AC3ComponentType(0x92));
-    TSUNIT_EQUAL(u"0x92 (Enhanced AC-3, combined, visually impaired, 2 channels)", ts::names::AC3ComponentType(0x92, ts::names::FIRST));
+    TSUNIT_EQUAL(u"0x92 (Enhanced AC-3, combined, visually impaired, 2 channels)", ts::names::AC3ComponentType(0x92, ts::NamesFlags::FIRST));
 }
 
 void NamesTest::testComponentType()
@@ -414,18 +437,45 @@ void NamesTest::testT2MIPacketType()
 void NamesTest::testPlatformId()
 {
     TSUNIT_EQUAL(u"Horizonsat", ts::names::PlatformId(10));
-    TSUNIT_EQUAL(u"0x000004 (TV digitale mobile, Telecom Italia)", ts::names::PlatformId(4, ts::names::FIRST));
-    TSUNIT_EQUAL(u"VTC Mobile TV (0x704001)", ts::names::PlatformId(0x704001, ts::names::VALUE));
+    TSUNIT_EQUAL(u"0x000004 (TV digitale mobile, Telecom Italia)", ts::names::PlatformId(4, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"VTC Mobile TV (0x704001)", ts::names::PlatformId(0x704001, ts::NamesFlags::VALUE));
 }
 
 void NamesTest::testDektec()
 {
     // Just check that the names file is correctly read and valid.
-    TSUNIT_ASSERT(!ts::DektecNames::Instance()->dtCaps(0).empty());
+    TSUNIT_EQUAL(0, ts::NamesFile::Instance(ts::NamesFile::Predefined::DEKTEC)->errorCount());
+    TSUNIT_ASSERT(!ts::NamesFile::Instance(ts::NamesFile::Predefined::DEKTEC)->nameFromSection(u"DtCaps", 0).empty());
 }
 
 void NamesTest::testHiDes()
 {
     // Just check that the names file is correctly read and valid.
-    TSUNIT_ASSERT(!ts::HiDesNames::Instance()->error(0).empty());
+    TSUNIT_EQUAL(0, ts::NamesFile::Instance(ts::NamesFile::Predefined::HIDES)->errorCount());
+    TSUNIT_ASSERT(!ts::NamesFile::Instance(ts::NamesFile::Predefined::HIDES)->nameFromSection(u"HiDesErrorLinux", 0).empty());
+}
+
+void NamesTest::testIP()
+{
+    // Just check that the names file is correctly read and valid.
+    TSUNIT_EQUAL(0, ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->errorCount());
+    TSUNIT_ASSERT(ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->nameFromSection(u"IPProtocol", 6).startWith(u"TCP"));
+}
+
+void NamesTest::testExtension()
+{
+    // Create a temporary names file.
+    const ts::UString file(ts::AbsoluteFilePath(ts::TempFile()));
+    debug() << "NamesTest::testExtension: extension file: " << file << std::endl;
+    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"[CASystemId]", u"0xF123 = test-cas"}), file));
+
+    ts::DuckContext duck;
+    ts::NamesFile::DeleteInstance(ts::NamesFile::Predefined::DTV);
+    ts::NamesFile::RegisterExtensionFile reg(file);
+    TSUNIT_EQUAL(u"test-cas", ts::names::CASId(duck, 0xF123));
+    ts::NamesFile::UnregisterExtensionFile(file);
+    ts::NamesFile::DeleteInstance(ts::NamesFile::Predefined::DTV);
+
+    // Delete temporary file
+    ts::DeleteFile(file);
 }

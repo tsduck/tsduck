@@ -280,7 +280,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
         disp << margin << UString::Format(u"Original network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
         const uint8_t ltype = buf.getUInt8();
-        disp << margin << UString::Format(u"Linkage type: %s", {names::LinkageType(ltype, names::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Linkage type: %s", {names::LinkageType(ltype, NamesFlags::FIRST)}) << std::endl;
 
         // Variable part
         switch (ltype) {
@@ -348,7 +348,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // OUI_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << "OUI: " << names::OUI(buf.getUInt24(), names::FIRST) << std::endl;
+        disp << margin << "OUI: " << names::OUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
         const size_t len = buf.getUInt8();
         disp.displayPrivateData(u"Selector data", buf, len, margin);
     }
@@ -386,7 +386,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(buf.getUInt24(), names::HEXA_FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(buf.getUInt24(), NamesFlags::HEXA_FIRST)}) << std::endl;
         buf.pushReadSizeFromLength(8); // platform_name_loop_length
         while (buf.canReadBytes(4)) {
             disp << margin << "  Language: " << buf.getLanguageCode();

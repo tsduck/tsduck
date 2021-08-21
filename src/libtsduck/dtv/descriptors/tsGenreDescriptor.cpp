@@ -98,7 +98,7 @@ void ts::GenreDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf,
         size_t count = buf.getBits<size_t>(5);
         disp << margin << UString::Format(u"Attribute count: %d", {count}) << std::endl;
         while (count-- > 0 && buf.canReadBytes(1)) {
-            disp << margin << " - Attribute: " << NameFromSection(u"ATSCGenreCode", buf.getUInt8(), names::FIRST) << std::endl;
+            disp << margin << " - Attribute: " << NameFromSection(u"ATSCGenreCode", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         }
     }
 }

@@ -108,7 +108,7 @@ void ts::SSULocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     if (buf.canReadBytes(2)) {
         const uint16_t id = buf.getUInt16();
-        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, NamesFlags::HEXA_FIRST) << std::endl;
         if (id == 0x000A && buf.canReadBytes(2)) {
             disp << margin << UString::Format(u"Association tag: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
         }

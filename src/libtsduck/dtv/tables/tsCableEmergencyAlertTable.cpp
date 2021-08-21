@@ -462,7 +462,7 @@ void ts::CableEmergencyAlertTable::DisplaySection(TablesDisplay& disp, const ts:
         buf.skipBits(2);
         const uint16_t county = buf.getBits<uint16_t>(10);
         disp << margin
-             << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, NameFromSection(u"EASCountySubdivision", subd, names::VALUE)})
+             << UString::Format(u"  State code: %d, county: %d, subdivision: %s", {state, county, NameFromSection(u"EASCountySubdivision", subd, NamesFlags::VALUE)})
              << std::endl;
     }
 

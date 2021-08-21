@@ -159,7 +159,7 @@ void ts::BasicLocalEventDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
     if (buf.canReadBytes(2)) {
         buf.skipBits(4);
         const uint8_t mode = buf.getBits<uint8_t>(4);
-        disp << margin << "Segmentation mode: " << NameFromSection(u"BasicLocalEventSegmentation", mode, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Segmentation mode: " << NameFromSection(u"BasicLocalEventSegmentation", mode, NamesFlags::DECIMAL_FIRST) << std::endl;
         buf.pushReadSizeFromLength(8); // segmentation_info_length
         if (mode == 0) {
         }

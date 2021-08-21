@@ -107,8 +107,8 @@ void ts::UpdateDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::UpdateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canRead()) {
-        disp << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
-        disp << margin << "Update method: " << NameFromSection(u"SSUUpdateMethod", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Update flag: " << NameFromSection(u"SSUUpdateFlag", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Update method: " << NameFromSection(u"SSUUpdateMethod", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
         disp << margin << UString::Format(u"Update priority: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }

@@ -239,7 +239,7 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp << margin << UString::Format(u"Context id: 0x%X (%<d)", {section.tableIdExtension()}) << std::endl;
 
     if (buf.canReadBytes(3)) {
-        disp << margin << "Context id type: " << NameFromSection(u"RNTContextIdType", buf.getUInt8(), names::HEXA_FIRST) << std::endl;
+        disp << margin << "Context id type: " << NameFromSection(u"RNTContextIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin, u"RNT top-level descriptors:", u"None");
 
         // Loop on resolution providers.
@@ -256,7 +256,7 @@ void ts::RNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
                 disp << margin << "  - CRID authority name: \"" << buf.getStringWithByteLength() << "\"" << std::endl;
                 if (buf.canReadBytes(1)) {
                     buf.skipBits(2);
-                    disp << margin << "    CRID authority policy: " << NameFromSection(u"CRIDAuthorityPolicy", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+                    disp << margin << "    CRID authority policy: " << NameFromSection(u"CRIDAuthorityPolicy", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
                     disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"CRID authority-level descriptors:", u"None");
                 }
             }
