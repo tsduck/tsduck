@@ -194,5 +194,7 @@ endif
 
 # Make sure that full paths of source files never appear in binaries.
 ifneq ($(CC_FILE_PREFIX_MAP),)
-    CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
+    ifeq ($(DEBUG),)
+        CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
+    endif    
 endif
