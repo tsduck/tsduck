@@ -308,7 +308,7 @@ void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
         }
         tsp->info(u"PID 0x%X (%d), packet type: %s, size: %d bytes, packet count: %d, superframe index: %d, frame index: %d%s",
                   {pid, pid,
-                   names::T2MIPacketType(uint8_t(pkt.packetType()), names::HEXA_FIRST),
+                   names::T2MIPacketType(uint8_t(pkt.packetType()), NamesFlags::HEXA_FIRST),
                    pkt.size(), pkt.packetCount(), pkt.superframeIndex(), pkt.frameIndex(), plpInfo});
     }
 

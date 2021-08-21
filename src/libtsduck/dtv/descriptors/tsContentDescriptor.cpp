@@ -102,7 +102,7 @@ void ts::ContentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(2)) {
-        disp << margin << "Content: " << names::Content(disp.duck(), buf.getUInt8(), names::FIRST);
+        disp << margin << "Content: " << names::Content(disp.duck(), buf.getUInt8(), NamesFlags::FIRST);
         disp << UString::Format(u" / User: 0x%X", {buf.getUInt8()}) << std::endl;
     }
 }

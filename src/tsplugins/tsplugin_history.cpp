@@ -512,11 +512,11 @@ ts::ProcessorPlugin::Status ts::HistoryPlugin::processPacket(TSPacket& pkt, TSPa
     if (has_pes_start) {
         if (!cpid.pes_strid.set()) {
             // Found first PES stream id in the PID.
-            report(u"PID %d (0x%<X), PES stream_id is %s", {pid, names::StreamId(pes_stream_id, names::FIRST)});
+            report(u"PID %d (0x%<X), PES stream_id is %s", {pid, names::StreamId(pes_stream_id, NamesFlags::FIRST)});
         }
         else if (cpid.pes_strid != pes_stream_id && !_ignore_stream_id) {
             // PES stream id has changed in the PID.
-            report(u"PID %d (0x%<X), PES stream_id modified from 0x%X to %s", {pid, cpid.pes_strid.value(), names::StreamId(pes_stream_id, names::FIRST)});
+            report(u"PID %d (0x%<X), PES stream_id modified from 0x%X to %s", {pid, cpid.pes_strid.value(), names::StreamId(pes_stream_id, NamesFlags::FIRST)});
         }
         cpid.pes_strid = pes_stream_id;
     }

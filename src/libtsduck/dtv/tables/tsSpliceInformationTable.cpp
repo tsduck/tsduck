@@ -428,7 +428,7 @@ void ts::SpliceInformationTable::DisplaySection(TablesDisplay& disp, const ts::S
             const size_t cmd_length = buf.getBits<size_t>(12);
             const uint8_t cmd_type = buf.getUInt8();
             disp << margin
-                 << "Command type: " << NameFromSection(u"SpliceCommandType", cmd_type, names::HEXA_FIRST)
+                 << "Command type: " << NameFromSection(u"SpliceCommandType", cmd_type, NamesFlags::HEXA_FIRST)
                  << ", size: " << (cmd_length == 0x0FFF ? u"unspecified" : UString::Format(u"%d bytes", {cmd_length}))
                  << std::endl;
 

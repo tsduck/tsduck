@@ -92,7 +92,6 @@ Bits = 8
 0x51 = VMTP: Versatile Message Transaction Protocol
 0x52 = SECURE-VMTP: Secure Versatile Message Transaction Protocol
 0x53 = VINES: VINES
-0x54 = TTP: TTP
 0x54 = IPTM: Internet Protocol Traffic Manager
 0x55 = NSFNET-IGP: NSFNET-IGP
 0x56 = DGP: Dissimilar Gateway Protocol

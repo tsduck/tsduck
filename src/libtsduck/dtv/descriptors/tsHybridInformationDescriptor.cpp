@@ -150,7 +150,7 @@ void ts::HybridInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
         const bool location_type = buf.getBool();
         disp << margin << "Has location: " << UString::YesNo(has_location) << std::endl;
         disp << margin << "Location type: " << (location_type ? "connected" : "broadcast") << std::endl;
-        disp << margin << "Format: " << NameFromSection(u"ISDBHybridInformationFormat", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Format: " << NameFromSection(u"ISDBHybridInformationFormat", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
         buf.skipBits(2);
         if (has_location) {
             if (location_type) {

@@ -71,6 +71,7 @@ public:
     void testTCPSocket();
     void testUDPSocket();
     void testIPHeader();
+    void testIPProtocol();
     void testTCPPacket();
     void testUDPPacket();
 
@@ -86,6 +87,7 @@ public:
     TSUNIT_TEST(testTCPSocket);
     TSUNIT_TEST(testUDPSocket);
     TSUNIT_TEST(testIPHeader);
+    TSUNIT_TEST(testIPProtocol);
     TSUNIT_TEST(testTCPPacket);
     TSUNIT_TEST(testUDPPacket);
     TSUNIT_TEST_END();
@@ -719,7 +721,6 @@ void NetworkingTest::testUDPSocket()
     CERR.debug(u"UDPSocketTest: main thread: reply sent");
 }
 
-// Test IP header
 void NetworkingTest::testIPHeader()
 {
     static const uint8_t reference_header[] = {
@@ -743,6 +744,12 @@ void NetworkingTest::testIPHeader()
     TSUNIT_ASSERT(ts::IPv4Packet::UpdateIPHeaderChecksum(header, sizeof(header)));
     TSUNIT_ASSERT(ts::IPv4Packet::VerifyIPHeaderChecksum(header, sizeof(header)));
     TSUNIT_EQUAL(0x328B, ts::IPv4Packet::IPHeaderChecksum(header, sizeof(header)));
+}
+
+void NetworkingTest::testIPProtocol()
+{
+    TSUNIT_EQUAL(u"TCP", ts::IPProtocolName(ts::IPv4_PROTO_TCP));
+    TSUNIT_EQUAL(u"UDP", ts::IPProtocolName(ts::IPv4_PROTO_UDP));
 }
 
 void NetworkingTest::testTCPPacket()

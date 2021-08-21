@@ -29,6 +29,7 @@
 
 #include "tsIPUtils.h"
 #include "tsIPv4Address.h"
+#include "tsNamesFile.h"
 #if defined(TS_MAC)
 #include <ifaddrs.h>
 #endif
@@ -204,4 +205,22 @@ bool ts::GetLocalIPAddresses(IPv4AddressVector& list, Report& report)
     else {
         return false;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get the name of an IP protocol (UDP, TCP, etc).
+//----------------------------------------------------------------------------
+
+ts::UString ts::IPProtocolName(uint8_t protocol, bool long_format)
+{
+    // The strings in tsduck.ip.names use format "acronym: description".
+    UString name(ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->nameFromSection(u"IPProtocol", protocol));
+    if (!long_format) {
+        const size_t colon = name.find(u':');
+        if (colon != NPOS) {
+            name.resize(colon);
+        }
+    }
+    return name;
 }

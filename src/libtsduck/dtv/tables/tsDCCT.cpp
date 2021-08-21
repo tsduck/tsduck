@@ -257,7 +257,7 @@ void ts::DCCT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
 
             // Loop on all DCC selection terms.
             while (dcc_term_count-- > 0 && buf.canReadBytes(9)) {
-                disp << margin << "  - DCC selection type: " << NameFromSection(u"DCCSelectionType", buf.getUInt8(), names::FIRST) << std::endl;
+                disp << margin << "  - DCC selection type: " << NameFromSection(u"DCCSelectionType", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
                 disp << margin << UString::Format(u"    DCC selection id: 0x%X", {buf.getUInt64()}) << std::endl;
                 disp.displayDescriptorListWithLength(section, buf, margin + u"    ", u"DCC selection term descriptors:", UString(), 10);
             }

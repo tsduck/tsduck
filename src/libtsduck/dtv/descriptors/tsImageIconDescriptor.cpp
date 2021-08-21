@@ -190,11 +190,11 @@ void ts::ImageIconDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 
         if (desc == 0) {
             const uint8_t transport = buf.getBits<uint8_t>(2);
-            disp << margin << "Transport mode: " << NameFromSection(u"IconTransportMode", transport, names::DECIMAL_FIRST) << std::endl;
+            disp << margin << "Transport mode: " << NameFromSection(u"IconTransportMode", transport, NamesFlags::DECIMAL_FIRST) << std::endl;
             const bool has_position = buf.getBool();
             disp << margin << "Position specified: " << UString::YesNo(has_position) << std::endl;
             if (has_position) {
-                disp << margin << "Coordinate system: " << NameFromSection(u"IconCoordinateSystem", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+                disp << margin << "Coordinate system: " << NameFromSection(u"IconCoordinateSystem", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
                 buf.skipBits(2);
                 if (buf.canReadBytes(3)) {
                     disp << margin << UString::Format(u"Horizontal origin: %d", {buf.getBits<uint16_t>(12)});

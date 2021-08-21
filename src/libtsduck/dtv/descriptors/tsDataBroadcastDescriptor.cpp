@@ -84,7 +84,7 @@ void ts::DataBroadcastDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 {
     if (buf.canReadBytes(4)) {
         const uint16_t dbid = buf.getUInt16();
-        disp << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, names::BOTH_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << names::DataBroadcastId(dbid, NamesFlags::BOTH_FIRST) << std::endl;
         disp << margin << UString::Format(u"Component tag: %d (0x%<X), ", {buf.getUInt8()}) << std::endl;
 
         buf.pushReadSizeFromLength(8); // selector_length

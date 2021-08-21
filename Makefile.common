@@ -833,7 +833,7 @@ endif
 
 # Check if option -ffile-prefix-map is supported.
 # GCC: v8 and higher, clang on Linux: v10 and higher, clang on macOS: v12 and higher.
-# Note on clang: the option is not documenter, the abover versions were checked by experimentation.
+# Note on clang: the option is not documented, the above versions were checked by experimentation.
 ifdef USE_GCC
     ifdef GCC_8_OR_MORE
         export CC_FILE_PREFIX_MAP = true

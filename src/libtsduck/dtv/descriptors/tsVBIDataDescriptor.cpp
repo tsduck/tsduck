@@ -108,7 +108,7 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 {
     while (buf.canReadBytes(2)) {
         const uint8_t data_id = buf.getUInt8();
-        disp << margin << "Data service id: " << NameFromSection(u"VBIDataServiceId", data_id, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Data service id: " << NameFromSection(u"VBIDataServiceId", data_id, NamesFlags::HEXA_FIRST) << std::endl;
         buf.pushReadSizeFromLength(8); // data_service_descriptor_length
         if (!EntryHasReservedBytes(data_id)) {
             while (buf.canReadBytes(1)) {

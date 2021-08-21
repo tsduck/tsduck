@@ -37,6 +37,7 @@
 #include "tsSection.h"
 #include "tsTablesPtr.h"
 #include "tsSingletonManager.h"
+#include "tsNamesFile.h"
 #include "tsVersionInfo.h"
 
 namespace ts {
@@ -216,12 +217,6 @@ namespace ts {
         void getRegisteredTablesModels(UStringList& names) const;
 
         //!
-        //! Get the list of all registered additional names files.
-        //! @param [out] names List of all registered additional names files.
-        //!
-        void getRegisteredNamesFiles(UStringList& names) const;
-
-        //!
         //! A class to register fully implemented tables.
         //! The registration is performed using constructors.
         //! Thus, it is possible to perform a registration in the declaration of a static object.
@@ -332,27 +327,6 @@ namespace ts {
             RegisterXML(const UString& filename);
         };
 
-        //!
-        //! A class to register additional names files to merge with the names file.
-        //! The registration is performed using constructors.
-        //! Thus, it is possible to perform a registration in the declaration of a static object.
-        //!
-        class TSDUCKDLL RegisterNames
-        {
-            TS_NOBUILD_NOCOPY(RegisterNames);
-        public:
-            //!
-            //! Register an additional names file.
-            //! This file will be merged with the main names files.
-            //! @param [in] filename Name of the names file. This should be a simple file name,
-            //! without directory. This file will be searched in the same directory as the executable,
-            //! then in all directories from $TSPLUGINS_PATH, then from $LD_LIBRARY_PATH (Linux only),
-            //! then from $PATH.
-            //! @see TS_REGISTER_NAMES_FILE
-            //!
-            RegisterNames(const UString& filename);
-        };
-
     private:
         // Description of a table id. Several descriptions can be used for the same table id,
         // for instance for distinct DTV standards or disctinct CA systems.
@@ -398,7 +372,6 @@ namespace ts {
         std::multimap<UString, TID>                     _descriptorTablesIds;      // XML descriptor name to table id for table-specific descriptors
         std::map<uint16_t, DisplayCADescriptorFunction> _casIdDescriptorDisplays;  // CA_system_id to display function for CA_descriptor.
         UStringList                                     _xmlModelFiles;            // Additional XML model files for tables.
-        UStringList                                     _namesFiles;               // Additional names files.
 
         // Common code to lookup a table function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>
@@ -468,12 +441,3 @@ namespace ts {
 #define TS_REGISTER_XML_FILE(filename) \
     TS_LIBCHECK(); \
     static ts::PSIRepository::RegisterXML _TS_REGISTRAR_NAME(filename)
-
-//!
-//! @hideinitializer
-//! Registration of an extension names file inside the ts::PSIRepository singleton.
-//! This macro is typically used in the .cpp file of a TSDuck extension.
-//!
-#define TS_REGISTER_NAMES_FILE(filename) \
-    TS_LIBCHECK(); \
-    static ts::PSIRepository::RegisterNames _TS_REGISTRAR_NAME(filename)

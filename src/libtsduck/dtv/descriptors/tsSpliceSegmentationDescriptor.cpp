@@ -279,7 +279,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
             buf.setUserError();
         }
         else {
-            disp << margin << UString::Format(u"Segmentation upid type: %s", {NameFromSection(u"SpliceSegmentationUpIdType", buf.getUInt8(), names::HEXA_FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"Segmentation upid type: %s", {NameFromSection(u"SpliceSegmentationUpIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST)}) << std::endl;
             const size_t upid_size = buf.getUInt8();
             disp.displayPrivateData(u"Upid data", buf, upid_size, margin);
         }
@@ -291,7 +291,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         }
         else {
             type_id = buf.getUInt8();
-            disp << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, NamesFlags::HEXA_FIRST)}) << std::endl;
             disp << margin << UString::Format(u"Segment number: %d", {buf.getUInt8()});
             disp << UString::Format(u", expected segments: %d", {buf.getUInt8()}) << std::endl;
         }

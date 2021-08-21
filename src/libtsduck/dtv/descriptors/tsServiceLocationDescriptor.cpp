@@ -133,7 +133,7 @@ void ts::ServiceLocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         for (size_t i = 0; i < count && buf.canReadBytes(6); ++i) {
             const uint8_t stype = buf.getUInt8();
             disp << margin << UString::Format(u"- PID: 0x%X (%<d)", {buf.getPID()});
-            disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << names::ServiceType(stype, names::FIRST) << std::endl;
+            disp << ", language: \"" << buf.getLanguageCode() << "\", type: " << names::ServiceType(stype, NamesFlags::FIRST) << std::endl;
         }
     }
 }

@@ -123,7 +123,7 @@ void ts::SIParameterDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
         disp << margin << UString::Format(u"Parameter version: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         disp << margin << "Update time: " << buf.getMJD(2).format(Time::DATE) << std::endl;
         while (buf.canReadBytes(2)) {
-            disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, names::HEXA_FIRST) << std::endl;
+            disp << margin << "- Table id: " << names::TID(disp.duck(), buf.getUInt8(), CASID_NULL, NamesFlags::HEXA_FIRST) << std::endl;
             disp.displayPrivateData(u"Table description", buf, buf.getUInt8(), margin + u"  ");
         }
     }
