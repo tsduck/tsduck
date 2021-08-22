@@ -50,7 +50,13 @@ ts::PcapFile::PcapFile() :
     _ng(false),
     _major(0),
     _minor(0),
+    _file_size(0),
     _packet_count(0),
+    _ipv4_packet_count(0),
+    _packets_size(0),
+    _ipv4_packets_size(0),
+    _first_timestamp(-1),
+    _last_timestamp(-1),
     _if()
 {
 }
@@ -94,6 +100,16 @@ bool ts::PcapFile::open(const UString& filename, Report& report)
         return false;
     }
 
+    // Reset counters.
+    _error = false;
+    _file_size = 0;
+    _packet_count = 0;
+    _ipv4_packet_count = 0;
+    _packets_size = 0;
+    _ipv4_packets_size = 0;
+    _first_timestamp = -1;
+    _last_timestamp = -1;
+
     // Open the file.
     if (filename.empty() || filename == u"-") {
         // Use standard input.
@@ -121,8 +137,6 @@ bool ts::PcapFile::open(const UString& filename, Report& report)
     }
 
     report.debug(u"opened %s, %s format version %d.%d, %s endian", {_name, _ng ? u"pcap-ng" : u"pcap", _major, _minor, _be ? u"big" : u"little"});
-    _error = false;
-    _packet_count = 0;
     return true;
 }
 
@@ -137,7 +151,6 @@ void ts::PcapFile::close()
         _file.close();
     }
     _in = nullptr;
-    _name.clear();
 }
 
 
@@ -156,6 +169,12 @@ bool ts::PcapFile::readall(uint8_t* data, size_t size, Report& report)
                 report.error(u"error reading %s", {_name});
             }
             return error(report);
+        }
+
+        // Get file size so far.
+        const std::ios::pos_type fpos = _in->tellg();
+        if (fpos != std::ios::pos_type(-1)) {
+            _file_size = size_t(fpos);
         }
 
         // Actual number of bytes.
@@ -452,6 +471,7 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
         }
 
         // Now process the captured packet.
+        _packets_size += cap_size;
         if (orig_size > cap_size) {
             report.debug(u"truncated captured packet ignored (%d bytes, truncated to %d)", {orig_size, cap_size});
             continue; // loop to next packet block
@@ -462,7 +482,13 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
         if (if_index < _if.size()) {
             ifd = _if[if_index];
         }
-        timestamp += ifd.time_offset;
+        if (timestamp >= 0) {
+            timestamp += ifd.time_offset;
+            if (_first_timestamp < 0) {
+                _first_timestamp = timestamp;
+            }
+            _last_timestamp = timestamp;
+        }
 
         report.debug(u"pcap data block: %d bytes, captured packet at offset %d, %d bytes (original: %d bytes), link type: %d",
                      {buffer.size(), cap_start, cap_size, orig_size, ifd.link_type});
@@ -498,6 +524,8 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
         // A possible IPv4 datagram was found.
         if (cap_size > 0) {
             if (packet.reset(buffer.data() + cap_start, cap_size)) {
+                _ipv4_packet_count++;
+                _ipv4_packets_size += cap_size;
                 return true;
             }
             else {
