@@ -57,11 +57,45 @@ namespace {
         bool        tcp_filter;
         bool        udp_filter;
         bool        others_filter;
+        bool        print_summary;
+        bool        list_streams;
+        bool        print_intervals;
         ts::IPv4SocketAddress source_filter;
         ts::IPv4SocketAddress dest_filter;
+        ts::MicroSecond       first_time_offset;
+        ts::MicroSecond       last_time_offset;
+        ts::MicroSecond       first_time;
+        ts::MicroSecond       last_time;
+        ts::MicroSecond       interval;
+
+    private:
+        // Get a date option and return it as micro-seconds since Unix epoch.
+        ts::MicroSecond getDate(const ts::UChar* arg, ts::MicroSecond def_value);
     };
 }
 
+// Get a date option and return it as micro-seconds since Unix epoch.
+ts::MicroSecond Options::getDate(const ts::UChar* arg, ts::MicroSecond def_value)
+{
+    ts::Time date;
+    const ts::UString str(value(arg));
+    if (str.empty()) {
+        return def_value;
+    }
+    else if (!date.decode(str, ts::Time::ALL)) {
+        error(u"invalid date \"%s\", use format \"YYYY/MM/DD:hh:mm:ss.mmm\"", {str});
+        return def_value;
+    }
+    else if (date < ts::Time::UnixEpoch) {
+        error(u"invalid date %s, must be after %s", {str, ts::Time::UnixEpoch});
+        return def_value;
+    }
+    else {
+        return (date - ts::Time::UnixEpoch) * ts::MicroSecPerMilliSec;
+    }
+}
+
+// Get command line options.
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze pcap and pcap-ng files", u"[options] [input-file]"),
     input_file(),
@@ -70,9 +104,17 @@ Options::Options(int argc, char *argv[]) :
     tcp_filter(false),
     udp_filter(false),
     others_filter(false),
+    print_summary(false),
+    list_streams(false),
+    print_intervals(false),
     source_filter(),
-    dest_filter()
-{
+    dest_filter(),
+    first_time_offset(-1),
+    last_time_offset(-1),
+    first_time(-1),
+    last_time(-1),
+    interval(-1)
+ {
     option(u"", 0, STRING, 0, 1);
     help(u"", u"file-name",
          u"Input file in pcap or pcap-ng format, typically as saved by Wireshark. "
@@ -83,17 +125,44 @@ Options::Options(int argc, char *argv[]) :
          u"Filter IPv4 packets based on the specified destination socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
 
-    option(u"first-packet", 'f', POSITIVE);
+    option(u"first-packet", 0, POSITIVE);
     help(u"first-packet",
          u"Filter packets starting at the specified number. "
          u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
          u"This is the same value as seen on Wireshark in the leftmost column.");
 
-    option(u"last-packet", 'l', POSITIVE);
+    option(u"first-timestamp", 0, UNSIGNED);
+    help(u"first-timestamp", u"micro-seconds",
+         u"Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture. "
+         u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
+
+    option(u"first-date", 0, STRING);
+    help(u"first-date", u"date-time",
+         u"Filter packets starting at the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
+
+    option(u"interval", 'i', POSITIVE);
+    help(u"interval", u"micro-seconds",
+         u"Print a summary of exchanged data by intervals of times in micro-seconds.");
+
+    option(u"last-packet", 0, POSITIVE);
     help(u"last-packet",
          u"Filter packets up to the specified number. "
          u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
          u"This is the same value as seen on Wireshark in the leftmost column.");
+
+    option(u"last-timestamp", 0, UNSIGNED);
+    help(u"last-timestamp", u"micro-seconds",
+         u"Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture. "
+         u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
+
+    option(u"last-date", 0, STRING);
+    help(u"last-date", u"date-time",
+         u"Filter packets up to the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
+
+    option(u"list-streams", 'l');
+    help(u"list-streams",
+         u"List all data streams. "
+         u"A data streams is made of all packets from one source to one destination using one protocol.");
 
     option(u"source", 's', STRING);
     help(u"source", u"[address][:port]",
@@ -121,6 +190,16 @@ Options::Options(int argc, char *argv[]) :
     others_filter = present(u"others");
     getIntValue(first_packet, u"first-packet", 1);
     getIntValue(last_packet, u"last-packet", std::numeric_limits<size_t>::max());
+    getIntValue(first_time_offset, u"first-timestamp", 0);
+    getIntValue(last_time_offset, u"last-timestamp", std::numeric_limits<ts::MicroSecond>::max());
+    getIntValue(interval, u"interval", 0);
+    first_time = getDate(u"first-date", 0);
+    last_time = getDate(u"last-date", std::numeric_limits<ts::MicroSecond>::max());
+    list_streams = present(u"list-streams");
+    print_intervals = present(u"interval");
+
+    // Default is to print a summary of the file content.
+    print_summary = !list_streams && !print_intervals;
 
     // Default is to filter all protocols.
     if (!tcp_filter && !udp_filter && !others_filter) {
@@ -149,10 +228,16 @@ namespace {
     {
         while (file.readIPv4(ip, timestamp, opt)) {
             // Do not read before --first-packet and after --last-packet.
-            if (file.packetCount() < opt.first_packet) {
+            if (file.packetCount() < opt.first_packet ||
+                timestamp < opt.first_time ||
+                file.timeOffset(timestamp) < opt.first_time_offset)
+            {
                 continue;
             }
-            if (file.packetCount() > opt.last_packet) {
+            if (file.packetCount() > opt.last_packet ||
+                timestamp > opt.last_time ||
+                file.timeOffset(timestamp) > opt.last_time_offset)
+            {
                 return false;
             }
             // Check if the packet shall be analyzed.
@@ -176,7 +261,8 @@ namespace {
 //----------------------------------------------------------------------------
 
 namespace {
-    class StatBlock {
+    class StatBlock
+    {
     public:
         // Constructor.
         StatBlock();
@@ -218,6 +304,168 @@ void StatBlock::addPacket(const ts::IPv4Packet& ip, ts::MicroSecond timestamp)
 
 
 //----------------------------------------------------------------------------
+// Identification of one "data stream".
+//----------------------------------------------------------------------------
+
+namespace {
+    class StreamId
+    {
+    public:
+        ts::IPv4SocketAddress source;
+        ts::IPv4SocketAddress destination;
+        uint8_t               protocol;
+
+        // Constructor.
+        StreamId(const ts::IPv4SocketAddress& src = ts::IPv4SocketAddress(), const ts::IPv4SocketAddress& dst = ts::IPv4SocketAddress(), uint8_t proto = 0xFF);
+
+        // Comparison, for use in containers.
+        bool operator<(const StreamId& other) const;
+    };
+}
+
+StreamId::StreamId(const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, uint8_t proto) :
+    source(src),
+    destination(dst),
+    protocol(proto)
+{
+}
+
+bool StreamId::operator<(const StreamId& other) const
+{
+    if (source != other.source) {
+        return source < other.source;
+    }
+    else if (destination != other.destination) {
+        return destination < other.destination;
+    }
+    else {
+        return protocol < other.protocol;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display summary of content.
+//----------------------------------------------------------------------------
+
+namespace {
+    void DisplaySummary(std::ostream& out, const ts::PcapFile& file, const StatBlock& stats)
+    {
+        const size_t hwidth = 22; // header width
+
+        out << std::endl;
+        out << "File summary:" << std::endl;
+        out << ts::UString::Format(u"  %-*s %s", {hwidth, u"File:", file.fileName()}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total packets in file:", file.packetCount()}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total IPv4 packets:", file.ipv4PacketCount()}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"File size:", file.fileSize()}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total packets size:", file.totalPacketsSize()}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total IPv4 size:", file.totalIPv4PacketsSize()}) << std::endl;
+        out << std::endl;
+
+        out << "Filtered packets summary:" << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets:", stats.packet_count}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets size:", stats.total_ip_size}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Payload data size:", stats.total_data_size}) << std::endl;
+
+        if (stats.first_timestamp > 0 && stats.last_timestamp > 0) {
+            const ts::Time start(ts::Time::UnixEpoch + stats.first_timestamp / ts::MicroSecPerMilliSec);
+            const ts::Time end(ts::Time::UnixEpoch + stats.last_timestamp / ts::MicroSecPerMilliSec);
+            const ts::MicroSecond duration = stats.last_timestamp - stats.first_timestamp;
+            out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"Start time:", start, file.timeOffset(stats.first_timestamp)}) << std::endl;
+            out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"End time:", end, file.timeOffset(stats.last_timestamp)}) << std::endl;
+            if (duration > 0) {
+                out << ts::UString::Format(u"  %-*s %'d micro-seconds", {hwidth, u"Duration:", duration}) << std::endl;
+                out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"IP bitrate:", (ts::BitRate(stats.total_ip_size * 8 * ts::MicroSecPerSec) / duration)}) << std::endl;
+                out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"Data bitrate:", (ts::BitRate(stats.total_data_size * 8 * ts::MicroSecPerSec) / duration)}) << std::endl;
+            }
+        }
+        out << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display list of streams.
+//----------------------------------------------------------------------------
+
+namespace {
+    void ListStreams(std::ostream& out, const ts::PcapFile& file, const std::map<StreamId,StatBlock>& stats, ts::MicroSecond duration)
+    {
+        out << std::endl;
+        out << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %11s",
+                                   {u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate"})
+            << std::endl;
+        for (auto it = stats.begin(); it != stats.end(); ++it) {
+            const StreamId& id(it->first);
+            const StatBlock& sb(it->second);
+            out << ts::UString::Format(u"%-22s %-22s %-8s %11'd %15'd %11'd",
+                                       {id.source, id.destination, ts::IPProtocolName(id.protocol),
+                                        sb.packet_count, sb.total_data_size,
+                                        duration <= 0 ? 0 : (ts::BitRate(sb.total_data_size * 8 * ts::MicroSecPerSec) / duration)})
+                << std::endl;
+        }
+        out << std::endl;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Display summary of content by interval of time.
+//----------------------------------------------------------------------------
+
+namespace {
+    class DisplayInterval
+    {
+        TS_NOBUILD_NOCOPY(DisplayInterval);
+    public:
+        // Constructor.
+        DisplayInterval(Options& opt);
+
+        // Start, stop display.
+        void start(std::ostream& out);
+        void stop(std::ostream& out);
+
+        // Process one IPv4 packet.
+        void addPacket(std::ostream& out, const ts::IPv4Packet&, ts::MicroSecond);
+
+    private:
+        Options&  _opt;
+        StatBlock _stat;
+    };
+}
+
+// Constructor.
+DisplayInterval::DisplayInterval(Options& opt) :
+    _opt(opt),
+    _stat()
+{
+}
+
+// Start the display.
+void DisplayInterval::start(std::ostream& out)
+{
+    out << std::endl;
+    //@@@@
+}
+
+// Process one IPv4 packet.
+void DisplayInterval::addPacket(std::ostream& out, const ts::IPv4Packet&, ts::MicroSecond)
+{
+    if (_opt.interval > 0) {
+        //@@@@
+    }
+}
+
+// Stop the display.
+void DisplayInterval::stop(std::ostream& out)
+{
+    //@@@@
+    out << std::endl;
+}
+
+
+//----------------------------------------------------------------------------
 // Program main code.
 //----------------------------------------------------------------------------
 
@@ -232,35 +480,39 @@ int MainCode(int argc, char *argv[])
         return EXIT_FAILURE;
     }
 
+    // Statistics per data stream and global.
+    std::map<StreamId,StatBlock> streams_stats;
+    StatBlock global_stats;
+
+    // Display list of time intervals.
+    DisplayInterval interval(opt);
+    if (opt.print_intervals) {
+        interval.start(std::cout);
+    }
+
     // Read all IPv4 packets from the file.
-    StatBlock stats;
-    ts::IPv4Packet ip;;
+    ts::IPv4Packet ip;
     ts::MicroSecond timestamp = 0;
     while (ReadPacket(opt, file, ip, timestamp)) {
-        stats.addPacket(ip, timestamp);
-    }
-    const size_t file_packet_count = file.packetCount();
-    file.close();
-
-    // Display statistics.
-    std::cout << ts::UString::Format(u"IPv4 packets:       %'d (out of %'d captured packets)", {stats.packet_count, file_packet_count}) << std::endl;
-    std::cout << ts::UString::Format(u"Total packets size: %'d bytes", {stats.total_ip_size}) << std::endl;
-    std::cout << ts::UString::Format(u"Total data size:    %'d bytes", {stats.total_data_size}) << std::endl;
-    if (stats.first_timestamp < 0 || stats.last_timestamp < 0) {
-        std::cout << "No timestamp available" << std::endl;
-    }
-    else {
-        ts::Time start(ts::Time::UnixEpoch + stats.first_timestamp / ts::MicroSecPerMilliSec);
-        ts::Time end(ts::Time::UnixEpoch + stats.last_timestamp / ts::MicroSecPerMilliSec);
-        std::cout << "Start time:         " << start << std::endl;
-        std::cout << "End time:           " << end << std::endl;
-        const ts::MicroSecond duration = stats.last_timestamp - stats.first_timestamp;
-        if (duration > 0) {
-            std::cout << ts::UString::Format(u"Duration:           %'d micro-seconds", {duration}) << std::endl;
-            std::cout << "IP bitrate:         " << (ts::BitRate(stats.total_ip_size * 8 * ts::MicroSecPerSec) / duration) << " b/s" << std::endl;
-            std::cout << "Data bitrate:       " << (ts::BitRate(stats.total_data_size * 8 * ts::MicroSecPerSec) / duration) << " b/s" << std::endl;
+        global_stats.addPacket(ip, timestamp);
+        if (opt.list_streams) {
+            streams_stats[StreamId(ip.sourceSocketAddress(), ip.destinationSocketAddress(), ip.protocol())].addPacket(ip, timestamp);
+        }
+        if (opt.print_intervals) {
+            interval.addPacket(std::cout, ip, timestamp);
         }
     }
+    file.close();
 
+    // Print final data.
+    if (opt.print_intervals) {
+        interval.stop(std::cout);
+    }
+    if (opt.list_streams) {
+        ListStreams(std::cout, file, streams_stats, global_stats.last_timestamp - global_stats.first_timestamp);
+    }
+    if (opt.print_summary) {
+        DisplaySummary(std::cout, file, global_stats);
+    }
     return EXIT_SUCCESS;
 }
