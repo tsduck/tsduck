@@ -93,6 +93,8 @@ ts::VersionInfo::~VersionInfo()
 
 void ts::VersionInfo::startNewVersionDetection()
 {
+#if !defined(TS_NO_GITHUB)
+
     // Do not start more than once.
     // If the environment variable is not empty, do not start the new version check.
     if (_started || !GetEnvironment(u"TSDUCK_NO_VERSION_CHECK").empty()) {
@@ -125,6 +127,8 @@ void ts::VersionInfo::startNewVersionDetection()
 
     // Start the thread.
     _started = start();
+
+#endif
 }
 
 
@@ -134,6 +138,8 @@ void ts::VersionInfo::startNewVersionDetection()
 
 void ts::VersionInfo::main()
 {
+#if !defined(TS_NO_GITHUB)
+
     // Get new version from GitHub.
     const ts::GitHubRelease rel(u"tsduck", u"tsduck", UString(), _debug);
 
@@ -152,6 +158,8 @@ void ts::VersionInfo::main()
         // The current version is older than latest one on GitHub.
         _report.info(u"new TSDuck version %s is available (yours is %s), use 'tsversion --upgrade' or see https://tsduck.io/", {remote, current});
     }
+
+#endif
 }
 
 

@@ -209,3 +209,19 @@ extern "C" {
 #define TS_LIBCHECK() \
     TS_STATIC_REFERENCE(version, &TSDUCK_LIBRARY_VERSION_SYMBOL); \
     TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_SYMBOL)
+
+#if defined(DOXYGEN)
+//!
+//! Macro to disable remote version checking on GitHub.
+//!
+//! When this macro is defined on the compilation command line, no version
+//! check is performed on GitHub. The utility @e tsversion does not call
+//! GitHub, does not check, downlaod or upgrade new versions.
+//!
+//! This macro is typically used by packagers of Linux distros who have the
+//! exclusive distribution of software packages. In that case, the packages
+//! for TSDuck shall be exclusively upgraded from the distro repositories,
+//! not using binaries from GitHub.
+//!
+#define TS_NO_GITHUB 1
+#endif
