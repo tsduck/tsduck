@@ -31,12 +31,21 @@
 #
 #  Additional options which can be defined:
 #
-#  - NOTEST  : Do not build unitary tests.
-#  - NODTAPI : No Dektec support, remove dependency to DTAPI.
-#  - NOCURL  : No HTTP support, remove dependency to libcurl.
-#  - NOPCSC  : No smartcard support, remove dependency to pcsc-lite.
-#  - NOSRT   : No SRT support, remove dependency to libsrt.
+#  - NOTEST     : Do not build unitary tests.
+#  - NODTAPI    : No Dektec support, remove dependency to DTAPI.
+#  - NOCURL     : No HTTP support, remove dependency to libcurl.
+#  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
+#  - NOSRT      : No SRT support, remove dependency to libsrt.
 #  - NOTELETEXT : No Teletext support, remove teletext handling code.
+#  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
+#
+#  Options to define the representation of bitrates:
+#
+#  - BITRATE_INTEGER    : Bitrates are 64-bit integer.
+#  - BITRATE_FRACTION   : Bitrates are fractions of two 64-bit integers.
+#  - BITRATE_FLOAT      : Bitrates are 64-bit floating-point.
+#  - BITRATE_FIXED      : Bitrates are 64-bit fixed-point (the default).
+#  - BITRATE_DECIMALS=n : Number of decimal with fixed-point (default: 1).
 #
 #-----------------------------------------------------------------------------
 

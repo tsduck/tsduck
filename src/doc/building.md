@@ -162,6 +162,37 @@ On Windows systems, there is only one binary installer which contains the tools,
 plugins, documentation and development environment. The user can select which
 components shall be installed. The development environment is unselected by default.
 
+## For packagers of Linux distros {#distropack}
+
+Packagers of Linux distros may want to create TSDuck packages. The build methods
+are not different. This section contains a few hints to help the packaging.
+
+By default, TSDuck is built with capabilities to check the availability of new
+versions on GitHub. The `tsversion` command can also download and upgrade TSDuck
+from the binaries on GitHub. Packagers of Linux distros may want to disable this
+since they prefer to avoid mixing their TSDuck packages with the generic TSDuck
+packages on GitHub. To disable this feature, build TSDuck with `make NOGITHUB=1`.
+
+The way to build a package depends on the package management system. Usually,
+the build procedure includes an installation on a temporary fake system root.
+To build TSDuck and install it on `/temporary/fake/root`, use the following
+command:
+~~~~
+make NOGITHUB=1 install SYSROOT=/temporary/fake/root
+~~~~
+
+It is recommended to create two distinct packages: one for the TSDuck tools and
+plugins and one for the development environment. The development package shall
+require the pre-installation of the tools package.
+
+If you need to separately build TSDuck for each package, use targets `install-tools`
+and `install-devel` instead of `install` which installs everything:
+
+~~~~
+make NOGITHUB=1 install-tools SYSROOT=/temporary/fake/root
+make NOGITHUB=1 install-devel SYSROOT=/temporary/fake/root
+~~~~
+
 # Installing in non-standard locations {#nonstdinst}
 
 On systems where you have no administration privilege and consequently no right
