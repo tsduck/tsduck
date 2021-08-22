@@ -35,6 +35,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsMemory.h"
+#include "tsTime.h"
 #include "tsIPv4Packet.h"
 
 namespace ts {
@@ -147,6 +148,13 @@ namespace ts {
         //! @return Time offset in microseconds of the packet from the beginning of the file.
         //!
         MicroSecond timeOffset(MicroSecond timestamp) const { return timestamp < 0 || _first_timestamp < 0 ? 0 : timestamp - _first_timestamp; }
+
+        //!
+        //! Compute the date and time from a packet timestamp.
+        //! @param [in] timestamp Capture timestamp of a packet in a file.
+        //! @return Corresponding date or Epoch in case of error.
+        //!
+        static Time ToTime(MicroSecond timestamp) { return timestamp < 0 ? Time::Epoch : Time::UnixEpoch + (timestamp / MicroSecPerMilliSec); }
 
         //!
         //! Close the file.
