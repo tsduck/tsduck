@@ -126,7 +126,7 @@ namespace ts {
         //!
         //! Delete a common instance of NamesFile for a predefined configuration file.
         //! This should never be necessary unless TSDuck extensions are loaded on the fly.
-        //! This never happen since extensions are registered in macro TS_REGISTER_NAMES_FILE.
+        //! This never happens since extensions are registered in macro TS_REGISTER_NAMES_FILE.
         //! This is useful in test programs only.
         //! @param [in] index Identifier of the predefined file to get.
         //!
