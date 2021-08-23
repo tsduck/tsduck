@@ -10,13 +10,13 @@
 |     Suspect and ignored: ................ 0  |         Unreferenced: ... 0  |
 |-----------------------------------------------------------------------------|
 |  Transport stream bitrate, based on ....... 188 bytes/pkt    204 bytes/pkt  |
-|  User-specified: .......................... 2,200,001 b/s    2,387,235 b/s  |
+|  User-specified: .......................... 2,200,001 b/s    2,387,236 b/s  |
 |  Estimated based on PCR's: ................ 2,200,001 b/s    2,387,236 b/s  |
 |-----------------------------------------------------------------------------|
 |  Broadcast time: ..................................... 6 sec (0 min 6 sec)  |
 |-----------------------------------------------------------------------------|
 |  Srv Id  Service Name                              Access          Bitrate  |
-|  0x0001  Foo Demo ..................................... C    2,157,100 b/s  |
+|  0x0001  Foo Demo ..................................... C    2,157,101 b/s  |
 |                                                                             |
 |  Note 1: C=Clear, S=Scrambled                                               |
 |  Note 2: Unless specified otherwise, bitrates are based on 188 bytes/pkt    |
@@ -44,7 +44,7 @@
 |  PMT PID: 0x0100 (256), PCR PID: 0x0101 (257)                               |
 |-----------------------------------------------------------------------------|
 |     PID  Usage                                     Access          Bitrate  |
-|   Total  Digital television service ................... C    2,157,100 b/s  |
+|   Total  Digital television service ................... C    2,157,101 b/s  |
 |  0x0100  PMT .......................................... C       10,780 b/s  |
 |  0x0101  AVC video .................................... C    1,062,600 b/s  |
 |  0x0102  AC-3 Audio (eng, clean effects) .............. C    1,062,160 b/s  |

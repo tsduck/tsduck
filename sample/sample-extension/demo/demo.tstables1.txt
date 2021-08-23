@@ -3,7 +3,7 @@
   Short section, total size: 10 bytes
   - Section 0:
     Foo id: 0x0123
-    Data: 0987654321
+    Data (5 bytes): 09 87 65 43 21
 
 * FOOT, TID 240 (0xF0), PID 260 (0x0104)
   Version: 0, sections: 1, total size: 66 bytes
@@ -20,5 +20,5 @@
   Short section, total size: 9 bytes
   - Section 0:
     Foo id: 0x0123
-    Data: 74125896
+    Data (4 bytes): 74 12 58 96
 
