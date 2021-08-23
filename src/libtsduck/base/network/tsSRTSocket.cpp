@@ -949,7 +949,8 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAd
     const int ret = srt_send(sock, reinterpret_cast<const char*>(data), int(size));
     if (ret < 0) {
         // Differentiate peer disconnection (aka "end of file") and actual errors.
-        if (srt_getlasterror(nullptr) == SRT_ECONNLOST) {
+        const int err = srt_getlasterror(nullptr);
+        if (err == SRT_ECONNLOST || err == SRT_EINVSOCK) {
             disconnected = true;
         }
         else if (sock >= 0) {
@@ -990,7 +991,8 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Micro
     const int ret = srt_recvmsg2(_guts->sock, reinterpret_cast<char*>(data), int(max_size), &ctrl);
     if (ret < 0) {
         // Differentiate peer disconnection (aka "end of file") and actual errors.
-        if (srt_getlasterror(nullptr) == SRT_ECONNLOST) {
+        const int err = srt_getlasterror(nullptr);
+        if (err == SRT_ECONNLOST || err == SRT_EINVSOCK) {
             _guts->disconnected = true;
         }
         else if (_guts->sock >= 0) {
