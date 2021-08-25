@@ -62,6 +62,18 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // SCTE-35 splice event.
+        class SpliceEvent
+        {
+        public:
+            SpliceEvent();                // Constructor.
+            PacketCounter first_cmd_packet; // Packet index of first occurence of splice command for latest signaled event.
+            uint32_t      event_id;       // Latest signaled event.
+            uint64_t      event_pts;      // Latest signaled PTS (lowest PTS value in command).
+            bool          event_out;      // Copy of splice_out for this event.
+            size_t        event_count;    // Number of occurences of same insert commands for this event.
+        };
+
         // Context of a PID containing SCTE-35 splice commands.
         class SpliceContext
         {
@@ -69,11 +81,7 @@ namespace ts {
             SpliceContext();                // Constructor.
             uint64_t      last_pts;         // Last PTS value in audio/video PID's for that splice PID.
             PacketCounter last_pts_packet;  // Packet index of last PTS.
-            PacketCounter first_cmd_packet; // Packet index of first occurence of splice command for latest signaled event.
-            uint32_t      event_id;         // Latest signaled event.
-            uint64_t      event_pts;        // Latest signaled PTS (lowest PTS value in command).
-            bool          event_out;        // Copy of splice_out for this event.
-            size_t        event_count;      // Number of occurences of same insert commands for this event.
+            std::map<uint32_t,SpliceEvent> splice_events;  // Map event id to splice event.
         };
 
         // Command line options:
@@ -102,7 +110,7 @@ namespace ts {
         void setSplicePID(const PMT&, PID);
 
         // Build and report a one-line message.
-        UString message(PID splice_pid, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
+        UString message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
         void display(const UString& line);
 
         // Implementation of interfaces.
@@ -215,6 +223,15 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
 ts::SpliceMonitorPlugin::SpliceContext::SpliceContext() :
     last_pts(INVALID_PTS),
     last_pts_packet(0),
+    splice_events()
+{
+}
+
+//----------------------------------------------------------------------------
+// SCTE-35 splice event.
+//----------------------------------------------------------------------------
+
+ts::SpliceMonitorPlugin::SpliceEvent::SpliceEvent() :
     first_cmd_packet(0),
     event_id(SpliceInsert::INVALID_EVENT_ID),
     event_pts(INVALID_PTS),
@@ -338,17 +355,18 @@ void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 // Report a one-line message.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, const UChar* format, const std::initializer_list<ArgMixIn>& args)
+ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args)
 {
     UString line;
     if (_packet_index) {
         line.format(u"packet %'d, ", {tsp->pluginPackets()});
     }
     if (splice_pid != PID_NULL) {
-        const SpliceContext& ctx(_splice_contexts[splice_pid]);
+        SpliceContext& ctx(_splice_contexts[splice_pid]);
         line.format(u"splice PID 0x%X (%<d), ", {splice_pid});
-        if (ctx.event_id != SpliceInsert::INVALID_EVENT_ID) {
-            line.format(u"event 0x%X (%<d) %d, ", {ctx.event_id, ctx.event_out ? u"out" : u"in"});
+        if (event_id != SpliceInsert::INVALID_EVENT_ID) {
+            const SpliceEvent& evt(ctx.splice_events[event_id]);
+            line.format(u"event 0x%X (%<d) %d, ", {evt.event_id, evt.event_out ? u"out" : u"in"});
         }
     }
     line.format(format, args);
@@ -408,24 +426,25 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         const uint64_t event_pts = si.lowestPTS();
 
         if (si.canceled) {
-            display(message(spid, u"canceled"));
+            display(message(spid, si.event_id, u"canceled"));
         }
         else if (si.immediate) {
-            display(message(spid, u"immediately %s", {si.splice_out ? "OUT" : "IN"}));
+            display(message(spid, si.event_id, u"immediately %s", {si.splice_out ? "OUT" : "IN"}));
         }
         else {
+            SpliceEvent& evt(ctx.splice_events[si.event_id]);
             // This is a planned insert command. Is this a repetition or new event?
-            if (si.event_id == ctx.event_id && event_pts == ctx.event_pts && si.splice_out == ctx.event_out) {
+            if (si.event_id == evt.event_id && event_pts == evt.event_pts && si.splice_out == evt.event_out) {
                 // Repetition of a previous event.
-                ctx.event_count++;
+                evt.event_count++;
             }
             else {
                 // First command about a new event.
-                ctx.event_id = si.event_id;
-                ctx.event_pts = event_pts;
-                ctx.event_out = si.splice_out;
-                ctx.event_count = 1;
-                ctx.first_cmd_packet = tsp->pluginPackets();
+                evt.event_id = si.event_id;
+                evt.event_pts = event_pts;
+                evt.event_out = si.splice_out;
+                evt.event_count = 1;
+                evt.first_cmd_packet = tsp->pluginPackets();
             }
             // Format time to event.
             UString time;
@@ -439,14 +458,14 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
                         current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
                     }
                 }
-                if (current_pts > ctx.event_pts) {
-                    time.format(u", event is in the past by %'d ms", {PTSToMilliSecond(current_pts - ctx.event_pts)});
+                if (current_pts > evt.event_pts) {
+                    time.format(u", event is in the past by %'d ms", {PTSToMilliSecond(current_pts - evt.event_pts)});
                 }
                 else {
-                    time.format(u", time to event: %'d ms", {PTSToMilliSecond(ctx.event_pts - current_pts)});
+                    time.format(u", time to event: %'d ms", {PTSToMilliSecond(evt.event_pts - current_pts)});
                 }
             }
-            display(message(spid, u"occurrence #%d%s", {ctx.event_count, time}));
+            display(message(spid, si.event_id, u"occurrence #%d%s", {evt.event_count, time}));
         }
     }
 
@@ -477,30 +496,34 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
         ctx.last_pts = pkt.getPTS();
         ctx.last_pts_packet = tsp->pluginPackets();
 
-        // Look for event occurrence.
-        if (ctx.event_id != SpliceInsert::INVALID_EVENT_ID && ctx.event_pts != INVALID_PTS && ctx.last_pts >= ctx.event_pts) {
-            // Evaluate time since first command. Assume constant bitrate since then.
-            const MilliSecond preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - ctx.first_cmd_packet);
-            UString line(message(spid, u"occurred"));
-            if (preroll > 0) {
-                line.format(u", actual pre-roll time: %'d ms", {preroll});
+        for (auto it = ctx.splice_events.begin(); it != ctx.splice_events.end();) {
+            SpliceEvent& evt(it->second);
+            // Look for event occurrence.
+            if (evt.event_id != SpliceInsert::INVALID_EVENT_ID && evt.event_pts != INVALID_PTS && ctx.last_pts >= evt.event_pts) {
+                // Evaluate time since first command. Assume constant bitrate since then.
+                const MilliSecond preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - evt.first_cmd_packet);
+                UString line(message(spid, evt.event_id, u"occurred"));
+                if (preroll > 0) {
+                    line.format(u", actual pre-roll time: %'d ms", {preroll});
+                }
+                display(line);
+                // Raise alarm if outside nominal range.
+                if (!_alarm_command.empty() &&
+                    ((_min_preroll != 0 && preroll != 0 && preroll < _min_preroll) ||
+                    (_max_preroll != 0 && preroll > _max_preroll) ||
+                    (_min_repetition != 0 && evt.event_count < _min_repetition) ||
+                    (_max_repetition != 0 && evt.event_count > _max_repetition)))
+                {
+                    UString command;
+                    command.format(u"%s \"%s\" %d %d %s %d %d %d",
+                                   {_alarm_command, line, spid, evt.event_id, evt.event_out ? u"out" : u"in", evt.event_pts, preroll, evt.event_count});
+                    ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
+                }
+                // Forget about this event, it is now in the past.
+                it = ctx.splice_events.erase(it);
+            } else {
+                ++it;
             }
-            display(line);
-            // Raise alarm if outside nominal range.
-            if (!_alarm_command.empty() &&
-                ((_min_preroll != 0 && preroll != 0 && preroll < _min_preroll) ||
-                 (_max_preroll != 0 && preroll > _max_preroll) ||
-                 (_min_repetition != 0 && ctx.event_count < _min_repetition) ||
-                 (_max_repetition != 0 && ctx.event_count > _max_repetition)))
-            {
-                UString command;
-                command.format(u"%s \"%s\" %d %d %s %d %d %d",
-                               {_alarm_command, line, spid, ctx.event_id, ctx.event_out ? u"out" : u"in", ctx.event_pts, preroll, ctx.event_count});
-                ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
-            }
-            // Forget about this event, it is now in the past.
-            ctx.event_id = SpliceInsert::INVALID_EVENT_ID;
-            ctx.event_pts = INVALID_PTS;
         }
    }
 
