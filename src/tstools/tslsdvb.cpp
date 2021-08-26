@@ -136,7 +136,9 @@ namespace {
 #endif
 
         // Display name.
+        ts::UString margin;
         if (tuner_index >= 0) {
+            margin = u"   ";
             std::cout << tuner_index << ": ";
         }
         std::cout << quote << tuner.deviceName() << quote;
@@ -155,12 +157,12 @@ namespace {
             // Display device path.
             const ts::UString path(tuner.devicePath());
             if (!path.empty()) {
-                std::cout << (tuner_index >= 0 ? "   " : "") << "Device: " << path << std::endl;
+                std::cout << margin << "Device: " << path << std::endl;
             }
 
             // Display system-specific status (very verbose).
             std::cout << std::endl;
-            tuner.displayStatus(std::cout, u"  ", opt.extended);
+            tuner.displayStatus(std::cout, margin + u"  ", opt.extended);
             std::cout << std::endl;
         }
     }

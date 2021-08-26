@@ -28,6 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerEmulator.h"
+#include "tsSignalState.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsxmlModelDocument.h"
@@ -245,20 +246,12 @@ ts::UString ts::TunerEmulator::devicePath() const
 // Emulated signal characteristics.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::signalLocked()
+bool ts::TunerEmulator::getSignalState(SignalState& state)
 {
-    return _state == State::TUNED || _state == State::STARTED;
-}
-
-int ts::TunerEmulator::signalStrength()
-{
-    return _strength;
-}
-
-int ts::TunerEmulator::signalQuality()
-{
-    // Use same percentage as signal strength.
-    return _strength;
+    state.clear();
+    state.signal_locked = _state == State::TUNED || _state == State::STARTED;
+    state.setPercent(&SignalState::signal_strength, _strength, 0, 100);
+    return true;
 }
 
 

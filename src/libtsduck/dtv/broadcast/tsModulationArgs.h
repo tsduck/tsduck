@@ -535,11 +535,9 @@ namespace ts {
         //!
         //! Format a short description (frequency and essential parameters).
         //! @param [out] duck TSDuck execution context.
-        //! @param [in] strength Signal strength in percent. Ignored if negative.
-        //! @param [in] quality Signal quality in percent. Ignored if negative.
         //! @return A description string.
         //!
-        UString shortDescription(DuckContext& duck, int strength = -1, int quality = -1) const;
+        UString shortDescription(DuckContext& duck) const;
 
         //!
         //! Format the modulation parameters as command line arguments.

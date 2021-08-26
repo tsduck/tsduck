@@ -35,6 +35,7 @@
 #include "tsDuckContext.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
+#include "tsSignalState.h"
 #include "tsModulation.h"
 #include "tsHFBand.h"
 #include "tsTSScanner.h"
@@ -50,7 +51,6 @@ TS_MAIN(MainCode);
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms
 #define DEFAULT_MIN_STRENGTH  10
-#define DEFAULT_MIN_QUALITY   10
 #define OFFSET_EXTEND         3
 
 
@@ -71,14 +71,12 @@ namespace {
         bool              vhf_scan;
         bool              nit_scan;
         bool              no_offset;
-        bool              use_best_quality;
         bool              use_best_strength;
         uint32_t          first_channel;
         uint32_t          last_channel;
         int32_t           first_offset;
         int32_t           last_offset;
-        int               min_strength;
-        int               min_quality;
+        int64_t           min_strength;
         bool              show_modulation;
         bool              list_services;
         bool              global_services;
@@ -98,14 +96,12 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     vhf_scan(false),
     nit_scan(false),
     no_offset(false),
-    use_best_quality(false),
     use_best_strength(false),
     first_channel(0),
     last_channel(0),
     first_offset(0),
     last_offset(0),
     min_strength(0),
-    min_quality(0),
     show_modulation(false),
     list_services(false),
     global_services(false),
@@ -141,18 +137,13 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     help(u"vhf-band", u"Perform a complete VHF-band scanning. See also option --uhf-band.");
 
     option(u"best-quality");
-    help(u"best-quality",
-         u"With UHF/VHF-band scanning, for each channel, use the offset with the "
-         u"best signal quality. By default, use the average of lowest and highest "
-         u"offsets with required minimum quality and strength. Note that some tuners "
-         u"cannot report a correct signal quality, making this option useless.");
+    help(u"best-quality", u"Obsolete option, do not use.");
 
     option(u"best-strength");
     help(u"best-strength",
-         u"With UHF/VHF-band scanning, for each channel, use the offset with the "
-         u"best signal strength. By default, use the average of lowest and highest "
-         u"offsets with required minimum quality and strength. Note that some tuners "
-         u"cannot report a correct signal strength, making this option useless.");
+         u"With UHF/VHF-band scanning, for each channel, use the offset with the best signal strength. "
+         u"By default, use the average of lowest and highest offsets with required minimum strength. "
+         u"Note that some tuners cannot report a correct signal strength, making this option useless.");
 
     option(u"first-channel", 0, POSITIVE);
     help(u"first-channel",
@@ -178,14 +169,12 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"specified offset, tsscan continues to check up to 3 higher offsets above the \"last\" one. "
          u"This means that if a signal is found at offset +2, offset +3 will be checked anyway, etc. up to offset +5.");
 
-    option(u"min-quality", 0, INTEGER, 0, 1, 0, 100);
-    help(u"min-quality",
-         u"Minimum signal quality percentage. Frequencies with lower signal "
-         u"quality are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_QUALITY) + u"%).");
+    option(u"min-quality", 0, INTEGER);
+    help(u"min-quality", u"Obsolete option, do not use.");
 
-    option(u"min-strength", 0, INTEGER, 0, 1, 0, 100);
+    option(u"min-strength", 0, INTEGER);
     help(u"min-strength",
-         u"Minimum signal strength percentage. Frequencies with lower signal "
+         u"Minimum signal strength. Frequencies with lower signal "
          u"strength are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_STRENGTH) + u"%).");
 
     option(u"no-offset");
@@ -254,7 +243,6 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     // Type of HF band to use.
     hfband = vhf_scan ? duck.vhfBand() : duck.uhfBand();
 
-    use_best_quality  = present(u"best-quality");
     use_best_strength = present(u"best-strength");
     first_channel     = intValue(u"first-channel", hfband->firstChannel());
     last_channel      = intValue(u"last-channel", hfband->lastChannel());
@@ -262,7 +250,6 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     no_offset         = !present(u"use-offsets");
     first_offset      = no_offset ? 0 : intValue(u"first-offset", hfband->firstOffset(first_channel));
     last_offset       = no_offset ? 0 : intValue(u"last-offset", hfband->lastOffset(first_channel));
-    min_quality       = intValue(u"min-quality", DEFAULT_MIN_QUALITY);
     min_strength      = intValue(u"min-strength", DEFAULT_MIN_STRENGTH);
     list_services     = present(u"service-list");
     global_services   = present(u"global-service-list");
@@ -311,8 +298,6 @@ private:
     int32_t            _best_offset;
     int32_t            _lowest_offset;
     int32_t            _highest_offset;
-    int                _best_quality;
-    int32_t            _best_quality_offset;
     int                _best_strength;
     int32_t            _best_strength_offset;
     ts::ModulationArgs _best_params;
@@ -341,8 +326,6 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
     _best_offset(0),
     _lowest_offset(0),
     _highest_offset(0),
-    _best_quality(0),
-    _best_quality_offset(0),
     _best_strength(0),
     _best_strength_offset(0),
     _best_params()
@@ -380,10 +363,6 @@ OffsetScanner::OffsetScanner(ScanOptions& opt, ts::Tuner& tuner, uint32_t channe
         if (_opt.no_offset) {
             // No offset search, the best and only offset is zero.
             _best_offset = 0;
-        }
-        else if (_opt.use_best_quality && _best_quality > 0) {
-            // Signal quality indicator is valid, use offset with best signal quality
-            _best_offset = _best_quality_offset;
         }
         else if (_opt.use_best_strength && _best_strength > 0) {
             // Signal strength indicator is valid, use offset with best signal strength
@@ -441,39 +420,28 @@ bool OffsetScanner::tryOffset(int32_t offset)
         return false;
     }
 
-    // Double-check that the signal was locked.
-    bool ok = _tuner.signalLocked();
+    // Get signal characteristics.
+    ts::SignalState state;
+    bool ok = _tuner.getSignalState(state) && state.signal_locked;
 
-    // If we get a signal and we wee need to scan offsets, check signal strength and quality.
-    // Note that if we don't scan offsets, there is no need to consider signal strength
-    // and quality, just use the central offset.
+    // If we get a signal and we wee need to scan offsets, check signal strength.
+    // If we don't scan offsets, there is no need to consider signal strength, just use the central offset.
     if (ok && !_opt.no_offset) {
 
-        // Get signal quality & strength
-        const int strength = _tuner.signalStrength();
-        const int quality = _tuner.signalQuality();
-        _opt.verbose(_opt.hfband->description(_channel, offset, strength, quality));
+        _opt.verbose(u"%s, %s", {_opt.hfband->description(_channel, offset), state});
 
-        if (strength >= 0 && strength <= _opt.min_strength) {
-            // Strength is supported but too low
-            ok = false;
-        }
-        else if (strength > _best_strength) {
-            // Best offset so far for signal strength
-            _best_strength = strength;
-            _best_strength_offset = offset;
-            _tuner.getCurrentTuning(params, false);
-        }
-
-        if (quality >= 0 && quality <= _opt.min_quality) {
-            // Quality is supported but too low
-            ok = false;
-        }
-        else if (quality > _best_quality) {
-            // Best offset so far for signal quality
-            _best_quality = quality;
-            _best_quality_offset = offset;
-            _tuner.getCurrentTuning(params, false);
+        if (state.signal_strength.set()) {
+            const int64_t strength = state.signal_strength.value().value;
+            if (strength <= _opt.min_strength) {
+                // Strength is supported but too low
+                ok = false;
+            }
+            else if (strength > _best_strength) {
+                // Best offset so far for signal strength
+                _best_strength = strength;
+                _best_strength_offset = offset;
+                _tuner.getCurrentTuning(params, false);
+            }
         }
     }
 
@@ -634,7 +602,9 @@ void ScanContext::hfBandScan()
         if (offscan.signalFound()) {
 
             // A channel was found, report its characteristics.
-            std::cout << "* " << _opt.hfband->description(chan, offscan.bestOffset(), _tuner.signalStrength(), _tuner.signalQuality()) << std::endl;
+            ts::SignalState state;
+            _tuner.getSignalState(state);
+            std::cout << "* " << _opt.hfband->description(chan, offscan.bestOffset()) << ", " << state.toString() << std::endl;
 
             // Analyze PSI/SI if required.
             ts::ModulationArgs tparams;
@@ -685,7 +655,9 @@ void ScanContext::nitScan()
                 _opt.debug(u"* tuning to " + params.toPluginOptions(true));
                 if (_tuner.tune(params)) {
                     // Report channel characteristics
-                    std::cout << "* Frequency: " << params.shortDescription(_opt.duck, _tuner.signalStrength(), _tuner.signalQuality()) << std::endl;
+                    ts::SignalState state;
+                    _tuner.getSignalState(state);
+                    std::cout << "* Frequency: " << params.shortDescription(_opt.duck) << ", " << state.toString() << std::endl;
                     // Analyze PSI/SI if required
                     scanTS(std::cout, u"  ", params);
                 }

@@ -100,9 +100,7 @@ namespace ts {
         virtual UString deviceName() const override;
         virtual UString deviceInfo() const override;
         virtual UString devicePath() const override;
-        virtual bool signalLocked() override;
-        virtual int signalStrength() override;
-        virtual int signalQuality() override;
+        virtual bool getSignalState(SignalState& state) override;
         virtual bool tune(ModulationArgs& params) override;
         virtual bool start() override;
         virtual bool stop(bool silent = false) override;
@@ -147,6 +145,6 @@ namespace ts {
         std::vector<Channel> _channels;          // Map of channels.
         size_t               _tune_index;        // Currently tuned channel.
         uint64_t             _tune_frequency;    // Requested frequency.
-        int                  _strength;          // Signal strength and quality in percent.
+        int                  _strength;          // Signal strength in percent.
     };
 }

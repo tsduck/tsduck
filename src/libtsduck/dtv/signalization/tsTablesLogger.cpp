@@ -151,11 +151,11 @@ void ts::TablesLogger::defineArgs(Args& args) const
               u"PID, table id, table id extension, section number and version.");
 
     args.option(u"all-sections", 'a');
-    args.help(u"all-sections", u"Display/save all sections, as they appear in the stream. By default, "
-              u"collect complete tables, with all sections of the tables grouped and "
-              u"ordered and collect each version of a table only once. Note that this "
-              u"mode is incompatible with --xml-output since valid XML structures may "
-              u"contain complete tables only.");
+    args.help(u"all-sections", u"Display/save all sections, as they appear in the stream. "
+              u"By default, collect complete tables, with all sections of the tables grouped "
+              u"and ordered and collect each version of a table only once. "
+              u"Note that this mode is incompatible with XML or JSON output since valid XML "
+              u"or JSON structures may contain complete tables only.");
 
     args.option(u"binary-output", 'b', Args::STRING);
     args.help(u"binary-output", u"filename",

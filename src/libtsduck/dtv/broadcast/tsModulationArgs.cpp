@@ -940,23 +940,11 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
 // Format a short description (frequency and essential parameters).
 //----------------------------------------------------------------------------
 
-ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength, int quality) const
+ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
 {
-    // Strength and quality as a string.
-    UString qual_string;
-    if (strength > 0) {
-        qual_string = UString::Format(u"strength: %d%%", {strength});
-    }
-    if (quality > 0) {
-        if (!qual_string.empty()) {
-            qual_string += u", ";
-        }
-        qual_string += UString::Format(u"quality: %d%%", {quality});
-    }
-
     // Don't know what to describe without delivery system or frequency.
     if (!delivery_system.set() || !frequency.set()) {
-        return qual_string;
+        return UString();
     }
 
     UString desc;
@@ -1042,11 +1030,6 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
             desc = UString::Format(u"%'d Hz", {frequency.value()});
             break;
         }
-    }
-
-    // Final string.
-    if (!qual_string.empty()) {
-        desc += u", " + qual_string;
     }
     return desc;
 }

@@ -254,11 +254,9 @@ namespace ts {
         //! Return a human-readable description of a channel.
         //! @param [in] channel Channel number.
         //! @param [in] offset Channel offset count. Displayed only if non-zero.
-        //! @param [in] strength Signal strength in percent. Ignored if negative.
-        //! @param [in] quality Signal quality in percent. Ignored if negative.
         //! @return Channel description.
         //!
-        UString description(uint32_t channel, int32_t offset, int strength = -1, int quality = -1) const;
+        UString description(uint32_t channel, int32_t offset) const;
 
     private:
         // Define a range of HF channels.

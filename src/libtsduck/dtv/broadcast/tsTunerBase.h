@@ -41,6 +41,7 @@ namespace ts {
     class AbortInterface;
     class Report;
     class ModulationArgs;
+    class SignalState;
     class TSPacket;
     class DeliverySystemSet;
 
@@ -152,24 +153,10 @@ namespace ts {
         virtual UString devicePath() const;
 
         //!
-        //! Check if a signal is present and locked.
-        //! @return True if a signal is present and locked.
+        //! Check if a signal is present and get the signal state.
+        //! @return True in case of success (even if no signal was detected), false on error.
         //!
-        virtual bool signalLocked();
-
-        //!
-        //! Get the signal strength.
-        //! @return The signal strength in percent (0=bad, 100=good).
-        //! Return a negative value on error.
-        //!
-        virtual int signalStrength();
-
-        //!
-        //! Get the signal quality.
-        //! @return The signal quality in percent (0=bad, 100=good).
-        //! Return a negative value on error.
-        //!
-        virtual int signalQuality();
+        virtual bool getSignalState(SignalState& state);
 
         //!
         //! Tune to the specified parameters.

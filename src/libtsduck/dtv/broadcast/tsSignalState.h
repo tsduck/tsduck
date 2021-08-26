@@ -84,7 +84,7 @@ namespace ts {
         //!
         //! Set to true when the signal is confirmed to be locked at the input of the demodulator.
         //!
-        Variable<bool> signal_locked;
+        bool signal_locked;
 
         //!
         //! Signal strength.
@@ -110,6 +110,11 @@ namespace ts {
         //! Constructor.
         //!
         SignalState();
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~SignalState();
 
         //!
         //! Clear content, reset all values, they become "unset"

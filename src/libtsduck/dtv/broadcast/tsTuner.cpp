@@ -158,19 +158,9 @@ ts::UString ts::Tuner::devicePath() const
     return _current->devicePath();
 }
 
-bool ts::Tuner::signalLocked()
+bool ts::Tuner::getSignalState(SignalState& state)
 {
-    return _current->signalLocked();
-}
-
-int ts::Tuner::signalStrength()
-{
-    return _current->signalStrength();
-}
-
-int ts::Tuner::signalQuality()
-{
-    return _current->signalQuality();
+    return _current->getSignalState(state);
 }
 
 bool ts::Tuner::tune(ModulationArgs& params)

@@ -37,7 +37,7 @@ TSDUCK_SOURCE;
 //----------------------------------------------------------------------------
 
 ts::SignalState::SignalState() :
-    signal_locked(),
+    signal_locked(false),
     signal_strength(),
     signal_noise_ratio(),
     bit_error_rate(),
@@ -45,9 +45,13 @@ ts::SignalState::SignalState() :
 {
 }
 
+ts::SignalState::~SignalState()
+{
+}
+
 void ts::SignalState::clear()
 {
-    signal_locked.clear();
+    signal_locked = false;
     signal_strength.clear();
     signal_noise_ratio.clear();
     bit_error_rate.clear();
@@ -92,32 +96,18 @@ ts::UString ts::SignalState::Value::toString() const
 ts::UString ts::SignalState::toString() const
 {
     UString str;
-    if (signal_locked.set()) {
-        str.format(u"locked: %s", {UString::YesNo(signal_locked.value())});
-    }
+    str.format(u"locked: %s", {UString::YesNo(signal_locked)});
     if (signal_strength.set()) {
-        if (!str.empty()) {
-            str.append(u", ");
-        }
-        str.format(u"strength: %s", {signal_strength.value()});
+        str.format(u", strength: %s", {signal_strength.value()});
     }
     if (signal_noise_ratio.set()) {
-        if (!str.empty()) {
-            str.append(u", ");
-        }
-        str.format(u"SNR: %s", {signal_noise_ratio.value()});
+        str.format(u", SNR: %s", {signal_noise_ratio.value()});
     }
     if (bit_error_rate.set()) {
-        if (!str.empty()) {
-            str.append(u", ");
-        }
-        str.format(u"BER: %s", {bit_error_rate.value()});
+        str.format(u", BER: %s", {bit_error_rate.value()});
     }
     if (packet_error_rate.set()) {
-        if (!str.empty()) {
-            str.append(u", ");
-        }
-        str.format(u"PER: %s", {packet_error_rate.value()});
+        str.format(u", PER: %s", {packet_error_rate.value()});
     }
     return str;
 }
@@ -129,9 +119,7 @@ ts::UString ts::SignalState::toString() const
 
 std::ostream& ts::SignalState::display(std::ostream& out, const UString& margin, int level) const
 {
-    if (signal_locked.set()) {
-        out << margin << "Signal locked: " << UString::YesNo(signal_locked.value()) << std::endl;
-    }
+    out << margin << "Signal locked: " << UString::YesNo(signal_locked) << std::endl;
     if (signal_strength.set()) {
         out << margin << "Signal strength: " << signal_strength.value() << std::endl;
     }
