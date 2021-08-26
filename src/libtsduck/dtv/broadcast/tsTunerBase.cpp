@@ -30,6 +30,7 @@
 #include "tsTunerBase.h"
 #include "tsReport.h"
 #include "tsModulationArgs.h"
+#include "tsSignalState.h"
 #include "tsDeliverySystem.h"
 TSDUCK_SOURCE;
 
@@ -126,21 +127,6 @@ ts::UString ts::TunerBase::devicePath() const
     return UString();
 }
 
-bool ts::TunerBase::signalLocked()
-{
-    return false;
-}
-
-int ts::TunerBase::signalStrength()
-{
-    return -1;
-}
-
-int ts::TunerBase::signalQuality()
-{
-    return -1;
-}
-
 bool ts::TunerBase::stop(bool silent)
 {
     return false;
@@ -171,6 +157,12 @@ bool ts::TunerBase::setReceiveTimeout(MilliSecond timeout)
 ts::MilliSecond ts::TunerBase::receiveTimeout() const
 {
     return 0;
+}
+
+bool ts::TunerBase::getSignalState(SignalState& state)
+{
+    state.clear();
+    return true;
 }
 
 std::ostream& ts::TunerBase::displayStatus(std::ostream& strm, const UString& margin, bool extended)
