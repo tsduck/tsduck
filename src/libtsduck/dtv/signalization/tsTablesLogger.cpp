@@ -382,7 +382,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
         args.error(u"options --rewrite-binary and --multiple-files are incompatible");
         return false;
     }
-    if ((_use_xml || _use_json || _log_xml_line || _log_json_line) && _all_sections) {
+    if ((_use_xml || _use_json || _log_xml_line || _log_json_line) && (_all_sections && !_pack_all_sections)) {
         args.error(u"filtering sections (--all-sections or --all-once) is incompatible with XML or JSON output");
         return false;
     }
