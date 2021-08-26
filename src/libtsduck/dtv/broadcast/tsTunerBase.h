@@ -154,6 +154,7 @@ namespace ts {
 
         //!
         //! Check if a signal is present and get the signal state.
+        //! @param [out] state Returned state of the tuner. Some fields may be unset if unavailable with that tuner.
         //! @return True in case of success (even if no signal was detected), false on error.
         //!
         virtual bool getSignalState(SignalState& state);
