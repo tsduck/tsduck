@@ -424,6 +424,12 @@ void SysUtilsTest::testVernacularFilePath()
 #if defined(TS_WINDOWS)
     TSUNIT_EQUAL(u"C:\\alpha\\beta\\gamma", ts::VernacularFilePath(u"C:\\alpha/beta\\gamma"));
     TSUNIT_EQUAL(u"D:\\alpha\\beta\\gamma", ts::VernacularFilePath(u"/d/alpha/beta/gamma"));
+    TSUNIT_EQUAL(u"D:\\alpha", ts::VernacularFilePath(u"/mnt/d/alpha"));
+    TSUNIT_EQUAL(u"D:\\", ts::VernacularFilePath(u"/mnt/d"));
+    TSUNIT_EQUAL(u"D:\\alpha", ts::VernacularFilePath(u"/cygdrive/d/alpha"));
+    TSUNIT_EQUAL(u"D:\\", ts::VernacularFilePath(u"/cygdrive/d"));
+    TSUNIT_EQUAL(u"D:\\alpha", ts::VernacularFilePath(u"/d/alpha"));
+    TSUNIT_EQUAL(u"D:\\", ts::VernacularFilePath(u"/d"));
 #elif defined(TS_UNIX)
     TSUNIT_EQUAL(u"C:/alpha/beta/gamma", ts::VernacularFilePath(u"C:\\alpha/beta\\gamma"));
     TSUNIT_EQUAL(u"/alpha-beta/gamma", ts::VernacularFilePath(u"/alpha-beta/gamma"));

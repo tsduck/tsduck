@@ -50,6 +50,8 @@ ts::UString ts::CurrentWorkingDirectory()
 #else
 
     // Unix implementation.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(maybe - uninitialized) // stupid warning, name is uninitialized on purpose
     std::array<char, 2048> name;
     if (::getcwd(name.data(), name.size() - 1) == nullptr) {
         name[0] = '\0'; // error
@@ -57,6 +59,7 @@ ts::UString ts::CurrentWorkingDirectory()
     else {
         name[name.size() - 1] = '\0'; // enforce null termination.
     }
+    TS_POP_WARNING()
     return UString::FromUTF8(name.data());
 
 #endif
@@ -73,20 +76,25 @@ ts::UString ts::VernacularFilePath(const UString& path)
 
 #if defined(TS_WINDOWS)
     // With Windows Linux Subsystem, the syntax "/mnt/c/" means "C:\"
-    if (vern.length() >= 7 && vern.startWith(u"/mnt/") && IsAlpha(vern[5]) && vern[6] == u'/') {
+    if (vern.length() >= 6 && vern.startWith(u"/mnt/") && IsAlpha(vern[5]) && (vern.length() == 6 || vern[6] == u'/')) {
         vern.erase(0, 4);
     }
 
-    // On Cygwin, the syntax "/cygdrive/C/" means "C:\"
+    // With Cygwin, the syntax "/cygdrive/C/" means "C:\"
     if (vern.startWith(u"/cygdrive/")) {
         vern.erase(0, 9);
     }
 
     // On Windows, transform "/c/" pattern into "C:\" (typical on Msys).
-    if (vern.length() >= 3 && vern[0] == u'/' && IsAlpha(vern[1]) && vern[2] == u'/') {
+    if (vern.length() >= 2 && vern[0] == u'/' && IsAlpha(vern[1]) && (vern.length() == 2 || vern[2] == u'/')) {
         vern[0] = ToUpper(vern[1]);
         vern[1] = u':';
-        vern[2] = u'\\';
+        if (vern.length() == 2) {
+            vern.append(u'\\');
+        }
+        else {
+            vern[2] = u'\\';
+        }
     }
 #endif
 
