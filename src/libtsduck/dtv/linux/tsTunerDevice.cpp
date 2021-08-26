@@ -50,7 +50,10 @@ TSDUCK_SOURCE;
 // feature. Also note that there are several forms of "unsupported" in errno and 524
 // is usually not defined...
 #if !defined(DVB_ENOTSUPP)
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(unused-macros)
     #define DVB_ENOTSUPP 524
+    TS_POP_WARNING()
 #endif
 
 #define MAX_OVERFLOW  8   // Maximum consecutive overflow
