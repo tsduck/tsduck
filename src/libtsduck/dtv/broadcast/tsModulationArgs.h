@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsObject.h"
+#include "tsDisplayInterface.h"
 #include "tsArgsSupplierInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
@@ -57,7 +58,7 @@ namespace ts {
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL ModulationArgs : public Object, public ArgsSupplierInterface
+    class TSDUCKDLL ModulationArgs : public Object, public ArgsSupplierInterface, public DisplayInterface
     {
     public:
         //!
@@ -434,10 +435,13 @@ namespace ts {
         virtual void defineArgs(Args& args) const override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
+        // Implementation of DisplayInterface.
+        virtual std::ostream& display(std::ostream& strm, const UString& margin = UString(), int level = Severity::Info) const override;
+
         //!
-        //! Reset all values, they become "unset"
+        //! Clear content, reset all values, they become "unset"
         //!
-        virtual void reset();
+        virtual void clear();
 
         //!
         //! Check if any modulation options is set.
@@ -545,15 +549,6 @@ namespace ts {
         //! @return A string containing a command line options for the "dvb" tsp plugin.
         //!
         UString toPluginOptions(bool no_local = false) const;
-
-        //!
-        //! Display a description of the modulation paramters on a stream, line by line.
-        //! @param [in,out] strm Where to display the parameters.
-        //! @param [in] margin Left margin to display.
-        //! @param [in] verbose When false, display only essentials parameters.
-        //! When true, display all parameters.
-        //!
-        void display(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const;
 
     protected:
         //!

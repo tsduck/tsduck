@@ -598,7 +598,7 @@ bool ts::ChannelFile::generateDocument(xml::Document& doc) const
 bool ts::ChannelFile::fromXML(ModulationArgs& mod, const xml::Element* elem, TunerType tunerType, uint16_t ts_id)
 {
     // Clear parameter area.
-    mod.reset();
+    mod.clear();
 
     // Handle all expected modulation arguments structures.
     if (elem == nullptr) {

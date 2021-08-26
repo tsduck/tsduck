@@ -191,7 +191,7 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::HEVCShortTermReferencePictureSetList::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::HEVCShortTermReferencePictureSetList::display(std::ostream& out, const UString& margin, int level) const
 {
     if (valid) {
         for (size_t stRpsIdx = 0 ; stRpsIdx < list.size(); ++stRpsIdx) {

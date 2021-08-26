@@ -344,7 +344,7 @@ bool ts::AVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer_
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::AVCSequenceParameterSet::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::AVCSequenceParameterSet::display(std::ostream& out, const UString& margin, int level) const
 {
     if (!valid) {
         return out;

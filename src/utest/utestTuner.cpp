@@ -36,6 +36,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTuner.h"
+#include "tsSignalState.h"
 #include "tsDuckContext.h"
 #include "tsTSScanner.h"
 #include "tsService.h"
@@ -64,6 +65,7 @@ public:
 
     void testListTuners();
     void testScanDVBT();
+    void testSignalState();
 #if defined(TS_LINUX)
     void testDTVProperties();
 #endif
@@ -71,6 +73,7 @@ public:
     TSUNIT_TEST_BEGIN(TunerTest);
     TSUNIT_TEST(testListTuners);
     TSUNIT_TEST(testScanDVBT);
+    TSUNIT_TEST(testSignalState);
 #if defined(TS_LINUX)
     TSUNIT_TEST(testDTVProperties);
 #endif
@@ -154,7 +157,7 @@ void TunerTest::testScanDVBT()
         }
 
         debug() << "  scanning channel " << channels[i] << std::endl;
-        args.reset();
+        args.clear();
         args.delivery_system = ts::DS_DVB_T;
         args.frequency = duck.uhfBand()->frequency(channels[i]);
         args.setDefaultValues();
@@ -177,6 +180,16 @@ void TunerTest::testScanDVBT()
             TSUNIT_ASSERT(!tuner.isOpen());
         }
     }
+}
+
+void TunerTest::testSignalState()
+{
+    TSUNIT_EQUAL(u"12,345", ts::SignalState::Value(12345).toString());
+    TSUNIT_EQUAL(u"48%", ts::SignalState::Value(48, ts::SignalState::Unit::PERCENT).toString());
+    TSUNIT_EQUAL(u"-12%", ts::SignalState::Value(-12, ts::SignalState::Unit::PERCENT).toString());
+    TSUNIT_EQUAL(u"0 dB", ts::SignalState::Value(0, ts::SignalState::Unit::MDB).toString());
+    TSUNIT_EQUAL(u"-2.1 dB", ts::SignalState::Value(-2100, ts::SignalState::Unit::MDB).toString());
+    TSUNIT_EQUAL(u"12.345 dB", ts::SignalState::Value(12345, ts::SignalState::Unit::MDB).toString());
 }
 
 #if defined(TS_LINUX)

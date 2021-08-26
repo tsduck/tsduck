@@ -92,7 +92,7 @@ ts::UString ts::FixedPoint<INT_T,PREC,N>::toString(size_t min_width,
     UString str(UString::Decimal(_value / FACTOR, 0, true, UString()));
     str.append(u'.');
     str.append(UString::Decimal(std::abs(_value % FACTOR), PRECISION, true, UString(), false, u'0'));
-    Format(str, min_width, right_justified, separator, force_sign && !is_negative(_value),  decimals == NPOS ? PRECISION : decimals, force_decimals, decimal_dot, pad);
+    Format(str, min_width, right_justified, separator, force_sign && !is_negative(_value), decimals == NPOS ? PRECISION : decimals, force_decimals, decimal_dot, pad);
     return str;
 }
 
