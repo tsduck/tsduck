@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2474
+VERSION 3.28-2490
 
 [NEW] New commands and plugins:
 
@@ -29,6 +29,7 @@ VERSION 3.28-2474
     frequency was incorrectly set to zero on satellite networks.
   * In "tsp", the global default options for plugins (--atsc, --isdb, etc)
     were not correctly passed to plugins "tables" and "psi".
+  * Fixed issue #856: The plugin "psi" with JSON output failed when restarted.
 
 -------------------------------------------------------------------------------
 
