@@ -117,21 +117,21 @@ bool ts::SpliceSegmentationDescriptor::deliveryNotRestricted() const
 bool ts::SpliceSegmentationDescriptor::isOut() const
 {
     switch (segmentation_type_id) {
-    case 0x10: //Program Start
-    case 0x14: //Program Resumption
-    case 0x17: //Program Overlap Start
-    case 0x19: //Program Start In Progress
-    case 0x20: //Chapter Start
-    case 0x22: //Break Start
-    case 0x30: //Provider Advertisement Start
-    case 0x32: //Distributor Advertisement Start
-    case 0x34: //Provider Placement Opportunity Start
-    case 0x36: //Distributor Placement Opportunity Start
-    case 0x40: //Unscheduled Event Start
-    case 0x50: //Network Start
-        return true;
-    default:
-        return false;
+        case 0x10: // Program Start
+        case 0x14: // Program Resumption
+        case 0x17: // Program Overlap Start
+        case 0x19: // Program Start In Progress
+        case 0x20: // Chapter Start
+        case 0x22: // Break Start
+        case 0x30: // Provider Advertisement Start
+        case 0x32: // Distributor Advertisement Start
+        case 0x34: // Provider Placement Opportunity Start
+        case 0x36: // Distributor Placement Opportunity Start
+        case 0x40: // Unscheduled Event Start
+        case 0x50: // Network Start
+            return true;
+        default:
+            return false;
     }
 }
 
@@ -143,23 +143,23 @@ bool ts::SpliceSegmentationDescriptor::isOut() const
 bool ts::SpliceSegmentationDescriptor::isIn() const
 {
     switch (segmentation_type_id) {
-    case 0x11: //Program End
-    case 0x12: //Program Early Termination
-    case 0x13: //Program Breakaway
-    case 0x15: //Program Runover Planned
-    case 0x16: //Program Runover Unplanned
-    case 0x18: //Program Blackout Override
-    case 0x21: //Chapter End
-    case 0x23: //Break End
-    case 0x31: //Provider Advertisement End
-    case 0x33: //Distributor Advertisement End
-    case 0x35: //Provider Placement Opportunity End
-    case 0x37: //Distributor Placement Opportunity End
-    case 0x41: //Unscheduled Event End
-    case 0x51: //Network End
-        return true;
-    default:
-        return false;
+        case 0x11: // Program End
+        case 0x12: // Program Early Termination
+        case 0x13: // Program Breakaway
+        case 0x15: // Program Runover Planned
+        case 0x16: // Program Runover Unplanned
+        case 0x18: // Program Blackout Override
+        case 0x21: // Chapter End
+        case 0x23: // Break End
+        case 0x31: // Provider Advertisement End
+        case 0x33: // Distributor Advertisement End
+        case 0x35: // Provider Placement Opportunity End
+        case 0x37: // Distributor Placement Opportunity End
+        case 0x41: // Unscheduled Event End
+        case 0x51: // Network End
+            return true;
+        default:
+            return false;
     }
 }
 

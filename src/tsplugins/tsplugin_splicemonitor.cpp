@@ -110,6 +110,9 @@ namespace ts {
         // Associate all audio/video PID's in a PMT to a splice PID.
         void setSplicePID(const PMT&, PID);
 
+        // Process an event.
+        void processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out);
+
         // Build and report a one-line message.
         UString message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
         void display(const UString& line);
@@ -394,6 +397,59 @@ void ts::SpliceMonitorPlugin::display(const UString& line)
 
 
 //----------------------------------------------------------------------------
+// Process an event.
+//----------------------------------------------------------------------------
+
+void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out)
+{
+    SpliceContext& ctx(_splice_contexts[splice_pid]);
+
+    if (canceled) {
+        display(message(splice_pid, event_id, u"canceled"));
+    }
+    else if (immediate) {
+        display(message(splice_pid, event_id, u"immediately %s", {splice_out ? "OUT" : "IN"}));
+    }
+    else {
+        SpliceEvent& evt(ctx.splice_events[event_id]);
+        // This is a planned insert command. Is this a repetition or new event?
+        if (event_id == evt.event_id && event_pts == evt.event_pts && splice_out == evt.event_out) {
+            // Repetition of a previous event.
+            evt.event_count++;
+        }
+        else {
+            // First command about a new event.
+            evt.event_id = event_id;
+            evt.event_pts = event_pts;
+            evt.event_out = splice_out;
+            evt.event_count = 1;
+            evt.first_cmd_packet = tsp->pluginPackets();
+        }
+        // Format time to event.
+        UString time;
+        if (ctx.last_pts != INVALID_PTS) {
+            // Compute "current" PTS. We use the latest PTS found and adjust it by the distance to its packet.
+            uint64_t current_pts = ctx.last_pts;
+            if (!_no_adjustment) {
+                const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
+                const BitRate bitrate = tsp->bitrate();
+                if (bitrate != 0 && distance != 0) {
+                    current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
+                }
+            }
+            if (current_pts > evt.event_pts) {
+                time.format(u", event is in the past by %'d ms", {PTSToMilliSecond(current_pts - evt.event_pts)});
+            }
+            else {
+                time.format(u", time to event: %'d ms", {PTSToMilliSecond(evt.event_pts - current_pts)});
+            }
+        }
+        display(message(splice_pid, event_id, u"occurrence #%d%s", {evt.event_count, time}));
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Invoked by the demux when a splice information section is available.
 //----------------------------------------------------------------------------
 
@@ -405,122 +461,28 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         // Was not a Splice Information Table.
         return;
     }
-    const bool is_insert = sit.splice_command_type == SPLICE_INSERT;
-    const bool is_time_signal = sit.splice_command_type == SPLICE_TIME_SIGNAL;
 
-    // Give up now if there is nothing to display.
-    if (!is_insert && !is_time_signal && !_all_commands) {
-        return;
-    }
-
-    // Splice context.
-    const PID spid = table.sourcePID();
-    SpliceContext& ctx(_splice_contexts[spid]);
-
-    if (!is_insert && !is_time_signal) {
-        // Not an insert command, just display it without initial message.
-        _display << std::endl;
-    }
-    else if(is_time_signal) {
+    if (sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.set()) {
         sit.adjustPTS();
         for (size_t di = 0; di < sit.descs.count(); ++di) {
             if (sit.descs[di]->tag() == DID_SPLICE_SEGMENT) {
                 // SCTE 35 SIT segmentation_descriptor.
                 const SpliceSegmentationDescriptor ssd(duck, *sit.descs[di]);
-                const uint64_t event_pts = sit.time_signal.value();
-                if (!ssd.isValid()) {
-                    continue;
-                }
-                if (ssd.segmentation_event_cancel) {
-                    display(message(spid, ssd.segmentation_event_id, u"canceled"));
-                } else if (ssd.isIn() || ssd.isOut()) {
-                    SpliceEvent& evt(ctx.splice_events[ssd.segmentation_event_id]);
-                    // This is a planned time signal command. Is this a repetition or new event?
-                    if (ssd.segmentation_event_id == evt.event_id && event_pts == evt.event_pts && ssd.isOut() == evt.event_out) {
-                        // Repetition of a previous event.
-                        evt.event_count++;
-                    }
-                    else {
-                        // First command about a new event.
-                        evt.event_id = ssd.segmentation_event_id;
-                        evt.event_pts = event_pts;
-                        evt.event_out = ssd.isOut();
-                        evt.event_count = 1;
-                        evt.first_cmd_packet = tsp->pluginPackets();
-                    }
-                    // Format time to event.
-                    UString time;
-                    if (ctx.last_pts != INVALID_PTS) {
-                        // Compute "current" PTS. We use the latest PTS found and adjust it by the distance to its packet.
-                        uint64_t current_pts = ctx.last_pts;
-                        if (!_no_adjustment) {
-                            const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
-                            const BitRate bitrate = tsp->bitrate();
-                            if (bitrate != 0 && distance != 0)
-                            {
-                                current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
-                            }
-                        }
-                        if (current_pts > evt.event_pts) {
-                            time.format(u", event is in the past by %'d ms", {PTSToMilliSecond(current_pts - evt.event_pts)});
-                        }
-                        else {
-                            time.format(u", time to event: %'d ms", {PTSToMilliSecond(evt.event_pts - current_pts)});
-                        }
-                    }
-                    display(message(spid, ssd.segmentation_event_id, u"occurrence #%d%s", {evt.event_count, time}));
+                if (ssd.isValid() && (ssd.isIn() || ssd.isOut())) {
+                    processEvent(table.sourcePID(), ssd.segmentation_event_id, sit.time_signal.value(), ssd.segmentation_event_cancel, false, ssd.isOut());
                 }
             }
         }
     }
-    else {
+    else if (sit.splice_command_type == SPLICE_INSERT) {
         // Get a copy of the splice insert command and adjust all PTS to actual time value.
         SpliceInsert si(sit.splice_insert);
         si.adjustPTS(sit.pts_adjustment);
-        const uint64_t event_pts = si.lowestPTS();
-
-        if (si.canceled) {
-            display(message(spid, si.event_id, u"canceled"));
-        }
-        else if (si.immediate) {
-            display(message(spid, si.event_id, u"immediately %s", {si.splice_out ? "OUT" : "IN"}));
-        }
-        else {
-            SpliceEvent& evt(ctx.splice_events[si.event_id]);
-            // This is a planned insert command. Is this a repetition or new event?
-            if (si.event_id == evt.event_id && event_pts == evt.event_pts && si.splice_out == evt.event_out) {
-                // Repetition of a previous event.
-                evt.event_count++;
-            }
-            else {
-                // First command about a new event.
-                evt.event_id = si.event_id;
-                evt.event_pts = event_pts;
-                evt.event_out = si.splice_out;
-                evt.event_count = 1;
-                evt.first_cmd_packet = tsp->pluginPackets();
-            }
-            // Format time to event.
-            UString time;
-            if (ctx.last_pts != INVALID_PTS) {
-                // Compute "current" PTS. We use the latest PTS found and adjust it by the distance to its packet.
-                uint64_t current_pts = ctx.last_pts;
-                if (!_no_adjustment) {
-                    const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
-                    const BitRate bitrate = tsp->bitrate();
-                    if (bitrate != 0 && distance != 0) {
-                        current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
-                    }
-                }
-                if (current_pts > evt.event_pts) {
-                    time.format(u", event is in the past by %'d ms", {PTSToMilliSecond(current_pts - evt.event_pts)});
-                }
-                else {
-                    time.format(u", time to event: %'d ms", {PTSToMilliSecond(evt.event_pts - current_pts)});
-                }
-            }
-            display(message(spid, si.event_id, u"occurrence #%d%s", {evt.event_count, time}));
-        }
+        processEvent(table.sourcePID(), si.event_id, si.lowestPTS(), si.canceled, si.immediate, si.splice_out);
+    }
+    else if (_display_commands) {
+        // Not an event command to process, just display it without initial message.
+        _display << std::endl;
     }
 
     // Finally, display the SCTE-35 table.
