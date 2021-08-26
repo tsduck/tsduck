@@ -217,6 +217,11 @@ bool ts::PSILogger::loadArgs(DuckContext& duck, Args& args)
 
 bool ts::PSILogger::open()
 {
+    // Reset content.
+    _xml_doc.clear();
+    _x2j_conv.clear();
+    _clear_packets_cnt = _scrambled_packets_cnt = 0;
+
     // Set XML options in document.
     _xml_doc.setTweaks(_xml_tweaks);
     _x2j_conv.setTweaks(_xml_tweaks);
@@ -237,7 +242,6 @@ bool ts::PSILogger::open()
     }
 
     // Open/create the XML output.
-    _xml_doc.clear();
     if (_use_xml && !_xml_doc.open(u"tsduck", u"", _xml_destination, std::cout)) {
         _abort = true;
         return false;
