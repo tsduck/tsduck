@@ -306,7 +306,7 @@ bool ts::HEVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::HEVCSequenceParameterSet::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::HEVCSequenceParameterSet::display(std::ostream& out, const UString& margin, int level) const
 {
     if (valid) {
 

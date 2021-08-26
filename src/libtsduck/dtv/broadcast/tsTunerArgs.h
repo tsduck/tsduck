@@ -69,7 +69,7 @@ namespace ts {
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         // Overridden from superclass.
-        virtual void reset() override;
+        virtual void clear() override;
 
         //!
         //! Open a tuner and configure it according to the parameters in this object.

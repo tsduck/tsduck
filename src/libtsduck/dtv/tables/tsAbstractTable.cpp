@@ -135,15 +135,18 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
 // This method serializes a table.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
+bool ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
 {
     // Reinitialize table object.
     table.clear();
 
     // Return an empty invalid table if this object is not valid.
     if (!isValid()) {
-        return;
+        return false;
     }
+
+    // Add the standards of the serialized table into the context.
+    duck.addStandards(definingStandards());
 
     // Build a buffer of the appropriate size.
     PSIBuffer payload(duck, maxPayloadSize());
@@ -155,10 +158,12 @@ void ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
     if (payload.error()) {
         // There were serialization errors, invalidate the binary table.
         table.clear();
+        return false;
     }
     else if (table.sectionCount() == 0) {
         // No section were added, add this one, even if empty.
         addOneSection(table, payload);
+        return true;
     }
     else {
         // Some sections were already added. Check if we need to add a last one.
@@ -177,10 +182,8 @@ void ts::AbstractTable::serialize(DuckContext& duck, BinaryTable& table) const
         if (add) {
             addOneSection(table, payload);
         }
+        return !payload.error();
     }
-
-    // Add the standards of the serialized table into the context.
-    duck.addStandards(definingStandards());
 }
 
 
@@ -236,7 +239,7 @@ void ts::AbstractTable::addOneSectionImpl(BinaryTable &table, PSIBuffer &payload
 // This method deserializes a binary table.
 //----------------------------------------------------------------------------
 
-void ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
+bool ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
 {
     // Make sure the object is cleared before analyzing the binary table.
     clear();
@@ -244,7 +247,7 @@ void ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
     // Keep this object invalid if the binary table is invalid or has an incorrect table if for this class.
     if (!table.isValid() || !isValidTableId(table.tableId())) {
         invalidate();
-        return;
+        return false;
     }
 
     // Table is already checked to be compatible but can be different from current one.
@@ -289,6 +292,7 @@ void ts::AbstractTable::deserialize(DuckContext& duck, const BinaryTable& table)
 
     // Add the standards of the deserialized table into the context.
     duck.addStandards(definingStandards());
+    return isValid();
 }
 
 

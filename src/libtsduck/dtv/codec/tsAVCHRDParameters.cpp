@@ -119,7 +119,7 @@ bool ts::AVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint32
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::AVCHRDParameters::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::AVCHRDParameters::display(std::ostream& out, const UString& margin, int level) const
 {
     if (valid) {
 #define DISP(n) disp(out, margin, u ## #n, n)

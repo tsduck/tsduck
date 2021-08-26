@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsReport.h"
 
 namespace ts {
     //!
@@ -47,9 +48,10 @@ namespace ts {
         //! Display the content of this object to a stream.
         //! @param [in,out] stream The stream where to print the content. Standard output by default.
         //! @param [in] margin The prefix string on each line, empty by default.
+        //! @param [in] level Severity level (for instance, Severity::Info or Severity::Debug may display more information).
         //! @return A reference to @a stream.
         //!
-        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString()) const = 0;
+        virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString(), int level = Severity::Info) const = 0;
 
         //!
         //! Virtual destructor

@@ -69,7 +69,7 @@ bool ts::AVCAccessUnitDelimiter::parseBody(AVCParser& parser, std::initializer_l
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::AVCAccessUnitDelimiter::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::AVCAccessUnitDelimiter::display(std::ostream& out, const UString& margin, int level) const
 {
 #define DISP(n) disp(out, margin, u ## #n, n)
 

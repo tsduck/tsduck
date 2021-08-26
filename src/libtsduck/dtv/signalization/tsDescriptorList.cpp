@@ -111,9 +111,13 @@ bool ts::DescriptorList::operator==(const DescriptorList& other) const
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add(const DescriptorPtr& desc)
+bool ts::DescriptorList::add(const DescriptorPtr& desc)
 {
     PDS pds = 0;
+
+    if (desc.isNull() || !desc->isValid()) {
+        return false;
+    }
 
     // Determine which PDS to associate with the descriptor
     if (desc->tag() == DID_PRIV_DATA_SPECIF) {
@@ -132,6 +136,7 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
 
     // Add the descriptor in the list
     _list.push_back(Element(desc, pds));
+    return true;
 }
 
 
@@ -139,14 +144,11 @@ void ts::DescriptorList::add(const DescriptorPtr& desc)
 // Add one descriptor at end of list
 //----------------------------------------------------------------------------
 
-void ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
+bool ts::DescriptorList::add(DuckContext& duck, const AbstractDescriptor& desc)
 {
     DescriptorPtr pd(new Descriptor);
     CheckNonNull(pd.pointer());
-    desc.serialize(duck, *pd);
-    if (pd->isValid()) {
-        add(pd);
-    }
+    return desc.serialize(duck, *pd) && add(pd);
 }
 
 
@@ -158,14 +160,15 @@ bool ts::DescriptorList::add(const void* data, size_t size)
 {
     const uint8_t* desc = reinterpret_cast<const uint8_t*>(data);
     size_t length = 0;
+    bool success = true;
 
     while (size >= 2 && (length = size_t(desc[1]) + 2) <= size) {
-        add(DescriptorPtr(new Descriptor(desc, length)));
+        success = add(DescriptorPtr(new Descriptor(desc, length))) && success;
         desc += length;
         size -= length;
     }
 
-    return size == 0;
+    return success && size == 0;
 }
 
 
