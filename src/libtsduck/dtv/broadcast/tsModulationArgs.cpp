@@ -131,7 +131,7 @@ ts::ModulationArgs::ModulationArgs(bool allow_short_options) :
 // Reset all values, they become "unset"
 //----------------------------------------------------------------------------
 
-void ts::ModulationArgs::reset()
+void ts::ModulationArgs::clear()
 {
     delivery_system.clear();
     frequency.clear();
@@ -1056,8 +1056,10 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
 // Display a description of the paramters on a stream, line by line.
 //----------------------------------------------------------------------------
 
-void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, bool verbose) const
+std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, int level) const
 {
+    const bool verbose = level >= Severity::Verbose;
+
     if (frequency.set() && frequency != 0) {
         strm << margin << "Carrier frequency: " << UString::Decimal(frequency.value()) << " Hz" << std::endl;
     }
@@ -1228,6 +1230,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             break;
         }
     }
+    return strm;
 }
 
 

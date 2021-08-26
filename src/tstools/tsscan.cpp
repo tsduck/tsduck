@@ -593,7 +593,7 @@ void ScanContext::scanTS(std::ostream& strm, const ts::UString& margin, ts::Modu
 
     // Display modulation parameters
     if (_opt.show_modulation) {
-        tparams.display(strm, margin, _opt.verbose());
+        tparams.display(strm, margin, _opt.maxSeverity());
     }
 
     // Display or collect services

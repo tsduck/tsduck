@@ -122,11 +122,12 @@ ts::DID ts::AbstractDescriptor::extendedTag() const
 // Descriptor serialization.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
+bool ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
 {
     if (!isValid()) {
         // The descriptor is already invalid.
         bin.invalidate();
+        return false;
     }
     else {
         // Allocate a byte block of the maximum descriptor size.
@@ -148,6 +149,7 @@ void ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
         if (buf.error()) {
             // Serialization error, not a valid descriptor.
             bin.invalidate();
+            return false;
         }
         else {
             // Update the actual descriptor size.
@@ -158,6 +160,7 @@ void ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
             // Resize the byte block and store it into the descriptor.
             bbp->resize(2 + size);
             bin = Descriptor(bbp, ShareMode::SHARE);
+            return true;
         }
     }
 }
@@ -167,7 +170,7 @@ void ts::AbstractDescriptor::serialize(DuckContext& duck, Descriptor& bin) const
 // Descriptor deserialization.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bin)
+bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bin)
 {
     // Make sure the object is cleared before analyzing the binary descriptor.
     clear();
@@ -175,6 +178,7 @@ void ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
     if (!bin.isValid() || bin.tag() != _tag) {
         // If the binary descriptor is already invalid or has the wrong descriptor tag, this object is invalid too.
         invalidate();
+        return false;
     }
     else {
         // Map a deserialization read-only buffer over the payload part.
@@ -184,7 +188,7 @@ void ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
         const DID etag = extendedTag();
         if (etag != EDID_NULL && (buf.getUInt8() != etag || buf.error())) {
             invalidate();
-            return;
+            return false;
         }
 
         // Let the subclass deserialize the payload in the buffer.
@@ -194,8 +198,10 @@ void ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
             // Deserialization error or extraneous data, not a valid descriptor.
             clear();
             invalidate();
+            return false;
         }
     }
+    return true;
 }
 
 
@@ -203,12 +209,13 @@ void ts::AbstractDescriptor::deserialize(DuckContext& duck, const Descriptor& bi
 // Deserialize from a descriptor list.
 //----------------------------------------------------------------------------
 
-void ts::AbstractDescriptor::deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index)
+bool ts::AbstractDescriptor::deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index)
 {
     if (index > dlist.count()) {
         invalidate();
+        return false;
     }
     else {
-        deserialize(duck, *dlist[index]);
+        return deserialize(duck, *dlist[index]);
     }
 }

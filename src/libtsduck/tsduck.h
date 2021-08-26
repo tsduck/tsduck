@@ -549,6 +549,7 @@
 #include "tsShortSmoothingBufferDescriptor.h"
 #include "tsSignalizationDemux.h"
 #include "tsSignalizationHandlerInterface.h"
+#include "tsSignalState.h"
 #include "tsSimpleApplicationBoundaryDescriptor.h"
 #include "tsSimpleApplicationLocationDescriptor.h"
 #include "tsSimulCryptDate.h"

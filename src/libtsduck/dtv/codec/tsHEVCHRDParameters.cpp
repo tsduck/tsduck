@@ -198,7 +198,7 @@ bool ts::HEVCHRDParameters::parse_sub_layer_hrd_parameters(AVCParser& parser, st
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::HEVCHRDParameters::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::HEVCHRDParameters::display(std::ostream& out, const UString& margin, int level) const
 {
 #define DISP(n) disp(out, margin, u ## #n, n)
 

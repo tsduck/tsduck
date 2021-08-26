@@ -403,7 +403,7 @@ size_t ts::TunerEmulator::receive(TSPacket* buffer, size_t max_packets, const Ab
 bool ts::TunerEmulator::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
 {
     if (reset_unknown) {
-        params.reset();
+        params.clear();
     }
     if (_state == State::CLOSED || _state == State::OPEN) {
         return false; // not tuned
