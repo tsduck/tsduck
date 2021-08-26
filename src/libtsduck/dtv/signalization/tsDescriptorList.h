@@ -167,15 +167,17 @@ namespace ts {
         //!
         //! Add one descriptor at end of list
         //! @param [in] desc The binary descriptor to add.
+        //! @return True in case of success, false if the descriptor is invalid.
         //!
-        void add(const DescriptorPtr& desc);
+        bool add(const DescriptorPtr& desc);
 
         //!
         //! Add one descriptor at end of list
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc The descriptor to add.
+        //! @return True in case of success, false if the descriptor is invalid.
         //!
-        void add(DuckContext& duck, const AbstractDescriptor& desc);
+        bool add(DuckContext& duck, const AbstractDescriptor& desc);
 
         //!
         //! Add another list of descriptors at end of list.
@@ -191,7 +193,7 @@ namespace ts {
         //! Add descriptors from a memory area at end of list
         //! @param [in] addr Address of descriptors in memory.
         //! @param [in] size Size in bytes of descriptors in memory.
-        //! @return True in case of succee, false in case of truncated descriptor.
+        //! @return True in case of success, false in case of invalid or truncated descriptor.
         //!
         bool add(const void* addr, size_t size);
 
@@ -199,11 +201,12 @@ namespace ts {
         //! Add one descriptor from a memory area at end of list.
         //! The size is extracted from the descriptor header.
         //! @param [in] addr Address of the descriptor in memory.
+        //! @return True in case of success, false if the descriptor is invalid.
         //!
-        void add(const void* addr)
+        bool add(const void* addr)
         {
             const uint8_t* data(reinterpret_cast<const uint8_t*>(addr));
-            add(data, size_t(data[1]) + 2);
+            return add(data, size_t(data[1]) + 2);
         }
 
         //!

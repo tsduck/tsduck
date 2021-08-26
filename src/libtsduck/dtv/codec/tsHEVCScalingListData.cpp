@@ -95,7 +95,7 @@ bool ts::HEVCScalingListData::parse(AVCParser& parser, std::initializer_list<uin
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::HEVCScalingListData::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::HEVCScalingListData::display(std::ostream& out, const UString& margin, int level) const
 {
 #define DISP(n) out << margin << #n "[" << sizeId << "][" << matrixId << "] = " << int64_t(sc.n) << std::endl
 
