@@ -64,7 +64,7 @@ namespace ts {
         //! Since different operating systems or drivers may return different units,
         //! there is no standard way to represent values. Each value comes with its unit.
         //!
-        class Value : public StringifyInterface
+        class TSDUCKDLL Value : public StringifyInterface
         {
         public:
             int64_t value;  //!< The value.
@@ -110,11 +110,6 @@ namespace ts {
         //! Constructor.
         //!
         SignalState();
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~SignalState();
 
         //!
         //! Clear content, reset all values, they become "unset"
