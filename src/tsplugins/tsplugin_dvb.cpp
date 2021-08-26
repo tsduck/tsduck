@@ -36,6 +36,7 @@
 #include "tsObjectRepository.h"
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
+#include "tsSignalState.h"
 #include "tsModulationArgs.h"
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
@@ -168,16 +169,11 @@ bool ts::DVBInputPlugin::start()
     }
     tsp->debug(u"tuner reception started");
 
-    UString signal(UString::Format(u"signal locked: %s", {UString::YesNo(_tuner.signalLocked())}));
-    int strength = _tuner.signalStrength();
-    if (strength >= 0) {
-        signal += UString::Format(u", strength: %d%%", {strength});
+    // Display signal state in verbose mode.
+    SignalState state;
+    if (_tuner.getSignalState(state)) {
+        tsp->verbose(state.toString());
     }
-    int quality = _tuner.signalQuality();
-    if (quality >= 0) {
-        signal += UString::Format(u", quality: %d%%", {quality});
-    }
-    tsp->verbose(signal);
 
     return true;
 }
