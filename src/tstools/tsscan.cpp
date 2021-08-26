@@ -298,7 +298,7 @@ private:
     int32_t            _best_offset;
     int32_t            _lowest_offset;
     int32_t            _highest_offset;
-    int                _best_strength;
+    int64_t            _best_strength;
     int32_t            _best_strength_offset;
     ts::ModulationArgs _best_params;
 

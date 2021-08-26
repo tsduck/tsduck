@@ -45,10 +45,6 @@ ts::SignalState::SignalState() :
 {
 }
 
-ts::SignalState::~SignalState()
-{
-}
-
 void ts::SignalState::clear()
 {
     signal_locked = false;

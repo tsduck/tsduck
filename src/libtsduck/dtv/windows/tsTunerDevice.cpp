@@ -32,6 +32,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerDevice.h"
+#include "tsSignalState.h"
 #include "tsTSPacket.h"
 #include "tsTime.h"
 #include "tsNullReport.h"
@@ -187,75 +188,40 @@ bool ts::TunerDevice::close(bool silent)
 
 
 //-----------------------------------------------------------------------------
-// Check if a signal is present and locked
+// Get the signal state.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::signalLocked()
+bool ts::TunerDevice::getSignalState(SignalState& state)
 {
+    state.clear();
+
     if (!_is_open) {
         _duck.report().error(u"tuner not open");
         return false;
     }
 
+    // Get the signal locked indicator.
+    bool ok = false;
     ::BOOL locked = 0;
-    bool found = _graph.searchProperty(locked, TunerGraph::psHIGHEST,
-                                       &::IBDA_SignalStatistics::get_SignalLocked,
-                                       KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_LOCKED);
-    return found && locked != 0;
-}
+    ok = _graph.searchProperty(locked, TunerGraph::psHIGHEST,
+                               &::IBDA_SignalStatistics::get_SignalLocked,
+                               KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_LOCKED);
+    state.signal_locked = ok && locked != 0;
 
-
-//-----------------------------------------------------------------------------
-// Get signal strength in mdB.
-//-----------------------------------------------------------------------------
-
-bool ts::TunerDevice::getSignalStrength_mdB(::LONG& strength)
-{
     // The header bdamedia.h defines carrier strength in mdB (1/1000 of a dB).
     // A strength of 0 is nominal strength as expected for the given network.
     // Sub-nominal strengths are reported as positive mdB
     // Super-nominal strengths are reported as negative mdB
-
-    return _graph.searchProperty(strength, TunerGraph::psHIGHEST,
-                                 &::IBDA_SignalStatistics::get_SignalStrength,
-                                 KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_STRENGTH);
-}
-
-
-//-----------------------------------------------------------------------------
-// Return signal strength, in percent (0=bad, 100=good)
-//-----------------------------------------------------------------------------
-
-int ts::TunerDevice::signalStrength()
-{
-    if (!_is_open) {
-        _duck.report().error(u"tuner not open");
-        return false;
-    }
-    else {
-        ::LONG strength = 0;
-        return getSignalStrength_mdB(strength) ? std::max(0, 100 + int(strength) / 1000) : -1;
-    }
-}
-
-
-//-----------------------------------------------------------------------------
-// Return signal quality, in percent (0=bad, 100=good)
-// Return a negative value on error.
-//-----------------------------------------------------------------------------
-
-int ts::TunerDevice::signalQuality()
-{
-    if (!_is_open) {
-        _duck.report().error(u"tuner not open");
-        return false;
+    ::LONG strength = 0;
+    ok = _graph.searchProperty(strength, TunerGraph::psHIGHEST,
+                               &::IBDA_SignalStatistics::get_SignalStrength,
+                               KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_STRENGTH);
+    if (ok) {
+        state.signal_strength = SignalState::Value(strength, SignalState::Unit::MDB);
     }
 
-    ::LONG quality = 0;
-    bool found = _graph.searchProperty(quality, TunerGraph::psHIGHEST,
-                                       &::IBDA_SignalStatistics::get_SignalQuality,
-                                       KSPROPSETID_BdaSignalStats, KSPROPERTY_BDA_SIGNAL_QUALITY);
-    return found ? int(quality) : -1;
+    // Other signal state parameters are not available on Windows.
+    return true;
 }
 
 
@@ -588,17 +554,14 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const UString& 
         return strm;
     }
 
-    strm << margin << "Signal locked:    " << UString::YesNo(signalLocked()) << std::endl;
-    int quality = signalQuality();
-    if (quality >= 0) {
-        strm << margin << "Signal quality:   " << quality << " %" << std::endl;
-    }
-    ::LONG strength;
-    if (getSignalStrength_mdB(strength)) {
-        strm << margin << "Signal strength:  " << UString::Decimal(strength) << " milli dB" << std::endl;
+    SignalState state;
+    getSignalState(state);
+    strm << margin << "Signal locked:    " << UString::YesNo(state.signal_locked) << std::endl;
+    if (state.signal_strength.set()) {
+        strm << margin << "Signal strength:  " << state.signal_strength.value() << std::endl;
     }
 
-    // The DirectSho graph can be very verbose.
+    // The DirectShow graph can be very verbose.
     if (extended) {
         strm << std::endl << margin << "DirectShow graph:" << std::endl;
         _graph.display(strm, _duck.report(), margin + u"  ", true);
