@@ -91,6 +91,18 @@ namespace ts {
         //!
         bool deliveryNotRestricted() const;
 
+        //!
+        //! Check if the signal is an in.
+        //! @return Value based on the segmentation_type_id.
+        //!
+        bool isIn() const;
+
+        //!
+        //! Check if the signal is an out.
+        //! @return Value based on the segmentation_type_id.
+        //!
+        bool isOut() const;
+
         // Inherited methods
         DeclareDisplayDescriptor();
 

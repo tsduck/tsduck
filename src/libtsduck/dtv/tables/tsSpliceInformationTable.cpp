@@ -127,9 +127,19 @@ void ts::SpliceInformationTable::clearContent()
 
 void ts::SpliceInformationTable::adjustPTS()
 {
-    // Only splice_insert() commands need adjustment.
+    // Ignore null or invalid adjustment.
+    if (pts_adjustment == 0 || pts_adjustment > PTS_DTS_MASK) {
+        return;
+    }
+
+    // Only splice_insert() and time_signal() commands need adjustment.
     if (splice_command_type == SPLICE_INSERT) {
         splice_insert.adjustPTS(pts_adjustment);
+    } else if (splice_command_type == SPLICE_TIME_SIGNAL) {
+        // Adjust time signal time.
+        if (time_signal.set() && time_signal.value() <= PTS_DTS_MASK) {
+            time_signal = (time_signal.value() + pts_adjustment) & PTS_DTS_MASK;
+        }
     }
 
     // Adjustment applied, don't do it again.
