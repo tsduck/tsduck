@@ -10,5 +10,6 @@ Aaron Levinson
 Oliver Collyer
 Anthony Delannoy
 Martin Frétigné
+Fei Wong
 
 If you wish to contribute, please see https://tsduck.io/doxy/contributing.html
