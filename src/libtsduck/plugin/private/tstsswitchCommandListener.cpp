@@ -131,8 +131,7 @@ void ts::tsswitch::CommandListener::main()
         else if (cmd == u"halt" || cmd == u"abort") {
             // Extremely rude way of exiting the process.
             static const char err[] = "\n\n*** Emergency abort requested\n\n";
-            static const size_t err_size = sizeof(err) - 1;
-            FatalError(err, err_size);
+            FatalError(err, sizeof(err) - 1);
         }
         else {
             _log.error(u"received invalid command \"%s\" from remote control at %s", {cmd, sender});
