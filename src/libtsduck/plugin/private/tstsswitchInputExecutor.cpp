@@ -252,6 +252,7 @@ void ts::tsswitch::InputExecutor::main()
                 }
                 // Exit input when termination is requested.
                 if (_stopRequest || _terminated) {
+                    debug(u"exiting session: stop request: %s, terminated: %s", {_stopRequest, _terminated});
                     break;
                 }
                 // There is some free buffer, compute first index and size of receive area.

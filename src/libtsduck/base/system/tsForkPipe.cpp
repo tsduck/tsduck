@@ -322,17 +322,45 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
         return false;
     }
 
+    // If we want to make the created process asynchronous, it shall not remain zombie until
+    // someone waits for it, since noone will wait for it. To make a process non-zombie, the
+    // created process must become a session leader (setsid) and then fork again and die.
+    // Thus, the application process is a grand-child of the calling application and the
+    // intermediate process no longer exists.
+    if (_wait_mode == ASYNCHRONOUS) {
+        if (_fpid != 0) {
+            // In the parent process, wait for the intermediate child to die immediately.
+            // Failing to do so, the intermediate process would remain zombie.
+            ::waitpid(_fpid, nullptr, 0);
+        }
+        else {
+            // In the intermediate process. First make it a session leader.
+            ::setsid();
+            // Then create the grand-child process.
+            if (::fork() != 0) {
+                // In the intermediate process, die immediately.
+                ::exit(EXIT_SUCCESS);
+            }
+            // We are here in the grand-child process...
+        }
+    }
+
     if (_fpid != 0) {
         // In the context of the parent process.
         if (_in_pipe) {
             // Keep the writing end-point of pipe for data transmission.
-            // Close the reading end-point of pipe.
             _fd = filedes[PIPE_WRITEFD];
+            // But make it automatically closed on exec(). If the parent process
+            // creates another child later, we do not want it to inherit this file
+            // descriptor, assuming that fork() is always followed by exec().
+            ::fcntl(_fd, F_SETFD, FD_CLOEXEC);
+            // Close the reading end-point of pipe.
             ::close(filedes[PIPE_READFD]);
         }
         else if (_out_pipe) {
             // Do the opposite.
             _fd = filedes[PIPE_READFD];
+            ::fcntl(_fd, F_SETFD, FD_CLOEXEC);
             ::close(filedes[PIPE_WRITEFD]);
         }
     }
@@ -362,15 +390,11 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                 break;
             }
             case STDIN_PIPE: {
-                // Close the writing end-point of the pipe.
-                ::close(filedes[PIPE_WRITEFD]);
                 // Redirect the reading end-point of the pipe to standard input
                 if (::dup2(filedes[PIPE_READFD], STDIN_FILENO) < 0) {
                     error = errno;
                     message = "error redirecting stdin in forked process";
                 }
-                // Close the now extraneous file descriptor.
-                ::close(filedes[PIPE_READFD]);
                 break;
             }
             case STDIN_PARENT:
@@ -400,8 +424,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
             }
             case STDOUT_PIPE:
             case STDOUTERR_PIPE: {
-                // Close reading end-point of the pipe.
-                ::close(filedes[PIPE_READFD]);
                 // Redirect stdout to the write end-point of the pipe.
                 if (::dup2(filedes[PIPE_WRITEFD], STDOUT_FILENO) < 0) {
                     error = errno;
@@ -412,8 +434,6 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                     error = errno;
                     message = "error redirecting stderr to pipe";
                 }
-                // Close the now extraneous file descriptor.
-                ::close(filedes[PIPE_WRITEFD]);
                 break;
             }
             case KEEP_BOTH:
@@ -421,6 +441,13 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
                 // Nothing to do.
                 break;
             }
+        }
+
+        // The original file descriptors of the pipe are now useless.
+        // Either they were redirected to stdin/out/err or they are unused.
+        if (_use_pipe) {
+            ::close(filedes[PIPE_WRITEFD]);
+            ::close(filedes[PIPE_READFD]);
         }
 
         // Execute the command if there was no prior error.
@@ -499,10 +526,12 @@ bool ts::ForkPipe::close(Report& report)
     }
 
     // Wait for termination of forked process
-    assert(_fpid != 0);
-    if (_wait_mode == SYNCHRONOUS && ::waitpid(_fpid, nullptr, 0) < 0) {
-        report.error(u"error waiting for process termination: %s", {SysErrorCodeMessage()});
-        result = false;
+    if (_wait_mode == SYNCHRONOUS) {
+        assert(_fpid != 0);
+        if (::waitpid(_fpid, nullptr, 0) < 0) {
+            report.error(u"error waiting for process termination: %s", {SysErrorCodeMessage()});
+            result = false;
+        }
     }
 
 #endif
