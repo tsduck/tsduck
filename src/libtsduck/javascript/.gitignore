@@ -1,0 +1,8 @@
+# Created node-gyp configurations
+build
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+node_modules

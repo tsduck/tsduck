@@ -1,0 +1,1 @@
+This directory contains Javascript bindings to some TSDuck features.

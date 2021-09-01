@@ -1,0 +1,19 @@
+{
+  "name": "tsduck",
+  "version": "1.0.0",
+  "description": "Javascript bindings to some TSDuck features.",
+  "main": "index.ts",
+  "types": "tsduck.d.ts",
+  "scripts": {},
+  "gypfile": true,
+  "keywords": [],
+  "author": "Jennifer Kuemmele",
+  "license": "ISC",
+  "dependencies": {
+    "dom-parser": "^0.1.6",
+    "node-addon-api": "^3.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^14.17.4"
+  }
+}
