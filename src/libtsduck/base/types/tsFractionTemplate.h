@@ -37,25 +37,6 @@ const ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::MAX(std::numeric_limits<INT_T
 
 
 //----------------------------------------------------------------------------
-// Manipulation on fraction sign.
-//----------------------------------------------------------------------------
-
-// Unsigned version.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <bool dummy>
-struct ts::Fraction<INT_T,N>::SignWrapper<false, dummy> {
-    static inline void reduce(INT_T& num, INT_T& den) {}
-};
-
-// Signed version.
-template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
-template <bool dummy>
-struct ts::Fraction<INT_T,N>::SignWrapper<true, dummy> {
-    static inline void reduce(INT_T& num, INT_T& den) { if (den < 0) { num = -num; den = -den; } }
-};
-
-
-//----------------------------------------------------------------------------
 // Reduce a fraction. Internal operation only. Try to optimize usual cases.
 //----------------------------------------------------------------------------
 
@@ -66,7 +47,7 @@ void ts::Fraction<INT_T,N>::reduce()
         _den = 1;
     }
     else {
-        SignWrapper<std::is_signed<int_t>::value>::reduce(_num, _den);
+        sign_reduce(_num, _den);
         if (_den != 1) {
             const int_t gcd = GCD(_num, _den);
             _num /= gcd;
@@ -99,7 +80,7 @@ ts::Fraction<INT_T,N>::Fraction(INT1 numerator, INT2 denominator) :
         debug_throw_bound_check<int_t>(denominator);
         _num = int_t(numerator);
         _den = int_t(denominator);
-        SignWrapper<std::is_signed<int_t>::value>::reduce(_num, _den);
+        sign_reduce(_num, _den);
         if (_den != 1) {
             const int_t gcd = GCD(_num, _den);
             _num /= gcd;
@@ -228,7 +209,7 @@ typename ts::Fraction<INT_T,N> ts::Fraction<INT_T,N>::operator*(const Fraction& 
         den = den1 * den2;
         debug_throw_mul_overflow(den1, den2, den);
     }
-    SignWrapper<std::is_signed<int_t>::value>::reduce(num, den);
+    sign_reduce(num, den);
     return Fraction(num, den, true);
 }
 

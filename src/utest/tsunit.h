@@ -81,6 +81,7 @@
 #include <exception>
 #include <cstdlib>
 #include <cstdio>
+#include <cmath>
 #include <atomic>
 
 //!
@@ -673,7 +674,7 @@ template<typename ETYPE,
          typename std::enable_if<std::is_floating_point<ATYPE>::value>::type*>
 void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const std::string& estr, const std::string& astr, const char* file, int line)
 {
-    if (std::abs(static_cast<double>(expected) - static_cast<double>(actual)) < 0.000001) { // precision ?
+    if (std::fabs(static_cast<double>(expected) - static_cast<double>(actual)) < 0.000001) { // precision ?
         ++_passedCount;
     }
     else {
