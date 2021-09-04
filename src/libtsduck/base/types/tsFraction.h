@@ -69,14 +69,6 @@ namespace ts {
         // Reduce the fraction.
         void reduce();
 
-        // Manipulation on fraction sign: different versions for signed and unsigned integers.
-        // This structure looks hacky (and it is) but it is the only way to have valid C++
-        // code which is correctly handled by gcc, clang and msvc.
-        template <bool is_signed, bool dummy = true>
-        struct SignWrapper {
-            static inline void reduce(INT_T& num, INT_T& den);
-        };
-
     public:
         //!
         //! The underlying integer type.

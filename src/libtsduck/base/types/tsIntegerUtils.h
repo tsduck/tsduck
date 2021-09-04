@@ -557,6 +557,21 @@ namespace ts {
     //! @endcond
 
     //!
+    //! Reduce the sign of an integer fraction.
+    //! Make sure that only the numerator carries the sign. The denominator must remain positive.
+    //! @tparam INT An integer type.
+    //! @param [in,out] num Fraction numerator.
+    //! @param [in,out] den Fraction denominator.
+    //!
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_unsigned<INT>::value, int>::type = 0>
+    void sign_reduce(INT& num, INT& den) {} // unsigned version
+
+    //! @cond nodoxygen
+    template<typename INT, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type = 0>
+    void sign_reduce(INT& num, INT& den) { if (den < 0) { num = -num; den = -den; } } // signed version
+    //! @endcond
+
+    //!
     //! Perform a sign extension on any subset of a signed integer.
     //!
     //! @tparam INT A signed integer type.
