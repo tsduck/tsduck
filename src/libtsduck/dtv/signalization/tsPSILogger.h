@@ -39,6 +39,7 @@
 #include "tsxmlRunningDocument.h"
 #include "tsxmlJSONConverter.h"
 #include "tsjsonRunningDocument.h"
+#include "tsPAT.h"
 
 namespace ts {
     //!
@@ -165,6 +166,7 @@ namespace ts {
         int                      _received_pmt;    // Received PMT count
         PacketCounter            _clear_packets_cnt;
         PacketCounter            _scrambled_packets_cnt;
+        PAT                      _previous_pat;    // Last received PAT.
         SectionDemux             _demux;           // Demux reporting PSI tables.
         Standards                _standards;       // List of current standards in the PSI logger.
 
