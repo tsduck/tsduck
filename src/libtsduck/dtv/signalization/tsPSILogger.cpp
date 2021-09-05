@@ -39,7 +39,6 @@
 #include "tsjsonObject.h"
 #include "tsTSPacket.h"
 #include "tsNames.h"
-#include "tsPAT.h"
 TSDUCK_SOURCE;
 
 #define MIN_CLEAR_PACKETS 100000
@@ -87,6 +86,7 @@ ts::PSILogger::PSILogger(TablesDisplay& display) :
     _received_pmt(0),
     _clear_packets_cnt(0),
     _scrambled_packets_cnt(0),
+    _previous_pat(),
     _demux(_duck, this, _dump ? this : nullptr),
     _standards(Standards::NONE)
 {
@@ -221,6 +221,8 @@ bool ts::PSILogger::open()
     _xml_doc.clear();
     _x2j_conv.clear();
     _clear_packets_cnt = _scrambled_packets_cnt = 0;
+    _previous_pat.clear();
+    _previous_pat.invalidate();
 
     // Set XML options in document.
     _xml_doc.setTweaks(_xml_tweaks);
@@ -356,8 +358,19 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 if (!_all_versions) {
                     _demux.removePID(pid);
                 }
+                // Reset all PMT PID's which disappeared or changed.
+                if (_previous_pat.isValid()) {
+                    for (auto prev_it = _previous_pat.pmts.begin(); prev_it != _previous_pat.pmts.end(); ++prev_it) {
+                        const auto new_it = pat.pmts.find(prev_it->first);
+                        if (new_it == pat.pmts.end() || new_it->second != prev_it->second) {
+                            // Service disappeared or changed PMT PID, remove the previous PMT PID.
+                            _demux.removePID(prev_it->second);
+                        }
+                    }
+                }
+                _previous_pat = pat;
                 // Add a filter on each referenced PID to get the PMT
-                for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
+                for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
                     _demux.addPID(it->second);
                     _expected_pmt++;
                 }
