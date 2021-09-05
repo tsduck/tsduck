@@ -42,7 +42,9 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
+#if !defined(TS_NO_DTAPI)
 TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);
+#endif
 
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::DektecOutputPlugin::REFERENCE = 0;

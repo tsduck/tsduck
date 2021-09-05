@@ -40,7 +40,9 @@
 #include "tsLNB.h"
 TSDUCK_SOURCE;
 
+#if !defined(TS_NO_DTAPI)
 TS_REGISTER_INPUT_PLUGIN(u"dektec", ts::DektecInputPlugin);
+#endif
 
 // Depending on TS_NO_DTAPI, some code may be unused.
 TS_LLVM_NOWARNING(unused-macros)

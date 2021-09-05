@@ -49,22 +49,26 @@ endif
 # Standard common makefile is in same directory.
 include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/Makefile.common
 
-# Project specific directories and files.
-
+# Project specific directories.
 INSTALLERDIR = $(ROOTDIR)/installers
 SRCROOT      = $(ROOTDIR)/src
 LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
 TSPLUGINSDIR = $(SRCROOT)/tsplugins
 
+# Library files.
 STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
 SHARED_LIBTSDUCK = $(BINDIR)/libtsduck.so
 
+# List of plugins and tools.
 ifndef TSPLUGINS
     export TSPLUGINS := $(sort $(filter-out $(if $(NOTELETEXT),tsplugin_teletext,),\
                                             $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
     export TSEXECS   := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
                                             $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
+    ifdef NODTAPI
+        TSEXECS := $(filter-out tsdektec,$(TSEXECS))
+    endif
 endif
 
 # Default installation root.
