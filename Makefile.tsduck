@@ -56,24 +56,13 @@ LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
 TSPLUGINSDIR = $(SRCROOT)/tsplugins
 
-# Library files.
+# TSDuck library files.
 STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
 SHARED_LIBTSDUCK = $(BINDIR)/libtsduck.so
 
-# List of plugins and tools.
-ifndef TSPLUGINS
-    export TSPLUGINS := $(sort $(filter-out $(if $(NOTELETEXT),tsplugin_teletext,),\
-                                            $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
-    export TSEXECS   := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
-                                            $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
-    ifdef NODTAPI
-        TSEXECS := $(filter-out tsdektec,$(TSEXECS))
-    endif
-endif
-
 # Default installation root.
-# RPM packagers should override this in the "make install" command line.
-
+# RPM packagers should override this in the "make install" command line
+# to build a temporary system root where TSDuck is installed.
 SYSROOT =
 
 # A shortcut-target to rebuild with static linking.
@@ -205,4 +194,27 @@ ifneq ($(CC_FILE_PREFIX_MAP),)
     ifeq ($(DEBUG),)
         CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
     endif    
+endif
+
+# List of plugins and tools.
+# Do not compile Dektec or HiDes tools when these devices are unsupported.
+# Tuners (dvb plugin, tslsdvb, tscan) shall be compiled everywhere because
+# the tuner emulator facility is available everywhere.
+ifndef TSPLUGINS
+    TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))
+    TSEXECS := $(sort $(notdir $(basename $(wildcard $(TSTOOLSDIR)/ts*.cpp))))
+    ifdef NODTAPI
+        TSEXECS := $(filter-out tsdektec,$(TSEXECS))
+    endif
+    ifdef MACOS
+        TSPLUGINS := $(filter-out tsplugin_hides,$(TSPLUGINS))
+        TSEXECS := $(filter-out tshides,$(TSEXECS))
+    endif
+    ifdef NOTELETEXT
+        TSPLUGINS := $(filter-out tsplugin_teletext,$(TSPLUGINS))
+    endif
+    ifdef NOPCSC
+        TSEXECS := $(filter-out tssmartcard,$(TSEXECS))
+    endif
+    export TSPLUGINS TSEXECS
 endif

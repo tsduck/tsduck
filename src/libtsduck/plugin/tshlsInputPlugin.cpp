@@ -32,7 +32,9 @@
 #include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
+#if !defined(TS_UNIX) || !defined(TS_NO_CURL)
 TS_REGISTER_INPUT_PLUGIN(u"hls", ts::hls::InputPlugin);
+#endif
 
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::hls::InputPlugin::REFERENCE = 0;
