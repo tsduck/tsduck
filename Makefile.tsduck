@@ -119,6 +119,22 @@ else
     LDLIBS := -lsrt $(LDLIBS)
 endif
 
+ifeq ($(RIST),)
+    # Currently, RIST must be explicitly enabled since no standard distro package exists.
+    NORIST := true
+endif
+
+ifeq ($(NORIST),)
+    # RIST not disabled, check if librist is available.
+    NORIST := $(if $(wildcard /usr/include/librist/*.h)$(wildcard /usr/local/include/librist/*.h),,true)
+endif
+
+ifneq ($(NORIST),)
+    CFLAGS_INCLUDES += -DTS_NORIST=1
+else
+    LDLIBS := -lrist $(LDLIBS)
+endif
+
 ifdef NOCURL
     CFLAGS_INCLUDES += -DTS_NO_CURL=1
 else
@@ -212,6 +228,9 @@ ifndef TSPLUGINS
     endif
     ifdef NOTELETEXT
         TSPLUGINS := $(filter-out tsplugin_teletext,$(TSPLUGINS))
+    endif
+    ifdef NORIST
+        TSPLUGINS := $(filter-out tsplugin_rist,$(TSPLUGINS))
     endif
     ifdef NOPCSC
         TSEXECS := $(filter-out tssmartcard,$(TSEXECS))
