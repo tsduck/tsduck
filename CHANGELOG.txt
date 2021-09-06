@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2511
+VERSION 3.28-2516
 
 [NEW] New commands and plugins:
 
@@ -34,6 +34,8 @@ VERSION 3.28-2511
     (typically "tsswitch" with several "fork" plugins), file descriptors were
     not properly segmented between processes, resulting in plugins failing to
     stop.
+  * With "--initial-input-packets N --add-start-stuffing N", tsp could not
+    start as long as at least one packet was received from the input plugin.
 
 -------------------------------------------------------------------------------
 

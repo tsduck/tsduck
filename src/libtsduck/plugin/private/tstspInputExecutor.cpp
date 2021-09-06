@@ -328,7 +328,9 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
     // Now read real packets.
     if (_options.instuff_inpkt == 0) {
         // There is no --add-input-stuffing option, simply call the plugin
-        pkt_done += receiveAndValidate(index, pkt_remain);
+        if (pkt_remain > 0) {
+            pkt_done += receiveAndValidate(index, pkt_remain);
+        }
     }
     else {
         // Otherwise, we have to alternate input packets and null packets.
