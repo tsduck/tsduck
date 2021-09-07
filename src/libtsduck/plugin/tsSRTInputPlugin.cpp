@@ -32,7 +32,7 @@
 #include "tsSysUtils.h"
 TSDUCK_SOURCE;
 
-#if !defined(TS_NOSRT)
+#if !defined(TS_NO_SRT)
 TS_REGISTER_INPUT_PLUGIN(u"srt", ts::SRTInputPlugin);
 #endif
 

@@ -114,7 +114,7 @@ ifeq ($(MACOS)$(NOSRT),)
 endif
 
 ifneq ($(NOSRT),)
-    CFLAGS_INCLUDES += -DTS_NOSRT=1
+    CFLAGS_INCLUDES += -DTS_NO_SRT=1
 else
     LDLIBS := -lsrt $(LDLIBS)
 endif
@@ -130,7 +130,7 @@ ifeq ($(NORIST),)
 endif
 
 ifneq ($(NORIST),)
-    CFLAGS_INCLUDES += -DTS_NORIST=1
+    CFLAGS_INCLUDES += -DTS_NO_RIST=1
 else
     LDLIBS := -lrist $(LDLIBS)
 endif

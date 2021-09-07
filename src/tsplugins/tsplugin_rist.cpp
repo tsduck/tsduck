@@ -32,6 +32,7 @@
 //
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_RIST)
 #include "tsPluginRepository.h"
 #include <librist/librist.h>
 TSDUCK_SOURCE;
@@ -86,7 +87,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"rist", ts::RistOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::RistInputPlugin::RistInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Receive TS packets using Reliable Internet Stream Transport (RIST)", u"[options]")
+    InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options]")
 {
 }
 
@@ -107,6 +108,9 @@ bool ts::RistInputPlugin::getOptions()
 
 bool ts::RistInputPlugin::start()
 {
+    tsp->debug(u"using librist version %s, API version %s", {librist_version(), librist_api_version()});
+
+
     return true;
 }
 
@@ -179,3 +183,5 @@ bool ts::RistOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata* 
 {
     return true;
 }
+
+#endif // TS_NO_RIST

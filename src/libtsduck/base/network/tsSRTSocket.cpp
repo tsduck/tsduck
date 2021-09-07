@@ -257,7 +257,7 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
 // Stubs in the absence of libsrt.
 //----------------------------------------------------------------------------
 
-#if defined(TS_NOSRT)
+#if defined(TS_NO_SRT)
 
 #define NOSRT_ERROR_MSG u"This version of TSDuck was compiled without SRT support"
 #define NOSRT_ERROR { report.error(NOSRT_ERROR_MSG); return false; }
@@ -1008,4 +1008,4 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Micro
     return true;
 }
 
-#endif // TS_NOSRT
+#endif // TS_NO_SRT
