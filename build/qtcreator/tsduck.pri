@@ -98,7 +98,7 @@ exists(/usr/include/srt/*.h) | exists(/usr/local/include/srt/*.h) {
     LIBS += -lsrt
 }
 else {
-    DEFINES += TS_NOSRT=1
+    DEFINES += TS_NO_SRT=1
 }
 tstool {
     # TSDuck tools shall use "CONFIG += tstool"
