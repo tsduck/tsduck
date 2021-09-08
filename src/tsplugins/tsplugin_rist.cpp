@@ -50,7 +50,7 @@ namespace ts {
         TS_NOBUILD_NOCOPY(RistPluginData);
     public:
         // Constructor. Also define commond line arguments.
-        RistPluginData(Args*, TSP*);
+        RistPluginData(bool receiver, Args*, TSP*);
 
         // Destructor.
         ~RistPluginData() { cleanup(); }
@@ -75,6 +75,7 @@ namespace ts {
     private:
         // Working data.
         TSP* _tsp;
+        bool _receiver;
 
         // A RIST log callback using a TSP* argument.
         static int RistLogCallback(void* arg, ::rist_log_level level, const char* msg);
@@ -86,14 +87,13 @@ namespace ts {
 // Input/output common data constructor.
 //----------------------------------------------------------------------------
 
-ts::RistPluginData::RistPluginData(Args* args, TSP* tsp) :
+ts::RistPluginData::RistPluginData(bool receiver, Args* args, TSP* tsp) :
     profile(RIST_PROFILE_SIMPLE),
     ctx(nullptr),
     log(LOGGING_SETTINGS_INITIALIZER),
-    _tsp(tsp)
+    _tsp(tsp),
+    _receiver(receiver)
 {
-    _tsp->debug(u"using librist version %s, API version %s", {librist_version(), librist_api_version()});
-
     log.log_level = SeverityToRistLog(tsp->maxSeverity());
     log.log_cb = RistLogCallback;
     log.log_cb_arg = tsp;
@@ -103,7 +103,10 @@ ts::RistPluginData::RistPluginData(Args* args, TSP* tsp) :
         {u"main",     RIST_PROFILE_MAIN},
         {u"advanced", RIST_PROFILE_ADVANCED},
     }));
-    args->help(u"profile", u"name", u"Specify the RIST profile.");
+    args->help(u"profile", u"name", u"Specify the RIST profile (main profile by default).");
+
+    args->option(u"version", 0, VersionInfo::FormatEnum, 0, 1, true);
+    args->help(u"version", u"Display the TSDuck and RIST library version numbers and immediately exits.");
 }
 
 
@@ -127,7 +130,18 @@ void ts::RistPluginData::cleanup()
 // Get command line options.
 bool ts::RistPluginData::getOptions(Args* args)
 {
-    args->getIntValue(profile, u"profile");
+    // The option --version supplements the TSDuck predefined --version option.
+    if (args->present(u"version")) {
+        _tsp->info(u"%s\nRIST library: librist version %s, API version %s", {
+            VersionInfo::GetVersion(args->intValue(u"version", VersionInfo::Format::LONG)),
+            librist_version(),
+            librist_api_version()
+        });
+        ::exit(EXIT_SUCCESS);
+    }
+
+    // Normal rist plugin options.
+    args->getIntValue(profile, u"profile", RIST_PROFILE_MAIN);
     return true;
 }
 
@@ -184,7 +198,12 @@ int ts::RistPluginData::RistLogCallback(void* arg, ::rist_log_level level, const
 {
     ts::TSP* tsp = reinterpret_cast<ts::TSP*>(arg);
     if (tsp != nullptr && msg != nullptr) {
-        tsp->log(RistLogToSeverity(level), ts::UString::FromUTF8(msg));
+        UString line;
+        line.assignFromUTF8(msg);
+        while (!line.empty() && (line.back() == LINE_FEED || line.back() == CARRIAGE_RETURN)) {
+            line.pop_back();
+        }
+        tsp->log(RistLogToSeverity(level), line);
     }
     // The returned value is undocumented but seems unused by librist, should have been void.
     return 0;
@@ -247,7 +266,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"rist", ts::RistOutputPlugin);
 
 ts::RistInputPlugin::RistInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options]"),
-    _data(this, tsp)
+    _data(true, this, tsp)
 {
 }
 
@@ -268,6 +287,17 @@ bool ts::RistInputPlugin::getOptions()
 
 bool ts::RistInputPlugin::start()
 {
+    if (_data.ctx != nullptr) {
+        tsp->error(u"already started");
+        return false;
+    }
+
+    tsp->debug(u"calling rist_receiver_create, profile: %d", {_data.profile});
+    if (::rist_receiver_create(&_data.ctx, _data.profile, &_data.log) != 0) {
+        tsp->error(u"already started");
+        return false;
+    }
+
     //@@@
     return true;
 }
@@ -301,7 +331,7 @@ size_t ts::RistInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data
 
 ts::RistOutputPlugin::RistOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using Reliable Internet Stream Transport (RIST)", u"[options]"),
-    _data(this, tsp)
+    _data(false, this, tsp)
 {
 }
 
@@ -322,6 +352,17 @@ bool ts::RistOutputPlugin::getOptions()
 
 bool ts::RistOutputPlugin::start()
 {
+    if (_data.ctx != nullptr) {
+        tsp->error(u"already started");
+        return false;
+    }
+
+    tsp->debug(u"calling rist_receiver_create, profile: %d", {_data.profile});
+    if (::rist_sender_create(&_data.ctx, _data.profile, 0, &_data.log) != 0) {
+        tsp->error(u"already started");
+        return false;
+    }
+
     //@@@
     return true;
 }
