@@ -306,9 +306,9 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
                 u"Using " + GetVersion(Format::COMPILER) + LINE_FEED +
                 u"System: " + GetVersion(Format::SYSTEM) + LINE_FEED +
                 u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
+                u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
                 u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
-                u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
-                u"Dektec: " + GetVersion(Format::DEKTEC);
+                u"SRT library: " + GetVersion(Format::SRT);
         }
         default: {
             // Undefined type, return an empty string.
