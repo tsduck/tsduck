@@ -67,6 +67,7 @@ namespace ts {
 
         // Command line options.
         ::rist_profile profile;
+        size_t         buffer_size;
 
         // Working data.
         ::rist_ctx*             ctx;
@@ -89,6 +90,7 @@ namespace ts {
 
 ts::RistPluginData::RistPluginData(bool receiver, Args* args, TSP* tsp) :
     profile(RIST_PROFILE_SIMPLE),
+    buffer_size(0),
     ctx(nullptr),
     log(LOGGING_SETTINGS_INITIALIZER),
     _tsp(tsp),
@@ -97,6 +99,9 @@ ts::RistPluginData::RistPluginData(bool receiver, Args* args, TSP* tsp) :
     log.log_level = SeverityToRistLog(tsp->maxSeverity());
     log.log_cb = RistLogCallback;
     log.log_cb_arg = tsp;
+
+    args->option(u"buffer-size", 'b', Args::POSITIVE);
+    args->help(u"buffer-size", u"Default buffer size in bytes for packet retransmissions.");
 
     args->option(u"profile", 'p', Enumeration({
         {u"simple",   RIST_PROFILE_SIMPLE},
@@ -142,6 +147,7 @@ bool ts::RistPluginData::getOptions(Args* args)
 
     // Normal rist plugin options.
     args->getIntValue(profile, u"profile", RIST_PROFILE_MAIN);
+    args->getIntValue(buffer_size, u"buffer-size");
     return true;
 }
 
@@ -200,10 +206,10 @@ int ts::RistPluginData::RistLogCallback(void* arg, ::rist_log_level level, const
     if (tsp != nullptr && msg != nullptr) {
         UString line;
         line.assignFromUTF8(msg);
-        while (!line.empty() && (line.back() == LINE_FEED || line.back() == CARRIAGE_RETURN)) {
+        while (!line.empty() && IsSpace(line.back())) {
             line.pop_back();
         }
-        tsp->log(RistLogToSeverity(level), line);
+        tsp->log(RistLogToSeverity(level), u"@@@>" + line + u"<@@@");
     }
     // The returned value is undocumented but seems unused by librist, should have been void.
     return 0;
@@ -223,16 +229,212 @@ namespace ts {
         RistInputPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool isRealTime() override {return true;}
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
 
     private:
         RistPluginData _data;
+        UStringVector  _urls;     // input RIST URL's.
+        MilliSecond    _timeout;  // receive timeout.
+        ByteBlock      _buffer;   // data in excess from last input.
     };
 }
 
 TS_REGISTER_INPUT_PLUGIN(u"rist", ts::RistInputPlugin);
+
+
+//----------------------------------------------------------------------------
+// Input plugin constructor
+//----------------------------------------------------------------------------
+
+ts::RistInputPlugin::RistInputPlugin(TSP* tsp_) :
+    InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options]"),
+    _data(true, this, tsp),
+    _urls(),
+    _timeout(0),
+    _buffer()
+{
+    option(u"", 0, STRING, 1, UNLIMITED_COUNT);
+    help(u"", u"One or more RIST URL's. "
+         u"A RIST URL may include tuning parameters in addition to the address and port. "
+         u"See https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation for more details.");
+}
+
+
+//----------------------------------------------------------------------------
+// Input get command line options
+//----------------------------------------------------------------------------
+
+bool ts::RistInputPlugin::getOptions()
+{
+    getValues(_urls, u"");
+    return _data.getOptions(this);
+}
+
+
+//----------------------------------------------------------------------------
+// Set receive timeout from tsp.
+//----------------------------------------------------------------------------
+
+bool ts::RistInputPlugin::setReceiveTimeout(MilliSecond timeout)
+{
+    if (timeout > 0) {
+        _timeout = timeout;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Input start method
+//----------------------------------------------------------------------------
+
+bool ts::RistInputPlugin::start()
+{
+    if (_data.ctx != nullptr) {
+        tsp->error(u"already started");
+        return false;
+    }
+
+    // Clear internal state.
+    _buffer.clear();
+
+    // Initialize the RIST context.
+    tsp->debug(u"calling rist_receiver_create, profile: %d", {_data.profile});
+    if (::rist_receiver_create(&_data.ctx, _data.profile, &_data.log) != 0) {
+        tsp->error(u"already started");
+        return false;
+    }
+
+    // Add all peers to the RIST context.
+    for (auto it = _urls.begin(); it != _urls.end(); ++it) {
+
+        // Parse one URL. The rist_peer_config is allocated by the library.
+        ::rist_peer_config* config = nullptr;
+        if (::rist_parse_address2(it->toUTF8().c_str(), &config) != 0 || config == nullptr) {
+            tsp->error(u"invalid RIST URL: %s", {*it});
+            _data.cleanup();
+            return false;
+        }
+
+        // Override with command-line options.
+        if (_data.buffer_size > 0) {
+            config->recovery_length_max = config->recovery_length_min = _data.buffer_size;
+        }
+
+        // Create the peer.
+        ::rist_peer* peer = nullptr;
+        if (::rist_peer_create(_data.ctx, &peer, config) != 0) {
+            tsp->error(u"error creating peer: %s", {*it});
+            _data.cleanup();
+            return false;
+        }
+
+        // Free the resources which were allocated by the library.
+        ::rist_peer_config_free2(&config);
+    }
+
+    // Start reception.
+    tsp->debug(u"calling rist_start");
+    if (::rist_start(_data.ctx) != 0) {
+        tsp->error(u"error starting RIST reception");
+        _data.cleanup();
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Input stop method
+//----------------------------------------------------------------------------
+
+bool ts::RistInputPlugin::stop()
+{
+    _data.cleanup();
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Input method
+//----------------------------------------------------------------------------
+
+size_t ts::RistInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_data, size_t max_packets)
+{
+    size_t pkt_count = 0;
+
+    if (!_buffer.empty()) {
+        // There are remaining data from a previous receive in the buffer.
+        tsp->debug(u"read data from remaining %d bytes in the buffer", {_buffer.size()});
+        assert(_buffer.size() % PKT_SIZE == 0);
+        pkt_count = std::min(_buffer.size() / PKT_SIZE, max_packets);
+        ::memcpy(pkt_buffer->b, _buffer.data(), pkt_count * PKT_SIZE);
+        _buffer.erase(0, pkt_count * PKT_SIZE);
+    }
+    else {
+        // Read one data block. Allocated in the library, must be freed later.
+        ::rist_data_block* data = nullptr;
+
+        // There is no blocking read. Only a timed read with zero meaning "no wait".
+        // Here, we poll every few seconds when no timeout is specified and check for abort.
+        for (;;) {
+            // The returned value is: number of buffers remaining on queue +1 (0 if no buffer returned), -1 on error.
+            const int queue_size = ::rist_receiver_data_read2(_data.ctx, &data, _timeout == 0 ? 3000 : int(_timeout));
+            if (queue_size < 0) {
+                tsp->error(u"reception error");
+                return 0;
+            }
+            else if (queue_size == 0 || data == nullptr) {
+                // No data block returned but not an error, must be a timeout.
+                if (_timeout > 0) {
+                    // This is a user-specified timeout.
+                    tsp->error(u"reception timeout");
+                    return 0;
+                }
+                else if (tsp->aborting()) {
+                    // User abort was requested.
+                    return 0;
+                }
+                tsp->debug(u"no packet, queue size: %d, data block: 0x%X, polling librist again", {queue_size, size_t(data)});
+            }
+            else {
+                // If the internal queue is too long, report a warning. We use the same method as ristreceiver here.
+                if (queue_size % 10 == 0 || queue_size > 50) {
+                    tsp->warning(u"RIST receive queue too long, %d data blocks, flow id %d\n", {queue_size, data->flow_id});
+                }
+
+                // Assume that we receive an integral number of TS packets.
+                const size_t total_pkt_count = data->payload_len / PKT_SIZE;
+                const uint8_t* const data_addr = reinterpret_cast<const uint8_t*>(data->payload);
+                const size_t data_size = total_pkt_count * PKT_SIZE;
+                if (data_size < data->payload_len) {
+                    tsp->warning(u"received %'d bytes, not a integral number of TS packets, %d trailing bytes, first received byte: 0x%X, first trailing byte: 0x%X",
+                                 {data->payload_len, data->payload_len % PKT_SIZE, data_addr[0], data_addr[data_size]});
+                }
+
+                // Return the packets which fit in the caller's buffer.
+                pkt_count = std::min(total_pkt_count, max_packets);
+                ::memcpy(pkt_buffer->b, data_addr, pkt_count * PKT_SIZE);
+
+                // Copy the rest, if any, in the local buffer.
+                if (pkt_count < total_pkt_count) {
+                    _buffer.copy(data_addr + (pkt_count * PKT_SIZE), (total_pkt_count - pkt_count) * PKT_SIZE);
+                }
+
+                // Free returned data block.
+                ::rist_receiver_data_block_free2(&data);
+
+                // Abort polling loop.
+                break;
+            }
+        }
+    }
+    return pkt_count;
+}
 
 
 //----------------------------------------------------------------------------
@@ -254,75 +456,11 @@ namespace ts {
 
     private:
         RistPluginData _data;
+        bool           _npd;   // null packet deletion
     };
 }
 
 TS_REGISTER_OUTPUT_PLUGIN(u"rist", ts::RistOutputPlugin);
-
-
-//----------------------------------------------------------------------------
-// Input plugin constructor
-//----------------------------------------------------------------------------
-
-ts::RistInputPlugin::RistInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options]"),
-    _data(true, this, tsp)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Input get command line options
-//----------------------------------------------------------------------------
-
-bool ts::RistInputPlugin::getOptions()
-{
-    return _data.getOptions(this);
-}
-
-
-//----------------------------------------------------------------------------
-// Input start method
-//----------------------------------------------------------------------------
-
-bool ts::RistInputPlugin::start()
-{
-    if (_data.ctx != nullptr) {
-        tsp->error(u"already started");
-        return false;
-    }
-
-    tsp->debug(u"calling rist_receiver_create, profile: %d", {_data.profile});
-    if (::rist_receiver_create(&_data.ctx, _data.profile, &_data.log) != 0) {
-        tsp->error(u"already started");
-        return false;
-    }
-
-    //@@@
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Input stop method
-//----------------------------------------------------------------------------
-
-bool ts::RistInputPlugin::stop()
-{
-    _data.cleanup();
-    return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Input method
-//----------------------------------------------------------------------------
-
-size_t ts::RistInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
-{
-    //@@@
-    return 0;
-}
 
 
 //----------------------------------------------------------------------------
@@ -331,8 +469,11 @@ size_t ts::RistInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data
 
 ts::RistOutputPlugin::RistOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using Reliable Internet Stream Transport (RIST)", u"[options]"),
-    _data(false, this, tsp)
+    _data(false, this, tsp),
+    _npd(false)
 {
+    option(u"null-packet-deletion", 'n');
+    help(u"null-packet-deletion", u"Enable null packet deletion. The receiver needs to support this.");
 }
 
 
@@ -342,6 +483,7 @@ ts::RistOutputPlugin::RistOutputPlugin(TSP* tsp_) :
 
 bool ts::RistOutputPlugin::getOptions()
 {
+    _npd = present(u"null-packet-deletion");
     return _data.getOptions(this);
 }
 
