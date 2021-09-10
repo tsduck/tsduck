@@ -59,6 +59,7 @@ $DektecDir = (Join-Path $RootDir dektec)
 
 & (Join-Path $PSScriptRoot install-nsis.ps1) -NoPause -ForceDownload:$ForceDownload
 & (Join-Path $PSScriptRoot install-libsrt.ps1) -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& (Join-Path $PSScriptRoot install-librist.ps1) -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & (Join-Path $PSScriptRoot install-graphviz.ps1) -NoPause -ForceDownload:$ForceDownload
 & (Join-Path $PSScriptRoot install-doxygen.ps1) -NoPause -ForceDownload:$ForceDownload
 & (Join-Path $PSScriptRoot install-java.ps1) -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
