@@ -6,20 +6,18 @@
   </ImportGroup>
 
   <ItemGroup>
-    <Plugins   Include="$(TSDuckRootDir)src\tsplugins\tsplugin_*.cpp"/>
-    <ClCompile Include="..\..\src\tstools\tsp.cpp" />
-    <ClCompile Include="@(Plugins)"/>
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_rist.cpp" />
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{0305170C-F14D-4812-8B14-1468D6607794}</ProjectGuid>
+    <ProjectGuid>{201D9E06-2D04-5AB4-534D-6DCCD8894EB7}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>tsp_static</RootNamespace>
+    <RootNamespace>tsplugin_rist</RootNamespace>
   </PropertyGroup>
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-target-exe.props" />
-    <Import Project="msvc-use-tsducklib.props" />
+    <Import Project="msvc-target-dll.props" />
+    <Import Project="msvc-use-tsduckdll.props" />
     <Import Project="msvc-use-librist.props" />
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
