@@ -98,13 +98,15 @@ ts::RistPluginData::RistPluginData(Args* args, TSP* tsp) :
     profile(RIST_PROFILE_SIMPLE),
     urls(),
     ctx(nullptr),
-    log(LOGGING_SETTINGS_INITIALIZER),
+    log({0}),
     _tsp(tsp),
     _peer_configs()
 {
     log.log_level = SeverityToRistLog(tsp->maxSeverity());
     log.log_cb = RistLogCallback;
     log.log_cb_arg = tsp;
+    log.log_socket = -1;
+    log.log_stream = nullptr;
 
     args->option(u"", 0, Args::STRING, 1, Args::UNLIMITED_COUNT);
     args->help(u"", u"One or more RIST URL's. "
@@ -188,7 +190,7 @@ bool ts::RistPluginData::getOptions(Args* args)
 
         // Override buffer size with command-line options.
         if (buffer_size > 0) {
-            _peer_configs[i]->recovery_length_max = _peer_configs[i]->recovery_length_min = buffer_size;
+            _peer_configs[i]->recovery_length_max = _peer_configs[i]->recovery_length_min = uint32_t(buffer_size);
         }
     }
 
