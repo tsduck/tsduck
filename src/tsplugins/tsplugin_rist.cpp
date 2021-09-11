@@ -315,7 +315,7 @@ TS_REGISTER_INPUT_PLUGIN(u"rist", ts::RistInputPlugin);
 //----------------------------------------------------------------------------
 
 ts::RistInputPlugin::RistInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options]"),
+    InputPlugin(tsp_, u"Receive TS packets from Reliable Internet Stream Transport (RIST)", u"[options] url [url...]"),
     _data(this, tsp),
     _timeout(0),
     _buffer(),
@@ -517,7 +517,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"rist", ts::RistOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::RistOutputPlugin::RistOutputPlugin(TSP* tsp_) :
-    AbstractDatagramOutputPlugin(tsp_, u"Send TS packets using Reliable Internet Stream Transport (RIST)", u"[options]", NONE),
+    AbstractDatagramOutputPlugin(tsp_, u"Send TS packets using Reliable Internet Stream Transport (RIST)", u"[options] url [url...]", NONE),
     _data(this, tsp),
     _npd(false)
 {
