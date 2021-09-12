@@ -69,22 +69,27 @@ namespace ts {
         static int RistLogToSeverity(::rist_log_level level);
         static ::rist_log_level SeverityToRistLog(int severity);
 
-        // Command line options.
-        size_t buffer_size;
-        ::rist_profile profile;
-        UStringVector urls;
-
         // Working data.
-        ::rist_ctx* ctx;
+        ::rist_profile          profile;
+        ::rist_ctx*             ctx;
         ::rist_logging_settings log;
 
     private:
         // Working data.
-        TSP* _tsp;
+        TSP*           _tsp;
+        uint32_t       _buffer_size;
+        int            _encryption_type;
+        UString        _secret;
+        int            _stats_interval;
+        UString        _stats_prefix;
+        UStringVector  _peer_urls;
         std::vector<::rist_peer_config*> _peer_configs;
 
-        // A RIST log callback using a TSP* argument.
+        // A RIST log callback using a RistPluginData* argument.
         static int RistLogCallback(void* arg, ::rist_log_level level, const char* msg);
+
+        // A RIST stats callback using a RistPluginData* argument.
+        static int RistStatsCallback(void* arg, const ::rist_stats* stats);
     };
 }
 
@@ -94,27 +99,42 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 ts::RistPluginData::RistPluginData(Args* args, TSP* tsp) :
-    buffer_size(0),
     profile(RIST_PROFILE_SIMPLE),
-    urls(),
     ctx(nullptr),
-    log({0}),
+    log(),
     _tsp(tsp),
+    _buffer_size(0),
+    _encryption_type(0),
+    _secret(),
+    _stats_interval(0),
+    _stats_prefix(),
+    _peer_urls(),
     _peer_configs()
 {
     log.log_level = SeverityToRistLog(tsp->maxSeverity());
     log.log_cb = RistLogCallback;
-    log.log_cb_arg = tsp;
+    log.log_cb_arg = this;
     log.log_socket = -1;
     log.log_stream = nullptr;
 
     args->option(u"", 0, Args::STRING, 1, Args::UNLIMITED_COUNT);
-    args->help(u"", u"One or more RIST URL's. "
-               u"A RIST URL may include tuning parameters in addition to the address and port. "
+    args->help(u"",
+               u"One or more RIST URL's. "
+               u"A RIST URL (rist://...) may include tuning parameters in addition to the address and port. "
                u"See https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation for more details.");
 
     args->option(u"buffer-size", 'b', Args::POSITIVE);
-    args->help(u"buffer-size", u"Default buffer size in bytes for packet retransmissions.");
+    args->help(u"buffer-size", u"milliseconds",
+               u"Default buffer size in milliseconds for packet retransmissions. "
+               u"This value overrides the 'buffer=' parameter in the URL.");
+
+    args->option(u"encryption-type", 'e', Enumeration({ // actual value is an AES key size in bits
+        {u"AES-128", 128},
+        {u"AES-256", 256},
+    }));
+    args->help(u"encryption-type", u"name",
+               u"Specify the encryption type (none by default). "
+               u"This value is used when the 'aes-type=' parameter is not present in the URL.");
 
     args->option(u"profile", 'p', Enumeration({
         {u"simple",   RIST_PROFILE_SIMPLE},
@@ -122,6 +142,22 @@ ts::RistPluginData::RistPluginData(Args* args, TSP* tsp) :
         {u"advanced", RIST_PROFILE_ADVANCED},
     }));
     args->help(u"profile", u"name", u"Specify the RIST profile (main profile by default).");
+
+    args->option(u"secret", 's', Args::STRING);
+    args->help(u"secret", u"string",
+               u"Default pre-shared encryption secret. "
+               u"If a pre-shared secret is specified without --encryption-type, AES-128 is used by default. "
+               u"This value is used when the 'secret=' parameter is not present in the URL.");
+
+    args->option(u"stats-interval", 0, Args::POSITIVE);
+    args->help(u"stats-interval", u"milliseconds",
+               u"Periodically report a line of statistics. The interval is in milliseconds. "
+               u"The statistics are in JSON format.");
+
+    args->option(u"stats-prefix", 0, Args::STRING);
+    args->help(u"stats-prefix", u"'prefix'",
+               u"With --stats-interval, specify a prefix to prepend on the statistics line "
+               u"before the JSON text to locate the appropriate line in the logs.");
 
     args->option(u"version", 0, VersionInfo::FormatEnum, 0, 1, true);
     args->help(u"version", u"Display the TSDuck and RIST library version numbers and immediately exits.");
@@ -172,25 +208,51 @@ bool ts::RistPluginData::getOptions(Args* args)
     }
 
     // Normal rist plugin options.
-    args->getValues(urls, u"");
+    args->getValues(_peer_urls, u"");
     args->getIntValue(profile, u"profile", RIST_PROFILE_MAIN);
-    args->getIntValue(buffer_size, u"buffer-size");
+    args->getIntValue(_buffer_size, u"buffer-size");
+    args->getIntValue(_encryption_type, u"encryption-type", 0);
+    args->getValue(_secret, u"secret");
+    args->getIntValue(_stats_interval, u"stats-interval", 0);
+    args->getValue(_stats_prefix, u"stats-prefix");
+
+    // Get the UTF-8 version of the pre-shared secret.
+    const std::string secret8(_secret.toUTF8());
 
     // Parse all URL's. The rist_peer_config are allocated by the library.
-    _peer_configs.resize(urls.size());
-    for (size_t i = 0; i < urls.size(); ++i) {
+    _peer_configs.resize(_peer_urls.size());
+    for (size_t i = 0; i < _peer_urls.size(); ++i) {
 
         // Parse the URL.
         _peer_configs[i] = nullptr;
-        if (::rist_parse_address2(urls[i].toUTF8().c_str(), &_peer_configs[i]) != 0 || _peer_configs[i] == nullptr) {
-            _tsp->error(u"invalid RIST URL: %s", {urls[i]});
+        if (::rist_parse_address2(_peer_urls[i].toUTF8().c_str(), &_peer_configs[i]) != 0 || _peer_configs[i] == nullptr) {
+            _tsp->error(u"invalid RIST URL: %s", {_peer_urls[i]});
             cleanup();
             return false;
         }
 
-        // Override buffer size with command-line options.
-        if (buffer_size > 0) {
-            _peer_configs[i]->recovery_length_max = _peer_configs[i]->recovery_length_min = uint32_t(buffer_size);
+        // Override URL parameters with command-line options.
+        ::rist_peer_config* const peer = _peer_configs[i];
+        if (_buffer_size > 0) {
+            // Unconditionally override 'buffer='
+            peer->recovery_length_max = peer->recovery_length_min = _buffer_size;
+        }
+        if (!_secret.empty() && peer->secret[0] == '\0') {
+            // Override 'secret=' only if not specified in the URL.
+            if (secret8.size() >= sizeof(peer->secret)) {
+                _tsp->error(u"invalid shared secret, maximum length is %d characters", {sizeof(peer->secret) - 1});
+                return false;
+            }
+            ::memset(peer->secret, 0, sizeof(peer->secret));
+            ::memcpy(peer->secret, secret8.data(), secret8.size());
+        }
+        if (peer->secret[0] != '\0' && peer->key_size == 0) {
+            // Override 'aes-type=' if unspecified and a secret is specified (AES-128 by default).
+            peer->key_size = _encryption_type == 0 ? 128 : _encryption_type;
+        }
+        if (peer->secret[0] == '\0' && peer->key_size != 0) {
+            _tsp->error(u"AES-%d encryption is specified but the shared secret is missing", {peer->key_size});
+            return false;
         }
     }
 
@@ -204,10 +266,18 @@ bool ts::RistPluginData::getOptions(Args* args)
 
 bool ts::RistPluginData::addPeers()
 {
+    // Setup statistics callback if required.
+    if (_stats_interval > 0 && ::rist_stats_callback_set(ctx, _stats_interval, RistStatsCallback, this) < 0) {
+        _tsp->error(u"error setting statistics callback");
+        cleanup();
+        return false;
+    }
+
+    // Add peers one by one.
     for (size_t i = 0; i < _peer_configs.size(); ++i) {
         ::rist_peer* peer = nullptr;
         if (::rist_peer_create(ctx, &peer, _peer_configs[i]) != 0) {
-            _tsp->error(u"error creating peer: %s", {urls[i]});
+            _tsp->error(u"error creating peer: %s", {_peer_urls[i]});
             cleanup();
             return false;
         }
@@ -263,18 +333,38 @@ int ts::RistPluginData::RistLogToSeverity(::rist_log_level level)
     }
 }
 
-// A RIST log callback using a TSP* argument.
+// A RIST log callback using a RistPluginData* argument.
 int ts::RistPluginData::RistLogCallback(void* arg, ::rist_log_level level, const char* msg)
 {
-    ts::TSP* tsp = reinterpret_cast<ts::TSP*>(arg);
-    if (tsp != nullptr && msg != nullptr) {
+    RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
+
+    if (data != nullptr && msg != nullptr) {
         UString line;
         line.assignFromUTF8(msg);
         while (!line.empty() && IsSpace(line.back())) {
             line.pop_back();
         }
-        tsp->log(RistLogToSeverity(level), line);
+        data->_tsp->log(RistLogToSeverity(level), line);
     }
+
+    // The returned value is undocumented but seems unused by librist, should have been void.
+    return 0;
+}
+
+
+//----------------------------------------------------------------------------
+// A RIST stats callback using a RistPluginData* argument.
+//----------------------------------------------------------------------------
+
+int ts::RistPluginData::RistStatsCallback(void* arg, const ::rist_stats* stats)
+{
+    RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
+
+    if (data != nullptr && stats != nullptr) {
+        data->_tsp->info(u"%s%s", {data->_stats_prefix, stats->stats_json});
+        ::rist_stats_free(stats);
+    }
+
     // The returned value is undocumented but seems unused by librist, should have been void.
     return 0;
 }
