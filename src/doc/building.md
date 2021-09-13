@@ -75,12 +75,12 @@ TSDuck will be disabled but the impact is limited. For instance, disabling
 
 The following `make` variables can be defined:
 
-- `NOTEST`  : Do not build unitary tests.
-- `NODTAPI` : No Dektec support, remove dependency to `DTAPI`.
-- `NOCURL`  : No HTTP support, remove dependency to `libcurl`.
-- `NOPCSC`  : No smartcard support, remove dependency to `pcsc-lite`.
-- `NOSRT`   : No SRT support (Secure Reliable Transport), remove dependency to `libsrt`.
-- `NORIST`  : No RIST support (Reliable Internet Stream Transport), remove dependency to `librist`.
+- `NOTEST`   : Do not build unitary tests.
+- `NODEKTEC` : No Dektec support, remove dependency to `DTAPI`.
+- `NOCURL`   : No HTTP support, remove dependency to `libcurl`.
+- `NOPCSC`   : No smartcard support, remove dependency to `pcsc-lite`.
+- `NOSRT`    : No SRT support (Secure Reliable Transport), remove dependency to `libsrt`.
+- `NORIST`   : No RIST support (Reliable Internet Stream Transport), remove dependency to `librist`.
 - `NOTELETEXT` : No Teletext support, remove teletext handling code.
 - `ASSERTIONS` : Keep assertions in production mode (slower code).
 

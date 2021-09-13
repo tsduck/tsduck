@@ -154,9 +154,12 @@ else ifeq ($(MACOS),)
     LDLIBS := -lpcsclite $(LDLIBS)
 else
     # PCSC on macOS
-    PCSC_ROOT = $(word 1,$(wildcard /opt/homebrew/opt/pcsc-lite /usr/local/opt/pcsc-lite))
-    CFLAGS_INCLUDES += -I$(PCSC_ROOT)/include/PCSC
-    LDLIBS := -L$(PCSC_ROOT)/lib -lpcsclite $(LDLIBS)
+    CFLAGS_INCLUDES += -I/opt/homebrew/opt/pcsc-lite/include/PCSC -I/usr/local/opt/pcsc-lite/include/PCSC
+    LDLIBS := -L/opt/homebrew/opt/pcsc-lite/lib -L/usr/local/opt/pcsc-lite/include/PCSC/lib -lpcsclite $(LDLIBS)
+endif
+
+ifdef NODEKTEC
+    NODTAPI = 1
 endif
 
 ifdef NODTAPI

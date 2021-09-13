@@ -32,10 +32,11 @@
 #  Additional options which can be defined:
 #
 #  - NOTEST     : Do not build unitary tests.
-#  - NODTAPI    : No Dektec support, remove dependency to DTAPI.
+#  - NODEKTEC   : No Dektec support, remove dependency to DTAPI.
 #  - NOCURL     : No HTTP support, remove dependency to libcurl.
 #  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
 #  - NOSRT      : No SRT support, remove dependency to libsrt.
+#  - NORIST     : No RIST support, remove dependency to librist.
 #  - NOTELETEXT : No Teletext support, remove teletext handling code.
 #  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
 #
