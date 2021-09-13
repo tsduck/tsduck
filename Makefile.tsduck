@@ -119,14 +119,14 @@ else
     LDLIBS := -lsrt $(LDLIBS)
 endif
 
-ifeq ($(RIST),)
-    # Currently, RIST must be explicitly enabled since no standard distro package exists.
+ifeq ($(MACOS)$(RIST),)
+    # Currently, RIST must be explicitly enabled on Linux since no standard distro package exists.
     NORIST := true
 endif
 
 ifeq ($(NORIST),)
     # RIST not disabled, check if librist is available.
-    NORIST := $(if $(wildcard /usr/include/librist/*.h)$(wildcard /usr/local/include/librist/*.h),,true)
+    NORIST := $(if $(wildcard /usr/include/librist/*.h)$(wildcard /usr/local/include/librist/*.h)$(wildcard /opt/homebrew/include/librist/*.h),,true)
 endif
 
 ifneq ($(NORIST),)
