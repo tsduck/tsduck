@@ -890,10 +890,10 @@ CFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
 optsize:
 	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
 
-# On macOS, HomeBrew development packages are installed in /usr/local.
+# On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
 ifdef MACOS
-    CFLAGS_INCLUDES += -I/usr/local/include
-    LDLIBS := -L/usr/local/lib $(LDLIBS)
+    CFLAGS_INCLUDES += -I/opt/homebrew/include -I/usr/local/include
+    LDLIBS := -L/opt/homebrew/lib -L/usr/local/lib $(LDLIBS)
 endif
 
 # Include paths for C++ also use include paths for C.

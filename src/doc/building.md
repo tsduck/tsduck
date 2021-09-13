@@ -90,12 +90,12 @@ to `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
 make NOPCSC=1 NOCURL=1 NODTAPI=1
 ~~~
 
-## Building with RIST support {#buildrist}
+## Building with RIST support on Linux {#buildrist}
 
 As of this writing, RIST (Reliable Internet Stream Transport) is not available
-in the standard repositories of any Linux distro or macOS. By default, TSDuck
-cannot be built with RIST support since this would introduce dependencies on
-packages which do not exist during installation.
+in the standard repositories of any Linux distro. By default, TSDuck cannot be
+built with RIST support since this would introduce dependencies on packages
+which do not exist during installation.
 
 However, it possible to manually rebuild TSDuck with RIST support using the
 command `make RIST=1`.
@@ -109,8 +109,6 @@ distros here](https://github.com/tsduck/rist-installer/releases).
 If you use other versions of rpm-based or deb-based distros,
 the [rist-installer project](https://github.com/tsduck/rist-installer)
 contains scripts to rebuild these packages.
-
-On macOS, `librist` is available as a [Homebrew tap here](https://github.com/tsduck/homebrew-rist).
 
 ## Building the TSDuck installation packages {#buildinst}
 
