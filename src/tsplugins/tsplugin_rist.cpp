@@ -38,7 +38,11 @@ TSDUCK_SOURCE;
 #if !defined(TS_NO_RIST)
 #include "tsAbstractDatagramOutputPlugin.h"
 #include "tsPluginRepository.h"
+
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(documentation)
 #include <librist/librist.h>
+TS_POP_WARNING()
 
 
 //----------------------------------------------------------------------------
