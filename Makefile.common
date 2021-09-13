@@ -892,8 +892,8 @@ optsize:
 
 # On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
 ifdef MACOS
-    CFLAGS_INCLUDES += -I/opt/homebrew/include -I/usr/local/include
-    LDLIBS := -L/opt/homebrew/lib -L/usr/local/lib $(LDLIBS)
+    CFLAGS_INCLUDES += $(addprefix -I,$(wildcard /opt/homebrew/include /usr/local/include))
+    LDLIBS :=  $(addprefix -L,$(wildcard /opt/homebrew/lib /usr/local/lib)) $(LDLIBS)
 endif
 
 # Include paths for C++ also use include paths for C.

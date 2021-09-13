@@ -154,8 +154,8 @@ else ifeq ($(MACOS),)
     LDLIBS := -lpcsclite $(LDLIBS)
 else
     # PCSC on macOS
-    CFLAGS_INCLUDES += -I/opt/homebrew/opt/pcsc-lite/include/PCSC -I/usr/local/opt/pcsc-lite/include/PCSC
-    LDLIBS := -L/opt/homebrew/opt/pcsc-lite/lib -L/usr/local/opt/pcsc-lite/include/PCSC/lib -lpcsclite $(LDLIBS)
+    CFLAGS_INCLUDES += $(addprefix -I,$(wildcard /opt/homebrew/opt/pcsc-lite/include/PCSC /usr/local/opt/pcsc-lite/include/PCSC))
+    LDLIBS := $(addprefix -L,$(wildcard /opt/homebrew/opt/pcsc-lite/lib /usr/local/opt/pcsc-lite/lib)) -lpcsclite $(LDLIBS)
 endif
 
 ifdef NODEKTEC
