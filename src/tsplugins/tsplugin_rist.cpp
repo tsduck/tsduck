@@ -38,10 +38,14 @@ TSDUCK_SOURCE;
 #if !defined(TS_NO_RIST)
 #include "tsAbstractDatagramOutputPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsIPv4SocketAddress.h"
 
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(documentation)
 #include <librist/librist.h>
+extern "C" { // to be removed after release of librist 0.2.7
+#include <librist/librist_srp.h>
+} // same as above
 TS_POP_WARNING()
 
 
@@ -69,10 +73,6 @@ namespace ts {
         // Cleanup RIST context.
         void cleanup();
 
-        // Convert between RIST log level to TSDuck severity.
-        static int RistLogToSeverity(::rist_log_level level);
-        static ::rist_log_level SeverityToRistLog(int severity);
-
         // Working data.
         ::rist_profile          profile;
         ::rist_ctx*             ctx;
@@ -80,20 +80,33 @@ namespace ts {
 
     private:
         // Working data.
-        TSP*           _tsp;
-        uint32_t       _buffer_size;
-        int            _encryption_type;
-        UString        _secret;
-        int            _stats_interval;
-        UString        _stats_prefix;
-        UStringVector  _peer_urls;
+        TSP*     _tsp;
+        uint32_t _buffer_size;
+        int      _encryption_type;
+        UString  _secret;
+        int      _stats_interval;
+        UString  _stats_prefix;
+        IPv4SocketAddressVector _allowed;
+        IPv4SocketAddressVector _denied;
+        UStringVector           _peer_urls;
         std::vector<::rist_peer_config*> _peer_configs;
 
+        // Analyze a list of options containing socket addresses.
+        bool getSocketValues(Args* args, IPv4SocketAddressVector& list, const UChar* option);
+
+        // Convert between RIST log level to TSDuck severity.
+        static int RistLogToSeverity(::rist_log_level level);
+        static ::rist_log_level SeverityToRistLog(int severity);
+
         // A RIST log callback using a RistPluginData* argument.
-        static int RistLogCallback(void* arg, ::rist_log_level level, const char* msg);
+        static int LogCallback(void* arg, ::rist_log_level level, const char* msg);
 
         // A RIST stats callback using a RistPluginData* argument.
-        static int RistStatsCallback(void* arg, const ::rist_stats* stats);
+        static int StatsCallback(void* arg, const ::rist_stats* stats);
+
+        // A RIST connection/disconnection callback using a RistPluginData* argument.
+        static int ConnectCallback(void* arg, const char* ip, uint16_t port, const char* local_ip, uint16_t local_port, ::rist_peer* peer);
+        static int DisconnectCallback(void* arg, ::rist_peer* peer);
     };
 }
 
@@ -112,11 +125,13 @@ ts::RistPluginData::RistPluginData(Args* args, TSP* tsp) :
     _secret(),
     _stats_interval(0),
     _stats_prefix(),
+    _allowed(),
+    _denied(),
     _peer_urls(),
     _peer_configs()
 {
     log.log_level = SeverityToRistLog(tsp->maxSeverity());
-    log.log_cb = RistLogCallback;
+    log.log_cb = LogCallback;
     log.log_cb_arg = this;
     log.log_socket = -1;
     log.log_stream = nullptr;
@@ -126,6 +141,17 @@ ts::RistPluginData::RistPluginData(Args* args, TSP* tsp) :
                u"One or more RIST URL's. "
                u"A RIST URL (rist://...) may include tuning parameters in addition to the address and port. "
                u"See https://code.videolan.org/rist/librist/-/wikis/LibRIST%20Documentation for more details.");
+
+    args->option(u"allow", 'a', Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args->help(u"allow", u"ip-address[:port]",
+               u"In listener mode (rist://@...), allow the specified IP address (and optional port) to connect. "
+               u"More than one --allow option can be used to specify several allowed addresses. "
+               u"If at least one --allow option is specified, any client which is not explicitly allowed is denied.");
+
+    args->option(u"deny", 'd', Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args->help(u"deny", u"ip-address[:port]",
+               u"In listener mode (rist://@...), deny the specified IP address (and optional port) to connect. "
+               u"More than one --deny option can be used to specify several denied addresses.");
 
     args->option(u"buffer-size", 'b', Args::POSITIVE);
     args->help(u"buffer-size", u"milliseconds",
@@ -192,10 +218,28 @@ void ts::RistPluginData::cleanup()
 
 
 //----------------------------------------------------------------------------
-// Input/output common data destructor.
+// Analyze a list of options containing socket addresses.
 //----------------------------------------------------------------------------
 
-// Get command line options.
+bool ts::RistPluginData::getSocketValues(Args* args, IPv4SocketAddressVector& list, const UChar* option)
+{
+    const size_t count = args->count(option);
+    list.resize(count);
+    for (size_t index = 0; index < count; ++index) {
+        const UString str(args->value(option, u"", index));
+        if (!list[index].resolve(str, *_tsp) || !list[index].hasAddress()) {
+            _tsp->error(u"invalid socket address \"%s\", use \"address[:port]\"", {str});
+            return false;
+        }
+    }
+    return true; // success
+}
+
+
+//----------------------------------------------------------------------------
+// Input/output common data - Get command line options.
+//----------------------------------------------------------------------------
+
 bool ts::RistPluginData::getOptions(Args* args)
 {
     // Make sure we do not have any allocated resources from librist.
@@ -219,6 +263,11 @@ bool ts::RistPluginData::getOptions(Args* args)
     args->getValue(_secret, u"secret");
     args->getIntValue(_stats_interval, u"stats-interval", 0);
     args->getValue(_stats_prefix, u"stats-prefix");
+
+    // Client address filter lists.
+    if (!getSocketValues(args, _allowed, u"allow") || !getSocketValues(args, _denied, u"deny")) {
+        return false;
+    }
 
     // Get the UTF-8 version of the pre-shared secret.
     const std::string secret8(_secret.toUTF8());
@@ -271,22 +320,90 @@ bool ts::RistPluginData::getOptions(Args* args)
 bool ts::RistPluginData::addPeers()
 {
     // Setup statistics callback if required.
-    if (_stats_interval > 0 && ::rist_stats_callback_set(ctx, _stats_interval, RistStatsCallback, this) < 0) {
-        _tsp->error(u"error setting statistics callback");
-        cleanup();
-        return false;
+    if (_stats_interval > 0 && ::rist_stats_callback_set(ctx, _stats_interval, StatsCallback, this) < 0) {
+        _tsp->warning(u"error setting statistics callback");
+    }
+
+    // Setup connection callback.
+    if (::rist_auth_handler_set(ctx, ConnectCallback, DisconnectCallback, this)) {
+        _tsp->warning(u"error setting connection callback");
     }
 
     // Add peers one by one.
     for (size_t i = 0; i < _peer_configs.size(); ++i) {
+
+        // Create the peer.
         ::rist_peer* peer = nullptr;
-        if (::rist_peer_create(ctx, &peer, _peer_configs[i]) != 0) {
+        ::rist_peer_config* config = _peer_configs[i];
+        if (::rist_peer_create(ctx, &peer, config) != 0) {
             _tsp->error(u"error creating peer: %s", {_peer_urls[i]});
             cleanup();
             return false;
         }
+
+        // Add user authentication if specified in URL.
+        if (config->srp_username[0] != '\0' && config->srp_password[0] != '\0') {
+            const int err = ::rist_enable_eap_srp(peer, config->srp_username, config->srp_password, nullptr, nullptr);
+            if (err != 0) {
+                // Report warning but do not fail.
+                _tsp->warning(u"error %d while setting SRP authentication on %s", {err, _peer_urls[i]});
+            }
+        }
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// A RIST connection callback using a RistPluginData* argument.
+//----------------------------------------------------------------------------
+
+int ts::RistPluginData::ConnectCallback(void* arg, const char* ip, uint16_t port, const char* local_ip, uint16_t local_port, ::rist_peer* peer)
+{
+    RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
+    if (data != nullptr && ip != nullptr && local_ip != nullptr) {
+        data->_tsp->verbose(u"connected to %s:%d (local: %s:%d)", {ip, port, local_ip, local_port});
+
+        // Process client access filtering if necessary.
+        if (!data->_allowed.empty() || !data->_denied.empty()) {
+
+            // Analyze remote peer socket address.
+            IPv4SocketAddress addr;
+            if (!addr.resolve(UString::FromUTF8(ip), *data->_tsp)) {
+                data->_tsp->error(u"invalid peer address: %s", {ip});
+                return -1; // connection rejected
+            }
+            addr.setPort(port);
+
+            // Process black list first.
+            for (auto it = data->_denied.begin(); it != data->_denied.end(); ++it) {
+                if (it->match(addr)) {
+                    data->_tsp->error(u"peer address %s is denied, connection rejected", {addr});
+                    return -1; // connection rejected
+                }
+            }
+
+            // Then process white list if not empty.
+            bool ok = data->_allowed.empty();
+            for (auto it = data->_allowed.begin(); !ok && it != data->_allowed.end(); ++it) {
+                ok = it->match(addr);
+            }
+            if (!ok) {
+                data->_tsp->error(u"peer address %s is not explicitly allowed, connection rejected", {addr});
+                return -1; // connection rejected
+            }
+        }
+    }
+    return 0; // connection accepted
+}
+
+int ts::RistPluginData::DisconnectCallback(void* arg, ::rist_peer* peer)
+{
+    // We do not do anything here. According to the RIST docs, it should be possible
+    // to set a non-null connect callback with a null disconnect callback. However,
+    // the application crashes on disconnection. We must specify both callbacks or
+    // none. So, we have an empty one here.
+    return 0;
 }
 
 
@@ -338,7 +455,7 @@ int ts::RistPluginData::RistLogToSeverity(::rist_log_level level)
 }
 
 // A RIST log callback using a RistPluginData* argument.
-int ts::RistPluginData::RistLogCallback(void* arg, ::rist_log_level level, const char* msg)
+int ts::RistPluginData::LogCallback(void* arg, ::rist_log_level level, const char* msg)
 {
     RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
 
@@ -360,7 +477,7 @@ int ts::RistPluginData::RistLogCallback(void* arg, ::rist_log_level level, const
 // A RIST stats callback using a RistPluginData* argument.
 //----------------------------------------------------------------------------
 
-int ts::RistPluginData::RistStatsCallback(void* arg, const ::rist_stats* stats)
+int ts::RistPluginData::StatsCallback(void* arg, const ::rist_stats* stats)
 {
     RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
 
