@@ -61,7 +61,6 @@ param(
 
 Write-Output "librist download and installation procedure"
 $ReleasePage = "https://github.com/tsduck/rist-installer/releases/latest"
-$Destination = "$RootDir\bin\external"
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")
@@ -76,6 +75,13 @@ function Exit-Script([string]$Message = "")
     }
     exit $Code
 }
+
+# Local file names.
+$RootDir = (Split-Path -Parent $PSScriptRoot)
+$ExtDir = "$RootDir\bin\external"
+
+# Create the directory for external products when necessary.
+[void] (New-Item -Path $ExtDir -ItemType Directory -Force)
 
 # Without this, Invoke-WebRequest is awfully slow.
 $ProgressPreference = 'SilentlyContinue'
@@ -108,13 +114,10 @@ if (-not $Ref) {
     Exit-Script "Could not find a reference to librist installer in ${ReleasePage}"
 }
 
-# Create the directory for external products when necessary.
-[void](New-Item -Path $Destination -ItemType Directory -Force)
-
 # Build the absolute URL's from base URL (the download page) and href links.
 $Url = New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$ReleasePage, $Ref)
 $InstallerName = (Split-Path -Leaf $Url.LocalPath)
-$InstallerPath = "$Destination\$InstallerName"
+$InstallerPath = "$ExtDir\$InstallerName"
 
 # Download installer
 if (-not $ForceDownload -and (Test-Path $InstallerPath)) {
