@@ -38,9 +38,11 @@ HTML_URL=$URL_BASE/downloads/SDK/
 GENERIC_URL=$URL_BASE/products/SDK/DTAPI/Downloads/LatestLinuxSDK
 
 SCRIPT=$(basename $BASH_SOURCE)
-ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
+ROOTDIR=$(cd $(dirname $BASH_SOURCE)/..; pwd)
+BINDIR="$ROOTDIR/bin"
 SYSTEM=$(uname -s | tr A-Z a-z)
 
+info() { echo >&2 "$SCRIPT: $*"; }
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Get the root directory of the DTAPI.
@@ -49,7 +51,7 @@ get-dtapi()
     local prefix=
     case "$SYSTEM" in
         linux)
-            header=$(find 2>/dev/null "$ROOTDIR/LinuxSDK/DTAPI" -path "*/DTAPI/Include/DTAPI.h" | head -1)
+            header=$(find 2>/dev/null "$BINDIR/LinuxSDK/DTAPI" -path "*/DTAPI/Include/DTAPI.h" | head -1)
             ;;
         cygwin*)
             header=$(find 2>/dev/null /cygdrive/c/Program\ Files*/Dektec -path "*/DTAPI/Include/DTAPI.h" | head -1)
@@ -123,7 +125,7 @@ get-object()
 
     # Get gcc executable from external $GCC or default.
     GCC=${GCC:-$(which gcc 2>/dev/null)}
-    [[ -z "$GCC" ]] && return
+    [[ -z "$GCC" ]] && return 0
 
     # Get gcc version from external $GCC_VERSION or $GCCVERSION.
     GCCVERSION=${GCCVERSION:-$GCC_VERSION}
@@ -134,7 +136,7 @@ get-object()
     local DIRVERS=
 
     # Get object file from platform name.
-    if ${M32:-false}; then
+    if ${OPT_M32:-false}; then
         OBJNAME=DTAPI.o
     elif [[ $(uname -m) == x86_64 ]]; then
         OBJNAME=DTAPI64.o
@@ -213,48 +215,118 @@ get-url()
     echo "$URL"
 }
 
+# Get local tarball file name.
+get-tarball()
+{
+    local link=$(readlink "$BINDIR/dektec-tarball")
+    local tarball=
+    [[ -n "$link" ]] && tarball="$BINDIR/$link"
+    [[ -e "$tarball" ]] && echo "$tarball"
+}
+
+# Download and expand the Dektec LinuxSDK.
+download-dtapi()
+{
+    # Do not download if DTAPI is not supported.
+    dtapi-support || return 0
+
+    # Cleanup first if --force is specified.
+    $OPT_FORCE && rm -rf "$BINDIR"/LinuxSDK* "$BINDIR/dektec-tarball"
+
+    # If DTAPI_ORIGIN is defined, use it as tarball.
+    local tarball="$DTAPI_ORIGIN"
+    [[ -z "$tarball" ]] && tarball=$(get-tarball)
+
+    # Download the tarball if not present.
+    if [[ ! -e "$tarball" ]]; then
+        local url=$(get-url)
+        local name=$(basename "$url")
+        tarball="$BINDIR/$name"
+        info "downloading $url ..."
+        mkdir -p "$BINDIR"
+        curl --silent --show-error --location "$url" -o "$BINDIR/$name"
+        ln -sf "$name" "$BINDIR/dektec-tarball"
+        rm -rf "$BINDIR/LinuxSDK"
+    fi
+
+    # Expand tarball.
+    if [[ ! -d "$BINDIR/LinuxSDK" ]]; then
+        info "expanding $tarball ..."
+        tar -C "$BINDIR" -xzf "$tarball"
+        # Make sure that files are more recent than already compiled binaries.
+        find "$BINDIR/LinuxSDK" -print0 | xargs -0 touch
+    fi
+}
+
 # Get options.
-CMD=""
-M32=false
+CMD_ALL=true
+CMD_DOWNLOAD=false
+CMD_TARBALL=false
+CMD_DTAPI=false
+CMD_HEADER=false
+CMD_OBJECT=false
+CMD_URL=false
+CMD_SUPPORT=false
+OPT_FORCE=false
+OPT_M32=false
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --download)
+            CMD_DOWNLOAD=true
+            CMD_ALL=false
+            ;;
+        --tarball)
+            CMD_TARBALL=true
+            CMD_ALL=false
+            ;;
+        --dtapi)
+            CMD_DTAPI=true
+            CMD_ALL=false
+            ;;
+        --header)
+            CMD_HEADER=true
+            CMD_ALL=false
+            ;;
+        --object)
+            CMD_OBJECT=true
+            CMD_ALL=false
+            ;;
+        --url)
+            CMD_URL=true
+            CMD_ALL=false
+            ;;
+        --support)
+            CMD_SUPPORT=true
+            CMD_ALL=false
+            ;;
+        --force)
+            OPT_FORCE=true
+            ;;
         --m32)
-            M32=true
+            OPT_M32=true
             ;;
         *)
-            CMD="$1"
+            error "invalid option $CMD (use --dtapi --header --object --url --support --tarball --download --force --m32)"
             ;;
     esac
     shift
 done
 
-# Main command
-case "$CMD" in
-    --dtapi)
-        get-dtapi
-        ;;
-    --header)
-        get-header
-        ;;
-    --object)
-        shift
-        get-object
-        ;;
-    --url)
-        get-url
-        ;;
-    --support)
-        dtapi-support && echo supported
-        ;;
-    -*)
-        error "invalid option $CMD (use --dtapi --header --object --url --support [--m32])"
-        ;;
-    *)
-        shift
-        echo "DTAPI_ROOT=$(get-dtapi)"
-        echo "DTAPI_HEADER=$(get-header)"
-        echo "DTAPI_OBJECT=$(get-object)"
-        echo "DTAPI_URL=$(get-url)"
-        ;;
-esac
+# Execute commands. Download first if requested.
+$CMD_DOWNLOAD && download-dtapi
+$CMD_TARBALL && get-tarball
+$CMD_DTAPI && get-dtapi
+$CMD_HEADER && get-header
+$CMD_OBJECT && get-object
+$CMD_URL && get-url
+$CMD_SUPPORT && dtapi-support && echo supported
+
+if $CMD_ALL; then
+    echo "DTAPI_ROOT=$(get-dtapi)"
+    echo "DTAPI_HEADER=$(get-header)"
+    echo "DTAPI_OBJECT=$(get-object)"
+    echo "DTAPI_TARBALL=$(get-tarball)"
+    echo "DTAPI_URL=$(get-url)"
+fi
 exit 0

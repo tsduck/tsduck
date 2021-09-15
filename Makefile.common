@@ -1089,7 +1089,7 @@ $(OBJDIR)/%.dep: %.cpp
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
-NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen \
+NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
           flawfinder cloc listvars scan-build unixify
 ifeq ($(DONT_BUILD_DEPS),)
     ifneq ($(MAKECMDGOALS),)
