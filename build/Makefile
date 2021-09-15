@@ -110,14 +110,12 @@ RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
 	rpmdev-setuptree
 
-# Reuse local Dektec Linux SDK if present.
-DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/dektec/$(notdir $(shell cat $(ROOTDIR)/dektec/LinuxSDK.version)),)
-
 # Build the tsduck binary RPM.
+# The build will take place elsewhere, reuse local Dektec Linux SDK if present.
 .PHONY: rpm rpm32
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
-	$(if $(wildcard $(DTAPI_ORIGIN)),MAKEFLAGS=DTAPI_ORIGIN=$(DTAPI_ORIGIN),) \
+	DTAPI_ORIGIN="$(shell ./dtapi-config.sh --tarball)" \
 	  $(RPMBUILD) $(RPMBUILDFLAGS) \
 	      -D 'version $(shell ./get-version-from-sources.sh --main)' \
 	      -D 'commit $(shell ./get-version-from-sources.sh --commit)' \
@@ -138,6 +136,7 @@ rpm32:
 TMPDIR = /tmp/tsduck-deb-$(USER)
 .PHONY: deb deb-tools deb-dev
 deb: deb-tools deb-dev
+
 deb-tools:
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR)
 	rm -rf $(TMPDIR)
@@ -154,6 +153,7 @@ deb-tools:
 	chmod a+x $(TMPDIR)/DEBIAN/postinst
 	dpkg --build $(TMPDIR) $(INSTALLERDIR)
 	rm -rf $(TMPDIR)
+
 deb-dev: deb-tools
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR)
 	rm -rf $(TMPDIR)

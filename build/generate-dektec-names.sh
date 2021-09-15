@@ -34,11 +34,11 @@
 
 # Characteristics of this script.
 SCRIPT=$(basename $BASH_SOURCE)
-ROOTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
+SCRIPTDIR=$(cd $(dirname $BASH_SOURCE); pwd)
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Locate DTAPI.h.
-DTAPI=$("$ROOTDIR/dtapi-config.sh" --header)
+DTAPI=$("$SCRIPTDIR/dtapi-config.sh" --header)
 [[ -n "$DTAPI" ]] || error "DTAPI.h not found"
 
 # Generate the output file.

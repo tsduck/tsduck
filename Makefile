@@ -53,8 +53,8 @@
 
 include Makefile.tsduck
 
-EXTRA_DISTCLEAN   += bin
-NORECURSE_SUBDIRS += bin
+EXTRA_DISTCLEAN   += bin dektec
+NORECURSE_SUBDIRS += bin dektec
 
 # Analyze our code only, not downloaded 3rd-party code in dektec.
 CPPCHECK_SOURCES   = src
@@ -97,12 +97,6 @@ sample:
 .PHONY: show-version
 show-version: default
 	$(BINDIR)/tsversion --version=all
-
-# Download the Dektec DTAPI. Automatically done during a global "make" since
-# we recurse in "dektec" before "src".
-.PHONY: dtapi
-dtapi:
-	@$(MAKE) -C dektec
 
 # Install files, using SYSROOT as target system root if necessary.
 .PHONY: install install-tools install-devel
