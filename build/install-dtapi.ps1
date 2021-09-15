@@ -55,12 +55,8 @@ param(
 )
 
 Write-Output "Dektec WinSDK download and installation procedure"
-
 $DektecUrl = "http://www.dektec.com/downloads/SDK/"
 $DtapiInstaller = "DekTec SDK - Windows Setup.exe"
-
-# Local file names.
-$RootDir = $PSScriptRoot
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")
@@ -75,6 +71,13 @@ function Exit-Script([string]$Message = "")
     }
     exit $Code
 }
+
+# Local file names.
+$RootDir = (Split-Path -Parent $PSScriptRoot)
+$ExtDir = "$RootDir\bin\external"
+
+# Create the directory for external products when necessary.
+[void] (New-Item -Path $ExtDir -ItemType Directory -Force)
 
 # Without this, Invoke-WebRequest is awfully slow.
 $ProgressPreference = 'SilentlyContinue'
@@ -107,8 +110,8 @@ $sdkRef = $response.Links.href | Where-Object { $_ -like "*/WinSDK*.zip" } | Sel
 # Build the absolute URL from base URL (the download page) and href link.
 $DtapiUrl = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DektecUrl),$sdkref)
 $DtapiZipName = (Split-Path -Leaf $DtapiUrl.toString())
-$DtapiZipFile = (Join-Path $RootDir $DtapiZipName)
-$DtapiDir = (Join-Path $RootDir ([io.fileinfo] $DtapiZipName).BaseName)
+$DtapiZipFile = (Join-Path $ExtDir $DtapiZipName)
+$DtapiDir = (Join-Path $ExtDir ([io.fileinfo] $DtapiZipName).BaseName)
 $DtapiSetup = (Join-Path $DtapiDir $DtapiInstaller)
 
 # Download WinSDK.zip
@@ -148,8 +151,10 @@ if (-not $NoInstall) {
     # Loop on all uninstallation entries, looking for *dektec* names.
     foreach ($reg in $RegUninstall) {
         if (Test-Path $reg) {
-            Get-ChildItem -Recurse -Path $reg |
-            ForEach-Object {
+            # We must get the list of registered products first, then uninstall.
+            # If we uninstall during Get-ChildItem, we break the iteration.
+            $Products = (Get-ChildItem -Recurse -Path $reg)
+            $Products | ForEach-Object {
                 $name = (Split-Path -Leaf $_.Name)
                 $entries = ($_ | Get-ItemProperty)
                 if ($entries.DisplayName -like "*dektec*") {
