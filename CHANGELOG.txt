@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2529
+VERSION 3.28-2547
 
 [NEW] New commands and plugins:
 
@@ -37,6 +37,8 @@ VERSION 3.28-2529
     stop.
   * With "--initial-input-packets N --add-start-stuffing N", tsp could not
     start as long as at least one packet was received from the input plugin.
+  * Fixed issue #871: In plugin "eitgenerator", the version number of the EIT
+    sections were not correctly updated on section content change.
 
 -------------------------------------------------------------------------------
 
