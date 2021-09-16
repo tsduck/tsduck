@@ -161,7 +161,7 @@ $(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 install: install-tools install-devel
 
 install-tools: $(SHARED_LIBTSDUCK) $(DEKTEC_NAMES)
-	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck/python/ts
+	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck/python
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 ifdef MACOS
 	cd $(SYSROOT)$(USRLIBDIR); ln -sf $(notdir $(SHARED_LIBTSDUCK)) $(notdir $(DYLIB_LIBTSDUCK))
@@ -171,9 +171,9 @@ endif
 	$(MAKE) -C java install
 
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
+	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsMPEG.h
 	install -m 644 tsduck.mk \
 	    $(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*' $(if $(NOTELETEXT),! -name tsTeletextDemux.h,)) \
 	    $(SYSROOT)$(SYSPREFIX)/include/tsduck
