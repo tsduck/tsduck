@@ -50,6 +50,7 @@ Syntax: $SCRIPT [options]
   --libs        library linking flags
   --static-libs static library linking flags
 
+  --so          shared object files extension (".so", ".dylib", ".dll")
   --prefix      installation prefix
   --bin         directory for TSDuck executables
   --lib         directory for TSDuck dynamic libraries (except plugins)
@@ -111,9 +112,19 @@ cmd_cflags() {
     echo "-I$(cmd_include) $(curl-config --cflags 2>/dev/null) -I$pcsc --std=c++11"
 }
 
+cmd_so() {
+    if [[ $SYSTEM == Darwin ]]; then
+        echo ".dylib"
+    elif [[ $SYSTEM == CYGWIN* || $SYSTEM == MINGW* ]]; then
+        echo ".dll"
+    else
+        echo ".so"
+    fi
+}
+
 libs_common() {
-    [[ $(uname -s) == Darwin ]] && pcsc="-L/usr/local/opt/pcsc-lite/lib" || pcsc=""
-    [[ $(uname -s) == Darwin ]] && rt="" || rt="-lrt"
+    [[ $SYSTEM == Darwin ]] && pcsc="-L/usr/local/opt/pcsc-lite/lib" || pcsc=""
+    [[ $SYSTEM == Darwin ]] && rt="" || rt="-lrt"
     echo "$pcsc -lpcsclite -lpthread $rt -ldl -lm -lstdc++"
 }
 
@@ -182,6 +193,7 @@ if [ $# -eq 0 ]; then
     # No option, display everything.
     echo "version: $(cmd_version)"
     echo "prefix: $(cmd_prefix)"
+    echo "so: $(cmd_so)"
     echo "bin: $(cmd_bin)"
     echo "lib: $(cmd_lib)"
     echo "plugin: $(cmd_plugin)"
@@ -207,6 +219,7 @@ else
             --plugin) cmd_plugin ;;
             --prefix) cmd_prefix ;;
             --python) cmd_python ;;
+            --so) cmd_so ;;
             --static-libs) cmd_staticlibs ;;
             --version) cmd_version ;;
             --vernum) cmd_vernum ;;

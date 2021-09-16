@@ -2,13 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2547
+VERSION 3.28-2548
 
 [NEW] New commands and plugins:
 
   * Added command "tspcap", a simple tool to analyze pcap files (Wireshark).
   * Added plugin "pcredit" (edit PCR, PTS and DTS values in various ways).
   * Added input and output plugin "rist" (Reliable Internet Stream Transport).
+  * On macOS, all shared objects, including plugins, are now named '.dylib',
+    the standard macOS naming, instead of '.so', a Linux naming.
 
 [IMP] Improvements on existing commands and plugins:
 
