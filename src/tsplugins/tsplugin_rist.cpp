@@ -94,7 +94,7 @@ namespace ts {
         // Analyze a list of options containing socket addresses.
         bool getSocketValues(Args* args, IPv4SocketAddressVector& list, const UChar* option);
 
-        // Convert between RIST log level to TSDuck severity.
+        // Convert between RIST log level and TSDuck severity.
         static int RistLogToSeverity(::rist_log_level level);
         static ::rist_log_level SeverityToRistLog(int severity);
 
@@ -355,43 +355,45 @@ bool ts::RistPluginData::addPeers()
 
 
 //----------------------------------------------------------------------------
-// A RIST connection callback using a RistPluginData* argument.
+// RIST connection/disconnection callbacks using a RistPluginData* argument.
 //----------------------------------------------------------------------------
 
-int ts::RistPluginData::ConnectCallback(void* arg, const char* ip, uint16_t port, const char* local_ip, uint16_t local_port, ::rist_peer* peer)
+int ts::RistPluginData::ConnectCallback(void* arg, const char* peer_ip, uint16_t peer_port, const char* local_ip, uint16_t local_port, ::rist_peer* peer)
 {
     RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
-    if (data != nullptr && ip != nullptr && local_ip != nullptr) {
-        data->_tsp->verbose(u"connected to %s:%d (local: %s:%d)", {ip, port, local_ip, local_port});
+    if (data == nullptr || peer_ip == nullptr || local_ip == nullptr) {
+        // Looks like an invalid call, reject connection just in case of hacking.
+        return -1;
+    }
+    data->_tsp->verbose(u"connected to %s:%d (local: %s:%d)", {peer_ip, peer_port, local_ip, local_port});
 
-        // Process client access filtering if necessary.
-        if (!data->_allowed.empty() || !data->_denied.empty()) {
+    // Process client access filtering if necessary.
+    if (!data->_allowed.empty() || !data->_denied.empty()) {
 
-            // Analyze remote peer socket address.
-            IPv4SocketAddress addr;
-            if (!addr.resolve(UString::FromUTF8(ip), *data->_tsp)) {
-                data->_tsp->error(u"invalid peer address: %s", {ip});
+        // Analyze remote peer socket address.
+        IPv4SocketAddress addr;
+        if (!addr.resolve(UString::FromUTF8(peer_ip), *data->_tsp)) {
+            data->_tsp->error(u"invalid peer address: %s", {peer_ip});
+            return -1; // connection rejected
+        }
+        addr.setPort(peer_port);
+
+        // Process black list first.
+        for (auto it = data->_denied.begin(); it != data->_denied.end(); ++it) {
+            if (it->match(addr)) {
+                data->_tsp->error(u"peer address %s is denied, connection rejected", {addr});
                 return -1; // connection rejected
             }
-            addr.setPort(port);
+        }
 
-            // Process black list first.
-            for (auto it = data->_denied.begin(); it != data->_denied.end(); ++it) {
-                if (it->match(addr)) {
-                    data->_tsp->error(u"peer address %s is denied, connection rejected", {addr});
-                    return -1; // connection rejected
-                }
-            }
-
-            // Then process white list if not empty.
-            bool ok = data->_allowed.empty();
-            for (auto it = data->_allowed.begin(); !ok && it != data->_allowed.end(); ++it) {
-                ok = it->match(addr);
-            }
-            if (!ok) {
-                data->_tsp->error(u"peer address %s is not explicitly allowed, connection rejected", {addr});
-                return -1; // connection rejected
-            }
+        // Then process white list if not empty.
+        bool ok = data->_allowed.empty();
+        for (auto it = data->_allowed.begin(); !ok && it != data->_allowed.end(); ++it) {
+            ok = it->match(addr);
+        }
+        if (!ok) {
+            data->_tsp->error(u"peer address %s is not explicitly allowed, connection rejected", {addr});
+            return -1; // connection rejected
         }
     }
     return 0; // connection accepted
@@ -408,10 +410,9 @@ int ts::RistPluginData::DisconnectCallback(void* arg, ::rist_peer* peer)
 
 
 //----------------------------------------------------------------------------
-// Bridge between librist and tsduck log systems.
+// Convert between RIST log level and TSDuck severity.
 //----------------------------------------------------------------------------
 
-// Convert RIST log level to TSDuck severity.
 int ts::RistPluginData::RistLogToSeverity(::rist_log_level level)
 {
     switch (level) {
@@ -433,7 +434,6 @@ int ts::RistPluginData::RistLogToSeverity(::rist_log_level level)
     }
 }
 
-// Convert TSDuck severity to RIST log level.
 ::rist_log_level ts::RistPluginData::SeverityToRistLog(int severity)
 {
     switch (severity) {
@@ -454,11 +454,14 @@ int ts::RistPluginData::RistLogToSeverity(::rist_log_level level)
     }
 }
 
+
+//----------------------------------------------------------------------------
 // A RIST log callback using a RistPluginData* argument.
+//----------------------------------------------------------------------------
+
 int ts::RistPluginData::LogCallback(void* arg, ::rist_log_level level, const char* msg)
 {
     RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
-
     if (data != nullptr && msg != nullptr) {
         UString line;
         line.assignFromUTF8(msg);
@@ -467,9 +470,7 @@ int ts::RistPluginData::LogCallback(void* arg, ::rist_log_level level, const cha
         }
         data->_tsp->log(RistLogToSeverity(level), line);
     }
-
-    // The returned value is undocumented but seems unused by librist, should have been void.
-    return 0;
+    return 0; // undocumented, 0 seems safe
 }
 
 
@@ -480,14 +481,11 @@ int ts::RistPluginData::LogCallback(void* arg, ::rist_log_level level, const cha
 int ts::RistPluginData::StatsCallback(void* arg, const ::rist_stats* stats)
 {
     RistPluginData* data = reinterpret_cast<RistPluginData*>(arg);
-
     if (data != nullptr && stats != nullptr) {
         data->_tsp->info(u"%s%s", {data->_stats_prefix, stats->stats_json});
         ::rist_stats_free(stats);
     }
-
-    // The returned value is undocumented but seems unused by librist, should have been void.
-    return 0;
+    return 0; // undocumented, 0 seems safe
 }
 
 
