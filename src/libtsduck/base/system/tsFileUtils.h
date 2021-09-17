@@ -51,12 +51,14 @@
 #endif
 
 //!
-//! File name extension of shared library file names (".so" on UNIX, ".dll" on Windows).
+//! File name extension of shared library file names (".so" on Linux, '.dylib" on macOS, ".dll" on Windows).
 //!
 #if defined(DOXYGEN)
-    #define TS_SHARED_LIB_SUFFIX platform-specific (".dll", ".so") // for doc only
+#define TS_SHARED_LIB_SUFFIX platform-specific (".dll", ".so", ".dylib") // for doc only
 #elif defined(TS_WINDOWS)
     #define TS_SHARED_LIB_SUFFIX u".dll"
+#elif defined(TS_MAC)
+    #define TS_SHARED_LIB_SUFFIX u".dylib"
 #else
     #define TS_SHARED_LIB_SUFFIX u".so"
 #endif

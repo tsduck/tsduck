@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Shared library handling (.so on UNIX, DLL on Windows)
+//!  Shared library handling (.so on Linux, .dylib on macOS, .dll on Windows)
 //!
 //----------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ namespace ts {
     };
 
     //!
-    //! Shared library handling (.so on UNIX, DLL on Windows).
+    //! Shared library handling (.so on Linux, .dylib on macOS, .dll on Windows).
     //! @ingroup system
     //!
     class TSDUCKDLL SharedLibrary

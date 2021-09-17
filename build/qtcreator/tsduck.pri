@@ -83,6 +83,12 @@ linux {
     LIBS += -lrt -ldl
 }
 mac {
+    SO = .dylib
+}
+else {
+    SO = .so
+}
+mac {
     # LLVM options. Some of them depend on the compiler version.
     LLVM_VERSION = $$system($$QMAKE_CXX " -dumpversion")
     LLVM_FIELDS = $$split(LLVM_VERSION, ".")
@@ -118,15 +124,15 @@ tsplugin {
     TEMPLATE = lib
     SOURCES += $$SRCROOT/tsplugins/$${TARGET}.cpp
     QMAKE_POST_LINK += mkdir -p ../tsp $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += cp $${TARGET}.so ../tsp $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $${TARGET}$$SO ../tsp $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += mkdir -p ../tsprofiling $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += cp $${TARGET}.so ../tsprofiling $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $${TARGET}$$SO ../tsprofiling $$escape_expand(\\n\\t)
 }
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
     linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'
-    LIBS += ../libtsduck/libtsduck.so
-    PRE_TARGETDEPS += ../libtsduck/libtsduck.so
+    LIBS += ../libtsduck/libtsduck$$SO
+    PRE_TARGETDEPS += ../libtsduck/libtsduck$$SO
     DEPENDPATH += ../libtsduck
     INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name release\\* ! -name debug\\*")
     QMAKE_POST_LINK += cp $$TS_CONFIG_FILES . $$escape_expand(\\n\\t)

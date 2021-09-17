@@ -51,7 +51,7 @@ which uses musl libc) cannot use Dektec devices either.
 ## Building the TSDuck binaries alone {#buildunix}
 
 Execute the command `make` at top level. The TSDuck binaries, executables and shared
-objects (`.so`), are built in directories `bin/release-<arch>-<hostname>`.
+objects (`.so` or `.dylib`), are built in directories `bin/release-<arch>-<hostname>`.
 
 Note that TSDuck contains thousands of source files and building it can take time.
 However, since most machines have multiple CPU's, all makefiles are designed for
@@ -92,10 +92,12 @@ make NOPCSC=1 NOCURL=1 NODTAPI=1
 
 ## Building with RIST support on Linux {#buildrist}
 
+By default, TSDuck is built with RIST support on macOS and Windows only.
+
 As of this writing, RIST (Reliable Internet Stream Transport) is not available
 in the standard repositories of any Linux distro. By default, TSDuck cannot be
-built with RIST support since this would introduce dependencies on packages
-which do not exist during installation.
+built on Linux with RIST support since this would introduce dependencies on
+packages which do not exist during installation.
 
 However, it possible to manually rebuild TSDuck with RIST support using the
 command `make RIST=1`.
