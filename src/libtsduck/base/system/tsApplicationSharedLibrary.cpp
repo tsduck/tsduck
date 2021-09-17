@@ -138,7 +138,7 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
     directories.push_back(u"/opt/homebrew/lib");
 #else
     directories.push_back(u"/usr/lib/tsduck");
-    directories.push_back(u"/usr/lib);
+    directories.push_back(u"/usr/lib");
 #endif
 #endif // TS_UNIX
 
