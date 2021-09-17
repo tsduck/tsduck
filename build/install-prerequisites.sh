@@ -154,6 +154,9 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     else
         pkglist="$pkglist libcurl4 libcurl4-openssl-dev"
     fi
+    if [[ "$MAJOR" -ge 11 ]]; then
+        pkglist="$pkglist libsrt-openssl-dev"
+    fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     # Update command: sudo apt update; sudo apt upgrade
