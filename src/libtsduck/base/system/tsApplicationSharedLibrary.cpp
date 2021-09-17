@@ -123,14 +123,24 @@ void ts::ApplicationSharedLibrary::GetSearchPath(UStringList& directories, const
 #if (TS_ADDRESS_BITS == 64) && defined(TS_LINUX)
     directories.push_back(exec_parent + u"/lib64/tsduck");
     directories.push_back(exec_parent + u"/lib64");
-    directories.push_back(u"/usr/lib64/tsduck");
-    directories.push_back(u"/usr/local/lib64/tsduck");
 #endif
     directories.push_back(exec_parent + u"/lib/tsduck");
     directories.push_back(exec_parent + u"/lib");
-    directories.push_back(u"/usr/lib/tsduck");
-    directories.push_back(u"/usr/local/lib/tsduck");
+#if (TS_ADDRESS_BITS == 64) && defined(TS_LINUX)
+    directories.push_back(u"/usr/lib64/tsduck");
+    directories.push_back(u"/usr/lib64");
 #endif
+#if defined(TS_MAC) && defined(TS_X86_64)
+    directories.push_back(u"/usr/local/lib/tsduck");
+    directories.push_back(u"/usr/local/lib");
+#elif defined(TS_MAC) && defined(TS_ARM64)
+    directories.push_back(u"/opt/homebrew/lib/tsduck");
+    directories.push_back(u"/opt/homebrew/lib");
+#else
+    directories.push_back(u"/usr/lib/tsduck");
+    directories.push_back(u"/usr/lib);
+#endif
+#endif // TS_UNIX
 
     // On Windows system, try the PATH.
 #if defined(TS_WINDOWS)

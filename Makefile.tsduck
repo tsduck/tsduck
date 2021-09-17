@@ -58,7 +58,7 @@ TSPLUGINSDIR = $(SRCROOT)/tsplugins
 
 # TSDuck library files.
 STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
-SHARED_LIBTSDUCK = $(BINDIR)/libtsduck.so
+SHARED_LIBTSDUCK = $(BINDIR)/libtsduck$(SO_SUFFIX)
 
 # Default installation root.
 # RPM packagers should override this in the "make install" command line

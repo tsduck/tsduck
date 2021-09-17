@@ -49,7 +49,7 @@ namespace ts {
     //! A simple encapsulation of Dektec device information.
     //! It is normally not possible to access DTAPI and Dektec devices from
     //! TSDuck applications. The binary DTAPI is privately isolated inside
-    //! tsduck.dll/.so. This class provides only basic device information.
+    //! the TSDuck library. This class provides only basic device information.
     //! All access to Dektec devices is normally done using the @c tsdektec
     //! command or the @c dektec plugin.
     //! @ingroup hardware

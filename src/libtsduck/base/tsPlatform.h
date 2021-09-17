@@ -364,7 +364,7 @@
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 32
     #endif
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__arm64__)
     #if !defined(TS_ARM64)
         #define TS_ARM64 1
     #endif

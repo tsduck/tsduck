@@ -3,6 +3,7 @@
 
 CXXFLAGS += $(shell tsconfig --cflags)
 LDLIBS += $(shell tsconfig --libs)
+SO := $(shell tsconfig --so)
 
 # Default target is build all.
 default: all
@@ -12,7 +13,7 @@ default: all
 DESTDIR :=
 
 # Compilation rules for shared libraries.
-%.so: %.o
+%$(SO): %.o
 	$(CC) $(CFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # Local compilation flags (-fPIC for shared objects).
@@ -24,12 +25,12 @@ HEADERS := $(sort $(notdir $(basename $(wildcard *.h))))
 
 # There is at most one TSDuck extension library, the file starting in "tslibext_":
 LIBEXT_SRC := $(firstword $(sort $(notdir $(basename $(wildcard tslibext_*.cpp)))))
-LIBEXT_SO  := $(addsuffix .so,$(LIBEXT_SRC))
+LIBEXT_SO  := $(addsuffix $(SO),$(LIBEXT_SRC))
 
 # There is any number of tsp plugins, all files starting in "tsplugin_".
 # We assume here that each plugin has only one source file, the rest is in the tslibext library.
 PLUGINS_SRC := $(sort $(notdir $(basename $(wildcard tsplugin_*.cpp))))
-PLUGINS_SO  := $(addsuffix .so,$(PLUGINS_SRC))
+PLUGINS_SO  := $(addsuffix $(SO),$(PLUGINS_SRC))
 
 # Names of the "tools", the executables. They are all source files without header.
 # We assume here that each tool has only one source file, the rest is in the tslibext library.
@@ -46,7 +47,7 @@ CONFIGS := $(wildcard *.xml *.names)
 all: $(LIBEXT_SO) $(PLUGINS_SO) $(TOOLS)
 	@true
 clean distclean:
-	@rm -rf *.o *.so $(TOOLS)
+	@rm -rf *.o *.so *.dylib $(TOOLS)
 
 $(LIBEXT_SO): $(LIBOBJS)
 $(PLUGINS_SO) $(TOOLS): $(LIBEXT_SO)

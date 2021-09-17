@@ -37,14 +37,15 @@ A TSDuck extension typically contains the following types of files:
 - Additional utilities. They are executable files without predefined naming. They are
   installed in the same directory as the TSDuck commands.
 
-- Additional `tsp` plugins. They are dynamic libraries named `tsplugin_XXX.dll` or `.so`.
+- Additional `tsp` plugins. They are dynamic libraries named `tsplugin_XXX.so`, `.dylib` or `.dll`.
   The plugins are loaded by `tsp` when invoked by their names `XXX`.
 
-- Extension dynamic libraries named `tslibext_XXX.dll` or `.so`. All shareable libraries
+- Extension dynamic libraries named `tslibext_XXX.so`, `.dylib` or `.dll`. All shareable libraries
   named `tslibext_XXX` in the same directory as the TSDuck binaries or in the path
   `TSPLUGINS_PATH` are automatically loaded when any TSDuck command is invoked
-  (in fact any time the TSDuck library `tsduck.dll` or `.so` is used). Such libraries
-  typically install hooks into the core of TSDuck to handle third-party signalization.
+  (in fact any time the TSDuck library `tsduck.dll` or `libtsduck.so` or `.dylib` is used).
+  Such libraries typically install hooks into the core of TSDuck to handle third-party
+  signalization.
 
 - XML files describing the XML models for third-party signalization (tables and descriptors).
   There is no mandatory naming template for those files but `tslibext_XXX.xml` is recommended.
@@ -57,7 +58,7 @@ A TSDuck extension typically contains the following types of files:
 
 # The extension dynamic library  {#extdll}
 
-All shareable libraries named `tslibext_XXX.exe` or `.so` are automatically loaded by any
+All shareable libraries named `tslibext_XXX.so`, `.dylib` or `.dll` are automatically loaded by any
 TSDuck command or plugin. The initialization of the library is responsible for registering
 various hooks which implement the additional features.
 

@@ -65,29 +65,24 @@ class NativeLibrary {
      * @return Library file path or null if not found.
      */
     private static String searchLibraryInPath(String search, String lib) {
-        if (search != null) {
+        if (search != null && lib != null) {
+            // Build OS-dependent library file name.
+            String fileName;
+            if (isWindows) {
+                fileName = lib + ".dll";
+            }
+            else if (isMac) {
+                fileName = "lib" + lib + ".dylib";
+            }
+            else {
+                fileName = "lib" + lib + ".so";
+            }
+            // Search in all directories in the search path.
             for (String dir : search.split(pathSeparator)) {
                 if (!dir.isEmpty()) {
-                    if (isWindows) {
-                        // DLL naming on Windows.
-                        Path path = FileSystems.getDefault().getPath(dir, lib + ".dll");
-                        if (Files.exists(path)) {
-                            return path.toString();
-                        }
-                    }
-                    else {
-                        // Try shared object naming on all Unix.
-                        Path path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".so");
-                        if (Files.exists(path)) {
-                            return path.toString();
-                        }
-                        if (isMac) {
-                            // Dynamic library naming on macOS.
-                            path = FileSystems.getDefault().getPath(dir, "lib" + lib + ".dylib");
-                            if (Files.exists(path)) {
-                                return path.toString();
-                            }
-                        }
+                    Path path = FileSystems.getDefault().getPath(dir, fileName);
+                    if (Files.exists(path)) {
+                        return path.toString();
                     }
                 }
             }

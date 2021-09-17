@@ -124,18 +124,6 @@ $(DEKTEC_NAMES): $(DTAPI_HEADER) $(GEN_DEKTEC_NAMES)
 	$(GEN_DEKTEC_NAMES) >$@
 endif
 
-# On macOS, we create all shared libraries as .so files, which is counter-intuitive
-# since these files have .dylib as standard extension on macOS. To avoid link errors
-# in third-party applications, we create a symbolic link.
-
-ifdef MACOS
-DYLIB_LIBTSDUCK = $(basename $(SHARED_LIBTSDUCK)).dylib
-$(DYLIB_LIBTSDUCK): $(SHARED_LIBTSDUCK)
-	@echo '  [DYLIB] $@'; cd $(dir $@); ln -sf $(notdir $^) $(notdir $@)
-else
-DYLIB_LIBTSDUCK =
-endif
-
 # Library containing all modules.
 # - Both static and dynamic libraries are created but only use the dynamic one when building
 #   tools and plugins.
@@ -145,7 +133,7 @@ endif
 #   the dynamic library. In fact, it would only slow down application startup.
 
 .PHONY: libs
-libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK) $(DYLIB_LIBTSDUCK))
+libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 
 $(STATIC_LIBTSDUCK): $(OBJS)
 	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
@@ -162,10 +150,10 @@ install: install-tools install-devel
 
 install-tools: $(SHARED_LIBTSDUCK) $(DEKTEC_NAMES)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck/python
-	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 ifdef MACOS
-	cd $(SYSROOT)$(USRLIBDIR); ln -sf $(notdir $(SHARED_LIBTSDUCK)) $(notdir $(DYLIB_LIBTSDUCK))
+	rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so
 endif
+	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -m 644 config/tsduck*.xml config/tsduck*.names $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	$(MAKE) -C python install
 	$(MAKE) -C java install
@@ -173,10 +161,9 @@ endif
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.mk
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	install -m 644 tsduck.mk \
-	    $(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*' $(if $(NOTELETEXT),! -name tsTeletextDemux.h,)) \
-	    $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	install -m 644 $(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*' $(if $(NOTELETEXT),! -name tsTeletextDemux.h,)) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 ifdef NOTELETEXT
 	sed tsduck.h -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h
 endif

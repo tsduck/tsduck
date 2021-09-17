@@ -32,6 +32,7 @@
 #-----------------------------------------------------------------------------
 
 import os
+import platform
 import ctypes
 import ctypes.util
 
@@ -48,12 +49,15 @@ def _searchLibTSDuck():
         base = 'tsduck.dll'
         search = [os.getenv('TSDUCK','')]
         search.extend(os.getenv('Path','').split(os.pathsep))
-    else:
-        base = 'libtsduck.so'
-        # For macOS only: LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
+    elif platform.system() == 'Darwin':
+        base = 'libtsduck.dylib'
+        # On macOS, LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
         # A backup version is defined in build/setenv.sh to test development versions.
         search = os.getenv('LD_LIBRARY_PATH2','').split(os.pathsep)
         search.extend(os.getenv('LD_LIBRARY_PATH','').split(os.pathsep))
+    else:
+        base = 'libtsduck.so'
+        search = os.getenv('LD_LIBRARY_PATH','').split(os.pathsep)
 
     # Search the TSDuck library.
     path = ''

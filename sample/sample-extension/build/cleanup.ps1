@@ -32,6 +32,7 @@ $files = @(Get-ChildItem -Recurse -Force $RootDir | Where-Object {
     $_.Name -like "*.obj" -or
     $_.Name -like "*.o" -or
     $_.Name -like "*.so" -or
+    $_.Name -like "*.dylib" -or
     $_.Name -like "core" -or
     $_.Name -like "core.*" -or
     $_.Name -like "*.bak" -or

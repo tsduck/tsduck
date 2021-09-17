@@ -40,7 +40,7 @@ include ../../Makefile.tsduck
 ifndef STATIC
 
 # Dynamic link (the default), we build shared objects.
-SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix .so,$(TSPLUGINS)))
+SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS)))
 
 # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
 # Maintenance: also update build/tsduck.nsi (Windows).
@@ -54,8 +54,11 @@ $(SHLIBS): $(SHARED_LIBTSDUCK)
 install: install-tools install-devel
 install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
+ifdef MACOS
+	rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so
+endif
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
-	rm -f $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/tsplugin_,$(addsuffix .so,$(OBSOLETE_PLUGINS)))
+	rm -f $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/tsplugin_,$(addsuffix $(SO_SUFFIX),$(OBSOLETE_PLUGINS)))
 install-devel:
 	@true
 
