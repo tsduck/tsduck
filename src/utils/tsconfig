@@ -104,7 +104,7 @@ cmd_python() {
 }
 
 cmd_lib() {
-    dirname $(ls $(cmd_prefix)/lib*/libtsduck.so | head -1)
+    dirname $(ls $(cmd_prefix)/lib*/libtsduck$(cmd_so) | head -1)
 }
 
 cmd_cflags() {
