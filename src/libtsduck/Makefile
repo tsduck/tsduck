@@ -159,7 +159,7 @@ endif
 	$(MAKE) -C java install
 
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
-	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	rm -rf $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.mk
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
