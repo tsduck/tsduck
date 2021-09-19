@@ -126,8 +126,8 @@ else
     LDLIBS := -lsrt $(LDLIBS)
 endif
 
-ifeq ($(MACOS)$(RIST),)
-    # Not on macOS and RIST not explicitly enabled.
+ifeq ($(MACOS)$(LINUXBREW)$(RIST),)
+    # Not on macOS, not using Linuxbrew and RIST not explicitly enabled.
     # Currently, RIST must be explicitly enabled on Linux since no standard distro package exists.
     NORIST := true
 endif
@@ -166,12 +166,12 @@ endif
 
 ifneq ($(NOPCSC),)
     CFLAGS_INCLUDES += -DTS_NO_PCSC=1
-else ifeq ($(MACOS),)
+else ifeq ($(MACOS)$(LINUXBREW),)
     # PCSC on Linux
     CFLAGS_INCLUDES += -I/usr/include/PCSC
     LDLIBS := -lpcsclite $(LDLIBS)
 else
-    # PCSC on macOS
+    # PCSC on macOS or Linuxbrew
     CFLAGS_INCLUDES += $(addprefix -I,$(wildcard $(ALTDEVROOT)/opt/pcsc-lite/include $(ALTDEVROOT)/opt/pcsc-lite/include/PCSC))
     LDLIBS := $(addprefix -L,$(wildcard $(ALTDEVROOT)/opt/pcsc-lite/lib)) -lpcsclite $(LDLIBS)
 endif

@@ -294,6 +294,13 @@
 #    Additional options for the linker.
 #    This variable can be defined after inclusion of this makefile.
 #
+#  LINUXBREW
+#    If defined (any non-empty value), force a compilation in a Homebrew
+#    environment on Linux. Homebrew on Linux (aka "Linuxbrew") installs a
+#    non-standard environment where libraries are fetched from
+#    $(HOMEBREW_PREFIX) instead of /usr. By default, ignore the Homebrew
+#    environment on Linux and build using system libraries.
+#
 #  LLVM
 #    If defined (any non-empty value), force the usage of the LLVM (clang)
 #    compiler. Useful on Linux only. On macOS, clang is the default compiler.
@@ -897,8 +904,10 @@ optsize:
 	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
 
 # On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
-ifdef MACOS
-    ALTDEVROOT := $(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local)
+# On Linux, when Homebrew is forced, use it as alternative development root.
+ifneq ($(MACOS)$(LINUXBREW),)
+    $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)),)
+    ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
     CFLAGS_INCLUDES += -I$(ALTDEVROOT)/include
     LDLIBS := -L$(ALTDEVROOT)/lib $(LDLIBS)
 else

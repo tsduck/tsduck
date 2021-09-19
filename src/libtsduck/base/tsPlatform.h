@@ -802,8 +802,6 @@ TS_MSC_NOWARNING(5032)
 TS_MSC_NOWARNING(4193)
 
 TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(reserved-id-macro)
-TS_LLVM_NOWARNING(zero-length-array)
 TS_MSC_NOWARNING(4263)
 TS_MSC_NOWARNING(4264)
 TS_MSC_NOWARNING(4668)
@@ -869,27 +867,32 @@ TS_MSC_NOWARNING(5204)
 #endif
 
 #if defined(TS_LINUX)
-#include <limits.h>
-#include <sys/mman.h>
-#include <byteswap.h>
-#include <linux/dvb/version.h>
-#include <linux/dvb/frontend.h>
-#include <linux/dvb/dmx.h>
-#include <linux/version.h>
+    #include <limits.h>
+    #include <sys/mman.h>
+    #include <byteswap.h>
+    #include <linux/dvb/version.h>
+    #include <linux/dvb/frontend.h>
+    #include <linux/dvb/dmx.h>
+    #include <linux/version.h>
 #endif
 
 #if defined(TS_MAC)
-#include <sys/mman.h>
-#include <libproc.h>
+    #include <sys/mman.h>
+    #include <libproc.h>
 #endif
 
 #if !defined(TS_NO_PCSC) // PC/SC support not inhibited by user.
-#if defined(TS_WINDOWS)
-#include <winscard.h>
-#else
-#include <PCSC/winscard.h>
-#include <PCSC/reader.h>
-#endif
+    #if defined(TS_WINDOWS)
+        #include <winscard.h>
+    #else
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(pedantic)
+        TS_LLVM_NOWARNING(reserved-id-macro)
+        TS_LLVM_NOWARNING(zero-length-array)
+        #include <PCSC/winscard.h>
+        #include <PCSC/reader.h>
+        TS_POP_WARNING()
+    #endif
 #endif
 
 #include <string>
