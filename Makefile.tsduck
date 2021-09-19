@@ -168,6 +168,7 @@ ifneq ($(NOPCSC),)
     CFLAGS_INCLUDES += -DTS_NO_PCSC=1
 else ifeq ($(MACOS),)
     # PCSC on Linux
+    CFLAGS_INCLUDES += -I/usr/include/PCSC
     LDLIBS := -lpcsclite $(LDLIBS)
 else
     # PCSC on macOS
