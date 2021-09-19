@@ -42,10 +42,6 @@ ifndef STATIC
 # Dynamic link (the default), we build shared objects.
 SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS)))
 
-# Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
-# Maintenance: also update build/tsduck.nsi (Windows).
-OBSOLETE_PLUGINS := dektec drop file fork hls http ip null psi skip srt tables
-
 default: shlibs
 	@true
 shlibs: $(SHLIBS)
@@ -54,11 +50,9 @@ $(SHLIBS): $(SHARED_LIBTSDUCK)
 install: install-tools install-devel
 install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
-ifdef MACOS
-	rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so
-endif
+	$(if $(NO_TSPLUGINS),rm -rf $(addsuffix $(SO_SUFFIX),$(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(NO_TSPLUGINS)),))
+	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so,)
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
-	rm -f $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/tsplugin_,$(addsuffix $(SO_SUFFIX),$(OBSOLETE_PLUGINS)))
 install-devel:
 	@true
 

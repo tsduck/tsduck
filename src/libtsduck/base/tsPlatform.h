@@ -803,6 +803,7 @@ TS_MSC_NOWARNING(4193)
 
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(reserved-id-macro)
+TS_LLVM_NOWARNING(zero-length-array)
 TS_MSC_NOWARNING(4263)
 TS_MSC_NOWARNING(4264)
 TS_MSC_NOWARNING(4668)
@@ -883,8 +884,10 @@ TS_MSC_NOWARNING(5204)
 #endif
 
 #if !defined(TS_NO_PCSC) // PC/SC support not inhibited by user.
+#if defined(TS_WINDOWS)
 #include <winscard.h>
-#if defined(TS_LINUX)
+#else
+#include <PCSC/winscard.h>
 #include <PCSC/reader.h>
 #endif
 #endif
@@ -931,17 +934,17 @@ TS_POP_WARNING()
 
 // Required link libraries under Windows.
 #if defined(TS_WINDOWS) && defined(TS_MSC)
-#pragma comment(lib, "userenv.lib")   // GetUserProfileDirectory
-#pragma comment(lib, "psapi.lib")     // GetProcessMemoryInfo
-#pragma comment(lib, "winmm.lib")     // timeBeginPeriod
-#pragma comment(lib, "quartz.lib")    // DirectShow, DirectX
-#pragma comment(lib, "ws2_32.lib")    // Winsock 2
-#pragma comment(lib, "winscard.lib")  // PC/SC
-#if defined(DEBUG)
-#pragma comment(lib, "comsuppwd.lib") // COM utilities
-#else
-#pragma comment(lib, "comsuppw.lib")
-#endif
+    #pragma comment(lib, "userenv.lib")       // GetUserProfileDirectory
+    #pragma comment(lib, "psapi.lib")         // GetProcessMemoryInfo
+    #pragma comment(lib, "winmm.lib")         // timeBeginPeriod
+    #pragma comment(lib, "quartz.lib")        // DirectShow, DirectX
+    #pragma comment(lib, "ws2_32.lib")        // Winsock 2
+    #pragma comment(lib, "winscard.lib")      // PC/SC
+    #if defined(DEBUG)
+        #pragma comment(lib, "comsuppwd.lib") // COM utilities
+    #else
+        #pragma comment(lib, "comsuppw.lib")
+    #endif
 #endif
 
 // Some standard Windows headers have the very-very bad idea to define common

@@ -35,6 +35,8 @@ OBJSUBDIR := objs-tstools
 
 include ../../Makefile.tsduck
 
+EXECS := $(addprefix $(BINDIR)/,$(TSEXECS))
+
 default: execs
 	@true
 
@@ -56,5 +58,6 @@ install: install-tools install-devel
 install-tools: $(EXECS)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
 	install -m 755 $(EXECS) $(SYSROOT)$(SYSPREFIX)/bin
+	$(if $(NO_TSEXECS),rm -rf $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(NO_TSEXECS)),)
 install-devel:
 	@true

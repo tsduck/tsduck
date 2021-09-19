@@ -386,6 +386,11 @@
 #  The following variables are defined in this included makefile and are
 #  available in the parent makefile after inclusion.
 #
+#  ALTDEVROOT
+#    Alternative root for development tools and library. This can be /usr/local
+#    or Homebrew root on macOS. Defined as "/usr" if no other value is suitable
+#    so that $(ALTDEVROOT) can always be safely used to check files.
+#
 #  ARFLAGS
 #    Options which are applied to the archiver (ar) when adding a module into
 #    a static library.
@@ -417,7 +422,7 @@
 #    Same as input variables with additional usual options.
 #
 #  COMMA
-#    Contains a comma. Use $(COMMA) wherever a plain "," is syntaxtically not
+#    Contains a comma. Use $(COMMA) wherever a plain "," is syntactically not
 #    allowed such as in functions.
 #
 #  CONTINUE
@@ -893,9 +898,11 @@ optsize:
 
 # On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
 ifdef MACOS
-    HOMEBREW_ROOT := $(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local)
-    CFLAGS_INCLUDES += -I$(HOMEBREW_ROOT)/include
-    LDLIBS := -L$(HOMEBREW_ROOT)/lib $(LDLIBS)
+    ALTDEVROOT := $(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local)
+    CFLAGS_INCLUDES += -I$(ALTDEVROOT)/include
+    LDLIBS := -L$(ALTDEVROOT)/lib $(LDLIBS)
+else
+    ALTDEVROOT := /usr
 endif
 
 # Include paths for C++ also use include paths for C.
@@ -1025,9 +1032,9 @@ endif
 # Define USELIB64 as "true" or empty.
 USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(wildcard /usr/lib64/libc.so*),true,))
 
-# On macOS, /usr/local and /opt/homebrew used without system privileges.
+# On macOS, the Homebrew root is used without system privileges.
 # On some x86_64 distros, the libraries are installed in lib64, not lib.
-SYSPREFIX ?= $(if $(MACOS),$(HOMEBREW_ROOT),/usr)
+SYSPREFIX ?= $(if $(MACOS),$(ALTDEVROOT),/usr)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
