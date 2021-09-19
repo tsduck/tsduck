@@ -41,19 +41,18 @@ CXXVPATH = $(patsubst ./%,%,$(shell find . -type d ! -name . ! -name windows ! -
 # Detect the presence of the Dektec DTAPI.
 # Define NODTAPI to compile without Dektec support.
 # NODTAPI is automatically defined if no DTAPI is found.
-# DTAPI is not available for MacOS and is not downloaded, not present.
-# Similarly, it cross-compilation is required, skip DTAPI.
 
-ifeq ($(filter-out default headers libs configs,$(MAKECMDGOALS))$(NODTAPI)$(CROSS)$(CROSS_TARGET),)
-    DTAPI_OBJECT := $(shell ../../build/dtapi-config.sh --object --download $(if $(M32),--m32,))
-    DTAPI_HEADER := $(shell ../../build/dtapi-config.sh --header)
-endif
-
-ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
-    NODTAPI := true
-    CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
-else
-    CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
+ifeq ($(NODTAPI),)
+    ifeq ($(filter-out default headers libs configs,$(MAKECMDGOALS)),)
+        DTAPI_OBJECT := $(shell ../../build/dtapi-config.sh --object --download $(if $(M32),--m32,))
+        DTAPI_HEADER := $(shell ../../build/dtapi-config.sh --header)
+    endif
+    ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
+        NODTAPI := true
+        CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
+    else
+        CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
+    endif
 endif
 
 # JNI headers (or disable JNI).
