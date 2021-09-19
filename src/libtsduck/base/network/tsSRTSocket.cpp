@@ -286,15 +286,31 @@ bool ts::SRTSocket::setAddressesInternal(const UString&, const UString&, const U
 
 #define DEFAULT_POLLING_TIME 100
 
-// The srtlib header contains errors.
+// The srtlib headers contain errors.
 TS_PUSH_WARNING()
 TS_LLVM_NOWARNING(documentation)
 TS_LLVM_NOWARNING(old-style-cast)
 TS_LLVM_NOWARNING(undef)
 TS_GCC_NOWARNING(undef)
+TS_GCC_NOWARNING(effc++)
 TS_MSC_NOWARNING(4005)  // 'xxx' : macro redefinition
 TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replacing with '0' for '#if/#elif'
+
+// Bug in GCC: "#if __APPLE__" triggers -Werror=undef despite TS_GCC_NOWARNING(undef)
+// This is a known GCC bug since 2012, never fixed: #if is too early in lex analysis and #pragma are not yet parsed.
+// See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
+#if defined(TS_GCC) && !defined(__APPLE__)
+#define __APPLE__ 0
+#define ZERO__APPLE__ 1
+#endif
+
 #include <srt/srt.h>
+
+#if defined(ZERO__APPLE__)
+#undef __APPLE__
+#undef ZERO__APPLE__
+#endif
+
 TS_POP_WARNING()
 
 
