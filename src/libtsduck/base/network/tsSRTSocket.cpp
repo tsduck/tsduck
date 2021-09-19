@@ -299,7 +299,7 @@ TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replaci
 // Bug in GCC: "#if __APPLE__" triggers -Werror=undef despite TS_GCC_NOWARNING(undef)
 // This is a known GCC bug since 2012, never fixed: #if is too early in lex analysis and #pragma are not yet parsed.
 // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
-#if defined(TS_GCC) && !defined(__APPLE__)
+#if defined(TS_GCC_ONLY) && !defined(__APPLE__)
 #define __APPLE__ 0
 #define ZERO__APPLE__ 1
 #endif
