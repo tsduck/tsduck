@@ -75,7 +75,7 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
 
 ts::VersionInfo::VersionInfo(Report& report) :
     _report(report),
-    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : report),
+    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : _report),
     _started(false)
 {
 }
@@ -84,6 +84,9 @@ ts::VersionInfo::~VersionInfo()
 {
     // Wait for thread termination, if started.
     waitForTermination();
+
+    // Keep this one to avoid clang warning with NOGITHUB=1
+    _started = false;
 }
 
 
