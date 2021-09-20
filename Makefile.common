@@ -1038,12 +1038,12 @@ ifneq ($(CVPATH)$(CXXVPATH),)
 endif
 
 # Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
-# Define USELIB64 as "true" or empty.
-USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(wildcard /usr/lib64/libc.so*),true,))
+# Linuxbrew does not use lib64. Define USELIB64 as "true" or empty.
+USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true,)))
 
 # On macOS, the Homebrew root is used without system privileges.
 # On some x86_64 distros, the libraries are installed in lib64, not lib.
-SYSPREFIX ?= $(if $(MACOS),$(ALTDEVROOT),/usr)
+SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
