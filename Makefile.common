@@ -643,14 +643,14 @@ export LANG = en_US.UTF-8
 
 # Define functions to search commands (see comments in header)
 F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin $(HOME)/bin)))
-F_COMMAND = $(if $(call F_SEARCH,$(1)),$(call F_SEARCH,$(1)),$(2))
+F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
 export F_SEARCH F_COMMAND
 
 # Find faster alternatives to sed and grep.
-SED   ?= $(call F_COMMAND,gsed,sed)
-GREP  ?= $(call F_COMMAND,ggrep,grep)
-FGREP ?= $(call F_COMMAND,gfgrep,fgrep)
-CHMOD ?= $(call F_COMMAND,gchmod,chmod)
+SED   := $(call F_COMMAND,gsed,sed)
+GREP  := $(call F_COMMAND,ggrep,grep)
+FGREP := $(call F_COMMAND,gfgrep,fgrep)
+CHMOD := $(call F_COMMAND,gchmod,chmod)
 export SED GREP FGREP CHMOD
 
 # Representation of a space and a comma character
