@@ -253,7 +253,13 @@ void PlatformTest::testIntegerTypes()
         << "PlatformTest: sizeof(char) = " << sizeof(char)
         << ", sizeof(unsigned char) = " << sizeof(unsigned char)
         << ", is_signed(char) = " << std::is_signed<char>::value << std::endl
-        << "PlatformTest: TS_WCHAR_SIZE = " << TS_WCHAR_SIZE << std::endl;
+        << "PlatformTest: TS_WCHAR_SIZE = " << TS_WCHAR_SIZE << std::endl
+        << "std::numeric_limits<int64_t>::max() = " << std::numeric_limits<int64_t>::max() << std::endl
+        << "std::numeric_limits<int64_t>::digits10 = " << std::numeric_limits<int64_t>::digits10 << std::endl
+        << "std::numeric_limits<double>::max() = " << std::numeric_limits<double>::max() << std::endl
+        << "std::numeric_limits<double>::min() = " << std::numeric_limits<double>::min() << std::endl
+        << "std::numeric_limits<double>::lowest() = " << std::numeric_limits<double>::lowest() << std::endl
+        << "std::numeric_limits<double>::digits10 = " << std::numeric_limits<double>::digits10 << std::endl;
 
     TSUNIT_EQUAL(1, sizeof(int8_t));
     TSUNIT_EQUAL(2, sizeof(int16_t));

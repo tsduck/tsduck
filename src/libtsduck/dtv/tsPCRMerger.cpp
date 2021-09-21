@@ -124,7 +124,7 @@ void ts::PCRMerger::processPacket(ts::TSPacket& pkt, ts::PacketCounter main_pack
             base_pkt = ctx->last_pcr_pkt;
         }
         assert(base_pkt < main_packet_index);
-        ctx->last_pcr = base_pcr + (((main_packet_index - base_pkt) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / main_bitrate).toInt();
+        ctx->last_pcr = base_pcr + ((BitRate(main_packet_index - base_pkt) * PKT_SIZE_BITS * SYSTEM_CLOCK_FREQ) / main_bitrate).toInt();
         ctx->last_pcr_pkt = main_packet_index;
 
         // When --pcr-reset-backwards is specified, check if DTS or PTS have moved backwards PCR.
