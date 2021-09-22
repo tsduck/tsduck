@@ -115,7 +115,10 @@ bool ts::FloatingPoint<FLOAT_T,PREC,N>::fromString(const UString& str, UChar sep
 
     int len = 0;
     double d = 0.0;
+    TS_PUSH_WARNING()
+    TS_MSC_NOWARNING(4996) // 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead.
     const int count = std::sscanf(str8.c_str(), "%lf%n", &d, &len);
+    TS_POP_WARNING()
     _value = float_t(d);
     return count == 1 && len == int(str8.length());
 }
