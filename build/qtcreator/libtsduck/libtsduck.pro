@@ -10,7 +10,7 @@ linux|mac {
 }
 
 linux {
-    QMAKE_CXXFLAGS += -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
+    QMAKE_CXXFLAGS += -isystem $$system("$$PROJROOT/build/dtapi-config.sh --include")
     OBJECTS += $$system("$$PROJROOT/build/dtapi-config.sh --object")
 }
 

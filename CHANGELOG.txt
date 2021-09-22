@@ -2,6 +2,17 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.29-2563
+
+[IMP] Improvements on existing commands and plugins:
+
+  * All bitrate computations are now implemented using 64-bit floating-point
+    values. Previously, a fixed-point representation was used. The strict
+    accuracy was better but integer overflows in intermediate computations
+    occurred from time to time, leading to incorrect evaluations.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.28-2548
 
 [NEW] New commands and plugins:

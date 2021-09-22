@@ -2169,7 +2169,7 @@ void ts::UString::ArgMixInContext::processArg()
             debug(u"type mismatch, not a double or fixed-point", cmd);
         }
         if (argit->isAbstractNumber()) {
-            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, precision > 0 ? precision : 6, hasDot, FULL_STOP, pad));
+            _result.append(argit->toAbstractNumber().toString(minWidth, !leftJustified, separatorChar, forceSign, precision > 0 ? precision : NPOS, hasDot, FULL_STOP, pad));
         }
         else {
             // Get a float or convert an integer to a float. Default to 6 decimal digits.

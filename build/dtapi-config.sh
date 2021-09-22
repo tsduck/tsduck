@@ -29,7 +29,6 @@
 #-----------------------------------------------------------------------------
 #
 #  Get configuration for DTAPI on current Linux system.
-#  Options: --dtapi --header --object --url --support --m32
 #
 #-----------------------------------------------------------------------------
 
@@ -112,6 +111,16 @@ get-header()
 
     local HEADER="$(get-dtapi)/Include/DTAPI.h"
     [[ -e "$HEADER" ]] && echo "$HEADER"
+}
+
+# Get DTAPI include directory.
+get-include()
+{
+    # Get DTAPI support on this system.
+    dtapi-support || return 0
+
+    local INCLUDE="$(get-dtapi)/Include"
+    [[ -e "$INCLUDE" ]] && echo "$INCLUDE"
 }
 
 # Get DTAPI object file.
@@ -264,6 +273,7 @@ CMD_DOWNLOAD=false
 CMD_TARBALL=false
 CMD_DTAPI=false
 CMD_HEADER=false
+CMD_INCLUDE=false
 CMD_OBJECT=false
 CMD_URL=false
 CMD_SUPPORT=false
@@ -288,6 +298,10 @@ while [[ $# -gt 0 ]]; do
             CMD_HEADER=true
             CMD_ALL=false
             ;;
+        --include)
+            CMD_INCLUDE=true
+            CMD_ALL=false
+            ;;
         --object)
             CMD_OBJECT=true
             CMD_ALL=false
@@ -307,7 +321,7 @@ while [[ $# -gt 0 ]]; do
             OPT_M32=true
             ;;
         *)
-            error "invalid option $CMD (use --dtapi --header --object --url --support --tarball --download --force --m32)"
+            error "invalid option $CMD (use --dtapi --header --object --include --url --support --tarball --download --force --m32)"
             ;;
     esac
     shift
@@ -318,6 +332,7 @@ $CMD_DOWNLOAD && download-dtapi
 $CMD_TARBALL && get-tarball
 $CMD_DTAPI && get-dtapi
 $CMD_HEADER && get-header
+$CMD_INCLUDE && get-include
 $CMD_OBJECT && get-object
 $CMD_URL && get-url
 $CMD_SUPPORT && dtapi-support && echo supported
@@ -325,6 +340,7 @@ $CMD_SUPPORT && dtapi-support && echo supported
 if $CMD_ALL; then
     echo "DTAPI_ROOT=$(get-dtapi)"
     echo "DTAPI_HEADER=$(get-header)"
+    echo "DTAPI_INCLUDE=$(get-include)"
     echo "DTAPI_OBJECT=$(get-object)"
     echo "DTAPI_TARBALL=$(get-tarball)"
     echo "DTAPI_URL=$(get-url)"

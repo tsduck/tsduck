@@ -45,7 +45,7 @@
 #  - BITRATE_INTEGER    : Bitrates are 64-bit integer.
 #  - BITRATE_FRACTION   : Bitrates are fractions of two 64-bit integers.
 #  - BITRATE_FLOAT      : Bitrates are 64-bit floating-point.
-#  - BITRATE_FIXED      : Bitrates are 64-bit fixed-point (the default).
+#  - BITRATE_FIXED      : Bitrates are 64-bit fixed-point.
 #  - BITRATE_DECIMALS=n : Number of decimal with fixed-point (default: 1).
 #
 #-----------------------------------------------------------------------------

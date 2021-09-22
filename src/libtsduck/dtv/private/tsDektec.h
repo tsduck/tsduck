@@ -423,11 +423,12 @@
         //!
         template <class FPOINT,
                   typename FLOAT_T = typename FPOINT::float_t,
-                  typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T>, FPOINT>::value, int>::type = 0>
+                  const size_t PREC = FPOINT::DISPLAY_PRECISION,
+                  typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T,PREC>, FPOINT>::value, int>::type = 0>
         inline Dtapi::DtFractionInt ToDektecFractionInt(const FPOINT& value)
         {
-            // Use 1/100 precision (arbitrary).
-            return Dtapi::DtFractionInt(int(100.0 * value.toDouble()), 100);
+            constexpr int factor = static_power10<int,PREC>::value;
+            return Dtapi::DtFractionInt(int(double(factor) * value.toDouble()), factor);
         }
 
         //!
@@ -439,7 +440,8 @@
         //!
         template <class FPOINT,
                   typename FLOAT_T = typename FPOINT::float_t,
-                  typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T>, FPOINT>::value, int>::type = 0>
+                  const size_t PREC = FPOINT::DISPLAY_PRECISION,
+                  typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T,PREC>, FPOINT>::value, int>::type = 0>
         inline void FromDektecFractionInt(FPOINT& result, Dtapi::DtFractionInt value)
         {
             result = FPOINT(FLOAT_T(value.m_Num) / FLOAT_T(value.m_Den));
