@@ -30,7 +30,7 @@
 #
 #  This script builds the various project files for the TSDuck library.
 #  This script is useful when source files are added to or removed from the
-#  directory src\libtsduck.
+#  directory src/libtsduck.
 #
 #  The following files are rebuilt:
 #
@@ -41,99 +41,68 @@
 #
 #-----------------------------------------------------------------------------
 
-SCRIPT=$(basename ${BASH_SOURCE[0]} .sh)
-
-error() { echo >&2 "$SCRIPT: $*"; exit 1; }
-
 # Optional file to build.
 TARGET=$(basename "$1")
 
 # Get the project directories.
-BUILDDIR=$(cd $(dirname ${BASH_SOURCE[0]}); pwd)
-ROOTDIR=$(cd "$BUILDDIR/.."; pwd)
+ROOTDIR=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
 SRCDIR="$ROOTDIR/src/libtsduck"
-MSVCDIR="$BUILDDIR/msvc"
-
-# Relative path from Visual Studio project files to libtsduck source directory.
-MS_RELPATH="..\\..\\src\\libtsduck\\"
-QT_RELPATH="../../../src/libtsduck/"
 
 # On macOS, make sure that commands which were installed by Homebrew packages are in the path.
-[[ $(uname -s) == Darwin ]] && export PATH="$PATH:/usr/local/bin"
+[[ $(uname -s) == Darwin ]] && export PATH="$PATH:/usr/local/bin:/opt/homebrew/bin"
 
-# Enforce LANG to get the same sort order as "Sort-Object -Culture en-US" in PowerShell
+# Enforce LANG to get the same sort order everywhere.
 export LANG=C
 export LC_ALL=$LANG
 
-# Embedded newline character for variables.
-NL=$'\n'
-
 # Get all libtsduck files by type.
-# Syntax: GetSources type unix|windows|none [additional-find-arguments]
+# Syntax: GetSources [additional-find-arguments]
 GetSources()
-{
-    local type="$1"; shift
-    local mode="$1"; shift
+{(
+    cd "$SRCDIR"
+    find . -type f -name '*.h' "$@" |
+        sed -e 's|.*/||' -e 's|^|#include "|' -e 's|$|"|' |
+        sort --ignore-case
+)}
 
-    find "$SRCDIR" -type f -name "*.$type" "$@" |
-        (
-            case $mode in
-                unix)    sed -e "s|$SRCDIR/||" ;;
-                windows) sed -e "s|$SRCDIR/||" -e 's|/|\\|g' ;;
-                none)    sed -e "s|$SRCDIR/||" -e 's|.*/||' ;;
-                *)       cat ;;
-            esac
-        ) |
-        sort --ignore-case |
-        sed -e "s|^|${PREFIX}|" -e "s|\$|${SUFFIX}|"
+# Generate the main TSDuck header file.
+GenerateMainHeader()
+{
+    cat "$ROOTDIR/src/HEADER.txt"
+    echo ''
+    echo '#pragma once'
+    GetSources \
+        ! -path '*/linux/*' ! -path '*/mac/*' ! -path '*/unix/*' ! -path '*/windows/*' ! -path '*/private/*' \
+        ! -name "tsStaticReferences*" ! -name "*Template.h" ! -name "tsduck.h"
+    echo ''
+    echo '#if defined(TS_LINUX)'
+    GetSources \( -path '*/unix/*' -o -path '*/linux/*' \) ! -name "*Template.h"
+    echo '#endif'
+    echo ''
+    echo '#if defined(TS_MAC)'
+    GetSources \( -path '*/unix/*' -o -path '*/mac/*' \) ! -name "*Template.h"
+    echo '#endif'
+    echo ''
+    echo '#if defined(TS_WINDOWS)'
+    GetSources -path '*/windows/*' ! -name "*Template.h"
+    echo '#endif'
 }
 
 # Generate includes based on doxygen group name (as in "@ingroup name").
 # Syntax: GetGroup name
 GetGroup()
-{
-    local group="$1"; shift
-    local name=""
-
-    find "$SRCDIR" -name 'ts*.h' ! -path '*/tsAbstract*.h' ! -name tsVCT.h |
+{(
+    local group="$1"
+    cd "$SRCDIR"
+    find . -name 'ts*.h' ! -path '*/tsAbstract*.h' ! -name tsVCT.h |
         xargs grep -l "@ingroup *$group" |
-        sed -e 's|^.*/ts\(.*\)\.h|\1|' |
-        sort --ignore-case |
-        sed -e "s|^|${PREFIX}|" -e "s|\$|${SUFFIX}|"
-}
-
-# Generate the main TSDuck header file.
-GenerateMainHeader()
-{
-    PREFIX="#include \""
-    SUFFIX="\""
-
-    cat "$ROOTDIR/src/HEADER.txt"
-    echo ''
-    echo '#pragma once'
-    GetSources h none \
-        ! -path '*/linux/*' ! -path '*/mac/*' ! -path '*/unix/*' ! -path '*/windows/*' ! -path '*/private/*' \
-        ! -name "tsStaticReferences*" ! -name "*Template.h" ! -name "tsduck.h"
-    echo ''
-    echo '#if defined(TS_LINUX)'
-    GetSources h none \( -path '*/unix/*' -o -path '*/linux/*' \) ! -name "*Template.h"
-    echo '#endif'
-    echo ''
-    echo '#if defined(TS_MAC)'
-    GetSources h none \( -path '*/unix/*' -o -path '*/mac/*' \) ! -name "*Template.h"
-    echo '#endif'
-    echo ''
-    echo '#if defined(TS_WINDOWS)'
-    GetSources h none -path '*/windows/*' ! -name "*Template.h"
-    echo '#endif'
-}
+        sed -e 's|^.*/ts\(.*\)\.h$|\1|' -e 's|^|    REF_TYPE(|' -e 's|$|);|' |
+        sort --ignore-case
+)}
 
 # Generate the header file containing static references to all tables and descriptors.
 GenerateRefType()
 {
-    PREFIX="    REF_TYPE("
-    SUFFIX=");"
-
     GetGroup table
     echo ''
     GetGroup descriptor
