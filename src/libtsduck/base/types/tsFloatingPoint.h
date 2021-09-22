@@ -42,8 +42,11 @@ namespace ts {
     //! @ingroup cpp
     //!
     //! @tparam FLOAT_T The underlying floating-point type.
+    //! @tparam PREC The number of decimal digits to display by default. This is a display
+    //! attribute only, it does not alter the binary representation of floating-point values.
+    //! The default is to display 6 digits.
     //!
-    template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+    template <typename FLOAT_T, const size_t PREC = 6, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type = 0>
     class FloatingPoint: public AbstractNumber
     {
     private:
@@ -60,6 +63,12 @@ namespace ts {
         //! Overflow may occur.
         //!
         typedef int64_t int_t;
+
+        //!
+        //! The displayed precision of the floating-point type (number of decimal digits).
+        //! This is a display attribute only, it does not alter the binary representation of floating-point values.
+        //!
+        static constexpr size_t DISPLAY_PRECISION = PREC;
 
         //!
         //! The minimum representable value of this fraction type.
@@ -229,35 +238,35 @@ namespace ts {
 //! @cond nodoxygen
 // The operators are not extensively documented with doxygen (obvious, verbose and redundant).
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline ts::FloatingPoint<FLOAT_T> operator+(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 + x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline ts::FloatingPoint<FLOAT_T,PREC> operator+(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 + x1; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline ts::FloatingPoint<FLOAT_T> operator-(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return -(x2 - x1); }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline ts::FloatingPoint<FLOAT_T,PREC> operator-(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return -(x2 - x1); }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline ts::FloatingPoint<FLOAT_T> operator*(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 * x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline ts::FloatingPoint<FLOAT_T,PREC> operator*(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 * x1; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline ts::FloatingPoint<FLOAT_T> operator/(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return ts::FloatingPoint<FLOAT_T>(x1) / x2; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline ts::FloatingPoint<FLOAT_T,PREC> operator/(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return ts::FloatingPoint<FLOAT_T,PREC>(x1) / x2; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator==(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 == x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline bool operator==(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 == x1; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator!=(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 != x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline bool operator!=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 != x1; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator<=(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 >= x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline bool operator<=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 >= x1; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator>=(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 <= x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline bool operator>=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 <= x1; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator<(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 > x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline bool operator<(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 > x1; }
 
-template<typename NUM_T, typename FLOAT_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator>(NUM_T x1, const ts::FloatingPoint<FLOAT_T>& x2) { return x2 < x1; }
+template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
+inline bool operator>(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 < x1; }
 
 //! @endcond
 

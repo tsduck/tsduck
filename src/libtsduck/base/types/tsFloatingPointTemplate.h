@@ -31,41 +31,41 @@
 #include "tsUString.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-constexpr FLOAT_T ts::FloatingPoint<FLOAT_T,N>::EQUAL_PRECISION;
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+constexpr FLOAT_T ts::FloatingPoint<FLOAT_T,PREC,N>::EQUAL_PRECISION;
 #endif
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-const ts::FloatingPoint<FLOAT_T,N> ts::FloatingPoint<FLOAT_T,N>::MIN(std::numeric_limits<FLOAT_T>::lowest());
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+const ts::FloatingPoint<FLOAT_T,PREC,N> ts::FloatingPoint<FLOAT_T,PREC,N>::MIN(std::numeric_limits<FLOAT_T>::lowest());
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-const ts::FloatingPoint<FLOAT_T,N> ts::FloatingPoint<FLOAT_T,N>::MAX(std::numeric_limits<FLOAT_T>::max());
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+const ts::FloatingPoint<FLOAT_T,PREC,N> ts::FloatingPoint<FLOAT_T,PREC,N>::MAX(std::numeric_limits<FLOAT_T>::max());
 
 
 //----------------------------------------------------------------------------
 // Virtual numeric conversions.
 //----------------------------------------------------------------------------
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-int64_t ts::FloatingPoint<FLOAT_T,N>::toInt64() const
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+int64_t ts::FloatingPoint<FLOAT_T,PREC,N>::toInt64() const
 {
     return int64_t(std::round(_value));
 }
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-double ts::FloatingPoint<FLOAT_T,N>::toDouble() const
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+double ts::FloatingPoint<FLOAT_T,PREC,N>::toDouble() const
 {
     return double(_value);
 }
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-bool ts::FloatingPoint<FLOAT_T,N>::inRange(int64_t min, int64_t max) const
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+bool ts::FloatingPoint<FLOAT_T,PREC,N>::inRange(int64_t min, int64_t max) const
 {
     return _value >= float_t(min) && _value <= float_t(max);
 }
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-ts::UString ts::FloatingPoint<FLOAT_T,N>::description() const
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::description() const
 {
     return UString::Format(u"%d-bit floating-point value", {8 * sizeof(float_t)});
 }
@@ -75,8 +75,8 @@ ts::UString ts::FloatingPoint<FLOAT_T,N>::description() const
 // Convert the number to a string object.
 //----------------------------------------------------------------------------
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-ts::UString ts::FloatingPoint<FLOAT_T,N>::toString(size_t min_width,
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::toString(size_t min_width,
                                                  bool right_justified,
                                                  UChar separator,
                                                  bool force_sign,
@@ -87,7 +87,7 @@ ts::UString ts::FloatingPoint<FLOAT_T,N>::toString(size_t min_width,
 {
     // 6 decimal digits by default.
     if (decimals == NPOS) {
-        decimals = 6;
+        decimals = DISPLAY_PRECISION;
     }
 
     // Format the floating point number in a slightly oversized UTF-8 buffer.
@@ -106,8 +106,8 @@ ts::UString ts::FloatingPoint<FLOAT_T,N>::toString(size_t min_width,
 // Parse a string and interpret it as a number.
 //----------------------------------------------------------------------------
 
-template <typename FLOAT_T, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
-bool ts::FloatingPoint<FLOAT_T,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
+template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
+bool ts::FloatingPoint<FLOAT_T,PREC,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
 {
     UString str16(str);
     Deformat(str16, separator, decimal_dot);

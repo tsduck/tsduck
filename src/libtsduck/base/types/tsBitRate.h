@@ -38,7 +38,6 @@
 #if defined(DOXYGEN)
 //!
 //! If this symbol is defined, bitrate values are represented as unsigned 64-bit integers.
-//! Without this symbol, bitrates are represented as fixed-point numbers of a given compile-time precision.
 //!
 //! @see ts::Integer
 //! @see ts::BitRate
@@ -47,7 +46,6 @@
 
 //!
 //! If this symbol is defined, bitrate values are represented as fractions of 64-bit integers.
-//! Without this symbol, bitrates are represented as fixed-point numbers of a given compile-time precision.
 //!
 //! Using fractions instead of fixed-point numbers gives a better precision but seriously impacts the
 //! overall performance of computations involving bitrates. The experience also demonstractes that using
@@ -63,8 +61,10 @@
 
 //!
 //! If this symbol is defined, bitrate values are represented as double floating-point.
-//! Without this symbol, bitrates are represented as fixed-point numbers of a given compile-time precision.
+//!
 //! Using floating-point instead of fixed-point numbers may give a better precision in some cases.
+//!
+//! This is currently the default.
 //!
 //! @see ts::Double
 //! @see ts::BitRate
@@ -73,36 +73,45 @@
 
 //!
 //! If this symbol is defined, bitrate values are represented as fixed-point.
-//! This is currently the default. If neither @a TS_BITRATE_FRACTION nor @a TS_BITRATE_FLOAT
-//! are defined, then @a TS_BITRATE_FIXED is automatically defined.
+//! The number of decimal digits is set by the macro TS_BITRATE_DECIMALS.
 //!
 //! @see ts::FixedPoint
 //! @see ts::BitRate
+//! @see TS_BITRATE_DECIMALS
 //!
 #define TS_BITRATE_FIXED 1
 
 #else
 
-// Default representation for BitRate values is fixed-point.
+// Default representation for BitRate values.
 #if !defined(TS_BITRATE_INTEGER) && !defined(TS_BITRATE_FRACTION) && !defined(TS_BITRATE_FLOAT) && !defined(TS_BITRATE_FIXED)
-#define TS_BITRATE_FIXED 1
+#define TS_BITRATE_FLOAT 1
 #endif
 
 #endif
 
 //!
-//! Define the precision (number of decimal digits) of bitrate values.
+//! Define the precision (number of decimal digits) of fixed-point bitrate values.
 //! This is used when bitrates are represented as fixed-point numbers instead of fractions or floating-point.
 //!
 //! @see ts::FixedPoint
 //! @see ts::BitRate
-//! @see TS_BITRATE_INTEGER
-//! @see TS_BITRATE_FRACTION
-//! @see TS_BITRATE_FLOAT
 //! @see TS_BITRATE_FIXED
 //!
 #if !defined(TS_BITRATE_DECIMALS)
 #define TS_BITRATE_DECIMALS 1
+#endif
+
+//!
+//! Define the displayed precision (number of decimal digits) of floating-point bitrate values.
+//! This is used when bitrates are represented as floating-point numbers instead of fractions or fixed-point.
+//!
+//! @see ts::FloatingPoint
+//! @see ts::BitRate
+//! @see TS_BITRATE_FLOAT
+//!
+#if !defined(TS_BITRATE_DISPLAY_DECIMALS)
+#define TS_BITRATE_DISPLAY_DECIMALS 2
 #endif
 
 // Required header for implementation of BitRate.
@@ -150,7 +159,7 @@ namespace ts {
     typedef Fraction<uint64_t> BitRate;
 #elif defined(TS_BITRATE_FLOAT)
     TS_LLVM_NOWARNING(implicit-int-float-conversion)
-    typedef FloatingPoint<double> BitRate;
+    typedef FloatingPoint<double,TS_BITRATE_DISPLAY_DECIMALS> BitRate;
 #elif defined(TS_BITRATE_FIXED)
     typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
 #else
