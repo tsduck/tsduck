@@ -1,0 +1,191 @@
+//----------------------------------------------------------------------------
+//
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2021, Thierry Lelegard
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright notice,
+//    this list of conditions and the following disclaimer.
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in the
+//    documentation and/or other materials provided with the distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+// THE POSSIBILITY OF SUCH DAMAGE.
+//
+//----------------------------------------------------------------------------
+
+#include "tsCommandLine.h"
+TSDUCK_SOURCE;
+
+
+//----------------------------------------------------------------------------
+// Constructor
+//----------------------------------------------------------------------------
+
+ts::CommandLine::CommandLine(Report& report) :
+    _report(report),
+    _process_redirections(false),
+    _cmd_id_alloc(0),
+    _cmd_enum(),
+    _commands()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Set command line redirection from files.
+//----------------------------------------------------------------------------
+
+bool ts::CommandLine::processRedirections(bool on)
+{
+    const bool previous = _process_redirections;
+    _process_redirections = on;
+    return previous;
+}
+
+
+//----------------------------------------------------------------------------
+// Set a new command line handler for one or all commands.
+//----------------------------------------------------------------------------
+
+void ts::CommandLine::setCommandLineHandler(CommandLineHandlerInterface* handler, const UString& command)
+{
+    if (command.empty()) {
+        // Set all commands.
+        for (auto it = _commands.begin(); it != _commands.end(); ++it) {
+            it->second.handler = handler;
+        }
+    }
+    else {
+        // Set one command.
+        const int id = _cmd_enum.value(command);
+        if (id != Enumeration::UNKNOWN) {
+            _commands[id].handler = handler;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Add the definition of a command to the interpreter.
+//----------------------------------------------------------------------------
+
+ts::Args* ts::CommandLine::command(CommandLineHandlerInterface* handler, const UString& name, const UString& description, const UString& syntax, int flags)
+{
+    // Check if the command already exists.
+    int id = _cmd_enum.value(name, true, false);
+    if (id == Enumeration::UNKNOWN) {
+        // New command.
+        id = _cmd_id_alloc++;
+        _cmd_enum.add(name, id);
+    }
+
+    // Set the argument definition for the command.
+    Cmd& cmd(_commands[id]);
+    cmd.handler = handler;
+    cmd.name = name;
+    cmd.args.setDescription(description);
+    cmd.args.setSyntax(syntax);
+    cmd.args.setAppName(name);
+    cmd.args.redirectReport(&_report);
+
+    // Enforce flags to avoid exiting the application on special events (error or help).
+    cmd.args.setFlags(flags |
+                      Args::NO_EXIT_ON_HELP |
+                      Args::NO_EXIT_ON_ERROR |
+                      Args::HELP_ON_THIS |
+                      Args::NO_DEBUG |
+                      Args::NO_VERSION |
+                      Args::NO_CONFIG_FILE);
+
+    return &cmd.args;
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze and process a command line.
+//----------------------------------------------------------------------------
+
+bool ts::CommandLine::processCommand(const UString& command)
+{
+    UStringVector args;
+    command.fromQuotedLine(args);
+    if (args.empty()) {
+        return true; // empty command line
+    }
+    else {
+        const UString cmd(args.front());
+        args.erase(args.begin());
+        return processCommand(cmd, args);
+    }
+}
+
+bool ts::CommandLine::processCommand(const UString& name, const UStringVector& arguments)
+{
+    // Look for command name.
+    const int cmd_id = _cmd_enum.value(name);
+    if (cmd_id == Enumeration::UNKNOWN) {
+        _report.error(_cmd_enum.error(name, true, true, u"command"));
+        return false;
+    }
+
+    // Analyze command.
+    Cmd& cmd(_commands[cmd_id]);
+    if (!cmd.args.analyze(cmd.name, arguments, _process_redirections)) {
+        return false;
+    }
+
+    // Process command/
+    if (cmd.handler == nullptr) {
+        _report.error(u"not command handler for command %s", {cmd.name});
+        return false;
+    }
+    else {
+        return cmd.handler->handleCommandLine(cmd.name, cmd.args);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get a formatted help text for all commands.
+//----------------------------------------------------------------------------
+
+ts::UString ts::CommandLine::getAllHelpText(Args::HelpFormat format, size_t line_width) const
+{
+    // Build a sorted list of command names.
+    UStringVector names;
+    _cmd_enum.getAllNames(names);
+    std::sort(names.begin(), names.end());
+
+    // Build a text of all helps.
+    UString text;
+    for (auto it1 = names.begin(); it1 != names.end(); ++it1) {
+        const auto it2 = _commands.find(_cmd_enum.value(*it1));
+        if (it2 != _commands.end()) {
+            // Get help for this command.
+            UString help(it2->second.args.getHelpText(format, line_width));
+            // Add a marker before the first non-space character to emphasize the start of command description.
+            for (size_t i = 0; i < help.size(); ++i) {
+                if (!IsSpace(help[i])) {
+                    help.insert(i, u"==== ");
+                    break;
+                }
+            }
+            text.append(help);
+        }
+    }
+    return text;
+}

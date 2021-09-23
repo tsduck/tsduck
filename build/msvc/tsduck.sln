@@ -504,6 +504,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsecmg", "tsecmg.vcxproj", 
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tseit", "tseit.vcxproj", "{51F7D277-1231-AFCF-A2A6-F5DEEE996507}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsemmg", "tsemmg.vcxproj", "{5238597F-8821-43A9-96F1-4F3DDC3C6C00}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
@@ -1580,6 +1585,14 @@ Global
 		{59553F6E-567A-4C24-8711-9F7F47472988}.Release|Win32.Build.0 = Release|Win32
 		{59553F6E-567A-4C24-8711-9F7F47472988}.Release|x64.ActiveCfg = Release|x64
 		{59553F6E-567A-4C24-8711-9F7F47472988}.Release|x64.Build.0 = Release|x64
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Debug|Win32.ActiveCfg = Debug|Win32
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Debug|Win32.Build.0 = Debug|Win32
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Debug|x64.ActiveCfg = Debug|x64
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Debug|x64.Build.0 = Debug|x64
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Release|Win32.ActiveCfg = Release|Win32
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Release|Win32.Build.0 = Release|Win32
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Release|x64.ActiveCfg = Release|x64
+		{51F7D277-1231-AFCF-A2A6-F5DEEE996507}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

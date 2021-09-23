@@ -52,7 +52,7 @@ namespace {
 
         ts::TSPControlCommand command_reference;
         ts::UString           command_line;
-        ts::IPv4SocketAddress     tsp_address;
+        ts::IPv4SocketAddress tsp_address;
 
         // Inherited methods.
         virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;

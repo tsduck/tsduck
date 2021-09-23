@@ -136,7 +136,7 @@ namespace ts {
         }
 
         //!
-        //! Get the value from a name, abbreviation allowed.
+        //! Get the value from a name.
         //!
         //! @param [in] name The string to search. This string may also
         //! contain an integer value in decimal or hexadecimal representation
@@ -144,16 +144,18 @@ namespace ts {
         //! @param [in] caseSensitive If false, the search is not case
         //! sensitive and @a name may match an equivalent string with
         //! distinct letter case. If true (the default), an exact match is required.
+        //! @param [in] abbreviated If true (the default), any non-ambiguous
+        //! abbreviation is valid. If false, a full name string must be provided.
         //! @return The integer value corresponding to @a name or @c UNKNOWN
         //! if not found or ambiguous, unless @a name can be interpreted as
         //! an integer value. If multiple integer values were registered
         //! with the same name, one of them is returned but which one is
         //! returned is unspecified.
         //!
-        int value(const UString& name, bool caseSensitive = true) const;
+        int value(const UString& name, bool caseSensitive = true, bool abbreviated = true) const;
 
         //!
-        //! Get the enumeration value from a name, abbreviation allowed.
+        //! Get the enumeration value from a name.
         //!
         //! @tparam ENUM An enumeration type.
         //! @param [out] e The enumeration value. Unmodified if @a name is not valid.
@@ -165,13 +167,15 @@ namespace ts {
         //! @param [in] caseSensitive If false, the search is not case
         //! sensitive and @a name may match an equivalent string with
         //! distinct letter case. If true (the default), an exact match is required.
+        //! @param [in] abbreviated If true (the default), any non-ambiguous
+        //! abbreviation is valid. If false, a full name string must be provided.
         //! @return True on success, false if @a name is not found or ambiguous, unless
         //! @a name can be interpreted as an integer value.
         //!
         template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
-        bool getValue(ENUM& e, const UString& name, bool caseSensitive = true) const
+        bool getValue(ENUM& e, const UString& name, bool caseSensitive = true, bool abbreviated = true) const
         {
-            const int i = value(name, caseSensitive);
+            const int i = value(name, caseSensitive, abbreviated);
             if (i == UNKNOWN) {
                 return false;
             }
@@ -180,6 +184,18 @@ namespace ts {
                 return true;
             }
         }
+
+        //!
+        //! Get the error message about a name failing to match a value.
+        //!
+        //! @param [in] name The string to search.
+        //! @param [in] caseSensitive If false, the search is not case sensitive.
+        //! @param [in] abbreviated If true, any non-ambiguous abbreviation is valid.
+        //! @param [in] designator How to designate the name in the message (e.g. "name", "command", "option").
+        //! @param [in] prefix Prefix to prepend each candidate in case of ambiguous name.
+        //! @return The corresponding error message or an empty string is there is no error.
+        //!
+        UString error(const UString& name, bool caseSensitive = true, bool abbreviated = true, const UString& designator = u"name", const UString& prefix = UString()) const;
 
         //!
         //! Get the name from an enumeration value.
@@ -253,6 +269,21 @@ namespace ts {
                 ++begin;
             }
             return res;
+        }
+
+        //!
+        //! Get all possible names in a string container.
+        //!
+        //! @tparam CONTAINER A container class of strings as defined by the C++ Standard Template Library (STL).
+        //! @param [out] names A container of strings.
+        //!
+        template <class CONTAINER>
+        void getAllNames(CONTAINER& names) const
+        {
+            names.clear();
+            for (auto it = _map.begin(); it != _map.end(); ++it) {
+                names.push_back(it->second);
+            }
         }
 
         //!
