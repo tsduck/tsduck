@@ -28,20 +28,36 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  An interface which handles a command from a CommandLine instance.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 29
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2566
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class Args;
+    class UString;
+
+    //!
+    //! An interface which handles a command from a CommandLine instance.
+    //! @ingroup cmd
+    //!
+    class TSDUCKDLL CommandLineHandlerInterface
+    {
+    public:
+        //!
+        //! Invoked by a CommandLine instance for one command.
+        //! @param [in] command Name of the command, unabbreviated, as defined in CommandLine::command().
+        //! @param [in,out] args Command line arguments.
+        //! @return True to continue command line processing. False on fatal error, stop command processing.
+        //!
+        virtual bool handleCommandLine(const UString& command, Args& args) = 0;
+
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~CommandLineHandlerInterface();
+    };
+}

@@ -51,6 +51,7 @@ public:
     void testValue();
     void testNameList();
     void testIterators();
+    void testError();
 
     TSUNIT_TEST_BEGIN(EnumerationTest);
     TSUNIT_TEST(testEnumeration);
@@ -59,6 +60,7 @@ public:
     TSUNIT_TEST(testValue);
     TSUNIT_TEST(testNameList);
     TSUNIT_TEST(testIterators);
+    TSUNIT_TEST(testError);
     TSUNIT_TEST_END();
 };
 
@@ -243,4 +245,18 @@ void EnumerationTest::testIterators()
     }
 
     TSUNIT_ASSERT(value == ref);
+}
+
+void EnumerationTest::testError()
+{
+    ts::Enumeration e({{u"version",   0},
+                       {u"verbose",   1},
+                       {u"versatile", 2},
+                       {u"other",     3}});
+
+    TSUNIT_EQUAL(u"", e.error(u"oth"));
+    TSUNIT_EQUAL(u"", e.error(u"versi"));
+    TSUNIT_EQUAL(u"unknown name \"foo\"", e.error(u"foo"));
+    TSUNIT_EQUAL(u"ambiguous command \"vers\", could be one of version, versatile", e.error(u"vers", true, true, u"command"));
+    TSUNIT_EQUAL(u"ambiguous option \"--ver\", could be one of --version, --verbose, --versatile", e.error(u"ver", true, true, u"option", u"--"));
 }

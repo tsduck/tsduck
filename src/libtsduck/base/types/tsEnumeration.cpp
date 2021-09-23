@@ -74,7 +74,7 @@ bool ts::Enumeration::operator!=(const Enumeration& other) const
 TS_PUSH_WARNING()
 TS_GCC_NOWARNING(shadow) // workaround for a bug in GCC 7.5
 
-int ts::Enumeration::value(const UString& name, bool caseSensitive) const
+int ts::Enumeration::value(const UString& name, bool caseSensitive, bool abbreviated) const
 {
     const UString lcName(name.toLower());
     size_t previousCount = 0;
@@ -85,7 +85,7 @@ int ts::Enumeration::value(const UString& name, bool caseSensitive) const
             // Found an exact match
             return it->first;
         }
-        else if (it->second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it->second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version
             if (++previousCount == 1) {
                 // First abbreviation, remember it and continue searching
@@ -113,6 +113,39 @@ int ts::Enumeration::value(const UString& name, bool caseSensitive) const
 }
 
 TS_POP_WARNING()
+
+
+//----------------------------------------------------------------------------
+// Get the error message about a name failing to match a value.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Enumeration::error(const UString& name, bool caseSensitive, bool abbreviated, const UString& designator, const UString& prefix) const
+{
+    const UString lcName(name.toLower());
+    UStringList maybe;
+
+    for (auto it = _map.begin(); it != _map.end(); ++it) {
+        if ((caseSensitive && it->second == name) || (!caseSensitive && it->second.toLower() == lcName)) {
+            // Found an exact match, there is no error.
+            return UString();
+        }
+        else if (abbreviated && it->second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+            // Found an abbreviated version.
+            maybe.push_back(prefix + it->second);
+        }
+    }
+
+    if (maybe.empty()) {
+        return UString::Format(u"unknown %s \"%s%s\"", {designator, prefix, name});
+    }
+    else if (maybe.size() == 1) {
+        // Only one possibility, there is no error.
+        return UString();
+    }
+    else {
+        return UString::Format(u"ambiguous %s \"%s%s\", could be one of %s", {designator, prefix, name, UString::Join(maybe)});
+    }
+}
 
 
 //----------------------------------------------------------------------------
