@@ -119,12 +119,12 @@ ts::Args* ts::CommandLine::command(CommandLineHandlerInterface* handler, const U
 // Analyze and process a command line.
 //----------------------------------------------------------------------------
 
-bool ts::CommandLine::processCommand(const UString& command)
+ts::CommandStatus ts::CommandLine::processCommand(const UString& command)
 {
     UStringVector args;
     command.fromQuotedLine(args);
     if (args.empty()) {
-        return true; // empty command line
+        return CommandStatus::SUCCESS; // empty command line
     }
     else {
         const UString cmd(args.front());
@@ -133,29 +133,80 @@ bool ts::CommandLine::processCommand(const UString& command)
     }
 }
 
-bool ts::CommandLine::processCommand(const UString& name, const UStringVector& arguments)
+ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const UStringVector& arguments)
 {
     // Look for command name.
     const int cmd_id = _cmd_enum.value(name);
     if (cmd_id == Enumeration::UNKNOWN) {
         _report.error(_cmd_enum.error(name, true, true, u"command"));
-        return false;
+        return CommandStatus::ERROR;
     }
 
     // Analyze command.
     Cmd& cmd(_commands[cmd_id]);
     if (!cmd.args.analyze(cmd.name, arguments, _process_redirections)) {
-        return false;
+        return CommandStatus::ERROR;
     }
 
-    // Process command/
+    // Process command.
     if (cmd.handler == nullptr) {
-        _report.error(u"not command handler for command %s", {cmd.name});
-        return false;
+        _report.error(u"no command handler for command %s", {cmd.name});
+        return CommandStatus::ERROR;
     }
     else {
         return cmd.handler->handleCommandLine(cmd.name, cmd.args);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze and process all commands from a text file.
+//----------------------------------------------------------------------------
+
+ts::CommandStatus ts::CommandLine::processCommandFile(const UString& filename)
+{
+    _report.debug(u"executing commands from %s", {filename});
+
+    // Load all text lines from the file.
+    ts::UStringVector lines;
+    if (!UString::Load(lines, filename)) {
+        _report.error(u"error loading %s", {filename});
+        return CommandStatus::ERROR;
+    }
+    return processCommandFile(lines);
+}
+
+ts::CommandStatus ts::CommandLine::processCommandFile(UStringVector& lines)
+{
+    // Reduce comment and continuation lines.
+    for (size_t i = 0; i < lines.size(); ) {
+        lines[i].trim();
+        if (lines[i].empty() || lines[i].startWith(u"#")) {
+            // Comment line, drop it.
+            lines.erase(lines.begin() + i);
+        }
+        else if (i > 0 && lines[i-1].endWith(u"\\")) {
+            // Append as continuation of previous line and remove this line.
+            lines[i-1].pop_back();
+            lines[i-1].append(lines[i]);
+            lines.erase(lines.begin() + i);
+        }
+        else {
+            ++i;
+        }
+    }
+    if (!lines.empty() && lines.back().endWith(u"\\")) {
+        // Last line ends with backslash, error but ignore it, drop it.
+        lines.back().pop_back();
+        lines.back().trim();
+    }
+
+    // Execute all commands in sequence.
+    CommandStatus status = CommandStatus::SUCCESS;
+    for (size_t i = 0; status != CommandStatus::EXIT && status != CommandStatus::FATAL && i < lines.size(); ++i) {
+        status = processCommand(lines[i]);
+    }
+    return status;
 }
 
 

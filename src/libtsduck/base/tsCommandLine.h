@@ -91,19 +91,35 @@ namespace ts {
         //! @param [in] command Full command line, with command name and parameters.
         //! Parameters are separated with spaces. Special characters and spaces must be
         //! escaped or quoted in the parameters.
-        //! @return True if the command was successfully processed. False if the command
-        //! does not exist or the command handler returned false.
+        //! @return Command status.
         //!
-        bool processCommand(const UString& command);
+        CommandStatus processCommand(const UString& command);
 
         //!
         //! Analyze and process a command line.
         //! @param [in] name Command name.
         //! @param [in] arguments Arguments from command line.
-        //! @return True if the command was successfully processed. False if the command
-        //! does not exist or the command handler returned false.
+        //! @return Command status.
         //!
-        bool processCommand(const UString& name, const UStringVector& arguments);
+        CommandStatus processCommand(const UString& name, const UStringVector& arguments);
+
+        //!
+        //! Analyze and process all commands from a vector of text lines.
+        //! @param [in,out] lines Lines of text. Lines starting with a '#' are considered as
+        //! comments and removed. A line ending with a backslash means that the command
+        //! continues on the next line. Such lines are reassembled.
+        //! @return Command status of the last command.
+        //!
+        CommandStatus processCommandFile(UStringVector& lines);
+
+        //!
+        //! Analyze and process all commands from a text file.
+        //! Lines starting with a '#' are considered as comments and ignored.
+        //! A line ending with a backslash means that the command continues on the next line.
+        //! @param [in] filename File name.
+        //! @return Command status of the last command.
+        //!
+        CommandStatus processCommandFile(const UString& filename);
 
         //!
         //! Get a formatted help text for all commands.

@@ -95,8 +95,10 @@ mac {
     LLVM_MAJOR = $$member(LLVM_FIELDS, 0)
     QMAKE_CXXFLAGS_WARN_ON += -Weverything -Wno-c++98-compat-pedantic
     greaterThan(LLVM_MAJOR, 11): QMAKE_CXXFLAGS_WARN_ON += -Wno-poison-system-directories
-    QMAKE_CXXFLAGS += -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
+    QMAKE_CXXFLAGS += -I/usr/local/include -I/usr/local/opt/pcsc-lite/include -I/usr/local/opt/pcsc-lite/include/PCSC
+    QMAKE_CXXFLAGS += -I/opt/homebrew/include -I/opt/homebrew/opt/pcsc-lite/include -I/opt/homebrew/opt/pcsc-lite/include/PCSC
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib
+    LIBS += -L/opt/homebrew/lib -L/opt/homebrew/opt/pcsc-lite/lib
     QMAKE_EXTENSION_SHLIB = so
     DEFINES += TS_NO_DTAPI=1
 }
