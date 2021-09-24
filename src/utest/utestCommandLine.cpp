@@ -46,9 +46,11 @@ public:
     virtual void afterTest() override;
 
     void testCommand();
+    void testCommandFile();
 
     TSUNIT_TEST_BEGIN(CommandLineTest);
     TSUNIT_TEST(testCommand);
+    TSUNIT_TEST(testCommandFile);
     TSUNIT_TEST_END();
 };
 
@@ -93,7 +95,7 @@ namespace {
         }
 
         // Command handler.
-        virtual bool handleCommandLine(const ts::UString& command, ts::Args& args) override
+        virtual ts::CommandStatus handleCommandLine(const ts::UString& command, ts::Args& args) override
         {
             output.format(u"[command:%s]", {command});
             if (command == u"cmd1") {
@@ -102,7 +104,7 @@ namespace {
             else if (command == u"cmd2") {
                 output.format(u"[--bar:%s]", {args.present(u"bar")});
             }
-            return true;
+            return ts::CommandStatus::SUCCESS;
         }
     };
 }
@@ -118,18 +120,33 @@ void CommandLineTest::testCommand()
     TestCommand test(cmdline);
 
     test.output.clear();
-    TSUNIT_ASSERT(cmdline.processCommand(u"cmd1"));
+    TSUNIT_EQUAL(ts::CommandStatus::SUCCESS, cmdline.processCommand(u"cmd1"));
     TSUNIT_EQUAL(test.output, u"[command:cmd1][--foo:false]");
 
     test.output.clear();
-    TSUNIT_ASSERT(cmdline.processCommand(u"cmd1 --foo"));
+    TSUNIT_EQUAL(ts::CommandStatus::SUCCESS, cmdline.processCommand(u"cmd1 --foo"));
     TSUNIT_EQUAL(test.output, u"[command:cmd1][--foo:true]");
 
     test.output.clear();
-    TSUNIT_ASSERT(cmdline.processCommand(u"cmd2"));
+    TSUNIT_EQUAL(ts::CommandStatus::SUCCESS, cmdline.processCommand(u"cmd2"));
     TSUNIT_EQUAL(test.output, u"[command:cmd2][--bar:false]");
 
     test.output.clear();
-    TSUNIT_ASSERT(cmdline.processCommand(u"cmd2 --bar"));
+    TSUNIT_EQUAL(ts::CommandStatus::SUCCESS, cmdline.processCommand(u"cmd2 --bar"));
     TSUNIT_EQUAL(test.output, u"[command:cmd2][--bar:true]");
+}
+
+void CommandLineTest::testCommandFile()
+{
+    ts::CommandLine cmdline;
+    TestCommand test(cmdline);
+
+    ts::UStringVector lines({
+        u"cmd2",
+        u" cmd1  --foo  ",
+        u"cmd2 --bar"
+    });
+
+    TSUNIT_EQUAL(ts::CommandStatus::SUCCESS, cmdline.processCommandFile(lines));
+    TSUNIT_EQUAL(test.output, u"[command:cmd2][--bar:false][command:cmd1][--foo:true][command:cmd2][--bar:true]");
 }
