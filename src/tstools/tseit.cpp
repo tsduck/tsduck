@@ -44,27 +44,28 @@ TS_MAIN(MainCode);
 // Command line options
 //----------------------------------------------------------------------------
 
-namespace {
-    class Options: public ts::Args
+namespace ts {
+    class EITOptions: public Args
     {
-        TS_NOBUILD_NOCOPY(Options);
+        TS_NOBUILD_NOCOPY(EITOptions);
     public:
-        Options(int argc, char *argv[]);
+        EITOptions(int argc, char *argv[]);
+        virtual ~EITOptions() override;
 
-        ts::UStringVector commands;
-        ts::UStringVector command_files;
-        ts::UString       input_directory;
-        ts::UString       output_directory;
-        ts::CommandLine   cmdline;
+        UStringVector commands;
+        UStringVector command_files;
+        UString       input_directory;
+        UString       output_directory;
+        CommandLine   cmdline;
 
         // Inherited methods.
-        virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
+        virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
     };
 }
 
-// Get command line options.
-Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Manipulate EIT's through commands", u"[options]"),
+// Constructor: get command line options.
+ts::EITOptions::EITOptions(int argc, char *argv[]) :
+    Args(u"Manipulate EIT's through commands", u"[options]"),
     commands(),
     command_files(),
     input_directory(),
@@ -94,8 +95,8 @@ Options::Options(int argc, char *argv[]) :
          u"Default directory of output files in EIT manipulation commands.");
 
     // EIT manipulation commands.
-    ts::Args* cmd = nullptr;
-    const int flags = ts::Args::NO_VERBOSE | ts::Args::NO_HELP;
+    Args* cmd = nullptr;
+    const int flags = Args::NO_VERBOSE | Args::NO_HELP;
 
     cmd = cmdline.command(u"load", u"Load events from a file", u"filename", flags);
     cmd->option(u"", 0, STRING, 1, 1);
@@ -162,9 +163,9 @@ Options::Options(int argc, char *argv[]) :
     cmd->help(u"no-other", u"Disable the generation of EIT other.");
     cmd->option(u"ts-id", 0, UINT16);
     cmd->help(u"ts-id", u"Set the actual transport stream id.");
-    cmd->option<ts::BitRate>(u"ts-bitrate");
+    cmd->option<BitRate>(u"ts-bitrate");
     cmd->help(u"ts-bitrate", u"Set the transport stream bitrate in bits/second.");
-    cmd->option<ts::BitRate>(u"eit-bitrate");
+    cmd->option<BitRate>(u"eit-bitrate");
     cmd->help(u"eit-bitrate", u"Set the EIT maximum bitrate in bits/second.");
     cmd->option(u"time", 0, STRING);
     cmd->help(u"time", u"year/month/day:hour:minute:second.millisecond", u"Set the current time.");
@@ -182,11 +183,16 @@ Options::Options(int argc, char *argv[]) :
     exitOnError();
 }
 
+// Destructor.
+ts::EITOptions::~EITOptions()
+{
+}
+
 // Build full help text.
-ts::UString Options::getHelpText(HelpFormat format, size_t line_width) const
+ts::UString ts::EITOptions::getHelpText(HelpFormat format, size_t line_width) const
 {
     // Initial text from superclass.
-    ts::UString text(Args::getHelpText(format, line_width));
+    UString text(Args::getHelpText(format, line_width));
 
     // If full help, add help for all commands.
     if (format == HELP_FULL) {
@@ -207,11 +213,11 @@ namespace ts {
     {
         TS_NOBUILD_NOCOPY(EITCommand);
     public:
-        // Constructor.
-        EITCommand(Options& opt);
+        EITCommand(EITOptions& opt);
+        virtual ~EITCommand() override;
 
     private:
-        Options&         _opt;
+        EITOptions&         _opt;
         DuckContext  _duck;
         BitRate      _ts_bitrate;
         EITOption    _eit_options;
@@ -239,12 +245,17 @@ namespace ts {
     };
 }
 
+// Destructor.
+ts::EITCommand::~EITCommand()
+{
+}
+
 
 //----------------------------------------------------------------------------
 // EIT database manipulation constructor.
 //----------------------------------------------------------------------------
 
-ts::EITCommand::EITCommand(Options& opt) :
+ts::EITCommand::EITCommand(EITOptions& opt) :
     _opt(opt),
     _duck(&_opt),
     _ts_bitrate(0),
@@ -320,7 +331,7 @@ bool ts::EITCommand::getDurationOptions(size_t& packet_count, Time& until, Args&
         packet_count = args.intValue<size_t>(u"packets");
     }
     else if (args.present(u"seconds")) {
-        packet_count = PacketDistance(_ts_bitrate, MilliSecPerSec * args.intValue<Second>(u"seconds"));
+        packet_count = size_t(PacketDistance(_ts_bitrate, MilliSecPerSec * args.intValue<Second>(u"seconds")));
     }
     return true;
 }
@@ -353,7 +364,7 @@ ts::CommandStatus ts::EITCommand::process(const UString& command, Args& args)
     const UString infile_name(inputFileName(args.value(u"", u"", 0)));
     const UString outfile_name(outputFileName(args.value(u"", u"", 1)));
     const uint64_t start_offset = args.intValue<uint64_t>(u"start-offset", 0);
-    const size_t repeat_count = args.intValue<uint64_t>(u"repeat", args.present(u"infinite") ? 0 : 1);
+    const size_t repeat_count = args.intValue<size_t>(u"repeat", args.present(u"infinite") ? 0 : 1);
     size_t packet_count = 0;
     Time until;
     TSFile infile;
@@ -498,7 +509,7 @@ int MainCode(int argc, char *argv[])
     ts::CommandStatus status = ts::CommandStatus::SUCCESS;
 
     // Get command line options.
-    Options opt(argc, argv);
+    ts::EITOptions opt(argc, argv);
     ts::EITCommand dbase(opt);
 
     // Execute all --file first, then all --command.
