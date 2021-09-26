@@ -48,6 +48,7 @@
 #include "tsSingletonManager.h"
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
+#include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
 
@@ -94,6 +95,20 @@ TS_LLVM_NOWARNING(old-style-cast)
 #define TS_CURL_CALLAGAIN 1
 #endif
 
+// URL of the latest official set of CA certificates from CURL.
+#define FRESH_CACERT_URL u"https://curl.se/ca/cacert.pem"
+
+// Define the various states of CA certificate processing.
+// They are sorted in sequential order of operations.
+namespace {
+    enum CertState {
+        CERT_INITIAL,   // Try without cacert file first, then use cacert file from CURL.
+        CERT_EXISTING,  // Use existing cacert file from CURL.
+        CERT_DOWNLOAD,  // Download cacert file from CURL.
+        CERT_NONE,      // Do not use cacert file from CURL.
+    };
+}
+
 
 //----------------------------------------------------------------------------
 // Global libcurl initialization using a singleton.
@@ -135,15 +150,16 @@ public:
     ~SystemGuts();
 
     // Start the transfer using WebRequest parameters.
-    bool startTransfer();
+    bool startTransfer(CertState certState);
 
     // Close and cleanup everything.
     void clear();
 
     // Wait for data to be present in the reception buffer.
     // If maxSize is zero, wait until something is present in data buffer
-    // without returning anything.
-    bool receive(void* buffer, size_t maxSize, size_t* retSize);
+    // without returning anything. If certError is not null and the error
+    // is "about SSL/TLS certificates" (hard to specify), set this bool to true.
+    bool receive(void* buffer, size_t maxSize, size_t* retSize, bool* certError);
 
     // Can be called from another thread to safely interrupt the current transfer.
     void abort();
@@ -161,8 +177,12 @@ private:
     ::CURLM*      _curlm;                   // "curl_multi" handler.
     ::CURL*       _curl;                    // "curl_easy" handler.
     ::curl_slist* _headers;                 // Request headers.
+    UString       _certFile;                // Latest CA certificates file.
     ByteBlock     _data;                    // Received data, filled by writeCallback(), emptied by receive().
     char          _error[CURL_ERROR_SIZE];  // Error message buffer for libcurl.
+
+    // Handle an error while receiving data. Always return false.
+    bool downloadError(const UString& message, bool* certError);
 
     // Libcurl callbacks for response headers and response data.
     // The userdata points to this SystemGuts object.
@@ -183,6 +203,7 @@ ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
     _curlm(nullptr),
     _curl(nullptr),
     _headers(nullptr),
+    _certFile(UserHomeDirectory() + u"/.tscacert.pem"),
     _data(),
     _error{0}
 {
@@ -234,13 +255,13 @@ ts::UString ts::WebRequest::SystemGuts::message(const UString& title, ENUM code,
 
 bool ts::WebRequest::startTransfer()
 {
-    return _guts->startTransfer();
+    return _guts->startTransfer(CERT_INITIAL);
 }
 
 bool ts::WebRequest::receive(void* buffer, size_t maxSize, size_t& retSize)
 {
     if (_isOpen) {
-        return _guts->receive(buffer, maxSize, &retSize);
+        return _guts->receive(buffer, maxSize, &retSize, nullptr);
     }
     else {
         _report.error(u"transfer not started");
@@ -267,7 +288,7 @@ void ts::WebRequest::abort()
 // Initialize transfer.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::SystemGuts::startTransfer()
+bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 {
     // Check that libcurl was correctly initialized.
     if (LibCurlInit::Instance()->initStatus != ::CURLE_OK) {
@@ -277,6 +298,37 @@ bool ts::WebRequest::SystemGuts::startTransfer()
 
     // Make sure we start from a clean state.
     clear();
+
+    // If no CA certificate file is specified, bypass certificate processing.
+    if (_certFile.empty()) {
+        certState = CERT_NONE;
+    }
+
+    // Download the CA certificate file from CURL if requested.
+    const bool certFileExists = certState != CERT_NONE && FileExists(_certFile);
+    if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < MilliSecPerDay) {
+        // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
+        certState = CERT_DOWNLOAD;
+        _request._report.debug(u"reusing recent CA cert file %s", {_certFile});
+    }
+    else if ((certState == CERT_EXISTING && !certFileExists) || certState == CERT_DOWNLOAD) {
+        // We need to download it. Jump to CERT_DOWNLOAD if there was no file.
+        certState = CERT_DOWNLOAD;
+        _request._report.verbose(u"encountered certificate issue, downloading a fresh CA list from %s", {FRESH_CACERT_URL});
+
+        WebRequest certRequest(_request._report);
+        certRequest.setAutoRedirect(true);
+        certRequest.setProxyHost(_request._proxyHost, _request._proxyPort);
+        certRequest.setProxyUser(_request._proxyUser, _request._proxyPassword);
+        certRequest.setReceiveTimeout(_request._receiveTimeout);
+        certRequest.setConnectionTimeout(_request._connectionTimeout);
+        certRequest._guts->_certFile.clear(); // don't recurse in case of cert issue!
+
+        if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !FileExists(_certFile)) {
+            _request._report.verbose(u"failed to get a fresh CA list, use default list");
+            certState = CERT_NONE;
+        }
+    }
 
     // The initialization and cleanup sequences of _curlm and _curl must be protected
     // when we have the ability to wakeup curl_multi from another thread.
@@ -319,6 +371,11 @@ bool ts::WebRequest::SystemGuts::startTransfer()
     // Set the starting URL.
     if (status == ::CURLE_OK) {
         status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());
+    }
+
+    // Set the CA certificate file.
+    if (status == ::CURLE_OK && (certState == CERT_EXISTING || certState == CERT_DOWNLOAD)) {
+        status = ::curl_easy_setopt(_curl, CURLOPT_CAINFO, _certFile.toUTF8().c_str());
     }
 
     // Set the connection timeout.
@@ -404,13 +461,45 @@ bool ts::WebRequest::SystemGuts::startTransfer()
 
     // There is no specific way to wait for connection and end of response header reception.
     // So, wait until at least one data byte of response body is received.
-    if (receive(nullptr, 0, nullptr)) {
+    // Make certificate error silent in phases CERT_INITIAL and CERT_EXISTING because we have other options later.
+    bool certError = false;
+    if (receive(nullptr, 0, nullptr, certState < CERT_DOWNLOAD ? &certError : nullptr)) {
         return true;
     }
+
+    // Error, reset state.
+    clear();
+
+    // In case of certificate error, try with an updated list of CA certificates.
+    if (certError) {
+        return startTransfer(CertState(certState + 1));
+    }
     else {
-        clear();
         return false;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Handle an error while receiving data. Always return false.
+//----------------------------------------------------------------------------
+
+bool ts::WebRequest::SystemGuts::downloadError(const UString& message, bool* certError)
+{
+    // There is no real deterministic way of diagnosing certificate error.
+    // In practice, we get messages like this one:
+    // "SSL peer certificate or SSH remote key was not OK, SSL certificate problem: unable to get local issuer certificate"
+    if (certError != nullptr) {
+        *certError = message.contain(u"certificate", CASE_INSENSITIVE);
+        if (*certError) {
+            // In case of certificate error, fail silently.
+            return false;
+        }
+    }
+
+    // Normal error processing.
+    _request._report.error(message);
+    return false;
 }
 
 
@@ -418,7 +507,7 @@ bool ts::WebRequest::SystemGuts::startTransfer()
 // Wait for data to be present in the reception buffer.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* retSize)
+bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* retSize, bool* certError)
 {
     // Preset returned size as zero.
     if (retSize != nullptr) {
@@ -463,8 +552,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
             mstatus = ::curl_multi_wait(_curlm, nullptr, 0, 1000, &numfds);
 #endif
             if (mstatus != ::CURLM_OK) {
-                _request._report.error(multiMessage(u"download error", mstatus));
-                return false;
+                return downloadError(multiMessage(u"download error", mstatus), certError);
             }
         }
     }
@@ -489,8 +577,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
                 }
                 else {
                     // Transfer error.
-                    _request._report.error(easyMessage(u"download error", msg->data.result));
-                    return false;
+                    return downloadError(easyMessage(u"download error", msg->data.result), certError);
                 }
             }
         }

@@ -35,6 +35,7 @@
 URL_BASE=https://www.dektec.com
 HTML_URL=$URL_BASE/downloads/SDK/
 GENERIC_URL=$URL_BASE/products/SDK/DTAPI/Downloads/LatestLinuxSDK
+CACERT_URL=https://curl.se/ca/cacert.pem
 
 SCRIPT=$(basename $BASH_SOURCE)
 ROOTDIR=$(cd $(dirname $BASH_SOURCE)/..; pwd)
@@ -194,12 +195,48 @@ merge-url()
     fi
 }
 
+# Check SSL/TLS connectivity, try with latest certificates from curl.se.
+# This can be necessary when the Let's Encrypt root of trust is unknown
+# to curl (see "DST Root CA X3" issue). Can be called any number of times,
+# the actual check is done only once.
+check-tls()
+{
+    if [[ -z "$CHECKTLS_DONE" ]]; then
+        export CHECKTLS_DONE=true
+        export CURLOPT=
+        # Try to access the site, check errors (possibly TLS).
+        if ! curl --silent --head "$URL_BASE" >/dev/null; then
+            # Error, try with CA certificates from curl.se.
+            CACERT_NAME=$(basename "$CACERT_URL")
+            CACERT_FILE="$BINDIR/$CACERT_NAME"
+            mkdir -p "$BINDIR"
+            if [[ ! -e "$CACERT_FILE" ]]; then
+                info "curl error, getting CA certs from $CACERT_URL"
+                curl --silent --show-error --location "$CACERT_URL" -o "$CACERT_FILE"
+            fi
+            if [[ ! -e "$CACERT_FILE" ]]; then
+                info "error getting $CACERT_URL, using default certs"
+            elif curl --silent --head "$URL_BASE" --cacert "$CACERT_FILE" >/dev/null; then
+                # Success with downloaded cacert
+                export CURLOPT="--cacert $CACERT_FILE"
+            elif [[ -n $(find "$CACERT_FILE" -mtime +1) ]]; then
+                # Current cacert file is older than 1 day, try to refresh it.
+                info "error with existing CA certs, older than 1 day, getting fresh ones from $CACERT_URL"
+                curl --silent --show-error --location "$CACERT_URL" -o "$CACERT_FILE"
+                # No need to test, just use them, we have no better option.
+                export CURLOPT="--cacert $CACERT_FILE"
+            fi
+        fi
+    fi
+}
+
 # Retrieve the URL using the redirection from a fixed generic URL.
 # This should be the preferred method but Dektec may forget to update
 # the redirection in the generic URL.
 get-url-from-redirection()
 {
-    curl --silent --show-error --dump-header /dev/stdout "$GENERIC_URL" | \
+    check-tls
+    curl $CURLOPT --silent --show-error --dump-header /dev/stdout "$GENERIC_URL" | \
         grep -i 'Location:' | \
         sed -e 's/.*: *//' -e 's/\r//g' | \
         merge-url "$GENERIC_URL"
@@ -208,7 +245,8 @@ get-url-from-redirection()
 # Retrieve the URL by parsing the HTML from the Dektec download web page.
 get-url-from-html-page()
 {
-    curl --silent --show-error --location "$HTML_URL" | \
+    check-tls
+    curl $CURLOPT --silent --show-error --location "$HTML_URL" | \
         grep 'href=".*LinuxSDK' | \
         sed -e 's/.*href="//' -e 's/".*//' | \
         merge-url "$HTML_URL"
@@ -253,7 +291,8 @@ download-dtapi()
         tarball="$BINDIR/$name"
         info "downloading $url ..."
         mkdir -p "$BINDIR"
-        curl --silent --show-error --location "$url" -o "$BINDIR/$name"
+        check-tls
+        curl $CURLOPT --silent --show-error --location "$url" -o "$BINDIR/$name"
         ln -sf "$name" "$BINDIR/dektec-tarball"
         rm -rf "$BINDIR/LinuxSDK"
     fi

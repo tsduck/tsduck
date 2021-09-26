@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2568
+VERSION 3.29-2571
 
 [NEW] New commands and plugins:
 
@@ -14,6 +14,11 @@ VERSION 3.29-2568
     values. Previously, a fixed-point representation was used. The strict
     accuracy was better but integer overflows in intermediate computations
     occurred from time to time, leading to incorrect evaluations.
+  * On Unix (using libcurl), when an SSL/TLS connection fails with a CA
+    certificate issue, retry with an updated list of CA certificates from
+    https://curl.se/ca/cacert.pem. Transient issues have been noticed with
+    Let's Encrypt CA around the certification renewal periods. The updated
+    list is saved in $HOME/.tscacert.pem and is updated at most once a day.
   * New options in exiting commands and plugins:
     - Options --section-number and --negate-section-number in "tstables" and
       plugin "tables".
