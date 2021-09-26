@@ -33,6 +33,7 @@
 
 #include "tsMain.h"
 #include "tsArgs.h"
+#include "tsFileUtils.h"
 #include "tsTelnetConnection.h"
 #include "tsTSPControlCommand.h"
 TSDUCK_SOURCE;
@@ -50,8 +51,8 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::TSPControlCommand command_reference;
-        ts::UString           command_line;
+        ts::TSPControlCommand cmdline;
+        ts::UString           command;
         ts::IPv4SocketAddress tsp_address;
 
         // Inherited methods.
@@ -61,10 +62,12 @@ namespace {
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Send control commands to a running tsp", u"[options] command ...", GATHER_PARAMETERS),
-    command_reference(),
-    command_line(),
+    cmdline(*this),
+    command(),
     tsp_address()
 {
+    cmdline.setShell(ts::Args::GetAppName(argc, argv));
+
     option(u"", 0, STRING, 1, UNLIMITED_COUNT);
     help(u"", u"The control command to send to tsp.");
 
@@ -80,15 +83,13 @@ Options::Options(int argc, char *argv[]) :
     // Build command line.
     ts::UStringVector args;
     getValues(args, u"");
-    command_line.quotedLine(args);
+    command.quotedLine(args);
 
     // Validate the control command. It will be validated inside tsp anyway
     // but let's not send an invalid command. Not all commands can be fully
     // validated outside the context of the tsp, but let's filter most errors.
-    ts::TSPControlCommand::ControlCommand cmd = ts::TSPControlCommand::CMD_NONE;
-    const ts::Args* ref = nullptr;
-    if (!command_reference.analyze(command_line, cmd, ref, *this)) {
-        error(u"invalid tsp control command: %s", {command_line});
+    if (!cmdline.analyzeCommand(command)) {
+        error(u"invalid tsp control command: %s", {command});
     }
 
     // Resolve tsp address.
@@ -111,7 +112,7 @@ ts::UString Options::getHelpText(HelpFormat format, size_t line_width) const
     if (format == HELP_FULL) {
         text.append(u"\nControl commands: \n");
         const size_t margin = line_width > 10 ? 2 : 0;
-        text.append(command_reference.getAllHelpText(HELP_FULL, line_width - margin).toIndented(margin));
+        text.append(cmdline.getAllHelpText(HELP_FULL, line_width - margin).toIndented(margin));
     }
     return text;
 }
@@ -134,7 +135,7 @@ int MainCode(int argc, char *argv[])
     if (conn.open(opt) &&
         conn.bind(addr, opt) &&
         conn.connect(opt.tsp_address, opt) &&
-        conn.sendLine(opt.command_line, opt) &&
+        conn.sendLine(opt.command, opt) &&
         conn.closeWriter(opt))
     {
         // Request successfully sent, read the responses.

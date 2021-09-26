@@ -30,56 +30,47 @@
 #include "tsTSPControlCommand.h"
 TSDUCK_SOURCE;
 
-// Enumeration description of ControlCommand.
-const ts::Enumeration ts::TSPControlCommand::ControlCommandEnum({
-    {u"exit",    ts::TSPControlCommand::ControlCommand::CMD_EXIT},
-    {u"set-log", ts::TSPControlCommand::ControlCommand::CMD_SETLOG},
-    {u"list",    ts::TSPControlCommand::ControlCommand::CMD_LIST},
-    {u"suspend", ts::TSPControlCommand::ControlCommand::CMD_SUSPEND},
-    {u"resume",  ts::TSPControlCommand::ControlCommand::CMD_RESUME},
-    {u"restart", ts::TSPControlCommand::ControlCommand::CMD_RESTART},
-});
-
 
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSPControlCommand::TSPControlCommand() :
-    _commands()
+ts::TSPControlCommand::TSPControlCommand(Report& report) :
+    CommandLine(report)
 {
     // Define the syntax for all commands.
     Args* arg = nullptr;
+    const int flags = Args::NO_HELP;
 
-    arg = newCommand(CMD_EXIT, u"Terminate the tsp process", u"[options]", Args::NO_VERBOSE);
+    arg = command(u"exit", u"Terminate the tsp process", u"[options]", flags | Args::NO_VERBOSE);
     arg->option(u"abort");
     arg->help(u"abort",
               u"Specify to immediately abort the tsp process. "
               u"By default, this command notifies each plugin to terminate "
               u"and let the processing continue until the process naturally exits.");
 
-    arg = newCommand(CMD_SETLOG, u"Change log level in the tsp process", u"level", Args::NO_VERBOSE);
+    arg = command(u"set-log", u"Change log level in the tsp process", u"level", flags | Args::NO_VERBOSE);
     arg->option(u"", 0, Severity::Enums, 1, 1);
     arg->help(u"",
               u"Specify a new logging level for the tsp process. "
               u"It can be either a name or a positive value for higher debug levels.");
 
-    arg = newCommand(CMD_LIST, u"List all running plugins", u"[options]");
+    arg = command(u"list", u"List all running plugins", u"[options]", flags);
 
-    arg = newCommand(CMD_SUSPEND, u"Suspend a plugin", u"[options] plugin-index");
+    arg = command(u"suspend", u"Suspend a plugin", u"[options] plugin-index", flags);
     arg->setIntro(u"Suspend a plugin. When a packet processing plugin is suspended, "
                   u"the TS packets are directly passed from the previous to the next plugin, "
                   u"without going through the suspended one. When the output plugin is suspended, "
                   u"the output packets are dropped. The input plugin cannot be suspended. "
-                  u"Use the command " + ControlCommandEnum.name(CMD_LIST) + u" to list all running plugins. ");
+                  u"Use the command 'list' to list all running plugins. ");
     arg->option(u"", 0, Args::UNSIGNED);
     arg->help(u"", u"Index of the plugin to suspend.");
 
-    arg = newCommand(CMD_RESUME, u"Resume a suspended plugin", u"[options] plugin-index");
+    arg = command(u"resume", u"Resume a suspended plugin", u"[options] plugin-index", flags);
     arg->option(u"", 0, Args::UNSIGNED);
     arg->help(u"", u"Index of the plugin to resume.");
 
-    arg = newCommand(CMD_RESTART, u"Restart plugin with different parameters", u"[options] plugin-index [plugin-options ...]", Args::GATHER_PARAMETERS);
+    arg = command(u"restart", u"Restart plugin with different parameters", u"[options] plugin-index [plugin-options ...]", flags | Args::GATHER_PARAMETERS);
     arg->option(u"", 0, Args::STRING, 1, Args::UNLIMITED_COUNT);
     arg->help(u"",
               u"Index of the plugin to restart, followed by the new plugin parameters to use.");
@@ -87,106 +78,4 @@ ts::TSPControlCommand::TSPControlCommand() :
     arg->help(u"same",
               u"Restart the plugin with the same options and parameters. "
               u"By default, when no plugin options are specified, restart with no option at all.");
-}
-
-
-//----------------------------------------------------------------------------
-// Add a new command.
-//----------------------------------------------------------------------------
-
-ts::Args* ts::TSPControlCommand::newCommand(ControlCommand cmd, const UString& description, const UString& syntax, int flags)
-{
-    Args* arg = &_commands[cmd];
-
-    arg->setDescription(description);
-    arg->setSyntax(syntax);
-    arg->setShell(u"tspcontrol");
-    arg->setAppName(ControlCommandEnum.name(cmd));
-
-    arg->setFlags(flags |
-                  Args::NO_EXIT_ON_HELP |
-                  Args::NO_EXIT_ON_ERROR |
-                  Args::NO_EXIT_ON_VERSION |
-                  Args::HELP_ON_THIS |
-                  Args::NO_DEBUG |
-                  Args::NO_VERSION |
-                  Args::NO_HELP |
-                  Args::NO_CONFIG_FILE);
-
-    return arg;
-}
-
-
-//----------------------------------------------------------------------------
-// Analyze a command line.
-//----------------------------------------------------------------------------
-
-bool ts::TSPControlCommand::analyze(const UString& line, ControlCommand& cmd, const Args*& args, Report& report)
-{
-    // Split the command.
-    UString name;
-    UStringVector params;
-    line.fromQuotedLine(params);
-
-    if (params.empty()) {
-        report.error(u"no control command specified");
-        return false;
-    }
-
-    name = params.front();
-    params.erase(params.begin());
-
-    // Search the command.
-    const int value = ControlCommandEnum.value(name, false);
-    const auto it = _commands.find(ControlCommand(value));
-    if (it == _commands.end()) {
-        report.error(u"unknown control command: %s", {name});
-        return false;
-    }
-    cmd = ControlCommand(value);
-    args = &it->second;
-
-    // Analyze the command.
-    // Temporarily redirects the error reporting of the command analysis.
-    it->second.redirectReport(&report);
-    const bool ok = it->second.analyze(name, params, false);
-    it->second.redirectReport(nullptr);
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Get a formatted help text for all commands.
-//----------------------------------------------------------------------------
-
-ts::UString ts::TSPControlCommand::getAllHelpText(Args::HelpFormat format, size_t line_width) const
-{
-    // Build a sorted list of command names.
-    UStringVector names;
-    for (auto it = ControlCommandEnum.begin(); it != ControlCommandEnum.end(); ++it) {
-        names.push_back(it->second);
-    }
-    std::sort(names.begin(), names.end());
-
-    // Build a text of all helps.
-    UString text;
-    for (auto it1 = names.begin(); it1 != names.end(); ++it1) {
-        const int cmd = ControlCommandEnum.value(*it1);
-        if (cmd != Enumeration::UNKNOWN) {
-            const auto it2 = _commands.find(ControlCommand(cmd));
-            if (it2 != _commands.end()) {
-                // Get help for this command.
-                UString help(it2->second.getHelpText(format, line_width));
-                // Add a marker before the first non-space character to emphasize the start of command description.
-                for (size_t i = 0; i < help.size(); ++i) {
-                    if (!IsSpace(help[i])) {
-                        help.insert(i, u"==== ");
-                        break;
-                    }
-                }
-                text.append(help);
-            }
-        }
-    }
-    return text;
 }

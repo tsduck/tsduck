@@ -154,7 +154,7 @@
 #include "tsCodecType.h"
 #include "tsCOM.h"
 #include "tsCommandLine.h"
-#include "tsCommandLineHandlerInterface.h"
+#include "tsCommandLineHandler.h"
 #include "tsComponentDescriptor.h"
 #include "tsComponentNameDescriptor.h"
 #include "tsCondition.h"

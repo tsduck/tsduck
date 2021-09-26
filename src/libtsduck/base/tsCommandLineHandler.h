@@ -26,10 +26,44 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  An interface which handles a command from a CommandLine instance.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsCommandLineHandlerInterface.h"
-TSDUCK_SOURCE;
+#pragma once
+#include "tsPlatform.h"
 
-ts::CommandLineHandlerInterface::~CommandLineHandlerInterface()
-{
+namespace ts {
+
+    class Args;
+    class UString;
+
+    //!
+    //! Status of a command which is executed by a CommandLine object.
+    //! @ingroup cmd
+    //!
+    enum class CommandStatus {
+        SUCCESS,  //!< Command successful.
+        EXIT,     //!< Exit command interpreter with success status.
+        ERROR,    //!< Command terminated on error.
+        FATAL     //!< Fatal error, exit command interpreter with error status.
+    };
+
+    //!
+    //! An interface which handles a command from a CommandLine instance.
+    //! @ingroup cmd
+    //!
+    class TSDUCKDLL CommandLineHandler
+    {
+    };
+
+    //!
+    //! Profile of a CommandLineHandler method which is invoked by a CommandLine instance for one command.
+    //! @param [in] command Name of the command, unabbreviated, as defined in CommandLine::command().
+    //! @param [in,out] args Command line arguments.
+    //! @return Status of the execution of the command.
+    //!
+    typedef CommandStatus (CommandLineHandler::*CommandLineMethod)(const UString& command, Args& args);
 }

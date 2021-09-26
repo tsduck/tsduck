@@ -37,6 +37,7 @@ TSDUCK_SOURCE;
 
 ts::CommandLine::CommandLine(Report& report) :
     _report(report),
+    _shell(),
     _process_redirections(false),
     _cmd_id_alloc(0),
     _cmd_enum(),
@@ -58,15 +59,29 @@ bool ts::CommandLine::processRedirections(bool on)
 
 
 //----------------------------------------------------------------------------
+// Set the "shell" string for all commands.
+//----------------------------------------------------------------------------
+
+void ts::CommandLine::setShell(const UString& shell)
+{
+    _shell = shell;
+    for (auto it = _commands.begin(); it != _commands.end(); ++it) {
+        it->second.args.setShell(_shell);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Set a new command line handler for one or all commands.
 //----------------------------------------------------------------------------
 
-void ts::CommandLine::setCommandLineHandler(CommandLineHandlerInterface* handler, const UString& command)
+void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, CommandLineMethod method, const UString& command)
 {
     if (command.empty()) {
         // Set all commands.
         for (auto it = _commands.begin(); it != _commands.end(); ++it) {
             it->second.handler = handler;
+            it->second.method = method;
         }
     }
     else {
@@ -74,6 +89,7 @@ void ts::CommandLine::setCommandLineHandler(CommandLineHandlerInterface* handler
         const int id = _cmd_enum.value(command);
         if (id != Enumeration::UNKNOWN) {
             _commands[id].handler = handler;
+            _commands[id].method = method;
         }
     }
 }
@@ -83,7 +99,7 @@ void ts::CommandLine::setCommandLineHandler(CommandLineHandlerInterface* handler
 // Add the definition of a command to the interpreter.
 //----------------------------------------------------------------------------
 
-ts::Args* ts::CommandLine::command(CommandLineHandlerInterface* handler, const UString& name, const UString& description, const UString& syntax, int flags)
+ts::Args* ts::CommandLine::commandImpl(CommandLineHandler* handler, CommandLineMethod method, const UString& name, const UString& description, const UString& syntax, int flags)
 {
     // Check if the command already exists.
     int id = _cmd_enum.value(name, true, false);
@@ -96,10 +112,12 @@ ts::Args* ts::CommandLine::command(CommandLineHandlerInterface* handler, const U
     // Set the argument definition for the command.
     Cmd& cmd(_commands[id]);
     cmd.handler = handler;
+    cmd.method = method;
     cmd.name = name;
     cmd.args.setDescription(description);
     cmd.args.setSyntax(syntax);
     cmd.args.setAppName(name);
+    cmd.args.setShell(_shell);
     cmd.args.redirectReport(&_report);
 
     // Enforce flags to avoid exiting the application on special events (error or help).
@@ -116,10 +134,42 @@ ts::Args* ts::CommandLine::command(CommandLineHandlerInterface* handler, const U
 
 
 //----------------------------------------------------------------------------
+// Analyze a command line.
+//----------------------------------------------------------------------------
+
+bool ts::CommandLine::analyzeCommand(const UString& command)
+{
+    UStringVector args;
+    command.fromQuotedLine(args);
+    if (args.empty()) {
+        return true; // empty command line
+    }
+    else {
+        const UString cmd(args.front());
+        args.erase(args.begin());
+        return analyzeCommand(cmd, args);
+    }
+}
+
+bool ts::CommandLine::analyzeCommand(const UString& name, const UStringVector& arguments)
+{
+    // Look for command name.
+    const int cmd_id = _cmd_enum.value(name);
+    if (cmd_id == Enumeration::UNKNOWN) {
+        _report.error(_cmd_enum.error(name, true, true, u"command"));
+        return false;
+    }
+
+    // Analyze command.
+    return _commands[cmd_id].args.analyze(name, arguments, _process_redirections);
+}
+
+
+//----------------------------------------------------------------------------
 // Analyze and process a command line.
 //----------------------------------------------------------------------------
 
-ts::CommandStatus ts::CommandLine::processCommand(const UString& command)
+ts::CommandStatus ts::CommandLine::processCommand(const UString& command, Report* redirect)
 {
     UStringVector args;
     command.fromQuotedLine(args);
@@ -129,33 +179,40 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& command)
     else {
         const UString cmd(args.front());
         args.erase(args.begin());
-        return processCommand(cmd, args);
+        return processCommand(cmd, args, redirect);
     }
 }
 
-ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const UStringVector& arguments)
+ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const UStringVector& arguments, Report* redirect)
 {
+    // Which log to use.
+    Report* log = redirect != nullptr ? redirect : &_report;
+
     // Look for command name.
     const int cmd_id = _cmd_enum.value(name);
     if (cmd_id == Enumeration::UNKNOWN) {
-        _report.error(_cmd_enum.error(name, true, true, u"command"));
+        log->error(_cmd_enum.error(name, true, true, u"command"));
         return CommandStatus::ERROR;
     }
 
-    // Analyze command.
+    // Analyze and process command.
+    CommandStatus status = CommandStatus::SUCCESS;
     Cmd& cmd(_commands[cmd_id]);
-    if (!cmd.args.analyze(cmd.name, arguments, _process_redirections)) {
-        return CommandStatus::ERROR;
-    }
+    cmd.args.redirectReport(log);
 
-    // Process command.
-    if (cmd.handler == nullptr) {
-        _report.error(u"no command handler for command %s", {cmd.name});
-        return CommandStatus::ERROR;
+    if (!cmd.args.analyze(cmd.name, arguments, _process_redirections)) {
+        status = CommandStatus::ERROR;
+    }
+    else if (cmd.handler == nullptr || cmd.method == nullptr) {
+        log->error(u"no command handler for command %s", {cmd.name});
+        status = CommandStatus::ERROR;
     }
     else {
-        return cmd.handler->handleCommandLine(cmd.name, cmd.args);
+        status = (cmd.handler->*cmd.method)(cmd.name, cmd.args);
     }
+
+    cmd.args.redirectReport(&_report);
+    return status;
 }
 
 
@@ -163,20 +220,20 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
 // Analyze and process all commands from a text file.
 //----------------------------------------------------------------------------
 
-ts::CommandStatus ts::CommandLine::processCommandFile(const UString& filename)
+ts::CommandStatus ts::CommandLine::processCommandFile(const UString& filename, Report* redirect)
 {
     _report.debug(u"executing commands from %s", {filename});
 
     // Load all text lines from the file.
     ts::UStringVector lines;
     if (!UString::Load(lines, filename)) {
-        _report.error(u"error loading %s", {filename});
+        (redirect == nullptr ? _report : *redirect).error(u"error loading %s", {filename});
         return CommandStatus::ERROR;
     }
-    return processCommandFile(lines);
+    return processCommandFile(lines, redirect);
 }
 
-ts::CommandStatus ts::CommandLine::processCommandFile(UStringVector& lines)
+ts::CommandStatus ts::CommandLine::processCommandFile(UStringVector& lines, Report* redirect)
 {
     // Reduce comment and continuation lines.
     for (size_t i = 0; i < lines.size(); ) {
@@ -204,7 +261,7 @@ ts::CommandStatus ts::CommandLine::processCommandFile(UStringVector& lines)
     // Execute all commands in sequence.
     CommandStatus status = CommandStatus::SUCCESS;
     for (size_t i = 0; status != CommandStatus::EXIT && status != CommandStatus::FATAL && i < lines.size(); ++i) {
-        status = processCommand(lines[i]);
+        status = processCommand(lines[i], redirect);
     }
     return status;
 }

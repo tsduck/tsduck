@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2563
+VERSION 3.29-2568
+
+[NEW] New commands and plugins:
+
+  * Added command "tseit" (test EIT manipulation scripts).
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -10,6 +14,9 @@ VERSION 3.29-2563
     values. Previously, a fixed-point representation was used. The strict
     accuracy was better but integer overflows in intermediate computations
     occurred from time to time, leading to incorrect evaluations.
+  * New options in exiting commands and plugins:
+    - Options --section-number and --negate-section-number in "tstables" and
+      plugin "tables".
 
 -------------------------------------------------------------------------------
 

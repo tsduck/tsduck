@@ -78,7 +78,7 @@ namespace ts {
 
         //!
         //! Open the file for read.
-        //! @param [in] filename File name. If empty, use standard input.
+        //! @param [in] filename File name. If empty or "-", use standard input.
         //! Must be a regular file if @a start_offset is not zero.
         //! If @a repeat_count is not 1 and the file is not a regular one,
         //! the file is closed and reopened instead of being rewound.
@@ -96,7 +96,7 @@ namespace ts {
         //! Open the file for read in rewindable mode.
         //! The file must be a rewindable file, eg. not a pipe.
         //! There is no repeat count, rewind must be done explicitly.
-        //! @param [in] filename File name. If empty, use standard input.
+        //! @param [in] filename File name. If empty or "-", use standard input.
         //! @param [in] start_offset Offset in bytes from the beginning of the file
         //! where to start reading packets.
         //! @param [in,out] report Where to report errors.
@@ -125,7 +125,7 @@ namespace ts {
         //!
         //! Open or create the file (generic form).
         //! The file is rewindable if the underlying file is seekable, eg. not a pipe.
-        //! @param [in] filename File name. If empty, use standard input or output.
+        //! @param [in] filename File name. If empty or "-", use standard input or output.
         //! If @a filename is empty, @a flags cannot contain both READ and WRITE.
         //! @param [in] flags Bit mask of open flags.
         //! @param [in,out] report Where to report errors.
@@ -223,6 +223,7 @@ namespace ts {
         volatile bool _aborted;          //!< Operation has been aborted, no operation available
         bool          _rewindable;       //!< Opened in rewindable mode
         bool          _regular;          //!< Is a regular file (ie. not a pipe or special device)
+        bool          _std_inout;        //!< File is standard input or output.
 #if defined(TS_WINDOWS)
         ::HANDLE      _handle;           //!< File handle
 #else
