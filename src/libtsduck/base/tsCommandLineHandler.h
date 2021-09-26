@@ -57,6 +57,11 @@ namespace ts {
     //!
     class TSDUCKDLL CommandLineHandler
     {
+    public:
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~CommandLineHandler();
     };
 
     //!
