@@ -338,7 +338,9 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
 //----------------------------------------------------------------------------
 
 ts::Args::Args(const UString& description, const UString& syntax, int flags) :
+    Report(),
     _subreport(nullptr),
+    _saved_severity(maxSeverity()),
     _iopts(),
     _description(description),
     _shell(),
@@ -558,11 +560,17 @@ ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 
 ts::Report* ts::Args::redirectReport(Report* rep)
 {
+    // When leaving the default report, save the severity.
+    if (_subreport == nullptr) {
+        _saved_severity = this->maxSeverity();
+    }
+
+    // Adjust severity.
+    this->setMaxSeverity(rep == nullptr ? _saved_severity : rep->maxSeverity());
+
+    // Switch report.
     Report* previous = _subreport;
     _subreport = rep;
-    if (rep != nullptr && rep->maxSeverity() > this->maxSeverity()) {
-        this->setMaxSeverity(rep->maxSeverity());
-    }
     return previous;
 }
 
@@ -835,6 +843,16 @@ ts::UString ts::Args::commandLine() const
 
 
 //----------------------------------------------------------------------------
+// Get the application name from a standard argc/argv pair.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::GetAppName(int argc, char* argv[])
+{
+    return argc < 1 || argv == nullptr ? UString() : BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX);
+}
+
+
+//----------------------------------------------------------------------------
 // Load arguments and analyze them, overloads.
 //----------------------------------------------------------------------------
 
@@ -852,13 +870,11 @@ bool ts::Args::analyze(const UString& command, bool processRedirections)
 
 bool ts::Args::analyze(int argc, char* argv[], bool processRedirections)
 {
-    UString app;
     UStringVector args;
     if (argc > 0) {
-        app = BaseName(UString::FromUTF8(argv[0]), TS_EXECUTABLE_SUFFIX);
         UString::Assign(args, argc - 1, argv + 1);
     }
-    return analyze(app, args, processRedirections);
+    return analyze(GetAppName(argc, argv), args, processRedirections);
 }
 
 

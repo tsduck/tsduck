@@ -59,10 +59,12 @@ namespace ts {
         bool               _diversified;    // Payload must be diversified.
         bool               _negate_tid;     // Negate tid filter (exclude selected tids).
         bool               _negate_tidext;  // Negate tidext filter (exclude selected tidexts).
+        bool               _negate_secnum;  // Negate section number filter (exclude selected numbers).
         bool               _psi_si;         // Add PSI/SI PID's.
         PIDSet             _pids;           // PID values to filter.
         std::set<uint8_t>  _tids;           // TID values to filter.
         std::set<uint16_t> _tidexts;        // TID-ext values to filter.
+        std::set<uint8_t>  _secnums;        // Section numbers to filter.
         BinaryTable        _pat;            // Last PAT.
     };
 }

@@ -33,66 +33,23 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgs.h"
-#include "tsCerrReport.h"
+#include "tsCommandLine.h"
 
 namespace ts {
     //!
     //! Definition of TSP control commands syntax.
-    //! These commands are used with the @a tspcontrol utility to
-    //! inspect or modify a running @a tsp command.
+    //! These commands are used with the @a tspcontrol utility to inspect or modify a running @a tsp command.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL TSPControlCommand
+    class TSDUCKDLL TSPControlCommand : public CommandLine
     {
         TS_NOCOPY(TSPControlCommand);
     public:
         //!
         //! Constructor.
+        //! @param [in,out] report Reference to a report where all messages are displayed.
+        //! The reference must remain valid as long as this object exists.
         //!
-        TSPControlCommand();
-
-        //!
-        //! Definition of TSP control command.
-        //!
-        enum ControlCommand {
-            CMD_NONE,     //!< No command specified, do nothing.
-            CMD_EXIT,     //!< Exit tsp.
-            CMD_SETLOG,   //!< Change log level.
-            CMD_LIST,     //!< List all plugins.
-            CMD_SUSPEND,  //!< Suspend a plugin.
-            CMD_RESUME,   //!< Resume a suspended plugin.
-            CMD_RESTART,  //!< Restart a plugin with different parameters.
-        };
-
-        //!
-        //! Enumeration description of ControlCommand.
-        //!
-        static const Enumeration ControlCommandEnum;
-
-        //!
-        //! Analyze a command line.
-        //! @param [in] line Command line to analyze.
-        //! @param [out] cmd Returned command line index.
-        //! @param [out] args Return pointer to analyzed args.
-        //! Points to an Args object inside this instance of ControlCommandLine.
-        //! @param [in,out] report Where to report errors.
-        //! @return True for a valid command, false on invalid command.
-        //!
-        bool analyze(const UString& line, ControlCommand& cmd, const Args*& args, Report& report);
-
-        //!
-        //! Get a formatted help text for all commands.
-        //! @param [in] format Requested format of the help text.
-        //! @param [in] line_width Maximum width of text lines.
-        //! @return The formatted help text.
-        //!
-        UString getAllHelpText(Args::HelpFormat format, size_t line_width = 79) const;
-
-    private:
-        std::map<ControlCommand,Args> _commands;
-
-        // Add a new command.
-        Args* newCommand(ControlCommand cmd, const UString& description, const UString& syntax, int flags = 0);
+        TSPControlCommand(Report& report = CERR);
     };
 }

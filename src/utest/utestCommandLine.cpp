@@ -77,7 +77,7 @@ void CommandLineTest::afterTest()
 //----------------------------------------------------------------------------
 
 namespace {
-    class TestCommand : public ts::CommandLineHandlerInterface
+    class TestCommand : public ts::CommandLineHandler
     {
         TS_NOBUILD_NOCOPY(TestCommand);
     public:
@@ -87,23 +87,23 @@ namespace {
         // Constructor.
         TestCommand(ts::CommandLine& cmdline) : output()
         {
-            ts::Args* args = cmdline.command(this, u"cmd1");
+            ts::Args* args = cmdline.command(this, &TestCommand::cmd1, u"cmd1");
             args->option(u"foo");
 
-            args = cmdline.command(this, u"cmd2");
+            args = cmdline.command(this, &TestCommand::cmd2, u"cmd2");
             args->option(u"bar");
         }
 
-        // Command handler.
-        virtual ts::CommandStatus handleCommandLine(const ts::UString& command, ts::Args& args) override
+        // Command handlers.
+        ts::CommandStatus cmd1(const ts::UString& command, ts::Args& args)
         {
-            output.format(u"[command:%s]", {command});
-            if (command == u"cmd1") {
-                output.format(u"[--foo:%s]", {args.present(u"foo")});
-            }
-            else if (command == u"cmd2") {
-                output.format(u"[--bar:%s]", {args.present(u"bar")});
-            }
+            output.format(u"[command:%s][--foo:%s]", {command, args.present(u"foo")});
+            return ts::CommandStatus::SUCCESS;
+        }
+
+        ts::CommandStatus cmd2(const ts::UString& command, ts::Args& args)
+        {
+            output.format(u"[command:%s][--bar:%s]", {command, args.present(u"bar")});
             return ts::CommandStatus::SUCCESS;
         }
     };

@@ -690,6 +690,14 @@ namespace ts {
         UString appName() const {return _app_name;}
 
         //!
+        //! Get the application name from a standard argc/argv pair.
+        //! @param [in] argc Number of arguments from command line.
+        //! @param [in] argv Arguments from command line.
+        //! @return The corresponding application name.
+        //!
+        static UString GetAppName(int argc, char* argv[]);
+
+        //!
         //! Get the command line parameters from the last command line analysis.
         //!
         //! @param [out] args The command parameters from the last command line analysis.
@@ -1137,6 +1145,7 @@ namespace ts {
 
         // Private fields
         Report*       _subreport;
+        int           _saved_severity;
         IOptionMap    _iopts;
         UString       _description;
         UString       _shell;

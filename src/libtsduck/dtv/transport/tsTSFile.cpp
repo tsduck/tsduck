@@ -55,6 +55,7 @@ ts::TSFile::TSFile() :
     _aborted(false),
     _rewindable(false),
     _regular(false),
+    _std_inout(false),
 #if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
@@ -85,6 +86,7 @@ ts::TSFile::TSFile(const TSFile& other) :
     _aborted(false),
     _rewindable(false),
     _regular(false),
+    _std_inout(other._std_inout),
 #if defined(TS_WINDOWS)
     _handle(INVALID_HANDLE_VALUE)
 #else
@@ -115,6 +117,7 @@ ts::TSFile::TSFile(TSFile&& other) noexcept :
     _aborted(other._aborted),
     _rewindable(other._rewindable),
     _regular(other._regular),
+    _std_inout(other._std_inout),
 #if defined(TS_WINDOWS)
     _handle(other._handle)
 #else
@@ -149,7 +152,7 @@ ts::TSFile::~TSFile()
 
 ts::UString ts::TSFile::getDisplayFileName() const
 {
-    if (!_filename.empty()) {
+    if (!_std_inout) {
         return _filename;
     }
     else if ((_flags & READ) != 0) {
@@ -270,9 +273,12 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     const bool keep_file = (_flags & KEEP) != 0;
     const bool temporary = (_flags & TEMPORARY) != 0;
 
+    // Use standard input/output if file name is empty or a dash.
+    _std_inout = _filename.empty() || _filename == u"-";
+
     // Only named files can be reopened.
     if (reopen) {
-        if (_filename.empty()) {
+        if (_std_inout) {
             report.log(_severity, u"internal error, cannot reopen standard input or output");
             return false;
         }
@@ -314,8 +320,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         winflags = CREATE_ALWAYS;
     }
 
-    if (!_filename.empty()) {
-        // Non-empty file name, open it.
+    if (!_std_inout) {
+        // Actual file name, open it.
         _handle = ::CreateFile(_filename.toUTF8().c_str(), access, shared, NULL, winflags, attrib, NULL);
         if (_handle == INVALID_HANDLE_VALUE) {
             const SysErrorCode err = LastSysErrorCode();
@@ -346,7 +352,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 
     // Check if seek is required or possible.
     if (!seekCheck(report)) {
-        if (!_filename.empty()) {
+        if (!_std_inout) {
             ::CloseHandle(_handle);
         }
         return false;
@@ -394,8 +400,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
         uflags |= O_EXCL;
     }
 
-    if (_filename.empty()) {
-        // File name is empty means standard input or output. No need to open.
+    if (_std_inout) {
+        // File is standard input or output. No need to open.
         _fd = read_access ? STDIN_FILENO : STDOUT_FILENO;
     }
     else {
@@ -424,7 +430,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     if (::fstat(_fd, &st) < 0) {
         const SysErrorCode err = LastSysErrorCode();
         report.log(_severity, u"cannot stat input file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
-        if (!_filename.empty()) {
+        if (!_std_inout) {
             ::close(_fd);
         }
         return false;
@@ -433,7 +439,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 
     // Check if seek is required or possible.
     if (!seekCheck(report)) {
-        if (!_filename.empty()) {
+        if (!_std_inout) {
             ::close(_fd);
         }
         return false;
@@ -443,7 +449,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     if (_start_offset != 0 && ::lseek(_fd, off_t(_start_offset), SEEK_SET) == off_t(-1)) {
         const SysErrorCode err = LastSysErrorCode();
         report.log (_severity, u"error seeking input file %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
-        if (!_filename.empty()) {
+        if (!_std_inout) {
             ::close(_fd);
         }
         return false;
@@ -482,7 +488,7 @@ bool ts::TSFile::seekCheck(Report& report)
         // Or no need to seek if the file is read only once, from the beginning.
         return true;
     }
-    else if (_start_offset == 0 && !_filename.empty() && (_flags & (REOPEN | REOPEN_SPEC)) != 0) {
+    else if (_start_offset == 0 && !_std_inout && (_flags & (REOPEN | REOPEN_SPEC)) != 0) {
         // Force reopen at each rewind on non-regular named files when read from the beginning.
         _flags |= REOPEN;
         return true;
@@ -563,7 +569,7 @@ bool ts::TSFile::close(Report& report)
         writeStuffing(_close_null, report);
     }
 
-    if (!_filename.empty()) {
+    if (!_std_inout) {
 #if defined(TS_WINDOWS)
         ::CloseHandle(_handle);
 #else
@@ -574,6 +580,7 @@ bool ts::TSFile::close(Report& report)
     _is_open = _at_eof = _aborted = false;
     _flags = NONE;
     _filename.clear();
+    _std_inout = false;
 
     return true;
 }

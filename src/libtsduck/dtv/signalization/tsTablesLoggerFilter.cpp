@@ -48,10 +48,12 @@ ts::TablesLoggerFilter::TablesLoggerFilter() :
     _diversified(false),
     _negate_tid(false),
     _negate_tidext(false),
+    _negate_secnum(false),
     _psi_si(false),
     _pids(),
     _tids(),
     _tidexts(),
+    _secnums(),
     _pat()
 {
 }
@@ -77,6 +79,9 @@ void ts::TablesLoggerFilter::defineFilterOptions(Args& args) const
               u"streams since PID's not containing sections can be accidentally "
               u"selected.");
 
+    args.option(u"negate-section-number");
+    args.help(u"negate-section-number", u"Negate the section number filter: specified sections are excluded.");
+
     args.option(u"negate-tid", 'n');
     args.help(u"negate-tid", u"Negate the TID filter: specified TID's are excluded.");
 
@@ -96,6 +101,12 @@ void ts::TablesLoggerFilter::defineFilterOptions(Args& args) const
               u"Add all PID's containing PSI/SI tables, ie. PAT, CAT, PMT, NIT, SDT "
               u"and BAT. Note that EIT, TDT and TOT are not included. Use --pid 18 "
               u"to get EIT and --pid 20 to get TDT and TOT.");
+
+    args.option(u"section-number", 0, Args::UINT8, 0, Args::UNLIMITED_COUNT);
+    args.help(u"section-number", u"num1[-num2]",
+              u"Section number filter: when sections are filtered individually instead of complete tables, "
+              u"select sections with this section number or range of section numbers. "
+              u"Several --section-number options may be specified.");
 
     args.option(u"tid", 't', Args::UINT8, 0, Args::UNLIMITED_COUNT);
     args.help(u"tid", u"tid1[-tid2]",
@@ -121,10 +132,12 @@ bool ts::TablesLoggerFilter::loadFilterOptions(DuckContext& duck, Args& args, PI
     _diversified = args.present(u"diversified-payload");
     _negate_tid = args.present(u"negate-tid");
     _negate_tidext = args.present(u"negate-tid-ext");
+    _negate_secnum = args.present(u"negate-section-number");
     _psi_si = args.present(u"psi-si");
     args.getIntValues(_pids, u"pid");
     args.getIntValues(_tids, u"tid");
     args.getIntValues(_tidexts, u"tid-ext");
+    args.getIntValues(_secnums, u"section-number");
 
     // If any PID was selected, then --negate-pid means all but them.
     if (args.present(u"negate-pid") && _pids.any()) {
@@ -201,6 +214,7 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
     // Is this a selected TID or TID-ext?
     const bool tid_set = Contains(_tids, section.tableId());
     const bool tidext_set = Contains(_tidexts, section.tableIdExtension());
+    const bool secnum_set = Contains(_secnums, section.sectionNumber());
 
     // Return final verdict. For each criteria (--pid, --tid, etc), either the criteria is
     // not specified or the corresponding value matches.
@@ -211,6 +225,8 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
         (_tids.empty() || (tid_set && !_negate_tid) || (!tid_set && _negate_tid)) &&
         // Check TIDext:
         (!section.isLongSection() || _tidexts.empty() || (tidext_set && !_negate_tidext) || (!tidext_set && _negate_tidext)) &&
+        // Check section number:
+        (_secnums.empty() || (secnum_set && !_negate_secnum) || (!secnum_set && _negate_secnum)) &&
         // Diversified payload ok
         (!_diversified || section.hasDiversifiedPayload());
 }

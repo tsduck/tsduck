@@ -1295,8 +1295,8 @@ void ts::EITGenerator::dumpSection(int lev, const UString& margin, const ESectio
     rep.log(lev, u"%sTable id: 0x%X, service: 0x%X, ts: 0x%X, size: %d bytes",
             {margin, section.tableId(), section.tableIdExtension(), GetUInt16(section.payload()), section.size()});
     rep.log(lev, u"%s%s", {space, desc});
-    rep.log(lev, u"%slast table id: 0x%X, section #: %d, segment last section #: %d, last section#: %d",
-            {space, section.payload()[5], section.sectionNumber(), section.payload()[4], section.lastSectionNumber()});
+    rep.log(lev, u"%sversion: %d, last table id: 0x%X, section #: %d, segment last section #: %d, last section#: %d",
+            {space, section.version(), section.payload()[5], section.sectionNumber(), section.payload()[4], section.lastSectionNumber()});
 
     // Display events.
     const uint8_t* data = section.payload() + EIT::EIT_PAYLOAD_FIXED_SIZE;
