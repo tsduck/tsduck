@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2571
+VERSION 3.29-2572
 
 [NEW] New commands and plugins:
 
@@ -22,6 +22,11 @@ VERSION 3.29-2571
   * New options in exiting commands and plugins:
     - Options --section-number and --negate-section-number in "tstables" and
       plugin "tables".
+
+[BUG] Bug fixes:
+
+  * Fixed incorrect EIT Schedule regeneration on event change in plugin
+    "eitinject".
 
 -------------------------------------------------------------------------------
 
