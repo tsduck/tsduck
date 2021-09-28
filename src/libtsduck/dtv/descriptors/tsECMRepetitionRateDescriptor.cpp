@@ -116,7 +116,7 @@ bool ts::ECMRepetitionRateDescriptor::analyzeXML(DuckContext& duck, const xml::E
 void ts::ECMRepetitionRateDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"CA System Id: %s", {names::CASId(disp.duck(), buf.getUInt16(), names::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"CA System Id: %s", {names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST)}) << std::endl;
         disp << margin << UString::Format(u"ECM repetition rate: %d ms", {buf.getUInt16()}) << std::endl;
         disp.displayPrivateData(u"Private data", buf, NPOS, margin);
     }

@@ -122,7 +122,7 @@ ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
 
 bool ts::RegulatePlugin::getOptions()
 {
-    getFixedValue(_bitrate, u"bitrate", 0);
+    getValue(_bitrate, u"bitrate", 0);
     getIntValue(_burst, u"packet-burst", DEF_PACKET_BURST);
     getIntValue(_wait_min, u"wait-min", PCRRegulator::DEFAULT_MIN_WAIT_NS / NanoSecPerMilliSec);
     getIntValue(_pid_pcr, u"pid-pcr", PID_NULL);

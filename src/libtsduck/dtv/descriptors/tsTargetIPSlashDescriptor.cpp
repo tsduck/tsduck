@@ -66,7 +66,7 @@ ts::TargetIPSlashDescriptor::TargetIPSlashDescriptor(DuckContext& duck, const De
     deserialize(duck, desc);
 }
 
-ts::TargetIPSlashDescriptor::Address::Address(const IPAddress& addr, uint8_t mask) :
+ts::TargetIPSlashDescriptor::Address::Address(const IPv4Address& addr, uint8_t mask) :
     IPv4_addr(addr),
     IPv4_slash_mask(mask)
 {
@@ -94,7 +94,7 @@ void ts::TargetIPSlashDescriptor::deserializePayload(PSIBuffer& buf)
 {
     while (buf.canRead()) {
         Address addr;
-        addr.IPv4_addr = IPAddress(buf.getUInt32());
+        addr.IPv4_addr = IPv4Address(buf.getUInt32());
         addr.IPv4_slash_mask = buf.getUInt8();
         addresses.push_back(addr);
     }
@@ -108,7 +108,7 @@ void ts::TargetIPSlashDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     while (buf.canReadBytes(5)) {
-        disp << margin << "Address/mask: " << IPAddress(buf.getUInt32());
+        disp << margin << "Address/mask: " << IPv4Address(buf.getUInt32());
         disp << "/" << int(buf.getUInt8()) << std::endl;
     }
 }

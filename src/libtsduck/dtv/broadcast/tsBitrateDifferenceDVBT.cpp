@@ -130,7 +130,7 @@ bool ts::BitrateDifferenceDVBT::operator<(const BitrateDifferenceDVBT& other) co
 // bitrate difference from a given target bitrate.
 //----------------------------------------------------------------------------
 
-void ts::BitrateDifferenceDVBT::EvaluateToBitrate(BitrateDifferenceDVBTList& list, BitRate bitrate)
+void ts::BitrateDifferenceDVBT::EvaluateToBitrate(BitrateDifferenceDVBTList& list, const BitRate& bitrate)
 {
     list.clear();
     BitrateDifferenceDVBT params;

@@ -619,7 +619,7 @@ void ts::TablesDisplay::displayDescriptorList(const Section& section, const void
 
         // Display descriptor header
         strm << margin << "- Descriptor " << desc_index++ << ": "
-             << names::DID(desc_tag, pds, tid, names::VALUE | names::BOTH) << ", "
+             << names::DID(desc_tag, pds, tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
              << desc_length << " bytes" << std::endl;
 
         // If the descriptor contains a private_data_specifier, keep it
@@ -659,7 +659,7 @@ void ts::TablesDisplay::displayDescriptorList(const DescriptorList& list, const 
         if (!desc.isNull()) {
             const PDS pds = list.privateDataSpecifier(i);
             strm << margin << "- Descriptor " << i << ": "
-                 << names::DID(desc->tag(), _duck.actualPDS(pds), tid, names::VALUE | names::BOTH) << ", "
+                 << names::DID(desc->tag(), _duck.actualPDS(pds), tid, NamesFlags::VALUE | NamesFlags::BOTH) << ", "
                  << desc->size() << " bytes" << std::endl;
             displayDescriptor(*desc, margin + u"  ", tid, _duck.actualPDS(pds), cas);
         }
@@ -687,7 +687,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         edid = EDID::ExtensionMPEG(ext);
         size--;
         // Display extended descriptor header
-        strm << margin << "MPEG extended descriptor: " << NameFromSection(u"MPEGExtendedDescriptorId", ext, names::VALUE | names::BOTH) << std::endl;
+        strm << margin << "MPEG extended descriptor: " << NameFromSection(u"MPEGExtendedDescriptorId", ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
     else if (did == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.
@@ -695,7 +695,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         edid = EDID::ExtensionDVB(ext);
         size--;
         // Display extended descriptor header
-        strm << margin << "Extended descriptor: " << names::EDID(ext, names::VALUE | names::BOTH) << std::endl;
+        strm << margin << "Extended descriptor: " << names::EDID(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
     else {
         // Simple descriptor.

@@ -153,7 +153,7 @@ void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 {
     if (buf.canReadBytes(1)) {
         const uint8_t type = buf.getBits<uint8_t>(4);
-        disp << margin << "Group type: " << NameFromSection(u"ISDBEventGroupType", type, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Group type: " << NameFromSection(u"ISDBEventGroupType", type, NamesFlags::DECIMAL_FIRST) << std::endl;
         size_t count = buf.getBits<size_t>(4);
         disp << margin << "Actual events:" << (count == 0 ? " none" : "") << std::endl;
         while (count-- > 0 && buf.canReadBytes(4)) {

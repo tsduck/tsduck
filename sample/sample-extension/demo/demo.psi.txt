@@ -11,7 +11,7 @@
     - Descriptor 0: CA (0x09, 9), 9 bytes
       CA System Id: 0xF004 (FooCAS), EMM PID: 512 (0x0200)
       Foo id: 0x0123
-      Data: ABCDEF
+      Data (3 bytes): AB CD EF
 
 * SDT Actual, TID 66 (0x42), PID 17 (0x0011)
   Version: 0, sections: 1, total size: 39 bytes
@@ -32,7 +32,7 @@
     - Descriptor 0: CA (0x09, 9), 9 bytes
       CA System Id: 0xF004 (FooCAS), ECM PID: 259 (0x0103)
       Foo id: 0x0123
-      Data: 456789
+      Data (3 bytes): 45 67 89
     Elementary stream: type 0x1B (AVC video), PID: 257 (0x0101)
     Elementary stream: type 0x06 (MPEG-2 PES private data), PID: 258 (0x0102)
     - Descriptor 0: AC-3 (0x6A, 106), 2 bytes

@@ -72,9 +72,7 @@ namespace ts {
         virtual UString deviceName() const override;
         virtual UString deviceInfo() const override;
         virtual UString devicePath() const override;
-        virtual bool signalLocked() override;
-        virtual int signalStrength() override;
-        virtual int signalQuality() override;
+        virtual bool getSignalState(SignalState& state) override;
         virtual bool tune(ModulationArgs& params) override;
         virtual bool start() override;
         virtual bool stop(bool silent = false) override;
@@ -102,10 +100,6 @@ namespace ts {
         volatile bool     _aborted;          // Reception was aborted
         size_t            _sink_queue_size;  // Media sample queue size
         TunerGraph        _graph;            // The filter graph
-
-        // Get signal strength in mdB.
-        // Return true if found, false if not found.
-        bool getSignalStrength_mdB(::LONG&);
 
         // Find one or more tuners. Exactly one of Tuner* or TunerPtrVector* must be non-zero.
         // If Tuner* is non-zero, find the first tuner (matching _device_name if not empty).

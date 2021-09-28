@@ -204,7 +204,7 @@ void ts::AudioPreselectionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
         buf.skipBits(3);
         for (size_t i = 0; buf.canReadBytes(2) && i < count; ++i) {
             disp << margin << UString::Format(u"- Preselection id: %d", {buf.getBits<uint8_t>(5)}) << std::endl;
-            disp << margin << "  Audio rendering indication: " << NameFromSection(u"AudioPreselectionRendering", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+            disp << margin << "  Audio rendering indication: " << NameFromSection(u"AudioPreselectionRendering", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
             disp << margin << "  Audio description: " << UString::YesNo(buf.getBool()) << std::endl;
             disp << margin << "  Spoken subtitles: " << UString::YesNo(buf.getBool()) << std::endl;
             disp << margin << "  Dialogue enhancement: " << UString::YesNo(buf.getBool()) << std::endl;

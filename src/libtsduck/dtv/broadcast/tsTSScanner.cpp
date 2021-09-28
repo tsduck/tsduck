@@ -88,7 +88,7 @@ ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, b
     // Get current tuning parameters before finishing.
     // Some tuners may take a while to update their internal status.
     if (!tuner.getCurrentTuning(_tparams, true)) {
-        _tparams.reset();
+        _tparams.clear();
     }
 
     // Stop packet acquisition

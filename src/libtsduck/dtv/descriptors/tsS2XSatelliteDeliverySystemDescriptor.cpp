@@ -265,8 +265,8 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& 
         const uint8_t mode = buf.getBits<uint8_t>(2);
         const bool sseq_sel = buf.getBool();
         buf.skipBits(3);
-        disp << margin << "S2X mode: " << NameFromSection(u"S2XMode", mode, names::FIRST) << std::endl;
-        disp << margin << "TS/GS S2X mode: " << NameFromSection(u"TSGSS2XMode", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "S2X mode: " << NameFromSection(u"S2XMode", mode, NamesFlags::FIRST) << std::endl;
+        disp << margin << "TS/GS S2X mode: " << NameFromSection(u"TSGSS2XMode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
 
         if (sseq_sel && buf.canReadBytes(3)) {
             buf.skipBits(6);
@@ -301,7 +301,7 @@ void ts::S2XSatelliteDeliverySystemDescriptor::DisplayChannel(TablesDisplay& dis
         disp << margin << UString::Format(u"  Orbital position: %d", {buf.getBCD<uint32_t>(3)});
         disp << UString::Format(u".%d degree, ", {buf.getBCD<uint32_t>(1)});
         disp << (buf.getBool() ? "east" : "west") << std::endl;
-        disp << margin << "  Polarization: " << NameFromSection(u"SatellitePolarization", buf.getBits<uint8_t>(2), names::VALUE | names::DECIMAL) << std::endl;
+        disp << margin << "  Polarization: " << NameFromSection(u"SatellitePolarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         const bool multiple = buf.getBool();
         disp << margin << "  Multiple input stream: " << UString::YesNo(multiple) << std::endl;
         buf.skipBits(1);

@@ -69,7 +69,7 @@ bool ts::HEVCAccessUnitDelimiter::parseBody(AVCParser& parser, std::initializer_
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::HEVCAccessUnitDelimiter::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::HEVCAccessUnitDelimiter::display(std::ostream& out, const UString& margin, int level) const
 {
 #define DISP(n) disp(out, margin, u ## #n, n)
 

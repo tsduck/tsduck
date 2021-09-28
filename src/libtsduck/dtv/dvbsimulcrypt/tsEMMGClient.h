@@ -92,8 +92,8 @@ namespace ts {
         //! @param [in] logger Where to report errors and messages.
         //! @return True on success, false on error.
         //!
-        bool connect(const SocketAddress& mux,
-                     const SocketAddress& udp,
+        bool connect(const IPv4SocketAddress& mux,
+                     const IPv4SocketAddress& udp,
                      uint32_t client_id,
                      uint16_t data_channel_id,
                      uint16_t data_stream_id,
@@ -204,7 +204,7 @@ namespace ts {
         // Private members
         const DuckContext&     _duck;
         volatile State         _state;
-        SocketAddress          _udp_address;
+        IPv4SocketAddress          _udp_address;
         uint64_t               _total_bytes;
         const AbortInterface*  _abort;
         tlv::Logger            _logger;

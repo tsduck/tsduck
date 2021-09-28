@@ -47,18 +47,12 @@ ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, Mut
     _terminate(false),
     _options(options),
     _log(log, u"control commands: "),
-    _reference(),
+    _reference(_log),
     _server(),
     _mutex(global_mutex),
     _input(input),
     _output(nullptr),
-    _plugins(),
-    _handlers{{TSPControlCommand::CMD_EXIT,    &ControlServer::executeExit},
-              {TSPControlCommand::CMD_SETLOG,  &ControlServer::executeSetLog},
-              {TSPControlCommand::CMD_LIST,    &ControlServer::executeList},
-              {TSPControlCommand::CMD_SUSPEND, &ControlServer::executeSuspend},
-              {TSPControlCommand::CMD_RESUME,  &ControlServer::executeResume},
-              {TSPControlCommand::CMD_RESTART, &ControlServer::executeRestart}}
+    _plugins()
 {
     // Locate output plugin, count packet processor plugins.
     if (_input != nullptr) {
@@ -77,6 +71,14 @@ ts::tsp::ControlServer::ControlServer(TSProcessorArgs& options, Report& log, Mut
         }
     }
     _log.debug(u"found %d packet processor plugins", {_plugins.size()});
+
+    // Register command handlers.
+    _reference.setCommandLineHandler(this, &ControlServer::executeExit, u"exit");
+    _reference.setCommandLineHandler(this, &ControlServer::executeSetLog, u"set-log");
+    _reference.setCommandLineHandler(this, &ControlServer::executeList, u"list");
+    _reference.setCommandLineHandler(this, &ControlServer::executeSuspend, u"suspend");
+    _reference.setCommandLineHandler(this, &ControlServer::executeResume, u"resume");
+    _reference.setCommandLineHandler(this, &ControlServer::executeRestart, u"restart");
 }
 
 ts::tsp::ControlServer::~ControlServer()
@@ -103,7 +105,7 @@ bool ts::tsp::ControlServer::open()
     }
     else {
         // Open the TCP server.
-        const SocketAddress addr(_options.control_local, _options.control_port);
+        const IPv4SocketAddress addr(_options.control_local, _options.control_port);
         if (!_server.open(_log) ||
             !_server.reusePort(_options.control_reuse, _log) ||
             !_server.bind(addr, _log) ||
@@ -146,7 +148,7 @@ void ts::tsp::ControlServer::main()
     ReportBuffer<NullMutex> error(_log.maxSeverity());
 
     // Client address and connection.
-    SocketAddress source;
+    IPv4SocketAddress source;
     TelnetConnection conn;
     UString line;
 
@@ -168,22 +170,7 @@ void ts::tsp::ControlServer::main()
             conn.setMaxSeverity(Severity::Info);
 
             // Analyze the command, return errors on the client connection.
-            TSPControlCommand::ControlCommand cmd = TSPControlCommand::CMD_NONE;
-            const Args* args = nullptr;
-            CommandHandler handler = nullptr;
-            if (_reference.analyze(line, cmd, args, conn)) {
-                const auto it = _handlers.find(cmd);
-                if (it != _handlers.end()) {
-                    handler = it->second;
-                }
-            }
-
-            // Execute the handler for this command or return an error message.
-            if (handler != nullptr && args != nullptr) {
-                // Execute the command.
-                (this->*handler)(args, conn);
-            }
-            else {
+            if (_reference.processCommand(line, &conn) != CommandStatus::SUCCESS) {
                 conn.error(u"invalid tsp control command: %s", {line});
             }
         }
@@ -204,9 +191,9 @@ void ts::tsp::ControlServer::main()
 // Exit command.
 //----------------------------------------------------------------------------
 
-void ts::tsp::ControlServer::executeExit(const Args* args, Report& response)
+ts::CommandStatus ts::tsp::ControlServer::executeExit(const UString& command, Args& args)
 {
-    if (args->present(u"abort")) {
+    if (args.present(u"abort")) {
         // Immediate exit.
         ::exit(EXIT_FAILURE);
     }
@@ -219,6 +206,7 @@ void ts::tsp::ControlServer::executeExit(const Args* args, Report& response)
             proc->setAbort();
         } while ((proc = proc->ringNext<PluginExecutor>()) != _input);
     }
+    return CommandStatus::SUCCESS;
 }
 
 
@@ -226,9 +214,9 @@ void ts::tsp::ControlServer::executeExit(const Args* args, Report& response)
 // Set-log command.
 //----------------------------------------------------------------------------
 
-void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& response)
+ts::CommandStatus ts::tsp::ControlServer::executeSetLog(const UString& command, Args& args)
 {
-    const int level = args->intValue(u"", Severity::Info);
+    const int level = args.intValue(u"", Severity::Info);
 
     // Set log severity of the main logger.
     _log.setMaxSeverity(level);
@@ -240,6 +228,8 @@ void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& response)
     do {
         proc->setMaxSeverity(level);
     } while ((proc = proc->ringNext<ts::tsp::PluginExecutor>()) != _input);
+
+    return CommandStatus::SUCCESS;
 }
 
 
@@ -247,35 +237,36 @@ void ts::tsp::ControlServer::executeSetLog(const Args* args, Report& response)
 // List command.
 //----------------------------------------------------------------------------
 
-void ts::tsp::ControlServer::executeList(const Args* args, Report& response)
+ts::CommandStatus ts::tsp::ControlServer::executeList(const UString& command, Args& args)
 {
-    if (response.verbose()) {
-        response.info(u"");
-        response.info(u"Executable: %s", {ExecutableFile()});
-        response.info(u"");
+    if (args.verbose()) {
+        args.info(u"");
+        args.info(u"Executable: %s", {ExecutableFile()});
+        args.info(u"");
     }
 
-    listOnePlugin(0, u'I', _input, response);
+    listOnePlugin(0, u'I', _input, args);
     size_t index = 1;
     for (size_t i = 0; i < _plugins.size(); ++i) {
-        listOnePlugin(index++, u'P', _plugins[i], response);
+        listOnePlugin(index++, u'P', _plugins[i], args);
     }
-    listOnePlugin(index, u'O', _output, response);
+    listOnePlugin(index, u'O', _output, args);
 
-    if (response.verbose()) {
-        response.info(u"");
+    if (args.verbose()) {
+        args.info(u"");
     }
+    return CommandStatus::SUCCESS;
 }
 
-void ts::tsp::ControlServer::listOnePlugin(size_t index, UChar type, PluginExecutor* plugin, Report& response)
+void ts::tsp::ControlServer::listOnePlugin(size_t index, UChar type, PluginExecutor* plugin, Report& report)
 {
-    const bool verbose = response.verbose();
+    const bool verbose = report.verbose();
     const bool suspended = plugin->getSuspended();
-    response.info(u"%2d: %s-%c %s", {
-                  index,
-                  verbose && suspended ? u"(suspended) " : u"",
-                  type,
-                  verbose ? plugin->plugin()->commandLine() : plugin->pluginName() });
+    report.info(u"%2d: %s-%c %s", {
+                index,
+                verbose && suspended ? u"(suspended) " : u"",
+                type,
+                verbose ? plugin->plugin()->commandLine() : plugin->pluginName() });
 }
 
 
@@ -283,19 +274,19 @@ void ts::tsp::ControlServer::listOnePlugin(size_t index, UChar type, PluginExecu
 // Suspend/resume commands.
 //----------------------------------------------------------------------------
 
-void ts::tsp::ControlServer::executeSuspend(const Args* args, Report& response)
+ts::CommandStatus ts::tsp::ControlServer::executeSuspend(const UString& command, Args& args)
 {
-    executeSuspendResume(true, args, response);
+    return executeSuspendResume(true, args);
 }
 
-void ts::tsp::ControlServer::executeResume(const Args* args, Report& response)
+ts::CommandStatus ts::tsp::ControlServer::executeResume(const UString& command, Args& args)
 {
-    executeSuspendResume(false, args, response);
+    return executeSuspendResume(false, args);
 }
 
-void ts::tsp::ControlServer::executeSuspendResume(bool state, const Args* args, Report& response)
+ts::CommandStatus ts::tsp::ControlServer::executeSuspendResume(bool state, Args& args)
 {
-    const size_t index = args->intValue<size_t>(u"");
+    const size_t index = args.intValue<size_t>(u"");
     if (index > 0 && index <= _plugins.size()) {
         _plugins[index-1]->setSuspended(state);
     }
@@ -303,11 +294,12 @@ void ts::tsp::ControlServer::executeSuspendResume(bool state, const Args* args, 
         _output->setSuspended(state);
     }
     else if (index == 0) {
-        response.error(u"cannot suspend/resume the input plugin");
+        args.error(u"cannot suspend/resume the input plugin");
     }
     else {
-        response.error(u"invalid plugin index %d, specify 1 to %d", { index, _plugins.size() + 1 });
+        args.error(u"invalid plugin index %d, specify 1 to %d", {index, _plugins.size() + 1});
     }
+    return CommandStatus::SUCCESS;
 }
 
 
@@ -315,25 +307,25 @@ void ts::tsp::ControlServer::executeSuspendResume(bool state, const Args* args, 
 // Restart commands.
 //----------------------------------------------------------------------------
 
-void ts::tsp::ControlServer::executeRestart(const Args* args, Report& response)
+ts::CommandStatus ts::tsp::ControlServer::executeRestart(const UString& command, Args& args)
 {
     // Get all parameters. The first one is the plugin index. Others are plugin parameters.
     UStringVector params;
-    args->getValues(params);
+    args.getValues(params);
     size_t index = 0;
     if (params.empty() || !params[0].toInteger(index) || index > _plugins.size() + 1) {
-        response.error(u"invalid plugin index");
-        return;
+        args.error(u"invalid plugin index");
+        return CommandStatus::ERROR;
     }
 
     // Keep only plugin parameters.
     params.erase(params.begin());
 
     // Same we use new parameters?
-    const bool same = args->present(u"same");
+    const bool same = args.present(u"same");
     if (same && !params.empty()) {
-        response.error(u"do not specify new plugin options with --same");
-        return;
+        args.error(u"do not specify new plugin options with --same");
+        return CommandStatus::ERROR;
     }
 
     // Get the target plugin.
@@ -350,9 +342,10 @@ void ts::tsp::ControlServer::executeRestart(const Args* args, Report& response)
 
     // Restart the plugin.
     if (same) {
-        plugin->restart(response);
+        plugin->restart(args);
     }
     else {
-        plugin->restart(params, response);
+        plugin->restart(params, args);
     }
+    return CommandStatus::SUCCESS;
 }

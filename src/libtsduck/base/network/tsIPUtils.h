@@ -36,9 +36,10 @@
 #pragma once
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
-#include "tsIPAddress.h"
-#include "tsIPAddressMask.h"
+#include "tsIPv4Address.h"
+#include "tsIPv4AddressMask.h"
 #include "tsIPv6Address.h"
+#include "tsIPv4SocketAddress.h"
 
 namespace ts {
     //!
@@ -389,22 +390,22 @@ namespace ts {
 
     //!
     //! Get the list of all local IPv4 addresses in the system with their network masks.
-    //! @param [out] addresses A vector of IPAddressMask which receives the list
-    //! of all local IPv4 addresses in the system, except @link ts::IPAddress::LocalHost @endlink.
+    //! @param [out] addresses A vector of IPv4AddressMask which receives the list
+    //! of all local IPv4 addresses in the system, except IPv4Address::LocalHost.
     //! @param [in] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPAddressMaskVector& addresses, Report& report = CERR);
+    TSDUCKDLL bool GetLocalIPAddresses(IPv4AddressMaskVector& addresses, Report& report = CERR);
 
     //!
     //! Get the list of all local IPv4 addresses in the system.
     //!
-    //! @param [out] addresses A vector of IPAddress which receives the list
-    //! of all local IPv4 addresses in the system, except @link ts::IPAddress::LocalHost @endlink.
+    //! @param [out] addresses A vector of IPv4Address which receives the list
+    //! of all local IPv4 addresses in the system, except ts::IPv4Address::LocalHost.
     //! @param [in] report Where to report errors.
     //! @return True on success, false on error.
     //!
-    TSDUCKDLL bool GetLocalIPAddresses(IPAddressVector& addresses, Report& report = CERR);
+    TSDUCKDLL bool GetLocalIPAddresses(IPv4AddressVector& addresses, Report& report = CERR);
 
     //!
     //! Check if a local system interface has a specified IP address.
@@ -412,7 +413,7 @@ namespace ts {
     //! @param [in] address The IP address to check.
     //! @return True is @a address is the address of a local system interface, false otherwise.
     //!
-    TSDUCKDLL bool IsLocalIPAddress(const IPAddress& address);
+    TSDUCKDLL bool IsLocalIPAddress(const IPv4Address& address);
 
     //------------------------------------------------------------------------
     // Internals of the IPv4 protocol.
@@ -430,47 +431,23 @@ namespace ts {
     //! Selected IP protocol identifiers.
     //!
     enum : uint8_t {
-        IPv4_PROTO_ICMP = 1,   //!< Protocol identifier for ICMP.
-        IPv4_PROTO_IGMP = 2,   //!< Protocol identifier for IGMP.
-        IPv4_PROTO_TCP  = 6,   //!< Protocol identifier for TCP.
-        IPv4_PROTO_UDP  = 17,  //!< Protocol identifier for UDP.
+        IPv4_PROTO_ICMP     =   1,  //!< IPv4 protocol identifier for Internet Control Message Protocol (ICMP).
+        IPv4_PROTO_IGMP     =   2,  //!< IPv4 protocol identifier for Internet Group Management Protocol (IGMP).
+        IPv4_PROTO_TCP      =   6,  //!< IPv4 protocol identifier for Transmission Control Protocol (TCP).
+        IPv4_PROTO_UDP      =  17,  //!< IPv4 protocol identifier for User Datagram Protocol (UDP).
+        IPv4_PROTO_V6_ENCAP =  41,  //!< IPv4 protocol identifier for IPv6 encapsulation.
+        IPv4_PROTO_OSPF     =  89,  //!< IPv4 protocol identifier for Open Shortest Path First (OSPF).
+        IPv4_PROTO_SCTP     = 132,  //!< IPv4 protocol identifier for Stream Control Transmission Protocol (SCTP).
     };
 
     //!
-    //! Get the size in bytes of an IPv4 header.
+    //! Get the name of an IP protocol (UDP, TCP, etc).
+    //! @param [in] protocol Protocol identifier, as set in IP header.
+    //! @param [in] long_format If false (the default), return a simple acronym.
+    //! When true, return a full description string.
+    //! @return The protocol name with optional description.
     //!
-    //! @param [in] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return The size in bytes of the IP header or zero on error.
-    //!
-    TSDUCKDLL size_t IPHeaderSize(const void* data, size_t size);
-
-    //!
-    //! Compute the checksum of an IPv4 header.
-    //!
-    //! @param [in] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return The computed checksum of the header.
-    //!
-    TSDUCKDLL uint16_t IPHeaderChecksum(const void* data, size_t size);
-
-    //!
-    //! Verify the checksum of an IPv4 header.
-    //!
-    //! @param [in] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return True if the checksum of the header if correct, false otherwise.
-    //!
-    TSDUCKDLL bool VerifyIPHeaderChecksum(const void* data, size_t size);
-
-    //!
-    //! Update the checksum of an IPv4 header.
-    //!
-    //! @param [in,out] data Address of the IP packet.
-    //! @param [in] size Size of the IP packet or header (must be larger than the header size).
-    //! @return True if the checksum was update, false on incorrect buffer.
-    //!
-    TSDUCKDLL bool UpdateIPHeaderChecksum(void* data, size_t size);
+    TSDUCKDLL UString IPProtocolName(uint8_t protocol, bool long_format = false);
 
     //------------------------------------------------------------------------
     // Ethernet II link layer.
@@ -505,6 +482,15 @@ namespace ts {
     constexpr size_t UDP_LENGTH_OFFSET    = 4;   //!< Offset of packet length (UDP header + UDP payload) in a UDP header.
     constexpr size_t UDP_CHECKSUM_OFFSET  = 6;   //!< Offset of checksum in a UDP header.
     constexpr size_t UDP_HEADER_SIZE      = 8;   //!< Size of a UDP header.
+
+    //------------------------------------------------------------------------
+    // Transmission Control Protocol (TCP)
+    //------------------------------------------------------------------------
+
+    constexpr size_t TCP_SRC_PORT_OFFSET      =  0;   //!< Offset of source port in a TCP header.
+    constexpr size_t TCP_DEST_PORT_OFFSET     =  2;   //!< Offset of destination port in a TCP header.
+    constexpr size_t TCP_HEADER_LENGTH_OFFSET = 12;   //!< Offset of TCP header length in a TCP header (number of 32-bit words).
+    constexpr size_t TCP_MIN_HEADER_SIZE      = 20;   //!< Minimum size in bytes of a TCP header.
 
     //------------------------------------------------------------------------
     // Real-time Transport Protocol (RTP)

@@ -94,7 +94,7 @@ void ts::DataComponentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DataComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", buf.getUInt16(), names::HEXA_FIRST) << std::endl;
+        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", buf.getUInt16(), NamesFlags::HEXA_FIRST) << std::endl;
         disp.displayPrivateData(u"Additional data component info", buf, NPOS, margin);
     }
 }

@@ -58,8 +58,19 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
+        // The following options apply to the current instance of TSDuck.
+        // They are always available.
+
         bool        current;    // Display current version of TSDuck, this executable.
         bool        integer;    // Display current version of TSDuck as integer value.
+        bool        extensions; // List extensions.
+
+        // The following options are used to detect, download and upgrade new versions of TSDuck.
+        // They are disabled when TS_NO_GITHUB is defined. With this macro, TSDuck is unlinked
+        // from the generic binary distribution on GitHub. Thus, upgrades can be limited to the
+        // repositories of a given Linux distro.
+
+#if !defined(TS_NO_GITHUB)
         bool        latest;     // Display the latest version of TSDuck.
         bool        check;      // Check if a new version of TSDuck is available.
         bool        all;        // List all available versions of TSDuck.
@@ -68,16 +79,19 @@ namespace {
         bool        binary;     // With --download, fetch the binaries.
         bool        source;     // With --download, feth the source code instead of the binaries.
         bool        upgrade;    // Upgrade TSDuck to the latest version.
-        bool        extensions; // List extensions.
         ts::UString name;       // Use the specified version, not the latest one.
         ts::UString out_dir;    // Output directory for downloaded files.
+#endif
     };
 }
 
 Options::Options(int argc, char *argv[]) :
+
+#if !defined(TS_NO_GITHUB)
     Args(u"Check version, download and upgrade TSDuck", u"[options]"),
     current(false),
     integer(false),
+    extensions(false),
     latest(false),
     check(false),
     all(false),
@@ -86,10 +100,31 @@ Options::Options(int argc, char *argv[]) :
     binary(false),
     source(false),
     upgrade(false),
-    extensions(false),
     name(),
     out_dir()
+#else
+    Args(u"Display TSDuck version and extensions", u"[options]"),
+    current(true),
+    integer(false),
+    extensions(false)
+#endif
 {
+    option(u"extensions", 'e');
+    help(u"extensions", u"List all available TSDuck extensions.");
+
+    option(u"integer", 'i');
+    help(u"integer",
+         u"Display the current version of TSDuck in integer format, suitable for "
+         u"comparison in a script. Example: " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) +
+         u" for " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
+
+    // The following options are used to detect, download and upgrade new versions of TSDuck.
+    // They are disabled when TS_NO_GITHUB is defined. With this macro, TSDuck is unlinked
+    // from the generic binary distribution on GitHub. Thus, upgrades can be limited to the
+    // repositories of a given Linux distro.
+
+#if !defined(TS_NO_GITHUB)
+
     option(u"all", 'a');
     help(u"all", u"List all available versions of TSDuck from GitHub.");
 
@@ -108,18 +143,8 @@ Options::Options(int argc, char *argv[]) :
          u"GitHub. By default, download the binary installers for the current "
          u"operating system and architecture. Specify --source to download the "
          u"source code.");
-
-    option(u"extensions", 'e');
-    help(u"extensions", u"List all available TSDuck extensions.");
-
     option(u"force", 'f');
     help(u"force", u"Force downloads even if a file with same name and size already exists.");
-
-    option(u"integer", 'i');
-    help(u"integer",
-         u"Display the current version of TSDuck in integer format, suitable for "
-         u"comparison in a script. Example: " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) +
-         u" for " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
 
     option(u"latest", 'l');
     help(u"latest", u"Display the latest version of TSDuck from GitHub.");
@@ -151,11 +176,17 @@ Options::Options(int argc, char *argv[]) :
     option(u"upgrade", 'u');
     help(u"upgrade", u"Upgrade TSDuck to the latest version.");
 
+#endif
+
     analyze(argc, argv);
+
+    extensions = present(u"extensions");
+    integer = present(u"integer");
+
+#if !defined(TS_NO_GITHUB)
 
     all = present(u"all");
     current = present(u"this");
-    integer = present(u"integer");
     latest = present(u"latest");
     check = present(u"check");
     binary = present(u"binary");
@@ -163,7 +194,6 @@ Options::Options(int argc, char *argv[]) :
     download = present(u"download") || binary || source;
     force = present(u"force");
     upgrade = present(u"upgrade");
-    extensions = present(u"extensions");
     getValue(name, u"name");
     getValue(out_dir, u"output-directory");
 
@@ -197,14 +227,17 @@ Options::Options(int argc, char *argv[]) :
         }
     }
 
+#endif
+
     exitOnError();
 }
 
 
 //----------------------------------------------------------------------------
-//  List all versions.
+// List all versions.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool ListAllVersions(Options& opt)
     {
@@ -269,12 +302,14 @@ namespace {
         return true;
     }
 }
+#endif
 
 
 //----------------------------------------------------------------------------
-//  Display one release.
+// Display one release.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool DisplayRelease(Options& opt, const ts::GitHubRelease& rel)
     {
@@ -324,12 +359,14 @@ namespace {
         return true;
     }
 }
+#endif
 
 
 //----------------------------------------------------------------------------
-//  Download a file.
+// Download a file.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool DownloadFile(Options& opt, const ts::UString& url, const ts::UString& file, int64_t size)
     {
@@ -351,12 +388,14 @@ namespace {
         return web.downloadFile(url, file);
     }
 }
+#endif
 
 
 //----------------------------------------------------------------------------
-//  Download a release.
+// Download a release.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool DownloadRelease(Options& opt, const ts::GitHubRelease& rel, bool forceBinary)
     {
@@ -394,14 +433,16 @@ namespace {
         return success;
     }
 }
+#endif
 
 
 //----------------------------------------------------------------------------
-//  Run an upgrade command.
-//  Do not stay in current tsversion process since the upgrade command
-//  will upgrade its executable file.
+// Run an upgrade command.
+// Do not stay in current tsversion process since the upgrade command
+// will upgrade its executable file.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool RunUpgradeCommand(Options& opt, const ts::UString& command, bool needPrivilege)
     {
@@ -427,12 +468,14 @@ namespace {
         return success;
     }
 }
+#endif
 
 
 //----------------------------------------------------------------------------
-//  Upgrade to a release.
+// Upgrade to a release.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool UpgradeRelease(Options& opt, const ts::GitHubRelease& rel)
     {
@@ -485,12 +528,14 @@ namespace {
         }
     }
 }
+#endif
 
 
 //----------------------------------------------------------------------------
-//  Check the availability of a new version.
+// Check the availability of a new version.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool CheckNewVersion(Options& opt, const ts::GitHubRelease& rel)
     {
@@ -531,11 +576,14 @@ namespace {
         return true;
     }
 }
+#endif
+
 
 //----------------------------------------------------------------------------
-//  Process one version.
+// Process one version.
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_GITHUB)
 namespace {
     bool ProcessVersion(Options& opt)
     {
@@ -575,10 +623,11 @@ namespace {
         return true;
     }
 }
+#endif
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+// Program entry point
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
@@ -591,20 +640,25 @@ int MainCode(int argc, char *argv[])
         // The returned string is either empty or ends with a new-line.
         std::cout << ts::DuckExtensionRepository::Instance()->listExtensions(opt);
     }
-    else if (opt.current) {
-        // Display current version.
-        std::cout << ts::VersionInfo::GetVersion(opt.verbose() ? ts::VersionInfo::Format::LONG : ts::VersionInfo::Format::SHORT) << std::endl;
-    }
     else if (opt.integer) {
         // Display current version in integer format.
         std::cout << ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) << std::endl;
     }
+    else if (opt.current) {
+        // Display current version.
+        std::cout << ts::VersionInfo::GetVersion(opt.verbose() ? ts::VersionInfo::Format::LONG : ts::VersionInfo::Format::SHORT) << std::endl;
+    }
+
+#if !defined(TS_NO_GITHUB)
+
     else if (opt.all) {
         success = ListAllVersions(opt);
     }
     else {
         success = ProcessVersion(opt);
     }
+
+#endif
 
     return success ? EXIT_SUCCESS : EXIT_FAILURE;
 }

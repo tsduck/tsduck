@@ -139,7 +139,7 @@ void ts::ExtendedBroadcasterDescriptor::DisplayDescriptor(TablesDisplay& disp, P
     if (buf.canReadBytes(1)) {
         const uint8_t btype = buf.getBits<uint8_t>(4);
         buf.skipBits(4);
-        disp << margin << "Broadcaster type: " << NameFromSection(u"ISDBBroadcasterType", btype, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Broadcaster type: " << NameFromSection(u"ISDBBroadcasterType", btype, NamesFlags::HEXA_FIRST) << std::endl;
 
         if ((btype == 0x01 || btype == 0x02) && buf.canReadBytes(3)) {
             disp << margin << UString::Format(u"Terrestrial%s broadcaster id: 0x%X (%<d)", {btype == 0x02 ? u" sound" : u"", buf.getUInt16()}) << std::endl;

@@ -46,7 +46,7 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     AbstractDatagramOutputPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast", u"[options] address:port", ALLOW_RTP),
     _destination(),
     _local_addr(),
-    _local_port(SocketAddress::AnyPort),
+    _local_port(IPv4SocketAddress::AnyPort),
     _ttl(0),
     _tos(-1),
     _force_mc_local(false),
@@ -117,7 +117,7 @@ bool ts::IPOutputPlugin::getOptions()
     const UString local(value(u"local-address"));
     _local_addr.clear();
     success = (local.empty() || _local_addr.resolve(local, *tsp)) && success;
-    getIntValue(_local_port, u"local-port", SocketAddress::AnyPort);
+    getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
     getIntValue(_ttl, u"ttl", 0);
     getIntValue(_tos, u"tos", -1);
     _force_mc_local = present(u"force-local-multicast-outgoing");
@@ -138,8 +138,8 @@ bool ts::IPOutputPlugin::start()
     }
 
     // Configure socket.
-    const SocketAddress local(_local_addr, _local_port);
-    if ((_local_port != SocketAddress::AnyPort && !_sock.reusePort(true, *tsp)) ||
+    const IPv4SocketAddress local(_local_addr, _local_port);
+    if ((_local_port != IPv4SocketAddress::AnyPort && !_sock.reusePort(true, *tsp)) ||
         !_sock.bind(local, *tsp) ||
         !_sock.setDefaultDestination(_destination, *tsp) ||
         (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr, *tsp)) ||

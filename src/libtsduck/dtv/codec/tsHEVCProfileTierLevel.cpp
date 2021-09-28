@@ -251,7 +251,7 @@ bool ts::HEVCProfileTierLevel::parse(AVCParser& parser, std::initializer_list<ui
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::HEVCProfileTierLevel::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::HEVCProfileTierLevel::display(std::ostream& out, const UString& margin, int level) const
 {
 #define DISP(n) disp(out, margin, u ## #n, n)
 #define DISPsl(n) out << margin << "sub_layer[" << i << "]." #n " = " << int64_t(sub_layers[i].n) << std::endl

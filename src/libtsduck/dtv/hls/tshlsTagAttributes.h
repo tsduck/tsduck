@@ -35,6 +35,7 @@
 #pragma once
 #include "tshls.h"
 #include "tsFixedPoint.h"
+#include "tsFraction.h"
 
 namespace ts {
     namespace hls {
@@ -63,7 +64,7 @@ namespace ts {
             void clear() { _map.clear(); }
 
             //!
-            //! Chek if an attribute is present.
+            //! Check if an attribute is present.
             //! @param [in] name Attribute name.
             //! @return True if the attribute is present.
             //!
@@ -93,17 +94,16 @@ namespace ts {
             }
 
             //!
-            //! Get the value of a fixed-point number attribute.
-            //! @tparam INT The underlying signed integer type.
-            //! @tparam PREC The decimal precision in digits.
+            //! Get the value of an AbstractNumber attribute.
+            //! @tparam NUMBER A subclass of AbstractNumber.
             //! @param [out] val Decoded value.
             //! @param [in] name Attribute name.
             //! @param [in] defValue Default value if not present.
             //!
-            template <typename INT, const size_t PREC>
-            void getFixedValue(FixedPoint<INT, PREC>& val, const UString& name, FixedPoint<INT, PREC> defValue = FixedPoint<INT, PREC>(0)) const
+            template <class NUMBER, typename std::enable_if<std::is_base_of<AbstractNumber, NUMBER>::value, int>::type = 0>
+            void getValue(NUMBER& val, const UString& name, const NUMBER& defValue = NUMBER()) const
             {
-                if (!value(name).toFixed(val)) {
+                if (!val.fromString(value(name))) {
                     val = defValue;
                 }
             }

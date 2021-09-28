@@ -58,7 +58,7 @@ namespace ts {
 
         // Inherited methods
         virtual void clear() override;
-        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
 
         // Access unit delimiter fields.
         uint8_t aud_irap_or_gdr_flag;  //!< IRAP or GDR, 1 bit

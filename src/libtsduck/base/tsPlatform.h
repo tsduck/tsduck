@@ -364,7 +364,7 @@
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 32
     #endif
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || defined(__arm64__)
     #if !defined(TS_ARM64)
         #define TS_ARM64 1
     #endif
@@ -802,7 +802,6 @@ TS_MSC_NOWARNING(5032)
 TS_MSC_NOWARNING(4193)
 
 TS_PUSH_WARNING()
-TS_LLVM_NOWARNING(reserved-id-macro)
 TS_MSC_NOWARNING(4263)
 TS_MSC_NOWARNING(4264)
 TS_MSC_NOWARNING(4668)
@@ -868,25 +867,32 @@ TS_MSC_NOWARNING(5204)
 #endif
 
 #if defined(TS_LINUX)
-#include <limits.h>
-#include <sys/mman.h>
-#include <byteswap.h>
-#include <linux/dvb/version.h>
-#include <linux/dvb/frontend.h>
-#include <linux/dvb/dmx.h>
-#include <linux/version.h>
+    #include <limits.h>
+    #include <sys/mman.h>
+    #include <byteswap.h>
+    #include <linux/dvb/version.h>
+    #include <linux/dvb/frontend.h>
+    #include <linux/dvb/dmx.h>
+    #include <linux/version.h>
 #endif
 
 #if defined(TS_MAC)
-#include <sys/mman.h>
-#include <libproc.h>
+    #include <sys/mman.h>
+    #include <libproc.h>
 #endif
 
 #if !defined(TS_NO_PCSC) // PC/SC support not inhibited by user.
-#include <winscard.h>
-#if defined(TS_LINUX)
-#include <PCSC/reader.h>
-#endif
+    #if defined(TS_WINDOWS)
+        #include <winscard.h>
+    #else
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(pedantic)
+        TS_LLVM_NOWARNING(reserved-id-macro)
+        TS_LLVM_NOWARNING(zero-length-array)
+        #include <PCSC/winscard.h>
+        #include <PCSC/reader.h>
+        TS_POP_WARNING()
+    #endif
 #endif
 
 #include <string>
@@ -907,6 +913,7 @@ TS_MSC_NOWARNING(5204)
 #include <sstream>
 #include <iostream>
 #include <exception>
+#include <stdexcept>
 #include <atomic>
 #include <typeinfo>
 
@@ -918,6 +925,7 @@ TS_MSC_NOWARNING(5204)
 #include <cstring>
 #include <cctype>
 #include <cstddef>     // size_t
+#include <cmath>
 #include <fcntl.h>
 
 TS_POP_WARNING()
@@ -929,17 +937,17 @@ TS_POP_WARNING()
 
 // Required link libraries under Windows.
 #if defined(TS_WINDOWS) && defined(TS_MSC)
-#pragma comment(lib, "userenv.lib")   // GetUserProfileDirectory
-#pragma comment(lib, "psapi.lib")     // GetProcessMemoryInfo
-#pragma comment(lib, "winmm.lib")     // timeBeginPeriod
-#pragma comment(lib, "quartz.lib")    // DirectShow, DirectX
-#pragma comment(lib, "ws2_32.lib")    // Winsock 2
-#pragma comment(lib, "winscard.lib")  // PC/SC
-#if defined(DEBUG)
-#pragma comment(lib, "comsuppwd.lib") // COM utilities
-#else
-#pragma comment(lib, "comsuppw.lib")
-#endif
+    #pragma comment(lib, "userenv.lib")       // GetUserProfileDirectory
+    #pragma comment(lib, "psapi.lib")         // GetProcessMemoryInfo
+    #pragma comment(lib, "winmm.lib")         // timeBeginPeriod
+    #pragma comment(lib, "quartz.lib")        // DirectShow, DirectX
+    #pragma comment(lib, "ws2_32.lib")        // Winsock 2
+    #pragma comment(lib, "winscard.lib")      // PC/SC
+    #if defined(DEBUG)
+        #pragma comment(lib, "comsuppwd.lib") // COM utilities
+    #else
+        #pragma comment(lib, "comsuppw.lib")
+    #endif
 #endif
 
 // Some standard Windows headers have the very-very bad idea to define common
@@ -1060,6 +1068,26 @@ TS_POP_WARNING()
     #define TS_UNUSED __pragma(warning(suppress:4189))
 #else
     #error "New unknown compiler, please update TS_UNUSED in tsPlatform.h"
+#endif
+
+//!
+//! Attribute to explicitly disable optimization in a function.
+//!
+//! Example:
+//! @code
+//! void f() TS_NO_OPTIMIZE;
+//! @endcode
+//!
+#if defined(DOXYGEN)
+    #define TS_NO_OPTIMIZE platform_specific
+#elif defined(TS_MSC)
+    #define TS_NO_OPTIMIZE
+#elif defined(TS_LLVM)
+    #define TS_NO_OPTIMIZE __attribute__((optnone))
+#elif defined(TS_GCC)
+    #define TS_NO_OPTIMIZE __attribute__((optimize("-O0")))
+#else
+    #error "New unknown compiler, please update TS_NO_OPTIMIZE in tsPlatform.h"
 #endif
 
 //!

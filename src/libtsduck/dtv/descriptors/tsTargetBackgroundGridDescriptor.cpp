@@ -99,7 +99,7 @@ void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& disp, 
     if (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Size: %d", {buf.getBits<uint16_t>(14)});
         disp << UString::Format(u"x%d", {buf.getBits<uint16_t>(14)});
-        disp << ", aspect ratio: " << NameFromSection(u"AspectRatio", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << ", aspect ratio: " << NameFromSection(u"AspectRatio", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
     }
 }
 

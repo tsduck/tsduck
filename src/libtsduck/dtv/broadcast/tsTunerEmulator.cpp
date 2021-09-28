@@ -28,6 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsTunerEmulator.h"
+#include "tsSignalState.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsxmlModelDocument.h"
@@ -152,7 +153,7 @@ bool ts::TunerEmulator::open(const UString& device_name, bool info_only)
         Channel chan;
         success = (*it)->getIntAttribute(chan.frequency, u"frequency", true) &&
                   (*it)->getIntAttribute(chan.bandwidth, u"bandwidth", false, def_bandwidth) &&
-                  (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
+                (*it)->getIntEnumAttribute(chan.delivery, DeliverySystemEnum, u"delivery", false, def_delivery) &&
                   (*it)->getAttribute(chan.file, u"file", false) &&
                   (*it)->getAttribute(chan.pipe, u"pipe", false);
         chan.file.trim();
@@ -245,20 +246,12 @@ ts::UString ts::TunerEmulator::devicePath() const
 // Emulated signal characteristics.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerEmulator::signalLocked()
+bool ts::TunerEmulator::getSignalState(SignalState& state)
 {
-    return _state == State::TUNED || _state == State::STARTED;
-}
-
-int ts::TunerEmulator::signalStrength()
-{
-    return _strength;
-}
-
-int ts::TunerEmulator::signalQuality()
-{
-    // Use same percentage as signal strength.
-    return _strength;
+    state.clear();
+    state.signal_locked = _state == State::TUNED || _state == State::STARTED;
+    state.setPercent(&SignalState::signal_strength, _strength, 0, 100);
+    return true;
 }
 
 
@@ -271,6 +264,11 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
     // Cannot tune if closed or started.
     if (_state == State::CLOSED || _state == State::STARTED) {
         _duck.report().error(u"cannot tune, wrong tuner emulator state");
+        return false;
+    }
+
+    // Initial parameter checks.
+    if (!checkTuneParameters(params)) {
         return false;
     }
 
@@ -294,6 +292,18 @@ bool ts::TunerEmulator::tune(ModulationArgs& params)
     else if (delsys != DS_UNDEFINED && _channels[index].delivery != DS_UNDEFINED && delsys != _channels[index].delivery) {
         _duck.report().error(u"delivery system at %'d Hz is %s, %s requested ", {freq, DeliverySystemEnum.name(_channels[index].delivery), DeliverySystemEnum.name(delsys)});
         return false;
+    }
+
+    // Update delivery system if undefined in parameters.
+    params.delivery_system = _channels[index].delivery;
+
+    if (IsSatelliteDelivery(params.delivery_system.value())) {
+        if (!params.lnb.set()) {
+            _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
+        }
+        else {
+            _duck.report().debug(u"using LNB %s", {params.lnb.value()});
+        }
     }
 
     // Found a valid entry for the frequency.
@@ -386,7 +396,7 @@ size_t ts::TunerEmulator::receive(TSPacket* buffer, size_t max_packets, const Ab
 bool ts::TunerEmulator::getCurrentTuning(ModulationArgs& params, bool reset_unknown)
 {
     if (reset_unknown) {
-        params.reset();
+        params.clear();
     }
     if (_state == State::CLOSED || _state == State::OPEN) {
         return false; // not tuned

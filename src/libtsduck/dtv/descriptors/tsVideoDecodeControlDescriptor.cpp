@@ -109,7 +109,7 @@ void ts::VideoDecodeControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
     if (buf.canReadBytes(1)) {
         disp << margin << UString::Format(u"Still picture: %s", {buf.getBool()}) << std::endl;
         disp << margin << UString::Format(u"Sequence end code: %s", {buf.getBool()}) << std::endl;
-        disp << margin << "Video encode format: " << NameFromSection(u"VideoEncodeFormat", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Video encode format: " << NameFromSection(u"VideoEncodeFormat", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
         disp << margin << UString::Format(u"Reserve future use: %d", {buf.getBits<uint8_t>(2)}) << std::endl;
     }
 }

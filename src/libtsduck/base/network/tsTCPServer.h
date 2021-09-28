@@ -112,7 +112,7 @@ namespace ts {
         //! @return True on success, false on error.
         //! @see listen()
         //!
-        bool accept(TCPConnection& client, SocketAddress& addr, Report& report = CERR);
+        bool accept(TCPConnection& client, IPv4SocketAddress& addr, Report& report = CERR);
 
         // Inherited and overridden
         virtual bool close(Report& report = CERR) override;

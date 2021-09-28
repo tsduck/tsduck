@@ -88,6 +88,13 @@ namespace ts {
         }
 
         //!
+        //! Add a new property to get statistics.
+        //! @param [in] cmd Command code.
+        //! @return The index in property buffer.
+        //!
+        size_t addStat(uint32_t cmd);
+
+        //!
         //! Search a property in the buffer.
         //! @param [in] cmd Command code.
         //! @return The index of @a cmd in buffer or count() if not found.
@@ -107,6 +114,16 @@ namespace ts {
         //! @return The data value at @a index or @link UNKNOWN @endlink if out of range.
         //!
         uint32_t getByIndex(size_t index) const;
+
+        //!
+        //! Get the value of a statistics property in the buffer.
+        //! @param [out] value Statistics value.
+        //! @param [out] scale Representation of the value.
+        //! @param [in] cmd Command code.
+        //! @param [in] layer Statistics layer. 0 in most case, 1..3 for ISDB sub-layers.
+        //! @return True on success, false on error or not available.
+        //!
+        bool getStatByCommand(int64_t& value, ::fecap_scale_params& scale, uint32_t cmd, size_t layer) const;
 
         //!
         //! Get the multiple values of a property in the buffer.
@@ -151,6 +168,13 @@ namespace ts {
         //! @param [in] severity Severity level of messages (typically a debug level).
         //!
         void report(Report& report, int severity) const;
+
+        //!
+        //! Display the statistics content of the object (for debug purpose).
+        //! @param [in,out] report Where to display the content.
+        //! @param [in] severity Severity level of messages (typically a debug level).
+        //!
+        void reportStat(Report& report, int severity) const;
 
         //!
         //! Return the name of a command.

@@ -87,8 +87,8 @@ void ts::tsswitch::CommandListener::main()
 
     char inbuf[1024];
     size_t insize = 0;
-    SocketAddress sender;
-    SocketAddress destination;
+    IPv4SocketAddress sender;
+    IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<NullMutex> error(_log.maxSeverity());
@@ -131,8 +131,7 @@ void ts::tsswitch::CommandListener::main()
         else if (cmd == u"halt" || cmd == u"abort") {
             // Extremely rude way of exiting the process.
             static const char err[] = "\n\n*** Emergency abort requested\n\n";
-            static const size_t err_size = sizeof(err) - 1;
-            FatalError(err, err_size);
+            FatalError(err, sizeof(err) - 1);
         }
         else {
             _log.error(u"received invalid command \"%s\" from remote control at %s", {cmd, sender});

@@ -144,8 +144,8 @@ namespace {
 
         bool ok = true;
         size_t invalid_msg = 0;
-        ts::SocketAddress sender;
-        ts::SocketAddress destination;
+        ts::IPv4SocketAddress sender;
+        ts::IPv4SocketAddress destination;
         ts::ByteBlock packet(ts::IP_MAX_PACKET_SIZE);
         ts::Time timestamp;
         ts::SectionPtrVector sections;

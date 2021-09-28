@@ -89,7 +89,7 @@ void ts::ScramblingDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ScramblingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << UString::Format(u"Scrambling mode: %s", {NameFromSection(u"ScramblingMode", buf.getUInt8(), names::HEXA_FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Scrambling mode: %s", {NameFromSection(u"ScramblingMode", buf.getUInt8(), NamesFlags::HEXA_FIRST)}) << std::endl;
     }
 }
 

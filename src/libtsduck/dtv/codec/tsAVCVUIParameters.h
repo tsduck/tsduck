@@ -63,7 +63,7 @@ namespace ts {
         virtual void clear() override;
         virtual bool parse(const uint8_t* data, size_t size, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
         virtual bool parse(AVCParser& parser, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
-        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString()) const override;
+        virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
 
         // VUI parameters fields.
         // See ISO/IEC 14496-10 sections E.1.1 and E.2.1.

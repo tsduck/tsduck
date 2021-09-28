@@ -35,8 +35,7 @@
 
 #pragma once
 #include "tsUString.h"
-#include "tsFixedPoint.h"
-#include "tsConfigConstants.h"
+#include "tsBitRate.h"
 #include "tsEnumeration.h"
 
 namespace ts {
@@ -180,29 +179,11 @@ namespace ts {
     //---------------------------------------------------------------------
 
     //!
-    //! Bitrate in bits/second.
-    //!
-    //! To get more precision over long computations or exotic modulations,
-    //! a bitrate is implemented as a fixed-point value with decimal digits.
-    //!
-    //! The number of decimal digits is customizable using the macro TS_BITRATE_DECIMALS.
-    //!
-    //! By default, bitrates are represented with one decimal digit only.
-    //! Tests with 2 digits were not positive. Intermediate overflows in
-    //! some computations were encountered in some plugins working on large
-    //! window sizes. Automatically detecting the overflow and reducing the
-    //! window size accordingly works fine but the efficiency of the plugins
-    //! is not as good as previously. Using 1 decimal digit is currently the
-    //! best balance.
-    //!
-    typedef FixedPoint<int64_t, TS_BITRATE_DECIMALS> BitRate;
-
-    //!
     //! Convert 188-byte packet bitrate into 204-byte packet bitrate.
     //! @param [in] bitrate188 Bitrate using 188-byte packet as reference.
     //! @return Corresponding bitrate using 204-byte packet as reference.
     //!
-    TSDUCKDLL inline BitRate ToBitrate204(BitRate bitrate188)
+    TSDUCKDLL inline BitRate ToBitrate204(const BitRate& bitrate188)
     {
         return (bitrate188 * 204) / 188;
     }
@@ -212,7 +193,7 @@ namespace ts {
     //! @param [in] bitrate204 Bitrate using 204-byte packet as reference.
     //! @return Corresponding bitrate using 188-byte packet as reference.
     //!
-    TSDUCKDLL inline BitRate ToBitrate188(BitRate bitrate204)
+    TSDUCKDLL inline BitRate ToBitrate188(const BitRate& bitrate204)
     {
         return (bitrate204 * 188) / 204;
     }
@@ -225,7 +206,7 @@ namespace ts {
     //! @return Interval in milliseconds between the first byte of the first packet
     //! and the first byte of the second packet.
     //!
-    TSDUCKDLL inline MilliSecond PacketInterval(BitRate bitrate, PacketCounter distance = 1)
+    TSDUCKDLL inline MilliSecond PacketInterval(const BitRate& bitrate, PacketCounter distance = 1)
     {
         return bitrate == 0 ? 0 : ((distance * PKT_SIZE_BITS * MilliSecPerSec) / bitrate).toInt();
     }
@@ -236,7 +217,7 @@ namespace ts {
     //! @param [in] duration Number of milliseconds.
     //! @return Number of packets during @a duration milliseconds.
     //!
-    TSDUCKDLL inline PacketCounter PacketDistance(BitRate bitrate, MilliSecond duration)
+    TSDUCKDLL inline PacketCounter PacketDistance(const BitRate& bitrate, MilliSecond duration)
     {
         return PacketCounter(((bitrate * (duration >= 0 ? duration : -duration)) / (MilliSecPerSec * PKT_SIZE_BITS)).toInt());
     }
@@ -448,7 +429,7 @@ namespace ts {
     //! @return The PCR of the packet which is at the specified @a distance from the packet with @a last_pcr
     //! or INVALID_PCR if a parameter is incorrect.
     //!
-    TSDUCKDLL uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate);
+    TSDUCKDLL uint64_t NextPCR(uint64_t last_pcr, PacketCounter distance, const BitRate& bitrate);
 
     //!
     //! Compute the difference between PCR2 and PCR1.

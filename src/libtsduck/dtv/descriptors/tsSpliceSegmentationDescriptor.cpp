@@ -110,6 +110,60 @@ bool ts::SpliceSegmentationDescriptor::deliveryNotRestricted() const
     return web_delivery_allowed && no_regional_blackout && archive_allowed && device_restrictions == 3;
 }
 
+//----------------------------------------------------------------------------
+// Check if the signal is an out.
+//----------------------------------------------------------------------------
+
+bool ts::SpliceSegmentationDescriptor::isOut() const
+{
+    switch (segmentation_type_id) {
+        case 0x10: // Program Start
+        case 0x14: // Program Resumption
+        case 0x17: // Program Overlap Start
+        case 0x19: // Program Start In Progress
+        case 0x20: // Chapter Start
+        case 0x22: // Break Start
+        case 0x30: // Provider Advertisement Start
+        case 0x32: // Distributor Advertisement Start
+        case 0x34: // Provider Placement Opportunity Start
+        case 0x36: // Distributor Placement Opportunity Start
+        case 0x40: // Unscheduled Event Start
+        case 0x50: // Network Start
+            return true;
+        default:
+            return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Check if the signal is an in.
+//----------------------------------------------------------------------------
+
+bool ts::SpliceSegmentationDescriptor::isIn() const
+{
+    switch (segmentation_type_id) {
+        case 0x11: // Program End
+        case 0x12: // Program Early Termination
+        case 0x13: // Program Breakaway
+        case 0x15: // Program Runover Planned
+        case 0x16: // Program Runover Unplanned
+        case 0x18: // Program Blackout Override
+        case 0x21: // Chapter End
+        case 0x23: // Break End
+        case 0x31: // Provider Advertisement End
+        case 0x33: // Distributor Advertisement End
+        case 0x35: // Provider Placement Opportunity End
+        case 0x37: // Distributor Placement Opportunity End
+        case 0x41: // Unscheduled Event End
+        case 0x51: // Network End
+            return true;
+        default:
+            return false;
+    }
+}
+
+
 
 //----------------------------------------------------------------------------
 // Serialization
@@ -279,7 +333,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
             buf.setUserError();
         }
         else {
-            disp << margin << UString::Format(u"Segmentation upid type: %s", {NameFromSection(u"SpliceSegmentationUpIdType", buf.getUInt8(), names::HEXA_FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"Segmentation upid type: %s", {NameFromSection(u"SpliceSegmentationUpIdType", buf.getUInt8(), NamesFlags::HEXA_FIRST)}) << std::endl;
             const size_t upid_size = buf.getUInt8();
             disp.displayPrivateData(u"Upid data", buf, upid_size, margin);
         }
@@ -291,7 +345,7 @@ void ts::SpliceSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         }
         else {
             type_id = buf.getUInt8();
-            disp << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, names::HEXA_FIRST)}) << std::endl;
+            disp << margin << UString::Format(u"Segmentation type id: %s", {NameFromSection(u"SpliceSegmentationTypeId", type_id, NamesFlags::HEXA_FIRST)}) << std::endl;
             disp << margin << UString::Format(u"Segment number: %d", {buf.getUInt8()});
             disp << UString::Format(u", expected segments: %d", {buf.getUInt8()}) << std::endl;
         }

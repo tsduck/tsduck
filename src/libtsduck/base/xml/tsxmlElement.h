@@ -37,7 +37,7 @@
 #include "tsxmlAttribute.h"
 #include "tsByteBlock.h"
 #include "tsVariable.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 #include "tsIPv6Address.h"
 #include "tsMACAddress.h"
 
@@ -414,7 +414,7 @@ namespace ts {
             //! @param [in] name Attribute name.
             //! @param [in] value Attribute value.
             //!
-            void setIPAttribute(const UString& name, const IPAddress& value)
+            void setIPAttribute(const UString& name, const IPv4Address& value)
             {
                 setAttribute(name, value.toString());
             }
@@ -707,7 +707,7 @@ namespace ts {
             //! @param [in] defValue Default value to return if the attribute is not present.
             //! @return True on success, false on error.
             //!
-            bool getIPAttribute(IPAddress& value, const UString& name, bool required = false, const IPAddress& defValue = IPAddress()) const;
+            bool getIPAttribute(IPv4Address& value, const UString& name, bool required = false, const IPv4Address& defValue = IPv4Address()) const;
 
             //!
             //! Get an IPv6 address attribute of an XML element.

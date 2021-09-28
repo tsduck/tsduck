@@ -177,7 +177,7 @@ namespace ts {
 
     protected:
         TSP* const  tsp;   //!< The TSP callback structure can be directly accessed by subclasses.
-        DuckContext duck;  //!< The TSDuck context with various MPEG/DV features.
+        DuckContext duck;  //!< The TSDuck context with various MPEG/DVB features.
 
         //!
         //! Constructor.

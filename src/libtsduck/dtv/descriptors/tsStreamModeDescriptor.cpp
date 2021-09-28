@@ -91,7 +91,7 @@ void ts::StreamModeDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::StreamModeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << UString::Format(u"Stream mode: %s", {NameFromSection(u"DSMCCStreamMode", buf.getUInt8(), names::HEXA_FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Stream mode: %s", {NameFromSection(u"DSMCCStreamMode", buf.getUInt8(), NamesFlags::HEXA_FIRST)}) << std::endl;
         buf.skipBits(8);
     }
 }

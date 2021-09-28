@@ -121,7 +121,7 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 {
     while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();
-        disp << ", Type: " << names::AudioType(buf.getUInt8(), names::FIRST) << std::endl;
+        disp << ", Type: " << names::AudioType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
     }
 }
 

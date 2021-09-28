@@ -325,7 +325,7 @@ bool ts::MergePlugin::getOptions()
     _terminate = present(u"terminate");
     _restart = present(u"restart");
     getIntValue(_restart_interval, u"restart-interval", 0);
-    getFixedValue(_user_bitrate, u"bitrate");
+    getValue(_user_bitrate, u"bitrate");
     tsp->useJointTermination(present(u"joint-termination"));
     getIntValues(_set_labels, u"set-label");
     getIntValues(_reset_labels, u"reset-label");

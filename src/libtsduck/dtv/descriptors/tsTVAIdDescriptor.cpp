@@ -112,7 +112,7 @@ void ts::TVAIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf,
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"TVA id: 0x%X (%<d)", {buf.getUInt16()});
         buf.skipBits(5);
-        disp << ", running status: " << NameFromSection(u"TVARunningStatus", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+        disp << ", running status: " << NameFromSection(u"TVARunningStatus", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
     }
 }
 

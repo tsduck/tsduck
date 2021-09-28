@@ -10,12 +10,12 @@ linux|mac {
 }
 
 linux {
-    QMAKE_CXXFLAGS += -isystem $$PROJROOT/dektec/LinuxSDK/DTAPI/Include
-    OBJECTS += $$system("$$PROJROOT/dektec/dtapi-config.sh --object")
+    QMAKE_CXXFLAGS += -isystem $$system("$$PROJROOT/build/dtapi-config.sh --include")
+    OBJECTS += $$system("$$PROJROOT/build/dtapi-config.sh --object")
 }
 
 mac {
-    QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/libtsduck.so $$OUT_PWD/libtsduck.so $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += install_name_tool -id $$OUT_PWD/libtsduck$$SO $$OUT_PWD/libtsduck$$SO $$escape_expand(\\n\\t)
 }
 
 QMAKE_CXXFLAGS += $$system("$$PROJROOT/build/java-config.sh --cflags")

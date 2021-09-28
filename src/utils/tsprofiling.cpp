@@ -114,7 +114,7 @@ Options::Options(int argc, char *argv[]) :
     // Load option values.
     duck.loadArgs(*this);
     getIntValue(buffer_size, u"packet-buffer", 1000);
-    getFixedValue(fixed_bitrate, u"bitrate");
+    getValue(fixed_bitrate, u"bitrate");
     getPlugin(input, ts::PluginType::INPUT, u"file");
     getPlugin(output, ts::PluginType::OUTPUT, u"drop");
     getPlugins(plugins, ts::PluginType::PROCESSOR);

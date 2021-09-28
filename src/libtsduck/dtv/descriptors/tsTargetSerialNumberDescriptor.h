@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 #include "tsIPUtils.h"
 
 namespace ts {

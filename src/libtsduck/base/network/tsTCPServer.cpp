@@ -53,7 +53,7 @@ bool ts::TCPServer::listen(int backlog, Report& report)
 // Wait for a client
 //----------------------------------------------------------------------------
 
-bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address, Report& report)
+bool ts::TCPServer::accept (TCPConnection& client, IPv4SocketAddress& client_address, Report& report)
 {
     if (client.isConnected()) {
         report.error(u"invalid client in accept(): already connected");
@@ -79,7 +79,7 @@ bool ts::TCPServer::accept (TCPConnection& client, SocketAddress& client_address
         return false;
     }
 
-    client_address = SocketAddress(sock_addr);
+    client_address = IPv4SocketAddress(sock_addr);
     report.debug(u"received connection from %s", {client_address});
 
     client.declareOpened(client_sock, report);

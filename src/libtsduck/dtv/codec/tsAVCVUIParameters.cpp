@@ -221,7 +221,7 @@ bool ts::AVCVUIParameters::parse(AVCParser& parser, std::initializer_list<uint32
 // Display structure content
 //----------------------------------------------------------------------------
 
-std::ostream& ts::AVCVUIParameters::display(std::ostream& out, const UString& margin) const
+std::ostream& ts::AVCVUIParameters::display(std::ostream& out, const UString& margin, int level) const
 {
     if (!valid) {
         return out;

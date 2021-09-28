@@ -35,7 +35,7 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::OneShotPacketizer::OneShotPacketizer(const DuckContext& duck, PID pid, bool do_stuffing, BitRate bitrate) :
+ts::OneShotPacketizer::OneShotPacketizer(const DuckContext& duck, PID pid, bool do_stuffing, const BitRate& bitrate) :
     CyclingPacketizer(duck, pid, do_stuffing ? StuffingPolicy::ALWAYS : StuffingPolicy::AT_END, bitrate)
 {
 }

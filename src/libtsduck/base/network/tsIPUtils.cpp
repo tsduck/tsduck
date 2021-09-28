@@ -28,7 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPUtils.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
+#include "tsNamesFile.h"
 #if defined(TS_MAC)
 #include <ifaddrs.h>
 #endif
@@ -64,10 +65,10 @@ bool ts::IPInitialize(Report& report)
 // Check if a local system interface has a specified IP address.
 //----------------------------------------------------------------------------
 
-bool ts::IsLocalIPAddress(const IPAddress& address)
+bool ts::IsLocalIPAddress(const IPv4Address& address)
 {
-    IPAddressVector locals;
-    return address == IPAddress::LocalHost || (GetLocalIPAddresses(locals) && std::find(locals.begin(), locals.end(), address) != locals.end());
+    IPv4AddressVector locals;
+    return address == IPv4Address::LocalHost || (GetLocalIPAddresses(locals) && std::find(locals.begin(), locals.end(), address) != locals.end());
 }
 
 
@@ -76,7 +77,7 @@ bool ts::IsLocalIPAddress(const IPAddress& address)
 // with their network mask.
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
 {
     bool status = true;
     list.clear();
@@ -93,9 +94,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
     // Browse the list of interfaces.
     for (::ifaddrs* ifa = start; ifa != nullptr; ifa = ifa->ifa_next) {
         if (ifa->ifa_addr != nullptr) {
-            IPAddress addr(*ifa->ifa_addr);
-            if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back(IPAddressMask(addr, IPAddress(*ifa->ifa_netmask)));
+            IPv4Address addr(*ifa->ifa_addr);
+            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
+                list.push_back(IPv4AddressMask(addr, IPv4Address(*ifa->ifa_netmask)));
             }
         }
     }
@@ -126,9 +127,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
         retsize = std::max<::DWORD>(0, std::min(retsize, ::DWORD(sizeof(info))));
         size_t count = retsize / sizeof(::INTERFACE_INFO);
         for (size_t i = 0; i < count; ++i) {
-            IPAddress addr(info[i].iiAddress.Address);
-            if (addr.hasAddress() && addr != IPAddress::LocalHost) {
-                list.push_back(IPAddressMask(addr, IPAddress(info[i].iiNetmask.Address)));
+            IPv4Address addr(info[i].iiAddress.Address);
+            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
+                list.push_back(IPv4AddressMask(addr, IPv4Address(info[i].iiNetmask.Address)));
             }
         }
     }
@@ -151,9 +152,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
         ifc.ifc_len = std::max(0, std::min(ifc.ifc_len, int(sizeof(info))));
         size_t count = ifc.ifc_len / sizeof(::ifreq);
         for (size_t i = 0; i < count; ++i) {
-            IPAddress addr(info[i].ifr_addr);
-            IPAddress mask;
-            if (addr.hasAddress() && addr != IPAddress::LocalHost) {
+            IPv4Address addr(info[i].ifr_addr);
+            IPv4Address mask;
+            if (addr.hasAddress() && addr != IPv4Address::LocalHost) {
                 // Get network mask for this interface.
                 ::ifreq req;
                 req = info[i];
@@ -162,9 +163,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
                     report.error(u"error getting network mask for %s: %s", {addr, SysSocketErrorCodeMessage(err)});
                 }
                 else {
-                    mask = IPAddress(req.ifr_netmask);
+                    mask = IPv4Address(req.ifr_netmask);
                 }
-                list.push_back(IPAddressMask(addr, mask));
+                list.push_back(IPv4AddressMask(addr, mask));
             }
         }
     }
@@ -189,9 +190,9 @@ bool ts::GetLocalIPAddresses(IPAddressMaskVector& list, Report& report)
 // This method returns the list of all local IPv4 addresses in the system
 //----------------------------------------------------------------------------
 
-bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
+bool ts::GetLocalIPAddresses(IPv4AddressVector& list, Report& report)
 {
-    IPAddressMaskVector full_list;
+    IPv4AddressMaskVector full_list;
     list.clear();
 
     if (GetLocalIPAddresses(full_list, report)) {
@@ -208,68 +209,18 @@ bool ts::GetLocalIPAddresses(IPAddressVector& list, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Get the size in bytes of an IPv4 header.
+// Get the name of an IP protocol (UDP, TCP, etc).
 //----------------------------------------------------------------------------
 
-size_t ts::IPHeaderSize(const void* data, size_t size)
+ts::UString ts::IPProtocolName(uint8_t protocol, bool long_format)
 {
-    const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
-    size_t headerSize = 0;
-
-    // The first byte of the header contains the IP version and the number
-    // of 32-bit words in the header.
-    if (ip != nullptr && size >= IPv4_MIN_HEADER_SIZE && ((ip[0] >> 4) & 0x0F) == IPv4_VERSION) {
-        headerSize = sizeof(uint32_t) * size_t(ip[0] & 0x0F);
-    }
-
-    return headerSize <= size ? headerSize : 0;
-}
-
-
-//----------------------------------------------------------------------------
-// Compute the checksum of an IPv4 header.
-//----------------------------------------------------------------------------
-
-uint16_t ts::IPHeaderChecksum(const void* data, size_t size)
-{
-    const size_t hSize = IPHeaderSize(data, size);
-    const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
-    uint32_t checksum = 0;
-
-    // Add all 16-bit words in the header (except checksum).
-    for (size_t i = 0; i < hSize; i += 2) {
-        if (i != IPv4_CHECKSUM_OFFSET) {
-            checksum += GetUInt16(ip + i);
+    // The strings in tsduck.ip.names use format "acronym: description".
+    UString name(ts::NamesFile::Instance(ts::NamesFile::Predefined::IP)->nameFromSection(u"IPProtocol", protocol));
+    if (!long_format) {
+        const size_t colon = name.find(u':');
+        if (colon != NPOS) {
+            name.resize(colon);
         }
     }
-
-    // Add carries until they are all gone.
-    while (checksum > 0xFFFF) {
-        checksum = (checksum & 0xFFFF) + (checksum >> 16);
-    }
-
-    // Take the complement.
-    return hSize == 0 ? 0 : uint16_t(checksum ^ 0xFFFF);
-}
-
-
-//----------------------------------------------------------------------------
-// Verify or update the checksum of an IPv4 header.
-//----------------------------------------------------------------------------
-
-bool ts::VerifyIPHeaderChecksum(const void* data, size_t size)
-{
-    const bool ok = IPHeaderSize(data, size) > 0;
-    const uint8_t* ip = reinterpret_cast<const uint8_t*>(data);
-    return ok && GetUInt16(ip + IPv4_CHECKSUM_OFFSET) == IPHeaderChecksum(data, size);
-}
-
-bool ts::UpdateIPHeaderChecksum(void* data, size_t size)
-{
-    const bool ok = IPHeaderSize(data, size) > 0;
-    if (ok) {
-        uint8_t* ip = reinterpret_cast<uint8_t*>(data);
-        PutUInt16(ip + IPv4_CHECKSUM_OFFSET, IPHeaderChecksum(data, size));
-    }
-    return ok;
+    return name;
 }

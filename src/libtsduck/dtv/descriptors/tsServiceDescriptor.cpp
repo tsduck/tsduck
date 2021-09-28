@@ -102,7 +102,7 @@ void ts::ServiceDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Service type: " << names::ServiceType(buf.getUInt8(), names::FIRST) << std::endl;
+        disp << margin << "Service type: " << names::ServiceType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         const UString provider(buf.getStringWithByteLength());
         const UString service(buf.getStringWithByteLength());
         disp << margin << "Service: \"" << service << "\", Provider: \"" << provider << "\"" << std::endl;

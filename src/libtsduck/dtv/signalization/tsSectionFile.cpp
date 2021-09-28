@@ -546,12 +546,11 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
     for (auto name = extfiles.begin(); name != extfiles.end(); ++name) {
         // Load the extension file. Use searching rules.
         xml::Document extdoc(doc.report());
-        xml::Element* extroot = nullptr;
         xml::Element* elem = nullptr;
         if (!extdoc.load(*name, true)) {
             extdoc.report().error(u"Extension XML model file not found: %s", {*name});
         }
-        else if ((extroot = extdoc.rootElement()) != nullptr) {
+        else if (extdoc.rootElement() != nullptr) {
             // Remove elements one by one.
             while ((elem = extdoc.rootElement()->firstChildElement()) != nullptr) {
                 if (!elem->name().startWith(u"_")) {

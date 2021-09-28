@@ -196,7 +196,7 @@ bool ts::Socket::reusePort(bool active, Report& report)
 // Get local socket address
 //----------------------------------------------------------------------------
 
-bool ts::Socket::getLocalAddress(SocketAddress& addr, Report& report)
+bool ts::Socket::getLocalAddress(IPv4SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
     SysSocketLengthType len = sizeof(sock_addr);
@@ -206,6 +206,6 @@ bool ts::Socket::getLocalAddress(SocketAddress& addr, Report& report)
         addr.clear();
         return false;
     }
-    addr = SocketAddress(sock_addr);
+    addr = IPv4SocketAddress(sock_addr);
     return true;
 }

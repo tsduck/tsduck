@@ -169,7 +169,7 @@ Options::Options(int argc, char *argv[]) :
     getValue(input_file, u"");
     getValue(output_file, u"output-file");
 
-    getFixedValue(target_bitrate, u"bitrate", 0);
+    getValue(target_bitrate, u"bitrate", 0);
     assert(target_bitrate != 0);
 
     getIntValue(buffer_size, u"buffer-size", DEFAULT_TS_BUFFER_SIZE);

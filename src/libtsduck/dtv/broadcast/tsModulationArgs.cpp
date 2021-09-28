@@ -131,7 +131,7 @@ ts::ModulationArgs::ModulationArgs(bool allow_short_options) :
 // Reset all values, they become "unset"
 //----------------------------------------------------------------------------
 
-void ts::ModulationArgs::reset()
+void ts::ModulationArgs::clear()
 {
     delivery_system.clear();
     frequency.clear();
@@ -173,6 +173,27 @@ void ts::ModulationArgs::reset()
     layer_c_segment_count.clear();
     layer_c_time_interleaving.clear();
     stream_id.clear();
+}
+
+
+//----------------------------------------------------------------------------
+//! Reset or copy the local reception parameters.
+//----------------------------------------------------------------------------
+
+void ts::ModulationArgs::resetLocalReceptionParameters()
+{
+    lnb.clear();
+    satellite_number.clear();
+}
+
+void ts::ModulationArgs::copyLocalReceptionParameters(const ModulationArgs& other)
+{
+    if (other.lnb.set()) {
+        lnb = other.lnb;
+    }
+    if (other.satellite_number.set()) {
+        satellite_number = other.satellite_number;
+    }
 }
 
 
@@ -672,9 +693,6 @@ bool ts::ModulationArgs::convertToDektecModulation(int& modulation_type, int& pa
 
 bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descriptor& desc, uint16_t ts_id)
 {
-    // Completely clear previous content.
-    reset();
-
     // Filter out invalid descriptors.
     if (!desc.isValid()) {
         return false;
@@ -774,7 +792,7 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
                     switch (data[6] & 0x03) {
                         case 0: modulation = QAM_AUTO; break;
                         case 1: modulation = QPSK; break;
-                        // ??? case 8: modulation = PSK_8; break;
+                        case 8: modulation = PSK_8; break;
                         // 8  = "ISDB-S system (refer to TMCC signal)", TC8PSK?, is this the same as PSK_8?
                         // 9  = 2.6GHz band digital satellite sound broadcasting
                         // 10 = Advanced narrow-band CS digital broadcasting
@@ -922,23 +940,11 @@ bool ts::ModulationArgs::fromDeliveryDescriptor(DuckContext& duck, const Descrip
 // Format a short description (frequency and essential parameters).
 //----------------------------------------------------------------------------
 
-ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength, int quality) const
+ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck) const
 {
-    // Strength and quality as a string.
-    UString qual_string;
-    if (strength > 0) {
-        qual_string = UString::Format(u"strength: %d%%", {strength});
-    }
-    if (quality > 0) {
-        if (!qual_string.empty()) {
-            qual_string += u", ";
-        }
-        qual_string += UString::Format(u"quality: %d%%", {quality});
-    }
-
     // Don't know what to describe without delivery system or frequency.
     if (!delivery_system.set() || !frequency.set()) {
-        return qual_string;
+        return UString();
     }
 
     UString desc;
@@ -1025,11 +1031,6 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
             break;
         }
     }
-
-    // Final string.
-    if (!qual_string.empty()) {
-        desc += u", " + qual_string;
-    }
     return desc;
 }
 
@@ -1038,8 +1039,10 @@ ts::UString ts::ModulationArgs::shortDescription(DuckContext& duck, int strength
 // Display a description of the paramters on a stream, line by line.
 //----------------------------------------------------------------------------
 
-void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, bool verbose) const
+std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, int level) const
 {
+    const bool verbose = level >= Severity::Verbose;
+
     if (frequency.set() && frequency != 0) {
         strm << margin << "Carrier frequency: " << UString::Decimal(frequency.value()) << " Hz" << std::endl;
     }
@@ -1210,6 +1213,7 @@ void ts::ModulationArgs::display(std::ostream& strm, const ts::UString& margin, 
             break;
         }
     }
+    return strm;
 }
 
 
@@ -1455,6 +1459,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
             status = false;
         }
         else {
+            args.debug(u"loaded LNB \"%s\" from command line", {l});
             lnb = l;
         }
     }

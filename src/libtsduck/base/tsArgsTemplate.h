@@ -103,37 +103,23 @@ void ts::Args::getOptionalIntValue(Variable<INT>& value, const UChar* name, bool
 
 
 //----------------------------------------------------------------------------
-// Get the fixed-precision value of an option.
+// Get the value of an AbstractNumber option.
 //----------------------------------------------------------------------------
 
-template <typename INT, const size_t PREC, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value, int>::type N>
-void ts::Args::getFixedValue(FixedPoint<INT,PREC>& value, const UChar* name, FixedPoint<INT,PREC> def_value, size_t index) const
+template <class NUMTYPE, typename std::enable_if<std::is_base_of<ts::AbstractNumber, NUMTYPE>::value, int>::type N>
+void ts::Args::getValue(NUMTYPE& val, const UChar* name, const NUMTYPE& def_value, size_t index) const
 {
-    INT i = 0;
-    getIntValue(i, name, def_value.raw(), index);
-    value = FixedPoint<INT,PREC>(i, true);
+    if (!val.fromString(value(name, u"", index))) {
+        val = def_value;
+    }
 }
 
-template <typename INT, const size_t PREC, typename INT2, typename std::enable_if<std::is_integral<INT>::value && std::is_signed<INT>::value && std::is_integral<INT2>::value, int>::type N>
-void ts::Args::getFixedValue(FixedPoint<INT,PREC>& value, const UChar* name, INT2 def_value, size_t index) const
+template <class NUMTYPE, typename std::enable_if<std::is_base_of<ts::AbstractNumber, NUMTYPE>::value, int>::type N>
+NUMTYPE ts::Args::numValue(const UChar* name, const NUMTYPE& def_value, size_t index) const
 {
-    getFixedValue<INT,PREC>(value, name, FixedPoint<INT,PREC>(def_value), index);
-}
-
-template <class FIXED>
-FIXED ts::Args::fixedValue(const UChar* name, FixedPoint<typename FIXED::int_t, FIXED::PRECISION> def_value, size_t index) const
-{
-    FIXED value(def_value);
-    getFixedValue<typename FIXED::int_t, FIXED::PRECISION>(value, name, def_value, index);
-    return value;
-}
-
-template <class FIXED, typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type N>
-FIXED ts::Args::fixedValue(const UChar* name, INT2 def_value, size_t index) const
-{
-    FIXED value(def_value);
-    getFixedValue<typename FIXED::int_t, FIXED::PRECISION>(value, name, FIXED(def_value), index);
-    return value;
+    NUMTYPE val;
+    getValue(val, name, def_value, index);
+    return val;
 }
 
 

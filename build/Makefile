@@ -74,9 +74,9 @@ install-tools:
 else
 install-tools: 80-tsduck.rules 80-tsduck.perms
 	install -d -m 755 $(SYSROOT)$(UDEVDIR)
-	install -m 644 80-tsduck.rules $(SYSROOT)$(UDEVDIR)/
+	install -m 644 80-tsduck.rules $(SYSROOT)$(UDEVDIR)
 	install -d -m 755 $(SYSROOT)$(ETCDIR)/security/console.perms.d
-	install -m 644 80-tsduck.perms $(SYSROOT)$(ETCDIR)/security/console.perms.d/
+	install -m 644 80-tsduck.perms $(SYSROOT)$(ETCDIR)/security/console.perms.d
 endif
 install-devel:
 	@true
@@ -110,14 +110,12 @@ RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
 	rpmdev-setuptree
 
-# Reuse local Dektec Linux SDK if present.
-DTAPI_ORIGIN = $(if $(wildcard $(ROOTDIR)/dektec/LinuxSDK.version),$(ROOTDIR)/dektec/$(notdir $(shell cat $(ROOTDIR)/dektec/LinuxSDK.version)),)
-
 # Build the tsduck binary RPM.
+# The build will take place elsewhere, reuse local Dektec Linux SDK if present.
 .PHONY: rpm rpm32
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
-	$(if $(wildcard $(DTAPI_ORIGIN)),MAKEFLAGS=DTAPI_ORIGIN=$(DTAPI_ORIGIN),) \
+	DTAPI_ORIGIN="$(shell ./dtapi-config.sh --tarball)" \
 	  $(RPMBUILD) $(RPMBUILDFLAGS) \
 	      -D 'version $(shell ./get-version-from-sources.sh --main)' \
 	      -D 'commit $(shell ./get-version-from-sources.sh --commit)' \
@@ -138,6 +136,7 @@ rpm32:
 TMPDIR = /tmp/tsduck-deb-$(USER)
 .PHONY: deb deb-tools deb-dev
 deb: deb-tools deb-dev
+
 deb-tools:
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR)
 	rm -rf $(TMPDIR)
@@ -149,11 +148,9 @@ deb-tools:
 	    $(if $(NOPCSC),-e '/libpcsc/d',) \
 	    $(if $(NOCURL),-e '/libcurl/d',) \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
-	sed -e 's|{{EXECS}}|$(addprefix /usr/bin/,$(TSEXECS))|g' \
-	    tsduck.postinst >$(TMPDIR)/DEBIAN/postinst
-	chmod a+x $(TMPDIR)/DEBIAN/postinst
-	dpkg --build $(TMPDIR) $(INSTALLERDIR)
+	dpkg-deb --build --root-owner-group $(TMPDIR) $(INSTALLERDIR)
 	rm -rf $(TMPDIR)
+
 deb-dev: deb-tools
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR)
 	rm -rf $(TMPDIR)
@@ -165,7 +162,5 @@ deb-dev: deb-tools
 	    $(if $(NOPCSC),-e '/libpcsc/d',) \
 	    $(if $(NOCURL),-e '/libcurl/d',) \
 	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
-	cp tsduck-dev.postinst $(TMPDIR)/DEBIAN/postinst
-	chmod a+x $(TMPDIR)/DEBIAN/postinst
-	dpkg --build $(TMPDIR) $(INSTALLERDIR)
+	dpkg-deb --build --root-owner-group $(TMPDIR) $(INSTALLERDIR)
 	rm -rf $(TMPDIR)

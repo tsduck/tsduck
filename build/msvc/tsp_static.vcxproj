@@ -20,6 +20,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-exe.props" />
     <Import Project="msvc-use-tsducklib.props" />
+    <Import Project="msvc-use-librist.props" />
     <Import Project="msvc-common-end.props" />
   </ImportGroup>
 

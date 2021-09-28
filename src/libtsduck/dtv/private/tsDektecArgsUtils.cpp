@@ -28,7 +28,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDektecArgsUtils.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsIPv6SocketAddress.h"
 #include "tsMemory.h"
 TSDUCK_SOURCE;
@@ -367,8 +367,8 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
     }
 
     // Get IP addresses and ports. Valid for receive and transmit.
-    IPAddress ip4;
-    SocketAddress sock4;
+    IPv4Address ip4;
+    IPv4SocketAddress sock4;
     IPv6Address ip6;
     IPv6SocketAddress sock6;
     if ((ipv4 && !DecodeAddress(args, u"ip4", 0, sock4, dtpars.m_Ip, sizeof(dtpars.m_Ip), &dtpars.m_Port, !receive, true)) ||

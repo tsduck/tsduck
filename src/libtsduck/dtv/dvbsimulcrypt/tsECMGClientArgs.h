@@ -35,7 +35,7 @@
 #pragma once
 #include "tsArgsSupplierInterface.h"
 #include "tsByteBlock.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tstlv.h"
 
 namespace ts {
@@ -52,7 +52,7 @@ namespace ts {
         ECMGClientArgs();
 
         // Public fields, by options.
-        SocketAddress ecmg_address;     //!< -\-ecmg, ECMG socket address (required or optional)
+        IPv4SocketAddress ecmg_address;     //!< -\-ecmg, ECMG socket address (required or optional)
         uint32_t      super_cas_id;     //!< -\-super-cas-id, CA system & subsystem id
         ByteBlock     access_criteria;  //!< -\-access-criteria
         MilliSecond   cp_duration;      //!< -\-cp-duration, crypto-period duration

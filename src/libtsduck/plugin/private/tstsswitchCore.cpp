@@ -564,12 +564,12 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
 
 bool ts::tsswitch::Core::inputStopped(size_t pluginIndex, bool success)
 {
+    _log.debug(u"input %d completed, success: %s", {pluginIndex, success});
     bool stopRequest = false;
 
     // Locked sequence.
     {
         GuardMutex lock(_mutex);
-        _log.debug(u"input %d completed, success: %s", {pluginIndex, success});
 
         // Count end of cycle when the last plugin terminates.
         if (pluginIndex == _inputs.size() - 1) {

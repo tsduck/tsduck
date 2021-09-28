@@ -59,7 +59,7 @@ ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
 // Reset all values, they become "unset"
 //----------------------------------------------------------------------------
 
-void ts::TunerArgs::reset()
+void ts::TunerArgs::clear()
 {
     device_name.clear();
     signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT;
@@ -69,7 +69,7 @@ void ts::TunerArgs::reset()
     receiver_name.clear();
 
     // Reset superclass.
-    ModulationArgs::reset();
+    ModulationArgs::clear();
 }
 
 
@@ -80,7 +80,7 @@ void ts::TunerArgs::reset()
 bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
 {
     bool status = true;
-    TunerArgs::reset();
+    TunerArgs::clear();
 
     // Tuner identification.
     if (args.present(u"adapter") && args.present(u"device-name")) {

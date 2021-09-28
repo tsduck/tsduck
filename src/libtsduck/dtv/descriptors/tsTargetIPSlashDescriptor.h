@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPAddress.h"
+#include "tsIPv4Address.h"
 #include "tsIPUtils.h"
 
 namespace ts {
@@ -56,7 +56,7 @@ namespace ts {
         class Address
         {
         public:
-            IPAddress IPv4_addr;         //!< IPv4 address.
+            IPv4Address IPv4_addr;         //!< IPv4 address.
             uint8_t   IPv4_slash_mask;   //!< Number of bits in network mask.
 
             //!
@@ -64,7 +64,7 @@ namespace ts {
             //! @param [in] addr IPv4 address.
             //! @param [in] mask Number of bits in network mask.
             //!
-            Address(const IPAddress& addr = IPAddress(), uint8_t mask = 0);
+            Address(const IPv4Address& addr = IPv4Address(), uint8_t mask = 0);
         };
 
         // TargetIPSlashDescriptor public members:

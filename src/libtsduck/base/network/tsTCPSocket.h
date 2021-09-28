@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsSocket.h"
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsAbortInterface.h"
 #include "tsReport.h"
 #include "tsNullReport.h"
@@ -119,18 +119,16 @@ namespace ts {
         //! Bind to a local address and port.
         //!
         //! The IP address part of the socket address must one of:
-        //! - @link IPAddress::AnyAddress @endlink. Any local interface may be used
-        //!   to connect to a server (client side) or to receive incoming client
-        //!   connections (server side).
+        //! - IPv4Address::AnyAddress. Any local interface may be used to connect to a server
+        //!   (client side) or to receive incoming client connections (server side).
         //! - The IP address of an interface of the local system. Outgoing connections
         //!   (client side) will be only allowed through this interface. Incoming client
         //!   connections (server side) will be accepted only when they arrive through
         //!   the selected interface.
         //!
         //! The port number part of the socket address must be one of:
-        //! - @link SocketAddress::AnyPort @endlink. The socket is bound to an
-        //!   arbitrary unused local TCP port. This is the usual configuration for
-        //!   a TCP client.
+        //! - IPv4SocketAddress::AnyPort. The socket is bound to an arbitrary unused
+        //!   local TCP port. This is the usual configuration for a TCP client.
         //! - A specific port number. This is the usual configuration for a TCP server.
         //!   If this TCP port is already bound by another local TCP socket, the bind
         //!   operation fails, unless the "reuse port" option has already been set.
@@ -139,7 +137,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool bind(const SocketAddress& addr, Report& report = CERR);
+        bool bind(const IPv4SocketAddress& addr, Report& report = CERR);
 
         // Implementation of Socket interface.
         virtual bool open(Report& report = CERR) override;

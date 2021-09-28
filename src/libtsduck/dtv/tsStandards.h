@@ -39,6 +39,7 @@
 namespace ts {
     //!
     //! Bit masks for standards, used to qualify the signalization.
+    //! @ingroup mpeg
     //!
     enum class Standards : uint16_t {
         NONE  = 0x00,  //!< No known standard

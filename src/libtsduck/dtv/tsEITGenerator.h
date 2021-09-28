@@ -255,7 +255,7 @@ namespace ts {
         //! @param [in] bitrate Maximum bitrate of the EIT PID.
         //! @see setTransportStreamBitRate()
         //!
-        void setMaxBitRate(BitRate bitrate) { setBitRateField(&EITGenerator::_max_bitrate, bitrate); }
+        void setMaxBitRate(const BitRate& bitrate) { setBitRateField(&EITGenerator::_max_bitrate, bitrate); }
 
         //!
         //! Set the current time in the stream processing.
@@ -403,7 +403,7 @@ namespace ts {
             SectionPtr section;      // Safe pointer to the EIT section.
 
             // Constructor, build an empty section for the specified service (CRC32 not set).
-            ESection(const ServiceIdTriplet& service_id, TID tid, uint8_t section_number, uint8_t last_section_number);
+            ESection(EITGenerator* gen, const ServiceIdTriplet& service_id, TID tid, uint8_t section_number, uint8_t last_section_number);
 
             // Indicate that the section will be modified. It the section is or has recently been used in a
             // packetizer, a copy of the section is created first to avoid corrupting the section being packetized.
@@ -411,6 +411,9 @@ namespace ts {
 
             // Toogle the actual/other status for the section.
             void toggleActual(bool actual);
+
+            // Increment version of section.
+            void updateVersion(EITGenerator* gen, bool recompute_crc);
         };
 
         typedef SafePtr<ESection> ESectionPtr;
@@ -495,9 +498,13 @@ namespace ts {
         EServiceMap          _services;          // Map of services -> segments -> events and sections.
         ESectionListArray    _injects;           // Arrays of sections for injection.
         size_t               _obsolete_count;    // Number of obsolete sections in the injection lists.
+        std::map<uint32_t,uint8_t> _versions;    // Last version of sections.
 
         // Set a bitrate field and update EIT inter-packet.
-        void setBitRateField(BitRate EITGenerator::* field, BitRate bitrate);
+        void setBitRateField(BitRate EITGenerator::* field, const BitRate& bitrate);
+
+        // Get next version of a section.
+        uint8_t nextVersion(TID tid, uint16_t service_id, uint8_t section_number);
 
         // Update the EIT database according to the current time.
         // Obsolete events, sections and segments are discarded.

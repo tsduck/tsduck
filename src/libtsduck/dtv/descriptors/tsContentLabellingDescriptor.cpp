@@ -161,13 +161,13 @@ void ts::ContentLabellingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 {
     if (buf.canReadBytes(2)) {
         const uint16_t format = buf.getUInt16();
-        disp << margin << "Metadata application format: " << NameFromSection(u"MetadataApplicationFormat", format, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Metadata application format: " << NameFromSection(u"MetadataApplicationFormat", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFFFF && buf.canReadBytes(4)) {
             disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         }
         const bool content_reference_id_record_flag = buf.getBool();
         const uint8_t time_base_indicator = buf.getBits<uint8_t>(4);
-        disp << margin << "Content time base indicator: " << NameFromSection(u"ContentTimeBaseIndicator", time_base_indicator, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Content time base indicator: " << NameFromSection(u"ContentTimeBaseIndicator", time_base_indicator, NamesFlags::HEXA_FIRST) << std::endl;
         buf.skipBits(3);
         if (content_reference_id_record_flag && buf.canReadBytes(1)) {
             const size_t length = buf.getUInt8();

@@ -2,21 +2,73 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.28-2442
+VERSION 3.29-2572
 
 [NEW] New commands and plugins:
 
+  * Added command "tseit" (test EIT manipulation scripts).
+
+[IMP] Improvements on existing commands and plugins:
+
+  * All bitrate computations are now implemented using 64-bit floating-point
+    values. Previously, a fixed-point representation was used. The strict
+    accuracy was better but integer overflows in intermediate computations
+    occurred from time to time, leading to incorrect evaluations.
+  * On Unix (using libcurl), when an SSL/TLS connection fails with a CA
+    certificate issue, retry with an updated list of CA certificates from
+    https://curl.se/ca/cacert.pem. Transient issues have been noticed with
+    Let's Encrypt CA around the certification renewal periods. The updated
+    list is saved in $HOME/.tscacert.pem and is updated at most once a day.
+  * New options in exiting commands and plugins:
+    - Options --section-number and --negate-section-number in "tstables" and
+      plugin "tables".
+
+[BUG] Bug fixes:
+
+  * Fixed incorrect EIT Schedule regeneration on event change in plugin
+    "eitinject".
+
+-------------------------------------------------------------------------------
+
+VERSION 3.28-2548
+
+[NEW] New commands and plugins:
+
+  * Added command "tspcap", a simple tool to analyze pcap files (Wireshark).
   * Added plugin "pcredit" (edit PCR, PTS and DTS values in various ways).
+  * Added input and output plugin "rist" (Reliable Internet Stream Transport).
+  * On macOS, all shared objects, including plugins, are now named '.dylib',
+    the standard macOS naming, instead of '.so', a Linux naming.
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in exiting commands and plugins:
     - Option --install-dvb-firmware in "tsconfig".
+    - Option --local-interface in plugin "srt" (input and output).
+    - Options --abnt, --atsc, --isdb in "tsscan".
 
 [BUG] Bug fixes:
 
   * Fixed issue #791: In plugin "merge", the PCR were not correcty adjusted
     when the input PCR had a discontinuity in the future.
+  * Fixed issue #830: Incorrect formatting of HEVC HRD parameters.
+  * Fixed issue #830: Incorrect handling of PES packets with 1 or 2 bytes in
+    last TS packet.
+  * Fixed issue #840: In "tsscan", the --lnb and --satellite-number parameters
+    were not correctly passed when scanning each transport.
+  * Fixed issue #841: In "tsscan", when generating channel files, the
+    frequency was incorrectly set to zero on satellite networks.
+  * In "tsp", the global default options for plugins (--atsc, --isdb, etc)
+    were not correctly passed to plugins "tables" and "psi".
+  * Fixed issue #856: The plugin "psi" with JSON output failed when restarted.
+  * Fixed issue #861: On Linux and macOS, when plugins start and stop processes
+    (typically "tsswitch" with several "fork" plugins), file descriptors were
+    not properly segmented between processes, resulting in plugins failing to
+    stop.
+  * With "--initial-input-packets N --add-start-stuffing N", tsp could not
+    start as long as at least one packet was received from the input plugin.
+  * Fixed issue #871: In plugin "eitgenerator", the version number of the EIT
+    sections were not correctly updated on section content change.
 
 -------------------------------------------------------------------------------
 

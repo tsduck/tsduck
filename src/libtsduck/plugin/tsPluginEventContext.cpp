@@ -35,15 +35,15 @@ TSDUCK_SOURCE;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PluginEventContext::PluginEventContext(uint32_t      event_code,
-                                           UString       plugin_name,
-                                           size_t        plugin_index,
-                                           size_t        plugin_count,
-                                           Plugin*       plugin,
-                                           Object*       plugin_data,
-                                           BitRate       bitrate,
-                                           PacketCounter plugin_packets,
-                                           PacketCounter total_packets) :
+ts::PluginEventContext::PluginEventContext(uint32_t       event_code,
+                                           UString        plugin_name,
+                                           size_t         plugin_index,
+                                           size_t         plugin_count,
+                                           Plugin*        plugin,
+                                           Object*        plugin_data,
+                                           const BitRate& bitrate,
+                                           PacketCounter  plugin_packets,
+                                           PacketCounter  total_packets) :
     _event_code(event_code),
     _plugin_name(plugin_name),
     _plugin_index(plugin_index),

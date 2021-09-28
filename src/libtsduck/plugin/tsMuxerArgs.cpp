@@ -227,7 +227,7 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     inputOnce = args.present(u"terminate");
     outputOnce = args.present(u"terminate-with-output");
     ignoreConflicts = args.present(u"ignore-conflicts");
-    args.getFixedValue(outputBitRate, u"bitrate");
+    args.getValue(outputBitRate, u"bitrate");
     args.getIntValue(inputRestartDelay, u"restart-delay", DEFAULT_RESTART_DELAY);
     args.getIntValue(cadence, u"cadence", DEFAULT_CADENCE);
     outputRestartDelay = inputRestartDelay;
@@ -240,10 +240,10 @@ bool ts::MuxerArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(sdtScope, u"sdt", TableScope::ACTUAL);
     args.getIntValue(eitScope, u"eit", TableScope::ACTUAL);
     args.getIntValue(timeInputIndex, u"time-reference-input", NPOS);
-    args.getFixedValue(patBitRate, u"pat-bitrate", DEFAULT_PSI_BITRATE);
-    args.getFixedValue(catBitRate, u"cat-bitrate", DEFAULT_PSI_BITRATE);
-    args.getFixedValue(nitBitRate, u"nit-bitrate", DEFAULT_PSI_BITRATE);
-    args.getFixedValue(sdtBitRate, u"sdt-bitrate", DEFAULT_PSI_BITRATE);
+    args.getValue(patBitRate, u"pat-bitrate", DEFAULT_PSI_BITRATE);
+    args.getValue(catBitRate, u"cat-bitrate", DEFAULT_PSI_BITRATE);
+    args.getValue(nitBitRate, u"nit-bitrate", DEFAULT_PSI_BITRATE);
+    args.getValue(sdtBitRate, u"sdt-bitrate", DEFAULT_PSI_BITRATE);
 
     // Load all plugin descriptions. Default output is the standard output file.
     ArgsWithPlugins* pargs = dynamic_cast<ArgsWithPlugins*>(&args);

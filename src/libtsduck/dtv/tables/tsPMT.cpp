@@ -489,7 +489,7 @@ void ts::PMT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     while (buf.canRead()) {
         const uint8_t type = buf.getUInt8();
         const PID pid = buf.getPID();
-        disp << margin << "Elementary stream: type " << names::StreamType(type, names::FIRST)
+        disp << margin << "Elementary stream: type " << names::StreamType(type, NamesFlags::FIRST)
              << UString::Format(u", PID: %d (0x%<X)", {pid}) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }

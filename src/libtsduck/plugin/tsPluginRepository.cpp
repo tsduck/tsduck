@@ -66,7 +66,12 @@ void ts::PluginRepository::registerInput(const UString& name, InputPluginFactory
 {
     CERR.debug(u"registering input plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
-        _inputPlugins[name] = allocator;
+        if (_inputPlugins[name] == nullptr) {
+            _inputPlugins[name] = allocator;
+        }
+        else {
+            CERR.debug(u"duplicated input plugin \"%s\" ignored", {name});
+        }
     }
 }
 
@@ -74,7 +79,12 @@ void ts::PluginRepository::registerProcessor(const UString& name, ProcessorPlugi
 {
     CERR.debug(u"registering processor plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
-        _processorPlugins[name] = allocator;
+        if (_processorPlugins[name] == nullptr) {
+            _processorPlugins[name] = allocator;
+        }
+        else {
+            CERR.debug(u"duplicated packet processor plugin \"%s\" ignored", {name});
+        }
     }
 }
 
@@ -82,7 +92,12 @@ void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFacto
 {
     CERR.debug(u"registering output plugin \"%s\", status: %s", {name, allocator != nullptr ? u"ok" : u"error, no allocator"});
     if (allocator != nullptr) {
-        _outputPlugins[name] = allocator;
+        if (_outputPlugins[name] == nullptr) {
+            _outputPlugins[name] = allocator;
+        }
+        else {
+            CERR.debug(u"duplicated output plugin \"%s\" ignored", {name});
+        }
     }
 }
 
@@ -181,6 +196,33 @@ ts::UStringList ts::PluginRepository::outputNames() const
 
 
 //----------------------------------------------------------------------------
+// A minimal implementation of TSP which only acts as a Report.
+//----------------------------------------------------------------------------
+
+namespace {
+    class ReportTSP: public ts::TSP
+    {
+        TS_NOBUILD_NOCOPY(ReportTSP);
+    private:
+        Report& _report;
+    protected:
+        virtual void writeLog(int sev, const ts::UString& msg) override { _report.log(sev, msg); }
+    public:
+        ReportTSP(Report& report) : ts::TSP(report.maxSeverity()), _report(report) {}
+        virtual ts::UString pluginName() const override { return ts::UString(); }
+        virtual ts::Plugin* plugin() const override { return nullptr; }
+        virtual size_t pluginIndex() const override { return 0; }
+        virtual size_t pluginCount() const override { return 0; }
+        virtual void signalPluginEvent(uint32_t, ts::Object*) const override {}
+        virtual void useJointTermination(bool on) override {}
+        virtual void jointTerminate() override {}
+        virtual bool useJointTermination() const override { return false; }
+        virtual bool thisJointTerminated() const override { return false; }
+    };
+}
+
+
+//----------------------------------------------------------------------------
 // Load all available tsp processors.
 //----------------------------------------------------------------------------
 
@@ -223,29 +265,32 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
     size_t name_width = 0;
     if ((flags & LIST_COMPACT) == 0) {
         if ((flags & LIST_INPUT) != 0) {
-            for (InputMap::const_iterator it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
+            for (auto it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
                 name_width = std::max(name_width, it->first.width());
             }
         }
         if ((flags & LIST_PACKET) != 0) {
-            for (ProcessorMap::const_iterator it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
+            for (auto it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
                 name_width = std::max(name_width, it->first.width());
             }
         }
         if ((flags & LIST_OUTPUT) != 0) {
-            for (OutputMap::const_iterator it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
+            for (auto it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
                 name_width = std::max(name_width, it->first.width());
             }
         }
     }
+
+    // A minimal TSP, used to build temporary plugins.
+    ReportTSP tsp(report);
 
     // List capabilities.
     if ((flags & LIST_INPUT) != 0) {
         if ((flags & LIST_COMPACT) == 0) {
             out += u"\nList of tsp input plugins:\n\n";
         }
-        for (InputMap::const_iterator it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
-            Plugin* p = it->second(nullptr);
+        for (auto it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
+            Plugin* p = it->second(&tsp);
             ListOnePlugin(out, it->first, p, name_width, flags);
             delete p;
         }
@@ -255,8 +300,8 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & LIST_COMPACT) == 0) {
             out += u"\nList of tsp output plugins:\n\n";
         }
-        for (OutputMap::const_iterator it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
-            Plugin* p = it->second(nullptr);
+        for (auto it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
+            Plugin* p = it->second(&tsp);
             ListOnePlugin(out, it->first, p, name_width, flags);
             delete p;
         }
@@ -266,8 +311,8 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & LIST_COMPACT) == 0) {
             out += u"\nList of tsp packet processor plugins:\n\n";
         }
-        for (ProcessorMap::const_iterator it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
-            Plugin* p = it->second(nullptr);
+        for (auto it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
+            Plugin* p = it->second(&tsp);
             ListOnePlugin(out, it->first, p, name_width, flags);
             delete p;
         }

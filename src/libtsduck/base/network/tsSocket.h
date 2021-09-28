@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSocketAddress.h"
+#include "tsIPv4SocketAddress.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
 
@@ -116,7 +116,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool getLocalAddress(SocketAddress& addr, Report& report = CERR);
+        bool getLocalAddress(IPv4SocketAddress& addr, Report& report = CERR);
 
         //!
         //! Get the underlying socket device handle (use with care).

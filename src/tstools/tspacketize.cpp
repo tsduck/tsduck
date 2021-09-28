@@ -149,7 +149,7 @@ Options::Options(int argc, char *argv[]) :
     }
     crc_op = present(u"force-crc") ? ts::CRC32::COMPUTE : ts::CRC32::CHECK;
     getIntValue(pid, u"pid", ts::PID_NULL);
-    getFixedValue(bitrate, u"bitrate");
+    getValue(bitrate, u"bitrate");
     getValue(outfile, u"output");
     infiles.getArgs(*this);
     if (present(u"xml")) {

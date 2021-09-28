@@ -31,8 +31,6 @@
 #
 #-----------------------------------------------------------------------------
 
-# With static link, we compile in a specific directory.
-BINDIR_SUFFIX := $(if $(STATIC),-static,)
 OBJSUBDIR := objs-tsplugins
 
 include ../../Makefile.tsduck
@@ -42,11 +40,7 @@ include ../../Makefile.tsduck
 ifndef STATIC
 
 # Dynamic link (the default), we build shared objects.
-SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix .so,$(TSPLUGINS)))
-
-# Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
-# Maintenance: also update build/tsduck.nsi (Windows).
-OBSOLETE_PLUGINS := dektec drop file fork hls http ip null psi skip srt tables
+SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS)))
 
 default: shlibs
 	@true
@@ -56,8 +50,9 @@ $(SHLIBS): $(SHARED_LIBTSDUCK)
 install: install-tools install-devel
 install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
+	$(if $(NO_TSPLUGINS),rm -rf $(addsuffix $(SO_SUFFIX),$(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(NO_TSPLUGINS)),))
+	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so,)
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
-	rm -f $(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/tsplugin_,$(addsuffix .so,$(OBSOLETE_PLUGINS)))
 install-devel:
 	@true
 

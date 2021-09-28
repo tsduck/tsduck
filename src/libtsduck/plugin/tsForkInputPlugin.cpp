@@ -85,6 +85,8 @@ bool ts::ForkInputPlugin::getOptions()
 
 bool ts::ForkInputPlugin::start()
 {
+    tsp->debug(u"starting input");
+
     // Create pipe & process.
     return _pipe.open(_command,
                       _nowait ? ForkPipe::ASYNCHRONOUS : ForkPipe::SYNCHRONOUS,
@@ -97,11 +99,13 @@ bool ts::ForkInputPlugin::start()
 
 bool ts::ForkInputPlugin::stop()
 {
+    tsp->debug(u"stopping input");
     return _pipe.close(*tsp);
 }
 
 bool ts::ForkInputPlugin::abortInput()
 {
+    tsp->debug(u"aborting input, is open: %s, is broken: %s", {_pipe.isOpen(), _pipe.isBroken()});
     _pipe.abortPipeReadWrite();
     return true;
 }

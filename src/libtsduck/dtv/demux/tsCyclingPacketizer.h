@@ -95,7 +95,7 @@ namespace ts {
         //! @param [in] bitrate Output bitrate, zero if undefined.
         //! Useful only when using specific repetition rates for sections
         //!
-        CyclingPacketizer(const DuckContext& duck, PID pid = PID_NULL, StuffingPolicy policy = StuffingPolicy::AT_END, BitRate bitrate = 0);
+        CyclingPacketizer(const DuckContext& duck, PID pid = PID_NULL, StuffingPolicy policy = StuffingPolicy::AT_END, const BitRate& bitrate = 0);
 
         //!
         //! Destructor
@@ -122,7 +122,7 @@ namespace ts {
         //! Useful only when using specific repetition rates for sections
         //! @param [in] bitrate Output bitrate, zero if undefined.
         //!
-        void setBitRate(BitRate bitrate);
+        void setBitRate(const BitRate& bitrate);
 
         //!
         //! Get the bitrate of the generated PID.

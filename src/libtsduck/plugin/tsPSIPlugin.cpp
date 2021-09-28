@@ -71,7 +71,6 @@ ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
 
 bool ts::PSIPlugin::getOptions()
 {
-    duck.reset();
     _signal_event = present(u"event-code");
     getIntValue(_event_code, u"event-code");
     _logger.setSectionHandler(_signal_event ? this : nullptr);
@@ -81,7 +80,6 @@ bool ts::PSIPlugin::getOptions()
 
 bool ts::PSIPlugin::start()
 {
-    duck.resetStandards();  // reset accumulated standards (not command line ones).
     return _logger.open();
 }
 

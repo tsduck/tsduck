@@ -93,7 +93,7 @@ void ts::AncillaryDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
         disp << margin << UString::Format(u"Ancillary data identifier: 0x%X", {id}) << std::endl;
         for (int i = 0; i < 8; ++i) {
             if ((id & (1 << i)) != 0) {
-                disp << margin << "  " << NameFromSection(u"AncillaryDataIdentifier", (1 << i), names::HEXA_FIRST) << std::endl;
+                disp << margin << "  " << NameFromSection(u"AncillaryDataIdentifier", (1 << i), NamesFlags::HEXA_FIRST) << std::endl;
             }
         }
     }

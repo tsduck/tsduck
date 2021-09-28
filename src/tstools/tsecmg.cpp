@@ -82,7 +82,7 @@ namespace {
         bool                       once;           // Accept only one client.
         bool                       reusePort;      // Socket option.
         ts::MilliSecond            ecmCompTime;    // ECM computation time.
-        ts::SocketAddress          serverAddress;  // TCP server local address.
+        ts::IPv4SocketAddress          serverAddress;  // TCP server local address.
         ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
         ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
     };
@@ -719,7 +719,7 @@ int MainCode(int argc, char *argv[])
     for (;;) {
 
         // Accept one incoming connection.
-        ts::SocketAddress clientAddress;
+        ts::IPv4SocketAddress clientAddress;
         ECMGConnectionPtr conn(new ECMGConnection(ts::ecmgscs::Protocol::Instance(), true, 3));
         ts::CheckNonNull(conn.pointer());
         if (!server.accept(*conn, clientAddress, shared.report())) {

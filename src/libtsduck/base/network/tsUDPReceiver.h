@@ -73,7 +73,7 @@ namespace ts {
         //! @param [in] reusePort Reuse-port option.
         //! @param [in] bufferSize Optional socket receive buffer size.
         //!
-        void setParameters(const SocketAddress& localAddress, bool reusePort, size_t bufferSize = 0);
+        void setParameters(const IPv4SocketAddress& localAddress, bool reusePort, size_t bufferSize = 0);
 
         //!
         //! Set reception timeout as if it comes from command line.
@@ -86,8 +86,8 @@ namespace ts {
         virtual bool receive(void* data,
                              size_t max_size,
                              size_t& ret_size,
-                             SocketAddress& sender,
-                             SocketAddress& destination,
+                             IPv4SocketAddress& sender,
+                             IPv4SocketAddress& destination,
                              const AbortInterface* abort = nullptr,
                              Report& report = CERR,
                              MicroSecond* timestamp = nullptr) override;
@@ -97,16 +97,16 @@ namespace ts {
         bool             _dest_as_param;
         bool             _receiver_specified; // An address is specified.
         bool             _use_ssm;            // Use source-specific multicast.
-        SocketAddress    _dest_addr;          // Expected destination of packets.
-        IPAddress        _local_address;      // Local address on which to listen.
+        IPv4SocketAddress    _dest_addr;          // Expected destination of packets.
+        IPv4Address        _local_address;      // Local address on which to listen.
         bool             _reuse_port;         // Reuse port socket option.
         bool             _default_interface;  // Use default local interface.
         bool             _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
         bool             _recv_timestamps;    // Get receive timestamps.
         size_t           _recv_bufsize;       // Socket receive buffer size.
         MilliSecond      _recv_timeout;       // Receive timeout.
-        SocketAddress    _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).
-        SocketAddress    _first_source;       // Socket address of first received packet.
-        SocketAddressSet _sources;            // Set of all detected packet sources.
+        IPv4SocketAddress    _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).
+        IPv4SocketAddress    _first_source;       // Socket address of first received packet.
+        IPv4SocketAddressSet _sources;            // Set of all detected packet sources.
     };
 }

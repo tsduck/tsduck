@@ -119,7 +119,7 @@ void ts::DataContentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DataContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", buf.getUInt16(), names::HEXA_FIRST) << std::endl;
+        disp << margin << "Data component id: " << NameFromSection(u"ISDBDataComponentId", buf.getUInt16(), NamesFlags::HEXA_FIRST) << std::endl;
         disp << margin << UString::Format(u"Entry component: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         size_t len = buf.getUInt8();
         disp.displayPrivateData(u"Selector bytes", buf, len, margin);

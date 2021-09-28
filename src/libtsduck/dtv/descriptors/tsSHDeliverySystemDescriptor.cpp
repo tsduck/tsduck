@@ -290,8 +290,8 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
                 disp << margin << "- Modulation type: OFDM" << std::endl;
                 disp << margin << "  Bandwidth: " << BandwidthNames.name(buf.getBits<uint8_t>(3)) << std::endl;
                 disp << margin << UString::Format(u"  Priority: %d", {buf.getBit()}) << std::endl;
-                disp << margin << "  Constellation & hierarchy: " << NameFromSection(u"SHConstellationHierarchy", buf.getBits<uint8_t>(3), names::FIRST) << std::endl;
-                disp << margin << "  Code rate: " << NameFromSection(u"SHCodeRate", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+                disp << margin << "  Constellation & hierarchy: " << NameFromSection(u"SHConstellationHierarchy", buf.getBits<uint8_t>(3), NamesFlags::FIRST) << std::endl;
+                disp << margin << "  Code rate: " << NameFromSection(u"SHCodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
                 disp << margin << "  Guard interval: " << GuardIntervalNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Transmission mode: " << TransmissionModeNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << UString::Format(u"  Common frequency: %s", {buf.getBool()}) << std::endl;
@@ -301,7 +301,7 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
                 disp << margin << "  Polarization: " << PolarizationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Roll off: " << RollOffNames.name(buf.getBits<uint8_t>(2)) << std::endl;
                 disp << margin << "  Modulation mode: " << ModulationNames.name(buf.getBits<uint8_t>(2)) << std::endl;
-                disp << margin << "  Code rate: " << NameFromSection(u"SHCodeRate", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+                disp << margin << "  Code rate: " << NameFromSection(u"SHCodeRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
                 disp << margin << UString::Format(u"  Symbol rate code: 0x%X (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
                 buf.skipBits(1);
             }

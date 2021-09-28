@@ -337,12 +337,12 @@ namespace ts {
             //! @return Index of the selected media play list or NPOS if there is none.
             //! If all criteria are zero, select the first playlist.
             //!
-            size_t selectPlayList(BitRate minBitrate,
-                                  BitRate maxBitrate,
-                                  size_t  minWidth,
-                                  size_t  maxWidth,
-                                  size_t  minHeight,
-                                  size_t  maxHeight) const;
+            size_t selectPlayList(const BitRate& minBitrate,
+                                  const BitRate& maxBitrate,
+                                  size_t minWidth,
+                                  size_t maxWidth,
+                                  size_t minHeight,
+                                  size_t maxHeight) const;
 
             //!
             //! Select the media playlist with the lowest bitrate.

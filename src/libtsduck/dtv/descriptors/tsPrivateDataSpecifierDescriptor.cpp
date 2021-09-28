@@ -89,7 +89,7 @@ void ts::PrivateDataSpecifierDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::PrivateDataSpecifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "Specifier: " << names::PrivateDataSpecifier(buf.getUInt32(), names::FIRST) << std::endl;
+        disp << margin << "Specifier: " << names::PrivateDataSpecifier(buf.getUInt32(), NamesFlags::FIRST) << std::endl;
     }
 }
 

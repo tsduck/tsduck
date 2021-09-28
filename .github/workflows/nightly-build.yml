@@ -39,7 +39,7 @@ name: Nightly build
 on:
   # Trigger the workflow every day at 00:40 UTC.
   schedule:
-    - cron:  '40 0 * * *'
+    - cron: '40 0 * * *'
   # Allow manual trigger.
   workflow_dispatch:
 

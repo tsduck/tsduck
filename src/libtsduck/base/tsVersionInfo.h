@@ -37,7 +37,7 @@
 #include "tsReport.h"
 #include "tsThread.h"
 #include "tsVersion.h"
-#include "tsConfigConstants.h"
+#include "tsBitRate.h"
 
 //!
 //! TSDuck namespace, containing all TSDuck classes and functions.
@@ -83,10 +83,12 @@ namespace ts {
             LONG,     //!< Full explanatory format.
             INTEGER,  //!< Integer format XXYYRRRRR.
             DATE,     //!< Build date.
+            COMPILER, //!< Version of the compiler which was used to build the code.
+            SYSTEM,   //!< Type of system and platform.
+            BITRATE,  //!< Representation of bitrate values.
             NSIS,     //!< Output NSIS @c !define directives.
             DEKTEC,   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
             HTTP,     //!< Version of HTTP library which is used.
-            COMPILER, //!< Version of the compiler which was used to build the code.
             SRT,      //!< Version of SRT library which is used.
             ALL,      //!< Multi-line output with full details.
         };
@@ -124,6 +126,9 @@ namespace ts {
         // Build a string representing the version of the compiler which built this module.
         static ts::UString GetCompilerVersion();
 
+        // Build a string representing the system on which the application runs.
+        static ts::UString GetSystemVersion();
+
         // Convert a version string into a vector of integers.
         static void VersionToInts(std::vector<int>& ints, const ts::UString& version);
     };
@@ -149,7 +154,17 @@ extern "C" {
     #define TS_SYM4(a,b,c,d) TS_SYM4a(a,b,c,d)
     #define TS_SYM4a(a,b,c,d) a##_##b##_##c##_##d
     #define TSDUCK_LIBRARY_VERSION_SYMBOL TS_SYM4(TSDUCK_LIBRARY_VERSION,TS_VERSION_MAJOR,TS_VERSION_MINOR,TS_COMMIT)
-    #define TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL TS_SYM2(TSDUCK_LIBRARY_BITRATE_DECIMALS,TS_BITRATE_DECIMALS)
+    #if defined(TS_BITRATE_FRACTION)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FRACTION
+    #elif defined(TS_BITRATE_INTEGER)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_INTEGER
+    #elif defined(TS_BITRATE_FLOAT)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TSDUCK_LIBRARY_BITRATE_FLOAT
+    #elif defined(TS_BITRATE_FIXED)
+        #define TSDUCK_LIBRARY_BITRATE_SYMBOL TS_SYM2(TSDUCK_LIBRARY_BITRATE_FIXED,TS_BITRATE_DECIMALS)
+    #else
+        #error "undefined implementation of BitRate"
+    #endif
     //! @endcond
 
     //!
@@ -168,11 +183,11 @@ extern "C" {
     extern const int TSDUCKDLL TSDUCK_LIBRARY_VERSION_SYMBOL;
 
     //!
-    //! Generate a dependency on the bitrate precision.
+    //! Generate a dependency on the bitrate implementation.
     //! Enforcing this dependency prevents mixing binaries which
-    //! were compiled using different precisions.
+    //! were compiled using different implementations of BitRate.
     //!
-    extern const int TSDUCKDLL TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL;
+    extern const int TSDUCKDLL TSDUCK_LIBRARY_BITRATE_SYMBOL;
 }
 
 //!
@@ -193,4 +208,20 @@ extern "C" {
 //!
 #define TS_LIBCHECK() \
     TS_STATIC_REFERENCE(version, &TSDUCK_LIBRARY_VERSION_SYMBOL); \
-    TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL)
+    TS_STATIC_REFERENCE(bitrate, &TSDUCK_LIBRARY_BITRATE_SYMBOL)
+
+#if defined(DOXYGEN)
+//!
+//! Macro to disable remote version checking on GitHub.
+//!
+//! When this macro is defined on the compilation command line, no version
+//! check is performed on GitHub. The utility @e tsversion does not call
+//! GitHub, does not check, downlaod or upgrade new versions.
+//!
+//! This macro is typically used by packagers of Linux distros who have the
+//! exclusive distribution of software packages. In that case, the packages
+//! for TSDuck shall be exclusively upgraded from the distro repositories,
+//! not using binaries from GitHub.
+//!
+#define TS_NO_GITHUB 1
+#endif

@@ -164,7 +164,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
     }
     else {
         const uint16_t format = buf.getUInt16();
-        disp << margin << "Metadata application format: " << NameFromSection(u"MetadataApplicationFormat", format, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Metadata application format: " << NameFromSection(u"MetadataApplicationFormat", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFFFF && buf.remainingReadBytes() >= 4) {
             disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         }
@@ -175,7 +175,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
     }
     else {
         const uint8_t format = buf.getUInt8();
-        disp << margin << "Metadata format: " << NameFromSection(u"MetadataFormat", format, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Metadata format: " << NameFromSection(u"MetadataFormat", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFF && buf.remainingReadBytes() >= 4) {
             disp << margin << UString::Format(u"Metadata format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         }
@@ -188,7 +188,7 @@ void ts::MetadataPointerDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         disp << margin << UString::Format(u"Metadata service id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         const bool metadata_locator_record_flag = buf.getBool();
         const uint8_t flags = buf.getBits<uint8_t>(2);
-        disp << margin << "MPEG carriage flags: " << NameFromSection(u"MetadataCarriageFlags", flags, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "MPEG carriage flags: " << NameFromSection(u"MetadataCarriageFlags", flags, NamesFlags::DECIMAL_FIRST) << std::endl;
         buf.skipBits(5);
         if (metadata_locator_record_flag) {
             const size_t length = buf.getUInt8();

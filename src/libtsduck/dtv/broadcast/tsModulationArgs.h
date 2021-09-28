@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsObject.h"
+#include "tsDisplayInterface.h"
 #include "tsArgsSupplierInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
@@ -57,7 +58,7 @@ namespace ts {
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL ModulationArgs : public Object, public ArgsSupplierInterface
+    class TSDUCKDLL ModulationArgs : public Object, public ArgsSupplierInterface, public DisplayInterface
     {
     public:
         //!
@@ -434,10 +435,13 @@ namespace ts {
         virtual void defineArgs(Args& args) const override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
+        // Implementation of DisplayInterface.
+        virtual std::ostream& display(std::ostream& strm, const UString& margin = UString(), int level = Severity::Info) const override;
+
         //!
-        //! Reset all values, they become "unset"
+        //! Clear content, reset all values, they become "unset"
         //!
-        virtual void reset();
+        virtual void clear();
 
         //!
         //! Check if any modulation options is set.
@@ -462,6 +466,22 @@ namespace ts {
         void setDefaultValues();
 
         //!
+        //! Reset the local reception parameters, they become "unset"
+        //! The "local reception parameters" configure the receiving equipment (typically the dish)
+        //! without affecting the received carrier signal.
+        //!
+        void resetLocalReceptionParameters();
+
+        //!
+        //! Copy the local reception parameters from another instance.
+        //! The "local reception parameters" configure the receiving equipment (typically the dish)
+        //! without affecting the received carrier signal.
+        //! @param [in] other Another instance from which the local reception parameters are copied.
+        //! Local reception parameters which are not set in @^a other are left unmodified in this instance.
+        //!
+        void copyLocalReceptionParameters(const ModulationArgs& other);
+
+        //!
         //! Theoretical bitrate computation.
         //! @return The theoretical useful bitrate of a transponder, based on 188-bytes packets,
         //! in bits/second. If the characteristics of the transponder are not sufficient to compute
@@ -471,6 +491,7 @@ namespace ts {
 
         //!
         //! Fill modulation parameters from a delivery system descriptor.
+        //! This method only sets the modulation parameters from the descriptor. Other parameters are unchanged.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] desc A descriptor. Must be a valid delivery system descriptor.
         //! @param [in] ts_id Tranport stream id of the TS which is described by the delivery system descriptor.
@@ -514,11 +535,9 @@ namespace ts {
         //!
         //! Format a short description (frequency and essential parameters).
         //! @param [out] duck TSDuck execution context.
-        //! @param [in] strength Signal strength in percent. Ignored if negative.
-        //! @param [in] quality Signal quality in percent. Ignored if negative.
         //! @return A description string.
         //!
-        UString shortDescription(DuckContext& duck, int strength = -1, int quality = -1) const;
+        UString shortDescription(DuckContext& duck) const;
 
         //!
         //! Format the modulation parameters as command line arguments.
@@ -528,15 +547,6 @@ namespace ts {
         //! @return A string containing a command line options for the "dvb" tsp plugin.
         //!
         UString toPluginOptions(bool no_local = false) const;
-
-        //!
-        //! Display a description of the modulation paramters on a stream, line by line.
-        //! @param [in,out] strm Where to display the parameters.
-        //! @param [in] margin Left margin to display.
-        //! @param [in] verbose When false, display only essentials parameters.
-        //! When true, display all parameters.
-        //!
-        void display(std::ostream& strm, const UString& margin = UString(), bool verbose = false) const;
 
     protected:
         //!

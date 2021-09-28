@@ -106,21 +106,19 @@ if ($status -ne 1 -and $status -ne 2) {
 else {
     # Parse HTML page to locate the latest installer.
     $Link = $response.links | Where-Object { $_.outerHTML -like "*stable_windows*Release*win64.exe*" } | Select-Object -First 1
-    $Name = $Link.outerHTML -replace '<[^>]*>',''
     $Ref = $Link.href
 }
 
 if (-not $Ref) {
     # Could not find a reference to installer.
     $Url = [System.Uri]$FallbackURL
-    $Name = $FallbackName
 }
 else {
     # Build the absolute URL's from base URL (the download page) and href links.
     $Url = New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DownloadPage, $Ref)
 }
 
-$InstallerName = $Name
+$InstallerName = (Split-Path -Leaf $Url.LocalPath)
 $InstallerPath = "$ExtDir\$InstallerName"
 
 # Download installer

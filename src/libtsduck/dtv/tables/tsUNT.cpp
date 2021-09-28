@@ -334,7 +334,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         const uint8_t oui_hash = section.tableIdExtension() & 0xFF;
         const uint8_t comp_hash = uint8_t(oui >> 16) ^ uint8_t(oui >> 8) ^ uint8_t(oui);
         const UString oui_check(oui_hash == comp_hash ? u"valid" : UString::Format(u"invalid, should be 0x%X", {comp_hash}));
-        disp << margin << "OUI: " << names::OUI(oui, names::HEXA_FIRST) << std::endl;
+        disp << margin << "OUI: " << names::OUI(oui, NamesFlags::HEXA_FIRST) << std::endl;
         disp << margin << UString::Format(u"Action type: 0x%X", {uint8_t(section.tableIdExtension() >> 8)});
         disp << UString::Format(u", processing order: 0x%X", {buf.getUInt8()});
         disp << UString::Format(u", OUI hash: 0x%X (%s)", {oui_hash, oui_check}) << std::endl;
@@ -364,14 +364,14 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         for (size_t desc_index = 0; buf.canRead() && descriptorCount-- > 0 && buf.canReadBytes(11); ++desc_index) {
             disp << margin
                  << "  - Descriptor " << desc_index
-                 << ", type " << NameFromSection(u"CompatibilityDescriptorType", buf.getUInt8(), names::HEXA_FIRST)
+                 << ", type " << NameFromSection(u"CompatibilityDescriptorType", buf.getUInt8(), NamesFlags::HEXA_FIRST)
                  << std::endl;
 
             // Get current compatibility descriptor content, based on 8-bit length field.
             buf.pushReadSizeFromLength(8);
 
             disp << margin << UString::Format(u"    Specifier type: 0x%X", {buf.getUInt8()});
-            disp << UString::Format(u", specifier data (OUI): %s", {names::OUI(buf.getUInt24(), names::HEXA_FIRST)}) << std::endl;
+            disp << UString::Format(u", specifier data (OUI): %s", {names::OUI(buf.getUInt24(), NamesFlags::HEXA_FIRST)}) << std::endl;
             disp << margin << UString::Format(u"    Model: 0x%X (%<d)", {buf.getUInt16()});
             disp << UString::Format(u", version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             const size_t subDescriptorCount = buf.getUInt8();

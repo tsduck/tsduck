@@ -91,7 +91,7 @@ namespace ts {
         //! @param [out] flush Set to true if all previously processed and buffered packets should be flushed.
         //! @param [out] bitrate_changed Set to true if the bitrate has changed.
         //!
-        void regulate(BitRate current_bitrate, bool& flush, bool& bitrate_changed);
+        void regulate(const BitRate& current_bitrate, bool& flush, bool& bitrate_changed);
 
         //!
         //! Regulate the flow, to be called at each packet.

@@ -34,18 +34,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsNamesFile.h"
 #include "tsPSI.h"
-#include "tsUString.h"
 #include "tsEnumUtils.h"
 #include "tsCASFamily.h"
 #include "tsCodecType.h"
-#include "tsReport.h"
-#include "tsSingletonManager.h"
-
-// Forward declaration to allow using the '|' operator in the definition of the enum type.
-// Not needed with GCC and LLVM, only MSC complains.
-namespace ts { namespace names { enum Flags : uint16_t; }}
-TS_ENABLE_BITMASK_OPERATORS(ts::names::Flags);
 
 namespace ts {
 
@@ -56,22 +49,13 @@ namespace ts {
     //!
     namespace names {
         //!
-        //! Flags to be used in the formating of MPEG/DVB names.
-        //! Values can be or'ed.
+        //! Get the NamesFile instance for all MPEG/DVB names.
+        //! @return A pointer to the NamesFile instance for all MPEG/DVB names.
         //!
-        enum Flags : uint16_t {
-            NAME          = 0x0000,   //!< Name only, no value. This is the default.
-            VALUE         = 0x0001,   //!< Include the value: "name (value)".
-            FIRST         = 0x0002,   //!< Same with value first: "value (name)".
-            HEXA          = 0x0004,   //!< Value in hexadecimal. This is the default.
-            DECIMAL       = 0x0008,   //!< Value in decimal. Both DECIMAL and HEXA can be specified.
-            BOTH          = HEXA | DECIMAL,          //!< Value in decimal and hexadecimal.
-            HEXA_FIRST    = FIRST | HEXA,            //!< Value in hexadecimal in first position.
-            DECIMAL_FIRST = FIRST | DECIMAL,         //!< Value in decimal in first position.
-            BOTH_FIRST    = FIRST | HEXA | DECIMAL,  //!< Value in decimal and hexadecimal in first position.
-            ALTERNATE     = 0x0010,                  //!< Display an alternate integer value.
-            NAME_OR_VALUE = 0x0020,                  //!< Display name if defined or value only if not defined.
-        };
+        inline const NamesFile* File()
+        {
+            return NamesFile::Instance(NamesFile::Predefined::DTV);
+        }
 
         //!
         //! Name of Table ID.
@@ -81,7 +65,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString TID(const DuckContext& duck, uint8_t tid, uint16_t cas = CASID_NULL, Flags flags = NAME);
+        TSDUCKDLL UString TID(const DuckContext& duck, uint8_t tid, uint16_t cas = CASID_NULL, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Descriptor ID.
@@ -91,7 +75,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString DID(uint8_t did, uint32_t pds = 0, uint8_t tid = 0xFF, Flags flags = NAME);
+        TSDUCKDLL UString DID(uint8_t did, uint32_t pds = 0, uint8_t tid = 0xFF, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Check if a descriptor id has a specific name for a given table.
@@ -107,7 +91,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString EDID(uint8_t edid, Flags flags = NAME);
+        TSDUCKDLL UString EDID(uint8_t edid, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Private Data Specifier.
@@ -115,7 +99,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString PrivateDataSpecifier(uint32_t pds, Flags flags = NAME);
+        TSDUCKDLL UString PrivateDataSpecifier(uint32_t pds, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Stream type (in PMT).
@@ -123,7 +107,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString StreamType(uint8_t st, Flags flags = NAME);
+        TSDUCKDLL UString StreamType(uint8_t st, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Stream ID (in PES header).
@@ -131,7 +115,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString StreamId(uint8_t sid, Flags flags = NAME);
+        TSDUCKDLL UString StreamId(uint8_t sid, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of PES start code value.
@@ -139,7 +123,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString PESStartCode(uint8_t code, Flags flags = NAME);
+        TSDUCKDLL UString PESStartCode(uint8_t code, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of aspect ratio values (in MPEG-1/2 video sequence header).
@@ -147,7 +131,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString AspectRatio(uint8_t a, Flags flags = NAME);
+        TSDUCKDLL UString AspectRatio(uint8_t a, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Chroma format values (in MPEG-1/2 video sequence header).
@@ -155,7 +139,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString ChromaFormat(uint8_t c, Flags flags = NAME);
+        TSDUCKDLL UString ChromaFormat(uint8_t c, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of AVC/HEVC/VVC access unit (aka "NALunit") type.
@@ -164,7 +148,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString AccessUnitType(CodecType codec, uint8_t ut, Flags flags = NAME);
+        TSDUCKDLL UString AccessUnitType(CodecType codec, uint8_t ut, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of AVC (ISO 14496-10, ITU H.264) profile.
@@ -172,7 +156,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString AVCProfile(int p, Flags flags = NAME);
+        TSDUCKDLL UString AVCProfile(int p, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of service type (in Service Descriptor).
@@ -180,7 +164,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString ServiceType(uint8_t st, Flags flags = NAME);
+        TSDUCKDLL UString ServiceType(uint8_t st, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of linkage type (in Linkage Descriptor).
@@ -188,7 +172,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString LinkageType(uint8_t lt, Flags flags = NAME);
+        TSDUCKDLL UString LinkageType(uint8_t lt, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of subtitling type (in Subtitling Descriptor).
@@ -196,7 +180,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString SubtitlingType(uint8_t st, Flags flags = NAME);
+        TSDUCKDLL UString SubtitlingType(uint8_t st, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Teletext type (in Teletext Descriptor).
@@ -204,7 +188,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString TeletextType(uint8_t tt, Flags flags = NAME);
+        TSDUCKDLL UString TeletextType(uint8_t tt, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Conditional Access System Id (in CA Descriptor).
@@ -213,7 +197,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString CASId(const DuckContext& duck, uint16_t casid, Flags flags = NAME);
+        TSDUCKDLL UString CASId(const DuckContext& duck, uint16_t casid, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Conditional Access Families.
@@ -228,7 +212,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString RunningStatus(uint8_t rs, Flags flags = NAME);
+        TSDUCKDLL UString RunningStatus(uint8_t rs, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of audio type (in ISO639 Language Descriptor).
@@ -236,7 +220,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString AudioType(uint8_t at, Flags flags = NAME);
+        TSDUCKDLL UString AudioType(uint8_t at, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Component Type (in Component Descriptor).
@@ -246,7 +230,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString ComponentType(const DuckContext& duck, uint16_t ct, Flags flags = NAME);
+        TSDUCKDLL UString ComponentType(const DuckContext& duck, uint16_t ct, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of AC-3 Component Type.
@@ -254,7 +238,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString AC3ComponentType(uint8_t t, Flags flags = NAME);
+        TSDUCKDLL UString AC3ComponentType(uint8_t t, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of DTS Audio Sample Rate code.
@@ -262,7 +246,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString DTSSampleRateCode(uint8_t c, Flags flags = NAME);
+        TSDUCKDLL UString DTSSampleRateCode(uint8_t c, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of DTS Audio Bit Rate Code.
@@ -270,7 +254,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString DTSBitRateCode(uint8_t c, Flags flags = NAME);
+        TSDUCKDLL UString DTSBitRateCode(uint8_t c, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of DTS Audio Surround Mode.
@@ -278,7 +262,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString DTSSurroundMode(uint8_t mode, Flags flags = NAME);
+        TSDUCKDLL UString DTSSurroundMode(uint8_t mode, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of DTS Audio Extended Surround Mode.
@@ -286,7 +270,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString DTSExtendedSurroundMode(uint8_t mode, Flags flags = NAME);
+        TSDUCKDLL UString DTSExtendedSurroundMode(uint8_t mode, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of content name (in Content Descriptor).
@@ -295,7 +279,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString Content(const DuckContext& duck, uint8_t c, Flags flags = NAME);
+        TSDUCKDLL UString Content(const DuckContext& duck, uint8_t c, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of scrambling control value in TS header
@@ -303,7 +287,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString ScramblingControl(uint8_t sc, Flags flags = NAME);
+        TSDUCKDLL UString ScramblingControl(uint8_t sc, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Bouquet Id.
@@ -311,7 +295,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString BouquetId(uint16_t id, Flags flags = NAME);
+        TSDUCKDLL UString BouquetId(uint16_t id, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Original Network Id.
@@ -319,7 +303,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString OriginalNetworkId(uint16_t id, Flags flags = NAME);
+        TSDUCKDLL UString OriginalNetworkId(uint16_t id, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Network Id.
@@ -327,7 +311,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString NetworkId(uint16_t id, Flags flags = NAME);
+        TSDUCKDLL UString NetworkId(uint16_t id, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Platform Id.
@@ -335,7 +319,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString PlatformId(uint32_t id, Flags flags = NAME);
+        TSDUCKDLL UString PlatformId(uint32_t id, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Data broadcast id (in Data Broadcast Id Descriptor).
@@ -343,7 +327,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString DataBroadcastId(uint16_t id, Flags flags = NAME);
+        TSDUCKDLL UString DataBroadcastId(uint16_t id, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of OUI (IEEE-assigned Organizationally Unique Identifier), 24 bits.
@@ -351,7 +335,7 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString OUI(uint32_t oui, Flags flags = NAME);
+        TSDUCKDLL UString OUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of T2-MI packet type.
@@ -359,174 +343,8 @@ namespace ts {
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString T2MIPacketType(uint8_t type, Flags flags = NAME);
+        TSDUCKDLL UString T2MIPacketType(uint8_t type, NamesFlags flags = NamesFlags::NAME);
     }
-
-    //!
-    //! A repository of names for MPEG/DVB entities.
-    //! All names are loaded from configuration files @em tsduck*.names.
-    //!
-    class TSDUCKDLL Names
-    {
-        TS_NOBUILD_NOCOPY(Names);
-    public:
-        //!
-        //! Constructor.
-        //! @param [in] fileName Configuration file name. Typically without directory name.
-        //! @param [in] mergeExtensions If true, merge the content of names files from extensions.
-        //!
-        Names(const UString& fileName, bool mergeExtensions = false);
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~Names();
-
-        //!
-        //! Largest integer type we manage in the repository of names.
-        //!
-        typedef uint64_t Value;
-
-        //!
-        //! Get the complete path of the configuration file from which the names were loaded.
-        //! @return The complete path of the configuration file. Empty if does not exist.
-        //!
-        UString configurationFile() const
-        {
-            return _configFile;
-        }
-
-        //!
-        //! Get the number of errors in the configuration file.
-        //! @return The number of errors in the configuration file.
-        //!
-        size_t errorCount() const
-        {
-            return _configErrors;
-        }
-
-        //!
-        //! Check if a name exists in a specified section.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
-        //! @param [in] value Value to get the name for.
-        //! @return True if a name exists for @a value in @a sectionName.
-        //!
-        bool nameExists(const UString& sectionName, Value value) const;
-
-        //!
-        //! Get a name from a specified section.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
-        //! @param [in] value Value to get the name for.
-        //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
-        //! @return The corresponding name.
-        //!
-        UString nameFromSection(const UString& sectionName, Value value, names::Flags flags = names::NAME, size_t bits = 0, Value alternateValue = 0) const;
-
-        //!
-        //! Get a name from a specified section, with alternate fallback value.
-        //! @param [in] sectionName Name of section to search. Not case-sensitive.
-        //! @param [in] value1 Value to get the name for.
-        //! @param [in] value2 Alternate value if no name is found for @a value1.
-        //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
-        //! @return The corresponding name.
-        //!
-        UString nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, names::Flags flags = names::NAME, size_t bits = 0, Value alternateValue = 0) const;
-
-        //!
-        //! Format a name using flags.
-        //! @param [in] value Value for the name.
-        //! @param [in] name Name for the value.
-        //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
-        //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
-        //! @return The corresponding name.
-        //!
-        static UString Formatted(Value value, const UString& name, names::Flags flags, size_t bits, Value alternateValue = 0);
-
-    private:
-        // Description of a configuration entry.
-        // The first value of the range is the key in a map.
-        class ConfigEntry
-        {
-        public:
-            Value   last;   // Last value in the range.
-            UString name;   // Associated name.
-
-            ConfigEntry(Value l = 0, const UString& n = UString());
-        };
-
-        // Map of configuration entries, indexed by first value of the range.
-        typedef std::map<Value, ConfigEntry*> ConfigEntryMap;
-
-        // Description of a configuration section.
-        // The name of the section is the key in a map.
-        class ConfigSection
-        {
-        public:
-            size_t          bits;     // Number of significant bits in values of the type.
-            ConfigEntryMap  entries;  // All entries, indexed by names.
-
-            ConfigSection();
-            ~ConfigSection();
-
-            // Check if a range is free, ie no value is defined in the range.
-            bool freeRange(Value first, Value last) const;
-
-            // Add a new entry.
-            void addEntry(Value first, Value last, const UString& name);
-
-            // Get a name from a value, empty if not found.
-            UString getName(Value val) const;
-        };
-
-        // Map of configuration sections, indexed by name.
-        typedef std::map<UString, ConfigSection*> ConfigSectionMap;
-
-        // Decode a line as "first[-last] = name". Return true on success, false on error.
-        bool decodeDefinition(const UString& line, ConfigSection* section);
-
-        // Compute a number of hexa digits.
-        static int HexaDigits(size_t bits);
-
-        // Compute the display mask
-        static Value DisplayMask(size_t bits);
-
-        // Load a configuration file and merge its content into this instance.
-        void loadFile(const UString& fileName);
-
-        // Names private fields.
-        Report&          _log;           // Error logger.
-        const UString    _configFile;    // Configuration file path.
-        size_t           _configErrors;  // Number of errors in configuration file.
-        ConfigSectionMap _sections;      // Configuration sections.
-    };
-
-    //!
-    //! An instance of names repository containing all MPEG and DVB identifiers.
-    //!
-    class TSDUCKDLL NamesMain : public Names
-    {
-        TS_DECLARE_SINGLETON(NamesMain);
-    public:
-        //! Destructor
-        virtual ~NamesMain() override;
-    };
-
-    //!
-    //! An instance of names repository containing all IEEE-assigned Organizationally Unique Identifiers (OUI).
-    //! Since the number of OUI values is very large, they are placed in a separate configuration file.
-    //!
-    class TSDUCKDLL NamesOUI : public Names
-    {
-        TS_DECLARE_SINGLETON(NamesOUI);
-    public:
-        //! Destructor
-        virtual ~NamesOUI() override;
-    };
 
     //!
     //! Get a name from a specified section in the DVB names file.
@@ -538,9 +356,9 @@ namespace ts {
     //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
     //! @return The corresponding name.
     //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-    UString NameFromSection(const UString& sectionName, INT value, names::Flags flags = names::NAME, size_t bits = 0, INT alternateValue = 0)
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+    UString NameFromSection(const UString& sectionName, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = 0)
     {
-        return NamesMain::Instance()->nameFromSection(sectionName, Names::Value(value), flags, bits, Names::Value(alternateValue));
+        return names::File()->nameFromSection(sectionName, NamesFile::Value(value), flags, bits, NamesFile::Value(alternateValue));
     }
 }

@@ -111,7 +111,7 @@ void ts::CAServiceDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::CAServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
         disp << margin << UString::Format(u"CA broadcaster group id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         disp << margin << UString::Format(u"Delay time: %d days", {buf.getUInt8()}) << std::endl;
         while (buf.canReadBytes(2)) {

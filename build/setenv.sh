@@ -40,7 +40,7 @@
 #-----------------------------------------------------------------------------
 
 SCRIPT=$(basename "${BASH_SOURCE[0]}")
-usage() { echo >&2 "syntax: $SCRIPT [--bin dir] [--debug] [--display]"; exit 1; }
+usage() { echo >&2 "syntax: $SCRIPT [--bin dir] [--debug] [--display] [-all]"; exit 1; }
 
 # Default options.
 TARGET=release
@@ -63,6 +63,9 @@ while [[ $# -gt 0 ]]; do
             ;;
         --display)
             SHOW_PATH=true
+            ;;
+        -h|--help)
+            usage
             ;;
     esac
     shift

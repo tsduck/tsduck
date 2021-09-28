@@ -67,12 +67,12 @@ namespace ts {
         virtual bool sendDatagram(const void* address, size_t size) override;
 
     private:
-        SocketAddress _destination;     // Destination address/port.
-        IPAddress     _local_addr;      // Local address.
-        uint16_t      _local_port;      // Local UDP source port.
-        int           _ttl;             // Time to live option.
-        int           _tos;             // Type of service option.
-        bool          _force_mc_local;  // Force multicast outgoing local interface
-        UDPSocket     _sock;            // Outgoing socket
+        IPv4SocketAddress _destination;     // Destination address/port.
+        IPv4Address       _local_addr;      // Local address.
+        uint16_t          _local_port;      // Local UDP source port.
+        int               _ttl;             // Time to live option.
+        int               _tos;             // Type of service option.
+        bool              _force_mc_local;  // Force multicast outgoing local interface
+        UDPSocket         _sock;            // Outgoing socket
     };
 }

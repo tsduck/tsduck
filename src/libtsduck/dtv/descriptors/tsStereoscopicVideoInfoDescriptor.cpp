@@ -134,8 +134,8 @@ void ts::StereoscopicVideoInfoDescriptor::DisplayDescriptor(TablesDisplay& disp,
         else if (!base && buf.canReadBytes(2)) {
             buf.skipBits(7);
             disp << margin << UString::Format(u"Usable as 2D: %s", {buf.getBool()}) << std::endl;
-            disp << margin << "Horizontal upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
-            disp << margin << "Vertical upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", buf.getBits<uint8_t>(4), names::DECIMAL_FIRST) << std::endl;
+            disp << margin << "Horizontal upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
+            disp << margin << "Vertical upsampling factor: " << NameFromSection(u"StereoscopicUpsamplingFactor", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
         }
     }
 }

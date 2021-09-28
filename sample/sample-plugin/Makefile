@@ -3,16 +3,17 @@
 
 CXXFLAGS += $(shell tsconfig --cflags)
 LDLIBS += $(shell tsconfig --libs)
+SO := $(shell tsconfig --so)
 
 # Default installation directory prefix.
 # RPM packagers should override this in the "make install" command line.
 DESTDIR :=
 
 # All plugin shared libraries from this directory.
-SHLIBS := $(addsuffix .so,$(basename $(wildcard tsplugin_*.cpp)))
+SHLIBS := $(addsuffix $(SO),$(basename $(wildcard tsplugin_*.cpp)))
 
 # Compilation rules for shared libraries.
-%.so: %.o
+%$(SO): %.o
 	$(CC) $(CFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # Local compilation flags (-fPIC for shared objects).
@@ -23,7 +24,7 @@ default: $(SHLIBS)
 	@true
 
 clean distclean:
-	@rm -rf *.o *.so
+	@rm -rf *.o *.so *.dylib
 
 .PHONY: install
 install: $(SHLIBS)

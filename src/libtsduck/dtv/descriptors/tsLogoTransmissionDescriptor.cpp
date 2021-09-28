@@ -144,7 +144,7 @@ void ts::LogoTransmissionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 {
     if (buf.canReadBytes(1)) {
         const uint8_t ttype = buf.getUInt8();
-        disp << margin << "Logo transmission type: " << NameFromSection(u"LogoTransmissionType", ttype, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Logo transmission type: " << NameFromSection(u"LogoTransmissionType", ttype, NamesFlags::HEXA_FIRST) << std::endl;
         if (ttype == 0x01 && buf.canReadBytes(6)) {
             buf.skipBits(7);
             disp << margin << UString::Format(u"Logo id: 0x%03X (%<d)", {buf.getBits<uint16_t>(9)}) << std::endl;

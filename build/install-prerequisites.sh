@@ -91,18 +91,18 @@ VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
     # macOS
-    pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt python3 openjdk"
+    pkglist="gnu-sed grep dos2unix coreutils pcsc-lite srt librist python3 openjdk"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
     fi
     if [[ -z $(which brew 2>/dev/null) ]]; then
         # Homebrew not installed
-        ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
     brew update
     for pkg in $pkglist; do
-        # Install or upgrade package (cannot be done in command).
+        # Install or upgrade package (cannot be done in one unique command).
         # Sometimes, brew exits with an error status even though the installation completes.
         # Mute this and enforce a good status to avoid GitHub Actions CI failure.
         brew ls --versions $pkg >/dev/null && cmd=upgrade || cmd=install
@@ -154,6 +154,9 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     else
         pkglist="$pkglist libcurl4 libcurl4-openssl-dev"
     fi
+    if [[ "$MAJOR" -ge 11 ]]; then
+        pkglist="$pkglist libsrt-openssl-dev"
+    fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     # Update command: sudo apt update; sudo apt upgrade
@@ -181,7 +184,7 @@ elif [[ -f /etc/fedora-release ]]; then
 elif [[ -f /etc/redhat-release ]]; then
 
     # Red Hat or CentOS
-    EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
+    EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
     pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then

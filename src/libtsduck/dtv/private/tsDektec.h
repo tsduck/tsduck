@@ -33,7 +33,10 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
+#include "tsInteger.h"
+#include "tsFraction.h"
 #include "tsFixedPoint.h"
+#include "tsFloatingPoint.h"
 
 #if defined(DOXYGEN)
 
@@ -313,27 +316,135 @@
     namespace ts {
         //!
         //! Convert a FixedPoint value into a Dektec-defined fractional int.
+        //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+        //! to enforce a fixed-point type and should be left to their default values.
         //! @param [in] value A FixedPoint value.
         //! @return Corresponding Dektec-defined fractional int.
         //!
-        template <typename INT, const size_t PREC>
-        Dtapi::DtFractionInt ToDektecFractionInt(FixedPoint<INT, PREC> value)
+        template <class FIXED,
+                  typename INT = typename FIXED::int_t,
+                  const size_t PREC = FIXED::PRECISION,
+                  typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
+        Dtapi::DtFractionInt ToDektecFractionInt(FIXED value)
         {
-            return Dtapi::DtFractionInt(int(value.raw()), int(FixedPoint<INT, PREC>::FACTOR));
+            return Dtapi::DtFractionInt(int(value.raw()), int(FIXED::FACTOR));
         }
 
         //!
-        //! Convert a Dektec-defined fractional int into a FixedPoint value.
-        //! @tparam INT The underlying signed integer type.
-        //! @tparam PREC The decimal precision in digits.
+        //! Convert a Dektec-defined fractional integer into a FixedPoint value.
+        //! @tparam FIXED An instantiation of FixedPoint. All other template parameters are here
+        //! to enforce a fixed-point type and should be left to their default values.
         //! @param [out] result The converted FixedPoint value.
         //! @param [in] value A Dektec-defined fractional int.
         //!
-        template <typename INT, const size_t PREC>
-        void FromDektecFractionInt(FixedPoint<INT, PREC>& result, Dtapi::DtFractionInt value)
+        template <class FIXED,
+                  typename INT = typename FIXED::int_t,
+                  const size_t PREC = FIXED::PRECISION,
+                  typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
+        void FromDektecFractionInt(FIXED& result, Dtapi::DtFractionInt value)
         {
             result = value.m_Num;
             result /= value.m_Den;
+        }
+
+        //!
+        //! Convert a Fraction value into a Dektec-defined fractional int.
+        //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+        //! to enforce a fraction type and should be left to their default values.
+        //! @param [in] value A FixedPoint value.
+        //! @return Corresponding Dektec-defined fractional int.
+        //!
+        template <class FRAC,
+                  typename INT = typename FRAC::int_t,
+                  typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+        Dtapi::DtFractionInt ToDektecFractionInt(const FRAC& value)
+        {
+            // DtFractionInt uses "int" members. We may use larger types in our fraction type.
+            if (bound_check<int>(value.numerator()) && bound_check<int>(value.denominator())) {
+                return Dtapi::DtFractionInt(int(value.numerator()), int(value.denominator()));
+            }
+            else {
+                // Use 1/100 precision (arbitrary).
+                return Dtapi::DtFractionInt(int(100.0 * value.toDouble()), 100);
+            }
+        }
+
+        //!
+        //! Convert a Dektec-defined fractional integer into a Fraction value.
+        //! @tparam FRAC An instantiation of Fraction. All other template parameters are here
+        //! to enforce a fraction type and should be left to their default values.
+        //! @param [out] result The converted FixedPoint value.
+        //! @param [in] value A Dektec-defined fractional int.
+        //!
+        template <class FRAC,
+                  typename INT = typename FRAC::int_t,
+                  typename std::enable_if<std::is_base_of<Fraction<INT>, FRAC>::value, int>::type = 0>
+        void FromDektecFractionInt(FRAC& result, Dtapi::DtFractionInt value)
+        {
+            result = FRAC(value.m_Num, value.m_Den);
+        }
+
+        //!
+        //! Convert an Integer value into a Dektec-defined fractional int.
+        //! @tparam INTEG An instantiation of Integer. All other template parameters are here
+        //! to enforce an Integer type and should be left to their default values.
+        //! @param [in] value An Integer value.
+        //! @return Corresponding Dektec-defined fractional int.
+        //!
+        template <class INTEG,
+                  typename INT_T = typename INTEG::int_t,
+                  typename std::enable_if<std::is_base_of<Integer<INT_T>, INTEG>::value, int>::type = 0>
+        inline Dtapi::DtFractionInt ToDektecFractionInt(const INTEG& value)
+        {
+            return Dtapi::DtFractionInt(int(value.toInt()), 1);
+        }
+
+        //!
+        //! Convert a Dektec-defined fractional integer into an Integer value.
+        //! @tparam INTEG An instantiation of Integer. All other template parameters are here
+        //! to enforce an Integer type and should be left to their default values.
+        //! @param [out] result The converted Integer value.
+        //! @param [in] value A Dektec-defined fractional int.
+        //!
+        template <class INTEG,
+                  typename INT_T = typename INTEG::int_t,
+                  typename std::enable_if<std::is_base_of<Integer<INT_T>, INTEG>::value, int>::type = 0>
+        inline void FromDektecFractionInt(INTEG& result, Dtapi::DtFractionInt value)
+        {
+            result = INTEG(rounded_div(value.m_Num, value.m_Den));
+        }
+
+        //!
+        //! Convert a FloatingPoint value into a Dektec-defined fractional int.
+        //! @tparam FPOINT An instantiation of FloatingPoint. All other template parameters are here
+        //! to enforce a FloatingPoint type and should be left to their default values.
+        //! @param [in] value A FloatingPoint value.
+        //! @return Corresponding Dektec-defined fractional int.
+        //!
+        template <class FPOINT,
+                  typename FLOAT_T = typename FPOINT::float_t,
+                  const size_t PREC = FPOINT::DISPLAY_PRECISION,
+                  typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T,PREC>, FPOINT>::value, int>::type = 0>
+        inline Dtapi::DtFractionInt ToDektecFractionInt(const FPOINT& value)
+        {
+            constexpr int factor = static_power10<int,PREC>::value;
+            return Dtapi::DtFractionInt(int(double(factor) * value.toDouble()), factor);
+        }
+
+        //!
+        //! Convert a Dektec-defined fractional integer into a FloatingPoint value.
+        //! @tparam FPOINT An instantiation of FloatingPoint. All other template parameters are here
+        //! to enforce a FloatingPoint type and should be left to their default values.
+        //! @param [out] result The converted FloatingPoint value.
+        //! @param [in] value A Dektec-defined fractional int.
+        //!
+        template <class FPOINT,
+                  typename FLOAT_T = typename FPOINT::float_t,
+                  const size_t PREC = FPOINT::DISPLAY_PRECISION,
+                  typename std::enable_if<std::is_base_of<FloatingPoint<FLOAT_T,PREC>, FPOINT>::value, int>::type = 0>
+        inline void FromDektecFractionInt(FPOINT& result, Dtapi::DtFractionInt value)
+        {
+            result = FPOINT(FLOAT_T(value.m_Num) / FLOAT_T(value.m_Den));
         }
     }
 

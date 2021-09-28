@@ -264,7 +264,7 @@ void ts::PCAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, P
         for (size_t version_count = buf.getUInt8(); buf.canReadBytes(8) && version_count > 0; version_count--) {
             disp << margin << UString::Format(u"- Content version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             disp << margin << UString::Format(u"  Content minor version: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
-            disp << margin << "  Version indicator: " << NameFromSection(u"PCATVersionIndicator", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+            disp << margin << "  Version indicator: " << NameFromSection(u"PCATVersionIndicator", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
             buf.skipBits(2);
 
             // Start the content_descriptor_length sequence. See [Warning #1] above.

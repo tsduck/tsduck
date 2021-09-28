@@ -182,7 +182,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
     }
     else {
         const uint16_t format = buf.getUInt16();
-        disp << margin << "Metadata application format: " << NameFromSection(u"MetadataApplicationFormat", format, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Metadata application format: " << NameFromSection(u"MetadataApplicationFormat", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFFFF && buf.remainingReadBytes() >= 4) {
             disp << margin << UString::Format(u"Metadata application format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         }
@@ -193,7 +193,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
     }
     else {
         const uint8_t format = buf.getUInt8();
-        disp << margin << "Metadata format: " << NameFromSection(u"MetadataFormat", format, names::HEXA_FIRST) << std::endl;
+        disp << margin << "Metadata format: " << NameFromSection(u"MetadataFormat", format, NamesFlags::HEXA_FIRST) << std::endl;
         if (format == 0xFF && buf.remainingReadBytes() >= 4) {
             disp << margin << UString::Format(u"Metadata format identifier: 0x%X (%<d)", {buf.getUInt32()}) << std::endl;
         }
@@ -207,7 +207,7 @@ void ts::MetadataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         const uint8_t flags = buf.getBits<uint8_t>(3);
         const bool DSMCC_flag = buf.getBool();
         buf.skipBits(4);
-        disp << margin << "Decoder config flags: " << NameFromSection(u"MetadataDecoderConfigFlags", flags, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Decoder config flags: " << NameFromSection(u"MetadataDecoderConfigFlags", flags, NamesFlags::DECIMAL_FIRST) << std::endl;
         if (DSMCC_flag) {
             const size_t length = buf.getUInt8();
             disp.displayPrivateData(u"Service identification record", buf, length, margin);

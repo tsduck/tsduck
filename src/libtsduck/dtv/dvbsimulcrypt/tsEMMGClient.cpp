@@ -156,8 +156,8 @@ ts::tlv::TAG ts::EMMGClient::waitResponse()
 // Connect to a remote EMMG. Perform all initial channel and stream negotiation.
 //----------------------------------------------------------------------------
 
-bool ts::EMMGClient::connect(const SocketAddress& mux,
-                             const SocketAddress& udp,
+bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
+                             const IPv4SocketAddress& udp,
                              uint32_t client_id,
                              uint16_t data_channel_id,
                              uint16_t data_stream_id,

@@ -32,7 +32,9 @@
 #include "tsFileUtils.h"
 TSDUCK_SOURCE;
 
+#if !defined(TS_UNIX) || !defined(TS_NO_CURL)
 TS_REGISTER_INPUT_PLUGIN(u"hls", ts::hls::InputPlugin);
+#endif
 
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::hls::InputPlugin::REFERENCE = 0;
@@ -167,8 +169,8 @@ bool ts::hls::InputPlugin::getOptions()
     _url.setURL(value(u""));
     const UString saveDirectory(value(u"save-files"));
     getIntValue(_maxSegmentCount, u"segment-count");
-    getFixedValue(_minRate, u"min-bitrate");
-    getFixedValue(_maxRate, u"max-bitrate");
+    getValue(_minRate, u"min-bitrate");
+    getValue(_maxRate, u"max-bitrate");
     getIntValue(_minWidth, u"min-width");
     getIntValue(_maxWidth, u"max-width");
     getIntValue(_minHeight, u"min-height");

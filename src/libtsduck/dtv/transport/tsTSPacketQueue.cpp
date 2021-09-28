@@ -177,7 +177,7 @@ void ts::TSPacketQueue::releaseWriteBuffer(size_t count)
 // Called by the writer thread to report the input bitrate.
 //----------------------------------------------------------------------------
 
-void ts::TSPacketQueue::setBitrate(BitRate bitrate)
+void ts::TSPacketQueue::setBitrate(const BitRate& bitrate)
 {
     GuardMutex lock(_mutex);
 

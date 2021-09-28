@@ -82,8 +82,9 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [out] bin A binary table object.
         //! Its content is replaced with a binary representation of this object.
+        //! @return True in case of success, false if the table is invalid.
         //!
-        void serialize(DuckContext& duck, BinaryTable& bin) const;
+        bool serialize(DuckContext& duck, BinaryTable& bin) const;
 
         //!
         //! This method deserializes a binary table.
@@ -91,8 +92,9 @@ namespace ts {
         //! In case of error, this object is invalidated.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary table to interpret according to the table subclass.
+        //! @return True in case of success, false if the table is invalid.
         //!
-        void deserialize(DuckContext& duck, const BinaryTable& bin);
+        bool deserialize(DuckContext& duck, const BinaryTable& bin);
 
         //!
         //! Virtual destructor

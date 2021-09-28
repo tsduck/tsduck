@@ -50,7 +50,7 @@ namespace ts {
         //! This class is internal to the TSDuck library and cannot be called by applications.
         //! @ingroup plugin
         //!
-        class ControlServer : private Thread
+        class ControlServer : public CommandLineHandler, private Thread
         {
             TS_NOBUILD_NOCOPY(ControlServer);
         public:
@@ -95,17 +95,14 @@ namespace ts {
             virtual void main() override;
 
             // Command handlers.
-            typedef void (ControlServer::* CommandHandler)(const Args*, Report&);
-            std::map<TSPControlCommand::ControlCommand, CommandHandler> _handlers;
-
-            void executeExit(const Args*, Report&);
-            void executeSetLog(const Args*, Report&);
-            void executeList(const Args*, Report&);
+            CommandStatus executeExit(const UString&, Args&);
+            CommandStatus executeSetLog(const UString&, Args&);
+            CommandStatus executeList(const UString&, Args&);
             void listOnePlugin(size_t index, UChar type, PluginExecutor* plugin, Report& report);
-            void executeSuspend(const Args*, Report&);
-            void executeResume(const Args*, Report&);
-            void executeSuspendResume(bool state, const Args*, Report&);
-            void executeRestart(const Args*, Report&);
+            CommandStatus executeSuspend(const UString&, Args&);
+            CommandStatus executeResume(const UString&, Args&);
+            CommandStatus executeSuspendResume(bool state, Args&);
+            CommandStatus executeRestart(const UString&, Args&);
         };
     }
 }

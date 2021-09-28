@@ -128,8 +128,9 @@ namespace ts {
         //! This method serializes a descriptor.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [out] bin A binary descriptor object. Its content is replaced with a binary representation of this descriptor.
+        //! @return True in case of success, false if the descriptor is invalid.
         //!
-        void serialize(DuckContext& duck, Descriptor& bin) const;
+        bool serialize(DuckContext& duck, Descriptor& bin) const;
 
         //!
         //! This method deserializes a binary descriptor.
@@ -137,8 +138,9 @@ namespace ts {
         //! @param [in] bin A binary descriptor to interpret according to the descriptor subclass.
         //! In case of success, this object is replaced with the interpreted content of @a bin.
         //! In case of error, this object is invalidated.
+        //! @return True in case of success, false if the descriptor is invalid.
         //!
-        void deserialize(DuckContext& duck, const Descriptor& bin);
+        bool deserialize(DuckContext& duck, const Descriptor& bin);
 
         //!
         //! Deserialize a descriptor from a descriptor list.
@@ -147,8 +149,9 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] dlist A list of binary descriptors.
         //! @param [in] index Index of the descriptor to deserialize in @a dlist.
+        //! @return True in case of success, false if the descriptor is invalid.
         //!
-        void deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index);
+        bool deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index);
 
         //!
         //! Virtual destructor

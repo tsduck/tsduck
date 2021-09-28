@@ -339,7 +339,7 @@ int32_t ts::HFBand::offsetCount(uint64_t frequency) const
 // Return a human-readable description of a channel.
 //----------------------------------------------------------------------------
 
-ts::UString ts::HFBand::description(uint32_t channel, int32_t offset, int strength, int quality) const
+ts::UString ts::HFBand::description(uint32_t channel, int32_t offset) const
 {
     const uint64_t freq = frequency(channel, offset);
     const int mhz = int(freq / 1000000);
@@ -353,12 +353,6 @@ ts::UString ts::HFBand::description(uint32_t channel, int32_t offset, int streng
         desc += UString::Format(u".%03d", {khz});
     }
     desc += u" MHz)";
-    if (strength > 0) {
-        desc += UString::Format(u", strength: %d%%", {strength});
-    }
-    if (quality > 0) {
-        desc += UString::Format(u", quality: %d%%", {quality});
-    }
     return desc;
 }
 

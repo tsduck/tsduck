@@ -83,14 +83,22 @@ linux {
     LIBS += -lrt -ldl
 }
 mac {
+    SO = .dylib
+}
+else {
+    SO = .so
+}
+mac {
     # LLVM options. Some of them depend on the compiler version.
     LLVM_VERSION = $$system($$QMAKE_CXX " -dumpversion")
     LLVM_FIELDS = $$split(LLVM_VERSION, ".")
     LLVM_MAJOR = $$member(LLVM_FIELDS, 0)
     QMAKE_CXXFLAGS_WARN_ON += -Weverything -Wno-c++98-compat-pedantic
     greaterThan(LLVM_MAJOR, 11): QMAKE_CXXFLAGS_WARN_ON += -Wno-poison-system-directories
-    QMAKE_CXXFLAGS += -I/usr/local/include -I/usr/local/opt/pcsc-lite/include/PCSC
+    QMAKE_CXXFLAGS += -I/usr/local/include -I/usr/local/opt/pcsc-lite/include -I/usr/local/opt/pcsc-lite/include/PCSC
+    QMAKE_CXXFLAGS += -I/opt/homebrew/include -I/opt/homebrew/opt/pcsc-lite/include -I/opt/homebrew/opt/pcsc-lite/include/PCSC
     LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib
+    LIBS += -L/opt/homebrew/lib -L/opt/homebrew/opt/pcsc-lite/lib
     QMAKE_EXTENSION_SHLIB = so
     DEFINES += TS_NO_DTAPI=1
 }
@@ -98,7 +106,7 @@ exists(/usr/include/srt/*.h) | exists(/usr/local/include/srt/*.h) {
     LIBS += -lsrt
 }
 else {
-    DEFINES += TS_NOSRT=1
+    DEFINES += TS_NO_SRT=1
 }
 tstool {
     # TSDuck tools shall use "CONFIG += tstool"
@@ -118,15 +126,15 @@ tsplugin {
     TEMPLATE = lib
     SOURCES += $$SRCROOT/tsplugins/$${TARGET}.cpp
     QMAKE_POST_LINK += mkdir -p ../tsp $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += cp $${TARGET}.so ../tsp $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $${TARGET}$$SO ../tsp $$escape_expand(\\n\\t)
     QMAKE_POST_LINK += mkdir -p ../tsprofiling $$escape_expand(\\n\\t)
-    QMAKE_POST_LINK += cp $${TARGET}.so ../tsprofiling $$escape_expand(\\n\\t)
+    QMAKE_POST_LINK += cp $${TARGET}$$SO ../tsprofiling $$escape_expand(\\n\\t)
 }
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
     linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'
-    LIBS += ../libtsduck/libtsduck.so
-    PRE_TARGETDEPS += ../libtsduck/libtsduck.so
+    LIBS += ../libtsduck/libtsduck$$SO
+    PRE_TARGETDEPS += ../libtsduck/libtsduck$$SO
     DEPENDPATH += ../libtsduck
     INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name release\\* ! -name debug\\*")
     QMAKE_POST_LINK += cp $$TS_CONFIG_FILES . $$escape_expand(\\n\\t)

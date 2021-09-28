@@ -32,6 +32,7 @@
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
+#include "tsSysInfo.h"
 #include "tsFileUtils.h"
 #include "tsDektecUtils.h"
 #include "tsWebRequest.h"
@@ -43,8 +44,13 @@ TSDUCK_SOURCE;
 const int tsduckLibraryVersionMajor = TS_VERSION_MAJOR;
 const int tsduckLibraryVersionMinor = TS_VERSION_MINOR;
 const int tsduckLibraryVersionCommit = TS_COMMIT;
+
+// Exported symbols, the names of which depend on the TSDuck version or BitRate implementation.
+// When an executable or shared library references these symbols, it is guaranteed that a
+// compatible TSDuck library is activated. Otherwise, the dynamic references would have failed.
+// Only the symbol names matter, the value is just unimportant.
 const int TSDUCK_LIBRARY_VERSION_SYMBOL = TS_VERSION_INTEGER;
-const int TSDUCK_LIBRARY_BITRATE_DECIMALS_SYMBOL = TS_BITRATE_DECIMALS;
+const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({
@@ -52,10 +58,12 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
     {u"long",     int(ts::VersionInfo::Format::LONG)},
     {u"integer",  int(ts::VersionInfo::Format::INTEGER)},
     {u"date",     int(ts::VersionInfo::Format::DATE)},
+    {u"compiler", int(ts::VersionInfo::Format::COMPILER)},
+    {u"system",   int(ts::VersionInfo::Format::SYSTEM)},
+    {u"bitrate",  int(ts::VersionInfo::Format::BITRATE)},
     {u"nsis",     int(ts::VersionInfo::Format::NSIS)},
     {u"dektec",   int(ts::VersionInfo::Format::DEKTEC)},
     {u"http",     int(ts::VersionInfo::Format::HTTP)},
-    {u"compiler", int(ts::VersionInfo::Format::COMPILER)},
     {u"srt",      int(ts::VersionInfo::Format::SRT)},
     {u"all",      int(ts::VersionInfo::Format::ALL)},
 });
@@ -67,7 +75,7 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
 
 ts::VersionInfo::VersionInfo(Report& report) :
     _report(report),
-    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : report),
+    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : _report),
     _started(false)
 {
 }
@@ -76,6 +84,9 @@ ts::VersionInfo::~VersionInfo()
 {
     // Wait for thread termination, if started.
     waitForTermination();
+
+    // Keep this one to avoid clang warning with NOGITHUB=1
+    _started = false;
 }
 
 
@@ -85,6 +96,8 @@ ts::VersionInfo::~VersionInfo()
 
 void ts::VersionInfo::startNewVersionDetection()
 {
+#if !defined(TS_NO_GITHUB)
+
     // Do not start more than once.
     // If the environment variable is not empty, do not start the new version check.
     if (_started || !GetEnvironment(u"TSDUCK_NO_VERSION_CHECK").empty()) {
@@ -117,6 +130,8 @@ void ts::VersionInfo::startNewVersionDetection()
 
     // Start the thread.
     _started = start();
+
+#endif
 }
 
 
@@ -126,6 +141,8 @@ void ts::VersionInfo::startNewVersionDetection()
 
 void ts::VersionInfo::main()
 {
+#if !defined(TS_NO_GITHUB)
+
     // Get new version from GitHub.
     const ts::GitHubRelease rel(u"tsduck", u"tsduck", UString(), _debug);
 
@@ -144,6 +161,8 @@ void ts::VersionInfo::main()
         // The current version is older than latest one on GitHub.
         _report.info(u"new TSDuck version %s is available (yours is %s), use 'tsversion --upgrade' or see https://tsduck.io/", {remote, current});
     }
+
+#endif
 }
 
 
@@ -201,6 +220,32 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 
 
 //----------------------------------------------------------------------------
+// Build a string representing the system on which the application runs.
+//----------------------------------------------------------------------------
+
+ts::UString ts::VersionInfo::GetSystemVersion()
+{
+    UString name(SysInfo::Instance()->systemName());
+    const UString version(SysInfo::Instance()->systemVersion());
+    if (!version.empty()) {
+        name.format(u" (%s)", {version});
+    }
+    name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes",
+                {SysInfo::Instance()->cpuName(),
+                 TS_ADDRESS_BITS,
+                 #if defined(TS_LITTLE_ENDIAN)
+                     u"little",
+                 #elif defined(TS_BIG_ENDIAN)
+                    u"big",
+                 #else
+                     u"unknown",
+                 #endif
+                 SysInfo::Instance()->memoryPageSize()});
+    return name;
+}
+
+
+//----------------------------------------------------------------------------
 // Build version string.
 //----------------------------------------------------------------------------
 
@@ -230,6 +275,15 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             return UString::Format(u"%s - %s", {__DATE__, __TIME__});
             TS_POP_WARNING()
         }
+        case Format::COMPILER: {
+            return GetCompilerVersion();
+        }
+        case Format::SYSTEM: {
+            return GetSystemVersion();
+        }
+        case Format::BITRATE: {
+            return BitRate().description();
+        }
         case Format::NSIS: {
             // A definition directive for NSIS.
             // The name tsduckVersion contains the visible version.
@@ -245,9 +299,6 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The version of the HTTP library.
             return WebRequest::GetLibraryVersion();
         }
-        case Format::COMPILER: {
-            return GetCompilerVersion();
-        }
         case Format::SRT: {
             // The version of the SRT library.
             return SRTSocket::GetLibraryVersion();
@@ -256,9 +307,11 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +
                 u"Built " + GetVersion(Format::DATE) + LINE_FEED +
                 u"Using " + GetVersion(Format::COMPILER) + LINE_FEED +
+                u"System: " + GetVersion(Format::SYSTEM) + LINE_FEED +
+                u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
+                u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
                 u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
-                u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
-                u"Dektec: " + GetVersion(Format::DEKTEC);
+                u"SRT library: " + GetVersion(Format::SRT);
         }
         default: {
             // Undefined type, return an empty string.

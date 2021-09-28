@@ -118,7 +118,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, co
     if (buf.canReadBytes(4)) {
         // Display common part
         const uint16_t casid = buf.getUInt16();
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, names::FIRST);
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), casid, NamesFlags::FIRST);
         disp << ", " << (tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA"));
         disp << UString::Format(u" PID: %d (0x%<X)", {buf.getPID()}) << std::endl;
 

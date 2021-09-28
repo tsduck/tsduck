@@ -175,5 +175,5 @@ void PacketizerTest::testPacketizer()
             << "PacketizerTest: Packetizer state after packetization: " << std::endl << pzer;
 
     TSUNIT_ASSERT(pmt_count == 4);
-    TSUNIT_ASSERT(sdt_count >= 15 && sdt_count <= 18);
+    TSUNIT_ASSERT(sdt_count >= 12 && sdt_count <= 18);
 }

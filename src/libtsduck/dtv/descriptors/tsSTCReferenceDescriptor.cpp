@@ -162,7 +162,7 @@ void ts::STCReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
         buf.skipBits(3);
         const bool external = buf.getBool();
         const uint8_t mode = buf.getBits<uint8_t>(4);
-        disp << margin << "Segmentation mode: " << NameFromSection(u"STCReferenceMode", mode, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Segmentation mode: " << NameFromSection(u"STCReferenceMode", mode, NamesFlags::DECIMAL_FIRST) << std::endl;
         if (external) {
             disp << margin << UString::Format(u"External event id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
             disp << margin << UString::Format(u"External service id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;

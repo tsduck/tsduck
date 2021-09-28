@@ -33,20 +33,25 @@
 
 
 # Duplicate output for specific compilers or profiling tools.
-ifdef LLVM
-    BINDIR_SUFFIX = -clang
-endif
+
 ifdef GCOV
     BINDIR_SUFFIX = -gcov
 endif
 ifdef GPROF
     BINDIR_SUFFIX = -gprof
 endif
+ifdef LLVM
+    BINDIR_SUFFIX += -clang
+endif
+ifdef STATIC
+    BINDIR_SUFFIX += -static
+endif
 
-# Standard common makefile is in same directory.
+# Standard common makefile is in same directory as this makefile.
+
 include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/Makefile.common
 
-# Project specific directories and files.
+# Project specific directories.
 
 INSTALLERDIR = $(ROOTDIR)/installers
 SRCROOT      = $(ROOTDIR)/src
@@ -54,18 +59,14 @@ LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
 TSPLUGINSDIR = $(SRCROOT)/tsplugins
 
-STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
-SHARED_LIBTSDUCK = $(BINDIR)/libtsduck.so
+# TSDuck library files.
 
-ifndef TSPLUGINS
-    export TSPLUGINS := $(sort $(filter-out $(if $(NOTELETEXT),tsplugin_teletext,),\
-                                            $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp)))))
-    export TSEXECS   := $(sort $(filter-out $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.h))),\
-                                            $(notdir $(basename $(wildcard $(TSTOOLSDIR)/*.cpp)))))
-endif
+STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
+SHARED_LIBTSDUCK = $(BINDIR)/libtsduck$(SO_SUFFIX)
 
 # Default installation root.
-# RPM packagers should override this in the "make install" command line.
+# RPM packagers should override this in the "make install" command line
+# to build a temporary system root where TSDuck is installed.
 
 SYSROOT =
 
@@ -90,18 +91,20 @@ else
     NOPCSC  = true
     NODTAPI = true
     NOSRT   = true
+    NORIST  = true
     NOTEST  = true
     CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
 endif
 
 # External include directories and libraries.
 
-ifdef CROSS_TARGET
+ifneq ($(CROSS)$(CROSS_TARGET),)
     # Some libraries are bypassed in cross-compilation.
     NOCURL  = true
     NOPCSC  = true
     NODTAPI = true
     NOSRT   = true
+    NORIST  = true
 endif
 
 ifdef NOTELETEXT
@@ -112,18 +115,40 @@ ifdef ASSERTIONS
     CFLAGS_INCLUDES += -DTS_KEEP_ASSERTIONS=1
 endif
 
-ifeq ($(MACOS)$(NOSRT),)
-    # Not on macOS and SRT not disabled, check if libsrt is available.
-    NOSRT := $(if $(wildcard /usr/include/srt/*.h)$(wildcard /usr/local/include/srt/*.h),,true)
+ifeq ($(NOSRT),)
+    # SRT not disabled, check if libsrt is available.
+    NOSRT := $(if $(wildcard /usr/include/srt/*.h $(ALTDEVROOT)/include/srt/*.h),,true)
 endif
 
 ifneq ($(NOSRT),)
-    CFLAGS_INCLUDES += -DTS_NOSRT=1
+    CFLAGS_INCLUDES += -DTS_NO_SRT=1
 else
     LDLIBS := -lsrt $(LDLIBS)
 endif
 
-ifdef NOCURL
+ifeq ($(MACOS)$(LINUXBREW)$(RIST),)
+    # Not on macOS, not using Linuxbrew and RIST not explicitly enabled.
+    # Currently, RIST must be explicitly enabled on Linux since no standard distro package exists.
+    NORIST := true
+endif
+
+ifeq ($(NORIST),)
+    # RIST not disabled, check if librist is available.
+    NORIST := $(if $(wildcard /usr/include/librist/*.h $(ALTDEVROOT)/include/librist/*.h),,true)
+endif
+
+ifneq ($(NORIST),)
+    CFLAGS_INCLUDES += -DTS_NO_RIST=1
+else
+    LDLIBS := -lrist $(LDLIBS)
+endif
+
+ifeq ($(NOCURL),)
+    # curl not disabled, check if available.
+    export NOCURL := $(if $(call F_COMMAND,curl-config,),,true)
+endif
+
+ifneq ($(NOCURL),)
     CFLAGS_INCLUDES += -DTS_NO_CURL=1
 else
     ifndef CFLAGS_CURL
@@ -134,21 +159,56 @@ else
     LDLIBS := $(LDLIBS_CURL) $(LDLIBS)
 endif
 
-ifdef NOPCSC
+ifeq ($(NOPCSC),)
+    # PCSC not disabled, check if available.
+    NOPCSC := $(if $(wildcard /usr/include/PCSC/*.h $(ALTDEVROOT)/include/PCSC/*.h $(ALTDEVROOT)/opt/pcsc-lite/include/PCSC/*.h),,true)
+endif
+
+ifneq ($(NOPCSC),)
     CFLAGS_INCLUDES += -DTS_NO_PCSC=1
-else ifeq ($(MACOS),)
+else ifeq ($(MACOS)$(LINUXBREW),)
     # PCSC on Linux
     CFLAGS_INCLUDES += -I/usr/include/PCSC
     LDLIBS := -lpcsclite $(LDLIBS)
 else
-    # PCSC on macOS
-    PCSC_ROOT = $(word 1,$(wildcard /opt/homebrew/opt/pcsc-lite /usr/local/opt/pcsc-lite))
-    CFLAGS_INCLUDES += -I$(PCSC_ROOT)/include/PCSC
-    LDLIBS := -L$(PCSC_ROOT)/lib -lpcsclite $(LDLIBS)
+    # PCSC on macOS or Linuxbrew
+    CFLAGS_INCLUDES += $(addprefix -I,$(wildcard $(ALTDEVROOT)/opt/pcsc-lite/include $(ALTDEVROOT)/opt/pcsc-lite/include/PCSC))
+    LDLIBS := $(addprefix -L,$(wildcard $(ALTDEVROOT)/opt/pcsc-lite/lib)) -lpcsclite $(LDLIBS)
 endif
 
-ifdef NODTAPI
+ifneq ($(NODEKTEC),)
+    # NODEKTEC is an alternative name for NODTAPI
+    NODTAPI = true
+endif
+
+ifeq ($(NODTAPI)$(NODTAPI_CHECKED),)
+    # Disable DTAPI on platforms where it is not supported.
+    NODTAPI := $(if $(shell $(ROOTDIR)/build/dtapi-config.sh --support),,true)
+    export NODTAPI_CHECKED := true
+endif
+
+ifneq ($(NODTAPI),)
     CFLAGS_INCLUDES += -DTS_NO_DTAPI=1
+endif
+
+ifdef NOGITHUB
+    CFLAGS_INCLUDES += -DTS_NO_GITHUB=1
+endif
+
+ifdef BITRATE_FRACTION
+    CFLAGS_INCLUDES += -DTS_BITRATE_FRACTION=1
+endif
+
+ifdef BITRATE_INTEGER
+    CFLAGS_INCLUDES += -DTS_BITRATE_INTEGER=1
+endif
+
+ifdef BITRATE_FLOAT
+    CFLAGS_INCLUDES += -DTS_BITRATE_FLOAT=1
+endif
+
+ifdef BITRATE_FIXED
+    CFLAGS_INCLUDES += -DTS_BITRATE_FIXED=1
 endif
 
 ifdef BITRATE_DECIMALS
@@ -175,5 +235,41 @@ endif
 
 # Make sure that full paths of source files never appear in binaries.
 ifneq ($(CC_FILE_PREFIX_MAP),)
-    CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
+    ifeq ($(DEBUG),)
+        CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
+    endif    
+endif
+
+# List of plugins and tools to build.
+# - Do not compile Dektec or HiDes tools when these devices are unsupported.
+# - Tuners (dvb plugin, tslsdvb, tscan) shall be compiled everywhere because
+#   the tuner emulator facility is available everywhere.
+# - Build a list of plugins to not build or deinstall from the system tree.
+#   Include obsolete plugins, were in separate shared libraries, now in libtsduck.so.
+#   Maintenance: also update build/tsduck.nsi (Windows).
+
+ifndef TSPLUGINS
+    TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))
+    TSEXECS := $(sort $(notdir $(basename $(wildcard $(TSTOOLSDIR)/ts*.cpp))))
+    NO_TSEXECS :=
+    NO_TSPLUGINS := $(addprefix tsplugin_,dektec drop file fork hls http ip null psi skip srt tables)
+    ifdef NODTAPI
+        NO_TSEXECS += tsdektec
+    endif
+    ifdef MACOS
+        NO_TSPLUGINS += tsplugin_hides
+        NO_TSEXECS += tshides
+    endif
+    ifdef NOTELETEXT
+        NO_TSPLUGINS += tsplugin_teletext
+    endif
+    ifdef NORIST
+        NO_TSPLUGINS += tsplugin_rist
+    endif
+    ifdef NOPCSC
+        NO_TSEXECS += tssmartcard
+    endif
+    TSEXECS := $(filter-out $(NO_TSEXECS),$(TSEXECS))
+    TSPLUGINS := $(filter-out $(NO_TSPLUGINS),$(TSPLUGINS))
+    export TSPLUGINS TSEXECS NO_TSEXECS NO_TSPLUGINS
 endif

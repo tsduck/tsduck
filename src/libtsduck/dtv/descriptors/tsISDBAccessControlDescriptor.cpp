@@ -108,8 +108,8 @@ void ts::ISDBAccessControlDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 {
     if (buf.canReadBytes(4)) {
         const UChar* const dtype = tid == TID_CAT ? u"EMM" : (tid == TID_PMT ? u"ECM" : u"CA");
-        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), names::FIRST) << std::endl;
-        disp << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "CA System Id: " << names::CASId(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Transmission type: " << NameFromSection(u"ISDBCATransmissionType", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
         disp << margin << UString::Format(u"%s PID: 0x%X (%<d)", {dtype, buf.getPID()}) << std::endl;
         disp.displayPrivateData(u"Private CA data", buf, NPOS, margin);
     }

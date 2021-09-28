@@ -87,12 +87,12 @@ ts::PacketInsertionController::BitRateControl::BitRateControl(Report& report, co
 {
 }
 
-size_t ts::PacketInsertionController::BitRateControl::diffPercent(BitRate rate) const
+size_t ts::PacketInsertionController::BitRateControl::diffPercent(const BitRate& rate) const
 {
     return size_t((((rate - _average) * 100) / _average).abs().toInt());
 }
 
-bool ts::PacketInsertionController::BitRateControl::setBitRate(BitRate rate)
+bool ts::PacketInsertionController::BitRateControl::setBitRate(const BitRate& rate)
 {
     if (rate == 0) {
         // Unknown bitrate.
@@ -142,7 +142,7 @@ void ts::PacketInsertionController::setBitRateVariationResetThreshold(size_t per
     _sub_bitrate.setResetThreshold(percent);
 }
 
-void ts::PacketInsertionController::setMainBitRate(BitRate rate)
+void ts::PacketInsertionController::setMainBitRate(const BitRate& rate)
 {
     // In case of bitrate reset, reset the insertion strategy.
     if (!_main_bitrate.setBitRate(rate)) {
@@ -150,7 +150,7 @@ void ts::PacketInsertionController::setMainBitRate(BitRate rate)
     }
 }
 
-void ts::PacketInsertionController::setSubBitRate(BitRate rate)
+void ts::PacketInsertionController::setSubBitRate(const BitRate& rate)
 {
     // In case of bitrate reset, reset the insertion strategy.
     if (!_sub_bitrate.setBitRate(rate)) {

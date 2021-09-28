@@ -56,7 +56,7 @@ namespace ts {
         //! packets. The bitrate hint is optional: if specified as zero, the
         //! analysis is based on the PCR values.
         //!
-        explicit TSAnalyzerReport(DuckContext& duck, BitRate bitrate_hint = 0);
+        explicit TSAnalyzerReport(DuckContext& duck, const BitRate& bitrate_hint = 0);
 
         //!
         //! Virtual destructor.
@@ -140,10 +140,10 @@ namespace ts {
 
     private:
         // Display header of a service PID list.
-        void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const;
+        void reportServiceHeader(Grid& grid, const UString& usage, bool scrambled, const BitRate& bitrate, const BitRate& ts_bitrate, bool wide) const;
 
          // Display one line of a subtotal.
-         void reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, BitRate bitrate, BitRate ts_bitrate, bool wide) const;
+         void reportServiceSubtotal(Grid& grid, const UString& header, const UString& usage, bool scrambled, const BitRate& bitrate, const BitRate& ts_bitrate, bool wide) const;
 
         // Display one line of a service PID list.
         void reportServicePID(Grid& grid, const PIDContext&) const;

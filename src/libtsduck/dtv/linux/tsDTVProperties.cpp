@@ -67,6 +67,14 @@ size_t ts::DTVProperties::add(uint32_t cmd, uint32_t data)
     return size_t(_prop_head.num++);
 }
 
+size_t ts::DTVProperties::addStat(uint32_t cmd)
+{
+    assert(_prop_head.num < DTV_IOCTL_MAX_MSGS);
+    _prop_buffer[_prop_head.num].cmd = cmd;
+    _prop_buffer[_prop_head.num].u.st.len = MAX_DTV_STATS;
+    return size_t(_prop_head.num++);
+}
+
 
 //-----------------------------------------------------------------------------
 // Search a property in the buffer, return index in buffer
@@ -101,6 +109,26 @@ uint32_t ts::DTVProperties::getByCommand(uint32_t cmd) const
     return UNKNOWN;
 }
 
+bool ts::DTVProperties::getStatByCommand(int64_t& value, ::fecap_scale_params& scale, uint32_t cmd, size_t layer) const
+{
+    value = 0;
+    scale = ::FE_SCALE_NOT_AVAILABLE;
+    for (size_t i = 0; i < size_t(_prop_head.num); i++) {
+        if (_prop_buffer[i].cmd == cmd) {
+            const ::dtv_fe_stats& stats(_prop_buffer[i].u.st);
+            if (layer < stats.len) {
+                value = stats.stat[layer].svalue;
+                scale = ::fecap_scale_params(stats.stat[layer].scale);
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+    }
+    return false;
+}
+
 
 //-----------------------------------------------------------------------------
 // Report the content of the object (for debug purpose)
@@ -108,17 +136,32 @@ uint32_t ts::DTVProperties::getByCommand(uint32_t cmd) const
 
 void ts::DTVProperties::report(Report& report, int severity) const
 {
-    if (report.maxSeverity() < severity) {
-        return;
+    if (report.maxSeverity() >= severity) {
+        report.log(severity, u"%d DTVProperties:", {_prop_head.num});
+        for (size_t i = 0; i < _prop_head.num; ++i) {
+            const ::dtv_property& prop(_prop_head.props[i]);
+            const char* name = CommandName(prop.cmd);
+            report.log(severity, u"[%d] cmd = %d (%s), data = %d (0x%<08X)", {i, prop.cmd, name == nullptr ? "?" : name, prop.u.data});
+        }
     }
+}
 
-    report.log(severity, u"%d DTVProperties:", {_prop_head.num});
-    for (size_t i = 0; i < _prop_head.num; ++i) {
-        const ::dtv_property& prop(_prop_head.props[i]);
-        const char* name = CommandName(prop.cmd);
-        report.log(severity,
-                   u"[%d] cmd = %d (%s), data = %d (0x%08X)",
-                   {i, prop.cmd, name == nullptr ? "?" : name, prop.u.data, prop.u.data});
+void ts::DTVProperties::reportStat(Report& report, int severity) const
+{
+    if (report.maxSeverity() >= severity) {
+        report.log(severity, u"%d DTVProperties (statistics result):", {_prop_head.num});
+        for (size_t i1 = 0; i1 < _prop_head.num; ++i1) {
+            const ::dtv_property& prop(_prop_head.props[i1]);
+            const char* name = CommandName(prop.cmd);
+            UString str;
+            for (size_t i2 = 0; i2 < prop.u.st.len && i2 < MAX_DTV_STATS; ++i2) {
+                if (i2 > 0) {
+                    str.append(u", ");
+                }
+                str.format(u"{scale: %d, value: %d}", {prop.u.st.stat[i2].scale, prop.u.st.stat[i2].svalue});
+            }
+            report.log(severity, u"[%d] cmd = %d (%s), count = %d, stat = %s", {i1, prop.cmd, name == nullptr ? "?" : name, prop.u.st.len, str});
+        }
     }
 }
 

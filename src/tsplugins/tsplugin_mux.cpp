@@ -232,7 +232,7 @@ bool ts::MuxPlugin::start()
     _check_pid_conflict = !present(u"no-pid-conflict-check");
     _force_pid = present(u"pid");
     getIntValue(_force_pid_value, u"pid");
-    getFixedValue(_bitrate, u"bitrate");
+    getValue(_bitrate, u"bitrate");
     getIntValue(_inter_pkt, u"inter-packet", 0);
     getIntValue(_inter_time, u"inter-time", 0);
     getIntValue(_min_pts, u"min-pts", 0);

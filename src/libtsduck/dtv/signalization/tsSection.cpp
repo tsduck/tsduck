@@ -639,7 +639,7 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bo
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
         strm << margin << ""
-             << UString::Format(u"* Section dump, PID 0x%X (%d), TID %d", {_source_pid, _source_pid, names::TID(duck, tid, cas, names::BOTH_FIRST)})
+             << UString::Format(u"* Section dump, PID 0x%X (%d), TID %d", {_source_pid, _source_pid, names::TID(duck, tid, cas, NamesFlags::BOTH_FIRST)})
              << std::endl
              << margin << "  Section size: " << size() << " bytes, header: " << (isLongSection() ? "long" : "short")
              << std::endl;

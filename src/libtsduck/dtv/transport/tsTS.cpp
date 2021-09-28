@@ -61,7 +61,7 @@ const ts::Enumeration ts::PIDClassEnum({
 // Compute the PCR of a packet, based on the PCR of a previous packet.
 //----------------------------------------------------------------------------
 
-uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, BitRate bitrate)
+uint64_t ts::NextPCR(uint64_t last_pcr, PacketCounter distance, const BitRate& bitrate)
 {
     if (last_pcr == INVALID_PCR || bitrate == 0) {
         return INVALID_PCR;

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props" />
+  </ImportGroup>
+
+  <ItemGroup>
+    <ClCompile Include="..\..\src\utils\tsmux.cpp" />
+  </ItemGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{995F6EFF-676B-B58F-7D78-C9C5D6746145}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tsmux</RootNamespace>
+  </PropertyGroup>
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-exe.props" />
+    <Import Project="msvc-use-tsduckdll.props" />
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+
+</Project>

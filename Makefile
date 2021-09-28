@@ -31,20 +31,30 @@
 #
 #  Additional options which can be defined:
 #
-#  - NOTEST  : Do not build unitary tests.
-#  - NODTAPI : No Dektec support, remove dependency to DTAPI.
-#  - NOCURL  : No HTTP support, remove dependency to libcurl.
-#  - NOPCSC  : No smartcard support, remove dependency to pcsc-lite.
-#  - NOSRT   : No SRT support, remove dependency to libsrt.
+#  - NOTEST     : Do not build unitary tests.
+#  - NODEKTEC   : No Dektec support, remove dependency to DTAPI.
+#  - NOCURL     : No HTTP support, remove dependency to libcurl.
+#  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
+#  - NOSRT      : No SRT support, remove dependency to libsrt.
+#  - NORIST     : No RIST support, remove dependency to librist.
 #  - NOTELETEXT : No Teletext support, remove teletext handling code.
+#  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
+#
+#  Options to define the representation of bitrates:
+#
+#  - BITRATE_INTEGER    : Bitrates are 64-bit integer.
+#  - BITRATE_FRACTION   : Bitrates are fractions of two 64-bit integers.
+#  - BITRATE_FLOAT      : Bitrates are 64-bit floating-point.
+#  - BITRATE_FIXED      : Bitrates are 64-bit fixed-point.
+#  - BITRATE_DECIMALS=n : Number of decimal with fixed-point (default: 1).
 #
 #-----------------------------------------------------------------------------
 
 
 include Makefile.tsduck
 
-EXTRA_DISTCLEAN   += bin
-NORECURSE_SUBDIRS += bin
+EXTRA_DISTCLEAN   += bin dektec
+NORECURSE_SUBDIRS += bin dektec
 
 # Analyze our code only, not downloaded 3rd-party code in dektec.
 CPPCHECK_SOURCES   = src
@@ -87,12 +97,6 @@ sample:
 .PHONY: show-version
 show-version: default
 	$(BINDIR)/tsversion --version=all
-
-# Download the Dektec DTAPI. Automatically done during a global "make" since
-# we recurse in "dektec" before "src".
-.PHONY: dtapi
-dtapi:
-	@$(MAKE) -C dektec
 
 # Install files, using SYSROOT as target system root if necessary.
 .PHONY: install install-tools install-devel

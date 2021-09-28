@@ -53,7 +53,7 @@ namespace ts {
         //! @param [in] bitrate Output bitrate, zero if undefined.
         //! Useful only when using specific repetition rates for sections
         //!
-        OneShotPacketizer(const DuckContext& duck, PID pid = PID_NULL, bool do_stuffing = false, BitRate bitrate = 0);
+        OneShotPacketizer(const DuckContext& duck, PID pid = PID_NULL, bool do_stuffing = false, const BitRate& bitrate = 0);
 
         //!
         //! Virtual destructor.

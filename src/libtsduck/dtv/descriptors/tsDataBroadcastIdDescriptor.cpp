@@ -101,7 +101,7 @@ void ts::DataBroadcastIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 {
     if (buf.canReadBytes(2)) {
         const uint16_t id = buf.getUInt16();
-        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, names::BOTH_FIRST) << std::endl;
+        disp << margin << "Data broadcast id: " << names::DataBroadcastId(id, NamesFlags::BOTH_FIRST) << std::endl;
         DisplaySelectorBytes(disp, buf, margin, id);
     }
 }
@@ -154,7 +154,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
     buf.pushReadSizeFromLength(8); // OUI_data_length
 
     while (buf.canReadBytes(6)) {
-        disp << margin << "OUI: " << names::OUI(buf.getUInt24(), names::FIRST) << std::endl;
+        disp << margin << "OUI: " << names::OUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
         buf.skipBits(4);
         const uint8_t upd_type = buf.getBits<uint8_t>(4);
         disp << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});
@@ -213,7 +213,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, PSIB
 {
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(5)) {
-        disp << margin << "- Platform id: " << names::PlatformId(buf.getUInt24(), names::HEXA_FIRST) << std::endl;
+        disp << margin << "- Platform id: " << names::PlatformId(buf.getUInt24(), NamesFlags::HEXA_FIRST) << std::endl;
         disp << margin << UString::Format(u"  Action type: 0x%X, version: ", {buf.getUInt8()});
         buf.skipBits(2);
         if (buf.getBool()) {

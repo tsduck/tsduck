@@ -129,13 +129,13 @@ void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 {
     if (buf.canRead()) {
         disp << margin << UString::Format(u"Multiple frame rate: %s", {buf.getBool()});
-        disp << ", frame rate: " << NameFromSection(u"FrameRate", buf.getBits<uint8_t>(4), names::FIRST) << std::endl;
+        disp << ", frame rate: " << NameFromSection(u"FrameRate", buf.getBits<uint8_t>(4), NamesFlags::FIRST) << std::endl;
         const bool mp1only = buf.getBool();
         disp << margin << UString::Format(u"MPEG-1 only: %s, constained parameter: %s", {mp1only, buf.getBool()});
         disp << UString::Format(u", still picture: %s", {buf.getBool()}) << std::endl;
         if (!mp1only && buf.canRead()) {
             disp << margin << UString::Format(u"Profile and level: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
-            disp << margin << "Chroma format: " << NameFromSection(u"ChromaFormat", buf.getBits<uint8_t>(2), names::FIRST) << std::endl;
+            disp << margin << "Chroma format: " << NameFromSection(u"ChromaFormat", buf.getBits<uint8_t>(2), NamesFlags::FIRST) << std::endl;
             disp << margin << UString::Format(u"Frame rate extension: %s", {buf.getBool()}) << std::endl;
             buf.skipBits(5);
         }

@@ -31,7 +31,9 @@
 #include "tsPluginRepository.h"
 TSDUCK_SOURCE;
 
+#if !defined(TS_NO_SRT)
 TS_REGISTER_OUTPUT_PLUGIN(u"srt", ts::SRTOutputPlugin);
+#endif
 
 // A dummy storage value to force inclusion of this module when using the static library.
 const int ts::SRTOutputPlugin::REFERENCE = 0;
@@ -84,7 +86,7 @@ bool ts::SRTOutputPlugin::getOptions()
 {
     _multiple = present(u"multiple");
     getIntValue(_restart_delay, u"restart-delay", 0);
-    return _sock.setAddresses(value(u""), value(u"rendezvous"), *tsp) &&
+    return _sock.setAddresses(value(u""), value(u"rendezvous"), UString(), *tsp) &&
            _sock.loadArgs(duck, *this) &&
            AbstractDatagramOutputPlugin::getOptions();
 }

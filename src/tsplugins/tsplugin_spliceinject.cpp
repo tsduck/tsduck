@@ -109,7 +109,7 @@ namespace ts {
         PacketCounter _min_inter_packet;
         UString       _files;
         UString       _service_ref;       // Service name or id.
-        SocketAddress _server_address;
+        IPv4SocketAddress _server_address;
         size_t        _sock_buf_size;
         size_t        _inject_count;
         MilliSecond   _inject_interval;
@@ -446,7 +446,7 @@ bool ts::SpliceInjectPlugin::getOptions()
     getIntValue(_inject_pid_opt, u"pid", PID_NULL);
     getIntValue(_pcr_pid_opt, u"pcr-pid", PID_NULL);
     getIntValue(_pts_pid_opt, u"pts-pid", PID_NULL);
-    getFixedValue(_min_bitrate, u"min-bitrate");
+    getValue(_min_bitrate, u"min-bitrate");
     getIntValue(_min_inter_packet, u"min-inter-packet");
     _delete_files = present(u"delete-files");
     _reuse_port = !present(u"no-reuse-port");
@@ -833,7 +833,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         SectionPtr sec(*it);
         if (!sec.isNull()) {
             if (sec->tableId() != TID_SCTE35_SIT) {
-                tsp->error(u"unexpected section, %s, ignored", {names::TID(duck, sec->tableId(), CASID_NULL, names::VALUE)});
+                tsp->error(u"unexpected section, %s, ignored", {names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE)});
             }
             else {
                 CommandPtr cmd(new SpliceCommand(this, sec));
@@ -1106,8 +1106,8 @@ void ts::SpliceInjectPlugin::UDPListener::main()
 
     uint8_t inbuf[65536];
     size_t insize = 0;
-    SocketAddress sender;
-    SocketAddress destination;
+    IPv4SocketAddress sender;
+    IPv4SocketAddress destination;
 
     // Get receive errors in a buffer since some errors are normal.
     ReportBuffer<NullMutex> error(_tsp->maxSeverity());

@@ -87,13 +87,13 @@ namespace ts {
             //! @param [in] aborted If true, there was a packet processor error, aborted.
             //! @param [in] bitrate Input bitrate (set by previous packet processor).
             //!
-            void initBuffer(PacketBuffer* buffer,
+            void initBuffer(PacketBuffer*  buffer,
                             PacketMetadataBuffer* metadata,
-                            size_t        pkt_first,
-                            size_t        pkt_cnt,
-                            bool          input_end,
-                            bool          aborted,
-                            BitRate       bitrate);
+                            size_t         pkt_first,
+                            size_t         pkt_cnt,
+                            bool           input_end,
+                            bool           aborted,
+                            const BitRate& bitrate);
 
             //!
             //! Inform if all plugins should use defaults for real-time.
@@ -168,7 +168,7 @@ namespace ts {
             //! @param [in] aborted if true, this processor has encountered an error and will cease to accept packets.
             //! @return True when the processor shall continue, false when it shall stop.
             //!
-            bool passPackets(size_t count, BitRate bitrate, bool input_end, bool aborted);
+            bool passPackets(size_t count, const BitRate& bitrate, bool input_end, bool aborted);
 
             //!
             //! Wait for something to do.

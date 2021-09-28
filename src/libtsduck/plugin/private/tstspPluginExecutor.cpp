@@ -121,13 +121,13 @@ bool ts::tsp::PluginExecutor::isRealTime() const
 // Executed in synchronous environment, before starting all executor threads.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
+void ts::tsp::PluginExecutor::initBuffer(PacketBuffer*  buffer,
                                          PacketMetadataBuffer* metadata,
-                                         size_t        pkt_first,
-                                         size_t        pkt_cnt,
-                                         bool          input_end,
-                                         bool          aborted,
-                                         BitRate       bitrate)
+                                         size_t         pkt_first,
+                                         size_t         pkt_cnt,
+                                         bool           input_end,
+                                         bool           aborted,
+                                         const BitRate& bitrate)
 {
     log(10, u"initBuffer(..., pkt_first = %'d, pkt_cnt = %'d, input_end = %s, aborted = %s, bitrate = %'d)", {pkt_first, pkt_cnt, input_end, aborted, bitrate});
 
@@ -146,7 +146,7 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer* buffer,
 // Signal that the specified number of packets have been processed.
 //----------------------------------------------------------------------------
 
-bool ts::tsp::PluginExecutor::passPackets(size_t count, BitRate bitrate, bool input_end, bool aborted)
+bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, bool input_end, bool aborted)
 {
     assert(count <= _pkt_cnt);
 

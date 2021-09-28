@@ -277,13 +277,13 @@ void HLSTest::testBuildMediaPlaylist()
     seg1.relativeURI = u"/c/test/path/segments/seg-0001.ts";
     seg1.title = u"Segment1";
     seg1.duration = 4920;
-    seg1.bitrate = 1234567;
+    seg1.bitrate = 1233920;
     TSUNIT_ASSERT(pl.addSegment(seg1));
 
     ts::hls::MediaSegment seg2;
     seg2.relativeURI = u"/c/test/path/segments/seg-0002.ts";
     seg2.duration = 4971;
-    seg2.bitrate = 1654321;
+    seg2.bitrate = 1653760;
     TSUNIT_ASSERT(pl.addSegment(seg2));
 
     TSUNIT_EQUAL(2, pl.segmentCount());
@@ -308,7 +308,7 @@ void HLSTest::testBuildMediaPlaylist()
     ts::hls::MediaSegment seg3;
     seg3.relativeURI = u"/c/test/path/segments/seg-0003.ts";
     seg3.duration = 4984;
-    seg3.bitrate = 1654321;
+    seg3.bitrate = 1653760;
     TSUNIT_ASSERT(pl.addSegment(seg3));
 
     TSUNIT_EQUAL(3, pl.segmentCount());

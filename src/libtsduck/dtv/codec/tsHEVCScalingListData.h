@@ -60,7 +60,7 @@ namespace ts {
         // Inherited methods
         virtual bool parse(const uint8_t*, size_t, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
         virtual bool parse(AVCParser&, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
-        virtual std::ostream& display(std::ostream& = std::cout, const UString& margin = UString()) const override;
+        virtual std::ostream& display(std::ostream& = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
 
         //!
         //! Scaling data entry.

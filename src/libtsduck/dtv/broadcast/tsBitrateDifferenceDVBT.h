@@ -75,6 +75,6 @@ namespace ts {
         //! difference from a @a bitrate.
         //! @param [in] bitrate Target bitrate in bits/second.
         //!
-        static void EvaluateToBitrate(BitrateDifferenceDVBTList& params, BitRate bitrate);
+        static void EvaluateToBitrate(BitrateDifferenceDVBTList& params, const BitRate& bitrate);
     };
 }

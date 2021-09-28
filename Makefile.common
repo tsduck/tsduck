@@ -294,6 +294,13 @@
 #    Additional options for the linker.
 #    This variable can be defined after inclusion of this makefile.
 #
+#  LINUXBREW
+#    If defined (any non-empty value), force a compilation in a Homebrew
+#    environment on Linux. Homebrew on Linux (aka "Linuxbrew") installs a
+#    non-standard environment where libraries are fetched from
+#    $(HOMEBREW_PREFIX) instead of /usr. By default, ignore the Homebrew
+#    environment on Linux and build using system libraries.
+#
 #  LLVM
 #    If defined (any non-empty value), force the usage of the LLVM (clang)
 #    compiler. Useful on Linux only. On macOS, clang is the default compiler.
@@ -359,7 +366,7 @@
 #    By default, use the source tree starting at current directory.
 #
 #  SOFLAGS
-#    Specific options when creating shared objects (.so files).
+#    Specific options when creating shared objects (.so or .dylib files).
 #    This variable can be defined after inclusion of this makefile.
 #
 #  SYSPREFIX
@@ -385,6 +392,11 @@
 #  ----------------
 #  The following variables are defined in this included makefile and are
 #  available in the parent makefile after inclusion.
+#
+#  ALTDEVROOT
+#    Alternative root for development tools and library. This can be /usr/local
+#    or Homebrew root on macOS. Defined as "/usr" if no other value is suitable
+#    so that $(ALTDEVROOT) can always be safely used to check files.
 #
 #  ARFLAGS
 #    Options which are applied to the archiver (ar) when adding a module into
@@ -417,7 +429,7 @@
 #    Same as input variables with additional usual options.
 #
 #  COMMA
-#    Contains a comma. Use $(COMMA) wherever a plain "," is syntaxtically not
+#    Contains a comma. Use $(COMMA) wherever a plain "," is syntactically not
 #    allowed such as in functions.
 #
 #  CONTINUE
@@ -575,6 +587,10 @@
 #  SED
 #    Name of "sed" command. If some "gsed" is found, use it instead.
 #
+#  SO_SUFFIX
+#    File name suffix for shared objects. Typically ".so" on Linux, ".dylib" on
+#    macOS and ".dll" on Windows.
+#
 #  SOURCES
 #    All C and C++ source files in the current directory.
 #
@@ -627,14 +643,14 @@ export LANG = en_US.UTF-8
 
 # Define functions to search commands (see comments in header)
 F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin $(HOME)/bin)))
-F_COMMAND = $(if $(call F_SEARCH,$(1)),$(call F_SEARCH,$(1)),$(2))
+F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
 export F_SEARCH F_COMMAND
 
 # Find faster alternatives to sed and grep.
-SED   ?= $(call F_COMMAND,gsed,sed)
-GREP  ?= $(call F_COMMAND,ggrep,grep)
-FGREP ?= $(call F_COMMAND,gfgrep,fgrep)
-CHMOD ?= $(call F_COMMAND,gchmod,chmod)
+SED   := $(call F_COMMAND,gsed,sed)
+GREP  := $(call F_COMMAND,ggrep,grep)
+FGREP := $(call F_COMMAND,gfgrep,fgrep)
+CHMOD := $(call F_COMMAND,gchmod,chmod)
 export SED GREP FGREP CHMOD
 
 # Representation of a space and a comma character
@@ -713,12 +729,9 @@ else
     CFLAGS_FPIC = -fPIC
 endif
 
-# Executable files suffix
-ifdef CYGWIN
-    EXE_SUFFIX = .exe
-else
-    EXE_SUFFIX =
-endif
+# Executable files and shared objects suffix.
+EXE_SUFFIX = $(if $(CYGWIN),.exe,)
+SO_SUFFIX = $(if $(CYGWIN),.dll,$(if $(MACOS),.dylib,.so))
 
 # Define compilation flags for 32-bit cross-compilation.
 # Target architecture is skipped on ARM because of numerous variants.
@@ -833,7 +846,7 @@ endif
 
 # Check if option -ffile-prefix-map is supported.
 # GCC: v8 and higher, clang on Linux: v10 and higher, clang on macOS: v12 and higher.
-# Note on clang: the option is not documenter, the abover versions were checked by experimentation.
+# Note on clang: the option is not documented, the above versions were checked by experimentation.
 ifdef USE_GCC
     ifdef GCC_8_OR_MORE
         export CC_FILE_PREFIX_MAP = true
@@ -890,10 +903,15 @@ CFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
 optsize:
 	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
 
-# On macOS, HomeBrew development packages are installed in /usr/local.
-ifdef MACOS
-    CFLAGS_INCLUDES += -I/usr/local/include
-    LDLIBS := -L/usr/local/lib $(LDLIBS)
+# On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
+# On Linux, when Homebrew is forced, use it as alternative development root.
+ifneq ($(MACOS)$(LINUXBREW),)
+    $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)),)
+    ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
+    CFLAGS_INCLUDES += -I$(ALTDEVROOT)/include
+    LDLIBS := -L$(ALTDEVROOT)/lib $(LDLIBS)
+else
+    ALTDEVROOT := /usr
 endif
 
 # Include paths for C++ also use include paths for C.
@@ -1020,12 +1038,12 @@ ifneq ($(CVPATH)$(CXXVPATH),)
 endif
 
 # Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
-# Define USELIB64 as "true" or empty.
-USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(wildcard /usr/lib64/libc.so*),true,))
+# Linuxbrew does not use lib64. Define USELIB64 as "true" or empty.
+USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true,)))
 
-# On macOS, /usr/local is used without system privileges.
+# On macOS, the Homebrew root is used without system privileges.
 # On some x86_64 distros, the libraries are installed in lib64, not lib.
-SYSPREFIX ?= $(if $(MACOS),/usr/local,/usr)
+SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
@@ -1072,7 +1090,7 @@ $(OBJDIR)/%.o: %.cpp
 $(BINDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
-$(BINDIR)/%.so: $(OBJDIR)/%.o
+$(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	@echo '  [CC] $@'; \
 	$(CC) $(CFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
@@ -1089,7 +1107,7 @@ $(OBJDIR)/%.dep: %.cpp
 	rm -f $@
 
 # Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
-NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros debug m32 distclean doxygen \
+NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
           flawfinder cloc listvars scan-build unixify
 ifeq ($(DONT_BUILD_DEPS),)
     ifneq ($(MAKECMDGOALS),)
@@ -1106,7 +1124,7 @@ CLEAN_FILES = $(EXTRA_CLEAN) \
     *~ *.o *.ko *.a *.class *.pyc *.gcov gmon.out *.dep tmp *.tmp *.out *.log *.tlog core core.* vgcore.* \
     *.stackdump callgrind.out*
 DISTCLEAN_FILES = $(CLEAN_FILES) $(EXTRA_DISTCLEAN) \
-    [Dd]ebug* [Rr]elease* ipch *.exe *.so *.jar .kdbgrc.* *.t2d .vs *.ncb *.suo *.idb *.sdf *.opensdf \
+    [Dd]ebug* [Rr]elease* ipch *.exe *.so *.dylib *.jar .kdbgrc.* *.t2d .vs *.ncb *.suo *.idb *.sdf *.opensdf \
     *.vcproj.*.user *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk *.VC.db *.VC.opendb \
     cov-int cov-int.* *.pro.user *.pro.user.* .tmp_versions
 clean:
@@ -1121,7 +1139,7 @@ distclean:
 # List of file and directory patterns for non-source files.
 NOSOURCE = \
     .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* [Bb]in doxy doxygen *.t2d \
-    *.o *.so *.ko *.a *.lib *.obj *.exe *.dll *.gcov gmon.out *.dep .kdbgrc.* \
+    *.o *.so *.dylib *.ko *.a *.lib *.obj *.exe *.dll *.gcov gmon.out *.dep .kdbgrc.* \
     tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
     *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \

@@ -136,7 +136,7 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << margin << "No temporal scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "No spatial scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "No quality scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        disp << margin << "Hierarchy type: " << NameFromSection(u"HierarchyType", buf.getBits<uint8_t>(4), names::BOTH_FIRST) << std::endl;
+        disp << margin << "Hierarchy type: " << NameFromSection(u"HierarchyType", buf.getBits<uint8_t>(4), NamesFlags::BOTH_FIRST) << std::endl;
         buf.skipBits(2);
         disp << margin << UString::Format(u"Hierarchy layer index: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
         disp << margin << "Tref present: " << UString::TrueFalse(buf.getBool()) << std::endl;

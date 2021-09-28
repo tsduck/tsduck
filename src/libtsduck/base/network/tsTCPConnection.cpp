@@ -100,7 +100,7 @@ void ts::TCPConnection::handleClosed(Report& report)
 // Get connected peer.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::getPeer(SocketAddress& peer, Report& report) const
+bool ts::TCPConnection::getPeer(IPv4SocketAddress& peer, Report& report) const
 {
     ::sockaddr sock_addr;
     SysSocketLengthType len = sizeof(sock_addr);
@@ -109,13 +109,13 @@ bool ts::TCPConnection::getPeer(SocketAddress& peer, Report& report) const
         report.error(u"error getting socket peer: " + SysSocketErrorCodeMessage());
         return false;
     }
-    peer = SocketAddress(sock_addr);
+    peer = IPv4SocketAddress(sock_addr);
     return true;
 }
 
 ts::UString ts::TCPConnection::peerName() const
 {
-    SocketAddress peer;
+    IPv4SocketAddress peer;
     return getPeer(peer, NULLREP) ? peer.toString() : u"";
 }
 
@@ -230,7 +230,7 @@ bool ts::TCPConnection::receive(void* buffer, size_t size, const AbortInterface*
 // to TCPServer::accept() which establishes the connection.
 //----------------------------------------------------------------------------
 
-bool ts::TCPConnection::connect(const SocketAddress& addr, Report& report)
+bool ts::TCPConnection::connect(const IPv4SocketAddress& addr, Report& report)
 {
     // Loop on unsollicited interrupts
     for (;;) {

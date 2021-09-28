@@ -137,7 +137,7 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         disp << margin << UString::Format(u"Backward compatibility: %s", {buf.getBool()}) << std::endl;
         const bool not_timeslice_flag = buf.getBool();
         buf.skipBits(2);
-        disp << margin << "TS/GS mode: " << NameFromSection(u"TSGSS2Mode", buf.getBits<uint8_t>(2), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "TS/GS mode: " << NameFromSection(u"TSGSS2Mode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
 
         if (scrambling_sequence_selector && buf.canReadBytes(3)) {
             buf.skipBits(6);

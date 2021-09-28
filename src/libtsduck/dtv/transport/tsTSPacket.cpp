@@ -1129,7 +1129,7 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
         uint8_t sid = b[header_size + 3];
         uint16_t length = GetUInt16(b + header_size + 4);
         strm << margin << "---- PES Header ----" << std::endl
-             << margin << "Stream id: " << names::StreamId(sid, names::FIRST) << std::endl
+             << margin << "Stream id: " << names::StreamId(sid, NamesFlags::FIRST) << std::endl
              << margin << "PES packet length: " << length;
         if (length == 0) {
             strm << " (unbounded)";

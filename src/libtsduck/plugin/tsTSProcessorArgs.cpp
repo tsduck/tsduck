@@ -230,7 +230,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     app_name = args.appName();
     log_plugin_index = args.present(u"log-plugin-index");
     ts_buffer_size = args.intValue<size_t>(u"buffer-size-mb", DEFAULT_BUFFER_SIZE);
-    args.getFixedValue(fixed_bitrate, u"bitrate", 0);
+    args.getValue(fixed_bitrate, u"bitrate", 0);
     bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
     args.getIntValue(max_flush_pkt, u"max-flushed-packets", 0);
     args.getIntValue(max_input_pkt, u"max-input-packets", 0);
@@ -260,11 +260,11 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     control_sources.clear();
     if (!args.present(u"control-source")) {
         // By default, the local host is the only allowed address.
-        control_sources.push_back(IPAddress::LocalHost);
+        control_sources.push_back(IPv4Address::LocalHost);
     }
     else {
         for (size_t i = 0; i < args.count(u"control-source"); ++i) {
-            IPAddress addr;
+            IPv4Address addr;
             if (addr.resolve(args.value(u"control-source", u"", i), args)) {
                 control_sources.push_back(addr);
             }

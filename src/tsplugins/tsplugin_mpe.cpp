@@ -79,10 +79,10 @@ namespace ts {
         uint32_t      _event_code;      // Event code to signal.
         int           _ttl;             // Time to live option.
         PIDSet        _pids;            // Explicitly specified PID's to extract.
-        SocketAddress _ip_source;       // IP source filter.
-        SocketAddress _ip_dest;         // IP destination filter.
-        SocketAddress _ip_forward;      // Forwarded socket address.
-        IPAddress     _local_address;   // Local IP address for UDP forwarding.
+        IPv4SocketAddress _ip_source;       // IP source filter.
+        IPv4SocketAddress _ip_dest;         // IP destination filter.
+        IPv4SocketAddress _ip_forward;      // Forwarded socket address.
+        IPv4Address     _local_address;   // Local IP address for UDP forwarding.
         uint16_t      _local_port;      // Local UDP source port for UDP forwarding.
 
         // Plugin private fields.
@@ -138,7 +138,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
     _ip_dest(),
     _ip_forward(),
     _local_address(),
-    _local_port(SocketAddress::AnyPort),
+    _local_port(IPv4SocketAddress::AnyPort),
     _abort(false),
     _sock(false, *tsp_),
     _previous_uc_ttl(0),
@@ -298,7 +298,7 @@ bool ts::MPEPlugin::getOptions()
     const UString ipDest(value(u"destination"));
     const UString ipForward(value(u"redirect"));
     const UString ipLocal(value(u"local-address"));
-    getIntValue(_local_port, u"local-port", SocketAddress::AnyPort);
+    getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
     getIntValue(_min_net_size, u"min-net-size");
     getIntValue(_max_net_size, u"max-net-size", NPOS);
     getIntValue(_min_udp_size, u"min-udp-size");
@@ -379,8 +379,8 @@ bool ts::MPEPlugin::start()
             return false;
         }
         // If local port is specified, bint to socket.
-        const SocketAddress local(IPAddress::AnyAddress, _local_port);
-        if (_local_port != SocketAddress::AnyPort && (!_sock.reusePort(true, *tsp) || !_sock.bind(local, *tsp))) {
+        const IPv4SocketAddress local(IPv4Address::AnyAddress, _local_port);
+        if (_local_port != IPv4SocketAddress::AnyPort && (!_sock.reusePort(true, *tsp) || !_sock.bind(local, *tsp))) {
             return false;
         }
         // If specified, set TTL option, for unicast and multicast.
@@ -489,7 +489,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
     }
     else if (_log) {
         // Get destination IP and MAC address.
-        const IPAddress destIP(mpe.destinationIPAddress());
+        const IPv4Address destIP(mpe.destinationIPAddress());
         const MACAddress destMAC(mpe.destinationMACAddress());
 
         // If the destination IP address is a multicast one, check that the
@@ -523,7 +523,7 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         // Determine the destination address.
         // Start with original address for MPE section.
         // Then override with user-specified values.
-        SocketAddress dest(mpe.destinationSocket());
+        IPv4SocketAddress dest(mpe.destinationSocket());
         if (_ip_forward.hasAddress()) {
             dest.setAddress(_ip_forward.address());
         }

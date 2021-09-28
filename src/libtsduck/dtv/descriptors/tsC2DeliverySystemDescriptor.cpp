@@ -137,8 +137,8 @@ void ts::C2DeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
         disp << margin << UString::Format(u"PLP id: 0x%X (%<d)", {buf.getUInt8()});
         disp << UString::Format(u", data slice id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         disp << margin << UString::Format(u"Frequency: %'d Hz (0x%<X)", {buf.getUInt32()}) << std::endl;
-        disp << margin << UString::Format(u"Tuning frequency type: %s", {NameFromSection(u"C2TuningType", buf.getBits<uint8_t>(2), names::FIRST)}) << std::endl;
-        disp << margin << UString::Format(u"Symbol duration: %s", {NameFromSection(u"C2SymbolDuration", buf.getBits<uint8_t>(3), names::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Tuning frequency type: %s", {NameFromSection(u"C2TuningType", buf.getBits<uint8_t>(2), NamesFlags::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Symbol duration: %s", {NameFromSection(u"C2SymbolDuration", buf.getBits<uint8_t>(3), NamesFlags::FIRST)}) << std::endl;
         const uint8_t guard = buf.getBits<uint8_t>(3);
         disp << margin << UString::Format(u"Guard interval: %d (%s)", {guard, C2GuardIntervalNames.name(guard)}) << std::endl;
     }

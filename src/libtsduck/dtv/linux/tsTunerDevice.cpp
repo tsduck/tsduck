@@ -50,7 +50,10 @@ TSDUCK_SOURCE;
 // feature. Also note that there are several forms of "unsupported" in errno and 524
 // is usually not defined...
 #if !defined(DVB_ENOTSUPP)
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(unused-macros)
     #define DVB_ENOTSUPP 524
+    TS_POP_WARNING()
 #endif
 
 #define MAX_OVERFLOW  8   // Maximum consecutive overflow
@@ -531,32 +534,67 @@ bool ts::TunerDevice::getFrontendStatus(::fe_status_t& status)
 
 
 //-----------------------------------------------------------------------------
-// Check if a signal is present and locked
+// Extract DTV_STAT_* properties and store it into a SignalState.
 //-----------------------------------------------------------------------------
 
-bool ts::TunerDevice::signalLocked()
+void ts::TunerDevice::GetStat(SignalState& state, Variable<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd)
 {
-    if (!_is_open) {
-        _duck.report().error(u"tuner not open");
-        return false;
+    int64_t value = 0;
+    ::fecap_scale_params scale = ::FE_SCALE_NOT_AVAILABLE;
+    if (props.getStatByCommand(value, scale, cmd, 0)) {
+        switch (scale) {
+            case ::FE_SCALE_DECIBEL:
+                state.*field = SignalState::Value(value, SignalState::Unit::MDB);
+                break;
+            case ::FE_SCALE_RELATIVE:
+                state.setPercent(field, value, 0, 65535);
+                break;
+            case ::FE_SCALE_COUNTER:
+                state.*field = SignalState::Value(value, SignalState::Unit::COUNTER);
+                break;
+            case ::FE_SCALE_NOT_AVAILABLE:
+            default:
+                (state.*field).clear();
+                break;
+        }
     }
     else {
-        ::fe_status_t status = FE_ZERO;
-        getFrontendStatus(status);
-        return (status & ::FE_HAS_LOCK) != 0;
+        (state.*field).clear();
+    }
+}
+
+void ts::TunerDevice::GetStatRatio(SignalState& state, Variable<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd1, uint32_t cmd2)
+{
+    int64_t value1 = 0;
+    int64_t value2 = 0;
+    ::fecap_scale_params scale2 = ::FE_SCALE_NOT_AVAILABLE;
+    ::fecap_scale_params scale1 = ::FE_SCALE_NOT_AVAILABLE;
+    if (props.getStatByCommand(value1, scale1, cmd1, 0) &&
+        props.getStatByCommand(value2, scale2, cmd2, 0) &&
+        scale1 == ::FE_SCALE_COUNTER &&
+        scale2 == ::FE_SCALE_COUNTER &&
+        value2 != 0)
+    {
+        // Store the ratio in percentage.
+        state.setPercent(field, (100 * value1) / value2, 0, 100);
+    }
+    else {
+        (state.*field).clear();
     }
 }
 
 
+
 //-----------------------------------------------------------------------------
-// Return signal strength, in percent (0=bad, 100=good)
-// Return a negative value on error.
+// Get the state of the signal.
 //-----------------------------------------------------------------------------
 
-int ts::TunerDevice::signalStrength()
+bool ts::TunerDevice::getSignalState(SignalState& state)
 {
+    state.clear();
+
     if (!_is_open) {
-        _duck.report().error(u"DVB tuner not open");
+        _duck.report().error(u"tuner not open");
         return false;
     }
 
@@ -565,6 +603,38 @@ int ts::TunerDevice::signalStrength()
         return -1;
     }
 
+    // Get signal lock.
+    ::fe_status_t status = FE_ZERO;
+    getFrontendStatus(status);
+    state.signal_locked = (status & ::FE_HAS_LOCK) != 0;
+
+#if defined(DTV_STAT_SIGNAL_STRENGTH)
+
+    // Get the statistics from the DVB API, if supported.
+
+    DTVProperties props;
+    props.addStat(DTV_STAT_SIGNAL_STRENGTH);
+    props.addStat(DTV_STAT_CNR);
+    props.addStat(DTV_STAT_POST_ERROR_BIT_COUNT);
+    props.addStat(DTV_STAT_POST_TOTAL_BIT_COUNT);
+    props.addStat(DTV_STAT_ERROR_BLOCK_COUNT);
+    props.addStat(DTV_STAT_TOTAL_BLOCK_COUNT);
+
+    if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
+        const SysErrorCode err = LastSysErrorCode();
+        _duck.report().error(u"error getting tuner statistics: %s", {SysErrorCodeMessage(err)});
+        return false;
+    }
+
+    props.reportStat(_duck.report(), Severity::Debug);
+    GetStat(state, &SignalState::signal_strength, props, DTV_STAT_SIGNAL_STRENGTH);
+    GetStat(state, &SignalState::signal_noise_ratio, props, DTV_STAT_CNR);
+    GetStatRatio(state, &SignalState::bit_error_rate, props, DTV_STAT_POST_ERROR_BIT_COUNT, DTV_STAT_POST_TOTAL_BIT_COUNT);
+    GetStatRatio(state, &SignalState::packet_error_rate, props, DTV_STAT_ERROR_BLOCK_COUNT, DTV_STAT_TOTAL_BLOCK_COUNT);
+
+#else
+
+    // Try to get the signal strength from the legacy API.
     uint16_t strength = 0;
     if (::ioctl(_frontend_fd, ioctl_request_t(FE_READ_SIGNAL_STRENGTH), &strength) < 0) {
         const SysErrorCode err = LastSysErrorCode();
@@ -575,22 +645,13 @@ int ts::TunerDevice::signalStrength()
         return -1;
     }
 
+    // Assume that the returned value is a uniform range.
     // Strength is an uint16_t: 0x0000 = 0%, 0xFFFF = 100%
-    return (int(strength) * 100) / 0xFFFF;
-}
+    state.setPercent(&SignalState::signal_strength, strength, 0, 0xFFFF);
 
+#endif
 
-//-----------------------------------------------------------------------------
-// Return signal quality, in percent (0=bad, 100=good)
-// Return a negative value on error.
-//-----------------------------------------------------------------------------
-
-int ts::TunerDevice::signalQuality()
-{
-    // No known signal quality on Linux. BER (bit error rate) is supported
-    // by the API but the unit is not clearly defined, the returned value
-    // is often zero. So, BER is generally unreliable / unusable.
-    return -1;
+    return true;
 }
 
 
@@ -632,10 +693,10 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
             // returns the intermediate frequency and there is no unique satellite
             // frequency for a given intermediate frequency.
             if (reset_unknown) {
-                params.frequency = 0;
-                params.polarity = ModulationArgs::DEFAULT_POLARITY;
-                params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
+                params.frequency.clear();
+                params.satellite_number.clear();
                 params.lnb.clear();
+                params.polarity.clear();
             }
 
             props.clear();
@@ -651,7 +712,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -691,7 +752,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -724,7 +785,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -743,7 +804,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -755,10 +816,10 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
         case DS_ISDB_S: {
             // Note: same remark about the frequency as DVB-S tuner.
             if (reset_unknown) {
-                params.frequency = 0;
-                params.polarity = ModulationArgs::DEFAULT_POLARITY;
-                params.satellite_number = ModulationArgs::DEFAULT_SATELLITE_NUMBER;
+                params.frequency.clear();
+                params.satellite_number.clear();
                 params.lnb.clear();
+                params.polarity.clear();
             }
 
             props.clear();
@@ -770,7 +831,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 #endif
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -816,7 +877,7 @@ bool ts::TunerDevice::getCurrentTuning(ModulationArgs& params, bool reset_unknow
 
             if (::ioctl(_frontend_fd, ioctl_request_t(FE_GET_PROPERTY), props.getIoctlParam()) < 0) {
                 const SysErrorCode err = LastSysErrorCode();
-                _duck.report().error(u"error getting tuning parameters : %s", {SysErrorCodeMessage(err)});
+                _duck.report().error(u"error getting tuning parameters: %s", {SysErrorCodeMessage(err)});
                 return false;
             }
 
@@ -1107,22 +1168,31 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
     uint32_t freq = uint32_t(params.frequency.value());
 
     // In case of satellite delivery, we need to control the dish.
-    if (IsSatelliteDelivery(params.delivery_system.value()) && params.lnb.set()) {
-        // Compute transposition information from the LNB.
-        LNB::Transposition trans;
-        if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), _duck.report())) {
-            return false;
+    if (IsSatelliteDelivery(params.delivery_system.value())) {
+        if (!params.lnb.set()) {
+            _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
         }
-        // For satellite, Linux DVB API uses an intermediate frequency in kHz
-        freq = uint32_t(trans.intermediate_frequency / 1000);
-        // We need to control the dish only if this is not a "stacked" transposition.
-        if (!trans.stacked) {
-            // Setup the dish (polarity, band).
-            if (!dishControl(params, trans)) {
+        else {
+            _duck.report().debug(u"using LNB %s", {params.lnb.value()});
+            // Compute transposition information from the LNB.
+            LNB::Transposition trans;
+            if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), _duck.report())) {
                 return false;
             }
-            // Clear tuner state again.
-            discardFrontendEvents();
+            // For satellite, Linux DVB API uses an intermediate frequency in kHz
+            freq = uint32_t(trans.intermediate_frequency / 1000);
+            // We need to control the dish only if this is not a "stacked" transposition.
+            if (trans.stacked) {
+                _duck.report().debug(u"LNB uses stacked transposition, no dish control required");
+            }
+            else {
+                // Setup the dish (polarity, band).
+                if (!dishControl(params, trans)) {
+                    return false;
+                }
+                // Clear tuner state again.
+                discardFrontendEvents();
+            }
         }
     }
 
@@ -1741,9 +1811,15 @@ std::ostream& ts::TunerDevice::displayStatus(std::ostream& strm, const ts::UStri
 
     // Read current status, ignore errors.
     ::fe_status_t status = FE_ZERO;
-    if (getFrontendStatus(status)) {
+    if (getFrontendStatus(status) && status != FE_ZERO) {
         DisplayFlags(strm, margin, u"Status", uint32_t(status), enum_fe_status);
         strm << std::endl;
+    }
+
+    // Read current signal status.
+    SignalState state;
+    if (getSignalState(state)) {
+        strm << margin << "Signal: " << state.toString() << std::endl << std::endl;
     }
 
     // Read current tuning parameters. Ignore errors (some fields may be unset).

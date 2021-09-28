@@ -198,7 +198,7 @@ void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf
     while (buf.canReadBytes(3)) {
         disp << margin << UString::Format(u"- Logical cell id: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
         buf.skipBits(7);
-        disp << margin << "  Presentation info: " << NameFromSection(u"MosaicLogicalCellPresentation", buf.getBits<uint8_t>(3), names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "  Presentation info: " << NameFromSection(u"MosaicLogicalCellPresentation", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
 
         buf.pushReadSizeFromLength(8); // elementary_cell_field_length
         while (buf.canReadBytes(1)) {
@@ -208,7 +208,7 @@ void ts::MosaicDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf
         buf.popState(); // end of elementary_cell_field_length
 
         const uint8_t link = buf.getUInt8();
-        disp << margin << "  Cell linkage info: " << NameFromSection(u"MosaicCellLinkageInfo", link, names::DECIMAL_FIRST) << std::endl;
+        disp << margin << "  Cell linkage info: " << NameFromSection(u"MosaicCellLinkageInfo", link, NamesFlags::DECIMAL_FIRST) << std::endl;
 
         if (link == 0x01 && buf.canReadBytes(2)) {
             disp << margin << UString::Format(u"  Bouquet id: 0x%X (%<d)", {buf.getUInt16()}) << std::endl;
