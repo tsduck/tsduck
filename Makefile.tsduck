@@ -87,12 +87,13 @@ ifeq ($(STATIC),)
 else ifdef MACOS
     $(error static linking is not supported on macOS)
 else
-    NOCURL  = true
-    NOPCSC  = true
-    NODTAPI = true
-    NOSRT   = true
-    NORIST  = true
-    NOTEST  = true
+    NOCURL     = true
+    NOPCSC     = true
+    NODTAPI    = true
+    NOSRT      = true
+    NORIST     = true
+    NOEDITLINE = true
+    NOTEST     = true
     CFLAGS_INCLUDES += -DTSDUCK_STATIC=1
 endif
 
@@ -100,11 +101,12 @@ endif
 
 ifneq ($(CROSS)$(CROSS_TARGET),)
     # Some libraries are bypassed in cross-compilation.
-    NOCURL  = true
-    NOPCSC  = true
-    NODTAPI = true
-    NOSRT   = true
-    NORIST  = true
+    NOCURL     = true
+    NOPCSC     = true
+    NODTAPI    = true
+    NOSRT      = true
+    NORIST     = true
+    NOEDITLINE = true
 endif
 
 ifdef NOTELETEXT
@@ -141,6 +143,12 @@ ifneq ($(NORIST),)
     CFLAGS_INCLUDES += -DTS_NO_RIST=1
 else
     LDLIBS := -lrist $(LDLIBS)
+endif
+
+ifneq ($(NOEDITLINE),)
+    CFLAGS_INCLUDES += -DTS_NO_EDITLINE=1
+else
+    LDLIBS := -ledit $(LDLIBS)
 endif
 
 ifeq ($(NOCURL),)

@@ -37,6 +37,7 @@
 #  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
 #  - NOSRT      : No SRT support, remove dependency to libsrt.
 #  - NORIST     : No RIST support, remove dependency to librist.
+#  - NOEDITLINE : No interactive line editing, remove dependency to libedit.
 #  - NOTELETEXT : No Teletext support, remove teletext handling code.
 #  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
 #
