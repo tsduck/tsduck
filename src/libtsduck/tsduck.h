@@ -257,6 +257,7 @@
 #include "tsECMGSCS.h"
 #include "tsECMRepetitionRateDescriptor.h"
 #include "tsEDID.h"
+#include "tsEditLine.h"
 #include "tsEIT.h"
 #include "tsEITGenerator.h"
 #include "tsEITProcessor.h"

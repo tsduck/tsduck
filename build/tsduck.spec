@@ -11,6 +11,8 @@ BuildRequires:  gcc-c++
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  binutils
+Requires:       libedit
+BuildRequires:  libedit-devel
 %if 0%{!?nocurl:1}
 Requires:       libcurl
 BuildRequires:  libcurl-devel

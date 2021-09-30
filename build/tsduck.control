@@ -7,6 +7,7 @@ Section: free/video
 Priority: optional
 Depends: libc6,
  libsrt | libsrt1 | libsrt1-openssl | libsrt1.4-openssl,
+ libedit2,
  libpcsclite1,
  libcurl3 | libcurl4,
  libstdc++6,
