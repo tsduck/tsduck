@@ -691,9 +691,8 @@ ifndef LOCAL_OS
     export LOCAL_ARCH := $(shell uname -m)
     export HOSTNAME   := $(shell hostname | $(SED) -e 's/\..*//')
 endif
-ifeq ($(LOCAL_OS),darwin)
-    MACOS = true
-endif
+MACOS := $(if $(subst darwin,,$(LOCAL_OS)),,true)
+MAC := $(MACOS)
 
 # Logical CPU and physical core count.
 ifndef CPU_COUNT
@@ -725,6 +724,7 @@ ifneq ($(subst cygwin,,$(LOCAL_OS)),$(LOCAL_OS))
     LD_LIBRARY_PATH_NAME = PATH
     CFLAGS_FPIC =
 else
+    CYGWIN =
     LD_LIBRARY_PATH_NAME = LD_LIBRARY_PATH
     CFLAGS_FPIC = -fPIC
 endif
