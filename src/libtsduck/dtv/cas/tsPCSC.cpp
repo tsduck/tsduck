@@ -275,130 +275,130 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
 ts::UString ts::pcsc::StrError(::LONG status)
 {
     switch (status) {
-        case SCARD_S_SUCCESS:
+        case ::LONG(SCARD_S_SUCCESS):
             return u"Success";
-        case SCARD_F_INTERNAL_ERROR:
+        case ::LONG(SCARD_F_INTERNAL_ERROR):
             return u"INTERNAL_ERROR, An internal consistency check failed";
-        case SCARD_E_CANCELLED:
+        case ::LONG(SCARD_E_CANCELLED):
             return u"CANCELLED, The action was cancelled by an SCardCancel request";
-        case SCARD_E_INVALID_HANDLE:
+        case ::LONG(SCARD_E_INVALID_HANDLE):
             return u"INVALID_HANDLE, The supplied handle was invalid";
-        case SCARD_E_INVALID_PARAMETER:
+        case ::LONG(SCARD_E_INVALID_PARAMETER):
             return u"INVALID_PARAMETER, One or more of the supplied parameters could not be properly interpreted";
-        case SCARD_E_INVALID_TARGET:
+        case ::LONG(SCARD_E_INVALID_TARGET):
             return u"INVALID_TARGET, Registry startup information is missing or invalid";
-        case SCARD_E_NO_MEMORY:
+        case ::LONG(SCARD_E_NO_MEMORY):
             return u"NO_MEMORY, Not enough memory available to complete this command";
-        case SCARD_F_WAITED_TOO_LONG:
+        case ::LONG(SCARD_F_WAITED_TOO_LONG):
             return u"WAITED_TOO_LONG, An internal consistency timer has expired";
-        case SCARD_E_INSUFFICIENT_BUFFER:
+        case ::LONG(SCARD_E_INSUFFICIENT_BUFFER):
             return u"INSUFFICIENT_BUFFER, The data buffer to receive returned data is too small for the returned data";
-        case SCARD_E_UNKNOWN_READER:
+        case ::LONG(SCARD_E_UNKNOWN_READER):
             return u"UNKNOWN_READER, The specified reader name is not recognized";
-        case SCARD_E_TIMEOUT:
+        case ::LONG(SCARD_E_TIMEOUT):
             return u"TIMEOUT, The user-specified timeout value has expired";
-        case SCARD_E_SHARING_VIOLATION:
+        case ::LONG(SCARD_E_SHARING_VIOLATION):
             return u"SHARING_VIOLATION, The smart card cannot be accessed because of other connections outstanding";
-        case SCARD_E_NO_SMARTCARD:
+        case ::LONG(SCARD_E_NO_SMARTCARD):
             return u"NO_SMARTCARD, The operation requires a Smart Card, but no Smart Card is currently in the device";
-        case SCARD_E_UNKNOWN_CARD:
+        case ::LONG(SCARD_E_UNKNOWN_CARD):
             return u"UNKNOWN_CARD, The specified smart card name is not recognized";
-        case SCARD_E_CANT_DISPOSE:
+        case ::LONG(SCARD_E_CANT_DISPOSE):
             return u"CANT_DISPOSE, The system could not dispose of the media in the requested manner";
-        case SCARD_E_PROTO_MISMATCH:
+        case ::LONG(SCARD_E_PROTO_MISMATCH):
             return u"PROTO_MISMATCH, The requested protocols are incompatible with the protocol currently in use with the smart card";
-        case SCARD_E_NOT_READY:
+        case ::LONG(SCARD_E_NOT_READY):
             return u"NOT_READY, The reader or smart card is not ready to accept commands";
-        case SCARD_E_INVALID_VALUE:
+        case ::LONG(SCARD_E_INVALID_VALUE):
             return u"INVALID_VALUE, One or more of the supplied parameters values could not be properly interpreted";
-        case SCARD_E_SYSTEM_CANCELLED:
+        case ::LONG(SCARD_E_SYSTEM_CANCELLED):
             return u"SYSTEM_CANCELLED, The action was cancelled by the system, presumably to log off or shut down";
-        case SCARD_F_COMM_ERROR:
+        case ::LONG(SCARD_F_COMM_ERROR):
             return u"COMM_ERROR, An internal communications error has been detected";
-        case SCARD_F_UNKNOWN_ERROR:
+        case ::LONG(SCARD_F_UNKNOWN_ERROR):
             return u"UNKNOWN_ERROR, An internal error has been detected, but the source is unknown";
-        case SCARD_E_INVALID_ATR:
+        case ::LONG(SCARD_E_INVALID_ATR):
             return u"INVALID_ATR, An ATR obtained from the registry is not a valid ATR string";
-        case SCARD_E_NOT_TRANSACTED:
+        case ::LONG(SCARD_E_NOT_TRANSACTED):
             return u"NOT_TRANSACTED, An attempt was made to end a non-existent transaction";
-        case SCARD_E_READER_UNAVAILABLE:
+        case ::LONG(SCARD_E_READER_UNAVAILABLE):
             return u"READER_UNAVAILABLE, The specified reader is not currently available for use";
-        case SCARD_E_PCI_TOO_SMALL:
+        case ::LONG(SCARD_E_PCI_TOO_SMALL):
             return u"PCI_TOO_SMALL, The PCI Receive buffer was too small";
-        case SCARD_E_READER_UNSUPPORTED:
+        case ::LONG(SCARD_E_READER_UNSUPPORTED):
             return u"READER_UNSUPPORTED, The reader driver does not meet minimal requirements for support";
-        case SCARD_E_DUPLICATE_READER:
+        case ::LONG(SCARD_E_DUPLICATE_READER):
             return u"DUPLICATE_READER, The reader driver did not produce a unique reader name";
-        case SCARD_E_CARD_UNSUPPORTED:
+        case ::LONG(SCARD_E_CARD_UNSUPPORTED):
             return u"CARD_UNSUPPORTED, The smart card does not meet minimal requirements for support";
-        case SCARD_E_NO_SERVICE:
+        case ::LONG(SCARD_E_NO_SERVICE):
             return u"NO_SERVICE, The Smart card resource manager is not running";
-        case SCARD_E_SERVICE_STOPPED:
+        case ::LONG(SCARD_E_SERVICE_STOPPED):
             return u"SERVICE_STOPPED, The Smart card resource manager has shut down";
 #if defined(SCARD_E_NO_READERS_AVAILABLE)
-        case SCARD_E_NO_READERS_AVAILABLE:
+        case ::LONG(SCARD_E_NO_READERS_AVAILABLE):
             return u"NO_READERS_AVAILABLE, Cannot find a smart card reader";
 #endif
-        case SCARD_E_UNSUPPORTED_FEATURE:
+        case ::LONG(SCARD_E_UNSUPPORTED_FEATURE):
             return u"UNSUPPORTED_FEATURE, This smart card does not support the requested feature";
-        case SCARD_W_UNSUPPORTED_CARD:
+        case ::LONG(SCARD_W_UNSUPPORTED_CARD):
             return u"UNSUPPORTED_CARD, The reader cannot communicate with the smart card, due to ATR configuration conflicts";
-        case SCARD_W_UNRESPONSIVE_CARD:
+        case ::LONG(SCARD_W_UNRESPONSIVE_CARD):
             return u"UNRESPONSIVE_CARD, The smart card is not responding to a reset";
-        case SCARD_W_UNPOWERED_CARD:
+        case ::LONG(SCARD_W_UNPOWERED_CARD):
             return u"UNPOWERED_CARD, Power has been removed from the smart card, so that further communication is not possible";
-        case SCARD_W_RESET_CARD:
+        case ::LONG(SCARD_W_RESET_CARD):
             return u"RESET_CARD, The smart card has been reset, so any shared state information is invalid";
-        case SCARD_W_REMOVED_CARD:
+        case ::LONG(SCARD_W_REMOVED_CARD):
             return u"REMOVED_CARD, The smart card has been removed, so that further communication is not possible";
 #if defined(TS_WINDOWS)
-        case SCARD_P_SHUTDOWN:
+        case ::LONG(SCARD_P_SHUTDOWN):
             return u"SHUTDOWN, The operation has been aborted to allow the server application to exit";
-        case SCARD_E_UNEXPECTED:
+        case ::LONG(SCARD_E_UNEXPECTED):
             return u"UNEXPECTED, An unexpected card error has occurred";
-        case SCARD_E_ICC_INSTALLATION:
+        case ::LONG(SCARD_E_ICC_INSTALLATION):
             return u"ICC_INSTALLATION, No Primary Provider can be found for the smart card";
-        case SCARD_E_ICC_CREATEORDER:
+        case ::LONG(SCARD_E_ICC_CREATEORDER):
             return u"ICC_CREATEORDER, The requested order of object creation is not supported";
-        case SCARD_E_DIR_NOT_FOUND:
+        case ::LONG(SCARD_E_DIR_NOT_FOUND):
             return u"DIR_NOT_FOUND, The identified directory does not exist in the smart card";
-        case SCARD_E_FILE_NOT_FOUND:
+        case ::LONG(SCARD_E_FILE_NOT_FOUND):
             return u"FILE_NOT_FOUND, The identified file does not exist in the smart card";
-        case SCARD_E_NO_DIR:
+        case ::LONG(SCARD_E_NO_DIR):
             return u"NO_DIR, The supplied path does not represent a smart card directory";
-        case SCARD_E_NO_FILE:
+        case ::LONG(SCARD_E_NO_FILE):
             return u"NO_FILE, The supplied path does not represent a smart card file";
-        case SCARD_E_NO_ACCESS:
+        case ::LONG(SCARD_E_NO_ACCESS):
             return u"NO_ACCESS, Access is denied to this file";
-        case SCARD_E_WRITE_TOO_MANY:
+        case ::LONG(SCARD_E_WRITE_TOO_MANY):
             return u"WRITE_TOO_MANY, The smartcard does not have enough memory to store the information";
-        case SCARD_E_BAD_SEEK:
+        case ::LONG(SCARD_E_BAD_SEEK):
             return u"BAD_SEEK, There was an error trying to set the smart card file object pointer";
-        case SCARD_E_INVALID_CHV:
+        case ::LONG(SCARD_E_INVALID_CHV):
             return u"INVALID_CHV, The supplied PIN is incorrect";
-        case SCARD_E_UNKNOWN_RES_MNG:
+        case ::LONG(SCARD_E_UNKNOWN_RES_MNG):
             return u"UNKNOWN_RES_MNG, An unrecognized error code was returned from a layered component";
-        case SCARD_E_NO_SUCH_CERTIFICATE:
+        case ::LONG(SCARD_E_NO_SUCH_CERTIFICATE):
             return u"NO_SUCH_CERTIFICATE, The requested certificate does not exist";
-        case SCARD_E_CERTIFICATE_UNAVAILABLE:
+        case ::LONG(SCARD_E_CERTIFICATE_UNAVAILABLE):
             return u"CERTIFICATE_UNAVAILABLE, The requested certificate could not be obtained";
-        case SCARD_E_COMM_DATA_LOST:
+        case ::LONG(SCARD_E_COMM_DATA_LOST):
             return u"COMM_DATA_LOST, A communications error with the smart card has been detected.  Retry the operation";
-        case SCARD_E_NO_KEY_CONTAINER:
+        case ::LONG(SCARD_E_NO_KEY_CONTAINER):
             return u"NO_KEY_CONTAINER, The requested key container does not exist on the smart card";
-        case SCARD_E_SERVER_TOO_BUSY:
+        case ::LONG(SCARD_E_SERVER_TOO_BUSY):
             return u"SERVER_TOO_BUSY, The Smart card resource manager is too busy to complete this operation";
-        case SCARD_W_SECURITY_VIOLATION:
+        case ::LONG(SCARD_W_SECURITY_VIOLATION):
             return u"SECURITY_VIOLATION, Access was denied because of a security violation";
-        case SCARD_W_WRONG_CHV:
+        case ::LONG(SCARD_W_WRONG_CHV):
             return u"WRONG_CHV, The card cannot be accessed because the wrong PIN was presented";
-        case SCARD_W_CHV_BLOCKED:
+        case ::LONG(SCARD_W_CHV_BLOCKED):
             return u"CHV_BLOCKED, The card cannot be accessed because the maximum number of PIN entry attempts has been reached";
-        case SCARD_W_EOF:
+        case ::LONG(SCARD_W_EOF):
             return u"EOF, The end of the smart card file has been reached";
-        case SCARD_W_CANCELLED_BY_USER:
+        case ::LONG(SCARD_W_CANCELLED_BY_USER):
             return u"CANCELLED_BY_USER, The action was cancelled by the user";
-        case SCARD_W_CARD_NOT_AUTHENTICATED:
+        case ::LONG(SCARD_W_CARD_NOT_AUTHENTICATED):
             return u"CARD_NOT_AUTHENTICATED, No PIN was presented to the smart card";
 #endif
         default:

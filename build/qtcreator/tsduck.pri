@@ -62,7 +62,12 @@ mac:   NOSYSDIR = linux
 # TSDuck configuration files
 TS_CONFIG_FILES += $$system("ls $$SRCROOT/libtsduck/config/*.names $$SRCROOT/libtsduck/config/*.xml")
 
+# Shared object suffix
+linux: SO = .so
+mac:   SO = .dylib
+
 # Other configuration.
+LIBS += -ledit
 linux|mac|mingw {
     QMAKE_CXXFLAGS_WARN_ON = -Werror -Wall -Wextra
     QMAKE_CXXFLAGS += -fno-strict-aliasing -fstack-protector-all -std=c++11
@@ -80,13 +85,7 @@ linux|mingw {
 }
 linux {
     QMAKE_CXXFLAGS += -I/usr/include/PCSC
-    LIBS += -lrt -ldl
-}
-mac {
-    SO = .dylib
-}
-else {
-    SO = .so
+    LIBS += -lpcsclite -lrt -ldl
 }
 mac {
     # LLVM options. Some of them depend on the compiler version.
@@ -95,18 +94,24 @@ mac {
     LLVM_MAJOR = $$member(LLVM_FIELDS, 0)
     QMAKE_CXXFLAGS_WARN_ON += -Weverything -Wno-c++98-compat-pedantic
     greaterThan(LLVM_MAJOR, 11): QMAKE_CXXFLAGS_WARN_ON += -Wno-poison-system-directories
-    QMAKE_CXXFLAGS += -I/usr/local/include -I/usr/local/opt/pcsc-lite/include -I/usr/local/opt/pcsc-lite/include/PCSC
-    QMAKE_CXXFLAGS += -I/opt/homebrew/include -I/opt/homebrew/opt/pcsc-lite/include -I/opt/homebrew/opt/pcsc-lite/include/PCSC
-    LIBS += -L/usr/local/lib -L/usr/local/opt/pcsc-lite/lib
-    LIBS += -L/opt/homebrew/lib -L/opt/homebrew/opt/pcsc-lite/lib
-    QMAKE_EXTENSION_SHLIB = so
+    exists(/usr/local/include): QMAKE_CXXFLAGS += -I/usr/local/include
+    exists(/opt/homebrew/include): QMAKE_CXXFLAGS += -I/opt/homebrew/include
+    LIBS += -framework PCSC
+    exists(/usr/local/lib): LIBS += -L/usr/local/lib
+    exists(/opt/homebrew/lib): LIBS += -L/opt/homebrew/lib
     DEFINES += TS_NO_DTAPI=1
 }
-exists(/usr/include/srt/*.h) | exists(/usr/local/include/srt/*.h) {
+exists(/usr/include/srt/*.h) | exists(/usr/local/include/srt/*.h) | exists(/opt/homebrew/include/srt/*.h) {
     LIBS += -lsrt
 }
 else {
     DEFINES += TS_NO_SRT=1
+}
+exists(/usr/include/librist/*.h) | exists(/usr/local/include/librist/*.h) | exists(/opt/homebrew/include/librist/*.h) {
+    LIBS += -lrist
+}
+else {
+    DEFINES += TS_NO_RIST=1
 }
 tstool {
     # TSDuck tools shall use "CONFIG += tstool"
@@ -139,4 +144,3 @@ libtsduck {
     INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name release\\* ! -name debug\\*")
     QMAKE_POST_LINK += cp $$TS_CONFIG_FILES . $$escape_expand(\\n\\t)
 }
-LIBS += -lpcsclite

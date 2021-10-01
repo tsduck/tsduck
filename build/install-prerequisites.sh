@@ -91,7 +91,7 @@ VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
     # macOS
-    pkglist="gnu-sed grep dos2unix coreutils libedit pcsc-lite srt librist python3 openjdk"
+    pkglist="gnu-sed grep dos2unix coreutils srt librist python3 openjdk"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
@@ -100,14 +100,9 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
         # Homebrew not installed
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
     fi
-    brew update
-    for pkg in $pkglist; do
-        # Install or upgrade package (cannot be done in one unique command).
-        # Sometimes, brew exits with an error status even though the installation completes.
-        # Mute this and enforce a good status to avoid GitHub Actions CI failure.
-        brew ls --versions $pkg >/dev/null && cmd=upgrade || cmd=install
-        HOMEBREW_NO_AUTO_UPDATE=1 brew $PKGOPTS $cmd $pkg || true
-    done
+    # Sometimes, brew exits with an error status even though the installation completes.
+    # Mute this and enforce a good status to avoid GitHub Actions CI failure.
+    brew $PKGOPTS install $pkglist || true
     # Register the openjdk jvm.
     [[ -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]] || \
         sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
