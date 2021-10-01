@@ -167,21 +167,24 @@ else
     LDLIBS := $(LDLIBS_CURL) $(LDLIBS)
 endif
 
-ifeq ($(NOPCSC),)
-    # PCSC not disabled, check if available.
-    NOPCSC := $(if $(wildcard /usr/include/PCSC/*.h $(ALTDEVROOT)/include/PCSC/*.h $(ALTDEVROOT)/opt/pcsc-lite/include/PCSC/*.h),,true)
+ifeq ($(NOPCSC)$(MACOS),)
+    # PCSC not disabled and not on macOS, check if available. On macOS, it is always available.
+    NOPCSC := $(if $(wildcard /usr/include/PCSC/*.h $(ALTDEVROOT)/include/PCSC/*.h),,true)
 endif
 
 ifneq ($(NOPCSC),)
     CFLAGS_INCLUDES += -DTS_NO_PCSC=1
-else ifeq ($(MACOS)$(LINUXBREW),)
+else ifneq ($(MACOS),)
+    # On macOS, use PCSC.framework
+    LDLIBS := -framework PCSC $(LDLIBS)
+else ifneq ($(LINUXBREW),)
+    # PCSC on Linuxbrew
+    CFLAGS_INCLUDES += -I$(ALTDEVROOT)/include/PCSC
+    LDLIBS := -lpcsclite $(LDLIBS)
+else
     # PCSC on Linux
     CFLAGS_INCLUDES += -I/usr/include/PCSC
     LDLIBS := -lpcsclite $(LDLIBS)
-else
-    # PCSC on macOS or Linuxbrew
-    CFLAGS_INCLUDES += $(addprefix -I,$(wildcard $(ALTDEVROOT)/opt/pcsc-lite/include $(ALTDEVROOT)/opt/pcsc-lite/include/PCSC))
-    LDLIBS := $(addprefix -L,$(wildcard $(ALTDEVROOT)/opt/pcsc-lite/lib)) -lpcsclite $(LDLIBS)
 endif
 
 ifneq ($(NODEKTEC),)

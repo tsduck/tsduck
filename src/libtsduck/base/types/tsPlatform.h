@@ -882,17 +882,20 @@ TS_MSC_NOWARNING(5204)
 #endif
 
 #if !defined(TS_NO_PCSC) // PC/SC support not inhibited by user.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(pedantic)
+    TS_LLVM_NOWARNING(reserved-id-macro)
+    TS_LLVM_NOWARNING(zero-length-array)
     #if defined(TS_WINDOWS)
         #include <winscard.h>
+    #elif defined(TS_MAC)
+        #include <PCSC/wintypes.h>
+        #include <PCSC/winscard.h>
     #else
-        TS_PUSH_WARNING()
-        TS_GCC_NOWARNING(pedantic)
-        TS_LLVM_NOWARNING(reserved-id-macro)
-        TS_LLVM_NOWARNING(zero-length-array)
         #include <PCSC/winscard.h>
         #include <PCSC/reader.h>
-        TS_POP_WARNING()
     #endif
+    TS_POP_WARNING()
 #endif
 
 #include <string>
