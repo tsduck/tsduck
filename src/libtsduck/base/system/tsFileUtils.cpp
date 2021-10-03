@@ -677,6 +677,27 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 
 
 //----------------------------------------------------------------------------
+// Build the name of a user-specific configuration file.
+//----------------------------------------------------------------------------
+
+ts::UString ts::UserConfigurationFileName(const UString& fileName, const UString& winFileName)
+{
+#if defined(TS_WINDOWS)
+    UString root(GetEnvironment(u"APPDATA"));
+    if (root.empty()) {
+        root = UserHomeDirectory();
+    }
+    else {
+        root.append(u"\\tsduck");
+    }
+    return root + u"\\" + (winFileName.empty() ? fileName : winFileName);
+#else
+    return UserHomeDirectory() + u"/" + fileName;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Check if a file path is a symbolic link.
 //----------------------------------------------------------------------------
 

@@ -358,16 +358,7 @@ ts::UString ts::ChannelFile::fileDescription() const
 
 ts::UString ts::ChannelFile::DefaultFileName()
 {
-#if defined(TS_WINDOWS)
-    static const UChar env[] = u"APPDATA";
-    static const UChar name[] = u"\\tsduck\\channels.xml";
-#else
-    static const UChar env[] = u"HOME";
-    static const UChar name[] = u"/.tsduck.channels.xml";
-#endif
-
-    const UString root(GetEnvironment(env));
-    return root.empty() ? UString() : UString(root) + UString(name);
+    return UserConfigurationFileName(u".tsduck.channels.xml", u"channels.xml");
 }
 
 

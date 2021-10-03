@@ -32,6 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
+#include "tsEditLine.h"
 #include "tsCommandLine.h"
 #include "tsEITGenerator.h"
 #include "tsTSFile.h"
@@ -52,6 +53,7 @@ namespace ts {
         EITOptions(int argc, char *argv[]);
         virtual ~EITOptions() override;
 
+        bool          exit_error;
         UStringVector commands;
         UStringVector command_files;
         UString       input_directory;
@@ -66,6 +68,7 @@ namespace ts {
 // Constructor: get command line options.
 ts::EITOptions::EITOptions(int argc, char *argv[]) :
     Args(u"Manipulate EIT's through commands", u"[options]"),
+    exit_error(false),
     commands(),
     command_files(),
     input_directory(),
@@ -79,12 +82,19 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
          u"Several --command options can be specified. "
          u"All commands are executed in sequence. ");
 
+    option(u"exit-on-error", 'e');
+    help(u"exit-on-error",
+         u"Stop executing commands when an error is encountered. "
+         u"By default, continue execution on error.");
+
     option(u"file", 'f', STRING, 0, UNLIMITED_COUNT);
     help(u"file", u"filename",
          u"Specify a text file containing EIT manipulation commands to execute. "
+         u"If the file name is empty or \"-\", the standard input is used. "
          u"Several --file options can be specified. "
          u"All files are executed in sequence. "
-         u"The commands from --file are executed first, then the --command.");
+         u"The commands from --file are executed first, then the --command. "
+         u"By default, if there no --file and no --command, commands are read from the standard input.");
 
     option(u"input-directory", 'i', STRING);
     help(u"input-directory", u"path",
@@ -96,7 +106,9 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
 
     // EIT manipulation commands.
     Args* cmd = nullptr;
-    const int flags = Args::NO_VERBOSE | Args::NO_HELP;
+    const int flags = Args::NO_VERBOSE;
+
+    cmdline.addPredefinedCommands();
 
     cmd = cmdline.command(u"load", u"Load events from a file", u"filename", flags);
     cmd->option(u"", 0, STRING, 1, 1);
@@ -174,6 +186,7 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Load option values.
+    exit_error = present(u"exit-on-error");
     getValues(commands, u"command");
     getValues(command_files, u"file");
     getValue(input_directory, u"input-directory");
@@ -217,7 +230,7 @@ namespace ts {
         virtual ~EITCommand() override;
 
     private:
-        EITOptions&         _opt;
+        EITOptions&  _opt;
         DuckContext  _duck;
         BitRate      _ts_bitrate;
         EITOption    _eit_options;
@@ -506,19 +519,25 @@ ts::CommandStatus ts::EITCommand::set(const UString& command, Args& args)
 
 int MainCode(int argc, char *argv[])
 {
-    ts::CommandStatus status = ts::CommandStatus::SUCCESS;
+    // Set defaults for interactive sessions.
+    ts::EditLine::setDefaultPrompt(u"tseit> ");
+    ts::EditLine::setDefaultNextPrompt(u">>> ");
 
     // Get command line options.
     ts::EITOptions opt(argc, argv);
     ts::EITCommand dbase(opt);
 
-    // Execute all --file first, then all --command.
-    for (size_t i = 0; status == ts::CommandStatus::SUCCESS && i < opt.command_files.size(); ++i) {
-        status = opt.cmdline.processCommandFile(opt.command_files[i]);
+    ts::CommandStatus status = ts::CommandStatus::SUCCESS;
+    if (opt.command_files.empty() && opt.commands.empty()) {
+        // Interactive session.
+        status = opt.cmdline.processInteractive(opt.exit_error);
     }
-    for (size_t i = 0; status == ts::CommandStatus::SUCCESS && i < opt.commands.size(); ++i) {
-        status = opt.cmdline.processCommand(opt.commands[i]);
+    else {
+        // Execute all --file first, then all --command.
+        status = opt.cmdline.processCommandFiles(opt.command_files, opt.exit_error);
+        if (status == ts::CommandStatus::SUCCESS || (status == ts::CommandStatus::ERROR && !opt.exit_error)) {
+            status = opt.cmdline.processCommands(opt.commands, opt.exit_error);
+        }
     }
-
     return (status == ts::CommandStatus::SUCCESS || status == ts::CommandStatus::EXIT) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

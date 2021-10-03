@@ -41,7 +41,8 @@ ts::CommandLine::CommandLine(Report& report) :
     _process_redirections(false),
     _cmd_id_alloc(0),
     _cmd_enum(),
-    _commands()
+    _commands(),
+    _predefined(*this)
 {
 }
 
@@ -217,23 +218,53 @@ ts::CommandStatus ts::CommandLine::processCommand(const UString& name, const USt
 
 
 //----------------------------------------------------------------------------
+// Check if we should continue executing commands.
+//----------------------------------------------------------------------------
+
+bool ts::CommandLine::more(CommandStatus status, bool exit_on_error) const
+{
+    return status != CommandStatus::EXIT && status != CommandStatus::FATAL && (!exit_on_error || status == CommandStatus::SUCCESS);
+}
+
+
+//----------------------------------------------------------------------------
 // Analyze and process all commands from a text file.
 //----------------------------------------------------------------------------
 
-ts::CommandStatus ts::CommandLine::processCommandFile(const UString& filename, Report* redirect)
+ts::CommandStatus ts::CommandLine::processCommandFiles(const UStringVector& file_names, bool exit_on_error, Report* redirect)
 {
-    _report.debug(u"executing commands from %s", {filename});
-
-    // Load all text lines from the file.
-    ts::UStringVector lines;
-    if (!UString::Load(lines, filename)) {
-        (redirect == nullptr ? _report : *redirect).error(u"error loading %s", {filename});
-        return CommandStatus::ERROR;
+    CommandStatus status = CommandStatus::SUCCESS;
+    for (size_t i = 0; more(status, exit_on_error) && i < file_names.size(); ++i) {
+        status = processCommandFile(file_names[i]);
     }
-    return processCommandFile(lines, redirect);
+    return status;
 }
 
-ts::CommandStatus ts::CommandLine::processCommandFile(UStringVector& lines, Report* redirect)
+ts::CommandStatus ts::CommandLine::processCommandFile(const UString& file_name, bool exit_on_error, Report* redirect)
+{
+    _report.debug(u"executing commands from %s", {file_name});
+
+    if (file_name.empty() || file_name == u"-") {
+        // Execute an interactive session.
+        return processInteractive(exit_on_error, redirect);
+    }
+    else {
+        // Load all text lines from the file.
+        ts::UStringVector lines;
+        if (!UString::Load(lines, file_name)) {
+            (redirect == nullptr ? _report : *redirect).error(u"error loading %s", {file_name});
+            return CommandStatus::ERROR;
+        }
+        return processCommands(lines, exit_on_error, redirect);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze and process all commands from a vector of text lines.
+//----------------------------------------------------------------------------
+
+ts::CommandStatus ts::CommandLine::processCommands(UStringVector& lines, bool exit_on_error, Report* redirect)
 {
     // Reduce comment and continuation lines.
     for (size_t i = 0; i < lines.size(); ) {
@@ -260,10 +291,53 @@ ts::CommandStatus ts::CommandLine::processCommandFile(UStringVector& lines, Repo
 
     // Execute all commands in sequence.
     CommandStatus status = CommandStatus::SUCCESS;
-    for (size_t i = 0; status != CommandStatus::EXIT && status != CommandStatus::FATAL && i < lines.size(); ++i) {
+    for (size_t i = 0; more(status, exit_on_error) && i < lines.size(); ++i) {
         status = processCommand(lines[i], redirect);
     }
     return status;
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze and process all commands from an interactive session.
+//----------------------------------------------------------------------------
+
+ts::CommandStatus ts::CommandLine::processInteractive(bool exit_on_error, Report* redirect)
+{
+    return processInteractive(EditLine::DefaultPrompt(), EditLine::DefaultNextPrompt(), EditLine::DefaultHistoryFile(), EditLine::DefaultHistorySize(), exit_on_error, redirect);
+}
+
+ts::CommandStatus ts::CommandLine::processInteractive(const UString& prompt, const UString& next_prompt, const UString& history_file, size_t history_size, bool exit_on_error, Report* redirect)
+{
+    EditLine edit(prompt, next_prompt, history_file, history_size);
+    UString line;
+    CommandStatus status = CommandStatus::SUCCESS;
+    while (more(status, exit_on_error) && edit.readLine(line)) {
+        status = processCommand(line, redirect);
+    }
+    return status;
+}
+
+//----------------------------------------------------------------------------
+// Build a list of command line definitions, sorted by name.
+//----------------------------------------------------------------------------
+
+void ts::CommandLine::getSortedCmd(std::vector<const Cmd*>& cmds) const
+{
+    cmds.clear();
+    cmds.reserve(_commands.size());
+
+    // Build a sorted list of command names.
+    UStringVector names;
+    _cmd_enum.getAllNames(names);
+    std::sort(names.begin(), names.end());
+
+    for (auto it1 = names.begin(); it1 != names.end(); ++it1) {
+        const auto it2 = _commands.find(_cmd_enum.value(*it1));
+        if (it2 != _commands.end()) {
+            cmds.push_back(&it2->second);
+        }
+    }
 }
 
 
@@ -273,27 +347,80 @@ ts::CommandStatus ts::CommandLine::processCommandFile(UStringVector& lines, Repo
 
 ts::UString ts::CommandLine::getAllHelpText(Args::HelpFormat format, size_t line_width) const
 {
-    // Build a sorted list of command names.
-    UStringVector names;
-    _cmd_enum.getAllNames(names);
-    std::sort(names.begin(), names.end());
+    // Get sorted list of commands.
+    std::vector<const Cmd*> cmds;
+    getSortedCmd(cmds);
 
-    // Build a text of all helps.
     UString text;
-    for (auto it1 = names.begin(); it1 != names.end(); ++it1) {
-        const auto it2 = _commands.find(_cmd_enum.value(*it1));
-        if (it2 != _commands.end()) {
-            // Get help for this command.
-            UString help(it2->second.args.getHelpText(format, line_width));
-            // Add a marker before the first non-space character to emphasize the start of command description.
-            for (size_t i = 0; i < help.size(); ++i) {
-                if (!IsSpace(help[i])) {
-                    help.insert(i, u"==== ");
-                    break;
-                }
+    for (size_t i = 0; i < cmds.size(); ++i) {
+        // Get help for this command.
+        UString help(cmds[i]->args.getHelpText(format, line_width));
+        // Add a marker before the first non-space character to emphasize the start of command description.
+        for (size_t i2 = 0; i2 < help.size(); ++i2) {
+            if (!IsSpace(help[i2])) {
+                help.insert(i2, u"==== ");
+                break;
             }
-            text.append(help);
         }
+        text.append(help);
     }
     return text;
+}
+
+
+//----------------------------------------------------------------------------
+// Add the predefined commands.
+//----------------------------------------------------------------------------
+
+void ts::CommandLine::addPredefinedCommands()
+{
+    command(&_predefined, &PredefinedCommands::help, u"help", u"List all internal commands", u"", Args::NO_VERBOSE);
+    command(&_predefined, &PredefinedCommands::quit, u"exit", u"Exit command session", u"", Args::NO_VERBOSE);
+    command(&_predefined, &PredefinedCommands::quit, u"quit", u"Exit command session", u"", Args::NO_VERBOSE);
+}
+
+
+//----------------------------------------------------------------------------
+// Internal command handler for predefined commands.
+//----------------------------------------------------------------------------
+
+ts::CommandLine::PredefinedCommands::PredefinedCommands(CommandLine& cmdline) :
+    _cmdline(cmdline)
+{
+}
+
+ts::CommandLine::PredefinedCommands::~PredefinedCommands()
+{
+}
+
+ts::CommandStatus ts::CommandLine::PredefinedCommands::quit(const UString& command, Args& args)
+{
+    return CommandStatus::EXIT;
+}
+
+ts::CommandStatus ts::CommandLine::PredefinedCommands::help(const UString& command, Args& args)
+{
+    // Get sorted list of commands.
+    std::vector<const Cmd*> cmds;
+    _cmdline.getSortedCmd(cmds);
+
+    // Get max command name length.
+    size_t width = 0;
+    for (size_t i = 0; i < cmds.size(); ++i) {
+        width = std::max(width, cmds[i]->name.width());
+    }
+
+    std::cout << std::endl;
+    std::cout << "List of available commands:" << std::endl;
+    std::cout << std::endl;
+
+    for (size_t i = 0; i < cmds.size(); ++i) {
+        std::cout << "  " << cmds[i]->name.toJustifiedLeft(width) << " : " << cmds[i]->args.getDescription() << std::endl;
+    }
+
+    std::cout << std::endl;
+    std::cout << "Use option --help on each command for more details" << std::endl;
+    std::cout << std::endl;
+
+    return CommandStatus::SUCCESS;
 }

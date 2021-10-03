@@ -44,13 +44,7 @@ TS_DEFINE_SINGLETON(ts::DuckConfigFile);
 //----------------------------------------------------------------------------
 
 ts::DuckConfigFile::DuckConfigFile() :
-    ConfigFile(
-        #if defined(TS_WINDOWS)
-        GetEnvironment(u"APPDATA") + u"\\tsduck\\tsduck.ini",
-        #endif
-        (UserHomeDirectory() + PathSeparator) + u".tsduck",
-        NULLREP,
-        u"TSDUCK_NO_USER_CONFIG"),
+    ConfigFile(UserConfigurationFileName(u".tsduck", u"tsduck.ini"), NULLREP, u"TSDUCK_NO_USER_CONFIG"),
     _appName(PathPrefix(BaseName(ExecutableFile())).toLower()),
     _appSection(section(_appName)),
     _mainSection(section(u""))

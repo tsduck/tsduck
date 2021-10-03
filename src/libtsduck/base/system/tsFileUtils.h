@@ -434,6 +434,17 @@ namespace ts {
     //! @return The path to an existing file or an empty string if not found.
     //!
     TSDUCKDLL UString SearchConfigurationFile(const UString& fileName);
+
+    //!
+    //! Build the name of a user-specific configuration file.
+    //! @param [in] fileName Base name of the configuration file.
+    //! @param [in] winFileName Alternative base name on Windows. If empty, @a fileName is used.
+    //! @return The path to the user-specific configuration file. The file may exist or not.
+    //! The default file location depends on the operating system:
+    //! - Windows: @c \%APPDATA%\\tsduck
+    //! - Unix: @c $HOME
+    //!
+    TSDUCKDLL UString UserConfigurationFileName(const UString& fileName, const UString& winFileName = UString());
 }
 
 TS_ENABLE_BITMASK_OPERATORS(ts::ResolveSymbolicLinksFlags);
