@@ -1182,12 +1182,17 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
         }
         case HELP_USAGE: {
             // Return the usage string with application name and syntax.
-            if (_shell.empty()) {
-                return _app_name + u" " + _syntax;
+            UString text;
+            if (!_shell.empty()) {
+                text.append(_shell);
+                text.append(SPACE);
             }
-            else {
-                return _shell + u" " + _app_name + u" " + _syntax;
+            text.append(_app_name);
+            if (!_syntax.empty()) {
+                text.append(SPACE);
+                text.append(_syntax);
             }
+            return text;
         }
         case HELP_SYNTAX: {
             // Same as usage but on one line.

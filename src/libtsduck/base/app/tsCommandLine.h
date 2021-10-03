@@ -36,6 +36,7 @@
 #include "tsArgs.h"
 #include "tsCommandLineHandler.h"
 #include "tsEnumeration.h"
+#include "tsEditLine.h"
 #include "tsCerrReport.h"
 
 namespace ts {
@@ -114,6 +115,12 @@ namespace ts {
         }
 
         //!
+        //! Add the predefined commands @e help, @e quit and @e exit.
+        //! Useful for interactive interpreters.
+        //!
+        void addPredefinedCommands();
+
+        //!
         //! Set command line redirection from files.
         //! @param [in] on If true, process command line arguments redirection.
         //! All lines with the form @c '\@filename' are replaced by the content
@@ -163,20 +170,61 @@ namespace ts {
         //! @param [in,out] lines Lines of text. Lines starting with a '#' are considered as
         //! comments and removed. A line ending with a backslash means that the command
         //! continues on the next line. Such lines are reassembled.
+        //! @param [in] exit_on_error If true, exit command session on first error.
         //! @param [in] redirect If not null, temporarily redirect errors here.
         //! @return Command status of the last command.
         //!
-        CommandStatus processCommandFile(UStringVector& lines, Report* redirect = nullptr);
+        CommandStatus processCommands(UStringVector& lines, bool exit_on_error = false, Report* redirect = nullptr);
 
         //!
         //! Analyze and process all commands from a text file.
         //! Lines starting with a '#' are considered as comments and ignored.
         //! A line ending with a backslash means that the command continues on the next line.
-        //! @param [in] filename File name.
+        //! @param [in] file_name File name. If empty or "-", execute an interactive session from the standard input.
+        //! @param [in] exit_on_error If true, exit command session on first error.
         //! @param [in] redirect If not null, temporarily redirect errors here.
         //! @return Command status of the last command.
         //!
-        CommandStatus processCommandFile(const UString& filename, Report* redirect = nullptr);
+        CommandStatus processCommandFile(const UString& file_name, bool exit_on_error = false, Report* redirect = nullptr);
+
+        //!
+        //! Analyze and process all commands from several text files.
+        //! Lines starting with a '#' are considered as comments and ignored.
+        //! A line ending with a backslash means that the command continues on the next line.
+        //! @param [in] file_names Vector of file name. If one file name is empty or "-", execute an interactive session from the standard input.
+        //! @param [in] exit_on_error If true, exit command session on first error.
+        //! @param [in] redirect If not null, temporarily redirect errors here.
+        //! @return Command status of the last command.
+        //!
+        CommandStatus processCommandFiles(const UStringVector& file_names, bool exit_on_error = false, Report* redirect = nullptr);
+
+        //!
+        //! Analyze and process all commands from an interactive session.
+        //! @param [in] prompt Command line prompt.
+        //! @param [in] next_prompt Command line prompt for continuation lines.
+        //! @param [in] history_file File to load/save the history. If empty, no history is loaded or saved.
+        //! @param [in] history_size Maximum number of history lines to save.
+        //! @param [in] exit_on_error If true, exit command session on first error.
+        //! @param [in] redirect If not null, temporarily redirect errors here.
+        //! @return Command status of the last command.
+        //! @see EditLine
+        //!
+        CommandStatus processInteractive(const UString& prompt = EditLine::DefaultPrompt(),
+                                         const UString& next_prompt = EditLine::DefaultNextPrompt(),
+                                         const UString& history_file = EditLine::DefaultHistoryFile(),
+                                         size_t history_size = EditLine::DefaultHistorySize(),
+                                         bool exit_on_error = false,
+                                         Report* redirect = nullptr);
+
+        //!
+        //! Analyze and process all commands from an interactive session.
+        //! Use all defaults for prompts and history.
+        //! @param [in] exit_on_error If true, exit command session on first error.
+        //! @param [in] redirect If not null, temporarily redirect errors here.
+        //! @return Command status of the last command.
+        //! @see EditLine
+        //!
+        CommandStatus processInteractive(bool exit_on_error, Report* redirect = nullptr);
 
         //!
         //! Get a formatted help text for all commands.
@@ -199,13 +247,33 @@ namespace ts {
             Cmd() : handler(nullptr), method(nullptr), name(), args() {}
         };
 
+        // Internal command handler for predefined commands.
+        class PredefinedCommands : public CommandLineHandler
+        {
+            TS_NOBUILD_NOCOPY(PredefinedCommands);
+        public:
+            PredefinedCommands(CommandLine& cmdline);
+            virtual ~PredefinedCommands() override;
+            CommandStatus help(const UString&, Args&);
+            CommandStatus quit(const UString&, Args&);
+        private:
+            CommandLine& _cmdline;
+        };
+
         // CommandLine private members.
-        Report&           _report;
-        UString           _shell;
-        bool              _process_redirections;
-        int               _cmd_id_alloc;  // sequential allocator of command ids.
-        Enumeration       _cmd_enum;      // commands name and ids, used to handle abbreviated command names.
-        std::map<int,Cmd> _commands;      // command ids to arguments.
+        Report&            _report;
+        UString            _shell;
+        bool               _process_redirections;
+        int                _cmd_id_alloc;  // sequential allocator of command ids.
+        Enumeration        _cmd_enum;      // commands name and ids, used to handle abbreviated command names.
+        std::map<int,Cmd>  _commands;      // command ids to arguments.
+        PredefinedCommands _predefined;    // predefined commands handler.
+
+        // Build a list of command line definitions, sorted by name.
+        void getSortedCmd(std::vector<const Cmd*>&) const;
+
+        // Check if we should continue executing commands.
+        bool more(CommandStatus status, bool exit_on_error) const;
 
         // Non-template implementations of command registrations.
         Args* commandImpl(CommandLineHandler* handler, CommandLineMethod method, const UString& name, const UString& description, const UString& syntax, int flags);

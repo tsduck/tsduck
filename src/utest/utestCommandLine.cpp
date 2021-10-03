@@ -147,6 +147,6 @@ void CommandLineTest::testCommandFile()
         u"cmd2 --bar"
     });
 
-    TSUNIT_EQUAL(ts::CommandStatus::SUCCESS, cmdline.processCommandFile(lines));
+    TSUNIT_EQUAL(ts::CommandStatus::SUCCESS, cmdline.processCommands(lines));
     TSUNIT_EQUAL(test.output, u"[command:cmd2][--bar:false][command:cmd1][--foo:true][command:cmd2][--bar:true]");
 }

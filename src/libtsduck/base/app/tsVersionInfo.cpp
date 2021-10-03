@@ -107,12 +107,7 @@ void ts::VersionInfo::startNewVersionDetection()
     // Do not check new version more than once a day.
     // We create an empty more-or-less-hidden empty file at the same place as the
     // TSDuck configuration file. The creation time of this file is the last check time.
-    const UString filename
-        #if defined(TS_WINDOWS)
-            (GetEnvironment(u"APPDATA") + u"\\tsduck\\tsduck.lastcheck");
-        #else
-            (UserHomeDirectory() + u"/.tsduck.lastcheck");
-        #endif
+    const UString filename(UserConfigurationFileName(u".tsduck.lastcheck", u"tsduck.lastcheck"));
     const Time lasttime(GetFileModificationTimeUTC(filename));
     const Time curtime(Time::CurrentUTC());
     if (lasttime != Time::Epoch && curtime != Time::Epoch && curtime >= lasttime && (curtime - lasttime) < MilliSecPerDay) {
