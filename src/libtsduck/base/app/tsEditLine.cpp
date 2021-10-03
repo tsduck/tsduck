@@ -111,7 +111,7 @@ bool ts::EditLine::readLine(UString& line, bool skip_empty, bool trim, bool cont
 #if defined(TS_NO_EDITLINE)
             // No libedit support, basic prompt + input.
             std::cout << (*prompt) << std::flush;
-            _eof = !subline.getLine(std::cin);
+            _end_of_file = !subline.getLine(std::cin);
 #else
             // Read line with history and edition features.
             char* in = ::readline(prompt->toUTF8().c_str());
