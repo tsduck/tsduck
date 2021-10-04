@@ -57,7 +57,7 @@ namespace ts {
         //!
         bool isFedora() const { return _isFedora; }
         //!
-        //! Check if the running operating system is RedHat Entreprise Linux or one of its clone such as CentOS.
+        //! Check if the running operating system is RedHat Entreprise Linux or one of its clone such as AlmaLinux.
         //! @return True if the running operating system is RedHat.
         //!
         bool isRedHat() const { return _isRedHat; }

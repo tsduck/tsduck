@@ -29,6 +29,7 @@ Currently, the script supports the following operating systems:
 - Fedora
 - Red Hat Enterprise Linux
 - CentOS
+- Alma Linux
 - Arch Linux
 - Alpine Linux
 - Gentoo
@@ -297,16 +298,16 @@ current version of TSDuck is 3.12-745.
 | tsduck-3.12-745.tgz                   | Source archive on Linux and macOS
 | tsduck_3.12-745_amd64.deb             | Binary package for 64-bit Ubuntu
 | tsduck_3.12-745_armhf.deb             | Binary package for 32-bit Raspbian (Raspberry Pi)
-| tsduck-3.12-745.el7.i386.rpm          | Binary package for 32-bit Red Hat or CentOS 7.x
-| tsduck-3.12-745.el7.x86_64.rpm        | Binary package for 64-bit Red Hat or CentOS 7.x
-| tsduck-3.12-745.el7.src.rpm           | Source package for Red Hat or CentOS 7.x
+| tsduck-3.12-745.el7.i386.rpm          | Binary package for 32-bit Red Hat 7.x and clones
+| tsduck-3.12-745.el7.x86_64.rpm        | Binary package for 64-bit Red Hat 7.x and clones
+| tsduck-3.12-745.el7.src.rpm           | Source package for Red Hat 7.x and clones
 | tsduck-3.12-745.fc25.i386.rpm         | Binary package for 32-bit Fedora 25
 | tsduck-3.12-745.fc25.x86_64.rpm       | Binary package for 64-bit Fedora 25
 | tsduck-3.12-745.fc25.src.rpm          | Source package for Fedora 25
 | tsduck-dev_3.12-745_amd64.deb         | Development package for 64-bit Ubuntu
 | tsduck-dev_3.12-745_armhf.deb         | Development package for 32-bit Raspbian (Raspberry Pi)
-| tsduck-devel-3.12-745.el7.i386.rpm    | Development package for 32-bit Red Hat or CentOS 7.x
-| tsduck-devel-3.12-745.el7.x86_64.rpm  | Development package for 64-bit Red Hat or CentOS 7.x
+| tsduck-devel-3.12-745.el7.i386.rpm    | Development package for 32-bit Red Hat 7.x and clones
+| tsduck-devel-3.12-745.el7.x86_64.rpm  | Development package for 64-bit Red Hat 7.x and clones
 | tsduck-devel-3.12-745.fc25.i386.rpm   | Development package for 32-bit Fedora 25
 | tsduck-devel-3.12-745.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
 | TSDuck-Win32-3.12-745.exe             | Binary installer for 32-bit Windows
