@@ -29,7 +29,6 @@
 
 #include "tsxmlRunningDocument.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.

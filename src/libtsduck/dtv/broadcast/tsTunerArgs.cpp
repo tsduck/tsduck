@@ -35,7 +35,6 @@
 #include "tsArgs.h"
 #include "tsSysUtils.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

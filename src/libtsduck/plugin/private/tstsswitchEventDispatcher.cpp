@@ -31,7 +31,6 @@
 #include "tsTextFormatter.h"
 #include "tsForkPipe.h"
 #include "tsTime.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

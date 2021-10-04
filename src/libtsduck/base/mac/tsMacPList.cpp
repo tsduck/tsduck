@@ -31,7 +31,6 @@
 #include "tsCerrReport.h"
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

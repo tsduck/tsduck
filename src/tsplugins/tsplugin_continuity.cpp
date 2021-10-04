@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsContinuityAnalyzer.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

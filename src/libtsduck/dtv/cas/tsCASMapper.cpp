@@ -34,7 +34,6 @@
 #include "tsCAT.h"
 #include "tsNames.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

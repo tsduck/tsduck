@@ -30,7 +30,6 @@
 #include "tsLegacyBandWidth.h"
 #include "tsxmlElement.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

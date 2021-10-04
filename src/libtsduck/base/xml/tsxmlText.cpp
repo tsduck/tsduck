@@ -30,7 +30,6 @@
 #include "tsxmlText.h"
 #include "tsxmlElement.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

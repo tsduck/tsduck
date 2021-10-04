@@ -42,7 +42,6 @@
 #include "tsSection.h"
 #include "tsSysUtils.h"
 #include "tsPagerArgs.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 // With static link, enforce a reference to MPEG/DVB structures.

@@ -30,7 +30,6 @@
 #include "tsMPEPacket.h"
 #include "tsIPv4Packet.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 #define TS_DEFAULT_TTL 128  // Default Time To Live when creating datagrams.
 

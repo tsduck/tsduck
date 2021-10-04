@@ -30,7 +30,6 @@
 #include "tsTablesPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPluginEventData.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"tables", ts::TablesPlugin);
 

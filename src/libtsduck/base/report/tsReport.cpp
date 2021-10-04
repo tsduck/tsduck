@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsReport.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr int ts::Severity::Fatal;

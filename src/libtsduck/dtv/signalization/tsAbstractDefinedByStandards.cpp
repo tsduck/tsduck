@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDefinedByStandards.h"
-TSDUCK_SOURCE;
 
 ts::AbstractDefinedByStandards::~AbstractDefinedByStandards()
 {

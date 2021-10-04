@@ -30,7 +30,6 @@
 #include "tsDektecDevice.h"
 #include "tsDektecUtils.h"
 #include "tsNamesFile.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NO_DTAPI)
 TS_LLVM_NOWARNING(missing-variable-declarations)

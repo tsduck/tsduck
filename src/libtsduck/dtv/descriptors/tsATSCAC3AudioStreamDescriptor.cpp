@@ -37,7 +37,6 @@
 #include "tsNames.h"
 #include "tsDVBCharTableUTF16.h"
 #include "tsDVBCharTableSingleByte.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ATSC_AC3_audio_stream_descriptor"
 #define MY_CLASS ts::ATSCAC3AudioStreamDescriptor

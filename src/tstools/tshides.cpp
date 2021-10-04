@@ -35,7 +35,6 @@
 #include "tsHFBand.h"
 #include "tsHiDesDevice.h"
 #include "tsLegacyBandWidth.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

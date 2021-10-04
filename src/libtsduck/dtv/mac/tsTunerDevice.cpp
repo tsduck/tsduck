@@ -29,7 +29,6 @@
 
 #include "tsTunerDevice.h"
 #include "tsReport.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

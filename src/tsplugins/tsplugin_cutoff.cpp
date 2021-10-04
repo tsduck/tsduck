@@ -38,7 +38,6 @@
 #include "tsMessageQueue.h"
 #include "tsThread.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_COMMANDS  128
 #define SERVER_THREAD_STACK_SIZE     (128 * 1024)

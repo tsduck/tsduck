@@ -34,7 +34,6 @@
 #include "tsjsonNull.h"
 #include "tsjsonNumber.h"
 #include "tsjsonString.h"
-TSDUCK_SOURCE;
 
 const ts::UString ts::xml::JSONConverter::HashName(u"#name");
 const ts::UString ts::xml::JSONConverter::HashNodes(u"#nodes");

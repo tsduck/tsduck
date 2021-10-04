@@ -35,7 +35,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"splice_information_table"
 #define MY_CLASS ts::SpliceInformationTable

@@ -30,7 +30,6 @@
 #include "tsT2MIPacket.h"
 #include "tsCRC32.h"
 #include "tsPSI.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

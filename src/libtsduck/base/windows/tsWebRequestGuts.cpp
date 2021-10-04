@@ -47,7 +47,6 @@
 #include "tsSysUtils.h"
 #include "tsWinUtils.h"
 #include <WinInet.h>
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

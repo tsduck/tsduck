@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsCommandLineHandler.h"
-TSDUCK_SOURCE;
 
 ts::CommandLineHandler::~CommandLineHandler()
 {

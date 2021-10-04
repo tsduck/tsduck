@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractWriteStreamInterface.h"
-TSDUCK_SOURCE;
 
 ts::AbstractWriteStreamInterface::~AbstractWriteStreamInterface()
 {

@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDisplayInterface.h"
-TSDUCK_SOURCE;
 
 ts::DisplayInterface::~DisplayInterface()
 {

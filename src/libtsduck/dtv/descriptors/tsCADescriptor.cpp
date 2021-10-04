@@ -36,7 +36,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsDescriptorList.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"CA_descriptor"
 #define MY_CLASS ts::CADescriptor

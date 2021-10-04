@@ -32,7 +32,6 @@
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsGuardMutex.h"
-TSDUCK_SOURCE;
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::BetterSystemRandomGenerator);

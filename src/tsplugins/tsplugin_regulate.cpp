@@ -35,7 +35,6 @@
 #include "tsPluginRepository.h"
 #include "tsBitRateRegulator.h"
 #include "tsPCRRegulator.h"
-TSDUCK_SOURCE;
 
 #define DEF_PACKET_BURST 16
 

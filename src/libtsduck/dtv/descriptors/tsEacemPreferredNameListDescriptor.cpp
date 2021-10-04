@@ -29,7 +29,6 @@
 
 #include "tsEacemPreferredNameListDescriptor.h"
 #include "tsPSIRepository.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"eacem_preferred_name_list_descriptor"
 #define MY_CLASS ts::EacemPreferredNameListDescriptor

@@ -30,7 +30,6 @@
 #include "tsConfigFile.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 // Used to return a constant reference.
 const ts::ConfigSection ts::ConfigFile::_empty;

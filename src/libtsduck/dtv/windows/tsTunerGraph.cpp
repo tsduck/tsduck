@@ -30,7 +30,6 @@
 #include "tsTunerGraph.h"
 #include "tsDuckContext.h"
 #include "tsDirectShowUtils.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

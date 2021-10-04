@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbortInterface.h"
-TSDUCK_SOURCE;
 
 ts::AbortInterface::~AbortInterface()
 {

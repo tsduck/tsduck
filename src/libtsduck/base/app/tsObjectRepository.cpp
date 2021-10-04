@@ -29,7 +29,6 @@
 
 #include "tsObjectRepository.h"
 #include "tsGuardMutex.h"
-TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::ObjectRepository);
 

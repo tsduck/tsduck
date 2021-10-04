@@ -30,7 +30,6 @@
 #include "tsPSIPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPluginEventData.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"psi", ts::PSIPlugin);
 

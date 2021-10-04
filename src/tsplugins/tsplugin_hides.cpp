@@ -36,7 +36,6 @@
 #include "tsHiDesDevice.h"
 #include "tsModulationArgs.h"
 #include "tsLegacyBandWidth.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

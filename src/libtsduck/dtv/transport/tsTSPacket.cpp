@@ -31,7 +31,6 @@
 #include "tsPES.h"
 #include "tsNames.h"
 #include "tsByteBlock.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

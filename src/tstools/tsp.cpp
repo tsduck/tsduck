@@ -41,7 +41,6 @@
 #include "tsSystemMonitor.h"
 #include "tsOutputPager.h"
 #include "tsVersionInfo.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 // With static link, enforce a reference to MPEG/DVB structures.

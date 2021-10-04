@@ -29,7 +29,6 @@
 
 #include "tsECMGClientArgs.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

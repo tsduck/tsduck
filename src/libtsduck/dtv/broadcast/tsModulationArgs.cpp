@@ -38,7 +38,6 @@
 #include "tsBCD.h"
 #include "tsDektec.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 

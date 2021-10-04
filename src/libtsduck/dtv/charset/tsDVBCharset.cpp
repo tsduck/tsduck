@@ -32,7 +32,6 @@
 #include "tsByteBlock.h"
 #include "tsDVBCharTableSingleByte.h"
 #include "tsDVBCharTableUTF8.h"
-TSDUCK_SOURCE;
 
 // Default predefined DVB character set (using ISO-6937 as default table).
 const ts::DVBCharset ts::DVBCharset::DVB(u"DVB");

@@ -30,7 +30,6 @@
 #include "tspyPluginEventHandler.h"
 #include "tsPluginEventData.h"
 #include "tspy.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

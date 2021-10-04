@@ -29,7 +29,6 @@
 
 #include "tsjsonRunningDocument.h"
 #include "tsjsonValue.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

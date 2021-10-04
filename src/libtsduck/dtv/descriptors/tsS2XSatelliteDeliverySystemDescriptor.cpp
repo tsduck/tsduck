@@ -38,7 +38,6 @@
 #include "tsxmlElement.h"
 #include "tsNames.h"
 #include "tsBCD.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"S2X_satellite_delivery_system_descriptor"
 #define MY_CLASS ts::S2XSatelliteDeliverySystemDescriptor

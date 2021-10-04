@@ -31,7 +31,6 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsCerrReport.h"
-TSDUCK_SOURCE;
 
 // Singleton definition.
 TS_DEFINE_SINGLETON(ts::TimeConfigurationFile);

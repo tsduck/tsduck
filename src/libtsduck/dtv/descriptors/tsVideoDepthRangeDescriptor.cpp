@@ -36,7 +36,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsIntegerUtils.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"video_depth_range_descriptor"
 #define MY_CLASS ts::VideoDepthRangeDescriptor

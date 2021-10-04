@@ -38,7 +38,6 @@
 #include "tsMonotonic.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
-TSDUCK_SOURCE;
 
 #define DEFAULT_THRESHOLD1 10
 #define DEFAULT_THRESHOLD2 100

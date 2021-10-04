@@ -33,7 +33,6 @@
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 // Constant string "Unreferenced"
 const ts::UString ts::TSAnalyzer::UNREFERENCED(u"Unreferenced");

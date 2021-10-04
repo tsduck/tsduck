@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsEnumeration.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -44,7 +44,6 @@
 #include "tsNullReport.h"
 #include "tsReportBuffer.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 // To avoid long prefixes
 typedef ts::SectionFile::FileType FType;

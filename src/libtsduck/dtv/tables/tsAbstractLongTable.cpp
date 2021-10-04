@@ -31,7 +31,6 @@
 #include "tsPSIBuffer.h"
 #include "tsBinaryTable.h"
 #include "tsSection.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

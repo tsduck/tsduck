@@ -38,7 +38,6 @@
 #include "tsATSCMultipleString.h"
 #include "tsNames.h"
 #include "tsIntegerUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

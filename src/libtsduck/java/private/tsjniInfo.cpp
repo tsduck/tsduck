@@ -34,7 +34,6 @@
 #include "tsVersionInfo.h"
 #include "tsVersionString.h"
 #include "tsjni.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 

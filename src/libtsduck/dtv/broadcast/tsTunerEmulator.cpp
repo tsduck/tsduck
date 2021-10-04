@@ -33,7 +33,6 @@
 #include "tsxmlElement.h"
 #include "tsxmlModelDocument.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

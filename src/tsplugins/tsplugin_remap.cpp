@@ -42,7 +42,6 @@
 #include "tsCASFamily.h"
 #include "tsCADescriptor.h"
 #include "tsSafePtr.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

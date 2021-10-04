@@ -29,7 +29,6 @@
 
 #include "tsxmlTweaks.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

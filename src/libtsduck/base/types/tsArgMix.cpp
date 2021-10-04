@@ -29,7 +29,6 @@
 
 #include "tsArgMix.h"
 #include "tsUString.h"
-TSDUCK_SOURCE;
 
 const std::string ts::ArgMix::empty;
 const ts::UString ts::ArgMix::uempty;

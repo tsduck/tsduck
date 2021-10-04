@@ -37,7 +37,6 @@
 #include "tsPcapFile.h"
 #include "tsIPv4SocketAddress.h"
 #include "tsIPv4Packet.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

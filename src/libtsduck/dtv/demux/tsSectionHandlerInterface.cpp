@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::SectionHandlerInterface::~SectionHandlerInterface()
 {

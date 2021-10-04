@@ -30,7 +30,6 @@
 #include "tsMuxer.h"
 #include "tsSystemMonitor.h"
 #include "tstsmuxCore.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

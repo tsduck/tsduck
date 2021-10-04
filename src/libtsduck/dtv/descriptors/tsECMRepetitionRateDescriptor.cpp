@@ -35,7 +35,6 @@
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ECM_repetition_rate_descriptor"
 #define MY_CLASS ts::ECMRepetitionRateDescriptor

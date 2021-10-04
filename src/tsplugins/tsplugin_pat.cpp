@@ -36,7 +36,6 @@
 #include "tsPluginRepository.h"
 #include "tsService.h"
 #include "tsPAT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

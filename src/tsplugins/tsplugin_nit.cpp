@@ -39,7 +39,6 @@
 #include "tsNIT.h"
 #include "tsPAT.h"
 #include "tsSDT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

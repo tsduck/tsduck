@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTableHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::TableHandlerInterface::~TableHandlerInterface()
 {

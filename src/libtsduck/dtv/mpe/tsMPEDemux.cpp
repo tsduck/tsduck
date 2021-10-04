@@ -33,7 +33,6 @@
 #include "tsPAT.h"
 #include "tsDataBroadcastIdDescriptor.h"
 #include "tsIPMACStreamLocationDescriptor.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

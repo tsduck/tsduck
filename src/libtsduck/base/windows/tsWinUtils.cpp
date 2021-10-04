@@ -33,7 +33,6 @@
 #include "tsRegistry.h"
 #include "tsMemory.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

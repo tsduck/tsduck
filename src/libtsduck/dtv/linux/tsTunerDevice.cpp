@@ -41,7 +41,6 @@
 #include "tsNullReport.h"
 #include "tsMemory.h"
 #include "tsTunerDeviceInfo.h"
-TSDUCK_SOURCE;
 
 // We used to report "bit error rate", "signal/noise ratio", "signal strength",
 // "uncorrected blocks". But the corresponding ioctl commands (FE_READ_BER, FE_READ_SNR,

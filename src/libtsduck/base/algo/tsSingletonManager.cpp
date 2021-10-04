@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSingletonManager.h"
-TSDUCK_SOURCE;
 
 ts::SingletonManager* volatile ts::SingletonManager::_instance = nullptr;
 

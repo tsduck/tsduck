@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginOptions.h"
-TSDUCK_SOURCE;
 
 ts::PluginOptions::PluginOptions(const ts::UString& name_, const UStringVector& args_) :
     name(name_),

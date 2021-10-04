@@ -30,7 +30,6 @@
 #include "tsMutex.h"
 #include "tsTime.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 // On MacOS, we must do polling on mutex "lock with timeout".
 // We use 10 ms, expressed in nanoseconds.

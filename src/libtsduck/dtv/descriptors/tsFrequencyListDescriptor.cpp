@@ -36,7 +36,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsBCD.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"frequency_list_descriptor"
 #define MY_CLASS ts::FrequencyListDescriptor

@@ -31,7 +31,6 @@
 #include "tsDirectShowUtils.h"
 #include "tsNullReport.h"
 #include "tsLNB.h"
-TSDUCK_SOURCE;
 
 // Put the value of a property (named "type") into a COM object.
 // Report errors through a variable named report (must be accessible).

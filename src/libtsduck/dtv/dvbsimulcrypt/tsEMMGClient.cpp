@@ -34,7 +34,6 @@
 #include "tsOneShotPacketizer.h"
 #include "tstlvSerializer.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::EMMGClient::RECEIVER_STACK_SIZE;

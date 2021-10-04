@@ -30,7 +30,6 @@
 #include "tsTime.h"
 #include "tsMemory.h"
 #include "tsTimeConfigurationFile.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

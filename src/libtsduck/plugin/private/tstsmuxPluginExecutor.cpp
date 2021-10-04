@@ -29,7 +29,6 @@
 
 #include "tstsmuxPluginExecutor.h"
 #include "tsGuardMutex.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

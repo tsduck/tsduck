@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsBlockCipherAlertInterface.h"
-TSDUCK_SOURCE;
 
 ts::BlockCipherAlertInterface::~BlockCipherAlertInterface()
 {

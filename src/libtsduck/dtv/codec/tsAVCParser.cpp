@@ -29,7 +29,6 @@
 
 #define TS_AVCPARSER_CPP 1 // used in tsAVCParser.h
 #include "tsAVCParser.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

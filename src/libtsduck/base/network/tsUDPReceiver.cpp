@@ -29,7 +29,6 @@
 
 #include "tsUDPReceiver.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

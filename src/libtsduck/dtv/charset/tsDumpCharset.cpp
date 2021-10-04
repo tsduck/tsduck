@@ -30,7 +30,6 @@
 #include "tsDumpCharset.h"
 #include "tsUString.h"
 #include "tsByteBlock.h"
-TSDUCK_SOURCE;
 
 // Default predefined character set.
 const ts::DumpCharset ts::DumpCharset::DUMP(u"DUMP");

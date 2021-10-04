@@ -44,7 +44,6 @@
 #include "tsSDT.h"
 #include "tsBAT.h"
 #include "tsNIT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

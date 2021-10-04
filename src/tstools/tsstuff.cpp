@@ -34,7 +34,6 @@
 #include "tsMain.h"
 #include "tsTSFileInputBuffered.h"
 #include "tsVariable.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

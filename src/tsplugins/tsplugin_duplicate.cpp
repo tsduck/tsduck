@@ -35,7 +35,6 @@
 #include "tsAbstractDuplicateRemapPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsSafePtr.h"
-TSDUCK_SOURCE;
 
 #define DEF_MAX_BUFFERED 1024
 

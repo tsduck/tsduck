@@ -30,7 +30,6 @@
 #include "tsECMGSCS.h"
 #include "tstlvMessageFactory.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 // Define protocol singleton instance
 TS_DEFINE_SINGLETON (ts::ecmgscs::Protocol);

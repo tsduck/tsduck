@@ -35,7 +35,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsPacketEncapsulation.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

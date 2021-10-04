@@ -36,7 +36,6 @@
 #include "tsTSFile.h"
 #include "tsContinuityAnalyzer.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

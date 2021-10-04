@@ -33,7 +33,6 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsDuckConfigFile.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

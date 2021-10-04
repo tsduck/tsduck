@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsCodecType.h"
-TSDUCK_SOURCE;
 
 const ts::Enumeration ts::CodecTypeEnum({
     {u"undefined",     int(ts::CodecType::UNDEFINED)},

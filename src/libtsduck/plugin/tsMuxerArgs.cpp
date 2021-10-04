@@ -29,7 +29,6 @@
 
 #include "tsMuxerArgs.h"
 #include "tsArgsWithPlugins.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::MuxerArgs::DEFAULT_MAX_INPUT_PACKETS;

@@ -30,7 +30,6 @@
 #include "tsFileInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
 

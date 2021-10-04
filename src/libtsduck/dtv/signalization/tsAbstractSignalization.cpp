@@ -31,7 +31,6 @@
 #include "tsDuckContext.h"
 #include "tsByteBlock.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 const ts::UChar* const ts::AbstractSignalization::XML_GENERIC_DESCRIPTOR  = u"generic_descriptor";
 const ts::UChar* const ts::AbstractSignalization::XML_GENERIC_SHORT_TABLE = u"generic_short_table";

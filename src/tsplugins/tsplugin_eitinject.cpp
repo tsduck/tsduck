@@ -40,7 +40,6 @@
 #include "tsMutex.h"
 #include "tsCondition.h"
 #include "tsGuardCondition.h"
-TSDUCK_SOURCE;
 
 namespace {
     // Default interval in milliseconds between two poll operations.

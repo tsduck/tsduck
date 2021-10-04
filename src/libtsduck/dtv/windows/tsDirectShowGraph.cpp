@@ -32,7 +32,6 @@
 #include "tsMediaTypeUtils.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

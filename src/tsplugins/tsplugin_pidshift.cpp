@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsTimeShiftBuffer.h"
-TSDUCK_SOURCE;
 
 #define DEF_EVAL_MS       1000  // Default initial evaluation duration in milliseconds.
 #define MAX_EVAL_PACKETS 30000  // Max number of packets after which the bitrate must be known.

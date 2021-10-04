@@ -31,7 +31,6 @@
 #include "tsSystemMonitor.h"
 #include "tstsswitchCore.h"
 #include "tstsswitchCommandListener.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

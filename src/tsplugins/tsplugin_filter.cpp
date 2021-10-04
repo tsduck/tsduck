@@ -37,7 +37,6 @@
 #include "tsPESPacket.h"
 #include "tsAlgorithm.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

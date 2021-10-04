@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPESProviderInterface.h"
-TSDUCK_SOURCE;
 
 ts::PESProviderInterface::~PESProviderInterface()
 {

@@ -52,12 +52,6 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <ItemDefinitionGroup Condition="'$(TS_NO_BUILD_VERSION)'!=''">
-    <ClCompile>
-      <PreprocessorDefinitions>TS_NO_BUILD_VERSION=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
   <ItemDefinitionGroup Condition="'$(TS_KEEP_ASSERTIONS)'!=''">
     <ClCompile>
       <PreprocessorDefinitions>TS_KEEP_ASSERTIONS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>

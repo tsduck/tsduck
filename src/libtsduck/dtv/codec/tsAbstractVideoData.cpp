@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractVideoData.h"
-TSDUCK_SOURCE;
 
 ts::AbstractVideoData::AbstractVideoData() :
     valid(false)

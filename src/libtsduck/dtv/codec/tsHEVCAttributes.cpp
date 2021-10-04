@@ -30,7 +30,6 @@
 #include "tsHEVCAttributes.h"
 #include "tsHEVCSequenceParameterSet.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

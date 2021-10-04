@@ -29,7 +29,6 @@
 
 #include "tstlvAnalyzer.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 
 

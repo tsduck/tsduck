@@ -31,7 +31,6 @@
 #include "tsPluginRepository.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"file", ts::FileOutputPlugin);
 

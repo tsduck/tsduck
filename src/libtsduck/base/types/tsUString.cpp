@@ -36,7 +36,6 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 // The UTF-8 Byte Order Mark
 const char* const ts::UString::UTF8_BOM = "\xEF\xBB\xBF";

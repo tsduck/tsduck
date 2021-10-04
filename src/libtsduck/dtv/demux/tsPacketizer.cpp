@@ -31,7 +31,6 @@
 #include "tsNullReport.h"
 #include "tsTSPacket.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

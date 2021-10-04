@@ -29,7 +29,6 @@
 
 #include "tsTimeTrackerDemux.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

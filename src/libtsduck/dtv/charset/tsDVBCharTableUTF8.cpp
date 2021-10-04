@@ -29,7 +29,6 @@
 
 #include "tsDVBCharTableUTF8.h"
 #include "tsUString.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsECMGClientHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::ECMGClientHandlerInterface::~ECMGClientHandlerInterface()
 {

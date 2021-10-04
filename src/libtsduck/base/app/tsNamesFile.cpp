@@ -34,7 +34,6 @@
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsSingletonManager.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

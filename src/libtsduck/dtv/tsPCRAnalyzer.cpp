@@ -30,7 +30,6 @@
 #include "tsPCRAnalyzer.h"
 #include "tsMemory.h"
 #include "tsUString.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

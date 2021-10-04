@@ -29,7 +29,6 @@
 
 #include "tsStaticReferencesDVB.h"
 #include "tsduck.h"
-TSDUCK_SOURCE;
 
 // Macros to generate a unique symbol name.
 #define REF_NAME1(a,b) a##b

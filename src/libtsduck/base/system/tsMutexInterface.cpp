@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsMutexInterface.h"
-TSDUCK_SOURCE;
 
 ts::MutexInterface::~MutexInterface()
 {

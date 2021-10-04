@@ -47,7 +47,6 @@
 #include "tsAVC.h"
 #include "tsHEVC.h"
 #include "tsVVC.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

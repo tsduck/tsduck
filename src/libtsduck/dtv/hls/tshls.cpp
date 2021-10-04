@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tshls.h"
-TSDUCK_SOURCE;
 
 const ts::Enumeration ts::hls::TagNames({
     {u"EXTM3U",                       ts::hls::EXTM3U},

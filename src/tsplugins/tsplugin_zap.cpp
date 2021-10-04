@@ -43,7 +43,6 @@
 #include "tsCVCT.h"
 #include "tsTVCT.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

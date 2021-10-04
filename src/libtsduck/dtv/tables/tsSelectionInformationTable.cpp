@@ -37,7 +37,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"selection_information_table"
 #define MY_CLASS ts::SelectionInformationTable

@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"dvb_html_application_boundary_descriptor"
 #define MY_CLASS ts::DVBHTMLApplicationBoundaryDescriptor

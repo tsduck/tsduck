@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsNullMutex.h"
-TSDUCK_SOURCE;
 
 bool ts::NullMutex::acquire(MilliSecond timeout)
 {

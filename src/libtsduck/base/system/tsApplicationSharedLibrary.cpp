@@ -32,7 +32,6 @@
 #include "tsCerrReport.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

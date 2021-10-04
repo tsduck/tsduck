@@ -29,7 +29,6 @@
 
 #include "tsConsoleState.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

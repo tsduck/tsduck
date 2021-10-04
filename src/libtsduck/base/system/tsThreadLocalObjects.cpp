@@ -29,7 +29,6 @@
 
 #include "tsThreadLocalObjects.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::ThreadLocalObjects);
 

@@ -29,7 +29,6 @@
 
 #include "tsDTGHDSimulcastLogicalChannelDescriptor.h"
 #include "tsPSIRepository.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"dtg_HD_simulcast_logical_channel_descriptor"
 #define MY_CLASS ts::DTGHDSimulcastLogicalChannelDescriptor

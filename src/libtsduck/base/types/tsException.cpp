@@ -30,7 +30,6 @@
 #include "tsException.h"
 #include "tsCerrReport.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 ts::Exception::Exception(const UString& w) :
     _what(w),

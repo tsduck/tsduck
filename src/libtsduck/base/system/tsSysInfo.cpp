@@ -35,7 +35,6 @@
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
-TSDUCK_SOURCE;
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::SysInfo);

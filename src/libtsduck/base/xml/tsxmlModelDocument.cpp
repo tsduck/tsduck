@@ -29,7 +29,6 @@
 
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 // References in XML model files.
 // Example: <_any in="_descriptors"/>

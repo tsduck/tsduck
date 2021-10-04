@@ -72,7 +72,6 @@
 #include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsSafePtr.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

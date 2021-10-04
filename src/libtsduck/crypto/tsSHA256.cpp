@@ -16,7 +16,6 @@
 #include "tsSHA256.h"
 #include "tsMemory.h"
 #include "tsRotate.h"
-TSDUCK_SOURCE;
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))
 #define Maj(x,y,z) (((x | y) & z) | (x & y))

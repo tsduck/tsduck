@@ -41,7 +41,6 @@
 #include "tsRegistrationDescriptor.h"
 #include "tsSCTE35.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

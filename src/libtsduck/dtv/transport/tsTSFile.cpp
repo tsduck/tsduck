@@ -31,7 +31,6 @@
 #include "tsTSPacketMetadata.h"
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

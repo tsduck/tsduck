@@ -29,7 +29,6 @@
 
 #include "tsAbstractNumber.h"
 #include "tsUString.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

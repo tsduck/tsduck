@@ -33,7 +33,6 @@
 #include "tsSection.h"
 #include "tsTablesDisplay.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

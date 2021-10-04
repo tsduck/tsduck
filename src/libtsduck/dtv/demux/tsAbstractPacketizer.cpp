@@ -29,7 +29,6 @@
 
 #include "tsAbstractPacketizer.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -38,7 +38,6 @@
 #include "tsT2MIPacket.h"
 #include "tsTSFile.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

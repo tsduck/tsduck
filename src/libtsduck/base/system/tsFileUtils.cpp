@@ -31,7 +31,6 @@
 #include "tsSysUtils.h"
 #include "tsMemory.h"
 #include "tsUID.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

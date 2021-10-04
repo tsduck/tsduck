@@ -31,7 +31,6 @@
 #include "tsMemory.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

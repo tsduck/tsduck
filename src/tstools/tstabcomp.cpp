@@ -43,7 +43,6 @@
 #include "tsOutputRedirector.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 // With static link, enforce a reference to MPEG/DVB structures.

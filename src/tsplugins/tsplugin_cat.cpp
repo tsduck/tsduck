@@ -36,7 +36,6 @@
 #include "tsPluginRepository.h"
 #include "tsCADescriptor.h"
 #include "tsCAT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

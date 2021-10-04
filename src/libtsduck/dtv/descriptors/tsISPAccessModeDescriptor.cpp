@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"ISP_access_mode_descriptor"
 #define MY_CLASS ts::ISPAccessModeDescriptor

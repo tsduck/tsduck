@@ -41,7 +41,6 @@
 #include "tsNames.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

@@ -29,7 +29,6 @@
 
 #include "tsSignalState.h"
 #include "tsFixedPoint.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

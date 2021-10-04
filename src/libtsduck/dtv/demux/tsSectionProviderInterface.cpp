@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionProviderInterface.h"
-TSDUCK_SOURCE;
 
 ts::SectionProviderInterface::~SectionProviderInterface()
 {

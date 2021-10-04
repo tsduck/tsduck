@@ -29,7 +29,6 @@
 
 #include "tsGuardMutex.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

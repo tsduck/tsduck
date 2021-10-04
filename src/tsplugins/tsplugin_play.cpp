@@ -36,7 +36,6 @@
 #include "tsTSForkPipe.h"
 #include "tsFileUtils.h"
 #include "tsRegistry.h"
-TSDUCK_SOURCE;
 
 // Pipe buffer size is used on Windows only.
 #define PIPE_BUFFER_SIZE 65536

@@ -29,7 +29,6 @@
 
 #include "tsPluginEventHandlerRegistry.h"
 #include "tsGuardMutex.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

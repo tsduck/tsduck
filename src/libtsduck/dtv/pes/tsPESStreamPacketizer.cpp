@@ -30,7 +30,6 @@
 #include "tsPESStreamPacketizer.h"
 #include "tsNullReport.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

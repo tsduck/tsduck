@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsEnumeration.h"
-TSDUCK_SOURCE;
 
 // Values for "not found"
 const int ts::Enumeration::UNKNOWN = std::numeric_limits<int>::max();

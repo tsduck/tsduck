@@ -39,7 +39,6 @@
 #include "tsjsonObject.h"
 #include "tsTSPacket.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 #define MIN_CLEAR_PACKETS 100000
 

@@ -29,7 +29,6 @@
 
 #include "tsForkOutputPlugin.h"
 #include "tsPluginRepository.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"fork", ts::ForkOutputPlugin);
 

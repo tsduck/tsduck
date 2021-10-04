@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"DVB_time_shifted_service_descriptor"
 #define MY_XML_NAME_LEGACY u"time_shifted_service_descriptor"

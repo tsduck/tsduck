@@ -35,7 +35,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"HEVC_hierarchy_extension_descriptor"
 #define MY_CLASS ts::HEVCHierarchyExtensionDescriptor

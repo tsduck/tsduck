@@ -39,7 +39,6 @@
 #include "tsChannelFile.h"
 #include "tsPAT.h"
 #include "tsNIT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

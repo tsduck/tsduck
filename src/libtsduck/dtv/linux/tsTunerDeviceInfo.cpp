@@ -29,7 +29,6 @@
 
 #include "tsTunerDeviceInfo.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

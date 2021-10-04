@@ -36,7 +36,6 @@
 #include "tsIPv4Packet.h"
 #include "tsTime.h"
 #include "tsBitRate.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

@@ -33,7 +33,6 @@
 #include "tsDescriptorList.h"
 #include "tsPSIBuffer.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

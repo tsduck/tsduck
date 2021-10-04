@@ -29,7 +29,6 @@
 
 #include "tsTransportStreamId.h"
 #include "tsUString.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

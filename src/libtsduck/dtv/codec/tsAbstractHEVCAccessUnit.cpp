@@ -29,7 +29,6 @@
 
 #include "tsAbstractHEVCAccessUnit.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

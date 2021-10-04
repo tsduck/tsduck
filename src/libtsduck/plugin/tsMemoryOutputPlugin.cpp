@@ -30,7 +30,6 @@
 #include "tsMemoryOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPluginEventData.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"memory", ts::MemoryOutputPlugin);
 

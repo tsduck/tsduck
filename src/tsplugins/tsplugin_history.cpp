@@ -44,7 +44,6 @@
 #include "tsTOT.h"
 #include "tsTDT.h"
 #include "tsEIT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

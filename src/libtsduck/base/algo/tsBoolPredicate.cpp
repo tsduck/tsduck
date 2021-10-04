@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsBoolPredicate.h"
-TSDUCK_SOURCE;
 
 bool ts::MultiAnd(std::initializer_list<bool> args)
 {

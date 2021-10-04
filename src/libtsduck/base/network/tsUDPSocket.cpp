@@ -29,7 +29,6 @@
 
 #include "tsUDPSocket.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 // Network timestampting feature in Linux.
 #if defined(TS_LINUX)

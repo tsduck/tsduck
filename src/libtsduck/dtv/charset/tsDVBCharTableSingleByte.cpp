@@ -31,7 +31,6 @@
 #include "tsByteBlock.h"
 #include "tsUString.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 // Static instances of corresponding DVB charsets.
 const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_6937(u"ISO-6937", &RAW_ISO_6937);

@@ -36,7 +36,6 @@
 #include "tsHFBand.h"
 #include "tsBitrateDifferenceDVBT.h"
 #include "tsLegacyBandWidth.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

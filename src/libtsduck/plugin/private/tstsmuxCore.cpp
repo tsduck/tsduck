@@ -36,7 +36,6 @@
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsEIT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -36,7 +36,6 @@
 #include "tsAbstractDescrambler.h"
 #include "tsPluginRepository.h"
 #include "tsDuckProtocol.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTeletextHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::TeletextHandlerInterface::~TeletextHandlerInterface()
 {

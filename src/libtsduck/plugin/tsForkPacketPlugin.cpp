@@ -29,7 +29,6 @@
 
 #include "tsForkPacketPlugin.h"
 #include "tsPluginRepository.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"fork", ts::ForkPacketPlugin);
 

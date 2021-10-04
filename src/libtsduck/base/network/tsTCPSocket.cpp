@@ -32,7 +32,6 @@
 #include "tsGuardMutex.h"
 #include "tsMemory.h"
 #include "tsException.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

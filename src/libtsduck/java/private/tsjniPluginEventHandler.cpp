@@ -29,7 +29,6 @@
 
 #include "tsjniPluginEventHandler.h"
 #include "tsPluginEventData.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 

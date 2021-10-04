@@ -35,7 +35,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"cable_emergency_alert_table"
 #define MY_CLASS ts::CableEmergencyAlertTable

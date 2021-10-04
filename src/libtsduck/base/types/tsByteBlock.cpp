@@ -31,7 +31,6 @@
 #include "tsUString.h"
 #include "tsReport.h"
 #include "tsBCD.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

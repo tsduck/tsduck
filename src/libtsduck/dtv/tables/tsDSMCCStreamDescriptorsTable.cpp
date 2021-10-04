@@ -33,7 +33,6 @@
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"DSMCC_stream_descriptors_table"
 #define MY_CLASS ts::DSMCCStreamDescriptorsTable

@@ -34,7 +34,6 @@
 #include "tsSection.h"
 #include "tsArgs.h"
 #include "tsPAT.h"
-TSDUCK_SOURCE;
 
 // Register this section filter in the reposity.
 TS_REGISTER_SECTION_FILTER(ts::TablesLoggerFilter);

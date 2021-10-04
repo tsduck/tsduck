@@ -29,7 +29,6 @@
 
 #include "tsWebRequestArgs.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

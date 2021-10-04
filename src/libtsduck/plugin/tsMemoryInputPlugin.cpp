@@ -30,7 +30,6 @@
 #include "tsMemoryInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsPluginEventData.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"memory", ts::MemoryInputPlugin);
 

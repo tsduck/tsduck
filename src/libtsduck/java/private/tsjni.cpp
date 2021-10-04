@@ -30,7 +30,6 @@
 #include "tsjni.h"
 #include "tsCerrReport.h"
 #include "tsThreadLocalObjects.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 

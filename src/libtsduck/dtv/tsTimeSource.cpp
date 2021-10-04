@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTimeSource.h"
-TSDUCK_SOURCE;
 
 const ts::TypedEnumeration<ts::TimeSource> ts::TimeSourceEnum({
     {u"undefined", ts::TimeSource::UNDEFINED},

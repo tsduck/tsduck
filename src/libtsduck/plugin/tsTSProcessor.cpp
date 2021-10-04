@@ -34,7 +34,6 @@
 #include "tstspControlServer.h"
 #include "tsMonotonic.h"
 #include "tsGuardMutex.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsPCRAnalyzer.h"
-TSDUCK_SOURCE;
 
 #define DEF_MIN_PCR_CNT  128
 #define DEF_MIN_PID        1

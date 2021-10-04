@@ -29,7 +29,6 @@
 
 #include "tsPluginThread.h"
 #include "tsPluginRepository.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

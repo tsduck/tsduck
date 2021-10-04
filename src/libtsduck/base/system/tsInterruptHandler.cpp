@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsInterruptHandler.h"
-TSDUCK_SOURCE;
 
 ts::InterruptHandler::~InterruptHandler()
 {

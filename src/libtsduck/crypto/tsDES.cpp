@@ -15,7 +15,6 @@
 
 #include "tsDES.h"
 #include "tsRotate.h"
-TSDUCK_SOURCE;
 
 
 #define C64(x) TS_UCONST64(x)

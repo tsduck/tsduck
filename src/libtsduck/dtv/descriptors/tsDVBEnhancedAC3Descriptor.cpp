@@ -35,7 +35,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"DVB_enhanced_AC3_descriptor"
 #define MY_XML_NAME_LEGACY u"enhanced_AC3_descriptor"

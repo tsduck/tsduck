@@ -108,8 +108,8 @@ cmd_lib() {
 }
 
 cmd_cflags() {
-    [[ $(uname -s) == Darwin ]] && pcsc="/usr/local/opt/pcsc-lite/include/PCSC" || pcsc="/usr/include/PCSC"
-    echo "-I$(cmd_include) $(curl-config --cflags 2>/dev/null) -I$pcsc --std=c++11"
+    [[ $(uname -s) == Linux ]] && pcsc="-I/usr/include/PCSC"
+    echo "-I$(cmd_include) $(curl-config --cflags 2>/dev/null) $pcsc --std=c++11"
 }
 
 cmd_so() {
@@ -123,9 +123,9 @@ cmd_so() {
 }
 
 libs_common() {
-    [[ $SYSTEM == Darwin ]] && pcsc="-L/usr/local/opt/pcsc-lite/lib" || pcsc=""
+    [[ $SYSTEM == Darwin ]] && pcsc="-framework PCSC" || pcsc="-lpcsclite"
     [[ $SYSTEM == Darwin ]] && rt="" || rt="-lrt"
-    echo "$pcsc -lpcsclite -lpthread $rt -ldl -lm -lstdc++"
+    echo "$pcsc -lpthread $rt -ldl -lm -lstdc++"
 }
 
 cmd_libs() {

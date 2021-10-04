@@ -29,4 +29,3 @@
 
 #define TS_COMIDS_DEFINE 1
 #include "tsComIds.h"
-TSDUCK_SOURCE;

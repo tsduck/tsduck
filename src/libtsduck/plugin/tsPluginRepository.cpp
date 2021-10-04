@@ -32,7 +32,6 @@
 #include "tsAlgorithm.h"
 #include "tsCerrReport.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::PluginRepository);
 

@@ -42,7 +42,6 @@
 #include "tsTunerGraph.h"
 #include "tsDirectShowUtils.h"
 #include "tsSinkFilter.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

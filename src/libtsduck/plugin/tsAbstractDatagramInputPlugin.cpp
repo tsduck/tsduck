@@ -30,7 +30,6 @@
 #include "tsAbstractDatagramInputPlugin.h"
 #include "tsSysUtils.h"
 #include "tsIPUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

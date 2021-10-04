@@ -33,7 +33,6 @@
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

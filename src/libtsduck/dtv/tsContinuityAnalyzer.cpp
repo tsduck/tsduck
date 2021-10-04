@@ -29,7 +29,6 @@
 
 #include "tsContinuityAnalyzer.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

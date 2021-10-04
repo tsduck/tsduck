@@ -29,7 +29,6 @@
 
 #include "tsPolledFile.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

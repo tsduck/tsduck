@@ -32,7 +32,6 @@
 #include "tsGuardCondition.h"
 #include "tsAlgorithm.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

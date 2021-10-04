@@ -29,7 +29,6 @@
 
 #include "tsAVCAccessUnitDelimiter.h"
 #include "tsAVC.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

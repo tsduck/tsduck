@@ -33,7 +33,6 @@
 #include "tsDuckContext.h"
 #include "tsPSIBuffer.h"
 #include "tsCRC32.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -40,7 +40,6 @@
 #include "tsMonotonic.h"
 #include "tsSectionFile.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 namespace {

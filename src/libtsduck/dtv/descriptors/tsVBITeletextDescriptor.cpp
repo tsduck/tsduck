@@ -32,7 +32,6 @@
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"VBI_teletext_descriptor"
 #define MY_CLASS ts::VBITeletextDescriptor

@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsjniSyncReport.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 

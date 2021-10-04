@@ -34,7 +34,6 @@
 #include "tsWinUtils.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 // Put the value of a property (named "type") into a COM object.
 // Report errors through a CucjContext variable named duck (must be accessible).

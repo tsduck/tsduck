@@ -31,7 +31,6 @@
 #include "tsNullReport.h"
 #include "tsMemory.h"
 #include "tsIntegerUtils.h"
-TSDUCK_SOURCE;
 
 // Index of pipe file descriptors on UNIX.
 #define PIPE_READFD  0

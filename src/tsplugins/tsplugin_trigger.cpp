@@ -37,7 +37,6 @@
 #include "tsByteBlock.h"
 #include "tsUDPSocket.h"
 #include "tsTime.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -34,7 +34,6 @@
 #include "tsDuckContext.h"
 #include "tsSection.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

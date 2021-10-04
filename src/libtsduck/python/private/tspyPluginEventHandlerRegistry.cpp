@@ -34,7 +34,6 @@
 
 #include "tspy.h"
 #include "tsPluginEventHandlerRegistry.h"
-TSDUCK_SOURCE;
 
 
 TSDUCKPY void tspyPluginEventHandlerRegister(void* tsp, ts::PluginEventHandlerInterface* handler, uint32_t event_code)
