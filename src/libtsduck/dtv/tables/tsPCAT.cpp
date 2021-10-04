@@ -37,7 +37,6 @@
 #include "tsNames.h"
 #include "tsMJD.h"
 #include "tsBCD.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"PCAT"
 #define MY_CLASS ts::PCAT

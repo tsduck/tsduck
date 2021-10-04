@@ -45,7 +45,6 @@
 #include "tsThread.h"
 #include "tsGuardMutex.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 #define DEFAULT_MAX_QUEUED_PACKETS  1000            // Default size in packet of the inter-thread queue.
 #define SERVER_THREAD_STACK_SIZE    (128 * 1024)    // Size in byte of the thread stack.

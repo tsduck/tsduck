@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsMPEHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::MPEHandlerInterface::~MPEHandlerInterface()
 {

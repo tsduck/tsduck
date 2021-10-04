@@ -32,7 +32,6 @@
 #include "tsModulationArgs.h"
 #include "tsSignalState.h"
 #include "tsDeliverySystem.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr ts::MilliSecond ts::TunerBase::DEFAULT_SIGNAL_TIMEOUT;

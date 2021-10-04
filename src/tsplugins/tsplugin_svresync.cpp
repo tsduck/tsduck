@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsSignalizationDemux.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

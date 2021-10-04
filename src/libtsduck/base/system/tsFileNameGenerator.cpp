@@ -29,7 +29,6 @@
 
 #include "tsFileNameGenerator.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

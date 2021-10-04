@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 // This is not a fully registered descriptor. This is just a specific case of data_broadcast_id_descriptor.
 // It has no specific XML representation. It cannot be converted from XML because it has no specific

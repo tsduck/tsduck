@@ -29,7 +29,6 @@
 
 #include "tsDektecDeviceInfo.h"
 #include "tsDektecDevice.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -38,7 +38,6 @@
 #include "tsService.h"
 #include "tsAlgorithm.h"
 #include "tsSDT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

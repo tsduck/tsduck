@@ -33,7 +33,6 @@
 
 #include "tsMain.h"
 #include "tsPCSC.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 // SCARD_ macros contains many "old style" casts.

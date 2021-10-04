@@ -29,7 +29,6 @@
 
 #include "tsStandards.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -35,7 +35,6 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsTS.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

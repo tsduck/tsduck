@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"target_serial_number_descriptor"
 #define MY_CLASS ts::TargetSerialNumberDescriptor

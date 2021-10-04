@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesLoggerFilterRepository.h"
-TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::TablesLoggerFilterRepository);
 

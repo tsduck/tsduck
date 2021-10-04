@@ -43,7 +43,6 @@
 #if defined(TS_WINDOWS)
 #include "tsWinUtils.h"
 #endif
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

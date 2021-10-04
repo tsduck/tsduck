@@ -29,7 +29,6 @@
 
 #include "tsWatchDog.h"
 #include "tsGuardMutex.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

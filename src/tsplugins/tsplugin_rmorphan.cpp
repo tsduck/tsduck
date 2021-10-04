@@ -41,7 +41,6 @@
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

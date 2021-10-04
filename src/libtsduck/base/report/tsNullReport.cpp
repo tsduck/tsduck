@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::NullReport);

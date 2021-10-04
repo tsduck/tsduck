@@ -30,7 +30,6 @@
 #include "tsxmlDeclaration.h"
 #include "tsxmlDocument.h"
 #include "tsTextFormatter.h"
-TSDUCK_SOURCE;
 
 // Default XML declaration.
 const ts::UChar* const ts::xml::Declaration::DEFAULT_XML_DECLARATION = u"xml version=\"1.0\" encoding=\"UTF-8\"";

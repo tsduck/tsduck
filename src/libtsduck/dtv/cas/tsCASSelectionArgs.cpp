@@ -30,7 +30,6 @@
 #include "tsArgs.h"
 #include "tsCASSelectionArgs.h"
 #include "tsPIDOperator.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

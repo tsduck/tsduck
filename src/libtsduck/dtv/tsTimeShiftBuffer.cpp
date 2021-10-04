@@ -30,7 +30,6 @@
 #include "tsTimeShiftBuffer.h"
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::TimeShiftBuffer::MIN_TOTAL_PACKETS;

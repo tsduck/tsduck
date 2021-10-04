@@ -35,7 +35,6 @@
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

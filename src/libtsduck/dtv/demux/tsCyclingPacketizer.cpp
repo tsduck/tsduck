@@ -29,7 +29,6 @@
 
 #include "tsCyclingPacketizer.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -31,7 +31,6 @@
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_PCSC)
 

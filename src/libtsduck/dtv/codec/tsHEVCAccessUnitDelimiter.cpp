@@ -29,7 +29,6 @@
 
 #include "tsHEVCAccessUnitDelimiter.h"
 #include "tsHEVC.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

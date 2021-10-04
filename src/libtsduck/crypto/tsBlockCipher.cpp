@@ -29,7 +29,6 @@
 
 #include "tsBlockCipher.h"
 #include "tsBlockCipherAlertInterface.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

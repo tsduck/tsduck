@@ -44,7 +44,6 @@
 #include "tsDuckProtocol.h"
 #include "tsVariable.h"
 #include "tsOneShotPacketizer.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 namespace {

@@ -38,7 +38,6 @@
 #include "tsTeletextDemux.h"
 #include "tsTeletextFrame.h"
 #include "tsTeletextDescriptor.h"
-TSDUCK_SOURCE;
 #if !defined(TS_NOTELETEXT)
 
 

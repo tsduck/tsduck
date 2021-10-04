@@ -39,7 +39,6 @@
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 // To avoid long prefixes

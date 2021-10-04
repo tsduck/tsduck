@@ -40,7 +40,6 @@
 #include "tsSpliceInformationTable.h"
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsForkPipe.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

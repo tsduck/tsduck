@@ -40,7 +40,6 @@
 #include "tsMJD.h"
 #include "tsBCD.h"
 #include "tsCRC32.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

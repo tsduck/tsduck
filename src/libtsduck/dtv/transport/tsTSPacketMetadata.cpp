@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacketMetadata.h"
-TSDUCK_SOURCE;
 
 const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::NoLabel;
 const ts::TSPacketMetadata::LabelSet ts::TSPacketMetadata::AllLabels(~NoLabel);

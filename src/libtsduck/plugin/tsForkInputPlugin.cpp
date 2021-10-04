@@ -29,7 +29,6 @@
 
 #include "tsForkInputPlugin.h"
 #include "tsPluginRepository.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_INPUT_PLUGIN(u"fork", ts::ForkInputPlugin);
 

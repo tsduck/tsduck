@@ -33,4 +33,3 @@
 // referenced code.
 
 #include "tsduck.h"
-TSDUCK_SOURCE;

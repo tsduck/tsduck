@@ -31,7 +31,6 @@
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -33,7 +33,6 @@
 #include "tsGuardMutex.h"
 #include "tsTime.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_WINDOWS)
 #include <intrin.h>

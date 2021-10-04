@@ -34,7 +34,6 @@
 #include "tsMain.h"
 #include "tsTSFile.h"
 #include "tsPCRAnalyzer.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

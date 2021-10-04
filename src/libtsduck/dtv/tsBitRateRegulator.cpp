@@ -29,7 +29,6 @@
 
 #include "tsBitRateRegulator.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

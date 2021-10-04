@@ -34,7 +34,6 @@
 #include "tsxmlElement.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

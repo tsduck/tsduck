@@ -33,7 +33,6 @@
 
 #include "tsMain.h"
 #include "tsContinuityAnalyzer.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

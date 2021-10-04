@@ -29,7 +29,6 @@
 
 #include "tsEITRepetitionProfile.h"
 #include "tsEIT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

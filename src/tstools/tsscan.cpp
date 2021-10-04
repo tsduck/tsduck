@@ -46,7 +46,6 @@
 #include "tsTime.h"
 #include "tsFileUtils.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms

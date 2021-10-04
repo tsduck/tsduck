@@ -35,7 +35,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsMJD.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"scheduling_descriptor"
 #define MY_CLASS ts::SchedulingDescriptor

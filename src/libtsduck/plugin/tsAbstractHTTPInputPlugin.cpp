@@ -30,7 +30,6 @@
 #include "tsAbstractHTTPInputPlugin.h"
 #include "tsFileUtils.h"
 #include "tsURL.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

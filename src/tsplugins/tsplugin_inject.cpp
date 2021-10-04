@@ -37,7 +37,6 @@
 #include "tsFileNameRate.h"
 #include "tsSectionFileArgs.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 #define DEF_EVALUATE_INTERVAL  100   // In packets
 #define DEF_POLL_FILE_MS      1000   // In milliseconds

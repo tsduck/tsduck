@@ -30,7 +30,6 @@
 #include "tsPESOneShotPacketizer.h"
 #include "tsNullReport.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

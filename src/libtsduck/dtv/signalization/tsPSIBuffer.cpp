@@ -33,7 +33,6 @@
 #include "tsSection.h"
 #include "tsMJD.h"
 #include "tsATSCMultipleString.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

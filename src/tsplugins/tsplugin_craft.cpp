@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsFunctors.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

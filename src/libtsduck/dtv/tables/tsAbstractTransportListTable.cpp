@@ -32,7 +32,6 @@
 #include "tsSection.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIBuffer.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

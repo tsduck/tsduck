@@ -85,7 +85,6 @@
 #include "tsMemory.h"
 #include "tsFileUtils.h"
 #include "tsNamesFile.h"
-TSDUCK_SOURCE;
 
 // Maximum size of our transfers. See comments above.
 #define ITE_MAX_SEND_PACKETS  172

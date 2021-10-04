@@ -40,7 +40,6 @@
 #include "tsFileNameGenerator.h"
 #include "tsFileUtils.h"
 #include <cmath>
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

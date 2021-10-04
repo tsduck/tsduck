@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTSPacketFormat.h"
-TSDUCK_SOURCE;
 
 const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatEnum({
     {u"autodetect", ts::TSPacketFormat::AUTODETECT},

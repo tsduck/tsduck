@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSimulCryptDate.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::SimulCryptDate::SIZE;

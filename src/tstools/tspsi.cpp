@@ -38,7 +38,6 @@
 #include "tsTablesDisplay.h"
 #include "tsPSILogger.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 // With static link, enforce a reference to MPEG/DVB structures.

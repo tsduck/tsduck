@@ -31,7 +31,6 @@
 #include "tsDescriptor.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"multilingual_bouquet_name_descriptor"
 #define MY_XML_ATTR u"bouquet_name"

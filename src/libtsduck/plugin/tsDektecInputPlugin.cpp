@@ -38,7 +38,6 @@
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsLNB.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_DTAPI)
 TS_REGISTER_INPUT_PLUGIN(u"dektec", ts::DektecInputPlugin);

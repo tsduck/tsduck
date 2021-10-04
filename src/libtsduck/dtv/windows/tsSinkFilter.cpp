@@ -35,7 +35,6 @@
 #include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
-TSDUCK_SOURCE;
 
 // Trace every low-level operation when COM instrumentation is enabled.
 #if defined(TS_COM_INSTRUMENTATION)

@@ -29,7 +29,6 @@
 
 #include "tsServiceIdTriplet.h"
 #include "tsUString.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

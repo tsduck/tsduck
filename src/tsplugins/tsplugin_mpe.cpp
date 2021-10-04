@@ -37,7 +37,6 @@
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
 #include "tsUDPSocket.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

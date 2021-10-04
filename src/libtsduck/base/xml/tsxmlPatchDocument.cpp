@@ -29,7 +29,6 @@
 
 #include "tsxmlPatchDocument.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define X_ATTR          u"x-" // prefix of special attribute names
 #define X_NODE_ATTR     X_ATTR u"node"

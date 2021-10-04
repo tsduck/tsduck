@@ -37,7 +37,6 @@
 #include "tsTSFile.h"
 #include "tsPagerArgs.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

@@ -30,7 +30,6 @@
 #include "tsTSScrambling.h"
 #include "tsNames.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

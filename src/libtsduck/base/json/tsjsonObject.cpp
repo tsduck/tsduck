@@ -33,7 +33,6 @@
 #include "tsjsonTrue.h"
 #include "tsjsonFalse.h"
 #include "tsjsonNull.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

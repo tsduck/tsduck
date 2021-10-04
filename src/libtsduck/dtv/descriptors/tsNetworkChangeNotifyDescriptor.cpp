@@ -37,7 +37,6 @@
 #include "tsxmlElement.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"network_change_notify_descriptor"
 #define MY_CLASS ts::NetworkChangeNotifyDescriptor

@@ -41,7 +41,6 @@
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 #define DEFAULT_BUFFERED_PACKETS 10000

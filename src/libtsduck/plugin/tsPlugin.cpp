@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlugin.h"
-TSDUCK_SOURCE;
 
 // Displayable names of plugin types.
 const ts::TypedEnumeration<ts::PluginType> ts::PluginTypeNames({

@@ -36,7 +36,6 @@
 #include "tsTuner.h"
 #include "tsTunerArgs.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 #if defined(TS_WINDOWS)

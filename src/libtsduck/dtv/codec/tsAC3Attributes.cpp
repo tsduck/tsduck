@@ -29,7 +29,6 @@
 
 #include "tsAC3Attributes.h"
 #include "tsBuffer.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

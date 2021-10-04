@@ -39,7 +39,6 @@
 #include "tsDescriptorList.h"
 #include "tsPIDOperator.h"
 #include "tsPAT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

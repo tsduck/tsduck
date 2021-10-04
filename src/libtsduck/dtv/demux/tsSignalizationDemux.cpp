@@ -35,7 +35,6 @@
 #include "tsLogicalChannelNumbers.h"
 #include "tsCADescriptor.h"
 #include "tsISDBAccessControlDescriptor.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

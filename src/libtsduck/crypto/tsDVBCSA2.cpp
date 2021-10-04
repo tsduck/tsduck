@@ -10,7 +10,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBCSA2.h"
-TSDUCK_SOURCE;
 
 // Operations on 64-bit areas.
 

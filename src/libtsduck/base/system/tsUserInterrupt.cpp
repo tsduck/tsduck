@@ -30,7 +30,6 @@
 #include "tsUserInterrupt.h"
 #include "tsStaticInstance.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
 

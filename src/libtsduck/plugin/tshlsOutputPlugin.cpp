@@ -34,7 +34,6 @@
 #include "tsPESPacket.h"
 #include "tsPAT.h"
 #include "tsPMT.h"
-TSDUCK_SOURCE;
 
 TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 

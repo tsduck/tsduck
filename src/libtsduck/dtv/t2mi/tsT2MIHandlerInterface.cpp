@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsT2MIHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::T2MIHandlerInterface::~T2MIHandlerInterface()
 {

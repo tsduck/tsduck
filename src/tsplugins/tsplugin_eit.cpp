@@ -43,7 +43,6 @@
 #include "tsSDT.h"
 #include "tsEIT.h"
 #include "tsMJD.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

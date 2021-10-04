@@ -30,7 +30,6 @@
 #include "tsDVBCharTableUTF16.h"
 #include "tsMemory.h"
 #include "tsUString.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

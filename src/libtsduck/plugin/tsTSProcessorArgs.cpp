@@ -30,7 +30,6 @@
 #include "tsTSProcessorArgs.h"
 #include "tsPluginRepository.h"
 #include "tsArgsWithPlugins.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE;

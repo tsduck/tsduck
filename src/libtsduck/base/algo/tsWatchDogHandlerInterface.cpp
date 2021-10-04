@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsWatchDogHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::WatchDogHandlerInterface::~WatchDogHandlerInterface()
 {

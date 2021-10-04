@@ -34,7 +34,6 @@
 #include "tsxmlUnknown.h"
 #include "tsFileUtils.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -41,7 +41,6 @@
 #include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 #include "tsTime.h"
-TSDUCK_SOURCE;
 
 // Define singleton instance
 TS_DEFINE_SINGLETON (ts::UID);

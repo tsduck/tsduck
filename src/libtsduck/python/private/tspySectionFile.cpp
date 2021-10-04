@@ -34,7 +34,6 @@
 #include "tspy.h"
 #include "tsSectionFile.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 //-----------------------------------------------------------------------------
 // Python interface to SectionFile.

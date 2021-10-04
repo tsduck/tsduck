@@ -40,7 +40,6 @@
 #include "tsIPv4SocketAddress.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_DTAPI)
 TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);

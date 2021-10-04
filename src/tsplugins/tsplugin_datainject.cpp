@@ -43,7 +43,6 @@
 #include "tstlvMessageFactory.h"
 #include "tsContinuityAnalyzer.h"
 #include "tsThread.h"
-TSDUCK_SOURCE;
 
 #define DEFAULT_PROTOCOL_VERSION  2     // Default protocol version for EMMG/PDG <=> MUX.
 #define DEFAULT_QUEUE_SIZE        1000  // Maximum number of TS packets in queue

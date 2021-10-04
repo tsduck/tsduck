@@ -29,7 +29,6 @@
 
 #include "tsMonotonic.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

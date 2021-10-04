@@ -50,7 +50,6 @@
 #include "tsPCRAnalyzer.h"
 #include "tsPluginRepository.h"
 #include "tsStaticReferencesDVB.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 // On Linux, we use the TSDuck static library, enforce a reference to MPEG/DVB structures.

@@ -43,7 +43,6 @@
 #include "tsOutputRedirector.h"
 #include "tsSafePtr.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 #define DEFAULT_INDENT 2

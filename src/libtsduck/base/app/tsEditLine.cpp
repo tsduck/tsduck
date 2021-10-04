@@ -30,7 +30,6 @@
 #include "tsEditLine.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 // Disable libedit on Windows.
 #if defined(TS_WINDOWS) && !defined(TS_NO_EDITLINE)

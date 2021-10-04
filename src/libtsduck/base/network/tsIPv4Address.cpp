@@ -30,7 +30,6 @@
 #include "tsIPv4Address.h"
 #include "tsIPUtils.h"
 #include "tsMemory.h"
-TSDUCK_SOURCE;
 
 // Local host address
 const ts::IPv4Address ts::IPv4Address::LocalHost(127, 0, 0, 1);

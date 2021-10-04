@@ -34,7 +34,6 @@
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsIntegerUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

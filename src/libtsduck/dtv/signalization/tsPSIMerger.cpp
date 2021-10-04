@@ -32,7 +32,6 @@
 #include "tsTSPacket.h"
 #include "tsAlgorithm.h"
 #include "tsEIT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

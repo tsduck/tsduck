@@ -29,7 +29,6 @@
 
 #include "tstspInputExecutor.h"
 #include "tsTime.h"
-TSDUCK_SOURCE;
 
 // Minimum number of PID's and PCR/DTS to analyze before getting a valid bitrate.
 #define MIN_ANALYZE_PID   1

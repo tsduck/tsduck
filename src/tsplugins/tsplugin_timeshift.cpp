@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsTimeShiftBuffer.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

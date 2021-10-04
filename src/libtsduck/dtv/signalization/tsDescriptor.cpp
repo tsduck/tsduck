@@ -34,7 +34,6 @@
 #include "tsPSIRepository.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

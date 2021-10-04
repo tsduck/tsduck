@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractNetworkAddress.h"
-TSDUCK_SOURCE;
 
 // All methods here are default implementations,
 // when a subclass does not implement the corresponding method.

@@ -30,7 +30,6 @@
 #include "tsDuckProtocol.h"
 #include "tstlvMessageFactory.h"
 #include "tsSection.h"
-TSDUCK_SOURCE;
 
 // Define protocol singleton instance
 TS_DEFINE_SINGLETON (ts::duck::Protocol);

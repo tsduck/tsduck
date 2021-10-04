@@ -33,7 +33,6 @@
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsFatal.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

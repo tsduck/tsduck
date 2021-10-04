@@ -31,7 +31,6 @@
 #include "tstsswitchCore.h"
 #include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

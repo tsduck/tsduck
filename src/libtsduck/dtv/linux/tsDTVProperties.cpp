@@ -28,7 +28,6 @@
 //-----------------------------------------------------------------------------
 
 #include "tsDTVProperties.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr uint32_t ts::DTVProperties::UNKNOWN;

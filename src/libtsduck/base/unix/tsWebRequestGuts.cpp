@@ -49,7 +49,6 @@
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

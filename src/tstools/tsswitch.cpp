@@ -56,7 +56,6 @@
 #include "tsSystemMonitor.h"
 #include "tsAsyncReport.h"
 #include "tsCerrReport.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

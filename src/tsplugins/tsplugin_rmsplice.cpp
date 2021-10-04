@@ -38,7 +38,6 @@
 #include "tsSpliceInformationTable.h"
 #include "tsContinuityAnalyzer.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

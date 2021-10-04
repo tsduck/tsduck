@@ -32,7 +32,6 @@
 //-----------------------------------------------------------------------------
 
 #include "tsThreadLocalObjects.h"
-TSDUCK_SOURCE;
 
 // This code makes sense only when TSDuck is not compiled as a static library.
 #if !defined(TSDUCK_STATIC_LIBRARY)

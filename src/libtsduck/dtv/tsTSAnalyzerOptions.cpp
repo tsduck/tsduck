@@ -30,7 +30,6 @@
 #include "tsTSAnalyzerOptions.h"
 #include "tsException.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

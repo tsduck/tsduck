@@ -36,7 +36,6 @@
 #include "tsTime.h"
 #include "tsCerrReport.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -29,7 +29,6 @@
 
 #include "tsEacemLogicalChannelNumberDescriptor.h"
 #include "tsPSIRepository.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"eacem_logical_channel_number_descriptor"
 #define MY_XML_NAME_LEGACY u"logical_channel_number_descriptor"

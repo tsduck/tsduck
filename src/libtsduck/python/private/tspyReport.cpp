@@ -36,7 +36,6 @@
 #include "tspySyncReport.h"
 #include "tsCerrReport.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 //-----------------------------------------------------------------------------
 // Build a report header from a severity.

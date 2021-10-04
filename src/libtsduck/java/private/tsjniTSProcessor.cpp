@@ -34,7 +34,6 @@
 #include "tsTSProcessor.h"
 #include "tsNullReport.h"
 #include "tsjni.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_JAVA)
 

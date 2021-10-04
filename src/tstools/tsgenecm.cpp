@@ -38,7 +38,6 @@
 #include "tsStandaloneTableDemux.h"
 #include "tsSectionFile.h"
 #include "tsTSPacket.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

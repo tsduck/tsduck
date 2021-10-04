@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsjsonNull.h"
-TSDUCK_SOURCE;
 
 // A general-purpose constant null JSON value.
 ts::json::Null ts::json::NullValue;

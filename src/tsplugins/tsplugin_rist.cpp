@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPlatform.h"
-TSDUCK_SOURCE;
 
 #if !defined(TS_NO_RIST)
 #include "tsAbstractDatagramOutputPlugin.h"

@@ -34,7 +34,6 @@
 #include "tsNames.h"
 #include "tsMemory.h"
 #include "tsReportWithPrefix.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

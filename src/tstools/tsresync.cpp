@@ -37,7 +37,6 @@
 #include "tsByteBlock.h"
 #include "tsFatal.h"
 #include "tsTS.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 #define MIN_SYNC_SIZE       (1024)              // 1 kB

@@ -36,7 +36,6 @@
 #include "tsxmlUnknown.h"
 #include "tsTextFormatter.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

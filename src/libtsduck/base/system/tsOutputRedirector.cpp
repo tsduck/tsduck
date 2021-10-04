@@ -29,7 +29,6 @@
 
 #include "tsOutputRedirector.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

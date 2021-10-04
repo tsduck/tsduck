@@ -38,7 +38,6 @@
 #include "tsPacketizer.h"
 #include "tsMessageQueue.h"
 #include "tsThread.h"
-TSDUCK_SOURCE;
 
 #define MAX_IP_SIZE                 65536
 #define DEFAULT_MAX_QUEUED_SECTION  32

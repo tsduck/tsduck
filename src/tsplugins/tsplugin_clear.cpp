@@ -40,7 +40,6 @@
 #include "tsPMT.h"
 #include "tsSDT.h"
 #include "tsTOT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

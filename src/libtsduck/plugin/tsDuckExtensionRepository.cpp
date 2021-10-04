@@ -32,7 +32,6 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsCerrReport.h"
-TSDUCK_SOURCE;
 
 // Define the singleton.
 TS_DEFINE_SINGLETON(ts::DuckExtensionRepository);

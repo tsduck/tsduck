@@ -29,7 +29,6 @@
 
 #include "tsMain.h"
 #include "tsDektecControl.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 int MainCode(int argc, char *argv[])

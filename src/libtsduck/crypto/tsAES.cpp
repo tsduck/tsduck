@@ -15,7 +15,6 @@
 
 #include "tsAES.h"
 #include "tsRotate.h"
-TSDUCK_SOURCE;
 
 #define BYTE(x,n) (((x) >> (8 * (n))) & 255)
 

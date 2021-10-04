@@ -36,7 +36,6 @@
 #include "tsjsonString.h"
 #include "tsjsonObject.h"
 #include "tsjsonArray.h"
-TSDUCK_SOURCE;
 
 const ts::Enumeration ts::json::TypeEnum({
     {u"Null literal",  int(ts::json::Type::Null)},

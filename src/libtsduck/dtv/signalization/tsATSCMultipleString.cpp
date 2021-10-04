@@ -32,7 +32,6 @@
 #include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 // Set of encoding modes which directly encode Unicode points.
 const std::set<uint8_t> ts::ATSCMultipleString::_unicode_modes({

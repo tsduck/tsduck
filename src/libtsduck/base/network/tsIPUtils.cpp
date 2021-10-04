@@ -33,7 +33,6 @@
 #if defined(TS_MAC)
 #include <ifaddrs.h>
 #endif
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

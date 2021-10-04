@@ -30,7 +30,6 @@
 #include "tsPagerArgs.h"
 #include "tsNullReport.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsPSIMerger.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

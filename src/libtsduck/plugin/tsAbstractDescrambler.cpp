@@ -30,7 +30,6 @@
 #include "tsAbstractDescrambler.h"
 #include "tsGuardCondition.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 // Stack usage required by this module in the ECM deciphering thread.
 #define ECM_THREAD_STACK_OVERHEAD (16  * 1024)

@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsxmlAttribute.h"
-TSDUCK_SOURCE;
 
 // A constant static invalid instance.
 const ts::xml::Attribute ts::xml::Attribute::INVALID;

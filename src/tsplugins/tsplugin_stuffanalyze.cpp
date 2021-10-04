@@ -37,7 +37,6 @@
 #include "tsSectionDemux.h"
 #include "tsBinaryTable.h"
 #include "tsPAT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -30,7 +30,6 @@
 #include "tsRelatedContentDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"related_content_descriptor"
 #define MY_CLASS ts::RelatedContentDescriptor

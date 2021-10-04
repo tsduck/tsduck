@@ -35,7 +35,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsHiDesDevice.h"
-TSDUCK_SOURCE;
 
 namespace {
     bool NotImplemented(ts::Report& report)

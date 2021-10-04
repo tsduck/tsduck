@@ -37,7 +37,6 @@
 #include "tsDektecUtils.h"
 #include "tsWebRequest.h"
 #include "tsSRTSocket.h"
-TSDUCK_SOURCE;
 
 // Exported version of the TSDuck library.
 // The names of these symbols are constant, their values are not.

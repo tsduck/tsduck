@@ -46,7 +46,6 @@
 #include "tsDVBEnhancedAC3Descriptor.h"
 #include "tsCueIdentifierDescriptor.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

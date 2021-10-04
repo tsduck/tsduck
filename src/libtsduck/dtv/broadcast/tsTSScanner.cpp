@@ -33,7 +33,6 @@
 #include "tsTVCT.h"
 #include "tsCVCT.h"
 #include "tsLogicalChannelNumbers.h"
-TSDUCK_SOURCE;
 
 #define BUFFER_PACKET_COUNT  10000 // packets
 

@@ -35,7 +35,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"announcement_support_descriptor"
 #define MY_CLASS ts::AnnouncementSupportDescriptor

@@ -32,7 +32,6 @@
 #include "tsVersionInfo.h"
 #include "tsAlgorithm.h"
 #include "tsNames.h"
-TSDUCK_SOURCE;
 
 TS_DEFINE_SINGLETON(ts::PSIRepository);
 

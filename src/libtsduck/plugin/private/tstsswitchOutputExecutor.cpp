@@ -29,7 +29,6 @@
 
 #include "tstsswitchOutputExecutor.h"
 #include "tstsswitchCore.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

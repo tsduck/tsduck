@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPollFilesListener.h"
-TSDUCK_SOURCE;
 
 bool ts::PollFilesListener::updatePollFiles(UString& wildcard, MilliSecond& poll_interval, MilliSecond& min_stable_delay)
 {

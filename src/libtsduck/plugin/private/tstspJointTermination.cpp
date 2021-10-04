@@ -29,7 +29,6 @@
 
 #include "tstspJointTermination.h"
 #include "tsGuardMutex.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

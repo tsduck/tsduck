@@ -30,7 +30,6 @@
 #include "tsAbstractDatagramOutputPlugin.h"
 #include "tsSystemRandomGenerator.h"
 #include "tsIPUtils.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::AbstractDatagramOutputPlugin::DEFAULT_PACKET_BURST;

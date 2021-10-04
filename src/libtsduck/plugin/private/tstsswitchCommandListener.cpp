@@ -32,7 +32,6 @@
 #include "tsNullMutex.h"
 #include "tsReportBuffer.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTelnetConnection.h"
-TSDUCK_SOURCE;
 
 // A telnet end-of-line sequence.
 const std::string ts::TelnetConnection::EOL("\r\n");

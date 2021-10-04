@@ -37,7 +37,6 @@
 #include "tsPacketizer.h"
 #include "tsAlgorithm.h"
 #include "tsBoolPredicate.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

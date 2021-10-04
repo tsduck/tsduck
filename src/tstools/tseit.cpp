@@ -37,7 +37,6 @@
 #include "tsEITGenerator.h"
 #include "tsTSFile.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

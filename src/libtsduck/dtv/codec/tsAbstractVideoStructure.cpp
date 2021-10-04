@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractVideoStructure.h"
-TSDUCK_SOURCE;
 
 bool ts::AbstractVideoStructure::parse(const uint8_t* data, size_t size, std::initializer_list<uint32_t> params)
 {

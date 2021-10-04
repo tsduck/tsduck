@@ -48,7 +48,6 @@
 #include "tsCTS3.h"
 #include "tsCTS4.h"
 #include "tsDVS042.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

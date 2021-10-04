@@ -36,7 +36,6 @@
 #include "tsNorDigLogicalChannelDescriptorV1.h"
 #include "tsNorDigLogicalChannelDescriptorV2.h"
 #include "tsSkyLogicalChannelNumberDescriptor.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

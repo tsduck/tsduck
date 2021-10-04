@@ -29,7 +29,6 @@
 
 #include "tshlsTagAttributes.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

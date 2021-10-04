@@ -36,7 +36,6 @@
 #include "tsFileUtils.h"
 #include "tsTelnetConnection.h"
 #include "tsTSPControlCommand.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

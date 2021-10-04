@@ -31,7 +31,6 @@
 #include "tsConsoleState.h"
 #include "tsIPUtils.h"
 #include "tsCOM.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

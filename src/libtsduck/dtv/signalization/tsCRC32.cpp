@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsCRC32.h"
-TSDUCK_SOURCE;
 
 
 // The FCS-32 generator polynomial:

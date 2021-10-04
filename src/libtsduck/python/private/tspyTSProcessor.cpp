@@ -34,7 +34,6 @@
 #include "tspy.h"
 #include "tsTSProcessor.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 TS_MSC_NOWARNING(4091) // '__declspec(dllexport)': ignored on left of 'struct type' when no variable is declared
 

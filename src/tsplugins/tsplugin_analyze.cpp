@@ -37,7 +37,6 @@
 #include "tsTSSpeedMetrics.h"
 #include "tsFileNameGenerator.h"
 #include "tsFileUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

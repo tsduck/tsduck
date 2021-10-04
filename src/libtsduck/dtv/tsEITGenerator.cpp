@@ -32,7 +32,6 @@
 #include "tsEIT.h"
 #include "tsMJD.h"
 #include "tsBCD.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

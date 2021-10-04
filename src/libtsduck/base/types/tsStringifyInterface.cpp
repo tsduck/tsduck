@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsStringifyInterface.h"
-TSDUCK_SOURCE;
 
 ts::StringifyInterface::~StringifyInterface()
 {

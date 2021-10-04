@@ -35,7 +35,6 @@
 #include "tsTelnetConnection.h"
 #include "tsGuardMutex.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

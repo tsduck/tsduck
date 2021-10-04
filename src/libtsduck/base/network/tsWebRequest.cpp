@@ -39,7 +39,6 @@
 #include "tsSysUtils.h"
 #include "tsSingletonManager.h"
 #include "tsURL.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

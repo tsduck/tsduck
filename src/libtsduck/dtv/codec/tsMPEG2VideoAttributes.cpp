@@ -30,7 +30,6 @@
 #include "tsMPEG2VideoAttributes.h"
 #include "tsMemory.h"
 #include "tsMPEG2.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

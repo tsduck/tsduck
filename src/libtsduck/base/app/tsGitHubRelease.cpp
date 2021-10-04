@@ -49,7 +49,6 @@
 #include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsjsonValue.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

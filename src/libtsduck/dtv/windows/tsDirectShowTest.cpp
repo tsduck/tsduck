@@ -32,7 +32,6 @@
 #include "tsDirectShowGraph.h"
 #include "tsDirectShowFilterCategory.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 //
 // An enumeration of TestType names.

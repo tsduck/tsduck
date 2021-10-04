@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTablesLoggerFilterInterface.h"
-TSDUCK_SOURCE;
 
 ts::TablesLoggerFilterInterface::~TablesLoggerFilterInterface()
 {

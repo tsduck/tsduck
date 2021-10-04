@@ -29,7 +29,6 @@
 
 #include "tsStandaloneTableDemux.h"
 #include "tsBinaryTable.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

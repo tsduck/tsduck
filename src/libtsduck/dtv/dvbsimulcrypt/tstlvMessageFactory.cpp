@@ -29,7 +29,6 @@
 
 #include "tstlvMessageFactory.h"
 #include "tstlvAnalyzer.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

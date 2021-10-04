@@ -29,7 +29,6 @@
 
 #include "tsSectionFileArgs.h"
 #include "tsArgs.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

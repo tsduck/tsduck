@@ -34,7 +34,6 @@
 #include "tspy.h"
 #include "tsDuckContext.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 TSDUCKPY void* tspyNewDuckContext(void* report)
 {

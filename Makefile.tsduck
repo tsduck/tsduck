@@ -240,17 +240,6 @@ endif
 
 CFLAGS_INCLUDES += $(addprefix -I,$(shell find $(LIBTSDUCKDIR) -type d ! -name private ! -name windows ! -name $(if $(MACOS),linux,mac)))
 
-ifneq ($(TS_NO_BUILD_VERSION),)
-    CPPFLAGS += -DTS_NO_BUILD_VERSION
-endif
-
-# Make sure that full paths of source files never appear in binaries.
-ifneq ($(CC_FILE_PREFIX_MAP),)
-    ifeq ($(DEBUG),)
-        CXXFLAGS += -ffile-prefix-map=$(SRCROOT)/=
-    endif    
-endif
-
 # List of plugins and tools to build.
 # - Do not compile Dektec or HiDes tools when these devices are unsupported.
 # - Tuners (dvb plugin, tslsdvb, tscan) shall be compiled everywhere because

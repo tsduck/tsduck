@@ -30,7 +30,6 @@
 #include "tsServiceDiscovery.h"
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

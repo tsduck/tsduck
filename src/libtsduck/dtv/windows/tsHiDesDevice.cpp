@@ -38,7 +38,6 @@
 #include "tsNullReport.h"
 #include <winioctl.h>
 #include <ksproxy.h>
-TSDUCK_SOURCE;
 
 namespace {
     // KS property list definitions for DeviceIoControl

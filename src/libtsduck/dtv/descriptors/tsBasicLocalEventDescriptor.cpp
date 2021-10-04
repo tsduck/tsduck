@@ -35,7 +35,6 @@
 #include "tsDuckContext.h"
 #include "tsNames.h"
 #include "tsxmlElement.h"
-TSDUCK_SOURCE;
 
 #define MY_XML_NAME u"basic_local_event_descriptor"
 #define MY_CLASS ts::BasicLocalEventDescriptor

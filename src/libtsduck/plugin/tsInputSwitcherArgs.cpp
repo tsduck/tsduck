@@ -29,7 +29,6 @@
 
 #include "tsInputSwitcherArgs.h"
 #include "tsArgsWithPlugins.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::InputSwitcherArgs::DEFAULT_MAX_INPUT_PACKETS;

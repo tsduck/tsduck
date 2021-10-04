@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractAudioVideoAttributes.h"
-TSDUCK_SOURCE;
 
 ts::AbstractAudioVideoAttributes::AbstractAudioVideoAttributes() :
     _is_valid(false)

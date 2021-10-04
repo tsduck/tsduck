@@ -30,7 +30,6 @@
 #include "tsCharset.h"
 #include "tsByteBlock.h"
 #include "tsAlgorithm.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

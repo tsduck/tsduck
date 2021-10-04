@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginEventHandlerInterface.h"
-TSDUCK_SOURCE;
 
 ts::PluginEventHandlerInterface::~PluginEventHandlerInterface()
 {

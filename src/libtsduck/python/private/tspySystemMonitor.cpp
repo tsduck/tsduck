@@ -34,7 +34,6 @@
 #include "tspy.h"
 #include "tsSystemMonitor.h"
 #include "tsCerrReport.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

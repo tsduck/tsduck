@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsIPv6Address.h"
-TSDUCK_SOURCE;
 
 // Local host address
 const ts::IPv6Address ts::IPv6Address::AnyAddress;

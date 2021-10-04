@@ -29,7 +29,6 @@
 
 #include "tsDektecUtils.h"
 #include "tsDektec.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

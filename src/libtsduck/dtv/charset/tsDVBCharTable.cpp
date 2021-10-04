@@ -29,7 +29,6 @@
 
 #include "tsDVBCharTable.h"
 #include "tsByteBlock.h"
-TSDUCK_SOURCE;
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr uint8_t  ts::DVBCharTable::DVB_SINGLE_BYTE_CRLF;

@@ -33,7 +33,6 @@
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
 #include "tsEIT.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

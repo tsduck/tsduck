@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsPCRAnalyzer.h"
-TSDUCK_SOURCE;
 
 // Default mode: target bitrate with 10,000 packets window (620 ms at 24 Mb/s, 300 ms at 50 Mb/s)
 #define DEFAULT_PACKET_WINDOW 10000

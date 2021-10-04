@@ -38,7 +38,6 @@
 #include "tsHEVCAccessUnitDelimiter.h"
 #include "tsVVCAccessUnitDelimiter.h"
 #include "tsStaticInstance.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

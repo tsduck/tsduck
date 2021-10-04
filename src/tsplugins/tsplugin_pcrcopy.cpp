@@ -34,7 +34,6 @@
 
 #include "tsPluginRepository.h"
 #include "tsByteBlock.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

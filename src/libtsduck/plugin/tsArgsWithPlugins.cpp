@@ -31,7 +31,6 @@
 #include "tsDuckConfigFile.h"
 #include "tsSysUtils.h"
 #include "tsPlugin.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

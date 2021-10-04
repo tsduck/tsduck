@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsPESHandlerInterface.h"
-TSDUCK_SOURCE;
 
 // Default implementations are all empty.
 

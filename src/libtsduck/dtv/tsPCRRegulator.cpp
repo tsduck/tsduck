@@ -29,7 +29,6 @@
 
 #include "tsPCRRegulator.h"
 #include "tsNullReport.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

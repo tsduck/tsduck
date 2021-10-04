@@ -31,7 +31,6 @@
 #include "tsUString.h"
 #include "tsAlgorithm.h"
 #include "tsSingletonManager.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

@@ -29,7 +29,6 @@
 
 #include "tsAudioLanguageOptions.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

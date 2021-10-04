@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsSignalizationHandlerInterface.h"
-TSDUCK_SOURCE;
 
 // All default handlers do nothing.
 

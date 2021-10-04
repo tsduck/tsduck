@@ -39,7 +39,6 @@
 #include "tsSignalState.h"
 #include "tsModulationArgs.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

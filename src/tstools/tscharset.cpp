@@ -43,7 +43,6 @@
 #include "tsARIBCharset.h"
 #include "tsOutputRedirector.h"
 #include "tsTime.h"
-TSDUCK_SOURCE;
 TS_MAIN(MainCode);
 
 

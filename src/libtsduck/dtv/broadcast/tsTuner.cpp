@@ -32,7 +32,6 @@
 #include "tsTunerEmulator.h"
 #include "tsNullReport.h"
 #include "tsDuckContext.h"
-TSDUCK_SOURCE;
 
 
 //-----------------------------------------------------------------------------

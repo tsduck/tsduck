@@ -43,7 +43,6 @@
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsCADescriptor.h"
 #include "tsScramblingDescriptor.h"
-TSDUCK_SOURCE;
 
 #define DEFAULT_ECM_BITRATE 30000
 #define ASYNC_HANDLER_EXTRA_STACK_SIZE (1024 * 1024)

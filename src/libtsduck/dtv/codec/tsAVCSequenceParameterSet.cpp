@@ -30,7 +30,6 @@
 #include "tsAVCSequenceParameterSet.h"
 #include "tsAVC.h"
 #include "tsMPEG2.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

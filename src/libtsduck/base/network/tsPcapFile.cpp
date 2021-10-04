@@ -34,7 +34,6 @@
 #include "tsNullReport.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------
