@@ -145,7 +145,7 @@ Configuration files for Linux
   binary packages.
 
 - tsduck.spec : RPM specification file to create TSDuck .rpm packages on
-  Fedora, Red Hat, CentOS and other clones.
+  Fedora, RedHat, CentOS, AlmaLinux and other clones.
 
 - tsduck.control : Template for Debian control file, used to create .deb
   packages for TSDuck on Ubuntu, Debian, Rapsbian and other derivatives.
