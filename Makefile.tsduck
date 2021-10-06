@@ -128,12 +128,6 @@ else
     LDLIBS := -lsrt $(LDLIBS)
 endif
 
-ifeq ($(MACOS)$(LINUXBREW)$(RIST),)
-    # Not on macOS, not using Linuxbrew and RIST not explicitly enabled.
-    # Currently, RIST must be explicitly enabled on Linux since no standard distro package exists.
-    NORIST := true
-endif
-
 ifeq ($(NORIST),)
     # RIST not disabled, check if librist is available.
     NORIST := $(if $(wildcard /usr/include/librist/*.h $(ALTDEVROOT)/include/librist/*.h),,true)
@@ -194,7 +188,7 @@ endif
 
 ifeq ($(NODTAPI)$(NODTAPI_CHECKED),)
     # Disable DTAPI on platforms where it is not supported.
-    NODTAPI := $(if $(shell $(ROOTDIR)/build/dtapi-config.sh --support),,true)
+    NODTAPI := $(if $(shell $(ROOTDIR)/scripts/dtapi-config.sh --support),,true)
     export NODTAPI_CHECKED := true
 endif
 
@@ -246,7 +240,7 @@ CFLAGS_INCLUDES += $(addprefix -I,$(shell find $(LIBTSDUCKDIR) -type d ! -name p
 #   the tuner emulator facility is available everywhere.
 # - Build a list of plugins to not build or deinstall from the system tree.
 #   Include obsolete plugins, were in separate shared libraries, now in libtsduck.so.
-#   Maintenance: also update build/tsduck.nsi (Windows).
+#   Maintenance: also update scripts/tsduck.nsi (Windows).
 
 ifndef TSPLUGINS
     TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))

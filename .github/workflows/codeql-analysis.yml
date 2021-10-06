@@ -60,7 +60,7 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Install dependencies
-      run: build/install-prerequisites.sh
+      run: scripts/install-prerequisites.sh
 
     - name: Initialize CodeQL
       uses: github/codeql-action/init@v1

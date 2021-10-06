@@ -141,7 +141,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsduck.dvb.names"
 
     ; Delete obsolete plugins from previous versions.
-    ; Maintenance: also update src/tsplugins/Makefile
+    ; Maintenance: also update Makefile.tsduck
     Delete "$INSTDIR\bin\tsplugin_dektec.dll"
     Delete "$INSTDIR\bin\tsplugin_drop.dll"
     Delete "$INSTDIR\bin\tsplugin_file.dll"
@@ -267,7 +267,7 @@ Section /o "C++ Development" SectionDevelopment
 
     ; Visual Studio property files.
     SetOutPath "$INSTDIR"
-    File "${RootDir}\build\tsduck.props"
+    File "${RootDir}\scripts\tsduck.props"
 
 SectionEnd
 

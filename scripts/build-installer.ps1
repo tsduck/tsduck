@@ -335,7 +335,7 @@ if (-not $NoSource) {
         Copy-Item $RootDir $TempRoot -Recurse
 
         # Cleanup the temporary tree.
-        & (Join-MultiPath @($TempRoot, "build", "cleanup.ps1")) -Deep -NoPause -Silent
+        & (Join-MultiPath @($TempRoot, "scripts", "cleanup.ps1")) -Deep -NoPause -Silent
 
         if ($NoTeletext) {
             Get-ChildItem $TempRoot -Recurse -Include @("tsTeletextDemux.*", "tsplugin_teletext.*") | `

@@ -9,11 +9,11 @@ ROOTDIR=$(cd $(dirname $0)/../../..; pwd)
 
 case $1 in
     -rel*)
-        source "$ROOTDIR/build/setenv.sh"
+        source "$ROOTDIR/scripts/setenv.sh"
         shift
         ;;
     -deb*)
-        source "$ROOTDIR/build/setenv.sh" --debug
+        source "$ROOTDIR/scripts/setenv.sh" --debug
         shift
         ;;
 esac

@@ -14,12 +14,12 @@ After building TSDuck, it is possible to execute the Java programs directly
 on the freshly built TSDuck library after executing:
 
 - Bash (Linux, macOS):
-  source ../../build/setenv.sh
+  source ../../scripts/setenv.sh
   javac SampleTSP.java
   java SampleTSP
 
 - PowerShell (Windows):
-  ..\..\build\setenv.ps1
+  ..\..\scripts\setenv.ps1
   javac SampleTSP.java
   java SampleTSP
 
@@ -29,14 +29,14 @@ in this directory to download and compile org.json. The resulting JAR file must
 be included in the class path.
 
 - Bash (Linux, macOS):
-  source ../../build/setenv.sh
+  source ../../scripts/setenv.sh
   ./get-org-json.sh
   export CLASSPATH="org.json.jar:$CLASSPATH"
   javac SampleAnalyzeTS.java
   java SampleAnalyzeTS some-ts-file-to-analyze.ts
 
 - PowerShell (Windows):
-  ..\..\build\setenv.ps1
+  ..\..\scripts\setenv.ps1
   .\get-org-json.ps1 -NoPause
   $env:CLASSPATH="org.json.jar;$env:CLASSPATH"
   javac SampleAnalyzeTS.java

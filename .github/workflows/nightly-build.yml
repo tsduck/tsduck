@@ -61,7 +61,7 @@ jobs:
         catch {
             $remote_version = ""
         }
-        $version = (& build\get-version-from-sources.ps1)
+        $version = (& scripts\get-version-from-sources.ps1)
         $rebuild = ($version -ne $remote_version).ToString().ToLower()
         $version | Out-File version.txt
         Write-Output "Current version: $version, latest on tsduck.io: $remote_version"
@@ -74,11 +74,11 @@ jobs:
 
     - name: Install dependencies
       if: env.REBUILD == 'true'
-      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoPause
 
     - name: Build installers
       if: env.REBUILD == 'true'
-      run: build/build-installer.ps1 -NoPause -NoLowPriority -NoSource
+      run: scripts/build-installer.ps1 -NoPause -NoLowPriority -NoSource
 
     - name: Check built version (64-bit)
       if: env.REBUILD == 'true'
@@ -138,14 +138,14 @@ jobs:
 
     - name: Install dependencies
       run: |
-        build/install-prerequisites.sh
+        scripts/install-prerequisites.sh
         sudo apt install -y jq
 
     - name: Check if rebuild is necessary
       run: |
         remote_version=$(curl -sL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
-        version=$(build/get-version-from-sources.sh)
-        fullversion=$(build/get-version-from-sources.sh --full)
+        version=$(scripts/get-version-from-sources.sh)
+        fullversion=$(scripts/get-version-from-sources.sh --full)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
         echo "VERSION=$version" >>$GITHUB_ENV
@@ -162,17 +162,17 @@ jobs:
 
     - name: Check built version
       if: env.REBUILD == 'true'
-      run: source build/setenv.sh && tsversion --version=all
+      run: source scripts/setenv.sh && tsversion --version=all
 
     - name: Prepare upload package
       if: env.REBUILD == 'true'
       run: |
-        source build/setenv.sh
+        source scripts/setenv.sh
         tsp --version=short &>tsp.version.txt
         tsp --list=input &>tsp.input.txt
         tsp --list=output &>tsp.output.txt
         tsp --list=packet &>tsp.packet.txt
-        bin=$(build/setenv.sh --display)
+        bin=$(scripts/setenv.sh --display)
         for file in src/tstools/*.cpp; do
             name=$(basename $file .cpp)
             if [[ -x $bin/$name ]]; then
@@ -215,12 +215,12 @@ jobs:
       uses: actions/checkout@master
 
     - name: Install dependencies
-      run: build/install-prerequisites.sh
+      run: scripts/install-prerequisites.sh
 
     - name: Check if rebuild is necessary
       run: |
         remote_version=$(curl -sL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
-        version=$(build/get-version-from-sources.sh)
+        version=$(scripts/get-version-from-sources.sh)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
         echo "VERSION=$version" >>$GITHUB_ENV

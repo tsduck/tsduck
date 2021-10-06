@@ -103,9 +103,9 @@ show-version: default
 .PHONY: install install-tools install-devel
 install install-tools install-devel:
 	$(MAKE) NOTEST=true -C src $@
-	$(MAKE) NOTEST=true -C build $@
+	$(MAKE) NOTEST=true -C scripts $@
 
 # Various build targets are redirected to build subdirectory.
 .PHONY: tarball rpm rpm32 deb
 tarball rpm rpm32 deb installer:
-	$(MAKE) -C build $@
+	$(MAKE) -C scripts $@

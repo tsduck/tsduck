@@ -14,9 +14,9 @@ After building TSDuck, it is possible to execute the Python programs directly
 on the freshly built TSDuck library after executing:
 
 - Bash (Linux, macOS):
-  source ../../build/setenv.sh
+  source ../../scripts/setenv.sh
   ./sample-tsp.py
 
 - PowerShell (Windows):
-  ..\..\build\setenv.ps1
+  ..\..\scripts\setenv.ps1
   .\sample-tsp.py
