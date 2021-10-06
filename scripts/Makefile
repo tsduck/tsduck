@@ -41,7 +41,7 @@ NORECURSE_SUBDIRS += build-tsduck-%
 #  - GITHOOKS_LIST    : List of git hooks to update.
 #  - GITHOOKS_DIR     : Target directory for git hooks.
 #  - GITHOOKS_TARGETS : List of hooks to install (none if not in a git repository):
-GITHOOKS_CMD     = build/git-hook.sh
+GITHOOKS_CMD     = scripts/git-hook.sh
 GITHOOKS_LIST    = pre-commit post-merge
 GITHOOKS_DIR     = ../.git/hooks
 GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/,$(GITHOOKS_LIST)),)
@@ -122,6 +122,7 @@ rpm: tarball $(RPMBUILDROOT)
 	      -D 'distro $(DISTRO)' \
 	      -D '_smp_mflags $(MAKEFLAGS_SMP)' \
 	      $(if $(NOSRT),-D 'nosrt 1',) \
+	      $(if $(NORIST),-D 'norist 1',) \
 	      $(if $(NOPCSC),-D 'nopcsc 1',) \
 	      $(if $(NOCURL),-D 'nocurl 1',) \
 	      tsduck.spec
@@ -145,6 +146,7 @@ deb-tools:
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    $(if $(NOSRT),-e '/libsrt/d',) \
+	    $(if $(NORIST),-e '/librist/d',) \
 	    $(if $(NOPCSC),-e '/libpcsc/d',) \
 	    $(if $(NOCURL),-e '/libcurl/d',) \
 	    tsduck.control >$(TMPDIR)/DEBIAN/control
@@ -159,6 +161,7 @@ deb-dev: deb-tools
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    $(if $(NOSRT),-e '/libsrt/d',) \
+	    $(if $(NORIST),-e '/librist/d',) \
 	    $(if $(NOPCSC),-e '/libpcsc/d',) \
 	    $(if $(NOCURL),-e '/libcurl/d',) \
 	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control

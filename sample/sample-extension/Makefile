@@ -9,7 +9,7 @@ default install:
 
 # Installers:
 deb rpm: default
-	build/build-$@.sh
+	scripts/build-$@.sh
 
 # Cleanup non-source files:
 clean distclean:

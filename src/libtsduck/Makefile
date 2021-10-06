@@ -44,8 +44,8 @@ CXXVPATH = $(patsubst ./%,%,$(shell find . -type d ! -name . ! -name windows ! -
 
 ifeq ($(NODTAPI),)
     ifeq ($(filter-out default headers libs configs,$(MAKECMDGOALS)),)
-        DTAPI_OBJECT := $(shell ../../build/dtapi-config.sh --object --download $(if $(M32),--m32,))
-        DTAPI_HEADER := $(shell ../../build/dtapi-config.sh --header)
+        DTAPI_OBJECT := $(shell ../../scripts/dtapi-config.sh --object --download $(if $(M32),--m32,))
+        DTAPI_HEADER := $(shell ../../scripts/dtapi-config.sh --header)
     endif
     ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
         NODTAPI := true
@@ -57,7 +57,7 @@ endif
 
 # JNI headers (or disable JNI).
 
-JNI_CFLAGS := $(shell ../../build/java-config.sh --cflags)
+JNI_CFLAGS := $(shell ../../scripts/java-config.sh --cflags)
 CXXFLAGS_INCLUDES += $(JNI_CFLAGS)
 
 # Now, we can include the common makefile.
@@ -73,7 +73,7 @@ default: headers libs configs
 
 GEN_HEADERS = tsduck.h dtv/private/tsRefType.h
 SRC_HEADERS = $(filter-out $(GEN_HEADERS),$(wildcard *.h */*.h */*/*.h))
-BUILD_PROJ_FILES = $(ROOTDIR)/build/build-project-files.sh
+BUILD_PROJ_FILES = $(ROOTDIR)/scripts/build-project-files.sh
 
 .PHONY: headers
 headers: $(GEN_HEADERS)
@@ -109,7 +109,7 @@ CFLAGS_INCLUDES += $(addprefix -I,$(shell find . -type d -name private))
 # Generate and copy TSDuck configuration files in output bin directory.
 
 DEKTEC_NAMES = config/tsduck.dektec.names
-GEN_DEKTEC_NAMES = $(ROOTDIR)/build/generate-dektec-names.sh
+GEN_DEKTEC_NAMES = $(ROOTDIR)/scripts/generate-dektec-names.sh
 
 .PHONY: configs
 configs: $(addprefix $(BINDIR)/,$(notdir $(wildcard config/tsduck*.xml config/tsduck*.names) $(DEKTEC_NAMES)))

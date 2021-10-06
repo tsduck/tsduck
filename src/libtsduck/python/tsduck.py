@@ -52,7 +52,7 @@ def _searchLibTSDuck():
     elif platform.system() == 'Darwin':
         base = 'libtsduck.dylib'
         # On macOS, LD_LIBRARY_PATH is not passed to shell-scripts for security reasons.
-        # A backup version is defined in build/setenv.sh to test development versions.
+        # A backup version LD_LIBRARY_PATH2 is defined to test development versions.
         search = os.getenv('LD_LIBRARY_PATH2','').split(os.pathsep)
         search.extend(os.getenv('LD_LIBRARY_PATH','').split(os.pathsep))
     else:

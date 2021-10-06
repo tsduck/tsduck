@@ -8,7 +8,7 @@
 #define VERSION_STRING STRINGIZE(TS_VERSION_MAJOR) "." STRINGIZE(TS_VERSION_MINOR) "-" STRINGIZE(TS_COMMIT)
 
 // Product icon.
-IDI_ICON1 ICON "..\\build\\tsduck-extension.ico"
+IDI_ICON1 ICON "..\\scripts\\tsduck-extension.ico"
 
 // Version identification.
 VS_VERSION_INFO VERSIONINFO

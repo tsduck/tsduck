@@ -41,7 +41,7 @@ NORECURSE_SUBDIRS += bin src
 .PHONY: install
 
 # Check presence of the Java compiler.
-JAVAC := $(shell $(ROOTDIR)/build/java-config.sh --javac)
+JAVAC := $(shell $(ROOTDIR)/scripts/java-config.sh --javac)
 
 # Just skip Java build if no compiler is present.
 ifeq ($(JAVAC),)
@@ -54,7 +54,7 @@ else
 # Generate classes to make sure they are compatible with Java 8.
 JAVAC_FLAGS = -source 1.8 -target 1.8 -Xlint:-options
 
-JAR      := $(shell $(ROOTDIR)/build/java-config.sh --jar)
+JAR      := $(shell $(ROOTDIR)/scripts/java-config.sh --jar)
 CLASSDIR  = $(OBJDIR)/java
 JARFILE   = $(OBJDIR)/tsduck.jar
 MANIFEST  = $(CLASSDIR)/Manifest.txt
@@ -76,7 +76,7 @@ $(JARFILE): $(JCLASSES) $(MANIFEST)
 $(MANIFEST): Manifest.txt ../tsVersion.h
 	@echo '  [GEN] $@'; \
 	mkdir -p $(dir $@); \
-	$(SED) -e 's|{{VERSION}}|$(shell $(ROOTDIR)/build/get-version-from-sources.sh)|' Manifest.txt >$@
+	$(SED) -e 's|{{VERSION}}|$(shell $(ROOTDIR)/scripts/get-version-from-sources.sh)|' Manifest.txt >$@
 
 install: $(JARFILE)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/java

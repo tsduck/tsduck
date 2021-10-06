@@ -25,6 +25,9 @@ BuildRequires:  pcsc-lite-devel
 Requires:       srt-libs
 BuildRequires:  srt-devel
 %endif
+%if 0%{!?norist:1}
+Requires:       librist
+%endif
 
 %description
 TSDuck, the MPEG Transport Stream Toolkit, provides some simple utilities to

@@ -48,9 +48,9 @@ jobs:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
-        build/install-prerequisites.sh
+        scripts/install-prerequisites.sh
         gcc --version
-        build/java-config.sh
+        scripts/java-config.sh
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
@@ -80,10 +80,10 @@ jobs:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
-        build/install-prerequisites.sh
+        scripts/install-prerequisites.sh
         sudo apt install -y clang
         clang --version
-        build/java-config.sh
+        scripts/java-config.sh
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
@@ -111,7 +111,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
-        build/install-prerequisites.sh
+        scripts/install-prerequisites.sh
         doxygen --version
     - name: Build TSDuck documentation
       run: make doxygen
@@ -128,9 +128,9 @@ jobs:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
-        build/install-prerequisites.sh
+        scripts/install-prerequisites.sh
         clang --version
-        build/java-config.sh
+        scripts/java-config.sh
     - name: Build TSDuck
       run: make -j5
     - name: Check built version
@@ -157,9 +157,9 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoPause
     - name: Build TSDuck
-      run: build/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
+      run: scripts/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
       run: bin/Release-x64/tsversion.exe --version=all
     - name: Run unitary tests
@@ -189,9 +189,9 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: build/install-prerequisites.ps1 -GitHubActions -NoPause
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoPause
     - name: Build TSDuck
-      run: build/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
+      run: scripts/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
       run: bin/Release-Win32/tsversion.exe --version=all
     - name: Run unitary tests

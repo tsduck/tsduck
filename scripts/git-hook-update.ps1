@@ -37,14 +37,14 @@
   A few standard Git hooks are established to manage the "commit count"
   which is used to identify the product version.
 
-  The actual code to execute is in build\git-hook.sh. This script is executed
+  The actual code to execute is in scripts\git-hook.sh. This script is executed
   on Windows using the so-called "Git Bash" (in practice, a trimmed version
   of Msys). The hook name is passed as parameter.
 
   The template for a hook script is:
 
     #!/usr/bin/env bash
-    exec $GIT_DIR/../build/git-hook.sh <hook-name>
+    exec $GIT_DIR/../scripts/git-hook.sh <hook-name>
 
  .PARAMETER NoPause
 
@@ -64,7 +64,7 @@ $GitHooksDir = (Join-Path (Join-Path (Split-Path -Parent $PSScriptRoot) .git) ho
 $GitLooksList | ForEach-Object {
     $name = $_
     $file = (Join-Path $GitHooksDir $name)
-    $line = "exec `$(dirname `$0)/../../build/git-hook.sh $name"
+    $line = "exec `$(dirname `$0)/../../scripts/git-hook.sh $name"
     $fileOK = (Test-Path $file)
     if (-not $fileOK -or -not (Select-String -Quiet -Path $file -SimpleMatch $line)) {
         Write-Output "  [GIT] updating $name hook"

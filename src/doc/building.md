@@ -16,7 +16,7 @@ not be available on all platforms or all versions of a specific distro.
 Operations in this section must be run once, before building TSDuck for the
 first time one a given system.
 
-Execute the shell-script `build/install-prerequisites.sh`.
+Execute the shell-script `scripts/install-prerequisites.sh`.
 It downloads and installs the requested packages which are necessary
 to build TSDuck. The list of packages and how to install them depend
 on the operating system distribution and version.
@@ -39,7 +39,7 @@ Since all packages are pulled from the standard repositories of each distro,
 there is generally no need to re-run this script later. The packages will be
 updated as part of the system system updates. Note, however, that a new version
 of TSDuck may require additional dependencies. In case of build error, it can
-be wise to run `build/install-prerequisites.sh` again and retry.
+be wise to run `scripts/install-prerequisites.sh` again and retry.
 
 Dektec DTAPI: The command `make` at the top level will automatically
 download the LinuxSDK from the Dektec site. See `dektec/Makefile` for details.
@@ -97,19 +97,10 @@ make NOPCSC=1 NOCURL=1 NODEKTEC=1
 By default, TSDuck is built with RIST support on macOS and Windows only.
 
 As of this writing, RIST (Reliable Internet Stream Transport) is not available
-in the standard repositories of any Linux distro. By default, TSDuck cannot be
-built on Linux with RIST support since this would introduce dependencies on
-packages which do not exist during installation.
-
-However, it possible to manually rebuild TSDuck with RIST support using the
-command `make RIST=1`.
-
-Before building TSDuck with RIST support, it is necessary to install `librist`
-with development files in standard locations. You may manually rebuild and install
-`librist`.
-
-It is also possible to get [pre-built packages for various Linux
-distros here](https://github.com/tsduck/rist-installer/releases).
+in the standard repositories of any Linux distro. To rebuild TSDuck with RIST
+support, you must either manually rebuild and install
+[librist](https://code.videolan.org/rist/librist) or get
+[pre-built packages for various Linux distros here](https://github.com/tsduck/rist-installer/releases).
 If you use other versions of rpm-based or deb-based distros,
 the [rist-installer project](https://github.com/tsduck/rist-installer)
 contains scripts to rebuild these packages.
@@ -191,9 +182,9 @@ TSDuck using the same shared source tree from various systems or virtual machine
 All builds will coexist using distinct names under the `bin` subdirectory.
 
 For _bash_ users who wish to include the binary directory in the `PATH`, simply
-"source" the script `build/setenv.sh`. Example:
+"source" the script `scripts/setenv.sh`. Example:
 ~~~~
-$ . build/setenv.sh 
+$ . scripts/setenv.sh 
 $ which tsp
 /Users/devel/tsduck/bin/release-x86_64-mymac/tsp
 ~~~~
@@ -202,11 +193,11 @@ This script can also be used with option `--display` to display the actual
 path of the binary directory. The output can be used in other scripts
 (including from any other shell than _bash_). Example:
 ~~~~
-$ build/setenv.sh --display
+$ scripts/setenv.sh --display
 /Users/devel/tsduck/bin/release-x86_64-mymac
 ~~~~
 
-Use `build/setenv.sh --help` for other options.
+Use `scripts/setenv.sh --help` for other options.
 
 # Windows systems {#winbuild}
 
@@ -222,7 +213,7 @@ It can be downloaded [here](https://www.visualstudio.com/downloads/).
 If you already have Visual Studio Enterprise Edition (the commercial version),
 it is fine, no need to install the Community Edition.
 
-Then, execute the PowerShell script `build\install-prerequisites.ps1`.
+Then, execute the PowerShell script `scripts\install-prerequisites.ps1`.
 It downloads and installs the requested packages which are necessary
 to build TSDuck on Windows.
 
@@ -236,16 +227,16 @@ If you prefer to collect the various installers yourself, follow the links to
 
 ## Building the binaries without installer {#buildwindows}
 
-Execute the PowerShell script `build\build.ps1`. The TSDuck binaries, executables
+Execute the PowerShell script `scripts\build.ps1`. The TSDuck binaries, executables
 and DLL's, are built in directories named `bin\<target>-<platform>`, for instance
 `bin\Release-x64` or `bin\Debug-Win32`.
 
 To cleanup the repository tree and return to a pristine source state,
-execute the PowerShell script `build\cleanup.ps1`.
+execute the PowerShell script `scripts\cleanup.ps1`.
 
 ## Building the installers {#instwindows}
 
-Execute the PowerShell script `build\build-installer.ps1`.
+Execute the PowerShell script `scripts\build-installer.ps1`.
 Two installers are built, for 32-bit and 64-bit systems respectively.
 
 There is no need to build the TSDuck binaries before building the installers.
