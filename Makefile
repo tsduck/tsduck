@@ -54,8 +54,8 @@
 
 include Makefile.tsduck
 
-EXTRA_DISTCLEAN   += bin dektec
-NORECURSE_SUBDIRS += bin dektec
+EXTRA_DISTCLEAN   += bin build dektec
+NORECURSE_SUBDIRS += bin build dektec
 
 # Analyze our code only, not downloaded 3rd-party code in dektec.
 CPPCHECK_SOURCES   = src

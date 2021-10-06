@@ -190,7 +190,7 @@ bool ts::IPv4Address::resolve(const UString& name, Report& report)
             errmsg = UString::FromUTF8(gai_strerror(status));
         }
         report.error(name + u": " + errmsg);
-    #endif
+#endif
         return false;
     }
 

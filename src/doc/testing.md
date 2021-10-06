@@ -47,19 +47,19 @@ The `utest` executable is built twice, once using the TSDuck shared library and 
 the static library. On UNIX systems, both versions of the test suite are built and run using
 `make test` as illustrated below
 ~~~~
-$ make test
+$ make -j10 test
   .....
   [CXX] utestXML.cpp
   [CXX] dependenciesForStaticLib.cpp
-  [LD] /home/tsduck/bin/release-x86_64-vmfedora/utest
-  [LD] /home/tsduck/bin/release-x86_64-vmfedora/utest_static
-/home/tsduck/bin/release-x86_64-vmfedora/utest 
+  [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest
+  [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
+TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest 
 
-OK (433 tests, 10008 assertions)
+OK (619 tests, 28730 assertions)
 
-/home/tsduck/bin/release-x86_64-vmfedora/utest_static 
+TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest_static 
 
-OK (430 tests, 9985 assertions)
+OK (616 tests, 28707 assertions)
 
 $
 ~~~~
@@ -75,11 +75,11 @@ manually or from Vidual Studio:
 ~~~~
 D:\tsduck> bin\Release-x64\utests-tsduckdll.exe
 
-OK (434 tests, 10017 assertions)
+OK (619 tests, 28747 assertions)
 
 D:\tsduck> bin\Release-x64\utests-tsducklib.exe
 
-OK (431 tests, 9994 assertions)
+OK (616 tests, 28724 assertions)
 
 D:\tsduck>
 ~~~~

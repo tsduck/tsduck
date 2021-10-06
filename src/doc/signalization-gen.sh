@@ -31,7 +31,7 @@ cat >$OUTFILE <<EOF
 [TOC]
 
 All signalization tables and descriptors which are supported by TSDuck are
-documented in the TSDuck user's guide, appendix C "PSI/SI XML Reference Model".
+documented in the TSDuck user's guide, appendix D "PSI/SI XML Reference Model".
 
 The tables below summarize all available structures and the reference of
 the standard which specifies them.
