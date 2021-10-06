@@ -1144,7 +1144,7 @@ NOSOURCE = \
     .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
     *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
     .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
-    *~ *.bak *.autosave cov-int bin callgrind.out*
+    *~ *.bak *.autosave cov-int bin build callgrind.out*
 
 # Doxygen version 1.8.17 has a bug which reports thousands of false errors.
 # Define a filter for doxygen errors.

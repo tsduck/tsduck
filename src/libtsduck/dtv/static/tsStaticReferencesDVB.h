@@ -37,7 +37,7 @@
 
 namespace ts {
     //!
-    //! Artificial references to all DVB items.
+    //! Artificial references to all MPEG/DVB items.
     //! @ingroup app
     //!
     //! This class is useful only when using the TSDuck static library.
