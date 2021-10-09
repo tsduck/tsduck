@@ -96,7 +96,8 @@ cmd_include() {
 }
 
 cmd_java() {
-    echo "$(cmd_prefix)/share/tsduck/java/tsduck.jar"
+    local jar="$(cmd_prefix)/share/tsduck/java/tsduck.jar"
+    [[ -e "$jar" ]] && echo "$jar"
 }
 
 cmd_python() {
@@ -108,7 +109,8 @@ cmd_lib() {
 }
 
 cmd_cflags() {
-    [[ $(uname -s) == Linux ]] && pcsc="-I/usr/include/PCSC"
+    local pcsc=
+    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-I/usr/include/PCSC"
     echo "-I$(cmd_include) $(curl-config --cflags 2>/dev/null) $pcsc --std=c++11"
 }
 
@@ -123,16 +125,22 @@ cmd_so() {
 }
 
 libs_common() {
-    [[ $SYSTEM == Darwin ]] && pcsc="-framework PCSC" || pcsc="-lpcsclite"
-    [[ $SYSTEM == Darwin ]] && rt="" || rt="-lrt"
+    local pcsc=
+    local rt=
+    [[ $SYSTEM == Darwin ]] && pcsc="-framework PCSC"
+    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-lpcsclite"
+    [[ $SYSTEM == Linux ]] && rt="-lrt"
     echo "$pcsc -lpthread $rt -ldl -lm -lstdc++"
 }
 
 cmd_libs() {
-    lib=$(cmd_lib)
-    [[ -n $(ls /usr/lib64/libc.so* 2>/dev/null) ]] && usrlib=/usr/lib64 || usrlib=/usr/lib
-    [[ $lib == $usrlib ]] && lopt="" || lopt="-L$lib"
-    [[ -n $(ls /usr/include/srt/srt.h /usr/local/include/srt/srt.h 2>/dev/null) ]] && srt="-lsrt" || srt=""
+    local lib=$(cmd_lib)
+    local usrlib=/usr/lib
+    local lopt=
+    local srt=
+    [[ -n $(ls /usr/lib64/libc.so* 2>/dev/null) ]] && usrlib=/usr/lib64
+    [[ $lib != $usrlib ]] && lopt="-L$lib"
+    [[ -n $(ls /usr/include/srt/srt.h /usr/local/include/srt/srt.h /opt/homebrew/include/srt/srt.h 2>/dev/null) ]] && srt="-lsrt"
     echo "$lopt -ltsduck $srt $(curl-config --libs 2>/dev/null) $(libs_common)"
 }
 
@@ -163,8 +171,8 @@ cmd_vernum() {
 cmd_install_firmware() {
     [[ $SYSTEM == Linux ]] || error "DVB firmware is available on Linux only"
     [[ $(id -u) -eq 0 ]] || error "must be root to install firmware"
-    FWDIR="$SYSROOT/lib/firmware"
-    [[ -d "$FWDIR" ]] || error "directory $FWDIR does not exist, maybe not the right system"
+    local fwdir=/lib/firmware
+    [[ -d "$fwdir" ]] || error "directory $fwdir does not exist, maybe not the right system"
 
     # linux-firmware package: standard package (depends on distro).
     if [[ -n $(which apt 2>/dev/null) ]]; then
@@ -173,12 +181,12 @@ cmd_install_firmware() {
             apt install -y linux-firmware
         fi
     fi
-    DNF=$(which dnf 2>/dev/null)
-    [[ -z "$DNF" ]] && DNF=$(which yum 2>/dev/null)
-    if [[ -n "$DNF" ]]; then
+    local dnf=$(which dnf 2>/dev/null)
+    [[ -z "$dnf" ]] && dnf=$(which yum 2>/dev/null)
+    if [[ -n "$dnf" ]]; then
         if ! rpm -q linux-firmware &>/dev/null; then
             info "installing package linux-firmware ..."
-            "$DNF" install -y linux-firmware
+            "$dnf" install -y linux-firmware
         fi
     fi
 
@@ -186,7 +194,7 @@ cmd_install_firmware() {
     # Exclude the first two levels of directory (down to "firmware" directory).
     info "downloading firmware from OpenELEC project ..."
     curl -sL https://github.com/OpenELEC/dvb-firmware/tarball/master | \
-        tar -C "$FWDIR" -xzpvf - --strip-components=2 --wildcards 'OpenELEC-dvb-firmware-*/firmware'
+        tar -C "$fwdir" -xzpvf - --strip-components=2 --wildcards 'OpenELEC-dvb-firmware-*/firmware'
 }
 
 if [ $# -eq 0 ]; then
