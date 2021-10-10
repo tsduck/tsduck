@@ -70,5 +70,6 @@ case "$1" in
     --distro) distro ;;
     --full)   echo "$(major).$(minor)-$(commit)$(distro)" ;;
     --main)   echo "$(major).$(minor)" ;;
+    --dotted) echo "$(major).$(minor).$(commit)" ;;
     *)        echo "$(major).$(minor)-$(commit)" ;;
 esac

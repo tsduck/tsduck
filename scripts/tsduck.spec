@@ -80,4 +80,5 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{_libdir}/libtsduck.a
 %{_includedir}/tsduck
+%{_datadir}/pkgconfig/tsduck.pc
 %doc LICENSE.txt

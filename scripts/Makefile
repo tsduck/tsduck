@@ -66,20 +66,27 @@ ifneq ($(filter-out doxygen,$(MAKECMDGOALS)),$(MAKECMDGOALS))
 endif
 
 # Install system files.
-.PHONY: install install-tools install-devel
+.PHONY: install install-tools install-devel install-linux-config
 install: install-tools install-devel
-ifdef MACOS
-install-tools:
+install-tools: $(if $(MACOS),,install-linux-config)
 	@true
-else
-install-tools: 80-tsduck.rules 80-tsduck.perms
+install-linux-config: 80-tsduck.rules 80-tsduck.perms
 	install -d -m 755 $(SYSROOT)$(UDEVDIR)
 	install -m 644 80-tsduck.rules $(SYSROOT)$(UDEVDIR)
 	install -d -m 755 $(SYSROOT)$(ETCDIR)/security/console.perms.d
 	install -m 644 80-tsduck.perms $(SYSROOT)$(ETCDIR)/security/console.perms.d
-endif
 install-devel:
-	@true
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig
+	sed -e 's|{{VERSION}}|$(shell ./get-version-from-sources.sh --dotted)|g' \
+	    -e 's|{{PREFIX}}|$(SYSPREFIX)|g' \
+	    -e 's|{{LIBDIR}}|$(USRLIBDIR)|g' \
+	    $(if $(NOSRT),-e 's|srt||g',) \
+	    $(if $(NORIST),-e 's|librist||g',) \
+	    $(if $(NOPCSC),-e 's|libpcsclite||g',) \
+	    $(if $(NOCURL),-e 's|libcurl||d',) \
+	    -e 's|:[ ,]*|: |' -e 's|,[ ,]*|, |' -e 's|[ ,]*$$||' \
+	    tsduck.pc >$(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
+	chmod 644 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
 
 # Build the source tarballs for distribution.
 VERSION = $(shell ./get-version-from-sources.sh)
@@ -95,9 +102,7 @@ tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
 	tar -C $(ROOTDIR) $(patsubst %,--exclude '%',$(NOSOURCE)) -cpf - . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
-ifdef NOTELETEXT
-	$(SED) -e '/tsTeletextDemux.h/d' -i $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h
-endif
+	$(if $(NOTELETEXT),$(SED) -e '/tsTeletextDemux.h/d' -i $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h,)
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
 	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)
