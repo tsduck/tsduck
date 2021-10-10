@@ -149,9 +149,7 @@ install: install-tools install-devel
 
 install-tools: $(SHARED_LIBTSDUCK) $(DEKTEC_NAMES)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck $(SYSROOT)$(SYSPREFIX)/share/tsduck/python
-ifdef MACOS
-	rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so
-endif
+	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so,)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -m 644 config/tsduck*.xml config/tsduck*.names $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	$(MAKE) -C python install
@@ -163,6 +161,4 @@ install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.mk
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*' $(if $(NOTELETEXT),! -name tsTeletextDemux.h,)) $(SYSROOT)$(SYSPREFIX)/include/tsduck
-ifdef NOTELETEXT
-	sed tsduck.h -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h
-endif
+	$(if $(NOTELETEXT),sed tsduck.h -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h,)

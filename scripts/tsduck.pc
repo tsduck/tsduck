@@ -1,0 +1,12 @@
+prefix={{PREFIX}}
+libdir={{LIBDIR}}
+
+Name: TSDuck
+Description: MPEG Transport Stream Toolkit
+URL: https://tsduck.io/
+Version: {{VERSION}}
+Requires: libpcsclite
+Requires.private: libcurl, srt
+Libs: -L${libdir} -ltsduck
+Libs.private: -lpthread -lrt -ldl -lm -lstdc++
+Cflags: -I${prefix}/include/tsduck --std=c++11
