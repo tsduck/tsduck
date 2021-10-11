@@ -26,13 +26,13 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  Windows PowerShell script to build the documentation using Doxygen.
-# 
+#
 #  See http://www.doxygen.org/download.html for Doxygen binary installers
 #  for Windows. The installer updates %Path% to include the Doxygen binary
 #  directory. Thus, doxygen is available as a simple command.
-# 
+#
 #-----------------------------------------------------------------------------
 
 <#

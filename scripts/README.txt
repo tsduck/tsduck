@@ -150,26 +150,5 @@ Configuration files for Linux
 - tsduck.control : Template for Debian control file, used to create .deb
   packages for TSDuck on Ubuntu, Debian, Rapsbian and other derivatives.
 
-- tsduck.postinst : Template for post-installation script in .deb packages
-  for TSDuck.
-
 - tsduck-dev.control : Template for Debian control file, used to create .deb
   packages for TSDuck development environment.
-
-- tsduck-dev.postinst : Template for post-installation script in .deb packages
-  for TSDuck development environment.
-
-Doxygen documentation
----------------------
-- Doxyfile : Project file to configure Doxygen.
-
-- doxy-defaults.conf : Default values for all Doxygen configuration parameters.
-
-- doxy-header.html : Template file for header of Doxygen-generated HTML pages.
-
-- doxy-footer.html : Template file for footer of Doxygen-generated HTML pages.
-
-- doxy-style.css : CSS style sheet for Doxygen-generated HTML pages.
-
-- build-doxygen.ps1 : Windows PowerShell script to create the Doxygen
-  documentation. On Unix systems, use "make doxygen" at project root level.
