@@ -89,6 +89,11 @@ test-suite: default
 	   echo >&2 "No test repository in ../tsduck-test"; \
 	 fi
 
+# Generate the documentation.
+.PHONY: doxygen
+doxygen:
+	doc/build-doxygen.sh
+
 # Build the sample applications.
 .PHONY: sample
 sample:

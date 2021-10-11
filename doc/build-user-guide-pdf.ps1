@@ -48,7 +48,7 @@ param([switch]$NoPause = $false)
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
-$DocDir = (Join-Path $RootDir "doc")
+$DocDir = $PSScriptRoot
 $SrcDir = (Join-Path $RootDir "src")
 
 # Input and output file names.
@@ -59,7 +59,7 @@ $DocOut = (Join-Path $DocDir "tsduck.pdf")
 $Major = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
 $Minor = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
 $Commit = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
-$Commit = $Commit  + 1
+$Commit = $Commit + 1
 $Version = "${Major}.${Minor}-${Commit}"
 
 # The following properties are set in the document:
