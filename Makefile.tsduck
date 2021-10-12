@@ -31,6 +31,576 @@
 #
 #-----------------------------------------------------------------------------
 
+# If no target precedes the inclusion of this file, use "default" as target.
+.PHONY: first default
+first: default
+	@true
+
+# General note: To speed up make recursion, some variables are exported when
+# their definition take some time.
+
+# Some nerds define exotic shells as default. Stay to a known shell.
+# Skip initialization files to speed up and reproduceability.
+SHELL := /usr/bin/env bash --noprofile --norc
+
+# Enforce English locale by default.
+export LANGUAGE = en_US.UTF-8
+export LC_ALL = en_US.UTF-8
+export LANG = en_US.UTF-8
+
+# The function F_SEARCH searches a command in $PATH and in a few other predefined
+# directories. Return the full path of the first found, empty if not found.
+# Example: $(call F_SEARCH,ls)
+
+export F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin /opt/homebrew/bin $(HOME)/bin)))
+
+# The funtion F_COMMAND searches a command with F_SEARCH. If the command is not
+# found, return the second parameter as default value. The following example
+# searches for a command named "gsed" and, if not found, use command "sed" as
+# fallback: $(call F_COMMAND,gsed,sed)
+
+export F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
+
+# Find GNU alternatives to sed, grep. fgrep, chmod.
+export SED   := $(call F_COMMAND,gsed,sed)
+export GREP  := $(call F_COMMAND,ggrep,grep)
+export FGREP := $(call F_COMMAND,gfgrep,fgrep)
+export CHMOD := $(call F_COMMAND,gchmod,chmod)
+
+# Representation of a space and a comma character
+EMPTY =
+SPACE = $(EMPTY) $(EMPTY)
+COMMA = ,
+
+# Recursive invocations of make should be silent.
+MAKEFLAGS += --no-print-directory
+
+# Check if "make -k" is specified (ie. continue on error).
+CONTINUE := $(if $(findstring k,$(filter-out --%,$(MAKEFLAGS))),true,)
+
+# The directory which contains the currently included Makefile is the project root.
+ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
+
+# List of subdirectories in the current directory.
+SUBDIRS = $(sort $(patsubst %/,%,$(wildcard */)))
+
+# List of subdirectories to ignore in make recursion.
+NORECURSE_SUBDIRS += tmp bin debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git cov-int __pycache__
+
+# Actual recurse order. If the user did not define RECURSE_ORDER, use all
+# subdirectories, except those for which we know there is nothing to make.
+# $(RECURSE_ORDER) defines which subdirectories should be used in which order
+# in the $(RECURSE) shell command. Non-existent subdirectories are ignored.
+# See RECURSE in the section "Output variables" below.
+#
+# Caveat: If you do not want to recurse into subdirectories, do not
+# define the variable as empty. If it is empty, the default will apply
+# (all subdirectories). Instead, define its value as something that does
+# not correspond to any existing directory (eg. RECURSE_ORDER = none).
+
+RECURSE_SUBDIRS = $(filter $(SUBDIRS),$(filter-out $(NORECURSE_SUBDIRS),$(if $(RECURSE_ORDER),$(RECURSE_ORDER),$(SUBDIRS))))
+
+# $(RECURSE) is a shell command which recurses the current make targets
+# in the subdirectories. By default, the $(RECURSE) command applies to all
+# subdirectories in alphabetical order. If the input variable $(RECURSE_ORDER)
+# is defined and non empty, it is used as the list of subdirectories to recurse into.
+
+RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); done
+
+# Operating system, architecture, host name.
+# $(LOCAL_ARCH) is the local processor exact architecture ("i686", "x86_64", "armv7l", etc.)
+# $(MAIN_ARCH) is the local processor architecture family ("i386", "x86_64", "arm", etc.)
+
+ifndef LOCAL_OS
+    export LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
+    export LOCAL_ARCH := $(shell uname -m)
+    export HOSTNAME   := $(shell hostname | $(SED) -e 's/\..*//')
+endif
+MACOS := $(if $(subst darwin,,$(LOCAL_OS)),,true)
+MAC := $(MACOS)
+
+# Logical CPU and physical core count.
+# $(CORE_COUNT) contains the number of physical CPU cores in the machine.
+# $(CPU_COUNT) contains the number of logical CPU's in the machine.
+# With hyperthreaded CPU cores, $(CPU_COUNT) is typically twice $(CORE_COUNT).
+
+ifndef CPU_COUNT
+    ifdef MACOS
+        export CPU_COUNT  := $(shell sysctl -n hw.logicalcpu 2>/dev/null)
+        export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        export CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
+        export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+    else
+        export CPU_COUNT  := $(shell nproc 2>/dev/null)
+        export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        export CORE_COUNT := $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
+        export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+    endif
+endif
+
+# Compute best multiprocessor make option if unspecified.
+# Warning, this must be a delayed eval ("=", not ":=").
+MAKEFLAGS_SMP = $(if $(filter -j%,$(MAKEFLAGS)),$(filter -j%,$(MAKEFLAGS)),-j$(CPU_COUNT))
+
+# Detect Cygwin platform. Impacts:
+# - The executables are started by the Windows loader which uses distinct environment
+#   variables for shared library resolution.
+# - The option -fPIC generates a stupid error:
+#   "-fPIC ignored for target (all code is position independent)"
+# - $(LD_LIBRARY_PATH_NAME) is the name of the environment variable containing
+#   the search path for the shareable libraries. Typically LD_LIBRARY_PATH on
+#   native unices and PATH on Windows-based environments such as Cygwin.
+
+ifneq ($(subst cygwin,,$(LOCAL_OS)),$(LOCAL_OS))
+    CYGWIN = true
+    LOCAL_OS := cygwin
+    LD_LIBRARY_PATH_NAME = PATH
+    CFLAGS_FPIC =
+else
+    CYGWIN =
+    LD_LIBRARY_PATH_NAME = LD_LIBRARY_PATH
+    CFLAGS_FPIC = -fPIC
+endif
+
+# Executable files and shared objects suffix.
+EXE_SUFFIX = $(if $(CYGWIN),.exe,)
+SO_SUFFIX = $(if $(CYGWIN),.dll,$(if $(MACOS),.dylib,.so))
+
+# Define compilation flags for 32-bit cross-compilation.
+# Target architecture is skipped on ARM because of numerous variants.
+ifdef M32
+    override MAIN_ARCH := i386
+    override TARGET_FLAGS := -march=i686
+    CFLAGS_M32   := -m32
+    LDFLAGS_M32  := -m32
+else ifndef MAIN_ARCH
+    MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
+    TARGET_FLAGS :=
+    CFLAGS_M32   :=
+    LDFLAGS_M32  :=
+endif
+export MAIN_ARCH TARGET_FLAGS
+
+# Use $(CC) for compilation. Use $(GCC) to explicitly reference GCC.
+GCC ?= gcc
+
+# Cross-compilation support.
+# If $(CROSS) is defined (any non-empty value), perform a cross-compilation build.
+# $(CROSS_TARGET) is the target name of the cross-compilation (e.g. arm-unknown-linux-gnueabi).
+# If undefined but $(CROSS) is defined, we locate the first GCC executable with path
+# $(CROSS_PREFIX)/TARGET/bin/TARGET-gcc.
+
+ifeq ($(CROSS)$(CROSS_TARGET),)
+    CFLAGS_CROSS =
+    LDFLAGS_CROSS =
+else
+    CROSS ?= true
+    # Cross-compilation tools are in /usr/local by default.
+    CROSS_PREFIX ?= /usr/local
+    # If cross target undefined, find the first one.
+    # We look for a file pattern: PREFIX/TARGET/bin/TARGET-gcc
+    CROSS_TARGET := $(if $(CROSS_TARGET),$(CROSS_TARGET),$(shell \
+        ls $(CROSS_PREFIX)/*/bin/*-gcc 2>/dev/null | \
+        $(GREP) '$(CROSS_PREFIX)//*\([^/]*\)/bin/\1-gcc' | \
+        $(SED) -e 's|^$(CROSS_PREFIX)//*||' -e 's|/.*$$||' | \
+        head -1))
+    $(if $(CROSS_TARGET),,$(error CROSS is defined but no cross-compilation tool-chain was found))
+    # Adjust target. Use "arm" as main target if CROSS_TARGET starts with "arm".
+    override MAIN_ARCH := $(if $(findstring @arm,@$(CROSS_TARGET)),arm,$(CROSS_TARGET))
+    override TARGET_FLAGS :=
+    override GCC_VERSION_DONE :=
+    # Redirect build tools.
+    CC  = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-gcc
+    GCC = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-gcc
+    CXX = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-g++
+    LD  = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-ld
+    # Add options. The layout can be different, so use them all.
+    CFLAGS_CROSS  = -I$(CROSS_PREFIX)/$(CROSS_TARGET)/include \
+                    -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/include \
+                    -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/include
+    LDFLAGS_CROSS = -L$(CROSS_PREFIX)/$(CROSS_TARGET)/lib \
+                    -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/lib \
+                    -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib
+endif
+
+# Get current compiler version, usually in form x.y.z
+ifeq ($(GCC_VERSION_DONE),)
+    export GCC_VERSION_DONE = true
+    export GCC_VERSION := $(shell $(GCC) -dumpversion 2>/dev/null)
+    export GCC_MAJOR := $(firstword $(subst .,$(SPACE),$(GCC_VERSION)))
+    export LLVM_VERSION := $(shell clang -dumpversion 2>/dev/null)
+    export LLVM_MAJOR := $(firstword $(subst .,$(SPACE),$(LLVM_VERSION)))
+    ifeq ($(shell test 0$(GCC_MAJOR) -ge 5; echo $$?),0)
+        export GCC_5_OR_MORE := true
+    else
+        GCC_5_OR_MORE :=
+        unexport GCC_5_OR_MORE
+    endif
+    ifeq ($(shell test 0$(GCC_MAJOR) -ge 6; echo $$?),0)
+        export GCC_6_OR_MORE := true
+    else
+        GCC_6_OR_MORE :=
+        unexport GCC_6_OR_MORE
+    endif
+    ifeq ($(shell test 0$(GCC_MAJOR) -ge 8; echo $$?),0)
+        export GCC_8_OR_MORE := true
+    else
+        GCC_8_OR_MORE :=
+        unexport GCC_8_OR_MORE
+    endif 
+    ifeq ($(shell test 0$(LLVM_MAJOR) -ge 10; echo $$?),0)
+        export LLVM_10_OR_MORE := true
+    else
+        LLVM_10_OR_MORE :=
+        unexport LLVM_10_OR_MORE
+    endif
+    ifeq ($(shell test 0$(LLVM_MAJOR) -ge 12; echo $$?),0)
+        export LLVM_12_OR_MORE := true
+    else
+        LLVM_12_OR_MORE :=
+        unexport LLVM_12_OR_MORE
+    endif
+    export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | grep -i -e gcc -e g++),true,)
+    export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true,)
+endif
+
+# Forced usage of LLVM (clang)
+ifdef LLVM
+    export USE_GCC :=
+    export USE_LLVM := true
+    CXX = clang++
+    CC = clang
+endif
+
+# When C++ source files are present, automatically define LDCXX.
+ifndef LDCXX
+    ifneq ($(wildcard *.cpp),)
+        export LDCXX = true
+        ifdef LLVM
+            CC = clang++
+        endif
+    endif
+endif
+
+# Check if option -ffile-prefix-map is supported.
+# GCC: v8 and higher, clang on Linux: v10 and higher, clang on macOS: v12 and higher.
+# Note on clang: the option is not documented, the above versions were checked by experimentation.
+ifdef USE_GCC
+    ifdef GCC_8_OR_MORE
+        export CC_FILE_PREFIX_MAP = true
+    endif
+else ifdef USE_LLVM
+    ifdef MACOS
+        ifdef LLVM_12_OR_MORE
+            export CC_FILE_PREFIX_MAP = true
+        endif
+    else
+        ifdef LLVM_10_OR_MORE
+            export CC_FILE_PREFIX_MAP = true
+        endif
+    endif
+endif
+
+# Compilation flags for various types of optimization.
+# $(CFLAGS_FULLSPEED) contains the C/C++ optimization options for maximum
+# execution speed, at the expense of code size. Can be used in the makefile
+# to specify that some selected modules should be compiled for full speed. Example:
+# $(OBJDIR)/fast1.o $(OBJDIR)/fast2.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
+# $(CFLAGS_OPTSIZE) contains the C/C++ optimization options for minimum code size.
+
+CFLAGS_OPTIMIZE ?= -O2 -fno-strict-aliasing
+CFLAGS_FULLSPEED = -O3 -fno-strict-aliasing -funroll-loops -fomit-frame-pointer
+CFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
+
+# On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
+# On Linux, when Homebrew is forced, use it as alternative development root.
+# if $(LINUXBREW) is defined (any non-empty value), force a compilation in a Homebrew
+# environment on Linux. Homebrew on Linux (aka "Linuxbrew") installs a non-standard environment
+# where libraries are fetched from $(HOMEBREW_PREFIX) instead of /usr.
+# By default, ignore the Homebrew environment on Linux and build using system libraries.
+# $(ALTDEVROOT) is the alternative root for development tools and library. This can be
+# the Homebrew root or "/usr" if no other value is suitable so that $(ALTDEVROOT) can
+# always be safely used to check files.
+
+ifneq ($(MACOS)$(LINUXBREW),)
+    $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)),)
+    ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
+    CFLAGS_INCLUDES += -I$(ALTDEVROOT)/include
+    LDLIBS := -L$(ALTDEVROOT)/lib $(LDLIBS)
+else
+    ALTDEVROOT := /usr
+endif
+
+# Include paths for C++ also use include paths for C.
+CXXFLAGS_INCLUDES += $(CFLAGS_INCLUDES)
+
+# Always use maximal or even paranoid warning mode.
+# With clang (macOS), the option -Weverything turns everything on.
+# There is no such option with GCC.
+COMMON_WARNINGS = -Werror
+CFLAGS_WARNINGS = $(COMMON_WARNINGS)
+CXXFLAGS_WARNINGS = $(COMMON_WARNINGS)
+ifdef USE_LLVM
+    COMMON_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
+    ifdef MACOS
+        # On macOS, it is normal to include from /usr/local/include since some libraries come from Homebrew.
+        # Starting with clang 12, this generates a warning we need to disable. However, this disable option
+        # generates an error with previous versions. And we cannot disable this warning inside the code since
+        # this is a command-line-level error. So, we must check the version here...
+        ifdef LLVM_12_OR_MORE
+            COMMON_WARNINGS += -Wno-poison-system-directories
+        endif
+    endif
+else
+    COMMON_WARNINGS += -Wall -Wextra
+    COMMON_WARNINGS += -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized \
+                       -Wfloat-equal -Wundef -Wpointer-arith
+    CFLAGS_WARNINGS += -Wstrict-prototypes -Wmissing-prototypes -Winit-self -Wtraditional \
+                       -Wbad-function-cast -Wc++-compat
+    CXXFLAGS_WARNINGS += -Woverloaded-virtual -Wctor-dtor-privacy -Wnon-virtual-dtor -Wsign-promo \
+                         -Wzero-as-null-pointer-constant -Wstrict-null-sentinel
+    ifdef GCC_5_OR_MORE
+        COMMON_WARNINGS += -Wshadow -Wpedantic
+        CXXFLAGS_WARNINGS += -Weffc++
+    endif
+    ifdef GCC_6_OR_MORE
+        CXXFLAGS_WARNINGS += -Wsuggest-override
+    endif
+    ifeq ($(MAIN_ARCH),arm)
+        CXXFLAGS_WARNINGS += -Wno-psabi
+    endif
+endif
+
+# Language levels.
+CFLAGS_STANDARD ?= -std=c11
+CXXFLAGS_STANDARD ?= -std=c++11
+
+# Compilation flags for security.
+COMMON_SECURITY   = -fstack-protector-all
+CFLAGS_SECURITY   = $(COMMON_SECURITY)
+CXXFLAGS_SECURITY = $(COMMON_SECURITY)
+
+# Compilation flags in debug mode.
+ifdef DEBUG
+    CFLAGS_DEBUG = -g -DDEBUG=1
+    LDFLAGS_DEBUG =
+else
+    CFLAGS_DEBUG = $(CFLAGS_OPTIMIZE)
+    LDFLAGS_DEBUG =
+endif
+
+# Compilation flags for code coverage using gcov.
+ifdef GCOV
+    CFLAGS_GCOV = --coverage -DGCOV=1
+    LDFLAGS_GCOV = --coverage
+else
+    CFLAGS_GCOV =
+    LDFLAGS_GCOV =
+endif
+
+# Compilation flags for code profiling using gprof.
+ifdef GPROF
+    CFLAGS_GPROF = -g -pg -DGPROF=1
+    LDFLAGS_GPROF = -g -pg
+else
+    CFLAGS_GPROF =
+    LDFLAGS_GPROF =
+endif
+
+# Compilation flags for posix threads.
+CFLAGS_PTHREAD = -pthread
+LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
+
+# External libraries
+LDLIBS += $(if $(LDCXX),-lstdc++,) -lpthread $(if $(MACOS),,-lrt) -lm
+
+# Global compilation flags.
+# Additional flags can be passed on the "make" command line using FLAGS_EXTRA.
+CFLAGS   = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_GPROF) $(CFLAGS_WARNINGS) \
+           $(CFLAGS_SECURITY) $(CFLAGS_INCLUDES) $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CFLAGS_STANDARD) \
+           $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CFLAGS_EXTRA)
+CXXFLAGS = $(CFLAGS_DEBUG) $(CFLAGS_M32) $(CFLAGS_GCOV) $(CFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
+           $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(TARGET_FLAGS) $(CFLAGS_FPIC) $(CXXFLAGS_STANDARD) \
+           $(CFLAGS_CROSS) $(CFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(TARGET_FLAGS) \
+           $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
+ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
+
+# All binaries are built into one single root directory named
+# bin/release|debug-arch-hostname where bin is located in the top-level directory.
+# The variable $(BINDIR) points to this directory. The variable $(OBJDIR) points
+# to the directory where object files are stored. This is, by default, the same place as
+# $(BINDIR), except when a local makefile defines $(OBJSUBDIR).
+# $(BINDIR_PREFIX) is a fixed prefix to add to generated $(BINDIR) subdirectory name.
+# $(BINDIR_SUFFIX) is a fixed suffix to add to generated $(BINDIR) subdirectory name.
+# They are ignored if $(BINDIR) is defined as input variable.
+
+ifneq ($(BINDIR),)
+    # BINDIR is specified in input, transform it into an absolute path for recursion.
+    INBINDIR := $(BINDIR)
+    override BINDIR := $(abspath $(INBINDIR))
+    MAKEOVERRIDES := $(subst BINDIR=$(INBINDIR),BINDIR=$(BINDIR),$(MAKEOVERRIDES))
+else ifneq ($(DEBUG),)
+    BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)debug-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
+else
+    BINDIR = $(ROOTDIR)/bin/$(BINDIR_PREFIX)release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
+endif
+ifdef OBJSUBDIR
+    OBJDIR = $(BINDIR)/$(OBJSUBDIR)
+else
+    OBJDIR = $(BINDIR)
+endif
+
+# Implicit search directives.
+# CVPATH and CXXVPATH contain directories where *.h and *.c/.cpp files are searched.
+# "vpath" directives are defined accordingly.
+
+ifneq ($(CVPATH),)
+    vpath %.c $(CVPATH)
+endif
+ifneq ($(CXXVPATH),)
+    vpath %.cpp $(CXXVPATH)
+endif
+ifneq ($(CVPATH)$(CXXVPATH),)
+    vpath %.h $(CVPATH) $(CXXVPATH)
+endif
+
+# Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
+# Linuxbrew does not use lib64. Define USELIB64 as "true" or empty.
+USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true,)))
+
+# $(SYSPREFIX) is the installation prefix. If not set on input, it is
+# defined as /usr/local or /opt/homebrew on macOS and /usr on Linux.
+# On macOS, the Homebrew root is used without system privileges.
+#
+# $(USRLIBDIR) is the library directory for the target architecture.
+# This is $(SYSPREFIX)/lib64 for Linux x86_64 where /usr/lib64/libc.so* exists
+# and $(SYSPREFIX)/lib elsewhere.
+#
+# $(UDEVDIR) is the directory for system-defined udev rules. $(ETCDIR) is
+# the system configuration directory. This is /etc if $(SYSPREFIX) is /usr
+# and $(SYSPREFIX)/etc otherwise.
+
+SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
+ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
+USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
+UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
+
+# RPM building.
+RPMBUILD     ?= rpmbuild
+RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true',) $(RPMBUILDFLAGS_EXTRA)
+
+# Source and object files in current directory.
+# - $(SOURCES) : All C and C++ source files in the current directory.
+# - $(HEADERS) : All header names, list of all "f" for which a source file "f.h" exists.
+# - $(MODULES) : All modules names, list of all "f" for which a source file f.c or f.cpp exists.
+# - $(MODULES_MAIN) : All modules names which are main programs, list of all "f" for which
+#   a source file "f.c" or "f.cpp" exists but no file "f.h" exists.
+# - $(MODULES_LIB) : All modules names which are not main programs, list of all "f" for which
+#   a source file "f.c" or "f.cpp" exists and a source file "f.h" exists
+# - $(OBJS) : All object files (.o) to build, for all C/C++ source files.
+# - $(OBJS_MAIN) : All object files (.o) to build which are main programs, for all $(MODULES_MAIN).
+# - $(OBJS_LIB) : All object files (.o) to build which are not main programs, for all $(MODULES_LIB).
+#   These object files will typically go into a library.
+# - $(EXECS) : All executable files to build, based on $(MODULES_MAIN).
+
+SOURCES      := $(sort $(notdir $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH)))))
+HEADERS      := $(sort $(notdir $(basename $(wildcard *.h $(addsuffix /*.h,$(CVPATH) $(CXXVPATH))))))
+MODULES      := $(basename $(SOURCES))
+MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
+MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
+OBJS          = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
+OBJS_MAIN     = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
+OBJS_LIB      = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
+EXECS         = $(addprefix $(BINDIR)/,$(MODULES_MAIN))
+
+# Keep intermediate files, avoid using "ar" again.
+.SECONDARY:
+
+# When using parallel make ("-j") on Linux, the command "ar" is badly handled.
+# This foolish make can run simultaneous "ar" commands on the same .a file,
+# which usually results in a corrupted library file. We have to explicitly
+# serialize access to the library file using flock. However, flock is specific
+# to Linux and not present on macOS.
+FLOCK ?= $(call F_SEARCH,flock)
+ARLOCK = $(if $(FLOCK),$(FLOCK) -w 60 $(patsubst %/,%,$(dir $@)),)
+export FLOCK
+
+# Compilation rules
+$(OBJDIR)/%.o: %.c
+	@echo '  [CC] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
+$(OBJDIR)/%.o: %.cpp
+	@echo '  [CXX] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+(%): %
+	@echo '  [AR] $<'; \
+	$(ARLOCK) $(AR) $(ARFLAGS) $@ $<
+$(BINDIR)/%: $(OBJDIR)/%.o
+	@echo '  [LD] $@'; \
+	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+$(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
+	@echo '  [CC] $@'; \
+	$(CC) $(CFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
+
+# Object files dependencies (.dep files, included by makefiles)
+$(OBJDIR)/%.dep: %.c
+	@echo '  [DEP] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CC) -MM $(CPPFLAGS) $(CFLAGS_INCLUDES) $(CFLAGS_STANDARD) $(CFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
+	rm -f $@
+$(OBJDIR)/%.dep: %.cpp
+	@echo '  [DEP] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CC) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
+	rm -f $@
+
+# Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
+# If $(DONT_BUILD_DEPS) is defined, do not attempt to build the header dependency files.
+# Useful when the source file depend on dynamically generated header files (initially non-existent).
+#
+# $(NODEPS) lists the make targets in the parent makefile which shall not
+# enforce the generation of header dependency files. This is a bit complicated
+# and, most of the time, there is no need to set this variable.
+#
+# When make is invoked, the .dep files which list for each C/C++ source
+# file the .h header dependencies are automatically updated. This is
+# required for most targets, those which build files. Some targets are
+# informational or do not need to build object files. In this case,
+# rebuilding the .dep files is useless but harmless. However, in some
+# cases such as the standard "clean" targets, the .dep files should
+# not be rebuilt. In fact, they are deleted by the target. In these
+# cases, the "clean" targets must not implicitly rebuild the .dep
+# files. The standard "clean" targets are automatically added in NODEPS,
+# there is no need to set them. However, if a makefile defines some
+# non-standard "clean" targets, it should set them in NODEPS before
+# inclusion of this make file.
+
+NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
+          flawfinder cloc listvars scan-build unixify
+ifeq ($(DONT_BUILD_DEPS),)
+    ifneq ($(MAKECMDGOALS),)
+        DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
+    endif
+endif
+ifeq ($(DONT_BUILD_DEPS),)
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(wildcard *.c *.cpp $(addsuffix /*.c,$(CVPATH)) $(addsuffix /*.cpp,$(CXXVPATH)))))))
+endif
+
+# $(NOSOURCE) is the list of file patterns which are typically not source files.
+# This can be used to filter file names when creating a backup or an archive of
+# the source files.
+
+NOSOURCE = \
+    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* [Bb]in doxy doxygen *.t2d \
+    *.o *.so *.dylib *.ko *.a *.lib *.obj *.exe *.dll *.gcov gmon.out *.dep .kdbgrc.* \
+    tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
+    .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
+    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
+    .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
+    *~ *.bak *.autosave cov-int bin build callgrind.out*
 
 # Duplicate output for specific compilers or profiling tools.
 
@@ -46,10 +616,6 @@ endif
 ifdef STATIC
     BINDIR_SUFFIX += -static
 endif
-
-# Standard common makefile is in same directory as this makefile.
-
-include $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST))))/Makefile.common
 
 # Project specific directories.
 
@@ -220,6 +786,7 @@ ifdef BITRATE_DECIMALS
     CFLAGS_INCLUDES += -DTS_BITRATE_DECIMALS=$(BITRATE_DECIMALS)
 endif
 
+# $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
 ifeq ($(MACOS),)
     # Link flags on Linux
     CFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux

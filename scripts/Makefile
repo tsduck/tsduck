@@ -33,7 +33,6 @@
 
 include ../Makefile.tsduck
 
-EXTRA_DISTCLEAN += build-tsduck-*
 NORECURSE_SUBDIRS += build-tsduck-%
 
 # The script git-hook.sh shall be invoked for some selected Git hooks.

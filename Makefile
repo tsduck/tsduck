@@ -54,16 +54,7 @@
 
 include Makefile.tsduck
 
-EXTRA_DISTCLEAN   += bin build dektec
 NORECURSE_SUBDIRS += bin build dektec
-
-# Analyze our code only, not downloaded 3rd-party code in dektec.
-CPPCHECK_SOURCES   = src
-FLAWFINDER_SOURCES = src
-SCANBUILD_SOURCES  = src
-COVERITY_SOURCES   = src
-CLOC_SOURCES       = src
-CLOC_FLAGS        += --exclude-ext=.tgz,.tar.gz,.tar,.pdf,.pptx,.docx
 
 # By default, recurse make target in all subdirectories
 default:
@@ -89,10 +80,50 @@ test-suite: default
 	   echo >&2 "No test repository in ../tsduck-test"; \
 	 fi
 
+# Alternative target to build with cross-compilation
+.PHONY: cross
+cross:
+	+@$(MAKE) CROSS=true
+
+# Alternative target to recompile with debug options
+.PHONY: debug
+debug:
+	+@$(MAKE) DEBUG=true
+
+# Alternative target to recompile with optimizations for reduced code size.
+.PHONY: optsize
+optsize:
+	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
+
+# Alternative target to recompile with LLVM (clang) compiler
+.PHONY: llvm clang
+llvm clang:
+	+@$(MAKE) LLVM=true
+
+# Alternative target to recompile with gcov support.
+.PHONY: gcov
+gcov:
+	+@$(MAKE) DEBUG=true GCOV=true
+
+# Alternative target to recompile with gprof support.
+.PHONY: gprof
+gprof:
+	+@$(MAKE) DEBUG=true GPROF=true
+
+# Alternative target to recompile for 32-bit target
+.PHONY: m32
+m32:
+	+@$(MAKE) M32=true
+
 # Generate the documentation.
 .PHONY: doxygen
 doxygen:
-	doc/build-doxygen.sh
+	@doc/build-doxygen.sh
+
+# Cleanup utilities
+.PHONY: clean distclean
+clean distclean:
+	@scripts/cleanup.py
 
 # Build the sample applications.
 .PHONY: sample
@@ -110,7 +141,87 @@ install install-tools install-devel:
 	$(MAKE) NOTEST=true -C src $@
 	$(MAKE) NOTEST=true -C scripts $@
 
-# Various build targets are redirected to build subdirectory.
-.PHONY: tarball rpm rpm32 deb
+# Installers build targets are redirected to build subdirectory.
+.PHONY: tarball rpm rpm32 deb installer
 tarball rpm rpm32 deb installer:
 	$(MAKE) -C scripts $@
+
+# Count lines of code: Run cloc on the source code tree starting at current directory.
+CLOC         = cloc
+CLOC_SOURCES = src
+CLOC_FLAGS   = --skip-uniqueness --quiet --exclude-ext=.tgz,.tar.gz,.tar,.pdf,.pptx,.docx
+.PHONY: cloc
+cloc:
+	@$(CLOC) $(CLOC_FLAGS) $(CLOC_SOURCES) | \
+	tee /dev/stderr | grep SUM: | awk '{print "Total lines in source files:   " $$3 + $$4 + $$5}'
+	@echo >&2 '-------------------------------------------'
+
+# Static code analysis: Run Coverity.
+COVERITY         = cov-build
+COVERITY_DIR     = cov-int
+COVERITY_SOURCES = src
+.PHONY: coverity
+coverity:
+	rm -rf $(COVERITY_DIR)
+	$(COVERITY) --dir $(COVERITY_DIR) $(MAKE) -C $(COVERITY_SOURCES)
+	tar czf $(COVERITY_DIR).tgz $(COVERITY_DIR)
+
+# Static code analysis: Run cppcheck on the source code tree starting at current directory.
+# In debug mode, the diagnostics are more aggressive but may be false positive.
+CPPCHECK         = cppcheck
+CPPCHECK_SOURCES = src
+CPPCHECK_FLAGS   = $(CXXFLAGS_INCLUDES) --inline-suppr --quiet --force \
+	--template="{file}:{line}: ({severity}) {id}: {message}" \
+	--enable=all --suppress=unusedFunction --suppress=missingIncludeSystem \
+	$(if $(DEBUG),--inconclusive,)
+.PHONY: cppcheck cppcheck-xml
+cppcheck:
+	$(CPPCHECK) $(CPPCHECK_FLAGS) $(CPPCHECK_SOURCES)
+cppcheck-xml:
+	$(CPPCHECK) $(CPPCHECK_FLAGS) --xml --xml-version=2 $(CPPCHECK_SOURCES)
+
+# Static code analysis: Run flawfinder on the source code tree starting at current directory.
+FLAWFINDER         = flawfinder
+FLAWFINDER_SOURCES = src
+FLAWFINDER_FLAGS   = --quiet --dataonly
+.PHONY: flawfinder
+flawfinder:
+	$(FLAWFINDER) $(FLAWFINDER_FLAGS) $(FLAWFINDER_SOURCES)
+
+# Static code analysis: Run scan-build on the source code tree starting at current directory.
+SCANBUILD          = scan-build
+SCANBUILD_SOURCES  = src
+SCANBUILD_FLAGS    = -o $(BINDIR)
+.PHONY: scan-build
+scan-build:
+	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)
+
+# Cleanup Windows oddities in source files.
+# Many IDE's indent with tabs, and tabs are 4 chars wide.
+# Tabs shall not be expanded in Makefiles.
+.PHONY: unixify
+unixify:
+	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
+	  expand -t 4 $$f >$$f.tmp; \
+	  $(CHMOD) --reference=$$f $$f.tmp; \
+	  mv -f $$f.tmp $$f; \
+	done
+	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
+	  dos2unix -q $$f; \
+	  $(SED) -i -e 's/  *$$//' $$f; \
+	done
+
+# Utilities: display predefined macros for C and C++
+.PHONY: cmacros cxxmacros
+cmacros:
+	@$(CPP) $(CFLAGS) -x c -dM /dev/null | sort
+cxxmacros:
+	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort
+
+# Display make variables for debug purposes.
+.PHONY: listvars
+listvars:
+	@true
+	$(foreach v, \
+	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG%,$(.VARIABLES))), \
+	  $(info $(v) = "$($(v))"))
