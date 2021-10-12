@@ -35,7 +35,6 @@
 DONT_BUILD_DEPS := TRUE
 include ../../../Makefile.tsduck
 
-EXTRA_DISTCLEAN   += bin
 NORECURSE_SUBDIRS += bin src
 
 .PHONY: install

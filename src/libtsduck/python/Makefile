@@ -3,8 +3,6 @@
 DONT_BUILD_DEPS := true
 include ../../../Makefile.tsduck
 
-EXTRA_DISTCLEAN += __pycache__
-
 default:
 	@true
 
