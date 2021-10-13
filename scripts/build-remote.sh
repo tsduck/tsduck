@@ -251,7 +251,7 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 
         # Build installers after updating the repository.
         ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \
-            ". '$REMOTE_DIR/scripts/build-installer.ps1' -GitPull -NoSource -NoPause"
+            ". '$REMOTE_DIR/scripts/build-installer.ps1' -GitPull -NoPause"
 
         # Get all files from installers directory which are newer than the timestamp.
         files=$(ssh $SSH_OPTS "$USER_NAME@$HOST_NAME" \

@@ -38,8 +38,7 @@
   is automatically rebuilt before building the installer.
 
   By default, installers are built for 32-bit and 64-bit systems, full
-  executable binary installers, standalone binaries (without admin rights),
-  source code archive.
+  executable binary installers, standalone binaries (without admin rights).
 
  .PARAMETER GitPull
 
@@ -67,10 +66,6 @@
 
   Do not build the portable packages.
 
- .PARAMETER NoSource
-
-  Do not build the source archive.
-
  .PARAMETER NoTeletext
 
   Build without Teletext support. The plugin "teletext" is not provided.
@@ -94,7 +89,6 @@ param(
     [switch]$NoLowPriority = $false,
     [switch]$NoPortable = $false,
     [switch]$NoTeletext = $false,
-    [switch]$NoSource = $false,
     [switch]$Win32 = $false,
     [switch]$Win64 = $false
 )
@@ -118,15 +112,6 @@ $InstallerDir = (Join-Path $RootDir "installers")
 if (-not $Win32 -and -not $Win64) {
     $Win32 = $true
     $Win64 = $true
-}
-
-# Requires .NET 4.5 to build zip files (need compression methods).
-if (-not $NoSource) {
-    $DotNetVersion = Get-DotNetVersion
-    if ($DotNetVersion -lt 405) {
-        $DotNetString = "v" + [int]($DotNetVersion / 100) + "." + ($DotNetVersion % 100)
-        Exit-Script -NoPause:$NoPause "Require .NET Framework v4.5, running $DotNetString"
-    }
 }
 
 # Collect files for the installers.
@@ -316,42 +301,6 @@ if (-not $NoPortable -and $Win32) {
 }
 if (-not $NoPortable -and $Win64) {
     Build-Portable "x64" "Win64" $VCRedist64
-}
-
-# Build the source archives.
-if (-not $NoSource) {
-    Write-Output "Building source archive..."
-
-    # Source archive name.
-    $SrcArchive = (Join-Path $InstallerDir "TSDuck-${Version}-src.zip")
-
-    # Create a temporary directory.
-    $TempDir = New-TempDirectory
-
-    Push-Location $TempDir
-    try {
-        # Copy project tree into temporary directory.
-        $TempRoot = (Join-Path $TempDir "TSDuck-${Version}")
-        Copy-Item $RootDir $TempRoot -Recurse
-
-        # Cleanup the temporary tree.
-        & (Join-MultiPath @($TempRoot, "scripts", "cleanup.ps1")) -Deep -NoPause -Silent
-
-        if ($NoTeletext) {
-            Get-ChildItem $TempRoot -Recurse -Include @("tsTeletextDemux.*", "tsplugin_teletext.*") | `
-                Remove-Item -Force -ErrorAction Ignore
-        }
-
-        # Create the source zip file.
-        Get-ChildItem -Recurse (Split-Path $TempRoot) | New-ZipFile $SrcArchive -Force -Root $TempDir
-    }
-    finally {
-        # Delete the temporary directory.
-        Pop-Location
-        if (Test-Path $TempDir) {
-            Remove-Item $TempDir -Recurse -Force
-        }
-    }
 }
 
 Exit-Script -NoPause:$NoPause

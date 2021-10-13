@@ -78,7 +78,7 @@ jobs:
 
     - name: Build installers
       if: env.REBUILD == 'true'
-      run: scripts/build-installer.ps1 -NoPause -NoLowPriority -NoSource
+      run: scripts/build-installer.ps1 -NoPause -NoLowPriority
 
     - name: Check built version (64-bit)
       if: env.REBUILD == 'true'
