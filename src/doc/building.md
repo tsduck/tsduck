@@ -65,7 +65,7 @@ Of course, this works only if your 64-bit system has all required 32-bit develop
 tools and libraries.
 
 To cleanup the repository tree and return to a pristine source state,
-execute `make distclean` at the top level.
+execute `make clean` at the top level.
 
 ## Building without specialized dependencies {#buildopt}
 
@@ -285,8 +285,6 @@ current version of TSDuck is 3.12-745.
 
 | File name                             | Description
 | ------------------------------------- | -----------------------------------------------------
-| TSDuck-3.12-745-src.zip               | Source archive on Windows
-| tsduck-3.12-745.tgz                   | Source archive on Linux and macOS
 | tsduck_3.12-745_amd64.deb             | Binary package for 64-bit Ubuntu
 | tsduck_3.12-745_armhf.deb             | Binary package for 32-bit Raspbian (Raspberry Pi)
 | tsduck-3.12-745.el7.i386.rpm          | Binary package for 32-bit Red Hat 7.x and clones
