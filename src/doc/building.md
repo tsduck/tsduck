@@ -60,10 +60,6 @@ parallel builds. On a quad-core machine, for instance, the command `make -j10`
 is recommended (10 parallel compilations), reducing the total build time to less
 than five minutes.
 
-To build a 32-bit version of TSDuck on a 64-bit system, execute the command `make m32`.
-Of course, this works only if your 64-bit system has all required 32-bit development
-tools and libraries.
-
 To cleanup the repository tree and return to a pristine source state,
 execute `make clean` at the top level.
 
@@ -287,17 +283,13 @@ current version of TSDuck is 3.12-745.
 | ------------------------------------- | -----------------------------------------------------
 | tsduck_3.12-745_amd64.deb             | Binary package for 64-bit Ubuntu
 | tsduck_3.12-745_armhf.deb             | Binary package for 32-bit Raspbian (Raspberry Pi)
-| tsduck-3.12-745.el7.i386.rpm          | Binary package for 32-bit Red Hat 7.x and clones
 | tsduck-3.12-745.el7.x86_64.rpm        | Binary package for 64-bit Red Hat 7.x and clones
 | tsduck-3.12-745.el7.src.rpm           | Source package for Red Hat 7.x and clones
-| tsduck-3.12-745.fc25.i386.rpm         | Binary package for 32-bit Fedora 25
 | tsduck-3.12-745.fc25.x86_64.rpm       | Binary package for 64-bit Fedora 25
 | tsduck-3.12-745.fc25.src.rpm          | Source package for Fedora 25
 | tsduck-dev_3.12-745_amd64.deb         | Development package for 64-bit Ubuntu
 | tsduck-dev_3.12-745_armhf.deb         | Development package for 32-bit Raspbian (Raspberry Pi)
-| tsduck-devel-3.12-745.el7.i386.rpm    | Development package for 32-bit Red Hat 7.x and clones
 | tsduck-devel-3.12-745.el7.x86_64.rpm  | Development package for 64-bit Red Hat 7.x and clones
-| tsduck-devel-3.12-745.fc25.i386.rpm   | Development package for 32-bit Fedora 25
 | tsduck-devel-3.12-745.fc25.x86_64.rpm | Development package for 64-bit Fedora 25
 | TSDuck-Win32-3.12-745.exe             | Binary installer for 32-bit Windows
 | TSDuck-Win64-3.12-745.exe             | Binary installer for 64-bit Windows

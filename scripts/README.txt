@@ -60,12 +60,6 @@ Build scripts on Windows
   automatically invoked by build.ps1 to ensure that the project files are
   always up to date.
 
-- build-user-guide-pdf.ps1 : This script updates the Microsoft Word document
-  for the TSDuck User's Guide. The version, dates, tables of contents and all
-  other fields are updated. The PDF file is generated. So, when updating the
-  documentation for new features, just add the description of the new features,
-  save and close the Word file and then run this script.
-
 - get-version-from-sources.ps1 : Extract the TSDuck version number from the
   source files.
 
@@ -138,12 +132,6 @@ Project files for Linux and macOS
 
 Configuration files for Linux
 -----------------------------
-- 80-tsduck.perms : Security settings for DVB adapters. Installed with the
-  TSDuck binary packages.
-
-- 80-tsduck.rules : Udev rules for DVB adapters. Installed with the TSDuck
-  binary packages.
-
 - tsduck.spec : RPM specification file to create TSDuck .rpm packages on
   Fedora, RedHat, CentOS, AlmaLinux and other clones.
 

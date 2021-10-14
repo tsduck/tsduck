@@ -52,32 +52,9 @@ $(GITHOOKS_TARGETS): Makefile
 	 echo 'exec $$(dirname $$0)/../../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
 	 chmod a+x "$@"
 
-# At least enforce the presence of the git hooks.
+# Enforce the presence of the git hooks.
 default: $(GITHOOKS_TARGETS)
-	+@$(RECURSE)
-
-# Install system files.
-.PHONY: install install-tools install-devel install-linux-config
-install: install-tools install-devel
-install-tools: $(if $(MACOS),,install-linux-config)
 	@true
-install-linux-config: 80-tsduck.rules 80-tsduck.perms
-	install -d -m 755 $(SYSROOT)$(UDEVDIR)
-	install -m 644 80-tsduck.rules $(SYSROOT)$(UDEVDIR)
-	install -d -m 755 $(SYSROOT)$(ETCDIR)/security/console.perms.d
-	install -m 644 80-tsduck.perms $(SYSROOT)$(ETCDIR)/security/console.perms.d
-install-devel:
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig
-	sed -e 's|{{VERSION}}|$(shell ./get-version-from-sources.sh --dotted)|g' \
-	    -e 's|{{PREFIX}}|$(SYSPREFIX)|g' \
-	    -e 's|{{LIBDIR}}|$(USRLIBDIR)|g' \
-	    $(if $(NOSRT),-e 's|srt||g',) \
-	    $(if $(NORIST),-e 's|librist||g',) \
-	    $(if $(NOPCSC),-e 's|libpcsclite||g',) \
-	    $(if $(NOCURL),-e 's|libcurl||d',) \
-	    -e 's|:[ ,]*|: |' -e 's|,[ ,]*|, |' -e 's|[ ,]*$$||' \
-	    tsduck.pc >$(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
-	chmod 644 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
 
 # Build the source tarballs for distribution.
 VERSION = $(shell ./get-version-from-sources.sh)
@@ -85,14 +62,13 @@ DISTRO  = $(shell ./get-version-from-sources.sh --distro)
 TARNAME = tsduck-$(VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
-ifdef NOTELETEXT
-    NOSOURCE += tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_teletext.cpp
-endif
+SKIPSRC = $(if $(NOTELETEXT),tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_teletext.cpp,)
+
 .PHONY: tarball
 tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
-	tar -C $(ROOTDIR) $(patsubst %,--exclude '%',$(NOSOURCE)) -cpf - . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
+	tar -C $(ROOTDIR) $(patsubst %,--exclude '%',$(SKIPSRC) $(NOSOURCE)) -cpf - . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
 	$(if $(NOTELETEXT),$(SED) -e '/tsTeletextDemux.h/d' -i $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h,)
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
 	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
@@ -130,36 +106,35 @@ rpm32:
 
 # Build the tsduck DEB package.
 # Make deb-dev depend on deb-tools to force serialization in case of -j.
-TMPDIR = /tmp/tsduck-deb-$(USER)
 .PHONY: deb deb-tools deb-dev
 deb: deb-tools deb-dev
 
 deb-tools:
+	rm -rf $(TMPROOT)
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR)
-	rm -rf $(TMPDIR)
-	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR) install-tools SYSROOT=$(TMPDIR)
-	mkdir $(TMPDIR)/DEBIAN
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR) install-tools SYSROOT=$(TMPROOT)
+	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    $(if $(NOSRT),-e '/libsrt/d',) \
 	    $(if $(NORIST),-e '/librist/d',) \
 	    $(if $(NOPCSC),-e '/libpcsc/d',) \
 	    $(if $(NOCURL),-e '/libcurl/d',) \
-	    tsduck.control >$(TMPDIR)/DEBIAN/control
-	dpkg-deb --build --root-owner-group $(TMPDIR) $(INSTALLERDIR)
-	rm -rf $(TMPDIR)
+	    tsduck.control >$(TMPROOT)/DEBIAN/control
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)
 
 deb-dev: deb-tools
+	rm -rf $(TMPROOT)
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR)
-	rm -rf $(TMPDIR)
-	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR) install-devel SYSROOT=$(TMPDIR)
-	mkdir $(TMPDIR)/DEBIAN
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR) install-devel SYSROOT=$(TMPROOT)
+	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
 	    $(if $(NOSRT),-e '/libsrt/d',) \
 	    $(if $(NORIST),-e '/librist/d',) \
 	    $(if $(NOPCSC),-e '/libpcsc/d',) \
 	    $(if $(NOCURL),-e '/libcurl/d',) \
-	    tsduck-dev.control >$(TMPDIR)/DEBIAN/control
-	dpkg-deb --build --root-owner-group $(TMPDIR) $(INSTALLERDIR)
-	rm -rf $(TMPDIR)
+	    tsduck-dev.control >$(TMPROOT)/DEBIAN/control
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)

@@ -35,9 +35,10 @@
 DONT_BUILD_DEPS := TRUE
 include ../../../Makefile.tsduck
 
-NORECURSE_SUBDIRS += bin src
-
-.PHONY: install
+.PHONY: install install-tools install-devel
+install: install-tools install-devel
+install-devel:
+	@true
 
 # Check presence of the Java compiler.
 JAVAC := $(shell $(ROOTDIR)/scripts/java-config.sh --javac)
@@ -45,7 +46,7 @@ JAVAC := $(shell $(ROOTDIR)/scripts/java-config.sh --javac)
 # Just skip Java build if no compiler is present.
 ifeq ($(JAVAC),)
 
-default install:
+default install-tools:
 	@true
 
 else
@@ -77,7 +78,7 @@ $(MANIFEST): Manifest.txt ../tsVersion.h
 	mkdir -p $(dir $@); \
 	$(SED) -e 's|{{VERSION}}|$(shell $(ROOTDIR)/scripts/get-version-from-sources.sh)|' Manifest.txt >$@
 
-install: $(JARFILE)
+install-tools: $(JARFILE)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
 	install -m 644 $(JARFILE) $(SYSROOT)$(SYSPREFIX)/share/tsduck/java
 
