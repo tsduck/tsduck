@@ -139,7 +139,6 @@ show-version: default
 .PHONY: install install-tools install-devel
 install install-tools install-devel:
 	$(MAKE) NOTEST=true -C src $@
-	$(MAKE) NOTEST=true -C scripts $@
 
 # Installers build targets are redirected to build subdirectory.
 .PHONY: tarball rpm rpm32 deb installer
@@ -217,11 +216,3 @@ cmacros:
 	@$(CPP) $(CFLAGS) -x c -dM /dev/null | sort
 cxxmacros:
 	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort
-
-# Display make variables for debug purposes.
-.PHONY: listvars
-listvars:
-	@true
-	$(foreach v, \
-	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG%,$(.VARIABLES))), \
-	  $(info $(v) = "$($(v))"))

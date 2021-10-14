@@ -620,6 +620,7 @@ endif
 # Project specific directories.
 
 INSTALLERDIR = $(ROOTDIR)/installers
+SCRIPTSDIR   = $(ROOTDIR)/scripts
 SRCROOT      = $(ROOTDIR)/src
 LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
@@ -834,3 +835,11 @@ ifndef TSPLUGINS
     TSPLUGINS := $(filter-out $(NO_TSPLUGINS),$(TSPLUGINS))
     export TSPLUGINS TSEXECS NO_TSEXECS NO_TSPLUGINS
 endif
+
+# Display make variables for debug purposes.
+.PHONY: listvars
+listvars:
+	@true
+	$(foreach v, \
+	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG%,$(.VARIABLES))), \
+	  $(info $(v) = "$($(v))"))
