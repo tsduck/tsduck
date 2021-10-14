@@ -111,9 +111,9 @@ deb-tools:
 	rm -rf $(TMPROOT)
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR)
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true -C $(ROOTDIR) install-tools SYSROOT=$(TMPROOT)
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
+	install -d -m 755 $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
 	install -m 644 $(ROOTDIR)/CHANGELOG.txt $(ROOTDIR)/LICENSE.txt $(ROOTDIR)/OTHERS.txt $(ROOTDIR)/doc/tsduck.pdf \
-	    $(SYSROOT)$(SYSPREFIX)/share/doc/tsduck
+	    $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
