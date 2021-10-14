@@ -33,8 +33,6 @@
 
 include ../Makefile.tsduck
 
-NORECURSE_SUBDIRS += build-tsduck-%
-
 # The script git-hook.sh shall be invoked for some selected Git hooks.
 #  - GITHOOKS_CMD     : File which executes the git hooks (relative to repository root).
 #  - GITHOOKS_LIST    : List of git hooks to update.
