@@ -26,19 +26,12 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-#
-#  There is nothing to build here, but cleanup is required.
-#
-#-----------------------------------------------------------------------------
 
 include ../Makefile.tsduck
-
-SAMPLE_SUBDIRS = $(filter sample-%,$(SUBDIRS))
-RECURSE_ORDER = $(if $(MAKECMDGOALS),$(if $(filter-out clean distclean,$(MAKECMDGOALS)),none,$(SAMPLE_SUBDIRS)),none)
 
 default:
 	@true
 
 .PHONY: sample
 sample:
-	@for dir in $(SAMPLE_SUBDIRS); do echo "=== Building $$dir"; $(MAKE) -C $$dir; done
+	@for dir in $(filter sample-%,$(SUBDIRS)); do echo "=== Building $$dir"; $(MAKE) -C $$dir; done

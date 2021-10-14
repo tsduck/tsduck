@@ -54,11 +54,10 @@
 
 include Makefile.tsduck
 
-NORECURSE_SUBDIRS += bin build dektec
-
-# By default, recurse make target in all subdirectories
+# By default, build TSDuck binaries.
 default:
-	+@$(RECURSE)
+	$(MAKE) -C scripts $@
+	$(MAKE) -C src $@
 
 # Build and run all tests.
 .PHONY: test-all
