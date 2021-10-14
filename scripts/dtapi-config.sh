@@ -300,6 +300,7 @@ download-dtapi()
     # Expand tarball.
     if [[ ! -d "$BINDIR/LinuxSDK" ]]; then
         info "expanding $tarball ..."
+        mkdir -p "$BINDIR"
         tar -C "$BINDIR" -xzf "$tarball"
         # Make sure that files are more recent than already compiled binaries.
         find "$BINDIR/LinuxSDK" -print0 | xargs -0 touch
