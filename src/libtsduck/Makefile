@@ -36,7 +36,7 @@ OBJSUBDIR = objs-libtsduck
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
 SKIPDIR := $(if $(findstring Darwin,$(shell uname -s)),linux,mac)
-CXXVPATH = $(patsubst ./%,%,$(shell find . -type d ! -name . ! -name windows ! -name $(SKIPDIR)))
+VPATH = $(patsubst ./%,%,$(shell find . -type d ! -name . ! -name windows ! -name $(SKIPDIR)))
 
 # Detect the presence of the Dektec DTAPI.
 # Define NODTAPI to compile without Dektec support.
@@ -57,8 +57,8 @@ endif
 
 # JNI headers (or disable JNI).
 
-JNI_CFLAGS := $(shell ../../scripts/java-config.sh --cflags)
-CXXFLAGS_INCLUDES += $(JNI_CFLAGS)
+JNI_CXXFLAGS := $(shell ../../scripts/java-config.sh --cflags)
+CXXFLAGS_INCLUDES += $(JNI_CXXFLAGS)
 
 # Now, we can include the common makefile.
 
@@ -95,13 +95,13 @@ $(OBJDIR)/tsStaticReferencesDVB.o: dtv/private/tsRefType.h tsduck.h
 
 # Specific (per-module) compilation options:
 
-$(OBJDIR)/tsAES.o:     CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tsDES.o:     CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tsTDES.o:    CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tsSHA1.o:    CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tsSHA256.o:  CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tsSHA512.o:  CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
-$(OBJDIR)/tsDVBCSA2.o: CFLAGS_OPTIMIZE = $(CFLAGS_FULLSPEED)
+$(OBJDIR)/tsAES.o:     CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
+$(OBJDIR)/tsDES.o:     CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
+$(OBJDIR)/tsTDES.o:    CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
+$(OBJDIR)/tsSHA1.o:    CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
+$(OBJDIR)/tsSHA256.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
+$(OBJDIR)/tsSHA512.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
+$(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 
 # Dektec code (if not empty) is encapsulated into the TSDuck library.
 
@@ -109,7 +109,7 @@ OBJS += $(DTAPI_OBJECT)
 
 # Add libtsduck internal headers.
 
-CFLAGS_INCLUDES += $(addprefix -I,$(shell find . -type d -name private))
+CXXFLAGS_INCLUDES += $(addprefix -I,$(shell find . -type d -name private))
 
 # Library containing all modules.
 # - Both static and dynamic libraries are created but only use the dynamic one when building
@@ -127,8 +127,8 @@ $(STATIC_LIBTSDUCK): $(OBJS)
 
 $(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
-	echo '  [CC] $@'; \
-	$(CC) $(CFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
+	echo '  [LD] $@'; \
+	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
 
 # Installation targets.
 

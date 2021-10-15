@@ -6,10 +6,10 @@
 #pragma once
 #include <stdint.h>
 
-// Many structures are poorly aligned and need padding.
 #if defined(__llvm__) || defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpadded"
+#pragma clang diagnostic ignored "-Wpadded" // Many structures are poorly aligned and need padding.
+#pragma clang diagnostic ignored "-Wreserved-identifier"
 #endif
 
 

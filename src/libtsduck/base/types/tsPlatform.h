@@ -742,7 +742,7 @@
 
 // Disable some warnings, application-wide, for various compilers.
 
-TS_GCC_NOWARNING(unused-parameter)          // Unused parameters are frequent with overrides.
+TS_GCC_NOWARNING(unused-parameter)                // Unused parameters are frequent with overrides.
 #if defined(TS_ARM)
     TS_GCC_NOWARNING(psabi)
 #endif
@@ -759,6 +759,7 @@ TS_LLVM_NOWARNING(reserved-id-macro)              // We sometimes use underscore
 TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Require C++11, no need for C++98 compatibility.
 TS_LLVM_NOWARNING(c++2a-compat)                   // Compatibility with C++2a is not yet a concern.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
+TS_LLVM_NOWARNING(reserved-identifier)            // Identifier '_Xxx' is reserved because it starts with '_' followed by a capital letter.
 
 TS_MSC_NOWARNING(4100)  // unreferenced formal parameter
 TS_MSC_NOWARNING(4189)  // local variable is initialized but not referenced

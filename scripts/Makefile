@@ -80,6 +80,10 @@ RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
 	rpmdev-setuptree
 
+# RPM building.
+RPMBUILD     ?= rpmbuild
+RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true',) $(RPMBUILDFLAGS_EXTRA)
+
 # Build the tsduck binary RPM.
 # The build will take place elsewhere, reuse local Dektec Linux SDK if present.
 .PHONY: rpm rpm32
