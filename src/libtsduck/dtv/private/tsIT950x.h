@@ -8,8 +8,9 @@
 
 #if defined(__llvm__) || defined(__clang__)
 #pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpadded" // Many structures are poorly aligned and need padding.
+#pragma clang diagnostic ignored "-Wunknown-warning-option"
 #pragma clang diagnostic ignored "-Wreserved-identifier"
+#pragma clang diagnostic ignored "-Wpadded" // Many structures are poorly aligned and need padding.
 #endif
 
 
