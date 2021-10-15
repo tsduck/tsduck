@@ -56,8 +56,8 @@ include Makefile.tsduck
 
 # By default, build TSDuck binaries.
 default:
-	$(MAKE) -C scripts $@
-	$(MAKE) -C src $@
+	@$(MAKE) -C scripts $@
+	@$(MAKE) -C src $@
 
 # Build and run all tests.
 .PHONY: test-all
@@ -92,7 +92,7 @@ debug:
 # Alternative target to recompile with optimizations for reduced code size.
 .PHONY: optsize
 optsize:
-	+@$(MAKE) CFLAGS_OPTIMIZE="$(CFLAGS_OPTSIZE)"
+	+@$(MAKE) CXXFLAGS_OPTIMIZE="$(CXXFLAGS_OPTSIZE)"
 
 # Alternative target to recompile with LLVM (clang) compiler
 .PHONY: llvm clang
@@ -132,17 +132,17 @@ sample:
 # Display the built version
 .PHONY: show-version
 show-version: default
-	$(BINDIR)/tsversion --version=all
+	@$(BINDIR)/tsversion --version=all
 
 # Install files, using SYSROOT as target system root if necessary.
 .PHONY: install install-tools install-devel
 install install-tools install-devel:
-	$(MAKE) NOTEST=true -C src $@
+	@$(MAKE) NOTEST=true -C src $@
 
 # Installers build targets are redirected to build subdirectory.
 .PHONY: tarball rpm rpm32 deb installer
 tarball rpm rpm32 deb installer:
-	$(MAKE) -C scripts $@
+	@$(MAKE) -C scripts $@
 
 # Count lines of code: Run cloc on the source code tree starting at current directory.
 CLOC         = cloc
@@ -151,7 +151,7 @@ CLOC_FLAGS   = --skip-uniqueness --quiet --exclude-ext=.tgz,.tar.gz,.tar,.pdf,.p
 .PHONY: cloc
 cloc:
 	@$(CLOC) $(CLOC_FLAGS) $(CLOC_SOURCES) | \
-	tee /dev/stderr | grep SUM: | awk '{print "Total lines in source files:   " $$3 + $$4 + $$5}'
+	    tee /dev/stderr | grep SUM: | awk '{print "Total lines in source files:   " $$3 + $$4 + $$5}'
 	@echo >&2 '-------------------------------------------'
 
 # Static code analysis: Run Coverity.
@@ -194,24 +194,7 @@ SCANBUILD_FLAGS    = -o $(BINDIR)
 scan-build:
 	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)
 
-# Cleanup Windows oddities in source files.
-# Many IDE's indent with tabs, and tabs are 4 chars wide.
-# Tabs shall not be expanded in Makefiles.
-.PHONY: unixify
-unixify:
-	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
-	  expand -t 4 $$f >$$f.tmp; \
-	  $(CHMOD) --reference=$$f $$f.tmp; \
-	  mv -f $$f.tmp $$f; \
-	done
-	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
-	  dos2unix -q $$f; \
-	  $(SED) -i -e 's/  *$$//' $$f; \
-	done
-
-# Utilities: display predefined macros for C and C++
-.PHONY: cmacros cxxmacros
-cmacros:
-	@$(CPP) $(CFLAGS) -x c -dM /dev/null | sort
+# Utilities: display predefined macros for C++
+.PHONY: cxxmacros
 cxxmacros:
 	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort
