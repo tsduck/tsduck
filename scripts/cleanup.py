@@ -53,7 +53,7 @@ def match_any(name, patterns):
 
 # Handler for rmtree() error
 def rmtree_error(func, file_path, excinfo):
-    print('=== error removing %s' % file_path)
+    print('**** error removing %s' % file_path)
     
 # Cleanup a directory tree.
 def cleanup_directory(root, keep, remove, norecurse):
@@ -79,7 +79,7 @@ def cleanup_directory(root, keep, remove, norecurse):
         file_path = root + os.sep + file_name
         is_dir = os.path.isdir(file_path)
         if not match_any(file_name, keep) and match_any(file_name, remove):
-            print('---- removing  %s' % file_path)
+            print('---- removing %s' % file_path)
             if is_dir:
                 shutil.rmtree(file_path, onerror = rmtree_error)
             else:
