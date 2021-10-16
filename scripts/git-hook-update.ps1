@@ -69,9 +69,7 @@ $GitLooksList | ForEach-Object {
     if (-not $fileOK -or -not (Select-String -Quiet -Path $file -SimpleMatch $line)) {
         Write-Output "  [GIT] updating $name hook"
         # We use IO.File methods to enforce LF as end of line.
-        if (-not $fileOK) {
-            [IO.File]::WriteAllText($file, "#!/usr/bin/env bash`n")
-        }
+        [IO.File]::WriteAllText($file, "#!/usr/bin/env bash`n")
         [IO.File]::AppendAllText($file, "$line`n")
     }
 }
