@@ -48,6 +48,7 @@ ifndef STATIC
     $(EXECS): $(SHARED_LIBTSDUCK)
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
+    # @@@ tsp, tspsi, tstabcomp, tstabdump, tstables: enforce inclusion of all tables, descriptors, charsets, plugins.
     LDFLAGS_EXTRA = -static
     $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
     $(EXECS): $(STATIC_LIBTSDUCK)

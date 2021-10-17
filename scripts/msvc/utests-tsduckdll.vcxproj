@@ -6,7 +6,7 @@
   </ImportGroup>
 
   <ItemGroup>
-    <TestSources Include="$(TSDuckRootDir)src\utest\**\*.cpp" Exclude="$(TSDuckRootDir)src\utest\**\dependenciesForStaticLib.cpp"/>
+    <TestSources Include="$(TSDuckRootDir)src\utest\**\*.cpp"/>
     <TestHeaders Include="$(TSDuckRootDir)src\utest\**\*.h"/>
     <ClInclude   Include="@(TestHeaders)"/>
     <ClCompile   Include="@(TestSources)"/>

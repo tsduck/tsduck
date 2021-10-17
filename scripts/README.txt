@@ -52,7 +52,7 @@ Build scripts on Windows
   It automatically invoke build.ps1. So, to build TSDuck installers from a
   freshly cloned repository, just run this script.
 
-- build-project-files.ps1 : This script builds all project files which list the
+- build-tsduck-header.ps1 : This script builds all project files which list the
   source files in the TSDuck DLL. Adding new source files in the TSDuck library
   is a common task. Each time a new file is added, some header files must be
   updated, such as tsduck.h, the main header file. This script recreates all
@@ -99,11 +99,11 @@ Build scripts on Windows
 
 Project files for Linux and macOS
 ---------------------------------
-- build-project-files.sh : This shell script is the Unix equivalent of
-  build-project-files.ps1. It is automatically invoked by the makefiles of
+- build-tsduck-header.sh : This shell script is the Unix equivalent of
+  build-tsduck-header.ps1. It is automatically invoked by the makefiles of
   the directory of each project file.
 
-- create-release-text.sh : This shell script recreates the MarkDown file which
+- build-release-text.sh : This shell script builds the MarkDown file which
   describes the latest TSDuck release on GitHub.
 
 - build-remote.sh : Build the TSDuck installers on a remote system, either a

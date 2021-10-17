@@ -30,19 +30,14 @@
 <#
  .SYNOPSIS
 
-  Build the various project files for the TSDuck library.
+  Rebuilt tsduck.h, the global header for the TSDuck library.
 
  .DESCRIPTION
 
   This script is useful when source files are added to or removed from the
   directory src\libtsduck.
 
-  The following files are rebuilt:
-
-  - src/libtsduck/tsduck.h
-  - src/libtsduck/dtv/private/tsRefType.h
-
-  See the shell script build-project-files.sh for a Unix equivalent.
+  See the shell script build-tsduck-header.sh for a Unix equivalent.
 
  .PARAMETER NoPause
 
@@ -53,25 +48,14 @@
 [CmdletBinding()]
 param([switch]$NoPause = $false)
 
-# PowerShell execution policy.
-Set-StrictMode -Version 3
-
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
 $SrcDir = "$RootDir\src\libtsduck"
-$MsvcDir = "$PSScriptRoot\msvc"
-
-# Relative path from Visual Studio project files to libtsduck source directory.
-$MsSrcRelPath = "..\..\src\libtsduck\"
-$QtSrcRelPath = "../../../src/libtsduck/"
 
 # Get all libtsduck files by type.
-function GetSources()
+function Get-Headers([string[]] $Include = @(), [string[]] $Exclude = @())
 {
-    [CmdletBinding()]
-    param([string]$Type, [switch]$Unix = $false, [switch]$Windows = $false, [string]$Prefix = "", [string]$Suffix, [string[]]$Include = @(), [string[]]$Exclude = @())
-
-    Get-ChildItem "$SrcDir" -Recurse -Include "*.$Type" | `
+    Get-ChildItem "$SrcDir" -Recurse -Include "*.h" | `
         Where-Object {
             $tmpname = $_.FullName
             ($Include.Count -eq 0) -or (($Include | ForEach-Object { $tmpname -like $_ }) -contains $true)
@@ -81,72 +65,30 @@ function GetSources()
             ($Exclude.Count -eq 0) -or -not (($Exclude | ForEach-Object { $tmpname -like $_ }) -contains $true)
         } | `
         ForEach-Object {
-            if ($Unix) {
-                $name = $_.FullName.Replace("$SrcDir\","") -replace "\\","/"
-            }
-            elseif ($Windows) {
-                $name = $_.FullName.Replace("$SrcDir\","")
-            }
-            else {
-                $name = $_.Name
-            }
-            $Prefix + $name + $Suffix
+            "#include `"" + $_.Name + "`""
         } | `
         Sort-Object -Culture en-US
 }
 
-# Get files based on doxygen group.
-function GetGroup()
-{
-    [CmdletBinding()]
-    param([string]$Group, [string]$Prefix = "", [string]$Suffix)
-
-    Get-ChildItem "$SrcDir" -Recurse -Include "*.h" -Exclude @("tsAbstract*.h", "tsVCT.h") | `
-        Select-String -Pattern "@ingroup *$group" | `
-        Select-Object -Unique Filename | `
-        ForEach-Object {$prefix + ($_.Filename -replace '^ts','' -replace '\.h$','') + $suffix} | `
-        Sort-Object -Culture en-US
-}
-
 # Generate the main TSDuck header file.
-function GenerateMainHeader()
-{
-    $prefix = "#include `""
-    $suffix = "`""
-
+& {
     Get-Content $SrcDir\..\HEADER.txt
     echo ''
     echo '#pragma once'
-    GetSources -Type h -Prefix $prefix -Suffix $suffix `
-        -Exclude @("*\tsStaticReferences*", "*Template.h", "*\tsduck.h", "*\unix\*", "*\linux\*", "*\mac\*", "*\windows\*", "*\private\*")
+    Get-Headers -Exclude @("*Template.h", "*\tsduck.h", "*\unix\*", "*\linux\*", "*\mac\*", "*\windows\*", "*\private\*")
     echo ''
     echo '#if defined(TS_LINUX)'
-    GetSources -Type h -Prefix $prefix -Suffix $suffix -Exclude @("*Template.h") -Include @("*\unix\*", "*\linux\*")
+    Get-Headers -Exclude @("*Template.h") -Include @("*\unix\*", "*\linux\*")
     echo '#endif'
     echo ''
     echo '#if defined(TS_MAC)'
-    GetSources -Type h -Prefix $prefix -Suffix $suffix -Exclude @("*Template.h") -Include @("*\unix\*", "*\mac\*")
+    Get-Headers -Exclude @("*Template.h") -Include @("*\unix\*", "*\mac\*")
     echo '#endif'
     echo ''
     echo '#if defined(TS_WINDOWS)'
-    GetSources -Type h -Prefix $prefix -Suffix $suffix -Exclude @("*Template.h") -Include @("*\windows\*")
+    Get-Headers -Exclude @("*Template.h") -Include @("*\windows\*")
     echo '#endif'
-}
-
-# Generate the header file containing static references to all tables and descriptors.
-function GenerateRefType()
-{
-    $prefix = "    REF_TYPE("
-    $suffix = ");"
-
-    GetGroup -Group table -Prefix $prefix -Suffix $suffix
-    echo ''
-    GetGroup -Group descriptor -Prefix $prefix -Suffix $suffix
-}
-
-# Generate the files.
-GenerateMainHeader | Out-File -Encoding ascii $SrcDir\tsduck.h
-GenerateRefType    | Out-File -Encoding ascii $SrcDir\dtv\private\tsRefType.h
+} | Out-File -Encoding ascii $SrcDir\tsduck.h
 
 if (-not $NoPause) {
     pause

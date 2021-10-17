@@ -41,10 +41,10 @@ default: execs
 execs: $(BINDIR)/utest $(BINDIR)/utest_static
 
 # Build two versions of the test executable.
-# 1) Using shared object. Skip the module which create static references.
-$(BINDIR)/utest: $(subst $(OBJDIR)/dependenciesForStaticLib.o,,$(OBJS)) $(SHARED_LIBTSDUCK)
+# 1) Using shared object.
+$(BINDIR)/utest: $(OBJS) $(SHARED_LIBTSDUCK)
 
-# 2) Using static library. Skipt plugin tests since they use the shared object.
+# 2) Using static library. Skip plugin tests since they use the shared object.
 $(BINDIR)/utest_static: $(subst $(OBJDIR)/utestPluginRepository.o,,$(OBJS)) $(STATIC_LIBTSDUCK)
 	@echo '  [LD] $@'; \
 	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
