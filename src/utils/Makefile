@@ -44,6 +44,7 @@ default: execs
 execs: $(EXECS)
 
 # We always build tsprofiling with the static library.
+# @@@ enforce inclusion of all tables, descriptors, charsets, plugins.
 STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
 ifndef STATIC
     $(BINDIR)/tsprofiling: $(STATIC_DEPS)

@@ -50,7 +50,6 @@ the static library. On UNIX systems, both versions of the test suite are built a
 $ make -j10 test
   .....
   [CXX] utestXML.cpp
-  [CXX] dependenciesForStaticLib.cpp
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
 TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest 

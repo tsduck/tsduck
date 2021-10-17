@@ -39,12 +39,6 @@
 #include "tsPagerArgs.h"
 TS_MAIN(MainCode);
 
-// With static link, enforce a reference to MPEG/DVB structures.
-#if defined(TSDUCK_STATIC_LIBRARY)
-#include "tsStaticReferencesDVB.h"
-const ts::StaticReferencesDVB dependenciesForStaticLib;
-#endif
-
 
 //----------------------------------------------------------------------------
 //  Command line options

@@ -74,24 +74,22 @@ RECURSE_ORDER = config python java
 default: headers libs
 	+@$(RECURSE)
 
-# The GEN_HEADERS headers are automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
+# The tsduck.h header is automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
 
-GEN_HEADERS = tsduck.h dtv/private/tsRefType.h
-SRC_HEADERS = $(filter-out $(GEN_HEADERS),$(wildcard *.h */*.h */*/*.h))
-BUILD_PROJ_FILES = $(ROOTDIR)/scripts/build-project-files.sh
+SRC_HEADERS = $(filter-out tsduck.h,$(wildcard *.h */*.h */*/*.h))
+BUILD_TSDUCK_H = $(ROOTDIR)/scripts/build-tsduck-header.sh
 
 .PHONY: headers
-headers: $(GEN_HEADERS)
-$(GEN_HEADERS): $(BUILD_PROJ_FILES) $(SRCROOT)/HEADER.txt $(SRC_HEADERS)
+headers: tsduck.h
+tsduck.h: $(BUILD_TSDUCK_H) $(SRCROOT)/HEADER.txt $(SRC_HEADERS)
 	@echo '  [REBUILD] $@'; \
-	$(BUILD_PROJ_FILES) $@
+	$(BUILD_TSDUCK_H)
 
-# These header files are regenerated and, normally, make should know that they must be
+# This header file is regenerated and, normally, make should know that they must be
 # finished before building tsVersionInfo.o. However, the .dep file contains full paths
 # of dependencies and make cannot realize it is the same header files.
 
 $(OBJDIR)/tsduck.o: tsduck.h
-$(OBJDIR)/tsStaticReferencesDVB.o: dtv/private/tsRefType.h tsduck.h
 
 # Specific (per-module) compilation options:
 
@@ -116,8 +114,6 @@ CXXFLAGS_INCLUDES += $(addprefix -I,$(shell find . -type d -name private))
 #   tools and plugins.
 # - There are so many object files that one single big 'ar' command is faster than individual
 #   'ar' commands per object module.
-# - The module tsStaticReferencesDVB is used only in the static library. It is useless in
-#   the dynamic library. In fact, it would only slow down application startup.
 
 .PHONY: libs
 libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
@@ -125,7 +121,7 @@ libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 $(STATIC_LIBTSDUCK): $(OBJS)
 	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
 
-$(SHARED_LIBTSDUCK): $(filter-out $(OBJDIR)/tsStaticReferencesDVB.o,$(OBJS))
+$(SHARED_LIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [LD] $@'; \
 	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
