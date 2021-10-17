@@ -41,6 +41,11 @@
   When used in a GitHub Action workflow, make sure that the required
   environment variables are propagated to subsequent jobs.
 
+ .PARAMETER NoDoxygen
+
+  Do not install doxygen and its dependencies. Install everything else to
+  build the project binaries.
+
  .PARAMETER NoPause
 
   Do not wait for the user to press <enter> at end of execution. By default,
@@ -51,14 +56,17 @@
 param(
     [switch]$ForceDownload = $false,
     [switch]$GitHubActions = $false,
+    [switch]$NoDoxygen = $false,
     [switch]$NoPause = $false
 )
 
-& (Join-Path $PSScriptRoot install-nsis.ps1)     -NoPause -ForceDownload:$ForceDownload
-& (Join-Path $PSScriptRoot install-libsrt.ps1)   -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-librist.ps1)  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-graphviz.ps1) -NoPause -ForceDownload:$ForceDownload
-& (Join-Path $PSScriptRoot install-doxygen.ps1)  -NoPause -ForceDownload:$ForceDownload
-& (Join-Path $PSScriptRoot install-java.ps1)     -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-python.ps1)   -NoPause -ForceDownload:$ForceDownload
-& (Join-Path $PSScriptRoot install-dtapi.ps1)    -NoPause:$NoPause -ForceDownload:$ForceDownload
+if (-not $NoDoxygen) {
+    & (Join-Path $PSScriptRoot install-graphviz.ps1) -NoPause -ForceDownload:$ForceDownload
+    & (Join-Path $PSScriptRoot install-doxygen.ps1)  -NoPause -ForceDownload:$ForceDownload
+}
+& (Join-Path $PSScriptRoot install-nsis.ps1)    -NoPause -ForceDownload:$ForceDownload
+& (Join-Path $PSScriptRoot install-python.ps1)  -NoPause -ForceDownload:$ForceDownload
+& (Join-Path $PSScriptRoot install-libsrt.ps1)  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& (Join-Path $PSScriptRoot install-librist.ps1) -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& (Join-Path $PSScriptRoot install-java.ps1)    -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& (Join-Path $PSScriptRoot install-dtapi.ps1)   -NoPause:$NoPause -ForceDownload:$ForceDownload

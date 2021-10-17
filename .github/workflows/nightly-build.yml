@@ -74,7 +74,7 @@ jobs:
 
     - name: Install dependencies
       if: env.REBUILD == 'true'
-      run: scripts/install-prerequisites.ps1 -GitHubActions -NoPause
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
 
     - name: Build installers
       if: env.REBUILD == 'true'

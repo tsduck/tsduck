@@ -157,7 +157,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: scripts/install-prerequisites.ps1 -GitHubActions -NoPause
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
     - name: Build TSDuck
       run: scripts/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
@@ -189,7 +189,7 @@ jobs:
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
-      run: scripts/install-prerequisites.ps1 -GitHubActions -NoPause
+      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
     - name: Build TSDuck
       run: scripts/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
