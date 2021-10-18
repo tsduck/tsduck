@@ -35,8 +35,9 @@ OBJSUBDIR = objs-libtsduck
 
 # Some source files are located in subdirectories but should be considered as part of libtsduck.
 
+ALLDIRS := $(patsubst %/,%,$(sort $(dir $(wildcard *.h */*.h */*/*.h *.cpp */*.cpp */*/*.cpp))))
 SKIPDIR := $(if $(findstring Darwin,$(shell uname -s)),linux,mac)
-VPATH = $(patsubst ./%,%,$(shell find . -type d ! -name . ! -name windows ! -name $(SKIPDIR)))
+VPATH := $(filter-out . %/windows %/$(SKIPDIR),$(ALLDIRS))
 
 # Detect the presence of the Dektec DTAPI.
 # Define NODTAPI to compile without Dektec support.
@@ -48,7 +49,7 @@ ifeq ($(NODTAPI),)
         DTAPI_HEADER := $(shell ../../scripts/dtapi-config.sh --header)
     endif
     ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
-        NODTAPI := true
+        NODTAPI = true
         CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
     else
         CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
@@ -76,7 +77,7 @@ default: headers libs
 
 # The tsduck.h header is automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
 
-SRC_HEADERS = $(filter-out tsduck.h,$(wildcard *.h */*.h */*/*.h))
+SRC_HEADERS = $(filter-out tsduck.h %Template.h,$(wildcard *.h */*.h */*/*.h))
 BUILD_TSDUCK_H = $(ROOTDIR)/scripts/build-tsduck-header.sh
 
 .PHONY: headers
@@ -105,26 +106,68 @@ $(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 
 OBJS += $(DTAPI_OBJECT)
 
-# Add libtsduck internal headers.
+# Add libtsduck internal headers when compiling libtsduck.
 
-CXXFLAGS_INCLUDES += $(addprefix -I,$(shell find . -type d -name private))
+CXXFLAGS_INCLUDES += $(addprefix -I,$(filter %/private,$(ALLDIRS)))
 
-# Library containing all modules.
-# - Both static and dynamic libraries are created but only use the dynamic one when building
-#   tools and plugins.
-# - There are so many object files that one single big 'ar' command is faster than individual
-#   'ar' commands per object module.
+# By default, both static and dynamic libraries are created but only use
+# the dynamic one when building tools and plugins. In case of static build,
+# only build the static library.
 
 .PHONY: libs
 libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 
-$(STATIC_LIBTSDUCK): $(OBJS)
-	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
+# The shared library contains all modules.
 
 $(SHARED_LIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [LD] $@'; \
 	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
+
+# The static library is build differently. There are four specific categories:
+# tables, descriptors, charsets and plugins. These classes use self-registration
+# in their initialization. They are usually not individually referenced. When
+# the category is referenced, all members must be loaded. In each category, a
+# partial link is performed to pre-link all members in a big object file.
+# If NOSTATICBLOB is defined, this phase is skipped and all object files are
+# individually archived without grouping.
+
+ifdef NOSTATICBLOB
+
+OBJS_STATIC_LIB = $(OBJS)
+
+else
+
+F_OBJ_BLOB  = $(addsuffix .o,$(addprefix $(OBJDIR)/,$(sort $(notdir $(basename $(wildcard $(1)/*.cpp))))))
+OBJS_TABLES = $(call F_OBJ_BLOB,dtv/tables)
+OBJS_DESCS  = $(call F_OBJ_BLOB,dtv/descriptors)
+OBJS_CHARS  = $(call F_OBJ_BLOB,dtv/charset)
+OBJS_PLUGS  = $(call F_OBJ_BLOB,plugins/plugins)
+
+OBJ_ALLTABLES = $(OBJDIR)/alltables.o
+OBJ_ALLDESCS  = $(OBJDIR)/alldescriptors.o
+OBJ_ALLCHARS  = $(OBJDIR)/allcharsets.o
+OBJ_ALLPLUGS  = $(OBJDIR)/allplugins.o
+
+$(OBJ_ALLTABLES): $(OBJS_TABLES)
+	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+$(OBJ_ALLDESCS): $(OBJS_DESCS)
+	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+$(OBJ_ALLCHARS): $(OBJS_CHARS)
+	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+$(OBJ_ALLPLUGS): $(OBJS_PLUGS)
+	@echo '  [LD] $@'; $(LD) -r $^ -o $@
+
+OBJS_STATIC_LIB = $(filter-out $(OBJS_TABLES) $(OBJS_DESCS) $(OBJS_CHARS) $(OBJS_PLUGS),$(OBJS)) \
+    $(OBJ_ALLTABLES) $(OBJ_ALLDESCS) $(OBJ_ALLCHARS) $(OBJ_ALLPLUGS)
+
+endif
+
+# Build the static library using one single big 'ar'. There are so many object files
+# that this is much faster than individual 'ar' commands per object module.
+
+$(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB)
+	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
 
 # Installation targets.
 

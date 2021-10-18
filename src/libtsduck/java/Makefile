@@ -58,7 +58,7 @@ JAR      := $(shell $(ROOTDIR)/scripts/java-config.sh --jar)
 CLASSDIR  = $(OBJDIR)/java
 JARFILE   = $(OBJDIR)/tsduck.jar
 MANIFEST  = $(CLASSDIR)/Manifest.txt
-JSOURCES := $(shell find src -name '*.java')
+JSOURCES := $(wildcard src/io/tsduck/*.java)
 JCLASSES := $(patsubst src/%.java,$(CLASSDIR)/%.class,$(JSOURCES))
 
 $(CLASSDIR)/%.class: src/%.java
