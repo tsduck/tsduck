@@ -725,6 +725,7 @@ ifdef BITRATE_DECIMALS
 endif
 
 # $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
+
 ifeq ($(MACOS),)
     # Link flags on Linux
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
@@ -737,7 +738,12 @@ else
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
-CXXFLAGS_INCLUDES += $(addprefix -I,$(shell find $(LIBTSDUCKDIR) -type d ! -name private ! -name windows ! -name $(if $(MACOS),linux,mac)))
+# List of libtsduck directories containing public headers.
+
+ifndef PUBLIC_INCLUDES
+    export PUBLIC_INCLUDES := $(filter-out %/private %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
+endif
+CXXFLAGS_INCLUDES += $(addprefix -I,$(PUBLIC_INCLUDES))
 
 # List of plugins and tools to build.
 # - Do not compile Dektec or HiDes tools when these devices are unsupported.
@@ -776,6 +782,7 @@ endif
 # Cleanup Windows oddities in source files.
 # Many IDE's indent with tabs, and tabs are 4 chars wide.
 # Tabs shall not be expanded in Makefiles.
+
 .PHONY: unixify
 unixify:
 	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
@@ -789,6 +796,7 @@ unixify:
 	done
 
 # Display make variables for debug purposes.
+
 .PHONY: listvars
 listvars:
 	@true
