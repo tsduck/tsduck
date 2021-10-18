@@ -28,40 +28,55 @@
 #-----------------------------------------------------------------------------
 #
 #  Common makefile definitions for the TSDuck project.
+#  To be included in all makefiles in the project.
+#
+#  General note: To speed up make recursion, some variables are exported when
+#  their definition take some time.
 #
 #-----------------------------------------------------------------------------
 
 # If no target precedes the inclusion of this file, use "default" as target.
+
 .PHONY: first default
 first: default
 	@true
 
-# General note: To speed up make recursion, some variables are exported when
-# their definition take some time.
-
 # Some nerds define exotic shells as default. Stay to a known shell.
 # Skip initialization files to speed up and reproduceability.
+
 SHELL := /usr/bin/env bash --noprofile --norc
 
-# Enforce English locale by default.
+# The directory which contains the currently included Makefile is the project root.
+
+ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
+
+# Enforce English locale by default for predictible output.
+
 export LANGUAGE = en_US.UTF-8
 export LC_ALL = en_US.UTF-8
 export LANG = en_US.UTF-8
+
+# Representation of a space and a comma character (make oddities...)
+
+EMPTY =
+SPACE = $(EMPTY) $(EMPTY)
+COMMA = ,
 
 # The function F_SEARCH searches a command in $PATH and in a few other predefined
 # directories. Return the full path of the first found, empty if not found.
 # Example: $(call F_SEARCH,ls)
 
-export F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin /opt/homebrew/bin $(HOME)/bin)))
+F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin /opt/homebrew/bin $(HOME)/bin)))
 
 # The funtion F_COMMAND searches a command with F_SEARCH. If the command is not
 # found, return the second parameter as default value. The following example
 # searches for a command named "gsed" and, if not found, use command "sed" as
 # fallback: $(call F_COMMAND,gsed,sed)
 
-export F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
+F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
 
 # Find GNU alternatives to sed, grep. fgrep, chmod.
+
 ifndef SED
     export SED   := $(call F_COMMAND,gsed,sed)
     export GREP  := $(call F_COMMAND,ggrep,grep)
@@ -69,45 +84,17 @@ ifndef SED
     export CHMOD := $(call F_COMMAND,gchmod,chmod)
 endif
 
-# Representation of a space and a comma character
-EMPTY =
-SPACE = $(EMPTY) $(EMPTY)
-COMMA = ,
-
 # Recursive invocations of make should be silent.
+
 MAKEFLAGS += --no-print-directory
 
 # Check if "make -k" is specified (ie. continue on error).
+
 CONTINUE := $(if $(findstring k,$(filter-out --%,$(MAKEFLAGS))),true,)
 
-# The directory which contains the currently included Makefile is the project root.
-ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
+# The function F_RECURSE recurses the current make targets in the specified subdirectories.
 
-# List of subdirectories in the current directory.
-SUBDIRS = $(sort $(patsubst %/,%,$(wildcard */)))
-
-# List of subdirectories to ignore in make recursion.
-NORECURSE_SUBDIRS += tmp bin debug release debug-% release-% Debug Release Debug-% Release-% .vs ipch %.t2d .git cov-int __pycache__
-
-# Actual recurse order. If the user did not define RECURSE_ORDER, use all
-# subdirectories, except those for which we know there is nothing to make.
-# $(RECURSE_ORDER) defines which subdirectories should be used in which order
-# in the $(RECURSE) shell command. Non-existent subdirectories are ignored.
-# See RECURSE in the section "Output variables" below.
-#
-# Caveat: If you do not want to recurse into subdirectories, do not
-# define the variable as empty. If it is empty, the default will apply
-# (all subdirectories). Instead, define its value as something that does
-# not correspond to any existing directory (eg. RECURSE_ORDER = none).
-
-RECURSE_SUBDIRS = $(filter $(SUBDIRS),$(filter-out $(NORECURSE_SUBDIRS),$(if $(RECURSE_ORDER),$(RECURSE_ORDER),$(SUBDIRS))))
-
-# $(RECURSE) is a shell command which recurses the current make targets
-# in the subdirectories. By default, the $(RECURSE) command applies to all
-# subdirectories in alphabetical order. If the input variable $(RECURSE_ORDER)
-# is defined and non empty, it is used as the list of subdirectories to recurse into.
-
-RECURSE = for dir in $(RECURSE_SUBDIRS); do $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); done
+F_RECURSE = for dir in $(1); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); fi; done
 
 # Operating system, architecture, host name.
 # $(LOCAL_ARCH) is the local processor exact architecture ("i686", "x86_64", "armv7l", etc.)
@@ -142,6 +129,7 @@ endif
 
 # Compute best multiprocessor make option if unspecified.
 # Warning, this must be a delayed eval ("=", not ":=").
+
 MAKEFLAGS_SMP = $(if $(filter -j%,$(MAKEFLAGS)),$(filter -j%,$(MAKEFLAGS)),-j$(CPU_COUNT))
 
 # Detect Cygwin platform. Impacts:
@@ -165,11 +153,13 @@ else
 endif
 
 # Executable files and shared objects suffix.
+
 EXE_SUFFIX = $(if $(CYGWIN),.exe,)
 SO_SUFFIX = $(if $(CYGWIN),.dll,$(if $(MACOS),.dylib,.so))
 
 # Define compilation flags for 32-bit cross-compilation.
 # Target architecture is skipped on ARM because of numerous variants.
+
 ifdef M32
     override MAIN_ARCH := i386
     override TARGET_FLAGS := -march=i686
@@ -184,6 +174,7 @@ endif
 export MAIN_ARCH TARGET_FLAGS
 
 # Use $(CXX) for compilation. Use $(GCC) to explicitly reference GCC.
+
 GCC ?= gcc
 
 # Cross-compilation support.
@@ -224,12 +215,34 @@ else
                      -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib
 endif
 
+# Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
+# Define USELIB64 as "true" or empty. Linuxbrew does not use lib64.
+
+USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true,)))
+
+# $(SYSPREFIX) is the installation prefix. If not set on input, it is
+# defined as /usr/local or /opt/homebrew on macOS and /usr on Linux.
+# On macOS, the Homebrew root is used without system privileges.
+#
+# $(USRLIBDIR) is the library directory for the target architecture.
+# This is $(SYSPREFIX)/lib64 for Linux x86_64 where /usr/lib64/libc.so* exists
+# and $(SYSPREFIX)/lib elsewhere.
+#
+# $(UDEVDIR) is the directory for system-defined udev rules. $(ETCDIR) is
+# the system configuration directory. This is /etc if $(SYSPREFIX) is /usr
+# and $(SYSPREFIX)/etc otherwise.
+
+SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
+ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
+USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
+UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
+
 # All binaries are built into one single root directory named
 # bin/release|debug-arch-hostname where bin is located in the top-level directory.
 # The variable $(BINDIR) points to this directory. The variable $(OBJDIR) points
 # to the directory where object files are stored. This is, by default, the same place as
 # $(BINDIR), except when a local makefile defines $(OBJSUBDIR).
-
+#
 # $(BINDIR_SUFFIX) is a fixed suffix to add to generated $(BINDIR) subdirectory name.
 # It is ignored if $(BINDIR) is defined as input variable. Duplicate the output tree
 # using $(BINDIR_SUFFIX) for specific compilers or profiling tools.
@@ -305,7 +318,8 @@ ifeq ($(GCC_VERSION_DONE),)
     export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true,)
 endif
 
-# Forced usage of LLVM (clang)
+# Forced usage of LLVM (clang).
+
 ifdef LLVM
     export USE_GCC :=
     export USE_LLVM := true
@@ -344,6 +358,7 @@ endif
 
 # Always use maximal or even paranoid warning mode.
 # With clang, the option -Weverything turns everything on. There is no such option with GCC.
+
 CXXFLAGS_WARNINGS = -Werror
 ifdef USE_LLVM
     CXXFLAGS_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
@@ -373,12 +388,15 @@ else
 endif
 
 # Language levels.
+
 CXXFLAGS_STANDARD ?= -std=c++11
 
 # Compilation flags for security.
+
 CXXFLAGS_SECURITY = -fstack-protector-all
 
 # Compilation flags in debug mode.
+
 ifdef DEBUG
     CXXFLAGS_DEBUG = -g -DDEBUG=1
     LDFLAGS_DEBUG =
@@ -388,6 +406,7 @@ else
 endif
 
 # Compilation flags for code coverage using gcov.
+
 ifdef GCOV
     CXXFLAGS_GCOV = --coverage -DGCOV=1
     LDFLAGS_GCOV = --coverage
@@ -397,6 +416,7 @@ else
 endif
 
 # Compilation flags for code profiling using gprof.
+
 ifdef GPROF
     CXXFLAGS_GPROF = -g -pg -DGPROF=1
     LDFLAGS_GPROF = -g -pg
@@ -406,20 +426,37 @@ else
 endif
 
 # Compilation flags for posix threads.
+
 CXXFLAGS_PTHREAD = -pthread
 LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
 
 # External libraries
+
 LDLIBS += -lstdc++ -lpthread $(if $(MACOS),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
+
 CXXFLAGS = $(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
            $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(TARGET_FLAGS) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) \
            $(CXXFLAGS_CROSS) $(CXXFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
 LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(TARGET_FLAGS) \
            $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
+
+# $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
+
+ifeq ($(MACOS),)
+    # Link flags on Linux
+    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
+    LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
+    SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
+else
+    # Link flags on macOS
+    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
+    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
+    SOFLAGS = -install_name '@rpath/$(notdir $@)'
+endif
 
 # Implicit search directives.
 # VPATH contain directories where *.h and *.cpp files are searched.
@@ -429,27 +466,6 @@ ifneq ($(VPATH),)
     vpath %.cpp $(VPATH)
     vpath %.h $(VPATH)
 endif
-
-# Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
-# Linuxbrew does not use lib64. Define USELIB64 as "true" or empty.
-USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true,)))
-
-# $(SYSPREFIX) is the installation prefix. If not set on input, it is
-# defined as /usr/local or /opt/homebrew on macOS and /usr on Linux.
-# On macOS, the Homebrew root is used without system privileges.
-#
-# $(USRLIBDIR) is the library directory for the target architecture.
-# This is $(SYSPREFIX)/lib64 for Linux x86_64 where /usr/lib64/libc.so* exists
-# and $(SYSPREFIX)/lib elsewhere.
-#
-# $(UDEVDIR) is the directory for system-defined udev rules. $(ETCDIR) is
-# the system configuration directory. This is /etc if $(SYSPREFIX) is /usr
-# and $(SYSPREFIX)/etc otherwise.
-
-SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
-ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
-USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
-UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
 # Source and object files in current directory.
 # - $(SOURCES) : All C and C++ source files in the current directory.
@@ -475,26 +491,12 @@ OBJS_MAIN     = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
 OBJS_LIB      = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
 EXECS         = $(addprefix $(BINDIR)/,$(MODULES_MAIN))
 
-# Keep intermediate files, avoid using "ar" again.
-.SECONDARY:
-
-# When using parallel make ("-j") on Linux, the command "ar" is badly handled.
-# This foolish make can run simultaneous "ar" commands on the same .a file,
-# which usually results in a corrupted library file. We have to explicitly
-# serialize access to the library file using flock. However, flock is specific
-# to Linux and not present on macOS.
-FLOCK ?= $(call F_SEARCH,flock)
-ARLOCK = $(if $(FLOCK),$(FLOCK) -w 60 $(patsubst %/,%,$(dir $@)),)
-export FLOCK
-
 # Compilation rules
+
 $(OBJDIR)/%.o: %.cpp
 	@echo '  [CXX] $<'; \
 	mkdir -p $(OBJDIR); \
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
-(%): %
-	@echo '  [AR] $<'; \
-	$(ARLOCK) $(AR) $(ARFLAGS) $@ $<
 $(BINDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
@@ -502,23 +504,11 @@ $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
-# Object files dependencies (.dep files, included by makefiles)
-$(OBJDIR)/%.dep: %.cpp
-	@echo '  [DEP] $<'; \
-	mkdir -p $(OBJDIR); \
-	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
-	rm -f $@
-
-# Rebuild and include all .dep files, unless the explicit targets do not require the .dep files.
-# If $(DONT_BUILD_DEPS) is defined, do not attempt to build the header dependency files.
-# Useful when the source file depend on dynamically generated header files (initially non-existent).
+# Dependency (.dep) files: For each xxx.cpp source file, there is one
+# xxx.dep file in the same directory as xxx.o. The file xxx.dep lists
+# all .h dependencies for xxx.cpp.
 #
-# $(NODEPS) lists the make targets in the parent makefile which shall not
-# enforce the generation of header dependency files. This is a bit complicated
-# and, most of the time, there is no need to set this variable.
-#
-# When make is invoked, the .dep files which list for each C/C++ source
-# file the .h header dependencies are automatically updated. This is
+# When make is invoked, the .dep files are automatically updated. This is
 # required for most targets, those which build files. Some targets are
 # informational or do not need to build object files. In this case,
 # rebuilding the .dep files is useless but harmless. However, in some
@@ -529,9 +519,24 @@ $(OBJDIR)/%.dep: %.cpp
 # there is no need to set them. However, if a makefile defines some
 # non-standard "clean" targets, it should set them in NODEPS before
 # inclusion of this make file.
+#
+# If $(DONT_BUILD_DEPS) is defined, do not attempt to build the header
+# dependency files. Useful when the source file depend on dynamically
+# generated header files (initially non-existent).
+#
+# $(NODEPS) lists the make targets in the parent makefile which shall
+# not enforce the generation of header dependency files. This is a bit
+# complicated and, most of the time, there is no need to set this variable.
+
+$(OBJDIR)/%.dep: %.cpp
+	@echo '  [DEP] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
+	rm -f $@
 
 NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
           flawfinder cloc listvars scan-build unixify
+
 ifeq ($(DONT_BUILD_DEPS),)
     ifneq ($(MAKECMDGOALS),)
         DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
@@ -722,20 +727,6 @@ endif
 
 ifdef BITRATE_DECIMALS
     CXXFLAGS_INCLUDES += -DTS_BITRATE_DECIMALS=$(BITRATE_DECIMALS)
-endif
-
-# $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
-
-ifeq ($(MACOS),)
-    # Link flags on Linux
-    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
-    LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
-    SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
-else
-    # Link flags on macOS
-    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
-    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
-    SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
 # List of libtsduck directories containing public headers.

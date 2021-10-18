@@ -32,7 +32,7 @@
 #-----------------------------------------------------------------------------
 
 OBJSUBDIR := objs-utest
-include ../../Makefile.tsduck
+include ../../Makefile.inc
 
 default: execs
 	@true
@@ -53,7 +53,3 @@ $(BINDIR)/utest_static: $(subst $(OBJDIR)/utestPluginRepository.o,,$(OBJS)) $(ST
 test: execs
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) $(BINDIR)/utest $(UTESTFLAGS)
 	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) $(BINDIR)/utest_static $(UTESTFLAGS)
-
-.PHONY: install install-tools install-devel
-install install-tools install-devel:
-	@true

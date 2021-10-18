@@ -51,24 +51,26 @@
 #
 #-----------------------------------------------------------------------------
 
+include Makefile.inc
 
-include Makefile.tsduck
+# By default, update git hooks and build TSDuck binaries.
 
-# By default, build TSDuck binaries.
-default:
-	@$(MAKE) -C scripts $@
+default: git-hooks
 	@$(MAKE) -C src $@
 
 # Build and run all tests.
+
 .PHONY: test-all
 test-all: test test-suite
 
 # Build and run unitary tests.
+
 .PHONY: test
 test: default
 	@$(MAKE) -C src/utest $@
 
 # Execute the TSDuck test suite from a sibling directory, if present.
+
 .PHONY: test-suite
 test-suite: default
 	@if [[ -d ../tsduck-test/.git ]]; then \
@@ -80,71 +82,199 @@ test-suite: default
 	 fi
 
 # Alternative target to build with cross-compilation
+
 .PHONY: cross
 cross:
 	+@$(MAKE) CROSS=true
 
 # Alternative target to recompile with debug options
+
 .PHONY: debug
 debug:
 	+@$(MAKE) DEBUG=true
 
 # Alternative target to recompile with optimizations for reduced code size.
+
 .PHONY: optsize
 optsize:
 	+@$(MAKE) CXXFLAGS_OPTIMIZE="$(CXXFLAGS_OPTSIZE)"
 
 # Alternative target to recompile with LLVM (clang) compiler
+
 .PHONY: llvm clang
 llvm clang:
 	+@$(MAKE) LLVM=true
 
 # Alternative target to recompile with gcov support.
+
 .PHONY: gcov
 gcov:
 	+@$(MAKE) DEBUG=true GCOV=true
 
 # Alternative target to recompile with gprof support.
+
 .PHONY: gprof
 gprof:
 	+@$(MAKE) DEBUG=true GPROF=true
 
 # Alternative target to recompile for 32-bit target
+
 .PHONY: m32
 m32:
 	+@$(MAKE) M32=true
 
 # Generate the documentation.
+
 .PHONY: doxygen
 doxygen:
 	@doc/build-doxygen.sh
 
 # Cleanup utilities
+
 .PHONY: clean distclean
 clean distclean:
-	@scripts/cleanup.py
+	@$(SCRIPTSDIR)/cleanup.py
 
 # Build the sample applications.
+
 .PHONY: sample
 sample:
 	@$(MAKE) -C sample $@
 
 # Display the built version
+
 .PHONY: show-version
 show-version: default
 	@$(BINDIR)/tsversion --version=all
 
 # Install files, using SYSROOT as target system root if necessary.
+
 .PHONY: install install-tools install-devel
 install install-tools install-devel:
 	@$(MAKE) NOTEST=true -C src $@
 
-# Installers build targets are redirected to build subdirectory.
-.PHONY: tarball rpm rpm32 deb installer
-tarball rpm rpm32 deb installer:
-	@$(MAKE) -C scripts $@
+# Build the source tarballs for distribution.
+
+VERSION = $(shell $(SCRIPTSDIR)/get-version-from-sources.sh)
+DISTRO  = $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --distro)
+TARNAME = tsduck-$(VERSION)
+TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
+TMPROOT = $(INSTALLERDIR)/tmp
+SKIPSRC = $(if $(NOTELETEXT),tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_teletext.cpp,)
+
+.PHONY: tarball
+tarball:
+	rm -rf $(TMPROOT)
+	mkdir -p $(TMPROOT)/$(TARNAME)
+	tar -C $(ROOTDIR) $(patsubst %,--exclude '%',$(SKIPSRC) $(NOSOURCE)) -cpf - . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
+	$(if $(NOTELETEXT),$(SED) -e '/tsTeletextDemux.h/d' -i $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h,)
+	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
+	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
+	rm -rf $(TMPROOT)
+
+# Installer target: rpm or deb.
+
+.PHONY: installer
+installer: $(if $(wildcard /etc/*fedora* /etc/*redhat*),rpm,$(if $(wildcard /etc/*debian*),deb,))
+
+# User's RPM build area.
+
+RPMBUILDROOT ?= $(HOME)/rpmbuild
+$(RPMBUILDROOT):
+	rpmdev-setuptree
+
+# RPM package building (Red Hat, CentOS, Alma Linux, etc.)
+# The build will take place elsewhere, reuse local Dektec Linux SDK if present.
+
+RPMBUILD ?= rpmbuild
+RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true',) $(RPMBUILDFLAGS_EXTRA)
+
+.PHONY: rpm rpm32
+rpm: tarball $(RPMBUILDROOT)
+	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
+	DTAPI_ORIGIN="$(shell $(SCRIPTSDIR)/dtapi-config.sh --tarball)" \
+	  $(RPMBUILD) $(RPMBUILDFLAGS) \
+	      -D 'version $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --main)' \
+	      -D 'commit $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --commit)' \
+	      -D 'distro $(DISTRO)' \
+	      -D '_smp_mflags $(MAKEFLAGS_SMP)' \
+	      $(if $(NOSRT),-D 'nosrt 1',) \
+	      $(if $(NORIST),-D 'norist 1',) \
+	      $(if $(NOPCSC),-D 'nopcsc 1',) \
+	      $(if $(NOCURL),-D 'nocurl 1',) \
+	      $(SCRIPTSDIR)/tsduck.spec
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
+	cp -uf $(RPMBUILDROOT)/SRPMS/tsduck-$(VERSION)$(DISTRO).src.rpm $(INSTALLERDIR)
+rpm32:
+	$(MAKE) rpm M32=true
+
+# DEB package building (Debian, Ubuntu, Linux Mint, Raspbian, etc.)
+# Make deb-dev depend on deb-tools to force serialization in case of -j.
+
+.PHONY: deb deb-tools deb-dev
+deb: deb-tools deb-dev
+
+deb-tools:
+	rm -rf $(TMPROOT)
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true install-tools SYSROOT=$(TMPROOT)
+	install -d -m 755 $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
+	install -m 644 CHANGELOG.txt LICENSE.txt OTHERS.txt doc/tsduck.pdf $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
+	mkdir $(TMPROOT)/DEBIAN
+	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
+	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
+	    $(if $(NOSRT),-e '/libsrt/d',) \
+	    $(if $(NORIST),-e '/librist/d',) \
+	    $(if $(NOPCSC),-e '/libpcsc/d',) \
+	    $(if $(NOCURL),-e '/libcurl/d',) \
+	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)
+
+deb-dev: deb-tools
+	rm -rf $(TMPROOT)
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true install-devel SYSROOT=$(TMPROOT)
+	mkdir $(TMPROOT)/DEBIAN
+	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
+	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
+	    $(if $(NOSRT),-e '/libsrt/d',) \
+	    $(if $(NORIST),-e '/librist/d',) \
+	    $(if $(NOPCSC),-e '/libpcsc/d',) \
+	    $(if $(NOCURL),-e '/libcurl/d',) \
+	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)
+
+# Git hook files: TSDuck uses git hooks to automatically update the commit
+# number in tsVersion.h. The git hooks are automatically installed when
+# building TSDuck.
+#
+# The script git-hook.sh implements the various git hooks, on Unix and Windows.
+# The actual hook scripts, in .git/hooks, simply call this script. Updating
+# this script is sufficient to update the behaviour of the hooks.
+#
+#  - GITHOOKS_CMD     : File which executes the git hooks (relative to repository root).
+#  - GITHOOKS_LIST    : List of git hooks to update.
+#  - GITHOOKS_DIR     : Target directory for git hooks.
+#  - GITHOOKS_TARGETS : List of hooks to install (none if not in a git repository):
+
+GITHOOKS_CMD     = scripts/git-hook.sh
+GITHOOKS_LIST    = pre-commit post-merge
+GITHOOKS_DIR     = .git/hooks
+GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/,$(GITHOOKS_LIST)),)
+
+.PHONY: git-hooks
+git-hooks: $(GITHOOKS_TARGETS)
+$(GITHOOKS_TARGETS): Makefile
+	@echo '  [GIT] updating $(notdir $@) hook'; \
+	 echo '#!/usr/bin/env bash' >$@; \
+	 echo 'exec $$(dirname $$0)/../../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
+	 chmod a+x "$@"
 
 # Count lines of code: Run cloc on the source code tree starting at current directory.
+
 CLOC         = cloc
 CLOC_SOURCES = src
 CLOC_FLAGS   = --skip-uniqueness --quiet --exclude-ext=.tgz,.tar.gz,.tar,.pdf,.pptx,.docx
@@ -155,6 +285,7 @@ cloc:
 	@echo >&2 '-------------------------------------------'
 
 # Static code analysis: Run Coverity.
+
 COVERITY         = cov-build
 COVERITY_DIR     = cov-int
 COVERITY_SOURCES = src
@@ -164,8 +295,9 @@ coverity:
 	$(COVERITY) --dir $(COVERITY_DIR) $(MAKE) -C $(COVERITY_SOURCES)
 	tar czf $(COVERITY_DIR).tgz $(COVERITY_DIR)
 
-# Static code analysis: Run cppcheck on the source code tree starting at current directory.
+# Static code analysis: Run cppcheck on the source code tree.
 # In debug mode, the diagnostics are more aggressive but may be false positive.
+
 CPPCHECK         = cppcheck
 CPPCHECK_SOURCES = src
 CPPCHECK_FLAGS   = $(CXXFLAGS_INCLUDES) --inline-suppr --quiet --force \
@@ -178,7 +310,8 @@ cppcheck:
 cppcheck-xml:
 	$(CPPCHECK) $(CPPCHECK_FLAGS) --xml --xml-version=2 $(CPPCHECK_SOURCES)
 
-# Static code analysis: Run flawfinder on the source code tree starting at current directory.
+# Static code analysis: Run flawfinder on the source code tree.
+
 FLAWFINDER         = flawfinder
 FLAWFINDER_SOURCES = src
 FLAWFINDER_FLAGS   = --quiet --dataonly
@@ -186,7 +319,8 @@ FLAWFINDER_FLAGS   = --quiet --dataonly
 flawfinder:
 	$(FLAWFINDER) $(FLAWFINDER_FLAGS) $(FLAWFINDER_SOURCES)
 
-# Static code analysis: Run scan-build on the source code tree starting at current directory.
+# Static code analysis: Run scan-build on the source code tree.
+
 SCANBUILD          = scan-build
 SCANBUILD_SOURCES  = src
 SCANBUILD_FLAGS    = -o $(BINDIR)
@@ -195,6 +329,7 @@ scan-build:
 	$(SCANBUILD) $(SCANBUILD_FLAGS) $(MAKE) -C $(SCANBUILD_SOURCES)
 
 # Utilities: display predefined macros for C++
+
 .PHONY: cxxmacros
 cxxmacros:
 	@$(CPP) $(CXXFLAGS) -x c++ -dM /dev/null | sort

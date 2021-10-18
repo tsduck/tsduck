@@ -33,7 +33,7 @@
 
 
 DONT_BUILD_DEPS := TRUE
-include ../../../Makefile.tsduck
+include ../../../Makefile.inc
 
 .PHONY: install install-tools install-devel
 install: install-tools install-devel

@@ -33,7 +33,7 @@
 
 
 DONT_BUILD_DEPS := true
-include ../../../Makefile.tsduck
+include ../../../Makefile.inc
 
 default:
 	@true
