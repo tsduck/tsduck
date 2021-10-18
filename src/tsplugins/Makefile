@@ -33,7 +33,7 @@
 
 OBJSUBDIR := objs-tsplugins
 
-include ../../Makefile.tsduck
+include ../../Makefile.inc
 
 .PHONY: shlibs install install-tools install-devel
 

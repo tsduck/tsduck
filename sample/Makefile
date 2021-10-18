@@ -26,12 +26,11 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
+#
+#  Makefile for sample directory: build all samples.
+#
+#-----------------------------------------------------------------------------
 
-include ../Makefile.tsduck
-
+.PHONY: default
 default:
-	@true
-
-.PHONY: sample
-sample:
-	@for dir in $(filter sample-%,$(SUBDIRS)); do echo "=== Building $$dir"; $(MAKE) -C $$dir; done
+	@for dir in $(wildcard sample-*/); do $(MAKE) -C $$dir; done

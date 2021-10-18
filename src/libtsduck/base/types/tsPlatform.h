@@ -74,7 +74,6 @@
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
-
     //!
     //! Defined when the compiler is GCC, also known as "GNU C", or a GCC-compatible compiler.
     //!
@@ -198,7 +197,6 @@
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
-
     //!
     //! Defined when compiled for a Microsoft Windows target platform.
     //!
@@ -259,7 +257,7 @@
     #error "New unknown operating system, please update tsPlatform.h"
 #endif
 
-#if !defined(TS_UNIX) && (defined(TS_LINUX) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
+#if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
     #define TS_UNIX 1
 #endif
 
@@ -269,7 +267,6 @@
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
-
     //!
     //! Defined when compiled for a little-endian or LSB-first target platform.
     //!
@@ -475,47 +472,48 @@
 //----------------------------------------------------------------------------
 
 #if defined(DOXYGEN)
-//!
-//! User-defined macro to enable static linking of plugins.
-//!
-//! If TSDUCK_STATIC_PLUGINS is defined, typically on the compilation command line,
-//! all plugins are linked statically. Dynamic loading of plugins is disabled.
-//! @hideinitializer
-//!
-#define TSDUCK_STATIC_PLUGINS 1
-//!
-//! Applications which link against the TSDuck static library.
-//!
-//! Applications which link against the TSDuck static library should define
-//! TSDUCK_STATIC_LIBRARY. This symbol can be used to force external references.
-//!
-//! TSDUCK_STATIC_LIBRARY enforces TSDUCK_STATIC_PLUGINS.
-//! @hideinitializer
-//!
-#define TSDUCK_STATIC_LIBRARY 1
-//!
-//! User-defined macro to enable full static linking.
-//!
-//! If TSDUCK_STATIC is defined, typically on the compilation command line,
-//! the code is compiled and linked statically, including system libraries.
-//! On Linux, this is not recommended since a few features such as IP address
-//! resolution are disabled.
-//!
-//! TSDUCK_STATIC enforces TSDUCK_STATIC_LIBRARY and TSDUCK_STATIC_PLUGINS.
-//! @hideinitializer
-//!
-#define TSDUCK_STATIC 1
+    //!
+    //! User-defined macro to enable static linking of plugins.
+    //!
+    //! If TSDUCK_STATIC_PLUGINS is defined, typically on the compilation command line,
+    //! all plugins are linked statically. Dynamic loading of plugins is disabled.
+    //! @hideinitializer
+    //!
+    #define TSDUCK_STATIC_PLUGINS 1
+    //!
+    //! Applications which link against the TSDuck static library.
+    //!
+    //! Applications which link against the TSDuck static library should define
+    //! TSDUCK_STATIC_LIBRARY. This symbol can be used to force external references.
+    //!
+    //! TSDUCK_STATIC_LIBRARY enforces TSDUCK_STATIC_PLUGINS.
+    //! @hideinitializer
+    //!
+    #define TSDUCK_STATIC_LIBRARY 1
+    //!
+    //! User-defined macro to enable full static linking.
+    //!
+    //! If TSDUCK_STATIC is defined, typically on the compilation command line,
+    //! the code is compiled and linked statically, including system libraries.
+    //! On Linux, this is not recommended since a few features such as IP address
+    //! resolution are disabled.
+    //!
+    //! TSDUCK_STATIC enforces TSDUCK_STATIC_LIBRARY and TSDUCK_STATIC_PLUGINS.
+    //! @hideinitializer
+    //!
+    #define TSDUCK_STATIC 1
+
 #else
 
-// Full static linking enforces the usage of TSDuck static library.
-#if defined(TSDUCK_STATIC) && !defined(TSDUCK_STATIC_LIBRARY)
-#define TSDUCK_STATIC_LIBRARY 1
-#endif
+    // Full static linking enforces the usage of TSDuck static library.
+    #if defined(TSDUCK_STATIC) && !defined(TSDUCK_STATIC_LIBRARY)
+    #define TSDUCK_STATIC_LIBRARY 1
+    #endif
 
-// Linking against the TSDuck static library enforces statically linked plugins.
-#if defined(TSDUCK_STATIC_LIBRARY) && !defined(TSDUCK_STATIC_PLUGINS)
-#define TSDUCK_STATIC_PLUGINS 1
-#endif
+    // Linking against the TSDuck static library enforces statically linked plugins.
+    #if defined(TSDUCK_STATIC_LIBRARY) && !defined(TSDUCK_STATIC_PLUGINS)
+    #define TSDUCK_STATIC_PLUGINS 1
+    #endif
 
 #endif // DOXYGEN
 
@@ -607,85 +605,84 @@
 #endif
 
 #if defined(DOXYGEN)
-
-//!
-//! Helper macro for the C++11 keyword @c _Pragma.
-//!
-//! With the C++11 standard, the keywork @c _Pragma uses a string literal.
-//! However, Visual C++ does not support it as of Visual Studio 2019.
-//! Instead, it uses the non-standard keyword @c __pragma with a plain directive (not a string).
-//! @param directive The directive for the pragma. Plain directive, not a string literal.
-//!
-//! Examples (depending on compilers):
-//! @code
-//! TS_PRAGMA(clang diagnostic push)
-//! TS_PRAGMA(GCC diagnostic push)
-//! TS_PRAGMA(warning(push))
-//! @endcode
-//!
-#define TS_PRAGMA(directive)
-//!
-//! Save the compiler's warnings reporting.
-//! @see TS_POP_WARNING
-//!
-#define TS_PUSH_WARNING()
-//!
-//! Restore the compiler's warnings reporting from a previous TS_PUSH_WARNING().
-//! @see TS_PUSH_WARNING
-//!
-#define TS_POP_WARNING()
-//!
-//! Disable a warning with the LLVM/clang compiler (does nothing on other compilers).
-//! @param name Warning name, as used after command line option @c -W
-//!
-#define TS_LLVM_NOWARNING(name)
-//!
-//! Disable a warning with the GCC compiler (does nothing on other compilers).
-//! @param name Warning name, as used after command line option @c -W
-//!
-#define TS_GCC_NOWARNING(name)
-//!
-//! Disable a warning with the Microsoft Visual C++ compiler (does nothing on other compilers).
-//! @param num Warning number.
-//!
-#define TS_MSC_NOWARNING(num)
+    //!
+    //! Helper macro for the C++11 keyword @c _Pragma.
+    //!
+    //! With the C++11 standard, the keywork @c _Pragma uses a string literal.
+    //! However, Visual C++ does not support it as of Visual Studio 2019.
+    //! Instead, it uses the non-standard keyword @c __pragma with a plain directive (not a string).
+    //! @param directive The directive for the pragma. Plain directive, not a string literal.
+    //!
+    //! Examples (depending on compilers):
+    //! @code
+    //! TS_PRAGMA(clang diagnostic push)
+    //! TS_PRAGMA(GCC diagnostic push)
+    //! TS_PRAGMA(warning(push))
+    //! @endcode
+    //!
+    #define TS_PRAGMA(directive)
+    //!
+    //! Save the compiler's warnings reporting.
+    //! @see TS_POP_WARNING
+    //!
+    #define TS_PUSH_WARNING()
+    //!
+    //! Restore the compiler's warnings reporting from a previous TS_PUSH_WARNING().
+    //! @see TS_PUSH_WARNING
+    //!
+    #define TS_POP_WARNING()
+    //!
+    //! Disable a warning with the LLVM/clang compiler (does nothing on other compilers).
+    //! @param name Warning name, as used after command line option @c -W
+    //!
+    #define TS_LLVM_NOWARNING(name)
+    //!
+    //! Disable a warning with the GCC compiler (does nothing on other compilers).
+    //! @param name Warning name, as used after command line option @c -W
+    //!
+    #define TS_GCC_NOWARNING(name)
+    //!
+    //! Disable a warning with the Microsoft Visual C++ compiler (does nothing on other compilers).
+    //! @param num Warning number.
+    //!
+    #define TS_MSC_NOWARNING(num)
 
 #else
 
-// Use a two-step macro to allow stringification of parameters.
-#if defined(TS_MSC)
-    #define TS_PRAGMA1_(s) __pragma(s)
-#else
-    #define TS_PRAGMA1_(s) _Pragma(#s)
-#endif
-#define TS_PRAGMA(s) TS_PRAGMA1_(s)
+    // Use a two-step macro to allow stringification of parameters.
+    #if defined(TS_MSC)
+        #define TS_PRAGMA1_(s) __pragma(s)
+    #else
+        #define TS_PRAGMA1_(s) _Pragma(#s)
+    #endif
+    #define TS_PRAGMA(s) TS_PRAGMA1_(s)
 
-#if defined(TS_LLVM)
-    #define TS_PUSH_WARNING()       TS_PRAGMA(clang diagnostic push)
-    #define TS_POP_WARNING()        TS_PRAGMA(clang diagnostic pop)
-    #define TS_LLVM_NOWARNING(name) TS_PRAGMA(clang diagnostic ignored TS_STRINGIFY(-W##name))
-    #define TS_GCC_NOWARNING(name)
-    #define TS_MSC_NOWARNING(num)
-#elif defined(TS_GCC)
-    #define TS_PUSH_WARNING()       TS_PRAGMA(GCC diagnostic push)
-    #define TS_POP_WARNING()        TS_PRAGMA(GCC diagnostic pop)
-    #define TS_LLVM_NOWARNING(name)
-    #define TS_GCC_NOWARNING(name)  TS_PRAGMA(GCC diagnostic ignored TS_STRINGIFY(-W##name))
-    #define TS_MSC_NOWARNING(num)
-    TS_GCC_NOWARNING(pragmas)       // ignore unknown recent warnings on older compilers
-#elif defined(TS_MSC)
-    #define TS_PUSH_WARNING()       TS_PRAGMA(warning(push))
-    #define TS_POP_WARNING()        TS_PRAGMA(warning(pop))
-    #define TS_LLVM_NOWARNING(name)
-    #define TS_GCC_NOWARNING(name)
-    #define TS_MSC_NOWARNING(num)   TS_PRAGMA(warning(disable:num))
-#else
-    #define TS_PUSH_NOWARNING()
-    #define TS_POP_NOWARNING()
-    #define TS_LLVM_NOWARNING(name)
-    #define TS_GCC_NOWARNING(name)
-    #define TS_MSC_NOWARNING(num)
-#endif
+    #if defined(TS_LLVM)
+        #define TS_PUSH_WARNING()       TS_PRAGMA(clang diagnostic push)
+        #define TS_POP_WARNING()        TS_PRAGMA(clang diagnostic pop)
+        #define TS_LLVM_NOWARNING(name) TS_PRAGMA(clang diagnostic ignored TS_STRINGIFY(-W##name))
+        #define TS_GCC_NOWARNING(name)
+        #define TS_MSC_NOWARNING(num)
+    #elif defined(TS_GCC)
+        #define TS_PUSH_WARNING()       TS_PRAGMA(GCC diagnostic push)
+        #define TS_POP_WARNING()        TS_PRAGMA(GCC diagnostic pop)
+        #define TS_LLVM_NOWARNING(name)
+        #define TS_GCC_NOWARNING(name)  TS_PRAGMA(GCC diagnostic ignored TS_STRINGIFY(-W##name))
+        #define TS_MSC_NOWARNING(num)
+        TS_GCC_NOWARNING(pragmas)       // ignore unknown recent warnings on older compilers
+    #elif defined(TS_MSC)
+        #define TS_PUSH_WARNING()       TS_PRAGMA(warning(push))
+        #define TS_POP_WARNING()        TS_PRAGMA(warning(pop))
+        #define TS_LLVM_NOWARNING(name)
+        #define TS_GCC_NOWARNING(name)
+        #define TS_MSC_NOWARNING(num)   TS_PRAGMA(warning(disable:num))
+    #else
+        #define TS_PUSH_NOWARNING()
+        #define TS_POP_NOWARNING()
+        #define TS_LLVM_NOWARNING(name)
+        #define TS_GCC_NOWARNING(name)
+        #define TS_MSC_NOWARNING(num)
+    #endif
 
 #endif // DOXYGEN
 
@@ -1526,15 +1523,15 @@ namespace ts {
 //! @hideinitializer
 //!
 #if defined(TS_GCC)
-#define TS_STATIC_REFERENCE(suffix, addr) \
-    static __attribute__ ((used)) volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr)
+    #define TS_STATIC_REFERENCE(suffix, addr) \
+        static __attribute__ ((used)) volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr)
 #else
-// Keep this definition on one line because of TS_UNIQUE_NAME.
-#define TS_STATIC_REFERENCE(suffix, addr) \
-    static volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr); static volatile const void* volatile const TS_UNIQUE_NAME(ref2##suffix) = &TS_UNIQUE_NAME(ref##suffix)
+    // Keep this definition on one line because of TS_UNIQUE_NAME.
+    #define TS_STATIC_REFERENCE(suffix, addr) \
+        static volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr); static volatile const void* volatile const TS_UNIQUE_NAME(ref2##suffix) = &TS_UNIQUE_NAME(ref##suffix)
 #endif
 
 // Obsolete macro, remove all references.
 #if !defined(DOXYGEN)
-#define TSDUCK_SOURCE typedef int TS_UNIQUE_NAME(obsolete)
+    #define TSDUCK_SOURCE typedef int TS_UNIQUE_NAME(obsolete)
 #endif

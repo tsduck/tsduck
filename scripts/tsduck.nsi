@@ -141,7 +141,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsduck.dvb.names"
 
     ; Delete obsolete plugins from previous versions.
-    ; Maintenance: also update Makefile.tsduck
+    ; Maintenance: also update Makefile.inc
     Delete "$INSTDIR\bin\tsplugin_dektec.dll"
     Delete "$INSTDIR\bin\tsplugin_drop.dll"
     Delete "$INSTDIR\bin\tsplugin_file.dll"

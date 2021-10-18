@@ -33,7 +33,7 @@
 
 
 DONT_BUILD_DEPS := TRUE
-include ../../../Makefile.tsduck
+include ../../../Makefile.inc
 
 # Copy TSDuck configuration files in output bin directory.
 

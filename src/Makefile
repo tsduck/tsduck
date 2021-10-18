@@ -31,17 +31,11 @@
 #
 #-----------------------------------------------------------------------------
 
-include ../Makefile.tsduck
-
-# By default, recurse make target in all subdirectories.
-# Default alphabetical order is fine here.
-
-# Do not recurse in utest and utils when NOTEST or CROSS is defined.
-NORECURSE_SUBDIRS += $(if $(NOTEST),utest,) $(if $(CROSS),utils,)
+include ../Makefile.inc
 
 default:
-	+@$(RECURSE)
+	+@$(call F_RECURSE,libtsduck tsplugins tstools $(if $(NOTEST),,utest) $(if $(CROSS),,utils))
 
 .PHONY: install install-tools install-devel
 install install-tools install-devel:
-	@$(RECURSE)
+	@$(call F_RECURSE,libtsduck tsplugins tstools utils)

@@ -63,17 +63,12 @@ CXXFLAGS_INCLUDES += $(JNI_CXXFLAGS)
 
 # Now, we can include the common makefile.
 
-include ../../Makefile.tsduck
-
-# There are things to build or install in those subdirectories.
-# All other subdirectories only contain C++ source files (used in VPATH).
-
-RECURSE_ORDER = config python java
+include ../../Makefile.inc
 
 # Building the TSDuck library.
 
 default: headers libs
-	+@$(RECURSE)
+	+@$(call F_RECURSE,config python java)
 
 # The tsduck.h header is automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
 
@@ -178,7 +173,7 @@ install-tools: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
 	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/libtsduck.so,)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	+@$(RECURSE)
+	+@$(call F_RECURSE,config python java)
 
 install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	rm -rf $(SYSROOT)$(SYSPREFIX)/include/tsduck
@@ -186,4 +181,4 @@ install-devel: $(STATIC_LIBTSDUCK) tsduck.h
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(shell find . -name 'ts*.h' ! -path '*/private/*' ! -path '*/windows/*' ! -path '*/$(SKIPDIR)/*' $(if $(NOTELETEXT),! -name tsTeletextDemux.h,)) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	$(if $(NOTELETEXT),sed tsduck.h -e '/tsTeletextDemux.h/d' >$(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h,)
-	+@$(RECURSE)
+	+@$(call F_RECURSE,config python java)
