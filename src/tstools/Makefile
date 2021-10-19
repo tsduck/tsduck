@@ -31,11 +31,9 @@
 #
 #-----------------------------------------------------------------------------
 
-OBJSUBDIR := objs-tstools
-
 include ../../Makefile.inc
 
-EXECS := $(addprefix $(BINDIR)/,$(TSEXECS))
+EXECS := $(addprefix $(BINDIR)/,$(TSTOOLS))
 
 default: execs
 	@true
@@ -58,6 +56,6 @@ install: install-tools install-devel
 install-tools: $(EXECS)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
 	install -m 755 $(EXECS) $(SYSROOT)$(SYSPREFIX)/bin
-	$(if $(NO_TSEXECS),rm -rf $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(NO_TSEXECS)),)
+	$(if $(NO_TSTOOLS),rm -rf $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(NO_TSTOOLS)),)
 install-devel:
 	@true

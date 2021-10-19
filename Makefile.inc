@@ -50,6 +50,15 @@ SHELL := /usr/bin/env bash --noprofile --norc
 
 ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
 
+# Project specific directories.
+
+INSTALLERDIR = $(ROOTDIR)/installers
+SCRIPTSDIR   = $(ROOTDIR)/scripts
+SRCROOT      = $(ROOTDIR)/src
+LIBTSDUCKDIR = $(SRCROOT)/libtsduck
+TSTOOLSDIR   = $(SRCROOT)/tstools
+TSPLUGINSDIR = $(SRCROOT)/tsplugins
+
 # Enforce English locale by default for predictible output.
 
 export LANGUAGE = en_US.UTF-8
@@ -105,7 +114,7 @@ ifndef LOCAL_OS
     export LOCAL_ARCH := $(shell uname -m)
     export HOSTNAME   := $(shell hostname | $(SED) -e 's/\..*//')
 endif
-MACOS := $(if $(subst darwin,,$(LOCAL_OS)),,true)
+MACOS := $(if $(findstring darwin,$(LOCAL_OS)),true)
 MAC := $(MACOS)
 
 # Logical CPU and physical core count.
@@ -141,7 +150,7 @@ MAKEFLAGS_SMP = $(if $(filter -j%,$(MAKEFLAGS)),$(filter -j%,$(MAKEFLAGS)),-j$(C
 #   the search path for the shareable libraries. Typically LD_LIBRARY_PATH on
 #   native unices and PATH on Windows-based environments such as Cygwin.
 
-ifneq ($(subst cygwin,,$(LOCAL_OS)),$(LOCAL_OS))
+ifneq ($(findstring cygwin,$(LOCAL_OS)),)
     CYGWIN = true
     LOCAL_OS := cygwin
     LD_LIBRARY_PATH_NAME = PATH
@@ -240,8 +249,7 @@ UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib
 # All binaries are built into one single root directory named
 # bin/release|debug-arch-hostname where bin is located in the top-level directory.
 # The variable $(BINDIR) points to this directory. The variable $(OBJDIR) points
-# to the directory where object files are stored. This is, by default, the same place as
-# $(BINDIR), except when a local makefile defines $(OBJSUBDIR).
+# to the directory where object files are stored
 #
 # $(BINDIR_SUFFIX) is a fixed suffix to add to generated $(BINDIR) subdirectory name.
 # It is ignored if $(BINDIR) is defined as input variable. Duplicate the output tree
@@ -270,11 +278,13 @@ else ifneq ($(DEBUG),)
 else
     BINDIR = $(ROOTDIR)/bin/release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 endif
-ifdef OBJSUBDIR
-    OBJDIR = $(BINDIR)/$(OBJSUBDIR)
-else
-    OBJDIR = $(BINDIR)
-endif
+
+OBJDIR = $(BINDIR)/objs-$(notdir $(CURDIR))
+
+# TSDuck library files.
+
+STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
+SHARED_LIBTSDUCK = $(BINDIR)/libtsduck$(SO_SUFFIX)
 
 # Get current compiler version, usually in form x.y.z
 
@@ -458,39 +468,6 @@ else
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
-# Implicit search directives.
-# VPATH contain directories where *.h and *.cpp files are searched.
-# "vpath" directives are defined accordingly.
-
-ifneq ($(VPATH),)
-    vpath %.cpp $(VPATH)
-    vpath %.h $(VPATH)
-endif
-
-# Source and object files in current directory.
-# - $(SOURCES) : All C and C++ source files in the current directory.
-# - $(HEADERS) : All header names, list of all "f" for which a source file "f.h" exists.
-# - $(MODULES) : All modules names, list of all "f" for which a source file f.c or f.cpp exists.
-# - $(MODULES_MAIN) : All modules names which are main programs, list of all "f" for which
-#   a source file "f.c" or "f.cpp" exists but no file "f.h" exists.
-# - $(MODULES_LIB) : All modules names which are not main programs, list of all "f" for which
-#   a source file "f.c" or "f.cpp" exists and a source file "f.h" exists
-# - $(OBJS) : All object files (.o) to build, for all C/C++ source files.
-# - $(OBJS_MAIN) : All object files (.o) to build which are main programs, for all $(MODULES_MAIN).
-# - $(OBJS_LIB) : All object files (.o) to build which are not main programs, for all $(MODULES_LIB).
-#   These object files will typically go into a library.
-# - $(EXECS) : All executable files to build, based on $(MODULES_MAIN).
-
-SOURCES      := $(sort $(notdir $(wildcard *.cpp $(addsuffix /*.cpp,$(VPATH)))))
-HEADERS      := $(sort $(notdir $(basename $(wildcard *.h $(addsuffix /*.h,$(VPATH))))))
-MODULES      := $(basename $(SOURCES))
-MODULES_MAIN := $(sort $(filter-out $(HEADERS),$(MODULES)))
-MODULES_LIB  := $(sort $(filter-out $(MODULES_MAIN),$(MODULES)))
-OBJS          = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES)))
-OBJS_MAIN     = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_MAIN)))
-OBJS_LIB      = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(MODULES_LIB)))
-EXECS         = $(addprefix $(BINDIR)/,$(MODULES_MAIN))
-
 # Compilation rules
 
 $(OBJDIR)/%.o: %.cpp
@@ -504,48 +481,6 @@ $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
-# Dependency (.dep) files: For each xxx.cpp source file, there is one
-# xxx.dep file in the same directory as xxx.o. The file xxx.dep lists
-# all .h dependencies for xxx.cpp.
-#
-# When make is invoked, the .dep files are automatically updated. This is
-# required for most targets, those which build files. Some targets are
-# informational or do not need to build object files. In this case,
-# rebuilding the .dep files is useless but harmless. However, in some
-# cases such as the standard "clean" targets, the .dep files should
-# not be rebuilt. In fact, they are deleted by the target. In these
-# cases, the "clean" targets must not implicitly rebuild the .dep
-# files. The standard "clean" targets are automatically added in NODEPS,
-# there is no need to set them. However, if a makefile defines some
-# non-standard "clean" targets, it should set them in NODEPS before
-# inclusion of this make file.
-#
-# If $(DONT_BUILD_DEPS) is defined, do not attempt to build the header
-# dependency files. Useful when the source file depend on dynamically
-# generated header files (initially non-existent).
-#
-# $(NODEPS) lists the make targets in the parent makefile which shall
-# not enforce the generation of header dependency files. This is a bit
-# complicated and, most of the time, there is no need to set this variable.
-
-$(OBJDIR)/%.dep: %.cpp
-	@echo '  [DEP] $<'; \
-	mkdir -p $(OBJDIR); \
-	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
-	rm -f $@
-
-NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
-          flawfinder cloc listvars scan-build unixify
-
-ifeq ($(DONT_BUILD_DEPS),)
-    ifneq ($(MAKECMDGOALS),)
-        DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
-    endif
-endif
-ifeq ($(DONT_BUILD_DEPS),)
-    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(wildcard *.cpp $(addsuffix /*.cpp,$(VPATH)))))))
-endif
-
 # $(NOSOURCE) is the list of file patterns which are typically not source files.
 # This can be used to filter file names when creating a backup or an archive of
 # the source files.
@@ -558,20 +493,6 @@ NOSOURCE = \
     *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
     .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
     *~ *.bak *.autosave cov-int bin build callgrind.out*
-
-# Project specific directories.
-
-INSTALLERDIR = $(ROOTDIR)/installers
-SCRIPTSDIR   = $(ROOTDIR)/scripts
-SRCROOT      = $(ROOTDIR)/src
-LIBTSDUCKDIR = $(SRCROOT)/libtsduck
-TSTOOLSDIR   = $(SRCROOT)/tstools
-TSPLUGINSDIR = $(SRCROOT)/tsplugins
-
-# TSDuck library files.
-
-STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
-SHARED_LIBTSDUCK = $(BINDIR)/libtsduck$(SO_SUFFIX)
 
 # Default installation root.
 # RPM packagers should override this in the "make install" command line
@@ -705,9 +626,14 @@ ifneq ($(NODTAPI),)
     CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 endif
 
-ifdef NOGITHUB
+ifneq ($(NOGITHUB),)
     CXXFLAGS_INCLUDES += -DTS_NO_GITHUB=1
 endif
+
+ifeq ($(CXXFLAGS_JNI),)
+    export CXXFLAGS_JNI := $(shell $(SCRIPTSDIR)/java-config.sh --cflags)
+endif
+CXXFLAGS_INCLUDES += $(CXXFLAGS_JNI)
 
 ifdef BITRATE_FRACTION
     CXXFLAGS_INCLUDES += -DTS_BITRATE_FRACTION=1
@@ -729,32 +655,35 @@ ifdef BITRATE_DECIMALS
     CXXFLAGS_INCLUDES += -DTS_BITRATE_DECIMALS=$(BITRATE_DECIMALS)
 endif
 
-# List of libtsduck directories containing public headers.
+# List of libtsduck directories containing private and public headers.
 
 ifndef PUBLIC_INCLUDES
-    export PUBLIC_INCLUDES := $(filter-out %/private %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
+    export ALL_INCLUDES := $(filter-out %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
+    export PRIVATE_INCLUDES := $(filter %/private,$(ALL_INCLUDES))
+    export PUBLIC_INCLUDES := $(filter-out %/private,$(ALL_INCLUDES))
 endif
 CXXFLAGS_INCLUDES += $(addprefix -I,$(PUBLIC_INCLUDES))
 
 # List of plugins and tools to build.
-# - Do not compile Dektec or HiDes tools when these devices are unsupported.
-# - Tuners (dvb plugin, tslsdvb, tscan) shall be compiled everywhere because
-#   the tuner emulator facility is available everywhere.
-# - Build a list of plugins to not build or deinstall from the system tree.
-#   Include obsolete plugins, were in separate shared libraries, now in libtsduck.so.
-#   Maintenance: also update scripts/tsduck.nsi (Windows).
 
 ifndef TSPLUGINS
+    # All plugins and tools, one source file per plugin or executable.
     TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))
-    TSEXECS := $(sort $(notdir $(basename $(wildcard $(TSTOOLSDIR)/ts*.cpp))))
-    NO_TSEXECS :=
+    TSTOOLS := $(sort $(notdir $(basename $(wildcard $(TSTOOLSDIR)/ts*.cpp))))
+    # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
+    # Maintenance: also update scripts/tsduck.nsi (Windows).
     NO_TSPLUGINS := $(addprefix tsplugin_,dektec drop file fork hls http ip null psi skip srt tables)
+    # Build a list of tools and plugins to not build or deinstall from the system tree.
+    NO_TSTOOLS :=
     ifdef NODTAPI
-        NO_TSEXECS += tsdektec
+        NO_TSTOOLS += tsdektec
     endif
     ifdef MACOS
+        # Do not compile HiDes tools and plugins on macOS. Physical tuners are
+        # not supported either but the related code (dvb plugin, tslsdvb, tscan) shall
+        # be compiled because the tuner emulator facility is available everywhere.
         NO_TSPLUGINS += tsplugin_hides
-        NO_TSEXECS += tshides
+        NO_TSTOOLS += tshides
     endif
     ifdef NOTELETEXT
         NO_TSPLUGINS += tsplugin_teletext
@@ -763,11 +692,54 @@ ifndef TSPLUGINS
         NO_TSPLUGINS += tsplugin_rist
     endif
     ifdef NOPCSC
-        NO_TSEXECS += tssmartcard
+        NO_TSTOOLS += tssmartcard
     endif
-    TSEXECS := $(filter-out $(NO_TSEXECS),$(TSEXECS))
+    TSTOOLS := $(filter-out $(NO_TSTOOLS),$(TSTOOLS))
     TSPLUGINS := $(filter-out $(NO_TSPLUGINS),$(TSPLUGINS))
-    export TSPLUGINS TSEXECS NO_TSEXECS NO_TSPLUGINS
+    export TSPLUGINS TSTOOLS NO_TSTOOLS NO_TSPLUGINS
+endif
+
+# Dependency (.dep) files: For each xxx.cpp source file, there is one
+# xxx.dep file in the same directory as xxx.o. The file xxx.dep lists
+# all .h dependencies for xxx.cpp.
+#
+# When make is invoked, the .dep files are automatically updated. This is
+# required for most targets, those which build files. Some targets are
+# informational or do not need to build object files. In this case,
+# rebuilding the .dep files is useless but harmless. However, in some
+# cases such as the standard "clean" targets, the .dep files should
+# not be rebuilt. In fact, they are deleted by the target. In these
+# cases, the "clean" targets must not implicitly rebuild the .dep
+# files. The standard "clean" targets are automatically added in NODEPS,
+# there is no need to set them. However, if a makefile defines some
+# non-standard "clean" targets, it should set them in NODEPS before
+# inclusion of this make file.
+#
+# If $(DONT_BUILD_DEPS) is defined, do not attempt to build the header
+# dependency files. Useful when the source file depend on dynamically
+# generated header files (initially non-existent).
+#
+# $(NODEPS) lists the make targets in the parent makefile which shall
+# not enforce the generation of header dependency files. This is a bit
+# complicated and, most of the time, there is no need to set this variable.
+
+$(OBJDIR)/%.dep: %.cpp
+	@echo '  [DEP] $<'; \
+	mkdir -p $(OBJDIR); \
+	$(CXX) -MM $(CPPFLAGS) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_STANDARD) $(CXXFLAGS_NO_WARNINGS) -MT $(OBJDIR)/$*.o -MT $@ $< >$@ || \
+	rm -f $@
+
+NODEPS += clean cmacros coverity cppcheck cppcheck-xml cxxmacros distclean doxygen \
+          flawfinder cloc listvars scan-build unixify
+
+ifeq ($(DONT_BUILD_DEPS),)
+    ifneq ($(MAKECMDGOALS),)
+        DONT_BUILD_DEPS := $(if $(filter-out $(NODEPS),$(MAKECMDGOALS)),,true)
+    endif
+endif
+
+ifeq ($(DONT_BUILD_DEPS),)
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(CURCPP) $(wildcard *.cpp)))))
 endif
 
 # Cleanup Windows oddities in source files.
