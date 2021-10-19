@@ -79,6 +79,11 @@ TS_LLVM_NOWARNING(old-style-cast)
 
 #include <curl/curl.h>
 
+// CURL_AT_LEAST_VERSION is defined in libcurl 7.44 and later only
+#if !defined(CURL_AT_LEAST_VERSION)
+#define CURL_AT_LEAST_VERSION(x,y,z) (LIBCURL_VERSION_NUM >= ((x)<<16|(y)<<8|(z)))
+#endif
+
 // Check if curl_multi_wakeup() is present.
 #if CURL_AT_LEAST_VERSION(7,68,0)
 #define TS_CURL_WAKEUP 1
