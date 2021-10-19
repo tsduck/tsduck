@@ -31,14 +31,6 @@
 #
 #-----------------------------------------------------------------------------
 
-OBJSUBDIR = objs-libtsduck
-
-# Some source files are located in subdirectories but should be considered as part of libtsduck.
-
-ALLDIRS := $(patsubst %/,%,$(sort $(dir $(wildcard *.h */*.h */*/*.h *.cpp */*.cpp */*/*.cpp))))
-SKIPDIR := $(if $(findstring Darwin,$(shell uname -s)),linux,mac)
-VPATH := $(filter-out . %/windows %/$(SKIPDIR),$(ALLDIRS))
-
 # Detect the presence of the Dektec DTAPI.
 # Define NODTAPI to compile without Dektec support.
 # NODTAPI is automatically defined if no DTAPI is found.
@@ -56,28 +48,42 @@ ifeq ($(NODTAPI),)
     endif
 endif
 
-# JNI headers (or disable JNI).
-
-JNI_CXXFLAGS := $(shell ../../scripts/java-config.sh --cflags)
-CXXFLAGS_INCLUDES += $(JNI_CXXFLAGS)
-
 # Now, we can include the common makefile.
 
 include ../../Makefile.inc
+
+# Some source files are located in subdirectories but should be considered as part of libtsduck.
+
+VPATH := $(filter-out %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp)))))
+VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
+
+# Implicit search directives.
+
+vpath %.cpp $(VPATH)
+
+# Add dependency files for sources in VPATH.
+
+ifeq ($(DONT_BUILD_DEPS),)
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(VPATH_SOURCES)))))
+endif
+
+# All sources and objects in libtsduck.
+
+SOURCES := $(VPATH_SOURCES) $(sort $(notdir $(wildcard *.cpp)))
+OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SOURCES))))
 
 # Building the TSDuck library.
 
 default: headers libs
 	+@$(call F_RECURSE,config python java)
 
-# The tsduck.h header is automatically generated from SRC_HEADERS using BUILD_PROJ_FILES.
+# The tsduck.h header is automatically generated from all headers using BUILD_PROJ_FILES.
 
-SRC_HEADERS = $(filter-out tsduck.h %Template.h,$(wildcard *.h */*.h */*/*.h))
 BUILD_TSDUCK_H = $(ROOTDIR)/scripts/build-tsduck-header.sh
 
 .PHONY: headers
 headers: tsduck.h
-tsduck.h: $(BUILD_TSDUCK_H) $(SRCROOT)/HEADER.txt $(SRC_HEADERS)
+tsduck.h: $(BUILD_TSDUCK_H) $(SRCROOT)/HEADER.txt $(filter-out tsduck.h %Template.h,$(wildcard *.h */*.h */*/*.h))
 	@echo '  [REBUILD] $@'; \
 	$(BUILD_TSDUCK_H)
 
@@ -103,7 +109,7 @@ OBJS += $(DTAPI_OBJECT)
 
 # Add libtsduck internal headers when compiling libtsduck.
 
-CXXFLAGS_INCLUDES += $(addprefix -I,$(filter %/private,$(ALLDIRS)))
+CXXFLAGS_INCLUDES += $(addprefix -I,$(PRIVATE_INCLUDES))
 
 # By default, both static and dynamic libraries are created but only use
 # the dynamic one when building tools and plugins. In case of static build,

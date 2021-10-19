@@ -31,8 +31,6 @@
 #
 #-----------------------------------------------------------------------------
 
-OBJSUBDIR := objs-tsplugins
-
 include ../../Makefile.inc
 
 .PHONY: shlibs install install-tools install-devel

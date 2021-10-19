@@ -55,8 +55,8 @@ else
 JAVAC_FLAGS = -source 1.8 -target 1.8 -Xlint:-options
 
 JAR      := $(shell $(ROOTDIR)/scripts/java-config.sh --jar)
-CLASSDIR  = $(OBJDIR)/java
-JARFILE   = $(OBJDIR)/tsduck.jar
+CLASSDIR  = $(BINDIR)/java
+JARFILE   = $(BINDIR)/tsduck.jar
 MANIFEST  = $(CLASSDIR)/Manifest.txt
 JSOURCES := $(wildcard src/io/tsduck/*.java)
 JCLASSES := $(patsubst src/%.java,$(CLASSDIR)/%.class,$(JSOURCES))

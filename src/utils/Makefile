@@ -31,19 +31,20 @@
 #
 #-----------------------------------------------------------------------------
 
-OBJSUBDIR := objs-utils
 include ../../Makefile.inc
-
-# Filter out Windows-only tools.
-EXECS := $(filter-out $(BINDIR)/setpath $(if $(NOTEST),$(BINDIR)/tsprofiling,),$(EXECS))
 
 default: execs
 	@true
+
+# One source file per executable (setpath is Windows-only, tsprofiling is a test program).
+
+EXECS := $(addprefix $(BINDIR)/,$(filter-out setpath $(if $(NOTEST),tsprofiling,),$(sort $(notdir $(wildcard *.cpp)))))
 
 .PHONY: execs
 execs: $(EXECS)
 
 # We always build tsprofiling with the static library.
+
 STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
 ifndef STATIC
     $(BINDIR)/tsprofiling: $(STATIC_DEPS)
@@ -52,6 +53,8 @@ else
     LDFLAGS_EXTRA = -static
     $(EXECS): $(STATIC_DEPS)
 endif
+
+# The tsconfig shell script is part of the installation.
 
 .PHONY: install install-tools install-devel
 install: install-tools install-devel
