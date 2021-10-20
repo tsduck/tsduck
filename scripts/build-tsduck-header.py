@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -27,48 +27,52 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-#
-#  Rebuilt tsduck.h, the global header for the TSDuck library.
-#  This script is useful when source files are added to or removed from the
-#  directory src/libtsduck.
-#
-#  See the PowerShell script build-tsduck-header.ps1 for a Windows equivalent.
-#
+# 
+#  Rebuilt tsduck.h, the global header for the TSDuck library. The content of
+#  tsduck.h is output on standard output. This script is useful when source
+#  files are added to or removed from the directory src/libtsduck.
+# 
 #-----------------------------------------------------------------------------
 
-# Execute in the libtsduck root directory.
-cd $(dirname $0)/../src/libtsduck
+import sys, os, fnmatch
 
-# Enforce LANG to get the same sort order everywhere.
-export LANG=C
-export LC_ALL=$LANG
+headers = {'': [], 'private': [], 'unix': [], 'linux': [], 'mac': [], 'windows': []}
 
-# Get all libtsduck files by type.
-get-headers()
-{
-    find . -type f -name '*.h' ! -name tsduck.h ! -name "*Template.h" "$@" |
-        sed -e 's|.*/||' -e 's|^|#include "|' -e 's|$|"|' |
-        sort --ignore-case
-}
+# Recursively collect header files.
+def collect_headers(root):
+    # List into which the local files are appended.
+    index = os.path.basename(root)
+    if index not in headers.keys():
+        index = ''
+    # Loop on all files in directory
+    for name in os.listdir(root):
+        path = root + os.sep + name
+        if name != 'tsduck.h' and fnmatch.fnmatch(name, '*.h') and not fnmatch.fnmatch(name, '*Template.h'):
+            headers[index].append(name)
+        elif os.path.isdir(path):
+            collect_headers(path)
 
-# Generate the main TSDuck header file.
-(
-    cat ../HEADER.txt
-    echo ''
-    echo '#pragma once'
-    get-headers ! -path '*/linux/*' ! -path '*/mac/*' ! -path '*/unix/*' ! -path '*/windows/*' ! -path '*/private/*'
-    echo ''
-    echo '#if defined(TS_LINUX)'
-    get-headers \( -path '*/unix/*' -o -path '*/linux/*' \)
-    echo '#endif'
-    echo ''
-    echo '#if defined(TS_MAC)'
-    get-headers \( -path '*/unix/*' -o -path '*/mac/*' \)
-    echo '#endif'
-    echo ''
-    echo '#if defined(TS_WINDOWS)'
-    get-headers -path '*/windows/*'
-    echo '#endif'
-) >tsduck.h
+# Collect header files.
+rootdir = os.path.abspath('.' if len(sys.argv) < 2 else sys.argv[1]).rstrip(os.sep)
+collect_headers(rootdir)
+headers['linux'].extend(headers['unix'])
+headers['mac'].extend(headers['unix'])
+del headers['private']
+del headers['unix']
 
-exit 0
+# Insert common source file header.
+with open(os.path.dirname(rootdir) + os.sep + 'HEADER.txt') as f:
+    print(f.read())
+
+# Print include directives.
+separator = '#pragma once'
+for system, files in headers.items():
+    files = sorted(files, key = str.casefold)
+    print(separator)
+    separator = ''
+    if system != '':
+        print('#if defined(TS_%s)' % system.upper())
+    for name in (files):
+        print('#include "%s"' % name)
+    if system != '':
+        print('#endif')

@@ -37,17 +37,13 @@ Build scripts on Windows
   freshly cloned repository, just run this script.
 
 - build-tsduck-header.ps1 : This script builds the tsduck.h header file which
-  includes all public headers of the TSDuck library. Adding new source files
-  in the TSDuck library is a common task. Each time a new public file is added,
-  tsduck.h must be updated. This script is automatically invoked by build.ps1
-  to ensure that the project files are always up to date.
+  includes all public headers of the library. See build-tsduck-header.py.
 
 - get-version-from-sources.ps1 : Extract the TSDuck version number from the
   source files.
 
 - cleanup.ps1 : This script does a complete cleanup of the directory tree,
-  removing all generated or temporary files. This is a Windows equivalent of
-  "make distclean" on Unix (they both invoke cleanup.py).
+  removing all generated or temporary files. See cleanup.py.
 
 - tsduck.nsi : This file is an NSIS script to build the binary installers of
   TSDuck. It is used by build-installer.ps1.
@@ -70,10 +66,11 @@ Build scripts on Windows
 
 Project files for Linux and macOS
 ---------------------------------
-- build-tsduck-header.sh : This script builds the tsduck.h header file which
-  includes all public headers of the TSDuck library. This shell script is the
-  Unix equivalent of build-tsduck-header.ps1. It is automatically invoked by
-  the makefile in libtsduck.
+- build-tsduck-header.py : This script builds the tsduck.h header file which
+  includes all public headers of the TSDuck library. Adding new source files
+  in the TSDuck library is a common task. Each time a new public file is added,
+  tsduck.h must be updated. This script is automatically invoked by the
+  makefile in libtsduck.
 
 - build-release-text.sh : This shell script builds the MarkDown file which
   describes the latest TSDuck release on GitHub.

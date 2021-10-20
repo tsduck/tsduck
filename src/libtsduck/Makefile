@@ -79,13 +79,13 @@ default: headers libs
 
 # The tsduck.h header is automatically generated from all headers using BUILD_PROJ_FILES.
 
-BUILD_TSDUCK_H = $(ROOTDIR)/scripts/build-tsduck-header.sh
+BUILD_TSDUCK_H = $(ROOTDIR)/scripts/build-tsduck-header.py
 
 .PHONY: headers
 headers: tsduck.h
 tsduck.h: $(BUILD_TSDUCK_H) $(SRCROOT)/HEADER.txt $(filter-out tsduck.h %Template.h,$(wildcard *.h */*.h */*/*.h))
 	@echo '  [REBUILD] $@'; \
-	$(BUILD_TSDUCK_H)
+	$(BUILD_TSDUCK_H) >$@
 
 # This header file is regenerated and, normally, make should know that they must be
 # finished before building tsVersionInfo.o. However, the .dep file contains full paths
