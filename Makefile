@@ -166,7 +166,7 @@ SKIPSRC = $(if $(NOTELETEXT),tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_tele
 tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
-	tar -C $(ROOTDIR) --exclude-vcs-ignores $(patsubst %,--exclude '%',.git $(SKIPSRC)) -cpf - . | \
+	tar -cpf - sample/sample-*/japanese-tables.bin $(patsubst %,--exclude '%',.git $(SKIPSRC) $(shell cat .gitignore)) . | \
 	    tar -C $(TMPROOT)/$(TARNAME) -xpf -
 	$(if $(NOTELETEXT),$(SED) -i -e '/tsTeletextDemux.h/d' $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h)
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
