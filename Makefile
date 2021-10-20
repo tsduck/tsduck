@@ -166,8 +166,9 @@ SKIPSRC = $(if $(NOTELETEXT),tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_tele
 tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
-	tar -C $(ROOTDIR) $(patsubst %,--exclude '%',$(SKIPSRC) $(NOSOURCE)) -cpf - . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
-	$(if $(NOTELETEXT),$(SED) -e '/tsTeletextDemux.h/d' -i $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h,)
+	tar -C $(ROOTDIR) --exclude-vcs-ignores $(patsubst %,--exclude '%',.git $(SKIPSRC)) -cpf - . | \
+	    tar -C $(TMPROOT)/$(TARNAME) -xpf -
+	$(if $(NOTELETEXT),$(SED) -i -e '/tsTeletextDemux.h/d' $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h)
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
 	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)

@@ -4,6 +4,7 @@
 ~*
 *.7z
 *.a
+*.apk
 *.autosave
 *.bak
 *.bin
@@ -15,14 +16,10 @@ core
 core.*
 cov-int
 cov-int.*
-[Dd]ebug
 [Dd]ebug*
-[Dd]ebug-*
 *.deb
 *.dep
 *.dll
-*.dll.embed.manifest.dll
-*.dll.embed.manifest.ilk
 doxy
 .DS_Store
 *.dylib
@@ -31,6 +28,7 @@ doxy
 gmon.out
 *.gz
 *.idb
+*.ilk
 ipch
 *.jar
 .kdbgrc.*
@@ -42,15 +40,12 @@ ipch
 *.obj
 *.opensdf
 *.out
-.project
 *.pro.user
 *.pro.user.*
 *.pyc
 __pycache__
 *.rpm
-[Rr]elease
 [Rr]elease*
-[Rr]elease-*
 *.sdf
 *.so
 *.stackdump
@@ -68,8 +63,6 @@ tmp
 *.VC.db
 *.VC.dbopen
 *.VC.opendb
-*.vcproj.*.user
-*.vcxproj.user
 vgcore.*
 .vs
 x64

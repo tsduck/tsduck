@@ -481,19 +481,6 @@ $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
-# $(NOSOURCE) is the list of file patterns which are typically not source files.
-# This can be used to filter file names when creating a backup or an archive of
-# the source files.
-
-NOSOURCE = \
-    .git .svn *.zip *.gz *.tgz [Dd]ebug* [Rr]elease* [Bb]in doxy doxygen *.t2d \
-    *.o *.so *.dylib *.ko *.a *.lib *.obj *.exe *.dll *.gcov gmon.out *.dep .kdbgrc.* \
-    tmp *.tmp *.out *.log *.tlog core core.* vgcore.* *.stackdump \
-    .vs ipch *.ncb *.suo *.idb *.sdf *.opensdf *.vcproj.*.user *.user.* \
-    *.vcxproj.user *.dll.embed.manifest.dll *.dll.embed.manifest.ilk \
-    .tmp_versions *.VC.db *.VC.dbopen *.VC.opendb *.deb *.rpm *.bz2 *.7z \
-    *~ *.bak *.autosave cov-int bin build callgrind.out*
-
 # Default installation root.
 # RPM packagers should override this in the "make install" command line
 # to build a temporary system root where TSDuck is installed.
