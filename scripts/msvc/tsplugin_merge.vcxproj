@@ -2,11 +2,11 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-common-begin.props" />
+    <Import Project="msvc-common-begin.props"/>
   </ImportGroup>
 
   <ItemGroup>
-    <ClCompile Include="..\..\src\tsplugins\tsplugin_merge.cpp" />
+    <ClCompile Include="..\..\src\tsplugins\tsplugin_merge.cpp"/>
   </ItemGroup>
 
   <PropertyGroup Label="Globals">
@@ -16,9 +16,9 @@
   </PropertyGroup>
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-target-dll.props" />
-    <Import Project="msvc-use-tsduckdll.props" />
-    <Import Project="msvc-common-end.props" />
+    <Import Project="msvc-target-dll.props"/>
+    <Import Project="msvc-use-tsduckdll.props"/>
+    <Import Project="msvc-common-end.props"/>
   </ImportGroup>
 
 </Project>
