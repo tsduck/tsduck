@@ -66,17 +66,21 @@ Build scripts on Windows
 
 Project files for Linux and macOS
 ---------------------------------
-- build-tsduck-header.py : This script builds the tsduck.h header file which
-  includes all public headers of the TSDuck library. Adding new source files
-  in the TSDuck library is a common task. Each time a new public file is added,
-  tsduck.h must be updated. This script is automatically invoked by the
-  makefile in libtsduck.
+- build-project-files.py : Build the project files for "Qt Creator" and
+  "Visual Studio" (also used by MSBuild) for all TSDuck commands and plugins.
+  See more details in the leading comments in the script.
 
 - build-release-text.sh : This shell script builds the MarkDown file which
   describes the latest TSDuck release on GitHub.
 
 - build-remote.sh : Build the TSDuck installers on a remote system, either a
   running physical system or a local VM to start.
+
+- build-tsduck-header.py : This script builds the tsduck.h header file which
+  includes all public headers of the TSDuck library. Adding new source files
+  in the TSDuck library is a common task. Each time a new public file is added,
+  tsduck.h must be updated. This script is automatically invoked by the
+  makefile in libtsduck.
 
 - get-version-from-sources.sh : Extract the TSDuck version number from the
   source files.
