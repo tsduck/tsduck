@@ -36,6 +36,9 @@ Build scripts on Windows
   It automatically invoke build.ps1. So, to build TSDuck installers from a
   freshly cloned repository, just run this script.
 
+- build-project-files.ps1 : Build the project files for "Qt Creator" and
+  "Visual Studio". See build-project-files.py.
+
 - build-tsduck-header.ps1 : This script builds the tsduck.h header file which
   includes all public headers of the library. See build-tsduck-header.py.
 
