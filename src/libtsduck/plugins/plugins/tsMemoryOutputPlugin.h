@@ -40,7 +40,7 @@ namespace ts {
     //! Memory output plugin for tsp.
     //! @ingroup plugin
     //!
-    class MemoryOutputPlugin: public OutputPlugin
+    class TSDUCKDLL MemoryOutputPlugin: public OutputPlugin
     {
         TS_NOBUILD_NOCOPY(MemoryOutputPlugin);
     public:
@@ -53,11 +53,6 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
 
     private:
         uint32_t _event_code;

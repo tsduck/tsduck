@@ -88,7 +88,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~SRTSocket() override;
+        virtual ~SRTSocket() override;
 
         //!
         //! Open the socket using parameters from the command line.
@@ -224,7 +224,7 @@ namespace ts {
 
         //!
         //! Get the version of the SRT library.
-        //! @return A string describing the SRT library versions (or the lack of SRT support).
+        //! @return A string describing the SRT library version (or the lack of SRT support).
         //!
         static UString GetLibraryVersion();
 

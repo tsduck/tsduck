@@ -32,9 +32,6 @@
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"skip", ts::SkipPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::SkipPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2021, Thierry Lelegard
+// Copyright (c) 2020-2021, Anthony Delannoy
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,58 +28,46 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  File input plugin for tsp.
+//!  Reliable Internet Stream Transport (RIST) input plugin for tsp.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsInputPlugin.h"
-#include "tsTSFile.h"
 
 namespace ts {
     //!
-    //! File input plugin for tsp.
+    //! Reliable Internet Stream Transport (RIST) input plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL FileInputPlugin: public InputPlugin
+    class TSDUCKDLL RISTInputPlugin: public InputPlugin
     {
-        TS_NOBUILD_NOCOPY(FileInputPlugin);
+        TS_NOBUILD_NOCOPY(RISTInputPlugin);
     public:
         //!
         //! Constructor.
         //! @param [in] tsp Associated callback to @c tsp executable.
         //!
-        FileInputPlugin(TSP* tsp);
+        RISTInputPlugin(TSP* tsp);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~RISTInputPlugin() override;
 
         // Implementation of plugin API
         virtual bool getOptions() override;
+        virtual bool isRealTime() override;
+        virtual bool setReceiveTimeout(MilliSecond timeout) override;
         virtual bool start() override;
         virtual bool stop() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
-        virtual bool abortInput() override;
 
     private:
-        volatile bool  _aborted;            // Set when abortInput() is set.
-        bool           _interleave;         // Read all files simultaneously with interleaving.
-        bool           _first_terminate;    // With _interleave, terminate when the first file terminates.
-        size_t         _interleave_chunk;   // Number of packets per chunk when _interleave.
-        size_t         _interleave_remain;  // Remaining packets to read in current chunk of current file.
-        size_t         _current_filename;   // Current file index in _filenames.
-        size_t         _current_file;       // Current file index in _files. Depends on _interleave.
-        size_t         _repeat_count;
-        uint64_t       _start_offset;
-        size_t         _base_label;
-        TSPacketFormat _file_format;
-        UStringVector  _filenames;
-        std::vector<size_t>  _start_stuffing;
-        std::vector<size_t>  _stop_stuffing;
-        std::set<size_t>     _eof;          // Set of file indexes having reached end of file.
-        std::vector<TSFile>  _files;        // Array of open files, only one without interleave.
-
-        // Open one input file.
-        bool openFile(size_t name_index, size_t file_index);
-
-        // Close all files which are currently open.
-        bool closeAllFiles();
+        // The actual implementation is private to the body of the class.
+        class Guts;
+        Guts* _guts;
     };
 }
+
+

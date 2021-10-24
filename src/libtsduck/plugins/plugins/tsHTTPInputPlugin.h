@@ -41,7 +41,7 @@ namespace ts {
     //! @ingroup plugin
     //!
     //!
-    class HTTPInputPlugin: public AbstractHTTPInputPlugin
+    class TSDUCKDLL HTTPInputPlugin: public AbstractHTTPInputPlugin
     {
         TS_NOBUILD_NOCOPY(HTTPInputPlugin);
     public:
@@ -54,11 +54,6 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
 
     protected:
         // Implementation of AbstractHTTPInputPlugin

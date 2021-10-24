@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2021, Thierry Lelegard
+// Copyright (c) 2020-2021, Anthony Delannoy
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,37 +26,19 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Skip packet processor plugin for tsp.
-//!
+
+#include "tsRIST.h"
+
+
+//----------------------------------------------------------------------------
+// Get the version of the RIST library.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsProcessorPlugin.h"
-
-namespace ts {
-    //!
-    //! Skip packet processor plugin for tsp.
-    //! @ingroup plugin
-    //!
-    class TSDUCKDLL SkipPlugin: public ProcessorPlugin
-    {
-        TS_NOBUILD_NOCOPY(SkipPlugin);
-    public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        SkipPlugin(TSP* tsp);
-
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-
-    private:
-        // Command line options:
-        PacketCounter _skip_count;
-        bool          _use_stuffing;
-    };
+ts::UString ts::GetRISTLibraryVersion()
+{
+#if defined(TS_NO_RIST)
+    return u"This version of TSDuck was compiled without RIST support";
+#else
+    return UString::Format(u"librist version %s, API version %s", {::librist_version(), ::librist_api_version()});
+#endif
 }

@@ -85,7 +85,6 @@ tsduck_sln_guid = '55E5A8EA-215E-45C2-9471-AD5CC5A925A0'
 
 # A list of MSBuild project dependencies and property files.
 ms_deps = {
-    'tsplugin_rist': {'props': ['msvc-use-librist']},
     'tsp': {'deps': list(plugins)},
     'tsswitch': {'deps': ['tsplugin_dvb', 'tsplugin_hides']},
     # all "others" must be listed below, at least for tsduckdll vs. tsducklib.

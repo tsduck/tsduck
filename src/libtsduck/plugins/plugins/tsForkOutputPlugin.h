@@ -43,7 +43,7 @@ namespace ts {
     //! Fork a process and send TS packets to its standard input (pipe).
     //! @ingroup plugin
     //!
-    class ForkOutputPlugin: public OutputPlugin
+    class TSDUCKDLL ForkOutputPlugin: public OutputPlugin
     {
         TS_NOBUILD_NOCOPY(ForkOutputPlugin);
     public:
@@ -58,11 +58,6 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
 
     private:
         UString        _command;      // The command to run.

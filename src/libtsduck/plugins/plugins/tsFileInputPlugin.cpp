@@ -33,9 +33,6 @@
 
 TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::FileInputPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

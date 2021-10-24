@@ -32,9 +32,6 @@
 
 TS_REGISTER_INPUT_PLUGIN(u"fork", ts::ForkInputPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::ForkInputPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

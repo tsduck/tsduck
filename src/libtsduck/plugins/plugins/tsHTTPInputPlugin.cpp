@@ -35,9 +35,6 @@
 TS_REGISTER_INPUT_PLUGIN(u"http", ts::HTTPInputPlugin);
 #endif
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::HTTPInputPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor
