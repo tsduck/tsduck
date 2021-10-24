@@ -42,7 +42,7 @@ namespace ts {
     //! Collect selected PSI/SI tables plugin for tsp.
     //! @ingroup plugin
     //!
-    class TablesPlugin: public ProcessorPlugin, private SectionHandlerInterface
+    class TSDUCKDLL TablesPlugin: public ProcessorPlugin, private SectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TablesPlugin);
     public:
@@ -59,11 +59,6 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
         // Implementation of SectionHandlerInterface
         virtual void handleSection(SectionDemux& demux, const Section& section) override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
 
     private:
         TablesDisplay _display;

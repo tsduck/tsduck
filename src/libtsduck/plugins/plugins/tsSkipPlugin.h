@@ -40,7 +40,7 @@ namespace ts {
     //! Skip packet processor plugin for tsp.
     //! @ingroup plugin
     //!
-    class SkipPlugin: public ProcessorPlugin
+    class TSDUCKDLL SkipPlugin: public ProcessorPlugin
     {
         TS_NOBUILD_NOCOPY(SkipPlugin);
     public:
@@ -53,11 +53,6 @@ namespace ts {
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
 
     private:
         // Command line options:

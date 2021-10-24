@@ -151,6 +151,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsplugin_ip.dll"
     Delete "$INSTDIR\bin\tsplugin_null.dll"
     Delete "$INSTDIR\bin\tsplugin_psi.dll"
+    Delete "$INSTDIR\bin\tsplugin_rist.dll"
     Delete "$INSTDIR\bin\tsplugin_skip.dll"
     Delete "$INSTDIR\bin\tsplugin_srt.dll"
     Delete "$INSTDIR\bin\tsplugin_tables.dll"

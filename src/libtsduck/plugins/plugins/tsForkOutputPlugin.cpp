@@ -32,9 +32,6 @@
 
 TS_REGISTER_OUTPUT_PLUGIN(u"fork", ts::ForkOutputPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::ForkOutputPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

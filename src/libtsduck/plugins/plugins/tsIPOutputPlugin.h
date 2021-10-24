@@ -57,11 +57,6 @@ namespace ts {
         virtual bool stop() override;
         virtual bool isRealTime() override;
 
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
-
     protected:
         // Implementation of AbstractDatagramOutputPlugin
         virtual bool sendDatagram(const void* address, size_t size) override;

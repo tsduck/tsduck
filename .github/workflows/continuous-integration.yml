@@ -161,7 +161,9 @@ jobs:
     - name: Build TSDuck
       run: scripts/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
-      run: bin/Release-x64/tsversion.exe --version=all
+      run: |
+        bin/Release-x64/tsversion.exe --version=all
+        bin/Release-x64/tsp.exe --list
     - name: Run unitary tests
       run: bin/Release-x64/utests-tsduckdll.exe
     - name: Run unitary tests (static)
@@ -193,7 +195,9 @@ jobs:
     - name: Build TSDuck
       run: scripts/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
     - name: Check built version
-      run: bin/Release-Win32/tsversion.exe --version=all
+      run: |
+        bin/Release-x64/tsversion.exe --version=all
+        bin/Release-x64/tsp.exe --list
     - name: Run unitary tests
       run: bin/Release-Win32/utests-tsduckdll.exe
     - name: Run unitary tests (static)

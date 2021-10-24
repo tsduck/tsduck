@@ -61,11 +61,6 @@ namespace ts {
             virtual bool start() override;
             virtual bool isRealTime() override;
 
-            //! @cond nodoxygen
-            // A dummy storage value to force inclusion of this module when using the static library.
-            static const int REFERENCE;
-            //! @endcond
-
         protected:
             // Implementation of AbstractHTTPInputPlugin
             virtual bool openURL(WebRequest&) override;

@@ -90,6 +90,7 @@ namespace ts {
             DEKTEC,   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
             HTTP,     //!< Version of HTTP library which is used.
             SRT,      //!< Version of SRT library which is used.
+            RIST,     //!< Version of RIST library which is used.
             ALL,      //!< Multi-line output with full details.
         };
 

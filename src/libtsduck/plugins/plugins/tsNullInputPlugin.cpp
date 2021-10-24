@@ -32,9 +32,6 @@
 
 TS_REGISTER_INPUT_PLUGIN(u"null", ts::NullInputPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::NullInputPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

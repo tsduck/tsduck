@@ -33,9 +33,6 @@
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"psi", ts::PSIPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::PSIPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

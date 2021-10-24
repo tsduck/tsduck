@@ -51,9 +51,6 @@ TS_LLVM_NOWARNING(unused-function)
 // observed here, ignore it. Later, a full FIFO indicates a potential packet loss.
 #define INIT_RECEIVE_COUNT 5
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::DektecInputPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Class internals.

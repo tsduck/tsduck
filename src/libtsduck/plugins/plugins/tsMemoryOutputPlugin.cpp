@@ -33,9 +33,6 @@
 
 TS_REGISTER_OUTPUT_PLUGIN(u"memory", ts::MemoryOutputPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::MemoryOutputPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

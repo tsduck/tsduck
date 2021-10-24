@@ -58,11 +58,6 @@ namespace ts {
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool abortInput() override;
 
-        //! @cond nodoxygen
-        // A dummy storage value to force inclusion of this module when using the static library.
-        static const int REFERENCE;
-        //! @endcond
-
     private:
         volatile bool  _aborted;            // Set when abortInput() is set.
         bool           _interleave;         // Read all files simultaneously with interleaving.

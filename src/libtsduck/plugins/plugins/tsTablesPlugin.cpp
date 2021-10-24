@@ -33,9 +33,6 @@
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"tables", ts::TablesPlugin);
 
-// A dummy storage value to force inclusion of this module when using the static library.
-const int ts::TablesPlugin::REFERENCE = 0;
-
 
 //----------------------------------------------------------------------------
 // Constructor

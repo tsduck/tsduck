@@ -37,6 +37,7 @@
 #include "tsDektecUtils.h"
 #include "tsWebRequest.h"
 #include "tsSRTSocket.h"
+#include "tsRIST.h"
 
 // Exported version of the TSDuck library.
 // The names of these symbols are constant, their values are not.
@@ -64,6 +65,7 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
     {u"dektec",   int(ts::VersionInfo::Format::DEKTEC)},
     {u"http",     int(ts::VersionInfo::Format::HTTP)},
     {u"srt",      int(ts::VersionInfo::Format::SRT)},
+    {u"rist",     int(ts::VersionInfo::Format::RIST)},
     {u"all",      int(ts::VersionInfo::Format::ALL)},
 });
 
@@ -297,6 +299,10 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The version of the SRT library.
             return SRTSocket::GetLibraryVersion();
         }
+        case Format::RIST: {
+            // The version of the RIST library.
+            return GetRISTLibraryVersion();
+        }
         case Format::ALL: {
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +
                 u"Built " + GetVersion(Format::DATE) + LINE_FEED +
@@ -305,7 +311,8 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
                 u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
                 u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
                 u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
-                u"SRT library: " + GetVersion(Format::SRT);
+                u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
+                u"RIST library: " + GetVersion(Format::RIST);
         }
         default: {
             // Undefined type, return an empty string.
