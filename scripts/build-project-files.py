@@ -116,6 +116,7 @@ def build_qt_files(names, config):
     for name in names:
         os.makedirs(qt_dir + os.sep + name, 0o755, True)
         with open(qt_dir + os.sep + name + os.sep + name + '.pro', 'w') as f:
+            f.write('# Automatically generated file, see %s\n' % os.path.basename(script))
             f.write('CONFIG += %s\n' % config)
             f.write('TARGET = %s\n' % name)
             f.write('include(../tsduck.pri)\n')
@@ -158,27 +159,23 @@ def build_ms_files(names, srcdir, props):
         with open(ms_file(name), 'w', newline = '\r\n') as f:
             f.write('<?xml version="1.0" encoding="utf-8"?>\n')
             f.write('<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">\n')
-            f.write('\n')
+            f.write('  <!-- Automatically generated file, see %s -->\n' % os.path.basename(script))
             f.write('  <ImportGroup Label="PropertySheets">\n')
             f.write('    <Import Project="msvc-common-begin.props"/>\n')
             f.write('  </ImportGroup>\n')
-            f.write('\n')
             f.write('  <ItemGroup>\n')
             f.write('    <ClCompile Include="..\..\src\%s\%s.cpp"/>\n' % (srcdir, name))
             f.write('  </ItemGroup>\n')
-            f.write('\n')
             f.write('  <PropertyGroup Label="Globals">\n')
             f.write('    <ProjectGuid>{%s}</ProjectGuid>\n' % (guid))
             f.write('    <Keyword>Win32Proj</Keyword>\n')
             f.write('    <RootNamespace>%s</RootNamespace>\n' % (name))
             f.write('  </PropertyGroup>\n')
-            f.write('\n')
             f.write('  <ImportGroup Label="PropertySheets">\n')
             for prop in all_props:
                 f.write('    <Import Project="%s.props"/>\n' % (prop))
             f.write('    <Import Project="msvc-common-end.props"/>\n')
             f.write('  </ImportGroup>\n')
-            f.write('\n')
             f.write('</Project>\n')
 
 # Build MSBuild project files.
