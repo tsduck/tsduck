@@ -218,7 +218,7 @@ namespace ts {
 
         //!
         //! Check if the SRT socket uses the Message API.
-        //! @return True if the SRT socket uses the Message API. False if it uses the buffer API.
+        //! @return True if the SRT socket uses the Message API. False if it uses the Buffer API.
         //!
         bool getMessageApi() const;
 
