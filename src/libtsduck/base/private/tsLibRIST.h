@@ -26,20 +26,21 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tsRIST.h"
-#include "tsLibRIST.h"
-
-
-//----------------------------------------------------------------------------
-// Get the version of the RIST library.
+//!
+//!  @file
+//!  Safely include the librist definitions.
+//!
 //----------------------------------------------------------------------------
 
-ts::UString ts::GetRISTLibraryVersion()
-{
-#if defined(TS_NO_RIST)
-    return u"This version of TSDuck was compiled without RIST support";
-#else
-    return UString::Format(u"librist version %s, API version %s", {::librist_version(), ::librist_api_version()});
+#pragma once
+#include "tsPlatform.h"
+
+#if !defined(TS_NO_RIST)
+    TS_PUSH_WARNING()
+    TS_LLVM_NOWARNING(documentation)
+    #include <librist/librist.h>
+    extern "C" { // to be removed after release of librist 0.2.7
+        #include <librist/librist_srp.h>
+    } // same as above
+    TS_POP_WARNING()
 #endif
-}
