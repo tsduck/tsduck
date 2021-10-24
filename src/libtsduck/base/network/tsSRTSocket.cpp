@@ -164,8 +164,11 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
               u"sets multiple other parameters to their default values as required for a "
               u"particular transmission type.");
 
+    args.option(u"bufferapi");
+    args.help(u"bufferapi", u"When set, this socket uses the Buffer API. The default is Message API.");
+
     args.option(u"messageapi");
-    args.help(u"messageapi", u"When set, this socket uses the Message API, otherwise it uses Buffer API.");
+    args.help(u"messageapi", u"Use the Message API. This is now the default, use --bufferapi to disable it.");
 
     args.option(u"min-version", 0, Args::INTEGER, 0, 1, 0, std::numeric_limits<int32_t>::max());
     args.help(u"min-version",
@@ -792,9 +795,14 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
         return false;
     }
 
+    if (args.present(u"bufferapi") && args.present(u"messageapi")) {
+        args.error(u"--bufferapi and --messageapi are mutually exclusive");
+        return false;
+    }
+
     _guts->transtype = (ttype == u"live") ? SRTT_LIVE : SRTT_FILE;
     _guts->enforce_encryption = args.present(u"enforce-encryption");
-    _guts->messageapi = args.present(u"messageapi");
+    _guts->messageapi = !args.present(u"bufferapi"); // --messageapi is now the default
     _guts->nakreport = args.present(u"nakreport");
     _guts->tlpktdrop = args.present(u"tlpktdrop");
     args.getIntValue(_guts->conn_timeout, u"conn-timeout", -1);
@@ -1111,40 +1119,49 @@ size_t ts::SRTSocket::totalReceivedBytes() const
 
 bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
 {
-    // If socket was disconnected or aborted, silently fail.
-    if (_guts->disconnected || _guts->sock < 0) {
+    // If socket was closed, silently fail.
+    if (_guts->sock < 0) {
         return false;
     }
 
-    // Return statistics data from the SRT socket.
+    // Get statistics data from the SRT socket.
+    // If the socket was disconnected but still open, the current version of libsrt cannot report statistics.
+    // Let's try anyway in case some future version allows that but silently fails in case of error.
     ::SRT_TRACEBSTATS stats;
     TS_ZERO(stats);
     const int clear = (mode & SRTStatMode::INTERVAL) == SRTStatMode::NONE ? 0 : 1;
 
     if (::srt_bstats(_guts->sock, &stats, clear) < 0) {
-        report.error(u"error during srt_bstats: %s", {::srt_getlasterror_str()});
+        int sys_error = 0;
+        const int srt_error = ::srt_getlasterror(&sys_error);
+        report.debug(u"srt_bstats: socket: 0x%X, libsrt error: %d, system error: %d", {_guts->sock, srt_error, sys_error});
+        if (!_guts->disconnected) {
+            report.error(u"error during srt_bstats: %s", {::srt_getlasterror_str()});
+        }
         return false;
     }
 
     // Build a statistics message.
-    UString msg(u"SRT statistics:");
+    const bool show_receive = (_guts->total_received_bytes > 0 || stats.byteRecvTotal > 0) && (mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE;
+    const bool show_send = (_guts->total_sent_bytes > 0 || stats.byteSentTotal > 0) && (mode & SRTStatMode::SEND) != SRTStatMode::NONE;
     bool none = true;
-    if (stats.byteRecvTotal > 0 && (mode & (SRTStatMode::RECEIVE | SRTStatMode::TOTAL)) == (SRTStatMode::RECEIVE | SRTStatMode::TOTAL)) {
+    UString msg(u"SRT statistics:");
+    if (show_receive && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
         none = false;
         msg.format(u"\n  Total received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
                    {stats.byteRecvTotal, stats.pktRecvTotal, stats.pktRcvLossTotal, stats.pktRcvDropTotal});
     }
-    if (stats.byteSentTotal > 0 && (mode & (SRTStatMode::SEND | SRTStatMode::TOTAL)) == (SRTStatMode::SEND | SRTStatMode::TOTAL)) {
+    if (show_send && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
         none = false;
         msg.format(u"\n  Total sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
                    {stats.byteSentTotal, stats.pktSentTotal, stats.pktRetransTotal, stats.pktSndLossTotal, stats.pktSndDropTotal});
     }
-    if (stats.byteRecvTotal > 0 && (mode & (SRTStatMode::RECEIVE | SRTStatMode::INTERVAL)) == (SRTStatMode::RECEIVE | SRTStatMode::INTERVAL)) {
+    if (show_receive && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
         none = false;
         msg.format(u"\n  Interval received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
                    {stats.byteRecv, stats.pktRecv, stats.pktRcvLoss, stats.pktRcvDrop});
     }
-    if (stats.byteSentTotal > 0 && (mode & (SRTStatMode::SEND | SRTStatMode::INTERVAL)) == (SRTStatMode::SEND | SRTStatMode::INTERVAL)) {
+    if (show_send && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
         none = false;
         msg.format(u"\n  Interval sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
                    {stats.byteSent, stats.pktSent, stats.pktRetrans, stats.pktSndLoss, stats.pktSndDrop});
