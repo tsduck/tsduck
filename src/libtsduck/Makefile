@@ -135,7 +135,7 @@ $(SHARED_LIBTSDUCK): $(OBJS)
 
 ifdef NOSTATICBLOB
 
-OBJS_STATIC_LIB = $(OBJS)
+OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tsduck.o,$(OBJS))
 
 else
 
@@ -159,7 +159,7 @@ $(OBJ_ALLCHARS): $(OBJS_CHARS)
 $(OBJ_ALLPLUGS): $(OBJS_PLUGS)
 	@echo '  [LD] $@'; $(LD) -r $^ -o $@
 
-OBJS_STATIC_LIB = $(filter-out $(OBJS_TABLES) $(OBJS_DESCS) $(OBJS_CHARS) $(OBJS_PLUGS),$(OBJS)) \
+OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tsduck.o $(OBJS_TABLES) $(OBJS_DESCS) $(OBJS_CHARS) $(OBJS_PLUGS),$(OBJS)) \
     $(OBJ_ALLTABLES) $(OBJ_ALLDESCS) $(OBJ_ALLCHARS) $(OBJ_ALLPLUGS)
 
 endif

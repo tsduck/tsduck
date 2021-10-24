@@ -30,8 +30,10 @@
 #include "tsSRTSocket.h"
 #include "tsSingletonManager.h"
 #include "tsArgs.h"
+#include "tsTime.h"
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
+#include "tsNullReport.h"
 #include "tsFatal.h"
 
 
@@ -235,6 +237,17 @@ void ts::SRTSocket::defineArgs(ts::Args& args) const
               u"packets that have no chance to be delivered in time. It is automatically enabled "
               u"in sender if receiver supports it.");
 
+    args.option(u"statistics-interval", 0, Args::POSITIVE);
+    args.help(u"statistics-interval", u"milliseconds",
+              u"Report SRT usage statistics at regular intervals, in milliseconds. "
+              u"The specified interval is a minimum value, actual reporting can occur "
+              u"only when data are exchanged over the SRT socket.");
+
+    args.option(u"final-statistics");
+    args.help(u"final-statistics",
+              u"Report SRT usage statistics when the SRT socket is closed. "
+              u"This option is implicit with --statistics-interval.");
+
     args.option(u"streamid", 0, Args::STRING);
     args.help(u"streamid",
               u"A string limited to 512 characters that can be set on the socket prior to connecting. "
@@ -270,11 +283,14 @@ bool ts::SRTSocket::loadArgs(DuckContext&, Args&) { return true; }
 bool ts::SRTSocket::send(const void*, size_t, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::receive(void*, size_t, size_t&, Report& report) NOSRT_ERROR
 bool ts::SRTSocket::receive(void*, size_t, size_t&, MicroSecond&, Report& report) NOSRT_ERROR
+bool ts::SRTSocket::reportStatistics(SRTStatMode, Report&) NOSRT_ERROR
 bool ts::SRTSocket::getSockOpt(int, const char*, void*, int&, Report& report) const NOSRT_ERROR
 int  ts::SRTSocket::getSocket() const { return -1; }
 bool ts::SRTSocket::getMessageApi() const { return false; }
 ts::UString ts::SRTSocket::GetLibraryVersion() { return NOSRT_ERROR_MSG; }
 bool ts::SRTSocket::setAddressesInternal(const UString&, const UString&, const UString&, bool, Report& report) NOSRT_ERROR
+size_t ts::SRTSocket::totalSentBytes() const { return 0; }
+size_t ts::SRTSocket::totalReceivedBytes() const { return 0; }
 
 #else
 
@@ -345,7 +361,7 @@ namespace {
     {
         ts::GuardMutex lock(_mutex);
         if (_count++ == 0) {
-            srt_startup();
+            ::srt_startup();
         }
     }
 
@@ -355,7 +371,7 @@ namespace {
         ts::GuardMutex lock(_mutex);
         if (_count > 0) {
             if (--_count == 0) {
-                srt_cleanup();
+                ::srt_cleanup();
             }
         }
     }
@@ -382,10 +398,12 @@ ts::UString ts::SRTSocket::GetLibraryVersion()
 
 class ts::SRTSocket::Guts
 {
-     TS_NOCOPY(Guts);
+     TS_NOBUILD_NOCOPY(Guts);
+private:
+     SRTSocket* _parent;
 public:
      // Default constructor.
-     Guts();
+     Guts(SRTSocket* parent);
 
      bool send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report);
      bool setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report);
@@ -394,48 +412,55 @@ public:
      bool srtListen(const IPv4SocketAddress& addr, Report& report);
      bool srtConnect(const IPv4SocketAddress& addr, Report& report);
      bool srtBind(const IPv4SocketAddress& addr, Report& report);
+     bool reportStats(Report& report);
 
      // Socket working data.
-     IPv4SocketAddress local_address;
-     IPv4SocketAddress remote_address;
-     SRTSocketMode     mode;
-     volatile int      sock;       // SRT socket for data transmission
-     volatile int      listener;   // Listener SRT socket when srt_listen() is used.
+     IPv4SocketAddress    local_address;
+     IPv4SocketAddress    remote_address;
+     SRTSocketMode        mode;
+     volatile ::SRTSOCKET sock;       // SRT socket for data transmission
+     volatile ::SRTSOCKET listener;   // Listener SRT socket when srt_listen() is used.
+     size_t               total_sent_bytes;
+     size_t               total_received_bytes;
+     Time                 next_stats;
 
      // Socket options.
-     SRT_TRANSTYPE transtype;
-     std::string   packet_filter;
-     std::string   passphrase;
-     std::string   streamid;
-     int     polling_time;
-     bool    messageapi;
-     bool    nakreport;
-     int     conn_timeout;
-     int     ffs;
-     int     linger;
-     int     lossmaxttl;
-     int     mss;
-     int     ohead_bw;
-     int     payload_size;
-     int     rcvbuf;
-     int     sndbuf;
-     bool    enforce_encryption;
-     int32_t kmrefreshrate;
-     int32_t kmpreannounce;
-     int     udp_rcvbuf;
-     int     udp_sndbuf;
-     int64_t input_bw;
-     int64_t max_bw;
-     int32_t iptos;
-     int32_t ipttl;
-     int32_t latency;
-     int32_t min_version;
-     int32_t pbkeylen;
-     int32_t peer_idle_timeout;
-     int32_t peer_latency;
-     int32_t rcv_latency;
-     bool    tlpktdrop;
-     bool    disconnected;
+     ::SRT_TRANSTYPE transtype;
+     std::string packet_filter;
+     std::string passphrase;
+     std::string streamid;
+     int         polling_time;
+     bool        messageapi;
+     bool        nakreport;
+     int         conn_timeout;
+     int         ffs;
+     int         linger;
+     int         lossmaxttl;
+     int         mss;
+     int         ohead_bw;
+     int         payload_size;
+     int         rcvbuf;
+     int         sndbuf;
+     bool        enforce_encryption;
+     int32_t     kmrefreshrate;
+     int32_t     kmpreannounce;
+     int         udp_rcvbuf;
+     int         udp_sndbuf;
+     int64_t     input_bw;
+     int64_t     max_bw;
+     int32_t     iptos;
+     int32_t     ipttl;
+     int32_t     latency;
+     int32_t     min_version;
+     int32_t     pbkeylen;
+     int32_t     peer_idle_timeout;
+     int32_t     peer_latency;
+     int32_t     rcv_latency;
+     bool        tlpktdrop;
+     bool        disconnected;
+     bool        final_stats;
+     MilliSecond stats_interval;
+     SRTStatMode stats_mode;
 };
 
 
@@ -443,12 +468,16 @@ public:
 // Guts constructor.
 //----------------------------------------------------------------------------
 
-ts::SRTSocket::Guts::Guts() :
+ts::SRTSocket::Guts::Guts(SRTSocket* parent) :
+    _parent(parent),
     local_address(),
     remote_address(),
     mode(SRTSocketMode::DEFAULT),
     sock(-1),      // do not use SYS_SOCKET_INVALID, an SRT socket is not a socket, it is always an int
     listener(-1),  // idem
+    total_sent_bytes(0),
+    total_received_bytes(0),
+    next_stats(),
     transtype(SRTT_INVALID),
     packet_filter(),
     passphrase(),
@@ -481,7 +510,10 @@ ts::SRTSocket::Guts::Guts() :
     peer_latency(-1),
     rcv_latency(-1),
     tlpktdrop(false),
-    disconnected(false)
+    disconnected(false),
+    final_stats(false),
+    stats_interval(0),
+    stats_mode(SRTStatMode::ALL)
 {
 }
 
@@ -491,7 +523,7 @@ ts::SRTSocket::Guts::Guts() :
 //----------------------------------------------------------------------------
 
 ts::SRTSocket::SRTSocket() :
-    _guts(new Guts)
+    _guts(new Guts(this))
 {
     CheckNonNull(_guts);
 }
@@ -504,7 +536,7 @@ ts::SRTSocket::SRTSocket() :
 ts::SRTSocket::~SRTSocket(void)
 {
     if (_guts != nullptr) {
-        close();
+        close(NULLREP);
         delete _guts;
         _guts = nullptr;
     }
@@ -517,7 +549,7 @@ ts::SRTSocket::~SRTSocket(void)
 
 int ts::SRTSocket::getSocket() const
 {
-    return _guts->sock;
+    return int(_guts->sock);
 }
 
 bool ts::SRTSocket::getMessageApi() const
@@ -528,7 +560,6 @@ bool ts::SRTSocket::getMessageApi() const
 
 //----------------------------------------------------------------------------
 // Open the socket
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SRTSocket::open(SRTSocketMode mode,
@@ -556,14 +587,14 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     // Create the SRT socket.
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 1)
     report.debug(u"calling srt_create_socket()");
-    _guts->sock = srt_create_socket();
+    _guts->sock = ::srt_create_socket();
 #else
     // Only supports IPv4.
     report.debug(u"calling srt_socket()");
-    _guts->sock = srt_socket(AF_INET, SOCK_DGRAM, 0);
+    _guts->sock = ::srt_socket(AF_INET, SOCK_DGRAM, 0);
 #endif
     if (_guts->sock < 0) {
-        report.error(u"error creating SRT socket: %s", {srt_getlasterror_str()});
+        report.error(u"error creating SRT socket: %s", {::srt_getlasterror_str()});
         SRTInit::Instance()->stop();
         return false;
     }
@@ -571,11 +602,10 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     // Set initial socket options.
     bool success = _guts->setSockOptPre(report);
 
-    // Connect / setuo the SRT socket.
+    // Connect / setup the SRT socket.
     switch (_guts->mode) {
         case SRTSocketMode::LISTENER:
-            success = success &&
-                      _guts->srtListen(_guts->local_address, report);
+            success = success && _guts->srtListen(_guts->local_address, report);
             break;
         case SRTSocketMode::RENDEZVOUS:
             success = success &&
@@ -593,9 +623,16 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
             report.error(u"unsupported socket mode");
             success = false;
     }
+    report.debug(u"SRTSocket::open, sock = 0x%X, listener = 0x%X", {_guts->sock, _guts->listener});
 
     // Set final socket options.
     success = success && _guts->setSockOptPost(report);
+
+    // Reset send/receive statistics.
+    _guts->total_sent_bytes = _guts->total_received_bytes = 0;
+    if (_guts->stats_interval > 0) {
+        _guts->next_stats = Time::CurrentUTC() + _guts->stats_interval;
+    }
 
     if (!success) {
         close(report);
@@ -610,28 +647,53 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
 
 bool ts::SRTSocket::close(Report& report)
 {
+    report.debug(u"SRTSocket::close, sock = 0x%X, listener = 0x%X, final stats: %s", {_guts->sock, _guts->listener, _guts->final_stats});
+
+    // Report final statistics if required.
+    if (_guts->final_stats) {
+        reportStatistics(_guts->stats_mode, report);
+    }
+
     // To handle the case where close() would be called from another thread,
     // clear the socket value first, then close.
-    const int sock = _guts->sock;
-    const int listener = _guts->listener;
+    const ::SRTSOCKET sock = _guts->sock;
+    const ::SRTSOCKET listener = _guts->listener;
     _guts->listener = -1;
     _guts->sock = -1;
 
     if (sock >= 0) {
         // Close the SRT data socket.
         report.debug(u"calling srt_close()");
-        srt_close(sock);
+        ::srt_close(sock);
 
         // Close the SRT listener socket if there is one.
         if (listener >= 0) {
             report.debug(u"calling srt_close() on listener socket");
-            srt_close(listener);
+            ::srt_close(listener);
         }
 
         // Decrement reference count to SRT library.
         SRTInit::Instance()->stop();
     }
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Report statistics when necessary.
+//----------------------------------------------------------------------------
+
+bool ts::SRTSocket::Guts::reportStats(Report& report)
+{
+    bool status = true;
+    if (stats_interval > 0) {
+        const Time now(Time::CurrentUTC());
+        if (now >= next_stats) {
+            next_stats = now + stats_interval;
+            status = _parent->reportStatistics(stats_mode, report);
+        }
+    }
+    return status;
 }
 
 
@@ -731,37 +793,39 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
     }
 
     _guts->transtype = (ttype == u"live") ? SRTT_LIVE : SRTT_FILE;
-    _guts->nakreport = args.present(u"nakreport");
-    _guts->conn_timeout = args.intValue<int>(u"conn-timeout", -1);
-    _guts->messageapi = args.present(u"messageapi");
-    _guts->ffs = args.intValue<int>(u"ffs", -1);
-    _guts->input_bw = args.intValue<int64_t>(u"input-bw", -1);
-    _guts->iptos = args.intValue<int32_t>(u"iptos", -1);
-    _guts->ipttl = args.intValue<int32_t>(u"ipttl", -1);
     _guts->enforce_encryption = args.present(u"enforce-encryption");
-    _guts->kmrefreshrate = args.intValue<int32_t>(u"kmrefreshrate", -1);
-    _guts->kmpreannounce = args.intValue<int32_t>(u"kmpreannounce", -1);
-    _guts->latency = args.intValue<int32_t>(u"latency", -1);
-    _guts->linger = args.intValue<int>(u"linger", -1);
-    _guts->lossmaxttl = args.intValue<int>(u"lossmaxttl", -1);
-    _guts->max_bw = args.intValue<int64_t>(u"max-bw", -1);
-    _guts->min_version = args.intValue<int32_t>(u"min-version", -1);
-    _guts->mss = args.intValue<int>(u"mss", -1);
-    _guts->ohead_bw = args.intValue<int>(u"ohead-bw", -1);
+    _guts->messageapi = args.present(u"messageapi");
+    _guts->nakreport = args.present(u"nakreport");
+    _guts->tlpktdrop = args.present(u"tlpktdrop");
+    args.getIntValue(_guts->conn_timeout, u"conn-timeout", -1);
+    args.getIntValue(_guts->ffs, u"ffs", -1);
+    args.getIntValue(_guts->input_bw, u"input-bw", -1);
+    args.getIntValue(_guts->iptos, u"iptos", -1);
+    args.getIntValue(_guts->ipttl, u"ipttl", -1);
+    args.getIntValue(_guts->kmrefreshrate, u"kmrefreshrate", -1);
+    args.getIntValue(_guts->kmpreannounce, u"kmpreannounce", -1);
+    args.getIntValue(_guts->latency, u"latency", -1);
+    args.getIntValue(_guts->linger, u"linger", -1);
+    args.getIntValue(_guts->lossmaxttl, u"lossmaxttl", -1);
+    args.getIntValue(_guts->max_bw, u"max-bw", -1);
+    args.getIntValue(_guts->min_version, u"min-version", -1);
+    args.getIntValue(_guts->mss, u"mss", -1);
+    args.getIntValue(_guts->ohead_bw, u"ohead-bw", -1);
     _guts->streamid = args.value(u"streamid").toUTF8();
     _guts->packet_filter = args.value(u"packet-filter").toUTF8();
     _guts->passphrase = args.value(u"passphrase").toUTF8();
-    _guts->payload_size = args.intValue<int>(u"payload-size", -1);
-    _guts->pbkeylen = args.intValue<int32_t>(u"pbkeylen", -1);
-    _guts->peer_idle_timeout = args.intValue<int32_t>(u"peer-idle-timeout", -1);
-    _guts->peer_latency = args.intValue<int32_t>(u"peer-latency", -1);
-    _guts->rcvbuf = args.intValue<int>(u"rcvbuf", -1);
-    _guts->rcv_latency = args.intValue<int32_t>(u"rcv-latency", -1);
-    _guts->polling_time = args.intValue<int>(u"polling-time", DEFAULT_POLLING_TIME);
-    _guts->sndbuf = args.intValue<int>(u"sndbuf", -1);
-    _guts->tlpktdrop = args.present(u"tlpktdrop");
-    _guts->udp_rcvbuf = args.intValue<int>(u"udp-rcvbuf", -1);
-    _guts->udp_sndbuf = args.intValue<int>(u"udp-sndbuf", -1);
+    args.getIntValue(_guts->payload_size, u"payload-size", -1);
+    args.getIntValue(_guts->pbkeylen, u"pbkeylen", -1);
+    args.getIntValue(_guts->peer_idle_timeout, u"peer-idle-timeout", -1);
+    args.getIntValue(_guts->peer_latency, u"peer-latency", -1);
+    args.getIntValue(_guts->rcvbuf, u"rcvbuf", -1);
+    args.getIntValue(_guts->rcv_latency, u"rcv-latency", -1);
+    args.getIntValue(_guts->polling_time, u"polling-time", DEFAULT_POLLING_TIME);
+    args.getIntValue(_guts->sndbuf, u"sndbuf", -1);
+    args.getIntValue(_guts->udp_rcvbuf, u"udp-rcvbuf", -1);
+    args.getIntValue(_guts->udp_sndbuf, u"udp-sndbuf", -1);
+    args.getIntValue(_guts->stats_interval, u"statistics-interval", 0);
+    _guts->final_stats = _guts->stats_interval > 0 || args.present(u"final-statistics");
 
     return true;
 }
@@ -873,15 +937,15 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     ::sockaddr sock_addr;
     addr.copy(sock_addr);
     report.debug(u"calling srt_bind(%s)", {addr});
-    if (srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
-        report.error(u"error during srt_bind(): %s", {srt_getlasterror_str()});
+    if (::srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
+        report.error(u"error during srt_bind(): %s", {::srt_getlasterror_str()});
         return false;
     }
 
     // Second parameter is the number of simultaneous connection accepted. For now we only accept one.
     report.debug(u"calling srt_listen()");
-    if (srt_listen(sock, 1) < 0) {
-        report.error(u"error during srt_listen(): %s", {srt_getlasterror_str()});
+    if (::srt_listen(sock, 1) < 0) {
+        report.error(u"error during srt_listen(): %s", {::srt_getlasterror_str()});
         return false;
     }
 
@@ -889,9 +953,9 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     ::sockaddr peer_addr;
     int peer_addr_len = sizeof(peer_addr);
     report.debug(u"calling srt_accept()");
-    int data_sock = srt_accept(sock, &peer_addr, &peer_addr_len);
+    int data_sock = ::srt_accept(sock, &peer_addr, &peer_addr_len);
     if (data_sock < 0) {
-        report.error(u"error during srt_accept(): %s", {srt_getlasterror_str()});
+        report.error(u"error during srt_accept(): %s", {::srt_getlasterror_str()});
         return false;
     }
 
@@ -914,12 +978,12 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
     addr.copy(sock_addr);
 
     report.debug(u"calling srt_connect(%s)", {addr});
-    if (srt_connect(sock, &sock_addr, sizeof(sock_addr)) < 0) {
-        const int err = srt_getlasterror(&errno);
-        std::string err_str(srt_strerror(err, errno));
+    if (::srt_connect(sock, &sock_addr, sizeof(sock_addr)) < 0) {
+        const int err = ::srt_getlasterror(&errno);
+        std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
             err_str.append(", reject reason: ");
-            err_str.append(srt_rejectreason_str(srt_getrejectreason(sock)));
+            err_str.append(::srt_rejectreason_str(::srt_getrejectreason(sock)));
         }
         report.error(u"error during srt_connect: %s", {err_str});
         return false;
@@ -935,8 +999,8 @@ bool ts::SRTSocket::Guts::srtBind(const IPv4SocketAddress& addr, Report& report)
     addr.copy(sock_addr);
 
     report.debug(u"calling srt_bind(%s)", {addr});
-    if (srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
-        report.error(u"error during srt_bind: %s", {srt_getlasterror_str()});
+    if (::srt_bind(sock, &sock_addr, sizeof(sock_addr)) < 0) {
+        report.error(u"error during srt_bind: %s", {::srt_getlasterror_str()});
         return false;
     }
     else {
@@ -961,26 +1025,27 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAd
         return false;
     }
 
-    const int ret = srt_send(sock, reinterpret_cast<const char*>(data), int(size));
+    const int ret = ::srt_send(sock, reinterpret_cast<const char*>(data), int(size));
     if (ret < 0) {
         // Differentiate peer disconnection (aka "end of file") and actual errors.
-        const int err = srt_getlasterror(nullptr);
+        const int err = ::srt_getlasterror(nullptr);
         if (err == SRT_ECONNLOST || err == SRT_EINVSOCK) {
             disconnected = true;
         }
         else if (sock >= 0) {
             // Do not display error if the socket was closed in the meantime (sock < 0).
-            report.error(u"error during srt_send(): %s", {srt_getlasterror_str()});
+            report.error(u"error during srt_send(): %s", {::srt_getlasterror_str()});
         }
         return false;
     }
-    return true;
+
+    total_sent_bytes += size;
+    return reportStats(report);
 }
 
 
 //----------------------------------------------------------------------------
 // Receive a message.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Report& report)
@@ -1003,7 +1068,7 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Micro
     ::SRT_MSGCTRL ctrl;
     TS_ZERO(ctrl);
 
-    const int ret = srt_recvmsg2(_guts->sock, reinterpret_cast<char*>(data), int(max_size), &ctrl);
+    const int ret = ::srt_recvmsg2(_guts->sock, reinterpret_cast<char*>(data), int(max_size), &ctrl);
     if (ret < 0) {
         // Differentiate peer disconnection (aka "end of file") and actual errors.
         const int err = srt_getlasterror(nullptr);
@@ -1016,10 +1081,79 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Micro
         }
         return false;
     }
-    ret_size = size_t(ret);
     if (ctrl.srctime != 0) {
         timestamp = MicroSecond(ctrl.srctime);
     }
+    ret_size = size_t(ret);
+    _guts->total_received_bytes += ret_size;
+    return _guts->reportStats(report);
+}
+
+
+//----------------------------------------------------------------------------
+// Send / receive statistics.
+//----------------------------------------------------------------------------
+
+size_t ts::SRTSocket::totalSentBytes() const
+{
+    return _guts->total_sent_bytes;
+}
+
+size_t ts::SRTSocket::totalReceivedBytes() const
+{
+    return _guts->total_received_bytes;
+}
+
+
+//----------------------------------------------------------------------------
+// Get statistics about the socket and report them.
+//----------------------------------------------------------------------------
+
+bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
+{
+    // If socket was disconnected or aborted, silently fail.
+    if (_guts->disconnected || _guts->sock < 0) {
+        return false;
+    }
+
+    // Return statistics data from the SRT socket.
+    ::SRT_TRACEBSTATS stats;
+    TS_ZERO(stats);
+    const int clear = (mode & SRTStatMode::INTERVAL) == SRTStatMode::NONE ? 0 : 1;
+
+    if (::srt_bstats(_guts->sock, &stats, clear) < 0) {
+        report.error(u"error during srt_bstats: %s", {::srt_getlasterror_str()});
+        return false;
+    }
+
+    // Build a statistics message.
+    UString msg(u"SRT statistics:");
+    bool none = true;
+    if (stats.byteRecvTotal > 0 && (mode & (SRTStatMode::RECEIVE | SRTStatMode::TOTAL)) == (SRTStatMode::RECEIVE | SRTStatMode::TOTAL)) {
+        none = false;
+        msg.format(u"\n  Total received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
+                   {stats.byteRecvTotal, stats.pktRecvTotal, stats.pktRcvLossTotal, stats.pktRcvDropTotal});
+    }
+    if (stats.byteSentTotal > 0 && (mode & (SRTStatMode::SEND | SRTStatMode::TOTAL)) == (SRTStatMode::SEND | SRTStatMode::TOTAL)) {
+        none = false;
+        msg.format(u"\n  Total sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
+                   {stats.byteSentTotal, stats.pktSentTotal, stats.pktRetransTotal, stats.pktSndLossTotal, stats.pktSndDropTotal});
+    }
+    if (stats.byteRecvTotal > 0 && (mode & (SRTStatMode::RECEIVE | SRTStatMode::INTERVAL)) == (SRTStatMode::RECEIVE | SRTStatMode::INTERVAL)) {
+        none = false;
+        msg.format(u"\n  Interval received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
+                   {stats.byteRecv, stats.pktRecv, stats.pktRcvLoss, stats.pktRcvDrop});
+    }
+    if (stats.byteSentTotal > 0 && (mode & (SRTStatMode::SEND | SRTStatMode::INTERVAL)) == (SRTStatMode::SEND | SRTStatMode::INTERVAL)) {
+        none = false;
+        msg.format(u"\n  Interval sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
+                   {stats.byteSent, stats.pktSent, stats.pktRetrans, stats.pktSndLoss, stats.pktSndDrop});
+    }
+    if (none) {
+        msg.append(u" none available");
+    }
+    report.info(msg);
+
     return true;
 }
 
