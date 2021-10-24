@@ -35,18 +35,6 @@
 #pragma once
 #include "tsUString.h"
 
-// Safely include the librist definitions.
-
-#if !defined(TS_NO_RIST)
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(documentation)
-    #include <librist/librist.h>
-    extern "C" { // to be removed after release of librist 0.2.7
-        #include <librist/librist_srp.h>
-    } // same as above
-    TS_POP_WARNING()
-#endif
-
 namespace ts {
     //!
     //! Get the version of the RIST library.

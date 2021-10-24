@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsRIST.h"
+#include "tsLibRIST.h"
 #include "tsPlugin.h"
 #include "tsIPv4SocketAddress.h"
 
