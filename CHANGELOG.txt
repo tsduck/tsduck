@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2572
+VERSION 3.29-2609
 
 [NEW] New commands and plugins:
 
@@ -22,6 +22,7 @@ VERSION 3.29-2572
   * New options in exiting commands and plugins:
     - Options --section-number and --negate-section-number in "tstables" and
       plugin "tables".
+    - Options --final-statistics and --statistics-interval in plugin "srt".
 
 [BUG] Bug fixes:
 

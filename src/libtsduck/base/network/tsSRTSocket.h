@@ -37,11 +37,12 @@
 #include "tsUString.h"
 #include "tsIPUtils.h"
 #include "tsReport.h"
+#include "tsEnumUtils.h"
 #include "tsArgsSupplierInterface.h"
 
 namespace ts {
     //!
-    //! Secure Reliable Transport (SRT) socket mode
+    //! Secure Reliable Transport (SRT) socket mode.
     //!
     enum class SRTSocketMode : int {
         DEFAULT    = -1,  //!< Unspecified, use command line mode.
@@ -51,6 +52,22 @@ namespace ts {
         LEN        =  3,  //!< Unknown.
     };
 
+    //!
+    //! Secure Reliable Transport (SRT) statistics mode.
+    //! Can be used as bitmask.
+    //!
+    enum class SRTStatMode : uint16_t {
+        NONE     = 0x0000,  //!< Reports nothing.
+        RECEIVE  = 0x0001,  //!< Receive statistics (ignored if nothing was received).
+        SEND     = 0x0002,  //!< Sender statistics (ignored if nothing was sent).
+        TOTAL    = 0x0004,  //!< Statistics since the socket was opened.
+        INTERVAL = 0x0008,  //!< Statistics in the last interval (restarted each time it is used).
+        ALL      = 0x000F,  //!< Report all statistics.
+    };
+}
+TS_ENABLE_BITMASK_OPERATORS(ts::SRTStatMode);
+
+namespace ts {
     //!
     //! Secure Reliable Transport (SRT) Socket.
     //! If the libsrt is not available during compilation of this class,
@@ -153,11 +170,31 @@ namespace ts {
         bool receive(void* data, size_t max_size, size_t& ret_size, MicroSecond& timestamp, Report& report = CERR);
 
         //!
+        //! Get the total number of sent bytes since the socket was opened.
+        //! @return The total number of sent bytes since the socket was opened.
+        //!
+        size_t totalSentBytes() const;
+
+        //!
+        //! Get the total number of received bytes since the socket was opened.
+        //! @return The total number of received bytes since the socket was opened.
+        //!
+        size_t totalReceivedBytes() const;
+
+        //!
         //! Check if the connection was disconnected by the peer.
         //! This can be used after a send/receive error to differentiate between "end of session" and actual error.
         //! @return True if the connection was closed by the peer.
         //!
         bool peerDisconnected() const;
+
+        //!
+        //! Get statistics about the socket and report them.
+        //! @param [in] mode Type of statistics to report (or'ing bitmask values is allowed).
+        //! @param [in,out] report Where to report statistics and errors.
+        //! @return True on success, false on error.
+        //!
+        bool reportStatistics(SRTStatMode mode = SRTStatMode::ALL, Report& report = CERR);
 
         //!
         //! Get SRT option.
