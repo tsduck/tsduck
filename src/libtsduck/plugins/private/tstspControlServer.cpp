@@ -197,7 +197,7 @@ ts::CommandStatus ts::tsp::ControlServer::executeExit(const UString& command, Ar
         ::exit(EXIT_FAILURE);
     }
     else {
-        _log.info(u"exit requested by remote tcpcontrol");
+        _log.info(u"exit requested by remote tspcontrol command");
         // Place all threads in "aborted" state so that each thread will see its
         // successor as aborted. Notify all threads that something happened.
         PluginExecutor* proc = _input;

@@ -153,14 +153,14 @@ show-version: default
 install install-tools install-devel:
 	@$(MAKE) NOTEST=true -C src $@
 
-# Build the source tarballs for distribution.
+# Build the source tarball for distribution.
 
 VERSION = $(shell $(SCRIPTSDIR)/get-version-from-sources.sh)
 DISTRO  = $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --distro)
 TARNAME = tsduck-$(VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
-SKIPSRC = $(if $(NOTELETEXT),tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_teletext.cpp,)
+SKIPSRC = $(if $(NOTELETEXT),tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_teletext.cpp)
 
 .PHONY: tarball
 tarball:
@@ -176,7 +176,7 @@ tarball:
 # Installer target: rpm or deb.
 
 .PHONY: installer
-installer: $(if $(wildcard /etc/*fedora* /etc/*redhat*),rpm,$(if $(wildcard /etc/*debian*),deb,))
+installer: $(if $(wildcard /etc/*fedora* /etc/*redhat*),rpm,$(if $(wildcard /etc/*debian*),deb))
 
 # User's RPM build area.
 
@@ -184,11 +184,11 @@ RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
 	rpmdev-setuptree
 
-# RPM package building (Red Hat, CentOS, Alma Linux, etc.)
+# RPM package building (Red Hat, Fedora, CentOS, Alma Linux, Rocky Linux, etc.)
 # The build will take place elsewhere, reuse local Dektec Linux SDK if present.
 
 RPMBUILD ?= rpmbuild
-RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true',) $(RPMBUILDFLAGS_EXTRA)
+RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true') $(RPMBUILDFLAGS_EXTRA)
 
 .PHONY: rpm rpm32
 rpm: tarball $(RPMBUILDROOT)
@@ -199,10 +199,10 @@ rpm: tarball $(RPMBUILDROOT)
 	      -D 'commit $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --commit)' \
 	      -D 'distro $(DISTRO)' \
 	      -D '_smp_mflags $(MAKEFLAGS_SMP)' \
-	      $(if $(NOSRT),-D 'nosrt 1',) \
-	      $(if $(NORIST),-D 'norist 1',) \
-	      $(if $(NOPCSC),-D 'nopcsc 1',) \
-	      $(if $(NOCURL),-D 'nocurl 1',) \
+	      $(if $(NOSRT),-D 'nosrt 1') \
+	      $(if $(NORIST),-D 'norist 1') \
+	      $(if $(NOPCSC),-D 'nopcsc 1') \
+	      $(if $(NOCURL),-D 'nocurl 1') \
 	      $(SCRIPTSDIR)/tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
@@ -225,10 +225,10 @@ deb-tools:
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
-	    $(if $(NOSRT),-e '/libsrt/d',) \
-	    $(if $(NORIST),-e '/librist/d',) \
-	    $(if $(NOPCSC),-e '/libpcsc/d',) \
-	    $(if $(NOCURL),-e '/libcurl/d',) \
+	    $(if $(NOSRT),-e '/libsrt/d') \
+	    $(if $(NORIST),-e '/librist/d') \
+	    $(if $(NOPCSC),-e '/libpcsc/d') \
+	    $(if $(NOCURL),-e '/libcurl/d') \
 	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
@@ -240,10 +240,10 @@ deb-dev: deb-tools
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
-	    $(if $(NOSRT),-e '/libsrt/d',) \
-	    $(if $(NORIST),-e '/librist/d',) \
-	    $(if $(NOPCSC),-e '/libpcsc/d',) \
-	    $(if $(NOCURL),-e '/libcurl/d',) \
+	    $(if $(NOSRT),-e '/libsrt/d') \
+	    $(if $(NORIST),-e '/librist/d') \
+	    $(if $(NOPCSC),-e '/libpcsc/d') \
+	    $(if $(NOCURL),-e '/libcurl/d') \
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
@@ -264,7 +264,7 @@ deb-dev: deb-tools
 GITHOOKS_CMD     = scripts/git-hook.sh
 GITHOOKS_LIST    = pre-commit post-merge
 GITHOOKS_DIR     = .git/hooks
-GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/,$(GITHOOKS_LIST)),)
+GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/,$(GITHOOKS_LIST)))
 
 .PHONY: git-hooks
 git-hooks: $(GITHOOKS_TARGETS)
@@ -272,7 +272,7 @@ $(GITHOOKS_TARGETS): Makefile
 	@echo '  [GIT] updating $(notdir $@) hook'; \
 	 echo '#!/usr/bin/env bash' >$@; \
 	 echo 'exec $$(dirname $$0)/../../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
-	 chmod a+x "$@"
+	 chmod a+x $@
 
 # Count lines of code: Run cloc on the source code tree starting at current directory.
 
