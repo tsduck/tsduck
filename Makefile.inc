@@ -41,11 +41,6 @@
 first: default
 	@true
 
-# Some nerds define exotic shells as default. Stay to a known shell.
-# Skip initialization files to speed up and reproduceability.
-
-SHELL := /usr/bin/env bash --noprofile --norc
-
 # The directory which contains the currently included Makefile is the project root.
 
 ROOTDIR := $(abspath $(patsubst %/,%,$(dir $(lastword $(MAKEFILE_LIST)))))
@@ -59,11 +54,14 @@ LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
 TSPLUGINSDIR = $(SRCROOT)/tsplugins
 
-# Enforce English locale by default for predictible output.
+# TSDuck library files.
 
-export LANGUAGE = en_US.UTF-8
-export LC_ALL = en_US.UTF-8
-export LANG = en_US.UTF-8
+STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
+SHARED_LIBTSDUCK = $(BINDIR)/libtsduck$(SO_SUFFIX)
+
+#-----------------------------------------------------------------------------
+# Customization of make.
+#-----------------------------------------------------------------------------
 
 # Representation of a space and a comma character (make oddities...)
 
@@ -71,11 +69,44 @@ EMPTY =
 SPACE = $(EMPTY) $(EMPTY)
 COMMA = ,
 
+# Some nerds define exotic shells as default. Stay to a known shell.
+# Skip initialization files to speed up and reproduceability.
+
+SHELL = /usr/bin/env bash --noprofile --norc
+
+# Recursive invocations of make should be silent.
+
+MAKEFLAGS += --no-print-directory
+
+# Best multiprocessor make option if unspecified.
+
+MAKEFLAGS_SMP = $(if $(filter -j%,$(MAKEFLAGS)),$(filter -j%,$(MAKEFLAGS)),$(if $(CPU_COUNT),-j$(CPU_COUNT)))
+
+# Check if "make -k" is specified (ie. continue on error).
+
+CONTINUE := $(if $(findstring k,$(filter-out --%,$(MAKEFLAGS))),true,)
+
+# The function F_RECURSE recurses the current make targets in the specified subdirectories.
+# Example: $(call F_RECURSE,src test1 test2)
+
+F_RECURSE = for dir in $(1); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); fi; done
+
+#-----------------------------------------------------------------------------
+# A few common shell commands.
+#-----------------------------------------------------------------------------
+
+# Enforce English locale by default in all commands for predictible output.
+
+export LANGUAGE = en_US.UTF-8
+export LC_ALL = en_US.UTF-8
+export LANG = en_US.UTF-8
+
 # The function F_SEARCH searches a command in $PATH and in a few other predefined
 # directories. Return the full path of the first found, empty if not found.
 # Example: $(call F_SEARCH,ls)
 
-F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(PATH)) /usr/bin /usr/sbin /usr/local/bin /opt/homebrew/bin $(HOME)/bin)))
+F_SEARCH_PATH ?= $(PATH):/usr/bin:/usr/sbin:/usr/local/bin:/opt/homebrew/bin:$(HOME)/bin
+F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(F_SEARCH_PATH)))))
 
 # The funtion F_COMMAND searches a command with F_SEARCH. If the command is not
 # found, return the second parameter as default value. The following example
@@ -93,34 +124,72 @@ ifndef SED
     export CHMOD := $(call F_COMMAND,gchmod,chmod)
 endif
 
-# Recursive invocations of make should be silent.
-
-MAKEFLAGS += --no-print-directory
-
-# Check if "make -k" is specified (ie. continue on error).
-
-CONTINUE := $(if $(findstring k,$(filter-out --%,$(MAKEFLAGS))),true,)
-
-# The function F_RECURSE recurses the current make targets in the specified subdirectories.
-
-F_RECURSE = for dir in $(1); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); fi; done
+#-----------------------------------------------------------------------------
+# Identify the system environment.
+# - ALTDEVROOT : alternative root for development tools and library; can be
+#   the Homebrew root or "/usr" if no other value is suitable
+# - CORE_COUNT : number of physical CPU cores in the machine
+# - CPU_COUNT : number of logical CPU's in the machine; with hyperthreaded
+#   CPU cores, CPU_COUNT is typically twice CORE_COUNT
+# - CYGWIN : non-empty on Windows with Cygwin
+# - ETCDIR : system configuration directory; /etc if $(SYSPREFIX) is /usr
+#   and $(SYSPREFIX)/etc otherwise
+# - EXE_SUFFIX : executable files suffix ("", ".exe")
+# - HOSTNAME : host name without domain name
+# - LD_LIBRARY_PATH_NAME : name of the environment variable containing the
+#   search path for the shareable libraries; typically LD_LIBRARY_PATH on
+#   native unices and PATH on Windows-based environments such as Cygwin.
+# - LINUXBREW : to be set on input; force a compilation in a Homebrew
+#   environment on Linux. Homebrew on Linux (aka "Linuxbrew") installs a
+#   non-standard environment where libraries are fetched from $HOMEBREW_PREFIX
+#   instead of /usr. By default, ignore the Homebrew environment on Linux and
+#   build using system libraries.
+# - LOCAL_ARCH : local processor exact architecture ("x86_64", "armv7l", etc)
+# - LOCAL_OS : operating system (linux, darwin, cygwin)
+# - MAIN_ARCH : target processor architecture family ("x86_64", "arm", etc)
+# - MAC, MACOS : non-empty on macOS systems
+# - SO_SUFFIX : shared libraries suffix (".so", ".dylib", ".dll")
+# - SYSPREFIX : installation prefix; if not already set on input, it is defined
+#   as /usr on Linux and HomeBrew root on macOS.
+# - UDEVDIR : directory for system-defined udev rules
+# - USELIB64 : non-empty on x86_64 distro using /usr/lib64 instead of /usr/lib
+# - USRLIBDIR : library directory for target; $(SYSPREFIX)/lib64 for Linux
+#   x86_64 where /usr/lib64/libc.so* exists and $(SYSPREFIX)/lib elsewhere.
+#-----------------------------------------------------------------------------
 
 # Operating system, architecture, host name.
-# $(LOCAL_ARCH) is the local processor exact architecture ("i686", "x86_64", "armv7l", etc.)
-# $(MAIN_ARCH) is the local processor architecture family ("i386", "x86_64", "arm", etc.)
 
-ifndef LOCAL_OS
+ifeq ($(LOCAL_OS),)
     export LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
     export LOCAL_ARCH := $(shell uname -m)
-    export HOSTNAME   := $(shell hostname | $(SED) -e 's/\..*//')
+    export HOSTNAME   := $(firstword $(subst ., ,$(shell hostname 2>/dev/null)))
 endif
-MACOS := $(if $(findstring darwin,$(LOCAL_OS)),true)
-MAC := $(MACOS)
+
+CYGWIN = $(if $(findstring cygwin,$(LOCAL_OS)),true)
+MACOS = $(if $(findstring darwin,$(LOCAL_OS)),true)
+MAC = $(MACOS)
+
+ifneq ($(CYGWIN),)
+    # Shorten the definition of LOCAL_OS, remove version, etc
+    LOCAL_OS := cygwin
+    LD_LIBRARY_PATH_NAME = PATH
+else
+    LD_LIBRARY_PATH_NAME = LD_LIBRARY_PATH
+endif
+
+ifneq ($(M32),)
+    # 32-bit cross-comppilation.
+    override MAIN_ARCH = i386
+else
+    MAIN_ARCH = $(patsubst arm%,arm,$(patsubst i%86,i386,$(LOCAL_ARCH)))
+endif
+
+# Executable files and shared objects suffix.
+
+EXE_SUFFIX = $(if $(CYGWIN),.exe,)
+SO_SUFFIX = $(if $(CYGWIN),.dll,$(if $(MACOS),.dylib,.so))
 
 # Logical CPU and physical core count.
-# $(CORE_COUNT) contains the number of physical CPU cores in the machine.
-# $(CPU_COUNT) contains the number of logical CPU's in the machine.
-# With hyperthreaded CPU cores, $(CPU_COUNT) is typically twice $(CORE_COUNT).
 
 ifndef CPU_COUNT
     ifdef MACOS
@@ -136,124 +205,33 @@ ifndef CPU_COUNT
     endif
 endif
 
-# Compute best multiprocessor make option if unspecified.
-# Warning, this must be a delayed eval ("=", not ":=").
+# On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
+# On Linux, when Homebrew is forced, use it as alternative development root.
 
-MAKEFLAGS_SMP = $(if $(filter -j%,$(MAKEFLAGS)),$(filter -j%,$(MAKEFLAGS)),-j$(CPU_COUNT))
-
-# Detect Cygwin platform. Impacts:
-# - The executables are started by the Windows loader which uses distinct environment
-#   variables for shared library resolution.
-# - The option -fPIC generates a stupid error:
-#   "-fPIC ignored for target (all code is position independent)"
-# - $(LD_LIBRARY_PATH_NAME) is the name of the environment variable containing
-#   the search path for the shareable libraries. Typically LD_LIBRARY_PATH on
-#   native unices and PATH on Windows-based environments such as Cygwin.
-
-ifneq ($(findstring cygwin,$(LOCAL_OS)),)
-    CYGWIN = true
-    LOCAL_OS := cygwin
-    LD_LIBRARY_PATH_NAME = PATH
-    CXXFLAGS_FPIC =
+ifneq ($(MACOS)$(LINUXBREW),)
+    $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)))
+    ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
 else
-    CYGWIN =
-    LD_LIBRARY_PATH_NAME = LD_LIBRARY_PATH
-    CXXFLAGS_FPIC = -fPIC
+    ALTDEVROOT := /usr
 endif
 
-# Executable files and shared objects suffix.
+# Locate system directories.
 
-EXE_SUFFIX = $(if $(CYGWIN),.exe,)
-SO_SUFFIX = $(if $(CYGWIN),.dll,$(if $(MACOS),.dylib,.so))
-
-# Define compilation flags for 32-bit cross-compilation.
-# Target architecture is skipped on ARM because of numerous variants.
-
-ifdef M32
-    override MAIN_ARCH := i386
-    override TARGET_FLAGS := -march=i686
-    CXXFLAGS_M32 := -m32
-    LDFLAGS_M32  := -m32
-else ifndef MAIN_ARCH
-    MAIN_ARCH    := $(shell uname -m | $(SED) -e 's/i.86/i386/' -e 's/arm.*/arm/')
-    TARGET_FLAGS :=
-    CXXFLAGS_M32 :=
-    LDFLAGS_M32  :=
-endif
-export MAIN_ARCH TARGET_FLAGS
-
-# Use $(CXX) for compilation. Use $(GCC) to explicitly reference GCC.
-
-GCC ?= gcc
-
-# Cross-compilation support.
-# If $(CROSS) is defined (any non-empty value), perform a cross-compilation build.
-# $(CROSS_TARGET) is the target name of the cross-compilation (e.g. arm-unknown-linux-gnueabi).
-# If undefined but $(CROSS) is defined, we locate the first GCC executable with path
-# $(CROSS_PREFIX)/TARGET/bin/TARGET-gcc.
-
-ifeq ($(CROSS)$(CROSS_TARGET),)
-    CXXFLAGS_CROSS =
-    LDFLAGS_CROSS =
-else
-    CROSS ?= true
-    # Cross-compilation tools are in /usr/local by default.
-    CROSS_PREFIX ?= /usr/local
-    # If cross target undefined, find the first one.
-    # We look for a file pattern: PREFIX/TARGET/bin/TARGET-gcc
-    CROSS_TARGET := $(if $(CROSS_TARGET),$(CROSS_TARGET),$(shell \
-        ls $(CROSS_PREFIX)/*/bin/*-gcc 2>/dev/null | \
-        $(GREP) '$(CROSS_PREFIX)//*\([^/]*\)/bin/\1-gcc' | \
-        $(SED) -e 's|^$(CROSS_PREFIX)//*||' -e 's|/.*$$||' | \
-        head -1))
-    $(if $(CROSS_TARGET),,$(error CROSS is defined but no cross-compilation tool-chain was found))
-    # Adjust target. Use "arm" as main target if CROSS_TARGET starts with "arm".
-    override MAIN_ARCH := $(if $(findstring @arm,@$(CROSS_TARGET)),arm,$(CROSS_TARGET))
-    override TARGET_FLAGS :=
-    override GCC_VERSION_DONE :=
-    # Redirect build tools.
-    CXX = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-g++
-    GCC = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-gcc
-    LD  = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-ld
-    # Add options. The layout can be different, so use them all.
-    CXXFLAGS_CROSS = -I$(CROSS_PREFIX)/$(CROSS_TARGET)/include \
-                     -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/include \
-                     -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/include
-    LDFLAGS_CROSS  = -L$(CROSS_PREFIX)/$(CROSS_TARGET)/lib \
-                     -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/lib \
-                     -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib
-endif
-
-# Check if we are on a x86_64 Linux distro using /usr/lib64 as library path.
-# Define USELIB64 as "true" or empty. Linuxbrew does not use lib64.
-
-USELIB64 := $(if $(subst linux-x86_64,,$(LOCAL_OS)-$(MAIN_ARCH)),,$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true,)))
-
-# $(SYSPREFIX) is the installation prefix. If not set on input, it is
-# defined as /usr/local or /opt/homebrew on macOS and /usr on Linux.
-# On macOS, the Homebrew root is used without system privileges.
-#
-# $(USRLIBDIR) is the library directory for the target architecture.
-# This is $(SYSPREFIX)/lib64 for Linux x86_64 where /usr/lib64/libc.so* exists
-# and $(SYSPREFIX)/lib elsewhere.
-#
-# $(UDEVDIR) is the directory for system-defined udev rules. $(ETCDIR) is
-# the system configuration directory. This is /etc if $(SYSPREFIX) is /usr
-# and $(SYSPREFIX)/etc otherwise.
-
+USELIB64  := $(if $(findstring linux-x86_64,$(LOCAL_OS)-$(MAIN_ARCH)),$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true)))
 SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
-ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
+ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
-# All binaries are built into one single root directory named
-# bin/release|debug-arch-hostname where bin is located in the top-level directory.
-# The variable $(BINDIR) points to this directory. The variable $(OBJDIR) points
-# to the directory where object files are stored
-#
-# $(BINDIR_SUFFIX) is a fixed suffix to add to generated $(BINDIR) subdirectory name.
-# It is ignored if $(BINDIR) is defined as input variable. Duplicate the output tree
-# using $(BINDIR_SUFFIX) for specific compilers or profiling tools.
+#-----------------------------------------------------------------------------
+# Output directories for final binaries and objects.
+# - BINDIR : root directory where all binaries are built; named
+#   bin/release|debug-arch-hostname in the top-level directory.
+# - BINDIR_SUFFIX : fixed suffix to add to generated BINDIR directory name;
+#   ignored if BINDIR is defined as input variable
+# - OBJDIR : subdirectory of BINDIR where object files are stored; named
+#   objs-$(CURDIR) for each source directory where make is executed.
+#-----------------------------------------------------------------------------
 
 ifdef GCOV
     BINDIR_SUFFIX += -gcov
@@ -281,10 +259,80 @@ endif
 
 OBJDIR = $(BINDIR)/objs-$(notdir $(CURDIR))
 
-# TSDuck library files.
+#-----------------------------------------------------------------------------
+# Compilation flags and other build commands.
+# - CXX : C++ compiler command
+# - GCC : gcc executable, even when CXX is not gcc
+# - LD : linker command
+# - CXXFLAGS : complete C++ compilation flags
+# - LDFLAGS : complete C++ compilation flags
+# Partial C++ compilation flags (included in CXXFLAGS):
+# - CXXFLAGS_CROSS : for cross-compilation
+# - 
+# - 
+# - CXXFLAGS_M32 : for 32-bit cross-compilation
+# - CXXFLAGS_TARGET : specify target CPU
+# - 
+# Partial linker flags (included in LDFLAGS):
+# - LDFLAGS_CROSS : for cross-compilation
+# - LDFLAGS_M32 : for 32-bit cross-compilation
+# - 
+#-----------------------------------------------------------------------------
 
-STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
-SHARED_LIBTSDUCK = $(BINDIR)/libtsduck$(SO_SUFFIX)
+# Use $(CXX) for compilation. Use $(GCC) to explicitly reference GCC.
+
+GCC ?= gcc
+
+# Define compilation flags for 32-bit cross-compilation.
+# Target architecture is skipped on ARM because of numerous variants.
+
+ifdef M32
+    override CXXFLAGS_TARGET := -march=i686
+    override CXXFLAGS_M32 := -m32
+    override LDFLAGS_M32  := -m32
+else
+    CXXFLAGS_TARGET :=
+    CXXFLAGS_M32 :=
+    LDFLAGS_M32  :=
+endif
+
+# Cross-compilation support.
+# If $(CROSS) is defined (any non-empty value), perform a cross-compilation build.
+# $(CROSS_TARGET) is the target name of the cross-compilation (e.g. arm-unknown-linux-gnueabi).
+# If undefined but $(CROSS) is defined, we locate the first GCC executable with path
+# $(CROSS_PREFIX)/TARGET/bin/TARGET-gcc.
+
+ifeq ($(CROSS)$(CROSS_TARGET),)
+    CXXFLAGS_CROSS =
+    LDFLAGS_CROSS =
+else
+    CROSS ?= true
+    # Cross-compilation tools are in /usr/local by default.
+    CROSS_PREFIX ?= /usr/local
+    # If cross target undefined, find the first one.
+    # We look for a file pattern: PREFIX/TARGET/bin/TARGET-gcc
+    CROSS_TARGET := $(if $(CROSS_TARGET),$(CROSS_TARGET),$(shell \
+        ls $(CROSS_PREFIX)/*/bin/*-gcc 2>/dev/null | \
+        $(GREP) '$(CROSS_PREFIX)//*\([^/]*\)/bin/\1-gcc' | \
+        $(SED) -e 's|^$(CROSS_PREFIX)//*||' -e 's|/.*$$||' | \
+        head -1))
+    $(if $(CROSS_TARGET),,$(error CROSS is defined but no cross-compilation tool-chain was found))
+    # Adjust target. Use "arm" as main target if CROSS_TARGET starts with "arm".
+    override MAIN_ARCH := $(if $(findstring @arm,@$(CROSS_TARGET)),arm,$(CROSS_TARGET))
+    override CXXFLAGS_TARGET :=
+    override GCC_VERSION_DONE :=
+    # Redirect build tools.
+    CXX = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-g++
+    GCC = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-gcc
+    LD  = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-ld
+    # Add options. The layout can be different, so use them all.
+    CXXFLAGS_CROSS = -I$(CROSS_PREFIX)/$(CROSS_TARGET)/include \
+                     -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/include \
+                     -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/include
+    LDFLAGS_CROSS  = -L$(CROSS_PREFIX)/$(CROSS_TARGET)/lib \
+                     -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/lib \
+                     -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib
+endif
 
 # Get current compiler version, usually in form x.y.z
 
@@ -347,23 +395,9 @@ CXXFLAGS_OPTIMIZE ?= -O2 -fno-strict-aliasing
 CXXFLAGS_FULLSPEED = -O3 -fno-strict-aliasing -funroll-loops -fomit-frame-pointer
 CXXFLAGS_OPTSIZE   = -Os -fno-strict-aliasing
 
-# On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
-# On Linux, when Homebrew is forced, use it as alternative development root.
-# if $(LINUXBREW) is defined (any non-empty value), force a compilation in a Homebrew
-# environment on Linux. Homebrew on Linux (aka "Linuxbrew") installs a non-standard environment
-# where libraries are fetched from $(HOMEBREW_PREFIX) instead of /usr.
-# By default, ignore the Homebrew environment on Linux and build using system libraries.
-# $(ALTDEVROOT) is the alternative root for development tools and library. This can be
-# the Homebrew root or "/usr" if no other value is suitable so that $(ALTDEVROOT) can
-# always be safely used to check files.
-
-ifneq ($(MACOS)$(LINUXBREW),)
-    $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)),)
-    ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
+ifneq ($(ALTDEVROOT),/usr)
     CXXFLAGS_INCLUDES += -I$(ALTDEVROOT)/include
     LDLIBS := -L$(ALTDEVROOT)/lib $(LDLIBS)
-else
-    ALTDEVROOT := /usr
 endif
 
 # Always use maximal or even paranoid warning mode.
@@ -404,6 +438,10 @@ CXXFLAGS_STANDARD ?= -std=c++11
 # Compilation flags for security.
 
 CXXFLAGS_SECURITY = -fstack-protector-all
+
+# On Cygwin, the option -fPIC generates a stupid error: "-fPIC ignored for target (all code is position independent)"
+
+CXXFLAGS_FPIC = $(if $(CYGWIN),,-fPIC)
 
 # Compilation flags in debug mode.
 
@@ -448,9 +486,9 @@ LDLIBS += -lstdc++ -lpthread $(if $(MACOS),,-lrt) -lm
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
 
 CXXFLAGS = $(CXXFLAGS_DEBUG) $(CXXFLAGS_M32) $(CXXFLAGS_GCOV) $(CXXFLAGS_GPROF) $(CXXFLAGS_WARNINGS) \
-           $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(TARGET_FLAGS) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) \
+           $(CXXFLAGS_SECURITY) $(CXXFLAGS_INCLUDES) $(CXXFLAGS_TARGET) $(CXXFLAGS_FPIC) $(CXXFLAGS_STANDARD) \
            $(CXXFLAGS_CROSS) $(CXXFLAGS_PTHREAD) $(CXXFLAGS_EXTRA)
-LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(TARGET_FLAGS) \
+LDFLAGS  = $(LDFLAGS_DEBUG) $(LDFLAGS_M32) $(LDFLAGS_GCOV) $(LDFLAGS_GPROF) $(CXXFLAGS_TARGET) \
            $(LDFLAGS_CROSS) $(LDFLAGS_PTHREAD) $(LDFLAGS_EXTRA)
 ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
