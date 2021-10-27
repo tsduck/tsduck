@@ -46,7 +46,7 @@ execs: $(EXECS)
 # We always build tsprofiling with the static library.
 
 STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
-ifndef STATIC
+ifeq ($(STATIC),)
     $(BINDIR)/tsprofiling: $(STATIC_DEPS)
     $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
 else

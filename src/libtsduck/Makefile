@@ -133,7 +133,7 @@ $(SHARED_LIBTSDUCK): $(OBJS)
 # If NOSTATICBLOB is defined, this phase is skipped and all object files are
 # individually archived without grouping.
 
-ifdef NOSTATICBLOB
+ifneq ($(NOSTATICBLOB),)
 
 OBJS_STATIC_LIB = $(filter-out $(OBJDIR)/tsduck.o,$(OBJS))
 

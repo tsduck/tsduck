@@ -54,10 +54,15 @@ LIBTSDUCKDIR = $(SRCROOT)/libtsduck
 TSTOOLSDIR   = $(SRCROOT)/tstools
 TSPLUGINSDIR = $(SRCROOT)/tsplugins
 
-# TSDuck library files.
+# TSDuck library files. See BINDIR later.
 
 STATIC_LIBTSDUCK = $(BINDIR)/libtsduck.a
 SHARED_LIBTSDUCK = $(BINDIR)/libtsduck$(SO_SUFFIX)
+
+# Default installation root. Packagers should override this in the "make install"
+# command line to build a temporary system root where TSDuck is installed.
+
+SYSROOT =
 
 #-----------------------------------------------------------------------------
 # Customization of make.
@@ -71,8 +76,9 @@ COMMA = ,
 
 # Some nerds define exotic shells as default. Stay to a known shell.
 # Skip initialization files to speed up and reproduceability.
+# Print all commands if VERBOSE is defined.
 
-SHELL = /usr/bin/env bash --noprofile --norc
+SHELL = /usr/bin/env bash --noprofile --norc $(if $(VERBOSE),-x)
 
 # Recursive invocations of make should be silent.
 
@@ -91,15 +97,14 @@ CONTINUE := $(if $(findstring k,$(filter-out --%,$(MAKEFLAGS))),true,)
 
 F_RECURSE = for dir in $(1); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if $(CONTINUE),,|| exit $$?); fi; done
 
-#-----------------------------------------------------------------------------
-# A few common shell commands.
-#-----------------------------------------------------------------------------
+# The functions F_LT, F_LE, F_GE, F_GT perform numeric comparisons ("true" or empty).
+# Example: $(if $(call F_LT,$(VERSION),2),"version<2","version>=2")
 
-# Enforce English locale by default in all commands for predictible output.
-
-export LANGUAGE = en_US.UTF-8
-export LC_ALL = en_US.UTF-8
-export LANG = en_US.UTF-8
+F_COMP = $(if $(subst 0,,$(shell [ 0$(1) -$(2) 0$(3) ])$(.SHELLSTATUS)),,true)
+F_LT = $(call F_COMP,$(1),lt,$(2))
+F_LE = $(call F_COMP,$(1),le,$(2))
+F_GE = $(call F_COMP,$(1),ge,$(2))
+F_GT = $(call F_COMP,$(1),gt,$(2))
 
 # The function F_SEARCH searches a command in $PATH and in a few other predefined
 # directories. Return the full path of the first found, empty if not found.
@@ -117,7 +122,7 @@ F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
 
 # Find GNU alternatives to sed, grep. fgrep, chmod.
 
-ifndef SED
+ifeq ($(SED),)
     export SED   := $(call F_COMMAND,gsed,sed)
     export GREP  := $(call F_COMMAND,ggrep,grep)
     export FGREP := $(call F_COMMAND,gfgrep,fgrep)
@@ -131,24 +136,19 @@ endif
 # - CORE_COUNT : number of physical CPU cores in the machine
 # - CPU_COUNT : number of logical CPU's in the machine; with hyperthreaded
 #   CPU cores, CPU_COUNT is typically twice CORE_COUNT
-# - CYGWIN : non-empty on Windows with Cygwin
 # - ETCDIR : system configuration directory; /etc if $(SYSPREFIX) is /usr
 #   and $(SYSPREFIX)/etc otherwise
-# - EXE_SUFFIX : executable files suffix ("", ".exe")
 # - HOSTNAME : host name without domain name
-# - LD_LIBRARY_PATH_NAME : name of the environment variable containing the
-#   search path for the shareable libraries; typically LD_LIBRARY_PATH on
-#   native unices and PATH on Windows-based environments such as Cygwin.
 # - LINUXBREW : to be set on input; force a compilation in a Homebrew
 #   environment on Linux. Homebrew on Linux (aka "Linuxbrew") installs a
 #   non-standard environment where libraries are fetched from $HOMEBREW_PREFIX
 #   instead of /usr. By default, ignore the Homebrew environment on Linux and
 #   build using system libraries.
 # - LOCAL_ARCH : local processor exact architecture ("x86_64", "armv7l", etc)
-# - LOCAL_OS : operating system (linux, darwin, cygwin)
+# - LOCAL_OS : operating system (linux, darwin)
 # - MAIN_ARCH : target processor architecture family ("x86_64", "arm", etc)
-# - MAC, MACOS : non-empty on macOS systems
-# - SO_SUFFIX : shared libraries suffix (".so", ".dylib", ".dll")
+# - MACOS : non-empty on macOS systems
+# - SO_SUFFIX : shared libraries suffix (".so", ".dylib")
 # - SYSPREFIX : installation prefix; if not already set on input, it is defined
 #   as /usr on Linux and HomeBrew root on macOS.
 # - UDEVDIR : directory for system-defined udev rules
@@ -156,6 +156,12 @@ endif
 # - USRLIBDIR : library directory for target; $(SYSPREFIX)/lib64 for Linux
 #   x86_64 where /usr/lib64/libc.so* exists and $(SYSPREFIX)/lib elsewhere.
 #-----------------------------------------------------------------------------
+
+# Enforce English locale by default in all commands for predictible output.
+
+export LANGUAGE = en_US.UTF-8
+export LC_ALL = en_US.UTF-8
+export LANG = en_US.UTF-8
 
 # Operating system, architecture, host name.
 
@@ -165,17 +171,7 @@ ifeq ($(LOCAL_OS),)
     export HOSTNAME   := $(firstword $(subst ., ,$(shell hostname 2>/dev/null)))
 endif
 
-CYGWIN = $(if $(findstring cygwin,$(LOCAL_OS)),true)
 MACOS = $(if $(findstring darwin,$(LOCAL_OS)),true)
-MAC = $(MACOS)
-
-ifneq ($(CYGWIN),)
-    # Shorten the definition of LOCAL_OS, remove version, etc
-    LOCAL_OS := cygwin
-    LD_LIBRARY_PATH_NAME = PATH
-else
-    LD_LIBRARY_PATH_NAME = LD_LIBRARY_PATH
-endif
 
 ifneq ($(M32),)
     # 32-bit cross-comppilation.
@@ -184,15 +180,14 @@ else
     MAIN_ARCH = $(patsubst arm%,arm,$(patsubst i%86,i386,$(LOCAL_ARCH)))
 endif
 
-# Executable files and shared objects suffix.
+# Shared object files suffix.
 
-EXE_SUFFIX = $(if $(CYGWIN),.exe,)
-SO_SUFFIX = $(if $(CYGWIN),.dll,$(if $(MACOS),.dylib,.so))
+SO_SUFFIX = $(if $(MACOS),.dylib,.so)
 
 # Logical CPU and physical core count.
 
-ifndef CPU_COUNT
-    ifdef MACOS
+ifeq ($(CPU_COUNT),)
+    ifneq ($(MACOS),)
         export CPU_COUNT  := $(shell sysctl -n hw.logicalcpu 2>/dev/null)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
         export CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
@@ -200,7 +195,7 @@ ifndef CPU_COUNT
     else
         export CPU_COUNT  := $(shell nproc 2>/dev/null)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
-        export CORE_COUNT := $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null | cut -d ' ' -f3)
+        export CORE_COUNT := $(lastword $(shell $(FGREP) -m1 'cpu cores' /proc/cpuinfo 2>/dev/null))
         export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
     endif
 endif
@@ -233,16 +228,16 @@ UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib
 #   objs-$(CURDIR) for each source directory where make is executed.
 #-----------------------------------------------------------------------------
 
-ifdef GCOV
+ifneq ($(GCOV),)
     BINDIR_SUFFIX += -gcov
 endif
-ifdef GPROF
+ifneq ($(GPROF),)
     BINDIR_SUFFIX += -gprof
 endif
-ifdef LLVM
+ifneq ($(LLVM),)
     BINDIR_SUFFIX += -clang
 endif
-ifdef STATIC
+ifneq ($(STATIC),)
     BINDIR_SUFFIX += -static
 endif
 
@@ -264,19 +259,41 @@ OBJDIR = $(BINDIR)/objs-$(notdir $(CURDIR))
 # - CXX : C++ compiler command
 # - GCC : gcc executable, even when CXX is not gcc
 # - LD : linker command
+# - AR : library archive command
 # - CXXFLAGS : complete C++ compilation flags
 # - LDFLAGS : complete C++ compilation flags
+# - SOFLAGS : complete options when creating shared object libraries
+# - ARFLAGS : complete library archive command flags
+# - GCC_VERSION : full gcc version
+# - GCC_MAJOR : gcc major version
+# - LLVM_VERSION : full clang version
+# - LLVM_MAJOR : clang major version
+# - USE_GCC : the C++ compiler is gcc
+# - USE_LLVM : the C++ compiler is clang (LLVM)
 # Partial C++ compilation flags (included in CXXFLAGS):
 # - CXXFLAGS_CROSS : for cross-compilation
-# - 
-# - 
+# - CXXFLAGS_DEBUG : for debug mode
+# - CXXFLAGS_FPIC : for position-independent code
+# - CXXFLAGS_FULLSPEED : for full speed code optimization
+# - CXXFLAGS_GCOV : for code coverage using gcov
+# - CXXFLAGS_GPROF : for code profiling using gprof
+# - CXXFLAGS_INCLUDES : preprocessing options (includes and macros)
 # - CXXFLAGS_M32 : for 32-bit cross-compilation
+# - CXXFLAGS_OPTIMIZE : for standard code optimization
+# - CXXFLAGS_OPTSIZE : for code size optimization
+# - CXXFLAGS_PTHREAD : pthread options
+# - CXXFLAGS_SECURITY : security-oriented options
+# - CXXFLAGS_STANDARD : specifies the standard level of C++ language
 # - CXXFLAGS_TARGET : specify target CPU
-# - 
+# - CXXFLAGS_WARNINGS : specify warnings
 # Partial linker flags (included in LDFLAGS):
 # - LDFLAGS_CROSS : for cross-compilation
+# - LDFLAGS_DEBUG : for debug mode
+# - LDFLAGS_GCOV : for code coverage using gcov
+# - LDFLAGS_GPROF : for code profiling using gprof
 # - LDFLAGS_M32 : for 32-bit cross-compilation
-# - 
+# - LDFLAGS_PTHREAD : pthread options
+# - LDLIBS : specify external libraries
 #-----------------------------------------------------------------------------
 
 # Use $(CXX) for compilation. Use $(GCC) to explicitly reference GCC.
@@ -286,7 +303,7 @@ GCC ?= gcc
 # Define compilation flags for 32-bit cross-compilation.
 # Target architecture is skipped on ARM because of numerous variants.
 
-ifdef M32
+ifneq ($(M32),)
     override CXXFLAGS_TARGET := -march=i686
     override CXXFLAGS_M32 := -m32
     override LDFLAGS_M32  := -m32
@@ -342,54 +359,24 @@ ifeq ($(GCC_VERSION_DONE),)
     export GCC_MAJOR := $(firstword $(subst .,$(SPACE),$(GCC_VERSION)))
     export LLVM_VERSION := $(shell clang -dumpversion 2>/dev/null)
     export LLVM_MAJOR := $(firstword $(subst .,$(SPACE),$(LLVM_VERSION)))
-    ifeq ($(shell test 0$(GCC_MAJOR) -ge 5; echo $$?),0)
-        export GCC_5_OR_MORE := true
-    else
-        GCC_5_OR_MORE :=
-        unexport GCC_5_OR_MORE
-    endif
-    ifeq ($(shell test 0$(GCC_MAJOR) -ge 6; echo $$?),0)
-        export GCC_6_OR_MORE := true
-    else
-        GCC_6_OR_MORE :=
-        unexport GCC_6_OR_MORE
-    endif
-    ifeq ($(shell test 0$(GCC_MAJOR) -ge 8; echo $$?),0)
-        export GCC_8_OR_MORE := true
-    else
-        GCC_8_OR_MORE :=
-        unexport GCC_8_OR_MORE
-    endif 
-    ifeq ($(shell test 0$(LLVM_MAJOR) -ge 10; echo $$?),0)
-        export LLVM_10_OR_MORE := true
-    else
-        LLVM_10_OR_MORE :=
-        unexport LLVM_10_OR_MORE
-    endif
-    ifeq ($(shell test 0$(LLVM_MAJOR) -ge 12; echo $$?),0)
-        export LLVM_12_OR_MORE := true
-    else
-        LLVM_12_OR_MORE :=
-        unexport LLVM_12_OR_MORE
-    endif
-    export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | grep -i -e gcc -e g++),true,)
-    export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true,)
+    export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | grep -i -e gcc -e g++),true)
+    export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true)
+    export LLVM_12 := $(call F_GE,$(LLVM_MAJOR),12)
+    export GCC_5 := $(call F_GE,$(GCC_MAJOR),5)
+    export GCC_6 := $(call F_GE,$(GCC_MAJOR),6)
 endif
 
 # Forced usage of LLVM (clang).
 
-ifdef LLVM
+ifneq ($(LLVM),)
     export USE_GCC :=
     export USE_LLVM := true
     CXX = clang++
 endif
 
 # Compilation flags for various types of optimization.
-# $(CXXFLAGS_FULLSPEED) contains the C/C++ optimization options for maximum
-# execution speed, at the expense of code size. Can be used in the makefile
-# to specify that some selected modules should be compiled for full speed. Example:
+# Example to specify that some selected modules should be compiled for full speed:
 # $(OBJDIR)/fast1.o $(OBJDIR)/fast2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
-# $(CXXFLAGS_OPTSIZE) contains the C/C++ optimization options for minimum code size.
 
 CXXFLAGS_OPTIMIZE ?= -O2 -fno-strict-aliasing
 CXXFLAGS_FULLSPEED = -O3 -fno-strict-aliasing -funroll-loops -fomit-frame-pointer
@@ -404,31 +391,23 @@ endif
 # With clang, the option -Weverything turns everything on. There is no such option with GCC.
 
 CXXFLAGS_WARNINGS = -Werror
-ifdef USE_LLVM
+ifneq ($(USE_LLVM),)
     CXXFLAGS_WARNINGS += -Weverything -Wno-c++98-compat-pedantic
-    ifdef MACOS
+    ifneq ($(MACOS),)
         # On macOS, it is normal to include from /usr/local/include since some libraries come from Homebrew.
         # Starting with clang 12, this generates a warning we need to disable. However, this disable option
         # generates an error with previous versions. And we cannot disable this warning inside the code since
         # this is a command-line-level error. So, we must check the version here...
-        ifdef LLVM_12_OR_MORE
-            CXXFLAGS_WARNINGS += -Wno-poison-system-directories
-        endif
+        CXXFLAGS_WARNINGS += $(if $(LLVM_12),-Wno-poison-system-directories)
     endif
 else
     CXXFLAGS_WARNINGS += \
         -Wall -Wextra -Wformat-nonliteral -Wformat-security -Wswitch-default -Wuninitialized \
         -Wfloat-equal -Wundef -Wpointer-arith -Woverloaded-virtual -Wctor-dtor-privacy \
-        -Wnon-virtual-dtor -Wsign-promo -Wzero-as-null-pointer-constant -Wstrict-null-sentinel
-    ifdef GCC_5_OR_MORE
-        CXXFLAGS_WARNINGS += -Wshadow -Wpedantic -Weffc++
-    endif
-    ifdef GCC_6_OR_MORE
-        CXXFLAGS_WARNINGS += -Wsuggest-override
-    endif
-    ifeq ($(MAIN_ARCH),arm)
-        CXXFLAGS_WARNINGS += -Wno-psabi
-    endif
+        -Wnon-virtual-dtor -Wsign-promo -Wzero-as-null-pointer-constant -Wstrict-null-sentinel \
+        $(if $(GCC_5),-Wshadow -Wpedantic -Weffc++) \
+        $(if $(GCC_6),-Wsuggest-override) \
+        $(if $(findstring arm,$(MAIN_ARCH)),-Wno-psabi)
 endif
 
 # Language levels.
@@ -439,13 +418,13 @@ CXXFLAGS_STANDARD ?= -std=c++11
 
 CXXFLAGS_SECURITY = -fstack-protector-all
 
-# On Cygwin, the option -fPIC generates a stupid error: "-fPIC ignored for target (all code is position independent)"
+# Compilation flags for position-independent code.
 
-CXXFLAGS_FPIC = $(if $(CYGWIN),,-fPIC)
+CXXFLAGS_FPIC = -fPIC
 
 # Compilation flags in debug mode.
 
-ifdef DEBUG
+ifneq ($(DEBUG),)
     CXXFLAGS_DEBUG = -g -DDEBUG=1
     LDFLAGS_DEBUG =
 else
@@ -455,7 +434,7 @@ endif
 
 # Compilation flags for code coverage using gcov.
 
-ifdef GCOV
+ifneq ($(GCOV),)
     CXXFLAGS_GCOV = --coverage -DGCOV=1
     LDFLAGS_GCOV = --coverage
 else
@@ -465,7 +444,7 @@ endif
 
 # Compilation flags for code profiling using gprof.
 
-ifdef GPROF
+ifneq ($(GPROF),)
     CXXFLAGS_GPROF = -g -pg -DGPROF=1
     LDFLAGS_GPROF = -g -pg
 else
@@ -497,12 +476,12 @@ ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 ifeq ($(MACOS),)
     # Link flags on Linux
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
-    LDFLAGS_EXTRA += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
+    LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else
     # Link flags on macOS
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
-    LDFLAGS_EXTRA += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
+    LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
@@ -519,18 +498,14 @@ $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
 	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
 
-# Default installation root.
-# RPM packagers should override this in the "make install" command line
-# to build a temporary system root where TSDuck is installed.
-
-SYSROOT =
-
-# A shortcut-target to rebuild with static linking.
-# Not meaningfull everywhere:
+#-----------------------------------------------------------------------------
+# Static linking.
+# Not meaningful everywhere:
 # - Static linking with system libraries is not supported on macOS.
 # - On Linux, all used libraries must be installed. This is not supported
 #   on all distros. On Fedora, you may install "glibc-static libstdc++-static"
 #   but there is no static package for curl and pcsclite.
+#-----------------------------------------------------------------------------
 
 .PHONY: static
 static:
@@ -539,7 +514,7 @@ static:
 ifeq ($(STATIC),)
     # Dynamic (default) link
     LDLIBS := -ldl $(LDLIBS)
-else ifdef MACOS
+else ifneq ($(MACOS),)
     $(error static linking is not supported on macOS)
 else
     NOCURL     = true
@@ -552,7 +527,9 @@ else
     CXXFLAGS_INCLUDES += -DTSDUCK_STATIC=1
 endif
 
-# External include directories and libraries.
+#-----------------------------------------------------------------------------
+# Exclude features which are not supported in the current environment
+#-----------------------------------------------------------------------------
 
 ifneq ($(CROSS)$(CROSS_TARGET),)
     # Some libraries are bypassed in cross-compilation.
@@ -564,11 +541,11 @@ ifneq ($(CROSS)$(CROSS_TARGET),)
     NOEDITLINE = true
 endif
 
-ifdef NOTELETEXT
+ifneq ($(NOTELETEXT),)
     CXXFLAGS_INCLUDES += -DTS_NOTELETEXT=1
 endif
 
-ifdef ASSERTIONS
+ifneq ($(ASSERTIONS),)
     CXXFLAGS_INCLUDES += -DTS_KEEP_ASSERTIONS=1
 endif
 
@@ -602,13 +579,17 @@ endif
 
 ifeq ($(NOCURL),)
     # curl not disabled, check if available.
-    export NOCURL := $(if $(call F_COMMAND,curl-config,),,true)
+    ifeq ($(NOCURL_DONE),)
+        export NOCURL_DONE = true
+        export NOCURL := $(if $(call F_COMMAND,curl-config,),,true)
+    endif
 endif
 
 ifneq ($(NOCURL),)
     CXXFLAGS_INCLUDES += -DTS_NO_CURL=1
 else
-    ifndef CXXFLAGS_CURL
+    ifeq ($(CURL_DONE),)
+        export CURL_DONE = true
         export CXXFLAGS_CURL := $(shell curl-config --cflags)
         export LDLIBS_CURL := $(shell curl-config --libs)
     endif
@@ -660,29 +641,25 @@ ifeq ($(CXXFLAGS_JNI),)
 endif
 CXXFLAGS_INCLUDES += $(CXXFLAGS_JNI)
 
-ifdef BITRATE_FRACTION
+ifneq ($(BITRATE_FRACTION),)
     CXXFLAGS_INCLUDES += -DTS_BITRATE_FRACTION=1
-endif
-
-ifdef BITRATE_INTEGER
+else ifneq ($(BITRATE_INTEGER),)
     CXXFLAGS_INCLUDES += -DTS_BITRATE_INTEGER=1
-endif
-
-ifdef BITRATE_FLOAT
+else ifneq ($(BITRATE_FLOAT),)
     CXXFLAGS_INCLUDES += -DTS_BITRATE_FLOAT=1
-endif
-
-ifdef BITRATE_FIXED
+else ifneq ($(BITRATE_FIXED),)
     CXXFLAGS_INCLUDES += -DTS_BITRATE_FIXED=1
-endif
-
-ifdef BITRATE_DECIMALS
+else ifneq ($(BITRATE_DECIMALS),)
     CXXFLAGS_INCLUDES += -DTS_BITRATE_DECIMALS=$(BITRATE_DECIMALS)
 endif
 
+#-----------------------------------------------------------------------------
+# List of source directories, tools, plugins, etc
+#-----------------------------------------------------------------------------
+
 # List of libtsduck directories containing private and public headers.
 
-ifndef PUBLIC_INCLUDES
+ifeq ($(PUBLIC_INCLUDES),)
     export ALL_INCLUDES := $(filter-out %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
     export PRIVATE_INCLUDES := $(filter %/private,$(ALL_INCLUDES))
     export PUBLIC_INCLUDES := $(filter-out %/private,$(ALL_INCLUDES))
@@ -691,7 +668,7 @@ CXXFLAGS_INCLUDES += $(addprefix -I,$(PUBLIC_INCLUDES))
 
 # List of plugins and tools to build.
 
-ifndef TSPLUGINS
+ifeq ($(TSPLUGINS),)
     # All plugins and tools, one source file per plugin or executable.
     TSPLUGINS := $(sort $(notdir $(basename $(wildcard $(TSPLUGINSDIR)/tsplugin_*.cpp))))
     TSTOOLS := $(sort $(notdir $(basename $(wildcard $(TSTOOLSDIR)/ts*.cpp))))
@@ -700,23 +677,20 @@ ifndef TSPLUGINS
     NO_TSPLUGINS := $(addprefix tsplugin_,dektec drop file fork hls http ip null psi rist skip srt tables)
     # Build a list of tools and plugins to not build or deinstall from the system tree.
     NO_TSTOOLS :=
-    ifdef NODTAPI
+    ifneq ($(NODTAPI),)
         NO_TSTOOLS += tsdektec
     endif
-    ifdef MACOS
+    ifneq ($(MACOS),)
         # Do not compile HiDes tools and plugins on macOS. Physical tuners are
         # not supported either but the related code (dvb plugin, tslsdvb, tscan) shall
         # be compiled because the tuner emulator facility is available everywhere.
         NO_TSPLUGINS += tsplugin_hides
         NO_TSTOOLS += tshides
     endif
-    ifdef NOTELETEXT
+    ifneq ($(NOTELETEXT),)
         NO_TSPLUGINS += tsplugin_teletext
     endif
-    ifdef NORIST
-        NO_TSPLUGINS += tsplugin_rist
-    endif
-    ifdef NOPCSC
+    ifneq ($(NOPCSC),)
         NO_TSTOOLS += tssmartcard
     endif
     TSTOOLS := $(filter-out $(NO_TSTOOLS),$(TSTOOLS))
@@ -724,6 +698,7 @@ ifndef TSPLUGINS
     export TSPLUGINS TSTOOLS NO_TSTOOLS NO_TSPLUGINS
 endif
 
+#-----------------------------------------------------------------------------
 # Dependency (.dep) files: For each xxx.cpp source file, there is one
 # xxx.dep file in the same directory as xxx.o. The file xxx.dep lists
 # all .h dependencies for xxx.cpp.
@@ -747,6 +722,7 @@ endif
 # $(NODEPS) lists the make targets in the parent makefile which shall
 # not enforce the generation of header dependency files. This is a bit
 # complicated and, most of the time, there is no need to set this variable.
+#-----------------------------------------------------------------------------
 
 $(OBJDIR)/%.dep: %.cpp
 	@echo '  [DEP] $<'; \
@@ -767,9 +743,11 @@ ifeq ($(DONT_BUILD_DEPS),)
     -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(CURCPP) $(wildcard *.cpp)))))
 endif
 
+#-----------------------------------------------------------------------------
 # Cleanup Windows oddities in source files.
 # Many IDE's indent with tabs, and tabs are 4 chars wide.
 # Tabs shall not be expanded in Makefiles.
+#-----------------------------------------------------------------------------
 
 .PHONY: unixify
 unixify:
@@ -783,11 +761,13 @@ unixify:
 	  $(SED) -i -e 's/  *$$//' $$f; \
 	done
 
+#-----------------------------------------------------------------------------
 # Display make variables for debug purposes.
+#-----------------------------------------------------------------------------
 
 .PHONY: listvars
 listvars:
 	@true
 	$(foreach v, \
-	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG%,$(.VARIABLES))), \
+	  $(sort $(filter-out .% ^% @% _% *% \%% <% +% ?% BASH% LS_COLORS SSH% VTE% XDG% F_%,$(.VARIABLES))), \
 	  $(info $(v) = "$($(v))"))
