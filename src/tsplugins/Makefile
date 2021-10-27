@@ -35,7 +35,7 @@ include ../../Makefile.inc
 
 .PHONY: shlibs install install-tools install-devel
 
-ifndef STATIC
+ifeq ($(STATIC),)
 
 # Dynamic link (the default), we build shared objects.
 SHLIBS := $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS)))

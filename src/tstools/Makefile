@@ -41,7 +41,7 @@ default: execs
 .PHONY: execs
 execs: $(EXECS)
 
-ifndef STATIC
+ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.
     $(EXECS): $(SHARED_LIBTSDUCK)
 else

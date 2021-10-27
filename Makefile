@@ -155,8 +155,8 @@ install install-tools install-devel:
 
 # Build the source tarball for distribution.
 
-VERSION = $(shell $(SCRIPTSDIR)/get-version-from-sources.sh)
-DISTRO  = $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --distro)
+VERSION := $(shell $(SCRIPTSDIR)/get-version-from-sources.sh)
+DISTRO  := $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --distro)
 TARNAME = tsduck-$(VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
