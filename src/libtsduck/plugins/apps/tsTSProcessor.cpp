@@ -191,8 +191,8 @@ bool ts::TSProcessor::start(const TSProcessorArgs& args)
         _packet_buffer = new PacketBuffer(_args.ts_buffer_size / ts::PKT_SIZE);
         CheckNonNull(_packet_buffer);
         if (!_packet_buffer->isLocked()) {
-            _report.verbose(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
-                            {_packet_buffer->lockErrorCode(), ts::SysErrorCodeMessage(_packet_buffer->lockErrorCode())});
+            _report.debug(u"tsp: buffer failed to lock into physical memory (%d: %s), risk of real-time issue",
+                          {_packet_buffer->lockErrorCode(), ts::SysErrorCodeMessage(_packet_buffer->lockErrorCode())});
         }
         _report.debug(u"tsp: buffer size: %'d TS packets, %'d bytes", {_packet_buffer->count(), _packet_buffer->count() * ts::PKT_SIZE});
 
