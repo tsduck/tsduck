@@ -100,7 +100,7 @@ F_RECURSE = for dir in $(1); do if [[ -d $$dir ]]; then $(MAKE) -C $$dir $@ $(if
 # The functions F_LT, F_LE, F_GE, F_GT perform numeric comparisons ("true" or empty).
 # Example: $(if $(call F_LT,$(VERSION),2),"version<2","version>=2")
 
-F_COMP = $(if $(subst 0,,$(shell [ 0$(1) -$(2) 0$(3) ])$(.SHELLSTATUS)),,true)
+F_COMP = $(shell [ 0$(1) -$(2) 0$(3) ] && echo true)
 F_LT = $(call F_COMP,$(1),lt,$(2))
 F_LE = $(call F_COMP,$(1),le,$(2))
 F_GE = $(call F_COMP,$(1),ge,$(2))

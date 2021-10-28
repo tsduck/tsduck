@@ -17,12 +17,12 @@
         <TSDUCKLIB>$(TSDUCK)\lib\Debug-Win64</TSDUCKLIB>
       </PropertyGroup>
     </When>
-    <When Condition="'$(Configuration)|$(Platform)'=='Release|x32' OR '$(Configuration)|$(Platform)'=='Release|Win32'">
+    <When Condition="'$(Configuration)|$(Platform)'=='Release|x86' OR '$(Configuration)|$(Platform)'=='Release|Win32'">
       <PropertyGroup Label="UserMacros">
         <TSDUCKLIB>$(TSDUCK)\lib\Release-Win32</TSDUCKLIB>
       </PropertyGroup>
     </When>
-    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x32' OR '$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <When Condition="'$(Configuration)|$(Platform)'=='Debug|x86' OR '$(Configuration)|$(Platform)'=='Debug|Win32'">
       <PropertyGroup Label="UserMacros">
         <TSDUCKLIB>$(TSDUCK)\lib\Debug-Win32</TSDUCKLIB>
       </PropertyGroup>
