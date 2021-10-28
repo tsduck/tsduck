@@ -47,9 +47,15 @@ OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(sort $(notdir $(basename $(wildca
 $(BINDIR)/utest: $(OBJS) $(SHARED_LIBTSDUCK)
 
 # 2) Using static library. Skip plugin tests since they use the shared object.
+# Add libraries which are otherwise only used by the libtsduck shared object.
 $(BINDIR)/utest_static: $(filter-out $(OBJDIR)/utestPluginRepository.o,$(OBJS)) $(STATIC_LIBTSDUCK)
 	@echo '  [LD] $@'; \
-	$(CC) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ \
+	      $(if $(NOSRT),,-lsrt) \
+	      $(if $(NORIST),,-lrist) \
+	      $(if $(NOCURL),,$(shell curl-config --libs)) \
+	      $(if $(NOEDITLINE),,-ledit) \
+	      $(LDLIBS) -o $@
 
 # Run tests.
 # Use make UTESTFLAGS="-d -t ClassTest::testName" for one single test in debug mode.

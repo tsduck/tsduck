@@ -453,6 +453,16 @@ size_t ts::DektecInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t)
     return 0;
 }
 
+bool ts::DektecInputPlugin::configureLNB()
+{
+    return false;
+}
+
+bool ts::DektecInputPlugin::startError(const UString& message, unsigned int status)
+{
+    return false;
+}
+
 #else
 
 //----------------------------------------------------------------------------
