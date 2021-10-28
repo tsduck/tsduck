@@ -76,7 +76,7 @@ EOF
 
 # Process individual commands
 cmd_bin() {
-    dirname "$TSCONFIG"
+    (cd $(dirname "$TSCONFIG"); pwd)
 }
 
 cmd_prefix() {
@@ -111,7 +111,7 @@ cmd_lib() {
 cmd_cflags() {
     local pcsc=
     [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-I/usr/include/PCSC"
-    echo "-I$(cmd_include) $(curl-config --cflags 2>/dev/null) $pcsc --std=c++11"
+    echo "-I$(cmd_include) $pcsc --std=c++11"
 }
 
 cmd_so() {
@@ -137,15 +137,15 @@ cmd_libs() {
     local lib=$(cmd_lib)
     local usrlib=/usr/lib
     local lopt=
-    local srt=
     [[ -n $(ls /usr/lib64/libc.so* 2>/dev/null) ]] && usrlib=/usr/lib64
     [[ $lib != $usrlib ]] && lopt="-L$lib"
-    [[ -n $(ls /usr/include/srt/srt.h /usr/local/include/srt/srt.h /opt/homebrew/include/srt/srt.h 2>/dev/null) ]] && srt="-lsrt"
-    echo "$lopt -ltsduck $srt $(curl-config --libs 2>/dev/null) $(libs_common)"
+    echo "$lopt -ltsduck $(libs_common)"
 }
 
 cmd_staticlibs() {
-    echo "$(cmd_lib)/libtsduck.a $(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a 2>/dev/null) $(curl-config --static-libs 2>/dev/null) $(libs_common)"
+    local srt=$(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a /opt/homebrew/lib/libsrt.a 2>/dev/null | head -1)
+    local rist=$(ls /usr/lib/librist.a /usr/local/lib/librist.a /opt/homebrew/lib/librist.a 2>/dev/null | head -1)
+    echo "$(cmd_lib)/libtsduck.a $srt $rist $(curl-config --static-libs 2>/dev/null) -ledit $(libs_common)"
 }
 
 version_major() {

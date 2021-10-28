@@ -844,6 +844,30 @@ bool ts::DektecOutputPlugin::send(const TSPacket*, const TSPacketMetadata*, size
     return false;
 }
 
+bool ts::DektecOutputPlugin::startError(const UString& message, unsigned int status)
+{
+    return false;
+}
+
+bool ts::DektecOutputPlugin::setBitrate(int symbol_rate, int dt_modulation, int param0, int param1, int param2)
+{
+    return false;
+}
+
+void ts::DektecOutputPlugin::displaySymbolRate(const BitRate& ts_bitrate, int dt_modulation, int param0, int param1, int param2)
+{
+}
+
+bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
+{
+    return false;
+}
+
+bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
+{
+    return false;
+}
+
 #else
 
 //----------------------------------------------------------------------------

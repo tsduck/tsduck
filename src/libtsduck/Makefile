@@ -79,7 +79,7 @@ default: headers libs
 
 # The tsduck.h header is automatically generated from all headers using BUILD_PROJ_FILES.
 
-BUILD_TSDUCK_H = $(ROOTDIR)/scripts/build-tsduck-header.py
+BUILD_TSDUCK_H = $(SCRIPTSDIR)/build-tsduck-header.py
 
 .PHONY: headers
 headers: tsduck.h
@@ -92,6 +92,39 @@ tsduck.h: $(BUILD_TSDUCK_H) $(SRCROOT)/HEADER.txt $(filter-out tsduck.h %Templat
 # of dependencies and make cannot realize it is the same header files.
 
 $(OBJDIR)/tsduck.o: tsduck.h
+
+# Some libraries are used internally to libtsduck only.
+
+ifneq ($(NODTAPI),)
+    CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
+endif
+
+ifneq ($(NOEDITLINE),)
+    CXXFLAGS_INCLUDES += -DTS_NO_EDITLINE=1
+else
+    LDLIBS := -ledit $(LDLIBS)
+endif
+
+ifneq ($(NOCURL),)
+    CXXFLAGS_INCLUDES += -DTS_NO_CURL=1
+else
+    CXXFLAGS_INCLUDES += $(shell curl-config --cflags)
+    LDLIBS := $(shell curl-config --libs) $(LDLIBS)
+endif
+
+ifneq ($(NOSRT),)
+    CXXFLAGS_INCLUDES += -DTS_NO_SRT=1
+else
+    LDLIBS := -lsrt $(LDLIBS)
+endif
+
+ifneq ($(NORIST),)
+    CXXFLAGS_INCLUDES += -DTS_NO_RIST=1
+else
+    LDLIBS := -lrist $(LDLIBS)
+endif
+
+CXXFLAGS_INCLUDES += $(shell $(SCRIPTSDIR)/java-config.sh --cflags)
 
 # Specific (per-module) compilation options:
 
@@ -123,7 +156,7 @@ libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 $(SHARED_LIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [LD] $@'; \
-	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LDLIBS) -shared -o $@
+	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LDLIBS_PCSC) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
 # tables, descriptors, charsets and plugins. These classes use self-registration

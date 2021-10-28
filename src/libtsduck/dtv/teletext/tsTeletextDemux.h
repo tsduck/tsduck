@@ -37,7 +37,7 @@
 #include "tsTeletext.h"
 #include "tsTeletextCharset.h"
 #include "tsTeletextHandlerInterface.h"
-#if !defined(TS_NOTELETEXT)
+#if !defined(TS_NO_TELETEXT)
 
 namespace ts {
     //!
@@ -249,4 +249,4 @@ namespace ts {
     };
 }
 
-#endif // TS_NOTELETEXT
+#endif // TS_NO_TELETEXT

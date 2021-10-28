@@ -66,7 +66,6 @@ namespace ts {
         class Guts;
         Guts* _guts;
 
-#if !defined(TS_NO_DTAPI)
         // Output start error: log error, detach channel & device, return false.
         bool startError(const UString&, unsigned int); // Dtapi::DTAPI_RESULT
 
@@ -84,6 +83,5 @@ namespace ts {
         // Set preload FIFO size based on a delay, if requested, in ms. Returns true if preload FIFO size is altered,
         // false otherwise.
         bool setPreloadFIFOSizeBasedOnDelay();
-#endif
     };
 }

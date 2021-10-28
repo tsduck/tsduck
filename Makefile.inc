@@ -493,10 +493,10 @@ $(OBJDIR)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
 $(BINDIR)/%: $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
-	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
-	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS) -shared -o $@
+	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 #-----------------------------------------------------------------------------
 # Static linking.
@@ -541,12 +541,16 @@ ifneq ($(CROSS)$(CROSS_TARGET),)
     NOEDITLINE = true
 endif
 
-ifneq ($(NOTELETEXT),)
-    CXXFLAGS_INCLUDES += -DTS_NOTELETEXT=1
-endif
-
 ifneq ($(ASSERTIONS),)
     CXXFLAGS_INCLUDES += -DTS_KEEP_ASSERTIONS=1
+endif
+
+ifneq ($(NOGITHUB),)
+    CXXFLAGS_INCLUDES += -DTS_NO_GITHUB=1
+endif
+
+ifneq ($(NOTELETEXT),)
+    CXXFLAGS_INCLUDES += -DTS_NO_TELETEXT=1
 endif
 
 ifeq ($(NOSRT),)
@@ -554,47 +558,25 @@ ifeq ($(NOSRT),)
     NOSRT := $(if $(wildcard /usr/include/srt/*.h $(ALTDEVROOT)/include/srt/*.h),,true)
 endif
 
-ifneq ($(NOSRT),)
-    CXXFLAGS_INCLUDES += -DTS_NO_SRT=1
-else
-    LDLIBS := -lsrt $(LDLIBS)
-endif
-
 ifeq ($(NORIST),)
     # RIST not disabled, check if librist is available.
     NORIST := $(if $(wildcard /usr/include/librist/*.h $(ALTDEVROOT)/include/librist/*.h),,true)
 endif
 
-ifneq ($(NORIST),)
-    CXXFLAGS_INCLUDES += -DTS_NO_RIST=1
-else
-    LDLIBS := -lrist $(LDLIBS)
-endif
-
-ifneq ($(NOEDITLINE),)
-    CXXFLAGS_INCLUDES += -DTS_NO_EDITLINE=1
-else
-    LDLIBS := -ledit $(LDLIBS)
-endif
-
 ifeq ($(NOCURL),)
     # curl not disabled, check if available.
-    ifeq ($(NOCURL_DONE),)
-        export NOCURL_DONE = true
-        export NOCURL := $(if $(call F_COMMAND,curl-config,),,true)
-    endif
+    NOCURL := $(if $(call F_SEARCH,curl-config),,true)
 endif
 
-ifneq ($(NOCURL),)
-    CXXFLAGS_INCLUDES += -DTS_NO_CURL=1
-else
-    ifeq ($(CURL_DONE),)
-        export CURL_DONE = true
-        export CXXFLAGS_CURL := $(shell curl-config --cflags)
-        export LDLIBS_CURL := $(shell curl-config --libs)
-    endif
-    CXXFLAGS_INCLUDES += $(CXXFLAGS_CURL)
-    LDLIBS := $(LDLIBS_CURL) $(LDLIBS)
+ifneq ($(NODEKTEC),)
+    # NODEKTEC is an alternative name for NODTAPI
+    NODTAPI = true
+endif
+
+ifeq ($(NODTAPI)$(NODTAPI_CHECKED),)
+    # Dektec DTAPI not disabled, check if available.
+    NODTAPI := $(if $(shell $(SCRIPTSDIR)/dtapi-config.sh --support),,true)
+    export NODTAPI_CHECKED := true
 endif
 
 ifeq ($(NOPCSC)$(MACOS),)
@@ -604,42 +586,19 @@ endif
 
 ifneq ($(NOPCSC),)
     CXXFLAGS_INCLUDES += -DTS_NO_PCSC=1
+    LDLIBS_PCSC =
 else ifneq ($(MACOS),)
     # On macOS, use PCSC.framework
-    LDLIBS := -framework PCSC $(LDLIBS)
+    LDLIBS_PCSC = -framework PCSC
 else ifneq ($(LINUXBREW),)
     # PCSC on Linuxbrew
     CXXFLAGS_INCLUDES += -I$(ALTDEVROOT)/include/PCSC
-    LDLIBS := -lpcsclite $(LDLIBS)
+    LDLIBS_PCSC = -lpcsclite
 else
     # PCSC on Linux
     CXXFLAGS_INCLUDES += -I/usr/include/PCSC
-    LDLIBS := -lpcsclite $(LDLIBS)
+    LDLIBS_PCSC = -lpcsclite
 endif
-
-ifneq ($(NODEKTEC),)
-    # NODEKTEC is an alternative name for NODTAPI
-    NODTAPI = true
-endif
-
-ifeq ($(NODTAPI)$(NODTAPI_CHECKED),)
-    # Disable DTAPI on platforms where it is not supported.
-    NODTAPI := $(if $(shell $(ROOTDIR)/scripts/dtapi-config.sh --support),,true)
-    export NODTAPI_CHECKED := true
-endif
-
-ifneq ($(NODTAPI),)
-    CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
-endif
-
-ifneq ($(NOGITHUB),)
-    CXXFLAGS_INCLUDES += -DTS_NO_GITHUB=1
-endif
-
-ifeq ($(CXXFLAGS_JNI),)
-    export CXXFLAGS_JNI := $(shell $(SCRIPTSDIR)/java-config.sh --cflags)
-endif
-CXXFLAGS_INCLUDES += $(CXXFLAGS_JNI)
 
 ifneq ($(BITRATE_FRACTION),)
     CXXFLAGS_INCLUDES += -DTS_BITRATE_FRACTION=1

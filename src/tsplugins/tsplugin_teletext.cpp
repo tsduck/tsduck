@@ -38,7 +38,7 @@
 #include "tsTeletextDemux.h"
 #include "tsTeletextFrame.h"
 #include "tsTeletextDescriptor.h"
-#if !defined(TS_NOTELETEXT)
+#if !defined(TS_NO_TELETEXT)
 
 
 //----------------------------------------------------------------------------
@@ -305,4 +305,4 @@ ts::ProcessorPlugin::Status ts::TeletextPlugin::processPacket(TSPacket& pkt, TSP
     return _service.nonExistentService() || _abort ? TSP_END : TSP_OK;
 }
 
-#endif // TS_NOTELETEXT
+#endif // TS_NO_TELETEXT

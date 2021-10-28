@@ -51,6 +51,9 @@ else
     $(EXECS): $(STATIC_LIBTSDUCK)
 endif
 
+# Some executables depend on PCSC.
+$(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
+
 .PHONY: install install-tools install-devel
 install: install-tools install-devel
 install-tools: $(EXECS)
