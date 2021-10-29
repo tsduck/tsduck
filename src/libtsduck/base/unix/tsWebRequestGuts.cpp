@@ -716,18 +716,27 @@ ts::UString ts::WebRequest::GetLibraryVersion()
 {
     UString result(u"libcurl");
 
+    // Check if runtime version is same as compiled one.
+    bool same = false;
+
     // Get version from libcurl.
     const ::curl_version_info_data* info = ::curl_version_info(CURLVERSION_NOW);
     if (info != nullptr) {
+        same = info->version_num == LIBCURL_VERSION_NUM;
         if (info->version != nullptr) {
-            result += u": " + UString::FromUTF8(info->version);
+            result.format(u": %s", {info->version});
         }
         if (info->ssl_version != nullptr) {
-            result += u", ssl: " + UString::FromUTF8(info->ssl_version);
+            result.format(u", ssl: %s", {info->ssl_version});
         }
         if (info->libz_version != nullptr) {
-            result += u", libz: " + UString::FromUTF8(info->libz_version);
+            result.format(u", libz: %s", {info->libz_version});
         }
+    }
+
+    // Add compilation version if different.
+    if (!same) {
+        result.format(u", compiled with %s", {LIBCURL_VERSION});
     }
     return result;
 }

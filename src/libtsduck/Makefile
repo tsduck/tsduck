@@ -108,7 +108,8 @@ endif
 ifneq ($(NOCURL),)
     CXXFLAGS_INCLUDES += -DTS_NO_CURL=1
 else
-    CXXFLAGS_INCLUDES += $(shell curl-config --cflags)
+    CXXFLAGS_CURL := $(shell curl-config --cflags)
+    CXXFLAGS_INCLUDES += $(CXXFLAGS_CURL)
     LDLIBS := $(shell curl-config --libs) $(LDLIBS)
 endif
 
@@ -124,7 +125,8 @@ else
     LDLIBS := -lrist $(LDLIBS)
 endif
 
-CXXFLAGS_INCLUDES += $(shell $(SCRIPTSDIR)/java-config.sh --cflags)
+CXXFLAGS_JAVA := $(shell $(SCRIPTSDIR)/java-config.sh --cflags)
+CXXFLAGS_INCLUDES += $(CXXFLAGS_JAVA)
 
 # Specific (per-module) compilation options:
 
