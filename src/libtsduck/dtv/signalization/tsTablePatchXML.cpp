@@ -64,7 +64,7 @@ void ts::TablePatchXML::clear()
 // Define standard command line arguments.
 //----------------------------------------------------------------------------
 
-void ts::TablePatchXML::defineArgs(Args& args) const
+void ts::TablePatchXML::defineArgs(Args& args)
 {
     args.option(u"patch-xml", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
     args.help(u"patch-xml", u"filename",

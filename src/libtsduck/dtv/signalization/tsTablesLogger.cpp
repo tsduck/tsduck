@@ -134,7 +134,7 @@ ts::TablesLogger::~TablesLogger()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::defineArgs(Args& args) const
+void ts::TablesLogger::defineArgs(Args& args)
 {
     // Define XML options.
     _xml_tweaks.defineArgs(args);

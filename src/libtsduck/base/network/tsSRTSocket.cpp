@@ -42,7 +42,7 @@
 // These arguments are defined even in the absence of libsrt.
 //----------------------------------------------------------------------------
 
-void ts::SRTSocket::defineArgs(ts::Args& args) const
+void ts::SRTSocket::defineArgs(ts::Args& args)
 {
     args.option(u"caller", 'c', Args::STRING);
     args.help(u"caller", u"address:port",

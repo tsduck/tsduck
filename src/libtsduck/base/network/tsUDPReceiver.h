@@ -55,7 +55,7 @@ namespace ts {
         explicit UDPReceiver(Report& report = CERR, bool with_short_options = true, bool dest_as_param = true);
 
         // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) const override;
+        virtual void defineArgs(Args& args) override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!

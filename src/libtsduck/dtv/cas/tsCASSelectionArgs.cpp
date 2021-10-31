@@ -62,7 +62,7 @@ ts::CASSelectionArgs::~CASSelectionArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::CASSelectionArgs::defineArgs(Args& args) const
+void ts::CASSelectionArgs::defineArgs(Args& args)
 {
     args.option(u"cas", 0, Args::UINT16);
     args.help(u"cas",

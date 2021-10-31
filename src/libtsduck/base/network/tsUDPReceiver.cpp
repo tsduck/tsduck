@@ -60,7 +60,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::UDPReceiver::defineArgs(ts::Args& args) const
+void ts::UDPReceiver::defineArgs(ts::Args& args)
 {
     // [[source@]address:]port can be either a parameter or an option.
     const UChar* const dest_name = _dest_as_param ? u"" : u"ip-udp";

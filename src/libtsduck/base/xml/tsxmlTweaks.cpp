@@ -52,7 +52,7 @@ ts::xml::Tweaks::Tweaks() :
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::xml::Tweaks::defineArgs(Args& args) const
+void ts::xml::Tweaks::defineArgs(Args& args)
 {
     args.option(u"strict-xml");
     args.help(u"strict-xml",

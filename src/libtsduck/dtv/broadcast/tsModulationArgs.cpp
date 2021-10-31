@@ -1476,7 +1476,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::ModulationArgs::defineArgs(Args& args) const
+void ts::ModulationArgs::defineArgs(Args& args)
 {
     args.option(u"delivery-system", 0, DeliverySystemEnum);
     args.help(u"delivery-system",

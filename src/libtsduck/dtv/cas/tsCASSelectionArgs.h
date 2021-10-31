@@ -66,7 +66,7 @@ namespace ts {
         uint32_t  cas_oper;    //!< CA operator id (depends on the CAS).
 
         // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) const override;
+        virtual void defineArgs(Args& args) override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!

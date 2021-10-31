@@ -56,7 +56,7 @@ ts::WebRequestArgs::~WebRequestArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::WebRequestArgs::defineArgs(Args& args) const
+void ts::WebRequestArgs::defineArgs(Args& args)
 {
     args.option(u"connection-timeout", 0, Args::POSITIVE);
     args.help(u"connection-timeout",

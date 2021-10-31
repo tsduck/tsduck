@@ -51,7 +51,7 @@ ts::AsyncReportArgs::AsyncReportArgs() :
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::AsyncReportArgs::defineArgs(Args& args) const
+void ts::AsyncReportArgs::defineArgs(Args& args)
 {
     args.option(u"log-message-count", 0, Args::POSITIVE);
     args.help(u"log-message-count",

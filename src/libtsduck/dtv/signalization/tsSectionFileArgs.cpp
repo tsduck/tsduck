@@ -51,7 +51,7 @@ ts::SectionFileArgs::~SectionFileArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::SectionFileArgs::defineArgs(Args& args) const
+void ts::SectionFileArgs::defineArgs(Args& args)
 {
     args.option(u"eit-normalization");
     args.help(u"eit-normalization",
