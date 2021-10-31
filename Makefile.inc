@@ -633,7 +633,7 @@ ifeq ($(TSPLUGINS),)
     TSTOOLS := $(sort $(notdir $(basename $(wildcard $(TSTOOLSDIR)/ts*.cpp))))
     # Obsolete plugins, were in separate shared libraries, now in libtsduck.so.
     # Maintenance: also update scripts/tsduck.nsi (Windows).
-    NO_TSPLUGINS := $(addprefix tsplugin_,dektec drop file fork hls http ip null psi rist skip srt tables)
+    NO_TSPLUGINS := $(addprefix tsplugin_,dektec drop file fork hls http ip null psi rist skip srt table teletext)
     # Build a list of tools and plugins to not build or deinstall from the system tree.
     NO_TSTOOLS :=
     ifneq ($(NODTAPI),)
@@ -645,9 +645,6 @@ ifeq ($(TSPLUGINS),)
         # be compiled because the tuner emulator facility is available everywhere.
         NO_TSPLUGINS += tsplugin_hides
         NO_TSTOOLS += tshides
-    endif
-    ifneq ($(NOTELETEXT),)
-        NO_TSPLUGINS += tsplugin_teletext
     endif
     ifneq ($(NOPCSC),)
         NO_TSTOOLS += tssmartcard

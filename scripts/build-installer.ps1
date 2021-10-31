@@ -176,14 +176,6 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [str
     # Base name of the MSVC redistributable.
     $VCRedistName = (Get-Item $VCRedist).Name
 
-    # Specific options to build without Teletext support.
-    if ($NoTeletext) {
-        $NsisOptTeletext = "/DNoTeletext"
-    }
-    else {
-        $NsisOptTeletext = ""
-    }
-
     # Specify JAR file option if it exists.
     if (Test-Path $JarFile) {
         $NsisOptJar = "/DJarFile=$JarFile"
@@ -193,7 +185,7 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [str
     }
 
     # Build the binary installer.
-    & $NSIS /V2 $NsisOptTeletext $NsisOptJar /D$Arch /DBinDir=$BinDir `
+    & $NSIS /V2 $NsisOptJar /D$Arch /DBinDir=$BinDir `
         /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DHeadersDir=$HeadersDir `
         /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
 }
@@ -207,8 +199,9 @@ if (-not $NoInstaller) {
     if ($NoTeletext) {
         $Exclude += "*\tsduck.h"
         $Exclude += "*\tsTeletextDemux.h"
+        $Exclude += "*\tsTeletextPlugin.h"
         Get-Content (Join-Multipath @($SrcDir, "libtsduck", "tsduck.h")) | `
-            Where-Object { $_ -notmatch 'tsTeletextDemux.h' } | `
+            Where-Object { ($_ -notmatch 'tsTeletextDemux.h') -and ($_ -notmatch 'tsTeletextPlugin.h') } | `
             Out-File -Encoding ascii (Join-Path $TempDir tsduck.h)
     }
     Get-ChildItem (Join-Path $SrcDir libtsduck) -Recurse -Include "*.h" | `
@@ -278,10 +271,6 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         $TempSetup = (New-Directory @($TempRoot, "setup"))
         Copy-Item (Join-Path $BinDir "setpath.exe") -Destination $TempSetup
         Copy-Item $VCRedist -Destination $TempSetup
-
-        if ($NoTeletext) {
-            Get-ChildItem $TempBin -Recurse -Include "tsplugin_teletext.*" | Remove-Item -Force -ErrorAction Ignore
-        }
 
         # Create the zip file.
         Get-ChildItem -Recurse (Split-Path $TempRoot) | New-ZipFile $ZipFile -Force -Root $TempDir

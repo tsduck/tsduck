@@ -160,15 +160,15 @@ DISTRO  := $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --distro)
 TARNAME = tsduck-$(VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
-SKIPSRC = $(if $(NOTELETEXT),tsTeletextDemux.h tsTeletextDemux.cpp tsplugin_teletext.cpp)
 
 .PHONY: tarball
 tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
-	tar -cpf - sample/sample-*/japanese-tables.bin $(patsubst %,--exclude '%',.git $(SKIPSRC) $(shell cat .gitignore)) . | \
-	    tar -C $(TMPROOT)/$(TARNAME) -xpf -
-	$(if $(NOTELETEXT),$(SED) -i -e '/tsTeletextDemux.h/d' $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h)
+	tar -cpf - sample/sample-*/japanese-tables.bin \
+	    $(patsubst %,--exclude '%',.git $(if $(NOTELETEXT),tsTeletextDemux.* tsTeletextPlugin.*) $(shell cat .gitignore)) \
+	    . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
+	$(if $(NOTELETEXT),$(SED) -i -e '/TeletextDemux/d' -e '/TeletextPlugin/d' $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h)
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
 	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)

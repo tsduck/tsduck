@@ -38,7 +38,6 @@
 ;  - HeadersDir : Directory containing all header files (development options).
 ;  - VCRedist : Full path of the MSVC redistributable installer.
 ;  - VCRedistName : Base name of the MSVC redistributable installer.
-;  - NoTeletext : Disable Teletext plugins.
 ;  - JarFile : Optional name of the JAR file for Java bindings.
 ;
 ;-----------------------------------------------------------------------------
@@ -155,17 +154,13 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsplugin_skip.dll"
     Delete "$INSTDIR\bin\tsplugin_srt.dll"
     Delete "$INSTDIR\bin\tsplugin_tables.dll"
+    Delete "$INSTDIR\bin\tsplugin_teletext.dll"
 
     ; Create folder for binaries
     CreateDirectory "$INSTDIR\bin"
     SetOutPath "$INSTDIR\bin"
     File /x *_static.exe /x tsprofiling.exe /x tsmux.exe "${BinDir}\ts*.exe"
-    !ifdef NoTeletext
-        Delete "$INSTDIR\bin\tsplugin_teletext.dll"
-        File /x tsplugin_teletext.dll "${BinDir}\ts*.dll"
-    !else
-        File "${BinDir}\ts*.dll"
-    !endif
+    File "${BinDir}\ts*.dll"
     File "${RootDir}\src\libtsduck\config\tsduck*.xml"
     File "${RootDir}\src\libtsduck\config\tsduck*.names"
 
