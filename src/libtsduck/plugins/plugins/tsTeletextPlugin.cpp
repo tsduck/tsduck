@@ -26,56 +26,12 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  Transport stream processor shared library:
-//  Extract Teletext subtitles.
-//
-//----------------------------------------------------------------------------
 
-#include "tsPluginRepository.h"
-#include "tsServiceDiscovery.h"
-#include "tsSubRipGenerator.h"
-#include "tsTeletextDemux.h"
+#include "tsTeletextPlugin.h"
 #include "tsTeletextFrame.h"
 #include "tsTeletextDescriptor.h"
+#include "tsPluginRepository.h"
 #if !defined(TS_NO_TELETEXT)
-
-
-//----------------------------------------------------------------------------
-// Plugin definition
-//----------------------------------------------------------------------------
-
-namespace ts {
-    class TeletextPlugin:
-        public ProcessorPlugin,
-        private SignalizationHandlerInterface,
-        private TeletextHandlerInterface
-    {
-        TS_NOBUILD_NOCOPY(TeletextPlugin);
-    public:
-        // Implementation of plugin API
-        TeletextPlugin(TSP*);
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-
-    private:
-        bool             _abort;      // Error (service not found, etc).
-        PID              _pid;        // Teletext PID.
-        int              _page;       // Teletext page.
-        int              _maxFrames;  // Max number of Teletext frames to generate.
-        UString          _language;   // Language to select.
-        UString          _outFile;    // Output file name.
-        ServiceDiscovery _service;    // Service name & id.
-        TeletextDemux    _demux;      // Teletext demux to extract subtitle frames.
-        SubRipGenerator  _srtOutput;  // Generate SRT output file.
-        std::set<int>    _pages;      // Set of all Teletext pages in the PID (for information only).
-
-        // Implementation of interfaces.
-        virtual void handlePMT(const PMT&, PID) override;
-        virtual void handleTeletextMessage(TeletextDemux&, const TeletextFrame&) override;
-    };
-}
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"teletext", ts::TeletextPlugin);
 

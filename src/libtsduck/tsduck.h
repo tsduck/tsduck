@@ -649,6 +649,7 @@
 #include "tsTeletextDescriptor.h"
 #include "tsTeletextFrame.h"
 #include "tsTeletextHandlerInterface.h"
+#include "tsTeletextPlugin.h"
 #include "tsTelnetConnection.h"
 #include "tsTerrestrialDeliverySystemDescriptor.h"
 #include "tsTextFormatter.h"
