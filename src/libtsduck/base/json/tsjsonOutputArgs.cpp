@@ -49,7 +49,7 @@ ts::json::OutputArgs::OutputArgs(bool use_short_opt, const UString& help) :
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::json::OutputArgs::defineArgs(Args& args) const
+void ts::json::OutputArgs::defineArgs(Args& args)
 {
     args.option(u"json", _use_short_opt ? 'j' : 0);
     args.help(u"json", _json_help);

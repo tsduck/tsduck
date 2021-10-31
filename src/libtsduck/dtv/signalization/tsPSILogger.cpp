@@ -101,7 +101,7 @@ ts::PSILogger::~PSILogger()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::PSILogger::defineArgs(Args& args) const
+void ts::PSILogger::defineArgs(Args& args)
 {
     // Define XML options.
     _xml_tweaks.defineArgs(args);

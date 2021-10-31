@@ -62,7 +62,7 @@ ts::TablesDisplay::~TablesDisplay()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::defineArgs(Args& args) const
+void ts::TablesDisplay::defineArgs(Args& args)
 {
     args.option(u"c-style", 'c');
     args.help(u"c-style",

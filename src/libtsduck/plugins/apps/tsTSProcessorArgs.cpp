@@ -84,7 +84,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TSProcessorArgs::defineArgs(Args& args) const
+void ts::TSProcessorArgs::defineArgs(Args& args)
 {
     args.option(u"add-input-stuffing", 'a', Args::STRING);
     args.help(u"add-input-stuffing", u"nullpkt/inpkt",

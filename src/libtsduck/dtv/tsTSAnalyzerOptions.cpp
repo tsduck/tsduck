@@ -69,7 +69,7 @@ ts::TSAnalyzerOptions::~TSAnalyzerOptions()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerOptions::defineArgs(Args& args) const
+void ts::TSAnalyzerOptions::defineArgs(Args& args)
 {
     args.option(u"ts-analysis");
     args.help(u"ts-analysis",

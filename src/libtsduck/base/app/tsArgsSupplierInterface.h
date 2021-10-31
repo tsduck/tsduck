@@ -51,7 +51,7 @@ namespace ts {
         //! Add command line option definitions in an Args.
         //! @param [in,out] args Command line arguments to update.
         //!
-        virtual void defineArgs(Args& args) const = 0;
+        virtual void defineArgs(Args& args) = 0;
 
         //!
         //! Load arguments from command line.

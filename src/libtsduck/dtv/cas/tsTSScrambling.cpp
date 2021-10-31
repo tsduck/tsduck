@@ -168,7 +168,7 @@ void ts::TSScrambling::setEntropyMode(DVBCSA2::EntropyMode mode)
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TSScrambling::defineArgs(Args &args) const
+void ts::TSScrambling::defineArgs(Args &args)
 {
     args.option(u"aes-cbc");
     args.help(u"aes-cbc",

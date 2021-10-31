@@ -178,7 +178,7 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TunerArgs::defineArgs(Args& args) const
+void ts::TunerArgs::defineArgs(Args& args)
 {
     // Tuner identification.
     args.option(u"adapter", allowShortOptions() ? u'a' : 0, Args::UNSIGNED);

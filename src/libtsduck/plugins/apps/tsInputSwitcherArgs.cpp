@@ -99,7 +99,7 @@ void ts::InputSwitcherArgs::enforceDefaults()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::InputSwitcherArgs::defineArgs(Args& args) const
+void ts::InputSwitcherArgs::defineArgs(Args& args)
 {
     args.option(u"allow", 'a', Args::STRING);
     args.help(u"allow",

@@ -57,13 +57,14 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
-        // Implementation of SectionHandlerInterface
-        virtual void handleSection(SectionDemux& demux, const Section& section) override;
 
     private:
         TablesDisplay _display;
         TablesLogger  _logger;
         bool          _signal_event;  // Signal a plugin event on section.
         uint32_t      _event_code;    // Event code to signal.
+
+        // Implementation of SectionHandlerInterface
+        virtual void handleSection(SectionDemux& demux, const Section& section) override;
     };
 }

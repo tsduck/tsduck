@@ -64,10 +64,10 @@ namespace ts {
             //! Must be called before defineArgs().
             //! @param [in] text Help text for the @c -\-json option.
             //!
-            void setHelp(const UString& text) const { _json_help = text; }
+            void setHelp(const UString& text) { _json_help = text; }
 
             // Implementation of ArgsSupplierInterface.
-            virtual void defineArgs(Args& args) const override;
+            virtual void defineArgs(Args& args) override;
             virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
             //!
@@ -79,8 +79,8 @@ namespace ts {
             void report(const json::Value& root, std::ostream& stm, Report& rep) const;
 
         private:
-            bool _use_short_opt;
-            mutable UString _json_help;
+            bool    _use_short_opt;
+            UString _json_help;
         };
     }
 }

@@ -62,7 +62,7 @@ namespace ts {
         Time eit_base_time;    //!< Last midnight reference for EIT normalization.
 
         // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) const override;
+        virtual void defineArgs(Args& args) override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!

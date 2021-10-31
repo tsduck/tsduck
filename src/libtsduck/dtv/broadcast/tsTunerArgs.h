@@ -65,7 +65,7 @@ namespace ts {
         TunerArgs(bool info_only = false, bool allow_short_options = true);
 
         // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) const override;
+        virtual void defineArgs(Args& args) override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         // Overridden from superclass.

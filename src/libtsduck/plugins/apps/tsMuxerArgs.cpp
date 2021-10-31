@@ -110,7 +110,7 @@ void ts::MuxerArgs::enforceDefaults()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::MuxerArgs::defineArgs(Args& args) const
+void ts::MuxerArgs::defineArgs(Args& args)
 {
     args.option<BitRate>(u"bitrate", 'b');
     args.help(u"bitrate",

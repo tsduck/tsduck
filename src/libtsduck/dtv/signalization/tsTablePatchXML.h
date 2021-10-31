@@ -64,7 +64,7 @@ namespace ts {
         virtual ~TablePatchXML() override;
 
         // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) const override;
+        virtual void defineArgs(Args& args) override;
         virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
         //!
