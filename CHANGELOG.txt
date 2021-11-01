@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2614
+VERSION 3.29-2623
 
 [NEW] New commands and plugins:
 
@@ -24,6 +24,7 @@ VERSION 3.29-2614
       plugin "tables".
     - Options --bufferapi, --final-statistics and --statistics-interval in
       plugin "srt". Option --messageapi is now enabled by default.
+    - Options --json and --json-line in plugin "splicemonitor".
 
 [BUG] Bug fixes:
 
