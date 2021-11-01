@@ -36,10 +36,14 @@
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsSectionDemux.h"
+#include "tsSectionFile.h"
 #include "tsSignalizationDemux.h"
 #include "tsSpliceInformationTable.h"
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsForkPipe.h"
+#include "tsjsonOutputArgs.h"
+#include "tsjsonRunningDocument.h"
+#include "tsxmlJSONConverter.h"
 
 
 //----------------------------------------------------------------------------
@@ -66,21 +70,21 @@ namespace ts {
         class SpliceEvent
         {
         public:
-            SpliceEvent();                // Constructor.
-            PacketCounter first_cmd_packet; // Packet index of first occurence of splice command for latest signaled event.
-            uint32_t      event_id;       // Latest signaled event.
-            uint64_t      event_pts;      // Latest signaled PTS (lowest PTS value in command).
-            bool          event_out;      // Copy of splice_out for this event.
-            size_t        event_count;    // Number of occurences of same insert commands for this event.
+            SpliceEvent();                   // Constructor.
+            PacketCounter first_cmd_packet;  // Packet index of first occurence of splice command for signaled event.
+            uint32_t      event_id;          // Signaled event id.
+            uint64_t      event_pts;         // Signaled PTS (lowest PTS value in command).
+            bool          event_out;         // Copy of splice_out for this event.
+            size_t        event_count;       // Number of occurences of same insert commands for this event.
         };
 
         // Context of a PID containing SCTE-35 splice commands.
         class SpliceContext
         {
         public:
-            SpliceContext();                // Constructor.
-            uint64_t      last_pts;         // Last PTS value in audio/video PID's for that splice PID.
-            PacketCounter last_pts_packet;  // Packet index of last PTS.
+            SpliceContext();                 // Constructor.
+            uint64_t      last_pts;          // Last PTS value in audio/video PID's for that splice PID.
+            PacketCounter last_pts_packet;   // Packet index of last PTS.
             std::map<uint32_t,SpliceEvent> splice_events;  // Map event id to splice event.
         };
 
@@ -98,6 +102,7 @@ namespace ts {
         size_t      _max_repetition;    // Maximum number of occurrences per command.
         MilliSecond _min_preroll;       // Minimum pre-roll time in milliseconds.
         MilliSecond _max_preroll;       // Maximum pre-roll time in milliseconds.
+        json::OutputArgs _json_args;    // JSON output.
 
         // Working data:
         TablesDisplay               _display;          // Display engine for splice information tables.
@@ -105,6 +110,8 @@ namespace ts {
         std::map<PID,PID>           _splice_pids;      // Map audio/video PID to splice PID.
         SectionDemux                _section_demux;    // Section filter for splice information.
         SignalizationDemux          _sig_demux;        // Signalization demux to get PMT's.
+        xml::JSONConverter          _x2j_conv;         // XML-to-JSON converter.
+        json::RunningDocument       _json_doc;         // JSON document, built on-the-fly.
 
         // Associate all audio/video PID's in a PMT to a splice PID.
         void setSplicePID(const PMT&, PID);
@@ -112,9 +119,11 @@ namespace ts {
         // Process an event.
         void processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out);
 
-        // Build and report a one-line message.
+        // Build and report a one-line message or JSON structure.
         UString message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
         void display(const UString& line);
+        void init(json::Object& obj, PID splice_pid, uint32_t event_id, const UString& progress, const SpliceContext& ctx, const SpliceEvent* evt);
+        void display(const json::Value& value);
 
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -144,12 +153,18 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _max_repetition(0),
     _min_preroll(0),
     _max_preroll(0),
+    _json_args(true),
     _display(duck),
     _splice_contexts(),
     _splice_pids(),
     _section_demux(duck, this),
-    _sig_demux(duck, this)
+    _sig_demux(duck, this),
+    _x2j_conv(*tsp),
+    _json_doc(*tsp)
 {
+    _json_args.setHelp(u"Build a JSON report into the specified file. Using '-' means standard output.");
+    _json_args.defineArgs(*this);
+
     option(u"alarm-command", 0, STRING);
     help(u"alarm-command", u"'command'",
          u"Command to run when a splice event is outside the nominal range as specified by other --min and --max options. "
@@ -201,6 +216,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     option(u"output-file", 'o', STRING);
     help(u"output-file", u"file-name",
          u"Specify an output text file. "
+         u"With --json, this will be a JSON file. "
          u"By default, use the message logging system (or standard output with --display-commands).");
 
     option(u"packet-index", 'i');
@@ -230,6 +246,7 @@ ts::SpliceMonitorPlugin::SpliceContext::SpliceContext() :
 {
 }
 
+
 //----------------------------------------------------------------------------
 // SCTE-35 splice event.
 //----------------------------------------------------------------------------
@@ -250,6 +267,7 @@ ts::SpliceMonitorPlugin::SpliceEvent::SpliceEvent() :
 
 bool ts::SpliceMonitorPlugin::getOptions()
 {
+    _json_args.loadArgs(duck, *this);
     _all_commands = present(u"all-commands");
     _display_commands = _all_commands || present(u"display-commands");
     _packet_index = present(u"packet-index");
@@ -289,8 +307,19 @@ bool ts::SpliceMonitorPlugin::start()
         }
     }
 
+    // If splice commands shall be displayed in JSON format, load the PSI/SI model into the JSON converter.
+    if (_json_args.json && _all_commands && !SectionFile::LoadModel(_x2j_conv)) {
+        return false;
+    }
+
     // Open the output file when required.
-    return duck.setOutput(_output_file);
+    if (_json_args.json && !_json_args.json_line) {
+        json::ValuePtr root;
+        return _json_doc.open(root, _output_file, std::cout);
+    }
+    else {
+        return duck.setOutput(_output_file);
+    }
 }
 
 
@@ -301,6 +330,7 @@ bool ts::SpliceMonitorPlugin::start()
 bool ts::SpliceMonitorPlugin::stop()
 {
     // Close the output file when required and return to stdout.
+    _json_doc.close();
     return duck.setOutput(u"");
 }
 
@@ -355,7 +385,7 @@ void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 
 
 //----------------------------------------------------------------------------
-// Report a one-line message.
+// Build a one-line message.
 //----------------------------------------------------------------------------
 
 ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args)
@@ -396,54 +426,143 @@ void ts::SpliceMonitorPlugin::display(const UString& line)
 
 
 //----------------------------------------------------------------------------
+// Initialize a JSON structure.
+//----------------------------------------------------------------------------
+
+void ts::SpliceMonitorPlugin::init(json::Object& obj, PID splice_pid, uint32_t event_id, const UString& progress, const SpliceContext& ctx, const SpliceEvent* evt)
+{
+    obj.add(u"#name", u"event");
+    obj.add(u"packet-index", int64_t(tsp->pluginPackets()));
+    obj.add(u"progress", progress);
+    if (splice_pid != PID_NULL) {
+        obj.add(u"splice-pid", int64_t(splice_pid));
+    }
+    if (event_id != SpliceInsert::INVALID_EVENT_ID) {
+        obj.add(u"event-id", int64_t(event_id));
+    }
+    if (evt != nullptr) {
+        obj.add(u"event-type", evt->event_out ? u"out" : u"in");
+        obj.add(u"event-pts", int64_t(evt->event_pts));
+        obj.add(u"count", int64_t(evt->event_count));
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Output a JSON structure.
+//----------------------------------------------------------------------------
+
+void ts::SpliceMonitorPlugin::display(const json::Value& value)
+{
+    if (_json_args.json_line) {
+        // Initialize a text formatter for one-liner.
+        TextFormatter text(*tsp);
+        text.setString();
+        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+
+        // Format a one-line JSON structure.
+        value.print(text);
+        tsp->info(_json_args.json_prefix + text.toString());
+    }
+    else {
+        // Add the JSON table to the running document.
+        _json_doc.add(value);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Process an event.
 //----------------------------------------------------------------------------
 
 void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out)
 {
+    // Locate PID context and event description (if it exists).
     SpliceContext& ctx(_splice_contexts[splice_pid]);
+    auto evt = ctx.splice_events.find(event_id);
+    bool known_event = evt != ctx.splice_events.end();
 
+    // Time to event in ms. Negative if event is in the past.
+    Variable<MilliSecond> time_to_event;
+    if (ctx.last_pts != INVALID_PTS) {
+        // Compute "current" PTS. We use the latest PTS found and adjust it by the distance to its packet.
+        uint64_t current_pts = ctx.last_pts;
+        if (!_no_adjustment) {
+            const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
+            const BitRate bitrate = tsp->bitrate();
+            if (bitrate != 0 && distance != 0) {
+                current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
+            }
+        }
+        time_to_event = current_pts > event_pts ? -PTSToMilliSecond(current_pts - event_pts) : PTSToMilliSecond(event_pts - current_pts);
+    }
+
+    // Display event depending on canceled/immediate/pending.
     if (canceled) {
-        display(message(splice_pid, event_id, u"canceled"));
+        if (_json_args.json) {
+            json::Object obj;
+            init(obj, splice_pid, event_id, u"canceled", ctx, known_event ? &evt->second : nullptr);
+            display(obj);
+        }
+        else {
+            display(message(splice_pid, event_id, u"canceled"));
+        }
+        if (known_event) {
+            // Canceled event -> remove it.
+            ctx.splice_events.erase(evt);
+        }
     }
     else if (immediate) {
-        display(message(splice_pid, event_id, u"immediately %s", {splice_out ? "OUT" : "IN"}));
+        if (_json_args.json) {
+            json::Object obj;
+            init(obj, splice_pid, event_id, u"immediate", ctx, known_event ? &evt->second : nullptr);
+            obj.add(u"event-type", splice_out ? u"out" : u"in");
+            display(obj);
+        }
+        else {
+            display(message(splice_pid, event_id, u"immediately %s", {splice_out ? "OUT" : "IN"}));
+        }
+        if (known_event) {
+            // Immediate event, won't reference it later -> remove it.
+            ctx.splice_events.erase(evt);
+        }
     }
     else {
-        SpliceEvent& evt(ctx.splice_events[event_id]);
         // This is a planned insert command. Is this a repetition or new event?
-        if (event_id == evt.event_id && event_pts == evt.event_pts && splice_out == evt.event_out) {
+        if (known_event) {
             // Repetition of a previous event.
-            evt.event_count++;
+            evt->second.event_count++;
         }
         else {
             // First command about a new event.
-            evt.event_id = event_id;
-            evt.event_pts = event_pts;
-            evt.event_out = splice_out;
-            evt.event_count = 1;
-            evt.first_cmd_packet = tsp->pluginPackets();
+            ctx.splice_events[event_id].event_id = event_id;
+            evt = ctx.splice_events.find(event_id);
+            evt->second.event_pts = event_pts;
+            evt->second.event_out = splice_out;
+            evt->second.event_count = 1;
+            evt->second.first_cmd_packet = tsp->pluginPackets();
         }
-        // Format time to event.
-        UString time;
-        if (ctx.last_pts != INVALID_PTS) {
-            // Compute "current" PTS. We use the latest PTS found and adjust it by the distance to its packet.
-            uint64_t current_pts = ctx.last_pts;
-            if (!_no_adjustment) {
-                const PacketCounter distance = tsp->pluginPackets() - ctx.last_pts_packet;
-                const BitRate bitrate = tsp->bitrate();
-                if (bitrate != 0 && distance != 0) {
-                    current_pts += ((distance * PKT_SIZE_BITS * SYSTEM_CLOCK_SUBFREQ) / bitrate).toInt();
+        if (_json_args.json) {
+            json::Object obj;
+            init(obj, splice_pid, event_id, u"pending", ctx, &evt->second);
+            if (time_to_event.set()) {
+                obj.add(u"time-to-event-ms", time_to_event.value());
+            }
+            display(obj);
+        }
+        else {
+            // Format time to event.
+            UString time;
+            if (time_to_event.set()) {
+                if (time_to_event.value() < 0) {
+                    time.format(u", event is in the past by %'d ms", {-time_to_event.value()});
+                }
+                else {
+                    time.format(u", time to event: %'d ms", {time_to_event.value()});
                 }
             }
-            if (current_pts > evt.event_pts) {
-                time.format(u", event is in the past by %'d ms", {PTSToMilliSecond(current_pts - evt.event_pts)});
-            }
-            else {
-                time.format(u", time to event: %'d ms", {PTSToMilliSecond(evt.event_pts - current_pts)});
-            }
+            display(message(splice_pid, event_id, u"occurrence #%d%s", {evt->second.event_count, time}));
         }
-        display(message(splice_pid, event_id, u"occurrence #%d%s", {evt.event_count, time}));
     }
 }
 
@@ -486,7 +605,18 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
 
     // Finally, display the SCTE-35 table.
     if (_display_commands) {
-        _display.displayTable(table);
+        if (_json_args.json) {
+            // Format the SCTE-35 table using JSON. First, build an XML document with the table.
+            xml::Document doc(*tsp);
+            doc.initialize(u"tsduck");
+            table.toXML(duck, doc.rootElement());
+            // Convert the XML document into JSON and get the first (and only) table.
+            display(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"));
+        }
+        else {
+            // Human-readable display of the SCTE-35 table.
+            _display.displayTable(table);
+        }
     }
 }
 
@@ -505,6 +635,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
 
     // Is this a video/audio PID which is associated to a splicing PID?
     if (pkt.hasPTS() && _splice_pids.find(pid) != _splice_pids.end()) {
+
         // Remember the latest PTS value for this splice PID.
         const PID spid = _splice_pids[pid];
         SpliceContext& ctx(_splice_contexts[spid]);
@@ -513,34 +644,54 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
 
         for (auto it = ctx.splice_events.begin(); it != ctx.splice_events.end();) {
             SpliceEvent& evt(it->second);
+
             // Look for event occurrence.
             if (evt.event_id != SpliceInsert::INVALID_EVENT_ID && evt.event_pts != INVALID_PTS && ctx.last_pts >= evt.event_pts) {
+
                 // Evaluate time since first command. Assume constant bitrate since then.
                 const MilliSecond preroll = PacketInterval(tsp->bitrate(), tsp->pluginPackets() - evt.first_cmd_packet);
+
+                // Check if outside nominal range.
+                const bool alarm =
+                    (_min_preroll != 0 && preroll != 0 && preroll < _min_preroll) ||
+                    (_max_preroll != 0 && preroll > _max_preroll) ||
+                    (_min_repetition != 0 && evt.event_count < _min_repetition) ||
+                    (_max_repetition != 0 && evt.event_count > _max_repetition);
+
+                // Build a one-line message.
                 UString line(message(spid, evt.event_id, u"occurred"));
                 if (preroll > 0) {
                     line.format(u", actual pre-roll time: %'d ms", {preroll});
                 }
-                display(line);
+
+                // Display the event.
+                if (_json_args.json) {
+                    json::Object obj;
+                    init(obj, spid, evt.event_id, u"occurred", ctx, &evt);
+                    obj.add(u"status", alarm ? u"alarm" : u"normal");
+                    obj.add(u"pre-roll-ms", preroll);
+                    display(obj);
+                }
+                else {
+                    display(line);
+                }
+
                 // Raise alarm if outside nominal range.
-                if (!_alarm_command.empty() &&
-                    ((_min_preroll != 0 && preroll != 0 && preroll < _min_preroll) ||
-                    (_max_preroll != 0 && preroll > _max_preroll) ||
-                    (_min_repetition != 0 && evt.event_count < _min_repetition) ||
-                    (_max_repetition != 0 && evt.event_count > _max_repetition)))
-                {
+                if (!_alarm_command.empty() && alarm) {
                     UString command;
-                    command.format(u"%s \"%s\" %d %d %s %d %d %d",
-                                   {_alarm_command, line, spid, evt.event_id, evt.event_out ? u"out" : u"in", evt.event_pts, preroll, evt.event_count});
+                    command.format(u"%s \"%s\" %d %d %s %d %d %d", {_alarm_command, line, spid, evt.event_id, evt.event_out ? u"out" : u"in", evt.event_pts, preroll, evt.event_count});
                     ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
                 }
+
                 // Forget about this event, it is now in the past.
                 it = ctx.splice_events.erase(it);
-            } else {
+            }
+            else {
+                // This is still a future event, move to next event.
                 ++it;
             }
         }
-   }
+    }
 
     return TSP_OK;
 }
