@@ -31,14 +31,21 @@
 #
 #-----------------------------------------------------------------------------
 
-name: flawfinder
+name: FlawFinder security analysis
+
+# This workflow is currently disabled, except manual trigger (workflow_dispatch),
+# because it generates too many false positives. FlawFinder is very awkward.
+# For instance, every call to a method named open() results in an error ("Check
+# when opening files - can an attacker redirect it (via symlinks), etc...")
+# Even though this open() method has nothing to do with files. And there are
+# many examples like this.
 
 on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
   workflow_dispatch:
+  # push:
+  #   branches: [ master ]
+  # pull_request:
+  #   branches: [ master ]
 
 jobs:
   flawfinder:
