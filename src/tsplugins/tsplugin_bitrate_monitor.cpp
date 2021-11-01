@@ -282,7 +282,7 @@ bool ts::BitrateMonitorPlugin::start()
     _pkt_count.resize(_window_size);
     _pkt_count_index = 0;
 
-    for (uint16_t i = 0; i < _pkt_count.size(); i++) {
+    for (size_t i = 0; i < _pkt_count.size(); i++) {
         _pkt_count[i] = 0;
     }
 
@@ -309,8 +309,8 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     // (Sum of packets received during the last time window) * (packet size) / (time window)
 
     PacketCounter total_pkt_count = 0;
-    for (uint16_t i = 0; i < _pkt_count.size(); i++) {
-        total_pkt_count  += _pkt_count[i];
+    for (size_t i = 0; i < _pkt_count.size(); i++) {
+        total_pkt_count += _pkt_count[i];
     }
 
     const BitRate bitrate = BitRate(total_pkt_count * PKT_SIZE_BITS) / _pkt_count.size();

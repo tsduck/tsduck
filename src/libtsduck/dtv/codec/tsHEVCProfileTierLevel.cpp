@@ -128,7 +128,7 @@ void ts::HEVCProfileTierLevel::clear()
 uint8_t ts::HEVCProfileTierLevel::profile() const
 {
     if (profile_present_flag) {
-        // Use general profile as base.
+        // Use general profile as base (0 to 31, read from 5-bit field).
         uint8_t prof = general_profile_idc;
         // Look for higher compatibility.
         for (uint8_t comp = prof + 1; comp < general_profile_compatibility_flag.size(); ++comp) {
