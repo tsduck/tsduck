@@ -216,8 +216,9 @@ elif [[ -f /etc/arch-release ]]; then
 elif [[ -f /etc/alpine-release ]]; then
 
     # Alpine Linux
-    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz libedit-dev pcsc-lite-dev curl-dev python3 openjdk11"
+    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip doxygen graphviz libedit-dev pcsc-lite-dev curl-dev python3 openjdk11 dpkg"
     sudo apk add $PKGOPTS $pkglist
+    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
     # Update command: sudo apk update; sudo apk upgrade
 
 elif [[ -f /etc/gentoo-release ]]; then
