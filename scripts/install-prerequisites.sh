@@ -196,12 +196,15 @@ elif [[ -f /etc/redhat-release ]]; then
         fi
     fi
     if [[ $EL -lt 800 ]]; then
+        sudo yum -y install $PKGOPTS epel-release
         sudo yum -y install $PKGOPTS $pkglist
     elif [[ $EL -lt 803 ]]; then
         sudo dnf -y config-manager --set-enabled PowerTools
+        sudo dnf -y install $PKGOPTS epel-release
         sudo dnf -y install $PKGOPTS $pkglist
     else
         sudo dnf -y config-manager --set-enabled powertools
+        sudo dnf -y install $PKGOPTS epel-release
         sudo dnf -y install $PKGOPTS $pkglist
     fi
     # Update command: sudo dnf update
