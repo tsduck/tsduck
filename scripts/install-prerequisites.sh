@@ -128,7 +128,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
     # Update command: sudo apt update; sudo apt upgrade
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
@@ -137,7 +137,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
     pkglist="g++ dos2unix curl tar zip doxygen graphviz libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev libsrt-dev"
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
     # Update command: sudo apt update; sudo apt upgrade
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
@@ -157,7 +157,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
     # Update command: sudo apt update; sudo apt upgrade
 
 elif [[ -f /etc/fedora-release ]]; then
@@ -178,7 +178,7 @@ elif [[ -f /etc/fedora-release ]]; then
         fi
     fi
     sudo dnf -y install $PKGOPTS $pkglist
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+    sudo alternatives --set python /usr/bin/python3
     # Update command: sudo dnf update
 
 elif [[ -f /etc/redhat-release ]]; then
@@ -211,7 +211,7 @@ elif [[ -f /etc/redhat-release ]]; then
         sudo dnf -y install $PKGOPTS epel-release
         sudo dnf -y install $PKGOPTS $pkglist
     fi
-    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 1
+    sudo alternatives --set python /usr/bin/python3
     # Update command: sudo dnf update
 
 elif [[ -f /etc/arch-release ]]; then
