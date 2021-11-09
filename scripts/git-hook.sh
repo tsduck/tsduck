@@ -43,8 +43,11 @@ info()  { echo >&2 "$SCRIPT: $*"; }
 # Get current branch (output and syntax varies across versions of git).
 BRANCH=$(git branch | sed -e '/^$/d' -e '/^[^*]/d' -e 's/^\* *//' 2>/dev/null)
 
+# Name of the master branch.
+MASTER=master
+
 # Do nothing if branch is not "master".
-[[ "$BRANCH" == "master" ]] || exit 0
+[[ "$BRANCH" == "$MASTER" ]] || exit 0
 
 # The commit number is in tsVersion.h
 SRCFILE="$ROOTDIR/src/libtsduck/tsVersion.h"
@@ -56,34 +59,25 @@ export PATH=$PATH:/usr/local/bin
 [[ -n "$(which gsed 2>/dev/null)" ]] && sed() { gsed "$@"; }
 [[ -n "$(which ggrep 2>/dev/null)" ]] && grep() { ggrep "$@"; }
 
-# Get commit number from the source file.
-get-src-commit-count()
-{
-    local cnum=0
-    [[ -e "$SRCFILE" ]] || error "$SRCFILE not found"
-    cnum=$(grep "^$PREFIX" "$SRCFILE" | head -1 | awk '{print $3}')
-    [[ -n "$cnum" ]] || error "no commit count found in $SRCFILE"
-    echo $cnum
-}
-
 # Filter by hook.
 case "$HOOK" in
 
     pre-commit|post-merge)
 
         # Get commit number in source file.
-        SRCCOMMIT=$(get-src-commit-count)
+        [[ -e "$SRCFILE" ]] || error "$SRCFILE not found"
+        SRCCOMMIT=$(grep "^$PREFIX" "$SRCFILE" | head -1 | awk '{print $3}')
+        [[ -n "$SRCCOMMIT" ]] || error "no commit count found in $SRCFILE"
 
         # Compute the lowest next commit number to set.
         # Can be forced externally using environment variable TS_GIT_COMMIT.
         COMMIT="$TS_GIT_COMMIT"
         if [[ -z "$COMMIT" ]]; then
-            # Get max number of commits from every local or remote branch.
-            COMMIT=$SRCCOMMIT
-            BRANCHES=$(git branch -a | sed -e 's/^[\* ]*//' -e 's/ .*//')
-            for n in $(for b in $BRANCHES; do git rev-list --count $b; done); do
-                [[ "$n" -gt "$COMMIT" ]] && COMMIT=$n
-            done
+            # Get max number of commits from master branch. Previously, we
+            # did it on every local or remote branch but this could create
+            # inconsistencies on local repos with many branches.
+            COMMIT=$(git rev-list --count $MASTER)
+            [[ "$SRCCOMMIT" -gt "$COMMIT" ]] && COMMIT=$SRCCOMMIT
             # With pre-commit, we must have at least this max + 1.
             [[ "$HOOK" == "pre-commit" ]] && COMMIT=$(($COMMIT + 1))
         fi
