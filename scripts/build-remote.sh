@@ -39,8 +39,8 @@
 #
 #    $HOME/tsduck/scripts/build-remote.sh --host raspberry
 #    $HOME/tsduck/scripts/build-remote.sh --host vmwindows --vmware $HOME/VM/Windows.vmwarevm/Windows.vmx --windows
-#    $HOME/tsduck/scripts/build-remote.sh --host vmfedora  --vmware $HOME/VM/Fedora.vmwarevm/Fedora.vmx
-#    $HOME/tsduck/scripts/build-remote.sh --host vmubuntu  --vmware $HOME/VM/Ubuntu.vmwarevm/Ubuntu.vmx
+#    $HOME/tsduck/scripts/build-remote.sh --host vmfedora --vmware $HOME/VM/Fedora.vmwarevm/Fedora.vmx
+#    $HOME/tsduck/scripts/build-remote.sh --host vmubuntu --parallels Ubuntu
 #
 #-----------------------------------------------------------------------------
 
@@ -57,6 +57,7 @@ REMOTE_WIN=false
 USER_NAME=$(id -un)
 HOST_NAME=
 VMX_FILE=
+PRL_NAME=
 SSH_TIMEOUT=5
 SSH_PORT=22
 BOOT_TIMEOUT=500
@@ -90,6 +91,11 @@ Options:
   -h name
   --host name
       Build on this remote host. Mandatory for remote hosts. Optional for VM's.
+
+  --parallels name
+      Use the Parallels Desktop virtual machine with the specified name. If the
+      VM is not currently running, it is booted first and shut down after
+      building the installers.
 
   -p number
   --port number
@@ -138,6 +144,10 @@ while [[ $# -gt 0 ]]; do
             [[ $# -gt 1 ]] || usage; shift
             HOST_NAME=$1
             ;;
+        --parallels)
+            [[ $# -gt 1 ]] || usage; shift
+            PRL_NAME=$1
+            ;;
         -p|--port)
             [[ $# -gt 1 ]] || usage; shift
             SSH_PORT=$1
@@ -175,8 +185,9 @@ NAME="$HOST_NAME"
 
 curdate()  { date +%Y%m%d-%H%M; }
 
-# Process VMWare startup.
+# Process virtual machines startup.
 VMX_SHUTDOWN=false
+PRL_SHUTDOWN=false
 if [[ -n "$VMX_FILE" ]]; then
 
     # Locate vmrun, the VMWare command line.
@@ -186,7 +197,7 @@ if [[ -n "$VMX_FILE" ]]; then
     [[ -z "$VMRUN" ]] && error "vmrun not found, cannot manage VMWare VM's"
 
     # Name for log file.
-    [[ -z "$HOST_NAME" ]] && NAME=$(basename "$VMX_FILE" .vmx | tr A-Z a-z)
+    [[ -z "$HOST_NAME" ]] && NAME=$(basename "$VMX_FILE" .vmx | tr A-Z a-z) || NAME="$HOST_NAME"
 
     # Try to get IP address of VM.
     IP=$("$VMRUN" getGuestIPAddress "$VMX_FILE")
@@ -206,7 +217,7 @@ if [[ -n "$VMX_FILE" ]]; then
                 [[ $ok -eq 0 ]] && break
                 sleep 5
             done
-            [[ $ok -ne 0 ]] && error "Cannot get IP address of $HOST_NAME after $BOOT_TIMEOUT seconds"
+            [[ $ok -ne 0 ]] && error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
             echo "IP address for $NAME is $IP, trying to ssh..."
             HOST_NAME="$IP"
         fi
@@ -230,6 +241,58 @@ if [[ -n "$VMX_FILE" ]]; then
 
     # Use the IP address if no host name is provided.
     [[ -z "$HOST_NAME" ]] && HOST_NAME="$IP"
+
+elif [[ -n "$PRL_NAME" ]]; then
+
+    # Locate prlctl, the Parallels Desktop command line.
+    export PATH="/usr/local/bin:$PATH"
+    [[ -z $(which prlctl 2>/dev/null) ]] && error "prlctl not found, cannot manage Parallels VM's"
+    [[ -z $(which jq 2>/dev/null) ]] && error "jq not found, cannot manage Parallels JSON reports"
+
+    # Name for log file.
+    [[ -z "$HOST_NAME" ]] && NAME="$PRL_NAME" || NAME="$HOST_NAME"
+
+    # Try to get IP address of VM.
+    IP=$(prlctl list "$PRL_NAME" -f -j | jq -r '.[0].ip_configured')
+    if [[ "$IP" != *.*.*.* ]]; then
+
+        # Cannot get VM IP address, try to boot the VM.
+        echo "Booting $PRL_NAME"
+        prlctl start "$PRL_NAME" || error "cannot start VM $PRL_NAME"
+
+        # Wait until we can get the IP address of the VM.
+        if [[ -z "$HOST_NAME" ]]; then
+            maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
+            while [[ $(date +%s) -lt $maxdate ]]; do
+                IP=$(prlctl list "$PRL_NAME" -f -j | jq -r '.[0].ip_configured')
+                [[ "$IP" == *.*.*.* ]] && break
+                sleep 5
+            done
+            [[ "$IP" == *.*.*.* ]] || error "Cannot get IP address of $NAME after $BOOT_TIMEOUT seconds"
+            echo "IP address for $NAME is $IP, trying to ssh..."
+            HOST_NAME="$IP"
+        fi
+
+        # Wait that the machine is accessible using ssh.
+        # Don't wait once for boot timeout, sometimes it hangs.
+        maxdate=$(( $(date +%s) + $BOOT_TIMEOUT ))
+        ok=1
+        while [[ $(date +%s) -lt $maxdate ]]; do
+            ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null
+            ok=$?
+            [[ $ok -eq 0 ]] && break
+            sleep 5
+        done
+        [[ $ok -ne 0 ]] && error "cannot contact VM $BOOT_TIMEOUT seconds after boot, aborting"
+        echo "SSH ok for $HOST_NAME"
+
+        # We need to shutdown the VM after building the installers.
+        PRL_SHUTDOWN=true
+    fi
+
+    # Use the IP address if no host name is provided.
+    [[ -z "$HOST_NAME" ]] && HOST_NAME="$IP"
+
 fi
 
 # Check accessibility of remote host.
@@ -301,6 +364,10 @@ ssh $SSH_OPTS "$HOST_NAME" cd &>/dev/null || error "$HOST_NAME not responding"
 if $VMX_SHUTDOWN; then
     echo "Shutting down" $(basename "$VMX_FILE")
     "$VMRUN" stop "$VMX_FILE" soft
+fi
+if $PRL_SHUTDOWN; then
+    echo "Shutting down $PRL_NAME"
+    prlctl stop "$PRL_NAME"
 fi
 
 exit 0
