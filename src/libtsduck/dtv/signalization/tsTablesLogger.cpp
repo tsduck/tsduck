@@ -1158,3 +1158,11 @@ void ts::TablesLogger::reportDemuxErrors(std::ostream& strm)
         status.display(strm, 4, true);
     }
 }
+
+void ts::TablesLogger::reportDemuxErrors(Report& report, int level)
+{
+    if (_demux.hasErrors()) {
+        SectionDemux::Status status(_demux);
+        status.display(report, level, UString(), true);
+    }
+}

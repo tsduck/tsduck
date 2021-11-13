@@ -149,6 +149,7 @@ namespace ts {
             uint64_t inv_sect_index;   //!< Number of invalid section index.
             uint64_t wrong_crc;        //!< Number of sections with wrong CRC32.
             uint64_t is_next;          //!< Number of sections with "next" flag (not yet applicable).
+            uint64_t truncated_sect;   //!< Number of truncated sections.
 
             //!
             //! Default constructor.
@@ -180,6 +181,15 @@ namespace ts {
             //! @return A reference to the @a strm object.
             //!
             std::ostream& display(std::ostream& strm, int indent = 0, bool errors_only = false) const;
+
+            //!
+            //! Display the content of a status block.
+            //! @param [in,out] report Output Report object.
+            //! @param [in] level Severity level to report.
+            //! @param [in] prefix Prefix string on each line.
+            //! @param [in] errors_only If true, don't report zero counters.
+            //!
+            void display(Report& report, int level = Severity::Info, const UString& prefix = UString(), bool errors_only = false) const;
         };
 
         //!

@@ -149,6 +149,13 @@ namespace ts {
         void reportDemuxErrors(std::ostream& strm);
 
         //!
+        //! Report the demux errors (if any).
+        //! @param [in,out] report Output Report object.
+        //! @param [in] level Severity level to report.
+        //!
+        void reportDemuxErrors(Report& report, int level = Severity::Info);
+
+        //!
         //! Static routine to analyze UDP messages as sent by the table logger (option --ip-udp).
         //! @param [in] data Address of UDP message.
         //! @param [in] size Size in bytes of UDP message.
