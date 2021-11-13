@@ -56,7 +56,7 @@ ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, int max
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, bool append, int max_severity) :
+ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, int max_severity) :
     Report(max_severity),
     _mutex(),
     _file_name(),

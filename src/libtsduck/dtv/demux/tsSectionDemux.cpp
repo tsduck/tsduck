@@ -32,6 +32,7 @@
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
 #include "tsTSPacket.h"
+#include "tsReportFile.h"
 #include "tsEIT.h"
 
 
@@ -46,7 +47,8 @@ ts::SectionDemux::Status::Status() :
     inv_sect_length(0),
     inv_sect_index(0),
     wrong_crc(0),
-    is_next(0)
+    is_next(0),
+    truncated_sect(0)
 {
 }
 
@@ -65,6 +67,7 @@ void ts::SectionDemux::Status::reset()
     inv_sect_index = 0;
     wrong_crc = 0;
     is_next = 0;
+    truncated_sect = 0;
 }
 
 // Check if any counter is non zero.
@@ -77,7 +80,8 @@ bool ts::SectionDemux::Status::hasErrors() const
         inv_sect_length != 0 ||
         inv_sect_index != 0 ||
         wrong_crc != 0 ||
-        is_next != 0;
+        is_next != 0 ||
+        truncated_sect != 0;
 }
 
 
@@ -87,31 +91,38 @@ bool ts::SectionDemux::Status::hasErrors() const
 
 std::ostream& ts::SectionDemux::Status::display(std::ostream& strm, int indent, bool errors_only) const
 {
+    ReportFile<> rep(strm);
     const UString margin(indent, ' ');
+    display(rep, Severity::Info, margin, errors_only);
+    return strm;
+}
 
+void ts::SectionDemux::Status::display(Report& report, int level, const UString& prefix, bool errors_only) const
+{
     if (!errors_only || invalid_ts != 0) {
-        strm << margin << "Invalid TS packets: " << UString::Decimal(invalid_ts) << std::endl;
+        report.log(level, u"%sInvalid TS packets: %'d", {prefix, invalid_ts});
     }
     if (!errors_only || discontinuities != 0) {
-        strm << margin << "TS packets discontinuities: " << UString::Decimal(discontinuities) << std::endl;
+        report.log(level, u"%sTS packets discontinuities: %'d", {prefix, discontinuities});
     }
     if (!errors_only || scrambled != 0) {
-        strm << margin << "Scrambled TS packets: " << UString::Decimal(scrambled) << std::endl;
+        report.log(level, u"%sScrambled TS packets: %'d", {prefix, scrambled});
     }
     if (!errors_only || inv_sect_length != 0) {
-        strm << margin << "Invalid section lengths: " << UString::Decimal(inv_sect_length) << std::endl;
+        report.log(level, u"%sInvalid section lengths: %'d", {prefix, inv_sect_length});
+    }
+    if (!errors_only || truncated_sect != 0) {
+        report.log(level, u"%sTruncated sections: %'d", {prefix, truncated_sect});
     }
     if (!errors_only || inv_sect_index != 0) {
-        strm << margin << "Invalid section index: " << UString::Decimal(inv_sect_index) << std::endl;
+        report.log(level, u"%sInvalid section index: %'d", {prefix, inv_sect_index});
     }
     if (!errors_only || wrong_crc != 0) {
-        strm << margin << "Corrupted sections (bad CRC): " << UString::Decimal(wrong_crc) << std::endl;
+        report.log(level, u"%sCorrupted sections (bad CRC): %'d", {prefix, wrong_crc});
     }
     if (!errors_only || is_next != 0) {
-        strm << margin << "Next sections (not yet applicable): " << UString::Decimal(is_next) << std::endl;
+        report.log(level, u"%sNext sections (not yet applicable): %'d", {prefix, is_next});
     }
-
-    return strm;
 }
 
 
@@ -413,6 +424,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         // Exit when end of section is missing. Wait for next TS packets.
 
         if (ts_size < section_length) {
+            _status.truncated_sect++;
             break;
         }
 

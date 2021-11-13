@@ -72,11 +72,9 @@ namespace ts {
         //! @param [in,out] stream A reference to an open output file stream to log the messages.
         //! The corresponding stream object must remain valid as long as this object exists.
         //! Typical valid values are std::cout and std::cerr.
-        //! @param [in] append If true, append the messages at the end of the file.
-        //! If false (the default), overwrite the file if it already existed.
         //! @param [in] max_severity Maximum debug level to display. None by default.
         //!
-        ReportFile(std::ostream& stream, bool append = false, int max_severity = 0);
+        ReportFile(std::ostream& stream, int max_severity = 0);
 
         //!
         //! Destructor
