@@ -67,6 +67,7 @@ namespace ts {
             Report&   _log;
             bool      _sendCommand;
             bool      _sendUDP;
+            UString   _userData;
             UDPSocket _socket;
 
             // Send command and UDP message.

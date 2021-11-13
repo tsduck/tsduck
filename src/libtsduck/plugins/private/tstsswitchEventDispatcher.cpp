@@ -42,6 +42,7 @@ ts::tsswitch::EventDispatcher::EventDispatcher(const InputSwitcherArgs& opt, Rep
     _log(log),
     _sendCommand(!_opt.eventCommand.empty()),
     _sendUDP(_opt.eventUDP.hasAddress() && _opt.eventUDP.hasPort()),
+    _userData(_opt.eventUserData),
     _socket()
 {
 }
@@ -58,6 +59,10 @@ bool ts::tsswitch::EventDispatcher::sendCommand(const UString& eventName, const 
     if (!otherParameters.empty()) {
         command.append(u" ");
         command.append(otherParameters);
+    }
+    if (!_userData.empty()) {
+        command.append(u" ");
+        command.append(_userData.toQuoted());
     }
     return ForkPipe::Launch(command, _log, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
 }
@@ -92,6 +97,7 @@ bool ts::tsswitch::EventDispatcher::sendUDP(const UString& eventName, json::Obje
     object.add(u"command", u"tsswitch");
     object.add(u"event", eventName);
     object.add(u"timestamp", Time::CurrentLocalTime().format());
+    object.add(u"user-data", _userData);
     object.print(text);
     const std::string line(text.toString().toUTF8());
 
