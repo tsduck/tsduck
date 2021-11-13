@@ -61,6 +61,7 @@ ts::InputSwitcherArgs::InputSwitcherArgs() :
     eventUDP(),
     eventLocalAddress(),
     eventTTL(0),
+    eventUserData(),
     sockBuffer(0),
     remoteServer(),
     allowedRemote(),
@@ -132,7 +133,8 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
               u"The command receives additional parameters:\n\n"
               u"1. Event name, currently only \"newinput\" is defined.\n"
               u"2. The input index before the event.\n"
-              u"3. The input index after the event.");
+              u"3. The input index after the event.\n"
+              u"4. Optional: the user data string from --event-user-data option.");
 
     args.option(u"event-udp", 0, Args::STRING);
     args.help(u"event-udp", u"address:port",
@@ -154,6 +156,11 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
               u"The actual option is either \"Unicast TTL\" or \"Multicast TTL\", "
               u"depending on the destination address. Remember that the default "
               u"Multicast TTL is 1 on most systems.");
+
+    args.option(u"event-user-data", 0, Args::STRING);
+    args.help(u"event-user-data", u"'string'",
+              u"A user-defined string which is passed to the --event-command as last "
+              u"parameter and to the --event-udp message as \"user-data\" JSON value.");
 
     args.option(u"fast-switch", 'f');
     args.help(u"fast-switch",
@@ -247,6 +254,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     args.getValue(eventCommand, u"event-command");
     setEventUDP(args.value(u"event-udp"), args.value(u"event-local-address"), args);
     args.getIntValue(eventTTL, u"event-ttl", 0);
+    args.getValue(eventUserData, u"event-user-data");
 
     // Check conflicting modes.
     if (args.present(u"cycle") + args.present(u"infinite") + args.present(u"terminate") > 1) {

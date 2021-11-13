@@ -57,12 +57,13 @@ namespace ts {
         size_t              maxInputPackets;   //!< Maximum input packets to read at a time.
         size_t              maxOutputPackets;  //!< Maximum output packets to send at a time.
         UString             eventCommand;      //!< External shell command to run on an event.
-        IPv4SocketAddress       eventUDP;          //!< Remote UDP socket address for event description.
-        IPv4Address           eventLocalAddress; //!< Outgoing local interface for UDP event description.
+        IPv4SocketAddress   eventUDP;          //!< Remote UDP socket address for event description.
+        IPv4Address         eventLocalAddress; //!< Outgoing local interface for UDP event description.
         int                 eventTTL;          //!< Time-to-live socket option for event UDP.
+        UString             eventUserData;     //!< User-defined data string in event messages.
         size_t              sockBuffer;        //!< Socket buffer size.
-        IPv4SocketAddress       remoteServer;      //!< UDP server address for remote control.
-        IPv4AddressSet        allowedRemote;     //!< Set of allowed remotes.
+        IPv4SocketAddress   remoteServer;      //!< UDP server address for remote control.
+        IPv4AddressSet      allowedRemote;     //!< Set of allowed remotes.
         MilliSecond         receiveTimeout;    //!< Receive timeout before switch (0=none).
         PluginOptionsVector inputs;            //!< Input plugins descriptions.
         PluginOptions       output;            //!< Output plugin description.
