@@ -29,7 +29,7 @@
 
 #include "tsAbstractDatagramInputPlugin.h"
 #include "tsSysUtils.h"
-#include "tsIPUtils.h"
+#include "tsIPProtocols.h"
 
 
 //----------------------------------------------------------------------------

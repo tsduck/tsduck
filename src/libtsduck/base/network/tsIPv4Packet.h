@@ -35,7 +35,7 @@
 #pragma once
 #include "tsIPv4Address.h"
 #include "tsIPv4SocketAddress.h"
-#include "tsIPUtils.h"
+#include "tsIPProtocols.h"
 #include "tsByteBlock.h"
 
 namespace ts {
@@ -147,6 +147,12 @@ namespace ts {
         //! @return The size in bytes of the sub-protocol payload data.
         //!
         size_t protocolDataSize() const { return _valid ? _data.size() - _ip_header_size - _proto_header_size : 0; }
+
+        //!
+        //! Check if the IPv4 packet is fragmented.
+        //! @return True if the packet is just a fragment of a larger packet.
+        //!
+        bool fragmented() const;
 
         //!
         //! Get the source IPv4 address.

@@ -31,6 +31,7 @@
 #include "tsSingletonManager.h"
 #include "tsArgs.h"
 #include "tsTime.h"
+#include "tsMemory.h"
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsNullReport.h"

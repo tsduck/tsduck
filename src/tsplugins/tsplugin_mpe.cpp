@@ -37,6 +37,7 @@
 #include "tsMPEDemux.h"
 #include "tsMPEPacket.h"
 #include "tsUDPSocket.h"
+#include "tsIPProtocols.h"
 
 
 //----------------------------------------------------------------------------

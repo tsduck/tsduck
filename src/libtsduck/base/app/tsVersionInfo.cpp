@@ -33,6 +33,7 @@
 #include "tsNullReport.h"
 #include "tsCerrReport.h"
 #include "tsSysInfo.h"
+#include "tsSysUtils.h"
 #include "tsFileUtils.h"
 #include "tsDektecUtils.h"
 #include "tsWebRequest.h"

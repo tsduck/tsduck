@@ -349,6 +349,7 @@
 #include "tsIPMACPlatformProviderNameDescriptor.h"
 #include "tsIPMACStreamLocationDescriptor.h"
 #include "tsIPOutputPlugin.h"
+#include "tsIPProtocols.h"
 #include "tsIPSignallingDescriptor.h"
 #include "tsIPUtils.h"
 #include "tsIPv4Address.h"
