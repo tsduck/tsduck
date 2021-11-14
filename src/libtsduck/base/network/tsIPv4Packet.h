@@ -185,6 +185,36 @@ namespace ts {
         IPv4SocketAddress destinationSocketAddress() const;
 
         //!
+        //! Get the TCP sequence number in the packet.
+        //! @return The TCP sequence number or zero if this is not a TCP packet.
+        //!
+        uint32_t tcpSequenceNumber() const;
+
+        //!
+        //! Get the TCP SYN flag in the packet.
+        //! @return The TCP SYN flag.
+        //!
+        bool tcpSYN() const;
+
+        //!
+        //! Get the TCP ACK flag in the packet.
+        //! @return The TCP ACK flag.
+        //!
+        bool tcpACK() const;
+
+        //!
+        //! Get the TCP RST flag in the packet.
+        //! @return The TCP RST flag.
+        //!
+        bool tcpRST() const;
+
+        //!
+        //! Get the TCP FIN flag in the packet.
+        //! @return The TCP FIN flag.
+        //!
+        bool tcpFIN() const;
+
+        //!
         //! Get the size in bytes of an IPv4 header from raw data.
         //! @param [in] data Address of the IP packet.
         //! @param [in] size Size of the IP packet or header (must be larger than the header size).

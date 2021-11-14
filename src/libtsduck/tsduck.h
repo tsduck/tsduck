@@ -458,6 +458,7 @@
 #include "tsPAT.h"
 #include "tsPcap.h"
 #include "tsPcapFile.h"
+#include "tsPcapStream.h"
 #include "tsPCAT.h"
 #include "tsPCRAnalyzer.h"
 #include "tsPCRMerger.h"
