@@ -116,7 +116,7 @@ bool ts::PcapStream::readTCP(ReadStatus& status, PeerNumber& peer_num, ByteBlock
     bool tcp_rst = false;
     bool tcp_fin = false;
     bool eof = false;
-    uint32_t tcp_seq = 0;
+    uint32_t tcp_sequence = 0;
     MicroSecond timestamp = -1;
     PeerNumber source_num = 0;
 
@@ -140,6 +140,6 @@ bool ts::PcapStream::readTCP(ReadStatus& status, PeerNumber& peer_num, ByteBlock
 
         //@@@
     }
-    status = ReadStatus(tcp_syn, tcp_rst, tcp_fin, eof, tcp_seq, timestamp);
-    return !eof;
+    status = ReadStatus(tcp_syn, tcp_rst, tcp_fin, eof, tcp_sequence, timestamp);
+    return !eof || size > 0;
 }
