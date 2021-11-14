@@ -489,7 +489,10 @@ namespace ts {
 
     constexpr size_t TCP_SRC_PORT_OFFSET      =  0;   //!< Offset of source port in a TCP header.
     constexpr size_t TCP_DEST_PORT_OFFSET     =  2;   //!< Offset of destination port in a TCP header.
+    constexpr size_t TCP_SEQUENCE_OFFSET      =  4;   //!< Offset of sequence number in a TCP header.
     constexpr size_t TCP_HEADER_LENGTH_OFFSET = 12;   //!< Offset of TCP header length in a TCP header (number of 32-bit words).
+    constexpr size_t TCP_FLAGS_OFFSET         = 13;   //!< Offset of flags byte in a TCP header.
+    constexpr size_t TCP_WSIZE_OFFSET         = 14;   //!< Offset of window size in a TCP header.
     constexpr size_t TCP_MIN_HEADER_SIZE      = 20;   //!< Minimum size in bytes of a TCP header.
 
     //------------------------------------------------------------------------

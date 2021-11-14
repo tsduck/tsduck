@@ -169,6 +169,36 @@ ts::IPv4SocketAddress ts::IPv4Packet::destinationSocketAddress() const
 
 
 //----------------------------------------------------------------------------
+// Get the TCP characteristics in the packet.
+//----------------------------------------------------------------------------
+
+uint32_t ts::IPv4Packet::tcpSequenceNumber() const
+{
+    return isTCP() ? GetUInt32BE(&_data[_ip_header_size + TCP_SEQUENCE_OFFSET]) : 0;
+}
+
+bool ts::IPv4Packet::tcpSYN() const
+{
+    return isTCP() && (_data[_ip_header_size + TCP_FLAGS_OFFSET] & 0x02) != 0;
+}
+
+bool ts::IPv4Packet::tcpACK() const
+{
+    return isTCP() && (_data[_ip_header_size + TCP_FLAGS_OFFSET] & 0x10) != 0;
+}
+
+bool ts::IPv4Packet::tcpRST() const
+{
+    return isTCP() && (_data[_ip_header_size + TCP_FLAGS_OFFSET] & 0x04) != 0;
+}
+
+bool ts::IPv4Packet::tcpFIN() const
+{
+    return isTCP() && (_data[_ip_header_size + TCP_FLAGS_OFFSET] & 0x01) != 0;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the size in bytes of an IPv4 header.
 //----------------------------------------------------------------------------
 
