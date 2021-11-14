@@ -35,9 +35,9 @@
 #pragma once
 #include "tsIPv4SocketAddress.h"
 #include "tsUString.h"
-#include "tsIPUtils.h"
 #include "tsReport.h"
 #include "tsEnumUtils.h"
+#include "tsCerrReport.h"
 #include "tsArgsSupplierInterface.h"
 
 namespace ts {

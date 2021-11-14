@@ -50,7 +50,7 @@ ts::UString ts::CurrentWorkingDirectory()
 
     // Unix implementation.
     TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(maybe - uninitialized) // stupid warning, name is uninitialized on purpose
+    TS_GCC_NOWARNING(maybe-uninitialized) // stupid warning, name is uninitialized on purpose
     std::array<char, 2048> name;
     if (::getcwd(name.data(), name.size() - 1) == nullptr) {
         name[0] = '\0'; // error

@@ -40,6 +40,7 @@
 #include "tsTablesLogger.h"
 #include "tsCASFamily.h"
 #include "tsSection.h"
+#include "tsIPProtocols.h"
 #include "tsSysUtils.h"
 #include "tsPagerArgs.h"
 TS_MAIN(MainCode);

@@ -29,7 +29,7 @@
 
 #include "tsAbstractDatagramOutputPlugin.h"
 #include "tsSystemRandomGenerator.h"
-#include "tsIPUtils.h"
+#include "tsIPProtocols.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::AbstractDatagramOutputPlugin::DEFAULT_PACKET_BURST;

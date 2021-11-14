@@ -38,7 +38,36 @@ ts::PcapStream::PcapStream() :
     PcapFile(),
     _client_num(0),
     _server_num(0),
-    _peers(2)
+    _peers(2),
+    _streams(2)
+{
+}
+
+// Description of one data block from an IP packet.
+ts::PcapStream::DataBlock::DataBlock() :
+    data(),
+    index(0),
+    sequence(0),
+    start(false),
+    end(false)
+{
+}
+
+ts::PcapStream::DataBlock::DataBlock(const IPv4Packet& pkt) :
+    data(),
+    index(0),
+    sequence(pkt.tcpSequenceNumber()),
+    start(pkt.tcpSYN()),
+    end(pkt.tcpFIN() || pkt.tcpRST())
+{
+    if (pkt.isTCP()) {
+        data.copy(pkt.protocolData(), pkt.protocolDataSize());
+    }
+}
+
+// Description of a one-directional stream (there are two directions in a connection).
+ts::PcapStream::Stream::Stream() :
+    packets()
 {
 }
 
@@ -73,14 +102,16 @@ bool ts::PcapStream::matchStream(const IPv4Packet& pkt, PeerNumber& source, Repo
 {
     source = 0;
 
-    if (!pkt.isTCP()) {
+    // Ignore non-TCP packets. Also ignored fragmented IP packets.
+    if (!pkt.isTCP() || pkt.fragmented()) {
         return false;
     }
 
     const IPv4SocketAddress src(pkt.sourceSocketAddress());
     const IPv4SocketAddress dst(pkt.destinationSocketAddress());
 
-    // Is there any unspecified field in current stream addresses (act as wildcard).
+    // Is there any unspecified field in current stream addresses (act as wildcard)?
+    // If yes and a wildcard match is found, this packet will define the stream end-points.
     const bool unspecified = !_peers[0].hasAddress() || !_peers[0].hasPort() || !_peers[1].hasAddress() || !_peers[1].hasPort();
 
     if (src.match(_peers[0]) && dst.match(_peers[1])) {
@@ -106,7 +137,76 @@ bool ts::PcapStream::matchStream(const IPv4Packet& pkt, PeerNumber& source, Repo
 
 
 //----------------------------------------------------------------------------
-// Read data from the TCP stream.
+// Check if data are immediately available in a stream.
+//----------------------------------------------------------------------------
+
+bool ts::PcapStream::Stream::available(size_t size) const
+{
+    // Loop on packets until we get enough data.
+    for (auto it = packets.begin(); size > 0 && it != packets.end(); ++it) {
+        const DataBlock& db(**it);
+        assert(db.index <= db.data.size());
+        if (db.index + size <= db.data.size()) {
+            // Enough data in that packet.
+            return true;
+        }
+        size -= db.data.size() - db.index;
+    }
+    return size == 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Store the content of an IP packet in a stream.
+//----------------------------------------------------------------------------
+
+void ts::PcapStream::Stream::store(const IPv4Packet& pkt)
+{
+    // Allocate a new data block.
+    const DataBlockPtr ptr(new DataBlock(pkt));
+
+    // Find the right location in the queue.
+    auto it = packets.begin();
+    while (it != packets.end()) {
+        const DataBlock& db(**it);
+        if (ptr->sequence == db.sequence) {
+            // Duplicate packet, drop it.
+            return;
+        }
+        else if (TCPOrderedSequence(ptr->sequence, db.sequence)) {
+            // Need to be inserted here, next packet is after.
+            // Detect and truncate any overlap.
+            const size_t diff = TCPSequenceDiff(ptr->sequence, db.sequence);
+            if (ptr->data.size() > diff) {
+                ptr->data.resize(diff);
+            }
+            break;
+        }
+        else {
+            // Need to be inserted after this one but check if there is any overlap.
+            const size_t diff = TCPSequenceDiff(db.sequence, ptr->sequence);
+            if (db.data.size() > diff) {
+                // The packet at **it overlaps on packet to insert.
+                const size_t extra = db.data.size() - diff;
+                if (ptr->data.size() <= extra) {
+                    // Packet to insert is fully overlapped, drop it.
+                    return;
+                }
+                else {
+                    // Remove overlapping start of the packet to insert.
+                    ptr->data.erase(0, extra);
+                    ptr->sequence += uint32_t(extra);
+                }
+            }
+        }
+        ++it;
+    }
+    packets.insert(it, ptr);
+}
+
+
+//----------------------------------------------------------------------------
+// Read data from the TCP session, any direction.
 //----------------------------------------------------------------------------
 
 bool ts::PcapStream::readTCP(ReadStatus& status, PeerNumber& peer_num, ByteBlock& data, size_t& size, Report& report)
@@ -136,6 +236,21 @@ bool ts::PcapStream::readTCP(ReadStatus& status, PeerNumber& peer_num, ByteBlock
         // Skip packet if not from the requested sequence.
         if (!matchStream(pkt, source_num, report)) {
             continue;
+        }
+        assert(source_num == 1 || source_num == 2);
+
+        // Determine client and server role at the beginning of a TCP session.
+        if (pkt.tcpSYN()) {
+            if (pkt.tcpACK()) {
+                // SYN/ACK: the source is the server.
+                _client_num = OtherPeer(source_num);
+                _server_num = source_num;
+            }
+            else {
+                // SYN alone: the source is the client.
+                _client_num = source_num;
+                _server_num = OtherPeer(source_num);
+            }
         }
 
         //@@@

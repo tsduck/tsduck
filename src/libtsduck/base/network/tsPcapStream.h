@@ -34,11 +34,17 @@
 
 #pragma once
 #include "tsPcapFile.h"
+#include "tsSafePtr.h"
 
 namespace ts {
     //!
     //! Read a TCP/IP stream from a pcap or pcapng file.
     //! @ingroup net
+    //!
+    //! Some effort is made to reorder repeated or re-ordered TCP packets.
+    //!
+    //! Fragmented IP packets are ignored. It is not possible to rebuild a
+    //! TCP session with fragmented packets.
     //!
     class TSDUCKDLL PcapStream: public PcapFile
     {
@@ -174,9 +180,45 @@ namespace ts {
         bool readTCP(ReadStatus& status, PeerNumber& peer, ByteBlock& data, size_t& size, Report& report);
 
     private:
-        PeerNumber _client_num;
-        PeerNumber _server_num;
+        // Description of one data block from an IP packet.
+        class DataBlock
+        {
+        public:
+            DataBlock();
+            DataBlock(const IPv4Packet& pkt);
+
+            ByteBlock data;     // TCP payload
+            size_t    index;    // index of next byte to read in data
+            uint32_t  sequence; // TCP sequence number at start of data
+            bool      start;    // Start of TCP stream.
+            bool      end;      // End of TCP stream.
+        };
+        typedef SafePtr<DataBlock> DataBlockPtr;
+        typedef std::list<DataBlockPtr> DataBlockQueue;
+
+        // Description of a one-directional stream (there are two directions in a connection).
+        class Stream
+        {
+        public:
+            Stream();
+
+            DataBlockQueue packets; // future packets to process
+
+            // Check if data of the specified size are immediately available.
+            bool available(size_t size) const;
+
+            // Store the content of an IP packet.
+            void store(const IPv4Packet& pkt);
+        };
+
+        // PcapStream private fields.
+        PeerNumber              _client_num;
+        PeerNumber              _server_num;
         IPv4SocketAddressVector _peers;
+        std::vector<Stream>     _streams; // source has same index as _peers
+
+        // Other peer number: turn 1 into 2 and 2 into 1.
+        static PeerNumber OtherPeer(PeerNumber peer) { return 3 - peer; }
 
         // Check if an IP packet matches the current TCP stream.
         bool matchStream(const IPv4Packet& pkt, PeerNumber& source, Report& report);

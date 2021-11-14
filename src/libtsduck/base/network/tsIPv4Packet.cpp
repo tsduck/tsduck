@@ -120,6 +120,19 @@ bool ts::IPv4Packet::reset(const void* data, size_t size)
 
 
 //----------------------------------------------------------------------------
+// Check if the IPv4 packet is fragmented.
+//----------------------------------------------------------------------------
+
+bool ts::IPv4Packet::fragmented() const
+{
+    return _valid && (
+        (_data[IPv4_FRAGMENT_OFFSET] & 0x20) != 0 ||                      // "More Fragments" bit set
+        (GetUInt16BE(_data.data() + IPv4_FRAGMENT_OFFSET) & 0x1FFF) != 0  // "Fragment Offset" not zero
+    );
+}
+
+
+//----------------------------------------------------------------------------
 // Get the source and destination IPv4 addresses and ports.
 //----------------------------------------------------------------------------
 
