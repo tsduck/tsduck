@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~PcapFile();
+        virtual ~PcapFile();
 
         //!
         //! Open the file for read.
@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool open(const UString& filename, Report& report);
+        virtual bool open(const UString& filename, Report& report);
 
         //!
         //! Check if the file is open.
@@ -94,7 +94,7 @@ namespace ts {
         //! @param [in,out] report Where to report error.
         //! @return True on success, false on error.
         //!
-        bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report);
+        virtual bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report);
 
         //!
         //! Get the number of captured packets so far.
@@ -103,6 +103,12 @@ namespace ts {
         //! @return The number of captured packets so far.
         //!
         size_t packetCount() const { return _packet_count; }
+
+        //!
+        //! Check if the end of file (or other error) has been reached.
+        //! @return True on end of file or error.
+        //!
+        bool endOfFile() const { return _error; }
 
         //!
         //! Get the number of valid captured IPv4 packets so far.

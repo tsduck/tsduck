@@ -32,7 +32,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsPcapFile.h"
+#include "tsPcapFilter.h"
 #include "tsIPv4Packet.h"
 #include "tsTime.h"
 #include "tsBitRate.h"
@@ -53,12 +53,10 @@ namespace {
         ts::UString input_file;
         size_t      first_packet;
         size_t      last_packet;
-        bool        tcp_filter;
-        bool        udp_filter;
-        bool        others_filter;
         bool        print_summary;
         bool        list_streams;
         bool        print_intervals;
+        std::set<uint8_t>     protocols;
         ts::IPv4SocketAddress source_filter;
         ts::IPv4SocketAddress dest_filter;
         ts::MicroSecond       first_time_offset;
@@ -100,12 +98,10 @@ Options::Options(int argc, char *argv[]) :
     input_file(),
     first_packet(0),
     last_packet(0),
-    tcp_filter(false),
-    udp_filter(false),
-    others_filter(false),
     print_summary(false),
     list_streams(false),
     print_intervals(false),
+    protocols(),
     source_filter(),
     dest_filter(),
     first_time_offset(-1),
@@ -184,9 +180,6 @@ Options::Options(int argc, char *argv[]) :
     getValue(input_file, u"");
     const ts::UString dest_string(value(u"destination"));
     const ts::UString source_string(value(u"source"));
-    tcp_filter = present(u"tcp");
-    udp_filter = present(u"udp");
-    others_filter = present(u"others");
     getIntValue(first_packet, u"first-packet", 1);
     getIntValue(last_packet, u"last-packet", std::numeric_limits<size_t>::max());
     getIntValue(first_time_offset, u"first-timestamp", 0);
@@ -200,9 +193,19 @@ Options::Options(int argc, char *argv[]) :
     // Default is to print a summary of the file content.
     print_summary = !list_streams && !print_intervals;
 
-    // Default is to filter all protocols.
-    if (!tcp_filter && !udp_filter && !others_filter) {
-        tcp_filter = udp_filter = others_filter = true;
+    // Default is to filter all protocols (empty protocol set).
+    if (present(u"tcp")) {
+        protocols.insert(ts::IPv4_PROTO_TCP);
+    }
+    if (present(u"udp")) {
+        protocols.insert(ts::IPv4_PROTO_UDP);
+    }
+    if (present(u"others")) {
+        for (int p = 0; p < 256; ++p) {
+            if (p != ts::IPv4_PROTO_TCP && p != ts::IPv4_PROTO_UDP) {
+                protocols.insert(uint8_t(p));
+            }
+        }
     }
 
     // Decode network addresses.
@@ -215,43 +218,6 @@ Options::Options(int argc, char *argv[]) :
 
     // Final checking
     exitOnError();
-}
-
-
-//----------------------------------------------------------------------------
-// Read next IPv4 packet matching input filters.
-//----------------------------------------------------------------------------
-
-namespace {
-    bool ReadPacket(Options& opt, ts::PcapFile& file, ts::IPv4Packet& ip, ts::MicroSecond& timestamp)
-    {
-        while (file.readIPv4(ip, timestamp, opt)) {
-            // Do not read before first filtered packet and after last one.
-            if (file.packetCount() < opt.first_packet ||
-                timestamp < opt.first_time ||
-                file.timeOffset(timestamp) < opt.first_time_offset)
-            {
-                continue;
-            }
-            if (file.packetCount() > opt.last_packet ||
-                timestamp > opt.last_time ||
-                file.timeOffset(timestamp) > opt.last_time_offset)
-            {
-                return false;
-            }
-            // Check if the packet matches the address and protocol filters.
-            if ((!ip.isTCP() || opt.tcp_filter) &&
-                (!ip.isUDP() || opt.udp_filter) &&
-                (ip.isUDP() || ip.isTCP() || opt.others_filter) &&
-                opt.source_filter.match(ip.sourceSocketAddress()) &&
-                opt.dest_filter.match(ip.destinationSocketAddress()))
-            {
-                opt.debug(u"packet: ip size: %'d, data size: %'d, timestamp: %'d", {ip.size(), ip.protocolDataSize(), timestamp});
-                return true;
-            }
-        }
-        return false;
-    }
 }
 
 
@@ -508,10 +474,21 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Open the pcap file.
-    ts::PcapFile file;
+    ts::PcapFilter file;
     if (!file.open(opt.input_file, opt)) {
         return EXIT_FAILURE;
     }
+
+    // Set packet filters.
+    file.setProtocolFilter(opt.protocols);
+    file.setSourceFilter(opt.source_filter);
+    file.setDestinationFilter(opt.dest_filter);
+    file.setFirstPacketFilter(opt.first_packet);
+    file.setLastPacketFilter(opt.last_packet);
+    file.setFirstTimeOffset(opt.first_time_offset);
+    file.setLastTimeOffset(opt.last_time_offset);
+    file.setFirstTimestamp(opt.first_time);
+    file.setLastTimestamp(opt.last_time);
 
     // Statistics per data stream and global.
     std::map<StreamId,StatBlock> streams_stats;
@@ -523,7 +500,7 @@ int MainCode(int argc, char *argv[])
     // Read all IPv4 packets from the file.
     ts::IPv4Packet ip;
     ts::MicroSecond timestamp = 0;
-    while (ReadPacket(opt, file, ip, timestamp)) {
+    while (file.readIPv4(ip, timestamp, opt)) {
         global_stats.addPacket(ip, timestamp);
         if (opt.list_streams) {
             streams_stats[StreamId(ip.sourceSocketAddress(), ip.destinationSocketAddress(), ip.protocol())].addPacket(ip, timestamp);
