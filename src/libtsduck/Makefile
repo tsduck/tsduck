@@ -79,7 +79,7 @@ default: headers libs
 
 # The tsduck.h header is automatically generated from all headers using BUILD_PROJ_FILES.
 
-BUILD_TSDUCK_H = $(SCRIPTSDIR)/build-tsduck-header.py
+BUILD_TSDUCK_H = $(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py
 
 .PHONY: headers
 headers: tsduck.h

@@ -121,12 +121,14 @@ F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(F_SEARCH_PATH)
 F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
 
 # Find GNU alternatives to sed, grep. fgrep, chmod.
+# Also use command python3 when available, fallback as python alone.
 
 ifeq ($(SED),)
-    export SED   := $(call F_COMMAND,gsed,sed)
-    export GREP  := $(call F_COMMAND,ggrep,grep)
-    export FGREP := $(call F_COMMAND,gfgrep,fgrep)
-    export CHMOD := $(call F_COMMAND,gchmod,chmod)
+    export SED    := $(call F_COMMAND,gsed,sed)
+    export GREP   := $(call F_COMMAND,ggrep,grep)
+    export FGREP  := $(call F_COMMAND,gfgrep,fgrep)
+    export CHMOD  := $(call F_COMMAND,gchmod,chmod)
+    export PYTHON := $(call F_COMMAND,python3,python)
 endif
 
 #-----------------------------------------------------------------------------
