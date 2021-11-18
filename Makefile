@@ -133,7 +133,7 @@ doxygen:
 
 .PHONY: clean distclean
 clean distclean:
-	@$(SCRIPTSDIR)/cleanup.py
+	@$(PYTHON) $(SCRIPTSDIR)/cleanup.py
 
 # Build the sample applications.
 
