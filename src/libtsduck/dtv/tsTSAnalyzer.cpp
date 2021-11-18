@@ -1262,7 +1262,7 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 
 void ts::TSAnalyzer::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pkt, const MPEG2AudioAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
+    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
 }
 
 
@@ -1273,7 +1273,7 @@ void ts::TSAnalyzer::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& p
 
 void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, const AC3Attributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
+    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
 }
 
 
@@ -1284,7 +1284,7 @@ void ts::TSAnalyzer::handleNewAC3Attributes(PESDemux&, const PESPacket& pkt, con
 
 void ts::TSAnalyzer::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& pkt, const MPEG2VideoAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
+    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
 }
 
 
@@ -1295,7 +1295,7 @@ void ts::TSAnalyzer::handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket& p
 
 void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, const AVCAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
+    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
 }
 
 
@@ -1306,7 +1306,7 @@ void ts::TSAnalyzer::handleNewAVCAttributes(PESDemux&, const PESPacket& pkt, con
 
 void ts::TSAnalyzer::handleNewHEVCAttributes(PESDemux&, const PESPacket& pkt, const HEVCAttributes& attr)
 {
-    AppendUnique(getPID(pkt.getSourcePID())->attributes, attr.toString());
+    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
 }
 
 
@@ -1342,7 +1342,7 @@ void ts::TSAnalyzer::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
 
 void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 {
-    PIDContextPtr pc(getPID(pkt.getSourcePID(), u"T2-MI"));
+    PIDContextPtr pc(getPID(pkt.sourcePID(), u"T2-MI"));
 
     // Count T2-MI packets.
     pc->t2mi_cnt++;
@@ -1365,7 +1365,7 @@ void ts::TSAnalyzer::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 
 void ts::TSAnalyzer::handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts)
 {
-    PIDContextPtr pc(getPID(t2mi.getSourcePID(), u"T2-MI"));
+    PIDContextPtr pc(getPID(t2mi.sourcePID(), u"T2-MI"));
 
     // Count demux'ed TS packets from this PLP.
     pc->t2mi_plp_ts[t2mi.plp()]++;

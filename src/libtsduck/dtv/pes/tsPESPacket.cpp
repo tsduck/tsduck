@@ -45,71 +45,66 @@
 //----------------------------------------------------------------------------
 
 ts::PESPacket::PESPacket(PID source_pid) :
+    SuperClass(),
     _is_valid(false),
     _header_size(0),
-    _source_pid(source_pid),
     _stream_type(ST_NULL),
     _codec(CodecType::UNDEFINED),
-    _pcr(INVALID_PCR),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    _pcr(INVALID_PCR)
 {
 }
 
 ts::PESPacket::PESPacket(const PESPacket& pp, ShareMode mode) :
+    SuperClass(pp, mode),
     _is_valid(pp._is_valid),
     _header_size(pp._header_size),
-    _source_pid(pp._source_pid),
     _stream_type(pp._stream_type),
     _codec(pp._codec),
-    _pcr(pp._pcr),
-    _first_pkt(pp._first_pkt),
-    _last_pkt(pp._last_pkt),
-    _data()
+    _pcr(pp._pcr)
 {
-    switch (mode) {
-        case ShareMode::SHARE:
-            _data = pp._data;
-            break;
-        case ShareMode::COPY:
-            _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
-            break;
-        default:
-            // should not get there
-            assert(false);
-    }
 }
 
 ts::PESPacket::PESPacket(PESPacket&& pp) noexcept :
+    SuperClass(std::move(pp)),
     _is_valid(pp._is_valid),
     _header_size(pp._header_size),
-    _source_pid(pp._source_pid),
     _stream_type(pp._stream_type),
     _codec(pp._codec),
-    _pcr(pp._pcr),
-    _first_pkt(pp._first_pkt),
-    _last_pkt(pp._last_pkt),
-    _data(std::move(pp._data))
+    _pcr(pp._pcr)
 {
 }
 
 ts::PESPacket::PESPacket(const void* content, size_t content_size, PID source_pid) :
-    PESPacket(source_pid)
+    SuperClass(content, content_size, source_pid),
+    _is_valid(false),
+    _header_size(0),
+    _stream_type(ST_NULL),
+    _codec(CodecType::UNDEFINED),
+    _pcr(INVALID_PCR)
 {
-    initialize(new ByteBlock(content, content_size));
+    validate();
 }
 
 ts::PESPacket::PESPacket(const ByteBlock& content, PID source_pid) :
-    PESPacket(source_pid)
+    SuperClass(content, source_pid),
+    _is_valid(false),
+    _header_size(0),
+    _stream_type(ST_NULL),
+    _codec(CodecType::UNDEFINED),
+    _pcr(INVALID_PCR)
 {
-    initialize(new ByteBlock(content));
+    validate();
 }
 
 ts::PESPacket::PESPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
-    PESPacket(source_pid)
+    SuperClass(content_ptr, source_pid),
+    _is_valid(false),
+    _header_size(0),
+    _stream_type(ST_NULL),
+    _codec(CodecType::UNDEFINED),
+    _pcr(INVALID_PCR)
 {
-    initialize(content_ptr);
+    validate();
 }
 
 
@@ -146,40 +141,34 @@ size_t ts::PESPacket::HeaderSize(const uint8_t* data, size_t size)
 
 
 //----------------------------------------------------------------------------
-// Initialize from a binary content.
+// Validate binary content.
 //----------------------------------------------------------------------------
 
-void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
+void ts::PESPacket::validate()
 {
     _is_valid = false;
     _header_size = 0;
     _pcr = INVALID_PCR;
-    _first_pkt = 0;
-    _last_pkt = 0;
-    _data.clear();
-
-    if (bbp.isNull()) {
-        return;
-    }
 
     // PES header size
-    const uint8_t* const data = bbp->data();
-    const size_t size = bbp->size();
-    _header_size = HeaderSize(data, size);
+    const uint8_t* const data = content();
+    const size_t dsize = SuperClass::size();
+    _header_size = HeaderSize(data, dsize);
     if (_header_size == 0) {
+        clear();
         return;
     }
 
     // Check that the embedded size is either zero (unbounded) or within actual data size.
     // This field indicates the packet length _after_ that field (ie. after offset 6).
     const size_t psize = 6 + size_t(GetUInt16(data + 4));
-    if (psize != 6 && (psize < _header_size || psize > size)) {
+    if (psize != 6 && (psize < _header_size || psize > dsize)) {
+        clear();
         return;
     }
 
     // Passed all checks
     _is_valid = true;
-    _data = bbp;
 }
 
 
@@ -189,15 +178,12 @@ void ts::PESPacket::initialize(const ByteBlockPtr& bbp)
 
 void ts::PESPacket::clear()
 {
+    SuperClass::clear();
     _is_valid = false;
     _header_size = 0;
-    _source_pid = PID_NULL;
     _stream_type = ST_NULL;
     _codec = CodecType::UNDEFINED;
     _pcr = INVALID_PCR;
-    _first_pkt = 0;
-    _last_pkt = 0;
-    _data.clear();
 }
 
 
@@ -218,20 +204,20 @@ void ts::PESPacket::setPCR(uint64_t pcr)
 
 void ts::PESPacket::reload(const void* content, size_t content_size, PID source_pid)
 {
-    _source_pid = source_pid;
-    initialize(new ByteBlock(content, content_size));
+    SuperClass::reload(content, content_size, source_pid);
+    validate();
 }
 
 void ts::PESPacket::reload(const ByteBlock& content, PID source_pid)
 {
-    _source_pid = source_pid;
-    initialize(new ByteBlock(content));
+    SuperClass::reload(content, source_pid);
+    validate();
 }
 
 void ts::PESPacket::reload(const ByteBlockPtr& content_ptr, PID source_pid)
 {
-    _source_pid = source_pid;
-    initialize(content_ptr);
+    SuperClass::reload(content_ptr, source_pid);
+    validate();
 }
 
 
@@ -243,9 +229,9 @@ size_t ts::PESPacket::size() const
 {
     if (_is_valid) {
         // Check if an actual size is specified.
-        const size_t psize = GetUInt16(_data->data() + 4);
+        const size_t psize = GetUInt16(content() + 4);
         // When the specified size is zero, get the complete binary data.
-        return psize == 0 ? _data->size() : std::min(psize + 6, _data->size());
+        return psize == 0 ? SuperClass::size() : std::min(psize + 6, SuperClass::size());
     }
     else {
         // Invalid PES packet.
@@ -260,13 +246,13 @@ size_t ts::PESPacket::size() const
 
 uint8_t ts::PESPacket::getStreamId() const
 {
-    return _is_valid ? (*_data)[3] : 0;
+    return _is_valid ? content()[3] : 0;
 }
 
 void ts::PESPacket::setStreamId(uint8_t sid)
 {
     if (_is_valid) {
-        (*_data)[3] = sid;
+        rwContent()[3] = sid;
     }
 }
 
@@ -277,7 +263,7 @@ void ts::PESPacket::setStreamId(uint8_t sid)
 
 bool ts::PESPacket::hasLongHeader() const
 {
-    return _is_valid && IsLongHeaderSID((*_data)[3]);
+    return _is_valid && IsLongHeaderSID(content()[3]);
 }
 
 
@@ -287,62 +273,56 @@ bool ts::PESPacket::hasLongHeader() const
 
 ts::PESPacket& ts::PESPacket::operator=(const PESPacket& pp)
 {
-    _is_valid = pp._is_valid;
-    _header_size = pp._header_size;
-    _source_pid = pp._source_pid;
-    _stream_type = pp._stream_type;
-    _codec = pp._codec;
-    _pcr = pp._pcr;
-    _first_pkt = pp._first_pkt;
-    _last_pkt = pp._last_pkt;
-    _data = pp._data;
+    if (&pp != this) {
+        SuperClass::operator=(pp);
+        _is_valid = pp._is_valid;
+        _header_size = pp._header_size;
+        _stream_type = pp._stream_type;
+        _codec = pp._codec;
+        _pcr = pp._pcr;
+    }
     return *this;
 }
 
 ts::PESPacket& ts::PESPacket::operator=(PESPacket&& pp) noexcept
 {
-    _is_valid = pp._is_valid;
-    _header_size = pp._header_size;
-    _source_pid = pp._source_pid;
-    _stream_type = pp._stream_type;
-    _codec = pp._codec;
-    _pcr = pp._pcr;
-    _first_pkt = pp._first_pkt;
-    _last_pkt = pp._last_pkt;
-    _data = std::move(pp._data);
+    if (&pp != this) {
+        SuperClass::operator=(std::move(pp));
+        _is_valid = pp._is_valid;
+        _header_size = pp._header_size;
+        _stream_type = pp._stream_type;
+        _codec = pp._codec;
+        _pcr = pp._pcr;
+    }
     return *this;
 }
 
 
 //----------------------------------------------------------------------------
-// Duplication. Similar to assignment but the content of the packet
-// is duplicated.
+// Duplication.
 //----------------------------------------------------------------------------
 
 ts::PESPacket& ts::PESPacket::copy(const PESPacket& pp)
 {
-    _is_valid = pp._is_valid;
-    _header_size = pp._header_size;
-    _source_pid = pp._source_pid;
-    _stream_type = pp._stream_type;
-    _codec = pp._codec;
-    _pcr = pp._pcr;
-    _first_pkt = pp._first_pkt;
-    _last_pkt = pp._last_pkt;
-    _data = pp._is_valid ? new ByteBlock(*pp._data) : nullptr;
+    if (&pp != this) {
+        SuperClass::copy(pp);
+        _is_valid = pp._is_valid;
+        _header_size = pp._header_size;
+        _stream_type = pp._stream_type;
+        _codec = pp._codec;
+        _pcr = pp._pcr;
+    }
     return *this;
 }
 
 
 //----------------------------------------------------------------------------
 // Comparison.
-// The source PID are ignored, only the packet contents are compared.
-// Note: Invalid packets are never identical
 //----------------------------------------------------------------------------
 
 bool ts::PESPacket::operator==(const PESPacket& pp) const
 {
-    return _is_valid && pp._is_valid && (_data == pp._data || *_data == *pp._data);
+    return _is_valid && pp._is_valid && SuperClass::operator==(pp);
 }
 
 

@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsByteBlock.h"
+#include "tsDemuxedData.h"
 #include "tsCodecType.h"
 #include "tsTS.h"
 #include "tsPSI.h"
@@ -56,9 +56,14 @@ namespace ts {
     //! Representation of MPEG PES packets.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL PESPacket
+    class TSDUCKDLL PESPacket : public DemuxedData
     {
     public:
+        //!
+        //! Explicit identification of super class.
+        //!
+        typedef DemuxedData SuperClass;
+
         //!
         //! Default constructor.
         //! The PESPacket is initially marked invalid.
@@ -107,38 +112,12 @@ namespace ts {
         //!
         PESPacket(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL);
 
-        //!
-        //! Reload from full binary content.
-        //! The content is copied into the packet if valid.
-        //! @param [in] content Address of the binary packet data.
-        //! @param [in] content_size Size in bytes of the packet.
-        //! @param [in] source_pid PID from which the packet was read.
-        //!
-        void reload(const void* content, size_t content_size, PID source_pid = PID_NULL);
-
-        //!
-        //! Reload from full binary content.
-        //! The content is copied into the packet if valid.
-        //! @param [in] content Binary packet data.
-        //! @param [in] source_pid PID from which the packet was read.
-        //!
-        void reload(const ByteBlock& content, PID source_pid = PID_NULL);
-
-        //!
-        //! Reload from full binary content.
-        //! The content is copied into the packet if valid.
-        //! @param [in] content_ptr Safe pointer to the binary packet data.
-        //! The content is referenced, and thus shared.
-        //! Do not modify the referenced ByteBlock from outside the PESPacket.
-        //! @param [in] source_pid PID from which the packet was read.
-        //!
-        void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL);
-
-        //!
-        //! Clear packet content.
-        //! Becomes an invalid packet.
-        //!
-        void clear();
+        // Inherited methods.
+        virtual void clear() override;
+        virtual void reload(const void* content, size_t content_size, PID source_pid = PID_NULL) override;
+        virtual void reload(const ByteBlock& content, PID source_pid = PID_NULL) override;
+        virtual void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL) override;
+        virtual size_t size() const override;
 
         //!
         //! Assignment operator.
@@ -167,7 +146,7 @@ namespace ts {
         //! Check if the packet has valid content.
         //! @return True if the packet has valid content.
         //!
-        bool isValid() const {return _is_valid;}
+        bool isValid() const { return _is_valid; }
 
         //!
         //! Equality operator.
@@ -185,38 +164,14 @@ namespace ts {
         //! @param [in] other Other packet to compare.
         //! @return True if the two packets are different. False otherwise.
         //!
-        bool operator!=(const PESPacket& other) const
-        {
-            return !(*this == other);
-        }
-
-        //!
-        //! Get the source PID.
-        //! @return The source PID.
-        //!
-        PID getSourcePID() const
-        {
-            return _source_pid;
-        }
-
-        //!
-        //! Set the source PID.
-        //! @param [in] pid The source PID.
-        //!
-        void setSourcePID(PID pid)
-        {
-            _source_pid = pid;
-        }
+        bool operator!=(const PESPacket& other) const { return !(*this == other); }
 
         //!
         //! Get the optional PCR value which was associated to the PES packets.
         //! It was typically extracted from the first TS packet of the PES packet.
         //! @return The 42-bit PCR or INVALID_PCR if there is none.
         //!
-        uint64_t getPCR() const
-        {
-            return _pcr;
-        }
+        uint64_t getPCR() const { return _pcr; }
 
         //!
         //! Set the PCR value for this PES packet.
@@ -228,37 +183,25 @@ namespace ts {
         //! Get the stream type, as specified in the PMT (optional).
         //! @return The stream type.
         //!
-        uint8_t getStreamType() const
-        {
-            return _stream_type;
-        }
+        uint8_t getStreamType() const { return _stream_type; }
 
         //!
         //! Set the stream type, as specified in the PMT.
         //! @param [in] type The stream type.
         //!
-        void setStreamType(uint8_t type)
-        {
-            _stream_type = type;
-        }
+        void setStreamType(uint8_t type) { _stream_type = type; }
 
         //!
         //! Get the codec type, as specified by the user (optional).
         //! @return The codec type.
         //!
-        CodecType getCodec() const
-        {
-            return _codec;
-        }
+        CodecType getCodec() const { return _codec; }
 
         //!
         //! Set the codec type (informational only).
         //! @param [in] codec The codec type.
         //!
-        void setCodec(CodecType codec)
-        {
-            _codec = codec;
-        }
+        void setCodec(CodecType codec) { _codec = codec; }
 
         //!
         //! Set a default codec type.
@@ -267,44 +210,6 @@ namespace ts {
         //! @param [in] default_codec The default codec type.
         //!
         void setDefaultCodec(CodecType default_codec);
-
-        //!
-        //! Index of first TS packet of the PES packet in the demultiplexed stream.
-        //! Usually valid only if the PES packet was extracted by a PES demux.
-        //! @return The first TS packet of the PES packet in the demultiplexed stream.
-        //!
-        PacketCounter getFirstTSPacketIndex() const
-        {
-            return _first_pkt;
-        }
-
-        //!
-        //! Index of last TS packet of the PES packet in the demultiplexed stream.
-        //! Usually valid only if the PES packet was extracted by a PES demux.
-        //! @return The last TS packet of the PES packet in the demultiplexed stream.
-        //!
-        PacketCounter getLastTSPacketIndex() const
-        {
-            return _last_pkt;
-        }
-
-        //!
-        //! Set the first TS packet of the PES packet in the demultiplexed stream.
-        //! @param [in] i The first TS packet of the PES packet in the demultiplexed stream.
-        //!
-        void setFirstTSPacketIndex(PacketCounter i)
-        {
-            _first_pkt = i;
-        }
-
-        //!
-        //! Set the last TS packet of the PES packet in the demultiplexed stream.
-        //! @param [in] i The last TS packet of the PES packet in the demultiplexed stream.
-        //!
-        void setLastTSPacketIndex(PacketCounter i)
-        {
-            _last_pkt = i;
-        }
 
         //!
         //! Stream id of the PES packet.
@@ -325,66 +230,34 @@ namespace ts {
         bool hasLongHeader() const;
 
         //!
-        //! Access to the full binary content of the packet.
-        //! Do not modify content.
-        //! @return Address of the full binary content of the packet.
-        //! May be invalidated after modification in packet.
-        //!
-        const uint8_t* content() const
-        {
-            return _data->data();
-        }
-
-        //!
-        //! Size of the binary content of the packet.
-        //! @return Size of the binary content of the packet.
-        //!
-        size_t size() const;
-
-        //!
         //! Access to the PES header of the packet.
         //! @return Address of the PES header of the packet.
         //!
-        const uint8_t* header() const
-        {
-            return _is_valid ? _data->data() : nullptr;
-        }
+        const uint8_t* header() const { return _is_valid ? content() : nullptr; }
 
         //!
         //! Size of the PES header of the packet.
         //! @return Size of the PES header of the packet.
         //!
-        size_t headerSize() const
-        {
-            return _is_valid ? _header_size : 0;
-        }
+        size_t headerSize() const { return _is_valid ? _header_size : 0; }
 
         //!
         //! Access to the payload of the packet.
         //! @return Address of the payload of the packet.
         //!
-        const uint8_t* payload() const
-        {
-            return _is_valid ? _data->data() + _header_size : nullptr;
-        }
+        const uint8_t* payload() const { return _is_valid ? content() + _header_size : nullptr; }
 
         //!
         //! Size of the payload of the packet.
         //! @return Size of the payload of the packet.
         //!
-        size_t payloadSize() const
-        {
-            return _is_valid ? size() - _header_size : 0;
-        }
+        size_t payloadSize() const { return _is_valid ? size() - _header_size : 0; }
 
         //!
         //! Number of spurious data bytes after the packet.
         //! @return Size of the spurious data bytes after the packet.
         //!
-        size_t spuriousDataSize() const
-        {
-            return _is_valid ? _data->size() - size() : 0;
-        }
+        size_t spuriousDataSize() const { return _is_valid ? SuperClass::size() - size() : 0; }
 
         //!
         //! Check if the PES packet contains MPEG-2 video.
@@ -514,18 +387,14 @@ namespace ts {
 
     private:
         // Private fields
-        bool          _is_valid;     // Content of *_data is a valid packet
-        size_t        _header_size;  // PES header size in bytes
-        PID           _source_pid;   // Source PID (informational)
-        uint8_t       _stream_type;  // Stream type from PMT (informational)
-        CodecType     _codec;        // Data format (informational)
-        uint64_t      _pcr;          // PCR value from TS packets (informational)
-        PacketCounter _first_pkt;    // Index of first packet in stream
-        PacketCounter _last_pkt;     // Index of last packet in stream
-        ByteBlockPtr  _data;         // Full binary content of the packet
+        bool      _is_valid;     // Content of *_data is a valid packet
+        size_t    _header_size;  // PES header size in bytes
+        uint8_t   _stream_type;  // Stream type from PMT (informational)
+        CodecType _codec;        // Data format (informational)
+        uint64_t  _pcr;          // PCR value from TS packets (informational)
 
-        // Initialize from a binary content.
-        void initialize(const ByteBlockPtr&);
+        // Validate binary content.
+        void validate();
 
         // Get the header size of the start of a PES packet. Return 0 on error.
         static size_t HeaderSize(const uint8_t* data, size_t size);

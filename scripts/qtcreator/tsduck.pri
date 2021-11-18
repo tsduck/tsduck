@@ -141,6 +141,6 @@ libtsduck {
     LIBS += ../libtsduck/libtsduck$$SO
     PRE_TARGETDEPS += ../libtsduck/libtsduck$$SO
     DEPENDPATH += ../libtsduck
-    INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name release\\* ! -name debug\\*")
+    INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name __pycache__")
     QMAKE_POST_LINK += cp $$TS_CONFIG_FILES . $$escape_expand(\\n\\t)
 }

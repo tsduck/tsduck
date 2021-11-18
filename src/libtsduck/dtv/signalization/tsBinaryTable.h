@@ -254,14 +254,14 @@ namespace ts {
         //! Valid only if the table was extracted by a section demux.
         //! @return The first TS packet of the table in the demultiplexed stream.
         //!
-        PacketCounter getFirstTSPacketIndex() const;
+        PacketCounter firstTSPacketIndex() const;
 
         //!
         //! Index of last TS packet of the table in the demultiplexed stream.
         //! Valid only if the table was extracted by a section demux.
         //! @return The last TS packet of the table in the demultiplexed stream.
         //!
-        PacketCounter getLastTSPacketIndex() const;
+        PacketCounter lastTSPacketIndex() const;
 
         //!
         //! Number of sections in the table.

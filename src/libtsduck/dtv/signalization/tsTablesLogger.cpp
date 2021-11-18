@@ -591,7 +591,7 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
 
     // Save table in text format.
     if (_use_text) {
-        preDisplay(table.getFirstTSPacketIndex(), table.getLastTSPacketIndex());
+        preDisplay(table.firstTSPacketIndex(), table.lastTSPacketIndex());
         if (_logger) {
             // Short log message
             logSection(*table.sectionAt(0));
@@ -757,7 +757,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // Note that no XML can be produced since valid XML structures contain complete tables only.
 
     if (_use_text) {
-        preDisplay(sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex());
+        preDisplay(sect.firstTSPacketIndex(), sect.lastTSPacketIndex());
         if (_logger) {
             // Short log message
             logSection(sect);
@@ -1066,7 +1066,7 @@ void ts::TablesLogger::logSection(const Section& sect)
 
     // Display packet index if required.
     if (_packet_index) {
-        header.format(u"Packet %'d to %'d, ", {sect.getFirstTSPacketIndex(), sect.getLastTSPacketIndex()});
+        header.format(u"Packet %'d to %'d, ", {sect.firstTSPacketIndex(), sect.lastTSPacketIndex()});
     }
 
     // Table identification.
