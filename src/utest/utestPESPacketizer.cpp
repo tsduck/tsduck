@@ -152,7 +152,7 @@ void PESPacketizerTest::handlePESPacket(ts::PESDemux& demux, const ts::PESPacket
 {
     _pes_count++;
     TSUNIT_ASSERT(pes.isValid());
-    TSUNIT_EQUAL(100, pes.getSourcePID());
+    TSUNIT_EQUAL(100, pes.sourcePID());
     TSUNIT_EQUAL(6, pes.headerSize());
     switch (_pes_count) {
         case 1:

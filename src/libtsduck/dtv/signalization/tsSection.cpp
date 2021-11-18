@@ -37,93 +37,40 @@
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
+// Constructors.
 //----------------------------------------------------------------------------
 
 ts::Section::Section() :
-    _is_valid(false),
-    _source_pid(PID_NULL),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    SuperClass(),
+    _is_valid(false)
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Copy constructor. The section content is either shared or referenced.
-//----------------------------------------------------------------------------
 
 ts::Section::Section(const Section& sect, ShareMode mode) :
-    _is_valid(sect._is_valid),
-    _source_pid(sect._source_pid),
-    _first_pkt(sect._first_pkt),
-    _last_pkt(sect._last_pkt),
-    _data()
+    SuperClass(sect, mode),
+    _is_valid(sect._is_valid)
 {
-    switch (mode) {
-        case ShareMode::SHARE:
-            _data = sect._data;
-            break;
-        case ShareMode::COPY:
-            _data = sect._is_valid ? new ByteBlock (*sect._data) : nullptr;
-            break;
-        default:
-            // should not get there
-            assert (false);
-    }
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from full binary content.
-//----------------------------------------------------------------------------
-
-ts::Section::Section(const void* content,
-                     size_t content_size,
-                     PID source_pid,
-                     CRC32::Validation crc_op) :
-    _is_valid(false),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+ts::Section::Section(const void* content, size_t content_size, PID source_pid, CRC32::Validation crc_op) :
+    SuperClass(content, content_size, source_pid),
+    _is_valid(false)
 {
-    initialize(new ByteBlock(content, content_size), source_pid, crc_op);
+    validate(crc_op);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from full binary content.
-//----------------------------------------------------------------------------
-
-ts::Section::Section(const ByteBlock& content,
-                     PID source_pid,
-                     CRC32::Validation crc_op) :
-    _is_valid(false),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+ts::Section::Section(const ByteBlock& content, PID source_pid, CRC32::Validation crc_op) :
+    SuperClass(content, source_pid),
+    _is_valid(false)
 {
-    initialize(new ByteBlock(content), source_pid, crc_op);
+    validate(crc_op);
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from full binary content.
-//----------------------------------------------------------------------------
-
-ts::Section::Section(const ByteBlockPtr& content_ptr,
-                     PID source_pid,
-                     CRC32::Validation crc_op) :
-    _is_valid(false),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+ts::Section::Section(const ByteBlockPtr& content_ptr, PID source_pid, CRC32::Validation crc_op) :
+    SuperClass(content_ptr, source_pid),
+    _is_valid(false)
 {
-    initialize(content_ptr, source_pid, crc_op);
+    validate(crc_op);
 }
 
 
@@ -131,16 +78,8 @@ ts::Section::Section(const ByteBlockPtr& content_ptr,
 // Constructor from a short section payload.
 //----------------------------------------------------------------------------
 
-ts::Section::Section(TID tid,
-                     bool is_private_section,
-                     const void* payload,
-                     size_t payload_size,
-                     PID source_pid) :
-    _is_valid(false),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+ts::Section::Section(TID tid, bool is_private_section, const void* payload, size_t payload_size, PID source_pid) :
+    Section()
 {
     reload(tid, is_private_section, payload, payload_size, source_pid);
 }
@@ -160,11 +99,7 @@ ts::Section::Section(TID tid,
                      const void* payload,
                      size_t payload_size,
                      PID source_pid) :
-    _is_valid(false),
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    Section()
 {
     reload(tid, is_private_section, tid_ext, version, is_current,
            section_number, last_section_number,
@@ -173,28 +108,76 @@ ts::Section::Section(TID tid,
 
 
 //----------------------------------------------------------------------------
+// Clear content.
+//----------------------------------------------------------------------------
+
+void ts::Section::clear()
+{
+    SuperClass::clear();
+    _is_valid = false;
+}
+
+
+//----------------------------------------------------------------------------
+// Reload from full binary content.
+//----------------------------------------------------------------------------
+
+void ts::Section::reload(const void* content, size_t content_size, PID source_pid)
+{
+    SuperClass::reload(content, content_size, source_pid);
+    validate(CRC32::CHECK);
+}
+
+void ts::Section::reload(const ByteBlock& content, PID source_pid)
+{
+    SuperClass::reload(content, source_pid);
+    validate(CRC32::CHECK);
+}
+
+void ts::Section::reload(const ByteBlockPtr& content_ptr, PID source_pid)
+{
+    SuperClass::reload(content_ptr, source_pid);
+    validate(CRC32::CHECK);
+}
+
+void ts::Section::reload(const void* content, size_t content_size, PID source_pid, CRC32::Validation crc_op)
+{
+    SuperClass::reload(content, content_size, source_pid);
+    validate(crc_op);
+}
+
+void ts::Section::reload(const ByteBlock& content, PID source_pid, CRC32::Validation crc_op)
+{
+    SuperClass::reload(content, source_pid);
+    validate(crc_op);
+}
+
+void ts::Section::reload(const ByteBlockPtr& content_ptr, PID source_pid, CRC32::Validation crc_op)
+{
+    SuperClass::reload(content_ptr, source_pid);
+    validate(crc_op);
+}
+
+
+//----------------------------------------------------------------------------
 // Reload short section
 //----------------------------------------------------------------------------
 
-void ts::Section::reload(TID tid,
-                         bool is_private_section,
-                         const void* payload,
-                         size_t payload_size,
-                         PID source_pid)
+void ts::Section::reload(TID tid, bool is_private_section, const void* payload, size_t payload_size, PID source_pid)
 {
-    initialize(source_pid);
-    _is_valid = SHORT_SECTION_HEADER_SIZE + payload_size <= MAX_PRIVATE_SECTION_SIZE;
-    _data = new ByteBlock(SHORT_SECTION_HEADER_SIZE + payload_size);
-    PutUInt8(_data->data(), tid);
-    PutUInt16(_data->data() + 1, (is_private_section ? 0x4000 : 0x0000) | 0x3000 | uint16_t (payload_size & 0x0FFF));
-    ::memcpy(_data->data() + 3, payload, payload_size);  // Flawfinder: ignore: memcpy()
+    clear();
+    if (SHORT_SECTION_HEADER_SIZE + payload_size <= MAX_PRIVATE_SECTION_SIZE) {
+        ByteBlockPtr data(new ByteBlock(SHORT_SECTION_HEADER_SIZE + payload_size));
+        PutUInt8(data->data(), tid);
+        PutUInt16(data->data() + 1, (is_private_section ? 0x4000 : 0x0000) | 0x3000 | uint16_t (payload_size & 0x0FFF));
+        ::memcpy(data->data() + 3, payload, payload_size);
+        reload(data, source_pid, CRC32::COMPUTE);
+    }
 }
 
 
 //----------------------------------------------------------------------------
 // Reload long section
-// The provided payload does not contain the CRC32.
-// The CRC32 is automatically computed.
 //----------------------------------------------------------------------------
 
 void ts::Section::reload(TID tid,
@@ -208,34 +191,22 @@ void ts::Section::reload(TID tid,
                          size_t payload_size,
                          PID source_pid)
 {
-    initialize(source_pid);
-    _is_valid = section_number <= last_section_number && version <= 31 &&
-        LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE <= MAX_PRIVATE_SECTION_SIZE;
-    _data = new ByteBlock(LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE);
-    PutUInt8(_data->data(), tid);
-    PutUInt16(_data->data() + 1,
-              0x8000 | (is_private_section ? 0x4000 : 0x0000) | 0x3000 |
-              uint16_t((LONG_SECTION_HEADER_SIZE - 3 + payload_size + SECTION_CRC32_SIZE) & 0x0FFF));
-    PutUInt16(_data->data() + 3, tid_ext);
-    PutUInt8(_data->data() + 5, 0xC0 | uint8_t((version & 0x1F) << 1) | (is_current ? 0x01 : 0x00));
-    PutUInt8(_data->data() + 6, section_number);
-    PutUInt8(_data->data() + 7, last_section_number);
-    ::memcpy(_data->data() + 8, payload, payload_size);  // Flawfinder: ignore: memcpy()
-    recomputeCRC();
-}
-
-
-//----------------------------------------------------------------------------
-// Private method: Helper for constructors.
-//----------------------------------------------------------------------------
-
-void ts::Section::initialize(PID pid)
-{
-    _is_valid = false;
-    _source_pid = pid;
-    _first_pkt = 0;
-    _last_pkt = 0;
-    _data = nullptr;
+    clear();
+    if (section_number <= last_section_number && version <= 31 &&
+        LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE <= MAX_PRIVATE_SECTION_SIZE)
+    {
+        ByteBlockPtr data(new ByteBlock(LONG_SECTION_HEADER_SIZE + payload_size + SECTION_CRC32_SIZE));
+        PutUInt8(data->data(), tid);
+        PutUInt16(data->data() + 1,
+                  0x8000 | (is_private_section ? 0x4000 : 0x0000) | 0x3000 |
+                  uint16_t((LONG_SECTION_HEADER_SIZE - 3 + payload_size + SECTION_CRC32_SIZE) & 0x0FFF));
+        PutUInt16(data->data() + 3, tid_ext);
+        PutUInt8(data->data() + 5, 0xC0 | uint8_t((version & 0x1F) << 1) | (is_current ? 0x01 : 0x00));
+        PutUInt8(data->data() + 6, section_number);
+        PutUInt8(data->data() + 7, last_section_number);
+        ::memcpy(data->data() + 8, payload, payload_size);  // Flawfinder: ignore: memcpy()
+        reload(data, source_pid, CRC32::COMPUTE);
+    }
 }
 
 
@@ -257,78 +228,84 @@ size_t ts::Section::SectionSize(const void* content, size_t content_size)
 
 
 //----------------------------------------------------------------------------
-// Private method: Helper for constructors.
+// Validate binary content (helper for constructors).
 //----------------------------------------------------------------------------
 
-void ts::Section::initialize(const ByteBlockPtr& bbp, PID pid, CRC32::Validation crc_op)
+void ts::Section::validate(CRC32::Validation crc_op)
 {
-    initialize(pid);
-    _data = bbp;
-
     // Basic validity check using section size
-    const size_t total_size = SectionSize(*bbp);
-    _is_valid = total_size > 0 && total_size == _data->size();
+    const uint8_t* const daddr = content();
+    const size_t dsize = size();
+    const size_t total_size = SectionSize(daddr, dsize);
+    const bool is_long = StartLongSection(daddr, dsize);
+    if (total_size == 0 || total_size != dsize) {
+        clear();
+        return;
+    }
 
-    // Extract long section header info
-    if (isLongSection()) {
-        _is_valid = _data->size() >= MIN_LONG_SECTION_SIZE && sectionNumber() <= lastSectionNumber();
+    // Extract long section header info (check section number <= last section number).
+    if (is_long && (dsize < MIN_LONG_SECTION_SIZE || daddr[6] > daddr[7])) {
+        clear();
+        return;
     }
 
     // Check CRC32 if required
-    if (isLongSection()) {
+    if (is_long) {
         // Section size, without CRC32:
-        const size_t size = _data->size() - 4;
+        const size_t sec_size = dsize - SECTION_CRC32_SIZE;
         switch (crc_op) {
             case CRC32::CHECK:
-                _is_valid = CRC32(_data->data(), size) == GetUInt32(&(*_data)[size]);
+                if (CRC32(daddr, sec_size) != GetUInt32(daddr + sec_size)) {
+                    clear();
+                    return;
+                }
                 break;
             case CRC32::COMPUTE:
-                PutUInt32(_data->data() + size, CRC32(_data->data(), size).value());
+                PutUInt32(rwContent() + sec_size, CRC32(daddr, sec_size).value());
                 break;
             case CRC32::IGNORE:
-                break;
             default:
                 break;
         }
     }
 
-    if (!_is_valid) {
-        _data = nullptr;
-    }
+    // Passed all checks
+    _is_valid = true;
 }
 
 
 //----------------------------------------------------------------------------
-// Assignment. The section content is referenced, and thus shared
-// between the two section objects.
+// Assignment.
 //----------------------------------------------------------------------------
 
 ts::Section& ts::Section::operator=(const Section& sect)
 {
     if (&sect != this) {
+        SuperClass::operator=(sect);
         _is_valid = sect._is_valid;
-        _source_pid = sect._source_pid;
-        _first_pkt = sect._first_pkt;
-        _last_pkt = sect._last_pkt;
-        _data = sect._data;
+    }
+    return *this;
+}
+
+ts::Section& ts::Section::operator=(const Section&& sect) noexcept
+{
+    if (&sect != this) {
+        SuperClass::operator=(std::move(sect));
+        _is_valid = sect._is_valid;
     }
     return *this;
 }
 
 
 //----------------------------------------------------------------------------
-// Duplication. Similar to assignment but the content of the section
-// is duplicated.
+// Duplication.
 //----------------------------------------------------------------------------
 
 ts::Section& ts::Section::copy(const Section& sect)
 {
     if (&sect != this) {
+        SuperClass::copy(sect);
         _is_valid = sect._is_valid;
-        _source_pid = sect._source_pid;
-        _first_pkt = sect._first_pkt;
-        _last_pkt = sect._last_pkt;
-        _data = sect._is_valid ? new ByteBlock(*sect._data) : nullptr;
     }
     return *this;
 }
@@ -340,7 +317,7 @@ ts::Section& ts::Section::copy(const Section& sect)
 
 bool ts::Section::operator==(const Section& sect) const
 {
-    return _is_valid && sect._is_valid && (_data == sect._data || *_data == *sect._data);
+    return _is_valid && sect._is_valid && SuperClass::operator==(sect);
 }
 
 
@@ -351,8 +328,9 @@ bool ts::Section::operator==(const Section& sect) const
 void ts::Section::recomputeCRC()
 {
     if (isLongSection()) {
-        const size_t size = _data->size() - 4;
-        PutUInt32(_data->data() + size, CRC32(_data->data(), size).value());
+        // Section size, without CRC32:
+        const size_t sec_size = size() - SECTION_CRC32_SIZE;
+        PutUInt32(rwContent() + sec_size, CRC32(content(), sec_size).value());
     }
 }
 
@@ -364,7 +342,7 @@ void ts::Section::recomputeCRC()
 ts::Standards ts::Section::definingStandards() const
 {
     // The defining standard is taken from table id.
-    return PSIRepository::Instance()->getTableStandards(tableId(), _source_pid);
+    return PSIRepository::Instance()->getTableStandards(tableId(), sourcePID());
 }
 
 
@@ -398,7 +376,7 @@ bool ts::Section::hasDiversifiedPayload() const
 void ts::Section::setTableId(uint8_t tid, bool recompute_crc)
 {
     if (_is_valid) {
-        (*_data)[0] = tid;
+        rwContent()[0] = tid;
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -408,7 +386,7 @@ void ts::Section::setTableId(uint8_t tid, bool recompute_crc)
 void ts::Section::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 {
     if (isLongSection()) {
-        PutUInt16(_data->data() + 3, tid_ext);
+        PutUInt16(rwContent() + 3, tid_ext);
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -418,7 +396,7 @@ void ts::Section::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 void ts::Section::setVersion(uint8_t version, bool recompute_crc)
 {
     if (isLongSection()) {
-        (*_data)[5] = ((*_data)[5] & 0xC1) | uint8_t((version & 0x1F) << 1);
+        rwContent()[5] = (content()[5] & 0xC1) | uint8_t((version & 0x1F) << 1);
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -428,7 +406,7 @@ void ts::Section::setVersion(uint8_t version, bool recompute_crc)
 void ts::Section::setIsCurrent(bool is_current, bool recompute_crc)
 {
     if (isLongSection()) {
-        (*_data)[5] = ((*_data)[5] & 0xFE) | (is_current ? 0x01 : 0x00);
+        rwContent()[5] = (content()[5] & 0xFE) | (is_current ? 0x01 : 0x00);
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -438,7 +416,7 @@ void ts::Section::setIsCurrent(bool is_current, bool recompute_crc)
 void ts::Section::setSectionNumber(uint8_t num, bool recompute_crc)
 {
     if (isLongSection()) {
-        (*_data)[6] = num;
+        rwContent()[6] = num;
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -448,7 +426,7 @@ void ts::Section::setSectionNumber(uint8_t num, bool recompute_crc)
 void ts::Section::setLastSectionNumber(uint8_t num, bool recompute_crc)
 {
     if (isLongSection()) {
-        (*_data)[7] = num;
+        rwContent()[7] = num;
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -458,7 +436,7 @@ void ts::Section::setLastSectionNumber(uint8_t num, bool recompute_crc)
 void ts::Section::setUInt8(size_t offset, uint8_t value, bool recompute_crc)
 {
     if (_is_valid && offset < payloadSize()) {
-        PutUInt8(_data->data() + headerSize() + offset, value);
+        PutUInt8(rwContent() + headerSize() + offset, value);
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -468,7 +446,7 @@ void ts::Section::setUInt8(size_t offset, uint8_t value, bool recompute_crc)
 void ts::Section::setUInt16(size_t offset, uint16_t value, bool recompute_crc)
 {
     if (_is_valid && offset + 1 < payloadSize()) {
-        PutUInt16(_data->data() + headerSize() + offset, value);
+        PutUInt16(rwContent() + headerSize() + offset, value);
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -478,7 +456,7 @@ void ts::Section::setUInt16(size_t offset, uint16_t value, bool recompute_crc)
 void ts::Section::setUInt32(size_t offset, uint32_t value, bool recompute_crc)
 {
     if (_is_valid && offset + 3 < payloadSize()) {
-        PutUInt32(_data->data() + headerSize() + offset, value);
+        PutUInt32(rwContent() + headerSize() + offset, value);
         if (recompute_crc) {
             recomputeCRC();
         }
@@ -490,24 +468,25 @@ void ts::Section::setUInt32(size_t offset, uint32_t value, bool recompute_crc)
 // Append binary data to the payload of the section.
 //----------------------------------------------------------------------------
 
-void ts::Section::appendPayload(const void* data, size_t size, bool recompute_crc)
+void ts::Section::appendPayload(const void* data, size_t dsize, bool recompute_crc)
 {
-    if (_is_valid && data != nullptr && size != 0) {
+    if (_is_valid && data != nullptr && dsize != 0) {
         // Update section size in header.
-        PutUInt16(_data->data() + 1, (GetUInt16(_data->data() + 1) & 0xF000) | uint16_t((_data->size() + size - 3) & 0x0FFF));
+        PutUInt16(rwContent() + 1, (GetUInt16(content() + 1) & 0xF000) | uint16_t((size() + dsize - 3) & 0x0FFF));
 
         // Remove trailing CRC (now invalid) at end of long section.
-        const bool is_long = isLongSection() && _data->size() >= LONG_SECTION_HEADER_SIZE + 4;
+        const bool is_long = isLongSection() && size() >= LONG_SECTION_HEADER_SIZE + 4;
         if (is_long) {
-            _data->resize(_data->size() - 4);
+            rwResize(size() - 4);
         }
 
         // Append the data.
-        _data->append(data, size);
+        rwAppend(data, dsize);
 
         // Restore a trailing CRC at end of long section and optionally recompute it.
         if (is_long) {
-            _data->appendUInt32(0);
+            static const uint8_t byte4[4] = {0, 0, 0, 0};
+            rwAppend(byte4, sizeof(byte4));
             if (recompute_crc) {
                 recomputeCRC();
             }
@@ -520,21 +499,21 @@ void ts::Section::appendPayload(const void* data, size_t size, bool recompute_cr
 // Truncate the payload of the section.
 //----------------------------------------------------------------------------
 
-void ts::Section::truncatePayload(size_t size, bool recompute_crc)
+void ts::Section::truncatePayload(size_t dsize, bool recompute_crc)
 {
     const size_t previous_size = payloadSize();
 
     // Do something only if the payload is really truncated.
-    if (_is_valid && size < previous_size) {
+    if (_is_valid && dsize < previous_size) {
 
         // Size to be removed from section:
-        const size_t remove = previous_size - size;
+        const size_t remove = previous_size - dsize;
 
         // Update section size in header.
-        PutUInt16(_data->data() + 1, (GetUInt16(_data->data() + 1) & 0xF000) | uint16_t((_data->size() - remove - 3) & 0x0FFF));
+        PutUInt16(rwContent() + 1, (GetUInt16(content() + 1) & 0xF000) | uint16_t((size() - remove - 3) & 0x0FFF));
 
         // Truncate the section.
-        _data->resize(_data->size() - remove);
+        rwResize(size() - remove);
 
         // Optionally recompute it.
         if (recompute_crc && isLongSection()) {
@@ -551,7 +530,7 @@ void ts::Section::truncatePayload(size_t size, bool recompute_crc)
 std::ostream& ts::Section::write(std::ostream& strm, Report& report) const
 {
     if (_is_valid && strm) {
-        strm.write(reinterpret_cast <const char*> (_data->data()), std::streamsize(_data->size()));
+        strm.write(reinterpret_cast<const char*>(content()), std::streamsize(size()));
         if (!strm) {
             report.error(u"error writing section into binary stream");
         }
@@ -582,7 +561,7 @@ std::istream& ts::Section::read(std::istream& strm, CRC32::Validation crc_op, Re
     // Read short header
     uint8_t header[3];
     std::streampos position(strm.tellg());
-    strm.read(reinterpret_cast <char*> (header), 3);
+    strm.read(reinterpret_cast<char*>(header), 3);
     size_t insize = size_t(strm.gcount());
 
     // Read rest of the section
@@ -638,16 +617,14 @@ std::ostream& ts::Section::dump(std::ostream& strm, int indent, uint16_t cas, bo
     // If PID is the null PID, this means "unknown PID"
     if (!no_header) {
         strm << margin << ""
-             << UString::Format(u"* Section dump, PID 0x%X (%d), TID %d", {_source_pid, _source_pid, names::TID(duck, tid, cas, NamesFlags::BOTH_FIRST)})
+             << UString::Format(u"* Section dump, PID 0x%X (%<d), TID %s", {sourcePID(), names::TID(duck, tid, cas, NamesFlags::BOTH_FIRST)})
              << std::endl
              << margin << "  Section size: " << size() << " bytes, header: " << (isLongSection() ? "long" : "short")
              << std::endl;
         if (isLongSection()) {
             strm << margin
-                 << UString::Format(u"  TIDext: 0x%X (%d), version: %d, index: %d, last: %d, %s",
-                                    {tableIdExtension(), tableIdExtension(),
-                                     version(), sectionNumber(), lastSectionNumber(),
-                                     (isNext() ? u"next" : u"current")})
+                 << UString::Format(u"  TIDext: 0x%X (%<d), version: %d, index: %d, last: %d, %s",
+                                    {tableIdExtension(), version(), sectionNumber(), lastSectionNumber(), (isNext() ? u"next" : u"current")})
                  << std::endl;
         }
     }

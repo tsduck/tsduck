@@ -72,10 +72,7 @@ namespace ts {
         //! Get the value of the CRC32 as computed so far.
         //! @return The value of the CRC32 as computed so far.
         //!
-        uint32_t value() const
-        {
-            return _fcs;
-        }
+        uint32_t value() const { return _fcs; }
 
         //!
         //! Convert to a 32-bit integer.
@@ -89,48 +86,33 @@ namespace ts {
         //! @param [in] c Other instance to compare.
         //! @return True if the two CRC32 are identical, false otherwise.
         //!
-        bool operator==(const CRC32& c) const
-        {
-            return _fcs == c._fcs;
-        }
+        bool operator==(const CRC32& c) const { return _fcs == c._fcs; }
 
         //!
         //! Comparison operator with another CRC32 instance.
         //! @param [in] c Other instance to compare.
         //! @return True if the two CRC32 are different, false otherwise.
         //!
-        bool operator!=(const CRC32& c) const
-        {
-            return _fcs != c._fcs;
-        }
+        bool operator!=(const CRC32& c) const { return _fcs != c._fcs; }
 
         //!
         //! Comparison operator with a 32-bit integer.
         //! @param [in] c A CRC32 value to compare.
         //! @return True if the two CRC32 are identical, false otherwise.
         //!
-        bool operator==(uint32_t c) const
-        {
-            return _fcs == c;
-        }
+        bool operator==(uint32_t c) const { return _fcs == c; }
 
         //!
         //! Comparison operator with a 32-bit integer.
         //! @param [in] c A CRC32 value to compare.
         //! @return True if the two CRC32 are different, false otherwise.
         //!
-        bool operator!=(uint32_t c) const
-        {
-            return _fcs != c;
-        }
+        bool operator!=(uint32_t c) const { return _fcs != c; }
 
         //!
         //! Reset the CRC32 computation, restart a new computation.
         //!
-        void reset()
-        {
-            _fcs = 0xFFFFFFFF;
-        }
+        void reset() { _fcs = 0xFFFFFFFF; }
 
         //!
         //! What to do with a CRC32.

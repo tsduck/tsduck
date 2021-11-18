@@ -228,7 +228,7 @@ void ts::TeletextDemux::handlePESPacket(const PESPacket& packet)
     SuperClass::handlePESPacket(packet);
 
     // Create PID context if non existent.
-    const PID pid = packet.getSourcePID();
+    const PID pid = packet.sourcePID();
     PIDContext& pc(_pids[pid]);
 
     // Explore PES payload.

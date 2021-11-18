@@ -295,7 +295,7 @@ void ts::T2MIPlugin::handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid,
 
 void ts::T2MIPlugin::handleT2MIPacket(T2MIDemux& demux, const T2MIPacket& pkt)
 {
-    const PID pid = pkt.getSourcePID();
+    const PID pid = pkt.sourcePID();
     const bool hasPLP = pkt.plpValid();
     const uint8_t plp = hasPLP ? pkt.plp() : 0;
 

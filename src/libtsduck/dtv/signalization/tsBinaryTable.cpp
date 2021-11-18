@@ -281,25 +281,25 @@ void ts::BinaryTable::setSourcePID(PID pid)
 // Index of first and last TS packet of the table in the demultiplexed stream.
 //----------------------------------------------------------------------------
 
-ts::PacketCounter ts::BinaryTable::getFirstTSPacketIndex() const
+ts::PacketCounter ts::BinaryTable::firstTSPacketIndex() const
 {
     bool found = false;
     PacketCounter first = std::numeric_limits<PacketCounter>::max();
     for (auto it = _sections.begin(); it != _sections.end(); ++it) {
         if (!it->isNull()) {
             found = true;
-            first = std::min(first, (*it)->getFirstTSPacketIndex());
+            first = std::min(first, (*it)->firstTSPacketIndex());
         }
     }
     return found ? first : 0;
 }
 
-ts::PacketCounter ts::BinaryTable::getLastTSPacketIndex() const
+ts::PacketCounter ts::BinaryTable::lastTSPacketIndex() const
 {
     PacketCounter last = 0;
     for (auto it = _sections.begin(); it != _sections.end(); ++it) {
         if (!it->isNull()) {
-            last = std::max(last, (*it)->getLastTSPacketIndex());
+            last = std::max(last, (*it)->lastTSPacketIndex());
         }
     }
     return last;
@@ -579,8 +579,8 @@ ts::xml::Element* ts::BinaryTable::toXML(DuckContext& duck, xml::Element* parent
             meta->setDateTimeAttribute(u"time", Time::CurrentLocalTime());
         }
         if (opt.setPackets) {
-            meta->setIntAttribute(u"first_ts_packet", getFirstTSPacketIndex());
-            meta->setIntAttribute(u"last_ts_packet", getLastTSPacketIndex());
+            meta->setIntAttribute(u"first_ts_packet", firstTSPacketIndex());
+            meta->setIntAttribute(u"last_ts_packet", lastTSPacketIndex());
         }
     }
 

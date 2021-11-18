@@ -2,7 +2,7 @@ CONFIG += plugin
 include(../tsduck.pri)
 TEMPLATE = lib
 TARGET = libtsduck
-INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name release\\* ! -name debug\\*")
+INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name __pycache__")
 
 linux|mac {
     QMAKE_CXXFLAGS += $$system("curl-config --cflags")
@@ -21,5 +21,5 @@ mac {
 QMAKE_CXXFLAGS += $$system("$$PROJROOT/scripts/java-config.sh --cflags")
 
 DISTFILES += $$TS_CONFIG_FILES
-HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\* ! -path \\*/release\\* ! -path \\*/debug\\*")
-SOURCES   += $$system("find $$SRCROOT/libtsduck -name \\*.cpp ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\* ! -path \\*/release\\* ! -path \\*/debug\\*")
+HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\*")
+SOURCES   += $$system("find $$SRCROOT/libtsduck -name \\*.cpp ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\*")

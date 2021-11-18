@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
+#include "tsDemuxedData.h"
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
 #include "tsTablesPtr.h"
@@ -56,9 +57,14 @@ namespace ts {
     //! Typically, if the ByteBlock comes from the wire, use CHECK.
     //! If the ByteBlock is built by the application, use COMPUTE,
     //!
-    class TSDUCKDLL Section : public AbstractDefinedByStandards
+    class TSDUCKDLL Section : public DemuxedData, public AbstractDefinedByStandards
     {
     public:
+        //!
+        //! Explicit identification of super class.
+        //!
+        typedef DemuxedData SuperClass;
+
         //!
         //! Default constructor.
         //! Section is initially marked invalid.
@@ -84,7 +90,7 @@ namespace ts {
         Section(const void* content,
                 size_t content_size,
                 PID source_pid = PID_NULL,
-                CRC32::Validation crc_op = CRC32::IGNORE);
+                CRC32::Validation crc_op = CRC32::Validation::IGNORE);
 
         //!
         //! Constructor from full binary content.
@@ -95,7 +101,7 @@ namespace ts {
         //!
         Section(const ByteBlock& content,
                 PID source_pid = PID_NULL,
-                CRC32::Validation crc_op = CRC32::IGNORE);
+                CRC32::Validation crc_op = CRC32::Validation::IGNORE);
 
         //!
         //! Constructor from full binary content.
@@ -108,7 +114,7 @@ namespace ts {
         //!
         Section(const ByteBlockPtr& content_ptr,
                 PID source_pid = PID_NULL,
-                CRC32::Validation crc_op = CRC32::IGNORE);
+                CRC32::Validation crc_op = CRC32::Validation::IGNORE);
 
         //!
         //! Constructor from a short section payload.
@@ -150,6 +156,13 @@ namespace ts {
                 size_t payload_size,
                 PID source_pid = PID_NULL);
 
+        // Inherited methods.
+        virtual void clear() override;
+        virtual void reload(const void* content, size_t content_size, PID source_pid = PID_NULL) override;
+        virtual void reload(const ByteBlock& content, PID source_pid = PID_NULL) override;
+        virtual void reload(const ByteBlockPtr& content_ptr, PID source_pid = PID_NULL) override;
+        virtual Standards definingStandards() const override;
+
         //!
         //! Reload from full binary content.
         //! The content is copied into the section if valid.
@@ -158,13 +171,7 @@ namespace ts {
         //! @param [in] source_pid PID from which the section was read.
         //! @param [in] crc_op How to process the CRC32.
         //!
-        void reload(const void* content,
-                    size_t content_size,
-                    PID source_pid = PID_NULL,
-                    CRC32::Validation crc_op = CRC32::IGNORE)
-        {
-            initialize(new ByteBlock(content, content_size), source_pid, crc_op);
-        }
+        void reload(const void* content, size_t content_size, PID source_pid, CRC32::Validation crc_op);
 
         //!
         //! Reload from full binary content.
@@ -172,12 +179,7 @@ namespace ts {
         //! @param [in] source_pid PID from which the section was read.
         //! @param [in] crc_op How to process the CRC32.
         //!
-        void reload(const ByteBlock& content,
-                     PID source_pid = PID_NULL,
-                     CRC32::Validation crc_op = CRC32::IGNORE)
-        {
-            initialize(new ByteBlock(content), source_pid, crc_op);
-        }
+        void reload(const ByteBlock& content, PID source_pid, CRC32::Validation crc_op);
 
         //!
         //! Reload from full binary content.
@@ -187,12 +189,7 @@ namespace ts {
         //! @param [in] source_pid PID from which the section was read.
         //! @param [in] crc_op How to process the CRC32.
         //!
-        void reload(const ByteBlockPtr& content_ptr,
-                    PID source_pid = PID_NULL,
-                    CRC32::Validation crc_op = CRC32::IGNORE)
-        {
-            initialize(content_ptr, source_pid, crc_op);
-        }
+        void reload(const ByteBlockPtr& content_ptr, PID source_pid, CRC32::Validation crc_op);
 
         //!
         //! Reload from a short section payload.
@@ -202,11 +199,7 @@ namespace ts {
         //! @param [in] payload_size Size in bytes of the payload data.
         //! @param [in] source_pid PID from which the section was read.
         //!
-        void reload(TID tid,
-                    bool is_private_section,
-                    const void* payload,
-                    size_t payload_size,
-                    PID source_pid = PID_NULL);
+        void reload(TID tid, bool is_private_section, const void* payload, size_t payload_size, PID source_pid = PID_NULL);
 
         //!
         //! Reload from a long section payload.
@@ -235,25 +228,19 @@ namespace ts {
                     PID source_pid = PID_NULL);
 
         //!
-        //! Clear section content.
-        //! Becomes invalid section.
-        //!
-        void clear()
-        {
-            _is_valid = false;
-            _source_pid = PID_NULL;
-            _first_pkt = 0;
-            _last_pkt = 0;
-            _data.clear();
-        }
-
-        //!
         //! Assignment operator.
         //! The sections contents are referenced, and thus shared between the two section objects.
         //! @param [in] other Other section to assign to this object.
         //! @return A reference to this object.
         //!
         Section& operator=(const Section& other);
+
+        //!
+        //! Move assignment operator.
+        //! @param [in,out] other Other section to move into this object.
+        //! @return A reference to this object.
+        //!
+        Section& operator=(const Section&& other) noexcept;
 
         //!
         //! Duplication.
@@ -267,10 +254,7 @@ namespace ts {
         //! Check if the section has valid content.
         //! @return True if the section has valid content.
         //!
-        bool isValid() const
-        {
-            return _is_valid;
-        }
+        bool isValid() const { return _is_valid; }
 
         //!
         //! Equality operator.
@@ -288,19 +272,13 @@ namespace ts {
         //! @param [in] other Other section to compare.
         //! @return True if the two sections are different. False otherwise.
         //!
-        bool operator!=(const Section& other) const
-        {
-            return !(*this == other);
-        }
+        bool operator!=(const Section& other) const { return !operator==(other); }
 
         //!
         //! Get the table id.
         //! @return The table id or TID_NULL if the table is invalid.
         //!
-        TID tableId() const
-        {
-            return _is_valid ? (*_data)[0] : uint8_t(TID_NULL);
-        }
+        TID tableId() const { return _is_valid ? content()[0] : uint8_t(TID_NULL); }
 
         //!
         //! This static method checks if a data area of at least 3 bytes can be the start of a long section.
@@ -314,129 +292,67 @@ namespace ts {
         //! Check if the section is a long one.
         //! @return True if the section is a long one.
         //!
-        bool isLongSection() const
-        {
-            return _is_valid && StartLongSection(_data->data(), _data->size());
-        }
+        bool isLongSection() const { return _is_valid && StartLongSection(content(), size()); }
 
         //!
         //! Check if the section is a short one.
         //! @return True if the section is a short one.
         //!
-        bool isShortSection() const
-        {
-            return _is_valid && !isLongSection();
-        }
+        bool isShortSection() const { return _is_valid && !isLongSection(); }
 
         //!
         //! Check if the section is a private one (ie. not MPEG-defined).
         //! @return True if the section is a private one (ie. not MPEG-defined).
         //!
-        bool isPrivateSection() const
-        {
-            return _is_valid && ((*_data)[1] & 0x40) != 0;
-        }
+        bool isPrivateSection() const { return _is_valid && (content()[1] & 0x40) != 0; }
 
         //!
         //! Get the table id extension (long section only).
         //! @return The table id extension.
         //!
-        uint16_t tableIdExtension() const
-        {
-            return isLongSection() ? GetUInt16(&(*_data)[3]) : 0;
-        }
+        uint16_t tableIdExtension() const { return isLongSection() ? GetUInt16(content() + 3) : 0; }
 
         //!
         //! Get the section version number (long section only).
         //! @return The section version number.
         //!
-        uint8_t version() const
-        {
-            return isLongSection() ? (((*_data)[5] >> 1) & 0x1F) : 0;
-        }
+        uint8_t version() const { return isLongSection() ? ((content()[5] >> 1) & 0x1F) : 0; }
 
         //!
         //! Check if the section is "current", not "next" (long section only).
         //! @return True if the section is "current", false if it is "next".
         //!
-        bool isCurrent() const
-        {
-            return isLongSection() && ((*_data)[5] & 0x01) != 0;
-        }
+        bool isCurrent() const { return isLongSection() && (content()[5] & 0x01) != 0; }
 
         //!
         //! Check if the section is "next", not "current" (long section only).
         //! @return True if the section is "next", false if it is "current".
         //!
-        bool isNext() const
-        {
-            return isLongSection() && ((*_data)[5] & 0x01) == 0;
-        }
+        bool isNext() const { return isLongSection() && (content()[5] & 0x01) == 0; }
 
         //!
         //! Get the section number in the table (long section only).
         //! @return The section number in the table.
         //!
-        uint8_t sectionNumber() const
-        {
-            return isLongSection() ? (*_data)[6] : 0;
-        }
+        uint8_t sectionNumber() const { return isLongSection() ? content()[6] : 0; }
 
         //!
         //! Get the number of the last section in the table (long section only).
         //! @return The number of the last section in the table.
         //!
-        uint8_t lastSectionNumber() const
-        {
-            return isLongSection() ? (*_data)[7] : 0;
-        }
+        uint8_t lastSectionNumber() const { return isLongSection() ? content()[7] : 0; }
 
         //!
         //! Get the table id and id extension (long section only).
         //! @return The table id and id extension as an ETID.
         //!
-        ETID etid() const
-        {
-            return isLongSection() ? ETID(tableId(), tableIdExtension()) : ETID(tableId());
-        }
-
-        //!
-        //! Get the source PID.
-        //! @return The source PID.
-        //!
-        PID sourcePID() const
-        {
-            return _source_pid;
-        }
-
-        //!
-        //! Access to the full binary content of the section.
-        //! Do not modify content.
-        //! @return Address of the full binary content of the section.
-        //! May be invalidated after modification in section.
-        //!
-        const uint8_t* content() const
-        {
-            return _data->data();
-        }
-
-        //!
-        //! Size of the binary content of the section.
-        //! @return Size of the binary content of the section.
-        //!
-        size_t size() const
-        {
-            return _data->size();
-        }
+        ETID etid() const { return isLongSection() ? ETID(tableId(), tableIdExtension()) : ETID(tableId()); }
 
         //!
         //! Size of the section header.
         //! @return Size of the section header.
         //!
-        size_t headerSize() const
-        {
-            return _is_valid ? (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE) : 0;
-        }
+        size_t headerSize() const { return _is_valid ? (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE) : 0; }
 
         //!
         //! Access to the payload of the section.
@@ -451,7 +367,7 @@ namespace ts {
         //!
         const uint8_t* payload() const
         {
-            return _is_valid ? _data->data() + (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE) : nullptr;
+            return _is_valid ? (content() + (isLongSection() ? LONG_SECTION_HEADER_SIZE : SHORT_SECTION_HEADER_SIZE)) : nullptr;
         }
 
         //!
@@ -461,7 +377,7 @@ namespace ts {
         //!
         size_t payloadSize() const
         {
-            return _is_valid ? _data->size() - (isLongSection() ? LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE : SHORT_SECTION_HEADER_SIZE) : 0;
+            return _is_valid ? size() - (isLongSection() ? LONG_SECTION_HEADER_SIZE + SECTION_CRC32_SIZE : SHORT_SECTION_HEADER_SIZE) : 0;
         }
 
         //!
@@ -563,53 +479,6 @@ namespace ts {
         void truncatePayload(size_t size, bool recompute_crc = true);
 
         //!
-        //! Set the source PID.
-        //! @param [in] pid The source PID.
-        //!
-        void setSourcePID(PID pid)
-        {
-            _source_pid = pid;
-        }
-
-        //!
-        //! Index of first TS packet of the section in the demultiplexed stream.
-        //! Usually valid only if the section was extracted by a demux.
-        //! @return The first TS packet of the section in the demultiplexed stream.
-        //!
-        PacketCounter getFirstTSPacketIndex() const
-        {
-            return _first_pkt;
-        }
-
-        //!
-        //! Index of last TS packet of the section in the demultiplexed stream.
-        //! Usually valid only if the section was extracted by a demux.
-        //! @return The last TS packet of the section in the demultiplexed stream.
-        //!
-        PacketCounter getLastTSPacketIndex() const
-        {
-            return _last_pkt;
-        }
-
-        //!
-        //! Set the first TS packet of the section in the demultiplexed stream.
-        //! @param [in] i The first TS packet of the section in the demultiplexed stream.
-        //!
-        void setFirstTSPacketIndex(PacketCounter i)
-        {
-            _first_pkt = i;
-        }
-
-        //!
-        //! Set the last TS packet of the section in the demultiplexed stream.
-        //! @param [in] i The last TS packet of the section in the demultiplexed stream.
-        //!
-        void setLastTSPacketIndex(PacketCounter i)
-        {
-            _last_pkt = i;
-        }
-
-        //!
         //! This method recomputes and replaces the CRC32 of the section.
         //!
         void recomputeCRC();
@@ -632,7 +501,7 @@ namespace ts {
         //! @param [in,out] report Where to report errors.
         //! @return A reference to the @a strm object.
         //!
-        std::istream& read(std::istream& strm, CRC32::Validation crc_op = CRC32::IGNORE, Report& report = CERR);
+        std::istream& read(std::istream& strm, CRC32::Validation crc_op = CRC32::Validation::IGNORE, Report& report = CERR);
 
         //!
         //! Write a section to standard streams (binary mode).
@@ -679,20 +548,12 @@ namespace ts {
         template <class CONTAINER>
         static PacketCounter PacketCount(const CONTAINER& container, bool pack = true);
 
-        // Implementation of AbstractDefinedByStandards
-        virtual Standards definingStandards() const override;
-
     private:
         // Private fields
-        bool          _is_valid;    // Content of *_data is a valid section
-        PID           _source_pid;  // Source PID (informational)
-        PacketCounter _first_pkt;   // Index of first packet in stream (informational)
-        PacketCounter _last_pkt;    // Index of last packet in stream (informational)
-        ByteBlockPtr  _data;        // Full binary content of the section
+        bool _is_valid;
 
-        // Helpers for constructors
-        void initialize(PID);
-        void initialize(const ByteBlockPtr&, PID, CRC32::Validation);
+        // Validate binary content.
+        void validate(CRC32::Validation);
 
         // Inaccessible operations
         Section(const Section&) = delete;
