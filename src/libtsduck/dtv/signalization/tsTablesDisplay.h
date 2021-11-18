@@ -43,6 +43,7 @@ namespace ts {
     class Report;
     class BinaryTable;
     class Section;
+    class DemuxedData;
     class Descriptor;
     class DescriptorList;
     class PSIBuffer;
@@ -141,6 +142,16 @@ namespace ts {
         //! @param [in] cas CAS id of the table.
         //!
         virtual void logSectionData(const Section& section, const UString& header = UString(), size_t max_bytes = 0, uint16_t cas = CASID_NULL);
+
+        //!
+        //! Display an invalid section on the output stream.
+        //! @param [in] data The invalid section.
+        //! @param [in] reason Reason for invalid section.
+        //! @param [in] margin Left margin content.
+        //! @param [in] cas CAS id of the table.
+        //! @param [in] no_header If true, do not display the section header.
+        //!
+        virtual void displayInvalidSection(const DemuxedData& data, const UString& reason = UString(), const UString& margin = UString(), uint16_t cas = CASID_NULL, bool no_header = false);
 
         //!
         //! Display a descriptor on the output stream.

@@ -300,10 +300,10 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
 
     // Display common header lines.
     if (!no_header) {
-        strm << margin << UString::Format(u"* %s, TID %d (0x%X)", {names::TID(_duck, tid, cas), tid, tid});
+        strm << margin << UString::Format(u"* %s, TID %d (0x%<X)", {names::TID(_duck, tid, cas), tid});
         if (section.sourcePID() != PID_NULL) {
             // If PID is the null PID, this means "unknown PID"
-            strm << UString::Format(u", PID %d (0x%X)", {section.sourcePID(), section.sourcePID()});
+            strm << UString::Format(u", PID %d (0x%<X)", {section.sourcePID()});
         }
         strm << std::endl;
         if (section.isShortSection()) {
@@ -365,8 +365,7 @@ void ts::TablesDisplay::logSectionData(const Section& section, const UString& he
     }
 
     // Output exactly one line.
-    std::ostream& strm(_duck.out());
-    strm << header << handler(section, max_bytes) << std::endl;
+    _duck.out() << header << handler(section, max_bytes) << std::endl;
 }
 
 
@@ -384,6 +383,44 @@ ts::UString ts::TablesDisplay::LogUnknownSectionData(const Section& section, siz
 
     // Build log line.
     return UString::Dump(section.payload(), log_size, UString::SINGLE_LINE) + (section.payloadSize() > log_size ? u" ..." : u"");
+}
+
+
+//----------------------------------------------------------------------------
+// Display an invalid section on the output stream.
+//----------------------------------------------------------------------------
+
+void ts::TablesDisplay::displayInvalidSection(const DemuxedData& data, const UString& reason, const UString& margin, uint16_t cas, bool no_header)
+{
+    std::ostream& strm(_duck.out());
+
+    // Display hexa dump of the section
+    if (_raw_dump) {
+        strm << UString::Dump(data.content(), data.size(), _raw_flags | UString::BPL, margin.size(), 16) << std::endl;
+        return;
+    }
+
+    const TID tid = data.size() > 0 ? data.content()[0] : TID(TID_NULL);
+    cas = _duck.casId(cas);
+
+    // Display common header lines.
+    if (!no_header) {
+        strm << margin << "* Invalid section";
+        if (!reason.empty()) {
+            strm << ", " << reason;
+        }
+        strm << std::endl << margin << "  ";
+        if (tid != TID_NULL) {
+            strm << UString::Format(u"%s, TID %d (0x%<X), ", {names::TID(_duck, tid, cas), tid});
+        }
+        if (data.sourcePID() != PID_NULL) {
+            strm << UString::Format(u"PID %d (0x%<X), ", {data.sourcePID()});
+        }
+        strm << UString::Format(u"%'d bytes:", {data.size()}) << std::endl;
+    }
+
+    // Display invalid section data
+    strm << UString::Dump(data.content(), data.size(), UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, margin.size() + 4, 16);
 }
 
 
