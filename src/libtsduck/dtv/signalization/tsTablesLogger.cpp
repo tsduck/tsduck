@@ -84,6 +84,8 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _udp_raw(false),
     _all_sections(false),
     _all_once(false),
+    _invalid_sections(false),
+    _invalid_only(false),
     _max_tables(0),
     _time_stamp(false),
     _packet_index(false),
@@ -150,7 +152,8 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"PID, table id, table id extension, section number and version.");
 
     args.option(u"all-sections", 'a');
-    args.help(u"all-sections", u"Display/save all sections, as they appear in the stream. "
+    args.help(u"all-sections",
+              u"Display/save all sections, as they appear in the stream. "
               u"By default, collect complete tables, with all sections of the tables grouped "
               u"and ordered and collect each version of a table only once. "
               u"Note that this mode is incompatible with XML or JSON output since valid XML "
@@ -179,6 +182,13 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.option(u"include-next");
     args.help(u"include-next",
               u"Include long sections with \"next\" indicator. By default, they are excluded.");
+
+    args.option(u"invalid-sections");
+    args.help(u"invalid-sections",
+              u"Display and dump invalid sections. These sections are normally dropped "
+              u"because they are truncated, incomplete, corrupted, have an invalid CRC32, etc. "
+              u"Because these sections are invalid, they cannot be formatted as normal sections. "
+              u"Instead, a binary and text dump is displayed.");
 
     args.option(u"ip-udp", 'i', Args::STRING);
     args.help(u"ip-udp", u"address:port",
@@ -245,6 +255,10 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.help(u"no-encapsulation",
               u"With --ip-udp, send the tables as raw binary messages in UDP packets. "
               u"By default, the tables are formatted into TLV messages.");
+
+    args.option(u"only-invalid-sections");
+    args.help(u"only-invalid-sections",
+              u"Same as --invalid-sections but do not display valid tables and sections.");
 
     args.option(u"output-file", 'o', Args::STRING);
     args.help(u"output-file", u"filename",
@@ -366,6 +380,8 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _fill_eit = args.present(u"fill-eit");
     _all_once = args.present(u"all-once");
     _all_sections = _all_once || _pack_all_sections || args.present(u"all-sections");
+    _invalid_only = args.present(u"only-invalid-sections");
+    _invalid_sections = _invalid_only || args.present(u"invalid-sections");
     args.getIntValue(_max_tables, u"max-tables", 0);
     _time_stamp = args.present(u"time-stamp");
     _packet_index = args.present(u"packet-index");
@@ -433,14 +449,9 @@ bool ts::TablesLogger::open()
     _demux.setPIDFilter(_initial_pids);
 
     // Set either a table or section handler, depending on --all-sections
-    if (_all_sections) {
-        _demux.setTableHandler(nullptr);
-        _demux.setSectionHandler(this);
-    }
-    else {
-        _demux.setTableHandler(this);
-        _demux.setSectionHandler(nullptr);
-    }
+    _demux.setTableHandler(_all_sections ? nullptr : this);
+    _demux.setSectionHandler(_all_sections ? this : nullptr);
+    _demux.setInvalidSectionHandler(_invalid_sections ? this : nullptr);
 
     // Type of sections to get.
     _demux.setCurrentNext(_use_current, _use_next);
@@ -590,7 +601,7 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
     // Filtering done, now save table in various formats.
 
     // Save table in text format.
-    if (_use_text) {
+    if (_use_text && !_invalid_only) {
         preDisplay(table.firstTSPacketIndex(), table.lastTSPacketIndex());
         if (_logger) {
             // Short log message
@@ -599,7 +610,7 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
         else {
             // Full table formatting
             _display.displayTable(table, u"", _cas_mapper.casId(pid));
-            _display.out() << std::endl;
+            _display << std::endl;
         }
         postDisplay();
     }
@@ -756,7 +767,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // Filtering done, now save data.
     // Note that no XML can be produced since valid XML structures contain complete tables only.
 
-    if (_use_text) {
+    if (_use_text && !_invalid_only) {
         preDisplay(sect.firstTSPacketIndex(), sect.lastTSPacketIndex());
         if (_logger) {
             // Short log message
@@ -765,7 +776,7 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
         else {
             // Full section formatting.
             _display.displaySection(sect, u"", _cas_mapper.casId(pid));
-            _display.out() << std::endl;
+            _display << std::endl;
         }
         postDisplay();
     }
@@ -799,6 +810,43 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     if (_max_tables > 0 && _table_count >= _max_tables) {
         _exit = true;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked when a complete section is available.
+// Only used with option --invalid-sections
+//----------------------------------------------------------------------------
+
+void ts::TablesLogger::handleInvalidSection(SectionDemux& demux, const DemuxedData& ddata)
+{
+    const uint8_t* const data = ddata.content();
+    const size_t size = ddata.size();
+
+    // Try to determine the reason for the invalid section.
+    const size_t sec_size = Section::SectionSize(data, size);
+    const bool is_long = Section::StartLongSection(data, size);
+    UString reason;
+    if (sec_size > 0 && sec_size != size) {
+        reason.format(u"invalid section size: %d, data size: %d", {sec_size, size});
+    }
+    else if (is_long && sec_size > 4 && CRC32(data, sec_size - 4) != GetUInt32(data + sec_size)) {
+        reason = u"invalid CRC32, corrupted section";
+    }
+    else if (is_long && data[6] > data[7]) {
+        reason.format(u"invalid section number: %d, last section: %d", {data[6], data[7]});
+    }
+
+    preDisplay(ddata.firstTSPacketIndex(), ddata.lastTSPacketIndex());
+    if (_logger) {
+        // Short log message
+        logInvalid(ddata, reason);
+    }
+    else {
+        _display.displayInvalidSection(ddata, reason, u"", _cas_mapper.casId(ddata.sourcePID()));
+        _display << std::endl;
+    }
+    postDisplay();
 }
 
 
@@ -1055,29 +1103,44 @@ void ts::TablesLogger::saveBinarySection(const Section& sect)
 // Log a table (option --log)
 //----------------------------------------------------------------------------
 
-void ts::TablesLogger::logSection(const Section& sect)
+ts::UString ts::TablesLogger::logHeader(const DemuxedData& data)
 {
     UString header;
-
-    // Display time stamp if required.
     if (_time_stamp) {
         header.format(u"%s: ", {Time::CurrentLocalTime()});
     }
-
-    // Display packet index if required.
     if (_packet_index) {
-        header.format(u"Packet %'d to %'d, ", {sect.firstTSPacketIndex(), sect.lastTSPacketIndex()});
+        header.format(u"Packet %'d to %'d, ", {data.firstTSPacketIndex(), data.lastTSPacketIndex()});
     }
+    header.format(u"PID 0x%X", {data.sourcePID()});
+    return header;
+}
 
-    // Table identification.
-    header.format(u"PID 0x%X, TID 0x%X", {sect.sourcePID(), sect.tableId()});
+void ts::TablesLogger::logSection(const Section& sect)
+{
+    UString header(logHeader(sect));
+    header.format(u", TID 0x%X", {sect.tableId()});
     if (sect.isLongSection()) {
         header.format(u", TIDext 0x%X, V%d, Sec %d/%d", {sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber()});
     }
-    header += u": ";
-
-    // Output the line through the display object.
+    header.append(u": ");
     _display.logSectionData(sect, header, _log_size, _cas_mapper.casId(sect.sourcePID()));
+}
+
+void ts::TablesLogger::logInvalid(const DemuxedData& data, const UString& reason)
+{
+    // Number of bytes to log:
+    const size_t size = _log_size == 0 ? data.size() : std::min(_log_size, data.size());
+
+    _display << logHeader(data) << ", invalid section";
+    if (!reason.empty()) {
+        _display << " (" << reason << ")";
+    }
+    _display << ": " << UString::Dump(data.content(), size, UString::SINGLE_LINE);
+    if (data.size() > size) {
+        _display << " ...";
+    }
+    _display << std::endl;
 }
 
 

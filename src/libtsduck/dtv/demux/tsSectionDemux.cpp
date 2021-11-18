@@ -213,6 +213,7 @@ ts::SectionDemux::SectionDemux(DuckContext& duck, TableHandlerInterface* table_h
     SuperClass(duck, pid_filter),
     _table_handler(table_handler),
     _section_handler(section_handler),
+    _invalid_handler(nullptr),
     _pids(),
     _status(),
     _get_current(true),
@@ -424,7 +425,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         // Exit when end of section is missing. Wait for next TS packets.
 
         if (ts_size < section_length) {
-            _status.truncated_sect++;
             break;
         }
 
@@ -432,6 +432,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 
         if (pusi_section != nullptr && ts_start < pusi_section && ts_start + section_length > pusi_section) {
             section_ok = false;
+            _status.truncated_sect++;
             // Resynchronize to actual section start
             section_length = uint16_t(pusi_section - ts_start);
         }
@@ -532,6 +533,24 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                     // If the table is completed and a handler is present, build the table.
                     tc->notify(*this, false, false);
                 }
+            }
+            catch (...) {
+                afterCallingHandler(false);
+                throw;
+            }
+            if (afterCallingHandler(true)) {
+                return;  // the PID of this packet or the complete demux was reset.
+            }
+        }
+
+        // If a handler is defined for invalid sections, call it.
+        if (!section_ok && _invalid_handler != nullptr) {
+            beforeCallingHandler(pid);
+            try {
+                DemuxedData data(ts_start, section_length, pid);
+                data.setFirstTSPacketIndex(pusi_pkt_index);
+                data.setLastTSPacketIndex(_packet_count);
+                _invalid_handler->handleInvalidSection(*this, data);
             }
             catch (...) {
                 afterCallingHandler(false);

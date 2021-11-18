@@ -36,6 +36,7 @@
 #include "tsAbstractDemux.h"
 #include "tsTableHandlerInterface.h"
 #include "tsSectionHandlerInterface.h"
+#include "tsInvalidSectionHandlerInterface.h"
 #include "tsETID.h"
 
 namespace ts {
@@ -61,7 +62,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! Contextual information (such as standards) are accumulated in the context from demuxed sections.
         //! @param [in] table_handler The object to invoke when a new complete table is extracted.
-        //! @param [in] section_handler The object to invoke when any section is extracted.
+        //! @param [in] section_handler The object to invoke when any valid section is extracted.
         //! @param [in] pid_filter The set of PID's to demux.
         //!
         explicit SectionDemux(DuckContext& duck,
@@ -122,6 +123,18 @@ namespace ts {
         void setSectionHandler(SectionHandlerInterface* h)
         {
             _section_handler = h;
+        }
+
+        //!
+        //! Replace the invalid section handler.
+        //! This object is invoked each time an invalid section is extracted from the stream,
+        //! maybe due to invalid section length, invalid CRC32, etc. This type of data block
+        //! is not a valid section and is never used in the standard table or section handler.
+        //! @param [in] h The new handler.
+        //!
+        void setInvalidSectionHandler(InvalidSectionHandlerInterface* h)
+        {
+            _invalid_handler = h;
         }
 
         //!
@@ -264,12 +277,13 @@ namespace ts {
         void fixAndFlush(bool pack, bool fill_eit);
 
         // Private members:
-        TableHandlerInterface*   _table_handler;
-        SectionHandlerInterface* _section_handler;
-        std::map<PID,PIDContext> _pids;
-        Status                   _status;
-        bool                     _get_current;
-        bool                     _get_next;
+        TableHandlerInterface*          _table_handler;
+        SectionHandlerInterface*        _section_handler;
+        InvalidSectionHandlerInterface* _invalid_handler;
+        std::map<PID,PIDContext>        _pids;
+        Status _status;
+        bool   _get_current;
+        bool   _get_next;
     };
 }
 

@@ -56,7 +56,8 @@ namespace ts {
     class TSDUCKDLL TablesLogger :
         public ArgsSupplierInterface,
         protected TableHandlerInterface,
-        protected SectionHandlerInterface
+        protected SectionHandlerInterface,
+        protected InvalidSectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(TablesLogger);
     public:
@@ -172,6 +173,7 @@ namespace ts {
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
         virtual void handleSection(SectionDemux&, const Section&) override;
+        virtual void handleInvalidSection(SectionDemux&, const DemuxedData&) override;
 
     private:
         // Command line options:
@@ -202,6 +204,8 @@ namespace ts {
         bool                     _udp_raw;           // UDP messages contain raw sections, not structured messages.
         bool                     _all_sections;      // Collect all sections, as they appear.
         bool                     _all_once;          // Collect all sections but only once per PID/TID/TDIext/secnum/version.
+        bool                     _invalid_sections;  // Display invalid sections.
+        bool                     _invalid_only;      // Display invalid sections only, not valid tables and sections.
         uint32_t                 _max_tables;        // Max number of tables to dump.
         bool                     _time_stamp;        // Display time stamps with each table.
         bool                     _packet_index;      // Display packet index with each table.
@@ -260,7 +264,9 @@ namespace ts {
         bool isFiltered(const Section& section, uint16_t cas);
 
         // Log a section (option --log).
-        void logSection(const Section& section);
+        UString logHeader(const DemuxedData&);
+        void logSection(const Section&);
+        void logInvalid(const DemuxedData&, const UString&);
     };
 
     //!
