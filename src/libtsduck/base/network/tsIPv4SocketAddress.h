@@ -202,6 +202,20 @@ namespace ts {
         bool match(const IPv4SocketAddress& other) const;
 
         //!
+        //! Equality operator.
+        //! @param [in] other Another instance to compare with.
+        //! @return True if both object contains the same address, false otherwise.
+        //!
+        bool operator==(const IPv4SocketAddress& other) const { return address() == other.address() && _port == other._port; }
+
+        //!
+        //! Unequality operator.
+        //! @param [in] other Another instance to compare with.
+        //! @return True if both object contains distinct addresses, false otherwise.
+        //!
+        bool operator!=(const IPv4SocketAddress& other) const { return address() != other.address() || _port != other._port; }
+
+        //!
         //! Comparison "less than" operator.
         //! It does not really makes sense. Only defined to allow usage in containers.
         //! @param [in] other Other instance to compare.

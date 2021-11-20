@@ -133,20 +133,6 @@ namespace ts {
         virtual UString toFullString() const override;
 
         //!
-        //! Equality operator.
-        //! @param [in] a Another instance to compare with.
-        //! @return True if both object contains the same address, false otherwise.
-        //!
-        bool operator==(const IPv6Address& a) const { return ::memcmp(_bytes, a._bytes, sizeof(_bytes)) == 0; }
-
-        //!
-        //! Unequality operator.
-        //! @param [in] a Another instance to compare with.
-        //! @return True if both object contains distinct addresses, false otherwise.
-        //!
-        bool operator!=(const IPv6Address& a) const { return ::memcmp(_bytes, a._bytes, sizeof(_bytes)) != 0; }
-
-        //!
         //! Constructor from a string in standard IPv6 numerical format.
         //! If @a name cannot be resolved, the address is set to @link AnyAddress @endlink.
         //! @param [in] name A string containing a string in standard IPv6 numerical format.
@@ -221,6 +207,20 @@ namespace ts {
         //! @return Byte block containing the IPv6 bytes.
         //!
         ByteBlock toBytes() const { return ByteBlock(_bytes, sizeof(_bytes)); }
+
+        //!
+        //! Equality operator.
+        //! @param [in] other Another instance to compare with.
+        //! @return True if both object contains the same address, false otherwise.
+        //!
+        bool operator==(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) == 0; }
+
+        //!
+        //! Unequality operator.
+        //! @param [in] other Another instance to compare with.
+        //! @return True if both object contains distinct addresses, false otherwise.
+        //!
+        bool operator!=(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) != 0; }
 
         //!
         //! Comparison "less than" operator.
