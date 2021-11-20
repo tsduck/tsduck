@@ -465,6 +465,22 @@ void NetworkingTest::testIPv4SocketAddress()
     a1.clearPort();
     const ts::UString s2(a1.toString());
     TSUNIT_ASSERT(s2 == u"2.3.4.5");
+
+    TSUNIT_ASSERT(a1.resolve(u"192.168.233.2:51823", CERR));
+    TSUNIT_ASSERT(a1.hasAddress());
+    TSUNIT_ASSERT(a1.hasPort());
+    TSUNIT_EQUAL((uint32_t(192) << 24) | (168 << 16) | (233 << 8) | 2, a1.address());
+    TSUNIT_EQUAL(51823, a1.port());
+
+    TSUNIT_ASSERT(a2.resolve(u"192.168.233.2:51824", CERR));
+    TSUNIT_ASSERT(a2.hasAddress());
+    TSUNIT_ASSERT(a2.hasPort());
+    TSUNIT_EQUAL((uint32_t(192) << 24) | (168 << 16) | (233 << 8) | 2, a2.address());
+    TSUNIT_EQUAL(51824, a2.port());
+
+    TSUNIT_ASSERT(a1 != a2);
+    TSUNIT_ASSERT(!(a1 == a2));
+    TSUNIT_ASSERT(a1 < a2);
 }
 
 void NetworkingTest::testIPv6SocketAddress()
@@ -482,6 +498,15 @@ void NetworkingTest::testIPv6SocketAddress()
     TSUNIT_EQUAL(TS_UCONST64(0x0004000500060007), sa1.interfaceIdentifier());
     TSUNIT_EQUAL(u"[0:1:2:3:4:5:6:7]:1234", sa1.toString());
     TSUNIT_EQUAL(u"[0000:0001:0002:0003:0004:0005:0006:0007]:1234", sa1.toFullString());
+    TSUNIT_EQUAL(1234, sa1.port());
+
+    ts::IPv6SocketAddress sa2(0, 1, 2, 3, 4, 5, 6, 7, 1235);
+    TSUNIT_ASSERT(sa2.hasAddress());
+    TSUNIT_ASSERT(sa2.hasPort());
+    TSUNIT_EQUAL(1235, sa2.port());
+    TSUNIT_ASSERT(sa1 != sa2);
+    TSUNIT_ASSERT(!(sa1 == sa2));
+    TSUNIT_ASSERT(sa1 < sa2);
 
     TSUNIT_ASSERT(sa1.resolve(u"fe80::93a3:dea0:2108:b81e", CERR));
     TSUNIT_ASSERT(sa1.hasAddress());
@@ -491,7 +516,7 @@ void NetworkingTest::testIPv6SocketAddress()
     TSUNIT_EQUAL(u"fe80::93a3:dea0:2108:b81e", sa1.toString());
     TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", sa1.toFullString());
 
-    ts::IPv6SocketAddress sa2(u"[FE80::93A3:DEA0:2108:B81E]:1234", CERR);
+    TSUNIT_ASSERT(sa2.resolve(u"[FE80::93A3:DEA0:2108:B81E]:1234", CERR));
     TSUNIT_ASSERT(sa2.hasAddress());
     TSUNIT_ASSERT(sa2.hasPort());
     TSUNIT_EQUAL(TS_UCONST64(0xFE80000000000000), sa2.networkPrefix());

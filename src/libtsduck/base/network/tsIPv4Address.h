@@ -126,20 +126,6 @@ namespace ts {
         virtual ~IPv4Address() override;
 
         //!
-        //! Equality operator.
-        //! @param [in] a Another instance to compare with.
-        //! @return True if both object contains the same address, false otherwise.
-        //!
-        bool operator==(const IPv4Address& a) const { return _addr == a._addr; }
-
-        //!
-        //! Unequality operator.
-        //! @param [in] a Another instance to compare with.
-        //! @return True if both object contains distinct addresses, false otherwise.
-        //!
-        bool operator!=(const IPv4Address& a) const {return _addr != a._addr;}
-
-        //!
         //! Constructor from a string, host name or "a.b.c.d" integer format.
         //! If @a name cannot be resolved, the integer value of the address is
         //! set to @link AnyAddress @endlink.
@@ -225,6 +211,20 @@ namespace ts {
         //! are different. True otherwise.
         //!
         bool match(const IPv4Address& other) const;
+
+        //!
+        //! Equality operator.
+        //! @param [in] a Another instance to compare with.
+        //! @return True if both object contains the same address, false otherwise.
+        //!
+        bool operator==(const IPv4Address& a) const { return _addr == a._addr; }
+
+        //!
+        //! Unequality operator.
+        //! @param [in] a Another instance to compare with.
+        //! @return True if both object contains distinct addresses, false otherwise.
+        //!
+        bool operator!=(const IPv4Address& a) const { return _addr != a._addr; }
 
         //!
         //! Comparison "less than" operator.
