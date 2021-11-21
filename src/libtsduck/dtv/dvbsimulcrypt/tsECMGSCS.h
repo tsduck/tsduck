@@ -49,8 +49,18 @@ namespace ts {
         // Protocol-defined values
         //---------------------------------------------------------------------
 
-        //! Current version of the ECMG <=> SCS protocol
+        //! Current version of the ECMG <=> SCS protocol.
         const tlv::VERSION CURRENT_VERSION = 0x03;
+
+        //!
+        //! Check if a command tag is valid for the ECMG <=> SCS protocol.
+        //! @param [in] tag Command tag.
+        //! @return True if @a tag is a valid command for the ECMG <=> SCS protocol.
+        //!
+        TSDUCKDLL inline bool IsValidCommand(uint16_t tag)
+        {
+            return (tag >= 0x0001 && tag <= 0x0005) || (tag >= 0x0101 && tag <= 0x0106) || (tag >= 0x0201 && tag <= 0x0202);
+        }
 
         //!
         //! All DVB-defined tags (commands and parameters).
@@ -163,6 +173,7 @@ namespace ts {
             // Implementation of pure virtual methods
             virtual void factory(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
             virtual void buildErrorResponse(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
+            virtual UString name() const override;
         };
 
 

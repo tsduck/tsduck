@@ -51,11 +51,16 @@ namespace ts {
     {
     public:
         //!
+        //! Wildcard socket address, unspecified address and port.
+        //!
+        static const IPv6SocketAddress AnySocketAddress;
+
+        //!
         //! Default constructor
         //!
         IPv6SocketAddress() :
             IPv6Address(),
-            _port(0)
+            _port(AnyPort)
         {
         }
 

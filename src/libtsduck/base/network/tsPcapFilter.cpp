@@ -117,6 +117,19 @@ bool ts::PcapFilter::addressFilterIsSet() const
            (!use_port || _destination.hasPort());
 }
 
+const ts::IPv4SocketAddress& ts::PcapFilter::otherFilter(const IPv4SocketAddress& addr) const
+{
+    if (addr.match(_source)) {
+        return _destination;
+    }
+    else if (addr.match(_destination)) {
+        return _source;
+    }
+    else {
+        return IPv4SocketAddress::AnySocketAddress;
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Open the file, inherited method.

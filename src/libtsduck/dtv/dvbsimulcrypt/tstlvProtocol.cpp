@@ -57,16 +57,12 @@ ts::tlv::Protocol::~Protocol()
 // Declare a command tag in the protocol and its parameters.
 //----------------------------------------------------------------------------
 
-void ts::tlv::Protocol::add(TAG cmd_tag, TAG param_tag,
-                            size_t min_size, size_t max_size,
-                            size_t min_count, size_t max_count)
+void ts::tlv::Protocol::add(TAG cmd_tag, TAG param_tag, size_t min_size, size_t max_size, size_t min_count, size_t max_count)
 {
     _commands[cmd_tag].params[param_tag] = Parameter{nullptr, min_size, max_size, min_count, max_count};
 }
 
-void ts::tlv::Protocol::add(TAG cmd_tag, TAG param_tag,
-                            const Protocol* compound,
-                            size_t min_count, size_t max_count)
+void ts::tlv::Protocol::add(TAG cmd_tag, TAG param_tag, const Protocol* compound, size_t min_count, size_t max_count)
 {
     _commands[cmd_tag].params[param_tag] = Parameter{compound, 0, 0, min_count, max_count};
 }

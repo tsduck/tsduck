@@ -64,6 +64,10 @@ ts::PcapStream::DataBlock::DataBlock(const IPv4Packet& pkt, MicroSecond tstamp) 
     timestamp(tstamp)
 {
     if (pkt.isTCP()) {
+        if (start) {
+            // When a TCP packet has SYN set, the next sequence is +1.
+            sequence++;
+        }
         data.copy(pkt.protocolData(), pkt.protocolDataSize());
     }
 }
@@ -132,9 +136,12 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
     // Find the right location in the queue.
     auto it = packets.begin();
     while (it != packets.end()) {
-        const DataBlock& db(**it);
+        DataBlock& db(**it);
         if (ptr->sequence == db.sequence) {
-            // Duplicate packet, drop it.
+            // Same position. If the new packet has more data, add them to existing packet at that position.
+            if (ptr->data.size() > db.data.size()) {
+                db.data.append(ptr->data.data() + db.data.size(), ptr->data.size() - db.data.size());
+            }
             return;
         }
         else if (TCPOrderedSequence(ptr->sequence, db.sequence)) {
@@ -246,10 +253,9 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
 
         // Store the packet in the stream.
         _streams[pkt_source].store(pkt, timestamp);
-        assert(!_streams[pkt_source].packets.empty());
 
         // Stop when a packet was read from the specified peer.
-        if (source == pkt_source || (source != ISRC && source != IDST)) {
+        if ((source == pkt_source || (source != ISRC && source != IDST)) && !_streams[pkt_source].packets.empty()) {
             source = pkt_source;
             return true;
         }
@@ -269,30 +275,39 @@ bool ts::PcapStream::readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t&
 
     // Check the direction of the requested stream.
     size_t peer_number = NPOS;
-    if (indexOf(source, true, peer_number, report)) {
+    if (!indexOf(source, true, peer_number, report)) {
         return false;
     }
 
     // If the peer is unspecified, select which one we will use.
     if (peer_number != ISRC && peer_number != IDST) {
-        const bool src_avail = _streams[ISRC].dataAvailable();
-        const bool dst_avail = _streams[IDST].dataAvailable();
-        if (src_avail && dst_avail) {
-            // Data available in both, choose the one with older data.
-            peer_number = _streams[ISRC].packets.front()->timestamp <= _streams[IDST].packets.front()->timestamp ? ISRC : IDST;
+        // Loop until some data are available.
+        for (;;) {
+            const bool src_avail = _streams[ISRC].dataAvailable();
+            const bool dst_avail = _streams[IDST].dataAvailable();
+            if (src_avail && dst_avail) {
+                // Data available in both, choose the one with older data.
+                peer_number = _streams[ISRC].packets.front()->timestamp <= _streams[IDST].packets.front()->timestamp ? ISRC : IDST;
+                break;
+            }
+            else if (src_avail) {
+                peer_number = ISRC;
+                break;
+            }
+            else if (dst_avail) {
+                peer_number = IDST;
+                break;
+            }
+            else if (!readStreams(peer_number, report)){
+                // No data available, tried to read in first available direction, but failed.
+                return false;
+            }
         }
-        else if (src_avail) {
-            peer_number = ISRC;
-        }
-        else if (dst_avail) {
-            peer_number = IDST;
-        }
-        else if (!readStreams(peer_number, report)){
-            // No data available, tried to read in first available direction, but failed.
-            return false;
-        }
-    }
+   }
+
+    // Update source with full address, if was not or partially specified.
     assert(peer_number == ISRC || peer_number == IDST);
+    source = peer_number == ISRC ? sourceFilter() : destinationFilter();
 
     // Read data from the selected stream.
     Stream& stream(_streams[peer_number]);
@@ -373,16 +388,17 @@ bool ts::PcapStream::nextSession(Report& report)
 
 bool ts::PcapStream::indexOf(const IPv4SocketAddress& source, bool allow_unspecified, size_t& index, Report& report) const
 {
-    if (source.match(sourceFilter())) {
+    const bool unspecified = !source.hasAddress() && !source.hasPort();
+    if (allow_unspecified && unspecified) {
+        index = NPOS;
+        return true;
+    }
+    else if (!unspecified && source.match(sourceFilter())) {
         index = ISRC;
         return true;
     }
-    else if (source.match(destinationFilter())) {
+    else if (!unspecified && source.match(destinationFilter())) {
         index = IDST;
-        return true;
-    }
-    else if (allow_unspecified && !source.hasAddress() && !source.hasPort()) {
-        index = NPOS;
         return true;
     }
     else {

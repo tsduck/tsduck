@@ -204,7 +204,7 @@ namespace ts {
         // Private members
         const DuckContext&     _duck;
         volatile State         _state;
-        IPv4SocketAddress          _udp_address;
+        IPv4SocketAddress      _udp_address;
         uint64_t               _total_bytes;
         const AbortInterface*  _abort;
         tlv::Logger            _logger;
