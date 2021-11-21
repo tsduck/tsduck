@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2641
+VERSION 3.29-2642
 
 [NEW] New commands and plugins:
 
@@ -27,6 +27,9 @@ VERSION 3.29-2641
     - Options --json and --json-line in plugin "splicemonitor".
     - Option --event-user-data in "tsswitch".
     - Options --dvb-simulcrypt and --no-pager in "tspcap".
+    - Options --emmg-client-id, --emmg-data-id, --first-date, --first-packet,
+      --first-timestamp, --last-date, --last-packet, --last-timestamp,
+      --tcp-emmg-mux, --udp-emmg-mux in "pcap" input plugin.
 
 [BUG] Bug fixes:
 

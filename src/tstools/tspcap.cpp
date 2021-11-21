@@ -58,8 +58,6 @@ namespace {
         ts::DuckContext       duck;     // TSDuck execution context.
         ts::PagerArgs         pager;    // Output paging options.
         ts::UString           input_file;
-        size_t                first_packet;
-        size_t                last_packet;
         bool                  print_summary;
         bool                  list_streams;
         bool                  print_intervals;
@@ -67,37 +65,8 @@ namespace {
         std::set<uint8_t>     protocols;
         ts::IPv4SocketAddress source_filter;
         ts::IPv4SocketAddress dest_filter;
-        ts::MicroSecond       first_time_offset;
-        ts::MicroSecond       last_time_offset;
-        ts::MicroSecond       first_time;
-        ts::MicroSecond       last_time;
         ts::MicroSecond       interval;
-
-    private:
-        // Get a date option and return it as micro-seconds since Unix epoch.
-        ts::MicroSecond getDate(const ts::UChar* arg, ts::MicroSecond def_value);
     };
-}
-
-// Get a date option and return it as micro-seconds since Unix epoch.
-ts::MicroSecond Options::getDate(const ts::UChar* arg, ts::MicroSecond def_value)
-{
-    ts::Time date;
-    const ts::UString str(value(arg));
-    if (str.empty()) {
-        return def_value;
-    }
-    else if (!date.decode(str, ts::Time::ALL)) {
-        error(u"invalid date \"%s\", use format \"YYYY/MM/DD:hh:mm:ss.mmm\"", {str});
-        return def_value;
-    }
-    else if (date < ts::Time::UnixEpoch) {
-        error(u"invalid date %s, must be after %s", {str, ts::Time::UnixEpoch});
-        return def_value;
-    }
-    else {
-        return (date - ts::Time::UnixEpoch) * ts::MicroSecPerMilliSec;
-    }
 }
 
 // Get command line options.
@@ -106,8 +75,6 @@ Options::Options(int argc, char *argv[]) :
     duck(this),
     pager(true, true),
     input_file(),
-    first_packet(0),
-    last_packet(0),
     print_summary(false),
     list_streams(false),
     print_intervals(false),
@@ -115,12 +82,10 @@ Options::Options(int argc, char *argv[]) :
     protocols(),
     source_filter(),
     dest_filter(),
-    first_time_offset(-1),
-    last_time_offset(-1),
-    first_time(-1),
-    last_time(-1),
     interval(-1)
 {
+    ts::PcapFilter file;
+    file.defineArgs(*this);
     pager.defineArgs(*this);
 
     option(u"", 0, STRING, 0, 1);
@@ -143,39 +108,9 @@ Options::Options(int argc, char *argv[]) :
          u"Filter IPv4 packets based on the specified destination socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
 
-    option(u"first-packet", 0, POSITIVE);
-    help(u"first-packet",
-         u"Filter packets starting at the specified number. "
-         u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
-         u"This is the same value as seen on Wireshark in the leftmost column.");
-
-    option(u"first-timestamp", 0, UNSIGNED);
-    help(u"first-timestamp", u"micro-seconds",
-         u"Filter packets starting at the specified timestamp in micro-seconds from the beginning of the capture. "
-         u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
-
-    option(u"first-date", 0, STRING);
-    help(u"first-date", u"date-time",
-         u"Filter packets starting at the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
-
     option(u"interval", 'i', POSITIVE);
     help(u"interval", u"micro-seconds",
          u"Print a summary of exchanged data by intervals of times in micro-seconds.");
-
-    option(u"last-packet", 0, POSITIVE);
-    help(u"last-packet",
-         u"Filter packets up to the specified number. "
-         u"The packet numbering counts all captured packets from the beginning of the file, starting at 1. "
-         u"This is the same value as seen on Wireshark in the leftmost column.");
-
-    option(u"last-timestamp", 0, UNSIGNED);
-    help(u"last-timestamp", u"micro-seconds",
-         u"Filter packets up to the specified timestamp in micro-seconds from the beginning of the capture. "
-         u"This is the same value as seen on Wireshark in the \"Time\" column (in seconds).");
-
-    option(u"last-date", 0, STRING);
-    help(u"last-date", u"date-time",
-         u"Filter packets up to the specified date. Use format YYYY/MM/DD:hh:mm:ss.mmm.");
 
     option(u"list-streams", 'l');
     help(u"list-streams",
@@ -204,13 +139,7 @@ Options::Options(int argc, char *argv[]) :
     getValue(input_file, u"");
     const ts::UString dest_string(value(u"destination"));
     const ts::UString source_string(value(u"source"));
-    getIntValue(first_packet, u"first-packet", 1);
-    getIntValue(last_packet, u"last-packet", std::numeric_limits<size_t>::max());
-    getIntValue(first_time_offset, u"first-timestamp", 0);
-    getIntValue(last_time_offset, u"last-timestamp", std::numeric_limits<ts::MicroSecond>::max());
     getIntValue(interval, u"interval", 0);
-    first_time = getDate(u"first-date", 0);
-    last_time = getDate(u"last-date", std::numeric_limits<ts::MicroSecond>::max());
     list_streams = present(u"list-streams");
     print_intervals = present(u"interval");
     dvb_simulcrypt = present(u"dvb-simulcrypt");
@@ -466,7 +395,7 @@ FileAnalysis::FileAnalysis(Options& opt) :
 bool FileAnalysis::analyze(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 
@@ -474,12 +403,6 @@ bool FileAnalysis::analyze(std::ostream& out)
     _file.setProtocolFilter(_opt.protocols);
     _file.setSourceFilter(_opt.source_filter);
     _file.setDestinationFilter(_opt.dest_filter);
-    _file.setFirstPacketFilter(_opt.first_packet);
-    _file.setLastPacketFilter(_opt.last_packet);
-    _file.setFirstTimeOffset(_opt.first_time_offset);
-    _file.setLastTimeOffset(_opt.last_time_offset);
-    _file.setFirstTimestamp(_opt.first_time);
-    _file.setLastTimestamp(_opt.last_time);
 
     // Read all IPv4 packets from the file.
     ts::IPv4Packet ip;
@@ -686,7 +609,7 @@ UDPSimulCryptDump::UDPSimulCryptDump(Options& opt) :
 bool UDPSimulCryptDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 
@@ -694,12 +617,6 @@ bool UDPSimulCryptDump::dump(std::ostream& out)
     _file.setProtocolFilterUDP();
     _file.setSourceFilter(_opt.source_filter);
     _file.setDestinationFilter(_opt.dest_filter);
-    _file.setFirstPacketFilter(_opt.first_packet);
-    _file.setLastPacketFilter(_opt.last_packet);
-    _file.setFirstTimeOffset(_opt.first_time_offset);
-    _file.setLastTimeOffset(_opt.last_time_offset);
-    _file.setFirstTimestamp(_opt.first_time);
-    _file.setLastTimestamp(_opt.last_time);
 
     // Read all UDP packets matching the source and destination.
     ts::IPv4Packet ip;
@@ -744,18 +661,12 @@ TCPSimulCryptDump::TCPSimulCryptDump(Options& opt) :
 bool TCPSimulCryptDump::dump(std::ostream& out)
 {
     // Open the pcap file.
-    if (!_file.open(_opt.input_file, _opt)) {
+    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
         return false;
     }
 
     // Set packet filters.
     _file.setBidirectionalFilter(_opt.source_filter, _opt.dest_filter);
-    _file.setFirstPacketFilter(_opt.first_packet);
-    _file.setLastPacketFilter(_opt.last_packet);
-    _file.setFirstTimeOffset(_opt.first_time_offset);
-    _file.setLastTimeOffset(_opt.last_time_offset);
-    _file.setFirstTimestamp(_opt.first_time);
-    _file.setLastTimestamp(_opt.last_time);
 
     // Read all TCP sessions matching the source and destination.
     for (;;) {
