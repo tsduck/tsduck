@@ -34,13 +34,19 @@
 
 #pragma once
 #include "tsPcapFile.h"
+#include "tsArgsSupplierInterface.h"
 
 namespace ts {
     //!
     //! Read a pcap or pcapng file with packet filtering.
+    //!
+    //! This class also implements ArgsSupplierInterface to set filtering options
+    //! from the command line: @c -\-first-packet, @c -\-first-timestamp,
+    //! @c -\-first-date, @c -\-last-packet, @c -\-last-timestamp, @c -\-last-date.
+    //!
     //! @ingroup net
     //!
-    class TSDUCKDLL PcapFilter: public PcapFile
+    class TSDUCKDLL PcapFilter: public PcapFile, public ArgsSupplierInterface
     {
         TS_NOCOPY(PcapFilter);
     public:
@@ -217,6 +223,8 @@ namespace ts {
         // Inherited methods.
         virtual bool open(const UString& filename, Report& report) override;
         virtual bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report) override;
+        virtual void defineArgs(Args& args) override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
     private:
         std::set<uint8_t> _protocols;
@@ -231,5 +239,14 @@ namespace ts {
         MicroSecond       _last_time_offset;
         MicroSecond       _first_time;
         MicroSecond       _last_time;
+        size_t            _opt_first_packet;
+        size_t            _opt_last_packet;
+        MicroSecond       _opt_first_time_offset;
+        MicroSecond       _opt_last_time_offset;
+        MicroSecond       _opt_first_time;
+        MicroSecond       _opt_last_time;
+
+        // Get a date option and return it as micro-seconds since Unix epoch.
+        ts::MicroSecond getDate(Args& args, const ts::UChar* arg_name, ts::MicroSecond def_value);
     };
 }
