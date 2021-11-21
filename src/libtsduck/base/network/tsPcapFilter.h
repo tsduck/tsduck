@@ -195,6 +195,14 @@ namespace ts {
         bool addressFilterIsSet() const;
 
         //!
+        //! Get the "other" filter (source or destination) based on the other one.
+        //! @param [in] addr A socket address, typically matching the source or destination filter.
+        //! @return A constant reference to the other filter. If @a addr matches neither the source
+        //! nor the destination filter, return an empty socket address.
+        //!
+        const IPv4SocketAddress& otherFilter(const IPv4SocketAddress& addr) const;
+
+        //!
         //! Specify the severity to report the filtered addresses once (in non-wildcard mode).
         //!
         //! In non-wildcard mode, when the filtered addresses contain non-specified fields,

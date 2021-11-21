@@ -32,10 +32,15 @@
 //----------------------------------------------------------------------------
 
 #include "tsMain.h"
-#include "tsPcapFilter.h"
+#include "tsDuckContext.h"
+#include "tsPcapStream.h"
 #include "tsIPv4Packet.h"
 #include "tsTime.h"
 #include "tsBitRate.h"
+#include "tsEMMGMUX.h"
+#include "tsECMGSCS.h"
+#include "tsPagerArgs.h"
+#include "tstlvMessageFactory.h"
 TS_MAIN(MainCode);
 
 
@@ -50,12 +55,15 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::UString input_file;
-        size_t      first_packet;
-        size_t      last_packet;
-        bool        print_summary;
-        bool        list_streams;
-        bool        print_intervals;
+        ts::DuckContext       duck;     // TSDuck execution context.
+        ts::PagerArgs         pager;    // Output paging options.
+        ts::UString           input_file;
+        size_t                first_packet;
+        size_t                last_packet;
+        bool                  print_summary;
+        bool                  list_streams;
+        bool                  print_intervals;
+        bool                  dvb_simulcrypt;
         std::set<uint8_t>     protocols;
         ts::IPv4SocketAddress source_filter;
         ts::IPv4SocketAddress dest_filter;
@@ -95,12 +103,15 @@ ts::MicroSecond Options::getDate(const ts::UChar* arg, ts::MicroSecond def_value
 // Get command line options.
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze pcap and pcap-ng files", u"[options] [input-file]"),
+    duck(this),
+    pager(true, true),
     input_file(),
     first_packet(0),
     last_packet(0),
     print_summary(false),
     list_streams(false),
     print_intervals(false),
+    dvb_simulcrypt(false),
     protocols(),
     source_filter(),
     dest_filter(),
@@ -109,11 +120,23 @@ Options::Options(int argc, char *argv[]) :
     first_time(-1),
     last_time(-1),
     interval(-1)
- {
+{
+    pager.defineArgs(*this);
+
     option(u"", 0, STRING, 0, 1);
     help(u"", u"file-name",
          u"Input file in pcap or pcap-ng format, typically as saved by Wireshark. "
          u"Use the standard input if no file name is specified.");
+
+    option(u"dvb-simulcrypt");
+    help(u"dvb-simulcrypt",
+         u"Dump the content of a session as DVB SimulCrypt protocol.\n"
+         u"Without --udp, the first TCP session matching the --source and --destination options "
+         u"is selected. The content of the session is interpreted as one of the TLV-based "
+         u"DVB SimulCrypt protocols and all messages are formatted.\n"
+         u"With --udp, all packets matching the --source and --destination options "
+         u"are interpreted as EMMG/PDG <=> MUX protocol (this is the only DVB SimulCrypt "
+         u"protocol which is based on UDP).");
 
     option(u"destination", 'd', STRING);
     help(u"destination", u"[address][:port]",
@@ -177,6 +200,7 @@ Options::Options(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Load option values.
+    pager.loadArgs(duck, *this);
     getValue(input_file, u"");
     const ts::UString dest_string(value(u"destination"));
     const ts::UString source_string(value(u"source"));
@@ -189,6 +213,7 @@ Options::Options(int argc, char *argv[]) :
     last_time = getDate(u"last-date", std::numeric_limits<ts::MicroSecond>::max());
     list_streams = present(u"list-streams");
     print_intervals = present(u"interval");
+    dvb_simulcrypt = present(u"dvb-simulcrypt");
 
     // Default is to print a summary of the file content.
     print_summary = !list_streams && !print_intervals;
@@ -320,73 +345,6 @@ bool StreamId::operator<(const StreamId& other) const
 
 
 //----------------------------------------------------------------------------
-// Display summary of content.
-//----------------------------------------------------------------------------
-
-namespace {
-    void DisplaySummary(std::ostream& out, const ts::PcapFile& file, const StatBlock& stats)
-    {
-        const size_t hwidth = 22; // header width
-
-        out << std::endl;
-        out << "File summary:" << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total packets in file:", file.packetCount()}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total IPv4 packets:", file.ipv4PacketCount()}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"File size:", file.fileSize()}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total packets size:", file.totalPacketsSize()}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total IPv4 size:", file.totalIPv4PacketsSize()}) << std::endl;
-        out << std::endl;
-
-        out << "Filtered packets summary:" << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets:", stats.packet_count}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets size:", stats.total_ip_size}) << std::endl;
-        out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Payload data size:", stats.total_data_size}) << std::endl;
-
-        if (stats.first_timestamp > 0 && stats.last_timestamp > 0) {
-            const ts::Time start(ts::PcapFile::ToTime(stats.first_timestamp));
-            const ts::Time end(ts::PcapFile::ToTime(stats.last_timestamp));
-            const ts::MicroSecond duration = stats.last_timestamp - stats.first_timestamp;
-            out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"Start time:", start, file.timeOffset(stats.first_timestamp)}) << std::endl;
-            out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"End time:", end, file.timeOffset(stats.last_timestamp)}) << std::endl;
-            if (duration > 0) {
-                out << ts::UString::Format(u"  %-*s %'d micro-seconds", {hwidth, u"Duration:", duration}) << std::endl;
-                out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"IP bitrate:", (ts::BitRate(stats.total_ip_size * 8 * ts::MicroSecPerSec) / duration)}) << std::endl;
-                out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"Data bitrate:", (ts::BitRate(stats.total_data_size * 8 * ts::MicroSecPerSec) / duration)}) << std::endl;
-            }
-        }
-        out << std::endl;
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Display list of streams.
-//----------------------------------------------------------------------------
-
-namespace {
-    void ListStreams(std::ostream& out, const ts::PcapFile& file, const std::map<StreamId,StatBlock>& stats, ts::MicroSecond duration)
-    {
-        out << std::endl
-            << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", {u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate"})
-            << std::endl;
-        for (auto it = stats.begin(); it != stats.end(); ++it) {
-            const StreamId& id(it->first);
-            const StatBlock& sb(it->second);
-            out << ts::UString::Format(u"%-22s %-22s %-8s %11'd %15'd %12'd",
-                                       {id.source,
-                                        id.destination,
-                                        ts::IPProtocolName(id.protocol),
-                                        sb.packet_count,
-                                        sb.total_data_size,
-                                        duration <= 0 ? 0 : (ts::BitRate(sb.total_data_size * 8 * ts::MicroSecPerSec) / duration)})
-                << std::endl;
-        }
-        out << std::endl;
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Display summary of content by intervals of time.
 //----------------------------------------------------------------------------
 
@@ -465,6 +423,376 @@ void DisplayInterval::close(std::ostream& out, const ts::PcapFile& file)
 
 
 //----------------------------------------------------------------------------
+// Display file analysis.
+//----------------------------------------------------------------------------
+
+namespace {
+    class FileAnalysis
+    {
+        TS_NOBUILD_NOCOPY(FileAnalysis);
+    public:
+        // Constructor.
+        FileAnalysis(Options&);
+
+        // Analyse the file, return true on success, false on error.
+        bool analyze(std::ostream&);
+
+    private:
+        Options&        _opt;
+        ts::PcapFilter  _file;
+        DisplayInterval _interval;                   // Display stats by time intervals.
+        StatBlock       _global_stats;               // Global stats
+        std::map<StreamId,StatBlock> _streams_stats; // Stats per data stream.
+
+        // Display summary of content.
+        void displaySummary(std::ostream& out, const StatBlock& stats);
+
+        // Display list of streams.
+        void listStreams(std::ostream& out, ts::MicroSecond duration);
+    };
+}
+
+// Constructor.
+FileAnalysis::FileAnalysis(Options& opt) :
+    _opt(opt),
+    _file(),
+    _interval(opt),
+    _global_stats(),
+    _streams_stats()
+{
+}
+
+// Analyse the file, return true on success, false on error.
+bool FileAnalysis::analyze(std::ostream& out)
+{
+    // Open the pcap file.
+    if (!_file.open(_opt.input_file, _opt)) {
+        return false;
+    }
+
+    // Set packet filters.
+    _file.setProtocolFilter(_opt.protocols);
+    _file.setSourceFilter(_opt.source_filter);
+    _file.setDestinationFilter(_opt.dest_filter);
+    _file.setFirstPacketFilter(_opt.first_packet);
+    _file.setLastPacketFilter(_opt.last_packet);
+    _file.setFirstTimeOffset(_opt.first_time_offset);
+    _file.setLastTimeOffset(_opt.last_time_offset);
+    _file.setFirstTimestamp(_opt.first_time);
+    _file.setLastTimestamp(_opt.last_time);
+
+    // Read all IPv4 packets from the file.
+    ts::IPv4Packet ip;
+    ts::MicroSecond timestamp = 0;
+    while (_file.readIPv4(ip, timestamp, _opt)) {
+        _global_stats.addPacket(ip, timestamp);
+        if (_opt.list_streams) {
+            _streams_stats[StreamId(ip.sourceSocketAddress(), ip.destinationSocketAddress(), ip.protocol())].addPacket(ip, timestamp);
+        }
+        if (_opt.print_intervals) {
+            _interval.addPacket(out, _file, ip, timestamp);
+        }
+    }
+    _file.close();
+
+    // Print final data.
+    if (_opt.print_intervals) {
+        _interval.close(out, _file);
+    }
+    if (_opt.list_streams) {
+        listStreams(out, _global_stats.last_timestamp - _global_stats.first_timestamp);
+    }
+    if (_opt.print_summary) {
+        displaySummary(out, _global_stats);
+    }
+    return true;
+}
+
+// Display summary of content.
+void FileAnalysis::displaySummary(std::ostream& out, const StatBlock& stats)
+{
+    const size_t hwidth = 22; // header width
+
+    out << std::endl;
+    out << "File summary:" << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total packets in file:", _file.packetCount()}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Total IPv4 packets:", _file.ipv4PacketCount()}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"File size:", _file.fileSize()}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total packets size:", _file.totalPacketsSize()}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d bytes", {hwidth, u"Total IPv4 size:", _file.totalIPv4PacketsSize()}) << std::endl;
+    out << std::endl;
+
+    out << "Filtered packets summary:" << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets:", stats.packet_count}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Packets size:", stats.total_ip_size}) << std::endl;
+    out << ts::UString::Format(u"  %-*s %'d", {hwidth, u"Payload data size:", stats.total_data_size}) << std::endl;
+
+    if (stats.first_timestamp > 0 && stats.last_timestamp > 0) {
+        const ts::Time start(ts::PcapFile::ToTime(stats.first_timestamp));
+        const ts::Time end(ts::PcapFile::ToTime(stats.last_timestamp));
+        const ts::MicroSecond duration = stats.last_timestamp - stats.first_timestamp;
+        out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"Start time:", start, _file.timeOffset(stats.first_timestamp)}) << std::endl;
+        out << ts::UString::Format(u"  %-*s %s (%+'d micro-seconds)", {hwidth, u"End time:", end, _file.timeOffset(stats.last_timestamp)}) << std::endl;
+        if (duration > 0) {
+            out << ts::UString::Format(u"  %-*s %'d micro-seconds", {hwidth, u"Duration:", duration}) << std::endl;
+            out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"IP bitrate:", (ts::BitRate(stats.total_ip_size * 8 * ts::MicroSecPerSec) / duration)}) << std::endl;
+            out << ts::UString::Format(u"  %-*s %'d bits/second", {hwidth, u"Data bitrate:", (ts::BitRate(stats.total_data_size * 8 * ts::MicroSecPerSec) / duration)}) << std::endl;
+        }
+    }
+    out << std::endl;
+}
+
+// Display list of streams.
+void FileAnalysis::listStreams(std::ostream& out, ts::MicroSecond duration)
+{
+    out << std::endl
+        << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", {u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate"})
+        << std::endl;
+    for (auto it = _streams_stats.begin(); it != _streams_stats.end(); ++it) {
+        const StreamId& id(it->first);
+        const StatBlock& sb(it->second);
+        out << ts::UString::Format(u"%-22s %-22s %-8s %11'd %15'd %12'd",
+                                   {id.source,
+                                    id.destination,
+                                    ts::IPProtocolName(id.protocol),
+                                    sb.packet_count,
+                                    sb.total_data_size,
+                                    duration <= 0 ? 0 : (ts::BitRate(sb.total_data_size * 8 * ts::MicroSecPerSec) / duration)})
+            << std::endl;
+    }
+    out << std::endl;
+}
+
+
+//----------------------------------------------------------------------------
+// DVB SimulCrypt dump, base class.
+//----------------------------------------------------------------------------
+
+namespace {
+    class SimulCryptDump
+    {
+        TS_NOBUILD_NOCOPY(SimulCryptDump);
+    protected:
+        // Constructor.
+        SimulCryptDump(Options&);
+
+        // Dump a message.
+        void dumpMessage(std::ostream&, const uint8_t*, size_t, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, ts::MicroSecond timestamp);
+
+        // Protected fields
+        Options& _opt;
+    };
+}
+
+// Constructor.
+SimulCryptDump::SimulCryptDump(Options& opt) :
+    _opt(opt)
+{
+}
+
+// Dump a message.
+void SimulCryptDump::dumpMessage(std::ostream& out, const uint8_t* data, size_t size, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, ts::MicroSecond timestamp)
+{
+    // Build a message description.
+    if (timestamp > 0) {
+        out << (ts::Time::UnixEpoch + timestamp / ts::MicroSecPerMilliSec) << ", ";
+    }
+    out << src << " -> " << dst << ", " << size << " bytes" << std::endl;
+
+    // There must be 5 header bytes: version(1), type(2), length(2).
+    // See ETSI TS 103 197, section 4.4.1.
+    bool valid = size >= 5;
+    const uint16_t msg_type = valid ? ts::GetUInt16(data + 1) : 0;
+    const size_t msg_size = valid ? 5 + ts::GetUInt16(data + 3) : 0;
+    valid = valid && size >= msg_size;
+
+    // Determine the DVB SimulCrypt protocol. We currently only support ECMG and EMMG.
+    ts::tlv::Protocol* protocol = nullptr;
+    if (valid) {
+        if (ts::ecmgscs::IsValidCommand(msg_type)) {
+            protocol = ts::ecmgscs::Protocol::Instance();
+        }
+        else if (ts::emmgmux::IsValidCommand(msg_type)) {
+            protocol = ts::emmgmux::Protocol::Instance();
+        }
+        else {
+            valid = false;
+        }
+    }
+
+    // Decode the message.
+    if (valid) {
+        // Adjust protocol version when necessary.
+        const ts::tlv::VERSION version = data[0];
+        if (version != protocol->version()) {
+            _opt.debug(u"switching EMMG <=> MUX version protocol to %d", {version});
+            protocol->setVersion(version);
+        }
+
+        // Interpret the UDP message as TLV message.
+        ts::tlv::MessagePtr msg;
+        ts::tlv::MessageFactory mf(data, msg_size, protocol);
+        valid = false;
+        if (mf.errorStatus() == ts::tlv::OK) {
+            mf.factory(msg);
+            if (!msg.isNull()) {
+                valid = true;
+                out << msg->dump(4);
+            }
+        }
+    }
+
+    // Display invalid messages.
+    if (!valid) {
+        out << "    Invalid or unsupported DVB SimulCrypt message" << std::endl;
+        out << ts::UString::Dump(data, size, ts::UString::ASCII | ts::UString::HEXA | ts::UString::OFFSET | ts::UString::BPL, 4, 16);
+    }
+    else if (size > msg_size) {
+        out << "    " << (size - msg_size) << " extraneous bytes:" << std::endl;
+        out << ts::UString::Dump(data + msg_size, size - msg_size, ts::UString::ASCII | ts::UString::HEXA | ts::UString::OFFSET | ts::UString::BPL, 4, 16);
+    }
+    out << std::endl;
+}
+
+
+//----------------------------------------------------------------------------
+// DVB SimulCrypt dump, UDP mode.
+//----------------------------------------------------------------------------
+
+namespace {
+    class UDPSimulCryptDump: private SimulCryptDump
+    {
+        TS_NOBUILD_NOCOPY(UDPSimulCryptDump);
+    public:
+        // Constructor.
+        UDPSimulCryptDump(Options&);
+
+        // Dump the file, return true on success, false on error.
+        bool dump(std::ostream&);
+
+    private:
+        ts::PcapFilter _file;
+    };
+}
+
+// Constructor.
+UDPSimulCryptDump::UDPSimulCryptDump(Options& opt) :
+    SimulCryptDump(opt),
+    _file()
+{
+}
+
+// Dump the file, return true on success, false on error.
+bool UDPSimulCryptDump::dump(std::ostream& out)
+{
+    // Open the pcap file.
+    if (!_file.open(_opt.input_file, _opt)) {
+        return false;
+    }
+
+    // Set packet filters.
+    _file.setProtocolFilterUDP();
+    _file.setSourceFilter(_opt.source_filter);
+    _file.setDestinationFilter(_opt.dest_filter);
+    _file.setFirstPacketFilter(_opt.first_packet);
+    _file.setLastPacketFilter(_opt.last_packet);
+    _file.setFirstTimeOffset(_opt.first_time_offset);
+    _file.setLastTimeOffset(_opt.last_time_offset);
+    _file.setFirstTimestamp(_opt.first_time);
+    _file.setLastTimestamp(_opt.last_time);
+
+    // Read all UDP packets matching the source and destination.
+    ts::IPv4Packet ip;
+    ts::MicroSecond timestamp = 0;
+    while (_file.readIPv4(ip, timestamp, _opt)) {
+        // Dump the content of the UDP datagram as DVB SimulCrypt message.
+        dumpMessage(out, ip.protocolData(), ip.protocolDataSize(), ip.sourceAddress(), ip.destinationAddress(), timestamp);
+    }
+    _file.close();
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// DVB SimulCrypt dump, TCP mode.
+//----------------------------------------------------------------------------
+
+namespace {
+    class TCPSimulCryptDump: private SimulCryptDump
+    {
+        TS_NOBUILD_NOCOPY(TCPSimulCryptDump);
+    public:
+        // Constructor.
+        TCPSimulCryptDump(Options&);
+
+        // Dump the file, return true on success, false on error.
+        bool dump(std::ostream&);
+
+    private:
+        ts::PcapStream _file;
+    };
+}
+
+// Constructor.
+TCPSimulCryptDump::TCPSimulCryptDump(Options& opt) :
+    SimulCryptDump(opt),
+    _file()
+{
+}
+
+// Dump the file, return true on success, false on error.
+bool TCPSimulCryptDump::dump(std::ostream& out)
+{
+    // Open the pcap file.
+    if (!_file.open(_opt.input_file, _opt)) {
+        return false;
+    }
+
+    // Set packet filters.
+    _file.setBidirectionalFilter(_opt.source_filter, _opt.dest_filter);
+    _file.setFirstPacketFilter(_opt.first_packet);
+    _file.setLastPacketFilter(_opt.last_packet);
+    _file.setFirstTimeOffset(_opt.first_time_offset);
+    _file.setLastTimeOffset(_opt.last_time_offset);
+    _file.setFirstTimestamp(_opt.first_time);
+    _file.setLastTimestamp(_opt.last_time);
+
+    // Read all TCP sessions matching the source and destination.
+    for (;;) {
+        ts::MicroSecond timestamp = 0;
+        ts::IPv4SocketAddress source;
+        ts::ByteBlock data;
+
+        // Read a message header from any source.
+        // There must be 5 header bytes: version(1), type(2), length(2).
+        // See ETSI TS 103 197, section 4.4.1.
+        size_t size = 5;
+        if (!_file.readTCP(source, data, size, timestamp, _opt)) {
+            break;
+        }
+        if (size < 5) {
+            _opt.error(u"truncated message: %s (%s -> %s)", {ts::UString::Dump(data, ts::UString::SINGLE_LINE), source, _file.otherFilter(source)});
+            break;
+        }
+        assert(data.size() == 5);
+        assert(source.hasAddress());
+        assert(source.hasPort());
+
+        // Read the rest of the message from the same source.
+        size = ts::GetUInt16(data.data() + 3);
+        if (!_file.readTCP(source, data, size, timestamp, _opt)) {
+            break;
+        }
+
+        // Dump the content of the message as DVB SimulCrypt.
+        dumpMessage(out, data.data(), data.size(), source, _file.otherFilter(source), timestamp);
+    }
+    _file.close();
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Program main code.
 //----------------------------------------------------------------------------
 
@@ -472,54 +800,26 @@ int MainCode(int argc, char *argv[])
 {
     // Get command line options.
     Options opt(argc, argv);
+    bool status = true;
 
-    // Open the pcap file.
-    ts::PcapFilter file;
-    if (!file.open(opt.input_file, opt)) {
-        return EXIT_FAILURE;
+    // Output device, may be paginated.
+    std::ostream& out(opt.pager.output(opt));
+
+    if (!opt.dvb_simulcrypt) {
+        // Global file analysis by default.
+        FileAnalysis dfa(opt);
+        status = dfa.analyze(out);
+    }
+    else if (opt.protocols.find(ts::IPv4_PROTO_UDP) == opt.protocols.end()) {
+        // DVB SimulCrypt dump, TCP mode.
+        TCPSimulCryptDump dvb(opt);
+        status = dvb.dump(out);
+    }
+    else {
+        // DVB SimulCrypt dump, UDP mode.
+        UDPSimulCryptDump dvb(opt);
+        status = dvb.dump(out);
     }
 
-    // Set packet filters.
-    file.setProtocolFilter(opt.protocols);
-    file.setSourceFilter(opt.source_filter);
-    file.setDestinationFilter(opt.dest_filter);
-    file.setFirstPacketFilter(opt.first_packet);
-    file.setLastPacketFilter(opt.last_packet);
-    file.setFirstTimeOffset(opt.first_time_offset);
-    file.setLastTimeOffset(opt.last_time_offset);
-    file.setFirstTimestamp(opt.first_time);
-    file.setLastTimestamp(opt.last_time);
-
-    // Statistics per data stream and global.
-    std::map<StreamId,StatBlock> streams_stats;
-    StatBlock global_stats;
-
-    // Display list of time intervals.
-    DisplayInterval interval(opt);
-
-    // Read all IPv4 packets from the file.
-    ts::IPv4Packet ip;
-    ts::MicroSecond timestamp = 0;
-    while (file.readIPv4(ip, timestamp, opt)) {
-        global_stats.addPacket(ip, timestamp);
-        if (opt.list_streams) {
-            streams_stats[StreamId(ip.sourceSocketAddress(), ip.destinationSocketAddress(), ip.protocol())].addPacket(ip, timestamp);
-        }
-        if (opt.print_intervals) {
-            interval.addPacket(std::cout, file, ip, timestamp);
-        }
-    }
-    file.close();
-
-    // Print final data.
-    if (opt.print_intervals) {
-        interval.close(std::cout, file);
-    }
-    if (opt.list_streams) {
-        ListStreams(std::cout, file, streams_stats, global_stats.last_timestamp - global_stats.first_timestamp);
-    }
-    if (opt.print_summary) {
-        DisplaySummary(std::cout, file, global_stats);
-    }
-    return EXIT_SUCCESS;
+    return status ? EXIT_SUCCESS : EXIT_FAILURE;
 }

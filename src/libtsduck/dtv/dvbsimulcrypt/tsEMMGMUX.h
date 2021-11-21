@@ -52,6 +52,16 @@ namespace ts {
         const tlv::VERSION CURRENT_VERSION = 0x03;
 
         //!
+        //! Check if a command tag is valid for the EMMG/PDG <=> MUX protocol.
+        //! @param [in] tag Command tag.
+        //! @return True if @a tag is a valid command for the EMMG/PDG <=> MUX protocol.
+        //!
+        TSDUCKDLL inline bool IsValidCommand(uint16_t tag)
+        {
+            return (tag >= 0x0011 && tag <= 0x0015) || (tag >= 0x0111 && tag <= 0x0118) || tag == 0x0211;
+        }
+
+        //!
         //! All DVB-defined tags (commands and parameters).
         //! Tags is defined as struct instead of namespace to be used as traits/
         //!
@@ -159,6 +169,7 @@ namespace ts {
             // Implementation of pure virtual methods
             virtual void factory(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
             virtual void buildErrorResponse(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
+            virtual UString name() const override;
         };
 
 

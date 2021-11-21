@@ -138,6 +138,12 @@ namespace ts {
             //!
             virtual void buildErrorResponse(const MessageFactory& mf, MessagePtr& msg) const = 0;
 
+            //!
+            //! Get the protocol name (for information only).
+            //! @return The protocol name.
+            //!
+            virtual UString name() const = 0;
+
         private:
             // The class MessageFactory acceeses the internal representation of the protocol.
             friend class MessageFactory;

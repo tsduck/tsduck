@@ -48,11 +48,16 @@ namespace ts {
     {
     public:
         //!
+        //! Wildcard socket address, unspecified address and port.
+        //!
+        static const IPv4SocketAddress AnySocketAddress;
+
+        //!
         //! Default constructor
         //!
         IPv4SocketAddress() :
             IPv4Address(),
-            _port(0)
+            _port(AnyPort)
         {
         }
 

@@ -489,8 +489,8 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
             _last_timestamp = timestamp;
         }
 
-        report.debug(u"pcap data block: %d bytes, captured packet at offset %d, %d bytes (original: %d bytes), link type: %d",
-                     {buffer.size(), cap_start, cap_size, orig_size, ifd.link_type});
+        report.log(2, u"pcap data block: %d bytes, captured packet at offset %d, %d bytes (original: %d bytes), link type: %d",
+                   {buffer.size(), cap_start, cap_size, orig_size, ifd.link_type});
 
         // Analyze the captured packet, trying to find an IPv4 datagram.
         if (ifd.link_type == LINKTYPE_NULL && cap_size > 4 && get32(buffer.data() + cap_start) == 2) {

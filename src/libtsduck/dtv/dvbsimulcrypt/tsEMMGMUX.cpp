@@ -32,7 +32,19 @@
 #include "tsNames.h"
 
 // Define protocol singleton instance
-TS_DEFINE_SINGLETON (ts::emmgmux::Protocol);
+TS_DEFINE_SINGLETON(ts::emmgmux::Protocol);
+
+
+//----------------------------------------------------------------------------
+// Protocol name.
+//----------------------------------------------------------------------------
+
+#define PROTOCOL_NAME u"EMMG/PDG<=>MUX"
+
+ts::UString ts::emmgmux::Protocol::name() const
+{
+    return PROTOCOL_NAME;
+}
 
 
 //----------------------------------------------------------------------------
@@ -120,49 +132,49 @@ void ts::emmgmux::Protocol::factory (const tlv::MessageFactory& fact, tlv::Messa
 {
     switch (fact.commandTag()) {
         case Tags::channel_setup:
-            msg = new ChannelSetup (fact);
+            msg = new ChannelSetup(fact);
             break;
         case Tags::channel_test:
-            msg = new ChannelTest (fact);
+            msg = new ChannelTest(fact);
             break;
         case Tags::channel_status:
-            msg = new ChannelStatus (fact);
+            msg = new ChannelStatus(fact);
             break;
         case Tags::channel_close:
-            msg = new ChannelClose (fact);
+            msg = new ChannelClose(fact);
             break;
         case Tags::channel_error:
-            msg = new ChannelError (fact);
+            msg = new ChannelError(fact);
             break;
         case Tags::stream_setup:
-            msg = new StreamSetup (fact);
+            msg = new StreamSetup(fact);
             break;
         case Tags::stream_test:
-            msg = new StreamTest (fact);
+            msg = new StreamTest(fact);
             break;
         case Tags::stream_status:
-            msg = new StreamStatus (fact);
+            msg = new StreamStatus(fact);
             break;
         case Tags::stream_close_request:
-            msg = new StreamCloseRequest (fact);
+            msg = new StreamCloseRequest(fact);
             break;
         case Tags::stream_close_response:
-            msg = new StreamCloseResponse (fact);
+            msg = new StreamCloseResponse(fact);
             break;
         case Tags::stream_error:
-            msg = new StreamError (fact);
+            msg = new StreamError(fact);
             break;
         case Tags::stream_BW_request:
-            msg = new StreamBWRequest (fact);
+            msg = new StreamBWRequest(fact);
             break;
         case Tags::stream_BW_allocation:
-            msg = new StreamBWAllocation (fact);
+            msg = new StreamBWAllocation(fact);
             break;
         case Tags::data_provision:
-            msg = new DataProvision (fact);
+            msg = new DataProvision(fact);
             break;
         default:
-            throw tlv::DeserializationInternalError(UString::Format(u"EMMG/PDG<=>MUX Message 0x%X unimplemented", {fact.commandTag()}));
+            throw tlv::DeserializationInternalError(UString::Format(PROTOCOL_NAME u" message 0x%X unimplemented", {fact.commandTag()}));
     }
 }
 
@@ -181,14 +193,14 @@ ts::UString ts::emmgmux::Errors::Name(uint16_t status)
 // Create an error response message for a faulty incoming message.
 //----------------------------------------------------------------------------
 
-void ts::emmgmux::Protocol::buildErrorResponse (const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
+void ts::emmgmux::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create a channel_error message
-    SafePtr<ChannelError> errmsg (new ChannelError);
+    SafePtr<ChannelError> errmsg(new ChannelError);
 
     // Try to get an data_channel_id from the incoming message.
     try {
-        errmsg->channel_id = fact.get<uint16_t> (Tags::data_channel_id);
+        errmsg->channel_id = fact.get<uint16_t>(Tags::data_channel_id);
     }
     catch (const tlv::DeserializationInternalError&) {
         errmsg->channel_id = 0;
@@ -223,8 +235,8 @@ void ts::emmgmux::Protocol::buildErrorResponse (const tlv::MessageFactory& fact,
     }
 
     // Copy error_status and error_information into response
-    errmsg->error_status.push_back (status);
-    errmsg->error_information.push_back (fact.errorInformation());
+    errmsg->error_status.push_back(status);
+    errmsg->error_information.push_back(fact.errorInformation());
 
     // Transfer ownership of safe ptr
     msg = errmsg.release();
@@ -242,25 +254,25 @@ ts::emmgmux::ChannelSetup::ChannelSetup() :
 {
 }
 
-ts::emmgmux::ChannelSetup::ChannelSetup (const tlv::MessageFactory& fact) :
+ts::emmgmux::ChannelSetup::ChannelSetup(const tlv::MessageFactory& fact) :
     ChannelMessage     (fact.protocolVersion(),
                         fact.commandTag(),
-                        fact.get<uint16_t> (Tags::data_channel_id)),
-    client_id          (fact.get<uint32_t> (Tags::client_id)),
-    section_TSpkt_flag (fact.get<bool>   (Tags::section_TSpkt_flag))
+                        fact.get<uint16_t>(Tags::data_channel_id)),
+    client_id          (fact.get<uint32_t>(Tags::client_id)),
+    section_TSpkt_flag (fact.get<bool>(Tags::section_TSpkt_flag))
 {
 }
 
-void ts::emmgmux::ChannelSetup::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::ChannelSetup::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id,    channel_id);
     fact.put(Tags::client_id,          client_id);
     fact.put(Tags::section_TSpkt_flag, section_TSpkt_flag);
 }
 
-ts::UString ts::emmgmux::ChannelSetup::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelSetup::dump(size_t indent) const
 {
-    return UString::Format(u"%*schannel_setup (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_setup (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -294,7 +306,7 @@ void ts::emmgmux::ChannelTest::serializeParameters (tlv::Serializer& fact) const
 
 ts::UString ts::emmgmux::ChannelTest::dump (size_t indent) const
 {
-    return UString::Format(u"%*schannel_test (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_test (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id);
@@ -330,7 +342,7 @@ void ts::emmgmux::ChannelStatus::serializeParameters (tlv::Serializer& fact) con
 
 ts::UString ts::emmgmux::ChannelStatus::dump (size_t indent) const
 {
-    return UString::Format(u"%*schannel_status (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_status (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -364,7 +376,7 @@ void ts::emmgmux::ChannelClose::serializeParameters (tlv::Serializer& fact) cons
 
 ts::UString ts::emmgmux::ChannelClose::dump (size_t indent) const
 {
-    return UString::Format(u"%*schannel_close (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_close (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id);
@@ -405,7 +417,7 @@ void ts::emmgmux::ChannelError::serializeParameters (tlv::Serializer& fact) cons
 
 ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
 {
-    return UString::Format(u"%*schannel_error (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*schannel_error (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -448,7 +460,7 @@ void ts::emmgmux::StreamSetup::serializeParameters (tlv::Serializer& fact) const
 
 ts::UString ts::emmgmux::StreamSetup::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_setup (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_setup (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -486,7 +498,7 @@ void ts::emmgmux::StreamTest::serializeParameters (tlv::Serializer& fact) const
 
 ts::UString ts::emmgmux::StreamTest::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_test (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_test (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -528,7 +540,7 @@ void ts::emmgmux::StreamStatus::serializeParameters (tlv::Serializer& fact) cons
 
 ts::UString ts::emmgmux::StreamStatus::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_status (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_status (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -566,7 +578,7 @@ void ts::emmgmux::StreamCloseRequest::serializeParameters (tlv::Serializer& fact
 
 ts::UString ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_close_request (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_close_request (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -602,7 +614,7 @@ void ts::emmgmux::StreamCloseResponse::serializeParameters (tlv::Serializer& fac
 
 ts::UString ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_close_response (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_close_response (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -646,7 +658,7 @@ void ts::emmgmux::StreamError::serializeParameters (tlv::Serializer& fact) const
 
 ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_error (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_error (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -691,7 +703,7 @@ void ts::emmgmux::StreamBWRequest::serializeParameters (tlv::Serializer& fact) c
 
 ts::UString ts::emmgmux::StreamBWRequest::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_BW_request (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_BW_request (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -735,7 +747,7 @@ void ts::emmgmux::StreamBWAllocation::serializeParameters (tlv::Serializer& fact
 
 ts::UString ts::emmgmux::StreamBWAllocation::dump (size_t indent) const
 {
-    return UString::Format(u"%*sstream_BW_allocation (EMMG/PDG<=>MUX)\n", {indent, u""}) +
+    return UString::Format(u"%*sstream_BW_allocation (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
@@ -788,7 +800,7 @@ void ts::emmgmux::DataProvision::serializeParameters(tlv::Serializer& fact) cons
 
 ts::UString ts::emmgmux::DataProvision::dump(size_t indent) const
 {
-    UString value(UString::Format(u"%*sdata_provision (EMMG/PDG<=>MUX)\n", {indent, u""}));
+    UString value(UString::Format(u"%*sdata_provision (" PROTOCOL_NAME u")\n", {indent, u""}));
     value += tlv::Message::dump(indent);
     value += dumpHexa(indent, u"client_id", client_id);
     value += dumpHexa(indent, u"data_channel_id", channel_id);

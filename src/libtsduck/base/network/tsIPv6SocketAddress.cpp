@@ -29,6 +29,9 @@
 
 #include "tsIPv6SocketAddress.h"
 
+// Wildcard socket address, unspecified address and port.
+const ts::IPv6SocketAddress ts::IPv6SocketAddress::AnySocketAddress;
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
