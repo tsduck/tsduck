@@ -283,6 +283,7 @@
 #include "tsFileInputPlugin.h"
 #include "tsFileNameGenerator.h"
 #include "tsFileNameRate.h"
+#include "tsFileNameRateList.h"
 #include "tsFileOutputPlugin.h"
 #include "tsFilePacketPlugin.h"
 #include "tsFileUtils.h"
