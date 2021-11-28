@@ -137,6 +137,17 @@ namespace ts {
         void setFix(bool fix) { _fix_errors = fix; }
 
         //!
+        //! When fixing errors, specify how to handle duplicated packets.
+        //! Two successive packets in the same PID are considered as duplicated if
+        //! they have the same continuity counter and same content (except PCR, if any).
+        //! @param [in] on When true (the default), duplicated input packets are replicated
+        //! as duplicated on output (the corresponding output packets have the same continuity
+        //! counters). When false, the input packets are not considered as duplicated and the
+        //! output packets have incremented countinuity counters.
+        //!
+        void setReplicateDuplicated(bool on) { _replicate_dup = on; }
+
+        //!
         //! Set generator mode.
         //! When the generator mode is on, the input continuity counters are always ignored.
         //! The output continuity counters are updated to create a continuous stream.
@@ -260,6 +271,7 @@ namespace ts {
         int           _severity;          // Severity level for error messages.
         bool          _display_errors;    // Display discontinuity errors.
         bool          _fix_errors;        // Fix discontinuity errors.
+        bool          _replicate_dup;     // With _fix_errors, replicate duplicate packets.
         bool          _generator;         // Use generator mode.
         UString       _prefix;            // Message prefix.
         PacketCounter _total_packets;     // Total number of packets.
@@ -270,7 +282,7 @@ namespace ts {
         PIDStateMap   _pid_states;        // State of all PID's.
 
         // Internal version of feedPacket.
-        // The packet is modified only is update is true.
+        // The packet is modified only if update is true.
         bool feedPacketInternal(TSPacket* pkt, bool update);
 
         // Build the first part of an error message.

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2642
+VERSION 3.29-2645
 
 [NEW] New commands and plugins:
 
@@ -30,6 +30,7 @@ VERSION 3.29-2642
     - Options --emmg-client-id, --emmg-data-id, --first-date, --first-packet,
       --first-timestamp, --last-date, --last-packet, --last-timestamp,
       --tcp-emmg-mux, --udp-emmg-mux in "pcap" input plugin.
+    - Option --no-replicate-duplicated in "tsfixcc" and plugin "continuity".
 
 [BUG] Bug fixes:
 
