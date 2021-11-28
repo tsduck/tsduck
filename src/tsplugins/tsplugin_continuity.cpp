@@ -54,6 +54,7 @@ namespace ts {
     private:
         UString            _tag;          // Message tag
         bool               _fix;          // Fix incorrect continuity counters
+        bool               _no_replicate; // Option --no-replicate-duplicated
         int                _log_level;    // Log level for discontinuity messages
         PIDSet             _pids;         // PID values to check or fix
         ContinuityAnalyzer _cc_analyzer;  // Continuity counters analyzer
@@ -70,7 +71,8 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"continuity", ts::ContinuityPlugin);
 ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Check or fix continuity counters on TS packets", u"[options]"),
     _tag(),
-    _fix(),
+    _fix(false),
+    _no_replicate(false),
     _log_level(Severity::Info),
     _pids(),
     _cc_analyzer(NoPID, tsp)
@@ -78,6 +80,15 @@ ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
     option(u"fix", 'f');
     help(u"fix",
          u"Fix incorrect continuity counters. By default, only display discontinuities.");
+
+    option(u"no-replicate-duplicated");
+    help(u"no-replicate-duplicated",
+         u"Two successive packets in the same PID are considered as duplicated if they have "
+         u"the same continuity counter and same content (except PCR, if any). "
+         u"By default, with --fix, duplicated input packets are replicated as duplicated on output "
+         u"(the corresponding output packets have the same continuity counters). "
+         u"When this option is specified, the input packets are not considered as duplicated and "
+         u"the output packets receive individually incremented countinuity counters.");
 
     option(u"pid", 'p', PIDVAL, 0, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",
@@ -101,6 +112,7 @@ bool ts::ContinuityPlugin::getOptions()
     // Command line arguments
     getIntValues(_pids, u"pid", true);
     _fix = present(u"fix");
+    _no_replicate = present(u"no-replicate-duplicated");
     _tag = value(u"tag");
     if (!_tag.empty()) {
         _tag += u": ";
@@ -129,6 +141,7 @@ bool ts::ContinuityPlugin::start()
     _cc_analyzer.setMessagePrefix(_tag);
     _cc_analyzer.setMessageSeverity(_log_level);
     _cc_analyzer.setFix(_fix);
+    _cc_analyzer.setReplicateDuplicated(!_no_replicate);
     return true;
 }
 

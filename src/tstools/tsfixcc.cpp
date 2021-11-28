@@ -47,10 +47,11 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        bool         test;      // Test mode
-        bool         circular;  // Add empty packets to enforce circular continuity
-        ts::UString  filename;  // File name
-        std::fstream file;      // File buffer
+        bool         test;          // Test mode
+        bool         circular;      // Add empty packets to enforce circular continuity
+        bool         no_replicate;  // Option --no-replicate-duplicated
+        ts::UString  filename;      // File name
+        std::fstream file;          // File buffer
 
         // Check if there was an I/O error on the file.
         // Print an error message if this is the case.
@@ -63,6 +64,7 @@ Options::Options(int argc, char *argv[]) :
     Args(u"Fix continuity counters in a transport stream", u"[options] filename"),
     test(false),
     circular(false),
+    no_replicate(false),
     filename(),
     file()
 {
@@ -75,14 +77,27 @@ Options::Options(int argc, char *argv[]) :
          u"Add empty packets, if necessary, on each PID so that the "
          u"continuity is preserved between end and beginning of file.");
 
-    option(u"noaction", 'n');
-    help(u"noaction", u"Display what should be performed but do not modify the file.");
+    option(u"noaction");
+    help(u"noaction", u"Legacy equivalent of --no-action.");
+
+    option(u"no-action", 'n');
+    help(u"no-action", u"Display what should be performed but do not modify the file.");
+
+    option(u"no-replicate-duplicated");
+    help(u"no-replicate-duplicated",
+         u"Two successive packets in the same PID are considered as duplicated if they have "
+         u"the same continuity counter and same content (except PCR, if any). "
+         u"By default, duplicated input packets are replicated as duplicated on output "
+         u"(the corresponding output packets have the same continuity counters). "
+         u"When this option is specified, the input packets are not considered as duplicated and "
+         u"the output packets receive individually incremented countinuity counters.");
 
     analyze(argc, argv);
 
     filename = value(u"");
     circular = present(u"circular");
-    test = present(u"noaction");
+    test = present(u"no-action") || present(u"noaction");
+    no_replicate = present(u"no-replicate-duplicated");
 
     exitOnError();
 }
@@ -112,6 +127,7 @@ int MainCode(int argc, char *argv[])
     // Configure the CC analyzer.
     fixer.setDisplay(true);
     fixer.setFix(!opt.test);
+    fixer.setReplicateDuplicated(!opt.no_replicate);
     fixer.setMessageSeverity(opt.test ? ts::Severity::Info : ts::Severity::Verbose);
 
     // Open file in read/write mode (CC are overwritten)

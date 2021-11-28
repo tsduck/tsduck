@@ -40,6 +40,7 @@ ts::ContinuityAnalyzer::ContinuityAnalyzer(const PIDSet& pid_filter, Report* rep
     _severity(Severity::Info),
     _display_errors(false),
     _fix_errors(false),
+    _replicate_dup(true),
     _generator(false),
     _prefix(),
     _total_packets(0),
@@ -243,11 +244,14 @@ bool ts::ContinuityAnalyzer::feedPacketInternal(TSPacket* pkt, bool update)
                 _error_count++;
                 result = false;
             }
-            if (update && cc != state.last_cc_out && _fix_errors) {
-                // Replicate a duplicate.
-                pkt->setCC(state.last_cc_out);
-                result = false;
-                _fix_count++;
+            if (update &&_fix_errors) {
+                // Check if we need to replicate a duplicate packet (same CC) or increment the CC.
+                const uint8_t cc_out = _replicate_dup || !has_payload ? state.last_cc_out : ((state.last_cc_out + 1) & CC_MASK);
+                if (cc != cc_out) {
+                    pkt->setCC(cc_out);
+                    result = false;
+                    _fix_count++;
+                }
             }
         }
         else {
