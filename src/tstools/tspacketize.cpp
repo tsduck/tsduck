@@ -35,7 +35,7 @@
 #include "tsDuckContext.h"
 #include "tsSectionFileArgs.h"
 #include "tsTSPacket.h"
-#include "tsFileNameRate.h"
+#include "tsFileNameRateList.h"
 #include "tsOutputRedirector.h"
 #include "tsCyclingPacketizer.h"
 #include "tsSysUtils.h"

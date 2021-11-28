@@ -34,7 +34,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsCyclingPacketizer.h"
-#include "tsFileNameRate.h"
+#include "tsFileNameRateList.h"
 #include "tsSectionFileArgs.h"
 #include "tsFileUtils.h"
 
