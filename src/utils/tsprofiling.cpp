@@ -73,7 +73,7 @@ namespace {
 }
 
 Options::Options(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),
+    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1, u"Mono-thread profiling and debugging environment for tsp plugins", u"[options]"),
     duck(this),
     buffer_size(0),
     fixed_bitrate(0),
@@ -81,25 +81,18 @@ Options::Options(int argc, char *argv[]) :
     plugins(),
     output()
 {
-    setDescription(u"Mono-thread profiling and debugging environment for tsp plugins");
-
-    setSyntax(u"[options] \\\n"
-              u"    [-I input-name [input-options]] \\\n"
-              u"    [-P processor-name [processor-options]] ... \\\n"
-              u"    [-O output-name [output-options]]");
-
-    option<ts::BitRate>(u"bitrate", 'b');
-    help(u"bitrate", u"Specify the input bitrate.");
-
-    option(u"packet-buffer", 'p', POSITIVE);
-    help(u"packet-buffer", u"Specify the maximum number of TS packets in the buffer. The default is 1000.");
-
     duck.defineArgsForCAS(*this);
     duck.defineArgsForCharset(*this);
     duck.defineArgsForHFBand(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForTimeReference(*this);
     duck.defineArgsForStandards(*this);
+
+    option<ts::BitRate>(u"bitrate", 'b');
+    help(u"bitrate", u"Specify the input bitrate.");
+
+    option(u"packet-buffer", 'p', POSITIVE);
+    help(u"packet-buffer", u"Specify the maximum number of TS packets in the buffer. The default is 1000.");
 
     // Analyze the command.
     analyze(argc, argv);

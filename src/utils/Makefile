@@ -38,7 +38,7 @@ default: execs
 
 # One source file per executable (setpath is Windows-only, tsprofiling is a test program).
 
-EXECS := $(addprefix $(BINDIR)/,$(filter-out setpath $(if $(NOTEST),tsprofiling,),$(sort $(notdir $(wildcard *.cpp)))))
+EXECS := $(addprefix $(BINDIR)/,$(filter-out setpath $(if $(NOTEST),tsprofiling,),$(sort $(notdir $(basename $(wildcard *.cpp))))))
 
 .PHONY: execs
 execs: $(EXECS)
@@ -48,6 +48,7 @@ execs: $(EXECS)
 STATIC_DEPS = $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS))) $(STATIC_LIBTSDUCK)
 ifeq ($(STATIC),)
     $(BINDIR)/tsprofiling: $(STATIC_DEPS)
+    $(BINDIR)/tsprofiling: LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS)
     $(filter-out $(BINDIR)/tsprofiling,$(EXECS)): $(SHARED_LIBTSDUCK)
 else
     LDFLAGS_EXTRA = -static

@@ -39,7 +39,6 @@
 #include "tsAsyncReport.h"
 #include "tsUserInterrupt.h"
 #include "tsSystemMonitor.h"
-#include "tsOutputPager.h"
 #include "tsVersionInfo.h"
 TS_MAIN(MainCode);
 
@@ -56,7 +55,6 @@ namespace {
         TSPOptions(int argc, char *argv[]);
 
         // Option values
-        int                 list_proc_flags;  // List processors, mask of PluginRepository::ListFlag.
         bool                monitor;          // Run a resource monitoring thread in the background.
         ts::UString         monitor_config;   // System monitoring configuration file.S
         ts::DuckContext     duck;             // TSDuck context
@@ -66,21 +64,13 @@ namespace {
 }
 
 TSPOptions::TSPOptions(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1),
-    list_proc_flags(0),
+    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1, u"MPEG transport stream processor using a chain of plugins", u"[tsp-options]"),
     monitor(false),
     monitor_config(),
     duck(this),
     log_args(),
     tsp_args()
 {
-    setDescription(u"MPEG transport stream processor using a chain of plugins");
-
-    setSyntax(u"[tsp-options] \\\n"
-              u"    [-I input-name [input-options]] \\\n"
-              u"    [-P processor-name [processor-options]] ... \\\n"
-              u"    [-O output-name [output-options]]");
-
     duck.defineArgsForCAS(*this);
     duck.defineArgsForCharset(*this);
     duck.defineArgsForHFBand(*this);
@@ -89,9 +79,6 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     duck.defineArgsForStandards(*this);
     log_args.defineArgs(*this);
     tsp_args.defineArgs(*this);
-
-    option(u"list-processors", 'l', ts::PluginRepository::ListProcessorEnum, 0, 1, true);
-    help(u"list-processors", u"List all available processors.");
 
     option(u"monitor", 'm', STRING, 0, 1, 0, UNLIMITED_VALUE, true);
     help(u"monitor", u"filename",
@@ -104,7 +91,6 @@ TSPOptions::TSPOptions(int argc, char *argv[]) :
     analyze(argc, argv);
 
     // Load option values.
-    list_proc_flags = present(u"list-processors") ? intValue<int>(u"list-processors", ts::PluginRepository::LIST_ALL) : 0;
     monitor = present(u"monitor");
     getValue(monitor_config, u"monitor");
     duck.loadArgs(*this);
@@ -153,35 +139,14 @@ int MainCode(int argc, char *argv[])
     // Internal sanity check about TS packets.
     ts::TSPacket::SanityCheck();
 
-    // Get command line options.
-    TSPOptions opt(argc, argv);
-    CERR.setMaxSeverity(opt.maxSeverity());
-
     // If plugins were statically linked, disallow the dynamic loading of plugins.
 #if defined(TSDUCK_STATIC_PLUGINS)
     ts::PluginRepository::Instance()->setSharedLibraryAllowed(false);
 #endif
 
-    // Process the --list-processors option
-    if (opt.list_proc_flags != 0) {
-        // Build the list of plugins.
-        const ts::UString text(ts::PluginRepository::Instance()->listPlugins(true, opt, opt.list_proc_flags));
-        // Try to page, raw output otherwise.
-        ts::OutputPager pager;
-        if ((opt.list_proc_flags & ts::PluginRepository::LIST_COMPACT) != 0) {
-            // Compact output, no paging.
-            std::cerr << text;
-        }
-        else if (pager.canPage() && pager.open(true, 0, opt)) {
-            pager.write(text, opt);
-            pager.write(u"\n", opt);
-            pager.close(opt);
-        }
-        else {
-            std::cerr << text << std::endl;
-        }
-        return EXIT_SUCCESS;
-    }
+    // Get command line options.
+    TSPOptions opt(argc, argv);
+    CERR.setMaxSeverity(opt.maxSeverity());
 
     // Prevent from being killed when writing on broken pipes.
     ts::IgnorePipeSignal();

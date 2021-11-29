@@ -543,18 +543,6 @@ ifneq ($(CROSS)$(CROSS_TARGET),)
     NOEDITLINE = true
 endif
 
-ifneq ($(ASSERTIONS),)
-    CXXFLAGS_INCLUDES += -DTS_KEEP_ASSERTIONS=1
-endif
-
-ifneq ($(NOGITHUB),)
-    CXXFLAGS_INCLUDES += -DTS_NO_GITHUB=1
-endif
-
-ifneq ($(NOTELETEXT),)
-    CXXFLAGS_INCLUDES += -DTS_NO_TELETEXT=1
-endif
-
 ifeq ($(NOSRT),)
     # SRT not disabled, check if libsrt is available.
     NOSRT := $(if $(wildcard /usr/include/srt/*.h $(ALTDEVROOT)/include/srt/*.h),,true)
@@ -586,6 +574,26 @@ ifeq ($(NOPCSC)$(MACOS),)
     NOPCSC := $(if $(wildcard /usr/include/PCSC/*.h $(ALTDEVROOT)/include/PCSC/*.h),,true)
 endif
 
+#-----------------------------------------------------------------------------
+# Other compilation optional features
+#-----------------------------------------------------------------------------
+
+# These symbols from the make command line drive the bitrate representation.
+
+ifneq ($(BITRATE_FRACTION),)
+    CXXFLAGS_INCLUDES += -DTS_BITRATE_FRACTION=1
+else ifneq ($(BITRATE_INTEGER),)
+    CXXFLAGS_INCLUDES += -DTS_BITRATE_INTEGER=1
+else ifneq ($(BITRATE_FLOAT),)
+    CXXFLAGS_INCLUDES += -DTS_BITRATE_FLOAT=1
+else ifneq ($(BITRATE_FIXED),)
+    CXXFLAGS_INCLUDES += -DTS_BITRATE_FIXED=1
+else ifneq ($(BITRATE_DECIMALS),)
+    CXXFLAGS_INCLUDES += -DTS_BITRATE_DECIMALS=$(BITRATE_DECIMALS)
+endif
+
+# The following definitions are used in applications and in the library.
+
 ifneq ($(NOPCSC),)
     CXXFLAGS_INCLUDES += -DTS_NO_PCSC=1
     LDLIBS_PCSC =
@@ -602,16 +610,57 @@ else
     LDLIBS_PCSC = -lpcsclite
 endif
 
-ifneq ($(BITRATE_FRACTION),)
-    CXXFLAGS_INCLUDES += -DTS_BITRATE_FRACTION=1
-else ifneq ($(BITRATE_INTEGER),)
-    CXXFLAGS_INCLUDES += -DTS_BITRATE_INTEGER=1
-else ifneq ($(BITRATE_FLOAT),)
-    CXXFLAGS_INCLUDES += -DTS_BITRATE_FLOAT=1
-else ifneq ($(BITRATE_FIXED),)
-    CXXFLAGS_INCLUDES += -DTS_BITRATE_FIXED=1
-else ifneq ($(BITRATE_DECIMALS),)
-    CXXFLAGS_INCLUDES += -DTS_BITRATE_DECIMALS=$(BITRATE_DECIMALS)
+ifneq ($(NOGITHUB),)
+    CXXFLAGS_INCLUDES += -DTS_NO_GITHUB=1
+endif
+
+ifneq ($(NOTELETEXT),)
+    CXXFLAGS_INCLUDES += -DTS_NO_TELETEXT=1
+endif
+
+ifneq ($(ASSERTIONS),)
+    CXXFLAGS_INCLUDES += -DTS_KEEP_ASSERTIONS=1
+endif
+
+# These variables are used when building the TSDuck library, not in the
+# applications. Note, however, that LIBTSDUCK_LDLIBS is still necessary
+# when linking applications against the TSDuck static library.
+
+LIBTSDUCK_CXXFLAGS_INCLUDES =
+LIBTSDUCK_LDLIBS = $(LDLIBS_PCSC)
+
+ifneq ($(NODTAPI),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
+endif
+
+ifneq ($(NOEDITLINE),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_EDITLINE=1
+else
+    LIBTSDUCK_LDLIBS += -ledit
+endif
+
+ifneq ($(NOCURL),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_CURL=1
+else
+    ifeq ($(CURL_DONE),)
+        export CXXFLAGS_CURL := $(shell curl-config --cflags)
+	export LDLIBS_CURL := $(shell curl-config --libs)
+        export CURL_DONE := true
+    endif
+    LIBTSDUCK_CXXFLAGS_INCLUDES += $(CXXFLAGS_CURL)
+    LIBTSDUCK_LDLIBS += $(LDLIBS_CURL)
+endif
+
+ifneq ($(NOSRT),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_SRT=1
+else
+    LIBTSDUCK_LDLIBS += -lsrt
+endif
+
+ifneq ($(NORIST),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_RIST=1
+else
+    LIBTSDUCK_LDLIBS += -lrist
 endif
 
 #-----------------------------------------------------------------------------
