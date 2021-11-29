@@ -62,15 +62,15 @@ namespace {
 }
 
 TSMuxOptions::TSMuxOptions(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1),
+    ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1, u"TS multiplexer", u"[tsmux-options]"),
     monitor(false),
     monitor_config(),
     duck(this),
     log_args(),
     mux_args()
 {
-    setDescription(u"TS multiplexer");
-    setSyntax(u"[tsmux-options] -I input-name [input-options] ... [-O output-name [output-options]]");
+    log_args.defineArgs(*this);
+    mux_args.defineArgs(*this);
 
     option(u"monitor", 'm', STRING, 0, 1, 0, UNLIMITED_VALUE, true);
     help(u"monitor", u"filename",
@@ -78,9 +78,6 @@ TSMuxOptions::TSMuxOptions(int argc, char *argv[]) :
          u"This includes CPU load, virtual memory usage. "
          u"Useful to verify the stability of the application. "
          u"The optional file is an XML monitoring configuration file.");
-
-    log_args.defineArgs(*this);
-    mux_args.defineArgs(*this);
 
     // Analyze the command.
     analyze(argc, argv);

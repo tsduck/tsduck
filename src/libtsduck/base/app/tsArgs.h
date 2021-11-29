@@ -560,6 +560,7 @@ namespace ts {
             HELP_USAGE,         //!< Formatted command line syntax.
             HELP_SYNTAX,        //!< One-line command line syntax.
             HELP_FULL,          //!< Full help text.
+            HELP_OPTIONS,       //!< Options names, one by line.
         };
 
         //!

@@ -51,6 +51,7 @@ const ts::Enumeration ts::Args::HelpFormatEnum({
     {u"usage",       ts::Args::HELP_USAGE},
     {u"syntax",      ts::Args::HELP_SYNTAX},
     {u"full",        ts::Args::HELP_FULL},
+    {u"options",     ts::Args::HELP_OPTIONS},
 });
 
 
@@ -1217,6 +1218,26 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
         case HELP_FULL: {
             // Default full complete help text.
             return u"\n" + _description + u"\n\nUsage: " + getHelpText(HELP_USAGE, line_width) + u"\n\n" + formatHelpOptions(line_width);
+        }
+        case HELP_OPTIONS: {
+            // Options names, one by line.
+            UString text;
+            for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
+                const IOption& opt(it->second);
+                if (!opt.name.empty()) {
+                    if (!text.empty()) {
+                        text += LINE_FEED;
+                    }
+                    if (opt.short_name != CHAR_NULL) {
+                        text += u'-';
+                        text += opt.short_name;
+                        text += LINE_FEED;
+                    }
+                    text += u"--";
+                    text += opt.name;
+                }
+            }
+            return text;
         }
         default: {
             return UString();

@@ -35,7 +35,7 @@
 # Define NODTAPI to compile without Dektec support.
 # NODTAPI is automatically defined if no DTAPI is found.
 
-ifeq ($(NODTAPI),)
+ifeq ($(NODTAPI)$(NODEKTEC),)
     ifeq ($(filter-out default headers libs,$(MAKECMDGOALS)),)
         DTAPI_OBJECT := $(shell ../../scripts/dtapi-config.sh --object --download $(if $(M32),--m32,))
         DTAPI_HEADER := $(shell ../../scripts/dtapi-config.sh --header)
@@ -95,38 +95,8 @@ $(OBJDIR)/tsduck.o: tsduck.h
 
 # Some libraries are used internally to libtsduck only.
 
-ifneq ($(NODTAPI),)
-    CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
-endif
-
-ifneq ($(NOEDITLINE),)
-    CXXFLAGS_INCLUDES += -DTS_NO_EDITLINE=1
-else
-    LDLIBS := -ledit $(LDLIBS)
-endif
-
-ifneq ($(NOCURL),)
-    CXXFLAGS_INCLUDES += -DTS_NO_CURL=1
-else
-    CXXFLAGS_CURL := $(shell curl-config --cflags)
-    CXXFLAGS_INCLUDES += $(CXXFLAGS_CURL)
-    LDLIBS := $(shell curl-config --libs) $(LDLIBS)
-endif
-
-ifneq ($(NOSRT),)
-    CXXFLAGS_INCLUDES += -DTS_NO_SRT=1
-else
-    LDLIBS := -lsrt $(LDLIBS)
-endif
-
-ifneq ($(NORIST),)
-    CXXFLAGS_INCLUDES += -DTS_NO_RIST=1
-else
-    LDLIBS := -lrist $(LDLIBS)
-endif
-
 CXXFLAGS_JAVA := $(shell $(SCRIPTSDIR)/java-config.sh --cflags)
-CXXFLAGS_INCLUDES += $(CXXFLAGS_JAVA)
+CXXFLAGS_INCLUDES += $(CXXFLAGS_JAVA) $(LIBTSDUCK_CXXFLAGS_INCLUDES)
 
 # Specific (per-module) compilation options:
 
@@ -158,7 +128,7 @@ libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 $(SHARED_LIBTSDUCK): $(OBJS)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [LD] $@'; \
-	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LDLIBS_PCSC) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
 # tables, descriptors, charsets and plugins. These classes use self-registration

@@ -28,9 +28,10 @@
 //----------------------------------------------------------------------------
 
 #include "tsArgsWithPlugins.h"
+#include "tsPluginRepository.h"
 #include "tsDuckConfigFile.h"
 #include "tsSysUtils.h"
-#include "tsPlugin.h"
+#include "tsOutputPager.h"
 
 
 //----------------------------------------------------------------------------
@@ -46,7 +47,7 @@ ts::ArgsWithPlugins::ArgsWithPlugins(size_t min_inputs,
                                      const ts::UString& description,
                                      const ts::UString& syntax,
                                      int flags) :
-    Args(description, syntax, flags),
+    Args(description, UString(), flags),
     _min_inputs(min_inputs),
     _max_inputs(max_inputs),
     _min_plugins(min_plugins),
@@ -55,6 +56,49 @@ ts::ArgsWithPlugins::ArgsWithPlugins(size_t min_inputs,
     _max_outputs(max_outputs),
     _plugins()
 {
+    setDirectSyntax(syntax);
+
+    option(u"list-plugins", 'l', PluginRepository::ListProcessorEnum, 0, 1, true);
+    help(u"list-plugins", u"List all available plugins.");
+}
+
+
+//----------------------------------------------------------------------------
+// Non-virtual version of setSyntax(), can be called in constructor.
+//----------------------------------------------------------------------------
+
+// Virtual version.
+void ts::ArgsWithPlugins::setSyntax(const UString& syntax)
+{
+    setDirectSyntax(syntax);
+}
+
+// Non-virtual version.
+void ts::ArgsWithPlugins::setDirectSyntax(const UString& syntax)
+{
+    // Add plugin definitions.
+    UString s(syntax);
+    if (_max_inputs > 0) {
+        s.append(u" \\\n    [-I input-name [input-options]]");
+        if (_max_inputs > 1) {
+            s.append(u" ...");
+        }
+    }
+    if (_max_plugins > 0) {
+        s.append(u" \\\n    [-P processor-name [processor-options]]");
+        if (_max_plugins > 1) {
+            s.append(u" ...");
+        }
+    }
+    if (_max_outputs > 0) {
+        s.append(u" \\\n    [-O output-name [output-options]]");
+        if (_max_outputs > 1) {
+            s.append(u" ...");
+        }
+    }
+
+    // Call superclass.
+    Args::setSyntax(s);
 }
 
 
@@ -126,6 +170,13 @@ bool ts::ArgsWithPlugins::analyze(const UString& app_name, const UStringVector& 
 
     // Analyze the command-specifc options, not including the plugin options, not processing redirections.
     if (!Args::analyze(app_name, UStringVector(args.begin(), args.begin() + plugin_index), false)) {
+        return false;
+    }
+
+    // Process the --list-plugins options.
+    if (present(u"list-plugins")) {
+        processListPlugins();
+        invalidate();
         return false;
     }
 
@@ -245,5 +296,56 @@ void ts::ArgsWithPlugins::loadDefaultPlugins(PluginType type, const ts::UString&
                 options.push_back(opt);
             }
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process --list-plugins.
+//----------------------------------------------------------------------------
+
+void ts::ArgsWithPlugins::processListPlugins()
+{
+    // Get requested list plugin flags.
+    int op = intValue<int>(u"list-plugins", PluginRepository::LIST_ALL);
+
+    // Clear unused plugin types.
+    if (_max_inputs == 0) {
+        op &= ~PluginRepository::LIST_INPUT;
+    }
+    if (_max_plugins == 0) {
+        op &= ~PluginRepository::LIST_PACKET;
+    }
+    if (_max_outputs == 0) {
+        op &= ~PluginRepository::LIST_OUTPUT;
+    }
+
+    // Build the list of plugins.
+    const UString text(PluginRepository::Instance()->listPlugins(true, *this, op));
+
+    // Try to page, raw output otherwise.
+    OutputPager pager;
+    if ((getFlags() & HELP_ON_THIS) != 0) {
+        // Use this report object.
+        info(text);
+    }
+    else if ((op & PluginRepository::LIST_COMPACT) != 0) {
+        // Compact output, no paging, no extra line.
+        std::cerr << text;
+    }
+    else if ((getFlags() & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
+        // Paginated full output.
+        pager.write(text, *this);
+        pager.write(u"\n", *this);
+        pager.close(*this);
+    }
+    else {
+        // Non-paginated full output.
+        std::cerr << text << std::endl;
+    }
+
+    // Exit application, unless specified otherwise.
+    if ((getFlags() & NO_EXIT_ON_HELP) == 0) {
+        ::exit(EXIT_SUCCESS);
     }
 }

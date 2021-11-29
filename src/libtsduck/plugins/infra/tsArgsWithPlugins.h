@@ -39,8 +39,12 @@
 namespace ts {
     //!
     //! Command line arguments for commands with plugins.
+    //!
     //! The command line is analyzed, keeping command-specific options and
     //! plugin descriptions apart.
+    //!
+    //! The option -\-list-plugins is automatically added and processed.
+    //!
     //! @ingroup plugin
     //!
     class TSDUCKDLL ArgsWithPlugins: public Args
@@ -73,6 +77,7 @@ namespace ts {
         virtual bool analyze(const UString& command, bool processRedirections = true) override;
         virtual bool analyze(int argc, char* argv[], bool processRedirections = true) override;
         virtual bool analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections = true) override;
+        virtual void setSyntax(const UString& syntax) override;
 
         //!
         //! Get the number of plugins of a given type, after command line analysis.
@@ -105,6 +110,12 @@ namespace ts {
         const size_t _min_outputs;
         const size_t _max_outputs;
         std::map<PluginType,PluginOptionsVector> _plugins;
+
+        // Non-virtual version of setSyntax(), can be called in constructor.
+        void setDirectSyntax(const UString& syntax);
+
+        // Process --list-plugins.
+        void processListPlugins();
 
         // Search next plugin option.
         size_t nextProcOpt(const UStringVector& args, size_t index, PluginType& type);
