@@ -79,7 +79,7 @@ Options::Options(int argc, char *argv[]) :
     logger.defineArgs(*this);
     display.defineArgs(*this);
 
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Input MPEG capture file (standard input if omitted).");
 
     option(u"format", 0, ts::TSPacketFormatEnum);

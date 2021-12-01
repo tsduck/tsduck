@@ -118,7 +118,7 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
          u"When the URL is a master playlist, select a content the resolution of which has a "
          u"lower height than the specified maximum.");
 
-    option(u"save-files", 0, STRING);
+    option(u"save-files", 0, FILENAME);
     help(u"save-files", u"directory-name",
          u"Specify a directory where all downloaded files, media segments and playlists, are saved "
          u"before being passed to the next plugin. "

@@ -34,12 +34,14 @@
 include ../../Makefile.inc
 
 EXECS := $(addprefix $(BINDIR)/,$(TSTOOLS))
+ALLTOOLS := $(sort $(basename $(wildcard ts*.cpp)))
 
-default: execs
+default: $(EXECS) tsduck-completion.bash
 	@true
 
-.PHONY: execs
-execs: $(EXECS)
+tsduck-completion.bash: $(addsuffix .cpp,$(ALLTOOLS))
+	@echo '  [GEN] $@'; \
+	$(SED) -i -e 's/^__ts_cmds=(.*$$/__ts_cmds=($(ALLTOOLS))/' $@
 
 ifeq ($(STATIC),)
     # With dynamic link (the default), we use the shareable library.
@@ -56,9 +58,11 @@ $(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
 
 .PHONY: install install-tools install-devel
 install: install-tools install-devel
-install-tools: $(EXECS)
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
+install-tools: $(EXECS) tsduck-completion.bash
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions
 	install -m 755 $(EXECS) $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 644 tsduck-completion.bash $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions/_tsduck
+	for cmd in $(ALLTOOLS); do ln -sf _tsduck $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions/$$cmd; done
 	$(if $(NO_TSTOOLS),rm -rf $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(NO_TSTOOLS)),)
 install-devel:
 	@true

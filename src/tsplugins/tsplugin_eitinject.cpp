@@ -209,7 +209,7 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"By default, the files are left unmodified after being loaded. "
          u"When a loaded file is modified later, it is reloaded and re-injected.");
 
-    option(u"files", 'f', STRING);
+    option(u"files", 'f', FILENAME);
     help(u"files", u"'file-wildcard'",
          u"A file specification with optional wildcards indicating which event files should be polled. "
          u"When such a file is created or updated, it is loaded and its content is interpreted as "

@@ -217,7 +217,7 @@ void ts::TSScrambling::defineArgs(Args &args)
               u"Specifies a fixed and constant control word for all TS packets. The value "
               u"must be a string of 16 hexadecimal digits (32 digits with --atis-idsa).");
 
-    args.option(u"cw-file", 'f', Args::STRING);
+    args.option(u"cw-file", 'f', Args::FILENAME);
     args.help(u"cw-file", u"name",
               u"Specifies a text file containing the list of control words to apply. "
               u"Each line of the file must contain exactly 16 hexadecimal digits (32 "
@@ -225,7 +225,7 @@ void ts::TSScrambling::defineArgs(Args &args)
               u"\"scrambling_control\" changes in the TS packets header. When all control "
               u"words are used, the first one is used again, and so on.");
 
-    args.option(u"output-cw-file", 0, Args::STRING);
+    args.option(u"output-cw-file", 0, Args::FILENAME);
     args.help(u"output-cw-file", u"name",
               u"Specifies a text file to create. "
               u"Each line of the file will contain a control word in hexadecimal digits. "

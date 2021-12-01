@@ -101,7 +101,7 @@ Options::Options(int argc, char *argv[]) :
 
     setIntro(u"Any input XML file name can be replaced with \"inline XML content\", starting with \"<?xml\".");
 
-    option(u"", 0, STRING, 0, UNLIMITED_COUNT);
+    option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"", u"Specify the list of input files. If any is specified as '-', the standard input is used.");
 
     option(u"channel", 'c');
@@ -130,7 +130,7 @@ Options::Options(int argc, char *argv[]) :
          u"A shortcut for '--model tsduck.lnbs.model.xml'. "
          u"It verifies that the input files are valid satellite LNB definition files.");
 
-    option(u"model", 'm', STRING);
+    option(u"model", 'm', FILENAME);
     help(u"model", u"filename",
          u"Specify an XML model file which is used to validate all input files.");
 
@@ -139,12 +139,12 @@ Options::Options(int argc, char *argv[]) :
          u"A shortcut for '--model tsduck.monitor.model.xml'. "
          u"It verifies that the input files are valid system monitoring configuration files.");
 
-    option(u"output", 'o', STRING);
+    option(u"output", 'o', FILENAME);
     help(u"output", u"filename",
          u"Specify the name of the output file (standard output by default). "
          u"An output file is produced only if --patch, --reformat or --json are specified.");
 
-    option(u"patch", 'p', STRING, 0, UNLIMITED_COUNT);
+    option(u"patch", 'p', FILENAME, 0, UNLIMITED_COUNT);
     help(u"patch", u"filename",
          u"Specify an XML patch file. All operations which are specified in this file are applied on each input file. "
          u"Several --patch options can be specified. Patch files are sequentially applied on each input file.");

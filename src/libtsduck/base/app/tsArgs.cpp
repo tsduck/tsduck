@@ -114,6 +114,7 @@ ts::Args::IOption::IOption(const UChar* name_,
     switch (type) {
         case NONE:
         case STRING:
+        case FILENAME:
         case TRISTATE:
             min_value = 0;
             max_value = 0;
@@ -246,20 +247,28 @@ ts::UString ts::Args::IOption::display() const
 
 ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 {
-    const UString s(syntax.empty() ? u"value" : syntax);
+    UString desc(syntax);
+    if (syntax.empty()) {
+        if (type == FILENAME) {
+            desc = u"filename";
+        }
+        else if (type != NONE) {
+            desc = u"value";
+        }
+    }
 
     if (type == NONE || (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) == (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
         // No value or value is optional and shall not be documented.
         return UString();
     }
     else if ((flags & IOPT_OPTVALUE) != 0) {
-        return (ctx == LONG ? u"[=" : u"[") + s + u"]";
+        return (ctx == LONG ? u"[=" : u"[") + desc + u"]";
     }
     else if (ctx == ALONE) {
-        return s;
+        return desc;
     }
     else {
-        return SPACE + s;
+        return SPACE + desc;
     }
 }
 
@@ -271,6 +280,57 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 ts::UString ts::Args::IOption::optionNames(const UString& separator) const
 {
     return enumeration.nameList(separator, u"\"", u"\"");
+}
+
+
+//----------------------------------------------------------------------------
+// Option type, as used in --help=options.
+//----------------------------------------------------------------------------
+
+ts::UString ts::Args::IOption::optionType() const
+{
+    UString desc;
+    if (type != NONE && (flags & IOPT_OPTVALUE) != 0) {
+        desc += u":opt";
+    }
+    switch (type) {
+        case INTEGER:
+        case UNSIGNED:
+        case POSITIVE:
+        case UINT8:
+        case UINT16:
+        case UINT32:
+        case UINT63:
+        case PIDVAL:
+        case INT8:
+        case INT16:
+        case INT32:
+        case INT64:
+            if (enumeration.empty()) {
+                desc += u":int";
+            }
+            else {
+                desc += u":enum:";
+                desc += enumeration.nameList(u",");
+            }
+            break;
+        case TRISTATE:
+            desc += u":enum:true,false,unknown";
+            break;
+        case ANUMBER:
+            desc += u":number";
+            break;
+        case STRING:
+            desc += u":string";
+            break;
+        case FILENAME:
+            desc += u":file";
+            break;
+        case NONE:
+        default:
+            break;
+    }
+    return desc;
 }
 
 
@@ -1225,16 +1285,19 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
             for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
                 const IOption& opt(it->second);
                 if (!opt.name.empty()) {
+                    const UString desc(opt.optionType());
                     if (!text.empty()) {
                         text += LINE_FEED;
                     }
                     if (opt.short_name != CHAR_NULL) {
                         text += u'-';
                         text += opt.short_name;
+                        text += desc;
                         text += LINE_FEED;
                     }
                     text += u"--";
                     text += opt.name;
+                    text += desc;
                 }
             }
             return text;

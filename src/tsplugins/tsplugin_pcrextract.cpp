@@ -222,7 +222,7 @@ ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
          u"Report Original Program Clock References (OPCR). By default, if none of "
          u"--pcr, --opcr, --pts, --dts is specified, report them all.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Output file name for CSV reporting (standard error by default).");
 

@@ -141,7 +141,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
     duck.defineArgsForCharset(*this);
     _sections_opt.defineArgs(*this);
 
-    option(u"", 0, STRING, 1, UNLIMITED_COUNT);
+    option(u"", 0, FILENAME, 1, UNLIMITED_COUNT);
     help(u"", u"filename[=rate]",
          u"Input binary, XML or JSON files containing one or more sections or tables. "
          u"By default, files ending in .bin, .xml or .json are automatically recognized. "

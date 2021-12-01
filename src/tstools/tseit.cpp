@@ -86,7 +86,7 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
          u"Stop executing commands when an error is encountered. "
          u"By default, continue execution on error.");
 
-    option(u"file", 'f', STRING, 0, UNLIMITED_COUNT);
+    option(u"file", 'f', FILENAME, 0, UNLIMITED_COUNT);
     help(u"file", u"filename",
          u"Specify a text file containing EIT manipulation commands to execute. "
          u"If the file name is empty or \"-\", the standard input is used. "
@@ -95,11 +95,11 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
          u"The commands from --file are executed first, then the --command. "
          u"By default, if there no --file and no --command, commands are read from the standard input.");
 
-    option(u"input-directory", 'i', STRING);
+    option(u"input-directory", 'i', FILENAME);
     help(u"input-directory", u"path",
          u"Default directory of input files in EIT manipulation commands.");
 
-    option(u"output-directory", 'o', STRING);
+    option(u"output-directory", 'o', FILENAME);
     help(u"output-directory", u"path",
          u"Default directory of output files in EIT manipulation commands.");
 
@@ -110,15 +110,15 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
     cmdline.addPredefinedCommands();
 
     cmd = cmdline.command(u"load", u"Load events from a file", u"filename", flags);
-    cmd->option(u"", 0, STRING, 1, 1);
+    cmd->option(u"", 0, FILENAME, 1, 1);
     cmd->help(u"", u"A binary, XML or JSON file containing EIT sections.");
 
     cmd = cmdline.command(u"save", u"Save all current EIT sections in a file", u"filename", flags);
-    cmd->option(u"", 0, STRING, 1, 1);
+    cmd->option(u"", 0, FILENAME, 1, 1);
     cmd->help(u"", u"Name of the output file receiving EIT sections in binary format.");
 
     cmd = cmdline.command(u"process", u"Process a TS file with EIT generation", u"[options] infile outfile", flags);
-    cmd->option(u"", 0, STRING, 2, 2);
+    cmd->option(u"", 0, FILENAME, 2, 2);
     cmd->help(u"", u"Name of the input and output TS files.");
     cmd->option(u"start-offset", 'o', UNSIGNED);
     cmd->help(u"start-offset", u"Start offset in bytes in the input file.");
@@ -136,7 +136,7 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
     cmd->help(u"until", u"year/month/day:hour:minute:second.millisecond", u"Process up to the specified date in the stream.");
 
     cmd = cmdline.command(u"generate", u"Generate TS packets", u"[options] filename", flags);
-    cmd->option(u"", 0, STRING, 1, 1);
+    cmd->option(u"", 0, FILENAME, 1, 1);
     cmd->help(u"", u"Name of the output TS file to generate.");
     cmd->option(u"bytes", 'b', POSITIVE);
     cmd->help(u"bytes", u"Size of the TS file in bytes.");

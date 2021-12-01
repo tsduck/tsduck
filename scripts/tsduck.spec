@@ -72,6 +72,8 @@ rm -rf $RPM_BUILD_ROOT
 %{_libdir}/libtsduck.so
 %{_libdir}/tsduck
 %{_datadir}/tsduck
+%{_datadir}/bash-completion/completions/ts*
+%{_datadir}/bash-completion/completions/_tsduck
 /lib/udev/rules.d/80-tsduck.rules
 %{_sysconfdir}/security/console.perms.d/80-tsduck.perms
 %doc CHANGELOG.txt LICENSE.txt OTHERS.txt doc/tsduck.pdf

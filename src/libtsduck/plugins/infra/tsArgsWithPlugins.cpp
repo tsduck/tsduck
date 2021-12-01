@@ -64,7 +64,41 @@ ts::ArgsWithPlugins::ArgsWithPlugins(size_t min_inputs,
 
 
 //----------------------------------------------------------------------------
-// Non-virtual version of setSyntax(), can be called in constructor.
+// Get a formatted help text.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ArgsWithPlugins::getHelpText(HelpFormat format, size_t line_width) const
+{
+    // Call superclass.
+    UString text(Args::getHelpText(format, line_width));
+
+    // Add specific options.
+    if (format == HELP_OPTIONS) {
+        if (_max_inputs > 0) {
+            if (!text.empty()) {
+                text += LINE_FEED;
+            }
+            text.append(u"-I");
+        }
+        if (_max_plugins > 0) {
+            if (!text.empty()) {
+                text += LINE_FEED;
+            }
+            text.append(u"-P");
+        }
+        if (_max_outputs > 0) {
+            if (!text.empty()) {
+                text += LINE_FEED;
+            }
+            text.append(u"-O");
+        }
+    }
+    return text;
+}
+
+
+//----------------------------------------------------------------------------
+// Set the syntax.
 //----------------------------------------------------------------------------
 
 // Virtual version.

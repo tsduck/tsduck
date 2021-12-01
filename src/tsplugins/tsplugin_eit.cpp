@@ -125,7 +125,7 @@ ts::EITPlugin::EITPlugin(TSP* tsp_) :
     _services(),
     _ts_id()
 {
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"Specify the output file for the report (default: standard output).");
 }
 

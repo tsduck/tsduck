@@ -115,7 +115,7 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _resetLabels(),
     _cc_fixer(AllPIDs, tsp)
 {
-    option(u"", 0, STRING, 1, 1);
+    option(u"", 0, FILENAME, 1, 1);
     help(u"", u"Input transport stream file.");
 
     option<BitRate>(u"bitrate", 'b');

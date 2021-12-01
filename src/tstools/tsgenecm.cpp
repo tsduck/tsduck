@@ -75,7 +75,7 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
              u"current or current/next control words in ECM, meaning CW_per_msg = 1 or 2 "
              u"and lead_CW = 0 or 1.");
 
-    option(u"", 0, STRING, 1, 1);
+    option(u"", 0, FILENAME, 1, 1);
     help(u"", u"filename", u"Name of the binary output file which receives the ECM.");
 
     option(u"cp-number", 0, UINT16);

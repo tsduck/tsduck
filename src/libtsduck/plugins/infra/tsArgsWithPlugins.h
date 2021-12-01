@@ -77,6 +77,7 @@ namespace ts {
         virtual bool analyze(const UString& command, bool processRedirections = true) override;
         virtual bool analyze(int argc, char* argv[], bool processRedirections = true) override;
         virtual bool analyze(const UString& app_name, const UStringVector& arguments, bool processRedirections = true) override;
+        virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
         virtual void setSyntax(const UString& syntax) override;
 
         //!

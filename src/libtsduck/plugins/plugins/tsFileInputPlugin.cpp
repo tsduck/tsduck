@@ -57,7 +57,7 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
     _eof(),
     _files()
 {
-    option(u"", 0, STRING, 0, UNLIMITED_COUNT);
+    option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"",
          u"Names of the input files. If no file is specified, the standard input is used. "
          u"When several files are specified, use '-' as file name to specify the standard input. "

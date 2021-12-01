@@ -66,7 +66,7 @@ void ts::TablePatchXML::clear()
 
 void ts::TablePatchXML::defineArgs(Args& args)
 {
-    args.option(u"patch-xml", 0, Args::STRING, 0, Args::UNLIMITED_COUNT);
+    args.option(u"patch-xml", 0, Args::FILENAME, 0, Args::UNLIMITED_COUNT);
     args.help(u"patch-xml", u"filename",
               u"Specify an XML patch file which is applied to all tables on the fly. "
               u"If the name starts with \"<?xml\", it is considered as \"inline XML content\". "

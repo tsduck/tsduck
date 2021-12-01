@@ -118,7 +118,7 @@ ts::PcapInputPlugin::PcapInputPlugin(TSP* tsp_) :
 {
     _pcap_udp.defineArgs(*this);
 
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"", u"file-name",
          u"The name of a '.pcap' or '.pcapng' capture file as produced by Wireshark for instance. "
          u"This input plugin extracts IPv4 UDP datagrams which contain transport stream packets. "

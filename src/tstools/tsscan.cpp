@@ -203,13 +203,13 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"Display modulation parameters when possible. Note that some tuners "
          u"cannot report correct modulation parameters, making this option useless.");
 
-    option(u"save-channels", 0, STRING);
+    option(u"save-channels", 0, FILENAME);
     help(u"save-channels", u"filename",
          u"Save the description of all channels in the specified XML file. "
          u"If the file name is \"-\", use the default tuning configuration file. "
          u"See also option --update-channels.");
 
-    option(u"update-channels", 0, STRING);
+    option(u"update-channels", 0, FILENAME);
     help(u"update-channels", u"filename",
          u"Update the description of all channels in the specified XML file. "
          u"The content of each scanned transport stream is replaced in the file. "

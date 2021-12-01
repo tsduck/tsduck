@@ -124,7 +124,7 @@ ts::PIDShiftPlugin::PIDShiftPlugin (TSP* tsp_) :
     help(u"ignore-errors",
          u"Ignore shift buffer size evaluation errors or shift buffer write errors, pass packets without shifting.");
 
-    option(u"directory", 0, STRING);
+    option(u"directory", 0, FILENAME);
     help(u"directory", u"path",
          u"Specify a directory where the temporary buffer file is created (if one is needed). "
          u"By default, the system-specific area for temporary files is used. "

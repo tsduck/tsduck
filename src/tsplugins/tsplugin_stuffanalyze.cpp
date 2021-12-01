@@ -115,7 +115,7 @@ ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
     _total(),
     _pid_contexts()
 {
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file",
          u"Specify the output text file for the analysis result. "
          u"By default, use the standard output.\n\n"

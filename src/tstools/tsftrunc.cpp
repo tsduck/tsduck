@@ -63,7 +63,7 @@ Options::Options(int argc, char *argv[]) :
     trunc_pkt(0),
     files()
 {
-    option(u"", 0, STRING, 1, UNLIMITED_COUNT);
+    option(u"", 0, FILENAME, 1, UNLIMITED_COUNT);
     help(u"", u"MPEG capture files to be truncated.");
 
     option(u"byte", 'b', UNSIGNED);

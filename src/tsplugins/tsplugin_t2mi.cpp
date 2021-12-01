@@ -143,7 +143,7 @@ ts::T2MIPlugin::T2MIPlugin(TSP* tsp_) :
     option(u"log", 'l');
     help(u"log", u"Log all T2-MI packets using one single summary line per packet.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify that the extracted stream is saved in this file. In that case, "
          u"the main transport stream is passed unchanged to the next plugin.");

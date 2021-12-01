@@ -77,7 +77,7 @@ Options::Options(int argc, char *argv[]) :
     pager.defineArgs(*this);
     analysis.defineArgs(*this);
 
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Input transport stream file (standard input if omitted).");
 
     option<ts::BitRate>(u"bitrate", 'b');

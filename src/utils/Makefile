@@ -60,7 +60,8 @@ endif
 .PHONY: install install-tools install-devel
 install: install-tools install-devel
 install-tools:
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions
 	install -m 755 tsconfig $(SYSROOT)$(SYSPREFIX)/bin
+	install -m 644 tsconfig-completion.bash $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions/tsconfig
 install-devel:
 	@true

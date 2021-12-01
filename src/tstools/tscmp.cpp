@@ -99,7 +99,7 @@ Options::Options(int argc, char *argv[]) :
     continue_all(false),
     json(true)
 {
-    option(u"", 0, STRING, 2, 2);
+    option(u"", 0, FILENAME, 2, 2);
     help(u"", u"MPEG capture files to be compared.");
 
     option(u"buffered-packets", 0, UNSIGNED);

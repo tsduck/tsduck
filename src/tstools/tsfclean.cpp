@@ -72,13 +72,13 @@ ts::FileCleanOptions::FileCleanOptions(int argc, char *argv[]) :
     out_file(),
     out_dir()
 {
-    option(u"", 0, STRING, 0, UNLIMITED_COUNT);
+    option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"",
          u"MPEG transport stream input files to cleanup. "
          u"All input files must be regular files (no pipe) since the processing is done on two passes. "
          u"If more than one file is specified, the output name shall specify a directory.");
 
-    option(u"output", 'o', STRING, 1, 1);
+    option(u"output", 'o', FILENAME, 1, 1);
     help(u"output", u"path",
          u"Output file or directory. "
          u"This is a mandatory parameter, there is no default. "

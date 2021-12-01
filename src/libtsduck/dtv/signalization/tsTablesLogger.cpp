@@ -159,7 +159,7 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"Note that this mode is incompatible with XML or JSON output since valid XML "
               u"or JSON structures may contain complete tables only.");
 
-    args.option(u"binary-output", 'b', Args::STRING);
+    args.option(u"binary-output", 'b', Args::FILENAME);
     args.help(u"binary-output", u"filename",
               u"Save sections in the specified binary output file. "
               u"If empty or '-', the binary sections are written to the standard output. "
@@ -260,7 +260,7 @@ void ts::TablesLogger::defineArgs(Args& args)
     args.help(u"only-invalid-sections",
               u"Same as --invalid-sections but do not display valid tables and sections.");
 
-    args.option(u"output-file", 'o', Args::STRING);
+    args.option(u"output-file", 'o', Args::FILENAME);
     args.help(u"output-file", u"filename",
               u"Save the tables or sections in human-readable text format in the specified "
               u"file. By default, when no output option is specified, text is produced on "
@@ -306,7 +306,7 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"With --json-output, rewrite the same file with each table. "
               u"The specified file always contains one single table, the latest one.");
 
-    args.option(u"text-output", 0, Args::STRING);
+    args.option(u"text-output", 0, Args::FILENAME);
     args.help(u"text-output", u"filename", u"A synonym for --output-file.");
 
     args.option(u"time-stamp");
@@ -319,12 +319,12 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"depending on the destination address. Remember that the default "
               u"Multicast TTL is 1 on most systems.");
 
-    args.option(u"xml-output", 0,  Args::STRING);
+    args.option(u"xml-output", 0,  Args::FILENAME);
     args.help(u"xml-output", u"filename",
               u"Save the tables in XML format in the specified file. "
               u"To output the XML text on the standard output, explicitly specify this option with \"-\" as output file name.");
 
-    args.option(u"json-output", 0,  Args::STRING);
+    args.option(u"json-output", 0,  Args::FILENAME);
     args.help(u"json-output", u"filename",
               u"Save the tables in JSON format in the specified file. "
               u"The tables are initially formatted as XML and automated XML-to-JSON conversion is applied. "

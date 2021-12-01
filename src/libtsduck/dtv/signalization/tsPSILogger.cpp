@@ -146,22 +146,22 @@ void ts::PSILogger::defineArgs(Args& args)
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the JSON text to locate the appropriate line in the logs.");
 
-    args.option(u"output-file", 'o', Args::STRING);
+    args.option(u"output-file", 'o', Args::FILENAME);
     args.help(u"output-file", u"filename",
               u"Save the tables in human-readable text format in the specified file. "
               u"By default, when no output option is specified, text is produced on the standard output. "
               u"If you need text formatting on the standard output in addition to other output such as XML, "
               u"explicitly specify this option with \"-\" as output file name.");
 
-    args.option(u"text-output", 0, Args::STRING);
+    args.option(u"text-output", 0, Args::FILENAME);
     args.help(u"text-output", u"filename", u"A synonym for --output-file.");
 
-    args.option(u"xml-output", 'x',  Args::STRING);
+    args.option(u"xml-output", 'x',  Args::FILENAME);
     args.help(u"xml-output", u"filename",
               u"Save the tables in XML format in the specified file. "
               u"To output the XML text on the standard output, explicitly specify this option with \"-\" as output file name.");
 
-    args.option(u"json-output", 'j',  Args::STRING);
+    args.option(u"json-output", 'j',  Args::FILENAME);
     args.help(u"json-output", u"filename",
               u"Save the tables in JSON format in the specified file. "
               u"The tables are initially formatted as XML and automated XML-to-JSON conversion is applied. "

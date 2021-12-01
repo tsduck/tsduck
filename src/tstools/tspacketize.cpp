@@ -86,7 +86,7 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForCharset(*this);
     sections_opt.defineArgs(*this);
 
-    option(u"", 0, STRING);
+    option(u"", 0, FILENAME);
     help(u"", u"filename[=rate]",
          u"Input binary, XML or JSON files containing one or more sections or tables. "
          u"By default, files ending in .bin, .xml or .json are automatically recognized. "
@@ -116,7 +116,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"json", 'j');
     help(u"json", u"Specify that all input files are JSON, regardless of their file name.");
 
-    option(u"output", 'o', STRING);
+    option(u"output", 'o', FILENAME);
     help(u"output", u"Output file name for TS packets. By default, use standard output.");
 
     option(u"pid", 'p', PIDVAL, 1, 1);

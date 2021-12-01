@@ -150,7 +150,7 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
          u"stream instead of the TS packet number. This time is a playback time based "
          u"on the current TS bitrate (use plugin pcrbitrate when necessary).");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify the output file for reporting history lines. By default, report "
          u"history lines on standard error using the tsp logging mechanism.\n\n"

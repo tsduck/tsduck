@@ -59,7 +59,7 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     _current_size(0),
     _next_open_time()
 {
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Name of the created output file. Use standard output by default.");
 
     option(u"add-start-stuffing", 0, UNSIGNED);

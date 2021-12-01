@@ -76,7 +76,7 @@ ts::TimeShiftPlugin::TimeShiftPlugin (TSP* tsp_) :
     _time_shift_ms(0),
     _buffer()
 {
-    option(u"directory", 0, STRING);
+    option(u"directory", 0, FILENAME);
     help(u"directory", u"path",
          u"Specify a directory where the temporary buffer file is created. "
          u"By default, the system-specific area for temporary files is used. "

@@ -212,7 +212,7 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"Specify the maximum number of datagrams to extract, then stop. By default, "
          u"all datagrams are extracted.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify that the extracted UDP datagrams are saved in this file. The UDP "
          u"messages are written without any encapsulation.");

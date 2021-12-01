@@ -259,7 +259,7 @@ void ts::TunerArgs::defineArgs(Args& args)
                   u"A \"TV channel\" name is searched in a \"tuning file\" and the corresponding "
                   u"tuning information in this file is used. See also option --tuning-file.");
 
-        args.option(u"tuning-file", 0, Args::STRING);
+        args.option(u"tuning-file", 0, Args::FILENAME);
         args.help(u"tuning-file",
                   u"Tuning configuration file to use for option -c or --channel-transponder. "
                   u"This is an XML file. See the TSDuck user's guide for more details. "

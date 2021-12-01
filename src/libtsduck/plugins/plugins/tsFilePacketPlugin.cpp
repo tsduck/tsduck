@@ -46,7 +46,7 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     _stop_stuffing(0),
     _file()
 {
-    option(u"", 0, STRING, 1, 1);
+    option(u"", 0, FILENAME, 1, 1);
     help(u"", u"Name of the created output file.");
 
     option(u"add-start-stuffing", 0, UNSIGNED);
