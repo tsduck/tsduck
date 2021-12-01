@@ -124,7 +124,7 @@ ts::CountPlugin::CountPlugin(TSP* tsp_) :
     help(u"negate",
          u"Negate the filter: specified PID's are excluded.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify the output file for reporting packet counters. By default, report "
          u"on standard error using the tsp logging mechanism.");

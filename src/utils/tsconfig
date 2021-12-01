@@ -76,11 +76,11 @@ EOF
 
 # Process individual commands
 cmd_bin() {
-    (cd $(dirname "$TSCONFIG"); pwd)
+    (cd $(dirname "$TSCONFIG" 2>/dev/null); pwd)
 }
 
 cmd_prefix() {
-    (cd $(dirname "$TSCONFIG"); cd ..; pwd)
+    (cd $(dirname "$TSCONFIG" 2>/dev/null); cd ..; pwd)
 }
 
 cmd_plugin() {
@@ -105,7 +105,7 @@ cmd_python() {
 }
 
 cmd_lib() {
-    dirname $(ls $(cmd_prefix)/lib*/libtsduck$(cmd_so) | head -1)
+    dirname $(ls $(cmd_prefix)/lib*/libtsduck$(cmd_so) 2>/dev/null | head -1) 2>/dev/null
 }
 
 cmd_cflags() {
@@ -149,15 +149,15 @@ cmd_staticlibs() {
 }
 
 version_major() {
-    sed -e '/#define *TS_VERSION_MAJOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h
+    sed -e '/#define *TS_VERSION_MAJOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
 }
 
 version_minor() {
-    sed -e '/#define *TS_VERSION_MINOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h
+    sed -e '/#define *TS_VERSION_MINOR/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
 }
 
 version_commit() {
-    sed -e '/#define *TS_COMMIT/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h
+    sed -e '/#define *TS_COMMIT/!d' -e 's/ *$//' -e 's/.* //' $(cmd_include)/tsVersion.h 2>/dev/null
 }
 
 cmd_version() {

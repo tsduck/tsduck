@@ -288,6 +288,7 @@ Section "-Common" SectionCommon
     SetOutPath "$INSTDIR\setup"
     File "${BinDir}\setpath.exe"
     File "${VCRedist}"
+    File "${RootDir}\src\tstools\tsduck-completion.bash"
 
     ; Add an environment variable to TSDuck root.
     WriteRegStr HKLM ${EnvironmentKey} "TSDUCK" "$INSTDIR"
@@ -440,6 +441,7 @@ Section "Uninstall"
     Delete "$0\OTHERS.txt"
     Delete "$0\setup\setpath.exe"
     Delete "$0\setup\${VCRedistName}"
+    Delete "$0\setup\tsduck-completion.bash"
     RMDir "$0\setup"
     Delete "$0\TSDuckUninstall.exe"
     RMDir "$0"

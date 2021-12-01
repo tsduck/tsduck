@@ -88,7 +88,7 @@ Options::Options(int argc, char *argv[]) :
     display.defineArgs(*this);
     udp.defineArgs(*this);
 
-    option(u"", 0, STRING);
+    option(u"", 0, FILENAME);
     help(u"",
          u"Input binary section file. Several files can be specified. By default, without "
          u"file and without --ip-udp, the binary tables are read from the standard input.\n\n"

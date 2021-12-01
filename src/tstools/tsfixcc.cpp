@@ -68,7 +68,7 @@ Options::Options(int argc, char *argv[]) :
     filename(),
     file()
 {
-    option(u"", 0, STRING, 1, 1);
+    option(u"", 0, FILENAME, 1, 1);
     help(u"", u"MPEG capture file to be modified.");
 
     option(u"circular", 'c');

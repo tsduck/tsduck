@@ -74,7 +74,7 @@ Options::Options(int argc, char *argv[]) :
     infile(),
     format(ts::TSPacketFormat::AUTODETECT)
 {
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
 
     option(u"all", 'a');

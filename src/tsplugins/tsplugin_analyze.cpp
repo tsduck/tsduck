@@ -117,7 +117,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
          u"specified output file name has the form 'base.ext', each file is created "
          u"with a time stamp in its name as 'base-YYYYMMDD-hhmmss.ext'.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify the output text file for the analysis result. "
          u"By default, use the standard output.");

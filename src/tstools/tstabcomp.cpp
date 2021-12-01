@@ -97,7 +97,7 @@ Options::Options(int argc, char *argv[]) :
     sectionOptions.defineArgs(*this);
     xmlTweaks.defineArgs(*this);
 
-    option(u"", 0, STRING);
+    option(u"", 0, FILENAME);
     help(u"",
          u"XML or JSON source files to compile or binary table files to decompile. "
          u"By default, files ending in .xml or .json are compiled and files ending in .bin are decompiled. "
@@ -136,7 +136,7 @@ Options::Options(int argc, char *argv[]) :
          u"The output file is in JSON format instead of XML. "
          u"The default output file names have extension .json.");
 
-    option(u"output", 'o', STRING);
+    option(u"output", 'o', FILENAME);
     help(u"output", u"filepath",
          u"Specify the output file name. "
          u"By default, the output file has the same name as the input and extension .bin (compile), .xml or .json (decompile). "

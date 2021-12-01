@@ -81,7 +81,7 @@ Options::Options(int argc, char *argv[]) :
     infile(),
     outfile()
 {
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Input MPEG transport stream file (standard input if omitted).");
 
     option(u"continue", 'c');
@@ -113,7 +113,7 @@ Options::Options(int argc, char *argv[]) :
          u"any other type of packet encapsulation, use options --packet-size and "
          u"--header-size.");
 
-    option(u"output", 'o', STRING);
+    option(u"output", 'o', FILENAME);
     help(u"output", u"filename", u"Output file name (standard output by default).");
 
     option(u"sync-size", 's', INTEGER, 0, 1, MIN_SYNC_SIZE, MAX_SYNC_SIZE);

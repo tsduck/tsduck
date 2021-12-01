@@ -88,7 +88,7 @@ Options::Options(int argc, char *argv[]) :
     file.defineArgs(*this);
     pager.defineArgs(*this);
 
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"", u"file-name",
          u"Input file in pcap or pcap-ng format, typically as saved by Wireshark. "
          u"Use the standard input if no file name is specified.");

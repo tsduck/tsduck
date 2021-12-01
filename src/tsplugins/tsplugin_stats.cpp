@@ -171,7 +171,7 @@ ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
     help(u"noheader",
          u"Do not output initial header line in CSV and text format.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify the output text file for the analysis result. "
          u"By default, use the standard output.");

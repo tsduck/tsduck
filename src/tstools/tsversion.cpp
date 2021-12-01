@@ -151,7 +151,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"name", 'n', STRING);
     help(u"name", u"version-name", u"Get information for or download from GitHub the specified version, not the latest one.");
 
-    option(u"output-directory", 'o', STRING);
+    option(u"output-directory", 'o', FILENAME);
     help(u"output-directory", u"dir-name", u"Output directory for downloaded files (current directory by default).");
 
     option(u"proxy-host", 0, STRING);

@@ -319,6 +319,7 @@ namespace ts {
         enum ArgType {
             NONE,     //!< Option without argument.
             STRING,   //!< Uninterpreted string argument.
+            FILENAME, //!< String argument which will be interpreted as file name.
             INTEGER,  //!< Integer argument, must set min & max values.
             UNSIGNED, //!< Integer 0..unlimited.
             POSITIVE, //!< Integer 1..unlimited.
@@ -1132,6 +1133,9 @@ namespace ts {
 
             // Complete option help text.
             UString helpText(size_t line_width) const;
+
+            // Option type, as used in --help=options.
+            UString optionType() const;
 
             // Check if an integer value is in range.
             template <typename INT, typename std::enable_if<std::is_same<INT, uint64_t>::value>::type* = nullptr>

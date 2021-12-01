@@ -72,7 +72,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _previousBitrate(0),
     _ccFixer(NoPID, tsp)
 {
-    option(u"", 0, STRING, 1, 1);
+    option(u"", 0, FILENAME, 1, 1);
     help(u"",
          u"Specify the name template of the output media segment files. "
          u"A number is automatically added to the name part so that successive segment "
@@ -127,7 +127,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"The default is to wait a maximum of " TS_STRINGIFY(DEFAULT_EXTRA_DURATION) u" additional seconds "
          u"for an intra-coded image.");
 
-    option(u"playlist", 'p', STRING);
+    option(u"playlist", 'p', FILENAME);
     help(u"playlist", u"filename",
          u"Specify the name of the playlist file. "
          u"The playlist file is rewritten each time a new segment file is completed or an obsolete one is deleted. "

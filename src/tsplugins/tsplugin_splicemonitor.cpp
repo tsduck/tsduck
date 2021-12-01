@@ -213,7 +213,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"Specify a maximum number of repetitions for each splice command. "
          u"See option --alarm-command for non-nominal cases.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"file-name",
          u"Specify an output text file. "
          u"With --json, this will be a JSON file. "

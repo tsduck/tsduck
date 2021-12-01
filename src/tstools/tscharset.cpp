@@ -132,7 +132,7 @@ ts::CharsetOptions::CharsetOptions(int argc, char *argv[]) :
     option(u"list-charsets", 'l');
     help(u"list-charsets", u"List all known character set names");
 
-    option(u"output", 'o', STRING);
+    option(u"output", 'o', FILENAME);
     help(u"output", u"Output file name. By default, use standard output.");
 
     option(u"to-utf-8");

@@ -130,7 +130,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     bytesPerSend(0),
     sendInterval(0)
 {
-    option(u"", 0, STRING, 0, UNLIMITED_COUNT);
+    option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"",
          u"The parameters are files containing sections in binary or XML format. Several "
          u"files can be specified. All sections are loaded and injected in the MUX using "

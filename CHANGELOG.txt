@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.29-2645
+VERSION 3.29-2647
 
 [NEW] New commands and plugins:
 
@@ -19,6 +19,12 @@ VERSION 3.29-2645
     https://curl.se/ca/cacert.pem. Transient issues have been noticed with
     Let's Encrypt CA around the certification renewal periods. The updated
     list is saved in $HOME/.tscacert.pem and is updated at most once a day.
+  * In commands "tsp" and "tsswitch", the alternative syntax "--input"
+    (for "-I"), "--processor" (for "-P") and "--output" (for "-O") are no
+    longer accepted. They were rarely used and created confusion with
+    potential equivalent options in plugins.
+  * Bash completion support has been added for all TSDuck commands and
+    plugins (plugin names, command and plugin options, enumeration values).
   * New options in exiting commands and plugins:
     - Options --section-number, --negate-section-number, --invalid-sections,
       --only-invalid-sections in "tstables" and plugin "tables".

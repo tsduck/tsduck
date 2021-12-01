@@ -89,7 +89,7 @@ Options::Options(int argc, char *argv[]) :
     input_format(ts::TSPacketFormat::AUTODETECT),
     output_format(ts::TSPacketFormat::TS)
 {
-    option(u"", 0, STRING, 0, 1);
+    option(u"", 0, FILENAME, 0, 1);
     help(u"",
          u"The input file is a TS file, typically with variable bitrate content. "
          u"By default, the standard input is used.");
@@ -146,7 +146,7 @@ Options::Options(int argc, char *argv[]) :
          u"amount of stuffing to insert. This duration is based on time-stamps, "
          u"not real time. The default is " + ts::UString::Decimal(DEFAULT_MIN_INTERVAL) + u" ms.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Output file name (standard output by default). The output file is a TS "
          u"file with the same packets as the input file with interspersed stuffing "

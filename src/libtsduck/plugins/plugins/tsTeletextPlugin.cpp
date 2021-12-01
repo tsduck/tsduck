@@ -71,7 +71,7 @@ ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
          u"Specifies the maximum number of Teletext frames to extract. The processing "
          u"is then stopped. By default, all frames are extracted.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specifies the SRT output file name. This is a text file. By default, the "
          u"SRT subtitles are displayed on the standard output.");

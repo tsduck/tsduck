@@ -321,7 +321,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"the files are left unmodified after being loaded. When a loaded file is "
          u"modified later, it is reloaded and re-injected.");
 
-    option(u"files", 'f', STRING);
+    option(u"files", 'f', FILENAME);
     help(u"files", u"'file-wildcard'",
          u"A file specification with optional wildcards indicating which files should be polled. "
          u"When such a file is created or updated, it is loaded and its "

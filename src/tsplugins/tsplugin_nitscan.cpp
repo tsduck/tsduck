@@ -144,7 +144,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
          u"Specify the network-id of a NIT other to analyze instead of the NIT actual. "
          u"By default, the NIT actual is analyzed.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify the output text file for the analysis result. "
          u"By default, use the standard output.");
@@ -155,7 +155,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
          u"is analyzed to get the PID of the NIT. DVB-compliant networks should "
          u"use PID 16 (0x0010) for the NIT and signal it in the PAT.");
 
-    option(u"save-channels", 0, STRING);
+    option(u"save-channels", 0, FILENAME);
     help(u"save-channels", u"filename",
          u"Save the description of all transport streams in the specified XML file. "
          u"If the file name is \"-\", use the default tuning configuration file. "
@@ -166,7 +166,7 @@ ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
          u"Stop the packet transmission after the first NIT is analyzed. "
          u"Should be specified when tsp is used only to scan the NIT.");
 
-    option(u"update-channels", 0, STRING);
+    option(u"update-channels", 0, FILENAME);
     help(u"update-channels", u"filename",
          u"Update the description of all transport streams in the specified XML file. "
          u"The content of each transport stream is preserved, only the tuning information is updated. "

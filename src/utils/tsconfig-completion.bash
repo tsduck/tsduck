@@ -27,42 +27,11 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Makefile for tstools.
+#  Bash completion for tsconfig.
 #
 #-----------------------------------------------------------------------------
 
-include ../../Makefile.inc
-
-EXECS := $(addprefix $(BINDIR)/,$(TSTOOLS))
-ALLTOOLS := $(sort $(basename $(wildcard ts*.cpp)))
-
-default: $(EXECS) tsduck-completion.bash
-	@true
-
-tsduck-completion.bash: $(addsuffix .cpp,$(ALLTOOLS))
-	@echo '  [GEN] $@'; \
-	$(SED) -i -e 's/^__ts_cmds=(.*$$/__ts_cmds=($(ALLTOOLS))/' $@
-
-ifeq ($(STATIC),)
-    # With dynamic link (the default), we use the shareable library.
-    $(EXECS): $(SHARED_LIBTSDUCK)
-else
-    # With static link, we compile in a specific directory and we link tsp with all plugins.
-    LDFLAGS_EXTRA = -static
-    $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
-    $(EXECS): $(STATIC_LIBTSDUCK)
-endif
-
-# Some executables depend on PCSC.
-$(BINDIR)/tssmartcard: LDLIBS_EXTRA = $(LDLIBS_PCSC)
-
-.PHONY: install install-tools install-devel
-install: install-tools install-devel
-install-tools: $(EXECS) tsduck-completion.bash
-	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions
-	install -m 755 $(EXECS) $(SYSROOT)$(SYSPREFIX)/bin
-	install -m 644 tsduck-completion.bash $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions/_tsduck
-	for cmd in $(ALLTOOLS); do ln -sf _tsduck $(SYSROOT)$(SYSPREFIX)/share/bash-completion/completions/$$cmd; done
-	$(if $(NO_TSTOOLS),rm -rf $(addprefix $(SYSROOT)$(SYSPREFIX)/bin/,$(NO_TSTOOLS)),)
-install-devel:
-	@true
+__opts="--bin --cflags --config --help --include --java --lib --libs --plugin --prefix --python --so --static-libs --version --vernum"
+[[ "$OSTYPE" == "linux-gnu"* ]] && __opts="$__opts --install-dvb-firmware"
+complete -W "$__opts" tsconfig
+unset __opts

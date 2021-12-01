@@ -264,7 +264,7 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     help(u"nibble",
          u"Same as --binary but add separator between 4-bit nibbles.");
 
-    option(u"output-file", 'o', STRING);
+    option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"filename",
          u"Specify the output file for the report (default: standard output).");
 
@@ -280,14 +280,14 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
          u"PID filter: select packets with these PID values (default: all PID's "
          u"containing PES packets). Several -p or --pid options may be specified.");
 
-    option(u"save-es", 0, STRING);
+    option(u"save-es", 0, FILENAME);
     help(u"save-es", u"filename",
          u"Save the elementary stream in the specified file. "
          u"The payloads of all PES packets are saved in a raw binary form without encapsulation. "
          u"The PES headers are dropped. "
          u"When the specified file is '-', the standard output is used.");
 
-    option(u"save-pes", 0, STRING);
+    option(u"save-pes", 0, FILENAME);
     help(u"save-pes", u"filename",
         u"Save all PES packets, header and payload, in the specified file. "
         u"All PES packets are saved in a raw binary form without encapsulation. "
