@@ -135,6 +135,9 @@ endif
 # Identify the system environment.
 # - ALTDEVROOT : alternative root for development tools and library; can be
 #   the Homebrew root or "/usr" if no other value is suitable
+# - BASHCOMP_DIR : directory for bash completion scripts
+# - BASHCOMP_AUTO : if non-empty, automatic bash completions based on command
+#   name, create links for each command if necessary
 # - CORE_COUNT : number of physical CPU cores in the machine
 # - CPU_COUNT : number of logical CPU's in the machine; with hyperthreaded
 #   CPU cores, CPU_COUNT is typically twice CORE_COUNT
@@ -219,6 +222,10 @@ SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
+
+# Locate bash completions facility.
+BASHCOMP_DIR ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT)/etc/bash_completion.d,$(SYSPREFIX)/share/bash-completion/completions)
+BASHCOMP_AUTO = $(if $(MACOS)$(LINUXBREW),,true)
 
 #-----------------------------------------------------------------------------
 # Output directories for final binaries and objects.
