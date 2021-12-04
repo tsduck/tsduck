@@ -95,12 +95,12 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
          u"The commands from --file are executed first, then the --command. "
          u"By default, if there no --file and no --command, commands are read from the standard input.");
 
-    option(u"input-directory", 'i', FILENAME);
-    help(u"input-directory", u"path",
+    option(u"input-directory", 'i', DIRECTORY);
+    help(u"input-directory",
          u"Default directory of input files in EIT manipulation commands.");
 
-    option(u"output-directory", 'o', FILENAME);
-    help(u"output-directory", u"path",
+    option(u"output-directory", 'o', DIRECTORY);
+    help(u"output-directory",
          u"Default directory of output files in EIT manipulation commands.");
 
     // EIT manipulation commands.

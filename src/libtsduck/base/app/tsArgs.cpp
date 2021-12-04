@@ -115,6 +115,7 @@ ts::Args::IOption::IOption(const UChar* name_,
         case NONE:
         case STRING:
         case FILENAME:
+        case DIRECTORY:
         case TRISTATE:
             min_value = 0;
             max_value = 0;
@@ -250,7 +251,10 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
     UString desc(syntax);
     if (syntax.empty()) {
         if (type == FILENAME) {
-            desc = u"filename";
+            desc = u"file-name";
+        }
+        else if (type == DIRECTORY) {
+            desc = u"directory-name";
         }
         else if (type != NONE) {
             desc = u"value";
@@ -326,7 +330,12 @@ ts::UString ts::Args::IOption::optionType() const
         case FILENAME:
             desc += u":file";
             break;
+        case DIRECTORY:
+            desc += u":directory";
+            break;
         case NONE:
+            desc += u":bool";
+            break;
         default:
             break;
     }
@@ -1284,21 +1293,24 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
             UString text;
             for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
                 const IOption& opt(it->second);
-                if (!opt.name.empty()) {
-                    const UString desc(opt.optionType());
-                    if (!text.empty()) {
-                        text += LINE_FEED;
-                    }
-                    if (opt.short_name != CHAR_NULL) {
-                        text += u'-';
-                        text += opt.short_name;
-                        text += desc;
-                        text += LINE_FEED;
-                    }
+                const UString desc(opt.optionType());
+                if (!text.empty()) {
+                    text += LINE_FEED;
+                }
+                if (opt.short_name != CHAR_NULL) {
+                    text += u'-';
+                    text += opt.short_name;
+                    text += desc;
+                    text += LINE_FEED;
+                }
+                if (opt.name.empty()) {
+                    text += u"@"; // meaning parameter
+                }
+                else {
                     text += u"--";
                     text += opt.name;
-                    text += desc;
                 }
+                text += desc;
             }
             return text;
         }
@@ -1328,6 +1340,10 @@ void ts::Args::processHelp()
     }
     else if ((_flags & HELP_ON_THIS) != 0) {
         info(text);
+    }
+    else if (format == HELP_OPTIONS) {
+        // --help=options is sent on stdout for automation.
+        std::cout << text << std::endl;
     }
     else {
         std::cerr << text << std::endl;
