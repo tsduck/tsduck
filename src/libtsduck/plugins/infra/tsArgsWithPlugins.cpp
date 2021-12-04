@@ -363,9 +363,9 @@ void ts::ArgsWithPlugins::processListPlugins()
         // Use this report object.
         info(text);
     }
-    else if ((op & PluginRepository::LIST_COMPACT) != 0) {
+    else if ((op & (PluginRepository::LIST_COMPACT | PluginRepository::LIST_NAMES)) != 0) {
         // Compact output, no paging, no extra line.
-        std::cerr << text;
+        std::cout << text;
     }
     else if ((getFlags() & NO_EXIT_ON_HELP) == 0 && pager.canPage() && pager.open(true, 0, *this)) {
         // Paginated full output.
@@ -375,7 +375,7 @@ void ts::ArgsWithPlugins::processListPlugins()
     }
     else {
         // Non-paginated full output.
-        std::cerr << text << std::endl;
+        std::cout << text << std::endl;
     }
 
     // Exit application, unless specified otherwise.

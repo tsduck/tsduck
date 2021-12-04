@@ -37,10 +37,13 @@ TS_DEFINE_SINGLETON(ts::PluginRepository);
 
 // Options for --list-processor.
 const ts::Enumeration ts::PluginRepository::ListProcessorEnum({
-    {u"all",    ts::PluginRepository::LIST_ALL},
-    {u"input",  ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_COMPACT},
-    {u"output", ts::PluginRepository::LIST_OUTPUT | ts::PluginRepository::LIST_COMPACT},
-    {u"packet", ts::PluginRepository::LIST_PACKET | ts::PluginRepository::LIST_COMPACT},
+    {u"all",          ts::PluginRepository::LIST_ALL},
+    {u"input",        ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_COMPACT},
+    {u"output",       ts::PluginRepository::LIST_OUTPUT | ts::PluginRepository::LIST_COMPACT},
+    {u"packet",       ts::PluginRepository::LIST_PACKET | ts::PluginRepository::LIST_COMPACT},
+    {u"names-input",  ts::PluginRepository::LIST_INPUT  | ts::PluginRepository::LIST_NAMES},
+    {u"names-output", ts::PluginRepository::LIST_OUTPUT | ts::PluginRepository::LIST_NAMES},
+    {u"names-packet", ts::PluginRepository::LIST_PACKET | ts::PluginRepository::LIST_NAMES},
 });
 
 
@@ -262,7 +265,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
 
     // Compute max name width of all plugins.
     size_t name_width = 0;
-    if ((flags & LIST_COMPACT) == 0) {
+    if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
         if ((flags & LIST_INPUT) != 0) {
             for (auto it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
                 name_width = std::max(name_width, it->first.width());
@@ -285,7 +288,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
 
     // List capabilities.
     if ((flags & LIST_INPUT) != 0) {
-        if ((flags & LIST_COMPACT) == 0) {
+        if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp input plugins:\n\n";
         }
         for (auto it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
@@ -296,7 +299,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
     }
 
     if ((flags & LIST_OUTPUT) != 0) {
-        if ((flags & LIST_COMPACT) == 0) {
+        if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp output plugins:\n\n";
         }
         for (auto it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
@@ -307,7 +310,7 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
     }
 
     if ((flags & LIST_PACKET) != 0) {
-        if ((flags & LIST_COMPACT) == 0) {
+        if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp packet processor plugins:\n\n";
         }
         for (auto it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
@@ -327,7 +330,11 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
 
 void ts::PluginRepository::ListOnePlugin(UString& out, const UString& name, Plugin* plugin, size_t name_width, int flags)
 {
-    if ((flags & LIST_COMPACT) != 0) {
+    if ((flags & LIST_NAMES) != 0) {
+        out += name;
+        out += u"\n";
+    }
+    else if ((flags & LIST_COMPACT) != 0) {
         out += name;
         out += u":";
         out += plugin->getDescription();

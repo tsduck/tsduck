@@ -180,6 +180,7 @@ namespace ts {
             LIST_PACKET  = 0x0002,  //!< List packet processor plugins.
             LIST_OUTPUT  = 0x0004,  //!< List output plugins.
             LIST_COMPACT = 0x0010,  //!< Compact output.
+            LIST_NAMES   = 0x0020,  //!< Names only.
             LIST_ALL     = LIST_INPUT | LIST_PACKET | LIST_OUTPUT,  //!< List all plugins.
         };
 

@@ -31,6 +31,35 @@
 #
 #-----------------------------------------------------------------------------
 
+# All TSDuck commands (automatically updated by makefile).
+__ts_cmds=(tsanalyze tsbitrate tscharset tscmp tsdate tsdektec tsdump tsecmg tseit tsemmg tsfclean tsfixcc tsftrunc tsgenecm tshides tslsdvb tsp tspacketize tspcap tspcontrol tspsi tsresync tsscan tssmartcard tsstuff tsswitch tstabcomp tstabdump tstables tsterinfo tsversion tsxml)
+
+# Assign COMPREPLY with the expansion of files or directories.
+# Syntax: __ts_compgen_fd {-f|-d} current-value
+__ts_compgen_fd()
+{
+    # Path expansion. 
+    local saved="$IFS"
+    IFS=$'\n'
+    COMPREPLY=($(compgen $1 -- "$2"))
+    IFS="$saved"
+    local i name
+    for ((i=0; i<${#COMPREPLY[@]}; i++)); do
+        name=${COMPREPLY[$i]//\\/\\\\}
+        name=${name// /\\ }
+        name=${name//\(/\\(}
+        name=${name//)/\\)}
+        name=${name//\[/\\[}
+        name=${name//]/\\]}
+        if [[ -d "${COMPREPLY[$i]}" ]]; then
+            COMPREPLY[$i]="$name/"
+        else
+            COMPREPLY[$i]="$name "
+        fi
+    done
+    compopt -o nospace
+}
+
 # Completion function for all TSDuck commands.
 _tsduck()
 {
@@ -39,14 +68,17 @@ _tsduck()
     local prevword="$3"
     local prevchar="${COMP_LINE:$(($COMP_POINT-1)):1}"
 
-    # All available options:types for this command.
-    local opts=$($cmd --help=options 2>&1 | sed -e 's/:.*$//')
+    # Filter sprurious invocations.
+    [[ -z $cmd ]] && return
+
+    # All available options for this command.
+    local cmdopts=$($cmd --help=options 2>/dev/null | sed -e '/^@/d' -e '/:/!d' -e 's/:.*$//')
 
     # Check if previous option is a plugin introducer (ie. need a plugin name).
     if [[ $prevword == -I || $prevword == -P || $prevword == -O ]]; then
-        if [[ $opts == *$prevword* ]]; then
+        if [[ $cmdopts == *$prevword* ]]; then
             # This type of plugin is supported by the command, get possible plugin names.
-            COMPREPLY=($($cmd --list-plugins=${prevword/-/} 2>&1 | sed -e '/:/!d' -e 's/:.*//' -e "/^$curword/!d"))
+            COMPREPLY=($(compgen -W "$($cmd --list-plugins=names$prevword 2>/dev/null)" -- "$curword"))
             return
         else
             COMPREPLY=("{unknown-option$prevword}")
@@ -66,11 +98,12 @@ _tsduck()
     done
     if [[ -n $plopt && -n $plname ]]; then
         # We are in a plugin argument list.
-        if [[ $opts == *$plopt* ]] && ($cmd --list-plugins=${plopt/-/} 2>&1 | grep -q "^$plname:"); then
+        if [[ $cmdopts == *$plopt* ]] && ($cmd --list-plugins=names$plopt | grep -q "^$plname\$"); then
             # This plugin is supported by the command, use it as base command.
             cmd="$cmd $plopt $plname"
+            cmdopts=$($cmd --help=options 2>/dev/null | sed -e '/^@/d' -e '/:/!d' -e 's/:.*$//')
         else
-            COMPREPLY=("{unknown-plugin-$plname}")
+            COMPREPLY=("{unknown-plugin$plopt-$plname}")
             return
         fi
     fi
@@ -89,59 +122,66 @@ _tsduck()
         val="$curword"
     elif [[ $curword == -* ]]; then
         # Current word is an option name without value, get all possible matching options.
-        COMPREPLY=($($cmd --help=options 2>&1 | sed -e 's/:.*$//' -e "/^$curword/!d"))
+        COMPREPLY=($(compgen -W "$cmdopts" -- "$curword"))
         return
     elif [[ $prevword == -* ]]; then
-        # Previous word is an option.
+        # Previous word is an option, current word is an option value or a parameter.
         opt="$prevword"
         val="$curword"
     else
-        # Current word is some parameter, use default completion.
-        return
+        # Current word is a parameter.
+        opt=@
+        val="$curword"
     fi
 
     # Completion for an option value, check option validity.
-    case $($cmd --help=options 2>&1 | grep "^$opt" | wc -l) in
-        1)  # Just one possible option, continue later.
-            ;;
-        0)  # Unknown option.
-            COMPREPLY=("{unknown-option$opt}")
-            return
-            ;;
-        *)  # Several options match that prefix.
-            COMPREPLY=("{ambiguous-option$opt}")
-            return
-            ;;
-    esac
+    if [[ $opt != @ ]]; then
+        case $(tr <<<$cmdopts ' ' '\n' | grep "^$opt" | wc -l | sed -e 's/ //g') in
+            1)  # Just one possible option, continue later.
+                ;;
+            0)  # Unknown option.
+                COMPREPLY=("{unknown-option$opt}")
+                return
+                ;;
+            *)  # Several options match that prefix.
+                COMPREPLY=("{ambiguous-option$opt}")
+                return
+                ;;
+        esac
+    fi
 
     # Get syntax for that option.
-    local syntax=$($cmd --help=options 2>&1 | sed -e '/:/!d' -e "/^$opt/!d" -e 's/^[^:]*://')
+    local syntax=$($cmd --help=options 2>/dev/null | sed -e '/:/!d' -e "/^$opt/!d" -e 's/^[^:]*://')
 
-    # If there is no possible value for that option, this is another parameter.
-    [[ -z $syntax ]] && return
-
-    # If the value is optional but not inside "--option=value", there is no value.
-    [[ $syntax == opt:* && -z $aftereq ]] && return
-    syntax=${syntax/#opt:/}
-
-    # Expand enumerations only for now.
-    if [[ $syntax == enum:* ]]; then
-        COMPREPLY=($(tr <<<${syntax/#enum:/} ',' '\n' | grep "^$val"))
+    # If there is no possible value for that option, this is a parameter.
+    # If the value is optional but not inside "--option=value", there is no value, this is a parameter.
+    if [[ $syntax == bool* || ( $syntax == opt:* && -z $aftereq ) ]]; then
+        opt=@
+        syntax=$($cmd --help=options 2>/dev/null | sed -e '/^@:/' -e 's/^@://')
     fi
-}
 
-# Declare a completion function for a command.
-__ts_complete()
-{
-    complete -o bashdefault -o default -o nospace -F _tsduck $1 2>/dev/null || complete -o default -o nospace -F _tsduck $1
+    syntax=${syntax/#opt:/}
+    case $syntax in
+        enum:*)
+            # Expand enumeration values.
+            syntax=${syntax/#enum:/}
+            COMPREPLY=($(compgen -W "${syntax//,/ }" -- "$val"))
+            ;;
+        file)
+            # Expand files names or intermediate directories.
+            __ts_compgen_fd -f "$val"
+            ;;
+        directory)
+            # Expand directories (intermediate or final).
+            __ts_compgen_fd -d "$val"
+            ;;
+        *)
+            # Other types (eg. integers), no auto-completion possible.
+            COMPREPLY=()
+            ;;
+    esac
 }
-
-# All TSDuck commands (automatically updated by makefile).
-__ts_cmds=(tsanalyze tsbitrate tscharset tscmp tsdate tsdektec tsdump tsecmg tseit tsemmg tsfclean tsfixcc tsftrunc tsgenecm tshides tslsdvb tsp tspacketize tspcap tspcontrol tspsi tsresync tsscan tssmartcard tsstuff tsswitch tstabcomp tstabdump tstables tsterinfo tsversion tsxml)
 
 # Declare completions for all TSDuck commands.
-for __cmd in ${__ts_cmds[*]}; do
-    __ts_complete $__cmd
-    [ "$OSTYPE" = cygwin ] && __ts_complete $__cmd.exe
-done
-unset __cmd __ts_cmds __ts_complete
+complete -F _tsduck ${__ts_cmds[*]}
+[[ $OSTYPE == cygwin || $OSTYPE == msys ]] && complete -F _tsduck ${__ts_cmds[*]/%/.exe}
