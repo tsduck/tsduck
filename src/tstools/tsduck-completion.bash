@@ -183,5 +183,6 @@ _tsduck()
 }
 
 # Declare completions for all TSDuck commands.
-complete -F _tsduck ${__ts_cmds[*]}
+# Do not change the order of the following two lines, guess why...
 [[ $OSTYPE == cygwin || $OSTYPE == msys ]] && complete -F _tsduck ${__ts_cmds[*]/%/.exe}
+complete -F _tsduck ${__ts_cmds[*]}
