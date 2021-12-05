@@ -157,7 +157,7 @@ _tsduck()
     # If the value is optional but not inside "--option=value", there is no value, this is a parameter.
     if [[ $syntax == bool* || ( $syntax == opt:* && -z $aftereq ) ]]; then
         opt=@
-        syntax=$($cmd --help=options 2>/dev/null | sed -e '/^@:/' -e 's/^@://')
+        syntax=$($cmd --help=options 2>/dev/null | sed -e '/^@:/!d' -e 's/^@://')
     fi
 
     syntax=${syntax/#opt:/}
