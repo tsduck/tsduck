@@ -203,6 +203,7 @@ rpm: tarball $(RPMBUILDROOT)
 	      $(if $(NORIST),-D 'norist 1') \
 	      $(if $(NOPCSC),-D 'nopcsc 1') \
 	      $(if $(NOCURL),-D 'nocurl 1') \
+	      $(if $(NOEDITLINE),-D 'noeditline 1') \
 	      $(SCRIPTSDIR)/tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
@@ -229,6 +230,7 @@ deb-tools:
 	    $(if $(NORIST),-e '/librist/d') \
 	    $(if $(NOPCSC),-e '/libpcsc/d') \
 	    $(if $(NOCURL),-e '/libcurl/d') \
+	    $(if $(NOEDITLINE),-e '/libedit/d') \
 	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
@@ -244,6 +246,7 @@ deb-dev: deb-tools
 	    $(if $(NORIST),-e '/librist/d') \
 	    $(if $(NOPCSC),-e '/libpcsc/d') \
 	    $(if $(NOCURL),-e '/libcurl/d') \
+	    $(if $(NOEDITLINE),-e '/libedit/d') \
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
