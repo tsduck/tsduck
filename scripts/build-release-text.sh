@@ -66,7 +66,7 @@ Binaries for command-line tools and plugins:
 * Debian 64 bits: $DB64
 * Ubuntu 64 bits: $UB64
 * Raspbian 32 bits (Raspberry Pi): $ARM
-* macOS: [use Homebrew](https://github.com/tsduck/homebrew-tsduck/blob/master/README.md)
+* macOS: [use Homebrew](https://tsduck.io/doxy/installing.html#macinstall)
 
 Binaries for development environment:
 * Windows: Included in installer (select option "Development")
