@@ -1,7 +1,7 @@
 # Building TSDuck   {#building}
 [TOC]
 
-TSDuck can be built on Windows, Linux and macOS.
+TSDuck can be built on Linux, macOS and Windows.
 
 Support for Dektec devices, DVB tuners and HiDes modulators is implemented only
 on Windows and Linux. macOS can only support files and networking for TS input and output.
@@ -117,7 +117,7 @@ into the git repository either.
 Special note on macOS: There is no binary package for TSDuck on macOS.
 On this platform, TSDuck is installed using [Homebrew](https://brew.sh),
 a package manager for open-source projects on macOS.
-See [here for more details](https://github.com/tsduck/homebrew-tsduck).
+See [here for more details](installing.html#macinstall).
 
 ## For packagers of Linux distros {#distropack}
 
