@@ -86,14 +86,16 @@ namespace ts {
             //! @param [in] input_end If true, there is no more packet after current ones.
             //! @param [in] aborted If true, there was a packet processor error, aborted.
             //! @param [in] bitrate Input bitrate (set by previous packet processor).
+            //! @param [in] br_confidence Confidence level in @a bitrate.
             //!
-            void initBuffer(PacketBuffer*  buffer,
+            void initBuffer(PacketBuffer*         buffer,
                             PacketMetadataBuffer* metadata,
-                            size_t         pkt_first,
-                            size_t         pkt_cnt,
-                            bool           input_end,
-                            bool           aborted,
-                            const BitRate& bitrate);
+                            size_t                pkt_first,
+                            size_t                pkt_cnt,
+                            bool                  input_end,
+                            bool                  aborted,
+                            const BitRate&        bitrate,
+                            BitRateConfidence     br_confidence);
 
             //!
             //! Inform if all plugins should use defaults for real-time.
@@ -164,11 +166,12 @@ namespace ts {
             //! @param [in] count Number of packets to pass to next processor.
             //! @param [in] bitrate Bitrate, as computed by this processor or passed from the previous processor.
             //! To be passed to next processor.
+            //! @param [in] br_confidence Confidence level in @a bitrate. To be passed to next processor.
             //! @param [in] input_end If true, this processor will no longer produce packets.
             //! @param [in] aborted if true, this processor has encountered an error and will cease to accept packets.
             //! @return True when the processor shall continue, false when it shall stop.
             //!
-            bool passPackets(size_t count, const BitRate& bitrate, bool input_end, bool aborted);
+            bool passPackets(size_t count, const BitRate& bitrate, BitRateConfidence br_confidence, bool input_end, bool aborted);
 
             //!
             //! Wait for something to do.
@@ -190,12 +193,15 @@ namespace ts {
             //! @param [out] pkt_first Index of first packet to process in the buffer.
             //! @param [out] pkt_cnt Number of packets to process in the buffer.
             //! @param [out] bitrate Current bitrate, as computed from previous processors.
+            //! @param [out] br_confidence Confidence level in @a bitrate, as evaluated by previous processors.
             //! @param [out] input_end The previous processor indicates that no more packets will be produced.
             //! @param [out] aborted The *next* processor indicates that it aborts and will no longer accept packets.
             //! @param [out] timeout No packet could be returned within the timeout specified by the plugin and
             //! the plugin requested an abort.
             //!
-            void waitWork(size_t min_pkt_cnt, size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout);
+            void waitWork(size_t min_pkt_cnt, size_t& pkt_first, size_t& pkt_cnt,
+                          BitRate& bitrate, BitRateConfidence& br_confidence,
+                          bool& input_end, bool& aborted, bool &timeout);
 
             //!
             //! Check if there is a pending restart operation (but do not execute it).
@@ -222,13 +228,14 @@ namespace ts {
             // The following private data must be accessed exclusively under the protection of the global mutex.
             // Implementation details: see the file src/docs/developing-plugins.dox.
             // [*] After initialization, these fields are read/written only in passPackets() and waitWork().
-            Condition      _to_do;         // Notify processor to do something.
-            size_t         _pkt_first;     // Starting index of packets area [*]
-            size_t         _pkt_cnt;       // Size of packets area [*]
-            bool           _input_end;     // No more packet after current ones [*]
-            BitRate        _bitrate;       // Input bitrate (set by previous plugin) [*]
-            bool           _restart;       // Restart the plugin asap using _restart_data
-            RestartDataPtr _restart_data;  // How to restart the plugin
+            Condition         _to_do;          // Notify processor to do something.
+            size_t            _pkt_first;      // Starting index of packets area [*]
+            size_t            _pkt_cnt;        // Size of packets area [*]
+            bool              _input_end;      // No more packet after current ones [*]
+            BitRate           _bitrate;        // Input bitrate (set by previous plugin) [*]
+            BitRateConfidence _br_confidence;  // Input bitrate confidence (set by previous plugin) [*]
+            bool              _restart;        // Restart the plugin asap using _restart_data
+            RestartDataPtr    _restart_data;   // How to restart the plugin
 
             // Description of a restart operation.
             class RestartData

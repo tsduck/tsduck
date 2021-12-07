@@ -85,7 +85,7 @@ void ts::tsp::OutputExecutor::main()
         size_t pkt_cnt = 0;
         bool input_end = false;
         bool timeout = false;
-        waitWork(1, pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
+        waitWork(1, pkt_first, pkt_cnt, _tsp_bitrate, _tsp_bitrate_confidence, input_end, aborted, timeout);
 
         // We ignore the returned "aborted" which comes from the "next"
         // processor in the chain, here the input thread. For the
@@ -100,7 +100,7 @@ void ts::tsp::OutputExecutor::main()
         // In case of abort on timeout, notify previous and next plugin, then exit.
         if (timeout) {
             // Do not transmit bitrate or input end to next (since next is input processor).
-            passPackets(0, 0, false, true);
+            passPackets(0, 0, BitRateConfidence::LOW, false, true);
             aborted = true;
             break;
         }
@@ -119,7 +119,6 @@ void ts::tsp::OutputExecutor::main()
 
         // Output the packets. Output may be segmented if dropped packets
         // (ie. starting with a zero byte) are in the middle of the buffer.
-
         TSPacket* pkt = _buffer->base() + pkt_first;
         TSPacketMetadata* data = _metadata->base() + pkt_first;
         size_t pkt_remain = pkt_cnt;
@@ -167,7 +166,7 @@ void ts::tsp::OutputExecutor::main()
 
         // Pass free buffers to input processor.
         // Do not transmit bitrate or input end to next (since next is input processor).
-        aborted = !passPackets(pkt_cnt, 0, false, aborted);
+        aborted = !passPackets(pkt_cnt, 0, BitRateConfidence::LOW, false, aborted);
 
     } while (!aborted);
 

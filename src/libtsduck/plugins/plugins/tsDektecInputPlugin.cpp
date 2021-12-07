@@ -953,6 +953,12 @@ ts::BitRate ts::DektecInputPlugin::getBitrate()
     return _guts->cur_bitrate = bitrate;
 }
 
+ts::BitRateConfidence ts::DektecInputPlugin::getBitrateConfidence()
+{
+    // The returned bitrate is based on the Dektec device hardware.
+    return BitRateConfidence::HARDWARE;
+}
+
 
 //----------------------------------------------------------------------------
 // Input method

@@ -42,7 +42,7 @@ const ts::UString ts::TSAnalyzer::UNREFERENCED(u"Unreferenced");
 // Constructor for the TS analyzer
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint) :
+ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint, BitRateConfidence bitrate_confidence) :
     _duck(duck),
     _ts_id(0),
     _ts_id_valid(false),
@@ -68,6 +68,7 @@ ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint) :
     _ts_pcr_bitrate_188(0),
     _ts_pcr_bitrate_204(0),
     _ts_user_bitrate(bitrate_hint),
+    _ts_user_br_confidence(bitrate_confidence),
     _ts_bitrate(0),
     _duration(0),
     _first_utc(Time::Epoch),
@@ -141,6 +142,7 @@ void ts::TSAnalyzer::reset()
     _ts_pcr_bitrate_188 = 0;
     _ts_pcr_bitrate_204 = 0;
     _ts_user_bitrate = 0;
+    _ts_user_br_confidence = BitRateConfidence::LOW;
     _ts_bitrate = 0;
     _duration = 0;
     _first_utc = Time::Epoch;
@@ -1582,9 +1584,10 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
 // optional: if specified as zero, the analysis is based on the PCR values.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzer::setBitrateHint(const BitRate& bitrate)
+void ts::TSAnalyzer::setBitrateHint(const BitRate& bitrate_hint, BitRateConfidence bitrate_confidence)
 {
-    _ts_user_bitrate = bitrate;
+    _ts_user_bitrate = bitrate_hint;
+    _ts_user_br_confidence = bitrate_confidence;
     _modified = true;
 }
 
@@ -1600,14 +1603,17 @@ void ts::TSAnalyzer::recomputeStatistics()
         return;
     }
 
-    // Store "last" system times
+    // Store "last" system times.
     _last_utc = Time::CurrentUTC();
     _last_local = Time::CurrentLocalTime();
 
-    // Compute bitrate and broadcast duration
+    // Select the reference bitrate from the user-specified and PCR-evaluated values
+    // based on their respective confidences.
     _ts_pcr_bitrate_188 = _ts_bitrate_cnt == 0 ? 0 : BitRate(_ts_bitrate_sum / _ts_bitrate_cnt);
     _ts_pcr_bitrate_204 = _ts_bitrate_cnt == 0 ? 0 : BitRate((_ts_bitrate_sum * PKT_RS_SIZE) / (_ts_bitrate_cnt * PKT_SIZE));
-    _ts_bitrate = _ts_user_bitrate != 0 ? _ts_user_bitrate : _ts_pcr_bitrate_188;
+    _ts_bitrate = SelectBitrate(_ts_user_bitrate, _ts_user_br_confidence, _ts_pcr_bitrate_188, BitRateConfidence::PCR_AVERAGE);
+
+    // Compute broadcast duration.
     _duration = _ts_bitrate == 0 ? 0 : ((MilliSecPerSec * PKT_SIZE_BITS * _ts_pkt_cnt) / _ts_bitrate).toInt();
 
     // Reinitialize all service information that will be updated PID by PID

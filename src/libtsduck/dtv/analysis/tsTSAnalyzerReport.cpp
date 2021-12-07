@@ -64,8 +64,8 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSAnalyzerReport::TSAnalyzerReport(DuckContext& duck, const BitRate& bitrate_hint) :
-    TSAnalyzer(duck, bitrate_hint)
+ts::TSAnalyzerReport::TSAnalyzerReport(DuckContext& duck, const BitRate& bitrate_hint, BitRateConfidence bitrate_confidence) :
+    TSAnalyzer(duck, bitrate_hint, bitrate_confidence)
 {
 }
 
@@ -247,6 +247,8 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
                     {_ts_user_bitrate == 0 ? u"None" : UString::Format(u"%'d b/s", {ToBitrate204(_ts_user_bitrate)})}});
     grid.putLayout({{u"Estimated based on PCR's:", _ts_pcr_bitrate_188 == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {_ts_pcr_bitrate_188})},
                     { _ts_pcr_bitrate_188 == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {_ts_pcr_bitrate_204})}});
+    grid.putLayout({{u"Selected reference bitrate:", _ts_bitrate == 0 ? u"Unknown" : UString::Format(u"%'d b/s", {_ts_bitrate})},
+                    {_ts_bitrate == 0 ? u"None" : UString::Format(u"%'d b/s", {ToBitrate204(_ts_bitrate)})}});
     grid.subSection();
 
     grid.setLayout({grid.bothTruncateLeft(73, u'.')});

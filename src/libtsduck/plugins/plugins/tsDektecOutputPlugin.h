@@ -61,6 +61,7 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
         virtual bool isRealTime() override;
         virtual BitRate getBitrate() override;
+        virtual BitRateConfidence getBitrateConfidence() override;
 
     private:
         class Guts;

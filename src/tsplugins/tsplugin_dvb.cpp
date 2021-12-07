@@ -57,6 +57,7 @@ namespace ts {
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
+        virtual BitRateConfidence getBitrateConfidence() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
         virtual bool abortInput() override;
@@ -218,6 +219,12 @@ ts::BitRate ts::DVBInputPlugin::getBitrate()
     }
 
     return _previous_bitrate = bitrate;
+}
+
+ts::BitRateConfidence ts::DVBInputPlugin::getBitrateConfidence()
+{
+    // The returned bitrate is based on the demodulator hardware.
+    return BitRateConfidence::HARDWARE;
 }
 
 

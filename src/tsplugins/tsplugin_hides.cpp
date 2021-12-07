@@ -43,17 +43,18 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class HiDesOutput: public OutputPlugin
+    class HiDesOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(HiDesOutput);
+        TS_NOBUILD_NOCOPY(HiDesOutputPlugin);
     public:
         // Implementation of plugin API
-        HiDesOutput(TSP*);
+        HiDesOutputPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
         virtual bool isRealTime() override {return true;}
         virtual BitRate getBitrate() override;
+        virtual BitRateConfidence getBitrateConfidence() override;
 
     private:
         int             _dev_number;  // Device adapter number.
@@ -64,14 +65,14 @@ namespace ts {
     };
 }
 
-TS_REGISTER_OUTPUT_PLUGIN(u"hides", ts::HiDesOutput);
+TS_REGISTER_OUTPUT_PLUGIN(u"hides", ts::HiDesOutputPlugin);
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
+ts::HiDesOutputPlugin::HiDesOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send packets to a HiDes modulator device", u"[options]"),
     _dev_number(-1),
     _dev_name(),
@@ -146,7 +147,7 @@ ts::HiDesOutput::HiDesOutput(TSP* tsp_) :
 // Output start method
 //----------------------------------------------------------------------------
 
-bool ts::HiDesOutput::start()
+bool ts::HiDesOutputPlugin::start()
 {
     if (_device.isOpen()) {
         tsp->error(u"already started");
@@ -249,7 +250,7 @@ bool ts::HiDesOutput::start()
 // Output stop method
 //----------------------------------------------------------------------------
 
-bool ts::HiDesOutput::stop()
+bool ts::HiDesOutputPlugin::stop()
 {
     return _device.stopTransmission(*tsp) && _device.close(*tsp);
 }
@@ -259,10 +260,16 @@ bool ts::HiDesOutput::stop()
 // Bitrate computation method
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::HiDesOutput::getBitrate()
+ts::BitRate ts::HiDesOutputPlugin::getBitrate()
 {
     // Was computed once, during start().
     return _bitrate;
+}
+
+ts::BitRateConfidence ts::HiDesOutputPlugin::getBitrateConfidence()
+{
+    // The returned bitrate is based on the HiDes device hardware.
+    return BitRateConfidence::HARDWARE;
 }
 
 
@@ -270,7 +277,7 @@ ts::BitRate ts::HiDesOutput::getBitrate()
 // Output method
 //----------------------------------------------------------------------------
 
-bool ts::HiDesOutput::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packet_count)
+bool ts::HiDesOutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packet_count)
 {
     return _device.send(pkt, packet_count, *tsp, tsp);
 }

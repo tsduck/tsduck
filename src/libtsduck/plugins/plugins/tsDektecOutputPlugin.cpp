@@ -1698,6 +1698,12 @@ ts::BitRate ts::DektecOutputPlugin::getBitrate()
     return bitrate;
 }
 
+ts::BitRateConfidence ts::DektecOutputPlugin::getBitrateConfidence()
+{
+    // The returned bitrate is based on the Dektec device hardware.
+    return BitRateConfidence::HARDWARE;
+}
+
 
 //----------------------------------------------------------------------------
 // Output method

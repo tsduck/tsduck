@@ -248,6 +248,7 @@ void PluginExecutor::updateBitrateFromCurrent()
     const ts::BitRate bitrate = _shlib->getBitrate();
     if (bitrate != 0) {
         _tsp_bitrate = bitrate;
+        _tsp_bitrate_confidence = _shlib->getBitrateConfidence();
         _own_bitrate = true;
     }
 }
@@ -318,6 +319,7 @@ size_t InputPluginExecutor::receive(ts::TSPacket* packets, ts::TSPacketMetadata*
         ts::BitRate bitrate = plugin()->getBitrate();
         if (bitrate > 0) {
             _tsp_bitrate = bitrate;
+            _tsp_bitrate_confidence = plugin()->getBitrateConfidence();
             _own_bitrate = true;
         }
         else if (!_own_bitrate && _pcr_analyzer.bitrateIsValid()) {

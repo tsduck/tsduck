@@ -62,6 +62,7 @@ namespace ts {
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool isRealTime() override;
         virtual BitRate getBitrate() override;
+        virtual BitRateConfidence getBitrateConfidence() override;
         virtual size_t stackUsage() const override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
 

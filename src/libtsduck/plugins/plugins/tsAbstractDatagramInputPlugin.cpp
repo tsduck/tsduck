@@ -160,6 +160,12 @@ ts::BitRate ts::AbstractDatagramInputPlugin::getBitrate()
     }
 }
 
+ts::BitRateConfidence ts::AbstractDatagramInputPlugin::getBitrateConfidence()
+{
+    // The returned bitrate is based on the system clock.
+    return BitRateConfidence::CLOCK;
+}
+
 
 //----------------------------------------------------------------------------
 // Input method

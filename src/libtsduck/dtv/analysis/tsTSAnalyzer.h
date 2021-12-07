@@ -67,12 +67,12 @@ namespace ts {
         //!
         //! Default constructor.
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the analyzer.
-        //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis.
-        //! It is the user-specified bitrate in bits/seconds, based on 188-byte
-        //! packets. The bitrate hint is optional: if specified as zero, the
-        //! analysis is based on the PCR values.
+        //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis. It is the user-specified
+        //! bitrate in bits/seconds, based on 188-byte packets. The bitrate hint is optional:
+        //! if specified as zero, the analysis is based on the PCR values.
+        //! @param [in] bitrate_confidence Confidence level in @a bitrate_hint.
         //!
-        explicit TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint = 0);
+        explicit TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint = 0, BitRateConfidence bitrate_confidence = BitRateConfidence::LOW);
 
         //!
         //! Destructor.
@@ -93,12 +93,12 @@ namespace ts {
 
         //!
         //! Specify a "bitrate hint" for the analysis.
-        //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis.
-        //! It is the user-specified bitrate in bits/seconds, based on 188-byte
-        //! packets. The bitrate hint is optional: if specified as zero, the
-        //! analysis is based on the PCR values.
+        //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis. It is the user-specified
+        //! bitrate in bits/seconds, based on 188-byte packets. The bitrate hint is optional:
+        //! if specified as zero, the analysis is based on the PCR values.
+        //! @param [in] bitrate_confidence Confidence level in @a bitrate_hint.
         //!
-        void setBitrateHint(const BitRate& bitrate_hint = 0);
+        void setBitrateHint(const BitRate& bitrate_hint = 0, BitRateConfidence bitrate_confidence = BitRateConfidence::LOW);
 
         //!
         //! Set the number of consecutive packet errors threshold.
@@ -431,48 +431,49 @@ namespace ts {
         // TSAnalyzer protected members.
         // Accessible to subclasses, valid after calling recomputeStatistics().
         // Important: subclasses shall not modify these fields, just read them.
-        DuckContext& _duck;               //!< TSDuck execution context
-        uint16_t     _ts_id;              //!< Transport stream id.
-        bool         _ts_id_valid;        //!< Transport stream id is valid.
-        uint64_t     _ts_pkt_cnt;         //!< Number of TS packets.
-        uint64_t     _invalid_sync;       //!< Number of packets with invalid sync byte (not 0x47).
-        uint64_t     _transport_errors;   //!< Number of packets with transport error.
-        uint64_t     _suspect_ignored;    //!< Number of suspect packets, ignored.
-        size_t       _pid_cnt;            //!< Number of PID's (with actual packets).
-        size_t       _scrambled_pid_cnt;  //!< Number of scrambled PID's.
-        size_t       _pcr_pid_cnt;        //!< Number of PID's with PCR's.
-        size_t       _global_pid_cnt;     //!< Number of global PID's (ref but no service).
-        size_t       _global_scr_pids;    //!< Number of scrambled global PID's.
-        uint64_t     _global_pkt_cnt;     //!< Number of packets in global PID's.
-        BitRate      _global_bitrate;     //!< Bitrate for global PID's.
-        size_t       _psisi_pid_cnt;      //!< Number of global PSI/SI PID's (0x00 to 0x1F).
-        size_t       _psisi_scr_pids;     //!< Number of scrambled global PSI/SI PID's (normally zero).
-        uint64_t     _psisi_pkt_cnt;      //!< Number of packets in global PSI/SI PID's.
-        BitRate      _psisi_bitrate;      //!< Bitrate for global PSI/SI PID's.
-        size_t       _unref_pid_cnt;      //!< Number of unreferenced PID's.
-        size_t       _unref_scr_pids;     //!< Number of scrambled unreferenced PID's.
-        uint64_t     _unref_pkt_cnt;      //!< Number of packets in unreferenced PID's.
-        BitRate      _unref_bitrate;      //!< Bitrate for unreferenced PID's.
-        BitRate      _ts_pcr_bitrate_188; //!< Average TS bitrate in b/s (eval from PCR).
-        BitRate      _ts_pcr_bitrate_204; //!< Average TS bitrate in b/s (eval from PCR).
-        BitRate      _ts_user_bitrate;    //!< User-specified TS bitrate (if any).
-        BitRate      _ts_bitrate;         //!< TS bitrate (either from PCR or options).
-        MilliSecond  _duration;           //!< Total broadcast duration.
-        Time         _first_utc;          //!< First system UTC time (first packet).
-        Time         _last_utc;           //!< Last system UTC time (recomputeStatistics).
-        Time         _first_local;        //!< First system local time (first packet).
-        Time         _last_local;         //!< Last system local time (recomputeStatistics).
-        Time         _first_tdt;          //!< First TDT UTC time stamp.
-        Time         _last_tdt;           //!< Last TDT UTC time stamp.
-        Time         _first_tot;          //!< First TOT local time stamp.
-        Time         _last_tot;           //!< Last TOT local time stamp.
-        Time         _first_stt;          //!< First STT (ATCS) UTC time stamp.
-        Time         _last_stt;           //!< Last STT (ATCS) time stamp.
-        UString      _country_code;       //!< TOT country code.
-        uint16_t     _scrambled_services_cnt; //!< Number of scrambled services;.
-        std::bitset<TID_MAX> _tid_present;    //!< Array of detected tables.
-        PIDContextMap        _pids;           //!< Description of PIDs.
-        ServiceContextMap    _services;       //!< Description of services, map key: service id..
+        DuckContext&         _duck;               //!< TSDuck execution context
+        uint16_t             _ts_id;              //!< Transport stream id.
+        bool                 _ts_id_valid;        //!< Transport stream id is valid.
+        uint64_t             _ts_pkt_cnt;         //!< Number of TS packets.
+        uint64_t             _invalid_sync;       //!< Number of packets with invalid sync byte (not 0x47).
+        uint64_t             _transport_errors;   //!< Number of packets with transport error.
+        uint64_t             _suspect_ignored;    //!< Number of suspect packets, ignored.
+        size_t               _pid_cnt;            //!< Number of PID's (with actual packets).
+        size_t               _scrambled_pid_cnt;  //!< Number of scrambled PID's.
+        size_t               _pcr_pid_cnt;        //!< Number of PID's with PCR's.
+        size_t               _global_pid_cnt;     //!< Number of global PID's (ref but no service).
+        size_t               _global_scr_pids;    //!< Number of scrambled global PID's.
+        uint64_t             _global_pkt_cnt;     //!< Number of packets in global PID's.
+        BitRate              _global_bitrate;     //!< Bitrate for global PID's.
+        size_t               _psisi_pid_cnt;      //!< Number of global PSI/SI PID's (0x00 to 0x1F).
+        size_t               _psisi_scr_pids;     //!< Number of scrambled global PSI/SI PID's (normally zero).
+        uint64_t             _psisi_pkt_cnt;      //!< Number of packets in global PSI/SI PID's.
+        BitRate              _psisi_bitrate;      //!< Bitrate for global PSI/SI PID's.
+        size_t               _unref_pid_cnt;      //!< Number of unreferenced PID's.
+        size_t               _unref_scr_pids;     //!< Number of scrambled unreferenced PID's.
+        uint64_t             _unref_pkt_cnt;      //!< Number of packets in unreferenced PID's.
+        BitRate              _unref_bitrate;      //!< Bitrate for unreferenced PID's.
+        BitRate              _ts_pcr_bitrate_188; //!< Average TS bitrate in b/s (eval from PCR).
+        BitRate              _ts_pcr_bitrate_204; //!< Average TS bitrate in b/s (eval from PCR).
+        BitRate              _ts_user_bitrate;    //!< User-specified TS bitrate (if any).
+        BitRateConfidence    _ts_user_br_confidence;  //!< Confidence in user-specified TS bitrate.
+        BitRate              _ts_bitrate;         //!< TS bitrate (either from PCR or options).
+        MilliSecond          _duration;           //!< Total broadcast duration.
+        Time                 _first_utc;          //!< First system UTC time (first packet).
+        Time                 _last_utc;           //!< Last system UTC time (recomputeStatistics).
+        Time                 _first_local;        //!< First system local time (first packet).
+        Time                 _last_local;         //!< Last system local time (recomputeStatistics).
+        Time                 _first_tdt;          //!< First TDT UTC time stamp.
+        Time                 _last_tdt;           //!< Last TDT UTC time stamp.
+        Time                 _first_tot;          //!< First TOT local time stamp.
+        Time                 _last_tot;           //!< Last TOT local time stamp.
+        Time                 _first_stt;          //!< First STT (ATCS) UTC time stamp.
+        Time                 _last_stt;           //!< Last STT (ATCS) time stamp.
+        UString              _country_code;       //!< TOT country code.
+        uint16_t             _scrambled_services_cnt; //!< Number of scrambled services;.
+        std::bitset<TID_MAX> _tid_present;        //!< Array of detected tables.
+        PIDContextMap        _pids;               //!< Description of PIDs.
+        ServiceContextMap    _services;           //!< Description of services, map key: service id..
 
     private:
         // Constant string "Unreferenced"
