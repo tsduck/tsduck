@@ -447,6 +447,11 @@ ts::BitRate ts::DektecInputPlugin::getBitrate()
     return 0;
 }
 
+ts::BitRateConfidence ts::DektecInputPlugin::getBitrateConfidence()
+{
+    return BitRateConfidence::LOW;
+}
+
 size_t ts::DektecInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t)
 {
     tsp->error(TS_NO_DTAPI_MESSAGE);
