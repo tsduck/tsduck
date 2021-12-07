@@ -74,7 +74,7 @@ install-devel:
 	    $(if $(NOSRT),-e 's|srt||g',) \
 	    $(if $(NORIST),-e 's|librist||g',) \
 	    $(if $(NOPCSC),-e 's|libpcsclite||g',) \
-	    $(if $(NOCURL),-e 's|libcurl||d',) \
+	    $(if $(NOCURL),-e 's|libcurl||g',) \
 	    -e 's|:[ ,]*|: |' -e 's|,[ ,]*|, |' -e 's|[ ,]*$$||' \
 	    tsduck.pc >$(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
 	chmod 644 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
