@@ -114,6 +114,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
     BitRate output_bitrate = _tsp_bitrate;
+    BitRateConfidence br_confidence = _tsp_bitrate_confidence;
     bool bitrate_never_modified = true;
     bool input_end = false;
     bool aborted = false;
@@ -124,12 +125,13 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
         size_t pkt_first = 0;
         size_t pkt_cnt = 0;
         bool timeout = false;
-        waitWork(1, pkt_first, pkt_cnt, _tsp_bitrate, input_end, aborted, timeout);
+        waitWork(1, pkt_first, pkt_cnt, _tsp_bitrate, _tsp_bitrate_confidence, input_end, aborted, timeout);
 
         // If bitrate was never modified by the plugin, always copy the input bitrate as output bitrate.
         // Otherwise, keep previous output bitrate, as modified by the plugin.
         if (bitrate_never_modified) {
             output_bitrate = _tsp_bitrate;
+            br_confidence = _tsp_bitrate_confidence;
         }
 
         // Process restart requests.
@@ -143,21 +145,21 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
 
         // In case of abort on timeout, notify previous and next plugin, then exit.
         if (timeout) {
-            passPackets(0, output_bitrate, true, true);
+            passPackets(0, output_bitrate, br_confidence, true, true);
             break;
         }
 
         // If next processor has aborted, abort as well.
         // We call passPacket to inform our predecessor that we aborted.
         if (aborted && !input_end) {
-            passPackets(0, output_bitrate, true, true);
+            passPackets(0, output_bitrate, br_confidence, true, true);
             break;
         }
 
         // Exit thread if no more packet to process.
         // We call passPackets to inform our successor of end of input.
         if (pkt_cnt == 0 && input_end) {
-            passPackets(0, output_bitrate, true, false);
+            passPackets(0, output_bitrate, br_confidence, true, false);
             break;
         }
 
@@ -237,6 +239,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
                         bitrate_never_modified = false;
                         got_new_bitrate = new_bitrate != output_bitrate;
                         output_bitrate = new_bitrate;
+                        br_confidence = _processor->getBitrateConfidence();
                     }
                 }
             }
@@ -245,7 +248,7 @@ void ts::tsp::ProcessorExecutor::processIndividualPackets()
             // Perform periodic flush to avoid waiting too long before two output operations.
             // Also propagate new bitrate values immediately.
             if (pkt_data->getFlush() || got_new_bitrate || pkt_done == pkt_cnt || (_options.max_flush_pkt > 0 && pkt_flush >= _options.max_flush_pkt)) {
-                aborted = !passPackets(pkt_flush, output_bitrate, pkt_done == pkt_cnt && input_end, aborted);
+                aborted = !passPackets(pkt_flush, output_bitrate, br_confidence, pkt_done == pkt_cnt && input_end, aborted);
                 pkt_flush = 0;
             }
         }
@@ -270,6 +273,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
     BitRate output_bitrate = _tsp_bitrate;
+    BitRateConfidence br_confidence = _tsp_bitrate_confidence;
     bool bitrate_never_modified = true;
     bool input_end = false;
     bool aborted = false;
@@ -301,12 +305,13 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
             win.clear();
 
             // Wait for packets to process.
-            waitWork(request_packets, first_packet_index, allocated_packets, _tsp_bitrate, input_end, aborted, timeout);
+            waitWork(request_packets, first_packet_index, allocated_packets, _tsp_bitrate, _tsp_bitrate_confidence, input_end, aborted, timeout);
 
             // If bitrate was never modified by the plugin, always copy the input bitrate as output bitrate.
             // Otherwise, keep previous output bitrate, as modified by the plugin.
             if (bitrate_never_modified) {
                 output_bitrate = _tsp_bitrate;
+                br_confidence = _tsp_bitrate_confidence;
             }
 
             // Process restart requests.
@@ -324,7 +329,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
             if (_suspended) {
                 // Drop all packets which are owned by this plugin.
                 addNonPluginPackets(allocated_packets);
-                passPackets(allocated_packets, output_bitrate, input_end, aborted);
+                passPackets(allocated_packets, output_bitrate, br_confidence, input_end, aborted);
                 // Continue building a packet window (the plugin maybe resumed in the meantime).
                 continue;
             }
@@ -407,6 +412,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
                 if (new_bitrate != 0) {
                     bitrate_never_modified = false;
                     output_bitrate = new_bitrate;
+                    br_confidence = _processor->getBitrateConfidence();
                 }
                 break;
             }
@@ -419,7 +425,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
 
         // Pass all allocated packets to the next plugin.
         // Can be less than actually allocated in case of termination.
-        passPackets(allocated_packets, output_bitrate, input_end, aborted);
+        passPackets(allocated_packets, output_bitrate, br_confidence, input_end, aborted);
 
     } while (!input_end && !aborted);
 

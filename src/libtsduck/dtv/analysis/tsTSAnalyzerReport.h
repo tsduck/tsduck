@@ -51,12 +51,12 @@ namespace ts {
         //!
         //! Default constructor.
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the analyzer.
-        //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis.
-        //! It is the user-specified bitrate in bits/seconds, based on 188-byte
-        //! packets. The bitrate hint is optional: if specified as zero, the
-        //! analysis is based on the PCR values.
+        //! @param [in] bitrate_hint Optional bitrate "hint" for the analysis. It is the user-specified
+        //! bitrate in bits/seconds, based on 188-byte packets. The bitrate hint is optional:
+        //! if specified as zero, the analysis is based on the PCR values.
+        //! @param [in] bitrate_confidence Confidence level in @a bitrate_hint.
         //!
-        explicit TSAnalyzerReport(DuckContext& duck, const BitRate& bitrate_hint = 0);
+        explicit TSAnalyzerReport(DuckContext& duck, const BitRate& bitrate_hint = 0, BitRateConfidence bitrate_confidence = BitRateConfidence::LOW);
 
         //!
         //! Virtual destructor.

@@ -130,6 +130,17 @@ namespace ts {
         virtual BitRate getBitrate();
 
         //!
+        //! Get the plugin bitrate confidence.
+        //!
+        //! When a subclass overrides getBitrate(), it should also override getBitrateConfidence().
+        //!
+        //! @return The level of confidence of the bitrate value as returned by the previous call
+        //! to getBitrate(). If the previous returned bitrate was zero, this confidence level
+        //! shall be ignored.
+        //!
+        virtual BitRateConfidence getBitrateConfidence();
+
+        //!
         //! Tell if the plugin is a real time one.
         //!
         //! Some plugin behave more accurately when the responsiveness of the

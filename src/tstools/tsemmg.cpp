@@ -171,9 +171,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     option(u"emm-size", 0, INTEGER, 0, 1, ts::MIN_SHORT_SECTION_SIZE, ts::MAX_PRIVATE_SECTION_SIZE);
     help(u"emm-size",
-         u"Specify the maximum table id of the automatically generated fake EMM's. "
-         u"When generating fake EMM's, the table ids are cycled from the minimum to "
-         u"the maximum value. The default is " + ts::UString::Hexa(DEFAULT_EMM_MAX_TID) + u".");
+         u"Specify the size in bytes of the automatically generated fake EMM's. The default is 100 bytes.");
 
     option(u"emm-min-table-id", 0, UINT8);
     help(u"emm-min-table-id",

@@ -87,6 +87,12 @@ namespace ts {
         BitRate bitrate() const { return _tsp_bitrate; }
 
         //!
+        //! Get the plugin bitrate confidence.
+        //! @return The level of confidence of the bitrate value as returned by the previous call to bitrate().
+        //!
+        BitRateConfidence bitrateConfidence() const { return _tsp_bitrate_confidence; }
+
+        //!
         //! Access the shared library through the plugin interface.
         //! @return Address of the plugin interface.
         //!
@@ -206,10 +212,11 @@ namespace ts {
         virtual ~TSP() override;
 
     protected:
-        bool          _use_realtime;  //!< The plugin should use realtime defaults.
-        BitRate       _tsp_bitrate;   //!< TSP input bitrate.
-        MilliSecond   _tsp_timeout;   //!< Timeout when waiting for packets (infinite by default).
-        volatile bool _tsp_aborting;  //!< TSP is currently aborting.
+        bool              _use_realtime;            //!< The plugin should use realtime defaults.
+        BitRate           _tsp_bitrate;             //!< TSP input bitrate.
+        BitRateConfidence _tsp_bitrate_confidence;  //!< TSP input bitrate confidence.
+        MilliSecond       _tsp_timeout;             //!< Timeout when waiting for packets (infinite by default).
+        volatile bool     _tsp_aborting;            //!< TSP is currently aborting.
 
         //!
         //! Constructor for subclasses.

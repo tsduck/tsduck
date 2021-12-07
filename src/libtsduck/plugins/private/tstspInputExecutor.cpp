@@ -90,7 +90,7 @@ ts::tsp::InputExecutor::~InputExecutor()
 bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadataBuffer* metadata)
 {
     // Pre-declare buffer for input plugin.
-    initBuffer(buffer, metadata, 0, buffer->count(), false, false, 0);
+    initBuffer(buffer, metadata, 0, buffer->count(), false, false, 0, BitRateConfidence::LOW);
 
     // Pre-load half of the buffer (the default) with packets from the input device.
     const size_t init_packets = _options.init_input_pkt == 0 ? buffer->count() / 2 : std::min(_options.init_input_pkt, buffer->count());
@@ -104,7 +104,10 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
     debug(u"initial buffer load: %'d packets, %'d bytes", {pkt_read, pkt_read * PKT_SIZE});
 
     // Try to evaluate the initial input bitrate.
-    const BitRate init_bitrate = getBitrate();
+    BitRate init_bitrate = 0;
+    BitRateConfidence init_confidence = BitRateConfidence::LOW;
+    getBitrate(init_bitrate, init_confidence);
+
     if (init_bitrate == 0) {
         verbose(u"unknown initial input bitrate");
     }
@@ -114,15 +117,15 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
 
     // Indicate that the loaded packets are now available to the next packet processor.
     PluginExecutor* next = ringNext<PluginExecutor>();
-    next->initBuffer(buffer, metadata, 0, pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
+    next->initBuffer(buffer, metadata, 0, pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate, init_confidence);
 
     // The rest of the buffer belongs to this input processor for reading additional packets.
-    initBuffer(buffer, metadata, pkt_read % buffer->count(), buffer->count() - pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate);
+    initBuffer(buffer, metadata, pkt_read % buffer->count(), buffer->count() - pkt_read, pkt_read == 0, pkt_read == 0, init_bitrate, init_confidence);
 
     // All other processors have an implicit empty buffer (_pkt_first and _pkt_cnt are zero).
     // Propagate initial input bitrate to all processors
     while ((next = next->ringNext<PluginExecutor>()) != this) {
-        next->initBuffer(buffer, metadata, 0, 0, pkt_read == 0, pkt_read == 0, init_bitrate);
+        next->initBuffer(buffer, metadata, 0, 0, pkt_read == 0, pkt_read == 0, init_bitrate, init_confidence);
     }
 
     return true;
@@ -133,34 +136,38 @@ bool ts::tsp::InputExecutor::initAllBuffers(PacketBuffer* buffer, PacketMetadata
 // Encapsulation of the plugin's getBitrate() method or PCR analysis.
 //----------------------------------------------------------------------------
 
-ts::BitRate ts::tsp::InputExecutor::getBitrate()
+void ts::tsp::InputExecutor::getBitrate(BitRate& bitrate, BitRateConfidence& confidence)
 {
-    // Get bitrate from --bitrate command line option or from plugin otherwise.
-    BitRate bitrate = _options.fixed_bitrate > 0 ? _options.fixed_bitrate : _input->getBitrate();
+    if (_options.fixed_bitrate > 0) {
+        // Get bitrate from --bitrate command line option. It takes precedence over all.
+        bitrate = _options.fixed_bitrate;
+        confidence = BitRateConfidence::OVERRIDE;
+    }
+    else {
+        // Get bitrate from plugin.
+        bitrate = _input->getBitrate();
+        confidence = _input->getBitrateConfidence();
+    }
 
     if (bitrate != 0) {
         // Got a bitrate value from command line or plugin.
-        if (_options.instuff_inpkt == 0) {
-            // No artificial input stuffing, use that bitrate.
-            return bitrate;
-        }
-        else {
+        if (_options.instuff_inpkt != 0) {
             // Need to adjust with artificial input stuffing.
-            return (bitrate * (_options.instuff_nullpkt + _options.instuff_inpkt)) / _options.instuff_inpkt;
+            bitrate = (bitrate * (_options.instuff_nullpkt + _options.instuff_inpkt)) / _options.instuff_inpkt;
         }
     }
-
-    // No valid bitrate from command line or plugin. Evaluate the bitrate ourselves.
-    if (!_use_dts_analyzer && _pcr_analyzer.bitrateIsValid()) {
-        // Got a bitrate from the PCR's
-        return _pcr_analyzer.bitrate188();
+    else if (!_use_dts_analyzer && _pcr_analyzer.bitrateIsValid()) {
+        // Got a bitrate from the PCR's, continuously re-evaluated.
+        bitrate = _pcr_analyzer.bitrate188();
+        confidence = BitRateConfidence::PCR_CONTINUOUS;
     }
     else {
         // Still no bitrate available from PCR, try DTS from video PID's.
         // If DTS are used at least once, continue to use them all the time.
         _use_dts_analyzer = _use_dts_analyzer || _dts_analyzer.bitrateIsValid();
         // Return the bitrate from DTS.
-        return _use_dts_analyzer ? _dts_analyzer.bitrate188() : 0;
+        bitrate = _use_dts_analyzer ? _dts_analyzer.bitrate188() : 0;
+        confidence = BitRateConfidence::PCR_CONTINUOUS;
     }
 }
 
@@ -395,11 +402,12 @@ void ts::tsp::InputExecutor::main()
         size_t pkt_first = 0;
         size_t pkt_max = 0;
         BitRate bitrate = 0;
+        BitRateConfidence br_confidence = BitRateConfidence::LOW;
         bool timeout = false;
 
         // Wait for space in the input buffer.
         // Ignore input_end and bitrate from previous, we are the input processor.
-        waitWork(1, pkt_first, pkt_max, bitrate, input_end, aborted, timeout);
+        waitWork(1, pkt_first, pkt_max, bitrate, br_confidence, input_end, aborted, timeout);
 
         // Process restart requests.
         if (!processPendingRestart(restarted)) {
@@ -415,7 +423,7 @@ void ts::tsp::InputExecutor::main()
         // In case of abort on timeout, notify previous and next plugin, then exit.
         if (timeout) {
             // Do not progate abort to previous processor since the "previous" one is the output one.
-            passPackets(0, _tsp_bitrate, true, false);
+            passPackets(0, _tsp_bitrate, _tsp_bitrate_confidence, true, false);
             aborted = true;
             break;
         }
@@ -455,25 +463,25 @@ void ts::tsp::InputExecutor::main()
                 } while (bitrate_due_packet <= pluginPackets());
             }
 
-            // Compute time for next bitrate adjustment. Note that we do not
-            // use a monotonic time (we use current time and not due time as
-            // base for next calculation).
+            // Compute time for next bitrate adjustment. Note that we do not use a monotonic time
+            // (we use current time and not due time as base for next calculation).
             if (current_time >= bitrate_due_time) {
                 bitrate_due_time = current_time + _options.bitrate_adj;
             }
 
             // Call shared library to get input bitrate
-            bitrate = getBitrate();
+            getBitrate(bitrate, br_confidence);
 
             if (bitrate > 0) {
                 // Keep this bitrate
                 _tsp_bitrate = bitrate;
+                _tsp_bitrate_confidence = br_confidence;
                 debug(u"input: got bitrate %'d b/s", {bitrate});
             }
         }
 
         // Pass received packets to next processor
-        passPackets(pkt_read, _tsp_bitrate, input_end, false);
+        passPackets(pkt_read, _tsp_bitrate, _tsp_bitrate_confidence, input_end, false);
 
     } while (!input_end);
 

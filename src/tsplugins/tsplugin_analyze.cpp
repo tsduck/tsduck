@@ -213,7 +213,7 @@ bool ts::AnalyzePlugin::produceReport()
     }
     else {
         // Set last known input bitrate as hint
-        _analyzer.setBitrateHint(tsp->bitrate());
+        _analyzer.setBitrateHint(tsp->bitrate(), tsp->bitrateConfidence());
 
         // Produce the report
         _analyzer.report(*_output, _analyzer_options, *tsp);
@@ -241,7 +241,7 @@ bool ts::AnalyzePlugin::stop()
 ts::ProcessorPlugin::Status ts::AnalyzePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
     // Feed the analyzer with one packet
-    _analyzer.feedPacket (pkt);
+    _analyzer.feedPacket(pkt);
 
     // With --interval, check if it is time to produce a report
     if (_output_interval > 0 && _metrics.processedPacket() && _metrics.sessionNanoSeconds() >= _next_report) {

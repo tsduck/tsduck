@@ -118,6 +118,7 @@ size_t ts::ProcessorPlugin::processPacketWindow(TSPacketWindow& win)
             }
             if (mdata->getBitrateChanged()) {
                 tsp->_tsp_bitrate = getBitrate();
+                tsp->_tsp_bitrate_confidence = getBitrateConfidence();
             }
             tsp->_plugin_packets++;
         }

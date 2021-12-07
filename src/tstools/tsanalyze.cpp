@@ -119,7 +119,7 @@ int MainCode(int argc, char *argv[])
     Options opt(argc, argv);
 
     // Configure the TS analyzer.
-    ts::TSAnalyzerReport analyzer(opt.duck, opt.bitrate);
+    ts::TSAnalyzerReport analyzer(opt.duck, opt.bitrate, ts::BitRateConfidence::OVERRIDE);
     analyzer.setAnalysisOptions(opt.analysis);
 
     // Open the TS file.

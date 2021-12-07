@@ -122,7 +122,7 @@ namespace ts {
 
             // Encapsulation of the plugin's getBitrate() method, taking into account the tsp input
             // stuffing options. Use PCR analysis if bitrate not otherwise available.
-            BitRate getBitrate();
+            void getBitrate(BitRate& bitrate, BitRateConfidence& confidence);
         };
     }
 }

@@ -179,6 +179,34 @@ namespace ts {
     //---------------------------------------------------------------------
 
     //!
+    //! Confidence in a bitrate value.
+    //!
+    //! Bitrates can be provided by various sources, some being more reliable than others.
+    //! Each bitrate value or computation is associated with a "level of confidence".
+    //! This enumeration type lists various levels of confidence in increasing order.
+    //! When evaluating a bitrate from several values, the one with highest confidence
+    //! is used.
+    //!
+    enum class BitRateConfidence {
+        LOW,              //!< Low confidence, used as last resort.
+        PCR_CONTINUOUS,   //!< Evaluated from PCR's, continuously adjusted.
+        PCR_AVERAGE,      //!< Evaluated from PCR's, average all over the stream.
+        CLOCK,            //!< Evaluated using the system clock on a real-time stream.
+        HARDWARE,         //!< Reported by hardware input device (demodulator, ASI).
+        OVERRIDE,         //!< Highest level, overrides any other value (user-defined for instance).
+    };
+
+    //!
+    //! Select a bitrate from two input values with potentially different levels of confidence.
+    //! @param [in] bitrate1 First bitrate.
+    //! @param [in] brc1 Level of confidence for @a bitrate1.
+    //! @param [in] bitrate2 Second bitrate.
+    //! @param [in] brc2 Level of confidence for @a bitrate2.
+    //! @return The selected bitrate value.
+    //!
+    TSDUCKDLL BitRate SelectBitrate(const BitRate& bitrate1, BitRateConfidence brc1, const BitRate& bitrate2, BitRateConfidence brc2);
+
+    //!
     //! Convert 188-byte packet bitrate into 204-byte packet bitrate.
     //! @param [in] bitrate188 Bitrate using 188-byte packet as reference.
     //! @return Corresponding bitrate using 204-byte packet as reference.

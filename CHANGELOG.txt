@@ -2,6 +2,19 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.30-2656
+
+[IMP] Improvements on existing commands and plugins:
+
+  * The bitrate evaluation has been modified in the plugin "analyze". When
+    there is no hardware-based ("dvb", "dektec") or clock-based ("ip")
+    evaluation of the bitrate, all bitrate computations are based on the
+    average bitrate, all over the capture, based on PCR's. Previously, the
+    base was the current "tsp" bitrate, ie. a PCR-based evaluation from the
+    last part of the stream only.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.29-2647
 
 [NEW] New commands and plugins:

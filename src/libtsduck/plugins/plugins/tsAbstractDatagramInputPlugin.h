@@ -55,6 +55,7 @@ namespace ts {
         virtual bool start() override;
         virtual bool isRealTime() override;
         virtual BitRate getBitrate() override;
+        virtual BitRateConfidence getBitrateConfidence() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
 
     protected:

@@ -56,6 +56,7 @@ ts::tsp::PluginExecutor::PluginExecutor(const TSProcessorArgs& options,
     _pkt_cnt(0),
     _input_end(false),
     _bitrate(0),
+    _br_confidence(BitRateConfidence::LOW),
     _restart(false),
     _restart_data()
 {
@@ -120,13 +121,14 @@ bool ts::tsp::PluginExecutor::isRealTime() const
 // Executed in synchronous environment, before starting all executor threads.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::initBuffer(PacketBuffer*  buffer,
+void ts::tsp::PluginExecutor::initBuffer(PacketBuffer*         buffer,
                                          PacketMetadataBuffer* metadata,
-                                         size_t         pkt_first,
-                                         size_t         pkt_cnt,
-                                         bool           input_end,
-                                         bool           aborted,
-                                         const BitRate& bitrate)
+                                         size_t                pkt_first,
+                                         size_t                pkt_cnt,
+                                         bool                  input_end,
+                                         bool                  aborted,
+                                         const BitRate&        bitrate,
+                                         BitRateConfidence     br_confidence)
 {
     log(10, u"initBuffer(..., pkt_first = %'d, pkt_cnt = %'d, input_end = %s, aborted = %s, bitrate = %'d)", {pkt_first, pkt_cnt, input_end, aborted, bitrate});
 
@@ -137,7 +139,9 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer*  buffer,
     _input_end = input_end;
     _tsp_aborting = aborted;
     _bitrate = bitrate;
+    _br_confidence = br_confidence;
     _tsp_bitrate = bitrate;
+    _tsp_bitrate_confidence = br_confidence;
 }
 
 
@@ -145,7 +149,7 @@ void ts::tsp::PluginExecutor::initBuffer(PacketBuffer*  buffer,
 // Signal that the specified number of packets have been processed.
 //----------------------------------------------------------------------------
 
-bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, bool input_end, bool aborted)
+bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, BitRateConfidence br_confidence, bool input_end, bool aborted)
 {
     assert(count <= _pkt_cnt);
 
@@ -164,6 +168,7 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
 
     // Propagate bitrate and end of input flag to next processor.
     next->_bitrate = bitrate;
+    next->_br_confidence = br_confidence;
     next->_input_end = next->_input_end || input_end;
 
     // Wake the next processor when there is some new input data or end of input.
@@ -192,7 +197,9 @@ bool ts::tsp::PluginExecutor::passPackets(size_t count, const BitRate& bitrate, 
 // Wait for packets to process or some error condition.
 //----------------------------------------------------------------------------
 
-void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, size_t& pkt_cnt, BitRate& bitrate, bool& input_end, bool& aborted, bool &timeout)
+void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, size_t& pkt_cnt,
+                                       BitRate& bitrate, BitRateConfidence& br_confidence,
+                                       bool& input_end, bool& aborted, bool &timeout)
 {
     log(10, u"waitWork(min_pkt_cnt = %'d, ...)", {min_pkt_cnt});
 
@@ -235,6 +242,7 @@ void ts::tsp::PluginExecutor::waitWork(size_t min_pkt_cnt, size_t& pkt_first, si
 
     pkt_first = _pkt_first;
     bitrate = _bitrate;
+    br_confidence = _br_confidence;
     input_end = _input_end && pkt_cnt == _pkt_cnt;
 
     // Force to abort our processor when the next one is aborting.

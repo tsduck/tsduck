@@ -100,6 +100,11 @@ ts::BitRate ts::Plugin::getBitrate()
     return 0;
 }
 
+ts::BitRateConfidence ts::Plugin::getBitrateConfidence()
+{
+    return BitRateConfidence::LOW;
+}
+
 bool ts::Plugin::isRealTime()
 {
     return false;

@@ -57,6 +57,32 @@ const ts::Enumeration ts::PIDClassEnum({
 
 
 //----------------------------------------------------------------------------
+// Select a bitrate from two input values with different levels of confidence.
+//----------------------------------------------------------------------------
+
+ts::BitRate ts::SelectBitrate(const BitRate& bitrate1, BitRateConfidence brc1, const BitRate& bitrate2, BitRateConfidence brc2)
+{
+    if (bitrate1 == 0) {
+        // A zero value is undefined, the other value is always better (or zero also).
+        return bitrate2;
+    }
+    else if (bitrate2 == 0) {
+        return bitrate1;
+    }
+    else if (brc1 == brc2) {
+        // Same confidence, both not null, return an average of the two.
+        return (bitrate1 + bitrate2) / 2;
+    }
+    else if (brc1 > brc2) {
+        return bitrate1;
+    }
+    else {
+        return bitrate2;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Compute the PCR of a packet, based on the PCR of a previous packet.
 //----------------------------------------------------------------------------
 

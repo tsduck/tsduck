@@ -52,6 +52,7 @@ namespace ts {
         PCRBitratePlugin(TSP*);
         virtual bool start() override;
         virtual BitRate getBitrate() override;
+        virtual BitRateConfidence getBitrateConfidence() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
@@ -137,6 +138,13 @@ ts::BitRate ts::PCRBitratePlugin::getBitrate()
 {
     return _bitrate;
 }
+
+ts::BitRateConfidence ts::PCRBitratePlugin::getBitrateConfidence()
+{
+    // The returned bitrate is based on continuous evaluation of PCR.
+    return BitRateConfidence::PCR_CONTINUOUS;
+}
+
 
 
 //----------------------------------------------------------------------------
