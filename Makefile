@@ -175,8 +175,11 @@ tarball:
 
 # Installer target: rpm or deb.
 
-.PHONY: installer
-installer: $(if $(wildcard /etc/*fedora* /etc/*redhat*),rpm,$(if $(wildcard /etc/*debian*),deb))
+INSTALLER_TYPE = $(if $(wildcard /etc/*fedora* /etc/*redhat*),rpm,$(if $(wildcard /etc/*debian*),deb))
+
+.PHONY: installer install-installer
+installer: $(INSTALLER_TYPE)
+install-installer: install-$(INSTALLER_TYPE)
 
 # User's RPM build area.
 
@@ -189,6 +192,7 @@ $(RPMBUILDROOT):
 
 RPMBUILD ?= rpmbuild
 RPMBUILDFLAGS = -ba --clean $(if $(M32),--target $(MAIN_ARCH) -D 'mflags M32=true') $(RPMBUILDFLAGS_EXTRA)
+RPM_ARCH = $(shell uname -m)
 
 .PHONY: rpm rpm32
 rpm: tarball $(RPMBUILDROOT)
@@ -211,8 +215,13 @@ rpm: tarball $(RPMBUILDROOT)
 rpm32:
 	$(MAKE) rpm M32=true
 
+install-rpm: $(INSTALLERDIR)/tsduck-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm $(INSTALLERDIR)/tsduck-devel-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm
+	$(SUDO) rpm -Uvh $^
+
 # DEB package building (Debian, Ubuntu, Linux Mint, Raspbian, etc.)
 # Make deb-dev depend on deb-tools to force serialization in case of -j.
+
+DEB_ARCH = $(shell dpkg-architecture -qDEB_BUILD_ARCH)
 
 .PHONY: deb deb-tools deb-dev
 deb: deb-tools deb-dev
@@ -225,7 +234,7 @@ deb-tools:
 	install -m 644 CHANGELOG.txt LICENSE.txt OTHERS.txt doc/tsduck.pdf $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
-	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
+	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
 	    $(if $(NOSRT),-e '/libsrt/d') \
 	    $(if $(NORIST),-e '/librist/d') \
 	    $(if $(NOPCSC),-e '/libpcsc/d') \
@@ -250,6 +259,9 @@ deb-dev: deb-tools
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
+
+install-deb: $(INSTALLERDIR)/tsduck_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb $(INSTALLERDIR)/tsduck-dev_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb
+	$(SUDO) dpkg -i $^
 
 # Git hook files: TSDuck uses git hooks to automatically update the commit
 # number in tsVersion.h. The git hooks are automatically installed when

@@ -131,6 +131,12 @@ ifeq ($(SED),)
     export PYTHON := $(call F_COMMAND,python3,python)
 endif
 
+# Command prefix for commands requiring superuser rights.
+# Do not use it for "make install" commands, it could be used to install in
+# user or temporary directory. Only use it for "rpm" or "dpkg" commands.
+
+SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
+
 #-----------------------------------------------------------------------------
 # Identify the system environment.
 # - ALTDEVROOT : alternative root for development tools and library; can be
