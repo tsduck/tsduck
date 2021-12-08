@@ -215,8 +215,8 @@ rpm: tarball $(RPMBUILDROOT)
 rpm32:
 	$(MAKE) rpm M32=true
 
-install-rpm: $(INSTALLERDIR)/tsduck-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm $(INSTALLERDIR)/tsduck-devel-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm
-	$(SUDO) rpm -Uvh $^
+install-rpm:
+	$(SUDO) rpm -Uvh $(INSTALLERDIR)/tsduck-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm $(INSTALLERDIR)/tsduck-devel-$(VERSION)$(DISTRO).$(RPM_ARCH).rpm
 
 # DEB package building (Debian, Ubuntu, Linux Mint, Raspbian, etc.)
 # Make deb-dev depend on deb-tools to force serialization in case of -j.
@@ -260,8 +260,8 @@ deb-dev: deb-tools
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
 
-install-deb: $(INSTALLERDIR)/tsduck_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb $(INSTALLERDIR)/tsduck-dev_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb
-	$(SUDO) dpkg -i $^
+install-deb:
+	$(SUDO) dpkg -i $(INSTALLERDIR)/tsduck_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb $(INSTALLERDIR)/tsduck-dev_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb
 
 # Git hook files: TSDuck uses git hooks to automatically update the commit
 # number in tsVersion.h. The git hooks are automatically installed when
