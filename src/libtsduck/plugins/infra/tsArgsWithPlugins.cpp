@@ -78,19 +78,19 @@ ts::UString ts::ArgsWithPlugins::getHelpText(HelpFormat format, size_t line_widt
             if (!text.empty()) {
                 text += LINE_FEED;
             }
-            text.append(u"-I");
+            text.append(u"-I:string");
         }
         if (_max_plugins > 0) {
             if (!text.empty()) {
                 text += LINE_FEED;
             }
-            text.append(u"-P");
+            text.append(u"-P:string");
         }
         if (_max_outputs > 0) {
             if (!text.empty()) {
                 text += LINE_FEED;
             }
-            text.append(u"-O");
+            text.append(u"-O:string");
         }
     }
     return text;
