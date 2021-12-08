@@ -26,6 +26,7 @@
 # Text files that will always have LF line endings on checkout.
 *.html text eol=lf linguist-language=HTML
 *.sh text eol=lf linguist-language=Bash
+*.bash text eol=lf linguist-language=Bash
 *.control text eol=lf linguist-language=InstallScripts
 *.postinst text eol=lf linguist-language=InstallScripts
 *.spec text eol=lf linguist-language=InstallScripts
