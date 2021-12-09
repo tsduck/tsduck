@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2656
+VERSION 3.30-2662
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,6 +12,12 @@ VERSION 3.30-2656
     average bitrate, all over the capture, based on PCR's. Previously, the
     base was the current "tsp" bitrate, ie. a PCR-based evaluation from the
     last part of the stream only.
+
+[BUG] Bug fixes:
+
+  * Fixed bash completion incorrect behavior after plugin option (-I, -P, -O).
+  * Fixed spurious new lines on standard output in plugin "splicemonitor" with
+    options --display-commands and --json.
 
 -------------------------------------------------------------------------------
 

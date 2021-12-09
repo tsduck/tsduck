@@ -598,7 +598,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         si.adjustPTS(sit.pts_adjustment);
         processEvent(table.sourcePID(), si.event_id, si.lowestPTS(), si.canceled, si.immediate, si.splice_out);
     }
-    else if (_display_commands) {
+    else if (_display_commands && !_json_args.json && !_json_args.json_line) {
         // Not an event command to process, just display it without initial message.
         _display << std::endl;
     }
