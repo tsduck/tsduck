@@ -81,7 +81,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool loadURL(const UString& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = UNKNOWN_PLAYLIST, Report& report = CERR);
+            bool loadURL(const UString& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
 
             //!
             //! Load the playlist from a URL.
@@ -92,7 +92,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool loadURL(const URL& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = UNKNOWN_PLAYLIST, Report& report = CERR);
+            bool loadURL(const URL& url, bool strict = false, const WebRequestArgs args = WebRequestArgs(), PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
 
             //!
             //! Load the playlist from a text file.
@@ -102,7 +102,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool loadFile(const UString& filename, bool strict = false, PlayListType type = UNKNOWN_PLAYLIST, Report& report = CERR);
+            bool loadFile(const UString& filename, bool strict = false, PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
 
             //!
             //! Load the playlist from its text content.
@@ -112,7 +112,7 @@ namespace ts {
             //! @param [in,out] report Where to report errors.
             //! @return True on success, false on error.
             //!
-            bool loadText(const UString& text, bool strict = false, PlayListType type = UNKNOWN_PLAYLIST, Report& report = CERR);
+            bool loadText(const UString& text, bool strict = false, PlayListType type = PlayListType::UNKNOWN, Report& report = CERR);
 
             //!
             //! Reload a media playlist with updated content.
@@ -181,6 +181,46 @@ namespace ts {
             PlayListType type() const { return _type; }
 
             //!
+            //! Set the playlist type.
+            //! @param [in] type The playlist type.
+            //! @param [in,out] report Where to report errors.
+            //! @param [in] forced When true, unconditionally set the playlist type.
+            //! When false (the default), check that the playlist type does not change in an inconsistent way.
+            //! Allowed changes are UNKNOWN to anything and LIVE to VOD or EVENT. The latter case is a playlist
+            //! which is known to be a media playlist but for which no EXT-X-PLAYLIST-TYPE tag was found so far.
+            //! @return True on success, false on error.
+            //!
+            bool setType(PlayListType type, Report& report = CERR, bool forced = false);
+
+            //!
+            //! Set the playlist type as media playlist.
+            //! If the type is already known and already a media playlist, do nothing.
+            //! If the type is unknown, set it as LIVE which is a media playlist type without EXT-X-PLAYLIST-TYPE
+            //! tag and which can be later turned into a VOD or EVENT playlist.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool setTypeMedia(Report& report = CERR);
+
+            //!
+            //! Check if the playlist can be updated (and must be reloaded later).
+            //! @return True if the playlist can be updated (and must be reloaded later).
+            //!
+            bool isUpdatable() const { return (_type == PlayListType::EVENT || _type == PlayListType::LIVE) && !_endList; }
+
+            //!
+            //! Check if the playlist is a media playlist (contains references to media segments).
+            //! @return True if the playlist is a media playlist.
+            //!
+            bool isMedia() const { return _type == PlayListType::EVENT || _type == PlayListType::LIVE || _type == PlayListType::VOD; }
+
+            //!
+            //! Check if the playlist is a master playlist (contains references to media playlists).
+            //! @return True if the playlist is a master playlist.
+            //!
+            bool isMaster() const { return _type == PlayListType::MASTER; }
+
+            //!
             //! Get the playlist version (EXT-X-VERSION).
             //! @return The playlist version.
             //!
@@ -228,26 +268,6 @@ namespace ts {
             //! @return True on success, false on error.
             //!
             bool setEndList(bool end, Report& report = CERR);
-
-            //!
-            //! Check if the playlist can be updated (and must be reloaded later).
-            //! @return True if the playlist can be updated (and must be reloaded later).
-            //!
-            bool updatable() const;
-
-            //!
-            //! Get the media playlist type ("EVENT" or "VOD", in media playlist).
-            //! @return The media playlist type.
-            //!
-            UString playlistType() const { return _playlistType; }
-
-            //!
-            //! Set the media playlist type in a media playlist.
-            //! @param [in] mt The media playlist type, typically "EVENT" or "VOD".
-            //! @param [in,out] report Where to report errors.
-            //! @return True on success, false on error.
-            //!
-            bool setPlaylistType(const UString& mt, Report& report = CERR);
 
             //!
             //! Get the number of media segments (in media playlist).
@@ -386,7 +406,6 @@ namespace ts {
             Second             _targetDuration;  // Segment target duration (media playlist).
             size_t             _mediaSequence;   // Sequence number of first segment (media playlist).
             bool               _endList;         // End of list indicator (media playlist).
-            UString            _playlistType;    // Media playlist type ("EVENT" or "VOD", media playlist).
             Time               _utcDownload;     // UTC time of download.
             Time               _utcTermination;  // UTC time of termination (download + all segment durations).
             MediaSegmentQueue  _segments;        // List of media segments (media playlist).
@@ -406,24 +425,8 @@ namespace ts {
             bool getTag(const UString& line, Tag& tag, UString& params, bool strict, Report& report);
             bool isURI(const UString& line, bool strict, Report& report);
 
-            // Set the playlist type, return true on success, false on error.
-            bool setType(PlayListType type, Report& report);
-
             // Perform automatic save of the loaded playlist.
             bool autoSave(Report& report);
-
-            // Set a member with a given playlist type.
-            template <typename T>
-            bool setMember(PlayListType requiredType, T PlayList::* member, const T& value, Report& report)
-            {
-                if (setType(requiredType, report)) {
-                    this->*member = value;
-                    return true;
-                }
-                else {
-                    return false;
-                }
-            }
         };
     }
 }
