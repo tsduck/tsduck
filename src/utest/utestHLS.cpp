@@ -105,7 +105,7 @@ void HLSTest::testMasterPlaylist()
     ts::hls::PlayList pl;
     TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/master.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
-    TSUNIT_EQUAL(ts::hls::MASTER_PLAYLIST, pl.type());
+    TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
     TSUNIT_EQUAL(6, pl.version());
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/master.m3u8", pl.url());
     ts::hls::MediaElement media;
@@ -119,7 +119,7 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(0, pl.targetDuration());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(!pl.endList());
-    TSUNIT_EQUAL(u"", pl.playlistType());
+    TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
 
     TSUNIT_EQUAL(u"v5/prog_index.m3u8", pl.playList(0).relativeURI);
     TSUNIT_EQUAL(2227464, pl.playList(0).bandwidth.toInt());
@@ -168,7 +168,7 @@ void HLSTest::testMediaPlaylist()
     ts::hls::PlayList pl;
     TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", true));
     TSUNIT_ASSERT(pl.isValid());
-    TSUNIT_EQUAL(ts::hls::MEDIA_PLAYLIST, pl.type());
+    TSUNIT_EQUAL(ts::hls::PlayListType::VOD, pl.type());
     TSUNIT_EQUAL(3, pl.version());
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/prog_index.m3u8", pl.url());
     ts::hls::MediaElement media;
@@ -179,7 +179,6 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_EQUAL(6, pl.targetDuration());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(pl.endList());
-    TSUNIT_EQUAL(u"VOD", pl.playlistType());
 
     TSUNIT_EQUAL(u"fileSequence0.ts", pl.segment(0).relativeURI);
     TSUNIT_EQUAL(u"", pl.segment(0).title);
@@ -207,10 +206,10 @@ void HLSTest::testMediaPlaylist()
 void HLSTest::testBuildMasterPlaylist()
 {
     ts::hls::PlayList pl;
-    pl.reset(ts::hls::MASTER_PLAYLIST, u"/c/test/path/master/test.m3u8");
+    pl.reset(ts::hls::PlayListType::MASTER, u"/c/test/path/master/test.m3u8");
 
     TSUNIT_ASSERT(pl.isValid());
-    TSUNIT_EQUAL(ts::hls::MASTER_PLAYLIST, pl.type());
+    TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
     TSUNIT_EQUAL(3, pl.version());
 
     ts::hls::MediaPlayList mpl1;
@@ -258,10 +257,10 @@ void HLSTest::testBuildMasterPlaylist()
 void HLSTest::testBuildMediaPlaylist()
 {
     ts::hls::PlayList pl;
-    pl.reset(ts::hls::MEDIA_PLAYLIST, u"/c/test/path/master/test.m3u8");
+    pl.reset(ts::hls::PlayListType::LIVE, u"/c/test/path/master/test.m3u8");
 
     TSUNIT_ASSERT(pl.isValid());
-    TSUNIT_EQUAL(ts::hls::MEDIA_PLAYLIST, pl.type());
+    TSUNIT_EQUAL(ts::hls::PlayListType::LIVE, pl.type());
     TSUNIT_EQUAL(3, pl.version());
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(0, pl.playListCount());
@@ -271,7 +270,8 @@ void HLSTest::testBuildMediaPlaylist()
     TSUNIT_ASSERT(!pl.endList());
     TSUNIT_ASSERT(pl.setEndList(true));
     TSUNIT_ASSERT(pl.endList());
-    TSUNIT_ASSERT(pl.setPlaylistType(u"VOD"));
+    TSUNIT_ASSERT(pl.setType(ts::hls::PlayListType::VOD));
+    TSUNIT_EQUAL(ts::hls::PlayListType::VOD, pl.type());
 
     ts::hls::MediaSegment seg1;
     seg1.relativeURI = u"/c/test/path/segments/seg-0001.ts";

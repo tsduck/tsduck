@@ -40,7 +40,7 @@
 ts::hls::PlayList::PlayList() :
     _valid(false),
     _version(1),
-    _type(UNKNOWN_PLAYLIST),
+    _type(PlayListType::UNKNOWN),
     _original(),
     _fileBase(),
     _isURL(false),
@@ -48,7 +48,6 @@ ts::hls::PlayList::PlayList() :
     _targetDuration(0),
     _mediaSequence(0),
     _endList(false),
-    _playlistType(),
     _utcDownload(),
     _utcTermination(),
     _segments(),
@@ -67,7 +66,7 @@ void ts::hls::PlayList::clear()
 {
     _valid = false;
     _version = 1;
-    _type = UNKNOWN_PLAYLIST;
+    _type = PlayListType::UNKNOWN;
     _original.clear();
     _fileBase.clear();
     _isURL = false;
@@ -75,7 +74,6 @@ void ts::hls::PlayList::clear()
     _targetDuration = 0;
     _mediaSequence = 0;
     _endList = false;
-    _playlistType.clear();
     _utcDownload = Time::Epoch;
     _utcTermination = Time::Epoch;
     _segments.clear();
@@ -128,38 +126,88 @@ void ts::hls::PlayList::buildURL(MediaElement& media, const UString& uri) const
 
 
 //----------------------------------------------------------------------------
+// Set the playlist type.
+//----------------------------------------------------------------------------
+
+bool ts::hls::PlayList::setType(PlayListType type, Report& report, bool forced)
+{
+    if (forced ||                           // forced => no check
+        _type == type ||                    // same type was already known => no change
+        _type == PlayListType::UNKNOWN ||   // type was unknown => now we know it.
+        (_type == PlayListType::LIVE && (type == PlayListType::VOD || type == PlayListType::EVENT)))
+                                            // media playlist without EXT-X-PLAYLIST-TYPE tag ("live") => now we get a tag
+    {
+        _type = type;
+        return true;
+    }
+    else {
+        report.error(u"incompatible tags or URI in HLS playlist, cannot be both master, VoD and event playlist");
+        _valid = false;
+        return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Set the playlist type as media playlist.
+//----------------------------------------------------------------------------
+
+bool ts::hls::PlayList::setTypeMedia(Report& report)
+{
+    switch (_type) {
+        case PlayListType::UNKNOWN:
+            // Force the playlist to be a media playlist without EXT-X-PLAYLIST-TYPE tag so far.
+            _type = PlayListType::LIVE;
+            return true;
+        case PlayListType::VOD:
+        case PlayListType::EVENT:
+        case PlayListType::LIVE:
+            // Already a media playlist.
+            return true;
+        case PlayListType::MASTER:
+        default:
+            report.error(u"incompatible tags or URI in HLS playlist, cannot be both master and media playlist");
+            _valid = false;
+            return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Set various properties in the playlist.
 //----------------------------------------------------------------------------
 
 bool ts::hls::PlayList::setTargetDuration(ts::Second duration, Report& report)
 {
-    return setMember(MEDIA_PLAYLIST, &PlayList::_targetDuration, duration, report);
+    if (setTypeMedia(report)) {
+        _targetDuration = duration;
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool ts::hls::PlayList::setMediaSequence(size_t seq, Report& report)
 {
-    return setMember(MEDIA_PLAYLIST, &PlayList::_mediaSequence, seq, report);
+    if (setTypeMedia(report)) {
+        _mediaSequence = seq;
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 bool ts::hls::PlayList::setEndList(bool end, Report& report)
 {
-    return setMember(MEDIA_PLAYLIST, &PlayList::_endList, end, report);
-}
-
-bool ts::hls::PlayList::setPlaylistType(const ts::UString& mt, Report& report)
-{
-    return setMember(MEDIA_PLAYLIST, &PlayList::_playlistType, mt, report);
-}
-
-
-//----------------------------------------------------------------------------
-// Check if the playlist can be updated (and must be reloaded later).
-//----------------------------------------------------------------------------
-
-bool ts::hls::PlayList::updatable() const
-{
-    // See RFC 8216, sections 4.3.3.5 and 6.2.1.
-    return _type == MEDIA_PLAYLIST && _playlistType != u"VOD" && !_endList;
+    if (setTypeMedia(report)) {
+        _endList = end;
+        return true;
+    }
+    else {
+        return false;
+    }
 }
 
 
@@ -229,7 +277,7 @@ bool ts::hls::PlayList::addSegment(const ts::hls::MediaSegment& seg, ts::Report&
         report.error(u"empty media segment URI");
         return false;
     }
-    else if (setType(MEDIA_PLAYLIST, report)) {
+    else if (setTypeMedia(report)) {
         // Add the segment.
         _segments.push_back(seg);
         // Build a relative URI.
@@ -251,7 +299,7 @@ bool ts::hls::PlayList::addPlayList(const ts::hls::MediaPlayList& pl, ts::Report
         report.error(u"empty media playlist URI");
         return false;
     }
-    else if (setType(MASTER_PLAYLIST, report)) {
+    else if (setType(PlayListType::MASTER, report)) {
         // Add the media playlist.
         _playlists.push_back(pl);
         // Build a relative URI.
@@ -477,15 +525,15 @@ bool ts::hls::PlayList::loadText(const UString& text, bool strict, PlayListType 
 bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Report& report)
 {
     // Playlists which cannot be reloaded are ignored (no error).
-    if (_type != MEDIA_PLAYLIST || _endList || _original.empty()) {
+    if (!isUpdatable() || _original.empty()) {
         report.debug(u"non-reloadable playlist: %s", {_original});
         return true;
     }
 
     // Reload the new content in another object.
     PlayList plNew;
-    if ((_isURL && !plNew.loadURL(_original, strict, args, UNKNOWN_PLAYLIST, report)) ||
-        (!_isURL && !plNew.loadFile(_original, strict, UNKNOWN_PLAYLIST, report)))
+    if ((_isURL && !plNew.loadURL(_original, strict, args, PlayListType::UNKNOWN, report)) ||
+        (!_isURL && !plNew.loadFile(_original, strict, PlayListType::UNKNOWN, report)))
     {
         return false;
     }
@@ -499,10 +547,10 @@ bool ts::hls::PlayList::reload(bool strict, const WebRequestArgs args, ts::Repor
     }
 
     // Copy global characteristics.
+    _type = plNew._type;
     _version = plNew._version;
     _targetDuration = plNew._targetDuration;
     _endList = plNew._endList;
-    _playlistType = plNew._playlistType;
     _utcTermination = plNew._utcTermination;
     _loadedContent.swap(plNew._loadedContent);
 
@@ -584,36 +632,30 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
         // A line is one of blank, comment, tag, URI.
         if (isURI(line, strict, report)) {
             // URI line, add media segment or media playlist description, depending on current playlist type.
-            switch (_type) {
-                case MASTER_PLAYLIST:
-                    // Enqueue a new playlist description.
-                    buildURL(plNext, line);
-                    _playlists.push_back(plNext);
-                    if (!plNext.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
-                        report.debug(u"unexpected playlist file extension in reference URI: %s", {line});
-                    }
-                    // Reset description of next playlist.
-                    plNext = plGlobal;
-                    break;
-                case MEDIA_PLAYLIST:
-                    // Enqueue a new media segment.
-                    buildURL(segNext, line);
-                    _utcTermination += segNext.duration;
-                    _segments.push_back(segNext);
-                    if (!segNext.filePath.endWith(u".ts", CASE_INSENSITIVE)) {
-                        report.debug(u"unexpected segment file extension in reference URI: %s", {line});
-                    }
-                    // Reset description of next segment.
-                    segNext = segGlobal;
-                    break;
-                case UNKNOWN_PLAYLIST:
-                    report.debug(u"unknown URI: %s", {line});
-                    _valid = false;
-                    break;
-                default:
-                    // Should not get there.
-                    assert(false);
-                    break;
+            if (isMaster()) {
+                // Enqueue a new playlist description.
+                buildURL(plNext, line);
+                _playlists.push_back(plNext);
+                if (!plNext.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
+                    report.debug(u"unexpected playlist file extension in reference URI: %s", {line});
+                }
+                // Reset description of next playlist.
+                plNext = plGlobal;
+            }
+            else if (isMedia()) {
+                // Enqueue a new media segment.
+                buildURL(segNext, line);
+                _utcTermination += segNext.duration;
+                _segments.push_back(segNext);
+                if (!segNext.filePath.endWith(u".ts", CASE_INSENSITIVE)) {
+                    report.debug(u"unexpected segment file extension in reference URI: %s", {line});
+                }
+                // Reset description of next segment.
+                segNext = segGlobal;
+            }
+            else {
+                report.debug(u"unknown URI: %s", {line});
+                _valid = false;
             }
         }
         else if (getTag(line, tag, tagParams, strict, report)) {
@@ -683,7 +725,16 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     break;
                 }
                 case PLAYLIST_TYPE: {
-                    _playlistType = tagParams;
+                    if (tagParams.similar(u"VOD")) {
+                        setType(PlayListType::VOD, report);
+                    }
+                    else if (tagParams.similar(u"EVENT")) {
+                        setType(PlayListType::EVENT, report);
+                    }
+                    else {
+                        report.error(u"invalid playlist type '%s' in %s", {tagParams, line});
+                        _valid = false;
+                    }
                     break;
                 }
                 case STREAM_INF: {
@@ -757,11 +808,11 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
     const int flags = TagProperties(tag);
     if ((flags & (TAG_MASTER | TAG_MEDIA)) == TAG_MASTER) {
         // This is a master-only tag.
-        setType(MASTER_PLAYLIST, report);
+        setType(PlayListType::MASTER, report);
     }
     else if ((flags & (TAG_MASTER | TAG_MEDIA)) == TAG_MEDIA) {
         // This is a media-only tag.
-        setType(MEDIA_PLAYLIST, report);
+        setTypeMedia(report);
     }
 
     // The tag must be alone of followed by ':'.
@@ -802,37 +853,14 @@ bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
     // If the URI extension is known, set playlist type.
     if (line.endWith(u".m3u8", CASE_INSENSITIVE) || line.endWith(u".m3u", CASE_INSENSITIVE)) {
         // Reference to another playlist, this is a master playlist.
-        setType(MASTER_PLAYLIST, report);
+        setType(PlayListType::MASTER, report);
     }
     else if (line.endWith(u".ts", CASE_INSENSITIVE)) {
         // Reference to a TS file, this is a media playlist.
-        setType(MEDIA_PLAYLIST, report);
+        setTypeMedia(report);
     }
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Set the playlist type, return true on success, false on error.
-//----------------------------------------------------------------------------
-
-bool ts::hls::PlayList::setType(PlayListType type, Report& report)
-{
-    if (_type == UNKNOWN_PLAYLIST) {
-        // Type was unknown, now we know it.
-        _type = type;
-        return true;
-    }
-    else if (_type == type) {
-        // Type was already known, confirmed.
-        return true;
-    }
-    else {
-        report.error(u"incompatible tags or URI in HLS playlist, cannot be both master and media playlist");
-        _valid = false;
-        return false;
-    }
 }
 
 
@@ -879,20 +907,20 @@ ts::UString ts::hls::PlayList::toString() const
     if (!_valid) {
         str.append(u"invalid playlist");
     }
-    else if (_type == MEDIA_PLAYLIST) {
+    else if (isMedia()) {
         str.append(u"media playlist");
     }
-    else if (_type == MASTER_PLAYLIST) {
+    else if (isMaster()) {
         str.append(u"master playlist");
     }
     else {
         str.append(u"unknown playlist");
     }
-    str.append(updatable() ? u", updatable (live)" : u", static");
-    if (_type == MEDIA_PLAYLIST) {
+    str.append(isUpdatable() ? u", updatable (live)" : u", static");
+    if (isMedia()) {
         str += UString::Format(u", %d segments", {_segments.size()});
     }
-    else if (_type == MASTER_PLAYLIST) {
+    else if (_type == PlayListType::MASTER) {
         str += UString::Format(u", %d media playlists", {_playlists.size()});
     }
     if (_targetDuration > 0) {
@@ -947,93 +975,91 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
     UString text;
     text.format(u"#%s\n#%s:%d\n", {TagNames.name(EXTM3U), TagNames.name(VERSION), _version});
 
-    switch (_type) {
-        case MASTER_PLAYLIST: {
-            // Loop on all media playlists.
-            for (auto it = _playlists.begin(); it != _playlists.end(); ++it) {
-                if (!it->relativeURI.empty()) {
-                    // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
-                    // Take care about string parameters: some are documented as quoted-string and
-                    // some as enumerated-string. The former shall be quoted, the latter shall not.
-                    text.append(UString::Format(u"#%s:BANDWIDTH=%d", {TagNames.name(STREAM_INF), it->bandwidth.toInt()}));
-                    if (it->averageBandwidth > 0) {
-                        text.append(UString::Format(u",AVERAGE-BANDWIDTH=%d", {it->averageBandwidth.toInt()}));
-                    }
-                    if (it->frameRate > 0) {
-                        text.append(UString::Format(u",FRAME-RATE=%d.%03d", {it->frameRate / 1000, it->frameRate % 1000}));
-                    }
-                    if (it->width > 0 && it->height > 0) {
-                        text.append(UString::Format(u",RESOLUTION=%dx%d", {it->width, it->height}));
-                    }
-                    if (!it->codecs.empty()) {
-                        text.append(UString::Format(u",CODECS=\"%s\"", {it->codecs}));
-                    }
-                    if (!it->hdcp.empty()) {
-                        text.append(UString::Format(u",HDCP-LEVEL=%s", {it->hdcp}));
-                    }
-                    if (!it->videoRange.empty()) {
-                        text.append(UString::Format(u",VIDEO-RANGE=%s", {it->videoRange}));
-                    }
-                    if (!it->video.empty()) {
-                        text.append(UString::Format(u",VIDEO=\"%s\"", {it->video}));
-                    }
-                    if (!it->audio.empty()) {
-                        text.append(UString::Format(u",AUDIO=\"%s\"", {it->audio}));
-                    }
-                    if (!it->subtitles.empty()) {
-                        text.append(UString::Format(u",SUBTITLES=\"%s\"", {it->subtitles}));
-                    }
-                    if (!it->closedCaptions.empty()) {
-                        if (it->closedCaptions.similar(u"NONE")) {
-                            // enumerated-string
-                            text.append(u",CLOSED-CAPTIONS=NONE");
-                        }
-                        else {
-                            // quoted-string
-                            text.append(UString::Format(u",CLOSED-CAPTIONS=\"%s\"", {it->closedCaptions}));
-                        }
-                    }
-                    // Close the #EXT-X-STREAM-INF line.
-                    text.append(u'\n');
-                    // The URI line must come right after #EXT-X-STREAM-INF.
-                    text.append(UString::Format(u"%s\n", {it->relativeURI}));
+    if (isMaster()) {
+        // Loop on all media playlists.
+        for (auto it = _playlists.begin(); it != _playlists.end(); ++it) {
+            if (!it->relativeURI.empty()) {
+                // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
+                // Take care about string parameters: some are documented as quoted-string and
+                // some as enumerated-string. The former shall be quoted, the latter shall not.
+                text.append(UString::Format(u"#%s:BANDWIDTH=%d", {TagNames.name(STREAM_INF), it->bandwidth.toInt()}));
+                if (it->averageBandwidth > 0) {
+                    text.append(UString::Format(u",AVERAGE-BANDWIDTH=%d", {it->averageBandwidth.toInt()}));
                 }
-            }
-            break;
-        }
-        case MEDIA_PLAYLIST: {
-            // Global tags.
-            text.append(UString::Format(u"#%s:%d\n", {TagNames.name(TARGETDURATION), _targetDuration}));
-            text.append(UString::Format(u"#%s:%d\n", {TagNames.name(MEDIA_SEQUENCE), _mediaSequence}));
-            if (!_playlistType.empty()) {
-                text.append(UString::Format(u"#%s:%s\n", {TagNames.name(PLAYLIST_TYPE), _playlistType}));
-            }
-
-            // Loop on all media segments.
-            for (auto it = _segments.begin(); it != _segments.end(); ++it) {
-                if (!it->relativeURI.empty()) {
-                    text.append(UString::Format(u"#%s:%d.%03d,%s\n", {TagNames.name(EXTINF), it->duration / MilliSecPerSec, it->duration % MilliSecPerSec, it->title}));
-                    if (it->bitrate > 1024) {
-                        text.append(UString::Format(u"#%s:%d\n", {TagNames.name(BITRATE), (it->bitrate / 1024).toInt()}));
-                    }
-                    if (it->gap) {
-                        text.append(UString::Format(u"#%s\n", {TagNames.name(GAP)}));
-                    }
-                    text.append(UString::Format(u"%s\n", {it->relativeURI}));
+                if (it->frameRate > 0) {
+                    text.append(UString::Format(u",FRAME-RATE=%d.%03d", {it->frameRate / 1000, it->frameRate % 1000}));
                 }
+                if (it->width > 0 && it->height > 0) {
+                    text.append(UString::Format(u",RESOLUTION=%dx%d", {it->width, it->height}));
+                }
+                if (!it->codecs.empty()) {
+                    text.append(UString::Format(u",CODECS=\"%s\"", {it->codecs}));
+                }
+                if (!it->hdcp.empty()) {
+                    text.append(UString::Format(u",HDCP-LEVEL=%s", {it->hdcp}));
+                }
+                if (!it->videoRange.empty()) {
+                    text.append(UString::Format(u",VIDEO-RANGE=%s", {it->videoRange}));
+                }
+                if (!it->video.empty()) {
+                    text.append(UString::Format(u",VIDEO=\"%s\"", {it->video}));
+                }
+                if (!it->audio.empty()) {
+                    text.append(UString::Format(u",AUDIO=\"%s\"", {it->audio}));
+                }
+                if (!it->subtitles.empty()) {
+                    text.append(UString::Format(u",SUBTITLES=\"%s\"", {it->subtitles}));
+                }
+                if (!it->closedCaptions.empty()) {
+                    if (it->closedCaptions.similar(u"NONE")) {
+                        // enumerated-string
+                        text.append(u",CLOSED-CAPTIONS=NONE");
+                    }
+                    else {
+                        // quoted-string
+                        text.append(UString::Format(u",CLOSED-CAPTIONS=\"%s\"", {it->closedCaptions}));
+                    }
+                }
+                // Close the #EXT-X-STREAM-INF line.
+                text.append(u'\n');
+                // The URI line must come right after #EXT-X-STREAM-INF.
+                text.append(UString::Format(u"%s\n", {it->relativeURI}));
             }
+        }
+    }
+    else if (isMedia()) {
+        // Global tags.
+        text.append(UString::Format(u"#%s:%d\n", {TagNames.name(TARGETDURATION), _targetDuration}));
+        text.append(UString::Format(u"#%s:%d\n", {TagNames.name(MEDIA_SEQUENCE), _mediaSequence}));
+        if (_type == PlayListType::VOD) {
+            text.append(UString::Format(u"#%s:VOD\n", {TagNames.name(PLAYLIST_TYPE)}));
+        }
+        else if (_type == PlayListType::EVENT) {
+            text.append(UString::Format(u"#%s:EVENT\n", {TagNames.name(PLAYLIST_TYPE)}));
+        }
 
-            // Mark end of list when necessary.
-            if (_endList) {
-                text.append(UString::Format(u"#%s\n", {TagNames.name(ENDLIST)}));
+        // Loop on all media segments.
+        for (auto it = _segments.begin(); it != _segments.end(); ++it) {
+            if (!it->relativeURI.empty()) {
+                text.append(UString::Format(u"#%s:%d.%03d,%s\n", {TagNames.name(EXTINF), it->duration / MilliSecPerSec, it->duration % MilliSecPerSec, it->title}));
+                if (it->bitrate > 1024) {
+                    text.append(UString::Format(u"#%s:%d\n", {TagNames.name(BITRATE), (it->bitrate / 1024).toInt()}));
+                }
+                if (it->gap) {
+                    text.append(UString::Format(u"#%s\n", {TagNames.name(GAP)}));
+                }
+                text.append(UString::Format(u"%s\n", {it->relativeURI}));
             }
-            break;
         }
-        case UNKNOWN_PLAYLIST:
-        default: {
-            report.error(u"unknown HLS playlist type (master or media playlist)");
-            text.clear();
+
+        // Mark end of list when necessary.
+        if (_endList) {
+            text.append(UString::Format(u"#%s\n", {TagNames.name(ENDLIST)}));
         }
+    }
+    else {
+        report.error(u"unknown HLS playlist type (master or media playlist)");
+        text.clear();
     }
 
     return text;

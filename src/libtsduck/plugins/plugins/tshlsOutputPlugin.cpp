@@ -51,6 +51,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _segmentTemplate(),
     _playlistFile(),
     _intraClose(false),
+    _playlistType(hls::PlayListType::UNKNOWN),
     _liveDepth(0),
     _targetDuration(0),
     _maxExtraDuration(0),
@@ -88,6 +89,10 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"Specify the target duration in seconds of media segments. "
          u"The default is " TS_STRINGIFY(DEFAULT_OUT_DURATION) u" seconds per segment for VoD streams "
          u"and " TS_STRINGIFY(DEFAULT_OUT_LIVE_DURATION) u" seconds for live streams.");
+
+    option(u"event", 'e');
+    help(u"event",
+         u"Specify that the output is a event playlist. By default, the output stream is considered as VoD.");
 
     option(u"fixed-segment-size", 'f', POSITIVE);
     help(u"fixed-segment-size",
@@ -161,12 +166,26 @@ bool ts::hls::OutputPlugin::getOptions()
     getValue(_segmentTemplate, u"");
     getValue(_playlistFile, u"playlist");
     _intraClose = present(u"intra-close");
-    _liveDepth = intValue<size_t>(u"live");
-    _targetDuration = intValue<Second>(u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
-    _maxExtraDuration = intValue<Second>(u"max-extra-duration", DEFAULT_EXTRA_DURATION);
+    getIntValue(_liveDepth, u"live");
+    getIntValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
+    getIntValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
     _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
-    _initialMediaSeq = intValue<size_t>(u"start-media-sequence", 0);
+    getIntValue(_initialMediaSeq, u"start-media-sequence", 0);
     getIntValues(_closeLabels, u"label-close");
+
+    if (present(u"event")) {
+        _playlistType = hls::PlayListType::EVENT;
+        if (_liveDepth > 0) {
+            tsp->error(u"options --live and --event are incompatible");
+            return false;
+        }
+    }
+    else if (_liveDepth > 0) {
+        _playlistType = hls::PlayListType::LIVE;
+    }
+    else {
+        _playlistType = hls::PlayListType::VOD;
+    }
 
     if (_fixedSegmentSize > 0 && _closeLabels.any()) {
         tsp->error(u"options --fixed-segment-size and --label-close are incompatible");
@@ -211,9 +230,8 @@ bool ts::hls::OutputPlugin::start()
         _segmentFile.close(*tsp);
     }
     if (!_playlistFile.empty()) {
-        _playlist.reset(hls::MEDIA_PLAYLIST, _playlistFile);
+        _playlist.reset(_playlistType, _playlistFile);
         _playlist.setTargetDuration(_targetDuration, *tsp);
-        _playlist.setPlaylistType(_liveDepth == 0 ? u"VOD" : u"EVENT", *tsp);
         _playlist.setMediaSequence(_initialMediaSeq, *tsp);
     }
 
@@ -323,7 +341,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
         // With live playlists, remove obsolete segments from the playlist.
         while (_liveDepth > 0 && _playlist.segmentCount() > _liveDepth) {
-            _playlist.popFirstSegment(seg);
+            _playlist.popFirstSegment();
         }
 
         // Write the playlist file.

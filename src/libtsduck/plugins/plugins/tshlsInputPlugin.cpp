@@ -228,12 +228,12 @@ bool ts::hls::InputPlugin::start()
 {
     // Load the HLS playlist, can be a master playlist or a media playlist.
     _playlist.clear();
-    if (!_playlist.loadURL(_url.toString(), false, webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
+    if (!_playlist.loadURL(_url.toString(), false, webArgs, hls::PlayListType::UNKNOWN, *tsp)) {
         return false;
     }
 
     // In the case of a master play list, select one media playlist.
-    if (_playlist.type() == hls::MASTER_PLAYLIST) {
+    if (_playlist.type() == hls::PlayListType::MASTER) {
         tsp->verbose(u"downloaded %s", {_playlist});
 
         // Get a copy of the master playlist. The media playlist will be loaded in _playlist.
@@ -275,7 +275,7 @@ bool ts::hls::InputPlugin::start()
 
             // Download selected media playlist.
             _playlist.clear();
-            if (_playlist.loadURL(nextURL, false, webArgs, hls::UNKNOWN_PLAYLIST, *tsp)) {
+            if (_playlist.loadURL(nextURL, false, webArgs, hls::PlayListType::UNKNOWN, *tsp)) {
                 break; // media playlist loaded
             }
             else if (master.playListCount() == 1) {
@@ -290,7 +290,7 @@ bool ts::hls::InputPlugin::start()
     }
 
     // Now, we must have a media playlist.
-    if (_playlist.type() != hls::MEDIA_PLAYLIST) {
+    if (!_playlist.isMedia()) {
         tsp->error(u"invalid HLS playlist type, expected a media playlist");
         return false;
     }
@@ -353,7 +353,7 @@ bool ts::hls::InputPlugin::openURL(WebRequest& request)
         tsp->aborting();
 
     // If there is only one or zero remaining segment, try to reload the playlist.
-    if (!completed && _playlist.segmentCount() < 2 && _playlist.updatable()) {
+    if (!completed && _playlist.segmentCount() < 2 && _playlist.isUpdatable()) {
 
         // Reload the playlist, ignore errors, continue to play next segments.
         _playlist.reload(false, webArgs, *tsp);

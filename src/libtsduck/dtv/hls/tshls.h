@@ -43,10 +43,20 @@ namespace ts {
         //!
         //! Types of .M3U8 playlist.
         //!
-        enum PlayListType {
-            UNKNOWN_PLAYLIST,  //!< Type is unknown.
-            MASTER_PLAYLIST,   //!< Master playlist, contains references to media playlists.
-            MEDIA_PLAYLIST,    //!< Media playlist, contains references to media segments.
+        //! - Master playlist. It contains references to media playlists (typically same content with various bitrates).
+        //! - All other types of playlists are media playlists, they contain references to media segments.
+        //!   - VoD playlist. A static media playlist for a fully recorded content. The list of media segments cannot change.
+        //!   - Event playlist. A growing media playlist for a running event. It is possible to move backward in the event,
+        //!     up to the beginning. New media segments can be added at the end of the playlist. No segment can be removed.
+        //!   - Live playlist. A sliding media playlist for a live channel, without backward browsing. The initial segments
+        //!     are regularly removed. New segments are regularly added at the end of the list.
+        //!
+        enum class PlayListType {
+            UNKNOWN,  //!< Type is unknown.
+            MASTER,   //!< Master playlist, contains references to media playlists.
+            VOD,      //!< VoD media playlist, reference media segments, static, cannot change.
+            EVENT,    //!< Event media playlist, reference media segments, can grow.
+            LIVE,     //!< Live media playlist, reference media segments, sliding window.
         };
 
         //!
