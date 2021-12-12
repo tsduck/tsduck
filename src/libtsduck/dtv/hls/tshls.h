@@ -44,6 +44,7 @@ namespace ts {
         //! Types of .M3U8 playlist.
         //!
         //! - Master playlist. It contains references to media playlists (typically same content with various bitrates).
+        //!   Also called "multivariant playlist" in recent versions of the HLS standard.
         //! - All other types of playlists are media playlists, they contain references to media segments.
         //!   - VoD playlist. A static media playlist for a fully recorded content. The list of media segments cannot change.
         //!   - Event playlist. A growing media playlist for a running event. It is possible to move backward in the event,
@@ -63,16 +64,16 @@ namespace ts {
         //! Tags to be used in the .M3U8 playlists.
         //! @ingroup hls
         //! @see RFC 8216, chapter 4.
-        //! @see draft-pantos-hls-rfc8216bis-03
+        //! @see draft-pantos-hls-rfc8216bis-10
         //!
         enum Tag {
             //
-            // 4.3.1 Basic Tags
+            // 4.4.1 Basic Tags
             //
             EXTM3U,                  //!< \#EXTM3U - first line, all playlists.
             VERSION,                 //!< \#EXT-X-VERSION:n - global, version number.
             //
-            // 4.3.2 Media Segment Tags, apply to one or more media segments, media playlists only.
+            // 4.4.4 Media Segment Tags, apply to one or more media segments, media playlists only.
             //
             EXTINF,                  //!< \#EXTINF:duration,[title] - next media segment only, required.
             BYTERANGE,               //!< \#EXT-X-BYTERANGE:n[\@o] - next media segment only.
@@ -80,11 +81,18 @@ namespace ts {
             KEY,                     //!< \#EXT-X-KEY:attribute-list - all media segments until next KEY.
             MAP,                     //!< \#EXT-X-MAP:attribute-list - all media segments until next MAP.
             PROGRAM_DATE_TIME,       //!< \#EXT-X-PROGRAM-DATE-TIME:date-time-msec - next media segment only.
-            DATERANGE,               //!< \#EXT-X-DATERANGE:attribute-list
             GAP,                     //!< \#EXT-X-GAP
             BITRATE,                 //!< \#EXT-X-BITRATE:rate
+            PART,                    //!< \#EXT-X-PART:attribute-list
             //
-            // 4.3.3 Media Playlist Tags, global parameters of a Media Playlist.
+            // 4.4.5 Media Metadata Tags, apply to one or more media segments, media playlists only.
+            //
+            DATERANGE,               //!< \#EXT-X-DATERANGE:attribute-list
+            SKIP,                    //!< \#EXT-X-SKIP:attribute-list
+            PRELOAD_HINT,            //!< \#EXT-X-PRELOAD-HINT:attribute-list
+            RENDITION_REPORT,        //!< \#EXT-X-RENDITION-REPORT:attribute-list
+            //
+            // 4.4.3 Media Playlist Tags, global parameters of a Media Playlist.
             //
             TARGETDURATION,          //!< \#EXT-X-TARGETDURATION:s
             MEDIA_SEQUENCE,          //!< \#EXT-X-MEDIA-SEQUENCE:number
@@ -92,16 +100,19 @@ namespace ts {
             ENDLIST,                 //!< \#EXT-X-ENDLIST
             PLAYLIST_TYPE,           //!< \#EXT-X-PLAYLIST-TYPE:type (EVENT or VOD).
             I_FRAMES_ONLY,           //!< \#EXT-X-I-FRAMES-ONLY
+            PART_INF,                //!< \#EXT-X-PART-INF
+            SERVER_CONTROL,          //!< \#EXT-X-SERVER-CONTROL
             //
-            // 4.3.4 Master Playlist Tags
+            // 4.4.6 Master / Multivariant Playlist Tags
             //
             MEDIA,                   //!< \#EXT-X-MEDIA:attribute-list
             STREAM_INF,              //!< \#EXT-X-STREAM-INF:attribute-list - immediately followed by an URI line.
             I_FRAME_STREAM_INF,      //!< \#EXT-X-I-FRAME-STREAM-INF:attribute-list - global to playlist.
             SESSION_DATA,            //!< \#EXT-X-SESSION-DATA:attribute-list
             SESSION_KEY,             //!< \#EXT-X-SESSION-KEY:attribute-list
+            CONTENT_STEERING,        //!< \#EXT-X-CONTENT-STEERING:attribute-list
             //
-            // 4.3.5 Media or Master Playlist Tags
+            // 4.4.2 Media or Master Playlist Tags
             //
             INDEPENDENT_SEGMENTS,    //!< \#EXT-X-INDEPENDENT-SEGMENTS
             START,                   //!< \#EXT-X-START:attribute-list
