@@ -677,6 +677,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 }
                 case EXTINF: {
                     // #EXTINF:duration,[title]
+                    // Apply to next segment only.
                     const size_t comma = tagParams.find(u",");  // can be NPOS
                     if (!TagAttributes::ToMilliValue(segNext.duration, tagParams.substr(0, comma))) {
                         report.error(u"invalid segment duration in %s", {line});
@@ -692,7 +693,8 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     // #EXT-X-BITRATE:<rate>
                     BitRate kilobits = 0;
                     if (kilobits.fromString(tagParams)) {
-                        segNext.bitrate = 1024 * kilobits;
+                        // Apply to one or more segments.
+                        segGlobal.bitrate = segNext.bitrate = 1024 * kilobits;
                     }
                     else if (strict) {
                         report.error(u"invalid segment bitrate in %s", {line});
@@ -701,6 +703,8 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     break;
                 }
                 case GAP: {
+                    // #EXT-X-GAP
+                    // Apply to next segment only.
                     segNext.gap = true;
                     break;
                 }
@@ -738,6 +742,8 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     break;
                 }
                 case STREAM_INF: {
+                    // #EXT-X-STREAM-INF:<attribute-list>
+                    // Apply to next playlist only.
                     const TagAttributes attr(tagParams);
                     attr.getValue(plNext.bandwidth, u"BANDWIDTH");
                     attr.getValue(plNext.averageBandwidth, u"AVERAGE-BANDWIDTH");
@@ -759,14 +765,21 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                 case MAP:
                 case PROGRAM_DATE_TIME:
                 case DATERANGE:
+                case SKIP:
+                case PRELOAD_HINT:
+                case RENDITION_REPORT:
                 case DISCONTINUITY_SEQUENCE:
                 case I_FRAMES_ONLY:
+                case PART_INF:
+                case SERVER_CONTROL:
                 case I_FRAME_STREAM_INF:
                 case SESSION_DATA:
                 case SESSION_KEY:
+                case CONTENT_STEERING:
                 case INDEPENDENT_SEGMENTS:
                 case START:
                 case DEFINE:
+                case PART:
                     // Currently ignored tags.
                     break;
                 default:
@@ -850,12 +863,17 @@ bool ts::hls::PlayList::isURI(const UString& line, bool strict, Report& report)
         return false;
     }
 
+    // Build a full path of the URI and extract the path name (without trailing query or fragment).
+    MediaElement me;
+    buildURL(me, line);
+    const UString name(me.url.isValid() ? me.url.getPath() : me.filePath);
+
     // If the URI extension is known, set playlist type.
-    if (line.endWith(u".m3u8", CASE_INSENSITIVE) || line.endWith(u".m3u", CASE_INSENSITIVE)) {
+    if (name.endWith(u".m3u8", CASE_INSENSITIVE) || name.endWith(u".m3u", CASE_INSENSITIVE)) {
         // Reference to another playlist, this is a master playlist.
         setType(PlayListType::MASTER, report);
     }
-    else if (line.endWith(u".ts", CASE_INSENSITIVE)) {
+    else if (name.endWith(u".ts", CASE_INSENSITIVE)) {
         // Reference to a TS file, this is a media playlist.
         setTypeMedia(report);
     }
