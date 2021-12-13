@@ -34,6 +34,9 @@
 # All TSDuck commands (automatically updated by makefile).
 __ts_cmds=(tsanalyze tsbitrate tscharset tscmp tsdate tsdektec tsdump tsecmg tseit tsemmg tsfclean tsfixcc tsftrunc tsgenecm tshides tslsdvb tsp tspacketize tspcap tspcontrol tspsi tsresync tsscan tssmartcard tsstuff tsswitch tstabcomp tstabdump tstables tsterinfo tsversion tsxml)
 
+# A filter to remove CR on Windows.
+[[ $OSTYPE == cygwin || $OSTYPE == msys ]] && __ts_lines() { dos2unix; } || __ts_lines() { cat; }
+
 # Assign COMPREPLY with the expansion of files or directories.
 # Syntax: __ts_compgen_fd {-f|-d} current-value
 __ts_compgen_fd()
@@ -72,13 +75,13 @@ _tsduck()
     [[ -z $cmd ]] && return
 
     # All available options for this command.
-    local cmdopts=$($cmd --help=options 2>/dev/null | sed -e '/^@/d' -e '/:/!d' -e 's/:.*$//')
+    local cmdopts=$($cmd --help=options 2>/dev/null | __ts_lines | sed -e '/^@/d' -e '/:/!d' -e 's/:.*$//')
 
     # Check if previous option is a plugin introducer (ie. need a plugin name).
     if [[ $prevword == -I || $prevword == -P || $prevword == -O ]]; then
         if [[ $cmdopts == *$prevword* ]]; then
             # This type of plugin is supported by the command, get possible plugin names.
-            COMPREPLY=($(compgen -W "$($cmd --list-plugins=names$prevword 2>/dev/null)" -- "$curword"))
+            COMPREPLY=($(compgen -W "$($cmd --list-plugins=names$prevword 2>/dev/null | __ts_lines)" -- "$curword"))
             return
         else
             COMPREPLY=("{unknown-option$prevword}")
@@ -98,10 +101,10 @@ _tsduck()
     done
     if [[ -n $plopt && -n $plname ]]; then
         # We are in a plugin argument list.
-        if [[ $cmdopts == *$plopt* ]] && ($cmd --list-plugins=names$plopt | grep -q "^$plname\$"); then
+        if [[ $cmdopts == *$plopt* ]] && ($cmd --list-plugins=names$plopt | __ts_lines | grep -q "^$plname\$"); then
             # This plugin is supported by the command, use it as base command.
             cmd="$cmd $plopt $plname"
-            cmdopts=$($cmd --help=options 2>/dev/null | sed -e '/^@/d' -e '/:/!d' -e 's/:.*$//')
+            cmdopts=$($cmd --help=options 2>/dev/null | __ts_lines | sed -e '/^@/d' -e '/:/!d' -e 's/:.*$//')
         else
             COMPREPLY=("{unknown-plugin$plopt-$plname}")
             return
@@ -151,13 +154,13 @@ _tsduck()
     fi
 
     # Get syntax for that option.
-    local syntax=$($cmd --help=options 2>/dev/null | sed -e '/:/!d' -e "/^$opt/!d" -e 's/^[^:]*://')
+    local syntax=$($cmd --help=options 2>/dev/null | __ts_lines | sed -e '/:/!d' -e "/^$opt/!d" -e 's/^[^:]*://')
 
     # If there is no possible value for that option, this is a parameter.
     # If the value is optional but not inside "--option=value", there is no value, this is a parameter.
     if [[ $syntax == bool* || ( $syntax == opt:* && -z $aftereq ) ]]; then
         opt=@
-        syntax=$($cmd --help=options 2>/dev/null | sed -e '/^@:/!d' -e 's/^@://')
+        syntax=$($cmd --help=options 2>/dev/null | __ts_lines | sed -e '/^@:/!d' -e 's/^@://')
     fi
 
     syntax=${syntax/#opt:/}
