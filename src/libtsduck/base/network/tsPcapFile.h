@@ -47,8 +47,10 @@ namespace ts {
     //! This class reads a pcap or pcapng file and extracts IPv4 frames.
     //! All metadata and all other types of frames are ignored.
     //!
-    //! @see https://pcapng.github.io/pcapng/draft-gharris-opsawg-pcap.html (PCAP)
-    //! @see https://pcapng.github.io/pcapng/draft-tuexen-opsawg-pcapng.html (PCAP-ng)
+    //! @see https://tools.ietf.org/pdf/draft-gharris-opsawg-pcap-02.pdf (PCAP)
+    //! @see https://datatracker.ietf.org/doc/draft-gharris-opsawg-pcap/ (PCAP tracker)
+    //! @see https://tools.ietf.org/pdf/draft-tuexen-opsawg-pcapng-04.pdf (PCAP-ng)
+    //! @see https://datatracker.ietf.org/doc/draft-tuexen-opsawg-pcapng/ (PCAP-ng tracker)
     //!
     class TSDUCKDLL PcapFile
     {

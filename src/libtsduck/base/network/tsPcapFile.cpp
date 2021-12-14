@@ -422,11 +422,9 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
                     }
                     else if (units > MicroSecPerSec && units % MicroSecPerSec == 0) {
                         timestamp = tstamp / (units / MicroSecPerSec);
-
                     }
                     else if (units < MicroSecPerSec && MicroSecPerSec % units == 0) {
                         timestamp = tstamp * (MicroSecPerSec / units);
-
                     }
                     else if (mul_overflow(tstamp, MicroSecPerSec, tstamp * MicroSecPerSec)) {
                         timestamp = SubSecond((double(tstamp) * double(MicroSecPerSec)) / double(units));
