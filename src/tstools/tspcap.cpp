@@ -62,6 +62,7 @@ namespace {
         bool                  list_streams;
         bool                  print_intervals;
         bool                  dvb_simulcrypt;
+        bool                  extract_tcp;
         std::set<uint8_t>     protocols;
         ts::IPv4SocketAddress source_filter;
         ts::IPv4SocketAddress dest_filter;
@@ -79,6 +80,7 @@ Options::Options(int argc, char *argv[]) :
     list_streams(false),
     print_intervals(false),
     dvb_simulcrypt(false),
+    extract_tcp(false),
     protocols(),
     source_filter(),
     dest_filter(),
@@ -107,6 +109,11 @@ Options::Options(int argc, char *argv[]) :
     help(u"destination", u"[address][:port]",
          u"Filter IPv4 packets based on the specified destination socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
+
+    option(u"extract-tcp-stream", 'e');
+    help(u"extract-tcp-stream",
+         u"Extract the content of a TCP session as hexadecimal dump. "
+         u"The first TCP session matching the --source and --destination options is selected.");
 
     option(u"interval", 'i', POSITIVE);
     help(u"interval", u"micro-seconds",
@@ -143,6 +150,7 @@ Options::Options(int argc, char *argv[]) :
     list_streams = present(u"list-streams");
     print_intervals = present(u"interval");
     dvb_simulcrypt = present(u"dvb-simulcrypt");
+    extract_tcp = present(u"extract-tcp-stream");
 
     // Default is to print a summary of the file content.
     print_summary = !list_streams && !print_intervals;
@@ -170,7 +178,10 @@ Options::Options(int argc, char *argv[]) :
         dest_filter.resolve(dest_string, *this);
     }
 
-    // Final checking
+    // Final checking.
+    if (dvb_simulcrypt && extract_tcp) {
+        error(u"--dvb-simulcrypt and --extract-tcp-stream are mutually exclusive");
+    }
     exitOnError();
 }
 
@@ -704,6 +715,101 @@ bool TCPSimulCryptDump::dump(std::ostream& out)
 
 
 //----------------------------------------------------------------------------
+// Extract TCP session
+//----------------------------------------------------------------------------
+
+namespace {
+    class TCPSessionDump
+    {
+        TS_NOBUILD_NOCOPY(TCPSessionDump);
+    public:
+        // Constructor.
+        TCPSessionDump(Options&);
+
+        // Dump the session, return true on success, false on error.
+        bool dump(std::ostream&);
+
+    private:
+        Options&       _opt;
+        ts::PcapStream _file;
+
+        // Dump a message.
+        void dumpMessage(std::ostream&, const ts::ByteBlock&, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, ts::MicroSecond timestamp);
+    };
+}
+
+// Constructor.
+TCPSessionDump::TCPSessionDump(Options& opt) :
+    _opt(opt),
+    _file()
+{
+}
+
+// Dump a message.
+void TCPSessionDump::dumpMessage(std::ostream& out, const ts::ByteBlock& data, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, ts::MicroSecond timestamp)
+{
+    if (!data.empty()) {
+        if (timestamp > 0) {
+            out << (ts::Time::UnixEpoch + timestamp / ts::MicroSecPerMilliSec) << ", ";
+        }
+        out << src << " -> " << dst << ", " << data.size() << " bytes" << std::endl;
+        out << ts::UString::Dump(data, ts::UString::ASCII | ts::UString::HEXA | ts::UString::OFFSET | ts::UString::BPL, 4, 16);
+        out << std::endl;
+    }
+}
+
+// Dump the session, return true on success, false on error.
+bool TCPSessionDump::dump(std::ostream& out)
+{
+    // Open the pcap file.
+    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
+        return false;
+    }
+
+    // Set packet filters.
+    _file.setBidirectionalFilter(_opt.source_filter, _opt.dest_filter);
+
+    ts::ByteBlock data;
+    ts::MicroSecond data_timestamp = 0;
+    ts::IPv4SocketAddress data_source;
+    ts::IPv4SocketAddress data_dest;
+    ts::ByteBlock buf;
+    ts::IPv4SocketAddress buf_source;
+
+    // Read all TCP sessions matching the source and destination.
+    for (;;) {
+        // Read byte by byte, to make sure the alternance between client and server traffic is clearly identified.
+        buf.clear();
+        buf_source.clear();
+        size_t size = 1;
+        ts::MicroSecond timestamp = 0;
+        if (!_file.readTCP(buf_source, buf, size, timestamp, _opt)) {
+            break;
+        }
+        if (data_timestamp <= 0) {
+            data_timestamp = timestamp;
+        }
+
+        if (!buf_source.match(data_source)) {
+            // New direction, dump previous message.
+            dumpMessage(out, data, data_source, data_dest, data_timestamp);
+            data.clear();
+            data_timestamp = timestamp;
+        }
+
+        data_source = buf_source;
+        data_dest = _file.otherFilter(buf_source);
+        data.append(buf);
+    }
+
+    // Dump remaining data, if any.
+    dumpMessage(out, data, data_source, data_dest, data_timestamp);
+    _file.close();
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Program main code.
 //----------------------------------------------------------------------------
 
@@ -716,7 +822,12 @@ int MainCode(int argc, char *argv[])
     // Output device, may be paginated.
     std::ostream& out(opt.pager.output(opt));
 
-    if (!opt.dvb_simulcrypt) {
+    if (opt.extract_tcp) {
+        // TCP session dump.
+        TCPSessionDump tcp(opt);
+        status = tcp.dump(out);
+    }
+    else if (!opt.dvb_simulcrypt) {
         // Global file analysis by default.
         FileAnalysis dfa(opt);
         status = dfa.analyze(out);

@@ -77,6 +77,9 @@ bool ts::IPv4Packet::reset(const void* data, size_t size)
         return false; // not a valid IP packet.
     }
 
+    // Packet size in header.
+    size = std::min<size_t>(size, GetUInt16(ip + IPv4_LENGTH_OFFSET));
+
     // Validate and filter by protocol.
     switch (_proto_type = ip[IPv4_PROTOCOL_OFFSET]) {
         case IPv4_PROTO_TCP: {

@@ -67,6 +67,7 @@ namespace ts {
     //------------------------------------------------------------------------
 
     constexpr uint8_t IPv4_VERSION          =     4;   //!< Protocol version of IPv4 is ... 4 !
+    constexpr size_t  IPv4_LENGTH_OFFSET    =     2;   //!< Offset of the total packet length in an IPv4 header.
     constexpr size_t  IPv4_FRAGMENT_OFFSET  =     6;   //!< Offset of the flags and fragments in an IPv4 header.
     constexpr size_t  IPv4_PROTOCOL_OFFSET  =     9;   //!< Offset of the protocol identifier in an IPv4 header.
     constexpr size_t  IPv4_CHECKSUM_OFFSET  =    10;   //!< Offset of the checksum in an IPv4 header.
