@@ -143,6 +143,7 @@
 #include "tsCASSelectionArgs.h"
 #include "tsCAT.h"
 #include "tsCBC.h"
+#include "tsCDT.h"
 #include "tsCellFrequencyLinkDescriptor.h"
 #include "tsCellListDescriptor.h"
 #include "tsCerrReport.h"
