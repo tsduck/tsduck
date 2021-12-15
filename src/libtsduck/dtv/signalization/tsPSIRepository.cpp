@@ -123,7 +123,7 @@ FUNCTION ts::PSIRepository::getTableFunction(TID tid, Standards standards, PID p
 
     // Look for an exact match.
     for (auto it = _tables.lower_bound(tid); it != _tables.end() && it->first == tid; ++it) {
-        // Ignore entris for which the searched function is not present.
+        // Ignore entries for which the searched function is not present.
         if (it->second.*member != nullptr) {
 
             // If the table in a standard PID, this is an exact match.

@@ -40,53 +40,58 @@ ts::UString ts::names::TID(const DuckContext& duck, uint8_t tid, uint16_t cas, N
     // Where to search table ids.
     const NamesFile* const repo = File();
     const UString section(u"TableId");
+    const NamesFile::Value casValue = NamesFile::Value(CASFamilyOf(cas)) << 8;
+    const NamesFile::Value tidValue = NamesFile::Value(tid);
 
-    // Check without standard, then with all known standards in TSDuck context.
-    // In all cases, use version with CAS first, then without CAS.
-    // Return the first name which is found.
-    // If no name is found in the list of supported standards but some with
-    // other standards, use the first one that was found.
-
-    const NamesFile::Value casMask = NamesFile::Value(CASFamilyOf(cas)) << 8;
-    NamesFile::Value finalValue = NamesFile::Value(tid);
-
-    if (repo->nameExists(section, finalValue | casMask)) {
+    if (repo->nameExists(section, tidValue | casValue)) {
         // Found without standard, with CAS.
-        finalValue |= casMask;
+        return repo->nameFromSection(section, tidValue | casValue, flags, 8);
     }
-    else if (repo->nameExists(section, finalValue)) {
-        // Found without standard, without CAS. Nothing to do. Keep this value.
+    else if (repo->nameExists(section, tidValue)) {
+        // Found without standard, without CAS. Keep this value.
+        return repo->nameFromSection(section, tidValue, flags, 8);
     }
     else {
-        // Loop on all possible standards.
-        bool foundOnce = false;
+        // Loop on all possible standards. Build a list of possible names.
+        UStringList allNames;
+        bool foundWithSupportedStandard = false;
         for (Standards mask = Standards(1); mask != Standards::NONE; mask <<= 1) {
-            // TID value with mask for this standard:
-            const NamesFile::Value value = NamesFile::Value(tid) | (NamesFile::Value(mask) << 16);
             // Check if this standard is currently in TSDuck context.
             const bool supportedStandard = bool(duck.standards() & mask);
+            const NamesFile::Value stdValue = NamesFile::Value(mask) << 16;
             // Lookup name only if supported standard or no previous standard was found.
-            if (!foundOnce || supportedStandard) {
-                bool foundHere = repo->nameExists(section, value | casMask);
-                if (foundHere) {
-                    // Found with that standard, with CAS.
-                    finalValue = value | casMask;
-                    foundOnce = true;
+            if (!foundWithSupportedStandard || supportedStandard) {
+                UString name;
+                if (repo->nameExists(section, tidValue | stdValue | casValue)) {
+                    // Found with that standard and CAS.
+                    name = repo->nameFromSection(section, tidValue | stdValue | casValue, flags, 8);
                 }
-                else if (repo->nameExists(section, value)) {
+                else if (repo->nameExists(section, tidValue | stdValue)) {
                     // Found with that standard, without CAS.
-                    finalValue = value;
-                    foundHere = foundOnce = true;
+                    name = repo->nameFromSection(section, tidValue | stdValue, flags, 8);
                 }
-                if (foundHere && supportedStandard) {
-                    break;
+                if (!name.empty()) {
+                    // A name was found.
+                    if (!foundWithSupportedStandard && supportedStandard) {
+                        // At least one supported standard is found.
+                        // Clear previous results without supported standard.
+                        // Will no longer try without supported standard.
+                        foundWithSupportedStandard = true;
+                        allNames.clear();
+                    }
+                    allNames.push_back(name);
                 }
             }
         }
+        if (allNames.empty()) {
+            // No name found, use default formatting with the value only.
+            return repo->nameFromSection(section, tidValue, flags, 8);
+        }
+        else {
+            // One or more possibility. Return them all since we cannot choose.
+            return UString::Join(allNames, u" or ");
+        }
     }
-
-    // Return the name for best matched value.
-    return repo->nameFromSection(section, finalValue, flags, 8);
 }
 
 
