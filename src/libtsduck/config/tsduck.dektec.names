@@ -213,5 +213,7 @@
 210 = External TS rate clock with ratio
 211 = Internal TS rate clock reference
 212 = Lock TS rate to input port
-213 = H.264 video encoder
-214 = MPEG2 video encoder
+213 = Internal clock reference
+214 = Steady clock reference
+215 = H.264 video encoder
+216 = MPEG2 video encoder
