@@ -17,6 +17,7 @@ the standard which specifies them.
 | BIT | ts::BIT | ARIB STD-B10, Part 2, 5.2.13
 | cable_emergency_alert_table | ts::CableEmergencyAlertTable | ANSI/SCTE 18, 5
 | CAT | ts::CAT | ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.4.4.6
+| CDT | ts::CDT | ARIB STD-B21, 12.2.2.2
 | CIT | ts::CIT | ETSI TS 102 323, 12.2
 | CVCT | ts::CVCT | ATSC A/65, 6.3.2
 | DCCSCT | ts::DCCSCT | ATSC A/65, 6.8
