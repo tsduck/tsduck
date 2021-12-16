@@ -68,18 +68,21 @@ namespace ts {
         Guts* _guts;
 
         // Output start error: log error, detach channel & device, return false.
-        bool startError(const UString&, unsigned int); // Dtapi::DTAPI_RESULT
+        bool startError(const UString& = UString(), unsigned int = 0); // Dtapi::DTAPI_RESULT
 
         // Update, when possible, the _opt_bitrate and _cur_bitrate fields based on a
         // user-specified symbol rate (and other modulation parameters). Return false
         // and close channel on error. Return true if the bitrate was successfully computed.
-        bool setBitrate(int symbol_rate, int dt_modulation, int param0, int param1, int param2);
+        bool computeBitrate(int symbol_rate, int dt_modulation, int param0, int param1, int param2);
 
         // Compute and display symbol rate (modulators only) if not explicitly specified by the user.
         void displaySymbolRate(const BitRate& ts_bitrate, int dt_modulation, int param0, int param1, int param2);
 
         // Set modulation parameters (modulators only). Return true on success, false on error.
         bool setModulation(int& modulation_type);
+
+        // Set bitrate on the output channel.
+        bool setBitrate(const BitRate& bitrate);
 
         // Set preload FIFO size based on a delay, if requested, in ms. Returns true if preload FIFO size is altered,
         // false otherwise.
