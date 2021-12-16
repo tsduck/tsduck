@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2667
+VERSION 3.30-2671
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -15,6 +15,7 @@ VERSION 3.30-2667
   * New options in exiting commands and plugins:
     - Option --event in output plugin "hls".
     - Option --extract-tcp-stream in "tspcap".
+    - Option --roll-off in "dektec" output plugin.
 
 [BUG] Bug fixes:
 

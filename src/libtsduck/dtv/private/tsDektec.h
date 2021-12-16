@@ -229,6 +229,15 @@
     #define DTAPI_MOD_QAMB_I64_J2        0
     #define DTAPI_MOD_QAMB_I8_J16        0
     #define DTAPI_MOD_QAMB_IL_AUTO       0
+    #define DTAPI_MOD_ROLLOFF_AUTO       0
+    #define DTAPI_MOD_ROLLOFF_NONE       0
+    #define DTAPI_MOD_ROLLOFF_3          0
+    #define DTAPI_MOD_ROLLOFF_5          0
+    #define DTAPI_MOD_ROLLOFF_10         0
+    #define DTAPI_MOD_ROLLOFF_15         0
+    #define DTAPI_MOD_ROLLOFF_20         0
+    #define DTAPI_MOD_ROLLOFF_25         0
+    #define DTAPI_MOD_ROLLOFF_35         0
     #define DTAPI_IOCONFIG_12GSDI        0
     #define DTAPI_IOCONFIG_3GSDI         0
     #define DTAPI_IOCONFIG_6GSDI         0
@@ -327,7 +336,18 @@
                   typename std::enable_if<std::is_base_of<FixedPoint<INT,PREC>, FIXED>::value, int>::type = 0>
         Dtapi::DtFractionInt ToDektecFractionInt(FIXED value)
         {
-            return Dtapi::DtFractionInt(int(value.raw()), int(FIXED::FACTOR));
+            // DtFractionInt uses "int" members. We may use larger types in our fraction type.
+            if (bound_check<int>(value.raw())) {
+                return Dtapi::DtFractionInt(int(value.raw()), int(FIXED::FACTOR));
+            }
+            else if (FIXED::PRECISION > 1 && bound_check<int>(value.raw() / 10)) {
+                // Too large, divide precision by 10.
+                return Dtapi::DtFractionInt(int(value.raw() / 10), int(FIXED::FACTOR / 10));
+            }
+            else {
+                // Too large, drop precision.
+                return Dtapi::DtFractionInt(int(value.toInt()), 1);
+            }
         }
 
         //!
@@ -363,9 +383,13 @@
             if (bound_check<int>(value.numerator()) && bound_check<int>(value.denominator())) {
                 return Dtapi::DtFractionInt(int(value.numerator()), int(value.denominator()));
             }
-            else {
-                // Use 1/100 precision (arbitrary).
+            else if (bound_check<int>(int64_t(100.0 * value.toDouble()))) {
+                // 1/100 precision fits.
                 return Dtapi::DtFractionInt(int(100.0 * value.toDouble()), 100);
+            }
+            else {
+                // Too large, drop precision.
+                return Dtapi::DtFractionInt(int(value.toInt()), 1);
             }
         }
 
@@ -428,7 +452,15 @@
         inline Dtapi::DtFractionInt ToDektecFractionInt(const FPOINT& value)
         {
             constexpr int factor = static_power10<int,PREC>::value;
-            return Dtapi::DtFractionInt(int(double(factor) * value.toDouble()), factor);
+            const uint64_t val = uint64_t(double(factor) * value.toDouble());
+            if (bound_check<int>(val)) {
+                // Display precision fits.
+                return Dtapi::DtFractionInt(int(val), factor);
+            }
+            else {
+                // Too large, drop precision.
+                return Dtapi::DtFractionInt(int(value.toInt()), 1);
+            }
         }
 
         //!
