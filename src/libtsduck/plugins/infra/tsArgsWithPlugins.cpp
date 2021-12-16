@@ -287,15 +287,15 @@ size_t ts::ArgsWithPlugins::nextProcOpt(const UStringVector& args, size_t index,
 {
     while (index < args.size()) {
         const UString& arg(args[index]);
-        if (arg == u"-I" || arg == u"--input") {
+        if (arg == u"-I") {
             type = PluginType::INPUT;
             return index;
         }
-        if (arg == u"-O" || arg == u"--output") {
+        if (arg == u"-O") {
             type = PluginType::OUTPUT;
             return index;
         }
-        if (arg == u"-P" || arg == u"--processor") {
+        if (arg == u"-P") {
             type = PluginType::PROCESSOR;
             return index;
         }
