@@ -60,7 +60,7 @@ __ts_compgen_fd()
             COMPREPLY[$i]="$name "
         fi
     done
-    compopt -o nospace
+    compopt -o nospace 2>/dev/null
 }
 
 # Completion function for all TSDuck commands.
@@ -71,8 +71,14 @@ _tsduck()
     local prevword="$3"
     local prevchar="${COMP_LINE:$(($COMP_POINT-1)):1}"
 
-    # Filter sprurious invocations.
+    # Filter spurious invocations.
     [[ -z $cmd ]] && return
+
+    # If the current word is a variable reference, ignore command syntax, just expand variable names.
+    if [[ $curword == \$* ]]; then
+        COMPREPLY=($(compgen -W "$(env | sed -e '/^[A-Za-z0-9_]*=/!d' -e 's/=.*$//' -e 's/^/\\\$/')" -- "$curword"))
+        return
+    fi
 
     # All available options for this command.
     local cmdopts=$($cmd --help=options 2>/dev/null | __ts_lines | sed -e '/^@/d' -e '/:/!d' -e 's/:.*$//')
