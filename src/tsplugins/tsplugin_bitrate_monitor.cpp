@@ -69,7 +69,9 @@ namespace ts {
         BitRate     _min_bitrate;          // Minimum allowed bitrate.
         BitRate     _max_bitrate;          // Maximum allowed bitrate.
         Second      _periodic_bitrate;     // Report bitrate at regular intervals, even if in range.
-        Second      _periodic_countdown;   // Countdown to report bitrate.
+        Second      _bitrate_countdown;    // Countdown to report bitrate.
+        Second      _periodic_command;     // Run alarm command at regular intervals, even if in range.
+        Second      _command_countdown;    // Countdown to run alarm command.
         RangeStatus _last_bitrate_status;  // Status of the last bitrate, regarding allowed range.
         UString     _alarm_command;        // Alarm command name.
         UString     _alarm_prefix;         // Prefix for alarm messages.
@@ -116,7 +118,9 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     _min_bitrate(0),
     _max_bitrate(0),
     _periodic_bitrate(0),
-    _periodic_countdown(0),
+    _bitrate_countdown(0),
+    _periodic_command(0),
+    _command_countdown(0),
     _last_bitrate_status(LOWER),
     _alarm_command(),
     _alarm_prefix(),
@@ -170,8 +174,13 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
 
     option(u"periodic-bitrate", 'p', POSITIVE);
     help(u"periodic-bitrate",
-         u"Always report bitrate at the specific interval in seconds, even if the "
+         u"Always report bitrate at the specific intervals in seconds, even if the "
          u"bitrate is in range.");
+
+    option(u"periodic-command", 0, POSITIVE);
+    help(u"periodic-command",
+         u"Run the --alarm-command at the specific intervals in seconds, even if the bitrate is in range. "
+         u"With this option, the alarm command is run on state change and at periodic intervals.");
 
     option(u"set-label-below", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
     help(u"set-label-below", u"label1[-label2]",
@@ -241,6 +250,7 @@ bool ts::BitrateMonitorPlugin::getOptions()
     getValue(_min_bitrate, u"min", DEFAULT_BITRATE_MIN);
     getValue(_max_bitrate, u"max", DEFAULT_BITRATE_MAX);
     getIntValue(_periodic_bitrate, u"periodic-bitrate", 0);
+    getIntValue(_periodic_command, u"periodic-command", 0);
     getIntValues(_labels_below, u"set-label-below");
     getIntValues(_labels_normal, u"set-label-normal");
     getIntValues(_labels_above, u"set-label-above");
@@ -251,6 +261,10 @@ bool ts::BitrateMonitorPlugin::getOptions()
     if (_min_bitrate > _max_bitrate) {
         tsp->error(u"bad parameters, bitrate min (%'d) > max (%'d), exiting", {_min_bitrate, _max_bitrate});
         ok = false;
+    }
+    if (_periodic_command > 0 && _alarm_command.empty()) {
+        tsp->warning(u"no --alarm-command set, --periodic-command ignored");
+        _periodic_command = 0;
     }
 
     // Prefix for alarm messages.
@@ -287,7 +301,8 @@ bool ts::BitrateMonitorPlugin::start()
     }
 
     _labels_next.reset();
-    _periodic_countdown = _periodic_bitrate;
+    _bitrate_countdown = _periodic_bitrate;
+    _command_countdown = _periodic_command;
     _last_bitrate_status = IN_RANGE;
     _last_second = ::time(nullptr);
     _startup = true;
@@ -307,19 +322,11 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 {
     // Bitrate is computed with the following formula :
     // (Sum of packets received during the last time window) * (packet size) / (time window)
-
     PacketCounter total_pkt_count = 0;
     for (size_t i = 0; i < _pkt_count.size(); i++) {
         total_pkt_count += _pkt_count[i];
     }
-
-    const BitRate bitrate = BitRate(total_pkt_count * PKT_SIZE_BITS) / _pkt_count.size();
-
-    // Periodic bitrate display.
-    if (_periodic_bitrate > 0 && --_periodic_countdown <= 0) {
-        _periodic_countdown = _periodic_bitrate;
-        tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate});
-    }
+    const BitRate bitrate((BitRate(total_pkt_count) * PKT_SIZE_BITS) / _pkt_count.size());
 
     // Check the bitrate value, regarding the allowed range.
     RangeStatus new_bitrate_status;
@@ -337,29 +344,48 @@ void ts::BitrateMonitorPlugin::computeBitrate()
         alarm_status = u"normal";
     }
 
-    // Report an error, if the bitrate status has changed.
-    if (new_bitrate_status != _last_bitrate_status) {
-        ts::UString alarm_message;
-        alarm_message.format(u"%s bitrate (%'d bits/s) ", {_alarm_prefix, bitrate});
-        switch (new_bitrate_status) {
-            case LOWER:
-                alarm_message += UString::Format(u"is lower than allowed minimum (%'d bits/s)", {_min_bitrate});
-                _labels_next |= _labels_go_below;
-                break;
-            case IN_RANGE:
-                alarm_message += UString::Format(u"is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
-                _labels_next |= _labels_go_normal;
-                break;
-            case GREATER:
-                alarm_message += UString::Format(u"is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
-                _labels_next |= _labels_go_above;
-                break;
-            default:
-                assert(false); // should not get there
-        }
+    // Periodic bitrate display.
+    if (_periodic_bitrate > 0 && --_bitrate_countdown <= 0) {
+        _bitrate_countdown = _periodic_bitrate;
+        tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate});
+    }
 
-        // Report alarm message as a tsp warning.
-        tsp->warning(alarm_message);
+    // Periodic command launch.
+    bool run_command = false;
+    if (_periodic_command > 0 && --_command_countdown <= 0) {
+        _command_countdown = _periodic_command;
+        run_command = true;
+    }
+
+    // Check if the bitrate status has changed.
+    const bool state_change = new_bitrate_status != _last_bitrate_status;
+
+    if (state_change || run_command) {
+
+        // Format an alarm message.
+        UString alarm_message;
+        alarm_message.format(u"%s bitrate (%'d bits/s)", {_alarm_prefix, bitrate});
+        if (state_change) {
+            switch (new_bitrate_status) {
+                case LOWER:
+                    alarm_message.format(u" is lower than allowed minimum (%'d bits/s)", {_min_bitrate});
+                    _labels_next |= _labels_go_below;
+                    break;
+                case IN_RANGE:
+                    alarm_message.format(u" is back in allowed range (%'d-%'d bits/s)", {_min_bitrate, _max_bitrate});
+                    _labels_next |= _labels_go_normal;
+                    break;
+                case GREATER:
+                    alarm_message.format(u" is greater than allowed maximum (%'d bits/s)", {_max_bitrate});
+                    _labels_next |= _labels_go_above;
+                    break;
+                default:
+                    assert(false); // should not get there
+            }
+
+            // Report alarm message as a tsp warning in case of state change.
+            tsp->warning(alarm_message);
+        }
 
         // Call alarm script if defined.
         // The command is run asynchronously, do not wait for completion.
