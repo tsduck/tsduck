@@ -37,6 +37,10 @@
   Invoke Microsoft Word, load the Word version of the user's guide and
   save a PDF version.
 
+ .PARAMETER Date
+
+  Specify the reference date for the documentation (current day by default).
+
  .PARAMETER NoPause
 
   Do not wait for the user to press <enter> at end of execution. By default,
@@ -44,7 +48,15 @@
   when the script was run from Windows Explorer.
 #>
 [CmdletBinding()]
-param([switch]$NoPause = $false)
+param([string]$Date = "", [switch]$NoPause = $false)
+
+# Reference date.
+if ($Date -ne "") {
+    $RefDate = (Get-Date -Date $Date)
+}
+else {
+    $RefDate = (Get-Date)
+}
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
@@ -73,8 +85,8 @@ $PropCopyright = "DateOfCopyright"
 # Get current month and year (force English language)
 $en = New-Object System.Globalization.CultureInfo("en-US")
 $InitialCopyrightYear = "2005"
-$CurrentYear = (Get-Date -Format "yyyy")
-$CurrentMonth = $en.TextInfo.ToTitleCase($en.DateTimeFormat.MonthNames[(Get-Date).Month - 1])
+$CurrentYear = [String]($RefDate.Year)
+$CurrentMonth = $en.TextInfo.ToTitleCase($en.DateTimeFormat.MonthNames[$RefDate.Month - 1])
 
 # Load types from Microsoft Word automation.
 Add-Type -AssemblyName Microsoft.Office.Interop.Word
@@ -111,6 +123,7 @@ $doc = $word.Documents.Open($DocIn)
 
 # Update the document properties.
 Write-Output "New document version is $Version"
+Write-Output "Reference date is $CurrentMonth $CurrentYear"
 Write-Output "Updating document fields"
 Set-CustomDocumentProperties $doc $PropVersion $Version
 Set-CustomDocumentProperties $doc $PropDate "${CurrentMonth} ${CurrentYear}"
