@@ -189,6 +189,10 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"some PCR's at the beginning of the input stream to evaluate the "
          u"original bitrate of the transport stream.");
 
+    option(u"carrier-only");
+    help(u"carrier-only",
+         u"Modulators: output the carrier only, without modulated transport stream.");
+
     option(u"cell-id", 0,  UINT16);
     help(u"cell-id",
          u"DVB-T and DVB-T2 modulators: indicate the cell identifier to set in the "
@@ -1675,15 +1679,14 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     }
 
     // Set carrier frequency.
-    // Make sure to use "__int64" and not "int64_t" in SetRfControl to avoid
-    // ambiguous overloading.
+    // Make sure to use "__int64" and not "int64_t" in SetRfControl to avoid ambiguous overloading.
     tsp->verbose(u"setting output carrier frequency to %'d Hz", {frequency});
     status = _guts->chan.SetRfControl(__int64(frequency));
     if (status != DTAPI_OK) {
         return startError(u"set modulator frequency error", status);
     }
-    const int rf_mode = DTAPI_UPCONV_NORMAL | (present(u"inversion") ? DTAPI_UPCONV_SPECINV : 0);
-    tsp->debug(u"setting RfMode to %d", {rf_mode});
+    const int rf_mode = (present(u"carrier-only") ? DTAPI_UPCONV_CW : DTAPI_UPCONV_NORMAL) | (present(u"inversion") ? DTAPI_UPCONV_SPECINV : 0);
+    tsp->debug(u"SetRfMode(%d)", {rf_mode});
     status = _guts->chan.SetRfMode(rf_mode);
     if (status != DTAPI_OK) {
         return startError(u"set modulator RF mode", status);
@@ -1707,7 +1710,7 @@ bool ts::DektecOutputPlugin::stop()
 
         // Mute output signal for modulators which support this
         if (_guts->mute_on_stop) {
-            tsp->debug(u"setting RF mode to %d", {DTAPI_UPCONV_MUTE});
+            tsp->debug(u"SetRfMode(%d)", {DTAPI_UPCONV_MUTE});
             Dtapi::DTAPI_RESULT status = _guts->chan.SetRfMode(DTAPI_UPCONV_MUTE);
             if (status != DTAPI_OK) {
                 tsp->error(u"error muting modulator output: " + DektecStrError(status));
