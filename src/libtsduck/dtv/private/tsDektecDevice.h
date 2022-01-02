@@ -33,11 +33,11 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
+#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
+
 #include "tsDektec.h"
 #include "tsCerrReport.h"
 #include "tsEnumeration.h"
-
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
 
 namespace ts {
 

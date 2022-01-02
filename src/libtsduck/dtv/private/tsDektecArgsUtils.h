@@ -39,6 +39,8 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
+#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
+
 #include "tsDektec.h"
 #include "tsArgs.h"
 
@@ -56,7 +58,6 @@ namespace ts {
     //!
     void DefineDektecIPArgs(Args& args, bool receive);
 
-#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
     //!
     //! Get command line option for Dektec --io-standard option.
     //! Args error indicator is set in case of incorrect arguments.
@@ -85,5 +86,6 @@ namespace ts {
     //! @return True on success, false in case of invalid parameters.
     //!
     bool CheckDektecIPArgs(bool receive, const Dtapi::DtIpPars2& dtpars, Report& report);
-#endif
 }
+
+#endif // TS_NO_DTAPI

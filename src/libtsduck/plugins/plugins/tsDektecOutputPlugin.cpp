@@ -27,6 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_DTAPI)
+
 #include "tsDektecOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsObjectRepository.h"
@@ -41,28 +43,15 @@
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 
-#if !defined(TS_NO_DTAPI)
 TS_REGISTER_OUTPUT_PLUGIN(u"dektec", ts::DektecOutputPlugin);
-#endif
 
 #define DEFAULT_PRELOAD_FIFO_PERCENTAGE 80
-
-#if !defined(TS_NO_DTAPI)
 #define DEFAULT_MAINTAIN_PRELOAD_THRESHOLD_SIZE 20116 // a little over 20k in packets, byte size for exactly 107 packets
-#endif
 
 
 //----------------------------------------------------------------------------
 // Class internals.
 //----------------------------------------------------------------------------
-
-#if defined(TS_NO_DTAPI)
-
-class ts::DektecOutputPlugin::Guts
-{
-};
-
-#else
 
 class ts::DektecOutputPlugin::Guts
 {
@@ -121,7 +110,6 @@ ts::DektecOutputPlugin::Guts::Guts() :
 {
 }
 
-#endif
 
 //----------------------------------------------------------------------------
 // Simple virtual methods.
@@ -833,70 +821,6 @@ ts::DektecOutputPlugin::~DektecOutputPlugin()
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Stubs when compiled without Dektec support.
-//----------------------------------------------------------------------------
-
-#if defined(TS_NO_DTAPI)
-
-bool ts::DektecOutputPlugin::start()
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return false;
-}
-
-bool ts::DektecOutputPlugin::stop()
-{
-    return true;
-}
-
-ts::BitRate ts::DektecOutputPlugin::getBitrate()
-{
-    return 0;
-}
-
-ts::BitRateConfidence ts::DektecOutputPlugin::getBitrateConfidence()
-{
-    return BitRateConfidence::LOW;
-}
-
-bool ts::DektecOutputPlugin::send(const TSPacket*, const TSPacketMetadata*, size_t)
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return false;
-}
-
-bool ts::DektecOutputPlugin::startError(const UString& message, unsigned int status)
-{
-    return false;
-}
-
-bool ts::DektecOutputPlugin::computeBitrate(int symbol_rate, int dt_modulation, int param0, int param1, int param2)
-{
-    return false;
-}
-
-void ts::DektecOutputPlugin::displaySymbolRate(const BitRate& ts_bitrate, int dt_modulation, int param0, int param1, int param2)
-{
-}
-
-bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
-{
-    return false;
-}
-
-bool ts::DektecOutputPlugin::setBitrate(const BitRate& bitrate)
-{
-    return false;
-}
-
-bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
-{
-    return false;
-}
-
-#else
 
 //----------------------------------------------------------------------------
 // Output start method

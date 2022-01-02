@@ -27,6 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
+#if !defined(TS_NO_DTAPI)
+
 #include "tsDektecInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsDektecUtils.h"
@@ -39,13 +41,7 @@
 #include "tsFatal.h"
 #include "tsLNB.h"
 
-#if !defined(TS_NO_DTAPI)
 TS_REGISTER_INPUT_PLUGIN(u"dektec", ts::DektecInputPlugin);
-#endif
-
-// Depending on TS_NO_DTAPI, some code may be unused.
-TS_LLVM_NOWARNING(unused-macros)
-TS_LLVM_NOWARNING(unused-function)
 
 // Consider that the first 5 receive() are "initialization". If a full input FIFO is
 // observed here, ignore it. Later, a full FIFO indicates a potential packet loss.
@@ -55,14 +51,6 @@ TS_LLVM_NOWARNING(unused-function)
 //----------------------------------------------------------------------------
 // Class internals.
 //----------------------------------------------------------------------------
-
-#if defined(TS_NO_DTAPI)
-
-class ts::DektecInputPlugin::Guts
-{
-};
-
-#else
 
 class ts::DektecInputPlugin::Guts
 {
@@ -121,7 +109,6 @@ ts::DektecInputPlugin::Guts::Guts() :
 {
 }
 
-#endif
 
 //----------------------------------------------------------------------------
 // Simple virtual methods.
@@ -414,61 +401,6 @@ ts::DektecInputPlugin::~DektecInputPlugin()
     }
 }
 
-
-//----------------------------------------------------------------------------
-// Stubs when compiled without Dektec support.
-//----------------------------------------------------------------------------
-
-#if defined(TS_NO_DTAPI)
-
-bool ts::DektecInputPlugin::getOptions()
-{
-    return true;
-}
-
-bool ts::DektecInputPlugin::setReceiveTimeout(MilliSecond timeout)
-{
-    return true;
-}
-
-bool ts::DektecInputPlugin::start()
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return false;
-}
-
-bool ts::DektecInputPlugin::stop()
-{
-    return true;
-}
-
-ts::BitRate ts::DektecInputPlugin::getBitrate()
-{
-    return 0;
-}
-
-ts::BitRateConfidence ts::DektecInputPlugin::getBitrateConfidence()
-{
-    return BitRateConfidence::LOW;
-}
-
-size_t ts::DektecInputPlugin::receive(TSPacket*, TSPacketMetadata*, size_t)
-{
-    tsp->error(TS_NO_DTAPI_MESSAGE);
-    return 0;
-}
-
-bool ts::DektecInputPlugin::configureLNB()
-{
-    return false;
-}
-
-bool ts::DektecInputPlugin::startError(const UString& message, unsigned int status)
-{
-    return false;
-}
-
-#else
 
 //----------------------------------------------------------------------------
 // Command line options method

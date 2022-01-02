@@ -33,6 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
+
 #include "tsInputPlugin.h"
 
 namespace ts {
@@ -77,3 +79,5 @@ namespace ts {
         bool configureLNB();
     };
 }
+
+#endif // TS_NO_DTAPI

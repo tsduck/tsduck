@@ -27,15 +27,12 @@
 //
 //-----------------------------------------------------------------------------
 
+#if !defined(TS_NO_DTAPI)
+
 #include "tsDektecArgsUtils.h"
 #include "tsIPv4SocketAddress.h"
 #include "tsIPv6SocketAddress.h"
 #include "tsMemory.h"
-
-// Depending on TS_NO_DTAPI, some code may be unused.
-TS_LLVM_NOWARNING(unused-macros)
-TS_LLVM_NOWARNING(unused-function)
-TS_GCC_NOWARNING(unused-function)
 
 
 //-----------------------------------------------------------------------------
@@ -123,7 +120,6 @@ void ts::DefineDektecIOStandardArgs(Args& args)
 // Get command line option for Dektec --io-standard option.
 //-----------------------------------------------------------------------------
 
-#if !defined(TS_NO_DTAPI)
 bool ts::GetDektecIOStandardArgs(Args& args, int& value, int& subvalue)
 {
     if (args.present(u"io-standard")) {
@@ -137,7 +133,6 @@ bool ts::GetDektecIOStandardArgs(Args& args, int& value, int& subvalue)
         return true;
     }
 }
-#endif
 
 
 //-----------------------------------------------------------------------------
@@ -255,7 +250,6 @@ void ts::DefineDektecIPArgs(Args& args, bool receive)
 // Decode an IP address and/or port and store it into binary data.
 //-----------------------------------------------------------------------------
 
-#if !defined(TS_NO_DTAPI)
 namespace {
     bool DecodeAddress(ts::Args& args, const ts::UChar* option_name, size_t option_index,
                        ts::AbstractNetworkAddress& instance,
@@ -305,14 +299,12 @@ namespace {
         return true;
     }
 }
-#endif
 
 
 //-----------------------------------------------------------------------------
 // Get command line option for Dektec TS-over-IP options.
 //-----------------------------------------------------------------------------
 
-#if !defined(TS_NO_DTAPI)
 bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
 {
     // Clear previous content.
@@ -432,14 +424,12 @@ bool ts::GetDektecIPArgs(Args& args, bool receive, Dtapi::DtIpPars2& dtpars)
 
     return true;
 }
-#endif
 
 
 //-----------------------------------------------------------------------------
 // Check if Dektec TS-over-IP options are valid.
 //-----------------------------------------------------------------------------
 
-#if !defined(TS_NO_DTAPI)
 bool ts::CheckDektecIPArgs(bool receive, const Dtapi::DtIpPars2& dtpars, Report& report)
 {
     // The port is always mandatory. The IP address is optional for receive (unicast).
@@ -460,4 +450,5 @@ bool ts::CheckDektecIPArgs(bool receive, const Dtapi::DtIpPars2& dtpars, Report&
     }
     return true;
 }
-#endif
+
+#endif // TS_NO_DTAPI

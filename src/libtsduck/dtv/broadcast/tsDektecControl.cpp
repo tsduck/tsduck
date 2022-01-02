@@ -28,6 +28,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsDektecControl.h"
+#include "tsDektec.h"
+
+#if !defined(TS_NO_DTAPI)
 #include "tsSysUtils.h"
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
@@ -35,11 +38,21 @@
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"
+#endif
 
 
 //----------------------------------------------------------------------------
-// Constructor.
+// Constructors and destructors.
 //----------------------------------------------------------------------------
+
+#if defined(TS_NO_DTAPI)
+
+ts::DektecControl::DektecControl(int argc, char *argv[]) :
+    Args(u"Control Dektec devices (unimplemented)")
+{
+}
+
+#else
 
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
     Args(u"Control Dektec devices", u"[options] [device]"),
@@ -127,14 +140,58 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     exitOnError();
 }
 
-
-//----------------------------------------------------------------------------
-// Destructor.
-//----------------------------------------------------------------------------
+#endif // TS_NO_DTAPI
 
 ts::DektecControl::~DektecControl()
 {
 }
+
+
+//----------------------------------------------------------------------------
+// Execute the dektec control command.
+//----------------------------------------------------------------------------
+
+int ts::DektecControl::execute()
+{
+#if defined(TS_NO_DTAPI)
+
+    error(TS_NO_DTAPI_MESSAGE);
+    return EXIT_FAILURE;
+
+#else
+
+    DektecDeviceVector devices;
+    DektecDevice::GetAllDevices(devices);
+
+    if (_list_all) {
+        // List all devices
+        if (_json.json) {
+            return listDevicesJSON(devices);
+        }
+        else if(_normalized) {
+            return listNormalizedDevices(devices);
+        }
+        else {
+            return listDevices(devices);
+        }
+    }
+    else {
+        // List only one device
+        if (_devindex >= devices.size()) {
+            // Invalid device index specified
+            error(u"invalid device index: %d", {_devindex});
+            return EXIT_FAILURE;
+        }
+        else {
+            return oneDevice(devices[_devindex]);
+        }
+    }
+
+#endif // TS_NO_DTAPI
+}
+
+// All the rest of this source file is for Dektec implementation
+#if !defined(TS_NO_DTAPI)
 
 
 //----------------------------------------------------------------------------
@@ -157,10 +214,7 @@ void ts::DektecControl::wideDisplay(const UString& line)
 
 int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
 {
-#if !defined(TS_NO_DTAPI)
-
     // Display DTAPI and device drivers versions
-
     if (verbose()) {
         std::cout << std::endl
                   << GetDektecVersions() << std::endl
@@ -168,7 +222,6 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
     }
 
     // Display device list
-
     for (size_t index = 0; index < devices.size(); index++) {
 
         const DektecDevice& device(devices[index]);
@@ -176,7 +229,6 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
         Dtapi::DtDevice dtdev;
 
         // Print short info
-
         std::cout << (verbose() ? "* Device " : "") << index << ": " << device.model;
         if (vpd.vpdid[0] != 0) {
             std::cout << " (" << vpd.vpdid << ")";
@@ -184,7 +236,6 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
         std::cout << std::endl;
 
         // Print verbose info
-
         if (verbose()) {
             std::cout << "  Physical ports: " << device.desc.m_NumPorts << std::endl
                       << "  Channels: input: " << device.input.size()
@@ -244,8 +295,6 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
         }
     }
 
-#endif // TS_NO_DTAPI
-
     return EXIT_SUCCESS;
 }
 
@@ -256,8 +305,6 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
 
 void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw)
 {
-#if !defined(TS_NO_DTAPI)
-
     std::cout << "channel:" << type << ":"
         << "device=" << device_index << ":"
         << "channel=" << channel_index << ":"
@@ -322,8 +369,6 @@ void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t c
     }
 
     std::cout << std::endl;
-
-#endif // TS_NO_DTAPI
 }
 
 
@@ -333,12 +378,9 @@ void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t c
 
 int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
 {
-#if !defined(TS_NO_DTAPI)
-
     Dtapi::DTAPI_RESULT status;
 
     // Display DTAPI and device drivers versions
-
     int maj, min, bugfix, build;
     Dtapi::DtapiGetVersion(maj, min, bugfix, build);
     std::cout << "dtapi:version=" << maj << "." << min << "." << bugfix << "." << build << ":" << std::endl;
@@ -354,7 +396,6 @@ int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
     }
 
     // Display device list
-
     for (size_t index = 0; index < devices.size(); index++) {
 
         const DektecDevice& device(devices[index]);
@@ -418,8 +459,6 @@ int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
         }
     }
 
-#endif // TS_NO_DTAPI
-
     return EXIT_SUCCESS;
 }
 
@@ -430,8 +469,6 @@ int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
 
 void ts::DektecControl::listCapabilitiesJSON(ts::json::Value& jv, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc &hw)
 {
-#if !defined(TS_NO_DTAPI)
-
     jv.add(u"device", device_index);
     jv.add(u"channel", channel_index);
     jv.add(u"port", hw.m_Port);
@@ -491,8 +528,6 @@ void ts::DektecControl::listCapabilitiesJSON(ts::json::Value& jv, size_t device_
                                        {hw.m_MacAddr[0] & 0xFF, hw.m_MacAddr[1] & 0xFF, hw.m_MacAddr[2] & 0xFF,
                                         hw.m_MacAddr[3] & 0xFF, hw.m_MacAddr[4] & 0xFF, hw.m_MacAddr[5] & 0xFF}));
     }
-
-#endif // TS_NO_DTAPI
 }
 
 
@@ -502,8 +537,6 @@ void ts::DektecControl::listCapabilitiesJSON(ts::json::Value& jv, size_t device_
 
 int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
 {
-#if !defined(TS_NO_DTAPI)
-
     json::Object root;
 
     // Display DTAPI and device drivers versions
@@ -582,8 +615,6 @@ int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
     // JSON output.
     _json.report(root, std::cout, *this);
 
-#endif // TS_NO_DTAPI
-
     return EXIT_SUCCESS;
 }
 
@@ -594,8 +625,6 @@ int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
 
 int ts::DektecControl::oneDevice(const DektecDevice& device)
 {
-#if !defined(TS_NO_DTAPI)
-
     Dtapi::DtDevice dtdev;
     Dtapi::DTAPI_RESULT status;
 
@@ -696,51 +725,7 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
     SleepThread(MilliSecPerSec * _wait_sec);
     dtdev.Detach();
 
-#endif // TS_NO_DTAPI
-
     return EXIT_SUCCESS;
 }
 
-
-//----------------------------------------------------------------------------
-// Execute the dektec control command.
-//----------------------------------------------------------------------------
-
-int ts::DektecControl::execute()
-{
-#if defined(TS_NO_DTAPI)
-
-    error(TS_NO_DTAPI_MESSAGE);
-    return EXIT_FAILURE;
-
-#else
-
-    DektecDeviceVector devices;
-    DektecDevice::GetAllDevices(devices);
-
-    if (_list_all) {
-        // List all devices
-        if (_json.json) {
-            return listDevicesJSON(devices);
-        }
-        else if(_normalized) {
-            return listNormalizedDevices(devices);
-        }
-        else {
-            return listDevices(devices);
-        }
-    }
-    else {
-        // List only one device
-        if (_devindex >= devices.size()) {
-            // Invalid device index specified
-            error(u"invalid device index: %d", {_devindex});
-            return EXIT_FAILURE;
-        }
-        else {
-            return oneDevice(devices[_devindex]);
-        }
-    }
-
 #endif // TS_NO_DTAPI
-}
