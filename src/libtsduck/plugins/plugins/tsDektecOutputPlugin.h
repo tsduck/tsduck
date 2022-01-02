@@ -33,6 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
+
 #include "tsOutputPlugin.h"
 
 namespace ts {
@@ -89,3 +91,5 @@ namespace ts {
         bool setPreloadFIFOSizeBasedOnDelay();
     };
 }
+
+#endif // TS_NO_DTAPI

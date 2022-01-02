@@ -34,11 +34,14 @@
 
 #pragma once
 #include "tsArgs.h"
+
+#if !defined(TS_NO_DTAPI)
 #include "tsDuckContext.h"
 #include "tsjsonOutputArgs.h"
 #include "tsjson.h"
+#endif
 
-#if !defined(DOXYGEN)
+#if !defined(TS_NO_DTAPI) && !defined(DOXYGEN)
 // Forward definitions for private part only.
 namespace Dtapi {
     struct DtHwFuncDesc;
@@ -68,7 +71,7 @@ namespace ts {
         DektecControl(int argc, char *argv[]);
 
         //!
-        //! Virtual destructor.
+        //! Destructor.
         //!
         virtual ~DektecControl() override;
 
@@ -77,6 +80,8 @@ namespace ts {
         //! @return Either EXIT_SUCCESS or EXIT_FAILURE.
         //!
         int execute();
+
+#if !defined(TS_NO_DTAPI)
 
     private:
         DuckContext _duck;
@@ -114,5 +119,7 @@ namespace ts {
 
         // Display a long line on multiple lines
         void wideDisplay(const UString& line);
+
+#endif // TS_NO_DTAPI
     };
 }
