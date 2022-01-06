@@ -80,6 +80,7 @@ public:
     bool                 drop_to_maintain;   // Drop packets as necessary to maintain preload
     int                  maintain_threshold; // Threshold in FIFO beyond preload_fifo_size before it starts dropping packets if drop_to_maintain enabled
     bool                 drop_to_preload;    // Drop sufficient packets to get back to preload FIFO size--only set to true at run-time if would exceed preload plus threshold
+    bool                 carrier_only;       // Output carrier frequency only, no modulated TS
     int                  power_mode;         // Power mode to set on DTU-315
 };
 
@@ -106,6 +107,7 @@ ts::DektecOutputPlugin::Guts::Guts() :
     drop_to_maintain(false),
     maintain_threshold(0),
     drop_to_preload(false),
+    carrier_only(false),
     power_mode(-1)
 {
 }
@@ -179,7 +181,10 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 
     option(u"carrier-only");
     help(u"carrier-only",
-         u"Modulators: output the carrier only, without modulated transport stream.");
+         u"Modulators: output the carrier only, without modulated transport stream. "
+         u"All output packets are dropped. "
+         u"To generate an empty carrier and wait forever, use the following sample command:\n"
+         u"tsp --final-wait 0 -I null 1 -O dektec --carrier-only --frequency ...");
 
     option(u"cell-id", 0,  UINT16);
     help(u"cell-id",
@@ -842,6 +847,7 @@ bool ts::DektecOutputPlugin::start()
     _guts->preload_fifo = present(u"preload-fifo");
     _guts->maintain_preload = present(u"maintain-preload");
     _guts->drop_to_maintain = present(u"drop-to-maintain-preload");
+    _guts->carrier_only = present(u"carrier-only");
     getIntValue(_guts->power_mode, u"power-mode", -1);
     GetDektecIOStandardArgs(*this, _guts->iostd_value, _guts->iostd_subvalue);
 
@@ -1609,7 +1615,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
     if (status != DTAPI_OK) {
         return startError(u"set modulator frequency error", status);
     }
-    const int rf_mode = (present(u"carrier-only") ? DTAPI_UPCONV_CW : DTAPI_UPCONV_NORMAL) | (present(u"inversion") ? DTAPI_UPCONV_SPECINV : 0);
+    const int rf_mode = (_guts->carrier_only ? DTAPI_UPCONV_CW : DTAPI_UPCONV_NORMAL) | (present(u"inversion") ? DTAPI_UPCONV_SPECINV : 0);
     tsp->debug(u"SetRfMode(%d)", {rf_mode});
     status = _guts->chan.SetRfMode(rf_mode);
     if (status != DTAPI_OK) {
@@ -1686,6 +1692,11 @@ bool ts::DektecOutputPlugin::send(const TSPacket* buffer, const TSPacketMetadata
 {
     if (!_guts->is_started) {
         return false;
+    }
+
+    // In case of --carrier-only, we silently drop packets to maintain a carrier frequency without modulated TS.
+    if (_guts->carrier_only) {
+        return true;
     }
 
     char* data = reinterpret_cast<char*>(const_cast<TSPacket*>(buffer));

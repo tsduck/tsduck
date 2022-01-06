@@ -63,15 +63,16 @@ namespace ts {
         PacketCounter     init_bitrate_adj; //!< As long as input bitrate is unknown, reevaluate periodically.
         Tristate          realtime;         //!< Use real-time options.
         MilliSecond       receive_timeout;  //!< Timeout on input operations.
+        MilliSecond       final_wait;       //!< Time to wait after last input packet. Zero means infinite, negative means none.
         uint16_t          control_port;     //!< TCP server port for control commands.
         IPv4Address       control_local;    //!< Local interface on which to listen for control commands.
         bool              control_reuse;    //!< Set the 'reuse port' socket option on the control TCP server port.
         IPv4AddressVector control_sources;  //!< Remote IP addresses which are allowed to send control commands.
         MilliSecond       control_timeout;  //!< Reception timeout in milliseconds for control commands.
-        DuckContext::SavedArgs duck_args; //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
-        PluginOptions          input;     //!< Input plugin description.
-        PluginOptionsVector    plugins;   //!< Packet processor plugins descriptions.
-        PluginOptions          output;    //!< Output plugin description.
+        DuckContext::SavedArgs duck_args;   //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
+        PluginOptions          input;       //!< Input plugin description.
+        PluginOptionsVector    plugins;     //!< Packet processor plugins descriptions.
+        PluginOptions          output;      //!< Output plugin description.
 
         static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;  //!< Default size in bytes of global TS buffer.
         static constexpr size_t MIN_BUFFER_SIZE = 18800;             //!< Minimum size in bytes of global TS buffer.
