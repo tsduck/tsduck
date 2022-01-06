@@ -1,2 +1,5 @@
 # QtCreator build workspace
 build-tsduck-*Desktop*
+build-tsduck-*Qt*
+build-tsduck-*-Debug
+build-tsduck-*-Release
