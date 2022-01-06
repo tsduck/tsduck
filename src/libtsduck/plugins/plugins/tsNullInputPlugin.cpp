@@ -64,7 +64,7 @@ ts::NullInputPlugin::NullInputPlugin(TSP* tsp_) :
 bool ts::NullInputPlugin::getOptions()
 {
     tsp->useJointTermination(present(u"joint-termination"));
-    _max_count = intValue<PacketCounter>(u"", std::numeric_limits<PacketCounter>::max());
+    getIntValue(_max_count, u"", std::numeric_limits<PacketCounter>::max());
     return true;
 }
 
@@ -111,7 +111,10 @@ size_t ts::NullInputPlugin::receive (TSPacket* buffer, TSPacketMetadata* pkt_dat
     }
 
     // Fill buffer
-    size_t n;
-    for (n = 0; n < max_packets && _count++ < _limit; buffer[n++] = NullPacket) {}
+    size_t n = 0;
+    while (n < max_packets && _count < _limit) {
+        _count++;
+        buffer[n++] = NullPacket;
+    }
     return n;
 }

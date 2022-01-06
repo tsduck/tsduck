@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2677
+VERSION 3.30-2683
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -15,8 +15,9 @@ VERSION 3.30-2677
   * New options in exiting commands and plugins:
     - Option --event in output plugin "hls".
     - Option --extract-tcp-stream in "tspcap".
-    - Options --carrier-only and --roll-off in "dektec" output plugin.
+    - Options --carrier-only and --roll-off in output plugin "dektec".
     - Option --periodic-command in plugin "bitrate_monitor".
+    - Option --final-wait in "tsp".
 
 [BUG] Bug fixes:
 

@@ -383,6 +383,37 @@ size_t ts::tsp::InputExecutor::receiveAndStuff(size_t index, size_t max_packets)
 
 
 //----------------------------------------------------------------------------
+// Encapsulation of passPackets().
+//----------------------------------------------------------------------------
+
+void ts::tsp::InputExecutor::passInputPackets(size_t pkt_count, bool input_end)
+{
+    // At end of input with --final-wait, wait before reporting the end of input.
+    if (input_end && _options.final_wait >= 0) {
+        // If there are some packets, report them without end-of-input before waiting.
+        if (pkt_count > 0) {
+            passPackets(pkt_count, _tsp_bitrate, _tsp_bitrate_confidence, false, false);
+            pkt_count = 0;
+        }
+        // Wait the specified number of milliseconds or forever if zero.
+        if (_options.final_wait > 0) {
+            SleepThread(_options.final_wait);
+        }
+        else {
+            // Repeatedly use long waits (one day) to avoid system limitations.
+            for (;;) {
+                SleepThread(MilliSecPerDay);
+            }
+        }
+    }
+
+    // Do not progate abort to previous processor since the "previous" one is the output one.
+    passPackets(pkt_count, _tsp_bitrate, _tsp_bitrate_confidence, input_end, false);
+}
+
+
+
+//----------------------------------------------------------------------------
 // Input plugin thread
 //----------------------------------------------------------------------------
 
@@ -422,8 +453,7 @@ void ts::tsp::InputExecutor::main()
 
         // In case of abort on timeout, notify previous and next plugin, then exit.
         if (timeout) {
-            // Do not progate abort to previous processor since the "previous" one is the output one.
-            passPackets(0, _tsp_bitrate, _tsp_bitrate_confidence, true, false);
+            passInputPackets(0, true);
             aborted = true;
             break;
         }
@@ -481,7 +511,7 @@ void ts::tsp::InputExecutor::main()
         }
 
         // Pass received packets to next processor
-        passPackets(pkt_read, _tsp_bitrate, _tsp_bitrate_confidence, input_end, false);
+        passInputPackets(pkt_read, input_end);
 
     } while (!input_end);
 

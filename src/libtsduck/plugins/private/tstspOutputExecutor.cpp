@@ -140,7 +140,7 @@ void ts::tsp::OutputExecutor::main()
                 out_cnt++;
             }
 
-            // Output contiguous ranges of non-dropped packets with repesct to --max-output-packets.
+            // Output contiguous ranges of non-dropped packets with respect to --max-output-packets.
             while (!aborted && out_cnt > 0) {
                 const size_t out_subcnt = std::min(out_cnt, _options.max_output_pkt);
                 if (_suspended) {
