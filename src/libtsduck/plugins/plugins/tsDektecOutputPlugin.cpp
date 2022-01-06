@@ -898,13 +898,12 @@ bool ts::DektecOutputPlugin::start()
     // Get the Vital Product Data (VPD)
     const DektecVPD vpd(_guts->dtdev);
 
-    // Check if the device is a modulator or a TS-over-IP.
+    // Check if the device is a modulator.
     const bool is_modulator = (dt_flags & DTAPI_CAP_MOD) != 0;
-    _guts->mute_on_stop = false;
+    _guts->mute_on_stop = is_modulator;
 
-    // Set default modulation for multi-standard modulators.
-    // Also adjust device capabilities since m_Flags field is not
-    // always set (DTAPI bug? maybe fixed since first found)
+    // Set default modulation for multi-standard modulators. This may be obsolete now, more modulator models exist.
+    // Also adjust device capabilities since m_Flags field is not always set (DTAPI bug? maybe fixed since first found).
     int modulation_type = -1;
     switch (_guts->device.desc.m_TypeNumber) {
         case 107: {
@@ -917,6 +916,8 @@ bool ts::DektecOutputPlugin::start()
                 modulation_type = DTAPI_MOD_DVBS_QPSK;
                 dt_flags |= DTAPI_CAP_TX_DVBS;
             }
+            // Mute on stop used to be unsupported on that device, maybe no longer true.
+            _guts->mute_on_stop = false;
             break;
         }
         case 110: {
@@ -930,13 +931,14 @@ bool ts::DektecOutputPlugin::start()
                 modulation_type = DTAPI_MOD_QAM64;
                 dt_flags |= DTAPI_CAP_TX_QAMA;
             }
+            // Mute on stop used to be unsupported on that device, maybe no longer true.
+            _guts->mute_on_stop = false;
             break;
         }
         case 115: {
             // DTA-115, multi-standard, depend on embedded licences.
             // DVB-T always supported (?) and is default.
             modulation_type = DTAPI_MOD_DVBT;
-            _guts->mute_on_stop = true;
             break;
         }
         default:
