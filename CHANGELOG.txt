@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2683
+VERSION 3.30-2685
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -26,6 +26,7 @@ VERSION 3.30-2683
     options --display-commands and --json.
   * Fixed issue #906: In output plugin "hls", live playlists were marked as
     event playlist.
+  * In "tsscan", the handling of --min-strength was broken.
 
 -------------------------------------------------------------------------------
 
