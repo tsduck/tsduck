@@ -168,13 +168,15 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
          u"specified offset, tsscan continues to check up to 3 higher offsets above the \"last\" one. "
          u"This means that if a signal is found at offset +2, offset +3 will be checked anyway, etc. up to offset +5.");
 
-    option(u"min-quality", 0, INTEGER);
+    option(u"min-quality", 0, INT64);
     help(u"min-quality", u"Obsolete option, do not use.");
 
-    option(u"min-strength", 0, INTEGER);
+    option(u"min-strength", 0, INT64);
     help(u"min-strength",
-         u"Minimum signal strength. Frequencies with lower signal "
-         u"strength are ignored (default: " + ts::UString::Decimal(DEFAULT_MIN_STRENGTH) + u"%).");
+         u"Minimum signal strength. Frequencies with lower signal strength are ignored. "
+         u"The value can be in milli-dB or percentage. It depends on the tuner and its driver. "
+         u"Check the displayed unit. "
+         u"The default is " + ts::UString::Decimal(DEFAULT_MIN_STRENGTH) + u", whatever unit it is.");
 
     option(u"no-offset");
     help(u"no-offset",
