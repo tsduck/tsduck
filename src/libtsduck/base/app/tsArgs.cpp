@@ -634,12 +634,13 @@ ts::Report* ts::Args::redirectReport(Report* rep)
         _saved_severity = this->maxSeverity();
     }
 
-    // Adjust severity.
-    this->setMaxSeverity(rep == nullptr ? _saved_severity : rep->maxSeverity());
-
     // Switch report.
     Report* previous = _subreport;
     _subreport = rep;
+
+    // Adjust severity.
+    this->setMaxSeverity(rep == nullptr ? _saved_severity : rep->maxSeverity());
+
     return previous;
 }
 
