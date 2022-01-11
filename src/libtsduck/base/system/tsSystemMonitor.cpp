@@ -138,6 +138,7 @@ void ts::SystemMonitor::main()
     size_t vsize_max(start_metrics.vmem_size);
 
     _report.info(u"%sresource monitoring started", {MonPrefix(start_time)});
+    bool mute_reported = false;
 
     // Loop on monitoring intervals.
     for (;;) {
@@ -148,6 +149,7 @@ void ts::SystemMonitor::main()
             period++;
             period_index++;
             start_next_period += period->duration;
+            mute_reported = false;
             _report.debug(u"starting monitoring period #%d, duration: %'d ms, interval: %'d ms", {period_index, period->duration, period->interval});
         }
 
@@ -163,8 +165,9 @@ void ts::SystemMonitor::main()
         }
 
         // If we no longer log monitoring messages, issue a last message.
-        if (!period->log_messages) {
-            _report.info(u"%sstopping monitoring messages to avoid infinitely large log files", {MonPrefix(Time::CurrentLocalTime())});
+        if (!period->log_messages && !mute_reported) {
+            _report.info(u"%sstopping stable monitoring messages to avoid infinitely large log files", {MonPrefix(Time::CurrentLocalTime())});
+            mute_reported = true;
         }
 
         // Get current process metrics
