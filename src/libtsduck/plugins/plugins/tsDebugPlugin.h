@@ -55,6 +55,10 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        UString _tag;      // Message tag
+        UString _tag;
+        char*   _null;
+        bool    _segfault;
+        bool    _exit;
+        int     _exit_code;
     };
 }
