@@ -39,8 +39,22 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"debug", ts::DebugPlugin);
 
 ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Debug traces", u"[options]"),
-    _tag()
+    _tag(),
+    _null(nullptr),
+    _segfault(false),
+    _exit(false),
+    _exit_code(0)
 {
+    setIntro(u"A number of debug actions are executed for each packet. "
+             u"By default, a debug-level message is displayed for each packet. "
+             u"Use --only-label to select packets to debug.");
+
+    option(u"exit", 0, INT32);
+    help(u"exit", u"Exit application with the specified integer code on the first debugged packet.");
+
+    option(u"segfault");
+    help(u"segfault", u"Simulate a segmentation fault on the first debugged packet.");
+
     option(u"tag", 't', STRING);
     help(u"tag", u"'string'",
          u"Message tag to be displayed with each debug message. "
@@ -54,7 +68,10 @@ ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
 
 bool ts::DebugPlugin::getOptions()
 {
-    _tag = value(u"tag");
+    _segfault = present(u"segfault");
+    _exit = present(u"exit");
+    getIntValue(_exit_code, u"exit");
+    getValue(_tag, u"tag");
     if (!_tag.empty()) {
         _tag += u": ";
     }
@@ -68,6 +85,12 @@ bool ts::DebugPlugin::getOptions()
 
 ts::ProcessorPlugin::Status ts::DebugPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    if (_segfault) {
+        *_null = 0;
+    }
+    if (_exit) {
+        ::exit(_exit_code);
+    }
     tsp->verbose(u"%sPID: 0x%0X, labels: %s, timestamp: %s, packets in plugin: %'d, in thread: %'d", {
                  _tag, pkt.getPID(),
                  pkt_data.labelsString(),
