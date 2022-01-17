@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2685
+VERSION 3.30-2689
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -27,6 +27,11 @@ VERSION 3.30-2685
   * Fixed issue #906: In output plugin "hls", live playlists were marked as
     event playlist.
   * In "tsscan", the handling of --min-strength was broken.
+  * Fixed a segmentation fault crash in various plugins ("svremove", "sdt",
+    "nit", etc). The crash occured when a table which is transparently passed
+    in a modified PID changes its version. For instance, if the SDT Actual
+    needs to be modified, all SDT Other in the same PID are transparently
+    passed. If one of these SDT Other changed its version, "tsp" crashed.
 
 -------------------------------------------------------------------------------
 
