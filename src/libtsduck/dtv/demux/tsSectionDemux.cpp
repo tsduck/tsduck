@@ -150,7 +150,7 @@ void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_secti
 
     // Mark all section entries as unused
     for (size_t i = 0; i < sect_expected; i++) {
-        sects[i].reset();
+        sects[i].clear();
     }
 }
 
@@ -475,7 +475,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             // Get reference to the ETID context for this PID.
             // The ETID context is created if did not exist.
             // Avoid accumulating partial sections when there is no table handler.
-
             ETIDContext* tc = _table_handler == nullptr ? nullptr : &pc.tids[etid];
 
             // If this is a new version of the table, reset the TID context.
@@ -562,7 +561,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         }
 
         // Move to next section in the buffer
-
         ts_start += section_length;
         ts_size -= section_length;
 
