@@ -42,6 +42,7 @@ ts::WebRequestArgs::WebRequestArgs() :
     proxyHost(),
     proxyUser(),
     proxyPassword(),
+    userAgent(),
     useCookies(true),
     cookiesFile()
 {
@@ -84,6 +85,10 @@ void ts::WebRequestArgs::defineArgs(Args& args)
               u"Specify the data reception timeout in milliseconds. This timeout applies "
               u"to each receive operation, individually. By default, let the operating "
               u"system decide.");
+
+    args.option(u"user-agent", 0, Args::STRING);
+    args.help(u"user-agent", u"'string'",
+              u"Specify the user agent string to send in HTTP requests.");
 }
 
 
@@ -95,11 +100,12 @@ void ts::WebRequestArgs::defineArgs(Args& args)
 bool ts::WebRequestArgs::loadArgs(DuckContext& duck, Args& args)
 {
     // Preserve previous timeout values
-    connectionTimeout = args.intValue<MilliSecond>(u"connection-timeout", connectionTimeout);
-    receiveTimeout = args.intValue<MilliSecond>(u"receive-timeout", receiveTimeout);
-    proxyPort = args.intValue<uint16_t>(u"proxy-port");
-    proxyHost = args.value(u"proxy-host");
-    proxyUser = args.value(u"proxy-user");
-    proxyPassword = args.value(u"proxy-password");
+    args.getIntValue(connectionTimeout, u"connection-timeout", connectionTimeout);
+    args.getIntValue(receiveTimeout, u"receive-timeout", receiveTimeout);
+    args.getIntValue(proxyPort, u"proxy-port");
+    args.getValue(proxyHost, u"proxy-host");
+    args.getValue(proxyUser, u"proxy-user");
+    args.getValue(proxyPassword, u"proxy-password");
+    args.getValue(userAgent, u"user-agent");
     return true;
 }

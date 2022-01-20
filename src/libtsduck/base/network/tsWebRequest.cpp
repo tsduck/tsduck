@@ -67,6 +67,7 @@ ts::UString ts::WebRequest::_defaultProxyHost(DefaultProxy::Instance()->url.getH
 uint16_t    ts::WebRequest::_defaultProxyPort = DefaultProxy::Instance()->url.getPort();
 ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance()->url.getUserName());
 ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance()->url.getPassword());
+const ts::UString ts::WebRequest::DEFAULT_USER_AGENT(u"tsduck");
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::WebRequest::DEFAULT_CHUNK_SIZE;
@@ -79,7 +80,7 @@ constexpr size_t ts::WebRequest::DEFAULT_CHUNK_SIZE;
 
 ts::WebRequest::WebRequest(Report& report) :
     _report(report),
-    _userAgent(u"tsduck"),
+    _userAgent(DEFAULT_USER_AGENT),
     _autoRedirect(true),
     _originalURL(),
     _finalURL(),
@@ -115,6 +116,16 @@ ts::WebRequest::~WebRequest()
         deleteGuts();
         _guts = nullptr;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Set the user agent name to use in HTTP headers.
+//----------------------------------------------------------------------------
+
+void ts::WebRequest::setUserAgent(const UString& name)
+{
+    _userAgent = name.empty() ? DEFAULT_USER_AGENT : name;
 }
 
 
@@ -216,6 +227,7 @@ bool ts::WebRequest::deleteCookiesFile(Report& report) const
     }
 }
 
+
 //----------------------------------------------------------------------------
 // Set various arguments from command line.
 //----------------------------------------------------------------------------
@@ -227,6 +239,9 @@ void ts::WebRequest::setArgs(const ts::WebRequestArgs& args)
     }
     if (!args.proxyUser.empty()) {
         setProxyUser(args.proxyUser, args.proxyPassword);
+    }
+    if (!args.userAgent.empty()) {
+        setUserAgent(args.userAgent);
     }
     if (args.connectionTimeout > 0) {
         setConnectionTimeout(args.connectionTimeout);

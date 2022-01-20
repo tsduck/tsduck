@@ -61,6 +61,7 @@ namespace ts {
         UString       proxyHost;            //!< -\-proxy-host
         UString       proxyUser;            //!< -\-proxy-user
         UString       proxyPassword;        //!< -\-proxy-password
+        UString       userAgent;            //!< -\-user-agent
         bool          useCookies;           //!< Use cookies, no command line options, true by default
         UString       cookiesFile;          //!< Cookies files (Linux only), no command line options
 
