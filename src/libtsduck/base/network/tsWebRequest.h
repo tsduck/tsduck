@@ -167,10 +167,21 @@ namespace ts {
         bool deleteCookiesFile(Report& report) const;
 
         //!
-        //! Set the user agent name to use in HTTP headers.
-        //! @param [in] name The user agent name.
+        //! Default user agent string ("tsduck").
         //!
-        void setUserAgent(const UString& name) { _userAgent = name; }
+        static const UString DEFAULT_USER_AGENT;
+
+        //!
+        //! Set the user agent name to use in HTTP headers.
+        //! @param [in] name The user agent name. If empty, DEFAULT_USER_AGENT is used.
+        //!
+        void setUserAgent(const UString& name = UString());
+
+        //!
+        //! Get the current user agent name to use in HTTP headers.
+        //! @return A constant reference to the user agent name to use in HTTP headers.
+        //!
+        const UString& userAgent() const { return _userAgent; }
 
         //!
         //! Enable or disable the automatic redirection of HTTP requests.

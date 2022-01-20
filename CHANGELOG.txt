@@ -18,6 +18,7 @@ VERSION 3.30-2689
     - Options --carrier-only and --roll-off in output plugin "dektec".
     - Option --periodic-command in plugin "bitrate_monitor".
     - Option --final-wait in "tsp".
+    - Option --user-agent in input plugins "hls", "http".
 
 [BUG] Bug fixes:
 
