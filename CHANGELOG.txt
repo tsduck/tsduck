@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2689
+VERSION 3.30-2691
 
 [IMP] Improvements on existing commands and plugins:
 

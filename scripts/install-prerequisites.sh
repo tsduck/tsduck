@@ -47,6 +47,7 @@
 #  - Red Hat
 #  - CentOS
 #  - Alma Linux
+#  - openSUSE Linux
 #  - Arch Linux
 #  - Alpine Linux
 #  - Gentoo
@@ -213,6 +214,14 @@ elif [[ -f /etc/redhat-release ]]; then
     fi
     sudo alternatives --set python /usr/bin/python3
     # Update command: sudo dnf update
+
+elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
+
+    # openSUSE
+    pkglist="make gcc-c++ dos2unix curl tar zip doxygen graphviz libedit-devel pcsc-tools pcsc-lite-devel curl libcurl-devel srt-devel rpmdevtools python3 java-11-openjdk-devel"
+    sudo zypper install -y -l $PKGOPTS $pkglist
+    sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
+    # Update command: sudo zypper update -y -l
 
 elif [[ -f /etc/arch-release ]]; then
 

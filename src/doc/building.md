@@ -30,6 +30,7 @@ Currently, the script supports the following operating systems:
 - Red Hat Enterprise Linux
 - CentOS
 - Alma Linux
+- openSUSE Linux
 - Arch Linux
 - Alpine Linux
 - Gentoo
