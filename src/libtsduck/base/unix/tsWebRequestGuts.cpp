@@ -488,13 +488,13 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 // Handle an error while receiving data. Always return false.
 //----------------------------------------------------------------------------
 
-bool ts::WebRequest::SystemGuts::downloadError(const UString& message, bool* certError)
+bool ts::WebRequest::SystemGuts::downloadError(const UString& msg, bool* certError)
 {
     // There is no real deterministic way of diagnosing certificate error.
     // In practice, we get messages like this one:
     // "SSL peer certificate or SSH remote key was not OK, SSL certificate problem: unable to get local issuer certificate"
     if (certError != nullptr) {
-        *certError = message.contain(u"certificate", CASE_INSENSITIVE);
+        *certError = msg.contain(u"certificate", CASE_INSENSITIVE);
         if (*certError) {
             // In case of certificate error, fail silently.
             return false;
@@ -502,7 +502,7 @@ bool ts::WebRequest::SystemGuts::downloadError(const UString& message, bool* cer
     }
 
     // Normal error processing.
-    _request._report.error(message);
+    _request._report.error(msg);
     return false;
 }
 

@@ -106,12 +106,12 @@ namespace ts {
         //! @tparam HANDLER A subclass of CommandLineHandler.
         //! @param [in] handler Command handler object. A null pointer is allowed (unhandled command).
         //! @param [in] method Command handler method. A null pointer is allowed (unhandled command).
-        //! @param [in] command Command name. If empty (the default), @a handler is set on all commands.
+        //! @param [in] name Command name. If empty (the default), @a handler is set on all commands.
         //!
         template <class HANDLER, typename std::enable_if<std::is_base_of<CommandLineHandler, HANDLER>::value, int>::type = 0>
-        void setCommandLineHandler(HANDLER* handler, CommandStatus (HANDLER::*method)(const UString&, Args&), const UString& command = UString())
+        void setCommandLineHandler(HANDLER* handler, CommandStatus (HANDLER::*method)(const UString&, Args&), const UString& name = UString())
         {
-            return setCommandLineHandlerImpl(handler, static_cast<CommandLineMethod>(method), command);
+            return setCommandLineHandlerImpl(handler, static_cast<CommandLineMethod>(method), name);
         }
 
         //!
@@ -148,13 +148,13 @@ namespace ts {
 
         //!
         //! Analyze and process a command line.
-        //! @param [in] command Full command line, with command name and parameters.
+        //! @param [in] line Full command line, with command name and parameters.
         //! Parameters are separated with spaces. Special characters and spaces must be
         //! escaped or quoted in the parameters.
         //! @param [in] redirect If not null, temporarily redirect errors here.
         //! @return Command status.
         //!
-        CommandStatus processCommand(const UString& command, Report* redirect = nullptr);
+        CommandStatus processCommand(const UString& line, Report* redirect = nullptr);
 
         //!
         //! Analyze and process a command line.
