@@ -118,31 +118,31 @@ TS_POP_WARNING()
 // Get the error message about a name failing to match a value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Enumeration::error(const UString& name, bool caseSensitive, bool abbreviated, const UString& designator, const UString& prefix) const
+ts::UString ts::Enumeration::error(const UString& name1, bool caseSensitive, bool abbreviated, const UString& designator, const UString& prefix) const
 {
-    const UString lcName(name.toLower());
+    const UString lcName(name1.toLower());
     UStringList maybe;
 
     for (auto it = _map.begin(); it != _map.end(); ++it) {
-        if ((caseSensitive && it->second == name) || (!caseSensitive && it->second.toLower() == lcName)) {
+        if ((caseSensitive && it->second == name1) || (!caseSensitive && it->second.toLower() == lcName)) {
             // Found an exact match, there is no error.
             return UString();
         }
-        else if (abbreviated && it->second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it->second.startWith(name1, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version.
             maybe.push_back(prefix + it->second);
         }
     }
 
     if (maybe.empty()) {
-        return UString::Format(u"unknown %s \"%s%s\"", {designator, prefix, name});
+        return UString::Format(u"unknown %s \"%s%s\"", {designator, prefix, name1});
     }
     else if (maybe.size() == 1) {
         // Only one possibility, there is no error.
         return UString();
     }
     else {
-        return UString::Format(u"ambiguous %s \"%s%s\", could be one of %s", {designator, prefix, name, UString::Join(maybe)});
+        return UString::Format(u"ambiguous %s \"%s%s\", could be one of %s", {designator, prefix, name1, UString::Join(maybe)});
     }
 }
 

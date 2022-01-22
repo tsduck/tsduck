@@ -75,9 +75,9 @@ void ts::CommandLine::setShell(const UString& shell)
 // Set a new command line handler for one or all commands.
 //----------------------------------------------------------------------------
 
-void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, CommandLineMethod method, const UString& command)
+void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, CommandLineMethod method, const UString& name)
 {
-    if (command.empty()) {
+    if (name.empty()) {
         // Set all commands.
         for (auto it = _commands.begin(); it != _commands.end(); ++it) {
             it->second.handler = handler;
@@ -86,7 +86,7 @@ void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, Com
     }
     else {
         // Set one command.
-        const int id = _cmd_enum.value(command);
+        const int id = _cmd_enum.value(name);
         if (id != Enumeration::UNKNOWN) {
             _commands[id].handler = handler;
             _commands[id].method = method;
@@ -137,10 +137,10 @@ ts::Args* ts::CommandLine::commandImpl(CommandLineHandler* handler, CommandLineM
 // Analyze a command line.
 //----------------------------------------------------------------------------
 
-bool ts::CommandLine::analyzeCommand(const UString& command)
+bool ts::CommandLine::analyzeCommand(const UString& line)
 {
     UStringVector args;
-    command.fromQuotedLine(args);
+    line.fromQuotedLine(args);
     if (args.empty()) {
         return true; // empty command line
     }
@@ -169,10 +169,10 @@ bool ts::CommandLine::analyzeCommand(const UString& name, const UStringVector& a
 // Analyze and process a command line.
 //----------------------------------------------------------------------------
 
-ts::CommandStatus ts::CommandLine::processCommand(const UString& command, Report* redirect)
+ts::CommandStatus ts::CommandLine::processCommand(const UString& line, Report* redirect)
 {
     UStringVector args;
-    command.fromQuotedLine(args);
+    line.fromQuotedLine(args);
     if (args.empty()) {
         return CommandStatus::SUCCESS; // empty command line
     }
