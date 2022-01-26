@@ -1,7 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-#  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2022, Thierry Lelegard
+#  Copyright (c) 2021, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -30,16 +29,25 @@
 <#
  .SYNOPSIS
 
-  Download, expand and install the Dektec DTAPI for Windows.
+  Download and install the Dektec DTAPI for Windows.
+
+ .PARAMETER Destination
+
+  Specify a local directory where the package will be downloaded.
+  By default, use the downloads folder for the current user.
 
  .PARAMETER ForceDownload
 
-  Force a download even if the DTAPI is already downloaded.
+  Force a download even if the package is already downloaded.
+
+ .PARAMETER GitHubActions
+
+  When used in a GitHub Action workflow, make sure that the required
+  environment variables are propagated to subsequent jobs.
 
  .PARAMETER NoInstall
 
-  Do not install the DTAPI package. By default, the API and the drivers are
-  installed.
+  Do not install the package. By default, the package is installed.
 
  .PARAMETER NoPause
 
@@ -49,12 +57,16 @@
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
+    [string]$Destination = "",
     [switch]$ForceDownload = $false,
+    [switch]$GitHubActions = $false,
     [switch]$NoInstall = $false,
     [switch]$NoPause = $false
 )
 
-Write-Output "Dektec WinSDK download and installation procedure"
+Write-Output "==== Dektec WinSDK download and installation procedure"
+
+# Web page for the latest releases.
 $DektecUrl = "http://www.dektec.com/downloads/SDK/"
 $DtapiInstaller = "DekTec SDK - Windows Setup.exe"
 
@@ -72,22 +84,13 @@ function Exit-Script([string]$Message = "")
     exit $Code
 }
 
-# Local file names.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
-$ExtDir = "$RootDir\bin\external"
-
-# Create the directory for external products when necessary.
-[void] (New-Item -Path $ExtDir -ItemType Directory -Force)
-
 # Without this, Invoke-WebRequest is awfully slow.
 $ProgressPreference = 'SilentlyContinue'
 
-# Get the HTML page for Dektec SDK downloads.
-# Normally, Invoke-WebRequest relies on Internet Explorer for HTML parsing.
-# Use -UseBasicParsing here because when we try to install Dektec SDK in
-# GitHub Actions, we execute in the Azure cloud and Azure has no`# Internet Explorer installed. 
+# Get the HTML page for downloads.
 $status = 0
 $message = ""
+$Ref = $null
 try {
     $response = Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $DektecUrl
     $status = [int] [Math]::Floor($response.StatusCode / 100)
@@ -95,23 +98,42 @@ try {
 catch {
     $message = $_.Exception.Message
 }
+
 if ($status -ne 1 -and $status -ne 2) {
+    # Error fetching download page.
     if ($message -eq "" -and (Test-Path variable:response)) {
-        Exit-Script "Status code $($response.StatusCode), $($response.StatusDescription)"
+        Write-Output "Status code $($response.StatusCode), $($response.StatusDescription)"
     }
     else {
-        Exit-Script "#### Error accessing ${DektecUrl}: $message"
+        Write-Output "#### Error accessing ${ReleasePage}: $message"
     }
 }
+else {
+    # Parse HTML page to locate the latest installer.
+    $Ref = $response.Links.href | Where-Object { $_ -like "*/WinSDK*.zip" } | Select-Object -First 1
+}
 
-# Parse HTML page to locate the WinSDK file.
-$sdkRef = $response.Links.href | Where-Object { $_ -like "*/WinSDK*.zip" } | Select-Object -First 1
+if (-not $Ref) {
+    # Could not find a reference to installer.
+    Exit-Script "Could not find a reference to librist installer in ${ReleasePage}"
+}
+else {
+    # Build the absolute URL's from base URL (the download page) and href links.
+    $DtapiUrl = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DektecUrl),$Ref)
+}
 
-# Build the absolute URL from base URL (the download page) and href link.
-$DtapiUrl = (New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DektecUrl),$sdkref)
+# Create the directory for external products or use default.
+if (-not $Destination) {
+    $Destination = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
+}
+else {
+    [void](New-Item -Path $Destination -ItemType Directory -Force)
+}
+
+# Local installer files.
 $DtapiZipName = (Split-Path -Leaf $DtapiUrl.toString())
-$DtapiZipFile = (Join-Path $ExtDir $DtapiZipName)
-$DtapiDir = (Join-Path $ExtDir ([io.fileinfo] $DtapiZipName).BaseName)
+$DtapiZipFile = (Join-Path $Destination $DtapiZipName)
+$DtapiDir = (Join-Path $Destination ([io.fileinfo] $DtapiZipName).BaseName)
 $DtapiSetup = (Join-Path $DtapiDir $DtapiInstaller)
 
 # Download WinSDK.zip
@@ -121,9 +143,9 @@ if (-not $ForceDownload -and (Test-Path $DtapiZipFile)) {
 else {
     Write-Output "Downloading $DtapiUrl ..."
     Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $DtapiUrl -OutFile $DtapiZipFile
-}
-if (-not (Test-Path $DtapiZipFile)) {
-    Exit-Script "$DtapiZipName download failed"
+    if (-not (Test-Path $DtapiZipFile)) {
+        Exit-Script "$DtapiUrl download failed"
+    }
 }
 
 # Extract archive.
@@ -132,15 +154,13 @@ if (Test-Path $DtapiDir) {
     Remove-Item $DtapiDir -Recurse -Force
 }
 Write-Output "Expanding DTAPI to $DtapiDir ..."
-Add-Type -AssemblyName System.IO.Compression.FileSystem
-[System.IO.Compression.ZipFile]::ExtractToDirectory($DtapiZipFile, $DtapiDir)
+Expand-Archive $DtapiZipFile -DestinationPath $DtapiDir
+if (-not (Test-Path $DtapiSetup)) {
+    Exit-Script "$DtapiInstaller not found in $DtapiZipFile"
+}
 
 # Install the DTAPI.
 if (-not $NoInstall) {
-    if (-not (Test-Path $DtapiSetup)) {
-        Exit-Script "$DtapiSetup not found, cannot install DTAPI"
-    }
-
     # The Dektec WinSDK refuses to upgrade, you need to uninstall first.
     # Registry roots for uninstallation procedures:
     $RegUninstall = @(

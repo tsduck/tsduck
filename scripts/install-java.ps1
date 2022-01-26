@@ -1,7 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-#  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2022, Thierry Lelegard
+#  Copyright (c) 2021, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -32,14 +31,19 @@
 
   Download and install Java for Windows (AdoptOpenJDK community project).
 
+ .PARAMETER Destination
+
+  Specify a local directory where the package will be downloaded.
+  By default, use the downloads folder for the current user.
+
  .PARAMETER ForceDownload
 
-  Force a download even if Java is already downloaded.
+  Force a download even if the package is already downloaded.
 
  .PARAMETER GitHubActions
 
-  When used in a GitHub Action workflow, make sure that the JAVA_HOME
-  environment variable is propagated to subsequent jobs.
+  When used in a GitHub Action workflow, make sure that the required
+  environment variables are propagated to subsequent jobs.
 
  .PARAMETER JRE
 
@@ -47,7 +51,7 @@
 
  .PARAMETER NoInstall
 
-  Do not install the Java package. By default, it is installed.
+  Do not install the package. By default, the package is installed.
 
  .PARAMETER NoPause
 
@@ -57,6 +61,7 @@
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
+    [string]$Destination = "",
     [switch]$ForceDownload = $false,
     [switch]$GitHubActions = $false,
     [switch]$JRE = $false,
@@ -64,18 +69,10 @@ param(
     [switch]$NoPause = $false
 )
 
-Write-Output "Java (AdoptOpenJDK) download and installation procedure"
+Write-Output "==== Java (AdoptOpenJDK) download and installation procedure"
+
+# REST API for the latest releases of AdoptOpenJDK.
 $API = "https://api.adoptopenjdk.net/v3"
-
-# Local file names.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
-$ExtDir = "$RootDir\bin\external"
-
-# Create the directory for external products when necessary.
-[void] (New-Item -Path $ExtDir -ItemType Directory -Force)
-
-# Without this, Invoke-WebRequest is awfully slow.
-$ProgressPreference = 'SilentlyContinue'
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")
@@ -90,6 +87,9 @@ function Exit-Script([string]$Message = "")
     }
     exit $Code
 }
+
+# Without this, Invoke-WebRequest is awfully slow.
+$ProgressPreference = 'SilentlyContinue'
 
 # Get JDK or JRE.
 if ($JRE) {
@@ -114,13 +114,23 @@ $bin = (Invoke-RestMethod $API/assets/latest/$lts/hotspot).binary | `
 
 $InstallerURL = $bin.installer.link
 $InstallerName = $bin.installer.name
-$InstallerPath = "$ExtDir\$InstallerName"
 
 if (-not $InstallerURL -or -not $InstallerName) {
     Exit-Script "Cannot find URL for installer"
 }
 
-# Download installer
+# Create the directory for external products or use default.
+if (-not $Destination) {
+    $Destination = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
+}
+else {
+    [void](New-Item -Path $Destination -ItemType Directory -Force)
+}
+
+# Local installer file.
+$InstallerPath = "$Destination\$InstallerName"
+
+# Download installer.
 if (-not $ForceDownload -and (Test-Path $InstallerPath)) {
     Write-Output "$InstallerName already downloaded, use -ForceDownload to download again"
 }
@@ -132,7 +142,7 @@ else {
     }
 }
 
-# Install product
+# Install package.
 if (-not $NoInstall) {
     Write-Output "Installing $InstallerName"
     # Note: /passive does not request any input from the user but still displays a progress window.
@@ -143,14 +153,7 @@ if (-not $NoInstall) {
 # Propagate JAVA_HOME in next jobs for GitHub Actions.
 if ($GitHubActions) {
     $jhome = [System.Environment]::GetEnvironmentVariable("JAVA_HOME","Machine")
-    if ((-not -not $env:GITHUB_ENV) -and (Test-Path $env:GITHUB_ENV)) {
-        # New version using environment file
-        Write-Output "JAVA_HOME=$jhome" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-    }
-    else {
-        # Old version using command on stdout.
-        Write-Output "::set-env name=JAVA_HOME::$jhome"
-    }
+    Write-Output "JAVA_HOME=$jhome" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 }
 
 Exit-Script

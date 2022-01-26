@@ -1,7 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-#  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2022, Thierry Lelegard
+#  Copyright (c) 2021, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -32,13 +31,23 @@
 
   Download and install Python for Windows.
 
+ .PARAMETER Destination
+
+  Specify a local directory where the package will be downloaded.
+  By default, use the downloads folder for the current user.
+
  .PARAMETER ForceDownload
 
-  Force a download even if Python is already downloaded.
+  Force a download even if the package is already downloaded.
+
+ .PARAMETER GitHubActions
+
+  When used in a GitHub Action workflow, make sure that the required
+  environment variables are propagated to subsequent jobs.
 
  .PARAMETER NoInstall
 
-  Do not install the Python package. By default, it is installed.
+  Do not install the package. By default, the package is installed.
 
  .PARAMETER NoPause
 
@@ -48,13 +57,17 @@
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
+    [string]$Destination = "",
     [switch]$ForceDownload = $false,
+    [switch]$GitHubActions = $false,
     [switch]$NoInstall = $false,
     [switch]$NoPause = $false
 )
 
-Write-Output "Python download and installation procedure"
-$DownloadPage = "https://www.python.org/downloads/windows/"
+Write-Output "==== Python download and installation procedure"
+
+# Web page for the latest releases of Python.
+$ReleasePage = "https://www.python.org/downloads/windows/"
 $FallbackURL = "https://www.python.org/ftp/python/3.9.0/python-3.9.0-amd64.exe"
 
 # A function to exit this script.
@@ -71,22 +84,15 @@ function Exit-Script([string]$Message = "")
     exit $Code
 }
 
-# Local file names.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
-$ExtDir = "$RootDir\bin\external"
-
-# Create the directory for external products when necessary.
-[void] (New-Item -Path $ExtDir -ItemType Directory -Force)
-
 # Without this, Invoke-WebRequest is awfully slow.
 $ProgressPreference = 'SilentlyContinue'
 
-# Get the HTML page for downloads.
+# Get the HTML page for latest package release.
 $status = 0
 $message = ""
 $Ref = $null
 try {
-    $response = Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $DownloadPage
+    $response = Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $ReleasePage
     $status = [int] [Math]::Floor($response.StatusCode / 100)
 }
 catch {
@@ -99,7 +105,7 @@ if ($status -ne 1 -and $status -ne 2) {
         Write-Output "Status code $($response.StatusCode), $($response.StatusDescription)"
     }
     else {
-        Write-Output "#### Error accessing ${DownloadPage}: $message"
+        Write-Output "#### Error accessing ${ReleasePage}: $message"
     }
 }
 else {
@@ -113,11 +119,20 @@ if (-not $Ref) {
 }
 else {
     # Build the absolute URL's from base URL (the download page) and href links.
-    $Url = New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$DownloadPage, $Ref)
+    $Url = New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$ReleasePage, $Ref)
 }
 
+# Create the directory for external products or use default.
+if (-not $Destination) {
+    $Destination = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
+}
+else {
+    [void](New-Item -Path $Destination -ItemType Directory -Force)
+}
+
+# Local installer file.
 $InstallerName = (Split-Path -Leaf $Url.LocalPath)
-$InstallerPath = "$ExtDir\$InstallerName"
+$InstallerPath = "$Destination\$InstallerName"
 
 # Download installer
 if (-not $ForceDownload -and (Test-Path $InstallerPath)) {

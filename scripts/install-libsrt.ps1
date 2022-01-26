@@ -1,7 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-#  TSDuck - The MPEG Transport Stream Toolkit
-#  Copyright (c) 2005-2022, Thierry Lelegard
+#  Copyright (c) 2021, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -30,7 +29,12 @@
 <#
  .SYNOPSIS
 
-  Download and install the libsrt library for Windows.
+  Download and install the librsrt library for Windows.
+
+ .PARAMETER Destination
+
+  Specify a local directory where the package will be downloaded.
+  By default, use the downloads folder for the current user.
 
  .PARAMETER ForceDownload
 
@@ -38,12 +42,12 @@
 
  .PARAMETER GitHubActions
 
-  When used in a GitHub Action workflow, make sure that the LIBSRT
-  environment variable is propagated to subsequent jobs.
+  When used in a GitHub Action workflow, make sure that the required
+  environment variables are propagated to subsequent jobs.
 
  .PARAMETER NoInstall
 
-  Do not install the package. By default, libsrt is installed.
+  Do not install the package. By default, the package is installed.
 
  .PARAMETER NoPause
 
@@ -53,21 +57,24 @@
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
+    [string]$Destination = "",
     [switch]$ForceDownload = $false,
     [switch]$GitHubActions = $false,
     [switch]$NoInstall = $false,
     [switch]$NoPause = $false
 )
 
-Write-Output "libsrt download and installation procedure"
-$ReleasePage = "https://github.com/tsduck/srt-win-installer/releases/latest"
+Write-Output "==== libsrt download and installation procedure"
+
+# Web page for the latest releases of rist-installer.
+$ReleasePage = "https://github.com/tsduck/rist-installer/releases/latest"
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")
 {
     $Code = 0
     if ($Message -ne "") {
-        Write-Host "ERROR: $Message"
+        Write-Output "ERROR: $Message"
         $Code = 1
     }
     if (-not $NoPause) {
@@ -76,62 +83,66 @@ function Exit-Script([string]$Message = "")
     exit $Code
 }
 
-# Local file names.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
-$ExtDir = "$RootDir\bin\external"
-
-# Create the directory for external products when necessary.
-[void] (New-Item -Path $ExtDir -ItemType Directory -Force)
-
 # Without this, Invoke-WebRequest is awfully slow.
 $ProgressPreference = 'SilentlyContinue'
 
-# Get the HTML page for latest libsrt release.
-$status = 0
-$message = ""
-try {
-    $response = Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $ReleasePage
-    $status = [int] [Math]::Floor($response.StatusCode / 100)
-}
-catch {
-    $message = $_.Exception.Message
-}
+# Get the URL of the latest installer.
+$URL = (Invoke-RestMethod "https://api.github.com/repos/Haivision/srt/releases?per_page=20" |
+        ForEach-Object { $_.assets } |
+        ForEach-Object { $_.browser_download_url } |
+        Select-String @("/libsrt-.*\.exe$", "/libsrt-.*-win-installer\.zip$") |
+        Select-Object -First 1)
 
-if ($status -ne 1 -and $status -ne 2) {
-    # Error fetch NSIS download page.
-    if ($message -eq "" -and (Test-Path variable:response)) {
-        Exit-Script "Status code $($response.StatusCode), $($response.StatusDescription)"
-    }
-    else {
-        Exit-Script "#### Error accessing ${ReleasePage}: $message"
-    }
+if (-not $URL) {
+    Exit-Script "Could not find a libsrt installer on GitHub"
+}
+if (-not ($URL -match "\.zip$") -and -not ($URL -match "\.exe$")) {
+    Exit-Script "Unexpected URL, not .exe, not .zip: $URL"
 }
 
-# Parse HTML page to locate the latest installer.
-$Ref = $response.Links.href | Where-Object { $_ -like "*/libsrt-*.exe" } | Select-Object -First 1
-
-if (-not $Ref) {
-    Exit-Script "Could not find a reference to libsrt installer in ${ReleasePage}"
+# Create the directory for external products or use default.
+if (-not $Destination) {
+    $Destination = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
+}
+else {
+    [void](New-Item -Path $Destination -ItemType Directory -Force)
 }
 
-# Build the absolute URL's from base URL (the download page) and href links.
-$Url = New-Object -TypeName 'System.Uri' -ArgumentList ([System.Uri]$ReleasePage, $Ref)
-$InstallerName = (Split-Path -Leaf $Url.LocalPath)
-$InstallerPath = "$ExtDir\$InstallerName"
+# Local installer file.
+$InstallerName = (Split-Path -Leaf $URL)
+$InstallerPath = "$Destination\$InstallerName"
 
 # Download installer
 if (-not $ForceDownload -and (Test-Path $InstallerPath)) {
     Write-Output "$InstallerName already downloaded, use -ForceDownload to download again"
 }
 else {
-    Write-Output "Downloading $Url ..."
-    Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $Url -OutFile $InstallerPath
+    Write-Output "Downloading $URL ..."
+    Invoke-WebRequest $URL.ToString() -UseBasicParsing -UserAgent Download -OutFile $InstallerPath
     if (-not (Test-Path $InstallerPath)) {
-        Exit-Script "$Url download failed"
+        Exit-Script "$URL download failed"
     }
 }
 
-# Install libsrt
+# If installer is an archive, expect an exe with same name inside.
+if ($InstallerName -match "\.zip$") {
+
+    # Expected installer name in archive.
+    $ZipName = $InstallerName
+    $ZipPath = $InstallerPath
+    $InstallerName = $ZipName -replace '-win-installer.zip','.exe'
+    $InstallerPath = "$Destination\$InstallerName"
+
+    # Extract the installer.
+    Remove-Item -Force $InstallerPath -ErrorAction SilentlyContinue
+    Write-Output "Expanding $ZipName ..."
+    Expand-Archive $ZipPath -DestinationPath $Destination
+    if (-not (Test-Path $InstallerPath)) {
+        Exit-Script "$InstallerName not found in $ZipName"
+    }
+}
+
+# Install package
 if (-not $NoInstall) {
     Write-Output "Installing $InstallerName"
     Start-Process -FilePath $InstallerPath -ArgumentList @("/S") -Wait

@@ -59,6 +59,9 @@ Build scripts on Windows
   pre-requisite packages to build TSDuck on Windows. Alternatively,
   the individual install-*.ps1 scripts can be used for each product.
 
+- install-tsduck.ps1 : a sample script which downloads and installs TSDuck.
+  It can be used by other projects which need TSDuck.
+
 - WindowsPowerShell.reg : A registry file which add definitions to run a
   PowerShell script by double-clicking on it (the default action is to edit
   script files with notepad).
