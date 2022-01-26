@@ -21,6 +21,13 @@ Running the installer provides several options:
 [Nightly builds and pre-releases](https://tsduck.io/download/prerelease) can be found on the
 TSDuck Web site.
 
+To automate the installation, the executable binary installer can be run from the command line
+or a script.
+- The option `/S` means "silent". No window is displayed, no user interaction is possible.
+- The option `/all=true` means install all options. By default, only the tools, plugins and
+  documentation are installed. In case of upgrade over an existing installation, the default
+  is to upgrade the same options as in the previous installation.
+
 # macOS {#macinstall}
 
 TSDuck is installable on macOS systems using [Homebrew](https://brew.sh),

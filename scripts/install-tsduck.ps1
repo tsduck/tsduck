@@ -29,7 +29,15 @@
 <#
  .SYNOPSIS
 
-  Download and install Graphviz for Windows (Graphviz is used by Doxygen).
+  Download and install TSDuck for Windows.
+
+  This is a sample script which can be used by other projects which need TSDuck.
+
+ .PARAMETER All
+
+  Install all options. By default, only the tools, plugins and documentation
+  are installed. In case of upgrade over an existing installation, the default
+  is to upgrade the same options as in the previous installation.
 
  .PARAMETER Destination
 
@@ -57,6 +65,7 @@
 #>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
+    [switch]$All = $false,
     [string]$Destination = "",
     [switch]$ForceDownload = $false,
     [switch]$GitHubActions = $false,
@@ -64,19 +73,17 @@ param(
     [switch]$NoPause = $false
 )
 
-Write-Output "==== Graphviz download and installation procedure"
+Write-Output "==== TSDuck download and installation procedure"
 
 # Web page for the latest releases.
-$ReleasePage = "http://graphviz.org/download/"
-$FallbackURL = "https://gitlab.com/graphviz/graphviz/-/package_files/9574245/download"
-$FallbackName = "stable_windows_10_cmake_Release_x64_graphviz-install-2.47.1-win64.exe"
+$ReleasePage = "https://github.com/tsduck/tsduck/releases/latest"
 
 # A function to exit this script.
 function Exit-Script([string]$Message = "")
 {
     $Code = 0
     if ($Message -ne "") {
-        Write-Host "ERROR: $Message"
+        Write-Output "ERROR: $Message"
         $Code = 1
     }
     if (-not $NoPause) {
@@ -88,7 +95,7 @@ function Exit-Script([string]$Message = "")
 # Without this, Invoke-WebRequest is awfully slow.
 $ProgressPreference = 'SilentlyContinue'
 
-# Get the HTML page for downloads.
+# Get the HTML page for latest package release.
 $status = 0
 $message = ""
 $Ref = $null
@@ -111,12 +118,12 @@ if ($status -ne 1 -and $status -ne 2) {
 }
 else {
     # Parse HTML page to locate the latest installer.
-    $Ref = $response.Links.href | Where-Object { $_ -like "*stable_windows*Release*win64.exe*" } | Select-Object -First 1
+    $Ref = $response.Links.href | Where-Object { $_ -like "*/TSDuck-Win64-*.exe" } | Select-Object -First 1
 }
 
 if (-not $Ref) {
     # Could not find a reference to installer.
-    $Url = [System.Uri]$FallbackURL
+    Exit-Script "Could not find a reference to installer in ${ReleasePage}"
 }
 else {
     # Build the absolute URL's from base URL (the download page) and href links.
@@ -135,7 +142,7 @@ else {
 $InstallerName = (Split-Path -Leaf $Url.LocalPath)
 $InstallerPath = "$Destination\$InstallerName"
 
-# Download installer
+# Download installer.
 if (-not $ForceDownload -and (Test-Path $InstallerPath)) {
     Write-Output "$InstallerName already downloaded, use -ForceDownload to download again"
 }
@@ -150,7 +157,17 @@ else {
 # Install package.
 if (-not $NoInstall) {
     Write-Output "Installing $InstallerName"
-    Start-Process -FilePath $InstallerPath -ArgumentList @("/S") -Wait
+    $ArgList = @("/S")
+    if ($All) {
+        $ArgList += "/all=true"
+    }
+    Start-Process -FilePath $InstallerPath -ArgumentList $ArgList -Wait
+}
+
+# Propagate Path in next jobs for GitHub Actions.
+if ($GitHubActions) {
+    $path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
+    Write-Output "Path=$path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 }
 
 Exit-Script

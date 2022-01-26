@@ -478,6 +478,10 @@ function .onInit
         ; "/all=true" is set, install all sections.
         !insertmacro SelectSection ${SectionTools}
         !insertmacro SelectSection ${SectionDocumentation}
+        !insertmacro SelectSection ${SectionPython}
+!ifdef JarFile
+        !insertmacro SelectSection ${SectionJava}
+!endif
         !insertmacro SelectSection ${SectionDevelopment}
     ${Else}
         ; Preset the selections identically to the previous installation.
