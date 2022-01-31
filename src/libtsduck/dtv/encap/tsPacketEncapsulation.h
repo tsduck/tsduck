@@ -69,7 +69,7 @@ namespace ts {
     //! When selecting the PES encapsulation the same plain elementary
     //! stream is used, but with a PES envelope. This reduces the payload
     //! size, but makes the outer encapsulation more transparent. The full
-    //! overhead is around 14-20% of more data.
+    //! overhead is around 14-20% of additional data.
     //!
     //! The PES envelope uses a KLVA SMPTE-336M encapsulation to insert the
     //! inner payload into one private (testing) key. Each TS packet contains
@@ -269,9 +269,9 @@ namespace ts {
 
         //!
         //! Set packing mode.
-        //! When packing mode is of (the default), encapsulated packets are issued
-        //! as soon as null packet are available for replacement, potentioally leaving
-        //! unused part in some outer packet. When packing mode if off, outer packets
+        //! When packing mode is off (the default), encapsulated packets are issued
+        //! as soon as null packet are available for replacement, potentially leaving
+        //! unused part in some outer packet. When packing mode if on, outer packets
         //! are emitted only when they are full.
         //! @param [in] on Packing mode.
         //! @param [in] limit Number of packets after which encapsulation is forced, even when packing is off.
