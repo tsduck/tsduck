@@ -87,7 +87,7 @@ void ts::AsyncReport::writeLog(int severity, const UString &msg)
     // TS_DEBUG_LOG is automatically defined and the debug logging is active.
     UString msgNewLine(msg);
     msgNewLine += u"\n";
-    ::OutputDebugStringA(msgNewLine.toUTF8().c_str());
+    ::OutputDebugStringW(msgNewLine.wc_str());
 #endif
 
     if (!_terminated) {

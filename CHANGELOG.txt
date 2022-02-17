@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2691
+VERSION 3.30-2697
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,7 +12,7 @@ VERSION 3.30-2691
     average bitrate, all over the capture, based on PCR's. Previously, the
     base was the current "tsp" bitrate, ie. a PCR-based evaluation from the
     last part of the stream only.
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --event in output plugin "hls".
     - Option --extract-tcp-stream in "tspcap".
     - Options --carrier-only and --roll-off in output plugin "dektec".
@@ -33,6 +33,7 @@ VERSION 3.30-2691
     in a modified PID changes its version. For instance, if the SDT Actual
     needs to be modified, all SDT Other in the same PID are transparently
     passed. If one of these SDT Other changed its version, "tsp" crashed.
+  * Fixed issue #939: On Windows, opening TS files with non-ASCII name failed.
 
 -------------------------------------------------------------------------------
 
@@ -59,7 +60,7 @@ VERSION 3.29-2647
     potential equivalent options in plugins.
   * Bash completion support has been added for all TSDuck commands and
     plugins (plugin names, command and plugin options, enumeration values).
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Options --section-number, --negate-section-number, --invalid-sections,
       --only-invalid-sections in "tstables" and plugin "tables".
     - Options --bufferapi, --final-statistics and --statistics-interval in
@@ -91,7 +92,7 @@ VERSION 3.28-2548
 
 [IMP] Improvements on existing commands and plugins:
 
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --install-dvb-firmware in "tsconfig".
     - Option --local-interface in plugin "srt" (input and output).
     - Options --abnt, --atsc, --isdb in "tsscan".
@@ -136,7 +137,7 @@ VERSION 3.27-2434
 
   * Added support for Dektec Ethernet devices (eg. DTA-2162).
   * The plugin "zap" can now select more than one service.
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --max-output-packets in "tsp".
     - Option --force-local-multicast-outgoing in output plugin "ip".
     - Options --fifo-size, --preload-fifo in input plugin "dektec".
@@ -182,7 +183,7 @@ VERSION 3.26-2344
     non-empty value, the user's configuration file is not loaded.
   * Bitrates are now handled, entered and computed with one decimal digit.
     The increased precision was required by some modulations.
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --event-code in plugins "mpe", "psi" and "tables".
     - Options --min-bitrate and --min-inter-packet in plugin "spliceinject".
     - Option --java and --python in "tsconfig".
@@ -235,7 +236,7 @@ VERSION 3.25-2236
   * The plugin "reduce" can now reduce the bitrate using PCR and VBR.
   * The command "tstabcomp" can use the standard input and output for XML or
     binary section files.
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --save-es in plugin "pes".
     - Option --extended-info in "tslsdvb" (--verbose no longer displays the
       extremely verbose graph, use --extended-info for this).
@@ -296,7 +297,7 @@ VERSION 3.24-2106
   * Added "default.time" to configuration file (see option --time-reference).
   * General improvement of ISDB support for Brazil and the Philippines:
     - Default character set, time reference and HF bands.
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --log-plugin-index in "tsp".
     - Option --subtitles-pid in plugin "zap".
     - Option --json in "tscmp" and "tsdektec".
@@ -369,7 +370,7 @@ VERSION 3.22-1924
     and propagate the information to all plugins (see improvement in plugin
     "pcrverify").
   * Most commands reading TS files can read M2TS files as well.
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --format in "tsanalyze", "tsbitrate", "tscmp", "tsdate", "tsdump",
       "tspsi", "tstables", plugins "file", "fork" (input, output and packet
       processor) and plugins "merge", "mux".
@@ -409,7 +410,7 @@ VERSION 3.21-1811
     - Japanese character sets as defined in ARIB STD-B24.
     - Partial ISDB signalization, as defined in ARIB STD-B10.
     - Option --japan triggers suitable defaults for Japanese TV.
-  * New options in exiting commands and plugins:
+  * New options in existing commands and plugins:
     - Option --initial-input-packets in "tsp".
     - Options --reopen-on-error, --max-retry and --retry-interval in
       output plugin "file".

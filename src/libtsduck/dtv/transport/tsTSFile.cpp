@@ -321,7 +321,7 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
 
     if (!_std_inout) {
         // Actual file name, open it.
-        _handle = ::CreateFile(_filename.toUTF8().c_str(), access, shared, NULL, winflags, attrib, NULL);
+        _handle = ::CreateFileW(_filename.wc_str(), access, shared, NULL, winflags, attrib, NULL);
         if (_handle == INVALID_HANDLE_VALUE) {
             const SysErrorCode err = LastSysErrorCode();
             report.log(_severity, u"cannot open %s: %s", {getDisplayFileName(), SysErrorCodeMessage(err)});
