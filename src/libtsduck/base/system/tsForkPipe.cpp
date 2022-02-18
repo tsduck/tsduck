@@ -37,6 +37,15 @@
 #define PIPE_WRITEFD 1
 #define PIPE_COUNT   2
 
+// Path to defaut basic shell on UNIX systems.
+// Can be overridden on the command line, eg. make CXXFLAGS_EXTRA="-DTS_SHELL_PATH=/foo/bar/bin/sh"
+#if !defined(TS_SHELL_PATH)
+    #define TS_SHELL_PATH /bin/sh
+#endif
+#if !defined(TS_SHELL_STRING)
+    #define TS_SHELL_STRING TS_STRINGIFY(TS_SHELL_PATH)
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor / destructor
@@ -451,7 +460,7 @@ bool ts::ForkPipe::open(const UString& command, WaitMode wait_mode, size_t buffe
 
         // Execute the command if there was no prior error.
         if (message == nullptr) {
-            ::execl("/bin/sh", "/bin/sh", "-c", command.toUTF8().c_str(), nullptr);
+            ::execl(TS_SHELL_STRING, TS_SHELL_STRING, "-c", command.toUTF8().c_str(), nullptr);
             // Should not return, so this is an error if we get there.
             error = errno;
             message = "exec error";
