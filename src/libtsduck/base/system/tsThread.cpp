@@ -114,7 +114,7 @@ void ts::Thread::Yield()
 {
 #if defined(TS_WINDOWS)
     ::SwitchToThread();
-#elif defined(TS_MAC) || defined(_GLIBCXX_USE_SCHED_YIELD)
+#elif defined(TS_MAC) || defined(TS_ANDROID) || defined(_GLIBCXX_USE_SCHED_YIELD)
     ::sched_yield();
 #else
     ::pthread_yield();
@@ -255,10 +255,13 @@ bool ts::Thread::start()
     }
 
     // Use explicit scheduling attributes, do not inherit them from the current thread.
+    // Apparently not supported on Android before API version 28.
+#if !defined(__ANDROID_API__) || __ANDROID_API__ >= 28
     if (::pthread_attr_setinheritsched(&attr, PTHREAD_EXPLICIT_SCHED) != 0) {
         ::pthread_attr_destroy(&attr);
         return false;
     }
+#endif
 
     // Create the thread
     if (::pthread_create(&_pthread, &attr, Thread::ThreadProc, this) != 0) {

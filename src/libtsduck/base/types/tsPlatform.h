@@ -228,6 +228,10 @@
     //! Defined when compiled for a Cygwin target platform.
     //!
     #define TS_CYGWIN
+    //!
+    //! Defined when compiled for an Android target platform.
+    //!
+    #define TS_ANDROID
 
 #elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #if !defined(TS_WINDOWS)
@@ -255,6 +259,11 @@
     #endif
 #else
     #error "New unknown operating system, please update tsPlatform.h"
+#endif
+
+#if defined(__ANDROID__) && !defined(TS_ANDROID)
+    // Android comes in addition to Linux.
+    #define TS_ANDROID 1
 #endif
 
 #if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
