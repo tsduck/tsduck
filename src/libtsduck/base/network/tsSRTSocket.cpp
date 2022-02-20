@@ -30,6 +30,8 @@
 #include "tsSRTSocket.h"
 #include "tsSingletonManager.h"
 #include "tsArgs.h"
+#include "tsjsonObject.h"
+#include "tsjsonNumber.h"
 #include "tsTime.h"
 #include "tsMemory.h"
 #include "tsMutex.h"
@@ -252,6 +254,12 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"Report SRT usage statistics when the SRT socket is closed. "
               u"This option is implicit with --statistics-interval.");
 
+    args.option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
+    args.help(u"json-line", u"'prefix'",
+              u"With --statistics-interval or --final-statistics, report the statistics as one single line in JSON format. "
+              u"The optional string parameter specifies a prefix to prepend on the log "
+              u"line before the JSON text to locate the appropriate line in the logs.");
+
     args.option(u"streamid", 0, Args::STRING);
     args.help(u"streamid",
               u"A string limited to 512 characters that can be set on the socket prior to connecting. "
@@ -463,6 +471,8 @@ public:
      bool        tlpktdrop;
      bool        disconnected;
      bool        final_stats;
+     bool        json_line;
+     UString     json_prefix;
      MilliSecond stats_interval;
      SRTStatMode stats_mode;
 };
@@ -516,6 +526,8 @@ ts::SRTSocket::Guts::Guts(SRTSocket* parent) :
     tlpktdrop(false),
     disconnected(false),
     final_stats(false),
+    json_line(false),
+    json_prefix(),
     stats_interval(0),
     stats_mode(SRTStatMode::ALL)
 {
@@ -835,6 +847,8 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(_guts->udp_sndbuf, u"udp-sndbuf", -1);
     args.getIntValue(_guts->stats_interval, u"statistics-interval", 0);
     _guts->final_stats = _guts->stats_interval > 0 || args.present(u"final-statistics");
+    _guts->json_line = args.present(u"json-line");
+    args.getValue(_guts->json_prefix, u"json-line");
 
     return true;
 }
@@ -1143,34 +1157,69 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
     }
 
     // Build a statistics message.
-    const bool show_receive = (_guts->total_received_bytes > 0 || stats.byteRecvTotal > 0) && (mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE;
-    const bool show_send = (_guts->total_sent_bytes > 0 || stats.byteSentTotal > 0) && (mode & SRTStatMode::SEND) != SRTStatMode::NONE;
-    bool none = true;
-    UString msg(u"SRT statistics:");
-    if (show_receive && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
-        none = false;
-        msg.format(u"\n  Total received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
-                   {stats.byteRecvTotal, stats.pktRecvTotal, stats.pktRcvLossTotal, stats.pktRcvDropTotal});
+    if (_guts->json_line) {
+        // Statistics in JSON format.
+        json::Object root;
+        if ((mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE) {
+            root.query(u"receive.total", true).add(u"bytes", stats.byteRecvTotal);
+            root.query(u"receive.total", true).add(u"packets", stats.pktRecvTotal);
+            root.query(u"receive.total", true).add(u"lost-packets", stats.pktRcvLossTotal);
+            root.query(u"receive.total", true).add(u"dropped-packets", stats.pktRcvDropTotal);
+            root.query(u"receive.interval", true).add(u"bytes", stats.byteRecv);
+            root.query(u"receive.interval", true).add(u"packets", stats.pktRecv);
+            root.query(u"receive.interval", true).add(u"lost-packets", stats.pktRcvLoss);
+            root.query(u"receive.interval", true).add(u"dropped-packets", stats.pktRcvDrop);
+        }
+        if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
+            root.query(u"send.total", true).add(u"bytes", stats.byteSentTotal);
+            root.query(u"send.total", true).add(u"packets", stats.pktSentTotal);
+            root.query(u"send.total", true).add(u"retransmit-packets", stats.pktRetransTotal);
+            root.query(u"send.total", true).add(u"lost-packets", stats.pktSndLossTotal);
+            root.query(u"send.total", true).add(u"dropped-packets", stats.pktSndDropTotal);
+            root.query(u"send.interval", true).add(u"bytes", stats.byteSent);
+            root.query(u"send.interval", true).add(u"packets", stats.pktSent);
+            root.query(u"send.interval", true).add(u"retransmit-packets", stats.pktRetrans);
+            root.query(u"send.interval", true).add(u"lost-packets", stats.pktSndLoss);
+            root.query(u"send.interval", true).add(u"dropped-packets", stats.pktSndDrop);
+        }
+        // Generate one line.
+        TextFormatter text(report);
+        text.setString();
+        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+        root.print(text);
+        report.info(_guts->json_prefix + text.toString());
     }
-    if (show_send && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
-        none = false;
-        msg.format(u"\n  Total sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
-                   {stats.byteSentTotal, stats.pktSentTotal, stats.pktRetransTotal, stats.pktSndLossTotal, stats.pktSndDropTotal});
+    else {
+        // Statistics in human-readable format.
+        const bool show_receive = (_guts->total_received_bytes > 0 || stats.byteRecvTotal > 0) && (mode & SRTStatMode::RECEIVE) != SRTStatMode::NONE;
+        const bool show_send = (_guts->total_sent_bytes > 0 || stats.byteSentTotal > 0) && (mode & SRTStatMode::SEND) != SRTStatMode::NONE;
+        bool none = true;
+        UString msg(u"SRT statistics:");
+        if (show_receive && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
+            none = false;
+            msg.format(u"\n  Total received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
+                       {stats.byteRecvTotal, stats.pktRecvTotal, stats.pktRcvLossTotal, stats.pktRcvDropTotal});
+        }
+        if (show_send && (mode & SRTStatMode::TOTAL) != SRTStatMode::NONE) {
+            none = false;
+            msg.format(u"\n  Total sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
+                       {stats.byteSentTotal, stats.pktSentTotal, stats.pktRetransTotal, stats.pktSndLossTotal, stats.pktSndDropTotal});
+        }
+        if (show_receive && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
+            none = false;
+            msg.format(u"\n  Interval received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
+                       {stats.byteRecv, stats.pktRecv, stats.pktRcvLoss, stats.pktRcvDrop});
+        }
+        if (show_send && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
+            none = false;
+            msg.format(u"\n  Interval sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
+                       {stats.byteSent, stats.pktSent, stats.pktRetrans, stats.pktSndLoss, stats.pktSndDrop});
+        }
+        if (none) {
+            msg.append(u" none available");
+        }
+        report.info(msg);
     }
-    if (show_receive && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
-        none = false;
-        msg.format(u"\n  Interval received: %'d bytes, %'d packets, lost: %'d packets, dropped: %'d packets",
-                   {stats.byteRecv, stats.pktRecv, stats.pktRcvLoss, stats.pktRcvDrop});
-    }
-    if (show_send && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
-        none = false;
-        msg.format(u"\n  Interval sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
-                   {stats.byteSent, stats.pktSent, stats.pktRetrans, stats.pktSndLoss, stats.pktSndDrop});
-    }
-    if (none) {
-        msg.append(u" none available");
-    }
-    report.info(msg);
 
     return true;
 }
