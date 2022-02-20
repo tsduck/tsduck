@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2697
+VERSION 3.30-2700
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -19,6 +19,7 @@ VERSION 3.30-2697
     - Option --periodic-command in plugin "bitrate_monitor".
     - Option --final-wait in "tsp".
     - Option --user-agent in input plugins "hls", "http".
+    - Option --json-line in input and output plugins "srt".
 
 [BUG] Bug fixes:
 
