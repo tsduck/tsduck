@@ -665,15 +665,18 @@ void ts::DataInjectPlugin::TCPListener::main()
                     else {
                         emmgmux::ChannelSetup* m = dynamic_cast<emmgmux::ChannelSetup*>(msg.pointer());
                         assert (m != nullptr);
+                        // First, declare the channel as established.
+                        {
+                            GuardMutex lock(_plugin->_mutex);
+                            _plugin->_client_id = m->client_id;
+                            _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
+                            _plugin->_channel_established = true;
+                        }
                         // Build and send the channel_status
                         channel_status.channel_id = m->channel_id;
                         channel_status.client_id = m->client_id;
                         channel_status.section_TSpkt_flag = m->section_TSpkt_flag;
                         ok = _client.send(channel_status, _plugin->_logger);
-                        GuardMutex lock(_plugin->_mutex);
-                        _plugin->_client_id = m->client_id;
-                        _plugin->_section_mode = !m->section_TSpkt_flag; // flag == 0 means section
-                        _plugin->_channel_established = true;
                     }
                     break;
                 }
@@ -708,6 +711,12 @@ void ts::DataInjectPlugin::TCPListener::main()
                     else {
                         emmgmux::StreamSetup* m = dynamic_cast<emmgmux::StreamSetup*>(msg.pointer());
                         assert(m != nullptr);
+                        // First, declare the stream as established.
+                        {
+                            GuardMutex lock(_plugin->_mutex);
+                            _plugin->_data_id = m->data_id;
+                            _plugin->_stream_established = true;
+                        }
                         // Build and send the stream_status
                         stream_status.channel_id = m->channel_id;
                         stream_status.stream_id = m->stream_id;
@@ -715,9 +724,6 @@ void ts::DataInjectPlugin::TCPListener::main()
                         stream_status.data_id = m->data_id;
                         stream_status.data_type = m->data_type;
                         ok = _client.send(stream_status, _plugin->_logger);
-                        GuardMutex lock(_plugin->_mutex);
-                        _plugin->_data_id = m->data_id;
-                        _plugin->_stream_established = true;
                     }
                     break;
                 }
