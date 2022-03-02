@@ -59,7 +59,8 @@ ts::T2MIDemux::T2MIDemux(DuckContext& duck, T2MIHandlerInterface* t2mi_handler, 
     _pids(),
     _psi_demux(duck, this)
 {
-    immediateReset();
+    // No virtual dispatch in constructor, use explicit dispatch.
+    T2MIDemux::immediateReset();
 }
 
 ts::T2MIDemux::~T2MIDemux()
@@ -118,7 +119,8 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
     }
 
     // Check if we loose synchronization.
-    if (pc->sync && (pkt.getDiscontinuityIndicator() || pkt.getCC() != ((pc->continuity + 1) & CC_MASK))) {
+    // Continuity counters must be consecutive or identical (duplicated packet, even thought we don't check for exact duplication).
+    if (pc->sync && (pkt.getDiscontinuityIndicator() || (pkt.getCC() != ((pc->continuity + 1) & CC_MASK) && pkt.getCC() != pc->continuity))) {
         pc->lostSync();
     }
 
