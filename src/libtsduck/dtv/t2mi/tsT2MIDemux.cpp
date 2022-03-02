@@ -118,9 +118,13 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
         CheckNonNull(pc.pointer());
     }
 
+    // Drop duplicate packet in outer transport stream.
+    if (pc->sync && pkt.getCC() == pc->continuity) {
+        return;
+    }
+
     // Check if we loose synchronization.
-    // Continuity counters must be consecutive or identical (duplicated packet, even thought we don't check for exact duplication).
-    if (pc->sync && (pkt.getDiscontinuityIndicator() || (pkt.getCC() != ((pc->continuity + 1) & CC_MASK) && pkt.getCC() != pc->continuity))) {
+    if (pc->sync && (pkt.getDiscontinuityIndicator() || pkt.getCC() != ((pc->continuity + 1) & CC_MASK))) {
         pc->lostSync();
     }
 
