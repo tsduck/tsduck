@@ -118,6 +118,11 @@ void ts::T2MIDemux::feedPacket(const TSPacket& pkt)
         CheckNonNull(pc.pointer());
     }
 
+    // Ignore packets without a payload (their CC should not be incremented, no need to check the synchronization).
+    if (!pkt.hasPayload()) {
+        return;
+    }
+
     // Drop duplicate packet in outer transport stream.
     if (pc->sync && pkt.getCC() == pc->continuity) {
         return;
