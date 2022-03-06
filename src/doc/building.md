@@ -74,7 +74,8 @@ TSDuck will be disabled but the impact is limited. For instance, disabling
 The following `make` variables can be defined:
 
 - `NOTEST`     : Do not build unitary tests.
-- `NODEKTEC`   : No Dektec support, remove dependency to `DTAPI`.
+- `NODEKTEC`   : No Dektec device support, remove dependency to `DTAPI`.
+- `NOHIDES`    : No HiDes device support.
 - `NOCURL`     : No HTTP support, remove dependency to `libcurl`.
 - `NOPCSC`     : No smartcard support, remove dependency to `pcsc-lite`.
 - `NOEDITLINE` : No interactive line editing, remove dependency to libedit.

@@ -32,7 +32,8 @@
 #  Additional options which can be defined:
 #
 #  - NOTEST     : Do not build unitary tests.
-#  - NODEKTEC   : No Dektec support, remove dependency to DTAPI.
+#  - NODEKTEC   : No Dektec device support, remove dependency to DTAPI.
+#  - NOHIDES    : No HiDes device support.
 #  - NOCURL     : No HTTP support, remove dependency to libcurl.
 #  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
 #  - NOSRT      : No SRT support, remove dependency to libsrt.
