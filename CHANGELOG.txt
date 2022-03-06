@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2702
+VERSION 3.30-2707
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -35,8 +35,11 @@ VERSION 3.30-2702
     needs to be modified, all SDT Other in the same PID are transparently
     passed. If one of these SDT Other changed its version, "tsp" crashed.
   * Fixed issue #939: On Windows, opening TS files with non-ASCII name failed.
+  * Fixed issue #948: Fixed truncated HTTP transfers when the server sends
+    very small chunks of data (observed with Python http.server, not seen
+    on usual production servers such as Apache or IIS).
   * Fixed issue #950: Extraction of T2MI streams failed in case of duplicate
-    packets in the outer transport stream.
+    packets or packets without payload in the outer transport stream.
 
 -------------------------------------------------------------------------------
 
