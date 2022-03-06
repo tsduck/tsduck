@@ -207,42 +207,44 @@ size_t ts::AbstractHTTPInputPlugin::receiveTransfer(TSPacket* buffer, size_t max
     size_t packetCount = 0;
     size_t receiveSize = 0;
 
-    // If a partial packet is present, try to fill it.
-    if (_partialSize > 0) {
-        assert(_partialSize < PKT_SIZE);
+    // Repeat until at least one packet is received.
+    do {
+        // If a partial packet is present, try to fill it.
+        if (_partialSize > 0) {
+            assert(_partialSize < PKT_SIZE);
 
-        // Receive more data into partial packet. We must receive at least one packet
-        // because returning zero means end of transfer.
-        while (_partialSize < PKT_SIZE) {
-            if (!_request.receive(_partial.b + _partialSize, PKT_SIZE - _partialSize, receiveSize) || receiveSize == 0) {
-                // Error or end of transfer.
-                return 0;
+            // Receive more data into partial packet. We must receive at least one packet because returning zero means end of transfer.
+            while (_partialSize < PKT_SIZE) {
+                if (!_request.receive(_partial.b + _partialSize, PKT_SIZE - _partialSize, receiveSize) || receiveSize == 0) {
+                    // Error or end of transfer.
+                    return 0;
+                }
+                _partialSize += receiveSize;
             }
-            _partialSize += receiveSize;
+            assert(_partialSize == PKT_SIZE);
+
+            // Copy the initial packet in the user buffer.
+            *curBuffer++ = _partial;
+            maxPackets--;
+            packetCount++;
+            _partialSize = 0;
         }
-        assert(_partialSize == PKT_SIZE);
 
-        // Copy the initial packet in the user buffer.
-        *buffer = _partial;
-        curBuffer++;
-        maxPackets--;
-        packetCount = 1;
-        _partialSize = 0;
-    }
+        // Receive subsequent data directly in the caller's buffer.
+        // Don't check the returned bool, we only need the returned size (O on error).
+        receiveSize = 0;
+        _request.receive(curBuffer->b, PKT_SIZE * maxPackets, receiveSize);
 
-    // Receive subsequent data directly in the caller's buffer.
-    // Don't check the returned bool, we only need the returned size (O on error).
-    receiveSize = 0;
-    _request.receive(curBuffer->b, PKT_SIZE * maxPackets, receiveSize);
+        // Compute residue after last complete packet.
+        _partialSize = receiveSize % PKT_SIZE;
+        packetCount += (receiveSize - _partialSize) / PKT_SIZE;
 
-    // Compute residue after last complete packet.
-    _partialSize = receiveSize % PKT_SIZE;
-    packetCount += (receiveSize - _partialSize) / PKT_SIZE;
+        // Save residue in partial packet.
+        if (_partialSize > 0) {
+            ::memcpy(_partial.b, buffer[packetCount].b, _partialSize);
+        }
 
-    // Save residue in partial packet.
-    if (_partialSize > 0) {
-        ::memcpy(_partial.b, buffer[packetCount].b, _partialSize);
-    }
+    } while (packetCount == 0 && receiveSize != 0);
 
     // If an intermediate save file was specified, save the packets.
     // Display errors but do not fail, this is just auto save.
