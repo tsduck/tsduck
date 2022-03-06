@@ -54,6 +54,7 @@ namespace ts {
     public:
         // Implementation of plugin API
         RMOrphanPlugin(TSP*);
+        virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
@@ -65,10 +66,11 @@ namespace ts {
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
-        // Reference a PID
+        // Reference a PID or a list of predefined PID's.
         void passPID(PID pid);
+        void passPredefinedPIDs(Standards standards, PID first, PID last);
 
-        // Adds all ECM/EMM PIDs from the specified descriptor list
+        // Adds all ECM/EMM PIDs from the specified descriptor list.
         void addCA(const DescriptorList& dlist, TID parent_table);
     };
 }
@@ -86,10 +88,33 @@ ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
     _pass_pids(),
     _demux(duck, this)
 {
+    duck.defineArgsForStandards(*this);
+
     option(u"stuffing", 's');
     help(u"stuffing",
          u"Replace excluded packets with stuffing (null packets) instead "
          u"of removing them. Useful to preserve bitrate.");
+}
+
+
+//----------------------------------------------------------------------------
+// Get command line options.
+//----------------------------------------------------------------------------
+
+bool ts::RMOrphanPlugin::getOptions()
+{
+    // Decode command line options.
+    duck.loadArgs(*this);
+    _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
+
+    // Assume MPEG. Also assume DVB if neither ISDB nor ATSC.
+    duck.addStandards(Standards::MPEG);
+    if ((duck.standards() & (Standards::ISDB | Standards::ATSC)) == Standards::NONE) {
+        duck.addStandards(Standards::DVB);
+    }
+    tsp->debug(u"using standards %s", {StandardsNames(duck.standards())});
+
+    return true;
 }
 
 
@@ -99,27 +124,14 @@ ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
 
 bool ts::RMOrphanPlugin::start()
 {
-    // Get command line arguments
-    _drop_status = present(u"stuffing") ? TSP_NULL : TSP_DROP;
-
     // List of referenced PID's, ie. PID's which must be passed.
-    // Initially contains all predefined PID's
+    // Initially contains all predefined PID's for the declared standards.
     _pass_pids.reset();
-    passPID(PID_PAT);
-    passPID(PID_CAT);
-    passPID(PID_TSDT);
-    passPID(PID_NULL);  // keep stuffing as well
-    passPID(PID_NIT);
-    passPID(PID_SDT);   // also contains BAT
-    passPID(PID_EIT);
-    passPID(PID_RST);
-    passPID(PID_TDT);   // also contains TOT
-    passPID(PID_NETSYNC);
-    passPID(PID_RNT);
-    passPID(PID_INBSIGN);
-    passPID(PID_MEASURE);
-    passPID(PID_DIT);
-    passPID(PID_SIT);
+    passPredefinedPIDs(Standards::MPEG, 0, PID_MPEG_LAST);
+    passPredefinedPIDs(Standards::DVB | Standards::ISDB, PID_DVB_FIRST, PID_DVB_LAST);
+    passPredefinedPIDs(Standards::ISDB, PID_ISDB_FIRST, PID_ISDB_LAST);
+    passPredefinedPIDs(Standards::ATSC, PID_ATSC_FIRST, PID_ATSC_LAST);
+    _pass_pids.set(PID_NULL);  // keep stuffing as well
 
     // Reinitialize the demux. TS entry points are PAT and CAT.
     _demux.reset();
@@ -131,7 +143,7 @@ bool ts::RMOrphanPlugin::start()
 
 
 //----------------------------------------------------------------------------
-// Reference a PID
+// Reference a PID or a list of predefined PID's.
 //----------------------------------------------------------------------------
 
 void ts::RMOrphanPlugin::passPID(PID pid)
@@ -139,6 +151,15 @@ void ts::RMOrphanPlugin::passPID(PID pid)
     if (!_pass_pids[pid]) {
         _pass_pids.set(pid);
         tsp->verbose(u"PID %d (0x%X) is referenced", {pid, pid});
+    }
+}
+
+void ts::RMOrphanPlugin::passPredefinedPIDs(Standards standards, PID first, PID last)
+{
+    if ((duck.standards() & standards) != Standards::NONE) {
+        for (PID pid = first; pid <= last; pid++) {
+            _pass_pids.set(pid);
+        }
     }
 }
 
