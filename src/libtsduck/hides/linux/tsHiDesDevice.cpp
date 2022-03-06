@@ -79,6 +79,10 @@
 //
 //----------------------------------------------------------------------------
 
+#if defined(TS_NO_HIDES)
+#include "tsHiDesDeviceStub.h"
+#else
+
 #include "tsIT950x.h"
 #include "tsHiDesDevice.h"
 #include "tsNullReport.h"
@@ -886,3 +890,5 @@ bool ts::HiDesDevice::Guts::send(const TSPacket* packets, size_t packet_count, R
 
     return true;
 }
+
+#endif // TS_NO_HIDES

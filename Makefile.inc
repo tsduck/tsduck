@@ -571,6 +571,12 @@ ifeq ($(NOCURL),)
     NOCURL := $(if $(call F_SEARCH,curl-config),,true)
 endif
 
+ifneq ($(MACOS),)
+    # Dektec and HiDes devices are not supported on macOS (no driver).
+    NODTAPI = true
+    NOHIDES = true
+endif
+
 ifneq ($(NODEKTEC),)
     # NODEKTEC is an alternative name for NODTAPI
     NODTAPI = true
@@ -646,6 +652,10 @@ ifneq ($(NODTAPI),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
 endif
 
+ifneq ($(NOHIDES),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_HIDES=1
+endif
+
 ifneq ($(NOEDITLINE),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_EDITLINE=1
 else
@@ -703,10 +713,7 @@ ifeq ($(TSPLUGINS),)
     ifneq ($(NODTAPI),)
         NO_TSTOOLS += tsdektec
     endif
-    ifneq ($(MACOS),)
-        # Do not compile HiDes tools and plugins on macOS. Physical tuners are
-        # not supported either but the related code (dvb plugin, tslsdvb, tscan) shall
-        # be compiled because the tuner emulator facility is available everywhere.
+    ifneq ($(NOHIDES),)
         NO_TSPLUGINS += tsplugin_hides
         NO_TSTOOLS += tshides
     endif

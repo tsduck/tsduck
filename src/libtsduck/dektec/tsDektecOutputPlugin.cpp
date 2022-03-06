@@ -27,7 +27,11 @@
 //
 //----------------------------------------------------------------------------
 
-#if !defined(TS_NO_DTAPI)
+#if defined(TS_NO_DTAPI)
+#include "tsPlatform.h"
+TS_LLVM_NOWARNING(missing-variable-declarations)
+bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
+#else
 
 #include "tsDektecOutputPlugin.h"
 #include "tsPluginRepository.h"

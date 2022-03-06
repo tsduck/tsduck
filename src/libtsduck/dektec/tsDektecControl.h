@@ -34,23 +34,7 @@
 
 #pragma once
 #include "tsArgs.h"
-
-#if !defined(TS_NO_DTAPI)
 #include "tsDuckContext.h"
-#include "tsjsonOutputArgs.h"
-#include "tsjson.h"
-#endif
-
-#if !defined(TS_NO_DTAPI) && !defined(DOXYGEN)
-// Forward definitions for private part only.
-namespace Dtapi {
-    struct DtHwFuncDesc;
-}
-namespace ts {
-    class DektecDevice;
-    typedef std::vector<DektecDevice> DektecDeviceVector;
-}
-#endif
 
 namespace ts {
     //!
@@ -81,45 +65,10 @@ namespace ts {
         //!
         int execute();
 
-#if !defined(TS_NO_DTAPI)
-
     private:
+        // Redirect it to an internal DTAPI-dependent "guts" class.
+        class Guts;
         DuckContext _duck;
-
-        // Command line parameters;
-        bool   _list_all;        // List all Dektec devices
-        bool   _normalized;      // List in "normalized" format
-        json::OutputArgs _json;  // List in JSON format
-        int    _wait_sec;        // Wait time before exit
-        size_t _devindex;        // Dektec device
-        bool   _reset;           // Reset the device
-        bool   _set_led;         // Change LED state
-        int    _led_state;       // State of the LED (one of DTAPI_LED_*)
-        int    _set_input;       // Port number to set as input, for directional ports
-        int    _set_output;      // Port number to set as output, for directional ports
-        int    _power_mode;      // Power mode to set on DTU-315
-
-        // Apply commands to one device. Return command status.
-        int oneDevice(const DektecDevice& device);
-
-        // Displays a list of all Dektec devices. Return command status.
-        int listDevices(const DektecDeviceVector& devices);
-
-        // Displays a list of all Dektec devices in normalized format. Return command status.
-        int listNormalizedDevices(const DektecDeviceVector& devices);
-
-        // Displays the capability of a hardware function in normalized format.
-        void listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw);
-
-        // Displays a list of all Dektec devices in JSON format. Return command status.
-        int listDevicesJSON(const DektecDeviceVector& devices);
-
-        // Displays the capability of a hardware function in JSON format.
-        void listCapabilitiesJSON(ts::json::Value&, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc& hw);
-
-        // Display a long line on multiple lines
-        void wideDisplay(const UString& line);
-
-#endif // TS_NO_DTAPI
+        Guts* _guts;
     };
 }

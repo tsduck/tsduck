@@ -30,33 +30,102 @@
 #include "tsDektecControl.h"
 #include "tsDektec.h"
 
-#if !defined(TS_NO_DTAPI)
+
+//----------------------------------------------------------------------------
+// Stubs when DTAPI is not supported
+//----------------------------------------------------------------------------
+
+#if defined(TS_NO_DTAPI)
+
+ts::DektecControl::DektecControl(int argc, char *argv[]) :
+    Args(u"Control Dektec devices (unimplemented)"),
+    _duck(this),
+    _guts(nullptr)
+{
+}
+
+ts::DektecControl::~DektecControl()
+{
+}
+
+int ts::DektecControl::execute()
+{
+    error(TS_NO_DTAPI_MESSAGE);
+    return EXIT_FAILURE;
+}
+
+#else
+
+
+//----------------------------------------------------------------------------
+// Start of real implementation using DTAPI.
+//----------------------------------------------------------------------------
+
+#include "tsDuckContext.h"
 #include "tsSysUtils.h"
 #include "tsDektecUtils.h"
 #include "tsDektecDevice.h"
 #include "tsDektecVPD.h"
+#include "tsjsonOutputArgs.h"
+#include "tsjson.h"
 #include "tsjsonObject.h"
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"
-#endif
+
+
+//----------------------------------------------------------------------------
+// Class internals, the "guts" internal class.
+//----------------------------------------------------------------------------
+
+class ts::DektecControl::Guts
+{
+private:
+    Report& _report;
+public:
+    bool    _list_all;       // List all Dektec devices
+    bool    _normalized;     // List in "normalized" format
+    json::OutputArgs _json;  // List in JSON format
+    int     _wait_sec;       // Wait time before exit
+    size_t  _devindex;       // Dektec device
+    bool    _reset;          // Reset the device
+    bool    _set_led;        // Change LED state
+    int     _led_state;      // State of the LED (one of DTAPI_LED_*)
+    int     _set_input;      // Port number to set as input, for directional ports
+    int     _set_output;     // Port number to set as output, for directional ports
+    int     _power_mode;     // Power mode to set on DTU-315
+
+    // Constructor
+    Guts(Report& report);
+
+    // Apply commands to one device. Return command status.
+    int oneDevice(const DektecDevice& device);
+
+    // Displays a list of all Dektec devices. Return command status.
+    int listDevices(const DektecDeviceVector& devices);
+
+    // Displays a list of all Dektec devices in normalized format. Return command status.
+    int listNormalizedDevices(const DektecDeviceVector& devices);
+
+    // Displays the capability of a hardware function in normalized format.
+    void listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw);
+
+    // Displays a list of all Dektec devices in JSON format. Return command status.
+    int listDevicesJSON(const DektecDeviceVector& devices);
+
+    // Displays the capability of a hardware function in JSON format.
+    void listCapabilitiesJSON(ts::json::Value&, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc& hw);
+
+    // Display a long line on multiple lines
+    void wideDisplay(const UString& line);
+};
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-#if defined(TS_NO_DTAPI)
-
-ts::DektecControl::DektecControl(int argc, char *argv[]) :
-    Args(u"Control Dektec devices (unimplemented)")
-{
-}
-
-#else
-
-ts::DektecControl::DektecControl(int argc, char *argv[]) :
-    Args(u"Control Dektec devices", u"[options] [device]"),
-    _duck(this),
+ts::DektecControl::Guts::Guts(Report& report) :
+    _report(report),
     _list_all(false),
     _normalized(false),
     _json(true),
@@ -68,6 +137,13 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _set_input(0),
     _set_output(0),
     _power_mode(-1)
+{
+}
+
+ts::DektecControl::DektecControl(int argc, char *argv[]) :
+    Args(u"Control Dektec devices", u"[options] [device]"),
+    _duck(this),
+    _guts(new Guts(*this))
 {
     option(u"", 0, UNSIGNED, 0, 1);
     help(u"",
@@ -97,8 +173,8 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"option --wait (the led state is automatically returned to "
          u"\"hardware\" after exit).");
 
-    _json.setHelp(u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
-    _json.defineArgs(*this);
+    _guts->_json.setHelp(u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
+    _guts->_json.defineArgs(*this);
 
     option(u"normalized", 'n');
     help(u"normalized", u"With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).");
@@ -121,29 +197,31 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
-    _devindex   = intValue(u"", 0);
-    _list_all   = present(u"all");
-    _normalized = present(u"normalized");
-    _reset      = present(u"reset");
-    _set_led    = present(u"led");
-    _led_state  = intValue(u"led", DTAPI_LED_OFF);
-    _set_input  = intValue(u"input", -1);
-    _set_output = intValue(u"output", -1);
-    _wait_sec   = intValue(u"wait", _set_led ? 5 : 0);
-    _power_mode = intValue(u"power-mode", -1);
-    _json.loadArgs(_duck, *this);
+    _guts->_devindex   = intValue(u"", 0);
+    _guts->_list_all   = present(u"all");
+    _guts->_normalized = present(u"normalized");
+    _guts->_reset      = present(u"reset");
+    _guts->_set_led    = present(u"led");
+    _guts->_led_state  = intValue(u"led", DTAPI_LED_OFF);
+    _guts->_set_input  = intValue(u"input", -1);
+    _guts->_set_output = intValue(u"output", -1);
+    _guts->_wait_sec   = intValue(u"wait", _guts->_set_led ? 5 : 0);
+    _guts->_power_mode = intValue(u"power-mode", -1);
+    _guts->_json.loadArgs(_duck, *this);
 
-    if (_json.json && _normalized) {
+    if (_guts->_json.json && _guts->_normalized) {
         error(u"options --json and --normalized are mutually exclusive");
     }
 
     exitOnError();
 }
 
-#endif // TS_NO_DTAPI
-
 ts::DektecControl::~DektecControl()
 {
+    if (_guts != nullptr) {
+        delete _guts;
+        _guts = nullptr;
+    }
 }
 
 
@@ -153,52 +231,40 @@ ts::DektecControl::~DektecControl()
 
 int ts::DektecControl::execute()
 {
-#if defined(TS_NO_DTAPI)
-
-    error(TS_NO_DTAPI_MESSAGE);
-    return EXIT_FAILURE;
-
-#else
-
     DektecDeviceVector devices;
     DektecDevice::GetAllDevices(devices);
 
-    if (_list_all) {
+    if (_guts->_list_all) {
         // List all devices
-        if (_json.json) {
-            return listDevicesJSON(devices);
+        if (_guts->_json.json) {
+            return _guts->listDevicesJSON(devices);
         }
-        else if(_normalized) {
-            return listNormalizedDevices(devices);
+        else if (_guts->_normalized) {
+            return _guts->listNormalizedDevices(devices);
         }
         else {
-            return listDevices(devices);
+            return _guts->listDevices(devices);
         }
     }
     else {
         // List only one device
-        if (_devindex >= devices.size()) {
+        if (_guts->_devindex >= devices.size()) {
             // Invalid device index specified
-            error(u"invalid device index: %d", {_devindex});
+            error(u"invalid device index: %d", {_guts->_devindex});
             return EXIT_FAILURE;
         }
         else {
-            return oneDevice(devices[_devindex]);
+            return _guts->oneDevice(devices[_guts->_devindex]);
         }
     }
-
-#endif // TS_NO_DTAPI
 }
-
-// All the rest of this source file is for Dektec implementation
-#if !defined(TS_NO_DTAPI)
 
 
 //----------------------------------------------------------------------------
 // Display a long line on multiple lines
 //----------------------------------------------------------------------------
 
-void ts::DektecControl::wideDisplay(const UString& line)
+void ts::DektecControl::Guts::wideDisplay(const UString& line)
 {
     UStringVector lines;
     line.splitLines(lines, 80, u".,;:)", u"      ");
@@ -212,10 +278,10 @@ void ts::DektecControl::wideDisplay(const UString& line)
 // Display a list of all Dektec devices. Return main() status.
 //----------------------------------------------------------------------------
 
-int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
+int ts::DektecControl::Guts::listDevices(const DektecDeviceVector& devices)
 {
     // Display DTAPI and device drivers versions
-    if (verbose()) {
+    if (_report.verbose()) {
         std::cout << std::endl
                   << GetDektecVersions() << std::endl
                   << std::endl;
@@ -229,14 +295,14 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
         Dtapi::DtDevice dtdev;
 
         // Print short info
-        std::cout << (verbose() ? "* Device " : "") << index << ": " << device.model;
+        std::cout << (_report.verbose() ? "* Device " : "") << index << ": " << device.model;
         if (vpd.vpdid[0] != 0) {
             std::cout << " (" << vpd.vpdid << ")";
         }
         std::cout << std::endl;
 
         // Print verbose info
-        if (verbose()) {
+        if (_report.verbose()) {
             std::cout << "  Physical ports: " << device.desc.m_NumPorts << std::endl
                       << "  Channels: input: " << device.input.size()
                       << ", output: " << device.output.size() << std::endl;
@@ -303,7 +369,7 @@ int ts::DektecControl::listDevices(const DektecDeviceVector& devices)
 // Display the capability of a hardware function in normalized format.
 //----------------------------------------------------------------------------
 
-void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw)
+void ts::DektecControl::Guts::listNormalizedCapabilities(size_t device_index, size_t channel_index, const char* type, const Dtapi::DtHwFuncDesc& hw)
 {
     std::cout << "channel:" << type << ":"
         << "device=" << device_index << ":"
@@ -376,7 +442,7 @@ void ts::DektecControl::listNormalizedCapabilities(size_t device_index, size_t c
 // List all Dektec devices in normalized format. Return main() status.
 //----------------------------------------------------------------------------
 
-int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
+int ts::DektecControl::Guts::listNormalizedDevices(const DektecDeviceVector& devices)
 {
     Dtapi::DTAPI_RESULT status;
 
@@ -467,7 +533,7 @@ int ts::DektecControl::listNormalizedDevices(const DektecDeviceVector& devices)
 // Display the capability of a hardware function in JSON format.
 //----------------------------------------------------------------------------
 
-void ts::DektecControl::listCapabilitiesJSON(ts::json::Value& jv, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc &hw)
+void ts::DektecControl::Guts::listCapabilitiesJSON(ts::json::Value& jv, size_t device_index, size_t channel_index, const Dtapi::DtHwFuncDesc &hw)
 {
     jv.add(u"device", device_index);
     jv.add(u"channel", channel_index);
@@ -535,7 +601,7 @@ void ts::DektecControl::listCapabilitiesJSON(ts::json::Value& jv, size_t device_
 // List all Dektec devices in JSON format. Return main() status.
 //----------------------------------------------------------------------------
 
-int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
+int ts::DektecControl::Guts::listDevicesJSON(const DektecDeviceVector& devices)
 {
     json::Object root;
 
@@ -613,7 +679,7 @@ int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
     }
 
     // JSON output.
-    _json.report(root, std::cout, *this);
+    _json.report(root, std::cout, _report);
 
     return EXIT_SUCCESS;
 }
@@ -623,7 +689,7 @@ int ts::DektecControl::listDevicesJSON(const DektecDeviceVector& devices)
 // Apply commands to one device. Return main() status.
 //----------------------------------------------------------------------------
 
-int ts::DektecControl::oneDevice(const DektecDevice& device)
+int ts::DektecControl::Guts::oneDevice(const DektecDevice& device)
 {
     Dtapi::DtDevice dtdev;
     Dtapi::DTAPI_RESULT status;
@@ -645,7 +711,7 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
                           << ": " << DektecStrError(status) << std::endl;
             }
             else {
-                if (verbose()) {
+                if (_report.verbose()) {
                     std::cout << "Resetting input channel " << ci << std::endl;
                 }
                 status = chan.Reset (DTAPI_FULL_RESET);
@@ -665,7 +731,7 @@ int ts::DektecControl::oneDevice(const DektecDevice& device)
                           << ": " << DektecStrError(status) << std::endl;
             }
             else {
-                if (verbose()) {
+                if (_report.verbose()) {
                     std::cout << "Resetting output channel " << ci << std::endl;
                 }
                 status = chan.Reset(DTAPI_FULL_RESET);

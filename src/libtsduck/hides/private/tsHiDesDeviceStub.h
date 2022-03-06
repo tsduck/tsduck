@@ -26,13 +26,14 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//
-//  An encapsulation of a HiDes modulator device - MacOS implementation.
-//
-//  WARNING: MacOS support is currently not implemented and all methods
-//  return errors.
-//
+//!
+//!  @file
+//!  Implementation of stub methods for HiDesDevice class.
+//!  To be included when this class is not implemented.
+//!
 //----------------------------------------------------------------------------
+
+#pragma once
 
 #include "tsHiDesDevice.h"
 
