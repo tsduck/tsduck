@@ -79,6 +79,7 @@ int ts::DektecControl::execute()
 
 class ts::DektecControl::Guts
 {
+    TS_NOBUILD_NOCOPY(Guts);
 private:
     Report& _report;
 public:
