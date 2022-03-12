@@ -89,8 +89,6 @@ namespace ts {
         };
 
         // Command line options:
-        bool        _display_commands;  // Display the content of splice commands.
-        bool        _all_commands;      // Display all splice commands.
         bool        _packet_index;      // Show packet index.
         bool        _use_log;           // Use tsp logger for messages.
         bool        _no_adjustment;     // Do not adjust PTS of splice command reception time.
@@ -103,9 +101,11 @@ namespace ts {
         MilliSecond _min_preroll;       // Minimum pre-roll time in milliseconds.
         MilliSecond _max_preroll;       // Maximum pre-roll time in milliseconds.
         json::OutputArgs _json_args;    // JSON output.
+        std::bitset<256> _log_cmds;     // List of splice commands to display.
 
         // Working data:
         TablesDisplay               _display;          // Display engine for splice information tables.
+        bool                        _displayed_table;  // Just displayed a table.
         std::map<PID,SpliceContext> _splice_contexts;  // Map splice PID to splice context.
         std::map<PID,PID>           _splice_pids;      // Map audio/video PID to splice PID.
         SectionDemux                _section_demux;    // Section filter for splice information.
@@ -140,8 +140,6 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"splicemonitor", ts::SpliceMonitorPlugin);
 
 ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Monitor SCTE 35 splice information", u"[options]"),
-    _display_commands(false),
-    _all_commands(false),
     _packet_index(false),
     _use_log(false),
     _no_adjustment(false),
@@ -154,7 +152,9 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _min_preroll(0),
     _max_preroll(0),
     _json_args(true),
+    _log_cmds(),
     _display(duck),
+    _displayed_table(false),
     _splice_contexts(),
     _splice_pids(),
     _section_demux(duck, this),
@@ -180,6 +180,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     option(u"all-commands", 'a');
     help(u"all-commands",
          u"Same as --display-commands but display all SCTE-35 splice information commands. "
+         u"This is equivalent to --select-commands 0-255. "
          u"By default, only display splice insert commands.");
 
     option(u"display-commands", 'd');
@@ -222,6 +223,12 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     option(u"packet-index", 'i');
     help(u"packet-index",
          u"Display the current TS packet index for each message or event.");
+
+    option(u"select-commands", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"select-commands", u"value1[–value2]",
+         u"Same as --display-commands but display the specified SCTE-35 command types only. "
+         u"By default, only display splice insert commands. "
+         u"Several --select-commands can be specified.");
 
     option(u"splice-pid", 's', PIDVAL);
     help(u"splice-pid",
@@ -268,8 +275,6 @@ ts::SpliceMonitorPlugin::SpliceEvent::SpliceEvent() :
 bool ts::SpliceMonitorPlugin::getOptions()
 {
     _json_args.loadArgs(duck, *this);
-    _all_commands = present(u"all-commands");
-    _display_commands = _all_commands || present(u"display-commands");
     _packet_index = present(u"packet-index");
     _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
@@ -280,7 +285,14 @@ bool ts::SpliceMonitorPlugin::getOptions()
     getIntValue(_max_preroll, u"max-pre-roll-time");
     getIntValue(_min_repetition, u"min-repetition");
     getIntValue(_max_repetition, u"max-repetition");
-    _use_log = !_display_commands && _output_file.empty();
+    getIntValues(_log_cmds, u"select-commands");
+    if (present(u"all-commands")) {
+        _log_cmds.set(); // Display all splice commands
+    }
+    else if (present(u"display-commands")) {
+        _log_cmds.set(SPLICE_INSERT); // Display splice insert commands
+    }
+    _use_log = _log_cmds.none() && _output_file.empty();
     return true;
 }
 
@@ -298,6 +310,7 @@ bool ts::SpliceMonitorPlugin::start()
     _sig_demux.addFilteredTableId(TID_PMT);
     _section_demux.reset();
     _section_demux.setPIDFilter(NoPID);
+    _displayed_table = false;
 
     // Starting demuxing on the splice PID if specified on the command line.
     if (_splice_pid != PID_NULL) {
@@ -308,7 +321,7 @@ bool ts::SpliceMonitorPlugin::start()
     }
 
     // If splice commands shall be displayed in JSON format, load the PSI/SI model into the JSON converter.
-    if (_json_args.json && _all_commands && !SectionFile::LoadModel(_x2j_conv)) {
+    if (_json_args.json && _log_cmds.any() && !SectionFile::LoadModel(_x2j_conv)) {
         return false;
     }
 
@@ -417,7 +430,8 @@ void ts::SpliceMonitorPlugin::display(const UString& line)
         tsp->info(line);
     }
     else {
-        if (_display_commands) {
+        if (_displayed_table) {
+            _displayed_table = false;
             _display << std::endl;
         }
         _display << "* " << line << std::endl;
@@ -598,13 +612,9 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         si.adjustPTS(sit.pts_adjustment);
         processEvent(table.sourcePID(), si.event_id, si.lowestPTS(), si.canceled, si.immediate, si.splice_out);
     }
-    else if (_display_commands && !_json_args.json && !_json_args.json_line) {
-        // Not an event command to process, just display it without initial message.
-        _display << std::endl;
-    }
 
     // Finally, display the SCTE-35 table.
-    if (_display_commands) {
+    if (_log_cmds.test(sit.splice_command_type)) {
         if (_json_args.json) {
             // Format the SCTE-35 table using JSON. First, build an XML document with the table.
             xml::Document doc(*tsp);
@@ -615,7 +625,11 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
         }
         else {
             // Human-readable display of the SCTE-35 table.
+            if (_displayed_table) {
+                _display << std::endl;
+            }
             _display.displayTable(table);
+            _displayed_table = true;
         }
     }
 }

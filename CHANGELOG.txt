@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.30-2708
+VERSION 3.30-2709
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -20,6 +20,7 @@ VERSION 3.30-2708
     - Option --final-wait in "tsp".
     - Option --user-agent in input plugins "hls", "http".
     - Option --json-line in input and output plugins "srt".
+    - Option --select-commands in plugin "splicemonitor".
 
 [BUG] Bug fixes:
 
