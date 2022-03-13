@@ -225,7 +225,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
          u"Display the current TS packet index for each message or event.");
 
     option(u"select-commands", 0, UINT8, 0, UNLIMITED_COUNT);
-    help(u"select-commands", u"value1[–value2]",
+    help(u"select-commands", u"value1[-value2]",
          u"Same as --display-commands but display the specified SCTE-35 command types only. "
          u"By default, only display splice insert commands. "
          u"Several --select-commands can be specified.");
