@@ -619,7 +619,10 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
             // Format the SCTE-35 table using JSON. First, build an XML document with the table.
             xml::Document doc(*tsp);
             doc.initialize(u"tsduck");
-            table.toXML(duck, doc.rootElement());
+            BinaryTable::XMLOptions xml;
+            xml.setPID = true;
+            xml.setPackets = _packet_index;
+            table.toXML(duck, doc.rootElement(), xml);
             // Convert the XML document into JSON and get the first (and only) table.
             display(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"));
         }
