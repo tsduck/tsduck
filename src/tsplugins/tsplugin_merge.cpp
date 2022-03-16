@@ -234,7 +234,7 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     option(u"no-psi-merge");
     help(u"no-psi-merge",
          u"Do not merge PSI/SI from the merged TS into the main TS. By default, the "
-         u"PAT, CAT and SDT are merged so that the services from the merged stream "
+         u"PAT, CAT, SDT and EIT are merged so that the services from the merged stream "
          u"are properly referenced and PID's 0x00 to 0x1F are dropped from the merged "
          u"stream.");
 
@@ -352,11 +352,10 @@ bool ts::MergePlugin::getOptions()
     getIntValues(pids, u"pass");
     _allowed_pids |= pids;
 
-    // By defaul (without --no-psi-merge), let the PSI Merger manage the packets from the merged PID's.
+    // By default (without --no-psi-merge), let the PSI Merger manage the packets from the merged PID's.
     if (_merge_psi) {
-        _allowed_pids.set(PID_PAT);
-        _allowed_pids.set(PID_CAT);
-        _allowed_pids.set(PID_SDT);
+        // No need to allow PAT, CAT and SDT PID, they are nullified by the PSIMerger.
+        // Need to keep EIT PID since the PSI merger balances EIT packets in both streams.
         _allowed_pids.set(PID_EIT);
     }
 
@@ -635,8 +634,8 @@ ts::ProcessorPlugin::Status ts::MergePlugin::processMergePacket(TSPacket& pkt, T
         return TSP_NULL;
     }
 
-    // Check PID conflicts.
-    if (!_ignore_conflicts && pid != PID_NULL) {
+    // Check PID conflicts. EIT PID are already merged by the PSIMerger (without --no-psi-merge).
+    if (!_ignore_conflicts && pid != PID_NULL && (pid != PID_EIT || !_merge_psi)) {
         if (!_merge_pids.test(pid)) {
             // First time we see that PID on the merged stream.
             _merge_pids.set(pid);

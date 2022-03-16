@@ -49,6 +49,11 @@ namespace ts {
     //! This class merges PSI/SI tables from two TS, replacing TS packets.
     //! @ingroup mpeg
     //!
+    //! Definitions:
+    //!  - Main stream: the main TS which will be modified.
+    //!  - Merged stream: the additional TS the PSI of which will be merged in
+    //!    the PSI of the main stream.
+    //!
     //! The packets from the two streams are passed using two distinct methods:
     //! feedMainPacket() and feedMergedPacket(). The packets from the main stream
     //! can be modified to overwrite PSI/SI packets. Packets from the merged stream
@@ -83,7 +88,7 @@ namespace ts {
             MERGE_EIT      = 0x00000020,  //!< Mix the EIT's from the two streams.
             KEEP_MAIN_TDT  = 0x00000040,  //!< Keep TDT/TOT from main stream.
             KEEP_MERGE_TDT = 0x00000080,  //!< Keep TDT/TOT from merge stream. It is dangerous to use KEEP_MAIN_TDT and KEEP_MERGE_TDT at the same time.
-            NULL_MERGED    = 0x00000100,  //!< Nullify packets from the merged stream when they carried merged PSI (PAT, NIT, SDT, BAT).
+            NULL_MERGED    = 0x00000100,  //!< Nullify packets from the merged stream when they carried merged PSI (PAT, NIT, SDT, BAT). EIT are merged, not nullified.
             NULL_UNMERGED  = 0x00000200,  //!< Nullify packets from the merged stream when they carry unmerged PSI (PAT, NIT, SDT, BAT, EIT).
             DEFAULT        = MERGE_PAT | MERGE_CAT | MERGE_NIT | MERGE_SDT | MERGE_BAT | MERGE_EIT | NULL_MERGED | NULL_UNMERGED,
                                           //!< Default options: merge all.
