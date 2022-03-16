@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.31-2713
+
+[BUG] Bug fixes:
+
+  * Fixed issue #959: In the plugin "merge", the merged EIT PID was not
+    correctly rebuilt when the merged stream contained EIT's.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.30-2709
 
 [IMP] Improvements on existing commands and plugins:
