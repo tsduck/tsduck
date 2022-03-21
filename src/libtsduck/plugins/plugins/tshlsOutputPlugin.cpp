@@ -51,6 +51,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _segmentTemplate(),
     _playlistFile(),
     _intraClose(false),
+    _useBitrateTag(false),
     _playlistType(hls::PlayListType::UNKNOWN),
     _liveDepth(0),
     _targetDuration(0),
@@ -132,6 +133,11 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"The default is to wait a maximum of " TS_STRINGIFY(DEFAULT_EXTRA_DURATION) u" additional seconds "
          u"for an intra-coded image.");
 
+    option(u"no-bitrate");
+    help(u"no-bitrate",
+         u"With --playlist, do not specify EXT-X-BITRATE tags for each segment in the playlist. "
+         u"This optional tag is present by default.");
+
     option(u"playlist", 'p', FILENAME);
     help(u"playlist", u"filename",
          u"Specify the name of the playlist file. "
@@ -166,6 +172,7 @@ bool ts::hls::OutputPlugin::getOptions()
     getValue(_segmentTemplate, u"");
     getValue(_playlistFile, u"playlist");
     _intraClose = present(u"intra-close");
+    _useBitrateTag = !present(u"no-bitrate");
     getIntValue(_liveDepth, u"live");
     getIntValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
     getIntValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
@@ -329,13 +336,13 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         }
         if (_previousBitrate > 0) {
             // Compute duration based on segment bitrate (or previous one).
-            seg.bitrate = _previousBitrate;
+            seg.bitrate = _useBitrateTag ? _previousBitrate : 0;
             seg.duration = PacketInterval(seg.bitrate, segPackets);
         }
         else {
             // Completely unknown bitrate, we build a fake one based on the target duration.
             seg.duration = _targetDuration * MilliSecPerSec;
-            seg.bitrate = PacketBitRate(segPackets, seg.duration);
+            seg.bitrate = _useBitrateTag ? PacketBitRate(segPackets, seg.duration) : 0;
         }
         _playlist.addSegment(seg, *tsp);
 

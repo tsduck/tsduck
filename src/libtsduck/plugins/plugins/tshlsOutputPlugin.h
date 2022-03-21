@@ -74,6 +74,7 @@ namespace ts {
             UString            _segmentTemplate;       // Command line segment file names template.
             UString            _playlistFile;          // Playlist file name.
             bool               _intraClose;            // Try to start segments on intra images.
+            bool               _useBitrateTag;         // Specify EXT-X-BITRATE tags for each segment in the playlist.
             hls::PlayListType  _playlistType;          // Type of playlist.
             size_t             _liveDepth;             // Number of simultaneous segments in live streams.
             Second             _targetDuration;        // Segment target duration in seconds.
