@@ -75,6 +75,7 @@ namespace ts {
             UString            _playlistFile;          // Playlist file name.
             bool               _intraClose;            // Try to start segments on intra images.
             bool               _useBitrateTag;         // Specify EXT-X-BITRATE tags for each segment in the playlist.
+            bool               _alignFirstSegment;     // Align first segment to the first PAT and PMT.
             hls::PlayListType  _playlistType;          // Type of playlist.
             size_t             _liveDepth;             // Number of simultaneous segments in live streams.
             Second             _targetDuration;        // Segment target duration in seconds.
@@ -91,6 +92,7 @@ namespace ts {
             PID                _pmtPID;                // PID of the PMT of the reference service.
             PID                _videoPID;              // Video PID on which the segmentation is evaluated.
             uint8_t            _videoStreamType;       // Stream type for video PID in PMT.
+            bool               _segStarted;            // Generation of output segments has started.
             bool               _segClosePending;       // Close the current segment when possible.
             TSFile             _segmentFile;           // Output segment file.
             UStringList        _liveSegmentFiles;      // List of current segments in a live stream.

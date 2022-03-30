@@ -2,12 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2714
+VERSION 3.31-2716
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
-    - Option --no-bitrate in output plugin "hls".
+    - Options --no-bitrate, --align-first-segment in output plugin "hls".
 
 [BUG] Bug fixes:
 
