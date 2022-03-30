@@ -35,23 +35,23 @@
 #pragma once
 #include "tsArgsSupplierInterface.h"
 #include "tsUString.h"
-#include "tsjsonObject.h"
+#include "tsUDPSocket.h"
 
 namespace ts {
     namespace json {
+
+        // Forward declarations.
+        class Value;
+        class RunningDocument;
+
         //!
-        //! Command line arguments for JSON reports (@c -\-json or @c -\-json-line).
+        //! Command line arguments for JSON reports (@c -\-json, @c -\-json-line, @c -\-json-udp).
         //! @ingroup cmd
         //!
         class TSDUCKDLL OutputArgs : public ArgsSupplierInterface
         {
             TS_NOCOPY(OutputArgs);
         public:
-            // Public fields
-            bool    json;         //!< Option -\-json
-            bool    json_line;    //!< Option -\-json-line
-            UString json_prefix;  //!< Option -\-json-line="prefix"
-
             //!
             //! Default constructor.
             //! @param [in] use_short_opt Define @c 'j' as short option for @c -\-json.
@@ -71,16 +71,49 @@ namespace ts {
             virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
             //!
+            //! Check if any JSON output option is specified.
+            //! @return True if any JSON output option is specified.
+            //!
+            bool useJSON() const { return _json_opt || _json_line || _json_udp; }
+
+            //!
+            //! Check if JSON file output option is specified.
+            //! @return True if JSON file output option is specified.
+            //!
+            bool useFile() const { return _json_opt; }
+
+            //!
             //! Issue a JSON report according to options.
             //! @param [in] root JSON root object.
-            //! @param [in] stm Output stream when @c -\-json is specified but not @c -\-json-line.
-            //! @param [in] rep Logger to output one-line JSON when @c -\-json-line is specified.
+            //! @param [in] stm Output stream when @c -\-json is specified.
+            //! @param [in] rep Logger to report errors or output one-line JSON when @c -\-json-line is specified.
+            //! @return True on success, false on error.
             //!
-            void report(const json::Value& root, std::ostream& stm, Report& rep) const;
+            bool report(const json::Value& root, std::ostream& stm, Report& rep);
+
+            //!
+            //! Issue a JSON report according to options.
+            //! @param [in] root JSON root object.
+            //! @param [in] doc Output running document when @c -\-json is specified.
+            //! @param [in] rep Logger to report errors or output one-line JSON when @c -\-json-line is specified.
+            //! @return True on success, false on error.
+            //!
+            bool report(const json::Value& root, json::RunningDocument& doc, Report& rep);
 
         private:
-            bool    _use_short_opt;
-            UString _json_help;
+            bool              _use_short_opt;
+            UString           _json_help;
+            bool              _json_opt;         // Option --json
+            bool              _json_line;        // Option --json-line
+            bool              _json_udp;         // Option --json-udp
+            UString           _line_prefix;      // Option --json-line="prefix"
+            IPv4SocketAddress _udp_destination;  // UDP destination.
+            IPv4Address       _udp_local;        // Name of outgoing local address.
+            int               _udp_ttl;          // Time-to-live socket option.
+            UDPSocket         _sock;             // Output UDP socket.
+
+            // Issue a JSON report, except --json file.
+            bool reportOthers(const json::Value& root, Report& rep);
         };
     }
 }

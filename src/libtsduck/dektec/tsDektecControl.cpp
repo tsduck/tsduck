@@ -210,7 +210,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
     _guts->_power_mode = intValue(u"power-mode", -1);
     _guts->_json.loadArgs(_duck, *this);
 
-    if (_guts->_json.json && _guts->_normalized) {
+    if (_guts->_json.useFile() && _guts->_normalized) {
         error(u"options --json and --normalized are mutually exclusive");
     }
 
@@ -237,7 +237,7 @@ int ts::DektecControl::execute()
 
     if (_guts->_list_all) {
         // List all devices
-        if (_guts->_json.json) {
+        if (_guts->_json.useJSON()) {
             return _guts->listDevicesJSON(devices);
         }
         else if (_guts->_normalized) {
@@ -680,9 +680,7 @@ int ts::DektecControl::Guts::listDevicesJSON(const DektecDeviceVector& devices)
     }
 
     // JSON output.
-    _json.report(root, std::cout, _report);
-
-    return EXIT_SUCCESS;
+    return _json.report(root, std::cout, _report) ? EXIT_SUCCESS : EXIT_FAILURE;
 }
 
 

@@ -89,7 +89,7 @@ void ts::TSAnalyzerReport::setAnalysisOptions(const TSAnalyzerOptions& opt)
 // General reporting method, using options
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& opt, Report& rep)
+void ts::TSAnalyzerReport::report(std::ostream& stm, TSAnalyzerOptions& opt, Report& rep)
 {
     // Start with one-line reports
     size_t count = 0;
@@ -180,7 +180,7 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
     }
 
     // JSON report.
-    if (opt.json.json) {
+    if (opt.json.useJSON()) {
         reportJSON(opt, stm, opt.title, rep);
     }
 }
@@ -190,7 +190,7 @@ void ts::TSAnalyzerReport::report(std::ostream& stm, const TSAnalyzerOptions& op
 // General reporting method, using the specified options.
 //----------------------------------------------------------------------------
 
-ts::UString ts::TSAnalyzerReport::reportToString(const TSAnalyzerOptions & opt, Report& rep)
+ts::UString ts::TSAnalyzerReport::reportToString(TSAnalyzerOptions& opt, Report& rep)
 {
     std::stringstream stm(std::ios::out);
     report(stm, opt, rep);
@@ -790,7 +790,7 @@ void ts::TSAnalyzerReport::reportNormalizedTime(std::ostream& stm, const Time& t
 // This method displays a normalized report.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::ostream& stm, const UString& title)
+void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream& stm, const UString& title)
 {
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();
@@ -1060,7 +1060,7 @@ void ts::TSAnalyzerReport::reportNormalized(const TSAnalyzerOptions& opt, std::o
 // This method displays a JSON report.
 //----------------------------------------------------------------------------
 
-void ts::TSAnalyzerReport::reportJSON(const TSAnalyzerOptions& opt, std::ostream& stm, const UString& title, Report& rep)
+void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm, const UString& title, Report& rep)
 {
     // Update the global statistics value if internal data were modified.
     recomputeStatistics();

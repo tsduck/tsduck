@@ -206,7 +206,7 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // An output file wil be produced.
-    need_output = reformat || json.json || from_json;
+    need_output = reformat || json.useFile() || from_json;
 
     exitOnError();
 }
@@ -289,10 +289,10 @@ int MainCode(int argc, char *argv[])
                 doc.print(text);
                 opt.info(opt.xml_prefix + text.toString());
             }
-            if (opt.json.json) {
+            if (opt.json.useJSON()) {
                 // Perform XML to JSON conversion.
                 const ts::json::ValuePtr jobj(model.convertToJSON(doc));
-                // Output JSON result, either on one line or output file.
+                // Output JSON result.
                 opt.json.report(*jobj, std::cout, opt);
             }
             else if (opt.reformat || opt.from_json) {
@@ -301,5 +301,5 @@ int MainCode(int argc, char *argv[])
             }
         }
     }
-    return opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
+    return opt.valid() && !opt.gotErrors() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

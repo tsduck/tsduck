@@ -73,18 +73,18 @@ namespace ts {
         //!
         //! General reporting method, using the specified options.
         //! @param [in,out] strm Output text stream.
-        //! @param [in] opt Analysis options.
+        //! @param [in,out] opt Analysis options.
         //! @param [in,out] rep Where to report errors.
         //!
-        void report(std::ostream& strm, const TSAnalyzerOptions& opt, Report& rep = NULLREP);
+        void report(std::ostream& strm, TSAnalyzerOptions& opt, Report& rep = NULLREP);
 
         //!
         //! General reporting method, using the specified options.
-        //! @param [in] opt Analysis options.
+        //! @param [in,out] opt Analysis options.
         //! @param [in,out] rep Where to report errors.
         //! @return The analysis as a String.
         //!
-        UString reportToString(const TSAnalyzerOptions& opt, Report& rep = NULLREP);
+        UString reportToString(TSAnalyzerOptions& opt, Report& rep = NULLREP);
 
         //!
         //! Report formatted analysis about the global transport stream.
@@ -123,20 +123,20 @@ namespace ts {
 
         //!
         //! This methods displays a normalized report.
-        //! @param [in] opt Analysis options.
+        //! @param [in,out] opt Analysis options.
         //! @param [in,out] strm Output text stream.
         //! @param [in] title Title string to display.
         //!
-        void reportNormalized(const TSAnalyzerOptions& opt, std::ostream& strm, const UString& title = UString());
+        void reportNormalized(TSAnalyzerOptions& opt, std::ostream& strm, const UString& title = UString());
 
         //!
         //! This methods displays a JSON report.
-        //! @param [in] opt Analysis options.
+        //! @param [in,out] opt Analysis options.
         //! @param [in,out] strm Output text stream.
         //! @param [in] title Title string.
         //! @param [in,out] rep Where to report errors.
         //!
-        void reportJSON(const TSAnalyzerOptions& opt, std::ostream& strm, const UString& title = UString(), Report& rep = NULLREP);
+        void reportJSON(TSAnalyzerOptions& opt, std::ostream& strm, const UString& title = UString(), Report& rep = NULLREP);
 
     private:
         // Display header of a service PID list.

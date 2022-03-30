@@ -29,6 +29,8 @@
 
 #include "tsjsonOutputArgs.h"
 #include "tsArgs.h"
+#include "tsjsonObject.h"
+#include "tsjsonRunningDocument.h"
 
 
 //----------------------------------------------------------------------------
@@ -36,11 +38,16 @@
 //----------------------------------------------------------------------------
 
 ts::json::OutputArgs::OutputArgs(bool use_short_opt, const UString& help) :
-    json(false),
-    json_line(false),
-    json_prefix(),
     _use_short_opt(use_short_opt),
-    _json_help(help.empty() ? u"Report in JSON output format (useful for automatic analysis)." : help)
+    _json_help(help.empty() ? u"Report in JSON output format (useful for automatic analysis)." : help),
+    _json_opt(false),
+    _json_line(false),
+    _json_udp(false),
+    _line_prefix(),
+    _udp_destination(),
+    _udp_local(),
+    _udp_ttl(0),
+    _sock()
 {
 }
 
@@ -56,10 +63,29 @@ void ts::json::OutputArgs::defineArgs(Args& args)
 
     args.option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
     args.help(u"json-line", u"'prefix'",
-              u"Same as --json but report the JSON text as one single line "
-              u"in the message logger instead of the output file. "
+              u"Same as --json but report the JSON text as one single line in the message logger instead of the output file. "
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the JSON text to locate the appropriate line in the logs.");
+
+    args.option(u"json-udp", 0, Args::STRING);
+    args.help(u"json-udp", u"address:port",
+              u"Same as --json but report the JSON text as one single line in a UDP datagram instead of the output file. "
+              u"The 'address' specifies an IP address which can be either unicast or multicast. "
+              u"It can be also a host name that translates to an IP address. "
+              u"The 'port' specifies the destination UDP port.");
+
+    args.option(u"json-udp-local", 0, Args::STRING);
+    args.help(u"json-udp-local", u"address",
+              u"With --json-udp, when the destination is a multicast address, specify "
+              u"the IP address of the outgoing local interface. It can be also a host "
+              u"name that translates to a local address.");
+
+    args.option(u"json-udp-ttl", 0, Args::POSITIVE);
+    args.help(u"json-udp-ttl",
+              u"With --json-udp, specifies the TTL (Time-To-Live) socket option. "
+              u"The actual option is either \"Unicast TTL\" or \"Multicast TTL\", "
+              u"depending on the destination address. Remember that the default "
+              u"Multicast TTL is 1 on most systems.");
 }
 
 
@@ -70,10 +96,65 @@ void ts::json::OutputArgs::defineArgs(Args& args)
 
 bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    json_line = args.present(u"json-line");
-    json = json_line || args.present(u"json");
-    args.getValue(json_prefix, u"json-line");
-    return true;
+    bool ok = true;
+    _json_opt = args.present(u"json");
+    _json_line = args.present(u"json-line");
+    _json_udp = args.present(u"json-udp");
+    args.getValue(_line_prefix, u"json-line");
+    args.getIntValue(_udp_ttl, u"json-udp-ttl");
+    _udp_destination.clear();
+    _udp_local.clear();
+    if (_json_udp) {
+        ok = _udp_destination.resolve(args.value(u"json-udp"), args);
+    }
+    if (args.present(u"json-udp-local")) {
+        ok = _udp_local.resolve(args.value(u"json-udp-local"), args) && ok;
+    }
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Issue a JSON report, except --json file.
+//----------------------------------------------------------------------------
+
+bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
+{
+    bool ok = true;
+
+    if (_json_line || _json_udp) {
+        // Generate one JSON line.
+        TextFormatter text(rep);
+        text.setString();
+        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
+        root.print(text);
+        UString line;
+        text.getString(line);
+
+        // Report in logger.
+        if (_json_line) {
+            rep.info(_line_prefix + line);
+        }
+
+        // Report in UDP.
+        if (_json_udp) {
+            // Open socket the first time.
+            if (!_sock.isOpen()) {
+                // Create UDP socket.
+                ok = _sock.open(rep) &&
+                     _sock.setDefaultDestination(_udp_destination, rep) &&
+                     (!_udp_local.hasAddress() || _sock.setOutgoingMulticast(_udp_local, rep)) &&
+                     (_udp_ttl <= 0 || _sock.setTTL(_udp_ttl, rep));
+            }
+            if (ok) {
+                std::string line8;
+                line.toUTF8(line8);
+                ok = _sock.send(line8.data(), line8.size(), rep);
+            }
+        }
+    }
+
+    return ok;
 }
 
 
@@ -81,23 +162,28 @@ bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
 // Issue a JSON report according to options.
 //----------------------------------------------------------------------------
 
-void ts::json::OutputArgs::report(const json::Value& root, std::ostream& stm, Report& rep) const
+bool ts::json::OutputArgs::report(const json::Value& root, std::ostream& stm, Report& rep)
 {
-    // An output text formatter for JSON output.
-    TextFormatter text(rep);
-
-    if (json_line) {
-        // Generate one line.
-        text.setString();
-        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
-        root.print(text);
-        rep.info(json_prefix + text.toString());
-    }
-    else if (json) {
-        // Output to stream.
+    // Process file output.
+    if (_json_opt) {
+        TextFormatter text(rep);
         text.setStream(stm);
         root.print(text);
         text << ts::endl;
         text.close();
     }
+
+    // Other output forms.
+    return reportOthers(root, rep);
+}
+
+bool ts::json::OutputArgs::report(const json::Value& root, json::RunningDocument& doc, Report& rep)
+{
+    // Process file output.
+    if (_json_opt) {
+        doc.add(root);
+    }
+
+    // Other output forms.
+    return reportOthers(root, rep);
 }

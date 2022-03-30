@@ -123,7 +123,6 @@ namespace ts {
         UString message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
         void display(const UString& line);
         void init(json::Object& obj, PID splice_pid, uint32_t event_id, const UString& progress, const SpliceContext& ctx, const SpliceEvent* evt);
-        void display(const json::Value& value);
 
         // Implementation of interfaces.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -321,12 +320,12 @@ bool ts::SpliceMonitorPlugin::start()
     }
 
     // If splice commands shall be displayed in JSON format, load the PSI/SI model into the JSON converter.
-    if (_json_args.json && _log_cmds.any() && !SectionFile::LoadModel(_x2j_conv)) {
+    if (_json_args.useJSON() && _log_cmds.any() && !SectionFile::LoadModel(_x2j_conv)) {
         return false;
     }
 
     // Open the output file when required.
-    if (_json_args.json && !_json_args.json_line) {
+    if (_json_args.useFile()) {
         json::ValuePtr root;
         return _json_doc.open(root, _output_file, std::cout);
     }
@@ -463,29 +462,6 @@ void ts::SpliceMonitorPlugin::init(json::Object& obj, PID splice_pid, uint32_t e
 
 
 //----------------------------------------------------------------------------
-// Output a JSON structure.
-//----------------------------------------------------------------------------
-
-void ts::SpliceMonitorPlugin::display(const json::Value& value)
-{
-    if (_json_args.json_line) {
-        // Initialize a text formatter for one-liner.
-        TextFormatter text(*tsp);
-        text.setString();
-        text.setEndOfLineMode(TextFormatter::EndOfLineMode::SPACING);
-
-        // Format a one-line JSON structure.
-        value.print(text);
-        tsp->info(_json_args.json_prefix + text.toString());
-    }
-    else {
-        // Add the JSON table to the running document.
-        _json_doc.add(value);
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Process an event.
 //----------------------------------------------------------------------------
 
@@ -513,10 +489,10 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
 
     // Display event depending on canceled/immediate/pending.
     if (canceled) {
-        if (_json_args.json) {
+        if (_json_args.useJSON()) {
             json::Object obj;
             init(obj, splice_pid, event_id, u"canceled", ctx, known_event ? &evt->second : nullptr);
-            display(obj);
+            _json_args.report(obj, _json_doc, *tsp);
         }
         else {
             display(message(splice_pid, event_id, u"canceled"));
@@ -527,11 +503,11 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
         }
     }
     else if (immediate) {
-        if (_json_args.json) {
+        if (_json_args.useJSON()) {
             json::Object obj;
             init(obj, splice_pid, event_id, u"immediate", ctx, known_event ? &evt->second : nullptr);
             obj.add(u"event-type", splice_out ? u"out" : u"in");
-            display(obj);
+            _json_args.report(obj, _json_doc, *tsp);
         }
         else {
             display(message(splice_pid, event_id, u"immediately %s", {splice_out ? "OUT" : "IN"}));
@@ -556,13 +532,13 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
             evt->second.event_count = 1;
             evt->second.first_cmd_packet = tsp->pluginPackets();
         }
-        if (_json_args.json) {
+        if (_json_args.useJSON()) {
             json::Object obj;
             init(obj, splice_pid, event_id, u"pending", ctx, &evt->second);
             if (time_to_event.set()) {
                 obj.add(u"time-to-event-ms", time_to_event.value());
             }
-            display(obj);
+            _json_args.report(obj, _json_doc, *tsp);
         }
         else {
             // Format time to event.
@@ -615,7 +591,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
 
     // Finally, display the SCTE-35 table.
     if (_log_cmds.test(sit.splice_command_type)) {
-        if (_json_args.json) {
+        if (_json_args.useJSON()) {
             // Format the SCTE-35 table using JSON. First, build an XML document with the table.
             xml::Document doc(*tsp);
             doc.initialize(u"tsduck");
@@ -624,7 +600,7 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
             xml.setPackets = _packet_index;
             table.toXML(duck, doc.rootElement(), xml);
             // Convert the XML document into JSON and get the first (and only) table.
-            display(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"));
+            _json_args.report(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"), _json_doc, *tsp);
         }
         else {
             // Human-readable display of the SCTE-35 table.
@@ -682,12 +658,12 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
                 }
 
                 // Display the event.
-                if (_json_args.json) {
+                if (_json_args.useJSON()) {
                     json::Object obj;
                     init(obj, spid, evt.event_id, u"occurred", ctx, &evt);
                     obj.add(u"status", alarm ? u"alarm" : u"normal");
                     obj.add(u"pre-roll-ms", preroll);
-                    display(obj);
+                    _json_args.report(obj, _json_doc, *tsp);
                 }
                 else {
                     display(line);
