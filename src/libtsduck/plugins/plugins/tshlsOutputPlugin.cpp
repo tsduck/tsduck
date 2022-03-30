@@ -52,6 +52,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _playlistFile(),
     _intraClose(false),
     _useBitrateTag(false),
+    _alignFirstSegment(false),
     _playlistType(hls::PlayListType::UNKNOWN),
     _liveDepth(0),
     _targetDuration(0),
@@ -66,6 +67,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _pmtPID(PID_NULL),
     _videoPID(PID_NULL),
     _videoStreamType(ST_NULL),
+    _segStarted(false),
     _segClosePending(false),
     _segmentFile(),
     _liveSegmentFiles(),
@@ -84,6 +86,15 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"name is used for the first segment. Then, the integer part is incremented. "
          u"Example: if the specified file name is foo-027.ts, the various segment files "
          u"are named foo-027.ts, foo-028.ts, etc.");
+
+    option(u"align-first-segment", 'a');
+    help(u"align-first-segment",
+         u"Force the first output segment to start with a PAT and PMT. "
+         u"Also force the reference video PID to start on a PES packet boundary. "
+         u"With --intra-close, also force this video PID to start on an intra-coded image (I-Frame). "
+         u"By default, the first output segment starts with the first packets in the TS. "
+         u"Using this option, all packets before all starting conditions are dropped. "
+         u"Note that subsequent output segments always start with a copy of the last PAT and PMT.");
 
     option(u"duration", 'd', POSITIVE);
     help(u"duration",
@@ -173,6 +184,7 @@ bool ts::hls::OutputPlugin::getOptions()
     getValue(_playlistFile, u"playlist");
     _intraClose = present(u"intra-close");
     _useBitrateTag = !present(u"no-bitrate");
+    _alignFirstSegment = present(u"align-first-segment");
     getIntValue(_liveDepth, u"live");
     getIntValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
     getIntValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
@@ -232,6 +244,7 @@ bool ts::hls::OutputPlugin::start()
 
     // Initialize the segment and playlist files.
     _liveSegmentFiles.clear();
+    _segStarted = false;
     _segClosePending = false;
     if (_segmentFile.isOpen()) {
         _segmentFile.close(*tsp);
@@ -241,9 +254,7 @@ bool ts::hls::OutputPlugin::start()
         _playlist.setTargetDuration(_targetDuration, *tsp);
         _playlist.setMediaSequence(_initialMediaSeq, *tsp);
     }
-
-    // Create the first segment file.
-    return createNextSegment();
+    return true;
 }
 
 
@@ -500,53 +511,74 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
         // Analyze PCR's from all packets.
         _pcrAnalyzer.feedPacket(*pkt);
 
-        // Check if we should close the current segment and create a new one.
-        bool renewNow = false;
-        bool renewOnPUSI = false;
-        if (_fixedSegmentSize > 0) {
-            // Each segment shall have a fixed size.
-            renewNow = _segmentFile.writePacketsCount() >= _fixedSegmentSize;
-        }
-        else if (!_segClosePending) {
-            if (pktData->hasAnyLabel(_closeLabels)) {
-                // This packet is a trigger to close the segment as soon as possible.
-                _segClosePending = true;
+        // Check if we can start the generation of output segments.
+        if (!_segStarted) {
+            if (!_alignFirstSegment) {
+                // Without --align-first-segment, always start immediately.
+                _segStarted = true;
             }
-            else if (_pcrAnalyzer.bitrateIsValid()) {
-                // The segment file shall be closed when the estimated duration exceeds the target duration.
-                const MilliSecond segDuration = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.writePacketsCount());
-                _segClosePending = segDuration >= _targetDuration * MilliSecPerSec;
-                // With --intra-close, force renew on next PES packet if extra duration is exceeded.
-                renewOnPUSI = segDuration >= (_targetDuration + _maxExtraDuration) * MilliSecPerSec;
+            else if (!_patPackets.empty() && !_pmtPackets.empty() && _videoPID != PID_NULL && pkt->getPID() == _videoPID && pkt->getPUSI()) {
+                // With --align-first-segment, need at least a PAT, PMT, PES packet on video PID.
+                // When --intra-close is also specified, start on intra image.
+                _segStarted = !_intraClose || (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS);
+            }
+            if (_segStarted) {
+                // Create the first segment file.
+                ok = createNextSegment();
             }
         }
 
-        // We close only when we start a new PES packet or new intra-image on the video PID.
-        if (_segClosePending) {
-            if (_videoPID == PID_NULL) {
-                tsp->debug(u"closing segment, no video PID was identified for synchronization");
-                renewNow = true;
-            }
-            else if (pkt->getPID() == _videoPID && pkt->getPUSI()) {
-                // On a new video PES packet.
-                if (!_intraClose) {
-                    tsp->debug(u"starting new segment on new PES packet");
-                    renewNow = true;
-                }
-                else if (renewOnPUSI) {
-                    tsp->debug(u"no I-frame found in last %d seconds, starting new segment on new PES packet", {_maxExtraDuration});
-                    renewNow = true;
-                }
-                else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {
-                    tsp->debug(u"starting new segment on new I-frame");
-                    renewNow = true;
-                }
-            }
-        }
+        // Process output packet only when the generation of segments is started.
+        if (ok && _segStarted) {
 
-        // Close current segment and recreate a new one when necessary.
-        // Finally write the packet.
-        ok = (!renewNow || createNextSegment()) && writePackets(pkt, 1);
+            // Check if we should close the current segment and create a new one.
+            bool renewNow = false;
+            bool renewOnPUSI = false;
+            if (_fixedSegmentSize > 0) {
+                // Each segment shall have a fixed size.
+                renewNow = _segmentFile.writePacketsCount() >= _fixedSegmentSize;
+            }
+            else if (!_segClosePending) {
+                if (pktData->hasAnyLabel(_closeLabels)) {
+                    // This packet is a trigger to close the segment as soon as possible.
+                    _segClosePending = true;
+                }
+                else if (_pcrAnalyzer.bitrateIsValid()) {
+                    // The segment file shall be closed when the estimated duration exceeds the target duration.
+                    const MilliSecond segDuration = PacketInterval(_pcrAnalyzer.bitrate188(), _segmentFile.writePacketsCount());
+                    _segClosePending = segDuration >= _targetDuration * MilliSecPerSec;
+                    // With --intra-close, force renew on next PES packet if extra duration is exceeded.
+                    renewOnPUSI = segDuration >= (_targetDuration + _maxExtraDuration) * MilliSecPerSec;
+                }
+            }
+
+            // We close only when we start a new PES packet or new intra-image on the video PID.
+            if (_segClosePending) {
+                if (_videoPID == PID_NULL) {
+                    tsp->debug(u"closing segment, no video PID was identified for synchronization");
+                    renewNow = true;
+                }
+                else if (pkt->getPID() == _videoPID && pkt->getPUSI()) {
+                    // On a new video PES packet.
+                    if (!_intraClose) {
+                        tsp->debug(u"starting new segment on new PES packet");
+                        renewNow = true;
+                    }
+                    else if (renewOnPUSI) {
+                        tsp->debug(u"no I-frame found in last %d seconds, starting new segment on new PES packet", {_maxExtraDuration});
+                        renewNow = true;
+                    }
+                    else if (pkt->isClear() && PESPacket::FindIntraImage(pkt->getPayload(), pkt->getPayloadSize(), _videoStreamType) != NPOS) {
+                        tsp->debug(u"starting new segment on new I-frame");
+                        renewNow = true;
+                    }
+                }
+            }
+
+            // Close current segment and recreate a new one when necessary.
+            // Finally write the packet.
+            ok = (!renewNow || createNextSegment()) && writePackets(pkt, 1);
+        }
 
         // Process next packet.
         ++pkt;
