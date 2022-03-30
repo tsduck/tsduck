@@ -212,7 +212,7 @@ bool ts::TSAnalyzerOptions::loadArgs(DuckContext& duck, Args& args)
         !table_analysis &&
         !error_analysis &&
         !normalized &&
-        !json.json &&
+        !json.useJSON() &&
         !service_list &&
         !pid_list &&
         !global_pid_list &&

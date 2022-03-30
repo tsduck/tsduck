@@ -2,12 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2716
+VERSION 3.31-2717
 
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
     - Options --no-bitrate, --align-first-segment in output plugin "hls".
+    - Options --json-udp, --json-udp-local, --json-udp-ttl to "tsanalyze",
+      "tscmp", "tsdektec", "tsxml", plugins "analyze", "splicemonitor".
 
 [BUG] Bug fixes:
 

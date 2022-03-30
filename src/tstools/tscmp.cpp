@@ -188,7 +188,7 @@ Options::Options(int argc, char *argv[]) :
     if (!quiet) {
         json.loadArgs(duck, *this);
     }
-    if (json.json && normalized) {
+    if (json.useFile() && normalized) {
         error(u"options --json and --normalized are mutually exclusive");
     }
     if (quiet) {
@@ -338,17 +338,17 @@ int MainCode(int argc, char *argv[])
     ts::json::Object root;
 
     // Display headers
-    if (opt.json.json) {
+    if (opt.json.useJSON()) {
         ts::json::Value& jfiles(root.query(u"files", true, ts::json::Type::Array));
         jfiles.set(ts::AbsoluteFilePath(file1.getFileName()));
         jfiles.set(ts::AbsoluteFilePath(file2.getFileName()));
     }
-    else if (opt.normalized) {
+    if (opt.normalized) {
         std::cout << "file:file=1:filename=" << file1.getFileName() << ":" << std::endl;
         std::cout << "file:file=2:filename=" << file2.getFileName() << ":" << std::endl;
 
     }
-    else if (opt.verbose()) {
+    else if (opt.verbose() && !opt.json.useFile()) {
         std::cout << "* Comparing " << file1.getFileName() << " and " << file2.getFileName() << std::endl;
     }
 
@@ -392,34 +392,34 @@ int MainCode(int argc, char *argv[])
             }
             if (read1 != 0) {
                 // File 2 is truncated
-                if (opt.json.json) {
+                if (opt.json.useJSON()) {
                     ts::json::Value& jv(root.query(u"events[]", true));
                     jv.add(u"type", u"truncated");
                     jv.add(u"packet", file2.readPacketsCount());
                     jv.add(u"file-index", 1);
                 }
-                else if (opt.normalized) {
+                if (opt.normalized) {
                     std::cout << "truncated:file=2:packet=" << file2.readPacketsCount()
                               << ":filename=" << file2.getFileName() << ":" << std::endl;
                 }
-                else if (!opt.quiet) {
+                else if (!opt.quiet && !opt.json.useFile()) {
                     std::cout << "* Packet " << ts::UString::Decimal(file2.readPacketsCount())
                               << ": file " << file2.getFileName() << " is truncated" << std::endl;
                 }
             }
             if (read2 != 0) {
                 // File 1 is truncated
-                if (opt.json.json) {
+                if (opt.json.useJSON()) {
                     ts::json::Value& jv(root.query(u"events[]", true));
                     jv.add(u"type", u"truncated");
                     jv.add(u"packet", file1.readPacketsCount());
                     jv.add(u"file-index", 0);
                 }
-                else if (opt.normalized) {
+                if (opt.normalized) {
                     std::cout << "truncated:file=1:packet=" << file1.readPacketsCount()
                               << ":filename=" << file1.getFileName() << ":" << std::endl;
                 }
-                else if (!opt.quiet) {
+                else if (!opt.quiet && !opt.json.useFile()) {
                     std::cout << "* Packet " << ts::UString::Decimal(file1.readPacketsCount())
                               << ": file " << file1.getFileName() << " is truncated" << std::endl;
                 }
@@ -438,18 +438,18 @@ int MainCode(int argc, char *argv[])
 
         // Report resynchronization after missing packets
         if (subset_skipped > 0) {
-            if (opt.json.json) {
+            if (opt.json.useJSON()) {
                 ts::json::Value& jv(root.query(u"events[]", true));
                 jv.add(u"type", u"skipped");
                 jv.add(u"packet", file1.readPacketsCount() - 1 - subset_skipped);
                 jv.add(u"skipped", subset_skipped);
             }
-            else if (opt.normalized) {
+            if (opt.normalized) {
                 std::cout << "skip:packet=" << (file1.readPacketsCount() - 1 - subset_skipped)
                           << ":skipped=" << ts::UString::Decimal(subset_skipped)
                           << ":" << std::endl;
             }
-            else {
+            else if (!opt.json.useFile()) {
                 std::cout << "* Packet " << ts::UString::Decimal(file1.readPacketsCount() - 1 - subset_skipped)
                           << ", missing " << ts::UString::Decimal(subset_skipped)
                           << " packets in " << file2.getFileName() << std::endl;
@@ -462,7 +462,7 @@ int MainCode(int argc, char *argv[])
         // Report a difference
         if (!comp.equal) {
             diff_count++;
-            if (opt.json.json) {
+            if (opt.json.useJSON()) {
                 ts::json::Value& jv(root.query(u"events[]", true));
                 jv.add(u"type", u"difference");
                 jv.add(u"packet", file1.readPacketsCount() - 1);
@@ -478,7 +478,7 @@ int MainCode(int argc, char *argv[])
                 jv.add(u"same-pid", ts::json::Bool(pid1 == pid2));
                 jv.add(u"same-index", ts::json::Bool(count2[pid2] == count1[pid1]));
             }
-            else if (opt.normalized) {
+            if (opt.normalized) {
                 std::cout << "diff:packet=" << (file1.readPacketsCount() - 1)
                           << (opt.payload_only ? ":payload" : "")
                           << ":offset=" << comp.first_diff
@@ -493,7 +493,7 @@ int MainCode(int argc, char *argv[])
                           << (count2[pid2] == count1[pid1] ? ":sameindex" : "")
                           << ":" << std::endl;
             }
-            else if (!opt.quiet) {
+            else if (!opt.quiet && !opt.json.useFile()) {
                 std::cout << "* Packet " << ts::UString::Decimal(file1.readPacketsCount() - 1) << " differ at offset " << comp.first_diff;
                 if (opt.payload_only) {
                     std::cout << " in payload";
@@ -531,21 +531,21 @@ int MainCode(int argc, char *argv[])
     }
 
     // Final report
-    if (opt.json.json) {
+    if (opt.json.useJSON()) {
         ts::json::Value& jv(root.query(u"summary", true));
         jv.add(u"packets", file1.readPacketsCount());
         jv.add(u"differences", diff_count);
         jv.add(u"missing", total_subset_skipped);
         jv.add(u"holes", subset_skipped_chunks);
     }
-    else if (opt.normalized) {
+    if (opt.normalized) {
         std::cout << "total:packets=" << file1.readPacketsCount()
                   << ":diff=" << diff_count
                   << ":missing=" << total_subset_skipped
                   << ":holes=" << subset_skipped_chunks
                   << ":" << std::endl;
     }
-    else if (opt.verbose()) {
+    else if (opt.verbose() && !opt.json.useFile()) {
         std::cout << "* Read " << ts::UString::Decimal(file1.readPacketsCount())
                   << " packets, found " << ts::UString::Decimal(diff_count) << " differences";
         if (subset_skipped_chunks > 0) {
@@ -556,12 +556,10 @@ int MainCode(int argc, char *argv[])
     }
 
     // JSON output if required.
-    if (opt.json.json) {
-        opt.json.report(root, std::cout, opt);
-    }
+    opt.json.report(root, std::cout, opt);
 
     // End of processing, close file
     file1.close(opt);
     file2.close(opt);
-    return diff_count == 0 && opt.valid() ? EXIT_SUCCESS : EXIT_FAILURE;
+    return diff_count == 0 && opt.valid() && !opt.gotErrors() ? EXIT_SUCCESS : EXIT_FAILURE;
 }
