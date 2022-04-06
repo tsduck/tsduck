@@ -42,6 +42,7 @@ bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsDektecArgsUtils.h"
 #include "tsHFBand.h"
 #include "tsBitrateDifferenceDVBT.h"
+#include "tsDVBT2ParamsEvaluator.h"
 #include "tsModulation.h"
 #include "tsIPv4SocketAddress.h"
 #include "tsIntegerUtils.h"
@@ -401,7 +402,7 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
 #if defined(TS_WINDOWS)
          u"Warning: not always accurate on Windows systems. "
 #endif
-         u"Otherwise, if the specified modulation is DVB-T, try to guess "
+         u"Otherwise, if the specified modulation is DVB-T or DVB-T2, try to guess "
          u"some modulation parameters from the bitrate.");
 
     option(u"instant-detach");
@@ -1507,19 +1508,29 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             pars.m_Plps[0].m_TimeIlLength = intValue<int>(u"plp0-il-length", 3);
             pars.m_Plps[0].m_TimeIlType = intValue<int>(u"plp0-il-type", DTAPI_DVBT2_IL_ONETOONE);
             pars.m_Plps[0].m_InBandAFlag = present(u"plp0-in-band");
-            // Compute other fields
+
             Dtapi::DtDvbT2ParamInfo info;
-            status = pars.OptimisePlpNumBlocks(info, pars.m_Plps[0].m_NumBlocks, pars.m_NumDataSyms);
-            if (status != DTAPI_OK) {
-                return startError(u"error computing PLP parameters", status);
+            if (use_input_modulation && input == nullptr && _guts->cur_bitrate > 0) {
+                // --input-modulation is specified but input plugin is not a DVB-T2 tuner,
+                // use input bitrate to determine modulation parameters.
+                EvaluateDvbT2ParsForBitrate(pars, _guts->cur_bitrate);
+            } else {
+                // Compute other fields
+                status = pars.OptimisePlpNumBlocks(info, pars.m_Plps[0].m_NumBlocks, pars.m_NumDataSyms);
+                if (status != DTAPI_OK) {
+                    return startError(u"error computing PLP parameters", status);
+                }
             }
             // Report actual parameters in debug mode
             tsp->debug(u"DVB-T2: DtDvbT2Pars = {");
             DektecDevice::ReportDvbT2Pars(pars, *tsp, Severity::Debug, u"  ");
             tsp->debug(u"}");
-            tsp->debug(u"DVB-T2: DtDvbT2ParamInfo = {");
-            DektecDevice::ReportDvbT2ParamInfo(info, *tsp, Severity::Debug, u"  ");
-            tsp->debug(u"}");
+            if (!(use_input_modulation && input == nullptr && _guts->cur_bitrate > 0)) {
+                tsp->debug(u"DVB-T2: DtDvbT2ParamInfo = {");
+                DektecDevice::ReportDvbT2ParamInfo(info, *tsp, Severity::Debug, u"  ");
+                tsp->debug(u"}");
+            }
+
             // Check validity of T2 parameters
             status = pars.CheckValidity();
             if (status != DTAPI_OK) {
