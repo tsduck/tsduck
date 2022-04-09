@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Maciej Czyżkowski
+// Copyright (c) 2005-2022, Maciej Czyzkowski
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -33,9 +33,13 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "DTAPI.h"
+#if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
+
+#include "tsDektec.h"
 #include "tsBitRate.h"
 
 namespace ts {
-void EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& params, const ts::BitRate& bitrate);
+    void EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& params, const ts::BitRate& bitrate);
 }
+
+#endif // TS_NO_DTAPI
