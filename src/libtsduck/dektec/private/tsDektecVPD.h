@@ -39,7 +39,6 @@
 #include "tsDektec.h"
 
 namespace ts {
-
     //!
     //! Description of a Dektec device's Vital Product Data (VPD).
     //!

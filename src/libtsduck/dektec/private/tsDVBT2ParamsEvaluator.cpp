@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Maciej Czyżkowski
+// Copyright (c) 2005-2022, Maciej Czyzkowski
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,37 +26,42 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-#include <array>
 
-#include "DTAPI.h"
+#if defined(TS_NO_DTAPI)
+#include "tsPlatform.h"
+TS_LLVM_NOWARNING(missing-variable-declarations)
+bool tsDVBT2ParamsEvaluatorIsEmpty = true; // Avoid warning about empty module.
+#else
+
 #include "tsDVBT2ParamsEvaluator.h"
-#include "tsDektec.h"
 
 namespace {
-template <typename V, typename... T>
-constexpr auto array_of(T&&... t) -> std::array < V, sizeof...(T) > 
-{
-    return {{ std::forward<T>(t)... }};
+    template <typename V, typename... T>
+    constexpr auto array_of(T&&... t) -> std::array < V, sizeof...(T) > 
+    {
+        return {{ std::forward<T>(t)... }};
+    }
+
+    // m_FftMode
+    const auto pref_fft_mode = array_of<int>(DTAPI_DVBT2_FFT_1K, DTAPI_DVBT2_FFT_2K, DTAPI_DVBT2_FFT_4K, 
+                                             DTAPI_DVBT2_FFT_8K, DTAPI_DVBT2_FFT_16K, DTAPI_DVBT2_FFT_32K);
+    // m_GuardInterval
+    const auto pref_guard_interval = array_of<int>(DTAPI_DVBT2_GI_1_128, DTAPI_DVBT2_GI_1_32, 
+                                                   DTAPI_DVBT2_GI_1_16, DTAPI_DVBT2_GI_19_256,
+                                                   DTAPI_DVBT2_GI_1_8, DTAPI_DVBT2_GI_19_128, 
+                                                   DTAPI_DVBT2_GI_1_4);
+    // m_L1Modulation
+    const auto pref_l1_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16, 
+                                                  DTAPI_DVBT2_QAM64, DTAPI_DVBT2_QAM256);
+    // m_Plps[0].m_CodeRate
+    const auto pref_code_rate = array_of<int>(DTAPI_DVBT2_COD_1_2, DTAPI_DVBT2_COD_3_5, DTAPI_DVBT2_COD_2_3, 
+                                              DTAPI_DVBT2_COD_3_4, DTAPI_DVBT2_COD_4_5, DTAPI_DVBT2_COD_5_6);
+    // m_Plps[0].m_Modulation
+    const auto pref_plp0_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16, 
+                                                    DTAPI_DVBT2_QAM64, DTAPI_DVBT2_QAM256);
 }
 
-// m_FftMode
-const auto pref_fft_mode = array_of<int>(DTAPI_DVBT2_FFT_1K, DTAPI_DVBT2_FFT_2K, DTAPI_DVBT2_FFT_4K, 
-    DTAPI_DVBT2_FFT_8K, DTAPI_DVBT2_FFT_16K, DTAPI_DVBT2_FFT_32K);
-// m_GuardInterval
-const auto pref_guard_interval = array_of<int>(DTAPI_DVBT2_GI_1_128, DTAPI_DVBT2_GI_1_32, 
-    DTAPI_DVBT2_GI_1_16, DTAPI_DVBT2_GI_19_256, DTAPI_DVBT2_GI_1_8, DTAPI_DVBT2_GI_19_128, 
-    DTAPI_DVBT2_GI_1_4);
-// m_L1Modulation
-const auto pref_l1_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16, 
-    DTAPI_DVBT2_QAM64, DTAPI_DVBT2_QAM256);
-// m_Plps[0].m_CodeRate
-const auto pref_code_rate = array_of<int>(DTAPI_DVBT2_COD_1_2, DTAPI_DVBT2_COD_3_5, DTAPI_DVBT2_COD_2_3, 
-    DTAPI_DVBT2_COD_3_4, DTAPI_DVBT2_COD_4_5, DTAPI_DVBT2_COD_5_6);
-// m_Plps[0].m_Modulation
-const auto pref_plp0_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16, 
-    DTAPI_DVBT2_QAM64, DTAPI_DVBT2_QAM256);
 
-}
 //----------------------------------------------------------------------------
 // Build a list of all possible combinations of bandwidth, constellation,
 //----------------------------------------------------------------------------
@@ -95,7 +100,8 @@ void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate
                             status = Dtapi::DtapiModPars2TsRate(frate, params);
                             if (status == DTAPI_OK && frate.m_Num > 0 && frate.m_Den > 0) {
                                 FromDektecFractionInt(new_bitrate, frate);
-                            } else {
+                            }
+                            else {
                                 int irate = 0;
                                 status = Dtapi::DtapiModPars2TsRate(irate, params);
                                 if (status == DTAPI_OK) {     
@@ -106,7 +112,7 @@ void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate
                                 is_smaller = true;
                             }
                             auto new_bitrate_diff = (new_bitrate - bitrate).abs();
-                            if  (new_bitrate_diff < best_bitrate_diff) {
+                            if (new_bitrate_diff < best_bitrate_diff) {
                                 best_params = params;
                                 best_bitrate = new_bitrate;
                                 best_bitrate_diff = new_bitrate_diff;
@@ -121,3 +127,5 @@ void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate
     }
     pars = best_params;
 }
+
+#endif // TS_NO_DTAPI
