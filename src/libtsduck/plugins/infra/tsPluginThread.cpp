@@ -91,8 +91,9 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
     // The process should have terminated on argument error.
     assert(_shlib->valid());
 
-    // Define thread stack size
+    // Define thread name and stack size.
     ThreadAttributes attr(attributes);
+    attr.setName(_name);
     attr.setStackSize(STACK_SIZE_OVERHEAD + _shlib->stackUsage());
     Thread::setAttributes(attr);
 }

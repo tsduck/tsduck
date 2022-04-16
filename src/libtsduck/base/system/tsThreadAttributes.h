@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -47,6 +47,30 @@ namespace ts {
         //! Default constructor (all attributes have their default values).
         //!
         ThreadAttributes();
+
+        //!
+        //! Set the thread name.
+        //!
+        //! This is just an informational name, depending on the operating system.
+        //!
+        //! @param [in] name Thread name.
+        //! @return A reference to this object.
+        //!
+        ThreadAttributes& setName(const UString& name)
+        {
+            _name = name;
+            return *this;
+        }
+
+        //!
+        //! Get the thread name.
+        //!
+        //! @return The thread name.
+        //!
+        UString getName() const
+        {
+            return _name;
+        }
 
         //!
         //! Set the stack size in bytes for the thread.
@@ -238,9 +262,10 @@ namespace ts {
         }
 
     private:
-        size_t _stackSize;
-        bool _deleteWhenTerminated;
-        int _priority;
+        size_t  _stackSize;
+        bool    _deleteWhenTerminated;
+        int     _priority;
+        UString _name;
 
         //
         // These fields describe the operating system priority range.
