@@ -877,6 +877,7 @@ TS_MSC_NOWARNING(5204)
 #if defined(TS_LINUX)
     #include <limits.h>
     #include <sys/mman.h>
+    #include <sys/prctl.h>
     #include <byteswap.h>
     #include <linux/dvb/version.h>
     #include <linux/dvb/frontend.h>

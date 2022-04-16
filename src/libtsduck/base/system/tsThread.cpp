@@ -341,6 +341,26 @@ bool ts::Thread::waitForTermination()
 
 void ts::Thread::mainWrapper()
 {
+    // Set thread name. For debug or trace purpose only.
+    UString name(_attributes.getName());
+    if (name.empty()) {
+        name = _typename;
+        // Thread names are limited on some systems, remove unnecessary prefix.
+        if (name.startWith(u"ts::")) {
+            name.erase(0, 4);
+        }
+        name.substitute(u"::", u".");
+    }
+    if (!name.empty()) {
+#if defined(TS_LINUX)
+        ::prctl(PR_SET_NAME, name.toUTF8().c_str());
+#elif defined(TS_MAC)
+        ::pthread_setname_np(name.toUTF8().c_str());
+#elif defined(TS_WINDOWS)
+        ::SetThreadDescription(::GetCurrentThread(), name.wc_str());
+#endif
+    }
+
     try {
         main();
     }
@@ -355,12 +375,6 @@ void ts::Thread::mainWrapper()
 ::DWORD WINAPI ts::Thread::ThreadProc(::LPVOID parameter)
 {
     Thread* thread = reinterpret_cast<Thread*>(parameter);
-
-    // Set thread name.
-    const UString name(thread->_attributes.getName());
-    if (!name.empty()) {
-       ::SetThreadDescription(::GetCurrentThread(), name.wc_str());
-    }
 
     // Execute thread code.
     thread->mainWrapper();
@@ -387,12 +401,6 @@ void* ts::Thread::ThreadProc(void* parameter)
         ::setitimer(ITIMER_PROF, &thread->_itimer, nullptr);
     }
 #endif
-
-    // Set thread name.
-    const UString name(thread->_attributes.getName());
-    if (!name.empty()) {
-        ::pthread_setname_np(name.toUTF8().c_str());
-    }
 
     // Execute thread code.
     thread->mainWrapper();
