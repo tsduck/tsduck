@@ -356,6 +356,12 @@ void ts::Thread::mainWrapper()
 {
     Thread* thread = reinterpret_cast<Thread*>(parameter);
 
+    // Set thread name.
+    const UString name(thread->_attributes.getName());
+    if (!name.empty()) {
+       ::SetThreadDescription(::GetCurrentThread(), name.wc_str());
+    }
+
     // Execute thread code.
     thread->mainWrapper();
 
@@ -381,6 +387,12 @@ void* ts::Thread::ThreadProc(void* parameter)
         ::setitimer(ITIMER_PROF, &thread->_itimer, nullptr);
     }
 #endif
+
+    // Set thread name.
+    const UString name(thread->_attributes.getName());
+    if (!name.empty()) {
+        ::pthread_setname_np(name.toUTF8().c_str());
+    }
 
     // Execute thread code.
     thread->mainWrapper();

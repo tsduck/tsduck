@@ -153,7 +153,8 @@ int ts::ThreadAttributes::Win32Priority(int priority)
 ts::ThreadAttributes::ThreadAttributes() :
     _stackSize(0),
     _deleteWhenTerminated(false),
-    _priority(0)
+    _priority(0),
+    _name()
 {
     if (!_priorityInitialized) {
         InitializePriorities();
