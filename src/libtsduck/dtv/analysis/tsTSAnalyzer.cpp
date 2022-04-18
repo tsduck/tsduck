@@ -29,6 +29,7 @@
 
 #include "tsTSAnalyzer.h"
 #include "tsT2MIPacket.h"
+#include "tsAACDescriptor.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
@@ -252,6 +253,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     scrambled(false),
     same_stream_id(false),
     pes_stream_id(0),
+    stream_type(0),
     ts_pkt_cnt(0),
     ts_af_cnt(0),
     unit_start_cnt(0),
@@ -275,6 +277,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     ssu_oui(),
     t2mi_plp_ts(),
     cur_continuity(0),
+    audio2(),
     cur_ts_sc(0),
     cur_ts_sc_pkt(0),
     cryptop_cnt(0),
@@ -617,9 +620,9 @@ void ts::TSAnalyzer::analyzePAT(const PAT& pat)
     _ts_id_valid = true;
 
     // Get all PMT PID's for all services
-    for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-        uint16_t service_id(it->first);
-        PID pmt_pid(it->second);
+    for (auto& it : pat.pmts) {
+        uint16_t service_id(it.first);
+        PID pmt_pid(it.second);
         // Register the PMT PID
         PIDContextPtr ps(getPID(pmt_pid));
         ps->description = u"PMT";
@@ -682,11 +685,12 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
     analyzeDescriptors(pmt.descs, svp.pointer());
 
     // Process all "elementary stream info"
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        const PID es_pid = it->first;
-        const PMT::Stream& stream(it->second);
+    for (auto& it : pmt.streams) {
+        const PID es_pid = it.first;
+        const PMT::Stream& stream(it.second);
         ps = getPID(es_pid);
         ps->addService(pmt.service_id);
+        ps->stream_type = stream.stream_type;
         ps->carry_audio = ps->carry_audio || StreamTypeIsAudio(stream.stream_type);
         ps->carry_video = ps->carry_video || StreamTypeIsVideo(stream.stream_type);
         ps->carry_pes = ps->carry_pes || StreamTypeIsPES(stream.stream_type);
@@ -694,6 +698,13 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
             ps->carry_section = true;
             _demux.addPID(es_pid);
         }
+
+        // AAC audio streams have the same outer syntax as MPEG-2 Audio.
+        if (ps->audio2.isValid() && (ps->stream_type == ST_MPEG1_AUDIO || ps->stream_type == ST_MPEG2_AUDIO)) {
+            // We are sure that the stream is MPEG 1/2 Audio.
+            AppendUnique(ps->attributes, ps->audio2.toString());
+        }
+
         ps->description = names::StreamType(stream.stream_type);
         analyzeDescriptors(stream.descs, svp.pointer(), ps.pointer());
     }
@@ -707,15 +718,17 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
 void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
 {
     // Register characteristics of all services
-    for (auto it = sdt.services.begin(); it != sdt.services.end(); ++it) {
+    for (auto& it : sdt.services) {
 
-        ServiceContextPtr svp(getService(it->first)); // it->first = map key = service id
+        ServiceContextPtr svp(getService(it.first)); // it->first = map key = service id
+        const SDT::ServiceEntry& entry(it.second);
+
         svp->orig_netw_id = sdt.onetw_id;
-        svp->service_type = it->second.serviceType(_duck);
+        svp->service_type = entry.serviceType(_duck);
 
         // Replace names only if they are not empty.
-        const UString provider(it->second.providerName(_duck));
-        const UString name(it->second.serviceName(_duck));
+        const UString provider(entry.providerName(_duck));
+        const UString name(entry.serviceName(_duck));
         if (!provider.empty()) {
             svp->provider = provider;
         }
@@ -764,10 +777,10 @@ void ts::TSAnalyzer::analyzeTOT(const TOT& tot)
 void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
 {
     // Process all table types.
-    for (auto it = mgt.tables.begin(); it != mgt.tables.end(); ++it) {
+    for (auto& it : mgt.tables) {
 
         // The table type and its name.
-        const MGT::TableType& tab(it->second);
+        const MGT::TableType& tab(it.second);
         const UString name(u"ATSC " + MGT::TableTypeName(tab.table_type));
 
         // Get the PID context.
@@ -800,19 +813,21 @@ void ts::TSAnalyzer::analyzeMGT(const MGT& mgt)
 void ts::TSAnalyzer::analyzeVCT(const VCT& vct)
 {
     // Register characteristics of all services
-    for (auto it = vct.channels.begin(); it != vct.channels.end(); ++it) {
+    for (auto& it : vct.channels) {
+        const VCT::Channel& chan(it.second);
+
         // Only keep services from this transport stream.
-        if (it->second.channel_TSID == vct.transport_stream_id) {
+        if (chan.channel_TSID == vct.transport_stream_id) {
             // Get or create the service with this service id ("program number" in ATSC parlance).
-            ServiceContextPtr svp(getService(it->second.program_number));
-            const UString name(it->second.short_name.toTrimmed());
+            ServiceContextPtr svp(getService(chan.program_number));
+            const UString name(chan.short_name.toTrimmed());
             if (!name.empty()) {
                 // Update the service name.
                 svp->name = name;
             }
             // Provider is a DVB concept, we replace it with major.minor with ATSC.
             if (svp->provider.empty()) {
-                svp->provider = UString::Format(u"ATSC %d.%d", {it->second.major_channel_number, it->second.minor_channel_number});
+                svp->provider = UString::Format(u"ATSC %d.%d", {chan.major_channel_number, chan.minor_channel_number});
             }
         }
     }
@@ -842,12 +857,12 @@ ts::UString ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes)
     // Additional description
     UString more(comment);
     if (include_attributes) {
-        for (UStringVector::const_iterator it = attributes.begin(); it != attributes.end(); ++it) {
-            if (!it->empty()) {
+        for (auto& attr : attributes) {
+            if (!attr.empty()) {
                 if (!more.empty()) {
                     more.append(u", ");
                 }
-                more.append(*it);
+                more.append(attr);
             }
         }
     }
@@ -925,8 +940,12 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             }
             case DID_AAC: {
                 if (ps != nullptr) {
-                    // The presence of this descriptor indicates an HE-AAC audio track.
-                    ps->description = u"HE-AAC Audio";
+                    // The presence of this descriptor indicates an AAC, E-AAC or HE-AAC audio track.
+                    AACDescriptor desc(_duck, *descs[di]);
+                    const UString type(desc.aacTypeString());
+                    if (!type.empty()) {
+                        ps->description = type;
+                    }
                     ps->carry_audio = true;
                 }
                 break;
@@ -1264,7 +1283,17 @@ void ts::TSAnalyzer::analyzeCADescriptor(const Descriptor& desc, ServiceContext*
 
 void ts::TSAnalyzer::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& pkt, const MPEG2AudioAttributes& attr)
 {
-    AppendUnique(getPID(pkt.sourcePID())->attributes, attr.toString());
+    PIDContextPtr pc(getPID(pkt.sourcePID()));
+
+    // AAC audio streams have the same outer syntax and are sometimes incorrectly reported as MPEG-2 audio.
+    if (pc->stream_type == ST_MPEG1_AUDIO || pc->stream_type == ST_MPEG2_AUDIO) {
+        // We are sure that the stream is MPEG 1/2 Audio.
+        AppendUnique(pc->attributes, attr.toString());
+    }
+    else if (pc->stream_type == ST_NULL) {
+        // We do not know the stream type yet, the first PES packet came before the PMT.
+        pc->audio2 = attr;
+    }
 }
 
 
@@ -1569,7 +1598,7 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
                 ps->pes_stream_id = pkt.b [header_size + 3];
                 ps->same_stream_id = true;
             }
-            else if (ps->pes_stream_id != pkt.b [header_size + 3]) {
+            else if (ps->pes_stream_id != pkt.b[header_size + 3]) {
                 // Got different values of stream_id in PES packets
                 ps->same_stream_id = false;
             }
@@ -1617,14 +1646,13 @@ void ts::TSAnalyzer::recomputeStatistics()
     _duration = _ts_bitrate == 0 ? 0 : ((MilliSecPerSec * PKT_SIZE_BITS * _ts_pkt_cnt) / _ts_bitrate).toInt();
 
     // Reinitialize all service information that will be updated PID by PID
-    for (ServiceContextMap::iterator it = _services.begin(); it != _services.end(); ++it) {
-        it->second->pid_cnt = 0;
-        it->second->ts_pkt_cnt = 0;
-        it->second->scrambled_pid_cnt = 0;
+    for (auto& srv : _services) {
+        srv.second->pid_cnt = 0;
+        srv.second->ts_pkt_cnt = 0;
+        srv.second->scrambled_pid_cnt = 0;
     }
 
     // Complete all PID information
-
     _pid_cnt = 0;
     _global_pid_cnt = 0;
     _global_pkt_cnt = 0;
@@ -1636,8 +1664,8 @@ void ts::TSAnalyzer::recomputeStatistics()
     _unref_pkt_cnt = 0;
     _unref_scr_pids = 0;
 
-    for (PIDContextMap::iterator pci = _pids.begin(); pci != _pids.end(); ++pci) {
-        PIDContext& pc(*pci->second);
+    for (auto& pci : _pids) {
+        PIDContext& pc(*pci.second);
 
         // Compute TS bitrate from the PCR's of this PID
         if (pc.ts_bitrate_cnt != 0) {
@@ -1656,8 +1684,8 @@ void ts::TSAnalyzer::recomputeStatistics()
         }
 
         // If the PID belongs to some services, update services info.
-        for (ServiceIdSet::iterator it = pc.services.begin(); it != pc.services.end(); ++it) {
-            ServiceContextPtr scp(getService(*it));
+        for (auto& it : pc.services) {
+            ServiceContextPtr scp(getService(it));
             scp->pid_cnt++;
             scp->ts_pkt_cnt += pc.ts_pkt_cnt;
             if (pc.scrambled) {
@@ -1711,19 +1739,19 @@ void ts::TSAnalyzer::recomputeStatistics()
     // Complete all service information
     _scrambled_services_cnt = 0;
 
-    for (ServiceContextMap::iterator sci = _services.begin(); sci != _services.end(); ++sci) {
+    for (auto& sci : _services) {
 
         // Count scrambled services
-        if (sci->second->scrambled_pid_cnt > 0) {
+        if (sci.second->scrambled_pid_cnt > 0) {
             _scrambled_services_cnt++;
         }
 
         // Compute average service bitrate
         if (_ts_pkt_cnt == 0) {
-            sci->second->bitrate = 0;
+            sci.second->bitrate = 0;
         }
         else {
-            sci->second->bitrate = (_ts_bitrate * sci->second->ts_pkt_cnt) / _ts_pkt_cnt;
+            sci.second->bitrate = (_ts_bitrate * sci.second->ts_pkt_cnt) / _ts_pkt_cnt;
         }
     }
 
@@ -1741,8 +1769,8 @@ void ts::TSAnalyzer::getServiceIds(std::vector<uint16_t>& list)
     recomputeStatistics();
     list.clear();
 
-    for (ServiceContextMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
-        list.push_back(it->first);
+    for (auto& srv : _services) {
+        list.push_back(srv.first);
     }
 }
 
@@ -1756,9 +1784,9 @@ void ts::TSAnalyzer::getPIDs(std::vector<PID>& list)
     recomputeStatistics();
     list.clear();
 
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        if (it->second->ts_pkt_cnt > 0) {
-            list.push_back(it->first);
+    for (auto& pid : _pids) {
+        if (pid.second->ts_pkt_cnt > 0) {
+            list.push_back(pid.first);
         }
     }
 }
@@ -1773,9 +1801,9 @@ void ts::TSAnalyzer::getGlobalPIDs(std::vector<PID>& list)
     recomputeStatistics();
     list.clear();
 
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        if (it->second->referenced && it->second->services.empty() && it->second->ts_pkt_cnt > 0) {
-            list.push_back(it->first);
+    for (auto& pid : _pids) {
+        if (pid.second->referenced && pid.second->services.empty() && pid.second->ts_pkt_cnt > 0) {
+            list.push_back(pid.first);
         }
     }
 }
@@ -1790,9 +1818,9 @@ void ts::TSAnalyzer::getUnreferencedPIDs(std::vector<PID>& list)
     recomputeStatistics();
     list.clear();
 
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        if (!it->second->referenced && it->second->ts_pkt_cnt > 0) {
-            list.push_back(it->first);
+    for (auto& pid : _pids) {
+        if (!pid.second->referenced && pid.second->ts_pkt_cnt > 0) {
+            list.push_back(pid.first);
         }
     }
 }
@@ -1807,9 +1835,9 @@ void ts::TSAnalyzer::getPIDsOfService(std::vector<PID>& list, uint16_t service_i
     recomputeStatistics();
     list.clear();
 
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        if (it->second->services.count(service_id) > 0) {
-            list.push_back(it->first);
+    for (auto& pid : _pids) {
+        if (pid.second->services.count(service_id) > 0) {
+            list.push_back(pid.first);
         }
     }
 }
@@ -1824,9 +1852,9 @@ void ts::TSAnalyzer::getPIDsWithPES(std::vector<PID>& list)
     recomputeStatistics();
     list.clear();
 
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        if (it->second->carry_pes) {
-            list.push_back(it->first);
+    for (auto& pid : _pids) {
+        if (pid.second->carry_pes) {
+            list.push_back(pid.first);
         }
     }
 }
