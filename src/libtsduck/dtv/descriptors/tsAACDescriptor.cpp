@@ -124,12 +124,28 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
         bool has_AAC_type = buf.getBool();
         disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(6);
-        if (has_AAC_type) {
+        if (has_AAC_type && buf.canRead()) {
             disp << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | buf.getUInt8(), NamesFlags::HEXA_FIRST, 8) << std::endl;
         }
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Get the string representation of an AAC type.
+//----------------------------------------------------------------------------
+
+ts::UString ts::AACDescriptor::aacTypeString() const
+{
+    return isValid() && AAC_type.set() ? aacTypeString(AAC_type.value()) : UString();
+}
+
+ts::UString ts::AACDescriptor::aacTypeString(uint8_t type)
+{
+    return NameFromSection(u"ComponentType", 0x6F00 | type, NamesFlags::NAME, 8);
+}
+
 
 
 //----------------------------------------------------------------------------

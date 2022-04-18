@@ -57,11 +57,24 @@ namespace ts {
         AACDescriptor();
 
         //!
-        //! Constructor from a binary descriptor
+        //! Constructor from a binary descriptor.
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
         AACDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        //!
+        //! Get the string representation of the AAC type.
+        //! @return The string representation of the AAC type.
+        //!
+        UString aacTypeString() const;
+
+        //!
+        //! Get the string representation of an AAC type.
+        //! @param [in] type The AAC type.
+        //! @return The string representation of the AAC type.
+        //!
+        static UString aacTypeString(uint8_t type);
 
         // Inherited methods
         DeclareDisplayDescriptor();
