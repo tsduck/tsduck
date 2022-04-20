@@ -63,7 +63,7 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-// Build a list of all possible combinations of bandwidth, constellation,
+// Build a list of all possible combinations of modulation parameters
 //----------------------------------------------------------------------------
 
 void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate& bitrate)
@@ -91,34 +91,24 @@ void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate
                         if (status != DTAPI_OK) {
                             continue;
                         }
-                        // lowering m_NumBlocks will always lower bitrate so if we find value that evaluates to bitrate lower than target, 
-                        // all remaining will be worse
-                        bool is_smaller = false;
-                        while (!is_smaller && params.m_Plps[0].m_NumBlocks > 0) {
-                            ts::BitRate new_bitrate = 0;
-                            Dtapi::DtFractionInt frate;
-                            status = Dtapi::DtapiModPars2TsRate(frate, params);
-                            if (status == DTAPI_OK && frate.m_Num > 0 && frate.m_Den > 0) {
-                                FromDektecFractionInt(new_bitrate, frate);
+                        ts::BitRate new_bitrate = 0;
+                        Dtapi::DtFractionInt frate;
+                        status = Dtapi::DtapiModPars2TsRate(frate, params);
+                        if (status == DTAPI_OK && frate.m_Num > 0 && frate.m_Den > 0) {
+                            FromDektecFractionInt(new_bitrate, frate);
+                        }
+                        else {
+                            int irate = 0;
+                            status = Dtapi::DtapiModPars2TsRate(irate, params);
+                            if (status == DTAPI_OK) {
+                                new_bitrate = ts::BitRate{irate};
                             }
-                            else {
-                                int irate = 0;
-                                status = Dtapi::DtapiModPars2TsRate(irate, params);
-                                if (status == DTAPI_OK) {     
-                                    new_bitrate = ts::BitRate{irate};
-                                }
-                            }
-                            if (new_bitrate != 0 && new_bitrate - bitrate < 0) {
-                                is_smaller = true;
-                            }
-                            auto new_bitrate_diff = (new_bitrate - bitrate).abs();
-                            if (new_bitrate_diff < best_bitrate_diff) {
-                                best_params = params;
-                                best_bitrate = new_bitrate;
-                                best_bitrate_diff = new_bitrate_diff;
-                            }
-
-                            params.m_Plps[0].m_NumBlocks--;
+                        }
+                        auto new_bitrate_diff = (new_bitrate - bitrate).abs();
+                        if (new_bitrate_diff < best_bitrate_diff) {
+                            best_params = params;
+                            best_bitrate = new_bitrate;
+                            best_bitrate_diff = new_bitrate_diff;
                         }
                     }
                 }
