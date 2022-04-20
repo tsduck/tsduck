@@ -41,7 +41,6 @@ bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsDektecVPD.h"
 #include "tsDektecArgsUtils.h"
 #include "tsHFBand.h"
-#include "tsBitrateDifferenceDVBT.h"
 #include "tsDVBT2ParamsEvaluator.h"
 #include "tsModulation.h"
 #include "tsIPv4SocketAddress.h"
@@ -1388,8 +1387,19 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
                 BitrateDifferenceDVBTList params_list;
                 BitrateDifferenceDVBT::EvaluateToBitrate(params_list, _guts->cur_bitrate);
                 if (!params_list.empty()) {
-                    other_args = params_list.front().tune;
-                    input = &other_args;
+                    // find the closest parameters set, that match user's specified values if there are any
+                    for (const auto& params : params_list) {
+                        if (ParamsMatchUserOverrides(params)) {
+                            other_args = params.tune;
+                            input = &other_args;
+                            break;
+                        }
+                    }
+                    if (input == nullptr) {
+                        // if we couldn't find parameters matching user preference, fallback to best match
+                        other_args = params_list.front().tune;
+                        input = &other_args;
+                    }
                 }
             }
             if (input != nullptr) {
@@ -1962,6 +1972,55 @@ bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
     }
 
     return false;
+}
+
+//----------------------------------------------------------------------------
+// Checks whether calculated parameters for dvb-t do not override user specified params
+//----------------------------------------------------------------------------
+
+bool ts::DektecOutputPlugin::ParamsMatchUserOverrides(const ts::BitrateDifferenceDVBT& params)
+{
+    if (present(u"bandwidth")) {
+        auto preffered_bandwidth = intValue<int>(u"bandwidth", 0);
+        auto calculated_bandwidth = params.tune.bandwidth.value();
+        switch (preffered_bandwidth) {
+            case DTAPI_MOD_DVBT_8MHZ: if(calculated_bandwidth != 8000000) return false; break;
+            case DTAPI_MOD_DVBT_7MHZ: if(calculated_bandwidth != 7000000) return false; break;
+            case DTAPI_MOD_DVBT_6MHZ: if(calculated_bandwidth != 6000000) return false; break;
+            case DTAPI_MOD_DVBT_5MHZ: if(calculated_bandwidth != 5000000) return false; break;
+            default: return false;
+        }
+    }
+    if (present(u"convolutional-rate")) {
+        auto preffered_convolutional_rate = intValue<int>(u"convolutional-rate", 0);
+        int calculated_convolutional_rate;
+        ModulationArgs::ToDektecCodeRate(calculated_convolutional_rate, params.tune.fec_hp.value(FEC_NONE));
+        if (calculated_convolutional_rate != preffered_convolutional_rate) {
+            return false;
+        }
+    }
+    if (present(u"constellation")) {
+        auto preffered_constellation = intValue<int>(u"constellation", 0);
+        auto calculated_constellation = params.tune.modulation.value();
+        switch (preffered_constellation) {
+            case DTAPI_MOD_DVBT_QPSK:  if(calculated_constellation != ts::QPSK)   return false; break;
+            case DTAPI_MOD_DVBT_QAM16: if(calculated_constellation != ts::QAM_16) return false; break;
+            case DTAPI_MOD_DVBT_QAM64: if(calculated_constellation != ts::QAM_64) return false; break;
+            default: return false;
+        }
+    }
+    if (present(u"guard-interval")) {
+        auto preffered_guard_interval = intValue<int>(u"guard-interval", 0);
+        auto calculated_guard_interval = params.tune.guard_interval.value();
+        switch (preffered_guard_interval) {
+            case DTAPI_MOD_DVBT_G_1_32: if(calculated_guard_interval != GUARD_1_32) return false; break;
+            case DTAPI_MOD_DVBT_G_1_16: if(calculated_guard_interval != GUARD_1_16) return false; break;
+            case DTAPI_MOD_DVBT_G_1_8:  if(calculated_guard_interval != GUARD_1_8)  return false; break;
+            case DTAPI_MOD_DVBT_G_1_4:  if(calculated_guard_interval != GUARD_1_4)  return false; break;
+            default: return false;
+        }
+    }
+    return true;
 }
 
 #endif // TS_NO_DTAPI
