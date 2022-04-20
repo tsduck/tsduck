@@ -36,6 +36,7 @@
 #if !defined(TS_NO_DTAPI) || defined(DOXYGEN)
 
 #include "tsOutputPlugin.h"
+#include "tsBitrateDifferenceDVBT.h"
 
 namespace ts {
     //!
@@ -89,6 +90,9 @@ namespace ts {
         // Set preload FIFO size based on a delay, if requested, in ms. Returns true if preload FIFO size is altered,
         // false otherwise.
         bool setPreloadFIFOSizeBasedOnDelay();
+
+        // Checks whether calculated parameters for dvb-t do not override user specified params
+        bool ParamsMatchUserOverrides(const ts::BitrateDifferenceDVBT& params);
     };
 }
 
