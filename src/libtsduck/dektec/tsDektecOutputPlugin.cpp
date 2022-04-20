@@ -1981,43 +1981,90 @@ bool ts::DektecOutputPlugin::setPreloadFIFOSizeBasedOnDelay()
 bool ts::DektecOutputPlugin::ParamsMatchUserOverrides(const ts::BitrateDifferenceDVBT& params)
 {
     if (present(u"bandwidth")) {
-        auto preffered_bandwidth = intValue<int>(u"bandwidth", 0);
+        auto preferred_bandwidth = intValue<int>(u"bandwidth", 0);
         auto calculated_bandwidth = params.tune.bandwidth.value();
-        switch (preffered_bandwidth) {
-            case DTAPI_MOD_DVBT_8MHZ: if(calculated_bandwidth != 8000000) return false; break;
-            case DTAPI_MOD_DVBT_7MHZ: if(calculated_bandwidth != 7000000) return false; break;
-            case DTAPI_MOD_DVBT_6MHZ: if(calculated_bandwidth != 6000000) return false; break;
-            case DTAPI_MOD_DVBT_5MHZ: if(calculated_bandwidth != 5000000) return false; break;
-            default: return false;
+        switch (preferred_bandwidth) {
+            case DTAPI_MOD_DVBT_8MHZ:
+                if (calculated_bandwidth != 8000000) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_7MHZ:
+                if (calculated_bandwidth != 7000000) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_6MHZ:
+                if (calculated_bandwidth != 6000000) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_5MHZ:
+                if (calculated_bandwidth != 5000000) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
         }
     }
     if (present(u"convolutional-rate")) {
-        auto preffered_convolutional_rate = intValue<int>(u"convolutional-rate", 0);
-        int calculated_convolutional_rate;
+        auto preferred_convolutional_rate = intValue<int>(u"convolutional-rate", 0);
+        int calculated_convolutional_rate = 0;
         ModulationArgs::ToDektecCodeRate(calculated_convolutional_rate, params.tune.fec_hp.value(FEC_NONE));
-        if (calculated_convolutional_rate != preffered_convolutional_rate) {
+        if (calculated_convolutional_rate != preferred_convolutional_rate) {
             return false;
         }
     }
     if (present(u"constellation")) {
-        auto preffered_constellation = intValue<int>(u"constellation", 0);
+        auto preferred_constellation = intValue<int>(u"constellation", 0);
         auto calculated_constellation = params.tune.modulation.value();
-        switch (preffered_constellation) {
-            case DTAPI_MOD_DVBT_QPSK:  if(calculated_constellation != ts::QPSK)   return false; break;
-            case DTAPI_MOD_DVBT_QAM16: if(calculated_constellation != ts::QAM_16) return false; break;
-            case DTAPI_MOD_DVBT_QAM64: if(calculated_constellation != ts::QAM_64) return false; break;
-            default: return false;
+        switch (preferred_constellation) {
+            case DTAPI_MOD_DVBT_QPSK:
+                if (calculated_constellation != ts::QPSK) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_QAM16:
+                if (calculated_constellation != ts::QAM_16) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_QAM64:
+                if (calculated_constellation != ts::QAM_64) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
         }
     }
     if (present(u"guard-interval")) {
-        auto preffered_guard_interval = intValue<int>(u"guard-interval", 0);
+        auto preferred_guard_interval = intValue<int>(u"guard-interval", 0);
         auto calculated_guard_interval = params.tune.guard_interval.value();
-        switch (preffered_guard_interval) {
-            case DTAPI_MOD_DVBT_G_1_32: if(calculated_guard_interval != GUARD_1_32) return false; break;
-            case DTAPI_MOD_DVBT_G_1_16: if(calculated_guard_interval != GUARD_1_16) return false; break;
-            case DTAPI_MOD_DVBT_G_1_8:  if(calculated_guard_interval != GUARD_1_8)  return false; break;
-            case DTAPI_MOD_DVBT_G_1_4:  if(calculated_guard_interval != GUARD_1_4)  return false; break;
-            default: return false;
+        switch (preferred_guard_interval) {
+            case DTAPI_MOD_DVBT_G_1_32:
+                if (calculated_guard_interval != GUARD_1_32) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_G_1_16:
+                if (calculated_guard_interval != GUARD_1_16) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_G_1_8:
+                if (calculated_guard_interval != GUARD_1_8) {
+                    return false;
+                }
+                break;
+            case DTAPI_MOD_DVBT_G_1_4:
+                if (calculated_guard_interval != GUARD_1_4) {
+                    return false;
+                }
+                break;
+            default:
+                return false;
         }
     }
     return true;
