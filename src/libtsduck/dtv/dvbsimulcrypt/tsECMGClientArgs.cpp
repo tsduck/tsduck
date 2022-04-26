@@ -56,7 +56,7 @@ ts::ECMGClientArgs::ECMGClientArgs() :
 
 void ts::ECMGClientArgs::defineArgs(Args& args)
 {
-    args.option(u"access-criteria", 'a', Args::STRING);
+    args.option(u"access-criteria", 'a', Args::HEXADATA);
     args.help(u"access-criteria",
               u"Specifies the access criteria for the service as sent to the ECMG. "
               u"The value must be a suite of hexadecimal digits.");
@@ -106,20 +106,15 @@ void ts::ECMGClientArgs::defineArgs(Args& args)
 
 bool ts::ECMGClientArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    super_cas_id = args.intValue<uint32_t>(u"super-cas-id");
-    ecm_channel_id = args.intValue<uint16_t>(u"channel-id", 1);
-    ecm_stream_id = args.intValue<uint16_t>(u"stream-id", 1);
-    ecm_id = args.intValue<uint16_t>(u"ecm-id", 1);
+    args.getIntValue(super_cas_id, u"super-cas-id");
+    args.getIntValue(ecm_channel_id, u"channel-id", 1);
+    args.getIntValue(ecm_stream_id, u"stream-id", 1);
+    args.getIntValue(ecm_id, u"ecm-id", 1);
     cp_duration = MilliSecPerSec * args.intValue<MilliSecond>(u"cp-duration", 10);
     log_protocol = args.present(u"log-protocol") ? args.intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
     log_data = args.present(u"log-data") ? args.intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
-    dvbsim_version = args.intValue<tlv::VERSION>(u"ecmg-scs-version", 2);
-
-    // Decode access criteria.
-    if (!args.value(u"access-criteria").hexaDecode(access_criteria)) {
-        args.error(u"invalid access criteria, specify an even number of hexa digits");
-        return false;
-    }
+    args.getIntValue(dvbsim_version, u"ecmg-scs-version", 2);
+    args.getHexaValue(access_criteria, u"access-criteria");
 
     // Decode ECMG socket address.
     const UString ecmg(args.value(u"ecmg"));

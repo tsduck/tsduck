@@ -282,7 +282,7 @@ ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
          u"Select packets which were explicitly turned into null packets by some previous "
          u"plugin in the chain (typically using a --stuffing option).");
 
-    option(u"pattern", 0, STRING);
+    option(u"pattern", 0, HEXADATA);
     help(u"pattern",
          u"Select packets containing the specified pattern bytes. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
@@ -429,11 +429,7 @@ bool ts::FilterPlugin::getOptions()
     _search_payload = present(u"search-payload");
     _use_search_offset = present(u"search-offset");
     getIntValue(_search_offset, u"search-offset");
-
-    if (!value(u"pattern").hexaDecode(_pattern)) {
-        tsp->error(u"invalid hexadecimal pattern");
-        return false;
-    }
+    getHexaValue(_pattern, u"pattern");
 
     // Decode all index ranges.
     _ranges.clear();

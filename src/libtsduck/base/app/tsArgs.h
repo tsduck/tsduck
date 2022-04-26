@@ -36,6 +36,7 @@
 #include "tsReport.h"
 #include "tsException.h"
 #include "tsEnumeration.h"
+#include "tsByteBlock.h"
 #include "tsVariable.h"
 #include "tsSafePtr.h"
 #include "tsAbstractNumber.h"
@@ -321,6 +322,7 @@ namespace ts {
             STRING,    //!< Uninterpreted string argument.
             FILENAME,  //!< String argument which will be interpreted as a file name.
             DIRECTORY, //!< String argument which will be interpreted as a directory name.
+            HEXADATA,  //!< String argument which will be interpreted as a suite of hexadecimal digits.
             INTEGER,   //!< Integer argument, must set min & max values.
             UNSIGNED,  //!< Integer 0..unlimited.
             POSITIVE,  //!< Integer 1..unlimited.
@@ -357,8 +359,8 @@ namespace ts {
         //! ignored if @a type is @link NONE @endlink.
         //! @param [in] max_occur Maximum number of occurences, ignored if @a type is @link NONE @endlink,
         //! 0 means default (1 for an option, unlimited for a parameters).
-        //! @param [in] min_value Minimum value, ignored if @a type is not @link INTEGER @endlink.
-        //! @param [in] max_value Maximum value, ignored if @a type is not @link INTEGER @endlink.
+        //! @param [in] min_value Minimum value for integer, minimum size for string and hexa data.
+        //! @param [in] max_value Maximum value for integer, maximum size for string and hexa data.
         //! @param [in] optional  When true, the option's value is optional.
         //! @param [in] decimals Reference number of decimal digits. When @a decimals is greater than
         //! zero, the result is automatically adjusted by the corresponding power of ten. For instance,
@@ -952,6 +954,36 @@ namespace ts {
         //! the option is present without value, the returned value is TRUE.
         //!
         Tristate tristateValue(const UChar* name = nullptr, size_t index = 0) const;
+
+        //!
+        //! Get the value of an hexadecimal option in the last analyzed command line.
+        //!
+        //! @param [out] value A variable receiving the decoded binary value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The string to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        void getHexaValue(ByteBlock& value, const UChar* name = nullptr, const ByteBlock& def_value = ByteBlock(), size_t index = 0) const;
+
+        //!
+        //! Get the value of an hexadecimal option in the last analyzed command line.
+        //!
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The string to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The decoded binary value of the option or parameter.
+        //!
+        ByteBlock hexaValue(const UChar* name = nullptr, const ByteBlock& def_value = ByteBlock(), size_t index = 0) const;
 
         //!
         //! Get the value of an AbstractNumber option in the last analyzed command line.

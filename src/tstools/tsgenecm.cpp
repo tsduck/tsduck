@@ -81,10 +81,10 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     option(u"cp-number", 0, UINT16);
     help(u"cp-number", u"Crypto-period number. Default: 0.");
 
-    option(u"cw-current", 'c', STRING, 1, 1);
+    option(u"cw-current", 'c', HEXADATA, 1, 1, 1);
     help(u"cw-current", u"Current control word (required). The value must be a suite of hexadecimal digits.");
 
-    option(u"cw-next", 'n', STRING);
+    option(u"cw-next", 'n', HEXADATA, 0, 1, 1);
     help(u"cw-next", u"Next control word (optional). The value must be a suite of hexadecimal digits.");
 
     // Common ECMG parameters.
@@ -96,10 +96,9 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     // Analyze parameters.
     ecmg.loadArgs(duck, *this);
     getValue(outFile, u"");
-    cpNumber = intValue<uint16_t>(u"cp-number", 0);
-    if (!value(u"cw-current").hexaDecode(cwCurrent) || !value(u"cw-next").hexaDecode(cwNext)) {
-        error(u"invalid control word value");
-    }
+    getIntValue(cpNumber, u"cp-number", 0);
+    getHexaValue(cwCurrent, u"cw-current");
+    getHexaValue(cwNext, u"cw-next");
 
     exitOnError();
 }

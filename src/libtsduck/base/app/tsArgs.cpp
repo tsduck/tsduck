@@ -29,6 +29,7 @@
 
 #include "tsArgs.h"
 #include "tsAlgorithm.h"
+#include "tsIntegerUtils.h"
 #include "tsFileUtils.h"
 #include "tsVersionInfo.h"
 #include "tsOutputPager.h"
@@ -113,13 +114,22 @@ ts::Args::IOption::IOption(const UChar* name_,
     // Normalize all integer types to INTEGER
     switch (type) {
         case NONE:
-        case STRING:
-        case FILENAME:
-        case DIRECTORY:
         case TRISTATE:
             min_value = 0;
             max_value = 0;
             break;
+        case STRING:
+        case FILENAME:
+        case DIRECTORY:
+        case HEXADATA:
+            // Min and max values will be converted to size_t, be sure to stay within limits.
+            min_value = std::max<int64_t>(0, std::min(min_value, bounded_cast<int64_t>(std::numeric_limits<size_t>::max())));
+            max_value = std::max<int64_t>(0, std::min(max_value, bounded_cast<int64_t>(std::numeric_limits<size_t>::max())));
+            // Max length of zero means unbounded.
+            if (max_value == 0) {
+                max_value = bounded_cast<int64_t>(std::numeric_limits<size_t>::max());
+            }
+            TS_FALLTHROUGH
         case INTEGER:
         case ANUMBER:
             if (max_value < min_value) {
@@ -250,15 +260,17 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 {
     UString desc(syntax);
     if (syntax.empty()) {
-        if (type == FILENAME) {
-            desc = u"file-name";
+        TS_PUSH_WARNING()
+        TS_LLVM_NOWARNING(switch-enum)
+        TS_MSC_NOWARNING(4061)
+        switch (type) {
+            case NONE:      break;
+            case FILENAME:  desc = u"file-name"; break;
+            case DIRECTORY: desc = u"directory-name"; break;
+            case HEXADATA:  desc = u"hexa-data"; break;
+            default:        desc = u"value"; break;
         }
-        else if (type == DIRECTORY) {
-            desc = u"directory-name";
-        }
-        else if (type != NONE) {
-            desc = u"value";
-        }
+        TS_POP_WARNING()
     }
 
     if (type == NONE || (flags & (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) == (IOPT_OPTVALUE | IOPT_OPTVAL_NOHELP)) {
@@ -332,6 +344,9 @@ ts::UString ts::Args::IOption::optionType() const
             break;
         case DIRECTORY:
             desc += u":directory";
+            break;
+        case HEXADATA:
+            desc += u":hexadata";
             break;
         case NONE:
             desc += u":bool";
@@ -898,6 +913,33 @@ ts::Tristate ts::Args::tristateValue(const UChar* name, size_t index) const
 
 
 //----------------------------------------------------------------------------
+// Get the value of an hexadecimal option.
+//----------------------------------------------------------------------------
+
+void ts::Args::getHexaValue(ByteBlock& value, const UChar* name, const ByteBlock& def_value, size_t index) const
+{
+    const IOption& opt(getIOption(name));
+
+    if (opt.type != STRING && opt.type != HEXADATA) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as string or hexa string");
+    }
+    if (index >= opt.values.size() || !opt.values[index].string.set()) {
+        value = def_value;
+    }
+    else {
+        opt.values[index].string.value().hexaDecode(value);
+    }
+}
+
+ts::ByteBlock ts::Args::hexaValue(const UChar* name, const ByteBlock& def_value, size_t index) const
+{
+    ByteBlock value;
+    getHexaValue(value, name, def_value, index);
+    return value;
+}
+
+
+//----------------------------------------------------------------------------
 // Get the full command line from the last command line analysis.
 //----------------------------------------------------------------------------
 
@@ -1166,6 +1208,32 @@ bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
         }
         else if (!opt.anumber->inRange(opt.min_value, opt.max_value)) {
             error(u"value for %s must be in range %'d to %'d", {opt.display(), opt.min_value, opt.max_value});
+            return false;
+        }
+    }
+    else if (opt.type == STRING) {
+        if (val.value().size() < size_t(opt.min_value)) {
+            error(u"invalid size %d for %s, must be at least %d characters", {val.value().size(), opt.display(), opt.min_value});
+            return false;
+        }
+        if (val.value().size() > size_t(opt.max_value)) {
+            error(u"invalid size %d for %s, must be at most %d characters", {val.value().size(), opt.display(), opt.max_value});
+            return false;
+        }
+    }
+    else if (opt.type == HEXADATA) {
+        // We keep the arg as a string value after validation and will parse it again when the value is queried later.
+        ByteBlock data;
+        if (!val.value().hexaDecode(data)) {
+            error(u"invalid hexadecimal value '%s' for %s", {val.value(), opt.display()});
+            return false;
+        }
+        if (data.size() < size_t(opt.min_value)) {
+            error(u"invalid size %d for %s, must be at least %d bytes", {data.size(), opt.display(), opt.min_value});
+            return false;
+        }
+        if (data.size() > size_t(opt.max_value)) {
+            error(u"invalid size %d for %s, must be at most %d bytes", {data.size(), opt.display(), opt.max_value});
             return false;
         }
     }

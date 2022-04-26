@@ -213,6 +213,14 @@ namespace ts {
         //!
         virtual size_t size() const;
 
+        //!
+        //! Check if the start of the data matches a given pattern.
+        //! @param [in] pattern A byte block to compare with the start of the data.
+        //! @param [in] mask Optional mask to select meaningful bits in @a pattern.
+        //! @return Size of the binary content of the data.
+        //!
+        bool matchContent(const ByteBlock& pattern, const ByteBlock& mask = ByteBlock()) const;
+
     protected:
         //!
         //! Read/write access to the full binary content of the data for subclasses.

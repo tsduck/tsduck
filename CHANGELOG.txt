@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2719
+VERSION 3.31-2730
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -11,6 +11,12 @@ VERSION 3.31-2719
     - Options --no-bitrate, --align-first-segment in output plugin "hls".
     - Options --json-udp, --json-udp-local, --json-udp-ttl to "tsanalyze",
       "tscmp", "tsdektec", "tsxml", plugins "analyze", "splicemonitor".
+    - Options --section-content, --section-mask in "tstables", plugins
+      "sections", "tables".
+    - Option --keep in plugin "sections".
+  * In plugin "sections", the options --tid-remove, --tid-ext-remove,
+    --etid-remove, --version-remove were renamed without -remove suffix to
+    highlight the fact that they can be used to remove or keep sections.
 
 [BUG] Bug fixes:
 

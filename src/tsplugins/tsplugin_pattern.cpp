@@ -72,7 +72,7 @@ ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
     _pattern(),
     _pid_list()
 {
-    option(u"", 0, STRING, 1, 1);
+    option(u"", 0, HEXADATA, 1, 1, 1, PKT_MAX_PAYLOAD_SIZE);
     help(u"",
          u"Specifies the binary pattern to apply on TS packets payload. "
          u"The value must be a string of hexadecimal digits specifying any "
@@ -109,17 +109,13 @@ ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
 
 bool ts::PatternPlugin::start()
 {
-    _offset_pusi = intValue<uint8_t>(u"offset-pusi", 0);
-    _offset_non_pusi = intValue<uint8_t>(u"offset-non-pusi", 0);
-
+    getHexaValue(_pattern);
+    getIntValue(_offset_pusi, u"offset-pusi", 0);
+    getIntValue(_offset_non_pusi, u"offset-non-pusi", 0);
     getIntValues(_pid_list, u"pid", true);
+
     if (present(u"negate")) {
         _pid_list.flip();
-    }
-
-    if (!value().hexaDecode(_pattern) || _pattern.size() == 0) {
-        tsp->error(u"invalid hexadecimal pattern");
-        return false;
     }
 
     return true;

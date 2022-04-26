@@ -326,7 +326,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"is a risk to later discover that this PID is already used. In that case, "
          u"specify --pid-ecm with a notoriously unused PID value.");
 
-    option(u"private-data", 0, STRING);
+    option(u"private-data", 0, HEXADATA);
     help(u"private-data",
          u"Specifies the private data to insert in the CA_descriptor in the PMT. "
          u"The value must be a suite of hexadecimal digits.");
@@ -368,12 +368,7 @@ bool ts::ScramblerPlugin::getOptions()
     getIntValue(_partial_scrambling, u"partial-scrambling", 1);
     getIntValue(_ecm_pid, u"pid-ecm", PID_NULL);
     getValue(_ecm_bitrate, u"bitrate-ecm", DEFAULT_ECM_BITRATE);
-
-    // Decode hexa data.
-    if (!value(u"private-data").hexaDecode(_ca_desc_private)) {
-        tsp->error(u"invalid private data for CA_descriptor, specify an even number of hexa digits");
-        return false;
-    }
+    getHexaValue(_ca_desc_private, u"private-data");
 
     // Other common parameters.
     if (!_ecmg_args.loadArgs(duck, *this) || !_scrambling.loadArgs(duck, *this)) {
