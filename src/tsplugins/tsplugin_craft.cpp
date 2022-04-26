@@ -183,13 +183,13 @@ ts::CraftInput::CraftInput(TSP* tsp_) :
     option(u"no-payload");
     help(u"no-payload", u"Do not use a payload.");
 
-    option(u"payload-pattern", 0, STRING);
+    option(u"payload-pattern", 0, HEXADATA, 0, UNLIMITED_COUNT, 1, PKT_MAX_PAYLOAD_SIZE);
     help(u"payload-pattern",
          u"Specify the binary pattern to apply on packets payload. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
          u"The pattern is repeated to fill the payload. The default is FF.");
 
-    option(u"payload-size", 0, INTEGER, 0, 1, 0, 184);
+    option(u"payload-size", 0, INTEGER, 0, 1, 0, PKT_MAX_PAYLOAD_SIZE);
     help(u"payload-size", u"size",
          u"Specify the size of the packet payload in bytes. "
          u"When necessary, an adaptation field is created. "
@@ -209,7 +209,7 @@ ts::CraftInput::CraftInput(TSP* tsp_) :
     option(u"priority");
     help(u"priority", u"Set the transport_priority flag in the packets.");
 
-    option(u"private-data", 0, STRING);
+    option(u"private-data", 0, HEXADATA);
     help(u"private-data",
          u"Specify the binary content of the transport_private_data in the adaptation field. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes.");
@@ -264,17 +264,8 @@ bool ts::CraftInput::getOptions()
     }
 
     // The binary patterns.
-    ByteBlock payloadPattern;
-    if (!value(u"payload-pattern", u"FF").hexaDecode(payloadPattern) || payloadPattern.size() == 0) {
-        tsp->error(u"invalid hexadecimal payload pattern");
-        return false;
-    }
-
-    ByteBlock privateData;
-    if (!value(u"private-data").hexaDecode(privateData)) {
-        tsp->error(u"invalid hexadecimal private data");
-        return false;
-    }
+    const ByteBlock payloadPattern(hexaValue(u"payload-pattern", ByteBlock(1, 0xFF)));
+    const ByteBlock privateData(hexaValue(u"private-data"));
 
     // Check if we need to set some data in adaptation field.
     const bool needAF =
@@ -527,26 +518,26 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
          u"--payload-pattern, --payload-and, --payload-or, --payload-xor. "
          u"The operation is performed once only.");
 
-    option(u"payload-pattern", 0, STRING);
-    help(u"payload-pattern", u"hexa-data",
+    option(u"payload-pattern", 0, HEXADATA, 0, UNLIMITED_COUNT, 0, PKT_MAX_PAYLOAD_SIZE);
+    help(u"payload-pattern",
          u"Overwrite the payload with the specified binary pattern. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
          u"The pattern is repeated to fill the payload (unless --no-repeat is specified).");
 
-    option(u"payload-and", 0, STRING);
-    help(u"payload-and", u"hexa-data",
+    option(u"payload-and", 0, HEXADATA, 0, UNLIMITED_COUNT, 0, PKT_MAX_PAYLOAD_SIZE);
+    help(u"payload-and",
          u"Apply a binary \"and\" operation on the payload using the specified binary pattern. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
          u"The \"and\" operation is repeated up to the end of the payload (unless --no-repeat is specified).");
 
-    option(u"payload-or", 0, STRING);
-    help(u"payload-or", u"hexa-data",
+    option(u"payload-or", 0, HEXADATA, 0, UNLIMITED_COUNT, 0, PKT_MAX_PAYLOAD_SIZE);
+    help(u"payload-or",
          u"Apply a binary \"or\" operation on the payload using the specified binary pattern. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
          u"The \"or\" operation is repeated up to the end of the payload (unless --no-repeat is specified).");
 
-    option(u"payload-xor", 0, STRING);
-    help(u"payload-xor", u"hexa-data",
+    option(u"payload-xor", 0, HEXADATA, 0, UNLIMITED_COUNT, 0, PKT_MAX_PAYLOAD_SIZE);
+    help(u"payload-xor",
          u"Apply a binary \"exclusive or\" operation on the payload using the specified binary pattern. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
          u"The \"exclusive or\" operation is repeated up to the end of the payload (unless --no-repeat is specified).");
@@ -595,7 +586,7 @@ ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
     option(u"clear-priority");
     help(u"clear-priority", u"Clear the transport_priority flag in the packets.");
 
-    option(u"private-data", 0, STRING);
+    option(u"private-data", 0, HEXADATA);
     help(u"private-data",
          u"Specify the binary content of the transport_private_data in the adaptation field. "
          u"The value must be a string of hexadecimal digits specifying any number of bytes. "
@@ -672,22 +663,16 @@ bool ts::CraftPlugin::getOptions()
     _clearSpliceCountdown = present(u"no-splice-countdown");
     getIntValue(_newSpliceCountdown, u"splice-countdown");
     _clearPrivateData = present(u"no-private-data");
+    getHexaValue(_payloadPattern, u"payload-pattern");
+    getHexaValue(_payloadAnd, u"payload-and");
+    getHexaValue(_payloadOr, u"payload-or");
+    getHexaValue(_payloadXor, u"payload-xor");
+    getHexaValue(_privateData, u"private-data");
 
     if (_payloadSize > 0 && _noPayload) {
         tsp->error(u"options --no-payload and --payload-size are mutually exclusive");
         return false;
     }
-
-    if (!value(u"payload-pattern").hexaDecode(_payloadPattern) ||
-        !value(u"payload-and").hexaDecode(_payloadAnd) ||
-        !value(u"payload-or").hexaDecode(_payloadOr) ||
-        !value(u"payload-xor").hexaDecode(_payloadXor) ||
-        !value(u"private-data").hexaDecode(_privateData))
-    {
-        tsp->error(u"invalid hexadecimal data");
-        return false;
-    }
-
     return true;
 }
 

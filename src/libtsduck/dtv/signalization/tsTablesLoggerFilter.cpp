@@ -53,6 +53,8 @@ ts::TablesLoggerFilter::TablesLoggerFilter() :
     _tids(),
     _tidexts(),
     _secnums(),
+    _content_filter(),
+    _content_mask(),
     _pat()
 {
 }
@@ -101,6 +103,18 @@ void ts::TablesLoggerFilter::defineFilterOptions(Args& args) const
               u"and BAT. Note that EIT, TDT and TOT are not included. Use --pid 18 "
               u"to get EIT and --pid 20 to get TDT and TOT.");
 
+    args.option(u"section-content", 0, Args::HEXADATA, 0, 1, 1);
+    args.help(u"section-content",
+              u"Binary content filter: Specify binary data that must match the beginning of the section. "
+              u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+              u"See also option --section-mask to specify selected bits or bytes only.");
+
+    args.option(u"section-mask", 0, Args::HEXADATA, 0, 1, 1);
+    args.help(u"section-mask",
+              u"With --section-content, specify a mask of meaningful bits in the binary data that must match the beginning of the section. "
+              u"The value must be a string of hexadecimal digits specifying any number of bytes. "
+              u"If omitted or shorter than the --section-content parameter, the mask is implicitely padded with FF bytes.");
+
     args.option(u"section-number", 0, Args::UINT8, 0, Args::UNLIMITED_COUNT);
     args.help(u"section-number", u"num1[-num2]",
               u"Section number filter: when sections are filtered individually instead of complete tables, "
@@ -137,6 +151,8 @@ bool ts::TablesLoggerFilter::loadFilterOptions(DuckContext& duck, Args& args, PI
     args.getIntValues(_tids, u"tid");
     args.getIntValues(_tidexts, u"tid-ext");
     args.getIntValues(_secnums, u"section-number");
+    args.getHexaValue(_content_filter, u"section-content");
+    args.getHexaValue(_content_mask, u"section-mask");
 
     // If any PID was selected, then --negate-pid means all but them.
     if (args.present(u"negate-pid") && _pids.any()) {
@@ -226,6 +242,8 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
         (!section.isLongSection() || _tidexts.empty() || (tidext_set && !_negate_tidext) || (!tidext_set && _negate_tidext)) &&
         // Check section number:
         (_secnums.empty() || (secnum_set && !_negate_secnum) || (!secnum_set && _negate_secnum)) &&
+        // Check section content:
+        (_content_filter.empty() || section.matchContent(_content_filter, _content_mask)) &&
         // Diversified payload ok
         (!_diversified || section.hasDiversifiedPayload());
 }

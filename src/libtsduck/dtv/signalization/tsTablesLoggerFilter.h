@@ -65,6 +65,8 @@ namespace ts {
         std::set<uint8_t>  _tids;           // TID values to filter.
         std::set<uint16_t> _tidexts;        // TID-ext values to filter.
         std::set<uint8_t>  _secnums;        // Section numbers to filter.
+        ByteBlock          _content_filter; // Section content to filter.
+        ByteBlock          _content_mask;   // Meaningful bits in content filter.
         BinaryTable        _pat;            // Last PAT.
     };
 }

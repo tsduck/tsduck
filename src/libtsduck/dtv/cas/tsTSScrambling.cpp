@@ -199,7 +199,7 @@ void ts::TSScrambling::defineArgs(Args &args)
               u"Use ATIS-IDSA scrambling (ATIS-0800006) instead of DVB-CSA2 (the "
               u"default). The control words are 16-byte long instead of 8-byte.");
 
-    args.option(u"iv", 0, Args::STRING);
+    args.option(u"iv", 0, Args::HEXADATA, 0, Args::UNLIMITED_COUNT, AES::BLOCK_SIZE, AES::BLOCK_SIZE);
     args.help(u"iv",
               u"With --aes-cbc or --aes-ctr, specifies a fixed initialization vector for all TS packets. "
               u"The value must be a string of 32 hexadecimal digits. "
@@ -212,7 +212,7 @@ void ts::TSScrambling::defineArgs(Args &args)
               u"and the counter part uses the last N bits. "
               u"By default, the counter part uses the second half of the IV (64 bits).");
 
-    args.option(u"cw", 'c', Args::STRING);
+    args.option(u"cw", 'c', Args::HEXADATA, 0, Args::UNLIMITED_COUNT, 8, 16);
     args.help(u"cw",
               u"Specifies a fixed and constant control word for all TS packets. The value "
               u"must be a string of 16 hexadecimal digits (32 digits with --atis-idsa).");
@@ -290,15 +290,11 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
     setEntropyMode(args.present(u"no-entropy-reduction") ? DVBCSA2::FULL_CW : DVBCSA2::REDUCE_ENTROPY);
 
     // Set AES-CBC/CTR initialization vector. The default is all zeroes.
-    ByteBlock iv(AES::BLOCK_SIZE, 0x00);
-    const UString hex_iv(args.value(u"iv"));
-    if (!hex_iv.empty() && (!hex_iv.hexaDecode(iv) || iv.size() != AES::BLOCK_SIZE)) {
-        args.error(u"invalid initialization vector \"%s\", specify %d hexa digits", {hex_iv, 2 * AES::BLOCK_SIZE});
-    }
-    else if (!_aescbc[0].setIV(iv.data(), iv.size()) ||
-             !_aescbc[1].setIV(iv.data(), iv.size()) ||
-             !_aesctr[0].setIV(iv.data(), iv.size()) ||
-             !_aesctr[1].setIV(iv.data(), iv.size()))
+    const ByteBlock iv(args.hexaValue(u"iv", ByteBlock(AES::BLOCK_SIZE, 0x00)));
+    if (!_aescbc[0].setIV(iv.data(), iv.size()) ||
+        !_aescbc[1].setIV(iv.data(), iv.size()) ||
+        !_aesctr[0].setIV(iv.data(), iv.size()) ||
+        !_aesctr[1].setIV(iv.data(), iv.size()))
     {
         args.error(u"error setting AES initialization vector");
     }

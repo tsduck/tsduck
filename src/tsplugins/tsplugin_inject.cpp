@@ -181,7 +181,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
 
     option(u"joint-termination", 'j');
     help(u"joint-termination",
-         u"Perform a \"joint termination\" when section insersion is complete. "
+         u"Perform a \"joint termination\" when section insertion is complete. "
          u"Meaningful only when --repeat is specified. "
          u"See \"tsp --help\" for more details on \"joint termination\".");
 
@@ -221,7 +221,7 @@ ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
 
     option(u"terminate", 't');
     help(u"terminate",
-         u"Terminate packet processing when section insersion is complete. "
+         u"Terminate packet processing when section insertion is complete. "
          u"Meaningful only when --repeat is specified. By default, when section "
          u"insertion is complete, the transmission continues and the stuffing is "
          u"no longer modified (if --replace is specified, the PID is then replaced "

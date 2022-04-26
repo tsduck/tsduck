@@ -72,8 +72,8 @@ Options::Options(int argc, char *argv[]) :
          u"name to list or reset. Without any option or parameter, the command lists "
          u"all smartcard reader devices in the system.");
 
-    option(u"apdu", 'a', STRING, 0, UNLIMITED_COUNT);
-    help(u"apdu", u"hex-data",
+    option(u"apdu", 'a', HEXADATA, 0, UNLIMITED_COUNT);
+    help(u"apdu",
          u"Send an APDU to the smartcard. "
          u"The APDU shall be specified using an even number of hexadecimal digits. "
          u"In verbose mode, the APDU, the status word and the response are displayed. "
@@ -118,10 +118,7 @@ Options::Options(int argc, char *argv[]) :
     // Decode all user-specified APDU.
     apdu.resize(count(u"apdu"));
     for (size_t i = 0; i < apdu.size(); ++i) {
-        const ts::UString arg(value(u"apdu", u"", i));
-        if (!arg.hexaDecode(apdu[i])) {
-            error(u"invalid hexadecimal value '%s' as APDU", {arg});
-        }
+        getHexaValue(apdu[i], u"apdu", ts::ByteBlock(), i);
     }
 
     exitOnError();

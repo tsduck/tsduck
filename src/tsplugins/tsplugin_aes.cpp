@@ -170,12 +170,12 @@ ts::AESPlugin::AESPlugin(TSP* tsp_) :
          u"part of the packet payload, shorter than 16 bytes) is left clear. "
          u"This is the default mode.");
 
-    option(u"iv", 'i', STRING);
+    option(u"iv", 'i', HEXADATA, 0, Args::UNLIMITED_COUNT, AES::BLOCK_SIZE, AES::BLOCK_SIZE);
     help(u"iv",
          u"Specifies the initialization vector. Must be a string of 32 hexadecimal "
          u"digits. Must not be used in ECB mode. The default IV is all zeroes.");
 
-    option(u"key", 'k', STRING, 1, 1);
+    option(u"key", 'k', HEXADATA, 1, 1, AES::MIN_KEY_SIZE, AES::MAX_KEY_SIZE);
     help(u"key",
          u"Specifies a fixed and constant AES key for all TS packets. The value "
          u"must be a string of 32 or 64 hexadecimal digits. This is a mandatory "
@@ -229,11 +229,7 @@ bool ts::AESPlugin::getOptions()
     }
 
     // Get AES key
-    ByteBlock key;
-    if (!value(u"key").hexaDecode(key)) {
-        tsp->error(u"invalid key, specify hexa digits");
-        return false;
-    }
+    const ByteBlock key(hexaValue(u"key"));
     if (!_chain->isValidKeySize(key.size())) {
         tsp->error(u"%d bytes is an invalid AES key size", {key.size()});
         return false;
@@ -244,19 +240,13 @@ bool ts::AESPlugin::getOptions()
     }
     tsp->verbose(u"using %d bits key: %s", {key.size() * 8, UString::Dump(key, UString::SINGLE_LINE)});
 
-    // Get IV
-    ByteBlock iv(_chain->minIVSize(), 0); // default IV is all zeroes
-    if (present(u"iv") && !value(u"iv").hexaDecode(iv)) {
-        tsp->error(u"invalid initialization vector, specify hexa digits");
-        return false;
-    }
+    // Get IV, default IV is all zeroes
+    const ByteBlock iv(hexaValue(u"iv", ByteBlock(_chain->minIVSize(), 0)));
     if (!_chain->setIV(iv.data(), iv.size())) {
         tsp->error(u"incorrect initialization vector");
         return false;
     }
-    if (iv.size() > 0) {
-        tsp->verbose(u"using %d bits IV: %s", {iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE)});
-    }
+    tsp->verbose(u"using %d bits IV: %s", {iv.size() * 8, UString::Dump(iv, UString::SINGLE_LINE)});
 
     return true;
 }

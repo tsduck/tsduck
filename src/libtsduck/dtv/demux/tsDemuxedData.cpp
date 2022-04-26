@@ -220,3 +220,23 @@ void ts::DemuxedData::rwAppend(const void* data, size_t dsize)
         _data->append(data, dsize);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Check if the start of the data matches a given pattern.
+//----------------------------------------------------------------------------
+
+bool ts::DemuxedData::matchContent(const ByteBlock& pattern, const ByteBlock& mask) const
+{
+    // Must be at least the same size.
+    if (_data.isNull() || _data->size() < pattern.size()) {
+        return false;
+    }
+    for (size_t i = 0; i < pattern.size(); ++i) {
+        const uint8_t m = i < mask.size() ? mask[i] : 0xFF;
+        if (((*_data)[i] & m) != (pattern[i] & m)) {
+            return false;
+        }
+    }
+    return true;
+}
