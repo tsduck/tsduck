@@ -9,6 +9,9 @@
 
 #include "tsduck.h"
 
+// Enforce COM and network init on Windows, transparent elsewhere.
+TS_MAIN(MainCode);
+
 
 //----------------------------------------------------------------------------
 // Plugin-specific data type used during event signalling.
@@ -132,7 +135,7 @@ void FooBarHandler::handlePluginEvent(const ts::PluginEventContext& ctx)
 // Application entry point.
 //----------------------------------------------------------------------------
 
-int main(int argc, char* argv[])
+int MainCode(int argc, char* argv[])
 {
     // Use an asynchronous logger to report errors, logs, debug, etc.
     // Make it display all messages up to debug level (default is info level).

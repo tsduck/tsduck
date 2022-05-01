@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2730
+VERSION 3.31-2731
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -17,6 +17,8 @@ VERSION 3.31-2730
   * In plugin "sections", the options --tid-remove, --tid-ext-remove,
     --etid-remove, --version-remove were renamed without -remove suffix to
     highlight the fact that they can be used to remove or keep sections.
+  * Added environment variable TSPLUGINS_STACK_SIZE to specify non-default
+    stack size for "tsp" plugin threads.
 
 [BUG] Bug fixes:
 

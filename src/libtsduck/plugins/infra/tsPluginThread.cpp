@@ -91,10 +91,17 @@ ts::PluginThread::PluginThread(Report* report, const UString& appName, PluginTyp
     // The process should have terminated on argument error.
     assert(_shlib->valid());
 
+    // Get non-default thread stack size.
+    size_t stackSize = 0;
+    if (!GetEnvironment(u"TSPLUGINS_STACK_SIZE").toInteger(stackSize, UString::DEFAULT_THOUSANDS_SEPARATOR) || stackSize == 0) {
+        // Use default value.
+        stackSize = STACK_SIZE_OVERHEAD + _shlib->stackUsage();
+    }
+
     // Define thread name and stack size.
     ThreadAttributes attr(attributes);
     attr.setName(_name);
-    attr.setStackSize(STACK_SIZE_OVERHEAD + _shlib->stackUsage());
+    attr.setStackSize(stackSize);
     Thread::setAttributes(attr);
 }
 

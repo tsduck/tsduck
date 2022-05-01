@@ -6,7 +6,10 @@
 
 #include "tsduck.h"
 
-int main(int argc, char* argv[])
+// Enforce COM and network init on Windows, transparent elsewhere.
+TS_MAIN(MainCode);
+
+int MainCode(int argc, char* argv[])
 {
     // Use an asynchronous logger to report errors, logs, debug, etc.
     ts::AsyncReport report;
