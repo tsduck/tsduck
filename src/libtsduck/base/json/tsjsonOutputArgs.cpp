@@ -42,13 +42,26 @@ ts::json::OutputArgs::OutputArgs(bool use_short_opt, const UString& help) :
     _json_help(help.empty() ? u"Report in JSON output format (useful for automatic analysis)." : help),
     _json_opt(false),
     _json_line(false),
+    _json_tcp(false),
     _json_udp(false),
     _line_prefix(),
+    _tcp_destination(),
     _udp_destination(),
     _udp_local(),
     _udp_ttl(0),
-    _sock()
+    _sock_buffer_size(0),
+    _udp_sock(),
+    _tcp_sock()
 {
+}
+
+ts::json::OutputArgs::~OutputArgs()
+{
+    if (_tcp_sock.isOpen()) {
+        _tcp_sock.closeWriter(NULLREP);
+        _tcp_sock.disconnect(NULLREP);
+        _tcp_sock.close(NULLREP);
+    }
 }
 
 
@@ -61,18 +74,38 @@ void ts::json::OutputArgs::defineArgs(Args& args)
     args.option(u"json", _use_short_opt ? 'j' : 0);
     args.help(u"json", _json_help);
 
+    args.option(u"json-buffer-size", 0, Args::UNSIGNED);
+    args.help(u"json-buffer-size",
+              u"With --json-tcp or --json-udp, specify the network socket send buffer size.");
+
     args.option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
     args.help(u"json-line", u"'prefix'",
               u"Same as --json but report the JSON text as one single line in the message logger instead of the output file. "
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the JSON text to locate the appropriate line in the logs.");
 
+    args.option(u"json-tcp", 0, Args::STRING);
+    args.help(u"json-tcp", u"address:port",
+              u"Same as --json but report the JSON text as one single line in a TCP connection instead of the output file. "
+              u"The 'address' specifies an IP address or a host name that translates to an IP address. "
+              u"The 'port' specifies the destination TCP port. "
+              u"By default, a new TCP connection is established each time a JSON message is produced. "
+              u"Be aware that a complete TCP connection cycle may introduce some latency in the processing. "
+              u"If latency is an issue, consider using --json-udp.");
+
+    args.option(u"json-tcp-keep");
+    args.help(u"json-tcp-keep",
+              u"With --json-tcp, keep the TCP connection open for all JSON messages. "
+              u"By default, a new TCP connection is established each time a JSON message is produced.");
+
     args.option(u"json-udp", 0, Args::STRING);
     args.help(u"json-udp", u"address:port",
               u"Same as --json but report the JSON text as one single line in a UDP datagram instead of the output file. "
               u"The 'address' specifies an IP address which can be either unicast or multicast. "
               u"It can be also a host name that translates to an IP address. "
-              u"The 'port' specifies the destination UDP port.");
+              u"The 'port' specifies the destination UDP port. "
+              u"Be aware that the size of UDP datagrams is limited by design to 64 kB. "
+              u"If larger JSON contents are expected, consider using --json-tcp.");
 
     args.option(u"json-udp-local", 0, Args::STRING);
     args.help(u"json-udp-local", u"address",
@@ -99,11 +132,17 @@ bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
     bool ok = true;
     _json_opt = args.present(u"json");
     _json_line = args.present(u"json-line");
+    _json_tcp = args.present(u"json-tcp");
+    _json_tcp_keep = args.present(u"json-tcp-keep");
     _json_udp = args.present(u"json-udp");
     args.getValue(_line_prefix, u"json-line");
     args.getIntValue(_udp_ttl, u"json-udp-ttl");
+    args.getIntValue(_sock_buffer_size, u"json-buffer-size");
     _udp_destination.clear();
     _udp_local.clear();
+    if (_json_tcp) {
+        ok = _tcp_destination.resolve(args.value(u"json-tcp"), args);
+    }
     if (_json_udp) {
         ok = _udp_destination.resolve(args.value(u"json-udp"), args);
     }
@@ -120,9 +159,11 @@ bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
 
 bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
 {
-    bool ok = true;
+    bool udp_ok = true;
+    bool tcp_ok = true;
 
-    if (_json_line || _json_udp) {
+    if (_json_line || _json_tcp || _json_udp) {
+
         // Generate one JSON line.
         TextFormatter text(rep);
         text.setString();
@@ -131,30 +172,52 @@ bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
         UString line;
         text.getString(line);
 
+        // When sent over the network, use a UTF-8 string.
+        std::string line8;
+        if (_json_tcp || _json_udp) {
+            line.toUTF8(line8);
+        }
+
         // Report in logger.
         if (_json_line) {
             rep.info(_line_prefix + line);
         }
 
-        // Report in UDP.
+        // Report through UDP.
         if (_json_udp) {
             // Open socket the first time.
-            if (!_sock.isOpen()) {
+            if (!_udp_sock.isOpen()) {
                 // Create UDP socket.
-                ok = _sock.open(rep) &&
-                     _sock.setDefaultDestination(_udp_destination, rep) &&
-                     (!_udp_local.hasAddress() || _sock.setOutgoingMulticast(_udp_local, rep)) &&
-                     (_udp_ttl <= 0 || _sock.setTTL(_udp_ttl, rep));
+                udp_ok = _udp_sock.open(rep) &&
+                     _udp_sock.setDefaultDestination(_udp_destination, rep) &&
+                     (_sock_buffer_size == 0 || _udp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
+                     (!_udp_local.hasAddress() || _udp_sock.setOutgoingMulticast(_udp_local, rep)) &&
+                     (_udp_ttl <= 0 || _udp_sock.setTTL(_udp_ttl, rep));
             }
-            if (ok) {
-                std::string line8;
-                line.toUTF8(line8);
-                ok = _sock.send(line8.data(), line8.size(), rep);
+            if (udp_ok) {
+                udp_ok = _udp_sock.send(line8.data(), line8.size(), rep);
+            }
+        }
+
+        // Report through TCP.
+        if (_json_tcp) {
+            // Open socket the first time (--json-tcp-keep) or every time.
+            if (!_tcp_sock.isOpen()) {
+                tcp_ok = _tcp_sock.open(rep) &&
+                    (_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
+                    _tcp_sock.bind(IPv4SocketAddress::AnySocketAddress, rep) &&
+                    _tcp_sock.connect(_tcp_destination, rep);
+            }
+            if (tcp_ok) {
+                tcp_ok = _tcp_sock.sendLine(line8, rep);
+            }
+            if (tcp_ok && !_json_tcp_keep) {
+                tcp_ok = _tcp_sock.closeWriter(rep) && _tcp_sock.disconnect(rep) && _tcp_sock.close(rep);
             }
         }
     }
 
-    return ok;
+    return udp_ok && tcp_ok;
 }
 
 
