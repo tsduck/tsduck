@@ -2,7 +2,6 @@
 // Simply count packets if --count is specified.
 
 #include "tsduck.h"
-TSDUCK_SOURCE;
 
 
 //----------------------------------------------------------------------------

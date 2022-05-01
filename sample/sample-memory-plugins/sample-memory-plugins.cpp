@@ -9,6 +9,9 @@
 
 #include "tsduck.h"
 
+// Enforce COM and network init on Windows, transparent elsewhere.
+TS_MAIN(MainCode);
+
 
 //----------------------------------------------------------------------------
 // An event handler for memory input plugin.
@@ -144,7 +147,7 @@ void OutputHandler::handlePluginEvent(const ts::PluginEventContext& context)
 // Application entry point.
 //----------------------------------------------------------------------------
 
-int main(int argc, char* argv[])
+int MainCode(int argc, char* argv[])
 {
     // Create a thread-safe asynchronous report.
     ts::AsyncReport report;
