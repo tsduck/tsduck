@@ -36,6 +36,7 @@
 #include "tsArgsSupplierInterface.h"
 #include "tsUString.h"
 #include "tsUDPSocket.h"
+#include "tsTelnetConnection.h"
 
 namespace ts {
     namespace json {
@@ -60,6 +61,11 @@ namespace ts {
             OutputArgs(bool use_short_opt = false, const UString& help = UString());
 
             //!
+            //! Virtual destructor.
+            //!
+            virtual ~OutputArgs() override;
+
+            //!
             //! Set the help text for the @c -\-json option.
             //! Must be called before defineArgs().
             //! @param [in] text Help text for the @c -\-json option.
@@ -74,7 +80,7 @@ namespace ts {
             //! Check if any JSON output option is specified.
             //! @return True if any JSON output option is specified.
             //!
-            bool useJSON() const { return _json_opt || _json_line || _json_udp; }
+            bool useJSON() const { return _json_opt || _json_line || _json_tcp || _json_udp; }
 
             //!
             //! Check if JSON file output option is specified.
@@ -103,14 +109,19 @@ namespace ts {
         private:
             bool              _use_short_opt;
             UString           _json_help;
-            bool              _json_opt;         // Option --json
-            bool              _json_line;        // Option --json-line
-            bool              _json_udp;         // Option --json-udp
-            UString           _line_prefix;      // Option --json-line="prefix"
-            IPv4SocketAddress _udp_destination;  // UDP destination.
-            IPv4Address       _udp_local;        // Name of outgoing local address.
-            int               _udp_ttl;          // Time-to-live socket option.
-            UDPSocket         _sock;             // Output UDP socket.
+            bool              _json_opt;          // Option --json
+            bool              _json_line;         // Option --json-line
+            bool              _json_tcp;          // Option --json-tcp
+            bool              _json_tcp_keep;     // Option --json-tcp-keep
+            bool              _json_udp;          // Option --json-udp
+            UString           _line_prefix;       // Option --json-line="prefix"
+            IPv4SocketAddress _tcp_destination;   // TCP destination.
+            IPv4SocketAddress _udp_destination;   // UDP destination.
+            IPv4Address       _udp_local;         // Name of outgoing local address.
+            int               _udp_ttl;           // Time-to-live socket option.
+            size_t            _sock_buffer_size;  // Socket buffer size (TCP and UDP).
+            UDPSocket         _udp_sock;          // Output UDP socket.
+            TelnetConnection  _tcp_sock;          // Output TCP socket.
 
             // Issue a JSON report, except --json file.
             bool reportOthers(const json::Value& root, Report& rep);

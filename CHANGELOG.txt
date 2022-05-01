@@ -2,15 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2731
+VERSION 3.31-2732
 
 [IMP] Improvements on existing commands and plugins:
 
   * In "dektec" output plugin, option "--input-modulation" now handles DVB-T2.
   * New options in existing commands and plugins:
     - Options --no-bitrate, --align-first-segment in output plugin "hls".
-    - Options --json-udp, --json-udp-local, --json-udp-ttl to "tsanalyze",
-      "tscmp", "tsdektec", "tsxml", plugins "analyze", "splicemonitor".
+    - Options --json-udp, --json-tcp, --json-buffer-size, --json-tcp-keep,
+      --json-udp-local, --json-udp-ttl to "tsanalyze", "tscmp", "tsdektec",
+      "tsxml", plugins "analyze", "splicemonitor".
     - Options --section-content, --section-mask in "tstables", plugins
       "sections", "tables".
     - Option --keep in plugin "sections".
