@@ -43,6 +43,7 @@ ts::json::OutputArgs::OutputArgs(bool use_short_opt, const UString& help) :
     _json_opt(false),
     _json_line(false),
     _json_tcp(false),
+    _json_tcp_keep(false),
     _json_udp(false),
     _line_prefix(),
     _tcp_destination(),
