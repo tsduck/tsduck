@@ -150,6 +150,77 @@ bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
     if (args.present(u"json-udp-local")) {
         ok = _udp_local.resolve(args.value(u"json-udp-local"), args) && ok;
     }
+
+    // Force reinit of UDP and TCP session in case the arguments are reloaded.
+    udpClose(args);
+    tcpDisconnect(true, args);
+
+    return ok;
+}
+
+
+//----------------------------------------------------------------------------
+// Open/close the UDP socket.
+//----------------------------------------------------------------------------
+
+bool ts::json::OutputArgs::udpOpen(Report& rep)
+{
+    if (_udp_sock.isOpen()) {
+        return true;
+    }
+    else if (!_udp_sock.open(rep)) {
+        return false;
+    }
+    else if (_udp_sock.setDefaultDestination(_udp_destination, rep) &&
+             (_sock_buffer_size == 0 || _udp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
+             (!_udp_local.hasAddress() || _udp_sock.setOutgoingMulticast(_udp_local, rep)) &&
+             (_udp_ttl <= 0 || _udp_sock.setTTL(_udp_ttl, rep)))
+    {
+        return true;
+    }
+    else {
+        _udp_sock.close(rep);
+        return false;
+    }
+}
+
+bool ts::json::OutputArgs::udpClose(Report& rep)
+{
+    return !_udp_sock.isOpen() || _udp_sock.close(rep);
+}
+
+
+//----------------------------------------------------------------------------
+// Connect/disconnect the TCP session.
+//----------------------------------------------------------------------------
+
+bool ts::json::OutputArgs::tcpConnect(Report& rep)
+{
+    if (_tcp_sock.isOpen()) {
+        return true;
+    }
+    else if (!_tcp_sock.open(rep)) {
+        return false;
+    }
+    else if ((_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
+             _tcp_sock.bind(IPv4SocketAddress::AnySocketAddress, rep) &&
+             _tcp_sock.connect(_tcp_destination, rep))
+    {
+        return true;
+    }
+    else {
+        _tcp_sock.close(rep);
+        return false;
+    }
+}
+
+bool ts::json::OutputArgs::tcpDisconnect(bool force, Report& rep)
+{
+    bool ok = true;
+    if (_tcp_sock.isOpen() && (force || !_json_tcp_keep)) {
+        ok = _tcp_sock.closeWriter(rep) && _tcp_sock.disconnect(rep);
+        ok = _tcp_sock.close(rep) && ok;
+    }
     return ok;
 }
 
@@ -184,37 +255,22 @@ bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
             rep.info(_line_prefix + line);
         }
 
-        // Report through UDP.
-        if (_json_udp) {
-            // Open socket the first time.
-            if (!_udp_sock.isOpen()) {
-                // Create UDP socket.
-                udp_ok = _udp_sock.open(rep) &&
-                     _udp_sock.setDefaultDestination(_udp_destination, rep) &&
-                     (_sock_buffer_size == 0 || _udp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
-                     (!_udp_local.hasAddress() || _udp_sock.setOutgoingMulticast(_udp_local, rep)) &&
-                     (_udp_ttl <= 0 || _udp_sock.setTTL(_udp_ttl, rep));
-            }
-            if (udp_ok) {
-                udp_ok = _udp_sock.send(line8.data(), line8.size(), rep);
-            }
+        // Report through UDP. Open socket the first time.
+        if (_json_udp && (udp_ok = udpOpen(rep))) {
+            udp_ok = _udp_sock.send(line8.data(), line8.size(), rep);
         }
 
-        // Report through TCP.
-        if (_json_tcp) {
-            // Open socket the first time (--json-tcp-keep) or every time.
-            if (!_tcp_sock.isOpen()) {
-                tcp_ok = _tcp_sock.open(rep) &&
-                    (_sock_buffer_size == 0 || _tcp_sock.setSendBufferSize(_sock_buffer_size, rep)) &&
-                    _tcp_sock.bind(IPv4SocketAddress::AnySocketAddress, rep) &&
-                    _tcp_sock.connect(_tcp_destination, rep);
+        // Report through TCP. Connect to TCP server the first time (--json-tcp-keep) or every time.
+        if (_json_tcp && (tcp_ok = tcpConnect(rep))) {
+            tcp_ok = _tcp_sock.sendLine(line8, rep);
+            // In case of send error, retry opening the socket once.
+            // This is useful when the session is kept open and the server disconnected since last time.
+            if (!tcp_ok) {
+                tcpDisconnect(true, rep);
+                tcp_ok = tcpConnect(rep) && _tcp_sock.sendLine(line8, rep);
             }
-            if (tcp_ok) {
-                tcp_ok = _tcp_sock.sendLine(line8, rep);
-            }
-            if (tcp_ok && !_json_tcp_keep) {
-                tcp_ok = _tcp_sock.closeWriter(rep) && _tcp_sock.disconnect(rep) && _tcp_sock.close(rep);
-            }
+            // Disconnect on error or when the connection shall not be kept open.
+            tcpDisconnect(!tcp_ok, rep);
         }
     }
 
