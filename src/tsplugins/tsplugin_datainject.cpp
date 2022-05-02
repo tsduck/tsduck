@@ -694,6 +694,7 @@ void ts::DataInjectPlugin::TCPListener::main()
                 }
 
                 case emmgmux::Tags::channel_close: {
+                    GuardMutex lock(_plugin->_mutex);
                     _plugin->_channel_established = false;
                     _plugin->_stream_established = false;
                     break;
@@ -746,6 +747,11 @@ void ts::DataInjectPlugin::TCPListener::main()
                         ok = false;
                     }
                     else {
+                        // First, declare the stream as closed.
+                        {
+                            GuardMutex lock(_plugin->_mutex);
+                            _plugin->_stream_established = false;
+                        }
                         // Send the stream_close_response
                         emmgmux::StreamCloseResponse resp;
                         emmgmux::StreamCloseRequest* m = dynamic_cast<emmgmux::StreamCloseRequest*>(msg.pointer());
@@ -754,7 +760,6 @@ void ts::DataInjectPlugin::TCPListener::main()
                         resp.stream_id = m->stream_id;
                         resp.client_id = m->client_id;
                         ok = _client.send(resp, _plugin->_logger);
-                        _plugin->_stream_established = false;
                     }
                     break;
                 }

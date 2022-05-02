@@ -2,11 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2732
+VERSION 3.31-2736
 
 [IMP] Improvements on existing commands and plugins:
 
   * In "dektec" output plugin, option "--input-modulation" now handles DVB-T2.
+  * Added environment variable TSPLUGINS_STACK_SIZE to specify non-default
+    stack size for "tsp" plugin threads.
+  * In plugin "sections", the options --tid-remove, --tid-ext-remove,
+    --etid-remove, --version-remove were renamed without -remove suffix to
+    highlight the fact that they can be used to remove or keep sections.
   * New options in existing commands and plugins:
     - Options --no-bitrate, --align-first-segment in output plugin "hls".
     - Options --json-udp, --json-tcp, --json-buffer-size, --json-tcp-keep,
@@ -15,11 +20,7 @@ VERSION 3.31-2732
     - Options --section-content, --section-mask in "tstables", plugins
       "sections", "tables".
     - Option --keep in plugin "sections".
-  * In plugin "sections", the options --tid-remove, --tid-ext-remove,
-    --etid-remove, --version-remove were renamed without -remove suffix to
-    highlight the fact that they can be used to remove or keep sections.
-  * Added environment variable TSPLUGINS_STACK_SIZE to specify non-default
-    stack size for "tsp" plugin threads.
+    - Option --udp-end-wait in "tsemmg".
 
 [BUG] Bug fixes:
 
