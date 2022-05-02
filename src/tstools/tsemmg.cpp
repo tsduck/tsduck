@@ -44,11 +44,12 @@ TS_MAIN(MainCode);
 
 namespace {
     // Command line default arguments.
-    static const uint16_t DEFAULT_BANDWIDTH      = 100;
-    static const size_t   DEFAULT_EMM_SIZE       = 100;
-    static const ts::TID  DEFAULT_EMM_MIN_TID    = ts::TID_EMM_FIRST;
-    static const ts::TID  DEFAULT_EMM_MAX_TID    = ts::TID_EMM_LAST;
-    static const size_t   DEFAULT_BYTES_PER_SEND = 500;
+    static const uint16_t        DEFAULT_BANDWIDTH      = 100;
+    static const size_t          DEFAULT_EMM_SIZE       = 100;
+    static const ts::TID         DEFAULT_EMM_MIN_TID    = ts::TID_EMM_FIRST;
+    static const ts::TID         DEFAULT_EMM_MAX_TID    = ts::TID_EMM_LAST;
+    static const size_t          DEFAULT_BYTES_PER_SEND = 500;
+    static const ts::MilliSecond DEFAULT_UDP_END_WAIT   = 100;
 
     // Minimum interval between two send operations.
     static const ts::NanoSecond MIN_SEND_INTERVAL = 4 * ts::NanoSecPerMilliSec; // 4 ms
@@ -97,6 +98,7 @@ namespace {
         ts::BitRate           dataBitrate;         // Actual data bitrate.
         size_t                bytesPerSend;        // Approximate size of each send.
         ts::NanoSecond        sendInterval;        // Interval between two send operations.
+        ts::MilliSecond       udpEndWait;          // Number of ms to wait between last UDP message and stream close.
 
         // Adjust the various rates and delays according to the allocated bandwidth.
         bool adjustBandwidth(uint16_t allocated);
@@ -128,7 +130,8 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     maxBytes(0),
     dataBitrate(0),
     bytesPerSend(0),
-    sendInterval(0)
+    sendInterval(0),
+    udpEndWait(0)
 {
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"",
@@ -249,6 +252,14 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
          u"name) is not specified, use the same IP address as the --mux option. The "
          u"port number is required, even if it is the same as the TCP port.");
 
+    option(u"udp-end-wait", 'w', UNSIGNED);
+    help(u"udp-end-wait", u"milliseconds",
+         u"With --udp, specify the number of milliseconds to wait after the last "
+         u"data_provision message (UDP) and before the stream_close_request message (TCP). "
+         u"This can be necesssary to ensure that the stream_close_request is "
+         u"processed after the processing of the last data_provision. "
+         u"Default: " + ts::UString::Decimal(DEFAULT_UDP_END_WAIT) + u" ms.");
+
     analyze(argc, argv);
 
     getValues(inputFiles);
@@ -270,6 +281,7 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     getIntValue(emmMaxTableId, u"emm-max-table-id", DEFAULT_EMM_MAX_TID);
     getIntValue(maxBytes, u"max-bytes", std::numeric_limits<uint64_t>::max());
     getIntValue(bytesPerSend, u"bytes-per-send", DEFAULT_BYTES_PER_SEND);
+    getIntValue(udpEndWait, u"udp-end-wait", DEFAULT_UDP_END_WAIT);
     const ts::tlv::VERSION protocolVersion = intValue<ts::tlv::VERSION>(u"emmg-mux-version", 2);
 
     // Set logging levels.
@@ -586,6 +598,11 @@ int MainCode(int argc, char *argv[])
             currentTime += opt.sendInterval;
             currentTime.wait();
         }
+    }
+
+    // With UDP data_provision message, optionally wait before closing the session.
+    if (opt.udpMuxAddress.hasPort() && opt.udpEndWait > 0) {
+        ts::SleepThread(opt.udpEndWait);
     }
 
     // Disconnect from the MUX.
