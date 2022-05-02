@@ -125,6 +125,14 @@ namespace ts {
 
             // Issue a JSON report, except --json file.
             bool reportOthers(const json::Value& root, Report& rep);
+
+            // Open/close the UDP socket.
+            bool udpOpen(Report& rep);
+            bool udpClose(Report& rep);
+
+            // Connect/disconnect the TCP session.
+            bool tcpConnect(Report& rep);
+            bool tcpDisconnect(bool force, Report& rep);
         };
     }
 }
