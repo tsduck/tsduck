@@ -488,13 +488,13 @@ bool ts::DataInjectPlugin::processBandwidthRequest(const tlv::MessagePtr& reques
         return false;
     }
 
+    GuardMutex lock(_mutex);
+
     // Check that the stream is established.
     if (!_stream_established) {
         tsp->error(u"unexpected stream_BW_request, stream not setup");
         return false;
     }
-
-    GuardMutex lock(_mutex);
 
     // Compute new bandwidth
     if (m->has_bandwidth) {
@@ -527,13 +527,13 @@ bool ts::DataInjectPlugin::processDataProvision(const tlv::MessagePtr& msg)
         return false;
     }
 
+    GuardMutex lock(_mutex);
+
     // Check that the stream is established.
     if (!_stream_established) {
         tsp->error(u"unexpected data_provision, stream not setup");
         return false;
     }
-
-    GuardMutex lock(_mutex);
 
     // Check that the client and data id are expected.
     if (m->client_id != _client_id) {

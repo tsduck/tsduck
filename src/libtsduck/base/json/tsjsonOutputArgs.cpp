@@ -256,21 +256,24 @@ bool ts::json::OutputArgs::reportOthers(const json::Value& root, Report& rep)
         }
 
         // Report through UDP. Open socket the first time.
-        if (_json_udp && (udp_ok = udpOpen(rep))) {
-            udp_ok = _udp_sock.send(line8.data(), line8.size(), rep);
+        if (_json_udp) {
+            udp_ok = udpOpen(rep) && _udp_sock.send(line8.data(), line8.size(), rep);
         }
 
         // Report through TCP. Connect to TCP server the first time (--json-tcp-keep) or every time.
-        if (_json_tcp && (tcp_ok = tcpConnect(rep))) {
-            tcp_ok = _tcp_sock.sendLine(line8, rep);
-            // In case of send error, retry opening the socket once.
-            // This is useful when the session is kept open and the server disconnected since last time.
-            if (!tcp_ok) {
-                tcpDisconnect(true, rep);
-                tcp_ok = tcpConnect(rep) && _tcp_sock.sendLine(line8, rep);
+        if (_json_tcp) {
+            tcp_ok = tcpConnect(rep);
+            if (tcp_ok) {
+                tcp_ok = _tcp_sock.sendLine(line8, rep);
+                // In case of send error, retry opening the socket once.
+                // This is useful when the session is kept open and the server disconnected since last time.
+                if (!tcp_ok) {
+                    tcpDisconnect(true, rep);
+                    tcp_ok = tcpConnect(rep) && _tcp_sock.sendLine(line8, rep);
+                }
+                // Disconnect on error or when the connection shall not be kept open.
+                tcpDisconnect(!tcp_ok, rep);
             }
-            // Disconnect on error or when the connection shall not be kept open.
-            tcpDisconnect(!tcp_ok, rep);
         }
     }
 
