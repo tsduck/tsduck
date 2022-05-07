@@ -47,6 +47,7 @@
 #  - Red Hat
 #  - CentOS
 #  - Alma Linux
+#  - Rocky Linux
 #  - openSUSE Linux
 #  - Arch Linux
 #  - Alpine Linux
@@ -82,17 +83,20 @@ done
 
 [[ -n "$PKGOPTS" ]] && echo "====> using packager options: $PKGOPTS"
 
-#-----------------------------------------------------------------------------
-
 SYSTEM=$(uname -s)
 DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
 MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
 MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*\.//')
 VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 
+#-----------------------------------------------------------------------------
+# macOS (with HomeBrew as open source packager)
+#
+# Update command: brew update; brew upgrade
+#-----------------------------------------------------------------------------
+
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
-    # macOS
     pkglist="gnu-sed grep dos2unix coreutils srt librist python3 openjdk"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
@@ -108,12 +112,17 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     # Register the openjdk jvm.
     [[ -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]] || \
         sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
-    # Update command: brew update; brew upgrade
+
+#-----------------------------------------------------------------------------
+# Ubuntu
+#
+# Update command: sudo apt update; sudo apt upgrade
+# Find package providing file: dpkg -S /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    # Ubuntu
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
     if [[ "$MAJOR" -le 17 ]]; then
         pkglist="$pkglist libcurl3 libcurl3-dev"
     else
@@ -130,21 +139,31 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    # Update command: sudo apt update; sudo apt upgrade
+
+#-----------------------------------------------------------------------------
+# Linux Mint
+#
+# Update command: sudo apt update; sudo apt upgrade
+# Find package providing file: dpkg -S /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    # Linux Mint
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev libsrt-dev"
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev libsrt-dev"
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    # Update command: sudo apt update; sudo apt upgrade
+
+#-----------------------------------------------------------------------------
+# Debian or Raspbian (Raspberry Pi)
+#
+# Update command: sudo apt update; sudo apt upgrade
+# Find package providing file: dpkg -S /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
-    # Debian or Raspbian (Raspberry Pi)
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
+    pkglist="g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
     if $M32; then
         pkglist="$pkglist gcc-multilib"
     fi
@@ -159,13 +178,18 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    # Update command: sudo apt update; sudo apt upgrade
+
+#-----------------------------------------------------------------------------
+# Fedora
+#
+# Update command: sudo dnf update
+# Find package providing file: rpm -qf /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ -f /etc/fedora-release ]]; then
 
-    # Fedora
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz libedit-devel pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -180,14 +204,19 @@ elif [[ -f /etc/fedora-release ]]; then
     fi
     sudo dnf -y install $PKGOPTS $pkglist
     sudo alternatives --set python /usr/bin/python3
-    # Update command: sudo dnf update
+
+#-----------------------------------------------------------------------------
+# Red Hat, CentOS, Alma Linux, Rocky Linux, etc.
+#
+# Update command: sudo dnf update
+# Find package providing file: rpm -qf /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ -f /etc/redhat-release ]]; then
 
-    # Red Hat, CentOS, AlmaLinux, etc.
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz libedit-devel pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -213,39 +242,58 @@ elif [[ -f /etc/redhat-release ]]; then
         sudo dnf -y install $PKGOPTS $pkglist
     fi
     sudo alternatives --set python /usr/bin/python3
-    # Update command: sudo dnf update
+
+#-----------------------------------------------------------------------------
+# openSUSE
+#
+# Update command: sudo zypper update -y -l
+# Find package providing file: zypper se --provides /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
-    # openSUSE
-    pkglist="make gcc-c++ dos2unix curl tar zip doxygen graphviz libedit-devel pcsc-tools pcsc-lite-devel curl libcurl-devel srt-devel rpmdevtools python3 java-11-openjdk-devel"
+    pkglist="make gcc-c++ dos2unix curl tar zip doxygen graphviz linux-glibc-devel libedit-devel pcsc-tools pcsc-lite-devel curl libcurl-devel srt-devel rpmdevtools python3 java-11-openjdk-devel"
     sudo zypper install -y -l $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    # Update command: sudo zypper update -y -l
+
+#-----------------------------------------------------------------------------
+# Arch Linux
+#
+# Update command: sudo pacman -Syu
+# Find package providing file: pacman -Qo /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ -f /etc/arch-release ]]; then
 
-    # Arch Linux
-    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz libedit pcsclite srt python jdk-openjdk"
+    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz linux-api-headers libedit pcsclite srt python jdk-openjdk"
     sudo pacman -Syu --noconfirm $PKGOPTS $pkglist
-    # Update command: sudo pacman -Syu
+
+#-----------------------------------------------------------------------------
+# Alpine Linux
+#
+# Update command: sudo apk update; sudo apk upgrade
+# Find package providing file: apk info --who-owns /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ -f /etc/alpine-release ]]; then
 
-    # Alpine Linux
     sudo sed -i '/http.*\/alpine\/v/s/^#//' /etc/apk/repositories
     pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip dpkg doxygen graphviz libedit-dev pcsc-lite-dev curl-dev libsrt-dev python3 openjdk11 dpkg"
     sudo apk add $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
-    # Update command: sudo apk update; sudo apk upgrade
+
+#-----------------------------------------------------------------------------
+# Gentoo Linux
+#
+# Update command: sudo emerge --sync
+# or (??): sudo emerge -auvND --with-bdeps=y world
+# or (??): sudo emerge --update --deep --changed-use @world
+# Find package providing file: equery b /path/to/file
+#-----------------------------------------------------------------------------
 
 elif [[ -f /etc/gentoo-release ]]; then
 
-    # Gentoo Linux
-    pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz dev-libs/libedit sys-apps/pcsc-lite net-libs/srt dev-lang/python dev-java/openjdk"
+    pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-kernel/linux-headers dev-libs/libedit sys-apps/pcsc-lite net-libs/srt dev-lang/python dev-java/openjdk"
     sudo emerge -n $PKGOPTS $pkglist
-    # Update command: sudo emerge --sync
-    # or (??): sudo emerge -auvND --with-bdeps=y world
-    # or (??): sudo emerge --update --deep --changed-use @world
 
 fi
