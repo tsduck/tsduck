@@ -305,7 +305,8 @@ namespace ts {
             // Public members - Synthetic data (do not modify outside PIDContext methods)
             const PID     pid;             //!< PID value.
             UString       description;     //!< Readable description string (ie "MPEG-2 Audio").
-            UString       comment;         //!< Additional description (ie language).
+            UString       comment;         //!< Additional description (ie "MPE", "HbbTV").
+            UStringVector languages;       //!< For audio or subtitles (3 chars per language).
             UStringVector attributes;      //!< Audio or video attributes (several lines if attributes changed).
             ServiceIdSet  services;        //!< List of service ids the PID belongs to.
             bool          is_pmt_pid;      //!< Is the PMT PID for this service.
@@ -339,7 +340,6 @@ namespace ts {
             uint64_t      pcr_cnt;         //!< Number of PCR's.
             BitRate       ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
             BitRate       bitrate;         //!< Average PID bitrate in b/s.
-            UString       language;        //!< For audio or subtitles (3 chars).
             uint16_t      cas_id;          //!< For EMM and ECM streams.
             std::set<uint32_t>         cas_operators; //!< Operators for EMM and ECM streams, when applicable.
             ETIDContextMap             sections;      //!< List of sections in this PID.

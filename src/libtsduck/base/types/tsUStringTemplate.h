@@ -329,14 +329,16 @@ void ts::UString::splitLinesAppend(CONTAINER& lines, size_t maxWidth, const UStr
 //----------------------------------------------------------------------------
 
 template <class ITERATOR>
-ts::UString ts::UString::Join(ITERATOR begin, ITERATOR end, const UString& separator)
+ts::UString ts::UString::Join(ITERATOR begin, ITERATOR end, const UString& separator, bool removeEmpty)
 {
     UString res;
     while (begin != end) {
-        if (!res.empty()) {
-            res.append(separator);
+        if (!removeEmpty || !begin->empty()) {
+            if (!res.empty()) {
+                res.append(separator);
+            }
+            res.append(*begin);
         }
-        res.append(*begin);
         ++begin;
     }
     return res;

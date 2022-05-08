@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2736
+VERSION 3.31-2739
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -26,6 +26,8 @@ VERSION 3.31-2736
 
   * Fixed issue #959: In the plugin "merge", the merged EIT PID was not
     correctly rebuilt when the merged stream contained EIT's.
+  * Fixed issue #991: In TS analysis, when an audio, subtitles or teletext PID
+    had multiple languages, only the first one was reported in the analysis.
 
 -------------------------------------------------------------------------------
 

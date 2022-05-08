@@ -868,9 +868,8 @@ namespace ts {
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [out] container A container of @c UString which receives the segments of the splitted string.
         //! @param [in] separator The character which is used to separate the segments.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed,
+        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //! @param [in] removeEmpty If true, empty segments are ignored
-        //! i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
         void split(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const
@@ -885,9 +884,8 @@ namespace ts {
         //! @param [in,out] container A container of @c UString which receives the segments of the splitted string.
         //! The strings are appended to the container without erasing previous content.
         //! @param [in] separator The character which is used to separate the segments.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed,
+        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //! @param [in] removeEmpty If true, empty segments are ignored
-        //! i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
         void splitAppend(CONTAINER& container, UChar separator = COMMA, bool trimSpaces = true, bool removeEmpty = false) const;
@@ -925,8 +923,7 @@ namespace ts {
         //! @param [out] container A container of @c UString which receives the segments of the splitted string.
         //! @param [in] startWith The character which is used to identify the start of a segment of @a input.
         //! @param [in] endWith The character which is used to identify the end of a segment of @a input.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed,
-        //! i.e. all leading and trailing space characters are removed.
+        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
         void splitBlocks(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const
@@ -942,8 +939,7 @@ namespace ts {
         //! The strings are appended to the container without erasing previous content.
         //! @param [in] startWith The character which is used to identify the start of a segment of @a input.
         //! @param [in] endWith The character which is used to identify the end of a segment of @a input.
-        //! @param [in] trimSpaces If true (the default), each segment is trimmed,
-        //! i.e. all leading and trailing space characters are removed.
+        //! @param [in] trimSpaces If true (the default), each segment is trimmed, i.e. all leading and trailing space characters are removed.
         //!
         template <class CONTAINER>
         void splitBlocksAppend(CONTAINER& container, UChar startWith = UChar('['), UChar endWith = UChar(']'), bool trimSpaces = true) const;
@@ -1023,10 +1019,11 @@ namespace ts {
         //! @param [in] begin An iterator pointing to the first string.
         //! @param [in] end An iterator pointing @em after the last string.
         //! @param [in] separator A string to insert between all segments.
+        //! @param [in] removeEmpty If true, empty segments are ignored
         //! @return The big string containing all segments and separators.
         //!
         template <class ITERATOR>
-        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(u", "));
+        static UString Join(ITERATOR begin, ITERATOR end, const UString& separator = UString(u", "), bool removeEmpty = false);
 
         //!
         //! Join a container of strings into one big string.
@@ -1034,12 +1031,13 @@ namespace ts {
         //! @tparam CONTAINER A container class of @c UString as defined by the C++ Standard Template Library (STL).
         //! @param [in] container A container of @c UString containing all strings to concatenate.
         //! @param [in] separator A string to insert between all segments.
+        //! @param [in] removeEmpty If true, empty segments are ignored
         //! @return The big string containing all segments and separators.
         //!
         template <class CONTAINER>
-        static UString Join(const CONTAINER& container, const UString& separator = UString(u", "))
+        static UString Join(const CONTAINER& container, const UString& separator = UString(u", "), bool removeEmpty = false)
         {
-            return Join(container.begin(), container.end(), separator);
+            return Join(container.begin(), container.end(), separator, removeEmpty);
         }
 
         //!
