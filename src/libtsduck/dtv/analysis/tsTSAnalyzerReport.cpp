@@ -957,8 +957,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         if (pc.carry_video) {
             stm << "video:";
         }
-        if (!pc.language.empty()) {
-            stm << "language=" << pc.language << ":";
+        if (!pc.languages.empty()) {
+            stm << "language=" << UString::Join(pc.languages, u",") << ":";
         }
         stm << "servcount=" << pc.services.size() << ":";
         if (!pc.referenced) {
@@ -1210,8 +1210,13 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         if (pc.same_stream_id) {
             jv.add(u"pes-stream-id", pc.pes_stream_id);
         }
-        if (!pc.language.empty()) {
-            jv.add(u"language", pc.language);
+        if (!pc.languages.empty()) {
+            // First language as a string (legacy compatibility).
+            jv.add(u"language", pc.languages.front());
+            // All languages as an array of string.
+            for (const auto& lang : pc.languages) {
+                jv.query(u"languages", true, json::Type::Array).set(lang);
+            }
         }
         jv.add(u"service-count", pc.services.size());
         jv.add(u"unreferenced", json::Bool(!pc.referenced));

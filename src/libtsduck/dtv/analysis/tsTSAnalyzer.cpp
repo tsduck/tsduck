@@ -30,6 +30,9 @@
 #include "tsTSAnalyzer.h"
 #include "tsT2MIPacket.h"
 #include "tsAACDescriptor.h"
+#include "tsISO639LanguageDescriptor.h"
+#include "tsSubtitlingDescriptor.h"
+#include "tsTeletextDescriptor.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
 #include "tsNames.h"
@@ -237,6 +240,7 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     pid(pid_),
     description(description_),
     comment(),
+    languages(),
     attributes(),
     services(),
     is_pmt_pid(false),
@@ -270,7 +274,6 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     pcr_cnt(0),
     ts_pcr_bitrate(0),
     bitrate(0),
-    language(),
     cas_id(0),
     cas_operators(),
     sections(),
@@ -855,17 +858,12 @@ void ts::TSAnalyzer::analyzeSTT(const STT& stt)
 ts::UString ts::TSAnalyzer::PIDContext::fullDescription(bool include_attributes) const
 {
     // Additional description
-    UString more(comment);
+    UStringVector lines(languages);
+    lines.push_back(comment);
     if (include_attributes) {
-        for (auto& attr : attributes) {
-            if (!attr.empty()) {
-                if (!more.empty()) {
-                    more.append(u", ");
-                }
-                more.append(attr);
-            }
-        }
+        lines.insert(lines.end(), attributes.begin(), attributes.end());
     }
+    UString more(UString::Join(lines, u", ", true));
 
     // Return full description
     if (description.empty()) {
@@ -890,34 +888,32 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
 {
     for (size_t di = 0; di < descs.count(); ++di) {
 
-        const uint8_t* data = descs[di]->payload();
-        size_t size = descs[di]->payloadSize();
+        const Descriptor& bindesc(*descs[di]);
+        const uint8_t* data = bindesc.payload();
+        size_t size = bindesc.payloadSize();
 
         switch (descs[di]->tag()) {
             case DID_CA: {
                 // MPEG standard CA descriptor.
-                analyzeCADescriptor(*descs[di], svp, ps);
+                analyzeCADescriptor(bindesc, svp, ps);
                 break;
             }
             case DID_ISDB_CA:
             case DID_ISDB_COND_PLAYBACK: {
                 // ISDB specific CA descriptors.
                 if (_duck.actualPDS(descs.privateDataSpecifier(di)) == PDS_ISDB) {
-                    analyzeCADescriptor(*descs[di], svp, ps, u" (ISDB)");
+                    analyzeCADescriptor(bindesc, svp, ps, u" (ISDB)");
                 }
                 break;
             }
             case DID_LANGUAGE: {
-                if (size >= 4 && ps != nullptr) {
-                    // First 3 bytes contains the audio language
-                    _duck.decode(ps->language, data, 3);
-                    // Next byte contains audio type, 0 is the default
-                    uint8_t audio_type(data[3]);
-                    if (audio_type == 0) {
-                        ps->comment = ps->language;
-                    }
-                    else {
-                        ps->comment = ps->language + u", " + names::AudioType(audio_type);
+                if (ps != nullptr) {
+                    const ISO639LanguageDescriptor desc(_duck, bindesc);
+                    for (auto& e : desc.entries) {
+                        AppendUnique(ps->languages, e.language_code);
+                        if (e.audio_type != 0) {
+                            ps->comment = names::AudioType(e.audio_type);
+                        }
                     }
                 }
                 break;
@@ -941,7 +937,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
             case DID_AAC: {
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates an AAC, E-AAC or HE-AAC audio track.
-                    AACDescriptor desc(_duck, *descs[di]);
+                    const AACDescriptor desc(_duck, bindesc);
                     const UString type(desc.aacTypeString());
                     if (!type.empty()) {
                         ps->description = type;
@@ -959,26 +955,24 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 break;
             }
             case DID_SUBTITLING: {
-                if (size >= 4 && ps != nullptr) {
-                    // First 3 bytes contains the language
-                    _duck.decode(ps->language, data, 3);
-                    // Next byte contains subtitling type
-                    uint8_t type = data[3];
+                if (ps != nullptr) {
                     ps->description = u"Subtitles";
-                    ps->comment = ps->language;
-                    AppendUnique(ps->attributes, names::SubtitlingType(type));
+                    const SubtitlingDescriptor desc(_duck, bindesc);
+                    for (auto& e : desc.entries) {
+                        AppendUnique(ps->languages, e.language_code);
+                        AppendUnique(ps->attributes, names::SubtitlingType(e.subtitling_type));
+                    }
                 }
                 break;
             }
             case DID_TELETEXT: {
-                if (size >= 4 && ps != nullptr) {
-                    // First 3 bytes contains the language
-                    _duck.decode(ps->language, data, 3);
-                    // Next byte contains teletext type
-                    uint8_t type(data[3] >> 3);
+                if (ps != nullptr) {
                     ps->description = u"Teletext";
-                    ps->comment = ps->language;
-                    AppendUnique(ps->attributes, names::TeletextType(type));
+                    const TeletextDescriptor desc(_duck, bindesc);
+                    for (auto& e : desc.entries) {
+                        AppendUnique(ps->languages, e.language_code);
+                        AppendUnique(ps->attributes, names::TeletextType(e.teletext_type));
+                    }
                 }
                 break;
             }
