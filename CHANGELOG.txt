@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2739
+VERSION 3.31-2740
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,6 +12,8 @@ VERSION 3.31-2739
   * In plugin "sections", the options --tid-remove, --tid-ext-remove,
     --etid-remove, --version-remove were renamed without -remove suffix to
     highlight the fact that they can be used to remove or keep sections.
+  * The plugin "bitrate_monitor" now reports the net bitrate (without null
+    packets) in addition to the global bitrate.
   * New options in existing commands and plugins:
     - Options --no-bitrate, --align-first-segment in output plugin "hls".
     - Options --json-udp, --json-tcp, --json-buffer-size, --json-tcp-keep,
