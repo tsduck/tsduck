@@ -54,7 +54,6 @@ namespace ts {
         virtual bool handlePacketTimeout() override;
 
     private:
-
         // Default values
         static constexpr BitRate::int_t DEFAULT_BITRATE_MIN = 10;
         static constexpr BitRate::int_t DEFAULT_BITRATE_MAX = 0xFFFFFFFF;
@@ -63,31 +62,50 @@ namespace ts {
         // Type indicating status of current bitrate, regarding allowed range.
         enum RangeStatus {LOWER, IN_RANGE, GREATER};
 
-        bool        _full_ts;              // Monitor full TS.
-        PID         _pid;                  // Monitored PID (when _full_ts is false).
-        UString     _tag;                  // Message tag.
-        BitRate     _min_bitrate;          // Minimum allowed bitrate.
-        BitRate     _max_bitrate;          // Maximum allowed bitrate.
-        Second      _periodic_bitrate;     // Report bitrate at regular intervals, even if in range.
-        Second      _bitrate_countdown;    // Countdown to report bitrate.
-        Second      _periodic_command;     // Run alarm command at regular intervals, even if in range.
-        Second      _command_countdown;    // Countdown to run alarm command.
-        RangeStatus _last_bitrate_status;  // Status of the last bitrate, regarding allowed range.
-        UString     _alarm_command;        // Alarm command name.
-        UString     _alarm_prefix;         // Prefix for alarm messages.
-        UString     _alarm_target;         // "target" parameter to the alarm command.
-        time_t      _last_second;          // Last second number.
-        size_t      _window_size;          // Size (in seconds) of the time window, used to compute bitrate.
-        bool        _startup;              // Measurement in progress.
-        size_t      _pkt_count_index;      // Index for packet number array.
-        std::vector<PacketCounter> _pkt_count;        // Number of packets received during last time window, second per second.
+        // Description of what is received during one second.
+        class Period
+        {
+        public:
+            PacketCounter packets;   // Total number of packets.
+            PacketCounter non_null;  // Total number of non-null packets.
+
+            // Constructor.
+            Period() : packets(0), non_null(0) {}
+
+            // Clear content.
+            void clear() { packets = non_null = 0; }
+        };
+
+        // Command line options.
+        bool    _full_ts;           // Monitor full TS.
+        PID     _first_pid;         // First monitored PID (for messages).
+        size_t  _pid_count;         // Number of PID's to monitor.
+        PIDSet  _pids;              // Monitored PID's.
+        UString _tag;               // Message tag.
+        BitRate _min_bitrate;       // Minimum allowed bitrate.
+        BitRate _max_bitrate;       // Maximum allowed bitrate.
+        Second  _periodic_bitrate;  // Report bitrate at regular intervals, even if in range.
+        Second  _periodic_command;  // Run alarm command at regular intervals, even if in range.
+        size_t  _window_size;       // Size (in seconds) of the time window, used to compute bitrate.
+        UString _alarm_command;     // Alarm command name.
+        UString _alarm_prefix;      // Prefix for alarm messages.
+        UString _alarm_target;      // "target" parameter to the alarm command.
         TSPacketMetadata::LabelSet _labels_below;     // Set these labels on all packets when bitrate is below normal.
         TSPacketMetadata::LabelSet _labels_normal;    // Set these labels on all packets when bitrate is normal.
         TSPacketMetadata::LabelSet _labels_above;     // Set these labels on all packets when bitrate is above normal.
         TSPacketMetadata::LabelSet _labels_go_below;  // Set these labels on one packet when bitrate goes below normal.
         TSPacketMetadata::LabelSet _labels_go_normal; // Set these labels on one packet when bitrate goes back to normal.
         TSPacketMetadata::LabelSet _labels_go_above;  // Set these labels on one packet when bitrate goes above normal.
-        TSPacketMetadata::LabelSet _labels_next;      // Set these labels on next packet.
+
+        // Working data.
+        Second      _bitrate_countdown;           // Countdown to report bitrate.
+        Second      _command_countdown;           // Countdown to run alarm command.
+        RangeStatus _last_bitrate_status;         // Status of the last bitrate, regarding allowed range.
+        time_t      _last_second;                 // Last second number.
+        bool        _startup;                     // Measurement in progress.
+        size_t      _periods_index;               // Index for packet number array.
+        std::vector<Period>        _periods;      // Number of packets received during last time window, second per second.
+        TSPacketMetadata::LabelSet _labels_next;  // Set these labels on next packet.
 
         // Compute bitrate. Report any alarm.
         void computeBitrate();
@@ -111,51 +129,56 @@ constexpr size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
 //----------------------------------------------------------------------------
 
 ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Monitor bitrate for TS or a given PID", u"[options]"),
+    ProcessorPlugin(tsp_, u"Monitor bitrate for TS or a given set of PID's", u"[options]"),
     _full_ts(false),
-    _pid(PID_NULL),
+    _first_pid(PID_NULL),
+    _pid_count(0),
+    _pids(),
     _tag(),
     _min_bitrate(0),
     _max_bitrate(0),
     _periodic_bitrate(0),
-    _bitrate_countdown(0),
     _periodic_command(0),
-    _command_countdown(0),
-    _last_bitrate_status(LOWER),
+    _window_size(0),
     _alarm_command(),
     _alarm_prefix(),
     _alarm_target(),
-    _last_second(0),
-    _window_size(0),
-    _startup(false),
-    _pkt_count_index(0),
-    _pkt_count(),
     _labels_below(),
     _labels_normal(),
     _labels_above(),
     _labels_go_below(),
     _labels_go_normal(),
     _labels_go_above(),
+    _bitrate_countdown(0),
+    _command_countdown(0),
+    _last_bitrate_status(LOWER),
+    _last_second(0),
+    _startup(false),
+    _periods_index(0),
+    _periods(),
     _labels_next()
 {
     // The PID was previously passed as argument. We now use option --pid.
     // We still accept the argument for legacy, but not both.
-    option(u"", 0, PIDVAL, 0, 1);
-    option(u"pid", 0, PIDVAL);
-    help(u"pid",
-         u"Specifies the PID to monitor. "
-         u"By default, when no --pid is specified, monitor the bitrate of the full TS.");
+    option(u"", 0, PIDVAL, 0, UNLIMITED_COUNT);
+    option(u"pid", 0, PIDVAL, 0, UNLIMITED_COUNT);
+    help(u"pid", u"pid1[-pid2]",
+         u"Specifies the PID or set of PID's to monitor. "
+         u"By default, when no --pid is specified, monitor the bitrate of the full TS. "
+         u"Several --pid options may be specified. "
+         u"When several PID's are specified, the tested bitrate is the global bitrate of all the selected PID's.");
 
     option(u"alarm-command", 'a', STRING);
     help(u"alarm-command", u"'command'",
          u"Command to run when the bitrate goes either out of range or back to normal. "
-         u"The command receives six additional parameters:\n\n"
+         u"The command receives the following additional parameters:\n\n"
          u"1. A human-readable alarm message.\n"
-         u"2. Either \"ts\" or the decimal integer value of the PID to monitor.\n"
+         u"2. Either \"ts\" or the decimal integer value of the first PID to monitor.\n"
          u"3. Bitrate alarm state, one of \"lower\", \"greater\", \"normal\".\n"
          u"4. Current bitrate in b/s (decimal integer).\n"
          u"5. Minimum bitrate in b/s (decimal integer).\n"
-         u"6. Maximum bitrate in b/s (decimal integer).");
+         u"6. Maximum bitrate in b/s (decimal integer).\n"
+         u"7. Net bitrate, without null packets, in b/s (decimal integer).");
 
     option(u"time-interval", 't', UINT16);
     help(u"time-interval",
@@ -230,17 +253,16 @@ bool ts::BitrateMonitorPlugin::getOptions()
     // Get the PID. Accept either --pid or legacy argument, but not both.
     const bool got_legacy_arg = present(u"");
     const bool got_pid_option = present(u"pid");
+    const UChar* const pid_opt_name = got_legacy_arg ? u"" : u"pid";
+
     _full_ts = !got_legacy_arg && !got_pid_option;
+    _pid_count = _full_ts ? PID_MAX : count(pid_opt_name);
+    getIntValue(_first_pid, pid_opt_name, PID_NULL);
+    getIntValues(_pids, pid_opt_name, true);
 
     if (got_legacy_arg && got_pid_option) {
         tsp->error(u"specify either --pid or legacy argument, but not both");
         ok = false;
-    }
-    else if (got_legacy_arg) {
-        _pid = intValue<PID>(u"");
-    }
-    else if (got_pid_option) {
-        _pid = intValue<PID>(u"pid");
     }
 
     // Get options
@@ -278,8 +300,8 @@ bool ts::BitrateMonitorPlugin::getOptions()
         _alarm_target = u"ts";
     }
     else {
-        _alarm_prefix.format(u"PID 0x%X (%<d)", {_pid});
-        _alarm_target.format(u"%d", {_pid});
+        _alarm_prefix.format(u"PID 0x%X (%<d)", {_first_pid});
+        _alarm_target.format(u"%d", {_first_pid});
     }
 
     return ok;
@@ -292,14 +314,13 @@ bool ts::BitrateMonitorPlugin::getOptions()
 
 bool ts::BitrateMonitorPlugin::start()
 {
-    // Initialize array with packets count.
-    _pkt_count.resize(_window_size);
-    _pkt_count_index = 0;
-
-    for (size_t i = 0; i < _pkt_count.size(); i++) {
-        _pkt_count[i] = 0;
+    // Initialize array packets count.
+    _periods.resize(_window_size);
+    for (auto& p : _periods) {
+        p.clear();
     }
 
+    _periods_index = 0;
     _labels_next.reset();
     _bitrate_countdown = _periodic_bitrate;
     _command_countdown = _periodic_command;
@@ -323,10 +344,13 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     // Bitrate is computed with the following formula :
     // (Sum of packets received during the last time window) * (packet size) / (time window)
     PacketCounter total_pkt_count = 0;
-    for (size_t i = 0; i < _pkt_count.size(); i++) {
-        total_pkt_count += _pkt_count[i];
+    PacketCounter non_null_count = 0;
+    for (auto& p : _periods) {
+        total_pkt_count += p.packets;
+        non_null_count += p.non_null;
     }
-    const BitRate bitrate((BitRate(total_pkt_count) * PKT_SIZE_BITS) / _pkt_count.size());
+    const BitRate bitrate((BitRate(total_pkt_count) * PKT_SIZE_BITS) / _periods.size());
+    const BitRate net_bitrate((BitRate(non_null_count) * PKT_SIZE_BITS) / _periods.size());
 
     // Check the bitrate value, regarding the allowed range.
     RangeStatus new_bitrate_status;
@@ -347,7 +371,12 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     // Periodic bitrate display.
     if (_periodic_bitrate > 0 && --_bitrate_countdown <= 0) {
         _bitrate_countdown = _periodic_bitrate;
-        tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate});
+        if (_full_ts) {
+            tsp->info(u"%s, %s bitrate: %'d bits/s, net bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate, net_bitrate});
+        }
+        else {
+            tsp->info(u"%s, %s bitrate: %'d bits/s", {Time::CurrentLocalTime().format(Time::DATETIME), _alarm_prefix, bitrate});
+        }
     }
 
     // Periodic command launch.
@@ -391,7 +420,7 @@ void ts::BitrateMonitorPlugin::computeBitrate()
         // The command is run asynchronously, do not wait for completion.
         if (!_alarm_command.empty()) {
             UString command;
-            command.format(u"%s \"%s\" %s %s %d %d %d", {_alarm_command, alarm_message, _alarm_target, alarm_status, bitrate, _min_bitrate, _max_bitrate});
+            command.format(u"%s \"%s\" %s %s %d %d %d %d", {_alarm_command, alarm_message, _alarm_target, alarm_status, bitrate, _min_bitrate, _max_bitrate, net_bitrate});
             ForkPipe::Launch(command, *tsp, ForkPipe::STDERR_ONLY, ForkPipe::STDIN_NONE);
         }
 
@@ -422,12 +451,12 @@ void ts::BitrateMonitorPlugin::checkTime()
         }
 
         // update index, and reset packet count.
-        _pkt_count_index = (_pkt_count_index + 1) % _pkt_count.size();
-        _pkt_count[_pkt_count_index] = 0;
+        _periods_index = (_periods_index + 1) % _periods.size();
+        _periods[_periods_index].clear();
 
         // We are no more at startup if the index cycles.
         if (_startup) {
-            _startup = _pkt_count_index != 0;
+            _startup = _periods_index != 0;
         }
 
         _last_second = now;
@@ -459,8 +488,11 @@ ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pk
     checkTime();
 
     // If packet's PID matches, increment the number of packets received during the current second.
-    if (_full_ts || pkt.getPID() == _pid) {
-        _pkt_count[_pkt_count_index]++;
+    if (_pids.test(pkt.getPID())) {
+        _periods[_periods_index].packets++;
+        if (pkt.getPID() != PID_NULL) {
+            _periods[_periods_index].non_null++;
+        }
     }
 
     // Set labels according to trigger.
