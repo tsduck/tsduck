@@ -153,20 +153,18 @@ ts::SysInfo::SysInfo() :
 
     // Get kernel version.
     int mib[2];
-    size_t len;
+    size_t len = 0;
     mib[0] = CTL_KERN;
     mib[1] = KERN_OSRELEASE;
-    if (::sysctl(mib, 2, nullptr, &len, nullptr, 0) == 0 ) {
+    if (::sysctl(mib, 2, nullptr, &len, nullptr, 0) == 0) {
         std::string version(len, 0);
-        if (::sysctl(mib, 2, &version[0], &len, nullptr, 0) == 0 ) {
-            const bool wasEmpty = _systemVersion.empty();
-            if (!wasEmpty) {
-                _systemVersion += u" (";
+        if (::sysctl(mib, 2, &version[0], &len, nullptr, 0) == 0) {
+            if (!_systemVersion.empty()) {
+                _systemVersion += u", ";
             }
-            _systemVersion += u"Darwin " + UString::FromUTF8(&version[0], len);
-            if (!wasEmpty) {
-                _systemVersion += u")";
-            }
+            // Implicitely remove trailing zeroes from sysctl() result.
+            version.resize(len);
+            _systemVersion += u"Darwin " + UString::FromUTF8(version.c_str());
         }
     }
 
