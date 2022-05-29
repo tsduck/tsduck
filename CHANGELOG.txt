@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2740
+VERSION 3.31-2743
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -30,6 +30,8 @@ VERSION 3.31-2740
     correctly rebuilt when the merged stream contained EIT's.
   * Fixed issue #991: In TS analysis, when an audio, subtitles or teletext PID
     had multiple languages, only the first one was reported in the analysis.
+  * Fixed issue #1010: The input plugin "hls" left obsolete cookies files in
+    /tmp when the transfer was closed before the end of stream.
 
 -------------------------------------------------------------------------------
 

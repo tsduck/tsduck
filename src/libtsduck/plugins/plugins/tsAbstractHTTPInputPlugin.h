@@ -56,12 +56,6 @@ namespace ts {
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
-        //!
-        //! Set a directory name where all loaded files are automatically saved.
-        //! @param [in] dir A directory name.
-        //!
-        void setAutoSaveDirectory(const UString dir) { _autoSaveDir = dir; }
-
     protected:
         //!
         //! Constructor for subclasses.
@@ -79,6 +73,18 @@ namespace ts {
         //! @return True on success, false on error or when no more download shall be performed.
         //!
         virtual bool openURL(WebRequest& request) = 0;
+
+        //!
+        //! Set a directory name where all loaded files are automatically saved.
+        //! @param [in] dir A directory name.
+        //!
+        void setAutoSaveDirectory(const UString dir) { _autoSaveDir = dir; }
+
+        //!
+        //! Delete the cookies file, if there is one.
+        //! @return True on success, false on error.
+        //!
+        bool deleteCookiesFile() { return _request.deleteCookiesFile(*tsp); }
 
         //!
         //! Web command line options can be accessed by subclasses for additional web operations.
