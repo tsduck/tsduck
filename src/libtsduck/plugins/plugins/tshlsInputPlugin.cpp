@@ -338,6 +338,20 @@ bool ts::hls::InputPlugin::start()
 
 
 //----------------------------------------------------------------------------
+// Input stop method
+//----------------------------------------------------------------------------
+
+bool ts::hls::InputPlugin::stop()
+{
+    // Invoke superclass first.
+    const bool stopped = AbstractHTTPInputPlugin::stop();
+
+    // Then delete the cookie file. Must be done after complete stop to avoid recreation.
+    return deleteCookiesFile() && stopped;
+}
+
+
+//----------------------------------------------------------------------------
 // Called by AbstractHTTPInputPlugin to open an URL.
 //----------------------------------------------------------------------------
 
