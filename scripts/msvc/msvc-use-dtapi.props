@@ -5,6 +5,9 @@
 
   <!-- Define DtapiIncludePath if not already defined and DTAPI.h found in some predefined locations -->
   <Choose>
+    <When Condition="'$(TS_NO_DEKTEC)$(TS_NO_DTAPI)' != ''">
+      <!-- TS_NO_DEKTEC or TS_NO_DTAPI environment variables defined, do not use DTAPI -->
+    </When>
     <When Condition="'$(DtapiIncludePath)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
@@ -22,6 +25,9 @@
 
   <!-- Define DtapiLibraryPath if not already defined and DTAPI found in some predefined locations -->
   <Choose>
+    <When Condition="'$(TS_NO_DEKTEC)$(TS_NO_DTAPI)' != ''">
+      <!-- TS_NO_DEKTEC or TS_NO_DTAPI environment variables defined, do not use DTAPI -->
+    </When>
     <When Condition="'$(DtapiLibraryPath)' != '' AND '$(DtapiVSDir)' != ''">
       <!-- Already externally defined, nothing to do -->
     </When>
