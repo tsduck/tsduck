@@ -161,10 +161,9 @@ namespace ts {
 
         //!
         //! Delete the cookies file, if one was defined.
-        //! @param [in,out] report Where to report errors.
         //! @return True on success, false on error.
         //!
-        bool deleteCookiesFile(Report& report) const;
+        bool deleteCookiesFile() const;
 
         //!
         //! Default user agent string ("tsduck").
@@ -375,6 +374,7 @@ namespace ts {
         UString       _proxyPassword;
         UString       _cookiesFileName;
         bool          _useCookies;
+        bool          _deleteCookiesFile;  // delete the cookies file on close
         HeadersMap    _requestHeaders;     // all request headers (to send)
         HeadersMap    _responseHeaders;    // all response headers (received)
         int           _httpStatus;         // 200, 404, etc.
