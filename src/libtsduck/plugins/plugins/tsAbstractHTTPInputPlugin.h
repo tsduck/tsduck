@@ -84,7 +84,7 @@ namespace ts {
         //! Delete the cookies file, if there is one.
         //! @return True on success, false on error.
         //!
-        bool deleteCookiesFile() { return _request.deleteCookiesFile(*tsp); }
+        bool deleteCookiesFile() { return _request.deleteCookiesFile(); }
 
         //!
         //! Web command line options can be accessed by subclasses for additional web operations.

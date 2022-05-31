@@ -181,8 +181,8 @@ bool ts::hls::InputPlugin::getOptions()
     // Invoke superclass to initialize webArgs.
     AbstractHTTPInputPlugin::getOptions();
 
-    // Enable authentication tokens from master playlist to media playlist
-    // and from media playlists to media segments.
+    // Enable authentication tokens from master playlist to media playlist and from media playlists to media segments.
+    // On Linux and macOS, use a specific cookies file to make sure that all Web requests use the same one.
     webArgs.useCookies = true;
     webArgs.cookiesFile = TempFile(u".cookies");
 

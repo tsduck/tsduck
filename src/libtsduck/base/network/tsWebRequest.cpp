@@ -92,6 +92,7 @@ ts::WebRequest::WebRequest(Report& report) :
     _proxyPassword(),
     _cookiesFileName(),
     _useCookies(false),
+    _deleteCookiesFile(false),
     _requestHeaders(),
     _responseHeaders(),
     _httpStatus(0),
@@ -115,6 +116,9 @@ ts::WebRequest::~WebRequest()
     if (_guts != nullptr) {
         deleteGuts();
         _guts = nullptr;
+    }
+    if (_deleteCookiesFile) {
+        deleteCookiesFile();
     }
 }
 
@@ -200,14 +204,21 @@ const ts::UString& ts::WebRequest::proxyPassword() const
 void ts::WebRequest::enableCookies(const UString& fileName)
 {
     _useCookies = true;
-#if defined(TS_UNIX)
-    _cookiesFileName = fileName.empty() ? TempFile(u".cookies") : fileName;
-#endif
+    // Delete previous cookies file.
+    if (_deleteCookiesFile) {
+        deleteCookiesFile();
+    }
+    // If the file name is not specified, delete the temporary file in the destructor.
+    _deleteCookiesFile = fileName.empty();
+    _cookiesFileName = _deleteCookiesFile ? TempFile(u".cookies") : fileName;
 }
 
 void ts::WebRequest::disableCookies()
 {
     _useCookies = false;
+    if (_deleteCookiesFile) {
+        deleteCookiesFile();
+    }
 }
 
 ts::UString ts::WebRequest::getCookiesFileName() const
@@ -215,15 +226,15 @@ ts::UString ts::WebRequest::getCookiesFileName() const
     return _cookiesFileName;
 }
 
-bool ts::WebRequest::deleteCookiesFile(Report& report) const
+bool ts::WebRequest::deleteCookiesFile() const
 {
     if (_cookiesFileName.empty() || !FileExists(_cookiesFileName)) {
         // No cookies file to delete.
         return true;
     }
     else {
-        report.debug(u"deleting cookies file %s", {_cookiesFileName});
-        return DeleteFile(_cookiesFileName, report);
+        _report.debug(u"deleting cookies file %s", {_cookiesFileName});
+        return DeleteFile(_cookiesFileName, _report);
     }
 }
 
