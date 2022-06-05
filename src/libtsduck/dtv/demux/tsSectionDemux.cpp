@@ -46,6 +46,7 @@ ts::SectionDemux::Status::Status() :
     scrambled(0),
     inv_sect_length(0),
     inv_sect_index(0),
+    inv_sect_version(0),
     wrong_crc(0),
     is_next(0),
     truncated_sect(0)
@@ -65,6 +66,7 @@ void ts::SectionDemux::Status::reset()
     scrambled = 0;
     inv_sect_length = 0;
     inv_sect_index = 0;
+    inv_sect_version = 0;
     wrong_crc = 0;
     is_next = 0;
     truncated_sect = 0;
@@ -79,6 +81,7 @@ bool ts::SectionDemux::Status::hasErrors() const
         scrambled != 0 ||
         inv_sect_length != 0 ||
         inv_sect_index != 0 ||
+        inv_sect_version != 0 ||
         wrong_crc != 0 ||
         is_next != 0 ||
         truncated_sect != 0;
@@ -116,6 +119,9 @@ void ts::SectionDemux::Status::display(Report& report, int level, const UString&
     }
     if (!errors_only || inv_sect_index != 0) {
         report.log(level, u"%sInvalid section index: %'d", {prefix, inv_sect_index});
+    }
+    if (!errors_only || inv_sect_version != 0) {
+        report.log(level, u"%sInvalid unchanged section version: %'d", {prefix, inv_sect_version});
     }
     if (!errors_only || wrong_crc != 0) {
         report.log(level, u"%sCorrupted sections (bad CRC): %'d", {prefix, wrong_crc});
@@ -217,7 +223,8 @@ ts::SectionDemux::SectionDemux(DuckContext& duck, TableHandlerInterface* table_h
     _pids(),
     _status(),
     _get_current(true),
-    _get_next(false)
+    _get_next(false),
+    _track_invalid_version(false)
 {
 }
 
@@ -495,6 +502,22 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
                 if (last_section_number != tc->sect_expected - 1) {
                     _status.inv_sect_index++;
                     section_ok = false;
+                }
+            }
+
+            // Track invalid section version numbers.
+            if (section_ok && _track_invalid_version && long_header && tc != nullptr && !tc->sects[section_number].isNull()) {
+                const Section& old(*tc->sects[section_number]);
+                // At this point, the version is necessarily identical. If this was another version,
+                // ts->init() was called and tc->sects[section_number] is null.
+                assert(old.version() == version);
+                if (section_length != old.size() || ::memcmp(ts_start, old.content(), section_length) != 0) {
+                    // Reset the previous content of the section and make sure the table will be notified again.
+                    tc->sects[section_number].clear();
+                    assert(tc->sect_received > 0);
+                    tc->sect_received--;
+                    tc->notified = false;
+                    _status.inv_sect_version++;
                 }
             }
 

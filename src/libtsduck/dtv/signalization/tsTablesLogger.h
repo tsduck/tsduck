@@ -206,6 +206,7 @@ namespace ts {
         bool                     _all_once;          // Collect all sections but only once per PID/TID/TDIext/secnum/version.
         bool                     _invalid_sections;  // Display invalid sections.
         bool                     _invalid_only;      // Display invalid sections only, not valid tables and sections.
+        bool                     _invalid_versions;  // Track invalid section versions.
         uint32_t                 _max_tables;        // Max number of tables to dump.
         bool                     _time_stamp;        // Display time stamps with each table.
         bool                     _packet_index;      // Display packet index with each table.
@@ -238,8 +239,8 @@ namespace ts {
         json::RunningDocument    _json_doc;          // JSON document, built on-the-fly.
         std::ofstream            _bin_file;          // Binary output file.
         UDPSocket                _sock;              // Output socket.
-        std::map<PID,SectionPtr> _short_sections;    // Tracking duplicate short sections by PID.
-        std::map<PID,SectionPtr> _last_sections;     // Tracking duplicate sections by PID (with --all-sections).
+        std::map<PID,ByteBlock>  _short_sections;    // Tracking duplicate short sections by PID with a section hash.
+        std::map<PID,ByteBlock>  _last_sections;     // Tracking duplicate sections by PID with a section hash (with --all-sections).
         std::set<uint64_t>       _sections_once;     // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
         TablesLoggerFilterVector _section_filters;   // All registered section filters.
 
@@ -267,6 +268,9 @@ namespace ts {
         UString logHeader(const DemuxedData&);
         void logSection(const Section&);
         void logInvalid(const DemuxedData&, const UString&);
+
+        // Detect and track duplicate section by PID.
+        bool isDuplicate(PID pid, const Section& section, std::map<PID,ByteBlock> TablesLogger::* tracker);
     };
 
     //!

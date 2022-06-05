@@ -31,6 +31,7 @@
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsCRC32.h"
+#include "tsSHA1.h"
 #include "tsNames.h"
 #include "tsMemory.h"
 #include "tsReportWithPrefix.h"
@@ -332,6 +333,20 @@ void ts::Section::recomputeCRC()
         const size_t sec_size = size() - SECTION_CRC32_SIZE;
         PutUInt32(rwContent() + sec_size, CRC32(content(), sec_size).value());
     }
+}
+
+//----------------------------------------------------------------------------
+// Get a hash of the section content.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock ts::Section::hash() const
+{
+    ByteBlock result;
+    if (isValid()) {
+        SHA1 algo;
+        algo.hash(content(), size(), result);
+    }
+    return result;
 }
 
 
