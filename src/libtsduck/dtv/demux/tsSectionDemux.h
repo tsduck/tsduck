@@ -162,6 +162,16 @@ namespace ts {
         }
 
         //!
+        //! Set the log level for messages reporting transport stream errors in demux.
+        //! By default, the log level is Severity::Debug.
+        //! @param [in] level The new log level for messages reporting transport stream errors.
+        //!
+        void setTransportErrorLogLevel(int level)
+        {
+            _ts_error_level = level;
+        }
+
+        //!
         //! Demux status information.
         //! It contains error counters.
         //!
@@ -299,6 +309,7 @@ namespace ts {
         bool   _get_current;
         bool   _get_next;
         bool   _track_invalid_version;
+        int    _ts_error_level;
     };
 }
 
