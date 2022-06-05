@@ -80,6 +80,20 @@ namespace ts {
         }
 
         //!
+        //! Track / untrack invalid section version numbers.
+        //! By default, if a section version does not change, the section is ignored.
+        //! When this tracking is enabled, the content of the sections are tracked and
+        //! a table is demuxed when a section version does not change but the content
+        //! changes. This is considered as an error according to MPEG rules.
+        //! @param [in] on Track invalid section versions. This is false by default.
+        //!
+        void trackInvalidSectionVersions(bool on)
+        {
+            _demux.trackInvalidSectionVersions(on);
+        }
+
+
+        //!
         //! Check if a PID is a known CA PID.
         //! @param [in] pid A PID to check.
         //! @return True if @ pid is a known ECM or EMM PID.

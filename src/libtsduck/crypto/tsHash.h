@@ -98,10 +98,17 @@ namespace ts {
         //! the actual returned hash size. Can be a null pointer (ignored).
         //! @return True on success, false on error.
         //!
-        bool hash(const void* data, size_t data_size, void* hash, size_t hash_maxsize, size_t* hash_retsize = nullptr)
-        {
-            return init() && add(data, data_size) && getHash(hash, hash_maxsize, hash_retsize);
-        }
+        bool hash(const void* data, size_t data_size, void* hash, size_t hash_maxsize, size_t* hash_retsize = nullptr);
+
+        //!
+        //! Compute a hash in one operation.
+        //! Same in init() + add() + getHash().
+        //! @param [in] data Address of message to hash.
+        //! @param [in] data_size Size in bytes of message to hash.
+        //! @param [out] hash Returned hash buffer.
+        //! @return True on success, false on error.
+        //!
+        bool hash(const void* data, size_t data_size, ByteBlock& hash);
 
         //!
         //! Virtual destructor.

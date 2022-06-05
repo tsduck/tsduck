@@ -381,6 +381,12 @@ namespace ts {
         }
 
         //!
+        //! Get a hash of the section content.
+        //! @return SHA-1 value of the section content.
+        //!
+        ByteBlock hash() const;
+
+        //!
         //! Minimum number of TS packets required to transport the section.
         //! @return The minimum number of TS packets required to transport the section.
         //!

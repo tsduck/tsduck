@@ -569,6 +569,16 @@ namespace ts {
     //! Safe pointer for ByteBlock, thread-safe (MT = multi-thread).
     //!
     typedef SafePtr<ByteBlock, Mutex> ByteBlockPtrMT;
+
+    //!
+    //! Vector of ByteBlock.
+    //!
+    typedef std::vector<ByteBlock> ByteBlockVector;
+
+    //!
+    //! List of ByteBlock.
+    //!
+    typedef std::list<ByteBlock> ByteBlockList;
 }
 
 //!

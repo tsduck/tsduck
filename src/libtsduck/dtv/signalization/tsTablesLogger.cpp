@@ -86,6 +86,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _all_once(false),
     _invalid_sections(false),
     _invalid_only(false),
+    _invalid_versions(false),
     _max_tables(0),
     _time_stamp(false),
     _packet_index(false),
@@ -189,6 +190,13 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"because they are truncated, incomplete, corrupted, have an invalid CRC32, etc. "
               u"Because these sections are invalid, they cannot be formatted as normal sections. "
               u"Instead, a binary and text dump is displayed.");
+
+    args.option(u"invalid-versions");
+    args.help(u"invalid-versions",
+              u"Track invalid version numbers in sections. "
+              u"Per MPEG rules, the version number of a section with long header shall be updated each time the content of the section is updated. "
+              u"With this option, the content of the sections is tracked to detect modified sections without version updates. "
+              u"These events are considered as errors.");
 
     args.option(u"ip-udp", 'i', Args::STRING);
     args.help(u"ip-udp", u"address:port",
@@ -382,6 +390,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _all_sections = _all_once || _pack_all_sections || args.present(u"all-sections");
     _invalid_only = args.present(u"only-invalid-sections");
     _invalid_sections = _invalid_only || args.present(u"invalid-sections");
+    _invalid_versions = args.present(u"invalid-versions");
     args.getIntValue(_max_tables, u"max-tables", 0);
     _time_stamp = args.present(u"time-stamp");
     _packet_index = args.present(u"packet-index");
@@ -456,6 +465,10 @@ bool ts::TablesLogger::open()
     // Type of sections to get.
     _demux.setCurrentNext(_use_current, _use_next);
     _cas_mapper.setCurrentNext(_use_current, _use_next);
+
+    // Track invalid section versions.
+    _demux.trackInvalidSectionVersions(_invalid_versions);
+    _cas_mapper.trackInvalidSectionVersions(_invalid_versions);
 
     // Load the XML model for tables if we need to convert to JSON.
     if ((_use_json || _log_json_line) && !SectionFile::LoadModel(_x2j_conv)) {
@@ -563,6 +576,27 @@ void ts::TablesLogger::feedPacket(const TSPacket& pkt)
 
 
 //----------------------------------------------------------------------------
+// Detect and track duplicate section by PID.
+//----------------------------------------------------------------------------
+
+bool ts::TablesLogger::isDuplicate(PID pid, const Section& section, std::map<PID,ByteBlock> TablesLogger::* tracker)
+{
+    // Get a SHA-1 for the section.
+    const ByteBlock hash(section.hash());
+    ByteBlock& last((this->*tracker)[pid]);
+    if (last.empty() || last != hash) {
+        // Not the same section, keep the hash for next time.
+        last = hash;
+        return false;
+    }
+    else {
+        // Same section (same hash) as previously.
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // This hook is invoked when a complete table is available.
 //----------------------------------------------------------------------------
 
@@ -587,15 +621,9 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
     }
 
     // Ignore duplicate tables with a short section.
-    if (_no_duplicate && table.isShortSection()) {
-        if (_short_sections[pid].isNull() || *_short_sections[pid] != *table.sectionAt(0)) {
-            // Not the same section, keep it for next time.
-            _short_sections[pid] = new Section(*table.sectionAt(0), ShareMode::COPY);
-        }
-        else {
-            // Same section as previously, ignore it.
-            return;
-        }
+    if (_no_duplicate && table.isShortSection() && isDuplicate(pid, *table.sectionAt(0), &TablesLogger::_short_sections)) {
+        // Same section as previously, ignore it.
+        return;
     }
 
     // Filtering done, now save table in various formats.
@@ -753,15 +781,9 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     }
 
     // Ignore duplicate sections.
-    if (_no_duplicate) {
-        if (_last_sections[pid].isNull() || *_last_sections[pid] != sect) {
-            // Not the same section, keep it for next time.
-            _last_sections[pid] = new Section(sect, ShareMode::COPY);
-        }
-        else {
-            // Same section as previously, ignore it.
-            return;
-        }
+    if (_no_duplicate && isDuplicate(pid, sect, &TablesLogger::_last_sections)) {
+        // Same section (same hash) as previously, ignore it.
+        return;
     }
 
     // Filtering done, now save data.

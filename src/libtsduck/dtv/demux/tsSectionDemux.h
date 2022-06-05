@@ -149,6 +149,19 @@ namespace ts {
         }
 
         //!
+        //! Track / untrack invalid section version numbers.
+        //! By default, if a section version does not change, the section is ignored.
+        //! When this tracking is enabled, the content of the sections are tracked and
+        //! a table is demuxed when a section version does not change but the content
+        //! changes. This is considered as an error according to MPEG rules.
+        //! @param [in] on Track invalid section versions. This is false by default.
+        //!
+        void trackInvalidSectionVersions(bool on)
+        {
+            _track_invalid_version = on;
+        }
+
+        //!
         //! Demux status information.
         //! It contains error counters.
         //!
@@ -160,6 +173,7 @@ namespace ts {
             uint64_t scrambled;        //!< Number of scrambled TS packets (undecoded).
             uint64_t inv_sect_length;  //!< Number of invalid section length.
             uint64_t inv_sect_index;   //!< Number of invalid section index.
+            uint64_t inv_sect_version; //!< Number of invalid section version (version unchanged with content change).
             uint64_t wrong_crc;        //!< Number of sections with wrong CRC32.
             uint64_t is_next;          //!< Number of sections with "next" flag (not yet applicable).
             uint64_t truncated_sect;   //!< Number of truncated sections.
@@ -284,6 +298,7 @@ namespace ts {
         Status _status;
         bool   _get_current;
         bool   _get_next;
+        bool   _track_invalid_version;
     };
 }
 
