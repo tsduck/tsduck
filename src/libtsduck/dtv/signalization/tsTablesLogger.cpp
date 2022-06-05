@@ -470,6 +470,9 @@ bool ts::TablesLogger::open()
     _demux.trackInvalidSectionVersions(_invalid_versions);
     _cas_mapper.trackInvalidSectionVersions(_invalid_versions);
 
+    // Log TS error at verbose level.
+    _demux.setTransportErrorLogLevel(Severity::Verbose);
+
     // Load the XML model for tables if we need to convert to JSON.
     if ((_use_json || _log_json_line) && !SectionFile::LoadModel(_x2j_conv)) {
         return false;
