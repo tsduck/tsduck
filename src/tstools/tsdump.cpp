@@ -52,16 +52,17 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck;        // TSDuck context
-        uint32_t           dump_flags;  // Dump options for Hexa and Packet::dump
-        bool               raw_file;    // Raw dump of file, not TS packets
-        bool               log;         // Option --log
-        size_t             log_size;    // Size to display with --log
-        ts::PIDSet         pids;        // PID values to dump
-        ts::PacketCounter  max_packets; // Maximum number of packets to dump per file
-        ts::UStringVector  infiles;     // Input file names
-        ts::TSPacketFormat format;      // Input file format
-        ts::PagerArgs      pager;       // Output paging options
+        ts::DuckContext    duck;          // TSDuck context
+        uint32_t           dump_flags;    // Dump options for Hexa and Packet::dump
+        bool               raw_file;      // Raw dump of file, not TS packets
+        bool               log;           // Option --log
+        size_t             log_size;      // Size to display with --log
+        uint64_t           start_offset;  // Start offset in bytes
+        ts::PIDSet         pids;          // PID values to dump
+        ts::PacketCounter  max_packets;   // Maximum number of packets to dump per file
+        ts::UStringVector  infiles;       // Input file names
+        ts::TSPacketFormat format;        // Input file format
+        ts::PagerArgs      pager;         // Output paging options
     };
 }
 
@@ -72,6 +73,7 @@ Options::Options(int argc, char *argv[]) :
     raw_file(false),
     log(false),
     log_size(0),
+    start_offset(0),
     pids(),
     max_packets(0),
     infiles(),
@@ -88,6 +90,11 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"binary", 'b');
     help(u"binary", u"Include binary dump in addition to hexadecimal.");
+
+    option(u"byte-offset", 0, UNSIGNED);
+    help(u"byte-offset",
+         u"Start reading each file at the specified byte offset (default: 0). "
+         u"This option is allowed only if all input files are regular files.");
 
     option(u"c-style", 'c');
     help(u"c-style", u"Same as --raw-dump (no interpretation of packet) but dump the bytes in C-language style.");
@@ -123,6 +130,11 @@ Options::Options(int argc, char *argv[]) :
     option(u"offset", 'o');
     help(u"offset", u"Include offset from start of packet with hexadecimal dump.");
 
+    option(u"packet-offset", 0, UNSIGNED);
+    help(u"packet-offset",
+         u"Start reading each file at the specified TS packet (default: 0). "
+         u"This option is allowed only if all input files are regular files.");
+
     option(u"payload");
     help(u"payload", u"Hexadecimal dump of TS payload only, skip TS header.");
 
@@ -142,6 +154,7 @@ Options::Options(int argc, char *argv[]) :
     getValues(infiles);
     raw_file = present(u"raw-file");
     log = present(u"log");
+    start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
     getIntValue(max_packets, u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
     getIntValue(log_size, u"log-size", ts::PKT_SIZE);
     getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
@@ -205,7 +218,7 @@ namespace {
 
         // Open the TS file.
         ts::TSFile file;
-        if (!file.openRead(filename, 1, 0, opt, opt.format)) {
+        if (!file.openRead(filename, 1, opt.start_offset, opt, opt.format)) {
             return;
         }
 
