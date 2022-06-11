@@ -27,7 +27,7 @@
 //
 //----------------------------------------------------------------------------
 //
-//  Compare two TS files
+// A command to compare two TS files.
 //
 //----------------------------------------------------------------------------
 
@@ -47,41 +47,46 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
-//  Command line options
+// Command line options
 //----------------------------------------------------------------------------
 
-namespace {
-    class Options: public ts::Args
+namespace ts {
+    class TSCompareOptions: public Args
     {
-        TS_NOBUILD_NOCOPY(Options);
+        TS_NOBUILD_NOCOPY(TSCompareOptions);
     public:
-        Options(int argc, char *argv[]);
+        TSCompareOptions(int argc, char *argv[]);
+        virtual ~TSCompareOptions() override;
 
-        ts::DuckContext      duck;
-        ts::TSPacketFormat   format;
-        ts::UString          filename1;
-        ts::UString          filename2;
-        uint64_t             byte_offset;
-        size_t               buffered_packets;
-        size_t               threshold_diff;
-        bool                 subset;
-        bool                 dump;
-        uint32_t             dump_flags;
-        bool                 normalized;
-        bool                 quiet;
-        bool                 payload_only;
-        bool                 pcr_ignore;
-        bool                 pid_ignore;
-        bool                 cc_ignore;
-        bool                 continue_all;
-        ts::json::OutputArgs json;
+        DuckContext      duck;
+        TSPacketFormat   format;
+        UString          filename1;
+        UString          filename2;
+        uint64_t         byte_offset;
+        size_t           buffered_packets;
+        size_t           threshold_diff;
+        bool             subset;
+        bool             dump;
+        uint32_t         dump_flags;
+        bool             normalized;
+        bool             quiet;
+        bool             payload_only;
+        bool             pcr_ignore;
+        bool             pid_ignore;
+        bool             cc_ignore;
+        bool             continue_all;
+        json::OutputArgs json;
     };
 }
 
-Options::Options(int argc, char *argv[]) :
+ts::TSCompareOptions::~TSCompareOptions()
+{
+}
+
+ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     Args(u"Compare two transport stream files", u"[options] filename-1 filename-2"),
     duck(this),
-    format(ts::TSPacketFormat::AUTODETECT),
+    format(TSPacketFormat::AUTODETECT),
     filename1(),
     filename2(),
     byte_offset(0),
@@ -105,7 +110,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"buffered-packets", 0, UNSIGNED);
     help(u"buffered-packets",
          u"Specifies the files input buffer size in TS packets.\n"
-         u"The default is " + ts::UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" TS packets.");
+         u"The default is " + UString::Decimal(DEFAULT_BUFFERED_PACKETS) + u" TS packets.");
 
     option(u"byte-offset", 'b', UNSIGNED);
     help(u"byte-offset", u"Start reading the files at the specified byte offset (default: 0).");
@@ -119,7 +124,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"dump", 'd');
     help(u"dump", u"Dump the content of all differing packets.");
 
-    option(u"format", 'f', ts::TSPacketFormatEnum);
+    option(u"format", 'f', TSPacketFormatEnum);
     help(u"format", u"name",
          u"Specify the format of the input files. "
          u"By default, the format is automatically and independently detected for each file. "
@@ -156,7 +161,7 @@ Options::Options(int argc, char *argv[]) :
          u"file is read ahead until a matching packet is found.\n"
          u"See also --threshold-diff.");
 
-    option(u"threshold-diff", 't', INTEGER, 0, 1, 0, ts::PKT_SIZE);
+    option(u"threshold-diff", 't', INTEGER, 0, 1, 0, PKT_SIZE);
     help(u"threshold-diff",
          u"When used with --subset, this value specifies the maximum number of "
          u"differing bytes in packets to declare them equal. When two packets have "
@@ -171,9 +176,9 @@ Options::Options(int argc, char *argv[]) :
     getValue(filename1, u"", u"", 0);
     getValue(filename2, u"", u"", 1);
 
-    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
+    getIntValue(format, u"format", TSPacketFormat::AUTODETECT);
     getIntValue(buffered_packets, u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
-    byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
+    byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
     getIntValue(threshold_diff, u"threshold-diff", 0);
     subset = present(u"subset");
     payload_only = present(u"payload-only");
@@ -192,106 +197,74 @@ Options::Options(int argc, char *argv[]) :
         error(u"options --json and --normalized are mutually exclusive");
     }
     if (quiet) {
-        setMaxSeverity(ts::Severity::Info);
+        setMaxSeverity(Severity::Info);
     }
 
     dump_flags =
-        ts::TSPacket::DUMP_TS_HEADER |    // Format TS headers
-        ts::TSPacket::DUMP_PES_HEADER |   // Format PES headers
-        ts::TSPacket::DUMP_RAW |          // Full dump of packet
-        ts::UString::HEXA |               // Hexadecimal dump (for TSPacket::DUMP_RAW)
-        ts::UString::ASCII;               // ASCII dump (for TSPacket::DUMP_RAW)
+        TSPacket::DUMP_TS_HEADER |    // Format TS headers
+        TSPacket::DUMP_PES_HEADER |   // Format PES headers
+        TSPacket::DUMP_RAW |          // Full dump of packet
+        UString::HEXA |               // Hexadecimal dump (for TSPacket::DUMP_RAW)
+        UString::ASCII;               // ASCII dump (for TSPacket::DUMP_RAW)
 
     exitOnError();
 }
 
 
 //----------------------------------------------------------------------------
-//  Packet comparator class
+// Packet comparator class
 //----------------------------------------------------------------------------
 
-class Comparator
-{
-public:
-    bool   equal;          // Compared packets are identical
-    size_t compared_size;  // Size of compared data
-    size_t first_diff;     // Offset of first difference
-    size_t end_diff;       // Offset of last difference + 1
-    size_t diff_count;     // Number of different bytes (can be lower than end_diff-first_diff)
+namespace ts {
+    class PacketComparator
+    {
+        TS_NOBUILD_NOCOPY(PacketComparator);
+    public:
+        bool   equal;          // Compared packets are identical
+        size_t compared_size;  // Size of compared data
+        size_t first_diff;     // Offset of first difference
+        size_t end_diff;       // Offset of last difference + 1
+        size_t diff_count;     // Number of different bytes (can be lower than end_diff-first_diff)
 
-    // Constructor
-    Comparator(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt);
+        // Constructor, compare the packets.
+        PacketComparator(const TSPacket& pkt1, const TSPacket& pkt2, TSCompareOptions& opt);
 
-    // Compare two TS packets, return equal
-    bool compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt);
-
-private:
-    // Compare two TS memory regions, return equal
-    bool compare(const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2);
-};
+    private:
+        // Compare two TS memory regions, fill all fields with comparison result.
+        void compare(const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2);
+    };
+}
 
 
 //----------------------------------------------------------------------------
-//  Packet comparator constructor.
+// Packet comparator constructor.
 //----------------------------------------------------------------------------
 
-Comparator::Comparator(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt) :
+ts::PacketComparator::PacketComparator(const TSPacket& pkt1, const TSPacket& pkt2, TSCompareOptions& opt) :
     equal(false),
     compared_size(0),
     first_diff(0),
     end_diff(0),
     diff_count(0)
 {
-    compare(pkt1, pkt2, opt);
-}
-
-//----------------------------------------------------------------------------
-//  Compare two memory regions.
-//----------------------------------------------------------------------------
-
-bool Comparator::compare(const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2)
-{
-    diff_count = 0;
-    first_diff = end_diff = compared_size = std::min (size1, size2);
-    for (size_t i = 0; i < compared_size; i++) {
-        if (mem1[i] != mem2[i]) {
-            diff_count++;
-            end_diff = i + 1;
-            if (first_diff == compared_size) {
-                first_diff = i;
-            }
-        }
-    }
-    return equal = diff_count == 0 && size1 == size2;
-}
-
-
-//----------------------------------------------------------------------------
-//  Compare two packets according to options.
-//  Offset in packet or in payload, depending on opt.payload_only.
-//----------------------------------------------------------------------------
-
-bool Comparator::compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Options& opt)
-{
-    if (pkt1.getPID() == ts::PID_NULL || pkt2.getPID() == ts::PID_NULL) {
-        // Null packets are always considered as identical.
-        // Non-null packets are always considered as different from null packets.
-        compare(pkt1.b, ts::PKT_SIZE, pkt2.b, ts::PKT_SIZE);
-        return equal = pkt1.getPID() == ts::PID_NULL && pkt2.getPID() == ts::PID_NULL;
+    if (pkt1.getPID() == PID_NULL || pkt2.getPID() == PID_NULL) {
+        // At least one packet is a null packet.
+        compare(pkt1.b, PKT_SIZE, pkt2.b, PKT_SIZE);
+        // Null packets are always considered as identical and non-null packets are always considered as different from null packets.
+        equal = pkt1.getPID() == PID_NULL && pkt2.getPID() == PID_NULL;
     }
     else if (opt.payload_only) {
         // Compare payload only
-        return compare(pkt1.getPayload(), pkt1.getPayloadSize(), pkt2.getPayload(), pkt2.getPayloadSize());
+        compare(pkt1.getPayload(), pkt1.getPayloadSize(), pkt2.getPayload(), pkt2.getPayloadSize());
     }
     else if (!opt.pcr_ignore && !opt.pid_ignore && !opt.cc_ignore) {
         // Compare full original packets
-        return compare(pkt1.b, ts::PKT_SIZE, pkt2.b, ts::PKT_SIZE);
+        compare(pkt1.b, PKT_SIZE, pkt2.b, PKT_SIZE);
     }
     else {
-        // Some fields should be ignored, reset them to zero in local copies
-        ts::TSPacket p1, p2;
-        p1 = pkt1;
-        p2 = pkt2;
+        // Some fields should be ignored, reset them in local copies
+        TSPacket p1(pkt1);
+        TSPacket p2(pkt2);
         if (opt.pcr_ignore) {
             if (p1.hasPCR()) {
                 p1.setPCR(0);
@@ -307,166 +280,166 @@ bool Comparator::compare(const ts::TSPacket& pkt1, const ts::TSPacket& pkt2, Opt
             }
         }
         if (opt.pid_ignore) {
-            p1.setPID(ts::PID_NULL);
-            p2.setPID(ts::PID_NULL);
+            p1.setPID(PID_NULL);
+            p2.setPID(PID_NULL);
         }
         if (opt.cc_ignore) {
             p1.setCC(0);
             p2.setCC(0);
         }
-        return compare(p1.b, ts::PKT_SIZE, p2.b, ts::PKT_SIZE);
+        compare(p1.b, PKT_SIZE, p2.b, PKT_SIZE);
     }
 }
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+// Compare two memory regions.
 //----------------------------------------------------------------------------
 
-int MainCode(int argc, char *argv[])
+void ts::PacketComparator::compare(const uint8_t* mem1, size_t size1, const uint8_t* mem2, size_t size2)
 {
-    Options opt(argc, argv);
-    ts::TSFileInputBuffered file1(opt.buffered_packets);
-    ts::TSFileInputBuffered file2(opt.buffered_packets);
+    diff_count = 0;
+    first_diff = end_diff = compared_size = std::min(size1, size2);
+    for (size_t i = 0; i < compared_size; i++) {
+        if (mem1[i] != mem2[i]) {
+            diff_count++;
+            end_diff = i + 1;
+            if (first_diff == compared_size) {
+                first_diff = i;
+            }
+        }
+    }
+    equal = diff_count == 0 && size1 == size2;
+}
 
+
+//----------------------------------------------------------------------------
+// File comparator class
+//----------------------------------------------------------------------------
+
+namespace ts {
+    class FileComparator
+    {
+        TS_NOBUILD_NOCOPY(FileComparator);
+    public:
+        // Constructor, compare the files.
+        FileComparator(TSCompareOptions& opt);
+
+        // Final status.
+        bool success;
+
+    private:
+        TSCompareOptions&   _opt;
+        TSFileInputBuffered _file1;
+        TSFileInputBuffered _file2;
+        json::Object        _json_root;
+        PacketCounter       _diff_count;         // Number of differences in file
+        PacketCounter       _subset_skipped;     // Currently skipped packets in file1 when --subset
+        PacketCounter       _total_subset_skipped;
+        PacketCounter       _subset_skipped_chunks;
+
+        // Report a truncated file.
+        void reportTruncated(size_t file_index);
+
+        // Report resynchronization after missing packets
+        void reportSkippedSubset(PacketCounter remove_count);
+    };
+}
+
+
+//----------------------------------------------------------------------------
+// File comparator constructor.
+//----------------------------------------------------------------------------
+
+ts::FileComparator::FileComparator(TSCompareOptions& opt) :
+    success(false),
+    _opt(opt),
+    _file1(opt.buffered_packets),
+    _file2(opt.buffered_packets),
+    _json_root(),
+    _diff_count(0),
+    _subset_skipped(0),
+    _total_subset_skipped(0),
+    _subset_skipped_chunks(0)
+{
     // Open files
-    file1.openRead(opt.filename1, 1, opt.byte_offset, opt, opt.format);
-    file2.openRead(opt.filename2, 1, opt.byte_offset, opt, opt.format);
-    opt.exitOnError();
-
-    // JSON root.
-    ts::json::Object root;
+    _file1.openRead(_opt.filename1, 1, _opt.byte_offset, _opt, _opt.format);
+    _file2.openRead(_opt.filename2, 1, _opt.byte_offset, _opt, _opt.format);
+    _opt.exitOnError();
 
     // Display headers
-    if (opt.json.useJSON()) {
-        ts::json::Value& jfiles(root.query(u"files", true, ts::json::Type::Array));
-        jfiles.set(ts::AbsoluteFilePath(file1.getFileName()));
-        jfiles.set(ts::AbsoluteFilePath(file2.getFileName()));
+    if (_opt.json.useJSON()) {
+        json::Value& jfiles(_json_root.query(u"files", true, json::Type::Array));
+        jfiles.set(AbsoluteFilePath(_file1.getFileName()));
+        jfiles.set(AbsoluteFilePath(_file2.getFileName()));
     }
-    if (opt.normalized) {
-        std::cout << "file:file=1:filename=" << file1.getFileName() << ":" << std::endl;
-        std::cout << "file:file=2:filename=" << file2.getFileName() << ":" << std::endl;
-
+    if (_opt.normalized) {
+        std::cout << "file:file=1:filename=" << _file1.getFileName() << ":" << std::endl;
+        std::cout << "file:file=2:filename=" << _file2.getFileName() << ":" << std::endl;
     }
-    else if (opt.verbose() && !opt.json.useFile()) {
-        std::cout << "* Comparing " << file1.getFileName() << " and " << file2.getFileName() << std::endl;
+    else if (_opt.verbose() && !_opt.json.useFile()) {
+        std::cout << "* Comparing " << _file1.getFileName() << " and " << _file2.getFileName() << std::endl;
     }
 
     // Count packets in PIDs in each file
-    ts::PacketCounter count1[ts::PID_MAX];
-    ts::PacketCounter count2[ts::PID_MAX];
+    PacketCounter count1[PID_MAX];
+    PacketCounter count2[PID_MAX];
     TS_ZERO(count1);
     TS_ZERO(count2);
 
-    // Currently skipped packets in file1 when --subset
-    ts::PacketCounter subset_skipped = 0;
-    ts::PacketCounter total_subset_skipped = 0;
-    ts::PacketCounter subset_skipped_chunks = 0;
-
-    // Number of differences in file
-    ts::PacketCounter diff_count = 0;
-
     // Read and compare all packets in the files
-    ts::TSPacket pkt1, pkt2;
+    TSPacket pkt1, pkt2;
     size_t read2 = 0;
-    ts::PID pid2 = ts::PID_NULL;
+    PID pid2 = PID_NULL;
 
     for (;;) {
-
         // Read one packet in file1
-        size_t read1 = file1.read (&pkt1, 1, opt);
-        ts::PID pid1 = pkt1.getPID();
+        size_t read1 = _file1.read(&pkt1, 1, _opt);
+        PID pid1 = pkt1.getPID();
         count1[pid1]++;
 
         // If currently not skipping packets, read one packet in file2
-        if (subset_skipped == 0) {
-            read2 = file2.read (&pkt2, 1, opt);
+        if (_subset_skipped == 0) {
+            read2 = _file2.read (&pkt2, 1, _opt);
             pid2 = pkt2.getPID();
             count2[pid2]++;
         }
 
-        // Exit if at least one file is terminated
+        // Exit if at least one file is terminated.
         if (read1 == 0 || read2 == 0) {
+            // One file is not terminated, the other one is truncated.
             if (read1 != 0 || read2 != 0) {
-                diff_count++;
-            }
-            if (read1 != 0) {
-                // File 2 is truncated
-                if (opt.json.useJSON()) {
-                    ts::json::Value& jv(root.query(u"events[]", true));
-                    jv.add(u"type", u"truncated");
-                    jv.add(u"packet", file2.readPacketsCount());
-                    jv.add(u"file-index", 1);
+                if (read1 != 0) {
+                    reportTruncated(2);
                 }
-                if (opt.normalized) {
-                    std::cout << "truncated:file=2:packet=" << file2.readPacketsCount()
-                              << ":filename=" << file2.getFileName() << ":" << std::endl;
-                }
-                else if (!opt.quiet && !opt.json.useFile()) {
-                    std::cout << "* Packet " << ts::UString::Decimal(file2.readPacketsCount())
-                              << ": file " << file2.getFileName() << " is truncated" << std::endl;
-                }
-            }
-            if (read2 != 0) {
-                // File 1 is truncated
-                if (opt.json.useJSON()) {
-                    ts::json::Value& jv(root.query(u"events[]", true));
-                    jv.add(u"type", u"truncated");
-                    jv.add(u"packet", file1.readPacketsCount());
-                    jv.add(u"file-index", 0);
-                }
-                if (opt.normalized) {
-                    std::cout << "truncated:file=1:packet=" << file1.readPacketsCount()
-                              << ":filename=" << file1.getFileName() << ":" << std::endl;
-                }
-                else if (!opt.quiet && !opt.json.useFile()) {
-                    std::cout << "* Packet " << ts::UString::Decimal(file1.readPacketsCount())
-                              << ": file " << file1.getFileName() << " is truncated" << std::endl;
+                if (read2 != 0) {
+                    reportTruncated(1);
                 }
             }
             break;
         }
 
         // Compare one packet
-        const Comparator comp (pkt1, pkt2, opt);
+        const PacketComparator comp(pkt1, pkt2, _opt);
 
         // If file2 is a subset of file1 and an inacceptable difference has been found, read ahead file1.
-        if (opt.subset && !comp.equal && comp.diff_count > opt.threshold_diff) {
-            subset_skipped++;
+        if (_opt.subset && !comp.equal && comp.diff_count > _opt.threshold_diff) {
+            _subset_skipped++;
             continue;
         }
 
-        // Report resynchronization after missing packets
-        if (subset_skipped > 0) {
-            if (opt.json.useJSON()) {
-                ts::json::Value& jv(root.query(u"events[]", true));
-                jv.add(u"type", u"skipped");
-                jv.add(u"packet", file1.readPacketsCount() - 1 - subset_skipped);
-                jv.add(u"skipped", subset_skipped);
-            }
-            if (opt.normalized) {
-                std::cout << "skip:packet=" << (file1.readPacketsCount() - 1 - subset_skipped)
-                          << ":skipped=" << ts::UString::Decimal(subset_skipped)
-                          << ":" << std::endl;
-            }
-            else if (!opt.json.useFile()) {
-                std::cout << "* Packet " << ts::UString::Decimal(file1.readPacketsCount() - 1 - subset_skipped)
-                          << ", missing " << ts::UString::Decimal(subset_skipped)
-                          << " packets in " << file2.getFileName() << std::endl;
-            }
-            total_subset_skipped += subset_skipped;
-            subset_skipped_chunks++;
-            subset_skipped = 0;
-        }
+        // Report resynchronization after missing packets.
+        // Do not count the current packet from file1, it is not in the skipped part.
+        reportSkippedSubset(1);
 
         // Report a difference
         if (!comp.equal) {
-            diff_count++;
-            if (opt.json.useJSON()) {
-                ts::json::Value& jv(root.query(u"events[]", true));
+            _diff_count++;
+            if (_opt.json.useJSON()) {
+                json::Value& jv(_json_root.query(u"events[]", true));
                 jv.add(u"type", u"difference");
-                jv.add(u"packet", file1.readPacketsCount() - 1);
-                jv.add(u"payload-only", ts::json::Bool(opt.payload_only));
+                jv.add(u"packet", _file1.readPacketsCount() - 1);
+                jv.add(u"payload-only", json::Bool(_opt.payload_only));
                 jv.add(u"offset", comp.first_diff);
                 jv.add(u"end-offset", comp.end_diff);
                 jv.add(u"diff-bytes", comp.diff_count);
@@ -475,12 +448,12 @@ int MainCode(int argc, char *argv[])
                 jv.add(u"pid1", pid2);
                 jv.add(u"pid0-index", count1[pid1] - 1);
                 jv.add(u"pid1-index", count2[pid2] - 1);
-                jv.add(u"same-pid", ts::json::Bool(pid1 == pid2));
-                jv.add(u"same-index", ts::json::Bool(count2[pid2] == count1[pid1]));
+                jv.add(u"same-pid", json::Bool(pid1 == pid2));
+                jv.add(u"same-index", json::Bool(count2[pid2] == count1[pid1]));
             }
-            if (opt.normalized) {
-                std::cout << "diff:packet=" << (file1.readPacketsCount() - 1)
-                          << (opt.payload_only ? ":payload" : "")
+            if (_opt.normalized) {
+                std::cout << "diff:packet=" << (_file1.readPacketsCount() - 1)
+                          << (_opt.payload_only ? ":payload" : "")
                           << ":offset=" << comp.first_diff
                           << ":endoffset=" << comp.end_diff
                           << ":diffbytes= " << comp.diff_count
@@ -493,9 +466,9 @@ int MainCode(int argc, char *argv[])
                           << (count2[pid2] == count1[pid1] ? ":sameindex" : "")
                           << ":" << std::endl;
             }
-            else if (!opt.quiet && !opt.json.useFile()) {
-                std::cout << "* Packet " << ts::UString::Decimal(file1.readPacketsCount() - 1) << " differ at offset " << comp.first_diff;
-                if (opt.payload_only) {
+            else if (!_opt.quiet && !_opt.json.useFile()) {
+                std::cout << "* Packet " << UString::Decimal(_file1.readPacketsCount() - 1) << " differ at offset " << comp.first_diff;
+                if (_opt.payload_only) {
                     std::cout << " in payload";
                 }
                 std::cout << ", " << comp.diff_count;
@@ -506,60 +479,124 @@ int MainCode(int argc, char *argv[])
                 if (pid2 != pid1) {
                     std::cout << "/" << pid2;
                 }
-                std::cout << ", packet " << ts::UString::Decimal(count1[pid1] - 1);
+                std::cout << ", packet " << UString::Decimal(count1[pid1] - 1);
                 if (pid2 != pid1 || count2[pid2] != count1[pid1]) {
-                    std::cout << "/" << ts::UString::Decimal(count2[pid2] - 1);
+                    std::cout << "/" << UString::Decimal(count2[pid2] - 1);
                 }
                 std::cout << " in PID" << std::endl;
-                if (opt.dump) {
-                    std::cout << "  Packet from " << file1.getFileName() << ":" << std::endl;
-                    pkt1.display (std::cout, opt.dump_flags, 6);
-                    std::cout << "  Packet from " << file2.getFileName() << ":" << std::endl;
-                    pkt2.display (std::cout, opt.dump_flags, 6);
-                    std::cout << "  Differing area from " << file1.getFileName() << ":" << std::endl
-                              << ts::UString::Dump(pkt1.b + (opt.payload_only ? pkt1.getHeaderSize() : 0) + comp.first_diff,
-                                                   comp.end_diff - comp.first_diff, opt.dump_flags, 6)
-                              << "  Differing area from " << file2.getFileName() << ":" << std::endl
-                              << ts::UString::Dump(pkt2.b + (opt.payload_only ? pkt2.getHeaderSize() : 0) + comp.first_diff,
-                                                   comp.end_diff - comp.first_diff, opt.dump_flags, 6);
+                if (_opt.dump) {
+                    std::cout << "  Packet from " << _file1.getFileName() << ":" << std::endl;
+                    pkt1.display (std::cout, _opt.dump_flags, 6);
+                    std::cout << "  Packet from " << _file2.getFileName() << ":" << std::endl;
+                    pkt2.display (std::cout, _opt.dump_flags, 6);
+                    std::cout << "  Differing area from " << _file1.getFileName() << ":" << std::endl
+                              << UString::Dump(pkt1.b + (_opt.payload_only ? pkt1.getHeaderSize() : 0) + comp.first_diff,
+                                               comp.end_diff - comp.first_diff, _opt.dump_flags, 6)
+                              << "  Differing area from " << _file2.getFileName() << ":" << std::endl
+                              << UString::Dump(pkt2.b + (_opt.payload_only ? pkt2.getHeaderSize() : 0) + comp.first_diff,
+                                               comp.end_diff - comp.first_diff, _opt.dump_flags, 6);
                 }
             }
-            if (opt.quiet || !opt.continue_all) {
+            if (_opt.quiet || !_opt.continue_all) {
                 break;
             }
         }
     }
 
+    // Report resynchronization after missing packets in file2, up to its end.
+    reportSkippedSubset(0);
+
     // Final report
-    if (opt.json.useJSON()) {
-        ts::json::Value& jv(root.query(u"summary", true));
-        jv.add(u"packets", file1.readPacketsCount());
-        jv.add(u"differences", diff_count);
-        jv.add(u"missing", total_subset_skipped);
-        jv.add(u"holes", subset_skipped_chunks);
+    if (_opt.json.useJSON()) {
+        json::Value& jv(_json_root.query(u"summary", true));
+        jv.add(u"packets", _file1.readPacketsCount());
+        jv.add(u"differences", _diff_count);
+        jv.add(u"missing", _total_subset_skipped);
+        jv.add(u"holes", _subset_skipped_chunks);
     }
-    if (opt.normalized) {
-        std::cout << "total:packets=" << file1.readPacketsCount()
-                  << ":diff=" << diff_count
-                  << ":missing=" << total_subset_skipped
-                  << ":holes=" << subset_skipped_chunks
+    if (_opt.normalized) {
+        std::cout << "total:packets=" << _file1.readPacketsCount()
+                  << ":diff=" << _diff_count
+                  << ":missing=" << _total_subset_skipped
+                  << ":holes=" << _subset_skipped_chunks
                   << ":" << std::endl;
     }
-    else if (opt.verbose() && !opt.json.useFile()) {
-        std::cout << "* Read " << ts::UString::Decimal(file1.readPacketsCount())
-                  << " packets, found " << ts::UString::Decimal(diff_count) << " differences";
-        if (subset_skipped_chunks > 0) {
-            std::cout << ", missing " << ts::UString::Decimal(total_subset_skipped)
-                      << " packets in " << ts::UString::Decimal(subset_skipped_chunks) << " holes";
+    else if (_opt.verbose() && !_opt.json.useFile()) {
+        std::cout << "* Read " << UString::Decimal(_file1.readPacketsCount()) << " packets, found " << UString::Decimal(_diff_count) << " differences";
+        if (_subset_skipped_chunks > 0) {
+            std::cout << ", missing " << UString::Decimal(_total_subset_skipped) << " packets in " << UString::Decimal(_subset_skipped_chunks) << " holes";
         }
         std::cout << std::endl;
     }
 
     // JSON output if required.
-    opt.json.report(root, std::cout, opt);
+    _opt.json.report(_json_root, std::cout, _opt);
 
     // End of processing, close file
-    file1.close(opt);
-    file2.close(opt);
-    return diff_count == 0 && opt.valid() && !opt.gotErrors() ? EXIT_SUCCESS : EXIT_FAILURE;
+    _file1.close(_opt);
+    _file2.close(_opt);
+    success = _diff_count == 0 && _opt.valid() && !_opt.gotErrors();
+}
+
+
+//----------------------------------------------------------------------------
+// Report a truncated file.
+//----------------------------------------------------------------------------
+
+void ts::FileComparator::reportTruncated(size_t file_index)
+{
+    TSFileInputBuffered& file(file_index == 1 ? _file1 : _file2);
+    if (_opt.json.useJSON()) {
+        json::Value& jv(_json_root.query(u"events[]", true));
+        jv.add(u"type", u"truncated");
+        jv.add(u"packet", file.readPacketsCount());
+        jv.add(u"file-index", file_index - 1);
+    }
+    if (_opt.normalized) {
+        std::cout << "truncated:file=" << file_index << ":packet=" << file.readPacketsCount() << ":filename=" << file.getFileName() << ":" << std::endl;
+    }
+    else if (!_opt.quiet && !_opt.json.useFile()) {
+        std::cout << "* Packet " << UString::Decimal(file.readPacketsCount()) << ": file " << file.getFileName() << " is truncated" << std::endl;
+    }
+    _diff_count++;
+}
+
+
+//----------------------------------------------------------------------------
+// Report resynchronization after missing packets
+//----------------------------------------------------------------------------
+
+void ts::FileComparator::reportSkippedSubset(PacketCounter remove_count)
+{
+    if (_subset_skipped > 0) {
+        const PacketCounter subset_start = _file1.readPacketsCount() - remove_count - _subset_skipped;
+        if (_opt.json.useJSON()) {
+            json::Value& jv(_json_root.query(u"events[]", true));
+            jv.add(u"type", u"skipped");
+            jv.add(u"packet", subset_start);
+            jv.add(u"skipped", _subset_skipped);
+        }
+        if (_opt.normalized) {
+            std::cout << "skip:packet=" << subset_start << ":skipped=" << _subset_skipped << ":" << std::endl;
+        }
+        else if (!_opt.json.useFile()) {
+            std::cout << "* Packet " << UString::Decimal(subset_start) << ", missing " << UString::Decimal(_subset_skipped) << " packets in " << _file2.getFileName() << std::endl;
+        }
+        _total_subset_skipped += _subset_skipped;
+        _subset_skipped_chunks++;
+        _subset_skipped = 0;
+        _diff_count++;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Program entry point
+//----------------------------------------------------------------------------
+
+int MainCode(int argc, char *argv[])
+{
+    ts::TSCompareOptions opt(argc, argv);
+    ts::FileComparator comp(opt);
+    return comp.success ? EXIT_SUCCESS : EXIT_FAILURE;
 }
