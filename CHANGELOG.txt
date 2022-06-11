@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2748
+VERSION 3.31-2749
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -24,6 +24,7 @@ VERSION 3.31-2748
     - Option --keep in plugin "sections".
     - Option --udp-end-wait in "tsemmg".
     - Option --invalid-versions in "tstables" and plugin "tables".
+    - Options --byte-offset, --packet-offset in "tsdump".
 
 [BUG] Bug fixes:
 
