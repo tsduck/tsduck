@@ -1,0 +1,4 @@
+project: tsduck
+target: tsdump
+cmds:
+  - cmd: /repo/bin/release-x86_64-725976e1ba7e/tsdump @@

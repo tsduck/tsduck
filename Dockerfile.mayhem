@@ -1,0 +1,19 @@
+FROM --platform=linux/amd64 ubuntu:22.04 as builder
+
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential
+
+COPY . /repo
+WORKDIR /repo
+RUN ./scripts/install-prerequisites.sh
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libedit-dev
+RUN make -j8
+
+RUN mkdir -p /deps
+RUN ldd /repo/bin/release-x86_64-725976e1ba7e/tsdump | tr -s '[:blank:]' '\n' | grep '^/' | xargs -I % sh -c 'cp % /deps;'
+
+FROM ubuntu:22.04 as package
+
+COPY --from=builder /deps /deps
+COPY --from=builder /repo/bin/release-x86_64-725976e1ba7e/tsdump /repo/bin/release-x86_64-725976e1ba7e/tsdump
+ENV LD_LIBRARY_PATH=/deps
