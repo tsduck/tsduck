@@ -474,7 +474,7 @@ LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
 
 # External libraries
 
-LDLIBS += -lstdc++ -lpthread $(if $(MACOS),,-lrt) -lm
+LDLIBS += -lstdc++ -lpthread $(if $(MACOS),,-lrt -latomic) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
