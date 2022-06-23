@@ -47,9 +47,6 @@ jobs:
   windows:
     name: Windows build
     runs-on: windows-latest
-    env:
-      # Temporarily disable Dektec due to incompatibility between DTAPI 2022.02 and VS 17.2+.
-      TS_NO_DEKTEC: true
     steps:
 
     - name: Get TSDuck repo
