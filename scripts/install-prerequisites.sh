@@ -216,7 +216,7 @@ elif [[ -f /etc/redhat-release ]]; then
 
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-lite pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-lite pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
