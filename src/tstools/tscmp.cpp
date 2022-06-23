@@ -571,7 +571,7 @@ namespace ts {
 
         void displayHeader();
         void displayFinal();
-        void displayOneDifference(const PacketComparator& comp, size_t index0, size_t index1);
+        void displayOneDifference(const PacketComparator& comp, PacketCounter index0, PacketCounter index1);
         void displayTruncated(size_t file_index, const FileToCompare& file);
         void displayMissingChunk(size_t ref_file_index, FileToCompare& ref_file,
                                  size_t miss_file_index, FileToCompare& miss_file);
@@ -740,7 +740,7 @@ void ts::FileComparator::displayFinal()
 
 
 // Report a difference in a packet.
-void ts::FileComparator::displayOneDifference(const PacketComparator& comp, size_t index0, size_t index1)
+void ts::FileComparator::displayOneDifference(const PacketComparator& comp, PacketCounter index0, PacketCounter index1)
 {
     _diff_count++;
 
