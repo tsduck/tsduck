@@ -105,6 +105,8 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     continue_all(false),
     json(true)
 {
+    ts::DefineTSPacketFormatInputOption(*this, 'f');
+
     option(u"", 0, FILENAME, 2, 2);
     help(u"", u"MPEG capture files to be compared.");
 
@@ -126,15 +128,6 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
 
     option(u"dump", 'd');
     help(u"dump", u"Dump the content of all differing packets.");
-
-    option(u"format", 'f', TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input files. "
-         u"By default, the format is automatically and independently detected for each file. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format. "
-         u"If a specific format is specified, the two input files must have the same format.");
 
     option(u"min-reorder", 'm', POSITIVE);
     help(u"min-reorder", u"count",
@@ -185,7 +178,6 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     getValue(filename0, u"", u"", 0);
     getValue(filename1, u"", u"", 1);
 
-    getIntValue(format, u"format", TSPacketFormat::AUTODETECT);
     getIntValue(buffered_packets, u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
     byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
     getIntValue(threshold_diff, u"threshold-diff", 0);
@@ -199,6 +191,7 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     quiet = present(u"quiet");
     normalized = !quiet && present(u"normalized");
     dump = !quiet && present(u"dump");
+    format = ts::LoadTSPacketFormatInputOption(*this);
 
     if (!quiet) {
         json.loadArgs(duck, *this);

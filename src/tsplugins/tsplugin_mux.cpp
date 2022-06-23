@@ -115,6 +115,8 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     _resetLabels(),
     _cc_fixer(AllPIDs, tsp)
 {
+    DefineTSPacketFormatInputOption(*this);
+
     option(u"", 0, FILENAME, 1, 1);
     help(u"", u"Input transport stream file.");
 
@@ -128,14 +130,6 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
     help(u"byte-offset",
          u"Start reading the file at the specified byte offset (default: 0). "
          u"This option is allowed only if the input file is a regular file.");
-
-    option(u"format", 0, TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input file. "
-         u"By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
 
     option(u"inter-packet", 'i', UINT32);
     help(u"inter-packet",
@@ -245,9 +239,9 @@ bool ts::MuxPlugin::start()
     _pts_last_inserted = 0;
     _inserted_packet_count = 0;
     _pts_range_ok = true;  // by default, enable packet insertion
-    getIntValue(_file_format, u"format", TSPacketFormat::AUTODETECT);
     getIntValues(_setLabels, u"set-label");
     getIntValues(_resetLabels, u"reset-label");
+    _file_format = LoadTSPacketFormatInputOption(*this);
 
     // Convert --inter-time from milliseconds to PTS units.
     _inter_time = _inter_time * 90;

@@ -77,20 +77,13 @@ Options::Options(int argc, char *argv[]) :
 {
     duck.defineArgsForStandards(*this);
     duck.defineArgsForTimeReference(*this);
+    ts::DefineTSPacketFormatInputOption(*this, 'f');
 
     option(u"", 0, FILENAME, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
 
     option(u"all", 'a');
     help(u"all", u"Report all TDT/TOT tables (default: report only the first table of each type).");
-
-    option(u"format", 'f', ts::TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input file. "
-         u"By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
 
     option(u"notdt", 0);
     help(u"notdt", u"Ignore Time & Date Table (TDT).");
@@ -106,7 +99,7 @@ Options::Options(int argc, char *argv[]) :
     all = present(u"all");
     no_tdt = present(u"notdt");
     no_tot = present(u"notot");
-    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
+    format = ts::LoadTSPacketFormatInputOption(*this);
 
     exitOnError();
 }

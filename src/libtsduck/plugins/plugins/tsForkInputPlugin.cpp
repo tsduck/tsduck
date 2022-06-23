@@ -45,19 +45,13 @@ ts::ForkInputPlugin::ForkInputPlugin(TSP* tsp_) :
     _buffer_size(0),
     _pipe()
 {
+    DefineTSPacketFormatInputOption(*this);
+
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Specifies the command line to execute in the created process.");
 
     option(u"buffered-packets", 'b', POSITIVE);
     help(u"buffered-packets", u"Windows only: Specifies the pipe buffer size in number of TS packets.");
-
-    option(u"format", 0, TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input stream. "
-         u"By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
 
     option(u"nowait", 'n');
     help(u"nowait", u"Do not wait for child process termination at end of its output.");
@@ -72,9 +66,9 @@ bool ts::ForkInputPlugin::getOptions()
 {
     // Get command line arguments.
     getValue(_command, u"");
-    getIntValue(_format, u"format", TSPacketFormat::AUTODETECT);
     getIntValue(_buffer_size, u"buffered-packets", 0);
     _nowait = present(u"nowait");
+    _format = LoadTSPacketFormatInputOption(*this);
     return true;
 }
 

@@ -57,6 +57,8 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
     _eof(),
     _files()
 {
+    DefineTSPacketFormatInputOption(*this);
+
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"",
          u"Names of the input files. If no file is specified, the standard input is used. "
@@ -87,15 +89,6 @@ ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
          u"With --interleave, terminate when any file reaches the end of file. "
          u"By default, continue reading until the last file reaches the end of file "
          u"(other files are replaced with null packets after their end of file).");
-
-    option(u"format", 0, TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input files. "
-         u"By default, the format is automatically and independently detected for each file. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format. "
-         u"If a specific format is specified, all input files must have the same format.");
 
     option(u"infinite", 'i');
     help(u"infinite",
@@ -144,9 +137,9 @@ bool ts::FileInputPlugin::getOptions()
     _first_terminate = present(u"first-terminate");
     getIntValue(_interleave_chunk, u"interleave", 1);
     getIntValue(_base_label, u"label-base", TSPacketMetadata::LABEL_MAX + 1);
-    getIntValue(_file_format, u"format", TSPacketFormat::AUTODETECT);
     getIntValues(_start_stuffing, u"add-start-stuffing");
     getIntValues(_stop_stuffing, u"add-stop-stuffing");
+    _file_format = LoadTSPacketFormatInputOption(*this);
 
     // If there is no file, then this is the standard input, an empty file name.
     if (_filenames.empty()) {

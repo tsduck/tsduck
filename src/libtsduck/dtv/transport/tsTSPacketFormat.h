@@ -36,6 +36,9 @@
 #include "tsTypedEnumeration.h"
 
 namespace ts {
+
+    class Args;
+
     //!
     //! Transport stream file formats.
     //!
@@ -51,4 +54,46 @@ namespace ts {
     //! Enumeration description of ts::TSPacketFormat.
     //!
     TSDUCKDLL extern const TypedEnumeration<TSPacketFormat> TSPacketFormatEnum;
+
+    //!
+    //! Enumeration description of ts::TSPacketFormat as input file option.
+    //!
+    TSDUCKDLL extern const TypedEnumeration<TSPacketFormat> TSPacketFormatInputEnum;
+
+    //!
+    //! Enumeration description of ts::TSPacketFormat as output file option.
+    //!
+    TSDUCKDLL extern const TypedEnumeration<TSPacketFormat> TSPacketFormatOutputEnum;
+
+    //!
+    //! Add the definition of a -\-format option for TS packet format in input files.
+    //! @param [in,out] args The set of arguments into which the -\-format option is added.
+    //! @param [in] short_name Optional one letter short name.
+    //! @param [in] name The full name of the option.
+    //!
+    void DefineTSPacketFormatInputOption(Args& args, UChar short_name = 0, const UChar* name = u"format");
+
+    //!
+    //! Add the definition of a -\-format option for TS packet format in output files.
+    //! @param [in,out] args The set of arguments into which the -\-format option is added.
+    //! @param [in] short_name Optional one letter short name.
+    //! @param [in] name The full name of the option.
+    //!
+    void DefineTSPacketFormatOutputOption(Args& args, UChar short_name = 0, const UChar* name = u"format");
+
+    //!
+    //! Get the value of a -\-format option for TS packet format in input files.
+    //! @param [in] args The set of arguments into which the -\-format option was defined.
+    //! @param [in] name The full name of the option.
+    //! @return The value of the -\-format option.
+    //!
+    TSPacketFormat LoadTSPacketFormatInputOption(const Args& args, const UChar* name = u"format");
+
+    //!
+    //! Get the value of a -\-format option for TS packet format in output files.
+    //! @param [in] args The set of arguments into which the -\-format option was defined.
+    //! @param [in] name The full name of the option.
+    //! @return The value of the -\-format option.
+    //!
+    TSPacketFormat LoadTSPacketFormatOutputOption(const Args& args, const UChar* name = u"format");
 }

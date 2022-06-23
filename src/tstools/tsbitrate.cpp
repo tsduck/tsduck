@@ -74,6 +74,8 @@ Options::Options(int argc, char *argv[]) :
     infile(),
     format(ts::TSPacketFormat::AUTODETECT)
 {
+    ts::DefineTSPacketFormatInputOption(*this);
+
     option(u"", 0, FILENAME, 0, 1);
     help(u"", u"MPEG capture file (standard input if omitted).");
 
@@ -86,14 +88,6 @@ Options::Options(int argc, char *argv[]) :
     help(u"dts",
          u"Use DTS (Decoding Time Stamps) from video PID's instead of PCR "
          u"(Program Clock Reference) from the transport layer");
-
-    option(u"format", 0, ts::TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input file. "
-         u"By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
 
     option(u"full", 'f');
     help(u"full",
@@ -129,7 +123,7 @@ Options::Options(int argc, char *argv[]) :
     use_dts = present(u"dts");
     pcr_name = use_dts ? u"DTS" : u"PCR";
     ignore_errors = present(u"ignore-errors");
-    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
+    format = ts::LoadTSPacketFormatInputOption(*this);
 
     exitOnError();
 }
