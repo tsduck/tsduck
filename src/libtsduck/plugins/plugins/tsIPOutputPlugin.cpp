@@ -76,6 +76,11 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
          u"Specify the local UDP source port for outgoing packets. "
          u"By default, a random source port is used.");
 
+    option(u"rs204");
+    help(u"rs204",
+         u"Use 204-byte format for TS packets in UDP datagrams. "
+         u"Each TS packet is followed by a zeroed placeholder for a 16-byte Reed-Solomon trailer.");
+
     option(u"tos", 's', INTEGER, 0, 1, 1, 255);
     help(u"tos",
          u"Specifies the TOS (Type-Of-Service) socket option. Setting this value "
@@ -117,6 +122,7 @@ bool ts::IPOutputPlugin::getOptions()
     getIntValue(_ttl, u"ttl", 0);
     getIntValue(_tos, u"tos", -1);
     _force_mc_local = present(u"force-local-multicast-outgoing");
+    setRS204Format(present(u"rs204"));
 
     return success;
 }

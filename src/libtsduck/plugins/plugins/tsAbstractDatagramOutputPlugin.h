@@ -84,6 +84,12 @@ namespace ts {
         AbstractDatagramOutputPlugin(TSP* tsp, const UString& description, const UString& syntax, Options flags);
 
         //!
+        //! Enable or disable the 204-byte format with placeholder for 16-byte Reed-Solomon trailer.
+        //! @param [in] on RS204 mode to set.
+        //!
+        void setRS204Format(bool on) { _rs204_format = on; }
+
+        //!
         //! Send a datagram message.
         //! Must be implemented by subclasses.
         //! @param [in] address Address of datagram.
@@ -104,6 +110,7 @@ namespace ts {
         bool           _rtp_fixed_ssrc;     // RTP SSRC id has a fixed value
         uint32_t       _rtp_user_ssrc;      // RTP user-specified SSRC id
         PID            _pcr_user_pid;       // User-specified PCR PID.
+        bool           _rs204_format;       // Use 204-byte format with Reed Solomon placeholder.
 
         // Working data.
         uint16_t       _rtp_sequence;       // RTP current sequence number
