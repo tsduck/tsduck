@@ -154,9 +154,6 @@ jobs:
   windows-64-msvc:
     name: Windows 64-bit with VC++
     runs-on: windows-latest
-    env:
-      # Temporarily disable Dektec due to incompatibility between DTAPI 2022.02 and VS 17.2+.
-      TS_NO_DEKTEC: true
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -191,9 +188,6 @@ jobs:
   windows-32-msvc:
     name: Windows 32-bit with VC++
     runs-on: windows-latest
-    env:
-      # Temporarily disable Dektec due to incompatibility between DTAPI 2022.02 and VS 17.2+.
-      TS_NO_DEKTEC: true
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
