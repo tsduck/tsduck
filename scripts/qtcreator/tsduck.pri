@@ -85,7 +85,7 @@ linux|mingw {
 }
 linux {
     QMAKE_CXXFLAGS += -I/usr/include/PCSC
-    LIBS += -lpcsclite -lrt -ldl
+    LIBS += -lpcsclite -lrt -latomic -ldl
 }
 mac {
     # LLVM options. Some of them depend on the compiler version.
@@ -138,7 +138,7 @@ tsplugin {
 libtsduck {
     # Applications using libtsduck shall use "CONFIG += libtsduck".
     linux:QMAKE_LFLAGS += -Wl,--rpath=\'\$\$ORIGIN/../libtsduck\'
-    LIBS += ../libtsduck/libtsduck$$SO
+    LIBS = ../libtsduck/libtsduck$$SO $$LIBS
     PRE_TARGETDEPS += ../libtsduck/libtsduck$$SO
     DEPENDPATH += ../libtsduck
     INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name $$NOSYSDIR ! -name private ! -name __pycache__")

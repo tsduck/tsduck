@@ -44,6 +44,7 @@
 TS_MAIN(MainCode);
 
 #define DEFAULT_BUFFERED_PACKETS 10000
+#define DEFAULT_MIN_REORDER          7
 
 
 //----------------------------------------------------------------------------
@@ -138,7 +139,7 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     option(u"min-reorder", 'm', POSITIVE);
     help(u"min-reorder", u"count",
          u"With --search-reorder, this is the minimum number of consecutive packets to consider in reordered sequences of packets. "
-         u"The default is 1. When the input is UDP datagrams, it can be useful to set it to 7.");
+         u"The default is " + UString::Decimal(DEFAULT_MIN_REORDER) + u" TS packets.");
 
     option(u"normalized", 'n');
     help(u"normalized", u"Report in a normalized output format (useful for automatic analysis).");
@@ -188,7 +189,7 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     getIntValue(buffered_packets, u"buffered-packets", DEFAULT_BUFFERED_PACKETS);
     byte_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
     getIntValue(threshold_diff, u"threshold-diff", 0);
-    getIntValue(min_reorder, u"min-reorder", 1);
+    getIntValue(min_reorder, u"min-reorder", std::min<size_t>(DEFAULT_MIN_REORDER, buffered_packets));
     search_reorder = present(u"subset") || present(u"search-reorder");
     payload_only = present(u"payload-only");
     pcr_ignore = present(u"pcr-ignore");
