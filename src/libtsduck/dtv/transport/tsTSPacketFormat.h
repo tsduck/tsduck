@@ -71,7 +71,7 @@ namespace ts {
     //! @param [in] short_name Optional one letter short name.
     //! @param [in] name The full name of the option.
     //!
-    void DefineTSPacketFormatInputOption(Args& args, UChar short_name = 0, const UChar* name = u"format");
+    TSDUCKDLL void DefineTSPacketFormatInputOption(Args& args, UChar short_name = 0, const UChar* name = u"format");
 
     //!
     //! Add the definition of a -\-format option for TS packet format in output files.
@@ -79,7 +79,7 @@ namespace ts {
     //! @param [in] short_name Optional one letter short name.
     //! @param [in] name The full name of the option.
     //!
-    void DefineTSPacketFormatOutputOption(Args& args, UChar short_name = 0, const UChar* name = u"format");
+    TSDUCKDLL void DefineTSPacketFormatOutputOption(Args& args, UChar short_name = 0, const UChar* name = u"format");
 
     //!
     //! Get the value of a -\-format option for TS packet format in input files.
@@ -87,7 +87,7 @@ namespace ts {
     //! @param [in] name The full name of the option.
     //! @return The value of the -\-format option.
     //!
-    TSPacketFormat LoadTSPacketFormatInputOption(const Args& args, const UChar* name = u"format");
+    TSDUCKDLL TSPacketFormat LoadTSPacketFormatInputOption(const Args& args, const UChar* name = u"format");
 
     //!
     //! Get the value of a -\-format option for TS packet format in output files.
@@ -95,5 +95,5 @@ namespace ts {
     //! @param [in] name The full name of the option.
     //! @return The value of the -\-format option.
     //!
-    TSPacketFormat LoadTSPacketFormatOutputOption(const Args& args, const UChar* name = u"format");
+    TSDUCKDLL TSPacketFormat LoadTSPacketFormatOutputOption(const Args& args, const UChar* name = u"format");
 }
