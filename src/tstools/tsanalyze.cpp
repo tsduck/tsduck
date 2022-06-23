@@ -76,6 +76,7 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForPDS(*this);
     pager.defineArgs(*this);
     analysis.defineArgs(*this);
+    ts::DefineTSPacketFormatInputOption(*this);
 
     option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Input transport stream file (standard input if omitted).");
@@ -86,14 +87,6 @@ Options::Options(int argc, char *argv[]) :
          u"(based on 188-byte packets). By default, the bitrate is "
          u"evaluated using the PCR in the transport stream.");
 
-    option(u"format", 0, ts::TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input file. "
-         u"By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
-
     analyze(argc, argv);
 
     // Define all standard analysis options.
@@ -103,7 +96,7 @@ Options::Options(int argc, char *argv[]) :
 
     getValue(infile, u"");
     getValue(bitrate, u"bitrate");
-    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
+    format = ts::LoadTSPacketFormatInputOption(*this);
 
     exitOnError();
 }

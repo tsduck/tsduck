@@ -59,6 +59,8 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
     _current_size(0),
     _next_open_time()
 {
+    DefineTSPacketFormatOutputOption(*this);
+
     option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Name of the created output file. Use standard output by default.");
 
@@ -74,11 +76,6 @@ ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
 
     option(u"append", 'a');
     help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
-
-    option(u"format", 0, TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the created file. "
-         u"By default, the format is a standard TS file.");
 
     option(u"keep", 'k');
     help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
@@ -132,11 +129,11 @@ bool ts::FileOutputPlugin::getOptions()
     _reopen = present(u"reopen-on-error");
     getIntValue(_retry_max, u"max-retry", 0);
     getIntValue(_retry_interval, u"retry-interval", DEF_RETRY_INTERVAL);
-    getIntValue(_file_format, u"format", TSPacketFormat::TS);
     getIntValue(_start_stuffing, u"add-start-stuffing", 0);
     getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
     getIntValue(_max_size, u"max-size", 0);
     getIntValue(_max_duration, u"max-duration", 0);
+    _file_format = LoadTSPacketFormatOutputOption(*this);
     _multiple_files = _max_size > 0 || _max_duration > 0;
 
     _flags = TSFile::WRITE | TSFile::SHARED;

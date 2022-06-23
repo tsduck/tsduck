@@ -46,6 +46,8 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     _stop_stuffing(0),
     _file()
 {
+    DefineTSPacketFormatOutputOption(*this);
+
     option(u"", 0, FILENAME, 1, 1);
     help(u"", u"Name of the created output file.");
 
@@ -62,11 +64,6 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     option(u"append", 'a');
     help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
 
-    option(u"format", 0, TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the created file. "
-         u"By default, the format is a standard TS file.");
-
     option(u"keep", 'k');
     help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
 }
@@ -79,9 +76,9 @@ ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
 bool ts::FilePacketPlugin::getOptions()
 {
     getValue(_name);
-    getIntValue(_file_format, u"format", TSPacketFormat::TS);
     getIntValue(_start_stuffing, u"add-start-stuffing", 0);
     getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
+    _file_format = LoadTSPacketFormatOutputOption(*this);
     _flags = TSFile::WRITE | TSFile::SHARED;
     if (present(u"append")) {
         _flags |= TSFile::APPEND;

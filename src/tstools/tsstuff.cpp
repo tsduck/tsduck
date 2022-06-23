@@ -122,19 +122,6 @@ Options::Options(int argc, char *argv[]) :
          u"time stamp (PCR or DTS). By default, use the same number as in the "
          u"first segment, between the first two time stamps.");
 
-    option(u"input-format", 0, ts::TSPacketFormatEnum);
-    help(u"input-format", u"name",
-         u"Specify the format of the input file. "
-         u"By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
-
-    option(u"output-format", 0, ts::TSPacketFormatEnum);
-    help(u"output-format", u"name",
-         u"Specify the format of the created output file. "
-         u"By default, the format is a standard TS file.");
-
     option(u"leading-packets", 'l', UNSIGNED);
     help(u"leading-packets",
          u"Number of consecutive stuffing packets to add at the beginning of the "
@@ -163,10 +150,16 @@ Options::Options(int argc, char *argv[]) :
          u"Number of consecutive stuffing packets to add at the end of the "
          u"output file, after the last input packet. The default is zero.");
 
+    ts::DefineTSPacketFormatInputOption(*this, 0, u"input-format");
+    ts::DefineTSPacketFormatOutputOption(*this, 0, u"output-format");
+
     analyze(argc, argv);
 
     getValue(input_file, u"");
     getValue(output_file, u"output-file");
+
+    input_format = ts::LoadTSPacketFormatInputOption(*this, u"input-format");
+    output_format = ts::LoadTSPacketFormatOutputOption(*this, u"output-format");
 
     getValue(target_bitrate, u"bitrate", 0);
     assert(target_bitrate != 0);
@@ -181,8 +174,6 @@ Options::Options(int argc, char *argv[]) :
     getIntValue(min_interval_ms, u"min-interval", DEFAULT_MIN_INTERVAL);
     dyn_final_inter_packet = !present(u"final-inter-packet");
     dyn_initial_inter_packet = !present(u"initial-inter-packet");
-    getIntValue(input_format, u"input-format", ts::TSPacketFormat::AUTODETECT);
-    getIntValue(output_format, u"output-format", ts::TSPacketFormat::TS);
 
     exitOnError();
 }

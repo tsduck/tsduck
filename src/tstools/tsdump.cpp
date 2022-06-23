@@ -81,6 +81,7 @@ Options::Options(int argc, char *argv[]) :
     pager(true, true)
 {
     pager.defineArgs(*this);
+    ts::DefineTSPacketFormatInputOption(*this, 'f');
 
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"", u"Any number of input MPEG TS files (standard input if omitted).");
@@ -98,14 +99,6 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"c-style", 'c');
     help(u"c-style", u"Same as --raw-dump (no interpretation of packet) but dump the bytes in C-language style.");
-
-    option(u"format", 'f', ts::TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input files. "
-         u"By default, when dumping TS packets, the format is automatically and independently detected for each file. "
-         u"But the auto-detection may fail in some cases  (for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format. If a specific format is specified, all input files must have the same format. "
-         u"This option is ignored with --raw-file: the complete raw structure of the file is dumped .");
 
     option(u"headers-only", 'h');
     help(u"headers-only", u"Dump packet headers only, not payload.");
@@ -157,8 +150,8 @@ Options::Options(int argc, char *argv[]) :
     start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * ts::PKT_SIZE);
     getIntValue(max_packets, u"max-packets", std::numeric_limits<ts::PacketCounter>::max());
     getIntValue(log_size, u"log-size", ts::PKT_SIZE);
-    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
     getIntValues(pids, u"pid", true);
+    format = ts::LoadTSPacketFormatInputOption(*this);
 
     dump_flags =
         ts::TSPacket::DUMP_TS_HEADER |    // Format TS headers

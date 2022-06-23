@@ -160,6 +160,8 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
     _insert_control.setMainStreamName(u"main stream");
     _insert_control.setSubStreamName(u"merged stream");
 
+    DefineTSPacketFormatInputOption(*this, 'f');
+
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"Specifies the command line to execute in the created process.");
@@ -186,14 +188,6 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"default, the PID's 0x00 to 0x1F are dropped and all other PID's are "
          u"passed. This can be modified using options --drop and --pass. Several "
          u"options --drop can be specified.");
-
-    option(u"format", 'f', TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input stream. "
-         u"By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases "
-         u"(for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
 
     option(u"ignore-conflicts", 'i');
     help(u"ignore-conflicts",
@@ -314,7 +308,6 @@ bool ts::MergePlugin::getOptions()
     const bool transparent = present(u"transparent");
     getIntValue(_max_queue, u"max-queue", DEFAULT_MAX_QUEUED_PACKETS);
     getIntValue(_accel_threshold, u"acceleration-threshold", _max_queue / 2);
-    getIntValue(_format, u"format", TSPacketFormat::AUTODETECT);
     _merge_psi = !transparent && !present(u"no-psi-merge");
     _pcr_restamp = !present(u"no-pcr-restamp");
     _incremental_pcr = present(u"incremental-pcr-restamp");
@@ -328,6 +321,7 @@ bool ts::MergePlugin::getOptions()
     tsp->useJointTermination(present(u"joint-termination"));
     getIntValues(_set_labels, u"set-label");
     getIntValues(_reset_labels, u"reset-label");
+    _format = LoadTSPacketFormatInputOption(*this);
 
     if (_restart + _terminate + tsp->useJointTermination() > 1) {
         tsp->error(u"--restart, --terminate and --joint-termination are mutually exclusive");

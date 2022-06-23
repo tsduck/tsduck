@@ -78,15 +78,10 @@ Options::Options(int argc, char *argv[]) :
     pager.defineArgs(*this);
     logger.defineArgs(*this);
     display.defineArgs(*this);
+    ts::DefineTSPacketFormatInputOption(*this);
 
     option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Input MPEG capture file (standard input if omitted).");
-
-    option(u"format", 0, ts::TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the input file. By default, the format is automatically detected. "
-         u"But the auto-detection may fail in some cases (for instance when the first time-stamp of an M2TS file starts with 0x47). "
-         u"Using this option forces a specific format.");
 
     analyze(argc, argv);
 
@@ -96,7 +91,7 @@ Options::Options(int argc, char *argv[]) :
     display.loadArgs(duck, *this);
 
     getValue(infile, u"");
-    getIntValue(format, u"format", ts::TSPacketFormat::AUTODETECT);
+    format = ts::LoadTSPacketFormatInputOption(*this);
 
     exitOnError();
 }

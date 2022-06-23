@@ -45,20 +45,18 @@ ts::ForkOutputPlugin::ForkOutputPlugin(TSP* tsp_) :
     _buffer_size(0),
     _pipe()
 {
+    DefineTSPacketFormatOutputOption(*this);
+
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Specifies the command line to execute in the created process.");
 
     option(u"buffered-packets", 'b', POSITIVE);
     help(u"buffered-packets", u"Windows only: Specifies the pipe buffer size in number of TS packets.");
 
-    option(u"format", 0, TSPacketFormatEnum);
-    help(u"format", u"name",
-         u"Specify the format of the output TS stream. "
-         u"By default, the format is a standard TS.");
-
     option(u"nowait", 'n');
     help(u"nowait", u"Do not wait for child process termination at end of input.");
 }
+
 
 //----------------------------------------------------------------------------
 // Output methods
@@ -68,9 +66,9 @@ bool ts::ForkOutputPlugin::getOptions()
 {
     // Get command line arguments.
     getValue(_command, u"");
-    getIntValue(_format, u"format", TSPacketFormat::TS);
     getIntValue(_buffer_size, u"buffered-packets", 0);
     _nowait = present(u"nowait");
+    _format = LoadTSPacketFormatOutputOption(*this);
     return true;
 }
 
