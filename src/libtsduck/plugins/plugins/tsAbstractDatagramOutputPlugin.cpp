@@ -53,6 +53,7 @@ ts::AbstractDatagramOutputPlugin::AbstractDatagramOutputPlugin(TSP* tsp_, const 
     _rtp_fixed_ssrc(false),
     _rtp_user_ssrc(0),
     _pcr_user_pid(PID_NULL),
+    _rs204_format(false),
     _rtp_sequence(0),
     _rtp_ssrc(0),
     _pcr_pid(PID_NULL),
@@ -260,7 +261,7 @@ bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t p
         // But never jump back in RTP timestamps, only increase "more slowly" when adjusting.
 
         // Build an RTP datagram. Use a simple RTP header without options nor extensions.
-        ByteBlock buffer(RTP_HEADER_SIZE + packet_count * PKT_SIZE);
+        ByteBlock buffer(RTP_HEADER_SIZE + packet_count * PKT_RS_SIZE);
 
         // Build the RTP header, except the timestamp.
         buffer[0] = 0x80;             // Version = 2, P = 0, X = 0, CC = 0
@@ -336,7 +337,31 @@ bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t p
         _last_rtp_pcr_pkt = _pkt_count;
 
         // Copy the TS packets after the RTP header and send the packets.
-        ::memcpy(buffer.data() + RTP_HEADER_SIZE, pkt, packet_count * PKT_SIZE);
+        uint8_t* buf = buffer.data() + RTP_HEADER_SIZE;
+        if (_rs204_format) {
+            // Copy TS packets one by one with RS204 zero trailer. Since the default initial value
+            // of the buffer vector is zero, there is no need to explicitly set the trailers.
+            for (size_t i = 0; i < packet_count; ++i) {
+                ::memcpy(buf, pkt++, PKT_SIZE);
+                buf += PKT_SIZE + RS_SIZE;
+            }
+        }
+        else {
+            // Directly copy the TS packets and shrink the buffer (no RS204 trailers).
+            ::memcpy(buf, pkt, packet_count * PKT_SIZE);
+            buffer.resize(RTP_HEADER_SIZE + packet_count * PKT_SIZE);
+        }
+        status = sendDatagram(buffer.data(), buffer.size());
+    }
+    else if (_rs204_format) {
+        // No RTP header, add TS trailer after each packet. Since the default initial value
+        // of the buffer vector is zero, there is no need to explicitly set the trailers.
+        ByteBlock buffer(packet_count * PKT_RS_SIZE);
+        uint8_t* buf = buffer.data();
+        for (size_t i = 0; i < packet_count; ++i) {
+            ::memcpy(buf, pkt++, PKT_SIZE);
+            buf += PKT_SIZE + RS_SIZE;
+        }
         status = sendDatagram(buffer.data(), buffer.size());
     }
     else {

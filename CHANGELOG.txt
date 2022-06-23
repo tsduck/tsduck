@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.31-2751
+VERSION 3.31-2754
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -26,6 +26,7 @@ VERSION 3.31-2751
     - Option --invalid-versions in "tstables" and plugin "tables".
     - Options --byte-offset, --packet-offset in "tsdump".
     - Options --search-reorder, --min-reorder in "tscmp".
+    - Option --rs204 in output plugin "ip".
 
 [BUG] Bug fixes:
 
