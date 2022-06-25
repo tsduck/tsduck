@@ -189,7 +189,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-tools pcsc-lite-devel libcurl libcurl-devel rpmdevtools python3 java-latest-openjdk-devel"
+    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-tools pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -273,12 +273,18 @@ elif [[ -f /etc/arch-release ]]; then
 #
 # Update command: sudo apk update; sudo apk upgrade
 # Find package providing file: apk info --who-owns /path/to/file
+# Interactive package search: https://pkgs.alpinelinux.org/packages
 #-----------------------------------------------------------------------------
 
 elif [[ -f /etc/alpine-release ]]; then
 
-    sudo sed -i '/http.*\/alpine\/v/s/^#//' /etc/apk/repositories
+    AL=$(sed /etc/alpine-release -e '/^[0-9][0-9]*\.[0-9]/!d' -e 's/^\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
+    AL=$(( ${AL/.*/} * 100 + ${AL/*./} ))
     pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip dpkg doxygen graphviz libedit-dev pcsc-lite-dev curl-dev libsrt-dev python3 openjdk11 dpkg"
+    if [[ $AL -ge 316 ]]; then
+        pkglist="$pkglist librist-dev"
+    fi
+    sudo sed -i '/http.*\/alpine\/v/s/^#//' /etc/apk/repositories
     sudo apk add $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 

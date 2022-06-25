@@ -92,16 +92,19 @@ make NOPCSC=1 NOCURL=1 NODEKTEC=1
 
 ## Building with RIST support on Linux {#buildrist}
 
-By default, TSDuck is built with RIST support on macOS and Windows only.
+By default, TSDuck is built with RIST support on macOS and Windows.
 
 As of this writing, RIST (Reliable Internet Stream Transport) is not available
-in the standard repositories of any Linux distro. To rebuild TSDuck with RIST
-support, you must either manually rebuild and install
+in the standard repositories of most Linux distros. On these distros, to
+rebuild TSDuck with RIST support, you must either manually rebuild and install
 [librist](https://code.videolan.org/rist/librist) or get
 [pre-built packages for various Linux distros here](https://github.com/tsduck/rist-installer/releases).
 If you use other versions of rpm-based or deb-based distros,
 the [rist-installer project](https://github.com/tsduck/rist-installer)
 contains scripts to rebuild these packages.
+
+Once the RIST library is installed (with its development package), rebuilding
+TSDuck automatically includes RIST support.
 
 ## Building the TSDuck installation packages {#buildinst}
 

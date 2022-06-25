@@ -61,7 +61,7 @@ Binaries for command-line tools and plugins:
 * Windows 64 bits: $WIN64
 * Windows 32 bits (portable): $WIN32Z
 * Windows 64 bits (portable): $WIN64Z
-* RedHat, AlmaLinux  64 bits: $EL64
+* RedHat, AlmaLinux 64 bits: $EL64
 * Fedora 64 bits: $FC64
 * Debian 64 bits: $DB64
 * Ubuntu 64 bits: $UB64
