@@ -8,5 +8,5 @@ Version: {{VERSION}}
 Requires: libpcsclite
 Requires.private: libcurl, srt, librist, libedit
 Libs: -L${libdir} -ltsduck
-Libs.private: -lpthread -lrt -ldl -lm -lstdc++
+Libs.private: -lpthread -lrt -latomic -ldl -lm -lstdc++
 Cflags: -I${prefix}/include/tsduck --std=c++11
