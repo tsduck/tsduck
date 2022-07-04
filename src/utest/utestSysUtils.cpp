@@ -153,8 +153,8 @@ namespace {
     void Display(const ts::UString& title, const ts::UString& prefix, const ts::UStringVector& strings)
     {
         tsunit::Test::debug() << "SysUtilsTest: " << title << std::endl;
-        for (ts::UStringVector::const_iterator it = strings.begin(); it != strings.end(); ++it) {
-            tsunit::Test::debug() << "SysUtilsTest: " << prefix << "\"" << *it << "\"" << std::endl;
+        for (const auto& str : strings) {
+            tsunit::Test::debug() << "SysUtilsTest: " << prefix << "\"" << str << "\"" << std::endl;
         }
     }
 }
@@ -248,8 +248,8 @@ void SysUtilsTest::testEnvironment()
     ts::Environment env;
     ts::GetEnvironment(env);
 
-    for (ts::Environment::const_iterator it = env.begin(); it != env.end(); ++it) {
-        debug() << "SysUtilsTest: env: \"" << it->first << "\" = \"" << it->second << "\"" << std::endl;
+    for (const auto& it : env) {
+        debug() << "SysUtilsTest: env: \"" << it.first << "\" = \"" << it.second << "\"" << std::endl;
     }
 
     TSUNIT_EQUAL(u"123456789",     env[u"UTEST_A"]);
@@ -634,9 +634,9 @@ void SysUtilsTest::testWildcard()
     TSUNIT_ASSERT(expanded == fileNames);
 
     // Final cleanup
-    for (ts::UStringVector::const_iterator it = fileNames.begin(); it != fileNames.end(); ++it) {
-        TSUNIT_ASSERT(ts::DeleteFile(*it));
-        TSUNIT_ASSERT(!ts::FileExists(*it));
+    for (const auto& file : fileNames) {
+        TSUNIT_ASSERT(ts::DeleteFile(file));
+        TSUNIT_ASSERT(!ts::FileExists(file));
     }
     TSUNIT_ASSERT(ts::DeleteFile(spuriousFileName));
     TSUNIT_ASSERT(!ts::FileExists(spuriousFileName));

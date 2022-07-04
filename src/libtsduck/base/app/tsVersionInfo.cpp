@@ -344,8 +344,8 @@ void ts::VersionInfo::VersionToInts(std::vector<int>& ints, const ts::UString& v
     // Convert strings into integers.
     ints.clear();
     int val = 0;
-    for (UStringList::const_iterator it = strings.begin(); it != strings.end(); ++it) {
-        if (it->toInteger(val)) {
+    for (const auto& str : strings) {
+        if (str.toInteger(val)) {
             ints.push_back(val);
         }
     }

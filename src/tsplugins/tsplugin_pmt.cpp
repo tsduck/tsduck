@@ -80,24 +80,24 @@ namespace ts {
         typedef std::map<PID, SafePtr<DescriptorList>> DescriptorListByPID;
 
         // PMTPlugin instance fields
-        ServiceDiscovery     _service;             // Service of PMT to modify
-        std::vector<PID>     _removed_pid;         // Set of PIDs to remove from PMT
-        std::vector<DID>     _removed_desc;        // Set of descriptor tags to remove
-        std::vector<uint8_t> _removed_stream;      // Set of stream types to remove
-        std::list<NewPID>    _added_pid;           // List of PID to add
-        std::map<PID,PID>    _moved_pid;           // List of renamed PID's in PMT (key=old, value=new)
-        bool                 _set_servid;          // Set a new service id
-        uint16_t             _new_servid;          // New service id
-        bool                 _set_pcrpid;          // Set a new PCR PID
-        PID                  _new_pcrpid;          // New PCR PID
-        PDS                  _pds;                 // Private data specifier for removed descriptors
-        bool                 _add_stream_id;       // Add stream_identifier_descriptor on all components
-        bool                 _ac3_atsc2dvb;        // Modify AC-3 signaling from ATSC to DVB method
-        bool                 _eac3_atsc2dvb;       // Modify Enhanced-AC-3 signaling from ATSC to DVB method
-        bool                 _cleanup_priv_desc;   // Remove private desc without preceding PDS desc
-        DescriptorList       _add_descs;           // List of descriptors to add at program level
-        DescriptorListByPID  _add_pid_descs;       // Lists of descriptors to add by PID
-        AudioLanguageOptionsVector _languages;     // Audio languages to set
+        ServiceDiscovery     _service;               // Service of PMT to modify
+        std::vector<PID>     _removed_pids;          // Set of PIDs to remove from PMT
+        std::vector<DID>     _removed_desc_tags;     // Set of descriptor tags to remove
+        std::vector<uint8_t> _removed_stream_types;  // Set of stream types to remove
+        std::list<NewPID>    _added_pids;            // List of PID to add
+        std::map<PID,PID>    _moved_pids;            // List of renamed PID's in PMT (key=old, value=new)
+        bool                 _set_servid;            // Set a new service id
+        uint16_t             _new_servid;            // New service id
+        bool                 _set_pcrpid;            // Set a new PCR PID
+        PID                  _new_pcrpid;            // New PCR PID
+        PDS                  _pds;                   // Private data specifier for removed descriptors
+        bool                 _add_stream_id;         // Add stream_identifier_descriptor on all components
+        bool                 _ac3_atsc2dvb;          // Modify AC-3 signaling from ATSC to DVB method
+        bool                 _eac3_atsc2dvb;         // Modify Enhanced-AC-3 signaling from ATSC to DVB method
+        bool                 _cleanup_priv_desc;     // Remove private desc without preceding PDS desc
+        DescriptorList       _add_descs;             // List of descriptors to add at program level
+        DescriptorListByPID  _add_pid_descs;         // Lists of descriptors to add by PID
+        AudioLanguageOptionsVector _languages;       // Audio languages to set
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
@@ -126,11 +126,11 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pmt", ts::PMTPlugin);
 ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     AbstractTablePlugin(tsp_, u"Perform various transformations on the PMT", u"[options]", u"PMT"),
     _service(duck, nullptr),
-    _removed_pid(),
-    _removed_desc(),
-    _removed_stream(),
-    _added_pid(),
-    _moved_pid(),
+    _removed_pids(),
+    _removed_desc_tags(),
+    _removed_stream_types(),
+    _added_pids(),
+    _moved_pids(),
     _set_servid(false),
     _new_servid(0),
     _set_pcrpid(false),
@@ -370,8 +370,8 @@ bool ts::PMTPlugin::decodeComponentDescOption(const UChar* parameter_name)
 bool ts::PMTPlugin::start()
 {
     _service.clear();
-    _added_pid.clear();
-    _moved_pid.clear();
+    _added_pids.clear();
+    _moved_pids.clear();
     _add_descs.clear();
     _add_pid_descs.clear();
 
@@ -381,14 +381,14 @@ bool ts::PMTPlugin::start()
     _new_servid = intValue<uint16_t>(u"new-service-id");
     _set_pcrpid = present(u"pcr-pid");
     _new_pcrpid = intValue<PID>(u"pcr-pid");
-    _pds = intValue<PDS>(u"pds");
+    getIntValue(_pds, u"pds");
     _ac3_atsc2dvb = present(u"ac3-atsc2dvb");
     _eac3_atsc2dvb = present(u"eac3-atsc2dvb");
     _add_stream_id = present(u"add-stream-identifier");
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
-    getIntValues(_removed_pid, u"remove-pid");
-    getIntValues(_removed_desc, u"remove-descriptor");
-    getIntValues(_removed_stream, u"remove-stream-type");
+    getIntValues(_removed_pids, u"remove-pid");
+    getIntValues(_removed_desc_tags, u"remove-descriptor");
+    getIntValues(_removed_stream_types, u"remove-stream-type");
 
     // Get list of components to add
     size_t opt_count = count(u"add-pid");
@@ -396,7 +396,7 @@ bool ts::PMTPlugin::start()
         PID pid = PID_NULL;
         uint8_t stype = 0;
         if (decodeOptionForPID(u"add-pid", n, pid, stype)) {
-            _added_pid.push_back(NewPID(pid, stype));
+            _added_pids.push_back(NewPID(pid, stype));
         }
         else {
             return false;
@@ -429,7 +429,7 @@ bool ts::PMTPlugin::start()
         PID opid = PID_NULL;
         PID npid = PID_NULL;
         if (decodeOptionForPID(u"move-pid", n, opid, npid, nullptr, PID(PID_MAX - 1))) {
-            _moved_pid[PID(opid)] = PID(npid);
+            _moved_pids[PID(opid)] = PID(npid);
         }
         else {
             return false;
@@ -537,14 +537,14 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // ---- Do removal first (otherwise it could remove things we add...)
 
     // Remove components by PID.
-    for (auto it = _removed_pid.begin(); it != _removed_pid.end(); ++it) {
-        pmt.streams.erase(*it);
+    for (auto rpid : _removed_pids) {
+        pmt.streams.erase(rpid);
     }
 
     // Remove components by stream type.
-    for (auto it = _removed_stream.begin(); it != _removed_stream.end(); ++it) {
+    for (auto rtype : _removed_stream_types) {
         for (auto str = pmt.streams.begin(); str != pmt.streams.end(); ) {
-            if (str->second.stream_type == *it) {
+            if (str->second.stream_type == rtype) {
                 str = pmt.streams.erase(str);
             }
             else {
@@ -554,36 +554,35 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Remove descriptors
-    for (auto it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
-        pmt.descs.removeByTag(*it, _pds);
-        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-            smi->second.descs.removeByTag(*it, _pds);
+    for (auto tag : _removed_desc_tags) {
+        pmt.descs.removeByTag(tag, _pds);
+        for (auto& smi : pmt.streams) {
+            smi.second.descs.removeByTag(tag, _pds);
         }
     }
 
     // Remove private descriptors without preceding PDS descriptor
     if (_cleanup_priv_desc) {
         pmt.descs.removeInvalidPrivateDescriptors();
-        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-            smi->second.descs.removeInvalidPrivateDescriptors();
+        for (auto& smi : pmt.streams) {
+            smi.second.descs.removeInvalidPrivateDescriptors();
         }
     }
 
     // ---- Add components and descriptors
 
     // Add new components
-    for (std::list<NewPID>::const_iterator it = _added_pid.begin(); it != _added_pid.end(); ++it) {
-        PMT::Stream& ps(pmt.streams[it->pid]);
-        ps.stream_type = it->type;
+    for (const auto& it : _added_pids) {
+        pmt.streams[it.pid].stream_type = it.type;
     }
 
     // Add new descriptors at program level.
     pmt.descs.add(_add_descs);
 
     // Add descriptors on components.
-    for (auto it = _add_pid_descs.begin(); it != _add_pid_descs.end(); ++it) {
-        const PID pid = it->first;
-        const DescriptorList& dlist(*it->second);
+    for (const auto& it : _add_pid_descs) {
+        const PID pid = it.first;
+        const DescriptorList& dlist(*it.second);
 
         auto comp_it = pmt.streams.find(pid);
         if (comp_it == pmt.streams.end()) {
@@ -599,12 +598,12 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     // Modify AC-3 signaling from ATSC to DVB method
     if (_ac3_atsc2dvb) {
-        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-            if (smi->second.stream_type == ST_AC3_AUDIO) {
-                smi->second.stream_type = ST_PES_PRIV;
-                if (smi->second.descs.search(DID_AC3) == smi->second.descs.count()) {
+        for (auto& smi : pmt.streams) {
+            if (smi.second.stream_type == ST_AC3_AUDIO) {
+                smi.second.stream_type = ST_PES_PRIV;
+                if (smi.second.descs.search(DID_AC3) == smi.second.descs.count()) {
                     // No AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(duck, DVBAC3Descriptor());
+                    smi.second.descs.add(duck, DVBAC3Descriptor());
                 }
             }
         }
@@ -612,12 +611,12 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     // Modify Enhanced-AC-3 signaling from ATSC to DVB method
     if (_eac3_atsc2dvb) {
-        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-            if (smi->second.stream_type == ST_EAC3_AUDIO) {
-                smi->second.stream_type = ST_PES_PRIV;
-                if (smi->second.descs.search (DID_ENHANCED_AC3) == smi->second.descs.count()) {
+        for (auto& smi : pmt.streams) {
+            if (smi.second.stream_type == ST_EAC3_AUDIO) {
+                smi.second.stream_type = ST_PES_PRIV;
+                if (smi.second.descs.search (DID_ENHANCED_AC3) == smi.second.descs.count()) {
                     // No enhanced_AC-3_descriptor present in this component, add one.
-                    smi->second.descs.add(duck, DVBEnhancedAC3Descriptor());
+                    smi.second.descs.add(duck, DVBEnhancedAC3Descriptor());
                 }
             }
         }
@@ -629,8 +628,8 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
         // First, look for existing descriptors, collect component tags.
         std::bitset<256> ctags;
-        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-            const DescriptorList& dlist(smi->second.descs);
+        for (auto& smi : pmt.streams) {
+            const DescriptorList& dlist(smi.second.descs);
             for (size_t i = dlist.search(DID_STREAM_ID); i < dlist.count(); i = dlist.search(DID_STREAM_ID, i + 1)) {
                 const StreamIdentifierDescriptor sid(duck, *dlist[i]);
                 if (sid.isValid()) {
@@ -640,8 +639,8 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         }
 
         // Then, add a stream_identifier_descriptor on all components which do not have one.
-        for (PMT::StreamMap::iterator smi = pmt.streams.begin(); smi != pmt.streams.end(); ++smi) {
-            DescriptorList& dlist(smi->second.descs);
+        for (auto& smi : pmt.streams) {
+            DescriptorList& dlist(smi.second.descs);
             // Skip components already containing a stream_identifier_descriptor
             if (dlist.search(DID_STREAM_ID) < dlist.count()) {
                 continue;
@@ -662,11 +661,11 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     // ---- Finally, do PID remapping
 
-    for (auto it = _moved_pid.begin(); it != _moved_pid.end(); ++it) {
+    for (const auto& mpid : _moved_pids) {
         // Check if component exists
-        if (it->first != it->second && Contains(pmt.streams, it->first)) {
-            pmt.streams[it->second] = pmt.streams[it->first];
-            pmt.streams.erase(it->first);
+        if (mpid.first != mpid.second && Contains(pmt.streams, mpid.first)) {
+            pmt.streams[mpid.second] = pmt.streams[mpid.first];
+            pmt.streams.erase(mpid.first);
         }
     }
 

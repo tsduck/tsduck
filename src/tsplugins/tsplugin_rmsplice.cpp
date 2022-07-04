@@ -219,8 +219,8 @@ bool ts::RMSplicePlugin::getOptions()
     _continue = present(u"continue");
     _adjustTime = present(u"adjust-time");
     _fixCC = present(u"fix-cc");
-    getIntValues(_eventIDs, u"event-id");
     _dryRun = present(u"dry-run");
+    getIntValues(_eventIDs, u"event-id");
     return true;
 }
 
@@ -278,10 +278,10 @@ void ts::RMSplicePlugin::handlePMT(const PMT& pmt, PID)
     bool foundSpliceInfo = false;
 
     // Analyze all components in the PMT.
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+    for (const auto& it : pmt.streams) {
 
-        const PID pid(it->first);
-        const PMT::Stream& stream(it->second);
+        const PID pid(it.first);
+        const PMT::Stream& stream(it.second);
 
         if (stream.stream_type == ST_SCTE35_SPLICE) {
             // This is a PID carrying splice information.
@@ -417,8 +417,8 @@ void ts::RMSplicePlugin::PIDState::addEvent(const SpliceInsert& cmd, const TagBy
         }
         else {
             // There is one PTS value per service component in the command, search our PTS value.
-            const TagByPID::const_iterator it1 = tags.find(pid);
-            const SpliceInsert::SpliceByComponent::const_iterator it2 =
+            const auto it1 = tags.find(pid);
+            const auto it2 =
                 it1 == tags.end() ?                     // no component tag found for our PID
                 cmd.components_pts.end() :              // so there won't be any PTS
                 cmd.components_pts.find(it1->second);   // search PTS value for the component type

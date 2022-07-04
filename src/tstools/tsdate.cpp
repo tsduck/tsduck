@@ -178,17 +178,17 @@ void TableHandler::handleTable(ts::SectionDemux&, const ts::BinaryTable& table)
                 break;
             }
             std::cout << "* TOT UTC time: " << tot.utc_time << std::endl;
-            for (ts::TOT::RegionVector::const_iterator it = tot.regions.begin(); it != tot.regions.end(); ++it) {
-                std::cout << "  Country: " << it->country
-                          << ", region: " << it->region_id
+            for (const auto& region : tot.regions) {
+                std::cout << "  Country: " << region.country
+                          << ", region: " << region.region_id
                           << std::endl
-                          << "  Local time:   " << tot.localTime(*it)
+                          << "  Local time:   " << tot.localTime(region)
                           << ", local time offset: "
-                          << ts::TOT::timeOffsetFormat(it->time_offset)
+                          << ts::TOT::timeOffsetFormat(region.time_offset)
                           << std::endl
-                          << "  Next change:  " << it->next_change
+                          << "  Next change:  " << region.next_change
                           << ", next time offset:  "
-                          << ts::TOT::timeOffsetFormat(it->next_time_offset)
+                          << ts::TOT::timeOffsetFormat(region.next_time_offset)
                           << std::endl;
             }
             break;

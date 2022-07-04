@@ -201,7 +201,7 @@ namespace ts {
         std::vector<InterfaceDesc> _if;    // Capture interfaces by index, only one in pcap files.
 
         // Report an error (if fmt is not empty), set error indicator, return false.
-        bool error(Report& report, const UString& fmt = UString(), const std::initializer_list<ArgMixIn>& args = std::initializer_list<ArgMixIn>());
+        bool error(Report& report, const UString& fmt = UString(), std::initializer_list<ArgMixIn> args = {});
 
         // Read exactly "size" bytes. Return false if not enough bytes before eof.
         bool readall(uint8_t* data, size_t size, Report& report);

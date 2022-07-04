@@ -663,8 +663,8 @@ ts::UString ts::SearchConfigurationFile(const UString& fileName)
 #endif
 
     // Search the file.
-    for (UStringList::const_iterator it = dirList.begin(); it != dirList.end(); ++it) {
-        const UString path(*it + PathSeparator + fileName);
+    for (const auto& dir : dirList) {
+        const UString path(dir + PathSeparator + fileName);
         if (FileExists(path)) {
             return path;
         }

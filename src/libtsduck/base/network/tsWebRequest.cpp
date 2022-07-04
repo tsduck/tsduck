@@ -292,7 +292,7 @@ void ts::WebRequest::getResponseHeaders(HeadersMap& headers) const
 
 ts::UString ts::WebRequest::reponseHeader(const UString& name) const
 {
-    const HeadersMap::const_iterator it = _responseHeaders.find(name);
+    const auto it = _responseHeaders.find(name);
     return it == _responseHeaders.end() ? UString() : it->second;
 }
 
@@ -336,13 +336,13 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
     text.toRemoved(CR).split(lines, u'\n', true, true);
 
     // Process headers one by one.
-    for (UStringList::const_iterator it = lines.begin(); it != lines.end(); ++it) {
+    for (const auto& line : lines) {
 
-        _report.debug(u"HTTP header: %s", {*it});
-        const size_t colon = it->find(u':');
+        _report.debug(u"HTTP header: %s", {line});
+        const size_t colon = line.find(u':');
         size_t size = 0;
 
-        if (it->startWith(u"HTTP/")) {
+        if (line.startWith(u"HTTP/")) {
             // This is the initial header. When we receive this, this is either
             // the first time we are called for this request or we have been
             // redirected to another URL. In all cases, reset the context.
@@ -352,15 +352,15 @@ void ts::WebRequest::processReponseHeaders(const UString& text)
 
             // The HTTP status is in the second field, as in "HTTP/1.1 200 OK".
             UStringVector fields;
-            it->split(fields, u' ', true, true);
+            line.split(fields, u' ', true, true);
             if (fields.size() < 2 || !fields[1].toInteger(_httpStatus)) {
-                _report.warning(u"no HTTP status found in header: %s", {*it});
+                _report.warning(u"no HTTP status found in header: %s", {line});
             }
         }
         else if (colon != NPOS) {
             // Found a real header.
-            UString name(*it, 0, colon);
-            UString value(*it, colon + 1, it->size() - colon - 1);
+            UString name(line, 0, colon);
+            UString value(line, colon + 1, line.size() - colon - 1);
             name.trim();
             value.trim();
 

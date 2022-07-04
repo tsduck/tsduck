@@ -415,8 +415,8 @@ void DemuxTest::testTable(const char* name, const uint8_t* ref_packets, size_t r
 
     ts::StandaloneTableDemux demux2(duck, ts::AllPIDs);
 
-    for (ts::TSPacketVector::const_iterator it = packets.begin(); it != packets.end(); ++it) {
-        demux2.feedPacket(*it);
+    for (const auto& pkt : packets) {
+        demux2.feedPacket(pkt);
     }
     TSUNIT_EQUAL(1, demux2.tableCount());
 

@@ -93,7 +93,7 @@ bool ts::PSIRepository::TableDescription::hasPID(PID pid) const
 // Add more PIDs in a table description.
 //----------------------------------------------------------------------------
 
-void ts::PSIRepository::TableDescription::addPIDs(const std::initializer_list<PID>& morePIDs)
+void ts::PSIRepository::TableDescription::addPIDs(std::initializer_list<PID> morePIDs)
 {
     for (auto it = morePIDs.begin(); it != morePIDs.end(); ++it) {
         if (*it != PID_NULL) {
@@ -201,7 +201,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
                                                 const UString& xmlName,
                                                 DisplaySectionFunction displayFunction,
                                                 LogSectionFunction logFunction,
-                                                const std::initializer_list<PID>& pids,
+                                                std::initializer_list<PID> pids,
                                                 uint16_t minCAS,
                                                 uint16_t maxCAS)
 {
@@ -234,7 +234,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(const std::vector<TID>& tids,
                                                 Standards standards,
                                                 DisplaySectionFunction displayFunction,
                                                 LogSectionFunction logFunction,
-                                                const std::initializer_list<PID>& pids,
+                                                std::initializer_list<PID> pids,
                                                 uint16_t minCAS,
                                                 uint16_t maxCAS)
 {

@@ -756,8 +756,8 @@ void ts::xml::Element::print(TextFormatter& output, bool keepNodeOpen) const
     getAttributesNamesInModificationOrder(names);
 
     // Loop on all attributes.
-    for (UStringList::const_iterator it = names.begin(); it != names.end(); ++it) {
-        const Attribute& attr(attribute(*it));
+    for (const auto& atname : names) {
+        const Attribute& attr(attribute(atname));
         output << " " << attr.name() << "=" << attr.formattedValue(tweaks());
     }
 

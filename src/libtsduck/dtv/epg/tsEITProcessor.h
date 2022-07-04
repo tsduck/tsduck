@@ -188,7 +188,7 @@ namespace ts {
         //! Remove all EIT's with a table id in a given list.
         //! @param [in] tids List of all table ids to remove.
         //!
-        void removeTableIds(const std::initializer_list<TID>& tids);
+        void removeTableIds(std::initializer_list<TID> tids);
 
         //!
         //! Remove all EIT Other.

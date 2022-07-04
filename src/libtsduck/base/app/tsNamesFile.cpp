@@ -471,7 +471,7 @@ ts::UString ts::NamesFile::ConfigSection::getName(Value val) const
 
     // The key in the 'entries' map is the _first_ value of a range.
     // Get an iterator pointing to the first element that is "not less" than 'val'.
-    ConfigEntryMap::const_iterator it = entries.lower_bound(val);
+    auto it = entries.lower_bound(val);
 
     if (it == entries.end() || (it != entries.begin() && it->first != val)) {
         // There is no entry with a value range starting at 'val'.
@@ -587,7 +587,7 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
 bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 {
     // Get the section, normalize the section name.
-    ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
+    const auto it = _sections.find(sectionName.toTrimmed().toLower());
     return it != _sections.end() && !it->second->getName(value).empty();
 }
 
@@ -599,7 +599,7 @@ bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value value, NamesFlags flags, size_t bits, Value alternateValue) const
 {
     // Get the section, normalize the section name.
-    ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
+    const auto it = _sections.find(sectionName.toTrimmed().toLower());
     const ConfigSection* section = it == _sections.end() ? nullptr : it->second;
 
     if (section == nullptr) {
@@ -619,7 +619,7 @@ ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value val
 ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags, size_t bits, Value alternateValue) const
 {
     // Get the section, normalize the section name.
-    ConfigSectionMap::const_iterator it = _sections.find(sectionName.toTrimmed().toLower());
+    const auto it = _sections.find(sectionName.toTrimmed().toLower());
     const ConfigSection* section = it == _sections.end() ? nullptr : it->second;
 
     if (section == nullptr) {

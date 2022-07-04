@@ -754,7 +754,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
         }
         // Check if the UUID (in the 16 first bytes of the SEI payload) must be filtered.
         bool found = false;
-        for (std::list<ByteBlock>::const_iterator it = _sei_uuid_filter.begin(); !found && it != _sei_uuid_filter.end(); ++it) {
+        for (auto it = _sei_uuid_filter.begin(); !found && it != _sei_uuid_filter.end(); ++it) {
             assert(it->size() == AVC_SEI_UUID_SIZE);
             found = ::memcmp(it->data(), pkt.payload() + offset, AVC_SEI_UUID_SIZE) == 0;
         }

@@ -175,7 +175,7 @@ size_t ts::DVBCharTableSingleByte::encode(uint8_t*& buffer, size_t& size, const 
     // Serialize characters as long as there is free space.
     while (buffer != nullptr && size > 0 && start < str.length() && count > 0) {
         const UChar cp = str[start];
-        const std::map<UChar, uint8_t>::const_iterator it = _bytesMap.find(cp);
+        const auto it = _bytesMap.find(cp);
         if (cp != ts::CARRIAGE_RETURN && it != _bytesMap.end()) {
             // Encode character.
             *buffer = it->second;

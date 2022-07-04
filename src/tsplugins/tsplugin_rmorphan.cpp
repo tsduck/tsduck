@@ -198,9 +198,9 @@ void ts::RMOrphanPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
                 if (pat.isValid()) {
                     // All all PMT PID's as referenced. Intercept PMT's in demux.
                     passPID(pat.nit_pid);
-                    for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                        passPID(it->second);
-                        _demux.addPID(it->second);
+                    for (const auto& it : pat.pmts) {
+                        passPID(it.second);
+                        _demux.addPID(it.second);
                     }
                 }
             }
@@ -226,11 +226,11 @@ void ts::RMOrphanPlugin::handleTable (SectionDemux& demux, const BinaryTable& ta
                 // Add service's PCR PID (usually a referenced component or null PID)
                 passPID(pmt.pcr_pid);
                 // Loop on all elementary streams
-                for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+                for (const auto& it : pmt.streams) {
                     // Add component's PID
-                    passPID(it->first);
+                    passPID(it.first);
                     // Add all component-level ECM PID's
-                    addCA(it->second.descs, TID_PMT);
+                    addCA(it.second.descs, TID_PMT);
                 }
             }
             break;

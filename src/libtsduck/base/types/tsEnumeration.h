@@ -307,9 +307,9 @@ namespace ts {
         //! @code
         //! ts::Enumeration e (...);
         //!
-        //! for (ts::Enumeration::const_iterator it = e.begin(); it != e.end(); ++it) {
-        //!     const int value (it->first);           // the int value
-        //!     const UString name (it->second);   // the corresponding name
+        //! for (const auto& it : e) {
+        //!     const int value(it.first);       // the int value
+        //!     const UString name(it.second);   // the corresponding name
         //!     ....
         //! }
         //! @endcode

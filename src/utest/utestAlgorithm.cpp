@@ -87,7 +87,7 @@ namespace {
     std::ostream& operator<< (std::ostream& strm, const IdSet& s)
     {
         strm << "{";
-        for (IdSet::const_iterator it = s.begin(); it != s.end(); ++it) {
+        for (auto it = s.begin(); it != s.end(); ++it) {
             if (it != s.begin()) {
                 strm << ", ";
             }

@@ -45,8 +45,8 @@ ts::Enumeration::Enumeration() :
 ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values) :
     _map()
 {
-    for (auto it = values.begin(); it != values.end(); ++it) {
-        _map.insert(std::make_pair(it->value, it->name));
+    for (const auto& it : values) {
+        _map.insert(std::make_pair(it.value, it.name));
     }
 }
 
@@ -79,16 +79,16 @@ int ts::Enumeration::value(const UString& name, bool caseSensitive, bool abbrevi
     size_t previousCount = 0;
     int previous = UNKNOWN;
 
-    for (auto it = _map.begin(); it != _map.end(); ++it) {
-        if ((caseSensitive && it->second == name) || (!caseSensitive && it->second.toLower() == lcName)) {
+    for (const auto& it : _map) {
+        if ((caseSensitive && it.second == name) || (!caseSensitive && it.second.toLower() == lcName)) {
             // Found an exact match
-            return it->first;
+            return it.first;
         }
-        else if (abbreviated && it->second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second.startWith(name, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version
             if (++previousCount == 1) {
                 // First abbreviation, remember it and continue searching
-                previous = it->first;
+                previous = it.first;
             }
             else {
                 // Another abbreviation already found, name is ambiguous
@@ -123,14 +123,14 @@ ts::UString ts::Enumeration::error(const UString& name1, bool caseSensitive, boo
     const UString lcName(name1.toLower());
     UStringList maybe;
 
-    for (auto it = _map.begin(); it != _map.end(); ++it) {
-        if ((caseSensitive && it->second == name1) || (!caseSensitive && it->second.toLower() == lcName)) {
+    for (const auto& it : _map) {
+        if ((caseSensitive && it.second == name1) || (!caseSensitive && it.second.toLower() == lcName)) {
             // Found an exact match, there is no error.
             return UString();
         }
-        else if (abbreviated && it->second.startWith(name1, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
+        else if (abbreviated && it.second.startWith(name1, caseSensitive ? CASE_SENSITIVE : CASE_INSENSITIVE)) {
             // Found an abbreviated version.
-            maybe.push_back(prefix + it->second);
+            maybe.push_back(prefix + it.second);
         }
     }
 
@@ -153,7 +153,7 @@ ts::UString ts::Enumeration::error(const UString& name1, bool caseSensitive, boo
 
 ts::UString ts::Enumeration::intToName(int value, bool hexa, size_t hexDigitCount) const
 {
-    const EnumMap::const_iterator it = _map.find(value);
+    const auto it = _map.find(value);
     if (it != _map.end()) {
         return it->second;
     }
@@ -176,14 +176,14 @@ ts::UString ts::Enumeration::bitMaskNames(int value, const ts::UString& separato
     int done = 0; // Bitmask of all values which are already added in the list.
 
     // Insert all known names.
-    for (auto it = _map.begin(); it != _map.end(); ++it) {
-        if ((value & it->first) == it->first) {
+    for (const auto& it : _map) {
+        if ((value & it.first) == it.first) {
             // This bit pattern is present.
-            done |= it->first;
+            done |= it.first;
             if (!list.empty()) {
                 list += separator;
             }
-            list += it->second;
+            list += it.second;
         }
     }
 
@@ -214,8 +214,8 @@ ts::UString ts::Enumeration::nameList(const UString& separator, const UString& i
 {
     UStringVector sl;
     sl.reserve(_map.size());
-    for (auto it = _map.begin(); it != _map.end(); ++it) {
-        sl.push_back(inQuote + it->second + outQuote);
+    for (const auto& it : _map) {
+        sl.push_back(inQuote + it.second + outQuote);
     }
     std::sort(sl.begin(), sl.end());
     return UString::Join(sl, separator);

@@ -96,10 +96,9 @@ bool ts::PollFiles::pollOnce()
 
     // Compare currently found files with last polled state.
     PolledFileList::iterator polled = _polled_files.begin();
-    for (UStringVector::const_iterator found = found_files.begin(); found != found_files.end(); ++found) {
+    for (const auto& name : found_files) {
 
         // Get characteristics of next found file
-        const UString& name(*found);
         const int64_t size(GetFileSize(name));
         const Time date(GetFileModificationTimeUTC(name));
 

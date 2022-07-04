@@ -150,7 +150,7 @@ bool ts::RemapPlugin::start()
 
 ts::PID ts::RemapPlugin::remap(PID pid)
 {
-    const PIDMap::const_iterator it = _pidMap.find(pid);
+    const auto it = _pidMap.find(pid);
     return it == _pidMap.end() ? pid : it->second;
 }
 
@@ -161,7 +161,7 @@ ts::PID ts::RemapPlugin::remap(PID pid)
 
 ts::RemapPlugin::CyclingPacketizerPtr ts::RemapPlugin::getPacketizer(PID pid, bool create)
 {
-    const PacketizerMap::const_iterator it = _pzer.find(pid);
+    const auto it = _pzer.find(pid);
     if (it != _pzer.end()) {
         return it->second;
     }

@@ -105,10 +105,10 @@ bool ts::xml::ModelDocument::validateElement(const Element* model, const Element
     doc->getAttributesNames(names);
 
     // Check that all attributes in doc exist in model.
-    for (UStringList::const_iterator it = names.begin(); it != names.end(); ++it) {
-        if (!model->hasAttribute(*it)) {
+    for (const auto& atname : names) {
+        if (!model->hasAttribute(atname)) {
             // The corresponding attribute does not exist in the model.
-            const Attribute& attr(doc->attribute(*it));
+            const Attribute& attr(doc->attribute(atname));
             report().error(u"unexpected attribute '%s' in <%s>, line %d", {attr.name(), doc->name(), attr.lineNumber()});
             success = false;
         }

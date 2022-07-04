@@ -60,9 +60,9 @@ namespace ts {
         // Command line options:
         bool               _single_bat;        // Modify one single BAT only
         uint16_t           _bouquet_id;        // Bouquet id of the BAT to modify (if _single_bat)
-        std::set<uint16_t> _remove_serv;       // Set of services to remove
-        std::set<uint16_t> _remove_ts;         // Set of transport streams to remove
-        std::vector<DID>   _removed_desc;      // Set of descriptor tags to remove
+        std::set<uint16_t> _remove_serv_ids;   // Set of services to remove
+        std::set<uint16_t> _remove_ts_ids;     // Set of transport streams to remove
+        std::vector<DID>   _removed_desc_tags; // Set of descriptor tags to remove
         PDS                _pds;               // Private data specifier for removed descriptors
         bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
 
@@ -82,9 +82,9 @@ ts::BATPlugin::BATPlugin(TSP* tsp_) :
    AbstractTablePlugin(tsp_, u"Perform various transformations on the BAT", u"[options]", u"BAT", PID_BAT),
    _single_bat(false),
    _bouquet_id(0),
-   _remove_serv(),
-   _remove_ts(),
-   _removed_desc(),
+   _remove_serv_ids(),
+   _remove_ts_ids(),
+   _removed_desc_tags(),
    _pds(0),
    _cleanup_priv_desc(false)
 {
@@ -132,9 +132,9 @@ bool ts::BATPlugin::getOptions()
     _bouquet_id = intValue<uint16_t>(u"bouquet-id", 0);
     _pds = intValue<PDS>(u"pds", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
-    getIntValues(_remove_serv, u"remove-service");
-    getIntValues(_remove_ts, u"remove-ts");
-    getIntValues(_removed_desc, u"remove-descriptor");
+    getIntValues(_remove_serv_ids, u"remove-service");
+    getIntValues(_remove_ts_ids, u"remove-ts");
+    getIntValues(_removed_desc_tags, u"remove-descriptor");
 
     // Start superclass.
     return AbstractTablePlugin::getOptions();
@@ -184,8 +184,8 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     bool found;
     do {
         found = false;
-        for (BAT::TransportMap::iterator it = bat.transports.begin(); it != bat.transports.end(); ++it) {
-            if (_remove_ts.count(it->first.transport_stream_id) != 0) {
+        for (auto it = bat.transports.begin(); it != bat.transports.end(); ++it) {
+            if (_remove_ts_ids.count(it->first.transport_stream_id) != 0) {
                 found = true;
                 bat.transports.erase(it->first);
                 break; // iterator is broken
@@ -197,8 +197,8 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     processDescriptorList(bat.descs);
 
     // Process each TS descriptor list
-    for (BAT::TransportMap::iterator it = bat.transports.begin(); it != bat.transports.end(); ++it) {
-        processDescriptorList(it->second.descs);
+    for (auto& it : bat.transports) {
+        processDescriptorList(it.second.descs);
     }
 
     // Reserialize modified BAT.
@@ -214,8 +214,8 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 void ts::BATPlugin::processDescriptorList(DescriptorList& dlist)
 {
     // Process descriptor removal
-    for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
-        dlist.removeByTag(*it, _pds);
+    for (auto tag :_removed_desc_tags) {
+        dlist.removeByTag(tag, _pds);
     }
 
     // Remove private descriptors without preceding PDS descriptor
@@ -230,7 +230,7 @@ void ts::BATPlugin::processDescriptorList(DescriptorList& dlist)
         size_t size = dlist[i]->payloadSize();
 
         // If the linkage descriptor points to a removed TS, remove the descriptor
-        if (size >= 2 && _remove_ts.count(GetUInt16 (base)) != 0) {
+        if (size >= 2 && _remove_ts_ids.count(GetUInt16 (base)) != 0) {
             dlist.removeByIndex (i);
             --i;
         }
@@ -248,7 +248,7 @@ void ts::BATPlugin::processDescriptorList(DescriptorList& dlist)
         while (size >= 3) {
             uint16_t id = GetUInt16(data);
             uint8_t type = data[2];
-            if (_remove_serv.count(id) == 0) {
+            if (_remove_serv_ids.count(id) == 0) {
                 PutUInt16(new_data, id);
                 new_data[2] = type;
                 new_data += 3;
@@ -271,7 +271,7 @@ void ts::BATPlugin::processDescriptorList(DescriptorList& dlist)
         while (size >= 4) {
             uint16_t id = GetUInt16(data);
             uint16_t lcn = GetUInt16(data + 2);
-            if (_remove_serv.count(id) == 0) {
+            if (_remove_serv_ids.count(id) == 0) {
                 PutUInt16(new_data, id);
                 PutUInt16(new_data + 2, lcn);
                 new_data += 4;
