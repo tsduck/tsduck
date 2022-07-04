@@ -244,8 +244,8 @@ namespace {
     {
         // Build inversed table from UpperLower.
         const UpperLower* ul = UpperLower::Instance();
-        for (UpperLower::const_iterator it = ul->begin(); it != ul->end(); ++it) {
-            insert(std::make_pair(it->second, it->first));
+        for (auto it : *ul) {
+            insert(std::make_pair(it.second, it.first));
         }
     }
 }
@@ -1916,8 +1916,8 @@ namespace {
 
 uint32_t ts::UCharacteristics(UChar c)
 {
-    const CharChar* ll = CharChar::Instance();
-    const CharChar::const_iterator it(ll->find(c));
+    const auto ll = CharChar::Instance();
+    const auto it = ll->find(c);
     return it == ll->end() ? 0 : it->second;
 }
 
@@ -1974,8 +1974,8 @@ ts::UChar ts::ToLower(UChar c)
     }
     else {
         // Search for an additional translation, if any.
-        const UpperLower* ul = UpperLower::Instance();
-        const UpperLower::const_iterator it(ul->find(c));
+        const auto ul = UpperLower::Instance();
+        const auto it = ul->find(c);
         return it == ul->end() ? c : it->second;
     }
 }
@@ -1989,37 +1989,37 @@ ts::UChar ts::ToUpper(UChar c)
     }
     else {
         // Search for an additional translation, if any.
-        const LowerUpper* lu = LowerUpper::Instance();
-        const LowerUpper::const_iterator it(lu->find(c));
+        const auto lu = LowerUpper::Instance();
+        const auto it = lu->find(c);
         return it == lu->end() ? c : it->second;
     }
 }
 
 bool ts::IsAccented(UChar c)
 {
-    const WithoutAccent* wa = WithoutAccent::Instance();
-    const WithoutAccent::const_iterator it(wa->find(c));
+    const auto wa = WithoutAccent::Instance();
+    const auto it = wa->find(c);
     return it != wa->end();
 }
 
 ts::UString ts::RemoveAccent(UChar c)
 {
-    const WithoutAccent* wa = WithoutAccent::Instance();
-    const WithoutAccent::const_iterator it(wa->find(c));
-    return it == wa->end() ? ts::UString(1, c) : ts::UString::FromUTF8(it->second);
+    const auto wa = WithoutAccent::Instance();
+    const auto it = wa->find(c);
+    return it == wa->end() ? UString(1, c) : UString::FromUTF8(it->second);
 }
 
 ts::UString ts::ToHTML(UChar c)
 {
-    const HTMLEntities* he = HTMLEntities::Instance();
-    const HTMLEntities::const_iterator it(he->find(c));
-    return it == he->end() ? ts::UString(1, c) : (ts::UChar('&') + ts::UString::FromUTF8(it->second) + ts::UChar(';'));
+    const auto he = HTMLEntities::Instance();
+    const auto it = he->find(c);
+    return it == he->end() ? UString(1, c) : (UChar('&') + UString::FromUTF8(it->second) + UChar(';'));
 }
 
 ts::UChar ts::FromHTML(const UString& entity)
 {
-    const HTMLCharacters* hc = HTMLCharacters::Instance();
-    const HTMLCharacters::const_iterator it(hc->find(entity.toUTF8()));
+    const auto hc = HTMLCharacters::Instance();
+    const auto it = hc->find(entity.toUTF8());
     return it == hc->end() ? CHAR_NULL : it->second;
 }
 
@@ -2027,7 +2027,7 @@ void ts::UString::convertToHTML(const UString& convert)
 {
     // Should not be there, but this is much faster to do it that way.
     const bool convertAll = convert.empty();
-    const HTMLEntities* he = HTMLEntities::Instance();
+    const auto he = HTMLEntities::Instance();
     for (size_type i = 0; i < length(); ) {
         if (!convertAll && convert.find(at(i)) == NPOS) {
             // Do not convert this one.
@@ -2035,7 +2035,7 @@ void ts::UString::convertToHTML(const UString& convert)
         }
         else {
             // Look for an HTML entity.
-            const HTMLEntities::const_iterator it(he->find(at(i)));
+            const auto it = he->find(at(i));
             if (it == he->end()) {
                 // No HTML entity for this character, don't convert.
                 ++i;
@@ -2043,9 +2043,9 @@ void ts::UString::convertToHTML(const UString& convert)
             else {
                 // Replace the character with the HTML entity.
                 const UString rep(UString::FromUTF8(it->second));
-                at(i) = ts::AMPERSAND;
+                at(i) = AMPERSAND;
                 insert(i + 1, rep);
-                insert(i + 1 + rep.length(), 1, ts::SEMICOLON);
+                insert(i + 1 + rep.length(), 1, SEMICOLON);
                 i += rep.length() + 2;
             }
         }
@@ -2055,7 +2055,7 @@ void ts::UString::convertToHTML(const UString& convert)
 void ts::UString::convertFromHTML()
 {
     // Should not be there, but this is much faster to do it that way.
-    const HTMLCharacters* hc = HTMLCharacters::Instance();
+    const auto hc = HTMLCharacters::Instance();
     for (size_type i = 0; i < length(); ) {
 
         // Find next "&...;" sequence.
@@ -2072,7 +2072,7 @@ void ts::UString::convertFromHTML()
 
         // Sequence found, locate character translation.
         assert(semi > amp);
-        const HTMLCharacters::const_iterator it(hc->find(substr(amp + 1, semi - amp - 1).toUTF8()));
+        const auto it = hc->find(substr(amp + 1, semi - amp - 1).toUTF8());
         if (it == hc->end()) {
             // Unknown sequence, leave it as is.
             i = semi + 1;
@@ -2108,7 +2108,7 @@ bool ts::Match(UChar c1, UChar c2, CaseSensitivity cs)
 
 bool ts::DecomposePrecombined(UChar c, UChar& letter, UChar& mark)
 {
-    const CombiningSequences* cs = CombiningSequences::Instance();
+    const auto cs = CombiningSequences::Instance();
     const auto it = cs->find(c);
     const bool found = it != cs->end();
     if (found) {
@@ -2126,7 +2126,7 @@ bool ts::DecomposePrecombined(UChar c, UChar& letter, UChar& mark)
 
 ts::UChar ts::Precombined(UChar letter, UChar mark)
 {
-    const CombiningCharacters* cc = CombiningCharacters::Instance();
+    const auto cc = CombiningCharacters::Instance();
     const auto it = cc->find(DIAC(letter, mark));
     return it == cc->end() ? CHAR_NULL : it->second;
 }

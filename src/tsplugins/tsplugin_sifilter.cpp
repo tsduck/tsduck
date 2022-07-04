@@ -227,15 +227,15 @@ void ts::SIFilterPlugin::handleTable(SectionDemux& demux, const BinaryTable& tab
 
 void ts::SIFilterPlugin::processPAT(const PAT& pat)
 {
-    for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
+    for (const auto& it : pat.pmts) {
         // Add PMT PID to section filter if ECM are required
         if (_cas_args.pass_ecm) {
-            _demux.addPID(it->second);
+            _demux.addPID(it.second);
         }
         // Pass this PMT PID if PMT are required
-        if (_pass_pmt && !_pass_pids[it->second]) {
-            tsp->verbose(u"Filtering PMT PID %d (0x%X)", {it->second, it->second});
-            _pass_pids.set(it->second);
+        if (_pass_pmt && !_pass_pids[it.second]) {
+            tsp->verbose(u"Filtering PMT PID 0x%X (%<d)", {it.second,});
+            _pass_pids.set(it.second);
         }
     }
 }

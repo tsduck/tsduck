@@ -367,8 +367,8 @@ void ts::T2MIDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
             PAT pat(_duck, table);
             if (pat.isValid() && table.sourcePID() == PID_PAT) {
                 // Add all PMT PID's to PSI demux.
-                for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _psi_demux.addPID(it->second);
+                for (const auto& it : pat.pmts) {
+                    _psi_demux.addPID(it.second);
                 }
             }
             break;
@@ -396,11 +396,11 @@ void ts::T2MIDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
 void ts::T2MIDemux::processPMT(const PMT& pmt)
 {
     // Loop on all components of the service, until the T2-MI PID is found.
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+    for (const auto& it : pmt.streams) {
          // Search a T2MI_descriptor in this component.
         // Loop on all extension_descriptors.
-        const PID pid = it->first;
-        const DescriptorList& dlist(it->second.descs);
+        const PID pid = it.first;
+        const DescriptorList& dlist(it.second.descs);
         for (size_t index = dlist.search(DID_DVB_EXTENSION); index < dlist.count(); index = dlist.search(DID_DVB_EXTENSION, index + 1)) {
             if (!dlist[index].isNull()) {
                 const T2MIDescriptor desc(_duck, *dlist[index]);

@@ -1870,7 +1870,7 @@ void ts::UString::appendDump(const void *data,
 // Format a string using a template and arguments.
 //----------------------------------------------------------------------------
 
-void ts::UString::format(const UChar* fmt, const std::initializer_list<ArgMixIn>& args)
+void ts::UString::format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
 {
     // Pre-reserve some space. We don't really know how much. Just address the most common cases.
     reserve(256);
@@ -1879,7 +1879,7 @@ void ts::UString::format(const UChar* fmt, const std::initializer_list<ArgMixIn>
     ArgMixInContext ctx(*this, fmt, args);
 }
 
-ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts::ArgMixIn>& args)
+ts::UString ts::UString::Format(const UChar* fmt, std::initializer_list<ArgMixIn> args)
 {
     UString result;
     result.format(fmt, args);
@@ -1891,7 +1891,7 @@ ts::UString ts::UString::Format(const UChar* fmt, const std::initializer_list<ts
 // Scan this string for integer or character values.
 //----------------------------------------------------------------------------
 
-bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, const std::initializer_list<ArgMixOut>& args) const
+bool ts::UString::scan(size_t& extractedCount, size_type& endIndex, const UChar* fmt, std::initializer_list<ArgMixOut> args) const
 {
     // Process this string instance.
     const UChar* input = data();
@@ -1942,7 +1942,7 @@ void ts::UString::ArgMixContext::debug(const UString& message, UChar cmd) const
 // Analysis context of a Format string.
 //----------------------------------------------------------------------------
 
-ts::UString::ArgMixInContext::ArgMixInContext(UString& result, const UChar* fmt, const std::initializer_list<ArgMixIn>& args) :
+ts::UString::ArgMixInContext::ArgMixInContext(UString& result, const UChar* fmt, std::initializer_list<ArgMixIn> args) :
     ArgMixContext(fmt, true),
     _result(result),
     _arg(args.begin()),
@@ -2233,7 +2233,7 @@ void ts::UString::ArgMixInContext::getFormatSize(size_t& size)
 // Analysis context of a scan string.
 //----------------------------------------------------------------------------
 
-ts::UString::ArgMixOutContext::ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, const std::initializer_list<ArgMixOut>& args) :
+ts::UString::ArgMixOutContext::ArgMixOutContext(size_t& extractedCount, const UChar*& input, const UChar*& fmt, std::initializer_list<ArgMixOut> args) :
     ArgMixContext(fmt, false),
     _input(input),
     _arg(args.begin()),

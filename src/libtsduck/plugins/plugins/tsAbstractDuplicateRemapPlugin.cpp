@@ -134,7 +134,7 @@ bool ts::AbstractDuplicateRemapPlugin::getOptions()
 
             // Check that we don't remap/duplicate the same PID twice on distinct taget PID's.
             // Ignore --unchecked since this is always inconsistent.
-            const PIDMap::const_iterator it = _pidMap.find(pid1);
+            const auto it = _pidMap.find(pid1);
             if (it != _pidMap.end() && it->second != newpid) {
                 tsp->error(u"PID 0x%X (%d) %s twice", {pid1, pid1, _verbed});
                 return false;

@@ -400,21 +400,21 @@ void ts::SVRemovePlugin::processPAT(PAT& pat)
     // PID to remove and which to keep (if shared between the removed service
     // and other services).
     bool found = false;
-    for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
+    for (const auto& it : pat.pmts) {
         // Scan all PMT's
-        _demux.addPID(it->second);
+        _demux.addPID(it.second);
 
         // Check if service to remove is here
-        if (it->first == _service.getId()) {
+        if (it.first == _service.getId()) {
             found = true;
-            _service.setPMTPID(it->second);
-            tsp->verbose(u"found service id 0x%X, PMT PID is 0x%X", {_service.getId(), _service.getPMTPID()});
+            _service.setPMTPID(it.second);
+            tsp->verbose(u"found service id 0x%X (%<d), PMT PID is 0x%X (%<d)", {_service.getId(), _service.getPMTPID()});
             // Drop PMT of the service
-            _drop_pids.set(it->second);
+            _drop_pids.set(it.second);
         }
         else {
             // Mark other PMT's as referenced
-            _ref_pids.set(it->second);
+            _ref_pids.set(it.second);
         }
     }
 
@@ -463,11 +463,11 @@ void ts::SVRemovePlugin::processPMT(PMT& pmt)
     pid_set.set(pmt.pcr_pid);
 
     // Loop on all elementary streams
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+    for (const auto& it : pmt.streams) {
         // Mark component's PID
-        pid_set.set(it->first);
+        pid_set.set(it.first);
         // Mark all component-level ECM PID's
-        addECMPID(it->second.descs, pid_set);
+        addECMPID(it.second.descs, pid_set);
     }
 
     // When the service to remove has been analyzed, we are ready to filter PIDs

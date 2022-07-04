@@ -301,14 +301,14 @@ void ts::SDTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     }
 
     // Remove selected services
-    for (std::vector<uint16_t>::const_iterator it = _remove_serv.begin(); it != _remove_serv.end(); ++it) {
-        sdt.services.erase(*it);
+    for (auto id : _remove_serv) {
+        sdt.services.erase(id);
     }
 
     // Remove private descriptors without preceding PDS descriptor
     if (_cleanup_priv_desc) {
-        for (SDT::ServiceMap::iterator smi = sdt.services.begin(); smi != sdt.services.end(); ++smi) {
-            smi->second.descs.removeInvalidPrivateDescriptors();
+        for (auto& smi : sdt.services) {
+            smi.second.descs.removeInvalidPrivateDescriptors();
         }
     }
 

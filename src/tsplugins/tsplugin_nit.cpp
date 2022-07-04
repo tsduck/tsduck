@@ -246,13 +246,13 @@ ts::NITPlugin::NITPlugin(TSP* tsp_) :
 
 bool ts::NITPlugin::getOptions()
 {
-    _nit_pid = intValue<PID>(u"pid", PID_NULL);
-    _lcn_oper = intValue<int>(u"lcn", LCN_NONE);
-    _sld_oper = intValue<int>(u"sld", LCN_NONE);
+    getIntValue(_nit_pid, u"pid", PID_NULL);
+    getIntValue(_lcn_oper, u"lcn", LCN_NONE);
+    getIntValue(_sld_oper, u"sld", LCN_NONE);
     getIntValues(_remove_serv, u"remove-service");
     getIntValues(_remove_ts, u"remove-ts");
     getIntValues(_removed_desc, u"remove-descriptor");
-    _pds = intValue<PDS>(u"pds");
+    getIntValue(_pds, u"pds", 0);
     _cleanup_priv_desc = present(u"cleanup-private-descriptors");
     _update_mpe_fec = present(u"mpe-fec");
     _mpe_fec = intValue<uint8_t>(u"mpe-fec") & 0x01;
@@ -260,12 +260,12 @@ bool ts::NITPlugin::getOptions()
     _time_slicing = intValue<uint8_t>(u"time-slicing") & 0x01;
     _new_netw_name = value(u"network-name");
     _set_netw_id = present(u"network-id");
-    _new_netw_id = intValue<uint16_t>(u"network-id");
+    getIntValue(_new_netw_id, u"network-id");
     _use_nit_other = present(u"other") || present(u"nit-other");
-    _nit_other_id = intValue<uint16_t>(u"other", intValue<uint16_t>(u"nit-other"));
+    getIntValue(_nit_other_id, u"other", intValue<uint16_t>(u"nit-other"));
     _build_sld = present(u"build-service-list-descriptors");
     _add_all_srv_in_sld = present(u"default-service-type");
-    _default_srv_type = intValue<uint8_t>(u"default-service-type");
+    getIntValue(_default_srv_type, u"default-service-type");
 
     if (_use_nit_other && _build_sld) {
         tsp->error(u"--nit-other and --build-service-list-descriptors are mutually exclusive");
@@ -540,8 +540,8 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
 {
     // Process descriptor removal
-    for (std::vector<DID>::const_iterator it = _removed_desc.begin(); it != _removed_desc.end(); ++it) {
-        dlist.removeByTag(*it, _pds);
+    for (auto tag : _removed_desc) {
+        dlist.removeByTag(tag, _pds);
     }
 
     // Remove private descriptors without preceding PDS descriptor

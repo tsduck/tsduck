@@ -116,10 +116,10 @@ ts::PATPlugin::PATPlugin(TSP* tsp_) :
 bool ts::PATPlugin::start()
 {
     // Get option values
-    _new_nit_pid = intValue<PID>(u"nit", PID_NULL);
+    getIntValue(_new_nit_pid, u"nit", PID_NULL);
     _remove_nit = present(u"remove-nit");
     _set_tsid = present(u"ts-id") || present(u"tsid");
-    _new_tsid = intValue<uint16_t>(u"ts-id", intValue<uint16_t>(u"tsid", 0));
+    getIntValue(_new_tsid, u"ts-id", intValue<uint16_t>(u"tsid", 0));
     getIntValues(_remove_serv, u"remove-service");
 
     // Get list of services to add
@@ -187,13 +187,13 @@ void ts::PATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     if (_new_nit_pid != PID_NULL) {
         pat.nit_pid = _new_nit_pid;
     }
-    for (std::vector<uint16_t>::const_iterator it = _remove_serv.begin(); it != _remove_serv.end(); ++it) {
-        pat.pmts.erase(*it);
+    for (auto id : _remove_serv) {
+        pat.pmts.erase(id);
     }
-    for (ServiceVector::const_iterator it = _add_serv.begin(); it != _add_serv.end(); ++it) {
-        assert(it->hasId());
-        assert(it->hasPMTPID());
-        pat.pmts[it->getId()] = it->getPMTPID();
+    for (const auto& it : _add_serv) {
+        assert(it.hasId());
+        assert(it.hasPMTPID());
+        pat.pmts[it.getId()] = it.getPMTPID();
     }
 
     // Reserialize modified PAT.

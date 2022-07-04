@@ -140,7 +140,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        virtual void log(int severity, const UChar* fmt, const std::initializer_list<ArgMixIn>& args);
+        virtual void log(int severity, const UChar* fmt, std::initializer_list<ArgMixIn> args);
 
         //!
         //! Report a message with an explicit severity and a printf-like interface.
@@ -149,7 +149,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        virtual void log(int severity, const UString& fmt, const std::initializer_list<ArgMixIn>& args);
+        virtual void log(int severity, const UString& fmt, std::initializer_list<ArgMixIn> args);
 
         //!
         //! Report a fatal error message.
@@ -163,7 +163,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void fatal(const UChar* fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Fatal, fmt, args); }
+        void fatal(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Fatal, fmt, args); }
 
         //!
         //! Report a fatal error message with a printf-like interface.
@@ -171,7 +171,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void fatal(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Fatal, fmt, args); }
+        void fatal(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Fatal, fmt, args); }
 
         //!
         //! Report a severe error message.
@@ -185,7 +185,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void severe(const UChar* fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Severe, fmt, args); }
+        void severe(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Severe, fmt, args); }
 
         //!
         //! Report a severe error message with a printf-like interface.
@@ -193,7 +193,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void severe(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Severe, fmt, args); }
+        void severe(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Severe, fmt, args); }
 
         //!
         //! Report an error message.
@@ -207,7 +207,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void error(const UChar* fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Error, fmt, args); }
+        void error(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Error, fmt, args); }
 
         //!
         //! Report an error message with a printf-like interface.
@@ -215,7 +215,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void error(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Error, fmt, args); }
+        void error(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Error, fmt, args); }
 
         //!
         //! Report a warning message.
@@ -229,7 +229,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void warning(const UChar* fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Warning, fmt, args); }
+        void warning(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Warning, fmt, args); }
 
         //!
         //! Report a warning message with a printf-like interface.
@@ -237,7 +237,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void warning(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Warning, fmt, args); }
+        void warning(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Warning, fmt, args); }
 
         //!
         //! Report an informational message.
@@ -251,7 +251,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void info(const UChar* fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Info, fmt, args); }
+        void info(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Info, fmt, args); }
 
         //!
         //! Report an informational message with a printf-like interface.
@@ -259,7 +259,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void info(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Info, fmt, args); }
+        void info(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Info, fmt, args); }
 
         //!
         //! Report a verbose message.
@@ -273,7 +273,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void verbose(const UChar* fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Verbose, fmt, args); }
+        void verbose(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Verbose, fmt, args); }
 
         //!
         //! Report a verbose message with a printf-like interface.
@@ -281,7 +281,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void verbose(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Verbose, fmt, args); }
+        void verbose(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Verbose, fmt, args); }
 
         //!
         //! Report a debug message.
@@ -295,7 +295,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void debug(const UChar* fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Debug, fmt, args); }
+        void debug(const UChar* fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Debug, fmt, args); }
 
         //!
         //! Report a debug message with a printf-like interface.
@@ -303,7 +303,7 @@ namespace ts {
         //! @param [in] args List of arguments to substitute in the format string.
         //! @see UString::format()
         //!
-        void debug(const UString& fmt, const std::initializer_list<ArgMixIn>& args) { log(Severity::Debug, fmt, args); }
+        void debug(const UString& fmt, std::initializer_list<ArgMixIn> args) { log(Severity::Debug, fmt, args); }
 
         //!
         //! Check if errors (or worse) were reported through this object.

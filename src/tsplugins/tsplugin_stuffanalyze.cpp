@@ -141,7 +141,7 @@ bool ts::StuffAnalyzePlugin::start()
 {
     // Get command line arguments
     _cas_args.loadArgs(duck, *this);
-    _output_name = value(u"output-file");
+    getValue(_output_name, u"output-file");
     getIntValues(_analyze_pids, u"pid");
 
     // Initialize the PSI demux.
@@ -214,11 +214,11 @@ bool ts::StuffAnalyzePlugin::stop()
                << "PID             Sections (stuffing)      Bytes (stuffing) (percent)" << std::endl
                << "------------- ---------- ---------- ---------- ---------- ---------" << std::endl;
 
-    for (PIDContextMap::const_iterator it = _pid_contexts.begin(); it != _pid_contexts.end(); ++it) {
-        const PID pid = it->first;
-        const PIDContextPtr& ctx(it->second);
+    for (const auto& it : _pid_contexts) {
+        const PID pid = it.first;
+        const PIDContextPtr& ctx(it.second);
         if (!ctx.isNull()) {
-            (*_output) << UString::Format(u"%4d (0x%04X) ", {pid, pid}) << ctx->toString() << std::endl;
+            (*_output) << UString::Format(u"%4d (0x%04<X) ", {pid}) << ctx->toString() << std::endl;
         }
     }
     (*_output) << "Total         " << _total.toString() << std::endl;
@@ -244,8 +244,8 @@ void ts::StuffAnalyzePlugin::handleTable(SectionDemux& demux, const BinaryTable&
             // Add all PMT PID's to PSI demux.
             PAT pat(duck, table);
             if (pat.isValid() && table.sourcePID() == PID_PAT) {
-                for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _psi_demux.addPID(it->second);
+                for (const auto& it : pat.pmts) {
+                    _psi_demux.addPID(it.second);
                 }
             }
             break;

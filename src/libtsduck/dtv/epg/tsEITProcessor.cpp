@@ -254,7 +254,7 @@ void ts::EITProcessor::renameService(const Service& old_service, const Service& 
 // Remove all EIT's with a table id in a given list.
 //----------------------------------------------------------------------------
 
-void ts::EITProcessor::removeTableIds(const std::initializer_list<TID>& tids)
+void ts::EITProcessor::removeTableIds(std::initializer_list<TID> tids)
 {
     _removed_tids.insert(tids);
 }

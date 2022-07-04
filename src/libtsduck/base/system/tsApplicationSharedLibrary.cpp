@@ -62,7 +62,7 @@ ts::ApplicationSharedLibrary::ApplicationSharedLibrary(const UString& filename,
         GetSearchPath(dirs, library_path);
 
         // Try in each directory.
-        for (UStringList::const_iterator it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
+        for (auto it = dirs.begin(); !isLoaded() && it != dirs.end(); ++it) {
             // First, try name with prefix.
             load(AddPathSuffix(*it + PathSeparator + prefix + basename, TS_SHARED_LIB_SUFFIX));
 

@@ -100,7 +100,7 @@ bool ts::DuplicatePlugin::getOptions()
 {
     // Options from this class.
     _silentDrop = present(u"drop-overflow");
-    _maxBuffered = intValue<size_t>(u"max-buffered-packets", DEF_MAX_BUFFERED);
+    getIntValue(_maxBuffered, u"max-buffered-packets", DEF_MAX_BUFFERED);
 
     // Options from superclass.
     return AbstractDuplicateRemapPlugin::getOptions();
@@ -127,7 +127,7 @@ ts::ProcessorPlugin::Status ts::DuplicatePlugin::processPacket(TSPacket& pkt, TS
 {
     // Get old and new PID.
     const PID pid = pkt.getPID();
-    const PIDMap::const_iterator it = _pidMap.find(pid);
+    const auto it = _pidMap.find(pid);
     const bool duplicate = it != _pidMap.end();
     const PID newpid = duplicate ? it->second : pid;
 

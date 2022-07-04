@@ -321,24 +321,24 @@ int MainCode(int argc, char *argv[])
 
     bool reader_found = false;
 
-    for (ts::pcsc::ReaderStateVector::const_iterator it = states.begin(); it != states.end(); ++it) {
-        if (opt.reader.empty() || opt.reader == it->reader) {
+    for (const auto& st : states) {
+        if (opt.reader.empty() || opt.reader == st.reader) {
             reader_found = true;
             if (opt.reset_action != SCARD_LEAVE_CARD) {
                 // Reset the smartcard if one is present
-                if ((it->event_state & SCARD_STATE_PRESENT) && !Reset(opt, pcsc_context, it->reader)) {
+                if ((st.event_state & SCARD_STATE_PRESENT) && !Reset(opt, pcsc_context, st.reader)) {
                     status = EXIT_FAILURE;
                 }
             }
             if (!opt.apdu.empty()) {
                 // Send a list of APDU.
-                if (!SendAPDU(opt, pcsc_context, it->reader)) {
+                if (!SendAPDU(opt, pcsc_context, st.reader)) {
                     status = EXIT_FAILURE;
                 }
             }
             else if (opt.reset_action == SCARD_LEAVE_CARD) {
                 // Default action: list the smartcard
-                List(opt, *it);
+                List(opt, st);
             }
         }
     }

@@ -519,9 +519,9 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
 
     // Collect all PIDS to scramble.
     _scrambled_pids.reset();
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        const PID pid = it->first;
-        const PMT::Stream& stream(it->second);
+    for (const auto& it : pmt.streams) {
+        const PID pid = it.first;
+        const PMT::Stream& stream(it.second);
         _input_pids.set(pid);
         if ((_scramble_audio && stream.isAudio(duck)) || (_scramble_video && stream.isVideo(duck)) || (_scramble_subtitles && stream.isSubtitles(duck))) {
             _scrambled_pids.set(pid);

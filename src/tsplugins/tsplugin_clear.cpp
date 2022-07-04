@@ -259,7 +259,7 @@ void ts::ClearPlugin::processPAT(PAT& pat)
 {
     if (_service.hasId()) {
         // The service id is known, search it in the PAT
-        PAT::ServiceMap::const_iterator it = pat.pmts.find (_service.getId());
+        const auto it = pat.pmts.find(_service.getId());
         if (it == pat.pmts.end()) {
             // Service not found, error
             tsp->error(u"service id %d (0x%X) not found in PAT", {_service.getId(), _service.getId()});
@@ -276,7 +276,7 @@ void ts::ClearPlugin::processPAT(PAT& pat)
     }
     else if (!pat.pmts.empty()) {
         // No service specified, use first one in PAT
-        PAT::ServiceMap::iterator it = pat.pmts.begin();
+        const auto it = pat.pmts.begin();
         _service.setId (it->first);
         _service.setPMTPID (it->second);
         _demux.addPID (it->second);

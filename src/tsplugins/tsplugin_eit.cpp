@@ -239,8 +239,8 @@ bool ts::EITPlugin::stop()
     MilliSecond max_time_act = 0;
     MilliSecond max_time_oth = 0;
     size_t name_width = 0;
-    for (ServiceMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
-        const ServiceDesc& serv(it->second);
+    for (const auto& it : _services) {
+        const ServiceDesc& serv(it.second);
         name_width = std::max(name_width, serv.getName().width());
         if (_ts_id.set() && serv.hasTSId (_ts_id.value())) {
             // Actual TS
@@ -276,8 +276,8 @@ bool ts::EITPlugin::stop()
     name_width = std::max(name_width, h_name.length());
     out << UString::Format(u"A/O  TS Id   Srv Id  %-*s  EITp/f  EITs  EPG days", {name_width, u"Name"}) << std::endl
         << UString::Format(u"---  ------  ------  %s  ------  ----  --------", {UString(name_width, u'-')}) << std::endl;
-    for (ServiceMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
-        const ServiceDesc& serv(it->second);
+    for (const auto& it : _services) {
+        const ServiceDesc& serv(it.second);
         const bool actual = _ts_id.set() && serv.hasTSId(_ts_id.value());
         out << UString::Format(u"%s  0x%04X  0x%04X  %-*s  %-6s  %-4s  %8d",
                                {actual ? u"Act" : u"Oth",
@@ -313,9 +313,9 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                     _ts_id = pat.ts_id;
                     tsp->verbose(u"TS id is %d (0x%X)", {pat.ts_id, pat.ts_id});
                     // Register all services
-                    for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                        ServiceDesc& serv(getServiceDesc(pat.ts_id, it->first));
-                        serv.setPMTPID(it->second);
+                    for (const auto& it : pat.pmts) {
+                        ServiceDesc& serv(getServiceDesc(pat.ts_id, it.first));
+                        serv.setPMTPID(it.second);
                     }
                 }
             }
@@ -328,15 +328,15 @@ void ts::EITPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
                 SDT sdt(duck, table);
                 if (sdt.isValid()) {
                     // Register all services
-                    for (SDT::ServiceMap::const_iterator it = sdt.services.begin(); it != sdt.services.end(); ++it) {
-                        ServiceDesc& serv(getServiceDesc(sdt.ts_id, it->first));
+                    for (const auto& it : sdt.services) {
+                        ServiceDesc& serv(getServiceDesc(sdt.ts_id, it.first));
                         serv.setONId(sdt.onetw_id);
-                        serv.setTypeDVB(it->second.serviceType(duck));
-                        serv.setName(it->second.serviceName(duck));
-                        serv.setProvider(it->second.providerName(duck));
-                        serv.setEITsPresent(it->second.EITs_present);
-                        serv.setEITpfPresent(it->second.EITpf_present);
-                        serv.setCAControlled(it->second.CA_controlled);
+                        serv.setTypeDVB(it.second.serviceType(duck));
+                        serv.setName(it.second.serviceName(duck));
+                        serv.setProvider(it.second.providerName(duck));
+                        serv.setEITsPresent(it.second.EITs_present);
+                        serv.setEITpfPresent(it.second.EITpf_present);
+                        serv.setCAControlled(it.second.CA_controlled);
                     }
                 }
             }

@@ -244,7 +244,7 @@ namespace ts {
                           const UString& xmlName,
                           DisplaySectionFunction displayFunction = nullptr,
                           LogSectionFunction logFunction = nullptr,
-                          const std::initializer_list<PID>& pids = std::initializer_list<PID>(),
+                          std::initializer_list<PID> pids = {},
                           uint16_t minCAS = CASID_NULL,
                           uint16_t maxCAS = CASID_NULL);
 
@@ -263,7 +263,7 @@ namespace ts {
                           Standards standards,
                           DisplaySectionFunction displayFunction = nullptr,
                           LogSectionFunction logFunction = nullptr,
-                          const std::initializer_list<PID>& pids = std::initializer_list<PID>(),
+                          std::initializer_list<PID> pids = {},
                           uint16_t minCAS = CASID_NULL,
                           uint16_t maxCAS = CASID_NULL);
         };
@@ -346,7 +346,7 @@ namespace ts {
             TableDescription();
 
             // Add PIDs in the list.
-            void addPIDs(const std::initializer_list<PID>& morePIDs);
+            void addPIDs(std::initializer_list<PID> morePIDs);
 
             // Check if a PID is present.
             bool hasPID(PID pid) const;

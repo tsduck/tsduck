@@ -78,7 +78,7 @@ ts::PcapFile::InterfaceDesc::InterfaceDesc() :
 // Report an error (if fmt is not empty), set error indicator, return false.
 //----------------------------------------------------------------------------
 
-bool ts::PcapFile::error(Report& report, const UString& fmt, const std::initializer_list<ArgMixIn>& args)
+bool ts::PcapFile::error(Report& report, const UString& fmt, std::initializer_list<ArgMixIn> args)
 {
     if (!fmt.empty()) {
         report.error(fmt, args);

@@ -69,7 +69,7 @@ void ts::ConfigSection::getEntryNames(UStringVector& names) const
 
 size_t ts::ConfigSection::valueCount(const UString& entry) const
 {
-    const EntryMap::const_iterator ent(_entries.find(entry));
+    const auto ent = _entries.find(entry);
     return ent == _entries.end() ? 0 : ent->second.size();
 }
 
@@ -80,9 +80,10 @@ size_t ts::ConfigSection::valueCount(const UString& entry) const
 
 ts::UString ts::ConfigSection::value(const UString& entry, size_t index, const UString& defvalue) const
 {
-    const EntryMap::const_iterator ent(_entries.find(entry));
+    const auto ent = _entries.find(entry);
     return ent == _entries.end() || index >= ent->second.size() ? defvalue : ent->second[index];
 }
+
 
 //----------------------------------------------------------------------------
 // Same as above but interpret the content as a boolean.

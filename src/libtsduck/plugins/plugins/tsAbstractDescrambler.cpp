@@ -165,7 +165,7 @@ ts::AbstractDescrambler::ECMStream::ECMStream(AbstractDescrambler* parent) :
 
 ts::AbstractDescrambler::ECMStreamPtr ts::AbstractDescrambler::getOrCreateECMStream(PID ecm_pid)
 {
-    ECMStreamMap::iterator ecm_it = _ecm_streams.find(ecm_pid);
+    auto ecm_it = _ecm_streams.find(ecm_pid);
     if (ecm_it != _ecm_streams.end()) {
         return ecm_it->second;
     }
@@ -247,9 +247,9 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
 
     // Loop on all elementary streams in this service.
     // Create an entry in _scrambled_streams for each of them.
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        const PID pid = it->first;
-        const PMT::Stream& pmt_stream(it->second);
+    for (const auto& it : pmt.streams) {
+        const PID pid = it.first;
+        const PMT::Stream& pmt_stream(it.second);
 
         // Enforce an entry for this PID in _scrambled_streams, even no valid ECM PID is found
         // (maybe we don't need ECM at all). But the PID must be marked as potentially scrambled.
@@ -554,7 +554,7 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
 
     // Locate an ECM stream with a currently valid pair of CW.
     ECMStreamPtr pecm;
-    for (std::set<PID>::const_iterator it = ss.ecm_pids.begin(); pecm.isNull() && it != ss.ecm_pids.end(); ++it) {
+    for (auto it = ss.ecm_pids.begin(); pecm.isNull() && it != ss.ecm_pids.end(); ++it) {
         pecm = getOrCreateECMStream(*it);
         // Flag cw_valid is "write-protected, read-volatile", no mutex needed.
         if (!pecm->cw_valid) {

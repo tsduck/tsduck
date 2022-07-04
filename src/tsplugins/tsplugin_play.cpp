@@ -122,9 +122,9 @@ bool ts::PlayPlugin::send(const TSPacket* buffer, const TSPacketMetadata* pkt_da
 
 bool ts::PlayPlugin::searchInPath(UString& result, const UStringVector& path, const UString& name)
 {
-    for (UStringVector::const_iterator it = path.begin(); it != path.end(); ++it) {
-        if (!it->empty()) {
-            result = *it + PathSeparator + name;
+    for (const auto& file : path) {
+        if (!file.empty()) {
+            result = file + PathSeparator + name;
             tsp->debug(u"looking for %s", {result});
             if (FileExists(result)) {
                 return true;

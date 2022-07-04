@@ -417,7 +417,7 @@ void ts::tsswitch::Core::execute(const Action& event)
             case WAIT_INPUT:
             case WAIT_STOPPED: {
                 // Wait commands, check if an event of this type is pending.
-                const ActionSet::const_iterator it(_events.find(Action(action, false)));
+                const auto it = _events.find(Action(action, false));
                 if (it == _events.end()) {
                     // Event not found, cannot execute further, keep the action in queue and retry later.
                     _log.debug(u"not ready, waiting: %s", {action});

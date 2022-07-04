@@ -164,9 +164,9 @@ private:
     ts::UString temporaryFileName(int) const;
     ts::UString newTemporaryFileName();
 
-    void testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn>& list);
-    void testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>& list);
-    void testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>& list);
+    void testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list);
+    void testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list);
+    void testArgMixOutCalled(std::initializer_list<ts::ArgMixOut> list);
 
     // Two sample Unicode characters from the supplementary planes:
     //   U+1D538: MATHEMATICAL DOUBLE-STRUCK CAPITAL A
@@ -207,9 +207,9 @@ void UStringTest::afterTest()
     // Delete all temporary files
     ts::UStringVector tempFiles;
     ts::ExpandWildcard(tempFiles, _tempFilePrefix + u"*");
-    for (ts::UStringVector::const_iterator i = tempFiles.begin(); i != tempFiles.end(); ++i) {
-        debug() << "UStringTest: deleting temporary file \"" << *i << "\"" << std::endl;
-        ts::DeleteFile(*i);
+    for (const auto& file : tempFiles) {
+        debug() << "UStringTest: deleting temporary file \"" << file << "\"" << std::endl;
+        ts::DeleteFile(file);
     }
     _nextFileIndex = 0;
 }
@@ -971,8 +971,8 @@ void UStringTest::testLoadSave()
     TSUNIT_ASSERT(load1.size() == 20);
     TSUNIT_ASSERT(load1 == ref);
 
-    const ts::UStringList::const_iterator refFirst = ++(ref.begin());
-    const ts::UStringList::const_iterator refLast = --(ref.end());
+    const auto refFirst = ++(ref.begin());
+    const auto refLast = --(ref.end());
 
     const ts::UString file2(newTemporaryFileName());
     TSUNIT_ASSERT(ts::UString::Save(refFirst, refLast, file2));
@@ -1392,16 +1392,16 @@ void UStringTest::testArgMixIn()
     testArgMixInCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock});
 }
 
-void UStringTest::testArgMixInCalled1(const std::initializer_list<ts::ArgMixIn>& list)
+void UStringTest::testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list)
 {
     TSUNIT_EQUAL(0, list.size());
 }
 
-void UStringTest::testArgMixInCalled2(const std::initializer_list<ts::ArgMixIn>& list)
+void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
 {
     TSUNIT_EQUAL(14, list.size());
 
-    std::initializer_list<ts::ArgMixIn>::const_iterator it = list.begin();
+    auto it = list.begin();
 
     // 12
     TSUNIT_ASSERT(!it->isOutputInteger());
@@ -1864,7 +1864,7 @@ void UStringTest::testArgMixOut()
     TSUNIT_EQUAL(E21, e2);
 }
 
-void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>& list)
+void UStringTest::testArgMixOutCalled(std::initializer_list<ts::ArgMixOut> list)
 {
     TSUNIT_EQUAL(11, list.size());
 
@@ -1874,20 +1874,20 @@ void UStringTest::testArgMixOutCalled(const std::initializer_list<ts::ArgMixOut>
     uint64_t u64 = 0;
 
     // Test all invariants.
-    for (std::initializer_list<ts::ArgMixOut>::const_iterator it = list.begin(); it != list.end(); ++it) {
-        TSUNIT_ASSERT(it->isOutputInteger());
-        TSUNIT_ASSERT(it->isInteger());
-        TSUNIT_ASSERT(!it->isAnyString());
-        TSUNIT_ASSERT(!it->isAnyString8());
-        TSUNIT_ASSERT(!it->isAnyString16());
-        TSUNIT_ASSERT(!it->isCharPtr());
-        TSUNIT_ASSERT(!it->isString());
-        TSUNIT_ASSERT(!it->isUCharPtr());
-        TSUNIT_ASSERT(!it->isUString());
+    for (const auto& elem : list) {
+        TSUNIT_ASSERT(elem.isOutputInteger());
+        TSUNIT_ASSERT(elem.isInteger());
+        TSUNIT_ASSERT(!elem.isAnyString());
+        TSUNIT_ASSERT(!elem.isAnyString8());
+        TSUNIT_ASSERT(!elem.isAnyString16());
+        TSUNIT_ASSERT(!elem.isCharPtr());
+        TSUNIT_ASSERT(!elem.isString());
+        TSUNIT_ASSERT(!elem.isUCharPtr());
+        TSUNIT_ASSERT(!elem.isUString());
     }
 
     // Now test specific values.
-    std::initializer_list<ts::ArgMixOut>::const_iterator it = list.begin();
+    auto it = list.begin();
 
     // int8_t   i8  = -2;
     TSUNIT_ASSERT(it->isSigned());

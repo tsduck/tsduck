@@ -120,7 +120,7 @@ namespace ts {
         void processEvent(PID splice_pid, uint32_t event_id, uint64_t event_pts, bool canceled, bool immediate, bool splice_out);
 
         // Build and report a one-line message or JSON structure.
-        UString message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args = {});
+        UString message(PID splice_pid, uint32_t event_id, const UChar* format, std::initializer_list<ArgMixIn> args = {});
         void display(const UString& line);
         void init(json::Object& obj, PID splice_pid, uint32_t event_id, const UString& progress, const SpliceContext& ctx, const SpliceEvent* evt);
 
@@ -400,7 +400,7 @@ void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 // Build a one-line message.
 //----------------------------------------------------------------------------
 
-ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, uint32_t event_id, const UChar* format, const std::initializer_list<ArgMixIn>& args)
+ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, uint32_t event_id, const UChar* format, std::initializer_list<ArgMixIn> args)
 {
     UString line;
     if (_packet_index) {

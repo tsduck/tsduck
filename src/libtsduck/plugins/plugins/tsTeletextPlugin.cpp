@@ -162,7 +162,7 @@ void ts::TeletextPlugin::handlePMT(const PMT& pmt, PID)
     bool pageOK = _page < 0;
 
     // Analyze all components in the PMT until our Teletext PID is found.
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); _pid == PID_NULL && it != pmt.streams.end(); ++it) {
+    for (auto it = pmt.streams.begin(); _pid == PID_NULL && it != pmt.streams.end(); ++it) {
         const PID pid = it->first;
         const PMT::Stream& stream(it->second);
 
@@ -175,7 +175,7 @@ void ts::TeletextPlugin::handlePMT(const PMT& pmt, PID)
             }
             else if (desc.isValid()) {
                 // Loop on all descriptor entries, until we find a matching one.
-                for (TeletextDescriptor::EntryList::const_iterator itEntry = desc.entries.begin(); _pid == PID_NULL && itEntry != desc.entries.end(); ++itEntry) {
+                for (auto itEntry = desc.entries.begin(); _pid == PID_NULL && itEntry != desc.entries.end(); ++itEntry) {
                     // Does it match the requested language and/or page?
                     const bool matchLanguage = _language.empty() || _language.similar(itEntry->language_code);
                     const bool matchPage = _page < 0 || _page == itEntry->page_number;

@@ -173,7 +173,7 @@ namespace {
                     }
                     else {
                         // Complete table not available, dump as individual sections.
-                        for (ts::SectionPtrVector::const_iterator it = sections.begin(); opt.max_tables > 0 && it != sections.end(); ++it) {
+                        for (auto it = sections.begin(); opt.max_tables > 0 && it != sections.end(); ++it) {
                             if (!it->isNull()) {
                                 opt.display.displaySection(**it);
                                 opt.display.out() << std::endl;
@@ -228,7 +228,7 @@ namespace {
         if (ok) {
             // Display all sections.
             opt.duck.setOutput(&opt.pager.output(opt), false);
-            for (ts::SectionPtrVector::const_iterator it = file.sections().begin(); opt.max_tables > 0 && it != file.sections().end(); ++it) {
+            for (auto it = file.sections().begin(); opt.max_tables > 0 && it != file.sections().end(); ++it) {
                 opt.display.displaySection(**it);
                 opt.display.out() << std::endl;
                 opt.max_tables--;

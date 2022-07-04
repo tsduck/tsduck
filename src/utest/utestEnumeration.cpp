@@ -240,8 +240,8 @@ void EnumerationTest::testIterators()
     ref.insert(std::make_pair(458, u"AddedElement"));
 
     std::map <int, ts::UString> value;
-    for (ts::Enumeration::const_iterator it = e1.begin(); it != e1.end(); ++it) {
-        value.insert(std::make_pair(it->first, it->second));
+    for (const auto& it : e1) {
+        value.insert(std::make_pair(it.first, it.second));
     }
 
     TSUNIT_ASSERT(value == ref);

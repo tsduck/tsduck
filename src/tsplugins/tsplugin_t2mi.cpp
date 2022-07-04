@@ -171,9 +171,9 @@ bool ts::T2MIPlugin::getOptions()
     _extract = present(u"extract");
     _log = present(u"log");
     _identify = present(u"identify");
-    _extract_pid = _original_pid = intValue<PID>(u"pid", PID_NULL);
-    _plp = intValue<uint8_t>(u"plp");
     _plp_valid = present(u"plp");
+    getIntValue(_original_pid, u"pid", PID_NULL);
+    getIntValue(_plp, u"plp");
     getValue(_outfile_name, u"output-file");
 
     // Output file open flags.
@@ -205,6 +205,7 @@ bool ts::T2MIPlugin::start()
 {
     // Initialize the demux.
     _demux.reset();
+    _extract_pid = _original_pid;
     if (_extract_pid != PID_NULL) {
         _demux.addPID(_extract_pid);
     }
@@ -240,9 +241,9 @@ bool ts::T2MIPlugin::stop()
     // With --identify, display a summary.
     if (_identify) {
         tsp->info(u"summary: found %d PID's with T2-MI", {_identified.size()});
-        for (IdentifiedSet::const_iterator it = _identified.begin(); it != _identified.end(); ++it) {
-            const PID pid = it->first;
-            const PLPSet& plps(it->second);
+        for (const auto& it : _identified) {
+            const PID pid = it.first;
+            const PLPSet& plps(it.second);
             UString line(UString::Format(u"PID 0x%X (%d): ", {pid, pid}));
             bool first = true;
             for (size_t plp = 0; plp < plps.size(); ++plp) {

@@ -118,15 +118,15 @@ int MainCode(int argc, char *argv[])
     bool success = true;
     ts::SysErrorCode err;
 
-    for (ts::UStringVector::const_iterator file = opt.files.begin(); file != opt.files.end(); ++file) {
+    for (const auto& file : opt.files) {
 
         // Get file size
 
-        const int64_t size = ts::GetFileSize(*file);
+        const int64_t size = ts::GetFileSize(file);
 
         if (size < 0) {
             err = ts::LastSysErrorCode();
-            opt.error(u"%s: %s", {*file, ts::SysErrorCodeMessage(err)});
+            opt.error(u"%s: %s", {file, ts::SysErrorCodeMessage(err)});
             success = false;
             continue;
         }
@@ -149,7 +149,7 @@ int MainCode(int argc, char *argv[])
 
         if (opt.verbose()) {
             if (opt.files.size() > 1) {
-                std::cout << *file << ": ";
+                std::cout << file << ": ";
             }
             std::cout << ts::UString::Format(u"%'d bytes, %'d %d-byte packets, ", {file_size, pkt_count, opt.packet_size});
             if (extra > 0) {
@@ -165,7 +165,7 @@ int MainCode(int argc, char *argv[])
 
         // Do the truncation
 
-        if (!opt.check_only && keep < file_size && !TruncateFile(*file, keep, opt)) {
+        if (!opt.check_only && keep < file_size && !TruncateFile(file, keep, opt)) {
             success = false;
         }
     }

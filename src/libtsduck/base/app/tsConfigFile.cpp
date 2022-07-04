@@ -228,7 +228,7 @@ bool ts::ConfigFile::save(const UString& filename, Report& report) const
 std::ostream& ts::ConfigFile::save(std::ostream& strm) const
 {
     // First, save content of section "" (out of any section)
-    SectionMap::const_iterator sec(_sections.find(UString()));
+    auto sec = _sections.find(UString());
     if (sec != _sections.end()) {
         sec->second.save(strm);
     }
@@ -265,6 +265,6 @@ void ts::ConfigFile::getSectionNames(UStringVector& names) const
 
 const ts::ConfigSection& ts::ConfigFile::section(const UString& name) const
 {
-    SectionMap::const_iterator sec = _sections.find(name);
+    const auto sec = _sections.find(name);
     return sec == _sections.end() ? _empty : sec->second;
 }
