@@ -1,8 +1,7 @@
 FROM --platform=linux/amd64 ubuntu:22.04 as builder
 
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libedit-dev python-is-python3
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libedit-dev python-is-python3
 
 COPY . /repo
 WORKDIR /repo
@@ -10,11 +9,9 @@ RUN ./scripts/install-prerequisites.sh
 RUN make -j8
 RUN mv /repo/bin/release* /repo/bin/release
 
-RUN mkdir -p /deps
-RUN ldd /repo/bin/release/tsdump | tr -s '[:blank:]' '\n' | grep '^/' | xargs -I % sh -c 'cp % /deps;'
-
 FROM ubuntu:22.04 as package
-
-COPY --from=builder /deps /deps
-COPY --from=builder /repo/bin/release/tsdump /repo/bin/release/tsdump
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y libedit-dev
+COPY --from=builder /repo/bin/release/tsdump /
+COPY --from=builder /repo/bin/release/*.so /deps/
 ENV LD_LIBRARY_PATH=/deps

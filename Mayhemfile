@@ -1,4 +1,4 @@
 project: tsduck
 target: tsdump
 cmds:
-  - cmd: /repo/bin/release/tsdump @@
+  - cmd: /tsdump @@
