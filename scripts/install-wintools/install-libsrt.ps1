@@ -1,6 +1,6 @@
 ﻿#-----------------------------------------------------------------------------
 #
-#  Copyright (c) 2021, Thierry Lelegard
+#  Copyright (c) 2022, Thierry Lelegard
 #  All rights reserved.
 #
 #  Redistribution and use in source and binary forms, with or without
@@ -25,36 +25,12 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
+#
+#  Download and install the libsrt library for Windows.
+#  See parameters documentation in install-common.ps1.
+#
+#-----------------------------------------------------------------------------
 
-<#
- .SYNOPSIS
-
-  Download and install the librsrt library for Windows.
-
- .PARAMETER Destination
-
-  Specify a local directory where the package will be downloaded.
-  By default, use the downloads folder for the current user.
-
- .PARAMETER ForceDownload
-
-  Force a download even if the package is already downloaded.
-
- .PARAMETER GitHubActions
-
-  When used in a GitHub Action workflow, make sure that the required
-  environment variables are propagated to subsequent jobs.
-
- .PARAMETER NoInstall
-
-  Do not install the package. By default, the package is installed.
-
- .PARAMETER NoPause
-
-  Do not wait for the user to press <enter> at end of execution. By default,
-  execute a "pause" instruction at the end of execution, which is useful
-  when the script was run from Windows Explorer.
-#>
 [CmdletBinding(SupportsShouldProcess=$true)]
 param(
     [string]$Destination = "",
@@ -66,25 +42,7 @@ param(
 
 Write-Output "==== libsrt download and installation procedure"
 
-# Web page for the latest releases of rist-installer.
-$ReleasePage = "https://github.com/tsduck/rist-installer/releases/latest"
-
-# A function to exit this script.
-function Exit-Script([string]$Message = "")
-{
-    $Code = 0
-    if ($Message -ne "") {
-        Write-Output "ERROR: $Message"
-        $Code = 1
-    }
-    if (-not $NoPause) {
-        pause
-    }
-    exit $Code
-}
-
-# Without this, Invoke-WebRequest is awfully slow.
-$ProgressPreference = 'SilentlyContinue'
+. "$PSScriptRoot\install-common.ps1"
 
 # Get the URL of the latest installer.
 $URL = (Invoke-RestMethod "https://api.github.com/repos/Haivision/srt/releases?per_page=20" |
@@ -100,29 +58,9 @@ if (-not ($URL -match "\.zip$") -and -not ($URL -match "\.exe$")) {
     Exit-Script "Unexpected URL, not .exe, not .zip: $URL"
 }
 
-# Create the directory for external products or use default.
-if (-not $Destination) {
-    $Destination = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
-}
-else {
-    [void](New-Item -Path $Destination -ItemType Directory -Force)
-}
-
-# Local installer file.
-$InstallerName = (Split-Path -Leaf $URL)
+$InstallerName = Get-URL-Local $URL
 $InstallerPath = "$Destination\$InstallerName"
-
-# Download installer
-if (-not $ForceDownload -and (Test-Path $InstallerPath)) {
-    Write-Output "$InstallerName already downloaded, use -ForceDownload to download again"
-}
-else {
-    Write-Output "Downloading $URL ..."
-    Invoke-WebRequest $URL.ToString() -UseBasicParsing -UserAgent Download -OutFile $InstallerPath
-    if (-not (Test-Path $InstallerPath)) {
-        Exit-Script "$URL download failed"
-    }
-}
+Download-Package $URL $InstallerPath
 
 # If installer is an archive, expect an exe with same name inside.
 if ($InstallerName -match "\.zip$") {
@@ -149,9 +87,6 @@ if (-not $NoInstall) {
 }
 
 # Propagate LIBSRT in next jobs for GitHub Actions.
-if ($GitHubActions) {
-    $libsrt = [System.Environment]::GetEnvironmentVariable("LIBSRT","Machine")
-    Write-Output "LIBSRT=$libsrt" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-}
+Propagate-Environment "LIBSRT"
 
 Exit-Script

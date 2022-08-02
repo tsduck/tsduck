@@ -60,13 +60,18 @@ param(
     [switch]$NoPause = $false
 )
 
+$InsDir = "$PSScriptRoot\install-wintools"
+
 if (-not $NoDoxygen) {
-    & (Join-Path $PSScriptRoot install-graphviz.ps1) -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-    & (Join-Path $PSScriptRoot install-doxygen.ps1)  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+    & "$InsDir\install-graphviz.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+    & "$InsDir\install-doxygen.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 }
-& (Join-Path $PSScriptRoot install-nsis.ps1)    -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-python.ps1)  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-libsrt.ps1)  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-librist.ps1) -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-java.ps1)    -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& (Join-Path $PSScriptRoot install-dektec.ps1)  -NoPause:$NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-git.ps1"     -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-git-lfs.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-nsis.ps1"    -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-python.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-libsrt.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-librist.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-java.ps1"    -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-vatek.ps1"   -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+& "$InsDir\install-dektec.ps1"  -NoPause:$NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions

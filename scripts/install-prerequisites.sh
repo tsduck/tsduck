@@ -97,7 +97,7 @@ VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
-    pkglist="gnu-sed grep dos2unix coreutils srt librist python3 openjdk"
+    pkglist="git git-lfs gnu-sed grep dos2unix coreutils srt librist python3 openjdk"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
@@ -122,7 +122,7 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
+    pkglist="git git-lfs g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
     if [[ "$MAJOR" -le 17 ]]; then
         pkglist="$pkglist libcurl3 libcurl3-dev"
     else
@@ -149,7 +149,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev libsrt-dev"
+    pkglist="git git-lfs g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev libsrt-dev"
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
@@ -163,7 +163,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
-    pkglist="g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
+    pkglist="git git-lfs g++ dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
     if $M32; then
         pkglist="$pkglist gcc-multilib"
     fi
@@ -189,7 +189,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-tools pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3 java-latest-openjdk-devel"
+    pkglist="git git-lfs gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-tools pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3 java-latest-openjdk-devel"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -216,7 +216,7 @@ elif [[ -f /etc/redhat-release ]]; then
 
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
-    pkglist="gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-lite pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3"
+    pkglist="git git-lfs gcc-c++ dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel pcsc-lite pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3"
     if $STATIC; then
         pkglist="$pkglist glibc-static libstdc++-static"
     fi
@@ -261,7 +261,7 @@ elif [[ -f /etc/redhat-release ]]; then
 
 elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
-    pkglist="make gcc-c++ dos2unix curl tar zip doxygen graphviz linux-glibc-devel libedit-devel pcsc-tools pcsc-lite-devel curl libcurl-devel srt-devel rpmdevtools python3 java-11-openjdk-devel"
+    pkglist="git git-lfs make gcc-c++ dos2unix curl tar zip doxygen graphviz linux-glibc-devel libedit-devel pcsc-tools pcsc-lite-devel curl libcurl-devel srt-devel rpmdevtools python3 java-11-openjdk-devel"
     sudo zypper install -y -l $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
@@ -274,8 +274,8 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
 elif [[ -f /etc/arch-release ]]; then
 
-    pkglist="make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz linux-api-headers libedit pcsclite srt python jdk-openjdk"
-    sudo pacman -Syu --noconfirm $PKGOPTS $pkglist
+    pkglist="git git-lfs make gcc dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz linux-api-headers libedit pcsclite srt python jdk-openjdk"
+    sudo pacman -Sy --noconfirm $PKGOPTS $pkglist
 
 #-----------------------------------------------------------------------------
 # Alpine Linux
@@ -289,7 +289,7 @@ elif [[ -f /etc/alpine-release ]]; then
 
     AL=$(sed /etc/alpine-release -e '/^[0-9][0-9]*\.[0-9]/!d' -e 's/^\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
     AL=$(( ${AL/.*/} * 100 + ${AL/*./} ))
-    pkglist="bash coreutils diffutils procps util-linux linux-headers git make g++ dos2unix curl tar zip dpkg doxygen graphviz libedit-dev pcsc-lite-dev curl-dev libsrt-dev python3 openjdk11 dpkg"
+    pkglist="bash coreutils diffutils procps util-linux linux-headers git git-lfs make g++ dos2unix curl tar zip dpkg doxygen graphviz libedit-dev pcsc-lite-dev curl-dev libsrt-dev python3 openjdk11 dpkg"
     if [[ $AL -ge 316 ]]; then
         pkglist="$pkglist librist-dev"
     fi
@@ -308,7 +308,7 @@ elif [[ -f /etc/alpine-release ]]; then
 
 elif [[ -f /etc/gentoo-release ]]; then
 
-    pkglist="sys-devel/gcc app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-kernel/linux-headers dev-libs/libedit sys-apps/pcsc-lite net-libs/srt dev-lang/python dev-java/openjdk"
+    pkglist="sys-devel/gcc dev-vcs/git dev-vcs/git-lfs app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-kernel/linux-headers dev-libs/libedit sys-apps/pcsc-lite net-libs/srt dev-lang/python dev-java/openjdk"
     sudo emerge -n $PKGOPTS $pkglist
 
 fi
