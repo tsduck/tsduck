@@ -264,31 +264,11 @@ deb-dev: deb-tools
 install-deb:
 	$(SUDO) dpkg -i $(INSTALLERDIR)/tsduck_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb $(INSTALLERDIR)/tsduck-dev_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb
 
-# Git hook files: TSDuck uses git hooks to automatically update the commit
-# number in tsVersion.h. The git hooks are automatically installed when
-# building TSDuck.
-#
-# The script git-hook.sh implements the various git hooks, on Unix and Windows.
-# The actual hook scripts, in .git/hooks, simply call this script. Updating
-# this script is sufficient to update the behaviour of the hooks.
-#
-#  - GITHOOKS_CMD     : File which executes the git hooks (relative to repository root).
-#  - GITHOOKS_LIST    : List of git hooks to update.
-#  - GITHOOKS_DIR     : Target directory for git hooks.
-#  - GITHOOKS_TARGETS : List of hooks to install (none if not in a git repository):
-
-GITHOOKS_CMD     = scripts/git-hook.sh
-GITHOOKS_LIST    = pre-commit post-merge
-GITHOOKS_DIR     = .git/hooks
-GITHOOKS_TARGETS = $(if $(wildcard $(GITHOOKS_DIR)),$(addprefix $(GITHOOKS_DIR)/,$(GITHOOKS_LIST)))
+# Install Git hooks.
 
 .PHONY: git-hooks
-git-hooks: $(GITHOOKS_TARGETS)
-$(GITHOOKS_TARGETS): Makefile
-	@echo '  [GIT] updating $(notdir $@) hook'; \
-	 echo '#!/usr/bin/env bash' >$@; \
-	 echo 'exec $$(dirname $$0)/../../$(GITHOOKS_CMD) $(notdir $@)' >>$@; \
-	 chmod a+x $@
+git-hooks:
+	@$(SCRIPTSDIR)/git-hook-update.sh
 
 # Count lines of code: Run cloc on the source code tree starting at current directory.
 
