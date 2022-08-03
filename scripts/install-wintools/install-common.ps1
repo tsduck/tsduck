@@ -250,10 +250,10 @@ function Define-Environment([string]$Name, [string]$Value)
 
 # Propagate an environment variable in next jobs for GitHub Actions.
 # If value is unspecified, get it from system environment.
-function Propagate-Environment([string]$Name, [string]$Value = $null)
+function Propagate-Environment([string]$Name, [string]$Value = "")
 {
     if ($GitHubActions) {
-        if ($Value -eq $null) {
+        if ($Value -eq "") {
             $Value = [System.Environment]::GetEnvironmentVariable($Name, "Machine")
         }
         Write-Output "${Name}=${Value}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
