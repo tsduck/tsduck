@@ -25,6 +25,7 @@
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-target-lib.props" />
     <Import Project="msvc-use-dtapi.props" />
+    <Import Project="msvc-use-vatek.props"/>
     <Import Project="msvc-disable-srt.props" />
     <Import Project="msvc-disable-rist.props"/>
     <Import Project="msvc-use-java.props"/>

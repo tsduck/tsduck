@@ -1,2 +1,5 @@
 # udev rules for dvb devices (sometimes also installed by dvb-apps or vdr, depending on versions)
 KERNEL=="dvb*", GROUP="video", MODE="0660"
+
+# udev rules for Vatek-based devices
+SUBSYSTEM=="usb", ATTR{idVendor}=="2c42", MODE="0666"

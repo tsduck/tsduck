@@ -2,7 +2,7 @@
 
 Interfacing Dektec devices is visible through the `dektec` input plugin, the
 `dektec` output plugin and the `tsdektec` command. The input/output plugins
-can can be used indifferently from the commands `tsp` and `tsswitch`.
+can be used indifferently from the commands `tsp` and `tsswitch`.
 
 The `tsdektec` command is just a small tool to list Dektec devices in the system
 and set a few permanent options (input/output mode of bidirectional ports,
@@ -44,7 +44,6 @@ On Linux, the DTAPI is automatically downloaded from https://dektec.com before
 the build. This is handled in the makefiles. See also the script `dtapi-config.sh`
 in the `scripts` directory. It is possible to disable Dektec support and remove
 the dependency to DTAPI using `make NODEKTEC=1`.
-
 
 On macOS or unsupported Linux platforms (Alpine, Arm processors), TSDuck is
 automatically compiled with `NODEKTEC` set.

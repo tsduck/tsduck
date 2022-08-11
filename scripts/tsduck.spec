@@ -30,6 +30,15 @@ BuildRequires:  srt-devel
 %if 0%{!?norist:1}
 Requires:       librist
 %endif
+%if 0%{!?novatek:1}
+%if 0%{?fedora}
+Requires:       libusb1
+BuildRequires:  libusb1-devel
+%else
+Requires:       libusbx
+BuildRequires:  libusbx-devel
+%endif
+%endif
 
 %description
 TSDuck, the MPEG Transport Stream Toolkit, provides some simple utilities to

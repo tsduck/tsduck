@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022, Richie Chang, Vision Advance Technology Inc. (VATek)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -26,22 +26,13 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2770
+#include "tsMain.h"
+#include "tsVatekControl.h"
+TS_MAIN(MainCode);
+
+int MainCode(int argc, char *argv[])
+{
+    ts::VatekControl opt(argc, argv);
+    return opt.execute();
+}
