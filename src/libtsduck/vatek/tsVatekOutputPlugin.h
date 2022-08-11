@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022, Richie Chang, Vision Advance Technology Inc. (VATek)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,20 +28,43 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Declare the ts::VatekOutputPlugin class.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2770
+#if !defined(TS_NO_VATEK) || defined(DOXYGEN)
+
+#include "tsOutputPlugin.h"
+
+namespace ts {
+    //!
+    //! Vatek output plugin for @c tsp.
+    //! @ingroup plugin
+    //!
+    class TSDUCKDLL VatekOutputPlugin: public OutputPlugin
+    {
+        TS_NOBUILD_NOCOPY(VatekOutputPlugin);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] tsp Associated callback to @c tsp executable.
+        //!
+        VatekOutputPlugin(TSP* tsp);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~VatekOutputPlugin() override;
+
+        // Implementation of plugin API
+        virtual bool start() override;
+        virtual bool stop() override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
+        virtual bool isRealTime() override;
+        virtual BitRate getBitrate() override;
+        virtual BitRateConfidence getBitrateConfidence() override;
+    };
+}
+
+#endif // TS_NO_VATEK

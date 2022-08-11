@@ -43,12 +43,16 @@ of TSDuck may require additional dependencies. In case of build error, it can
 be wise to run `scripts/install-prerequisites.sh` again and retry.
 
 Dektec DTAPI: The command `make` at the top level will automatically
-download the LinuxSDK from the Dektec site. See `dektec/Makefile` for details.
-There is no manual setup for DTAPI on Linux. Note that the Dektec DTAPI is
-available only for Linux distros on Intel CPU's with the GNU libc. Non-Intel systems
-(for instance ARM-based devices such as Raspberry Pi) cannot use Dektec devices.
-Similarly, Intel-based distros using a non-standard libc (for instance Alpine Linux
-which uses musl libc) cannot use Dektec devices either.
+download the LinuxSDK from the Dektec site. There is no manual setup for DTAPI on
+Linux. Note that the Dektec DTAPI is available only for Linux distros on Intel CPU's
+with the GNU libc. Non-Intel systems (for instance ARM-based devices such as Raspberry Pi)
+cannot use Dektec devices. Similarly, Intel-based distros using a non-standard libc
+(for instance Alpine Linux which uses musl libc) cannot use Dektec devices either.
+
+Vatek API: On Linux, the command `make` at the top level will automatically download the
+Linux version of the Vatek API from the GitHub. There is currectly no Linux packet for
+the Vatek API. On Windows and macOS, binary packages are available and are installed
+by the install-prerequisites script.
 
 ## Building the TSDuck binaries alone {#buildunix}
 
@@ -76,6 +80,7 @@ The following `make` variables can be defined:
 - `NOTEST`     : Do not build unitary tests.
 - `NODEKTEC`   : No Dektec device support, remove dependency to `DTAPI`.
 - `NOHIDES`    : No HiDes device support.
+- `NOVATEK`    : No Vatek device support (modulators based on Vatek chips).
 - `NOCURL`     : No HTTP support, remove dependency to `libcurl`.
 - `NOPCSC`     : No smartcard support, remove dependency to `pcsc-lite`.
 - `NOEDITLINE` : No interactive line editing, remove dependency to libedit.
@@ -223,6 +228,7 @@ If you prefer to collect the various installers yourself, follow the links to
 [SRT downloads](https://github.com/tsduck/srt-win-installer/releases/latest),
 [RIST downloads](https://github.com/tsduck/rist-installer/releases/latest),
 [DTAPI downloads](https://www.dektec.com/downloads/SDK),
+[Vatek downloads](https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest),
 [Doxygen downloads](http://www.doxygen.org/download.html) and
 [Graphviz downloads](https://graphviz.gitlab.io/_pages/Download/Download_windows.html).
 

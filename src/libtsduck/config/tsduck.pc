@@ -6,7 +6,7 @@ Description: MPEG Transport Stream Toolkit
 URL: https://tsduck.io/
 Version: {{VERSION}}
 Requires: libpcsclite
-Requires.private: libcurl, srt, librist, libedit
+Requires.private: libcurl, srt, librist, libedit, libusb-1.0
 Libs: -L${libdir} -ltsduck
 Libs.private: -lpthread -lrt -latomic -ldl -lm -lstdc++
 Cflags: -I${prefix}/include/tsduck --std=c++11

@@ -645,8 +645,8 @@ endif
 # applications. Note, however, that LIBTSDUCK_LDLIBS is still necessary
 # when linking applications against the TSDuck static library.
 
-LIBTSDUCK_CXXFLAGS_INCLUDES =
-LIBTSDUCK_LDLIBS = $(LDLIBS_PCSC)
+LIBTSDUCK_CXXFLAGS_INCLUDES +=
+LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC)
 
 ifneq ($(NODTAPI),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
@@ -654,6 +654,10 @@ endif
 
 ifneq ($(NOHIDES),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_HIDES=1
+endif
+
+ifneq ($(NOVATEK),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_VATEK=1
 endif
 
 ifneq ($(NOEDITLINE),)
@@ -716,6 +720,9 @@ ifeq ($(TSPLUGINS),)
     ifneq ($(NOHIDES),)
         NO_TSPLUGINS += tsplugin_hides
         NO_TSTOOLS += tshides
+    endif
+    ifneq ($(NOVATEK),)
+        NO_TSTOOLS += tsvatek
     endif
     ifneq ($(NOPCSC),)
         NO_TSTOOLS += tssmartcard

@@ -727,6 +727,8 @@
 #include "tsUserInterrupt.h"
 #include "tsUString.h"
 #include "tsVariable.h"
+#include "tsVatekControl.h"
+#include "tsVatekOutputPlugin.h"
 #include "tsVBIDataDescriptor.h"
 #include "tsVBITeletextDescriptor.h"
 #include "tsVCT.h"

@@ -19,6 +19,7 @@ mac {
 }
 
 QMAKE_CXXFLAGS += $$system("$$PROJROOT/scripts/java-config.sh --cflags")
+QMAKE_CXXFLAGS += $$system("$$PROJROOT/scripts/vatek-config.sh --cflags")
 
 DISTFILES += $$TS_CONFIG_FILES
 HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\*")

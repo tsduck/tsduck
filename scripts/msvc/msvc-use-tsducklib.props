@@ -5,6 +5,7 @@
 
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-use-dtapi.props" />
+    <Import Project="msvc-use-vatek.props" />
   </ImportGroup>
 
   <ItemDefinitionGroup>

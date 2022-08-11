@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022, Richie Chang, Vision Advance Technology Inc. (VATek)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,20 +28,44 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  A class implementing the @c tsvatek control utility.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2770
+#include "tsArgs.h"
+#include "tsDuckContext.h"
+
+namespace ts {
+    //!
+    //! A class implementing the tsvatek control utility.
+    //! This is defined as a separate class the interface of which does not depend on the Vatek core library.
+    //! @ingroup hardware
+    //!
+    class TSDUCKDLL VatekControl: private Args
+    {
+        TS_NOBUILD_NOCOPY(VatekControl);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] argc Command line argument count.
+        //! @param [in] argv Command line arguments.
+        //!
+        VatekControl(int argc, char *argv[]);
+
+        //!
+        //! Destructor.
+        //!
+        virtual ~VatekControl() override;
+
+        //!
+        //! Execute the command.
+        //! @return Either EXIT_SUCCESS or EXIT_FAILURE.
+        //!
+        int execute();
+
+    private:
+        DuckContext _duck;
+        int32_t     _dev_index;  // Vatek device index, -1 for all devices
+    };
+}

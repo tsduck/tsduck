@@ -42,9 +42,25 @@ ifeq ($(NODTAPI)$(NODEKTEC),)
     endif
     ifeq ($(DTAPI_OBJECT)$(DTAPI_HEADER),)
         NODTAPI = true
-        CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
     else
-        CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
+        LIBTSDUCK_CXXFLAGS_INCLUDES += -isystem $(dir $(DTAPI_HEADER))
+    endif
+endif
+
+# Detect the presence of the Vatek library.
+# Define NOVATEK to compile without Vatek support.
+# NOVATEK is automatically defined if no Vatek library is found.
+
+ifeq ($(NOVATEK),)
+    ifeq ($(filter-out default headers libs,$(MAKECMDGOALS)),)
+        VATEK_CFLAGS := $(shell ../../scripts/vatek-config.sh --cflags --download)
+        VATEK_LIBS := $(shell ../../scripts/vatek-config.sh --ldlibs)
+    endif
+    ifeq ($(VATEK_CFLAGS)$(VATEK_LIBS),)
+        NOVATEK = true
+    else
+        LIBTSDUCK_CXXFLAGS_INCLUDES += $(VATEK_CFLAGS)
+	LIBTSDUCK_LDLIBS += $(VATEK_LIBS)
     endif
 endif
 

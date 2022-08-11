@@ -361,7 +361,7 @@ while [[ $# -gt 0 ]]; do
             OPT_M32=true
             ;;
         *)
-            error "invalid option $CMD (use --dtapi --header --object --include --url --support --tarball --download --force --m32)"
+            error "invalid option $1 (use --dtapi --header --object --include --url --support --tarball --download --force --m32)"
             ;;
     esac
     shift

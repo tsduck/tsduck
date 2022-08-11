@@ -34,6 +34,7 @@
 #  - NOTEST     : Do not build unitary tests.
 #  - NODEKTEC   : No Dektec device support, remove dependency to DTAPI.
 #  - NOHIDES    : No HiDes device support.
+#  - NOVATEK    : No Vatek-based device support.
 #  - NOCURL     : No HTTP support, remove dependency to libcurl.
 #  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
 #  - NOSRT      : No SRT support, remove dependency to libsrt.
@@ -188,7 +189,7 @@ RPMBUILDROOT ?= $(HOME)/rpmbuild
 $(RPMBUILDROOT):
 	rpmdev-setuptree
 
-# RPM package building (Red Hat, Fedora, CentOS, Alma Linux, Rocky Linux, etc.)
+# RPM package building (Red Hat, Fedora, CentOS, Alma Linux, Rocky Linux, Oracle Linux, etc.)
 # The build will take place elsewhere, reuse local Dektec Linux SDK if present.
 
 RPMBUILD ?= rpmbuild
@@ -199,6 +200,8 @@ RPM_ARCH = $(shell uname -m)
 rpm: tarball $(RPMBUILDROOT)
 	cp -f $(TARFILE) $(RPMBUILDROOT)/SOURCES/
 	DTAPI_ORIGIN="$(shell $(SCRIPTSDIR)/dtapi-config.sh --tarball)" \
+	  VATEK_SRC_ORIGIN="$(shell $(SCRIPTSDIR)/vatek-config.sh --src-tarball)" \
+	  VATEK_BIN_ORIGIN="$(shell $(SCRIPTSDIR)/vatek-config.sh --bin-tarball)" \
 	  $(RPMBUILD) $(RPMBUILDFLAGS) \
 	      -D 'version $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --main)' \
 	      -D 'commit $(shell $(SCRIPTSDIR)/get-version-from-sources.sh --commit)' \
@@ -209,6 +212,7 @@ rpm: tarball $(RPMBUILDROOT)
 	      $(if $(NOPCSC),-D 'nopcsc 1') \
 	      $(if $(NOCURL),-D 'nocurl 1') \
 	      $(if $(NOEDITLINE),-D 'noeditline 1') \
+	      $(if $(NOVATEK),-D 'novatek 1') \
 	      $(SCRIPTSDIR)/tsduck.spec
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
 	cp -uf $(RPMBUILDROOT)/RPMS/*/tsduck-devel-$(VERSION)$(DISTRO).*.rpm $(INSTALLERDIR)
@@ -241,6 +245,7 @@ deb-tools:
 	    $(if $(NOPCSC),-e '/libpcsc/d') \
 	    $(if $(NOCURL),-e '/libcurl/d') \
 	    $(if $(NOEDITLINE),-e '/libedit/d') \
+	    $(if $(NOVATEK),-e '/libusb/d') \
 	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
@@ -257,6 +262,7 @@ deb-dev: deb-tools
 	    $(if $(NOPCSC),-e '/libpcsc/d') \
 	    $(if $(NOCURL),-e '/libcurl/d') \
 	    $(if $(NOEDITLINE),-e '/libedit/d') \
+	    $(if $(NOVATEK),-e '/libusb/d') \
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)

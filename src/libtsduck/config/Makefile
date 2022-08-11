@@ -76,6 +76,7 @@ install-devel:
 	    $(if $(NOPCSC),-e 's|libpcsclite||g') \
 	    $(if $(NOCURL),-e 's|libcurl||g') \
 	    $(if $(NOEDITLINE),-e 's|libedit||g') \
+	    $(if $(NOVATEK),-e 's|libusb-1.0||g') \
 	    $(if $(MACOS),-e 's| *-lrt *| |g' -e 's| *-latomic *| |g') \
 	    -e 's|:[ ,]*|: |g' -e 's|,[ ,]*|, |g' -e 's|[ ,]*$$||' -e '/: *$$/d' \
 	    tsduck.pc >$(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc

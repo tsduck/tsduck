@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Must be included in .vcxproj files to use the Vatek core library -->
+
+  <!-- Default property file for Vatek static library -->
+  <PropertyGroup Label="UserMacros">
+    <DefaultVatekProps>C:\Program Files\VATek\VATek_API\libvatek_core_static.props</DefaultVatekProps>
+  </PropertyGroup>
+
+  <!-- Check that the Vatek property file exists and not disabled (env var TS_NO_VATEK) -->
+  <PropertyGroup Label="UserMacros" Condition="'$(TS_NO_VATEK)'=='' And Exists('$(DefaultVatekProps)') And ('$(Platform)'=='x64' Or '$(Platform)'=='Win64')">
+    <VatekProps>$(DefaultVatekProps)</VatekProps>
+  </PropertyGroup>
+
+  <!-- Activate the Vatek property file when available -->
+  <ImportGroup Label="PropertySheets" Condition="'$(VatekProps)'!=''">
+    <Import Project="$(VatekProps)"/>
+  </ImportGroup>
+
+  <!-- Disable Vatek code in TSDuck when Vatek library is not available -->
+  <ItemDefinitionGroup Condition="'$(VatekProps)'==''">
+    <ClCompile>
+      <PreprocessorDefinitions>TS_NO_VATEK;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+  <!-- Temporary workaround for missing declaration in Vatek property file with SDK v3.04 -->
+  <ItemDefinitionGroup Condition="'$(VatekProps)'!=''">
+    <ClCompile>
+      <PreprocessorDefinitions>_VA2_STATIC_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
+</Project>
