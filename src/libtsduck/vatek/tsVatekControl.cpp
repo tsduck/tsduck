@@ -29,6 +29,16 @@
 
 #include "tsVatekControl.h"
 
+
+// Temporarily disable Vatek on Linux: the Vatek static library is not built with -fPIC
+//@@@@@@@@@@@@@
+#if defined(TS_LINUX) && !defined(TS_NO_VATEK)
+#define TS_NO_VATEK 1
+#endif
+//@@@@@@@@@@@@@
+
+
+
 #if !defined(TS_NO_VATEK)
 #include <vatek_sdk_device.h>
 #include <core/ui/ui_props_api.h>
@@ -79,9 +89,6 @@ int ts::VatekControl::execute()
     error(u"This version of TSDuck was compiled without Vatek support");
 #else
 
-    /*@@@@@@@@@@@@@@@@@@@@@@@@@@@@
-     * The following code is disabled because the Vatek static library is not compiled with -fPIC.
-
     hvatek_devices hdevices = nullptr;
     vatek_result status = vatek_device_list_enum(DEVICE_BUS_USB, service_transform, &hdevices);
     const int32_t device_count = int32_t(status);
@@ -115,13 +122,14 @@ int ts::VatekControl::execute()
             return EXIT_FAILURE;
         }
         std::cout << "Device " << _dev_index << ": " << vatek_device_get_name(hchip) << std::endl;
+        TS_PUSH_WARNING()
+        TS_LLVM_NOWARNING(cast-qual)
+        TS_LLVM_NOWARNING(old-style-cast)
         ui_props_printf(" - [%-20s] : %-8s - %s\r\n", nullptr, _ui_struct(chip_info), (uint8_t*)vatek_device_get_info(hchip));
+        TS_PUSH_WARNING()
     }
 
     vatek_device_list_free(hdevices);
-
-    @@@@@@@@@@@@@@@*/
-
     return EXIT_SUCCESS;
 
 #endif // TS_NO_VATEK
