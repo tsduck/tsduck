@@ -138,7 +138,7 @@ get-ldlibs()
         lib=$(basename "$lib" $suffix)
         echo -l${lib/#lib/}
     else
-        echo "$lib"
+        echo "$lib -lusb-1.0"
     fi
 }
 
