@@ -40,9 +40,12 @@
 
 
 #if !defined(TS_NO_VATEK)
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(5027)
 #include <vatek_sdk_device.h>
 #include <core/ui/ui_props_api.h>
 #include <core/ui/ui_props/ui_props_chip.h>
+TS_POP_WARNING()
 #endif
 
 
@@ -86,7 +89,10 @@ ts::VatekControl::~VatekControl()
 int ts::VatekControl::execute()
 {
 #if defined(TS_NO_VATEK)
+
     error(u"This version of TSDuck was compiled without Vatek support");
+    return EXIT_FAILURE;
+
 #else
 
     hvatek_devices hdevices = nullptr;
