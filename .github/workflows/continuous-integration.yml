@@ -128,6 +128,7 @@ jobs:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
+        brew update
         scripts/install-prerequisites.sh
         clang --version
         scripts/java-config.sh
