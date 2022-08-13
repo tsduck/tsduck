@@ -202,7 +202,8 @@ download-vatek()
             info "rebuilding the vatek library ..."
             (
                 rm -rf "$VATEK_BUILD"
-                cmake -S "$srcdir" -B "$VATEK_BUILD" --install-prefix "$VATEK_INSTALL" \
+                # Remain compatible with old versions of cmake.
+                cmake -S "$srcdir" -B "$VATEK_BUILD" -DCMAKE_INSTALL_PREFIX:PATH="$VATEK_INSTALL" \
                       -DSDK2_EN_QT=OFF -DSDK2_EN_APP=OFF -DSDK2_EN_SAMPLE=OFF -DSDK2_EN_STATIC_ONLY=ON &&
                     cmake --build "$VATEK_BUILD" &&
                     cmake --install "$VATEK_BUILD"
