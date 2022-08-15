@@ -28,8 +28,12 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Get configuration for Vatek core API on current Linux system.
+#  Get configuration for Vatek core API on current Linux or macOS system.
 #  Vatek provides an open-source API on GitHub for their modulator chips.
+#  On macOS, the Homebrew package libatek provides a binary version.
+#  On Linux, a binary tarball is downloaded by this script. When the
+#  binary tarball is not appropriate for the current system, the source
+#  code of the Vatek library is dowloaded and rebuilt.
 #
 #-----------------------------------------------------------------------------
 
@@ -48,7 +52,7 @@ VATEK_BUILD="$VATEK_ROOT/build"
 VATEK_INSTALL="$VATEK_ROOT/install"
 SYSTEM=$(uname -s)
 
-# Get Vatek API source tarball URL.
+# Get Vatek API source tarball URL for the latest release.
 get-src-url()
 {
     # Use the GitHub REST API to get the source tarball of the latest release of the Vatek API.
@@ -58,7 +62,7 @@ get-src-url()
         head -1
 }
 
-# Get Vatek API binary tarball URL.
+# Get Vatek API binary tarball URL for the latest release.
 get-bin-url()
 {
     # Use the GitHub REST API to get the URL if an asset named VATek-Linux-x86_64.*\.tgz in the latest release of the Vatek API.
@@ -99,9 +103,6 @@ get-include()
         [[ -d "$brew/include/vatek" ]] && echo "$brew/include/vatek"
     elif [[ -d "$VATEK_INSTALL/include/vatek" ]]; then
         echo "$VATEK_INSTALL/include/vatek"
-    elif [[ -e "$VATEK_INSTALL/include/vatek_sdk_device.h" ]]; then
-        # Older versions install directly under include.
-        echo "$VATEK_INSTALL/include"
     fi
 }
 
@@ -115,9 +116,6 @@ get-lib()
         [[ -e "$brew/lib/libvatek_core$suffix" ]] && echo "$brew/lib/libvatek_core$suffix"
     elif [[ -e "$VATEK_INSTALL/lib/libvatek_core.a" ]]; then
         echo "$VATEK_INSTALL/lib/libvatek_core.a"
-    elif [[ -e "$VATEK_INSTALL/lib/libvatek_core_static.a" ]]; then
-        # Older versions.
-        echo "$VATEK_INSTALL/lib/libvatek_core_static.a"
     fi    
 }
 

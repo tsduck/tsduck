@@ -29,16 +29,6 @@
 
 #include "tsVatekControl.h"
 
-
-// Temporarily disable Vatek on Linux: the Vatek static library is not built with -fPIC
-//@@@@@@@@@@@@@
-#if defined(TS_LINUX) && !defined(TS_NO_VATEK)
-#define TS_NO_VATEK 1
-#endif
-//@@@@@@@@@@@@@
-
-
-
 #if !defined(TS_NO_VATEK)
 TS_PUSH_WARNING()
 TS_MSC_NOWARNING(5027)
@@ -127,11 +117,12 @@ int ts::VatekControl::execute()
             error(u"open VATEK device fail, status: %d", {status});
             return EXIT_FAILURE;
         }
-        std::cout << "Device " << _dev_index << ": " << vatek_device_get_name(hchip) << std::endl;
+        std::cout << "Device " << _dev_index << ": " << vatek_device_get_name(hchip) << std::endl << std::flush;
         TS_PUSH_WARNING()
         TS_LLVM_NOWARNING(cast-qual)
         TS_LLVM_NOWARNING(old-style-cast)
         ui_props_printf(" - [%-20s] : %-8s - %s\r\n", nullptr, _ui_struct(chip_info), (uint8_t*)vatek_device_get_info(hchip));
+        fflush(stdout);
         TS_PUSH_WARNING()
     }
 
