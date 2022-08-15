@@ -33,9 +33,15 @@ TS_LLVM_NOWARNING(missing-variable-declarations)
 bool tsVatekOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #else
 
+#include "tsPlatform.h"
+
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(5027)
+TS_MSC_NOWARNING(4244)
 #include "tsVatekOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include <cross/cross_os_api.h>
+TS_POP_WARNING()
 
 TS_REGISTER_OUTPUT_PLUGIN(u"vatek", ts::VatekOutputPlugin);
 
@@ -477,7 +483,7 @@ bool ts::VatekOutputPlugin::send(const TSPacket* pkts, const TSPacketMetadata* m
                 memcpy(m_slicebuf->ptrbuf, data, pktsize);
                 m_slicebuf->ptrbuf += pktsize;
                 data += pktsize;
-                m_slicebuf->packet_pos += pktnums;
+                m_slicebuf->packet_pos += int32_t(pktnums);
                 if (m_slicebuf->packet_pos == m_slicebuf->packet_len) {
                     nres = vatek_ustream_async_commit_buffer(m_husbstream, m_slicebuf);
                     m_slicebuf = nullptr;
