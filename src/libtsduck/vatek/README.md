@@ -38,20 +38,18 @@ The installation of the Vatek core library depends on the operating system:
 
 When building TSDuck, it is possible to disable Vatek support and remove the dependency
 to the Vatek library using `make NOVATEK=1` on Linux and macOS, or defining
-the environment variable TS_NO_VATEK to any non-empty value on Windows.
+the environment variable `TS_NO_VATEK` to any non-empty value on Windows.
 
 Since, on some operating systems, the Vatek library is statically linked
 inside the TSDuck shared library, all Vatek-related code for `tsvatek` and
 the `vatek` plugin is built inside the TSDuck shared library.
 The `tsvatek` command just calls a C++ class named `ts::VatekControl` which
-is inside the TSDuck shared library.
+is inside the TSDuck shared library. The `vatek` plugin is located inside
+the TSDuck library and not a separated shared library (there are a dozen
+plugins in that case for various technical reasons).
 
 When Vatek support is disabled, `tsvatek` and the `vatek` plugins are not
 built, not installed and not present in the binary package.
-
-Even when Vatek support is disabled, the Vatek-related C++ classes exist in
-the TSDuck shared library so that applications using these classes cab be built.
-However, any operation will fail with an error message.
 
 See also:
 - https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2
