@@ -26,7 +26,7 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  Download and install the VATek (Vision Advanced Technologies) SDK for Windows.
+#  Download and install the VATek (Vision Advance Technologies) SDK for Windows.
 #  See parameters documentation in install-common.ps1.
 #
 #-----------------------------------------------------------------------------
