@@ -33,15 +33,9 @@ TS_LLVM_NOWARNING(missing-variable-declarations)
 bool tsVatekOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #else
 
-#include "tsPlatform.h"
-
-TS_PUSH_WARNING()
-TS_MSC_NOWARNING(5027)
-TS_MSC_NOWARNING(4244)
 #include "tsVatekOutputPlugin.h"
 #include "tsPluginRepository.h"
 #include <cross/cross_os_api.h>
-TS_POP_WARNING()
 
 TS_REGISTER_OUTPUT_PLUGIN(u"vatek", ts::VatekOutputPlugin);
 
