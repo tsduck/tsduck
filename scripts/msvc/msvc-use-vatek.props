@@ -25,11 +25,4 @@
     </ClCompile>
   </ItemDefinitionGroup>
 
-  <!-- Temporary workaround for missing declaration in Vatek property file with SDK v3.04 -->
-  <ItemDefinitionGroup Condition="'$(VatekProps)'!=''">
-    <ClCompile>
-      <PreprocessorDefinitions>_VA2_STATIC_;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
 </Project>
