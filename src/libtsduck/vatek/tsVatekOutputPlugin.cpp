@@ -547,14 +547,11 @@ vatek_result ts::VatekOutputPlugin::configParam()
     if (is_vatek_success(nres)) {
         // Command line parameter is in Hz, Vatek parameter is in kHz.
         m_param.r2param.freqkhz = uint32_t(intValue<uint64_t>(u"frequency", uint64_t(m_param.r2param.freqkhz) * 1000) / 1000);
-        m_index = intValue(u"device", 0);
+        getIntValue(m_index, u"device", 0);
+        getIntValue(m_param.remux, u"remux", m_param.remux);
+        debugParams();
     }
 
-    if (is_vatek_success(nres))
-    {
-        m_param.remux = intValue(u"remux", m_param.remux);
-        m_index = intValue(u"device", 0);
-    }
     return nres;
 }
 
@@ -768,6 +765,100 @@ vatek_result ts::VatekOutputPlugin::modparam_config_dvb_t2(Pmodulator_param pmod
         }
     }
     return nres;
+}
+
+
+//----------------------------------------------------------------------------
+// Display modulation parameters in debug mode.
+//----------------------------------------------------------------------------
+
+void ts::VatekOutputPlugin::debugParams()
+{
+    if (debug()) {
+        #define PR(format,name) debug(u"" #name " = " format, {m_param.name})
+        PR("%d", mode);
+        PR("%d", remux);
+        PR("%d", pcradjust);
+        PR("%d", r2param.mode);
+        PR("0x%X", r2param.r2_flags);
+        PR("%'d", r2param.freqkhz);
+        PR("%d", r2param.rule.tune.ioffset);
+        PR("%d", r2param.rule.tune.qoffset);
+        PR("%d", r2param.rule.tune.imgoffset);
+        PR("%d", r2param.rule.tune.phaseoffset);
+        PR("%d", r2param.rule.pagain);
+        PR("%d", r2param.rule.gpiocntl);
+        PR("%d", modulator.bandwidth_symbolrate);
+        PR("%d", modulator.type);
+        PR("%d", modulator.ifmode);
+        PR("%d", modulator.iffreq_offset);
+        PR("%d", modulator.dac_gain);
+        PR("%d", modulator.mod.raw_byte);
+        switch (m_param.modulator.type) {
+            case modulator_dvb_t:
+                PR("%d", modulator.mod.dvb_t.constellation);
+                PR("%d", modulator.mod.dvb_t.fft);
+                PR("%d", modulator.mod.dvb_t.guardinterval);
+                PR("%d", modulator.mod.dvb_t.coderate);
+                break;
+            case modulator_dvb_t2:
+                PR("%d", modulator.mod.dvb_t2.version);
+                PR("0x%X", modulator.mod.dvb_t2.t2_flags);
+                PR("%d", modulator.mod.dvb_t2.l1_constellation);
+                PR("%d", modulator.mod.dvb_t2.plp_constellation);
+                PR("%d", modulator.mod.dvb_t2.issy);
+                PR("%d", modulator.mod.dvb_t2.fft);
+                PR("%d", modulator.mod.dvb_t2.coderate);
+                PR("%d", modulator.mod.dvb_t2.guardinterval);
+                PR("%d", modulator.mod.dvb_t2.pilotpattern);
+                PR("%d", modulator.mod.dvb_t2.fectype);
+                PR("%d", modulator.mod.dvb_t2.network_id);
+                PR("%d", modulator.mod.dvb_t2.system_id);
+                PR("%d", modulator.mod.dvb_t2.fecblock_nums);
+                PR("%d", modulator.mod.dvb_t2.symbol_nums);
+                PR("%d", modulator.mod.dvb_t2.ti_ni);
+                PR("%d", modulator.mod.dvb_t2.recv);
+                break;
+            case modulator_isdb_t:
+                PR("%d", modulator.mod.isdb_t.constellation);
+                PR("%d", modulator.mod.isdb_t.fft);
+                PR("%d", modulator.mod.isdb_t.guardinterval);
+                PR("%d", modulator.mod.isdb_t.coderate);
+                PR("%d", modulator.mod.isdb_t.timeinterleaved);
+                PR("0x%X", modulator.mod.isdb_t.isdb_t_flags);
+                break;
+            case modulator_atsc:
+                PR("%d", modulator.mod.atsc.constellation);
+                break;
+            case modulator_j83a:
+                PR("%d", modulator.mod.j83a.constellation);
+                break;
+            case modulator_j83b:
+                PR("%d", modulator.mod.j83b.constellation);
+                PR("%d", modulator.mod.j83b.r2_path);
+                break;
+            case modulator_j83c:
+                PR("%d", modulator.mod.j83c.constellation);
+                break;
+            case modulator_dtmb:
+                PR("%d", modulator.mod.dtmb.constellation);
+                PR("%d", modulator.mod.dtmb.timeinterleaved);
+                PR("%d", modulator.mod.dtmb.coderate);
+                PR("%d", modulator.mod.dtmb.carriermode);
+                PR("%d", modulator.mod.dtmb.framesync);
+                break;
+            case modulator_unknown:
+            case modulator_mod_nums:
+            default:
+                break;
+        }
+        if (m_param.mode == ustream_mode_async) {
+            PR("%d", async.mode);
+            PR("%d", async.bitrate);
+            PR("%d", async.prepare_ms);
+        }
+        #undef PR
+    }
 }
 
 #endif // TS_NO_VATEK

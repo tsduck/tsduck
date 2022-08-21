@@ -98,6 +98,7 @@ namespace ts {
         int32_t m_index;
         Pusbstream_slice m_slicebuf;
 
+        void debugParams();
         vatek_result configParam();
         vatek_result modparam_config_dvb_t(Pmodulator_param pmod);
         vatek_result modparam_config_j83a(Pmodulator_param pmod);
