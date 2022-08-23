@@ -7,7 +7,7 @@ Section: free/video
 Priority: optional
 Depends: libc6,
  libsrt | libsrt1 | libsrt1-openssl | libsrt1.4-openssl,
- librist | librist1,
+ librist | librist1 | librist4,
  libedit2,
  libusb-1.0-0 | libusb-1.0,
  libpcsclite1,
