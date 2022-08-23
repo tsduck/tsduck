@@ -136,6 +136,9 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     elif [[ "$VERSION" -ge 1904 ]]; then
         pkglist="$pkglist libsrt-dev"
     fi
+    if [[ "$VERSION" -ge 2210 ]]; then
+        pkglist="$pkglist librist-dev"
+    fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
@@ -174,6 +177,9 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     fi
     if [[ "$MAJOR" -ge 11 ]]; then
         pkglist="$pkglist libsrt-openssl-dev"
+    fi
+    if [[ "$MAJOR" -ge 12 ]]; then
+        pkglist="$pkglist librist-dev"
     fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
