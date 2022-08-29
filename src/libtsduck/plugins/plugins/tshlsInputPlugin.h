@@ -82,6 +82,11 @@ namespace ts {
             bool     _lowestRes;
             bool     _highestRes;
             size_t   _maxSegmentCount;
+            bool     _altSelection;
+            UString  _altType;
+            UString  _altName;
+            UString  _altGroupId;
+            UString  _altLanguage;
 
             // Working data:
             size_t   _segmentCount;

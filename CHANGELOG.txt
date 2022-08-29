@@ -2,12 +2,18 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.32-2770
+VERSION 3.32-2783
 
 [NEW] New commands and plugins:
 
   * Added command "tsvatek" and output plugin "vatek" to handle modulators
     based on VATek chips.
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Options --alt-group-id, --alt-language, --alt-name, --alt-type in input
+      plugin "hls".
 
 -------------------------------------------------------------------------------
 

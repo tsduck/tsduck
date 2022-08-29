@@ -56,6 +56,11 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
     _lowestRes(false),
     _highestRes(false),
     _maxSegmentCount(0),
+    _altSelection(false),
+    _altType(),
+    _altName(),
+    _altGroupId(),
+    _altLanguage(),
     _segmentCount(0),
     _playlist()
 {
@@ -67,6 +72,26 @@ ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
          u"of the same content (with various bitrates or resolutions). "
          u"The playlist can also be a media playlist, referencing all segments "
          u"of one single content.");
+
+    option(u"alt-group-id", 0, STRING);
+    help(u"alt-group-id", u"'string'",
+         u"When the URL is a master playlist, use the 'alternative rendition content' with the specified group id. "
+         u"If several --alt-* options are specified, the selected 'alternative rendition content' must match all of them.");
+
+    option(u"alt-language", 0, STRING);
+    help(u"alt-language", u"'string'",
+         u"When the URL is a master playlist, use the first 'alternative rendition content' with the specified language. "
+         u"If several --alt-* options are specified, the selected 'alternative rendition content' must match all of them.");
+
+    option(u"alt-name", 0, STRING);
+    help(u"alt-name", u"'string'",
+         u"When the URL is a master playlist, use the 'alternative rendition content' with the specified name. "
+         u"If several --alt-* options are specified, the selected 'alternative rendition content' must match all of them.");
+
+    option(u"alt-type", 0, STRING);
+    help(u"alt-type", u"'string'",
+         u"When the URL is a master playlist, use the first 'alternative rendition content' with the specified type. "
+         u"If several --alt-* options are specified, the selected 'alternative rendition content' must match all of them.");
 
     option(u"lowest-bitrate");
     help(u"lowest-bitrate",
@@ -178,6 +203,12 @@ bool ts::hls::InputPlugin::getOptions()
     _highestRes = present(u"highest-resolution");
     _listVariants = present(u"list-variants");
 
+    getValue(_altGroupId, u"alt-group-id");
+    getValue(_altLanguage, u"alt-language");
+    getValue(_altName, u"alt-name");
+    getValue(_altType, u"alt-type");
+    _altSelection = !_altGroupId.empty() || !_altLanguage.empty() || !_altName.empty() || !_altType.empty();
+
     // Invoke superclass to initialize webArgs.
     AbstractHTTPInputPlugin::getOptions();
 
@@ -202,13 +233,18 @@ bool ts::hls::InputPlugin::getOptions()
 
     // Check consistency of selection options.
     const int singleSelect = _lowestRate + _highestRate + _lowestRes + _highestRes;
-    const int multiSelect = (_minRate > 0) + (_maxRate > 0) + (_minWidth > 0) + (_maxWidth > 0) + (_minHeight > 0) + (_maxHeight > 0);
+    const bool multiSelect = _minRate > 0 || _maxRate > 0 || _minWidth > 0 || _maxWidth > 0 || _minHeight > 0 || _maxHeight > 0;
+
     if (singleSelect > 1) {
         tsp->error(u"specify only one of --lowest-bitrate, --highest-bitrate, --lowest-resolution, --highest-resolution");
         return false;
     }
-    if (singleSelect > 0 && multiSelect > 0) {
+    if (singleSelect > 0 && multiSelect) {
         tsp->error(u"incompatible combination of stream selection options");
+        return false;
+    }
+    if (_altSelection && (singleSelect > 0 || multiSelect)) {
+        tsp->error(u"--alt-* options and incompatible with main stream selection options");
         return false;
     }
 
@@ -244,47 +280,72 @@ bool ts::hls::InputPlugin::start()
             for (size_t i = 0; i < master.playListCount(); ++i) {
                 tsp->info(master.playList(i).toString());
             }
+            if (master.altPlayListCount() > 0) {
+                tsp->info(u"%s alternative rendition contents:", {master.altPlayListCount()});
+                for (size_t i = 0; i < master.altPlayListCount(); ++i) {
+                    tsp->info(master.altPlayList(i).toString());
+                }
+            }
         }
 
         // Apply command line selection criteria.
-        // Loop until one media playlist is loaded (skip missing playlists).
-        for (;;) {
-            size_t index = 0;
-            if (_lowestRate) {
-                index = master.selectPlayListLowestBitRate();
-            }
-            else if (_highestRate) {
-                index = master.selectPlayListHighestBitRate();
-            }
-            else if (_lowestRes) {
-                index = master.selectPlayListLowestResolution();
-            }
-            else if (_highestRes) {
-                index = master.selectPlayListHighestResolution();
-            }
-            else {
-                index = master.selectPlayList(_minRate, _maxRate, _minWidth, _maxWidth, _minHeight, _maxHeight);
-            }
-            if (index == NPOS) {
-                tsp->error(u"could not find a matching stream in master playlist");
-                return false;
-            }
-            assert(index < master.playListCount());
-            tsp->verbose(u"selected playlist: %s", {master.playList(index)});
-            const UString nextURL(master.playList(index).urlString());
-
-            // Download selected media playlist.
+        if (_altSelection) {
+            // Select an 'alternative rendition' playlist according to --alt-* parameters.
             _playlist.clear();
-            if (_playlist.loadURL(nextURL, false, webArgs, hls::PlayListType::UNKNOWN, *tsp)) {
-                break; // media playlist loaded
-            }
-            else if (master.playListCount() == 1) {
-                tsp->error(u"no more media playlist to try, giving up");
+            const size_t index = master.selectAltPlayList(_altType, _altName, _altGroupId, _altLanguage);
+            if (index == NPOS) {
+                tsp->error(u"no alternative rendition media playlist found with selected criteria");
                 return false;
             }
             else {
-                // Remove the failing playlist and retry playlist selection.
-                master.deletePlayList(index);
+                assert(index < master.altPlayListCount());
+                tsp->verbose(u"selected playlist: %s", {master.altPlayList(index)});
+                if (!_playlist.loadURL(master.altPlayList(index).urlString(), false, webArgs, hls::PlayListType::UNKNOWN, *tsp)) {
+                    return false;
+                }
+            }
+        }
+        else {
+            // Select a main content playlist.
+            // Loop until one media playlist is loaded (skip missing playlists).
+            for (;;) {
+                size_t index = 0;
+                if (_lowestRate) {
+                    index = master.selectPlayListLowestBitRate();
+                }
+                else if (_highestRate) {
+                    index = master.selectPlayListHighestBitRate();
+                }
+                else if (_lowestRes) {
+                    index = master.selectPlayListLowestResolution();
+                }
+                else if (_highestRes) {
+                    index = master.selectPlayListHighestResolution();
+                }
+                else {
+                    index = master.selectPlayList(_minRate, _maxRate, _minWidth, _maxWidth, _minHeight, _maxHeight);
+                }
+                if (index == NPOS) {
+                    tsp->error(u"could not find a matching stream in master playlist");
+                    return false;
+                }
+                assert(index < master.playListCount());
+                tsp->verbose(u"selected playlist: %s", {master.playList(index)});
+                const UString nextURL(master.playList(index).urlString());
+
+                // Download selected media playlist.
+                _playlist.clear();
+                if (_playlist.loadURL(nextURL, false, webArgs, hls::PlayListType::UNKNOWN, *tsp)) {
+                    break; // media playlist loaded
+                }
+                else if (master.playListCount() == 1) {
+                    tsp->error(u"no more media playlist to try, giving up");
+                    return false;
+                }
+                else {
+                    // Remove the failing playlist and retry playlist selection.
+                    master.deletePlayList(index);
+                }
             }
         }
     }

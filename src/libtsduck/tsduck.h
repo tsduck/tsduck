@@ -326,6 +326,7 @@
 #include "tsHierarchicalTransmissionDescriptor.h"
 #include "tsHierarchyDescriptor.h"
 #include "tshls.h"
+#include "tshlsAltPlayList.h"
 #include "tshlsInputPlugin.h"
 #include "tshlsMediaElement.h"
 #include "tshlsMediaPlayList.h"
