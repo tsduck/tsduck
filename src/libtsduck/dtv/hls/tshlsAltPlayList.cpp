@@ -26,22 +26,52 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
+
+#include "tshlsAltPlayList.h"
+
+
+//----------------------------------------------------------------------------
+// Constructor.
 //----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2783
+ts::hls::AltPlayList::AltPlayList() :
+    MediaElement(),
+    isDefault(false),
+    autoselect(false),
+    forced(false),
+    name(),
+    type(),
+    groupId(),
+    stableRenditionId(),
+    language(),
+    assocLanguage(),
+    inStreamId(),
+    characteristics(),
+    channels()
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of StringifyInterface
+//----------------------------------------------------------------------------
+
+ts::UString ts::hls::AltPlayList::toString() const
+{
+    UString str(MediaElement::toString());
+
+    if (!type.empty()) {
+        str.format(u", type: %s", {type});
+    }
+    if (!name.empty()) {
+        str.format(u", name: %s", {name});
+    }
+    if (!groupId.empty()) {
+        str.format(u", group id: %s", {groupId});
+    }
+    if (!language.empty()) {
+        str.format(u", language: %s", {language});
+    }
+
+    return str;
+}

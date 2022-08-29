@@ -35,6 +35,7 @@
 #pragma once
 #include "tshls.h"
 #include "tshlsMediaPlayList.h"
+#include "tshlsAltPlayList.h"
 #include "tshlsMediaSegment.h"
 #include "tsURL.h"
 #include "tsTime.h"
@@ -282,6 +283,12 @@ namespace ts {
             size_t playListCount() const { return _playlists.size(); }
 
             //!
+            //! Get the number of altenative rendition playlists (in master playlist).
+            //! @return The number of altenative rendition playlists.
+            //!
+            size_t altPlayListCount() const { return _altPlaylists.size(); }
+
+            //!
             //! Get a constant reference to a media segment (in media playlist).
             //! @param [in] index Index of the segment, from 0 to segmentCount().
             //! @return A constant reference to the media segment at @a index.
@@ -388,6 +395,43 @@ namespace ts {
             //!
             size_t selectPlayListHighestResolution() const;
 
+            //!
+            //! Get a constant reference to an alternative rendition playlist description (in master playlist).
+            //! @param [in] index Index of the playlist, from 0 to altPlayListCount()-1.
+            //! @return A constant reference to the alternative rendition playlist description at @a index.
+            //!
+            const AltPlayList& altPlayList(size_t index) const;
+
+            //!
+            //! Delete an alternative rendition playlist description from a master playlist.
+            //! @param [in] index Index of the alternative rendition playlist to delete, from 0 to altPlayListCount()-1.
+            //!
+            void deleteAltPlayList(size_t index);
+
+            //!
+            //! Add an alternative rendition media playlist in a master playlist.
+            //! @param [in] pl The new alternative rendition playlist to append. If the master playlist's URI is a file
+            //! name, the URI of the media playlist is transformed into a relative URI from the master
+            //! playlist's path.
+            //! @param [in,out] report Where to report errors.
+            //! @return True on success, false on error.
+            //!
+            bool addAltPlayList(const AltPlayList& pl, Report& report = CERR);
+
+            //!
+            //! Select the first alternative rendition playlist with specific criteria.
+            //! @param [in] type The type to match. Ignored if empty.
+            //! @param [in] name The name to match. Ignored if empty.
+            //! @param [in] groupId The group-id to match. Ignored if empty.
+            //! @param [in] language The language to match. Ignored if empty.
+            //! @return Index of the selected alternative rendition playlist which matches all non-empty criteria
+            //! or NPOS if there is none. If all criteria are empty, select the first playlist.
+            //!
+            size_t selectAltPlayList(const UString& type = UString(),
+                                     const UString& name = UString(),
+                                     const UString& groupId = UString(),
+                                     const UString& language = UString()) const;
+
             // Implementation of StringifyInterface
             virtual UString toString() const override;
 
@@ -395,6 +439,7 @@ namespace ts {
             // We need to access lists of media, with index access and fast insert at beginning and end.
             typedef std::deque<MediaSegment> MediaSegmentQueue;
             typedef std::deque<MediaPlayList> MediaPlayListQueue;
+            typedef std::deque<AltPlayList> AltPlayListQueue;
 
             bool               _valid;           // Content loaded and valid.
             int                _version;         // Playlist format version.
@@ -410,12 +455,14 @@ namespace ts {
             Time               _utcTermination;  // UTC time of termination (download + all segment durations).
             MediaSegmentQueue  _segments;        // List of media segments (media playlist).
             MediaPlayListQueue _playlists;       // List of media playlists (master playlist).
+            AltPlayListQueue   _altPlaylists;    // List of alternative rendition media playlists (master playlist).
             UStringList        _loadedContent;   // Loaded text content (can be different from current content).
             UString            _autoSaveDir;     // If not empty, automatically save loaded playlist to this directory.
 
             // Empty data to return.
             static const MediaSegment EmptySegment;
             static const MediaPlayList EmptyPlayList;
+            static const AltPlayList EmptyAltPlayList;
 
             // Load from the text content.
             bool parse(const UString& text, bool strict, Report& report);

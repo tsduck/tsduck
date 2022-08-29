@@ -52,6 +52,7 @@ ts::hls::PlayList::PlayList() :
     _utcTermination(),
     _segments(),
     _playlists(),
+    _altPlaylists(),
     _loadedContent(),
     _autoSaveDir()
 {
@@ -78,6 +79,7 @@ void ts::hls::PlayList::clear()
     _utcTermination = Time::Epoch;
     _segments.clear();
     _playlists.clear();
+    _altPlaylists.clear();
     _loadedContent.clear();
     // Preserve _autoSaveDir
 }
@@ -217,6 +219,7 @@ bool ts::hls::PlayList::setEndList(bool end, Report& report)
 
 const ts::hls::MediaSegment ts::hls::PlayList::EmptySegment;
 const ts::hls::MediaPlayList ts::hls::PlayList::EmptyPlayList;
+const ts::hls::AltPlayList ts::hls::PlayList::EmptyAltPlayList;
 
 const ts::hls::MediaSegment& ts::hls::PlayList::segment(size_t index) const
 {
@@ -254,6 +257,11 @@ const ts::hls::MediaPlayList& ts::hls::PlayList::playList(size_t index) const
     return index < _playlists.size() ? _playlists[index] : EmptyPlayList;
 }
 
+const ts::hls::AltPlayList& ts::hls::PlayList::altPlayList(size_t index) const
+{
+    return index < _altPlaylists.size() ? _altPlaylists[index] : EmptyAltPlayList;
+}
+
 
 //----------------------------------------------------------------------------
 // Delete a media playlist description from a master playlist.
@@ -266,12 +274,19 @@ void ts::hls::PlayList::deletePlayList(size_t index)
     }
 }
 
+void ts::hls::PlayList::deleteAltPlayList(size_t index)
+{
+    if (index < _altPlaylists.size()) {
+        _altPlaylists.erase(_altPlaylists.begin() + index);
+    }
+}
+
 
 //----------------------------------------------------------------------------
 // Add a segment or sub-playlist in a playlist.
 //----------------------------------------------------------------------------
 
-bool ts::hls::PlayList::addSegment(const ts::hls::MediaSegment& seg, ts::Report& report)
+bool ts::hls::PlayList::addSegment(const MediaSegment& seg, Report& report)
 {
     if (seg.relativeURI.empty()) {
         report.error(u"empty media segment URI");
@@ -293,7 +308,7 @@ bool ts::hls::PlayList::addSegment(const ts::hls::MediaSegment& seg, ts::Report&
 }
 
 
-bool ts::hls::PlayList::addPlayList(const ts::hls::MediaPlayList& pl, ts::Report& report)
+bool ts::hls::PlayList::addPlayList(const MediaPlayList& pl, Report& report)
 {
     if (pl.relativeURI.empty()) {
         report.error(u"empty media playlist URI");
@@ -306,6 +321,24 @@ bool ts::hls::PlayList::addPlayList(const ts::hls::MediaPlayList& pl, ts::Report
         if (!_isURL && !_original.empty()) {
             // The master playlist's URI is a file name, update the media playlist's URI.
             _playlists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FileSystemCaseSensitivity, true);
+        }
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+
+bool ts::hls::PlayList::addAltPlayList(const AltPlayList& pl, Report& report)
+{
+    if (setType(PlayListType::MASTER, report)) {
+        // Add the media playlist.
+        _altPlaylists.push_back(pl);
+        // Build a relative URI if there is one (the URI field is optional in an alternative rendition playlist).
+        if (!pl.relativeURI.empty() && !_isURL && !_original.empty()) {
+            // The master playlist's URI is a file name, update the media playlist's URI.
+            _altPlaylists.back().relativeURI = RelativeFilePath(pl.relativeURI, _fileBase, FileSystemCaseSensitivity, true);
         }
         return true;
     }
@@ -393,6 +426,29 @@ size_t ts::hls::PlayList::selectPlayListHighestResolution() const
         }
     }
     return result;
+}
+
+
+//----------------------------------------------------------------------------
+// Select the first alternative rendition playlist with specific criteria.
+//----------------------------------------------------------------------------
+
+size_t ts::hls::PlayList::selectAltPlayList(const UString& type, const UString& name, const UString& groupId, const UString& language) const
+{
+    for (size_t i = 0; i < _altPlaylists.size(); ++i) {
+        const AltPlayList& pl(_altPlaylists[i]);
+        if ((type.empty() || pl.type.similar(type)) &&
+            (name.empty() || pl.name.similar(name)) &&
+            (groupId.empty() || pl.groupId.similar(groupId)) &&
+            (language.empty() || pl.language.similar(language)))
+        {
+            // Match all criteria.
+            return i;
+        }
+    }
+
+    // None found.
+    return NPOS;
 }
 
 
@@ -758,7 +814,32 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     plNext.closedCaptions = attr.value(u"CLOSED-CAPTIONS");
                     break;
                 }
-                case MEDIA:
+                case MEDIA: {
+                    // #EXT-X-MEDIA:<attribute-list>
+                    const TagAttributes attr(tagParams);
+                    AltPlayList pl;
+                    pl.name = attr.value(u"NAME");
+                    pl.type = attr.value(u"TYPE");
+                    pl.groupId = attr.value(u"GROUP-ID");
+                    pl.stableRenditionId = attr.value(u"STABLE-RENDITION-ID");
+                    pl.language = attr.value(u"LANGUAGE");
+                    pl.assocLanguage = attr.value(u"ASSOC-LANGUAGE");
+                    pl.inStreamId = attr.value(u"INSTREAM-ID");
+                    pl.characteristics = attr.value(u"CHARACTERISTICS");
+                    pl.channels = attr.value(u"CHANNELS");
+                    pl.isDefault = attr.value(u"DEFAULT").similar(u"YES");
+                    pl.autoselect = attr.value(u"AUTOSELECT").similar(u"YES");
+                    pl.forced = attr.value(u"FORCED").similar(u"YES");
+                    const UString uri(attr.value(u"URI"));
+                    if (!uri.empty()) {
+                        buildURL(pl, uri);
+                        if (!pl.filePath.endWith(u".m3u8", CASE_INSENSITIVE)) {
+                            report.debug(u"unexpected playlist file extension in reference URI: %s", {uri});
+                        }
+                    }
+                    _altPlaylists.push_back(pl);
+                    break;
+                }
                 case BYTERANGE:
                 case DISCONTINUITY:
                 case KEY:
@@ -936,13 +1017,16 @@ ts::UString ts::hls::PlayList::toString() const
     }
     str.append(isUpdatable() ? u", updatable (live)" : u", static");
     if (isMedia()) {
-        str += UString::Format(u", %d segments", {_segments.size()});
+        str.format(u", %d segments", {_segments.size()});
     }
     else if (_type == PlayListType::MASTER) {
-        str += UString::Format(u", %d media playlists", {_playlists.size()});
+        str.format(u", %d media playlists", {_playlists.size()});
+        if (!_altPlaylists.empty()) {
+            str.format(u", %d alternative rendition playlists", {_altPlaylists.size()});
+        }
     }
     if (_targetDuration > 0) {
-        str += UString::Format(u", %d seconds/segment", {_targetDuration});
+        str.format(u", %d seconds/segment", {_targetDuration});
     }
     return str;
 }
@@ -994,85 +1078,122 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
     text.format(u"#%s\n#%s:%d\n", {TagNames.name(EXTM3U), TagNames.name(VERSION), _version});
 
     if (isMaster()) {
+        // Loop on all alternative rendition playlists.
+        for (const auto& pl : _altPlaylists) {
+            // The initial fields are required.
+            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", {TagNames.name(MEDIA), pl.type, pl.groupId, pl.name});
+            if (pl.isDefault) {
+                text.append(u",DEFAULT=YES");
+            }
+            if (pl.autoselect) {
+                text.append(u",AUTOSELECT=YES");
+            }
+            if (pl.forced) {
+                text.append(u",FORCED=YES");
+            }
+            if (!pl.language.empty()) {
+                text.format(u",LANGUAGE=\"%s\"", {pl.language});
+            }
+            if (!pl.assocLanguage.empty()) {
+                text.format(u",ASSOC-LANGUAGE=\"%s\"", {pl.assocLanguage});
+            }
+            if (!pl.stableRenditionId.empty()) {
+                text.format(u",STABLE-RENDITION-ID=\"%s\"", {pl.stableRenditionId});
+            }
+            if (!pl.inStreamId.empty()) {
+                text.format(u",INSTREAM-ID=\"%s\"", {pl.inStreamId});
+            }
+            if (!pl.characteristics.empty()) {
+                text.format(u",CHARACTERISTICS=\"%s\"", {pl.characteristics});
+            }
+            if (!pl.channels.empty()) {
+                text.format(u",CHANNELS=\"%s\"", {pl.channels});
+            }
+            if (!pl.relativeURI.empty()) {
+                text.format(u",URI=\"%s\"", {pl.relativeURI});
+            }
+            // Close the #EXT-X-MEDIA line.
+            text.append(u'\n');
+        }
         // Loop on all media playlists.
-        for (auto it = _playlists.begin(); it != _playlists.end(); ++it) {
-            if (!it->relativeURI.empty()) {
+        for (const auto& pl : _playlists) {
+            if (!pl.relativeURI.empty()) {
                 // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
                 // Take care about string parameters: some are documented as quoted-string and
                 // some as enumerated-string. The former shall be quoted, the latter shall not.
-                text.append(UString::Format(u"#%s:BANDWIDTH=%d", {TagNames.name(STREAM_INF), it->bandwidth.toInt()}));
-                if (it->averageBandwidth > 0) {
-                    text.append(UString::Format(u",AVERAGE-BANDWIDTH=%d", {it->averageBandwidth.toInt()}));
+                text.format(u"#%s:BANDWIDTH=%d", {TagNames.name(STREAM_INF), pl.bandwidth.toInt()});
+                if (pl.averageBandwidth > 0) {
+                    text.format(u",AVERAGE-BANDWIDTH=%d", {pl.averageBandwidth.toInt()});
                 }
-                if (it->frameRate > 0) {
-                    text.append(UString::Format(u",FRAME-RATE=%d.%03d", {it->frameRate / 1000, it->frameRate % 1000}));
+                if (pl.frameRate > 0) {
+                    text.format(u",FRAME-RATE=%d.%03d", {pl.frameRate / 1000, pl.frameRate % 1000});
                 }
-                if (it->width > 0 && it->height > 0) {
-                    text.append(UString::Format(u",RESOLUTION=%dx%d", {it->width, it->height}));
+                if (pl.width > 0 && pl.height > 0) {
+                    text.format(u",RESOLUTION=%dx%d", {pl.width, pl.height});
                 }
-                if (!it->codecs.empty()) {
-                    text.append(UString::Format(u",CODECS=\"%s\"", {it->codecs}));
+                if (!pl.codecs.empty()) {
+                    text.format(u",CODECS=\"%s\"", {pl.codecs});
                 }
-                if (!it->hdcp.empty()) {
-                    text.append(UString::Format(u",HDCP-LEVEL=%s", {it->hdcp}));
+                if (!pl.hdcp.empty()) {
+                    text.format(u",HDCP-LEVEL=%s", {pl.hdcp});
                 }
-                if (!it->videoRange.empty()) {
-                    text.append(UString::Format(u",VIDEO-RANGE=%s", {it->videoRange}));
+                if (!pl.videoRange.empty()) {
+                    text.format(u",VIDEO-RANGE=%s", {pl.videoRange});
                 }
-                if (!it->video.empty()) {
-                    text.append(UString::Format(u",VIDEO=\"%s\"", {it->video}));
+                if (!pl.video.empty()) {
+                    text.format(u",VIDEO=\"%s\"", {pl.video});
                 }
-                if (!it->audio.empty()) {
-                    text.append(UString::Format(u",AUDIO=\"%s\"", {it->audio}));
+                if (!pl.audio.empty()) {
+                    text.format(u",AUDIO=\"%s\"", {pl.audio});
                 }
-                if (!it->subtitles.empty()) {
-                    text.append(UString::Format(u",SUBTITLES=\"%s\"", {it->subtitles}));
+                if (!pl.subtitles.empty()) {
+                    text.format(u",SUBTITLES=\"%s\"", {pl.subtitles});
                 }
-                if (!it->closedCaptions.empty()) {
-                    if (it->closedCaptions.similar(u"NONE")) {
+                if (!pl.closedCaptions.empty()) {
+                    if (pl.closedCaptions.similar(u"NONE")) {
                         // enumerated-string
                         text.append(u",CLOSED-CAPTIONS=NONE");
                     }
                     else {
                         // quoted-string
-                        text.append(UString::Format(u",CLOSED-CAPTIONS=\"%s\"", {it->closedCaptions}));
+                        text.format(u",CLOSED-CAPTIONS=\"%s\"", {pl.closedCaptions});
                     }
                 }
                 // Close the #EXT-X-STREAM-INF line.
                 text.append(u'\n');
                 // The URI line must come right after #EXT-X-STREAM-INF.
-                text.append(UString::Format(u"%s\n", {it->relativeURI}));
+                text.format(u"%s\n", {pl.relativeURI});
             }
         }
     }
     else if (isMedia()) {
         // Global tags.
-        text.append(UString::Format(u"#%s:%d\n", {TagNames.name(TARGETDURATION), _targetDuration}));
-        text.append(UString::Format(u"#%s:%d\n", {TagNames.name(MEDIA_SEQUENCE), _mediaSequence}));
+        text.format(u"#%s:%d\n", {TagNames.name(TARGETDURATION), _targetDuration});
+        text.format(u"#%s:%d\n", {TagNames.name(MEDIA_SEQUENCE), _mediaSequence});
         if (_type == PlayListType::VOD) {
-            text.append(UString::Format(u"#%s:VOD\n", {TagNames.name(PLAYLIST_TYPE)}));
+            text.format(u"#%s:VOD\n", {TagNames.name(PLAYLIST_TYPE)});
         }
         else if (_type == PlayListType::EVENT) {
-            text.append(UString::Format(u"#%s:EVENT\n", {TagNames.name(PLAYLIST_TYPE)}));
+            text.format(u"#%s:EVENT\n", {TagNames.name(PLAYLIST_TYPE)});
         }
 
         // Loop on all media segments.
-        for (auto it = _segments.begin(); it != _segments.end(); ++it) {
-            if (!it->relativeURI.empty()) {
-                text.append(UString::Format(u"#%s:%d.%03d,%s\n", {TagNames.name(EXTINF), it->duration / MilliSecPerSec, it->duration % MilliSecPerSec, it->title}));
-                if (it->bitrate > 1024) {
-                    text.append(UString::Format(u"#%s:%d\n", {TagNames.name(BITRATE), (it->bitrate / 1024).toInt()}));
+        for (const auto& seg : _segments) {
+            if (!seg.relativeURI.empty()) {
+                text.format(u"#%s:%d.%03d,%s\n", {TagNames.name(EXTINF), seg.duration / MilliSecPerSec, seg.duration % MilliSecPerSec, seg.title});
+                if (seg.bitrate > 1024) {
+                    text.format(u"#%s:%d\n", {TagNames.name(BITRATE), (seg.bitrate / 1024).toInt()});
                 }
-                if (it->gap) {
-                    text.append(UString::Format(u"#%s\n", {TagNames.name(GAP)}));
+                if (seg.gap) {
+                    text.format(u"#%s\n", {TagNames.name(GAP)});
                 }
-                text.append(UString::Format(u"%s\n", {it->relativeURI}));
+                text.format(u"%s\n", {seg.relativeURI});
             }
         }
 
         // Mark end of list when necessary.
         if (_endList) {
-            text.append(UString::Format(u"#%s\n", {TagNames.name(ENDLIST)}));
+            text.format(u"#%s\n", {TagNames.name(ENDLIST)});
         }
     }
     else {

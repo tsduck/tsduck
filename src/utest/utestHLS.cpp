@@ -48,12 +48,14 @@ public:
     virtual void afterTest() override;
 
     void testMasterPlaylist();
+    void testMasterPlaylistWithAlternate();
     void testMediaPlaylist();
     void testBuildMasterPlaylist();
     void testBuildMediaPlaylist();
 
     TSUNIT_TEST_BEGIN(HLSTest);
     TSUNIT_TEST(testMasterPlaylist);
+    TSUNIT_TEST(testMasterPlaylistWithAlternate);
     TSUNIT_TEST(testMediaPlaylist);
     TSUNIT_TEST(testBuildMasterPlaylist);
     TSUNIT_TEST(testBuildMediaPlaylist);
@@ -116,6 +118,7 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/foo.bar", media.urlString());
     TSUNIT_EQUAL(0, pl.segmentCount());
     TSUNIT_EQUAL(24, pl.playListCount());
+    TSUNIT_EQUAL(5, pl.altPlayListCount());
     TSUNIT_EQUAL(0, pl.targetDuration());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(!pl.endList());
@@ -159,6 +162,67 @@ void HLSTest::testMasterPlaylist()
     TSUNIT_EQUAL(7, pl.selectPlayListLowestResolution());
 }
 
+void HLSTest::testMasterPlaylistWithAlternate()
+{
+    // Test file downloaded from TSDuck web site.
+
+    ts::hls::PlayList pl;
+    TSUNIT_ASSERT(pl.loadURL(u"https://tsduck.io/download/test/hls/alternative/index_hd.m3u8", true));
+    TSUNIT_ASSERT(pl.isValid());
+    TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
+    TSUNIT_EQUAL(4, pl.version());
+    TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/alternative/index_hd.m3u8", pl.url());
+    TSUNIT_EQUAL(0, pl.segmentCount());
+    TSUNIT_EQUAL(7, pl.playListCount());
+    TSUNIT_EQUAL(2, pl.altPlayListCount());
+    TSUNIT_EQUAL(0, pl.targetDuration());
+    TSUNIT_EQUAL(0, pl.mediaSequence());
+    TSUNIT_ASSERT(!pl.endList());
+    TSUNIT_EQUAL(ts::hls::PlayListType::MASTER, pl.type());
+
+    TSUNIT_EQUAL(u"04_hd.m3u8", pl.playList(0).relativeURI);
+    TSUNIT_EQUAL(1209781, pl.playList(0).bandwidth.toInt());
+    TSUNIT_EQUAL(768, pl.playList(0).width);
+    TSUNIT_EQUAL(432, pl.playList(0).height);
+    TSUNIT_EQUAL(25000, pl.playList(0).frameRate);
+    TSUNIT_EQUAL(u"avc1.4D4020,mp4a.40.2", pl.playList(0).codecs);
+    TSUNIT_EQUAL(u"", pl.playList(0).hdcp);
+    TSUNIT_EQUAL(u"", pl.playList(0).videoRange);
+    TSUNIT_EQUAL(u"", pl.playList(0).video);
+    TSUNIT_EQUAL(u"audio2", pl.playList(0).audio);
+    TSUNIT_EQUAL(u"", pl.playList(0).subtitles);
+    TSUNIT_EQUAL(u"", pl.playList(0).closedCaptions);
+    TSUNIT_EQUAL(u"04_hd.m3u8, 768x432, 1,209,781 b/s, @25 fps", pl.playList(0).toString());
+
+    TSUNIT_EQUAL(u"09_hd.m3u8", pl.altPlayList(0).relativeURI);
+    TSUNIT_EQUAL(u"AUDIO", pl.altPlayList(0).type);
+    TSUNIT_EQUAL(u"audio2", pl.altPlayList(0).groupId);
+    TSUNIT_EQUAL(u"ENG", pl.altPlayList(0).name);
+    TSUNIT_EQUAL(u"ENG", pl.altPlayList(0).language);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).stableRenditionId);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).assocLanguage);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).inStreamId);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).characteristics);
+    TSUNIT_EQUAL(u"", pl.altPlayList(0).channels);
+    TSUNIT_ASSERT(pl.altPlayList(0).isDefault);
+    TSUNIT_ASSERT(pl.altPlayList(0).autoselect);
+    TSUNIT_ASSERT(!pl.altPlayList(0).forced);
+
+    TSUNIT_EQUAL(u"01_hd.m3u8", pl.altPlayList(1).relativeURI);
+    TSUNIT_EQUAL(u"AUDIO", pl.altPlayList(1).type);
+    TSUNIT_EQUAL(u"audio1", pl.altPlayList(1).groupId);
+    TSUNIT_EQUAL(u"FOO", pl.altPlayList(1).name);
+    TSUNIT_EQUAL(u"FOO", pl.altPlayList(1).language);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).stableRenditionId);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).assocLanguage);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).inStreamId);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).characteristics);
+    TSUNIT_EQUAL(u"", pl.altPlayList(1).channels);
+    TSUNIT_ASSERT(!pl.altPlayList(1).isDefault);
+    TSUNIT_ASSERT(!pl.altPlayList(1).autoselect);
+    TSUNIT_ASSERT(!pl.altPlayList(1).forced);
+}
+
 void HLSTest::testMediaPlaylist()
 {
     // Test file downloaded from TSDuck web site.
@@ -176,6 +240,7 @@ void HLSTest::testMediaPlaylist()
     TSUNIT_EQUAL(u"https://tsduck.io/download/test/hls/img_bipbop_adv_example_ts/v5/foo.bar", media.urlString());
     TSUNIT_EQUAL(100, pl.segmentCount());
     TSUNIT_EQUAL(0, pl.playListCount());
+    TSUNIT_EQUAL(0, pl.altPlayListCount());
     TSUNIT_EQUAL(6, pl.targetDuration());
     TSUNIT_EQUAL(0, pl.mediaSequence());
     TSUNIT_ASSERT(pl.endList());
