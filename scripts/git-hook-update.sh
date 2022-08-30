@@ -48,6 +48,9 @@ GITHOOKS_DIR="$ROOTDIR/.git/hooks"
 GITHOOKS_CMD="scripts/git-hook.sh"
 GITHOOKS_LIST="pre-commit post-merge"
 
+# Give up if not in a Git repo.
+[[ -d "$GITHOOKS_DIR" ]] || exit 0
+
 # Activate Git LFS at user level.
 cd "$HOME"
 (git config --list --global | fgrep -q filter.lfs) || git lfs install
