@@ -126,7 +126,7 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
 //----------------------------------------------------------------------------
 
 template <typename T>
-ts::ResidentBuffer<T>::~ResidentBuffer<T>()
+ts::ResidentBuffer<T>::~ResidentBuffer()
 {
     // Unlock from physical memory
     if (_is_locked) {

@@ -35,7 +35,7 @@
 //----------------------------------------------------------------------------
 
 template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>::~SafePtr<T,MUTEX>()
+ts::SafePtr<T,MUTEX>::~SafePtr()
 {
     if (_shared != nullptr && _shared->detach()) {
         _shared = nullptr;
