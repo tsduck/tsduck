@@ -61,30 +61,34 @@ $GitLooksList = @("pre-commit", "post-merge")
 $RepoDir = (Split-Path -Parent $PSScriptRoot)
 $GitHooksDir = (Join-Path (Join-Path $RepoDir .git) hooks)
 
-# Activate Git LFS at user level and then in repo.
-if (-not (git config --list --global | Select-String -Quiet -SimpleMatch filter.lfs)) {
-    Push-Location (Split-Path -Parent $RepoDir)
-    git lfs install
-    Pop-Location
-}
-Push-Location $RepoDir
-git lfs update --force
-Pop-Location
+# Do nothing if not in a Git repo.
+if (Test-Path $GitHooksDir) {
 
-# Check each hook for the line to execute.
-$GitLooksList | ForEach-Object {
-    $name = $_
-    $file = (Join-Path $GitHooksDir $name)
-    $line = "`$(dirname `$0)/../../scripts/git-hook.sh $name"
-    $fileOK = (Test-Path $file)
-    if (-not $fileOK -or -not (Select-String -Quiet -Path $file -SimpleMatch $line)) {
-        Write-Output "  [GIT] updating $name hook"
-        # We use IO.File methods to enforce LF as end of line.
-        if (-not $fileOK) {
-            # Create non-existent file.
-            [IO.File]::WriteAllText($file, "#!/usr/bin/env bash`n")
+    # Activate Git LFS at user level and then in repo.
+    if (-not (git config --list --global | Select-String -Quiet -SimpleMatch filter.lfs)) {
+        Push-Location (Split-Path -Parent $RepoDir)
+        git lfs install
+        Pop-Location
+    }
+    Push-Location $RepoDir
+    git lfs update --force
+    Pop-Location
+
+    # Check each hook for the line to execute.
+    $GitLooksList | ForEach-Object {
+        $name = $_
+        $file = (Join-Path $GitHooksDir $name)
+        $line = "`$(dirname `$0)/../../scripts/git-hook.sh $name"
+        $fileOK = (Test-Path $file)
+        if (-not $fileOK -or -not (Select-String -Quiet -Path $file -SimpleMatch $line)) {
+            Write-Output "  [GIT] updating $name hook"
+            # We use IO.File methods to enforce LF as end of line.
+            if (-not $fileOK) {
+                # Create non-existent file.
+                [IO.File]::WriteAllText($file, "#!/usr/bin/env bash`n")
+            }
+            [IO.File]::AppendAllText($file, "$line`n")
         }
-        [IO.File]::AppendAllText($file, "$line`n")
     }
 }
 
