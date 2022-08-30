@@ -71,7 +71,7 @@ ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, int max_severity) :
 //----------------------------------------------------------------------------
 
 template <class MUTEX>
-ts::ReportFile<MUTEX>::~ReportFile<MUTEX>()
+ts::ReportFile<MUTEX>::~ReportFile()
 {
     GuardMutex lock(_mutex);
 

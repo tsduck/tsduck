@@ -54,7 +54,7 @@ ts::Variable<T>::Variable(Variable<T>&& other) :
 }
 
 template <typename T>
-ts::Variable<T>::~Variable<T>()
+ts::Variable<T>::~Variable()
 {
     clear();
 }
