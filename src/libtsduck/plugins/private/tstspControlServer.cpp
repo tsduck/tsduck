@@ -157,7 +157,7 @@ void ts::tsp::ControlServer::main()
 
         // Filter allowed sources.
         // Set receive timeout on the connection and read one line.
-        if (std::find(_options.control_sources.begin(), _options.control_sources.end(), source) == _options.control_sources.end()) {
+        if (std::find(_options.control_sources.begin(), _options.control_sources.end(), source.address()) == _options.control_sources.end()) {
             _log.warning(u"connection attempt from unauthorized source %s (ignored)", {source});
             conn.sendLine("error: client address is not authorized", _log);
         }

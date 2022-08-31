@@ -159,7 +159,9 @@ namespace ts {
         Integer& operator/=(const Integer& x) { _value /= x._value; return *this; }
 
         bool operator==(const Integer& x) const { return _value == x._value; }
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         bool operator!=(const Integer& x) const { return _value != x._value; }
+#endif
         bool operator<=(const Integer& x) const { return _value <= x._value; }
         bool operator>=(const Integer& x) const { return _value >= x._value; }
         bool operator<(const Integer& x) const { return _value < x._value; }
@@ -192,8 +194,10 @@ namespace ts {
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         bool operator==(INT2 x) const { return _value == int_t(x); }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         bool operator!=(INT2 x) const { return _value != int_t(x); }
+#endif
 
         template<typename INT2, typename std::enable_if<std::is_integral<INT2>::value, int>::type = 0>
         bool operator<=(INT2 x) const { return _value <= int_t(x); }
@@ -227,10 +231,12 @@ template <typename INT1, typename INT2, typename std::enable_if<std::is_integral
 inline ts::Integer<INT2> operator/(INT1 x1, const ts::Integer<INT2>& x2) { return ts::Integer<INT2>(x1) / x2; }
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator==(INT1 x1, const ts::Integer<INT2>& x2) { return x2 == x1; }
+inline bool operator==(INT1 x1, const ts::Integer<INT2>& x2) { return x2.operator==(x1); }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
-inline bool operator!=(INT1 x1, const ts::Integer<INT2>& x2) { return x2 != x1; }
+inline bool operator!=(INT1 x1, const ts::Integer<INT2>& x2) { return !x2.operator==(x1); }
+#endif
 
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type = 0>
 inline bool operator<=(INT1 x1, const ts::Integer<INT2>& x2) { return x2 >= x1; }

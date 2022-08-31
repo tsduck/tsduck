@@ -153,13 +153,15 @@ namespace ts {
         //!
         bool operator==(const DemuxedData& other) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! The source PID's are ignored, only the packet contents are compared.
         //! @param [in] other Other packet to compare.
         //! @return True if the two packets are different. False otherwise.
         //!
-        bool operator!=(const DemuxedData& other) const { return !(*this == other); }
+        bool operator!=(const DemuxedData& other) const { return !operator==(other); }
+#endif
 
         //!
         //! Get the source PID.

@@ -89,6 +89,7 @@ namespace ts {
             return normalized() == svid.normalized();
         }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Comparison operator.
         //! @param [in] svid Another instance to compare.
@@ -98,6 +99,7 @@ namespace ts {
         {
             return normalized() != svid.normalized();
         }
+#endif
 
         //!
         //! Comparison operator.

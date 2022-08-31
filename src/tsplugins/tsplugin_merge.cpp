@@ -442,7 +442,8 @@ bool ts::MergePlugin::start()
     _main_pids.reset();
     _merge_pids.reset();
     _merged_count = _hold_count = _empty_count = 0;
-    _got_eof = _stopping = false;
+    _got_eof = false;
+    _stopping = false;
 
     // Create pipe & process, then start the internal thread which receives the TS to merge.
     return startStopCommand(false, true) && Thread::start();

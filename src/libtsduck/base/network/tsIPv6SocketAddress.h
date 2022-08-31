@@ -144,7 +144,7 @@ namespace ts {
             IPv6Address(),
             _port(0)
         {
-            resolve(name, report);
+            IPv6SocketAddress::resolve(name, report);
         }
 
         //!
@@ -231,12 +231,14 @@ namespace ts {
         //!
         bool operator==(const IPv6SocketAddress& other) const { return IPv6Address::operator==(other) && _port == other._port; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] other Another instance to compare with.
         //! @return True if both object contains distinct addresses, false otherwise.
         //!
         bool operator!=(const IPv6SocketAddress& other) const { return IPv6Address::operator!=(other) || _port != other._port; }
+#endif
 
         //!
         //! Comparison "less than" operator.

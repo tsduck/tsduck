@@ -213,12 +213,14 @@ namespace ts {
         //!
         bool operator==(const IPv4SocketAddress& other) const { return address() == other.address() && _port == other._port; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] other Another instance to compare with.
         //! @return True if both object contains distinct addresses, false otherwise.
         //!
-        bool operator!=(const IPv4SocketAddress& other) const { return address() != other.address() || _port != other._port; }
+        bool operator!=(const IPv4SocketAddress& other) const { return !operator==(other); }
+#endif
 
         //!
         //! Comparison "less than" operator.

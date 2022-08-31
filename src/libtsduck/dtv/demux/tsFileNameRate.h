@@ -66,15 +66,14 @@ namespace ts {
         //!
         bool operator==(const FileNameRate& other) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Comparison operator.
         //! @param [in] other Other instance to compare.
         //! @return True if this instance is different from @a other.
         //!
-        bool operator!=(const FileNameRate& other) const
-        {
-            return !(*this == other);
-        }
+        bool operator!=(const FileNameRate& other) const { return !operator==(other); }
+#endif
 
         //!
         //! Comparison "less than" operator.

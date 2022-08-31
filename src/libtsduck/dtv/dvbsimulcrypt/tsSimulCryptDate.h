@@ -63,19 +63,13 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        SimulCryptDate()
-        {
-            reset();
-        }
+        SimulCryptDate() { reset(); }
 
         //!
         //! Constructor from binary data.
         //! @param [in] bin Address of an 8-byte binary DVB SimulCrypt date.
         //!
-        SimulCryptDate(const void* bin)
-        {
-            getBinary(bin);
-        }
+        SimulCryptDate(const void* bin) { getBinary(bin); }
 
         //!
         //! Constructor from a ts::Time.
@@ -99,172 +93,115 @@ namespace ts {
         //! Get the number of years.
         //! @return The number of years.
         //!
-        int year() const
-        {
-            return int(GetUInt16(_data));
-        }
+        int year() const { return int(GetUInt16(_data)); }
 
         //!
         //! Get the number of months.
         //! @return The number of months.
         //!
-        int month() const
-        {
-            return int(_data[2]);
-        }
+        int month() const { return int(_data[2]); }
 
         //!
         //! Get the number of days.
         //! @return The number of days.
         //!
-        int day() const
-        {
-            return int(_data[3]);
-        }
+        int day() const { return int(_data[3]); }
 
         //!
         //! Get the number of hours.
         //! @return The number of hours.
         //!
-        int hour() const
-        {
-            return int(_data[4]);
-        }
+        int hour() const { return int(_data[4]); }
 
         //!
         //! Get the number of minutes.
         //! @return The number of minutes.
         //!
-        int minute() const
-        {
-            return int(_data[5]);
-        }
+        int minute() const { return int(_data[5]); }
 
         //!
         //! Get the number of seconds.
         //! @return The number of seconds.
         //!
-        int second() const
-        {
-            return int(_data[6]);
-        }
+        int second() const { return int(_data[6]); }
 
         //!
         //! Get the number of hundredths of seconds.
         //! @return The number of hundredths of seconds.
         //!
-        int hundredth() const
-        {
-            return int(_data[7]);
-        }
+        int hundredth() const { return int(_data[7]); }
 
         //!
         //! Set the number of years.
         //! @param [in] n The number of years.
         //!
-        void setYear(int n)
-        {
-            PutUInt16(_data, uint16_t(n));
-        }
+        void setYear(int n) { PutUInt16(_data, uint16_t(n)); }
 
         //!
         //! Set the number of months.
         //! @param [in] n The number of months.
         //!
-        void setMonth(int n)
-        {
-            _data[2] = uint8_t(n);
-        }
+        void setMonth(int n) { _data[2] = uint8_t(n); }
 
         //!
         //! Set the number of days.
         //! @param [in] n The number of days.
         //!
-        void setDay(int n)
-        {
-            _data[3] = uint8_t(n);
-        }
+        void setDay(int n) { _data[3] = uint8_t(n); }
 
         //!
         //! Set the number of hours.
         //! @param [in] n The number of hours.
         //!
-        void setHour(int n)
-        {
-            _data[4] = uint8_t(n);
-        }
+        void setHour(int n) { _data[4] = uint8_t(n); }
 
         //!
         //! Set the number of minutes.
         //! @param [in] n The number of minutes.
         //!
-        void setMinute(int n)
-        {
-            _data[5] = uint8_t(n);
-        }
+        void setMinute(int n) { _data[5] = uint8_t(n); }
 
         //!
         //! Set the number of seconds.
         //! @param [in] n The number of seconds.
         //!
-        void setSecond(int n)
-        {
-            _data[6] = uint8_t(n);
-        }
+        void setSecond(int n) { _data[6] = uint8_t(n); }
 
         //!
         //! Set the number of hundredths of seconds.
         //! @param [in] n The number of hundredths of seconds.
         //!
-        void setHundredth(int n)
-        {
-            _data[7] = uint8_t(n);
-        }
+        void setHundredth(int n) { _data[7] = uint8_t(n); }
 
         //!
         //! Reset to a null value.
         //!
-        void reset()
-        {
-            TS_ZERO(_data);
-        }
+        void reset() { TS_ZERO(_data); }
 
         //!
         //! Read from memory (8 bytes).
         //! @param [in] a Address of an 8-byte binary DVB SimulCrypt date.
         //!
-        void getBinary(const void* a)
-        {
-            ::memcpy(_data, a, SIZE);  // Flawfinder: ignore: memcpy()
-        }
+        void getBinary(const void* a) { ::memcpy(_data, a, SIZE); }
 
         //!
         //! Write to memory (8 bytes).
         //! @param [out] a Address of an 8-byte buffer for the binary DVB SimulCrypt date.
         //!
-        void putBinary(void* a) const
-        {
-            ::memcpy(a, _data, SIZE);  // Flawfinder: ignore: memcpy()
-        }
+        void putBinary(void* a) const { ::memcpy(a, _data, SIZE); }
 
         //!
         //! Put into a DVB SimulCrypt TLV messages.
         //! @param [in,out] zer A TLV serializer.
         //!
-        void put(tlv::Serializer& zer) const
-        {
-            zer.put(_data, sizeof(_data));
-        }
+        void put(tlv::Serializer& zer) const { zer.put(_data, sizeof(_data)); }
 
         //!
         //! Put as a complete TLV structure into a DVB SimulCrypt TLV messages.
         //! @param [in,out] zer A TLV serializer.
         //! @param [in] tag Tag for the date parameter.
         //!
-        void put(tlv::Serializer& zer, tlv::TAG tag) const
-        {
-            zer.put(tag, _data, sizeof(_data));
-        }
+        void put(tlv::Serializer& zer, tlv::TAG tag) const { zer.put(tag, _data, sizeof(_data)); }
 
         //!
         //! Get from a DVB SimulCrypt TLV messages.
@@ -284,6 +221,7 @@ namespace ts {
             return ::memcmp(_data, t._data, SIZE) == 0;
         }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] t Another date to compare with this object.
@@ -293,6 +231,7 @@ namespace ts {
         {
             return ::memcmp(_data, t._data, SIZE) != 0;
         }
+#endif
 
         //!
         //! Lower operator.

@@ -95,6 +95,7 @@ namespace ts {
         //!
         bool operator==(const Enumeration& other) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //!
@@ -103,6 +104,7 @@ namespace ts {
         //! false otherwise.
         //!
         bool operator!=(const Enumeration& other) const;
+#endif
 
         //!
         //! Get the number of entries in the enumeration.
