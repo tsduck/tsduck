@@ -36,5 +36,8 @@ ts::SingletonManager* volatile ts::SingletonManager::_instance = nullptr;
 
 ts::SingletonManager* ts::SingletonManager::Instance()
 {
-    return _instance != nullptr ? _instance : (_instance = new SingletonManager);
+    if (_instance == nullptr) {
+        _instance = new SingletonManager;
+    }
+    return _instance;
 }

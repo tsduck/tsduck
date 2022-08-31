@@ -125,6 +125,8 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
 // Destructor
 //----------------------------------------------------------------------------
 
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
 template <typename T>
 ts::ResidentBuffer<T>::~ResidentBuffer()
 {
@@ -151,3 +153,4 @@ ts::ResidentBuffer<T>::~ResidentBuffer()
     _elem_count = 0;
     _is_locked = false;
 }
+TS_POP_WARNING()

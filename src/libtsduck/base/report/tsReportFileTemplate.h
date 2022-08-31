@@ -70,6 +70,8 @@ ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, int max_severity) :
 // Destructor
 //----------------------------------------------------------------------------
 
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
 template <class MUTEX>
 ts::ReportFile<MUTEX>::~ReportFile()
 {
@@ -80,6 +82,7 @@ ts::ReportFile<MUTEX>::~ReportFile()
         _named_file.close();
     }
 }
+TS_POP_WARNING()
 
 
 //----------------------------------------------------------------------------

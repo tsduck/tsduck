@@ -161,6 +161,7 @@ namespace ts {
             return _value == other._value;
         }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] other Another time to compare with this object.
@@ -171,6 +172,7 @@ namespace ts {
         {
             return _value != other._value;
         }
+#endif
 
         //!
         //! Lower operator.
@@ -251,13 +253,15 @@ namespace ts {
             //!
             bool operator==(const Fields& other) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
             //!
             //! Unequality operator.
             //! @param [in] other Another @c Fields to compare with this object.
             //! @return @c True is this object is different from the @a other object,
             //! @c false otherwise.
             //!
-            bool operator!=(const Fields& other) const;
+            bool operator!=(const Fields& other) const { return !operator==(other); }
+#endif
 
             //!
             //! Validation of the fields.

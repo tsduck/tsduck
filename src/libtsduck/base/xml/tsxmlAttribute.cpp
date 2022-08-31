@@ -33,8 +33,7 @@
 const ts::xml::Attribute ts::xml::Attribute::INVALID;
 
 // A non-thread-safe allocator for sequence numbers.
-volatile size_t ts::xml::Attribute::_allocator = 0;
-
+std::atomic_size_t  ts::xml::Attribute::_allocator(0);
 
 //----------------------------------------------------------------------------
 // Constructors.

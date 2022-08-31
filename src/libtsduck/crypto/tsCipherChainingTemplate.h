@@ -40,6 +40,8 @@ ts::CipherChainingTemplate<CIPHER>::CipherChainingTemplate(size_t iv_min_blocks,
 {
 }
 
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
 template <class CIPHER>
 ts::CipherChainingTemplate<CIPHER>::~CipherChainingTemplate()
 {
@@ -48,3 +50,4 @@ ts::CipherChainingTemplate<CIPHER>::~CipherChainingTemplate()
         algo = nullptr;
     }
 }
+TS_POP_WARNING()

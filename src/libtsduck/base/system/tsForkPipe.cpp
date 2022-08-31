@@ -557,7 +557,8 @@ void ts::ForkPipe::abortPipeReadWrite()
 {
     if (_is_open) {
         // Mark broken pipe, read or write.
-        _broken_pipe = _eof = true;
+        _broken_pipe = true;
+        _eof = true;
 
         // Close pipe handle, ignore errors.
 #if defined(TS_WINDOWS)

@@ -174,6 +174,7 @@ namespace ts {
         //!
         bool operator==(const Variable<T>& other) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //!
@@ -182,6 +183,7 @@ namespace ts {
         //! are initialized with unequal values.
         //!
         bool operator!=(const Variable<T>& other) const;
+#endif
 
         //!
         //! Equality operator with a @a T instance.
@@ -192,6 +194,7 @@ namespace ts {
         //!
         bool operator==(const T& obj) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator with a @a T instance.
         //!
@@ -200,6 +203,7 @@ namespace ts {
         //! is not equal to @a obj.
         //!
         bool operator!=(const T& obj) const;
+#endif
 
         //!
         //! Identity.

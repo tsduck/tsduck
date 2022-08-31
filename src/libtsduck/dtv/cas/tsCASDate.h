@@ -162,12 +162,14 @@ namespace ts {
         //!
         bool operator==(const CASDate& t) const { return _value == t._value; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Comparison operator.
         //! @param [in] t A data to assign.
         //! @return True if this object != @a t.
         //!
         bool operator!=(const CASDate& t) const { return _value != t._value; }
+#endif
 
         //!
         //! Comparison operator.

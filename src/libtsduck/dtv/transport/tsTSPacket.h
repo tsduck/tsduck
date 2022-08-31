@@ -68,24 +68,6 @@ namespace ts {
         TS_DECLARE_EXCEPTION(AdaptationFieldError);
 
         //!
-        //! Default constructor.
-        //!
-        TSPacket() = default;
-
-        //!
-        //! Copy constructor.
-        //! @param [in] p Other packet to copy.
-        //!
-        TSPacket(const TSPacket& p) = default;
-
-        //!
-        //! Assigment operator.
-        //! @param [in] p Other packet to copy.
-        //! @return A reference to this object.
-        //!
-        TSPacket& operator=(const TSPacket& p) noexcept;
-
-        //!
         //! Equality operator.
         //! @param [in] p Other packet to compare.
         //! @return True is this object is equal to @a p.
@@ -95,6 +77,7 @@ namespace ts {
             return ::memcmp(b, p.b, PKT_SIZE) == 0;
         }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] p Other packet to compare.
@@ -104,6 +87,7 @@ namespace ts {
         {
             return ::memcmp(b, p.b, PKT_SIZE) != 0;
         }
+#endif
 
         //!
         //! Initialize a TS packet.
