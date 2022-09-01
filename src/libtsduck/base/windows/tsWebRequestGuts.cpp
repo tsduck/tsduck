@@ -173,7 +173,8 @@ void ts::WebRequest::SystemGuts::clear()
     if (_inet != 0 && !::InternetCloseHandle(_inet)) {
         error(u"error closing main Internet handle");
     }
-    _url = _inet = 0;
+    _url = nullptr;
+    _inet = nullptr;
 }
 
 

@@ -266,7 +266,7 @@ bool ts::DirectShowNetworkType::initDefaultLocator(::ITuningSpace* tspace, ::ILo
     return dlocator == nullptr || PUT(tspace, DefaultLocator, dlocator);
 }
 
-bool ts::DirectShowNetworkType::initTuningSpace(::ITuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
+bool ts::DirectShowNetworkType::initTuningSpace(::ITuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
     // Keep the tuning space name.
     _tuning_space_name = UString(name);
@@ -276,12 +276,12 @@ bool ts::DirectShowNetworkType::initTuningSpace(::ITuningSpace* tspace, ::WCHAR*
     // Ignore error (display them in debug mode only).
     if (tspace != nullptr) {
         if (report.debug()) {
-            ComSuccess(tspace->put_UniqueName(name), u"error setting UniqueName on " + _tuning_space_name, report);
-            ComSuccess(tspace->put_FriendlyName(name), u"error setting FriendlyName on " + _tuning_space_name, report);
+            ComSuccess(tspace->put_UniqueName(const_cast<::WCHAR*>(name)), u"error setting UniqueName on " + _tuning_space_name, report);
+            ComSuccess(tspace->put_FriendlyName(const_cast<::WCHAR*>(name)), u"error setting FriendlyName on " + _tuning_space_name, report);
         }
         else {
-            tspace->put_UniqueName(name);
-            tspace->put_FriendlyName(name);
+            tspace->put_UniqueName(const_cast<::WCHAR*>(name));
+            tspace->put_FriendlyName(const_cast<::WCHAR*>(name));
         }
     }
 
@@ -290,21 +290,21 @@ bool ts::DirectShowNetworkType::initTuningSpace(::ITuningSpace* tspace, ::WCHAR*
         initDefaultLocator(tspace, dlocator, report);
 }
 
-bool ts::DirectShowNetworkType::initDVBTuningSpace(::IDVBTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
+bool ts::DirectShowNetworkType::initDVBTuningSpace(::IDVBTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
     return initTuningSpace(tspace, name, nullptr, report) &&
         PUT(tspace, SystemType, _system_type) &&
         initDefaultLocator(tspace, dlocator, report);
 }
 
-bool ts::DirectShowNetworkType::initDVBTuningSpace2(::IDVBTuningSpace2* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
+bool ts::DirectShowNetworkType::initDVBTuningSpace2(::IDVBTuningSpace2* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
     return initDVBTuningSpace(tspace, name, nullptr, report) &&
         PUT(tspace, NetworkID, -1) &&   // -1 = "not set"
         initDefaultLocator(tspace, dlocator, report);
 }
 
-bool ts::DirectShowNetworkType::initDVBSTuningSpace(::IDVBSTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
+bool ts::DirectShowNetworkType::initDVBSTuningSpace(::IDVBSTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
     return initDVBTuningSpace2(tspace, name, nullptr, report) &&
         PUT(tspace, LNBSwitch, -1) &&   // -1 = "not set"
@@ -314,7 +314,7 @@ bool ts::DirectShowNetworkType::initDVBSTuningSpace(::IDVBSTuningSpace* tspace, 
         initDefaultLocator(tspace, dlocator, report);
 }
 
-bool ts::DirectShowNetworkType::initATSCTuningSpace(::IATSCTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
+bool ts::DirectShowNetworkType::initATSCTuningSpace(::IATSCTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
     const bool terrestrial = _input_type == ::TunerInputType::TunerInputAntenna;
     return initTuningSpace(tspace, name, nullptr, report) &&
@@ -329,7 +329,7 @@ bool ts::DirectShowNetworkType::initATSCTuningSpace(::IATSCTuningSpace* tspace, 
         initDefaultLocator(tspace, dlocator, report);
 }
 
-bool ts::DirectShowNetworkType::initDigitalCableTuningSpace(::IDigitalCableTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report)
+bool ts::DirectShowNetworkType::initDigitalCableTuningSpace(::IDigitalCableTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report)
 {
     return initATSCTuningSpace(tspace, name, nullptr, report) &&
         PUT(tspace, MaxMajorChannel, 99) &&

@@ -102,7 +102,10 @@ std::string tsunit::convertFromUTF16(const std::u16string& u16)
     #if defined(WINDOWS)
         // Workaround for Visual Studio bug.
         std::wstring wstr(u16.begin(), u16.end());
+        #pragma warning(push)
+        #pragma warning(disable:4996)
         return std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>, wchar_t>{}.to_bytes(wstr);
+        #pragma warning(pop)
     #elif defined(NOCODECVT)
         // With GCC 4.X, codecvt is not available, need to use iconv
         iconv_t conv = iconv_open("UTF-8", "UTF-16");
