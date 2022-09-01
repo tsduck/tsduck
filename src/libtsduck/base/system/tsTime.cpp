@@ -116,13 +116,6 @@ bool ts::Time::Fields::operator== (const Fields& f) const
            millisecond == f.millisecond;
 }
 
-bool ts::Time::Fields::operator!= (const Fields& f) const
-{
-    return year != f.year || month != f.month || day != f.day ||
-           hour != f.hour || minute != f.minute || second != f.second ||
-           millisecond != f.millisecond;
-}
-
 
 //----------------------------------------------------------------------------
 // Check if a year is a leap year (29 days in February).

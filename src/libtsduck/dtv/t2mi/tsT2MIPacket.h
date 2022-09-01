@@ -154,6 +154,7 @@ namespace ts {
         //!
         bool operator==(const T2MIPacket& other) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! The source PID's are ignored, only the packet contents are compared.
@@ -161,7 +162,8 @@ namespace ts {
         //! @param [in] other Other packet to compare.
         //! @return True if the two packets are different. False otherwise.
         //!
-        bool operator!=(const T2MIPacket& other) const { return !(*this == other); }
+        bool operator!=(const T2MIPacket& other) const { return !operator==(other); }
+#endif
 
         //!
         //! Access to the payload of the packet.

@@ -79,7 +79,7 @@ namespace ts {
         //! Default constructor.
         //! The default value is AnyAddress.
         //!
-        IPv6Address() { clearAddress(); }
+        IPv6Address() { IPv6Address::clearAddress(); }
 
         //!
         //! Constructor from 16 bytes.
@@ -88,7 +88,7 @@ namespace ts {
         //! the IPv6 is padded on the left (most significant bytes) with zeroes.
         //! If the size is larger than 16, extra bytes are ignored.
         //!
-        IPv6Address(const uint8_t *addr, size_t size) { setAddress(addr, size); }
+        IPv6Address(const uint8_t *addr, size_t size) { IPv6Address::setAddress(addr, size); }
 
         //!
         //! Constructor from 16 bytes.
@@ -139,7 +139,7 @@ namespace ts {
         //! @param [in] report Where to report errors.
         //! @see https://en.wikipedia.org/wiki/IPv6_address
         //!
-        IPv6Address(const UString& name, Report& report) { resolve(name, report); }
+        IPv6Address(const UString& name, Report& report) { IPv6Address::resolve(name, report); }
 
         //!
         //! Get the IP address as a byte block.
@@ -172,7 +172,7 @@ namespace ts {
         //! than 16, the IPv6 is padded on the left (most significant bytes) with zeroes.
         //! If the size is larger than 16, extra bytes are ignored.
         //!
-        void setAddress(const ByteBlock& bb) { setAddress(bb.data(), bb.size());}
+        void setAddress(const ByteBlock& bb) { IPv6Address::setAddress(bb.data(), bb.size());}
 
         //!
         //! Set the IP address from 8 hexlets.
@@ -215,12 +215,14 @@ namespace ts {
         //!
         bool operator==(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) == 0; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] other Another instance to compare with.
         //! @return True if both object contains distinct addresses, false otherwise.
         //!
         bool operator!=(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) != 0; }
+#endif
 
         //!
         //! Comparison "less than" operator.

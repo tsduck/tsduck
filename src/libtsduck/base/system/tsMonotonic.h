@@ -88,57 +88,44 @@ namespace ts {
         //! @param [in] t Another instance to compare.
         //! @return True if this object == @a t.
         //!
-        bool operator==(const Monotonic& t) const {return _value == t._value;}
+        bool operator==(const Monotonic& t) const { return _value == t._value; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Comparison operator.
         //! @param [in] t Another instance to compare.
         //! @return True if this object != @a t.
         //!
-        bool operator!=(const Monotonic& t) const
-        {
-            return _value != t._value;
-        }
+        bool operator!=(const Monotonic& t) const { return _value != t._value; }
+#endif
 
         //!
         //! Comparison operator.
         //! @param [in] t Another instance to compare.
         //! @return True if this object < @a t.
         //!
-        bool operator< (const Monotonic& t) const
-        {
-            return _value <  t._value;
-        }
+        bool operator< (const Monotonic& t) const { return _value <  t._value; }
 
         //!
         //! Comparison operator.
         //! @param [in] t Another instance to compare.
         //! @return True if this object <= @a t.
         //!
-        bool operator<=(const Monotonic& t) const
-        {
-            return _value <= t._value;
-        }
+        bool operator<=(const Monotonic& t) const { return _value <= t._value; }
 
         //!
         //! Comparison operator.
         //! @param [in] t Another instance to compare.
         //! @return True if this object > @a t.
         //!
-        bool operator> (const Monotonic& t) const
-        {
-            return _value >  t._value;
-        }
+        bool operator> (const Monotonic& t) const { return _value >  t._value; }
 
         //!
         //! Comparison operator.
         //! @param [in] t Another instance to compare.
         //! @return True if this object >= @a t.
         //!
-        bool operator>=(const Monotonic& t) const
-        {
-            return _value >= t._value;
-        }
+        bool operator>=(const Monotonic& t) const { return _value >= t._value; }
 
         //!
         //! Increment operator.

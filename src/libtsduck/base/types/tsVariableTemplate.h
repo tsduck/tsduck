@@ -53,11 +53,14 @@ ts::Variable<T>::Variable(Variable<T>&& other) :
     }
 }
 
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
 template <typename T>
-ts::Variable<T>::~Variable<T>()
+ts::Variable<T>::~Variable()
 {
     clear();
 }
+TS_POP_WARNING()
 
 template <typename T>
 ts::Variable<T>& ts::Variable<T>::operator=(const Variable<T>& other)
@@ -173,6 +176,7 @@ bool ts::Variable<T>::operator==(const Variable<T>& other) const
     return _access != nullptr && other._access != nullptr && *_access == *other._access;
 }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
 template <typename T>
 bool ts::Variable<T>::operator!=(const Variable<T>& other) const
 {
@@ -180,6 +184,7 @@ bool ts::Variable<T>::operator!=(const Variable<T>& other) const
     // We just require operator==. So we use !(.. == ..).
     return _access == nullptr || other._access == nullptr || !(*_access == *other._access);
 }
+#endif
 
 template <typename T>
 bool ts::Variable<T>::operator==(const T& obj) const
@@ -187,6 +192,7 @@ bool ts::Variable<T>::operator==(const T& obj) const
     return _access != nullptr && *_access == obj;
 }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
 template <typename T>
 bool ts::Variable<T>::operator!=(const T& obj) const
 {
@@ -194,3 +200,4 @@ bool ts::Variable<T>::operator!=(const T& obj) const
     // We just require operator==. So we use !(.. == ..).
     return _access == nullptr || !(*_access == obj);
 }
+#endif

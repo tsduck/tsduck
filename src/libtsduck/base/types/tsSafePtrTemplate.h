@@ -34,13 +34,16 @@
 // Destructor.
 //----------------------------------------------------------------------------
 
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
 template <typename T, class MUTEX>
-ts::SafePtr<T,MUTEX>::~SafePtr<T,MUTEX>()
+ts::SafePtr<T,MUTEX>::~SafePtr()
 {
     if (_shared != nullptr && _shared->detach()) {
         _shared = nullptr;
     }
 }
+TS_POP_WARNING()
 
 
 //----------------------------------------------------------------------------

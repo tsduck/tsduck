@@ -88,12 +88,14 @@ namespace ts {
         //!
         bool operator==(const CRC32& c) const { return _fcs == c._fcs; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Comparison operator with another CRC32 instance.
         //! @param [in] c Other instance to compare.
         //! @return True if the two CRC32 are different, false otherwise.
         //!
         bool operator!=(const CRC32& c) const { return _fcs != c._fcs; }
+#endif
 
         //!
         //! Comparison operator with a 32-bit integer.
@@ -102,12 +104,14 @@ namespace ts {
         //!
         bool operator==(uint32_t c) const { return _fcs == c; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Comparison operator with a 32-bit integer.
         //! @param [in] c A CRC32 value to compare.
         //! @return True if the two CRC32 are different, false otherwise.
         //!
         bool operator!=(uint32_t c) const { return _fcs != c; }
+#endif
 
         //!
         //! Reset the CRC32 computation, restart a new computation.
@@ -140,6 +144,7 @@ namespace ts {
         return c2 == c1;  // this one is a member function
     }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
     //!
     //! Comparison operator between a CRC32 instance and a 32-bit integer.
     //! The reversed form of operators is a member function.
@@ -151,4 +156,5 @@ namespace ts {
     {
         return c2 != c1;  // this one is a member function
     }
+#endif
 }

@@ -222,8 +222,8 @@ namespace ts {
             size_t  _line;
             size_t  _sequence;  // insertion sequence
 
-            // A non-thread-safe allocator for sequence numbers.
-            static volatile size_t _allocator;
+            // An for sequence numbers.
+            static std::atomic_size_t _allocator;
         };
     }
 }
