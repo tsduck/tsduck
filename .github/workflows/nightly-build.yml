@@ -208,7 +208,8 @@ jobs:
         
   doc:
     name: Documentation build
-    runs-on: ubuntu-latest
+    # ubuntu-latest is currently ubuntu-20.04, try to grab a more recent version of doxygen.
+    runs-on: ubuntu-22.04
     steps:
 
     - name: Get TSDuck repo
