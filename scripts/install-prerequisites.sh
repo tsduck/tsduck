@@ -108,6 +108,7 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     fi
     # Sometimes, brew exits with an error status even though the installation completes.
     # Mute this and enforce a good status to avoid GitHub Actions CI failure.
+    brew update || true
     brew $PKGOPTS install $pkglist || true
     # Register the openjdk jvm.
     [[ -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]] || \

@@ -36,6 +36,7 @@
       <MinimalRebuild>false</MinimalRebuild>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <DisableSpecificWarnings Condition="'$(MSBuildToolsVersion)'=='14.0'">4800;4702;4592;4505</DisableSpecificWarnings>
+      <LanguageStandard Condition="'$(STDCPP)'!=''">$(STDCPP)</LanguageStandard>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>TS_WINVER_FILENAME="$(TargetName)$(TargetExt)";%(PreprocessorDefinitions)</PreprocessorDefinitions>

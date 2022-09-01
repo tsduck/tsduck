@@ -192,7 +192,7 @@ bool ts::TimeShiftBuffer::shift(TSPacket& packet, TSPacketMetadata& mdata, Repor
         return false;
     }
 
-    TSPacket ret_packet;
+    TSPacket ret_packet(NullPacket);
     TSPacketMetadata ret_mdata;
     const bool was_full = full();
 
