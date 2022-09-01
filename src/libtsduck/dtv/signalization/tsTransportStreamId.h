@@ -80,6 +80,7 @@ namespace ts {
             return transport_stream_id == tsid.transport_stream_id && original_network_id == tsid.original_network_id;
         }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Comparison operator.
         //! @param [in] tsid Another instance to compare.
@@ -89,6 +90,7 @@ namespace ts {
         {
             return transport_stream_id != tsid.transport_stream_id || original_network_id != tsid.original_network_id;
         }
+#endif
 
         //!
         //! Comparison operator.

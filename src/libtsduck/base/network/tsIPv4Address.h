@@ -136,7 +136,7 @@ namespace ts {
         IPv4Address(const UString& name, Report& report) :
             _addr (0)
         {
-            resolve(name, report);
+            IPv4Address::resolve(name, report);
         }
 
         // Inherited methods.
@@ -219,12 +219,14 @@ namespace ts {
         //!
         bool operator==(const IPv4Address& a) const { return _addr == a._addr; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] a Another instance to compare with.
         //! @return True if both object contains distinct addresses, false otherwise.
         //!
         bool operator!=(const IPv4Address& a) const { return _addr != a._addr; }
+#endif
 
         //!
         //! Comparison "less than" operator.

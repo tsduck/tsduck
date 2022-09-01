@@ -45,10 +45,13 @@ ts::MessageQueue<MSG, MUTEX>::MessageQueue(size_t maxMessages) :
 {
 }
 
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
 template <typename MSG, class MUTEX>
-ts::MessageQueue<MSG, MUTEX>::~MessageQueue<MSG, MUTEX>()
+ts::MessageQueue<MSG, MUTEX>::~MessageQueue()
 {
 }
+TS_POP_WARNING()
 
 
 //----------------------------------------------------------------------------

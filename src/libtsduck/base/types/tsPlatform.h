@@ -142,6 +142,10 @@
     //!
     #define TS_CXX17
     //!
+    //! Defined when the compiler is compliant with C++20.
+    //!
+    #define TS_CXX20
+    //!
     //! Defined when the STL @c basic_string is compliant with C++11.
     //!
     //! The class @c basic_string from the C++ STL has more features starting
@@ -162,6 +166,9 @@
     #endif
     #if defined(__cplusplus) && __cplusplus >= 201703L && !defined(TS_CXX17)
         #define TS_CXX17 1
+    #endif
+    #if defined(__cplusplus) && __cplusplus >= 202002L && !defined(TS_CXX20)
+        #define TS_CXX20 1
     #endif
     //
     // Microsoft-specific ways of signaling the language level.
@@ -189,6 +196,20 @@
     #if defined(TS_CXX11) && (defined(TS_LLVM) || !defined(__GNUC__) || __GNUC__ >= 5) && !defined(TS_CXX11_STRING)
         #define TS_CXX11_STRING 1
     #endif
+#endif
+
+#if defined(DOXYGEN) || !defined(TS_CXX20)
+    //!
+    //! Defined when the != operator shall be defined in addition to ==.
+    //!
+    //! In C++20, != operators are implicitly derived from the corresponding == operators.
+    //! Defining the != operator when == is already defined is not only useless,
+    //! it also creates "ambiguous operator" errors because tests such as "a != b"
+    //! become ambiguous when a and b are not const (the exact profile of !=).
+    //! In that case, the compiler cannot choose between the explicitly defined
+    //! != and the implicit one which is derived from ==.
+    //!
+    #define TS_NEED_UNEQUAL_OPERATOR 1
 #endif
 
 

@@ -228,6 +228,7 @@ namespace ts {
             return sp._shared == this->_shared;
         }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //!
@@ -247,6 +248,7 @@ namespace ts {
         {
             return sp._shared != this->_shared;
         }
+#endif
 
         //!
         //! Redirection operator.

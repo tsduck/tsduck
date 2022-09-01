@@ -397,7 +397,7 @@ void NetworkingTest::testIPv4SocketAddressConstructors()
 
     ts::IPv4SocketAddress a8(u"localhost", CERR);
     TSUNIT_ASSERT(a8.address() == 0x7F000001); // 127.0.0.1
-    TSUNIT_ASSERT(a8 == ts::IPv4Address::LocalHost);
+    TSUNIT_ASSERT(ts::IPv4Address(a8) == ts::IPv4Address::LocalHost);
     TSUNIT_ASSERT(a8.port() == ts::IPv4SocketAddress::AnyPort);
 
     ts::IPv4SocketAddress a9(u"2.3.4.5:80", CERR);

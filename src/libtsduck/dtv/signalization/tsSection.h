@@ -265,6 +265,7 @@ namespace ts {
         //!
         bool operator==(const Section& other) const;
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! The source PID's are ignored, only the section contents are compared.
@@ -273,6 +274,7 @@ namespace ts {
         //! @return True if the two sections are different. False otherwise.
         //!
         bool operator!=(const Section& other) const { return !operator==(other); }
+#endif
 
         //!
         //! Get the table id.

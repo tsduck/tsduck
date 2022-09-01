@@ -396,14 +396,17 @@ bool ts::WebRequest::open(const UString& url)
         return false;
     }
 
-    _finalURL = _originalURL = url;
+    _finalURL = url;
+    _originalURL = url;
     _responseHeaders.clear();
-    _contentSize = _headerContentSize = 0;
+    _contentSize = 0;
+    _headerContentSize = 0;
     _httpStatus = 0;
     _interrupted = false;
 
     // System-specific transfer initialization.
-    return _isOpen = startTransfer();
+    _isOpen = startTransfer();
+    return _isOpen;
 }
 
 

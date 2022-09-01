@@ -462,7 +462,8 @@ bool ts::TSFile::openInternal(bool reopen, Report& report)
     }
 
     // Clean initial state.
-    _at_eof = _aborted = false;
+    _aborted = false;
+    _at_eof = false;
     _is_open = true;
 
     // In write mode, write initial null packets.
@@ -576,7 +577,9 @@ bool ts::TSFile::close(Report& report)
 #endif
     }
 
-    _is_open = _at_eof = _aborted = false;
+    _is_open = false;
+    _at_eof = false;
+    _aborted = false;
     _flags = NONE;
     _filename.clear();
     _std_inout = false;
@@ -831,7 +834,8 @@ void ts::TSFile::abort()
 {
     if (_is_open) {
         // Mark broken pipe, read or write.
-        _aborted = _at_eof = true;
+        _aborted = true;
+        _at_eof = true;
 
         // Close pipe handle, ignore errors.
 #if defined(TS_WINDOWS)

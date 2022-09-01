@@ -96,12 +96,14 @@ namespace ts {
         //!
         bool operator==(const MACAddress& a) const { return _addr == a._addr; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         //!
         //! Unequality operator.
         //! @param [in] a Another instance to compare with.
         //! @return True if both object contains distinct addresses, false otherwise.
         //!
         bool operator!=(const MACAddress& a) const {return _addr != a._addr;}
+#endif
 
         //!
         //! Constructor from a string in "a:b:c:d:e:f" format.
@@ -111,7 +113,7 @@ namespace ts {
         MACAddress(const UString& name, Report& report) :
             _addr(0)
         {
-            resolve(name, report);
+            MACAddress::resolve(name, report);
         }
 
         // Inherited methods.

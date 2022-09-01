@@ -183,7 +183,9 @@ namespace ts {
         FloatingPoint& operator/=(const FloatingPoint& x) { _value /= x._value; return *this; }
 
         bool operator==(const FloatingPoint& x) const { return std::abs(_value - x._value) < EQUAL_PRECISION; }
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         bool operator!=(const FloatingPoint& x) const { return std::abs(_value - x._value) >= EQUAL_PRECISION; }
+#endif
         bool operator<=(const FloatingPoint& x) const { return _value <= x._value; }
         bool operator>=(const FloatingPoint& x) const { return _value >= x._value; }
         bool operator<(const FloatingPoint& x) const { return _value < x._value; }
@@ -216,8 +218,10 @@ namespace ts {
         template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
         bool operator==(NUM_T x) const { return std::abs(_value - float_t(x)) < EQUAL_PRECISION; }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
         template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
         bool operator!=(NUM_T x) const { return std::abs(_value - float_t(x)) >= EQUAL_PRECISION; }
+#endif
 
         template<typename NUM_T, typename std::enable_if<std::is_arithmetic<NUM_T>::value, int>::type = 0>
         bool operator<=(NUM_T x) const { return _value <= float_t(x); }
@@ -250,11 +254,15 @@ inline ts::FloatingPoint<FLOAT_T,PREC> operator*(NUM_T x1, const ts::FloatingPoi
 template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
 inline ts::FloatingPoint<FLOAT_T,PREC> operator/(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return ts::FloatingPoint<FLOAT_T,PREC>(x1) / x2; }
 
+// This one explicitly calls the operator== method because without it, you get an error when built with C++20
+// error: in C++20 this comparison calls the current function recursively with reversed arguments
 template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator==(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 == x1; }
+inline bool operator==(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2.operator==(x1); }
 
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
 template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
-inline bool operator!=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 != x1; }
+inline bool operator!=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return !x2.operator==(x1); }
+#endif
 
 template<typename NUM_T, typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_arithmetic<NUM_T>::value && std::is_floating_point<FLOAT_T>::value, int>::type = 0>
 inline bool operator<=(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { return x2 >= x1; }
