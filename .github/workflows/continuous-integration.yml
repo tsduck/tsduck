@@ -54,13 +54,13 @@ jobs:
         compiler: [gcc, clang]
         std: [11, 20]
         include:
-        - os: ubuntu-latest
+        - os: ubuntu
           compiler: clang
           llvm: true
-        - os: macos-latest
+        - os: macos
           bindir: bin
         exclude:
-        - os: macos-latest
+        - os: macos
           compiler: gcc
     name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
     runs-on: ${{ matrix.os }}-latest
