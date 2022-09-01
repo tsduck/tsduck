@@ -36,53 +36,44 @@ name: Continuous integration
 # Trigger the workflow on push or pull request, for master branch only.
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    branches: [ master ]
+    branches: [master]
 
+# Build on Ubuntu, macOS and Windows. Use gcc and clang on Linux, only clang on macOS.
+# Build using C++11 (C++14 on Windows) and C++20 levels of standards.
+# Warning: It has been noted on GitHub macOS runners that the host name can change
+# between steps or even the middle of a step. This breaks the naming scheme of the
+# build directory for binaries. As a consequence, we force BINDIR=bin.
 jobs:
-  linux-gcc:
-    name: Linux with gcc
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Install dependencies
-      run: |
-        scripts/install-prerequisites.sh
-        gcc --version
-        scripts/java-config.sh
-    - name: Build TSDuck
-      run: make -j5
-    - name: Check built version
-      run: make show-version
-    - name: Run unitary tests
-      run: make test
-    - name: Download test suite
-      run: |
-        mkdir -p ../tsduck-test
-        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
-    - name: Run test suite
-      run: |
-        make test-suite && status=$? || status=$?
-        cd ../tsduck-test
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
-
-  linux-clang:
-    name: Linux with clang
-    runs-on: ubuntu-latest
+  build_unix:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu, macos]
+        compiler: [gcc, clang]
+        std: [11, 20]
+        include:
+        - os: ubuntu-latest
+          compiler: clang
+          llvm: true
+        - os: macos-latest
+          bindir: bin
+        exclude:
+        - os: macos-latest
+          compiler: gcc
+    name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
+    runs-on: ${{ matrix.os }}-latest
     env:
-      LLVM: true
+      LLVM: ${{ matrix.llvm }}
+      BINDIR: ${{ matrix.bindir }}
+      CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
       run: |
         scripts/install-prerequisites.sh
-        sudo apt install -y clang
-        clang --version
+        ${{ matrix.compiler }} --version
         scripts/java-config.sh
     - name: Build TSDuck
       run: make -j5
@@ -104,7 +95,65 @@ jobs:
         done
         exit $status
 
-  doxygen:
+  build_windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [Win64, Win32]
+        configuration: [Release]
+        std: [14, 20]
+        include:
+        - target: Win64
+          suffix: x64
+          testopt: --dev
+        - target: Win32
+          suffix: Win32
+          testopt: --dev32
+        exclude:
+        - target: Win32
+          std: 20
+    name: Build on ${{ matrix.target }} with VC++, C++${{ matrix.std }}
+    runs-on: windows-latest
+    env:
+      STDCPP: stdcpp${{ matrix.std }}
+    steps:
+    - uses: actions/checkout@master
+    - name: Install dependencies
+      run: |
+        scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
+    - name: Build TSDuck
+      run: |
+        scripts/build.ps1 -${{ matrix.target }} -${{ matrix.configuration }} -Parallel 5 -NoLowPriority -NoPause
+    - name: Check built version
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/tsversion.exe --version=all
+    - name: Check plugins list
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/tsp.exe --list
+    - name: Run unitary tests
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/utests-tsduckdll.exe
+    - name: Run unitary tests (static)
+      run: |
+        bin/${{ matrix.configuration }}-${{ matrix.suffix }}/utests-tsducklib.exe
+    - name: Download test suite
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
+        Expand-Archive test.zip -DestinationPath . -Force
+        Move-Item tsduck-test-master ../tsduck-test -Force
+    - name: Run test suite
+      shell: bash
+      run: |
+        cd ../tsduck-test
+        ./run-all-tests.sh ${{ matrix.testopt }} && status=$? || status=$?
+        for f in $(find tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+
+  build_doxygen:
     name: Doxygen documentation
     runs-on: ubuntu-latest
     steps:
@@ -114,108 +163,5 @@ jobs:
         scripts/install-prerequisites.sh
         doxygen --version
     - name: Build TSDuck documentation
-      run: make doxygen
-
-  macos-clang:
-    # Warning: It has been noted on GitHub macOS runners that the host name can change
-    # between steps or even the middle of a step. This breaks the naming scheme of the
-    # build directory for binaries. As a consequence, we need to force a fixed name.
-    name: macOS with clang
-    runs-on: macos-latest
-    env:
-       BINDIR: bin
-    steps:
-    - uses: actions/checkout@master
-    - name: Install dependencies
       run: |
-        brew update
-        scripts/install-prerequisites.sh
-        clang --version
-        scripts/java-config.sh
-    - name: Build TSDuck
-      run: make -j5
-    - name: Check built version
-      run: make show-version
-    - name: Run unitary tests
-      run: make test
-    - name: Download test suite
-      run: |
-        mkdir -p ../tsduck-test
-        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
-    - name: Run test suite
-      run: |
-        make test-suite && status=$? || status=$?
-        cd ../tsduck-test
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
-
-  windows-64-msvc:
-    name: Windows 64-bit with VC++
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Install dependencies
-      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
-    - name: Build TSDuck
-      run: scripts/build.ps1 -Win64 -Release -Parallel 5 -NoLowPriority -NoPause
-    - name: Check built version
-      run: bin/Release-x64/tsversion.exe --version=all
-    - name: Check plugins list
-      run: bin/Release-x64/tsp.exe --list
-    - name: Run unitary tests
-      run: bin/Release-x64/utests-tsduckdll.exe
-    - name: Run unitary tests (static)
-      run: bin/Release-x64/utests-tsducklib.exe
-    - name: Download test suite
-      run: |
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
-        Expand-Archive test.zip -DestinationPath . -Force
-        Move-Item tsduck-test-master ../tsduck-test -Force
-    - name: Run test suite
-      shell: bash
-      run: |
-        cd ../tsduck-test
-        ./run-all-tests.sh --dev && status=$? || status=$?
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
-
-  windows-32-msvc:
-    name: Windows 32-bit with VC++
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@master
-    - name: Install dependencies
-      run: scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
-    - name: Build TSDuck
-      run: scripts/build.ps1 -Win32 -Release -Parallel 5 -NoLowPriority -NoPause
-    - name: Check built version
-      run: bin/Release-Win32/tsversion.exe --version=all
-    - name: Check plugins list
-      run: bin/Release-Win32/tsp.exe --list
-    - name: Run unitary tests
-      run: bin/Release-Win32/utests-tsduckdll.exe
-    - name: Run unitary tests (static)
-      run: bin/Release-Win32/utests-tsducklib.exe
-    - name: Download test suite
-      run: |
-        $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
-        Expand-Archive test.zip -DestinationPath . -Force
-        Move-Item tsduck-test-master ../tsduck-test -Force
-    - name: Run test suite
-      shell: bash
-      run: |
-        cd ../tsduck-test
-        ./run-all-tests.sh --dev32 && status=$? || status=$?
-        for f in $(find tmp -name '*.diff'); do
-            echo "==== $f";
-            cat "$f"
-        done
-        exit $status
+        make doxygen
