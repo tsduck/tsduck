@@ -144,12 +144,12 @@ namespace ts {
         //
 
         // Initialize the content of a TuningSpace object with a name and a default locator.
-        bool initTuningSpace(::ITuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report);
-        bool initDVBTuningSpace(::IDVBTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report);
-        bool initDVBTuningSpace2(::IDVBTuningSpace2* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report);
-        bool initDVBSTuningSpace(::IDVBSTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report);
-        bool initATSCTuningSpace(::IATSCTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report);
-        bool initDigitalCableTuningSpace(::IDigitalCableTuningSpace* tspace, ::WCHAR* name, ::ILocator* dlocator, Report& report);
+        bool initTuningSpace(::ITuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report);
+        bool initDVBTuningSpace(::IDVBTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report);
+        bool initDVBTuningSpace2(::IDVBTuningSpace2* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report);
+        bool initDVBSTuningSpace(::IDVBSTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report);
+        bool initATSCTuningSpace(::IATSCTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report);
+        bool initDigitalCableTuningSpace(::IDigitalCableTuningSpace* tspace, const ::WCHAR* name, ::ILocator* dlocator, Report& report);
 
         // It has been noticed that the default locator shall be set on a tuning space after
         // all other settings. This is specifically required for DVB tuning spaces. Initialization
