@@ -40,30 +40,31 @@ on:
   pull_request:
     branches: [master]
 
-# Build on Ubuntu, macOS and Windows. Use gcc and clang on Linux, only clang on macOS.
-# Build using C++11 (C++14 on Windows) and C++20 levels of standards.
-# Warning: It has been noted on GitHub macOS runners that the host name can change
-# between steps or even the middle of a step. This breaks the naming scheme of the
-# build directory for binaries. As a consequence, we force BINDIR=bin.
+# Build on Ubuntu, macOS and Windows, using C++11 (C++14 on Windows) and C++20 levels of standards.
 jobs:
   build_unix:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu, macos]
+        # ubuntu-latest is currently ubuntu-20.04, too old for C++20, force ubuntu-22.04.
+        os: [ubuntu-22.04, macos-latest]
         compiler: [gcc, clang]
         std: [11, 20]
         include:
-        - os: ubuntu
+        - os: ubuntu-22.04
           compiler: clang
           llvm: true
-        - os: macos
+        - os: macos-latest
+          # It has been noted on GitHub macOS runners that the host name can change
+          # between steps or even the middle of a step. This breaks the naming scheme
+          # of the build directory for binaries. As a consequence, we force BINDIR=bin.
           bindir: bin
         exclude:
-        - os: macos
+        - os: macos-latest
           compiler: gcc
+          # Don't use gcc on macOS.
     name: Build on ${{ matrix.os }} with ${{ matrix.compiler }}, C++${{ matrix.std }}
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     env:
       LLVM: ${{ matrix.llvm }}
       BINDIR: ${{ matrix.bindir }}
