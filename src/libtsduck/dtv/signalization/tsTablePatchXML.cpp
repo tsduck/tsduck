@@ -32,6 +32,7 @@
 #include "tsxmlElement.h"
 #include "tsFatal.h"
 #include "tsArgs.h"
+#include "tsDuckContext.h"
 
 
 //----------------------------------------------------------------------------
@@ -45,9 +46,6 @@ ts::TablePatchXML::TablePatchXML(DuckContext& duck) :
 {
 }
 
-ts::TablePatchXML::~TablePatchXML()
-{
-}
 
 //----------------------------------------------------------------------------
 // Clear all previously loaded patch files, clear list of patch files.

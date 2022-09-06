@@ -33,26 +33,24 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgsSupplierInterface.h"
 #include "tsUString.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! Command line arguments for the class WebRequest.
     //! @ingroup net
     //!
-    class TSDUCKDLL WebRequestArgs : public ArgsSupplierInterface
+    class TSDUCKDLL WebRequestArgs
     {
     public:
         //!
         //! Constructor.
         //!
         WebRequestArgs();
-
-        //!
-        //! Destructor.
-        //!
-        virtual ~WebRequestArgs() override;
 
         // Public fields, by options.
         MilliSecond   connectionTimeout;    //!< -\-connection-timeout
@@ -65,8 +63,19 @@ namespace ts {
         bool          useCookies;           //!< Use cookies, no command line options, true by default
         UString       cookiesFile;          //!< Cookies files (Linux only), no command line options
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
     };
 }

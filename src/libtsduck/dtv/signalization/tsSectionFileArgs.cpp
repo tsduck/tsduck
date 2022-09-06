@@ -29,6 +29,7 @@
 
 #include "tsSectionFileArgs.h"
 #include "tsArgs.h"
+#include "tsDuckContext.h"
 
 
 //----------------------------------------------------------------------------
@@ -39,10 +40,6 @@ ts::SectionFileArgs::SectionFileArgs() :
     pack_and_flush(false),
     eit_normalize(false),
     eit_base_time()
-{
-}
-
-ts::SectionFileArgs::~SectionFileArgs()
 {
 }
 

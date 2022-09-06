@@ -150,7 +150,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _max_repetition(0),
     _min_preroll(0),
     _max_preroll(0),
-    _json_args(true),
+    _json_args(),
     _log_cmds(),
     _display(duck),
     _displayed_table(false),
@@ -161,8 +161,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _x2j_conv(*tsp),
     _json_doc(*tsp)
 {
-    _json_args.setHelp(u"Build a JSON report into the specified file. Using '-' means standard output.");
-    _json_args.defineArgs(*this);
+    _json_args.defineArgs(*this, true, u"Build a JSON report into the specified file. Using '-' means standard output.");
 
     option(u"alarm-command", 0, STRING);
     help(u"alarm-command", u"'command'",

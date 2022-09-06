@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgsSupplierInterface.h"
 #include "tsCASFamily.h"
 #include "tsDescriptorList.h"
 #include "tsNullReport.h"
@@ -41,22 +40,21 @@
 #include "tsPMT.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! Command line arguments to select Conditional Access Systems.
     //! @ingroup cmd
     //!
-    class TSDUCKDLL CASSelectionArgs : public ArgsSupplierInterface
+    class TSDUCKDLL CASSelectionArgs
     {
     public:
         //!
         //! Constructor.
         //!
         CASSelectionArgs();
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~CASSelectionArgs() override;
 
         // Public fields, by options.
         bool      pass_ecm;    //!< Pass PIDs containing ECM.
@@ -65,9 +63,20 @@ namespace ts {
         uint16_t  max_cas_id;  //!< Maximum CA system id for ECM or EMM.
         uint32_t  cas_oper;    //!< CA operator id (depends on the CAS).
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
 
         //!
         //! Check if the specified CAS id matches the selection criteria.

@@ -54,7 +54,6 @@ constexpr size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
 //----------------------------------------------------------------------------
 
 ts::TablesLogger::TablesLogger(TablesDisplay& display) :
-    ArgsSupplierInterface(),
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _use_text(false),

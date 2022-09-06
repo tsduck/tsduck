@@ -83,7 +83,6 @@
 #include "tsAreaBroadcastingInformationDescriptor.h"
 #include "tsArgMix.h"
 #include "tsArgs.h"
-#include "tsArgsSupplierInterface.h"
 #include "tsArgsWithPlugins.h"
 #include "tsARIBCharset.h"
 #include "tsAssociationTagDescriptor.h"

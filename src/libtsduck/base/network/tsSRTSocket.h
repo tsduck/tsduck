@@ -38,7 +38,6 @@
 #include "tsReport.h"
 #include "tsEnumUtils.h"
 #include "tsCerrReport.h"
-#include "tsArgsSupplierInterface.h"
 
 namespace ts {
     //!
@@ -68,6 +67,10 @@ namespace ts {
 TS_ENABLE_BITMASK_OPERATORS(ts::SRTStatMode);
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! Secure Reliable Transport (SRT) Socket.
     //! If the libsrt is not available during compilation of this class,
@@ -76,7 +79,7 @@ namespace ts {
     //! @see https://www.srtalliance.org/
     //! @ingroup net
     //!
-    class TSDUCKDLL SRTSocket: public ArgsSupplierInterface
+    class TSDUCKDLL SRTSocket
     {
         TS_NOCOPY(SRTSocket);
     public:
@@ -88,7 +91,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~SRTSocket() override;
+        ~SRTSocket();
 
         //!
         //! Open the socket using parameters from the command line.
@@ -117,9 +120,20 @@ namespace ts {
         //!
         bool close(Report& report = CERR);
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
 
         //!
         //! Preset local and remote socket addresses in string form.

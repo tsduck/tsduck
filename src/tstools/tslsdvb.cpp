@@ -69,11 +69,11 @@ Options::Options(int argc, char *argv[]) :
     test_type(ts::DirectShowTest::NONE),
 #endif
     duck(this),
-    tuner_args(true, true),
+    tuner_args(true),
     extended(false)
 {
     // Common tuner options.
-    tuner_args.defineArgs(*this);
+    tuner_args.defineArgs(*this, true);
 
     option(u"extended-info", 'e');
     help(u"extended-info", u"Display extended information.");

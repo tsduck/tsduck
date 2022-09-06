@@ -129,7 +129,7 @@ ts::DektecControl::Guts::Guts(Report& report) :
     _report(report),
     _list_all(false),
     _normalized(false),
-    _json(true),
+    _json(),
     _wait_sec(0),
     _devindex(0),
     _reset(false),
@@ -174,8 +174,7 @@ ts::DektecControl::DektecControl(int argc, char *argv[]) :
          u"option --wait (the led state is automatically returned to "
          u"\"hardware\" after exit).");
 
-    _guts->_json.setHelp(u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
-    _guts->_json.defineArgs(*this);
+    _guts->_json.defineArgs(*this, true, u"With --all, list the Dektec devices in JSON format (useful for automatic analysis).");
 
     option(u"normalized", 'n');
     help(u"normalized", u"With --all, list the Dektec devices in a normalized output format (useful for automatic analysis).");

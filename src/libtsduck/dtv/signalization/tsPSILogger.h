@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgsSupplierInterface.h"
 #include "tsSectionDemux.h"
 #include "tsTextFormatter.h"
 #include "tsxmlRunningDocument.h"
@@ -42,14 +41,15 @@
 #include "tsPAT.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! This class logs sections and tables.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL PSILogger :
-        public ArgsSupplierInterface,
-        private TableHandlerInterface,
-        private SectionHandlerInterface
+    class TSDUCKDLL PSILogger: private TableHandlerInterface, private SectionHandlerInterface
     {
         TS_NOBUILD_NOCOPY(PSILogger);
     public:
@@ -64,9 +64,20 @@ namespace ts {
         //!
         virtual ~PSILogger() override;
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
 
         //!
         //! Set a table handler which is called for each complete table in addition to logging.

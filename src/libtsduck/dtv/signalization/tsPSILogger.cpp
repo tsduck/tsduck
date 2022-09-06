@@ -48,7 +48,6 @@
 //----------------------------------------------------------------------------
 
 ts::PSILogger::PSILogger(TablesDisplay& display) :
-    ArgsSupplierInterface(),
     TableHandlerInterface(),
     SectionHandlerInterface(),
     _all_versions(false),

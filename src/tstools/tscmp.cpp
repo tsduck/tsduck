@@ -103,7 +103,7 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
     pid_ignore(false),
     cc_ignore(false),
     continue_all(false),
-    json(true)
+    json()
 {
     ts::DefineTSPacketFormatInputOption(*this, 'f');
 
@@ -171,7 +171,7 @@ ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
          u"different and the first file is read ahead. The default is zero, which "
          u"means that two packets must be strictly identical to declare them equal.");
 
-    json.defineArgs(*this);
+    json.defineArgs(*this, true);
 
     analyze(argc, argv);
 

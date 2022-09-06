@@ -41,8 +41,8 @@
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::TunerArgs::TunerArgs(bool info_only, bool allow_short_options) :
-    ModulationArgs(allow_short_options),
+ts::TunerArgs::TunerArgs(bool info_only) :
+    ModulationArgs(),
     device_name(),
     signal_timeout(Tuner::DEFAULT_SIGNAL_TIMEOUT),
     receive_timeout(0),
@@ -178,10 +178,10 @@ bool ts::TunerArgs::loadArgs(DuckContext& duck, Args& args)
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::TunerArgs::defineArgs(Args& args)
+void ts::TunerArgs::defineArgs(Args& args, bool allow_short_options)
 {
     // Tuner identification.
-    args.option(u"adapter", allowShortOptions() ? u'a' : 0, Args::UNSIGNED);
+    args.option(u"adapter", allow_short_options ? u'a' : 0, Args::UNSIGNED);
     args.help(u"adapter", u"N",
 #if defined(TS_LINUX)
               u"Specifies the Linux DVB adapter N (/dev/dvb/adapterN). "
@@ -190,7 +190,7 @@ void ts::TunerArgs::defineArgs(Args& args)
 #endif
               u"This option can be used instead of device name.");
 
-    args.option(u"device-name", allowShortOptions() ? u'd' : 0, Args::STRING);
+    args.option(u"device-name", allow_short_options ? u'd' : 0, Args::STRING);
     args.help(u"device-name", u"name",
 #if defined(TS_LINUX)
               u"Specify the DVB receiver device name, /dev/dvb/adapterA[:F[:M[:V]]] "
@@ -246,10 +246,10 @@ void ts::TunerArgs::defineArgs(Args& args)
 #endif
 
         // Tuning options from superclass.
-        ModulationArgs::defineArgs(args);
+        ModulationArgs::defineArgs(args, allow_short_options);
 
         // Tuning using a channel configuration file.
-        args.option(u"channel-transponder", allowShortOptions() ? 'c' : 0, Args::STRING);
+        args.option(u"channel-transponder", allow_short_options ? 'c' : 0, Args::STRING);
         args.help(u"channel-transponder", u"name",
                   u"Tune to the transponder containing the specified channel. "
                   u"The channel name is not case-sensitive and blanks are ignored. "

@@ -33,8 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgsSupplierInterface.h"
-#include "tsDuckContext.h"
 #include "tsBinaryTable.h"
 #include "tsUString.h"
 #include "tsReport.h"
@@ -43,12 +41,16 @@
 #include "tsxmlTweaks.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! Implementation of on-the-fly table patching using XML.
     //! This class is typically used to handle -\-patch-xml command line options.
     //! @ingroup mpeg
     //!
-    class TSDUCKDLL TablePatchXML : public ArgsSupplierInterface
+    class TSDUCKDLL TablePatchXML
     {
         TS_NOBUILD_NOCOPY(TablePatchXML);
     public:
@@ -59,13 +61,19 @@ namespace ts {
         TablePatchXML(DuckContext& duck);
 
         //!
-        //! Virtual destructor.
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //!
-        virtual ~TablePatchXML() override;
+        void defineArgs(Args& args);
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
 
         //!
         //! Clear all previously loaded patch files, clear list of patch files.
