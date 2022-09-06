@@ -58,41 +58,41 @@ namespace ts {
 
     private:
         // Command line options.
-        bool          _log;             // Log MPE datagrams.
-        bool          _sync_layout;     // Display a layout of 0x47 sync bytes.
-        bool          _dump_datagram;   // Dump complete network datagrams.
-        bool          _dump_udp;        // Dump UDP payloads.
-        bool          _send_udp;        // Send all datagrams through UDP.
-        bool          _log_hexa_line;   // Log datagrams as one hexa line in the system message log.
-        bool          _signal_event;    // Signal a plugin event on MPE packet.
-        bool          _all_mpe_pids;    // Extract all MPE PID's.
-        bool          _outfile_append;  // Append file.
-        UString       _outfile_name;    // Output file name.
-        UString       _log_hexa_prefix; // Prefix before hexa log line.
-        PacketCounter _max_datagram;    // Maximum number of datagrams to extract.
-        size_t        _min_net_size;    // Minimum size of network datagrams.
-        size_t        _max_net_size;    // Maximum size of network datagrams.
-        size_t        _min_udp_size;    // Minimum size of UDP datagrams.
-        size_t        _max_udp_size;    // Maximum size of UDP datagrams.
-        size_t        _dump_max;        // Max dump size in bytes.
-        size_t        _skip_size;       // Initial bytes to skip for --dump and --output-file.
-        uint32_t      _event_code;      // Event code to signal.
-        int           _ttl;             // Time to live option.
-        PIDSet        _pids;            // Explicitly specified PID's to extract.
-        IPv4SocketAddress _ip_source;       // IP source filter.
-        IPv4SocketAddress _ip_dest;         // IP destination filter.
-        IPv4SocketAddress _ip_forward;      // Forwarded socket address.
-        IPv4Address     _local_address;   // Local IP address for UDP forwarding.
-        uint16_t      _local_port;      // Local UDP source port for UDP forwarding.
+        bool          _log;               // Log MPE datagrams.
+        bool          _sync_layout;       // Display a layout of 0x47 sync bytes.
+        bool          _dump_datagram;     // Dump complete network datagrams.
+        bool          _dump_udp;          // Dump UDP payloads.
+        bool          _send_udp;          // Send all datagrams through UDP.
+        bool          _log_hexa_line;     // Log datagrams as one hexa line in the system message log.
+        bool          _signal_event;      // Signal a plugin event on MPE packet.
+        bool          _all_mpe_pids;      // Extract all MPE PID's.
+        bool          _outfile_append;    // Append file.
+        UString       _outfile_name;      // Output file name.
+        UString       _log_hexa_prefix;   // Prefix before hexa log line.
+        PacketCounter _max_datagram;      // Maximum number of datagrams to extract.
+        size_t        _min_net_size;      // Minimum size of network datagrams.
+        size_t        _max_net_size;      // Maximum size of network datagrams.
+        size_t        _min_udp_size;      // Minimum size of UDP datagrams.
+        size_t        _max_udp_size;      // Maximum size of UDP datagrams.
+        size_t        _dump_max;          // Max dump size in bytes.
+        size_t        _skip_size;         // Initial bytes to skip for --dump and --output-file.
+        uint32_t      _event_code;        // Event code to signal.
+        int           _ttl;               // Time to live option.
+        PIDSet        _pids;              // Explicitly specified PID's to extract.
+        IPv4SocketAddress _ip_source;     // IP source filter.
+        IPv4SocketAddress _ip_dest;       // IP destination filter.
+        IPv4SocketAddress _ip_forward;    // Forwarded socket address.
+        IPv4Address       _local_address; // Local IP address for UDP forwarding.
+        uint16_t          _local_port;    // Local UDP source port for UDP forwarding.
 
         // Plugin private fields.
-        bool          _abort;           // Error, abort asap.
-        UDPSocket     _sock;            // Outgoing UDP socket (forwarded datagrams).
-        int           _previous_uc_ttl; // Previous unicast TTL which was set.
-        int           _previous_mc_ttl; // Previous multicast TTL which was set.
-        PacketCounter _datagram_count;  // Number of extracted datagrams.
-        std::ofstream _outfile;         // Output file for extracted datagrams.
-        MPEDemux      _demux;           // MPE demux to extract MPE datagrams.
+        bool          _abort;             // Error, abort asap.
+        UDPSocket     _sock;              // Outgoing UDP socket (forwarded datagrams).
+        int           _previous_uc_ttl;   // Previous unicast TTL which was set.
+        int           _previous_mc_ttl;   // Previous multicast TTL which was set.
+        PacketCounter _datagram_count;    // Number of extracted datagrams.
+        std::ofstream _outfile;           // Output file for extracted datagrams.
+        MPEDemux      _demux;             // MPE demux to extract MPE datagrams.
 
         // Inherited methods.
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
@@ -501,11 +501,16 @@ void ts::MPEPlugin::handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe)
         }
 
         // Finally log the complete message.
-        tsp->info(u"PID 0x%X (%<d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s\n%s",
+        UString dump;
+        if (dump_size > 0) {
+            dump.append(u"\n");
+            dump.appendDump(dump_data, dump_size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16);
+        }
+        tsp->info(u"PID 0x%X (%<d), src: %s:%d, dest: %s:%d (%s%s), %d bytes, fragment: 0x%X%s%s",
                   {mpe.sourcePID(), mpe.sourceIPAddress(), mpe.sourceUDPPort(),
                    destIP, mpe.destinationUDPPort(), destMAC, macComment, udp_size,
                    GetUInt16(mpe.datagram() + 6), syncLayoutString(udp_data, udp_size),
-                   UString::Dump(dump_data, dump_size, UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, 2, 16)});
+                   dump});
     }
 
     // Save UDP messages in binary file.
