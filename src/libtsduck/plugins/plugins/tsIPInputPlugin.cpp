@@ -46,7 +46,7 @@ ts::IPInputPlugin::IPInputPlugin(TSP* tsp_) :
     _sock(*tsp_)
 {
     // Add UDP receiver common options.
-    _sock.defineArgs(*this);
+    _sock.defineArgs(*this, true, true, false);
 }
 
 

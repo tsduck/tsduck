@@ -33,12 +33,16 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgsSupplierInterface.h"
 #include "tsUString.h"
 #include "tsUDPSocket.h"
 #include "tsTelnetConnection.h"
 
 namespace ts {
+
+    // Forward declarations.
+    class Args;
+    class DuckContext;
+
     namespace json {
 
         // Forward declarations.
@@ -49,32 +53,36 @@ namespace ts {
         //! Command line arguments for JSON reports (@c -\-json, @c -\-json-line, @c -\-json-udp).
         //! @ingroup cmd
         //!
-        class TSDUCKDLL OutputArgs : public ArgsSupplierInterface
+        class TSDUCKDLL OutputArgs
         {
             TS_NOCOPY(OutputArgs);
         public:
             //!
             //! Default constructor.
-            //! @param [in] use_short_opt Define @c 'j' as short option for @c -\-json.
-            //! @param [in] help Help text for option @c -\-json.
             //!
-            OutputArgs(bool use_short_opt = false, const UString& help = UString());
+            OutputArgs();
 
             //!
             //! Virtual destructor.
             //!
-            virtual ~OutputArgs() override;
+            virtual ~OutputArgs();
 
             //!
-            //! Set the help text for the @c -\-json option.
-            //! Must be called before defineArgs().
-            //! @param [in] text Help text for the @c -\-json option.
+            //! Add command line option definitions in an Args.
+            //! @param [in,out] args Command line arguments to update.
+            //! @param [in] use_short_opt Define @c 'j' as short option for @c -\-json.
+            //! @param [in] help Help text for option @c -\-json.
             //!
-            void setHelp(const UString& text) { _json_help = text; }
+            void defineArgs(Args& args, bool use_short_opt, const UString& help = UString());
 
-            // Implementation of ArgsSupplierInterface.
-            virtual void defineArgs(Args& args) override;
-            virtual bool loadArgs(DuckContext& duck, Args& args) override;
+            //!
+            //! Load arguments from command line.
+            //! Args error indicator is set in case of incorrect arguments.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @param [in,out] args Command line arguments.
+            //! @return True on success, false on error in argument line.
+            //!
+            bool loadArgs(DuckContext& duck, Args& args);
 
             //!
             //! Check if any JSON output option is specified.
@@ -107,8 +115,6 @@ namespace ts {
             bool report(const json::Value& root, json::RunningDocument& doc, Report& rep);
 
         private:
-            bool              _use_short_opt;
-            UString           _json_help;
             bool              _json_opt;          // Option --json
             bool              _json_line;         // Option --json-line
             bool              _json_tcp;          // Option --json-tcp

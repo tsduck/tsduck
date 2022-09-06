@@ -33,17 +33,20 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsArgsSupplierInterface.h"
 #include "tsSectionFile.h"
 #include "tsReport.h"
 #include "tsTime.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! Command line arguments for section file processing.
     //! @ingroup cmd
     //!
-    class TSDUCKDLL SectionFileArgs : public ArgsSupplierInterface
+    class TSDUCKDLL SectionFileArgs
     {
     public:
         //!
@@ -51,19 +54,25 @@ namespace ts {
         //!
         SectionFileArgs();
 
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~SectionFileArgs() override;
-
         // Public fields, by options.
         bool pack_and_flush;   //!< Pack and flush incomplete tables before exiting.
         bool eit_normalize;    //!< EIT normalization (ETSI TS 101 211).
         Time eit_base_time;    //!< Last midnight reference for EIT normalization.
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
 
         //!
         //! Process the content of a section file according to the selected options.

@@ -80,7 +80,7 @@ constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::ModulationArgs::ModulationArgs(bool allow_short_options) :
+ts::ModulationArgs::ModulationArgs() :
     delivery_system(),
     frequency(),
     polarity(),
@@ -120,8 +120,7 @@ ts::ModulationArgs::ModulationArgs(bool allow_short_options) :
     layer_c_modulation(),
     layer_c_segment_count(),
     layer_c_time_interleaving(),
-    stream_id(),
-    _allow_short_options(allow_short_options)
+    stream_id()
 {
 }
 
@@ -1476,13 +1475,13 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::ModulationArgs::defineArgs(Args& args)
+void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
 {
     args.option(u"delivery-system", 0, DeliverySystemEnum);
     args.help(u"delivery-system",
               u"Specify which delivery system to use. By default, use the default system for the tuner.");
 
-    args.option(u"frequency", _allow_short_options ? 'f' : 0, Args::UNSIGNED);
+    args.option(u"frequency", allow_short_options ? 'f' : 0, Args::UNSIGNED);
     args.help(u"frequency", u"Carrier frequency in Hz (all tuners). There is no default.");
 
     args.option(u"polarity", 0, PolarizationEnum);
@@ -1502,7 +1501,7 @@ void ts::ModulationArgs::defineArgs(Args& args)
     args.help(u"spectral-inversion",
               u"Spectral inversion. The default is \"auto\".");
 
-    args.option(u"symbol-rate", _allow_short_options ? 's' : 0, Args::UNSIGNED);
+    args.option(u"symbol-rate", allow_short_options ? 's' : 0, Args::UNSIGNED);
     args.help(u"symbol-rate",
               u"Used for satellite and cable tuners only. "
               u"Symbol rate in symbols/second. The default is " +
@@ -1520,7 +1519,7 @@ void ts::ModulationArgs::defineArgs(Args& args)
               u"Used for satellite tuners only. Satellite/dish number. "
               u"Must be 0 to 3 with DiSEqC switches and 0 to 1 fornon-DiSEqC switches. The default is 0.");
 
-    args.option(u"modulation", _allow_short_options ? 'm' : 0, ModulationEnum);
+    args.option(u"modulation", allow_short_options ? 'm' : 0, ModulationEnum);
     args.help(u"modulation",
               u"Used for DVB-C, DVB-T, DVB-S2 and ATSC tuners. Modulation type. The default is \"" +
               ModulationEnum.name(DEFAULT_MODULATION_DVBT) + u"\" for DVB-T/T2, \"" +
@@ -1679,7 +1678,7 @@ void ts::ModulationArgs::defineArgs(Args& args)
               u"Warning: this option is supported on Linux only.");
 
     // UHF/VHF frequency bands options.
-    args.option(u"uhf-channel", _allow_short_options ? 'u' : 0, Args::POSITIVE);
+    args.option(u"uhf-channel", allow_short_options ? 'u' : 0, Args::POSITIVE);
     args.help(u"uhf-channel",
               u"Used for terrestrial tuners only. "
               u"Specify the UHF channel number of the carrier. "
@@ -1687,7 +1686,7 @@ void ts::ModulationArgs::defineArgs(Args& args)
               u"Can be combined with an --offset-count option. "
               u"The UHF frequency layout depends on the region, see --hf-band-region option.");
 
-    args.option(u"vhf-channel", _allow_short_options ? 'v' : 0, Args::POSITIVE);
+    args.option(u"vhf-channel", allow_short_options ? 'v' : 0, Args::POSITIVE);
     args.help(u"vhf-channel",
               u"Used for terrestrial tuners only. "
               u"Specify the VHF channel number of the carrier. "

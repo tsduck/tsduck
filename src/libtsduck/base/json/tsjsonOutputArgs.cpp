@@ -37,9 +37,7 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::json::OutputArgs::OutputArgs(bool use_short_opt, const UString& help) :
-    _use_short_opt(use_short_opt),
-    _json_help(help.empty() ? u"Report in JSON output format (useful for automatic analysis)." : help),
+ts::json::OutputArgs::OutputArgs() :
     _json_opt(false),
     _json_line(false),
     _json_tcp(false),
@@ -70,10 +68,10 @@ ts::json::OutputArgs::~OutputArgs()
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::json::OutputArgs::defineArgs(Args& args)
+void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UString& help)
 {
-    args.option(u"json", _use_short_opt ? 'j' : 0);
-    args.help(u"json", _json_help);
+    args.option(u"json", use_short_opt ? 'j' : 0);
+    args.help(u"json", help.empty() ? u"Report in JSON output format (useful for automatic analysis)." : help);
 
     args.option(u"json-buffer-size", 0, Args::UNSIGNED);
     args.help(u"json-buffer-size",

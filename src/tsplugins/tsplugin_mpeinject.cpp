@@ -71,8 +71,8 @@ namespace ts {
         bool          _pack_sections;  // Packet DSM-CC section, without stuffing in TS packets.
         size_t        _max_queued;     // Max number of queued sections.
         MACAddress    _default_mac;    // Default MAC address in MPE section for unicast packets.
-        IPv4SocketAddress _new_source;     // Masquerade source socket in MPE section.
-        IPv4SocketAddress _new_dest;       // Masquerade destination socket in MPE section.
+        IPv4SocketAddress _new_source; // Masquerade source socket in MPE section.
+        IPv4SocketAddress _new_dest;   // Masquerade destination socket in MPE section.
         UDPReceiver   _sock;           // Incoming socket with associated command line options
 
         // Working data.
@@ -112,7 +112,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
     _packetizer(duck, PID_NULL, this)
 {
     // UDP receiver common options.
-    _sock.defineArgs(*this);
+    _sock.defineArgs(*this, true, true, false);
 
     option(u"mac-address", 0, STRING);
     help(u"mac-address", u"nn:nn:nn:nn:nn:nn",

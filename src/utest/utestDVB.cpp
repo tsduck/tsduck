@@ -107,7 +107,7 @@ void DVBTest::testTunerArgs()
 {
     ts::Args args(u"Test tuner", u"[options]");
     ts::TunerArgs tuner_args;
-    tuner_args.defineArgs(args);
+    tuner_args.defineArgs(args, true);
     debug() << "DVBTest:: TunerArgs: " << std::endl << args.getHelpText(ts::Args::HELP_FULL) << std::endl;
 }
 
@@ -126,7 +126,7 @@ void DVBTest::testParameters(ts::DeliverySystem delsys)
 
     ts::Args args;
     ts::TunerArgs targs1;
-    targs1.defineArgs(args);
+    targs1.defineArgs(args, true);
 
     ts::UStringVector args_vec;
     opts.split(args_vec, u' ');

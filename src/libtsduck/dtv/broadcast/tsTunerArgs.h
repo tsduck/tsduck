@@ -60,15 +60,12 @@ namespace ts {
         //!
         //! Default constructor.
         //! @param [in] info_only If true, the tuner will not be used to tune, just to get information.
-        //! @param [in] allow_short_options If true, allow short one-letter options.
         //!
-        TunerArgs(bool info_only = false, bool allow_short_options = true);
-
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        TunerArgs(bool info_only = false);
 
         // Overridden from superclass.
+        virtual void defineArgs(Args& args, bool allow_short_options) override;
+        virtual bool loadArgs(DuckContext& duck, Args& args) override;
         virtual void clear() override;
 
         //!

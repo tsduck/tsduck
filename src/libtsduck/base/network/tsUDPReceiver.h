@@ -34,29 +34,58 @@
 
 #pragma once
 #include "tsUDPSocket.h"
-#include "tsArgsSupplierInterface.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! UDP datagram receiver with common command line options.
     //! @ingroup net
     //!
-    class TSDUCKDLL UDPReceiver: public UDPSocket, public ArgsSupplierInterface
+    class TSDUCKDLL UDPReceiver: public UDPSocket
     {
         TS_NOCOPY(UDPReceiver);
     public:
         //!
         //! Constructor.
         //! @param [in,out] report Where to report error.
-        //! @param [in] with_short_options When true, define one-letter short options.
-        //! @param [in] dest_as_param When true, the destination [address:]port is defined
-        //! as a parameter. When false, it is defined as option --ip--udp.
         //!
-        explicit UDPReceiver(Report& report = CERR, bool with_short_options = true, bool dest_as_param = true);
+        explicit UDPReceiver(Report& report = CERR);
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //! @param [in] with_short_options When true, define one-letter short options.
+        //! @param [in] destination_is_parameter When true, the destination [address:]port is defined
+        //! as a parameter. When false, it is defined as option --ip--udp.
+        //! @param [in] multiple_receivers When true, multiple destination [address:]port are allowed.
+        //!
+        void defineArgs(Args& args, bool with_short_options, bool destination_is_parameter, bool multiple_receivers);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @param [in] index When @a multiple_receivers was true in defineArgs(), specify the @a index
+        //! of the occurence of the set of options to return. Zero designates the first occurence.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args, size_t index = 0);
+
+        //!
+        //! Get the number of receivers on the command line.
+        //! @return The number of receivers on the command line during the last call to loadArgs().
+        //!
+        size_t receiverCount() const { return _receiver_count; }
+
+        //!
+        //! Get the index of the selected receiver on the command line.
+        //! @return The number of the selected receiver on the command line during the last call to loadArgs().
+        //!
+        size_t receiverIndex() const { return _receiver_index; }
 
         //!
         //! Check if a UDP receiver is specified.
@@ -93,10 +122,12 @@ namespace ts {
                              MicroSecond* timestamp = nullptr) override;
 
     private:
-        bool              _with_short_options;
-        bool              _dest_as_param;
+        bool              _dest_is_parameter;  // Destination address is a command line parameter, not an option.
+        const UChar*      _dest_option_name;   // Open name for destination address.
         bool              _receiver_specified; // An address is specified.
         bool              _use_ssm;            // Use source-specific multicast.
+        size_t            _receiver_index;     // The number of the selected receiver on the command line.
+        size_t            _receiver_count;     // The number of receivers on the command line.
         IPv4SocketAddress _dest_addr;          // Expected destination of packets.
         IPv4Address       _local_address;      // Local address on which to listen.
         bool              _reuse_port;         // Reuse port socket option.

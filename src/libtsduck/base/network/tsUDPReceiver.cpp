@@ -35,12 +35,14 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool dest_as_param) :
+ts::UDPReceiver::UDPReceiver(ts::Report& report) :
     UDPSocket(false, report),
-    _with_short_options(with_short_options),
-    _dest_as_param(dest_as_param),
+    _dest_is_parameter(true),
+    _dest_option_name(u""),
     _receiver_specified(false),
     _use_ssm(false),
+    _receiver_index(0),
+    _receiver_count(0),
     _dest_addr(),
     _local_address(),
     _reuse_port(false),
@@ -60,22 +62,33 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report, bool with_short_options, bool d
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void ts::UDPReceiver::defineArgs(ts::Args& args)
+void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool destination_is_parameter, bool multiple_receivers)
 {
     // [[source@]address:]port can be either a parameter or an option.
-    const UChar* const dest_name = _dest_as_param ? u"" : u"ip-udp";
-    const UChar dest_short = _dest_as_param || !_with_short_options ? 0 : 'i';
-    const size_t dest_min = _dest_as_param ? 1 : 0;
+    _dest_is_parameter = destination_is_parameter;
+    _dest_option_name = destination_is_parameter ? u"" : u"ip-udp";
+    const UChar dest_short = destination_is_parameter || !with_short_options ? 0 : 'i';
+    const size_t dest_min = destination_is_parameter ? 1 : 0;
 
-    args.option(dest_name, dest_short, Args::STRING, dest_min, 1);
-    args.help(dest_name, u"[address:]port",
-              u"The [address:]port describes the destination of UDP packets to receive. "
-              u"The 'port' part is mandatory and specifies the UDP port to listen on. "
-              u"The 'address' part is optional. It specifies an IP multicast address to listen on. "
-              u"It can be also a host name that translates to a multicast address. "
-              u"An optional source address can be specified as 'source@address:port' in the case of SSM.");
+    // [[source@]address:]port can be specified multiple times.
+    const size_t max_count = multiple_receivers ? Args::UNLIMITED_COUNT : 1;
+    const UChar* const dest_display = destination_is_parameter ? u"[address:]port parameters" : u"--ip-udp options";
+    UString help;
 
-    args.option(u"buffer-size", _with_short_options ? 'b' : 0, Args::UNSIGNED);
+    help = u"The [address:]port describes the destination of UDP packets to receive. "
+           u"The 'port' part is mandatory and specifies the UDP port to listen on. "
+           u"The 'address' part is optional. It specifies an IP multicast address to listen on. "
+           u"It can be also a host name that translates to a multicast address. "
+           u"An optional source address can be specified as 'source@address:port' in the case of SSM.";
+    if (multiple_receivers) {
+        help.format(u"\nSeveral %s can be specified to receive multiple UDP streams. "
+                    u"If distinct receivers use the same port, this may work or not, depending on the operating system.",
+                    {dest_display});
+    }
+    args.option(_dest_option_name, dest_short, Args::STRING, dest_min, max_count);
+    args.help(_dest_option_name, u"[address:]port", help);
+
+    args.option(u"buffer-size", with_short_options ? 'b' : 0, Args::UNSIGNED);
     args.help(u"buffer-size", u"Specify the UDP socket receive buffer size (socket option).");
 
     args.option(u"default-interface");
@@ -83,7 +96,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args)
               u"Let the system find the appropriate local interface on which to listen. "
               u"By default, listen on all local interfaces.");
 
-    args.option(u"first-source", _with_short_options ? 'f' : 0);
+    args.option(u"first-source", with_short_options ? 'f' : 0);
     args.help(u"first-source",
               u"Filter UDP packets based on the source address. Use the sender address of "
               u"the first received packet as only allowed source. This option is useful "
@@ -93,17 +106,23 @@ void ts::UDPReceiver::defineArgs(ts::Args& args)
               u"use option --source. Options --first-source and --source are mutually "
               u"exclusive.");
 
-    args.option(u"local-address", _with_short_options ? 'l' : 0, Args::STRING);
-    args.help(u"local-address", u"address",
-              u"Specify the IP address of the local interface on which to listen. "
-              u"It can be also a host name that translates to a local address. "
-              u"By default, listen on all local interfaces.");
+    help = u"Specify the IP address of the local interface on which to listen. "
+           u"It can be also a host name that translates to a local address. "
+           u"By default, listen on all local interfaces.";
+    if (multiple_receivers) {
+        help.format(u"\nIf several %s are specified, several --local-address options can be specified, "
+                    u"one for each receiver, in the same order. It there are less --local-address "
+                    u"options than receivers, the last --local-address applies for all remaining receivers.",
+                    {dest_display});
+    }
+    args.option(u"local-address", with_short_options ? 'l' : 0, Args::STRING, 0, max_count);
+    args.help(u"local-address", u"address", help);
 
     args.option(u"no-reuse-port");
     args.help(u"no-reuse-port",
               u"Disable the reuse port socket option. Do not use unless completely necessary.");
 
-    args.option(u"reuse-port", _with_short_options ? 'r' : 0);
+    args.option(u"reuse-port", with_short_options ? 'r' : 0);
     args.help(u"reuse-port",
               u"Set the reuse port socket option. This is now enabled by default, the option "
               u"is present for legacy only.");
@@ -114,13 +133,19 @@ void ts::UDPReceiver::defineArgs(ts::Args& args)
               u"This timeout applies to each receive operation, individually. "
               u"By default, receive operations wait for data, possibly forever.");
 
-    args.option(u"source", _with_short_options ? 's' : 0, Args::STRING);
-    args.help(u"source", u"address[:port]",
-              u"Filter UDP packets based on the specified source address. This option is "
-              u"useful when several sources send packets to the same destination address "
-              u"and port. Accepting all packets could result in a corrupted stream and "
-              u"only one sender shall be accepted. Options --first-source and --source "
-              u"are mutually exclusive.");
+    help = u"Filter UDP packets based on the specified source address. This option is "
+           u"useful when several sources send packets to the same destination address "
+           u"and port. Accepting all packets could result in a corrupted stream and "
+           u"only one sender shall be accepted. Options --first-source and --source "
+           u"are mutually exclusive.";
+    if (multiple_receivers) {
+        help.format(u"\nIf several %s are specified, several --source options can be specified, "
+                    u"one for each receiver, in the same order. It there are less --source "
+                    u"options than receivers, the last --source applies for all remaining receivers.",
+                    {dest_display});
+    }
+    args.option(u"source", with_short_options ? 's' : 0, Args::STRING, 0, max_count);
+    args.help(u"source", u"address[:port]", help);
 
     args.option(u"ssm");
     args.help(u"ssm",
@@ -134,15 +159,17 @@ void ts::UDPReceiver::defineArgs(ts::Args& args)
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args)
+bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
 {
     // Get destination address.
-    UString destination(args.value(_dest_as_param ? u"" : u"ip-udp"));
+    _receiver_count = args.count(_dest_option_name);
+    _receiver_index = index;
+    UString destination(args.value(_dest_option_name, u"", _receiver_index));
     _receiver_specified = !destination.empty();
 
     // When --ip-udp is specified as an option, the presence of a UDP received is optional.
     // Option UDP-related parameters are ignored when not specified.
-    if (!_dest_as_param && !_receiver_specified) {
+    if (!_dest_is_parameter && !_receiver_specified) {
         return true;
     }
 
@@ -151,8 +178,8 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args)
     _default_interface = args.present(u"default-interface");
     _use_ssm = args.present(u"ssm");
     _use_first_source = args.present(u"first-source");
-    _recv_bufsize = args.intValue<size_t>(u"buffer-size", 0);
-    _recv_timeout = args.intValue<MilliSecond>(u"receive-timeout", _recv_timeout); // preserve previous value
+    args.getIntValue(_recv_bufsize, u"buffer-size", 0);
+    args.getIntValue(_recv_timeout, u"receive-timeout", _recv_timeout); // preserve previous value
 
     // Check the presence of the '@' indicating a source address.
     const size_t sep = destination.find(u'@');
@@ -199,10 +226,15 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Get and resolve optional local address.
-    if (!args.present(u"local-address")) {
+    const size_t laddr_count = args.count(u"local-address");
+    if (laddr_count > _receiver_count) {
+        args.error(u"too many --local-address options");
+        return false;
+    }
+    if (laddr_count == 0) {
         _local_address.clear();
     }
-    else if (!_local_address.resolve(args.value(u"local-address"), args)) {
+    else if (!_local_address.resolve(args.value(u"local-address", u"", std::min(_receiver_index, laddr_count - 1)), args)) {
         return false;
     }
 
@@ -213,23 +245,28 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Translate optional source address.
-    UString source(args.value(u"source"));
-    if (_use_source.hasAddress() && !source.empty()) {
+    UString source;
+    const size_t source_count = args.count(u"source");
+    if (source_count > _receiver_count) {
+        args.error(u"too many --source options");
+        return false;
+    }
+    if (source_count > 0 && (!_use_source.hasAddress() || _receiver_index < source_count)) {
+        args.getValue(source, u"source", u"", std::min(_receiver_index, source_count - 1));
+    }
+    if (_use_source.hasAddress() && _receiver_index < source_count) {
         args.error(u"SSM source address specified twice");
         return false;
     }
-    else if (source.empty()) {
-        // Keep optional source address in source@address:port
-    }
-    else if (!_use_source.resolve(source, args)) {
+    if (!_use_source.resolve(source, args)) {
         return false;
     }
-    else if (!_use_source.hasAddress()) {
+    if (!_use_source.hasAddress()) {
         // If source is specified, the port is optional but the address is mandatory.
         args.error(u"missing IP address in --source %s", {source});
         return false;
     }
-    else if (_use_first_source) {
+    if (_use_first_source) {
         args.error(u"--first-source and --source are mutually exclusive");
         return false;
     }

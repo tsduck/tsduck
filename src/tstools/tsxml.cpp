@@ -93,10 +93,9 @@ Options::Options(int argc, char *argv[]) :
     xml_prefix(),
     indent(2),
     xml_tweaks(),
-    json(true)
+    json()
 {
-    json.setHelp(u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
-    json.defineArgs(*this);
+    json.defineArgs(*this, true, u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
     xml_tweaks.defineArgs(*this);
 
     setIntro(u"Any input XML file name can be replaced with \"inline XML content\", starting with \"<?xml\".");

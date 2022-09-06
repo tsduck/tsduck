@@ -35,7 +35,6 @@
 #pragma once
 #include "tsObject.h"
 #include "tsDisplayInterface.h"
-#include "tsArgsSupplierInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
 #include "tsLNB.h"
@@ -43,6 +42,8 @@
 
 namespace ts {
 
+    class Args;
+    class DuckContext;
     class Descriptor;
     class ModulationArgs;
 
@@ -58,7 +59,7 @@ namespace ts {
     //! All values may be "set" or "unset", depending on command line arguments.
     //! All options for all types of tuners are included here.
     //!
-    class TSDUCKDLL ModulationArgs : public Object, public ArgsSupplierInterface, public DisplayInterface
+    class TSDUCKDLL ModulationArgs : public Object, public DisplayInterface
     {
     public:
         //!
@@ -427,13 +428,24 @@ namespace ts {
 
         //!
         //! Default constructor.
+        //!
+        ModulationArgs();
+
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //! @param [in] allow_short_options If true, allow short one-letter options.
         //!
-        explicit ModulationArgs(bool allow_short_options = true);
+        virtual void defineArgs(Args& args, bool allow_short_options);
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        virtual bool loadArgs(DuckContext& duck, Args& args);
 
         // Implementation of DisplayInterface.
         virtual std::ostream& display(std::ostream& strm, const UString& margin = UString(), int level = Severity::Info) const override;
@@ -550,12 +562,6 @@ namespace ts {
 
     protected:
         //!
-        //! Check if one-letter short command line options are allowed.
-        //! @return True if one-letter short command line options are allowed.
-        //!
-        bool allowShortOptions() const { return _allow_short_options; }
-
-        //!
         //! Theoretical useful bitrate for QPSK or QAM modulation.
         //! This protected static method computes the theoretical useful bitrate of a
         //! transponder, based on 188-bytes packets, for QPSK or QAM modulation.
@@ -565,8 +571,5 @@ namespace ts {
         //! @return Theoretical useful bitrate in bits/second or zero on error.
         //!
         static BitRate TheoreticalBitrateForModulation(Modulation mod, InnerFEC fec, uint32_t symbol_rate);
-
-    private:
-        bool _allow_short_options;
     };
 }

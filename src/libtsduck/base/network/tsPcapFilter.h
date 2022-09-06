@@ -34,9 +34,12 @@
 
 #pragma once
 #include "tsPcapFile.h"
-#include "tsArgsSupplierInterface.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! Read a pcap or pcapng file with packet filtering.
     //!
@@ -46,7 +49,7 @@ namespace ts {
     //!
     //! @ingroup net
     //!
-    class TSDUCKDLL PcapFilter: public PcapFile, public ArgsSupplierInterface
+    class TSDUCKDLL PcapFilter: public PcapFile
     {
         TS_NOCOPY(PcapFilter);
     public:
@@ -220,11 +223,24 @@ namespace ts {
         //!
         void setReportAddressesFilterSeverity(int level) { _display_addresses_severity = level; }
 
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
+
         // Inherited methods.
         virtual bool open(const UString& filename, Report& report) override;
         virtual bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report) override;
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
 
     private:
         std::set<uint8_t> _protocols;

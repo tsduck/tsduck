@@ -53,10 +53,6 @@ ts::CASSelectionArgs::CASSelectionArgs() :
 {
 }
 
-ts::CASSelectionArgs::~CASSelectionArgs()
-{
-}
-
 
 //----------------------------------------------------------------------------
 // Define command line options in an Args.

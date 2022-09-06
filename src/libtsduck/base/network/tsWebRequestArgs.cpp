@@ -48,10 +48,6 @@ ts::WebRequestArgs::WebRequestArgs() :
 {
 }
 
-ts::WebRequestArgs::~WebRequestArgs()
-{
-}
-
 
 //----------------------------------------------------------------------------
 // Define command line options in an Args.

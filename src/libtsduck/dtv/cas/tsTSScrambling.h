@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsBlockCipherAlertInterface.h"
-#include "tsArgsSupplierInterface.h"
 #include "tsCerrReport.h"
 #include "tsTSPacket.h"
 #include "tsPSI.h"
@@ -46,6 +45,10 @@
 #include "tsIDSA.h"
 
 namespace ts {
+
+    class Args;
+    class DuckContext;
+
     //!
     //! Transport stream scrambling using multiple algorithms.
     //! @ingroup mpeg
@@ -63,7 +66,7 @@ namespace ts {
     //! - For decryption, the next key is used each time a new scrambling_control
     //!   value is found in a TS header.
     //!
-    class TSDUCKDLL TSScrambling : public ArgsSupplierInterface, private BlockCipherAlertInterface
+    class TSDUCKDLL TSScrambling : private BlockCipherAlertInterface
     {
     public:
         //!
@@ -87,9 +90,20 @@ namespace ts {
         //!
         TSScrambling(TSScrambling&& other);
 
-        // Implementation of ArgsSupplierInterface.
-        virtual void defineArgs(Args& args) override;
-        virtual bool loadArgs(DuckContext& duck, Args& args) override;
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
 
         //!
         //! Check if fixed control words were loaded from the command line.

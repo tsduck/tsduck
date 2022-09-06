@@ -82,12 +82,12 @@ TS_REGISTER_INPUT_PLUGIN(u"dvb", ts::DVBInputPlugin);
 ts::DVBInputPlugin::DVBInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"DVB receiver device input", u"[options]"),
     _tuner(duck),
-    _tuner_args(false, true),
+    _tuner_args(false),
     _previous_bitrate(0)
 {
     // Define common tuning options
     duck.defineArgsForHFBand(*this);
-    _tuner_args.defineArgs(*this);
+    _tuner_args.defineArgs(*this, true);
 }
 
 

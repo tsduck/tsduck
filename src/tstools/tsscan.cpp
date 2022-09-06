@@ -90,7 +90,7 @@ namespace {
 ScanOptions::ScanOptions(int argc, char *argv[]) :
     Args(u"Scan a DTV network frequencies and services", u"[options]"),
     duck(this),
-    tuner_args(false, true),
+    tuner_args(false),
     uhf_scan(false),
     vhf_scan(false),
     nit_scan(false),
@@ -114,7 +114,7 @@ ScanOptions::ScanOptions(int argc, char *argv[]) :
     duck.defineArgsForHFBand(*this);
     duck.defineArgsForPDS(*this);
     duck.defineArgsForStandards(*this);
-    tuner_args.defineArgs(*this);
+    tuner_args.defineArgs(*this, true);
 
     setIntro(u"There are three mutually exclusive types of network scanning. "
              u"Exactly one of the following options shall be specified: "

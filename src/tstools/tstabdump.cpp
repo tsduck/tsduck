@@ -73,7 +73,7 @@ Options::Options(int argc, char *argv[]) :
     duck(this),
     display(duck),
     pager(true, true),
-    udp(*this, false, false),
+    udp(*this),
     infiles(),
     max_tables(0),
     max_invalid_udp(16),
@@ -86,7 +86,7 @@ Options::Options(int argc, char *argv[]) :
     duck.defineArgsForCharset(*this);
     pager.defineArgs(*this);
     display.defineArgs(*this);
-    udp.defineArgs(*this);
+    udp.defineArgs(*this, false, false, false);
 
     option(u"", 0, FILENAME);
     help(u"",
