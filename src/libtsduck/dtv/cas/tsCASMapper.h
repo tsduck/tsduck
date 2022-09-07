@@ -92,7 +92,6 @@ namespace ts {
             _demux.trackInvalidSectionVersions(on);
         }
 
-
         //!
         //! Check if a PID is a known CA PID.
         //! @param [in] pid A PID to check.

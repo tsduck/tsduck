@@ -130,6 +130,6 @@ namespace ts {
             uint16_t     min;
             uint16_t     max;
         };
-        const std::vector<PredefinedCAS> _predefined_cas;
+        static const std::vector<PredefinedCAS> _predefined_cas;
     };
 }
