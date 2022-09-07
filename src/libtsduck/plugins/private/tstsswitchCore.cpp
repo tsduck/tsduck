@@ -260,10 +260,11 @@ void ts::tsswitch::Core::setInputLocked(size_t index, bool abortCurrent)
 
 void ts::tsswitch::Core::handleWatchDogTimeout(WatchDog& watchdog)
 {
-    _log.verbose(u"receive timeout, switching to next plugin");
-
     GuardMutex lock(_mutex);
-    setInputLocked((_curPlugin + 1) % _inputs.size(), true);
+    const size_t next = (_curPlugin + 1) % _inputs.size();
+    // Verbose message under mutex is not a good idea when option --synchronous-log is set.
+    _log.verbose(u"receive timeout, switching to next plugin (#%d to #%d)", {_curPlugin, next});
+    setInputLocked(next, true);
 }
 
 
