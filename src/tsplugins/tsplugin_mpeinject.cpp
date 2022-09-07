@@ -50,11 +50,11 @@
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class MPEInjectPlugin: public ProcessorPlugin, private Thread, private SectionProviderInterface
+    class MPEInjectPlugin: public ProcessorPlugin, private SectionProviderInterface
     {
         TS_NOBUILD_NOCOPY(MPEInjectPlugin);
     public:
-        // Implementation of plugin API
+        // Implementation of plugin API.
         MPEInjectPlugin(TSP*);
         virtual bool start() override;
         virtual bool getOptions() override;
@@ -63,29 +63,60 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
+        // Each UDP receiver is executed in a thread. There is a vector of receiver threads.
+        class ReceiverThread;
+        typedef SafePtr<ReceiverThread> ReceiverPtr;
+        typedef std::vector<ReceiverPtr> ReceiverVector;
+
+        // Each receiver thread builds DSM-CC sections from the received UDP datagrams.
+        // Sections from all receivers are multiplexed into one single thread-safe queue.
         typedef MessageQueue<Section, Mutex> SectionQueue;
 
         // Command line options.
-        PID           _mpe_pid;        // PID into insert the MPE datagrams.
-        bool          _replace;        // Replace incoming PID if it exists.
-        bool          _pack_sections;  // Packet DSM-CC section, without stuffing in TS packets.
-        size_t        _max_queued;     // Max number of queued sections.
-        MACAddress    _default_mac;    // Default MAC address in MPE section for unicast packets.
-        IPv4SocketAddress _new_source; // Masquerade source socket in MPE section.
-        IPv4SocketAddress _new_dest;   // Masquerade destination socket in MPE section.
-        UDPReceiver   _sock;           // Incoming socket with associated command line options
+        PID        _mpe_pid;        // PID into insert the MPE datagrams.
+        bool       _replace;        // Replace incoming PID if it exists.
+        bool       _pack_sections;  // Packet DSM-CC section, without stuffing in TS packets.
+        size_t     _max_queued;     // Max number of queued sections.
+        MACAddress _default_mac;    // Default MAC address in MPE section for unicast packets.
 
         // Working data.
-        volatile bool _terminate;      // Force termination flag for thread.
-        SectionQueue  _section_queue;  // Queue of datagrams between the UDP server and the MPE inserter.
-        Packetizer    _packetizer;     // Packetizer for MPE sections.
-
-        // Invoked in the context of the server thread.
-        virtual void main() override;
+        volatile bool  _terminate;      // Force termination flag for thread.
+        SectionQueue   _section_queue;  // Queue of datagrams between the UDP server and the MPE inserter.
+        Packetizer     _packetizer;     // Packetizer for MPE sections.
+        ReceiverVector _receivers;      // UDP receiver threads.
 
         // Implementation of SectionProviderInterface.
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
         virtual bool doStuffing() override;
+
+        // Each UDP receiver is executed in a thread of this class.
+        class ReceiverThread: public Thread
+        {
+            TS_NOBUILD_NOCOPY(ReceiverThread);
+        public:
+            // Constructor.
+            ReceiverThread(MPEInjectPlugin* plugin);
+
+            // Invoked in the context of the server thread.
+            virtual void main() override;
+
+            // Read command line options for this receiver.
+            bool getOptions(size_t index);
+
+            // Total number of receivers (after getOptions).
+            size_t receiverCount() const { return _sock.receiverCount(); }
+
+            // Open/close UDP socket.
+            bool openSocket() { return _sock.open(*_plugin->tsp); }
+            bool closeSocket() { return _sock.close(*_plugin->tsp); }
+
+        private:
+            MPEInjectPlugin*  _plugin;     // Parent plugin.
+            IPv4SocketAddress _new_source; // Masquerade source socket in MPE section.
+            IPv4SocketAddress _new_dest;   // Masquerade destination socket in MPE section.
+            UDPReceiver       _sock;       // Incoming socket with associated command line options.
+            size_t            _index;      // Receiver index.
+        };
     };
 }
 
@@ -93,26 +124,24 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"mpeinject", ts::MPEInjectPlugin);
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Constructor for the plugin.
 //----------------------------------------------------------------------------
 
 ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port"),
-    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
+    ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port ..."),
     _mpe_pid(PID_NULL),
     _replace(false),
     _pack_sections(false),
     _max_queued(DEFAULT_MAX_QUEUED_SECTION),
     _default_mac(),
-    _new_source(),
-    _new_dest(),
-    _sock(*tsp_),
     _terminate(false),
     _section_queue(DEFAULT_MAX_QUEUED_SECTION),
-    _packetizer(duck, PID_NULL, this)
+    _packetizer(duck, PID_NULL, this),
+    _receivers()
 {
-    // UDP receiver common options.
-    _sock.defineArgs(*this, true, true, false);
+    // Use a dummy UDP receiver to define common options.
+    UDPReceiver dummy(*tsp);
+    dummy.defineArgs(*this, true, true, true);
 
     option(u"mac-address", 0, STRING);
     help(u"mac-address", u"nn:nn:nn:nn:nn:nn",
@@ -125,17 +154,25 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
          u"Specify the maximum number of queued UDP datagrams before their insertion "
          u"into the MPE stream. The default is " TS_STRINGIFY(DEFAULT_MAX_QUEUED_SECTION) u".");
 
-    option(u"new-destination", 0, STRING);
+    option(u"new-destination", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"new-destination", u"address[:port]",
-         u"Change the destination IP address and UDP port in MPE sections. If the "
-         u"port is not specified, the original destination port from the UDP datagram "
-         u"is used. By default, the destination address is not modified.");
+         u"Change the destination IP address and UDP port in MPE sections. "
+         u"If the port is not specified, the original destination port from the UDP datagram is used. "
+         u"By default, the destination address is not modified.\n"
+         u"If several [address:]port parameters are specified, several --new-destination options can "
+         u"be specified, one for each receiver, in the same order. "
+         u"It there are less --new-destination options than receivers, the last --new-destination "
+         u"applies for all remaining receivers.");
 
-    option(u"new-source", 0, STRING);
+    option(u"new-source", 0, STRING, 0, UNLIMITED_COUNT);
     help(u"new-source", u"address[:port]",
          u"Change the source IP address and UDP port in MPE sections. If the port is "
          u"not specified, the original source port from the UDP datagram is used. By "
-         u"default, the source address is not modified.");
+         u"default, the source address is not modified.\n"
+         u"If several [address:]port parameters are specified, several --new-source options can "
+         u"be specified, one for each receiver, in the same order. "
+         u"It there are less --new-source options than receivers, the last --new-source "
+         u"applies for all remaining receivers.");
 
     option(u"pack-sections");
     help(u"pack-sections",
@@ -157,31 +194,82 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
 
 
 //----------------------------------------------------------------------------
-// Get command line options method
+// Constructor for a receiver thread.
+//----------------------------------------------------------------------------
+
+ts::MPEInjectPlugin::ReceiverThread::ReceiverThread(MPEInjectPlugin* plugin) :
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
+    _plugin(plugin),
+    _new_source(),
+    _new_dest(),
+    _sock(*_plugin->tsp),
+    _index(0)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Get command line options at plugin level.
 //----------------------------------------------------------------------------
 
 bool ts::MPEInjectPlugin::getOptions()
 {
+    // Get common options, not depending on a receiver.
     _mpe_pid = intValue<PID>(u"pid");
     _max_queued = intValue<size_t>(u"max-queue", DEFAULT_MAX_QUEUED_SECTION);
     _replace = present(u"replace");
     _pack_sections = present(u"pack-sections");
-    const UString macAddress(value(u"mac-address"));
-    const UString newDestination(value(u"new-destination"));
-    const UString newSource(value(u"new-source"));
-    if (!_sock.loadArgs(duck, *this)) {
+    const UString mac_address(value(u"mac-address"));
+    if (!mac_address.empty() && !_default_mac.resolve(mac_address, *tsp)) {
         return false;
     }
 
-    // Decode addresses in command line.
-    if ((!macAddress.empty() && !_default_mac.resolve(macAddress, *tsp)) ||
-        (!newDestination.empty() && !_new_dest.resolve(newDestination, *tsp)) ||
-        (!newSource.empty() && !_new_source.resolve(newSource, *tsp)))
-    {
-        return false;
-    }
+    // Clearing the vector of receivers automatically deallocated previous receivers (if any).
+    _receivers.clear();
+
+    // There must be at least one receiver.
+    do {
+        _receivers.push_back(ReceiverPtr(new ReceiverThread(this)));
+        if (!_receivers.back()->getOptions(_receivers.size() - 1)) {
+            return false;
+        }
+    } while (_receivers.size() < _receivers.back()->receiverCount());
 
     return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Read command line options for one receiver.
+//----------------------------------------------------------------------------
+
+bool ts::MPEInjectPlugin::ReceiverThread::getOptions(size_t index)
+{
+    _index = index;
+
+    // Load UDP options. Note that the command line syntax was defined on the plugin
+    // using a separate dummy instance of UDPReceiver. So we need to respecify that
+    // the UDP destination is in the parameter, not as option --ip-udp.
+    if (!_sock.loadArgs(true, _plugin->duck, *_plugin, _index)) {
+        return false;
+    }
+
+    // Get optional new source and destination.
+    const size_t max_count = _sock.receiverCount();
+    const size_t dst_count = _plugin->count(u"new-destination");
+    const size_t src_count = _plugin->count(u"new-source");
+
+    if (dst_count > max_count) {
+        _plugin->tsp->error(u"too many --new-destination options");
+        return false;
+    }
+    if (src_count > max_count) {
+        _plugin->tsp->error(u"too many --new-source options");
+        return false;
+    }
+
+    return (dst_count == 0 || _new_dest.resolve(_plugin->value(u"new-destination", u"", std::min(_index, dst_count - 1)), *_plugin->tsp)) &&
+           (src_count == 0 || _new_source.resolve(_plugin->value(u"new-source", u"", std::min(_index, src_count - 1)), *_plugin->tsp));
 }
 
 
@@ -191,9 +279,15 @@ bool ts::MPEInjectPlugin::getOptions()
 
 bool ts::MPEInjectPlugin::start()
 {
-    // Create UDP socket
-    if (!_sock.open(*tsp)) {
-        return false;
+    // Create all UDP sockets.
+    for (size_t i = 0; i < _receivers.size(); ++i) {
+        if (!_receivers[i]->openSocket()) {
+            // Failed to open one socket, clase those which were alread opened.
+            for (size_t old = 0; old < i; ++old) {
+                _receivers[old]->closeSocket();
+            }
+            return false;
+        }
     }
 
     // Reset section queue.
@@ -204,9 +298,11 @@ bool ts::MPEInjectPlugin::start()
     _packetizer.reset();
     _packetizer.setPID(_mpe_pid);
 
-    // Start the internal thread which listens to incoming UDP packet.
+    // Start all internal threads which listens to incoming UDP packet.
     _terminate = false;
-    Thread::start();
+    for (auto& rec : _receivers) {
+        rec->start();
+    }
 
     return true;
 }
@@ -218,14 +314,17 @@ bool ts::MPEInjectPlugin::start()
 
 bool ts::MPEInjectPlugin::stop()
 {
-    // Close the UDP socket.
-    // This will force the server thread to terminate on receive error.
+    // Close all UDP sockets. This will force the server threads to terminate on receive error.
     // In case the server does not properly notify the error, set a volatile flag.
     _terminate = true;
-    _sock.close(*tsp);
+    for (auto& rec : _receivers) {
+        rec->closeSocket();
+    }
 
-    // Wait for actual thread termination
-    Thread::waitForTermination();
+    // Wait for actual thread terminations.
+    for (auto& rec : _receivers) {
+        rec->waitForTermination();
+    }
     return true;
 }
 
@@ -285,9 +384,9 @@ void ts::MPEInjectPlugin::provideSection(SectionCounter counter, SectionPtr& sec
 // Invoked in the context of the server thread.
 //----------------------------------------------------------------------------
 
-void ts::MPEInjectPlugin::main()
+void ts::MPEInjectPlugin::ReceiverThread::main()
 {
-    tsp->debug(u"server thread started");
+    _plugin->tsp->debug(u"UDP reception thread %d started", {_index});
 
     // Try to cumlate "UDP overflow" messages.
     size_t overflow_count = 0;
@@ -298,7 +397,7 @@ void ts::MPEInjectPlugin::main()
     ByteBlock buffer(MAX_IP_SIZE);
 
     // Loop on message reception until a receive error (probably an end of execution).
-    while (!_terminate && _sock.receive(buffer.data(), buffer.size(), insize, sender, destination, tsp, *tsp)) {
+    while (!_plugin->_terminate && _sock.receive(buffer.data(), buffer.size(), insize, sender, destination, _plugin->tsp, *_plugin->tsp)) {
 
         // Rebuild source and destination addresses if required.
         if (_new_source.hasAddress()) {
@@ -315,14 +414,14 @@ void ts::MPEInjectPlugin::main()
         }
 
         // Compute destination MAC address for MPE section.
-        MACAddress mac(_default_mac);
+        MACAddress mac(_plugin->_default_mac);
         if (destination.isMulticast()) {
             mac.toMulticast(destination);
         }
 
         // Create an MPE packet containing this datagram.
         MPEPacket mpe;
-        mpe.setSourcePID(_mpe_pid);
+        mpe.setSourcePID(_plugin->_mpe_pid);
         mpe.setSourceSocket(sender);
         mpe.setDestinationSocket(destination);
         mpe.setDestinationMACAddress(mac);
@@ -334,19 +433,19 @@ void ts::MPEInjectPlugin::main()
 
         // Enqueue the section immediately. Never wait.
         if (!section->isValid()) {
-            tsp->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes", {sender, destination, insize});
+            _plugin->tsp->error(u"error creating MPE section from UDP datagram, source: %s, destination: %s, size: %d bytes", {sender, destination, insize});
         }
         else {
-            const bool queued = _section_queue.enqueue(section, 0);
+            const bool queued = _plugin->_section_queue.enqueue(section, 0);
             if (!queued) {
                 overflow_count++;
             }
             if ((queued && overflow_count > 0) || overflow_count >= OVERFLOW_MSG_GROUP_COUNT) {
-                tsp->warning(u"incoming UDP overflow, dropped %d datagrams", {overflow_count});
+                _plugin->tsp->warning(u"incoming UDP overflow, dropped %d datagrams", {overflow_count});
                 overflow_count = 0;
             }
         }
     }
 
-    tsp->debug(u"server thread completed");
+    _plugin->tsp->debug(u"UDP reception thread %d completed", {_index});
 }

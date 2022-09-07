@@ -74,7 +74,7 @@ namespace ts {
         //! Check if socket is open.
         //! @return True if socket is open.
         //!
-        bool isOpen() const {return _sock != SYS_SOCKET_INVALID;}
+        bool isOpen() const { return _sock != SYS_SOCKET_INVALID; }
 
         //!
         //! Set the send buffer size.
@@ -149,6 +149,6 @@ namespace ts {
         virtual void declareOpened(SysSocketType sock, Report& report);
 
     private:
-        SysSocketType _sock;
+        volatile SysSocketType _sock;
     };
 }

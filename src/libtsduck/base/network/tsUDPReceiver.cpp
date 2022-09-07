@@ -38,7 +38,6 @@
 ts::UDPReceiver::UDPReceiver(ts::Report& report) :
     UDPSocket(false, report),
     _dest_is_parameter(true),
-    _dest_option_name(u""),
     _receiver_specified(false),
     _use_ssm(false),
     _receiver_index(0),
@@ -66,13 +65,12 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
 {
     // [[source@]address:]port can be either a parameter or an option.
     _dest_is_parameter = destination_is_parameter;
-    _dest_option_name = destination_is_parameter ? u"" : u"ip-udp";
-    const UChar dest_short = destination_is_parameter || !with_short_options ? 0 : 'i';
-    const size_t dest_min = destination_is_parameter ? 1 : 0;
+    const UChar dest_short = _dest_is_parameter || !with_short_options ? 0 : 'i';
+    const size_t dest_min = _dest_is_parameter ? 1 : 0;
 
     // [[source@]address:]port can be specified multiple times.
     const size_t max_count = multiple_receivers ? Args::UNLIMITED_COUNT : 1;
-    const UChar* const dest_display = destination_is_parameter ? u"[address:]port parameters" : u"--ip-udp options";
+    const UChar* const dest_display = _dest_is_parameter ? u"[address:]port parameters" : u"--ip-udp options";
     UString help;
 
     help = u"The [address:]port describes the destination of UDP packets to receive. "
@@ -85,8 +83,8 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
                     u"If distinct receivers use the same port, this may work or not, depending on the operating system.",
                     {dest_display});
     }
-    args.option(_dest_option_name, dest_short, Args::STRING, dest_min, max_count);
-    args.help(_dest_option_name, u"[address:]port", help);
+    args.option(destinationOptionName(), dest_short, Args::STRING, dest_min, max_count);
+    args.help(destinationOptionName(), u"[address:]port", help);
 
     args.option(u"buffer-size", with_short_options ? 'b' : 0, Args::UNSIGNED);
     args.help(u"buffer-size", u"Specify the UDP socket receive buffer size (socket option).");
@@ -162,9 +160,9 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
 bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
 {
     // Get destination address.
-    _receiver_count = args.count(_dest_option_name);
+    _receiver_count = args.count(destinationOptionName());
     _receiver_index = index;
-    UString destination(args.value(_dest_option_name, u"", _receiver_index));
+    UString destination(args.value(destinationOptionName(), u"", _receiver_index));
     _receiver_specified = !destination.empty();
 
     // When --ip-udp is specified as an option, the presence of a UDP received is optional.
@@ -251,6 +249,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
         args.error(u"too many --source options");
         return false;
     }
+    // If _use_source is already set, it comes from source@destination SSM format.
     if (source_count > 0 && (!_use_source.hasAddress() || _receiver_index < source_count)) {
         args.getValue(source, u"source", u"", std::min(_receiver_index, source_count - 1));
     }
@@ -258,15 +257,18 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
         args.error(u"SSM source address specified twice");
         return false;
     }
-    if (!_use_source.resolve(source, args)) {
+    if (source.empty()) {
+        // No --source specified, no additional check.
+    }
+    else if (!_use_source.resolve(source, args)) {
         return false;
     }
-    if (!_use_source.hasAddress()) {
+    else if (!_use_source.hasAddress()) {
         // If source is specified, the port is optional but the address is mandatory.
         args.error(u"missing IP address in --source %s", {source});
         return false;
     }
-    if (_use_first_source) {
+    else if (_use_first_source) {
         args.error(u"--first-source and --source are mutually exclusive");
         return false;
     }

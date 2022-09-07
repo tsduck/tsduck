@@ -190,7 +190,8 @@ bool ts::TCPConnection::receive(void* data,             // Buffers address
         else {
             GuardMutex lock(_mutex);
             if (isOpen()) {
-                report.error(u"error receiving data from socket: " + SysSocketErrorCodeMessage(err_code));
+                // Report the error only if the error does not result from a close in another thread.
+                report.error(u"error receiving data from socket: %s", {SysSocketErrorCodeMessage(err_code)});
             }
             return false;
         }

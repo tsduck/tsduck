@@ -97,15 +97,18 @@ void ts::Socket::declareOpened(SysSocketType sock, Report& report)
 bool ts::Socket::close(Report& report)
 {
     if (_sock != SYS_SOCKET_INVALID) {
+        // Mark the socket as invalid. If the close generates reception errors in other threads,
+        // these threads can immediately check if this is a real error or the result of a close.
+        const SysSocketType previous = _sock;
+        _sock = SYS_SOCKET_INVALID;
         // Shutdown should not be necessary here. However, on Linux, no using
         // shutdown makes a blocking receive hangs forever when close() is
         // invoked by another thread. By using shutdown() before close(),
         // the blocking call is released. This is especially true on UDP sockets
         // where shutdown() is normally meaningless.
-        ::shutdown(_sock, SYS_SOCKET_SHUT_RDWR);
+        ::shutdown(previous, SYS_SOCKET_SHUT_RDWR);
         // Actually close the socket.
-        SysCloseSocket(_sock);
-        _sock = SYS_SOCKET_INVALID;
+        SysCloseSocket(previous);
     }
     return true;
 }
