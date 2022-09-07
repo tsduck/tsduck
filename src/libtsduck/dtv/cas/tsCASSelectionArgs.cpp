@@ -31,6 +31,17 @@
 #include "tsCASSelectionArgs.h"
 #include "tsPIDOperator.h"
 
+const std::vector<ts::CASSelectionArgs::PredefinedCAS> ts::CASSelectionArgs::_predefined_cas{
+    {u"conax",       CASID_CONAX_MIN,      CASID_CONAX_MAX},
+    {u"irdeto",      CASID_IRDETO_MIN,     CASID_IRDETO_MAX},
+    {u"mediaguard",  CASID_MEDIAGUARD_MIN, CASID_MEDIAGUARD_MAX},
+    {u"nagravision", CASID_NAGRA_MIN,      CASID_NAGRA_MAX},
+    {u"nds",         CASID_NDS_MIN,        CASID_NDS_MAX},
+    {u"safeaccess",  CASID_SAFEACCESS,     CASID_SAFEACCESS},
+    {u"viaccess",    CASID_VIACCESS_MIN,   CASID_VIACCESS_MAX},
+    {u"widevine",    CASID_WIDEVINE_MIN,   CASID_WIDEVINE_MAX}
+};
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
@@ -41,15 +52,7 @@ ts::CASSelectionArgs::CASSelectionArgs() :
     pass_emm(false),
     min_cas_id(0),
     max_cas_id(0),
-    cas_oper(0),
-    _predefined_cas{{u"conax", CASID_CONAX_MIN, CASID_CONAX_MAX},
-                    {u"irdeto", CASID_IRDETO_MIN, CASID_IRDETO_MAX},
-                    {u"mediaguard", CASID_MEDIAGUARD_MIN, CASID_MEDIAGUARD_MAX},
-                    {u"nagravision", CASID_NAGRA_MIN, CASID_NAGRA_MAX},
-                    {u"nds", CASID_NDS_MIN, CASID_NDS_MAX},
-                    {u"safeaccess", CASID_SAFEACCESS, CASID_SAFEACCESS},
-                    {u"viaccess", CASID_VIACCESS_MIN, CASID_VIACCESS_MAX},
-                    {u"widevine", CASID_WIDEVINE_MIN, CASID_WIDEVINE_MAX}}
+    cas_oper(0)
 {
 }
 
@@ -85,11 +88,11 @@ void ts::CASSelectionArgs::defineArgs(Args& args)
     args.help(u"operator", u"Restrict to the specified CAS operator (depends on the CAS).");
 
     // Predefined CAS options:
-    for (auto cas = _predefined_cas.begin(); cas != _predefined_cas.end(); ++cas) {
-        args.option(cas->name);
-        args.help(cas->name, cas->min == cas->max ?
-            UString::Format(u"Equivalent to --cas 0x%04X.", {cas->min}) :
-            UString::Format(u"Equivalent to --min-cas 0x%04X --max-cas 0x%04X.", {cas->min, cas->max}));
+    for (const auto& cas : _predefined_cas) {
+        args.option(cas.name);
+        args.help(cas.name, cas.min == cas.max ?
+            UString::Format(u"Equivalent to --cas 0x%04X.", {cas.min}) :
+            UString::Format(u"Equivalent to --min-cas 0x%04X --max-cas 0x%04X.", {cas.min, cas.max}));
     }
 }
 
@@ -192,11 +195,11 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const DescriptorList&
         pidop.addAllOperators(dlist, tid == TID_CAT);
 
         // Loop on all collected PID and filter by operator id.
-        for (PIDOperatorSet::const_iterator it = pidop.begin(); it != pidop.end(); ++it) {
-            if (operatorMatch(it->oper) && casMatch(it->cas_id)) {
-                pids.set(it->pid);
+        for (const auto& it : pidop) {
+            if (operatorMatch(it.oper) && casMatch(it.cas_id)) {
+                pids.set(it.pid);
                 pid_count++;
-                report.verbose(u"Filtering %s PID %d (0x%X)", {tid == TID_CAT ? u"EMM" : u"ECM", it->pid, it->pid});
+                report.verbose(u"Filtering %s PID %d (0x%X)", {tid == TID_CAT ? u"EMM" : u"ECM", it.pid, it.pid});
             }
         }
     }

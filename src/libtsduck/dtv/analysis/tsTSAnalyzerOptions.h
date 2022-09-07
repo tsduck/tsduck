@@ -50,6 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSAnalyzerOptions
     {
+        TS_NOCOPY(TSAnalyzerOptions);
     public:
         //!
         //! Constructor.
