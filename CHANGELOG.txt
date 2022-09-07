@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.32-2783
+VERSION 3.32-2803
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,8 @@ VERSION 3.32-2783
 
 [IMP] Improvements on existing commands and plugins:
 
+  * In "mpeinject" plugin, it is now possible to multiplex several input UDP
+    stream into one single output MPE PID.
   * New options in existing commands and plugins:
     - Options --alt-group-id, --alt-language, --alt-name, --alt-type in input
       plugin "hls".

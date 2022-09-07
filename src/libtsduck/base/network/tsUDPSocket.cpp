@@ -472,7 +472,10 @@ bool ts::UDPSocket::receive(void* data,
 #endif
         else {
             // Abort on non-interrupt errors.
-            report.error(u"error receiving from UDP socket: %s", {SysSocketErrorCodeMessage(err)});
+            if (isOpen()) {
+                // Report the error only if the error does not result from a close in another thread.
+                report.error(u"error receiving from UDP socket: %s", {SysSocketErrorCodeMessage(err)});
+            }
             return false;
         }
     }
@@ -484,12 +487,12 @@ bool ts::UDPSocket::receive(void* data,
 //----------------------------------------------------------------------------
 
 ts::SysSocketErrorCode ts::UDPSocket::receiveOne(void* data,
-                                              size_t max_size,
-                                              size_t& ret_size,
-                                              IPv4SocketAddress& sender,
-                                              IPv4SocketAddress& destination,
-                                              Report& report,
-                                              MicroSecond* timestamp)
+                                                 size_t max_size,
+                                                 size_t& ret_size,
+                                                 IPv4SocketAddress& sender,
+                                                 IPv4SocketAddress& destination,
+                                                 Report& report,
+                                                 MicroSecond* timestamp)
 {
     // Clear returned values
     ret_size = 0;

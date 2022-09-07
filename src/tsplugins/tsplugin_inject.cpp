@@ -375,7 +375,7 @@ bool ts::InjectPlugin::reloadFiles()
             _pzer.addSections(file.sections(), it->repetition);
             tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
                          {file.sections().size(),
-                          it->file_name,
+                          xml::Document::IsInlineXML(it->file_name) ? u"inlined XML" : it->file_name,
                           it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
 
             if (_use_files_bitrate) {

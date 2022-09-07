@@ -76,6 +76,25 @@ namespace ts {
         bool loadArgs(DuckContext& duck, Args& args, size_t index = 0);
 
         //!
+        //! Load arguments from command line, when defineArgs() was not called on this object.
+        //! This version of loadArgs() is typically called when the command line syntax was defined
+        //! in @a args using another instance of UDPReceiver.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in] destination_is_parameter When true, the destination [address:]port is defined
+        //! as a parameter. When false, it is defined as option --ip--udp.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @param [in] index When @a multiple_receivers was true in defineArgs(), specify the @a index
+        //! of the occurence of the set of options to return. Zero designates the first occurence.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(bool destination_is_parameter, DuckContext& duck, Args& args, size_t index = 0)
+        {
+            _dest_is_parameter = destination_is_parameter;
+            return loadArgs(duck, args, index);
+        }
+
+        //!
         //! Get the number of receivers on the command line.
         //! @return The number of receivers on the command line during the last call to loadArgs().
         //!
@@ -123,7 +142,6 @@ namespace ts {
 
     private:
         bool              _dest_is_parameter;  // Destination address is a command line parameter, not an option.
-        const UChar*      _dest_option_name;   // Open name for destination address.
         bool              _receiver_specified; // An address is specified.
         bool              _use_ssm;            // Use source-specific multicast.
         size_t            _receiver_index;     // The number of the selected receiver on the command line.
@@ -139,5 +157,8 @@ namespace ts {
         IPv4SocketAddress _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).
         IPv4SocketAddress _first_source;       // Socket address of first received packet.
         IPv4SocketAddressSet _sources;         // Set of all detected packet sources.
+
+        // Get the command line argument for the destination parameter.
+        const UChar* destinationOptionName() const { return _dest_is_parameter ? u"" : u"ip-udp"; }
     };
 }
