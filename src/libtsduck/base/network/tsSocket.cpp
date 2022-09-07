@@ -67,7 +67,8 @@ bool ts::Socket::createSocket(int domain, int type, int protocol, Report& report
     }
 
     // Create a datagram socket.
-    if ((_sock = ::socket(domain, type, protocol)) == SYS_SOCKET_INVALID) {
+    _sock = ::socket(domain, type, protocol);
+    if (_sock == SYS_SOCKET_INVALID) {
         report.error(u"error creating socket: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
