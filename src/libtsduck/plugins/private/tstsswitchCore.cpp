@@ -337,10 +337,11 @@ void ts::tsswitch::Core::enqueue(const Action& action, bool highPriority)
 
 void ts::tsswitch::Core::cancelActions(int typeMask)
 {
-    for (ActionQueue::iterator it = _actions.begin(); it != _actions.end(); ) {
+    for (auto it = _actions.begin(); it != _actions.end(); ) {
         // Check if the current action is one that must be removed.
         if ((int(it->type) & typeMask) != 0) {
             // Yes, remove instruction.
+            _log.debug(u"cancel action %s", {*it});
             it = _actions.erase(it);
         }
         else {
@@ -530,19 +531,21 @@ bool ts::tsswitch::Core::inputReceived(size_t pluginIndex)
     // If input is detected on the primary input and the current plugin is not this one
     // after executing all actions, then automatically switch to it.
     if (pluginIndex == _opt.primaryInput && _curPlugin != _opt.primaryInput) {
+        _log.verbose(u"received data, switching back to primary input plugin (#%d to #%d)", {_curPlugin, _opt.primaryInput});
         // Remove all pending actions.
+        _log.debug(u"clearing action queue, %s events canceled", {_actions.size()});
         _actions.clear();
         // Define a new set of actions.
         enqueue(Action(SUSPEND_TIMEOUT));
         enqueue(Action(NOTIF_CURRENT, _curPlugin, false));
         enqueue(Action(SET_CURRENT, _opt.primaryInput));
         enqueue(Action(NOTIF_CURRENT, _opt.primaryInput, true));
-        enqueue(Action(RESTART_TIMEOUT));
         if (!_opt.fastSwitch) {
             enqueue(Action(ABORT_INPUT, _curPlugin, true));
             enqueue(Action(STOP, _curPlugin));
             enqueue(Action(WAIT_STOPPED, _curPlugin));
         }
+        enqueue(Action(RESTART_TIMEOUT));
         // Execute actions.
         execute();
         assert(_curPlugin == _opt.primaryInput);
