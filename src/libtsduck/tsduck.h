@@ -611,6 +611,7 @@
 #include "tsSVCExtensionDescriptor.h"
 #include "tsSwitchableReport.h"
 #include "tsSysInfo.h"
+#include "tsSystemBroadcast.h"
 #include "tsSystemClockDescriptor.h"
 #include "tsSystemManagementDescriptor.h"
 #include "tsSystemMonitor.h"

@@ -35,6 +35,12 @@
 #pragma once
 #include "tsPlatform.h"
 
+#if defined(TS_LINUX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <byteswap.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 namespace ts {
     //!
     //! Perform a sign extension on 24 bit integers.

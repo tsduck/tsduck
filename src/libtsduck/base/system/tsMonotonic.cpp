@@ -30,6 +30,11 @@
 #include "tsMonotonic.h"
 #include "tsFileUtils.h"
 
+// Required link libraries under Windows.
+#if defined(TS_WINDOWS) && defined(TS_MSC)
+    #pragma comment(lib, "winmm.lib") // timeBeginPeriod
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.

@@ -293,7 +293,7 @@ void ts::NamesFile::loadFile(const UString& fileName)
             line.convertToLower();
 
             // Get or create associated section.
-            ConfigSectionMap::iterator it = _sections.find(line);
+            auto it = _sections.find(line);
             if (it != _sections.end()) {
                 section = it->second;
             }

@@ -213,8 +213,7 @@ void ts::CyclingPacketizer::removeSections(TID tid, uint16_t tid_ext, uint8_t se
 
 void ts::CyclingPacketizer::removeSections(SectionDescList& list, TID tid, uint16_t tid_ext, uint8_t sec_number, bool use_tid_ext, bool use_sec_number, bool scheduled)
 {
-    SectionDescList::iterator it(list.begin());
-    while (it != list.end()) {
+    for (auto it = list.begin(); it != list.end(); ) {
         const SectionDescPtr& sp(*it);
         const Section& sect(*sp->section);
         if (sect.tableId() == tid && (!use_tid_ext || sect.tableIdExtension() == tid_ext) && (!use_sec_number || sect.sectionNumber() == sec_number)) {
@@ -289,8 +288,7 @@ void ts::CyclingPacketizer::setBitRate(const BitRate& new_bitrate)
         // Bitrate was null but is not now. Move all scheduled sections
         // out of list of unscheduled sections.
         const PacketCounter current_packet(packetCount());
-        SectionDescList::iterator it(_other_sections.begin());
-        while (it != _other_sections.end()) {
+        for (auto it = _other_sections.begin(); it != _other_sections.end(); ) {
             if ((*it)->repetition == 0) {
                 // Not a scheduled section
                 ++it;
@@ -451,12 +449,12 @@ std::ostream& ts::CyclingPacketizer::display(std::ostream& strm) const
         << "  Stored sections: " << _section_count << std::endl
         << "  Scheduled sections: " << _sched_sections.size() << std::endl
         << "  Scheduled packets max: " << _sched_packets << std::endl;
-    for (SectionDescList::const_iterator it = _sched_sections.begin(); it != _sched_sections.end(); ++it) {
-        (*it)->display(duck(), strm);
+    for (auto& it : _sched_sections) {
+        it->display(duck(), strm);
     }
     strm << "  Unscheduled sections: " << _other_sections.size() << std::endl;
-    for (SectionDescList::const_iterator it = _other_sections.begin(); it != _other_sections.end(); ++it) {
-        (*it)->display(duck(), strm);
+    for (auto& it : _other_sections) {
+        it->display(duck(), strm);
     }
     return strm;
 }

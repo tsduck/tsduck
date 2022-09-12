@@ -154,7 +154,7 @@ bool ts::AudioLanguageOptionsVector::apply(DuckContext& duck, PMT& pmt, int seve
     bool ok = true;
     // Loop on all options
     for (const_iterator it = begin(); it != end(); ++it) {
-        PMT::StreamMap::iterator smi;
+        auto smi = pmt.streams.end();
         // Find audio stream in PMT
         if (it->locateByPID()) {
             // Find the audio stream by PID in the PMT

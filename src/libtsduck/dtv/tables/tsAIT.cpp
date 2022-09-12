@@ -277,14 +277,13 @@ void ts::AIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"application_type", application_type, true);
     descs.toXML(duck, root);
 
-    for (ApplicationMap::const_iterator it = applications.begin(); it != applications.end(); ++it) {
+    for (auto& app : applications) {
         xml::Element* e = root->addElement(u"application");
-        e->setIntAttribute(u"control_code", it->second.control_code, true);
+        e->setIntAttribute(u"control_code", app.second.control_code, true);
         xml::Element* id = e->addElement(u"application_identifier");
-        id->setIntAttribute(u"organization_id", it->first.organization_id, true);
-        id->setIntAttribute(u"application_id", it->first.application_id, true);
-
-        it->second.descs.toXML(duck, e);
+        id->setIntAttribute(u"organization_id", app.first.organization_id, true);
+        id->setIntAttribute(u"application_id", app.first.application_id, true);
+        app.second.descs.toXML(duck, e);
     }
 }
 

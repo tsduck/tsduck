@@ -156,8 +156,8 @@ int main(int argc, char* argv[])
     // Split the Path into a list of clean directories.
     ts::UStringList dirs;
     path.split(dirs, ts::SearchPathSeparator, true, true);
-    for (ts::UStringList::iterator it = dirs.begin(); it != dirs.end(); ++it) {
-        *it = CleanupDirectory(*it);
+    for (auto& it : dirs) {
+        it = CleanupDirectory(it);
     }
 
     // Remove the specified directory from the Path, if already present.

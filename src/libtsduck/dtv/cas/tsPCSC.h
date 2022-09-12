@@ -48,6 +48,25 @@
 
 #else // PC/SC support available
 
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <winscard.h>
+    #include "tsAfterStandardHeaders.h"
+    #if defined(TS_MSC)
+       #pragma comment(lib, "winscard.lib")
+    #endif
+#elif defined(TS_MAC)
+    #include "tsBeforeStandardHeaders.h"
+    #include <PCSC/wintypes.h>
+    #include <PCSC/winscard.h>
+    #include "tsAfterStandardHeaders.h"
+#elif defined(TS_LINUX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <PCSC/winscard.h>
+    #include <PCSC/reader.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 namespace ts {
     //!
     //! PC/SC smartcard API utilities

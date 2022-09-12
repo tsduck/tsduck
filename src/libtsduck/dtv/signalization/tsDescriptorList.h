@@ -438,7 +438,7 @@ namespace ts {
         // Prepare removal of a private_data_specifier descriptor.
         // Return true if can be removed, false if it cannot (private descriptors ahead).
         // When it can be removed, the current PDS of all subsequent descriptors is updated.
-        bool prepareRemovePDS(const ElementVector::iterator&);
+        bool prepareRemovePDS(ElementVector::iterator);
 
         // Inaccessible operations.
         DescriptorList() = delete;

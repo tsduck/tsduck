@@ -448,7 +448,7 @@ void ts::GitHubRelease::getPlatformAssets(AssetList& assets) const
     getAssets(assets);
 
     // Then, remove assets which are not suitable for the local platform.
-    for (AssetList::iterator it = assets.begin(); it != assets.end(); ) {
+    for (auto it = assets.begin(); it != assets.end(); ) {
         if (IsPlatformAsset(it->name)) {
             ++it;
         }

@@ -32,6 +32,31 @@
 #include "tsMemory.h"
 #include "tsUID.h"
 
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <userenv.h>
+    #include <memory.h>
+    #include <io.h>
+    #include <mmsystem.h>  // Memory management
+    #include <psapi.h>     // Process API
+    #include <comutil.h>   // COM utilities
+    #include <Shellapi.h>
+    #include "tsAfterStandardHeaders.h"
+#else
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/ioctl.h>
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <unistd.h>
+    #include <pwd.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
+// Required link libraries under Windows.
+#if defined(TS_WINDOWS) && defined(TS_MSC)
+    #pragma comment(lib, "userenv.lib")  // GetUserProfileDirectory
+#endif
+
 
 //----------------------------------------------------------------------------
 // Get the current working directory.

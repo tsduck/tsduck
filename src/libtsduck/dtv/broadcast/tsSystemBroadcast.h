@@ -26,44 +26,51 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
+//!
+//!  @file
+//!  @ingroup hardware
+//!  Include the definitions for broadcast devices in the operating system.
+//!
+//----------------------------------------------------------------------------
 
-#include "tsCOM.h"
+#pragma once
 
-#if defined(TS_WINDOWS)
-#include "tsWinUtils.h"
+#include "tsBeforeStandardHeaders.h"
+#if defined(TS_LINUX)
+    #include <linux/dvb/version.h>
+    #include <linux/dvb/frontend.h>
+    #include <linux/dvb/dmx.h>
+    #include <linux/version.h>
+#elif defined(TS_WINDOWS)
+    #include <dshow.h>     // DirectShow (aka ActiveMovie)
+    #include <dshowasf.h>
+    #include <amstream.h>
+    #include <videoacc.h>
+    #include <ks.h>
+    #include <ksproxy.h>
+    #include <ksmedia.h>
+    #include <bdatypes.h>  // BDA (Broadcast Device Architecture)
+    #include <bdamedia.h>
+    #include <bdaiface.h>
+    #include <bdatif.h>
+    #include <dsattrib.h>
+    #include <dvbsiparser.h>
+    #include <mpeg2data.h>
+    #include <vidcap.h>
+#endif
+#include "tsAfterStandardHeaders.h"
+
+// Identify Linux DVB API version in one value
+#if defined(TS_LINUX) || defined(DOXYGEN)
+    //!
+    //! @hideinitializer
+    //! On Linux systems, identify the Linux DVB API version in one value.
+    //! Example: TS_DVB_API_VERSION is 503 for DVB API version 5.3.
+    //!
+    #define TS_DVB_API_VERSION ((DVB_API_VERSION * 100) + DVB_API_VERSION_MINOR)
 #endif
 
 // Required link libraries under Windows.
 #if defined(TS_WINDOWS) && defined(TS_MSC)
-    #if defined(DEBUG)
-        #pragma comment(lib, "comsuppwd.lib") // COM utilities
-    #else
-        #pragma comment(lib, "comsuppw.lib")
-    #endif
+    #pragma comment(lib, "quartz.lib")
 #endif
-
-
-ts::COM::COM(Report& report) :
-    _is_init(false)
-{
-#if defined(TS_WINDOWS)
-    _is_init = ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), u"COM initialization", report);
-#else
-    _is_init = true;
-#endif
-}
-
-ts::COM::~COM()
-{
-    uninitialize();
-}
-
-void ts::COM::uninitialize()
-{
-#if defined(TS_WINDOWS)
-    if (_is_init) {
-        ::CoUninitialize();
-    }
-#endif
-    _is_init = false;
-}

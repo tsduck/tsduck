@@ -34,8 +34,9 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
 #include "tsStandards.h"
+#include "tsSystemBroadcast.h"
+#include "tsEnumeration.h"
 #include "tsStringifyInterface.h"
 
 namespace ts {

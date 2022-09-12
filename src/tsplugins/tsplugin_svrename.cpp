@@ -411,7 +411,7 @@ void ts::SVRenamePlugin::processPAT(PAT& pat)
     _old_service.setTSId(pat.ts_id);
 
     // Locate the service in the PAT.
-    PAT::ServiceMap::iterator it;
+    auto it = pat.pmts.end();
     if (_old_service.hasId()) {
         // The service id is known, find it in the PAT.
         it = pat.pmts.find(_old_service.getId());
@@ -500,9 +500,9 @@ void ts::SVRenamePlugin::processPMT(PMT& pmt)
 void ts::SVRenamePlugin::processNITBAT(AbstractTransportListTable& table)
 {
     // Process the descriptor list for the current TS
-    for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
-        if (it->first.transport_stream_id == _ts_id) {
-            processNITBATDescriptorList(it->second.descs);
+    for (auto& it : table.transports) {
+        if (it.first.transport_stream_id == _ts_id) {
+            processNITBATDescriptorList(it.second.descs);
         }
     }
 

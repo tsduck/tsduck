@@ -33,6 +33,10 @@
 
 #include "tsSignalAllocator.h"
 
+#include "tsBeforeStandardHeaders.h"
+#include <signal.h>
+#include "tsAfterStandardHeaders.h"
+
 // Define singleton instance
 TS_DEFINE_SINGLETON (ts::SignalAllocator);
 

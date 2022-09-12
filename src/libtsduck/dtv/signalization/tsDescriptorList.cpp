@@ -309,7 +309,7 @@ ts::PDS ts::DescriptorList::privateDataSpecifier(size_t index) const
 // Prepare removal of a private_data_specifier descriptor.
 //----------------------------------------------------------------------------
 
-bool ts::DescriptorList::prepareRemovePDS(const ElementVector::iterator& it)
+bool ts::DescriptorList::prepareRemovePDS(ElementVector::iterator it)
 {
     // Eliminate invalid cases
     if (it == _list.end() || it->desc->tag() != DID_PRIV_DATA_SPECIF) {
@@ -317,7 +317,7 @@ bool ts::DescriptorList::prepareRemovePDS(const ElementVector::iterator& it)
     }
 
     // Search for private descriptors ahead.
-    ElementVector::iterator end;
+    decltype(it) end;
     for (end = it + 1; end != _list.end(); ++end) {
         DID tag = end->desc->tag();
         if (tag >= 0x80) {

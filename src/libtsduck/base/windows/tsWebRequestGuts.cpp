@@ -46,7 +46,10 @@
 #include "tsWebRequest.h"
 #include "tsSysUtils.h"
 #include "tsWinUtils.h"
+
+#include "tsBeforeStandardHeaders.h"
 #include <WinInet.h>
+#include "tsAfterStandardHeaders.h"
 
 
 //----------------------------------------------------------------------------

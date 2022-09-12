@@ -37,6 +37,27 @@
 #include "tsUString.h"
 #include "tsCerrReport.h"
 
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <userenv.h>
+    #include <memory.h>
+    #include <io.h>
+    #include <mmsystem.h>  // Memory management
+    #include <psapi.h>     // Process API
+    #include <comutil.h>   // COM utilities
+    #include <Shellapi.h>
+    #include "tsAfterStandardHeaders.h"
+#else
+    #include "tsBeforeStandardHeaders.h"
+    #include <cerrno>
+    #include <sys/ioctl.h>
+    #include <sys/types.h>
+    #include <sys/wait.h>
+    #include <pthread.h>
+    #include <sched.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 //!
 //! Default separator in CSV (comma-separated values) format.
 //! CSV files are suitable for analysis using tools such as Microsoft Excel.
@@ -124,6 +145,22 @@ namespace ts {
     //! @return A string describing the error.
     //!
     TSDUCKDLL UString SysErrorCodeMessage(SysErrorCode code = LastSysErrorCode());
+
+    //!
+    //! Portable type for ioctl() request parameter.
+    //!
+    #if defined(DOXYGEN)
+        typedef platform-dependent ioctl_request_t;
+    #elif defined(TS_WINDOWS)
+        // Second parameter of ::DeviceIoControl().
+        typedef ::DWORD ioctl_request_t;
+    #else
+        // Extract the type of the second parameter of ::ioctl().
+        // It is "unsigned long" on most Linux systems but "int" on Alpine Linux.
+        template<typename T>
+        T request_param_type(int (*ioctl_syscall)(int, T, ...));
+        typedef decltype(request_param_type(&::ioctl)) ioctl_request_t;
+    #endif
 
     //!
     //! Get the name of the current application executable file.

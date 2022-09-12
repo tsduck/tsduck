@@ -32,6 +32,14 @@
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 
+#if defined(TS_UNIX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <unistd.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 
 //----------------------------------------------------------------------------
 // Default constructor.

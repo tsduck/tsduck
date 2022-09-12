@@ -455,7 +455,7 @@ void ts::TablesDisplay::displayUnkownSectionData(const ts::Section& section, con
     size_t index = 0;
 
     // Loop on all possible TLV syntaxen.
-    for (TLVSyntaxVector::const_iterator it = _tlv_syntax.begin(); it != _tlv_syntax.end() && index < payloadSize; ++it) {
+    for (auto it = _tlv_syntax.begin(); it != _tlv_syntax.end() && index < payloadSize; ++it) {
 
         // Can we locate a TLV area after current index?
         size_t tlvStart = 0;

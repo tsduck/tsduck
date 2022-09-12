@@ -387,7 +387,7 @@ ts::TSAnalyzer::ETIDContextPtr ts::TSAnalyzer::getETID(const Section& section)
 {
     const ETID etid = section.etid();
     const PIDContextPtr pc(getPID(section.sourcePID()));
-    ETIDContextMap::const_iterator it(pc->sections.find(etid));
+    const auto it = pc->sections.find(etid);
 
     if (it != pc->sections.end()) {
         // ETID context found

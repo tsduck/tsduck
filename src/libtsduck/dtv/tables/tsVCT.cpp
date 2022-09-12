@@ -176,7 +176,7 @@ bool ts::VCT::findService(Service& service, bool exact_match, bool same_ts) cons
 
 ts::VCT::ChannelList::const_iterator ts::VCT::findServiceInternal(Service& service, bool exact_match, bool same_ts) const
 {
-    ChannelList::const_iterator srv = channels.end();
+    auto srv = channels.end();
     if (service.hasId()) {
         // Search by service id.
         srv = findService(service.getId(), same_ts);

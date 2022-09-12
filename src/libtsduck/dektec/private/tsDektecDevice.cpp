@@ -78,7 +78,7 @@ bool ts::DektecDevice::GetAllPorts(DektecPortDescVector& ports, bool is_input, b
     ports.resize(size_t(count));
 
     // Remove non-input or non-output ports
-    for (DektecPortDescVector::iterator it = ports.begin(); it != ports.end(); ) {
+    for (auto it = ports.begin(); it != ports.end(); ) {
         const bool port_is_input = (it->m_ChanType & DTAPI_CHAN_INPUT) != 0;
         const bool port_is_output = (it->m_ChanType & DTAPI_CHAN_OUTPUT) != 0;
         const bool port_is_bidirectional = port_is_input && port_is_output;

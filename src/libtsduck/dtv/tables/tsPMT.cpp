@@ -440,9 +440,9 @@ bool ts::PMT::Stream::getComponentTag(uint8_t& tag) const
 ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
 {
     // Loop on all components of the service.
-    for (auto it = streams.begin(); it != streams.end(); ++it) {
-        const PID pid = it->first;
-        const PMT::Stream& stream(it->second);
+    for (auto& it : streams) {
+        const PID pid = it.first;
+        const PMT::Stream& stream(it.second);
         // Loop on all stream_identifier_descriptors.
         for (size_t i = stream.descs.search(DID_STREAM_ID); i < stream.descs.count(); i = stream.descs.search(DID_STREAM_ID, i + 1)) {
             // The payload of the stream_identifier_descriptor contains only one byte, the component tag.
@@ -509,11 +509,11 @@ void ts::PMT::buildXML(DuckContext& duck, xml::Element* root) const
     }
     descs.toXML(duck, root);
 
-    for (StreamMap::const_iterator it = streams.begin(); it != streams.end(); ++it) {
+    for (auto& st : streams) {
         xml::Element* e = root->addElement(u"component");
-        e->setIntAttribute(u"elementary_PID", it->first, true);
-        e->setIntAttribute(u"stream_type", it->second.stream_type, true);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"elementary_PID", st.first, true);
+        e->setIntAttribute(u"stream_type", st.second.stream_type, true);
+        st.second.descs.toXML(duck, e);
     }
 }
 
