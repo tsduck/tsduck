@@ -51,6 +51,11 @@
 #include <WinInet.h>
 #include "tsAfterStandardHeaders.h"
 
+// Required link libraries.
+#if defined(TS_MSC)
+    #pragma comment(lib, "Wininet.lib")
+#endif
+
 
 //----------------------------------------------------------------------------
 // System-specific parts are stored in a private structure.

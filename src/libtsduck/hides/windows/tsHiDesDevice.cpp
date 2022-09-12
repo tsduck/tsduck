@@ -40,8 +40,11 @@
 #include "tsDirectShowUtils.h"
 #include "tsMemory.h"
 #include "tsNullReport.h"
+
+#include "tsBeforeStandardHeaders.h"
 #include <winioctl.h>
 #include <ksproxy.h>
+#include "tsAfterStandardHeaders.h"
 
 namespace {
     // KS property list definitions for DeviceIoControl

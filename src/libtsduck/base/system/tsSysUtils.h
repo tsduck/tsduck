@@ -37,17 +37,7 @@
 #include "tsUString.h"
 #include "tsCerrReport.h"
 
-#if defined(TS_WINDOWS)
-    #include "tsBeforeStandardHeaders.h"
-    #include <userenv.h>
-    #include <memory.h>
-    #include <io.h>
-    #include <mmsystem.h>  // Memory management
-    #include <psapi.h>     // Process API
-    #include <comutil.h>   // COM utilities
-    #include <Shellapi.h>
-    #include "tsAfterStandardHeaders.h"
-#else
+#if defined(TS_UNIX)
     #include "tsBeforeStandardHeaders.h"
     #include <cerrno>
     #include <sys/ioctl.h>

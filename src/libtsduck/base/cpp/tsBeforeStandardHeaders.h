@@ -49,7 +49,7 @@
 //!
 //----------------------------------------------------------------------------
 
-#pragma once
+// Do not use "#pragma once", can be used multiple times on purpose.
 
 // Enforce inclusion tsPlatform.h but avoid recursion.
 #if !defined(TS_ADDRESS_BITS)
@@ -58,15 +58,6 @@
 
 // Windows specific settings
 #if defined(TS_WINDOWS) && !defined(DOXYGEN)
-    #if !defined(WINVER)
-        #define WINVER 0x0601            // Allow use of features specific to Windows 7 or later.
-    #endif
-    #if !defined(_WIN32_WINNT)
-        #define _WIN32_WINNT 0x0601      // Allow use of features specific to Windows 7 or later.
-    #endif
-    #if defined(UNICODE)
-        #undef UNICODE                   // No unicode in TSDuck, use single byte char
-    #endif
     #if !defined(_CRT_SECURE_NO_DEPRECATE)
         #define _CRT_SECURE_NO_DEPRECATE 1
     #endif
@@ -74,7 +65,7 @@
         #define _CRT_NONSTDC_NO_DEPRECATE 1
     #endif
     #if !defined(WIN32_LEAN_AND_MEAN)
-        #define WIN32_LEAN_AND_MEAN 1        // Exclude rarely-used stuff from Windows headers
+        #define WIN32_LEAN_AND_MEAN 1  // Exclude rarely-used stuff from Windows headers
     #endif
 #endif
 
@@ -97,28 +88,9 @@
 // Before including system headers, we must temporarily suspend some compilation warnings.
 // This is especially true for Windows which trigger tons of warnings.
 // The normal warning reporting is restored after inclusion.
-
-// [BUG.1] This one is nasty and is a bug in winioctl.h, already reported, never fixed, as usual with MSVC...
-// It must be set before pushing warnings.
-// tsPlatform.h(840, 1) : error C2220 : warning treated as error - no 'object' file generated
-// tsPlatform.h(840, 1) : warning C5031 : #pragma warning(pop) : likely mismatch, popping warning state pushed in different file
-// winioctl.h(161, 17) : message:  #pragma warning(push)
-// tsPlatform.h(719, 1) : warning C5032 : detected #pragma warning(push) with no corresponding #pragma warning(pop)
-// different warnings for older versions of MSVC:  C4193:  #pragma warning(pop): no matching '#pragma warning(push)'
-TS_MSC_NOWARNING(5031)
-TS_MSC_NOWARNING(5032)
-TS_MSC_NOWARNING(4193)
-
-// Warnings to disable for system headers.
+// See the restoration section in tsAfterStandardHeaders.h.
 TS_PUSH_WARNING()
-TS_MSC_NOWARNING(4263)
-TS_MSC_NOWARNING(4264)
-TS_MSC_NOWARNING(4668)
-TS_MSC_NOWARNING(4774)
-TS_MSC_NOWARNING(5026)
-TS_MSC_NOWARNING(5027)
-TS_MSC_NOWARNING(5054)
-TS_MSC_NOWARNING(5204)
+TS_MSC_NOWARNING(4193 4263 4264 4668 4774 5026 5027 5031 5032 5054 5204)
 TS_GCC_NOWARNING(pedantic)
 TS_LLVM_NOWARNING(reserved-id-macro)
 TS_LLVM_NOWARNING(zero-length-array)

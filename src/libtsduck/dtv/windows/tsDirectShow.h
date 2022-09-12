@@ -28,49 +28,33 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup hardware
-//!  Include the definitions for broadcast devices in the operating system.
+//!  @ingroup windows
+//!  Include the definitions for DirectShow (Windows media framework).
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsPlatform.h"
 
 #include "tsBeforeStandardHeaders.h"
-#if defined(TS_LINUX)
-    #include <linux/dvb/version.h>
-    #include <linux/dvb/frontend.h>
-    #include <linux/dvb/dmx.h>
-    #include <linux/version.h>
-#elif defined(TS_WINDOWS)
-    #include <dshow.h>     // DirectShow (aka ActiveMovie)
-    #include <dshowasf.h>
-    #include <amstream.h>
-    #include <videoacc.h>
-    #include <ks.h>
-    #include <ksproxy.h>
-    #include <ksmedia.h>
-    #include <bdatypes.h>  // BDA (Broadcast Device Architecture)
-    #include <bdamedia.h>
-    #include <bdaiface.h>
-    #include <bdatif.h>
-    #include <dsattrib.h>
-    #include <dvbsiparser.h>
-    #include <mpeg2data.h>
-    #include <vidcap.h>
-#endif
+#include <dshow.h>     // DirectShow (aka ActiveMovie)
+#include <dshowasf.h>
+#include <amstream.h>
+#include <videoacc.h>
+#include <ks.h>
+#include <ksproxy.h>
+#include <ksmedia.h>
+#include <bdatypes.h>  // BDA (Broadcast Device Architecture)
+#include <bdamedia.h>
+#include <bdaiface.h>
+#include <bdatif.h>
+#include <dsattrib.h>
+#include <dvbsiparser.h>
+#include <mpeg2data.h>
+#include <vidcap.h>
 #include "tsAfterStandardHeaders.h"
 
-// Identify Linux DVB API version in one value
-#if defined(TS_LINUX) || defined(DOXYGEN)
-    //!
-    //! @hideinitializer
-    //! On Linux systems, identify the Linux DVB API version in one value.
-    //! Example: TS_DVB_API_VERSION is 503 for DVB API version 5.3.
-    //!
-    #define TS_DVB_API_VERSION ((DVB_API_VERSION * 100) + DVB_API_VERSION_MINOR)
-#endif
-
-// Required link libraries under Windows.
-#if defined(TS_WINDOWS) && defined(TS_MSC)
+// Required link libraries.
+#if defined(TS_MSC)
     #pragma comment(lib, "quartz.lib")
 #endif

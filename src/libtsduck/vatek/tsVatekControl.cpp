@@ -123,7 +123,7 @@ int ts::VatekControl::execute()
         TS_LLVM_NOWARNING(old-style-cast)
         ui_props_printf(" - [%-20s] : %-8s - %s\r\n", nullptr, _ui_struct(chip_info), (uint8_t*)vatek_device_get_info(hchip));
         fflush(stdout);
-        TS_PUSH_WARNING()
+        TS_POP_WARNING()
     }
 
     vatek_device_list_free(hdevices);

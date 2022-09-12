@@ -611,7 +611,6 @@
 #include "tsSVCExtensionDescriptor.h"
 #include "tsSwitchableReport.h"
 #include "tsSysInfo.h"
-#include "tsSystemBroadcast.h"
 #include "tsSystemClockDescriptor.h"
 #include "tsSystemManagementDescriptor.h"
 #include "tsSystemMonitor.h"
@@ -777,6 +776,7 @@
 #if defined(TS_WINDOWS)
 #include "tsComIds.h"
 #include "tsComPtr.h"
+#include "tsDirectShow.h"
 #include "tsDirectShowFilterCategory.h"
 #include "tsDirectShowGraph.h"
 #include "tsDirectShowNetworkType.h"

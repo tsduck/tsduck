@@ -65,7 +65,7 @@ ts::TSProcessorArgs::TSProcessorArgs() :
     fixed_bitrate(0),
     bitrate_adj(DEF_BITRATE_INTERVAL * MilliSecPerSec),
     init_bitrate_adj(DEF_INIT_BITRATE_PKT_INTERVAL),
-    realtime(Tristate::MAYBE),
+    realtime(Tristate::Maybe),
     receive_timeout(0),
     final_wait(-1),
     control_port(0),

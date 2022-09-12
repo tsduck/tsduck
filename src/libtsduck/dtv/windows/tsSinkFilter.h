@@ -39,6 +39,7 @@
 #include "tsMutex.h"
 #include "tsCondition.h"
 #include "tsReport.h"
+#include "tsDirectShow.h"
 
 namespace ts {
 

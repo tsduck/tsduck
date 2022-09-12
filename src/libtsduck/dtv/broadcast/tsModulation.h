@@ -39,6 +39,17 @@
 #include "tsVariable.h"
 #include "tsReport.h"
 
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <bdatypes.h>
+    #include "tsAfterStandardHeaders.h"
+#elif defined(TS_LINUX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <linux/dvb/frontend.h>
+    #include <linux/version.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 namespace ts {
     //!
     //! Check if an enumeration value is supported by the native implementation.
