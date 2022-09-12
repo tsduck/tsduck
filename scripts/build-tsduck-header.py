@@ -37,6 +37,7 @@
 import sys, os, fnmatch
 
 headers = {'': [], 'private': [], 'unix': [], 'linux': [], 'mac': [], 'windows': []}
+exclude = ['tsduck.h', 'tsBeforeStandardHeaders.h', 'tsAfterStandardHeaders.h']
 
 # Recursively collect header files.
 def collect_headers(root):
@@ -47,7 +48,7 @@ def collect_headers(root):
     # Loop on all files in directory
     for name in os.listdir(root):
         path = root + os.sep + name
-        if name != 'tsduck.h' and fnmatch.fnmatch(name, '*.h') and not fnmatch.fnmatch(name, '*Template.h'):
+        if name not in exclude and fnmatch.fnmatch(name, '*.h') and not fnmatch.fnmatch(name, '*Template.h'):
             headers[index].append(name)
         elif os.path.isdir(path):
             collect_headers(path)

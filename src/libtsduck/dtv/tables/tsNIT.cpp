@@ -131,14 +131,14 @@ void ts::NIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setBoolAttribute(u"actual", isActual());
     descs.toXML(duck, root);
 
-    for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
+    for (auto& tp : transports) {
         xml::Element* e = root->addElement(u"transport_stream");
-        e->setIntAttribute(u"transport_stream_id", it->first.transport_stream_id, true);
-        e->setIntAttribute(u"original_network_id", it->first.original_network_id, true);
-        if (it->second.preferred_section >= 0) {
-            e->setIntAttribute(u"preferred_section", it->second.preferred_section, false);
+        e->setIntAttribute(u"transport_stream_id", tp.first.transport_stream_id, true);
+        e->setIntAttribute(u"original_network_id", tp.first.original_network_id, true);
+        if (tp.second.preferred_section >= 0) {
+            e->setIntAttribute(u"preferred_section", tp.second.preferred_section, false);
         }
-        it->second.descs.toXML(duck, e);
+        tp.second.descs.toXML(duck, e);
     }
 }
 

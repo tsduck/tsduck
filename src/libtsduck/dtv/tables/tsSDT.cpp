@@ -130,10 +130,10 @@ bool ts::SDT::isValidTableId(TID tid) const
 
 bool ts::SDT::findService(DuckContext& duck, const UString& name, uint16_t& service_id, bool exact_match) const
 {
-    for (ServiceMap::const_iterator it = services.begin(); it != services.end(); ++it) {
-        const UString service_name(it->second.serviceName(duck));
+    for (auto& it : services) {
+        const UString service_name(it.second.serviceName(duck));
         if ((exact_match && service_name == name) || (!exact_match && service_name.similar(name))) {
-            service_id = it->first;
+            service_id = it.first;
             return true;
         }
     }
@@ -184,11 +184,11 @@ void ts::SDT::ServiceEntry::updateService(DuckContext& duck, Service& service) c
 void ts::SDT::updateServices(DuckContext& duck, ServiceList& slist) const
 {
     // Loop on all services in the SDT.
-    for (auto sdt_it = services.begin(); sdt_it != services.end(); ++sdt_it) {
+    for (auto& sdt_it : services) {
 
         // Service id is the index in the service map.
-        const uint16_t service_id = sdt_it->first;
-        const ServiceEntry& service(sdt_it->second);
+        const uint16_t service_id = sdt_it.first;
+        const ServiceEntry& service(sdt_it.second);
 
         // Try to find an existing matching service. The service id must match.
         // The TS is and orig. netw. id must either not exist or match.
@@ -248,10 +248,10 @@ void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all services
-    for (auto it = services.begin(); it != services.end(); ++it) {
+    for (auto& it : services) {
 
         // Binary size of the service entry.
-        const size_t entry_size = 5 + it->second.descs.binarySize();
+        const size_t entry_size = 5 + it.second.descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
@@ -259,13 +259,13 @@ void ts::SDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Insert service entry
-        buf.putUInt16(it->first); // service_id
+        buf.putUInt16(it.first); // service_id
         buf.putBits(0xFF, 6);
-        buf.putBit(it->second.EITs_present);
-        buf.putBit(it->second.EITpf_present);
-        buf.putBits(it->second.running_status, 3);
-        buf.putBit(it->second.CA_controlled);
-        buf.putPartialDescriptorListWithLength(it->second.descs);
+        buf.putBit(it.second.EITs_present);
+        buf.putBit(it.second.EITpf_present);
+        buf.putBits(it.second.running_status, 3);
+        buf.putBit(it.second.CA_controlled);
+        buf.putPartialDescriptorListWithLength(it.second.descs);
     }
 }
 
@@ -410,14 +410,14 @@ void ts::SDT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"original_network_id", onetw_id, true);
     root->setBoolAttribute(u"actual", isActual());
 
-    for (ServiceMap::const_iterator it = services.begin(); it != services.end(); ++it) {
+    for (auto& it : services) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->first, true);
-        e->setBoolAttribute(u"EIT_schedule", it->second.EITs_present);
-        e->setBoolAttribute(u"EIT_present_following", it->second.EITpf_present);
-        e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
-        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"service_id", it.first, true);
+        e->setBoolAttribute(u"EIT_schedule", it.second.EITs_present);
+        e->setBoolAttribute(u"EIT_present_following", it.second.EITpf_present);
+        e->setBoolAttribute(u"CA_mode", it.second.CA_controlled);
+        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it.second.running_status);
+        it.second.descs.toXML(duck, e);
     }
 }
 

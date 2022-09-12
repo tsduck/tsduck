@@ -488,17 +488,14 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     tsp->debug(u"got a NIT, version %d, network Id: %d (0x%X)", {nit.version, nit.network_id, nit.network_id});
 
     // Remove the specified transport streams
-    bool found;
-    do {
-        found = false;
-        for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-            if (_remove_ts.count(it->first.transport_stream_id) != 0) {
-                found = true;
-                nit.transports.erase(it->first);
-                break; // iterator is broken
-            }
+    for (auto it = nit.transports.begin(); it != nit.transports.end(); ) {
+        if (_remove_ts.count(it->first.transport_stream_id) != 0) {
+            it = nit.transports.erase(it);
         }
-    } while (found);
+        else {
+            ++it;
+        }
+    }
 
     // Update the network id.
     if (_set_netw_id) {

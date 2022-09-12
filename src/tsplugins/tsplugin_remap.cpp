@@ -205,12 +205,12 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
         if (pat.isValid()) {
             // Process the PAT content
             pat.nit_pid = remap(pat.nit_pid);
-            for (PAT::ServiceMap::iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
+            for (auto& it : pat.pmts) {
                 // Need to filter and transform this PMT
-                _demux.addPID(it->second);
-                getPacketizer(it->second, true);
+                _demux.addPID(it.second);
+                getPacketizer(it.second, true);
                 // Remap the PMT PID if necessary
-                it->second = remap(it->second);
+                it.second = remap(it.second);
             }
             // All PMT PID's are now known
             _pmt_ready = true;
@@ -220,7 +220,6 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             pzer->addTable(duck, pat);
         }
     }
-
     else if (table.tableId() == TID_CAT && table.sourcePID() == PID_CAT) {
         CAT cat(duck, table);
         if (cat.isValid()) {
@@ -232,7 +231,6 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             pzer->addTable(duck, cat);
         }
     }
-
     else if (table.tableId() == TID_PMT) {
         PMT pmt(duck, table);
         if (pmt.isValid()) {
@@ -240,9 +238,9 @@ void ts::RemapPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             processDescriptors(pmt.descs, TID_PMT);
             pmt.pcr_pid = remap(pmt.pcr_pid);
             PMT::StreamMap new_map(nullptr);
-            for (PMT::StreamMap::iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                processDescriptors(it->second.descs, TID_PMT);
-                new_map[remap(it->first)] = it->second;
+            for (auto& it : pmt.streams) {
+                processDescriptors(it.second.descs, TID_PMT);
+                new_map[remap(it.first)] = it.second;
             }
             pmt.streams.swap(new_map);
             // Replace the PMT

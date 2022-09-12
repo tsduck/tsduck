@@ -91,8 +91,8 @@ void ts::SectionFile::add(const AbstractTablePtr& table)
 
 void ts::SectionFile::add(const BinaryTablePtrVector& tables)
 {
-    for (BinaryTablePtrVector::const_iterator it = tables.begin(); it != tables.end(); ++it) {
-        add(*it);
+    for (auto& it : tables) {
+        add(it);
     }
 }
 
@@ -126,8 +126,8 @@ void ts::SectionFile::add(const BinaryTablePtr& table)
 
 void ts::SectionFile::add(const SectionPtrVector& sections)
 {
-    for (SectionPtrVector::const_iterator it = sections.begin(); it != sections.end(); ++it) {
-        add(*it);
+    for (auto& it : sections) {
+        add(it);
     }
 }
 
@@ -208,7 +208,7 @@ void ts::SectionFile::collectLastTable()
     }
 
     // Get a iterator to last section.
-    SectionPtrVector::iterator first(_orphanSections.end());
+    auto first = _orphanSections.end();
     --first;
     assert(!first->isNull());
     assert((*first)->isValid());
@@ -750,8 +750,7 @@ bool ts::SectionFile::generateDocument(xml::Document& doc) const
     }
 
     // Format all tables.
-    for (BinaryTablePtrVector::const_iterator it = _tables.begin(); it != _tables.end(); ++it) {
-        const BinaryTablePtr& table(*it);
+    for (auto& table : _tables) {
         if (!table.isNull()) {
             table->toXML(_duck, root);
         }

@@ -537,15 +537,24 @@
 
     // Full static linking enforces the usage of TSDuck static library.
     #if defined(TSDUCK_STATIC) && !defined(TSDUCK_STATIC_LIBRARY)
-    #define TSDUCK_STATIC_LIBRARY 1
+        #define TSDUCK_STATIC_LIBRARY 1
     #endif
 
     // Linking against the TSDuck static library enforces statically linked plugins.
     #if defined(TSDUCK_STATIC_LIBRARY) && !defined(TSDUCK_STATIC_PLUGINS)
-    #define TSDUCK_STATIC_PLUGINS 1
+        #define TSDUCK_STATIC_PLUGINS 1
     #endif
 
 #endif // DOXYGEN
+
+
+//----------------------------------------------------------------------------
+// Always enforce assertions when TS_KEEP_ASSERTIONS is defined
+//----------------------------------------------------------------------------
+
+#if defined(NDEBUG) && defined(TS_KEEP_ASSERTIONS)
+    #undef NDEBUG
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -716,59 +725,9 @@
 
 #endif // DOXYGEN
 
-
-//----------------------------------------------------------------------------
-// System-specific settings
-//----------------------------------------------------------------------------
-
-// Windows specific settings
-
-#if defined(TS_WINDOWS) && !defined(DOXYGEN)
-    #if !defined(WINVER)
-        #define WINVER 0x0601            // Allow use of features specific to Windows 7 or later.
-    #endif
-    #if !defined(_WIN32_WINNT)
-        #define _WIN32_WINNT 0x0601      // Allow use of features specific to Windows 7 or later.
-    #endif
-    #if defined(UNICODE)
-        #undef UNICODE                   // No unicode in TSDuck, use single byte char
-    #endif
-    #if !defined(_CRT_SECURE_NO_DEPRECATE)
-        #define _CRT_SECURE_NO_DEPRECATE 1
-    #endif
-    #if !defined(_CRT_NONSTDC_NO_DEPRECATE)
-        #define _CRT_NONSTDC_NO_DEPRECATE 1
-    #endif
-    #if !defined(WIN32_LEAN_AND_MEAN)
-        #define WIN32_LEAN_AND_MEAN 1        // Exclude rarely-used stuff from Windows headers
-    #endif
-#endif
-
-// Large file system (LFS) support on Linux.
-
-#if defined(TS_LINUX) && !defined(DOXYGEN)
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(reserved-id-macro)
-    #if !defined(_LARGEFILE_SOURCE)
-        #define _LARGEFILE_SOURCE    1
-    #endif
-    #if !defined(_LARGEFILE64_SOURCE)
-        #define _LARGEFILE64_SOURCE  1
-    #endif
-    #if !defined(_FILE_OFFSET_BITS)
-        #define _FILE_OFFSET_BITS   64
-    #endif
-    TS_POP_WARNING()
-#endif
-
-// Enforce assertions, even in optimized mode, if TS_KEEP_ASSERTIONS is defined.
-
-#if defined(NDEBUG) && defined(TS_KEEP_ASSERTIONS)
-    #undef NDEBUG
-#endif
-
+//
 // Disable some warnings, application-wide, for various compilers.
-
+//
 TS_GCC_NOWARNING(unused-parameter)                // Unused parameters are frequent with overrides.
 #if defined(TS_ARM)
     TS_GCC_NOWARNING(psabi)
@@ -814,121 +773,12 @@ TS_MSC_NOWARNING(4710)  // 'xxx' : function not inlined
 TS_MSC_NOWARNING(4711)  // function 'xxx' selected for automatic inline expansion
 TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory load if / Qspectre switch specified
 
-// System headers.
-// Before including system headers, we must temporarily suspend some compilation warnings.
-// This is especially true for Windows which trigger tons of warnings.
-// The normal warning reporting is restored after inclusion.
 
-// [BUG.1] This one is nasty and is a bug in winioctl.h, already reported, never fixed, as usual with MSVC...
-// It must be set before pushing warnings.
-// tsPlatform.h(840, 1) : error C2220 : warning treated as error - no 'object' file generated
-// tsPlatform.h(840, 1) : warning C5031 : #pragma warning(pop) : likely mismatch, popping warning state pushed in different file
-// winioctl.h(161, 17) : message:  #pragma warning(push)
-// tsPlatform.h(719, 1) : warning C5032 : detected #pragma warning(push) with no corresponding #pragma warning(pop)
-// different warnings for older versions of MSVC:  C4193:  #pragma warning(pop): no matching '#pragma warning(push)'
-TS_MSC_NOWARNING(5031)
-TS_MSC_NOWARNING(5032)
-TS_MSC_NOWARNING(4193)
+//----------------------------------------------------------------------------
+// Commonly used C++ headers.
+//----------------------------------------------------------------------------
 
-TS_PUSH_WARNING()
-TS_MSC_NOWARNING(4263)
-TS_MSC_NOWARNING(4264)
-TS_MSC_NOWARNING(4668)
-TS_MSC_NOWARNING(4774)
-TS_MSC_NOWARNING(5026)
-TS_MSC_NOWARNING(5027)
-TS_MSC_NOWARNING(5054)
-TS_MSC_NOWARNING(5204)
-
-#if defined(TS_WINDOWS)
-
-#include <windows.h>
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#include <mswsock.h>
-#include <userenv.h>
-#include <memory.h>
-#include <io.h>
-#include <mmsystem.h>  // Memory management
-#include <psapi.h>     // Process API
-#include <comutil.h>   // COM utilities
-#include <dshow.h>     // DirectShow (aka ActiveMovie)
-#include <dshowasf.h>
-#include <amstream.h>
-#include <videoacc.h>
-#include <ks.h>
-#include <ksproxy.h>
-#include <ksmedia.h>
-#include <bdatypes.h>  // BDA (Broadcast Device Architecture)
-#include <bdamedia.h>
-#include <bdaiface.h>
-#include <bdatif.h>
-#include <dsattrib.h>
-#include <dvbsiparser.h>
-#include <mpeg2data.h>
-#include <vidcap.h>
-#include <Wincrypt.h>  // Cryptographic services
-#include <WinInet.h>
-#include <Shellapi.h>
-
-#else
-
-#include <cerrno>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <net/if.h>
-#include <netinet/in.h>
-#include <netinet/tcp.h>
-#include <unistd.h>
-#include <time.h>
-#include <glob.h>
-#include <pthread.h>
-#include <sched.h>
-#include <semaphore.h>
-#include <signal.h>
-#include <dlfcn.h>
-#include <pwd.h>
-
-#endif
-
-#if defined(TS_LINUX)
-    #include <limits.h>
-    #include <sys/mman.h>
-    #include <sys/prctl.h>
-    #include <byteswap.h>
-    #include <linux/dvb/version.h>
-    #include <linux/dvb/frontend.h>
-    #include <linux/dvb/dmx.h>
-    #include <linux/version.h>
-#endif
-
-#if defined(TS_MAC)
-    #include <sys/mman.h>
-    #include <libproc.h>
-#endif
-
-#if !defined(TS_NO_PCSC) // PC/SC support not inhibited by user.
-    TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(pedantic)
-    TS_LLVM_NOWARNING(reserved-id-macro)
-    TS_LLVM_NOWARNING(zero-length-array)
-    #if defined(TS_WINDOWS)
-        #include <winscard.h>
-    #elif defined(TS_MAC)
-        #include <PCSC/wintypes.h>
-        #include <PCSC/winscard.h>
-    #else
-        #include <PCSC/winscard.h>
-        #include <PCSC/reader.h>
-    #endif
-    TS_POP_WARNING()
-#endif
-
+#include "tsBeforeStandardHeaders.h"
 #include <string>
 #include <vector>
 #include <array>
@@ -950,7 +800,6 @@ TS_MSC_NOWARNING(5204)
 #include <stdexcept>
 #include <atomic>
 #include <typeinfo>
-
 #include <cassert>
 #include <cstdlib>
 #include <cstdarg>
@@ -958,117 +807,16 @@ TS_MSC_NOWARNING(5204)
 #include <cstdint>
 #include <cstring>
 #include <cctype>
-#include <cstddef>     // size_t
+#include <cstddef>
+#include <climits>
 #include <cmath>
 #include <fcntl.h>
-
-TS_POP_WARNING()
-
-// See [BUG.1] above. Try to recover from this sh... bug in winioctl.h
-#if defined(TS_MSC)
-    #pragma warning(pop)  // one more to compensate for missing one in winioctl.h
+#if defined(TS_WINDOWS)
+    #include <windows.h>
+#else
+    #include <unistd.h>
 #endif
-
-// Required link libraries under Windows.
-#if defined(TS_WINDOWS) && defined(TS_MSC)
-    #pragma comment(lib, "userenv.lib")       // GetUserProfileDirectory
-    #pragma comment(lib, "psapi.lib")         // GetProcessMemoryInfo
-    #pragma comment(lib, "winmm.lib")         // timeBeginPeriod
-    #pragma comment(lib, "quartz.lib")        // DirectShow, DirectX
-    #pragma comment(lib, "ws2_32.lib")        // Winsock 2
-    #pragma comment(lib, "winscard.lib")      // PC/SC
-    #if defined(DEBUG)
-        #pragma comment(lib, "comsuppwd.lib") // COM utilities
-    #else
-        #pragma comment(lib, "comsuppw.lib")
-    #endif
-#endif
-
-// Some standard Windows headers have the very-very bad idea to define common
-// words as macros. Also, common function names, used by TSDuck, are defined
-// as macros, breaking C++ visibility rules.
-#if defined(min)
-    #undef min
-#endif
-#if defined(max)
-    #undef max
-#endif
-#if defined(MIN)
-    #undef MIN
-#endif
-#if defined(MAX)
-    #undef MAX
-#endif
-#if defined(TRUE)
-    #undef TRUE
-#endif
-#if defined(FALSE)
-    #undef FALSE
-#endif
-#if defined(MAYBE)
-    #undef MAYBE
-#endif
-#if defined(IGNORE)
-    #undef IGNORE
-#endif
-#if defined(CHECK)
-    #undef CHECK
-#endif
-#if defined(COMPUTE)
-    #undef COMPUTE
-#endif
-#if defined(INFO)
-    #undef INFO
-#endif
-#if defined(ERROR)
-    #undef ERROR
-#endif
-#if defined(SHORT)
-    #undef SHORT
-#endif
-#if defined(LONG)
-    #undef LONG
-#endif
-#if defined(INTEGER)
-    #undef INTEGER
-#endif
-#if defined(Yield)
-    #undef Yield
-#endif
-#if defined(CreateDirectory)
-    #undef CreateDirectory
-#endif
-#if defined(DeleteFile)
-    #undef DeleteFile
-#endif
-#if defined(ALTERNATE)
-    #undef ALTERNATE
-#endif
-
-// Similar common-words macros in Mach kernel (macOS).
-#if defined(MAX_TRAILER_SIZE)
-    #undef MAX_TRAILER_SIZE
-#endif
-
-// For platforms not supporting large files:
-#if !defined(TS_WINDOWS) && !defined(O_LARGEFILE) && !defined(DOXYGEN)
-    #define O_LARGEFILE 0
-#endif
-
-// Identify Linux DVB API version in one value
-#if defined(TS_LINUX) || defined(DOXYGEN)
-    //!
-    //! @hideinitializer
-    //! On Linux systems, identify the Linux DVB API version in one value.
-    //! Example: TS_DVB_API_VERSION is 503 for DVB API version 5.3.
-    //!
-    #define TS_DVB_API_VERSION ((DVB_API_VERSION * 100) + DVB_API_VERSION_MINOR)
-#endif
-
-// On macOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
-#if defined(TS_MAC) && !defined(SA_ONESHOT) && !defined(DOXYGEN)
-    #define SA_ONESHOT SA_RESETHAND
-#endif
+#include "tsAfterStandardHeaders.h"
 
 
 //----------------------------------------------------------------------------
@@ -1344,22 +1092,43 @@ TS_POP_WARNING()
 
 
 //----------------------------------------------------------------------------
-// Some common pointer types, typically for casting.
+// Source code identification.
 //----------------------------------------------------------------------------
 
 //!
-//! TSDuck namespace, containing all TSDuck classes and functions.
+//! This macro generates a reference to some address (string literal, external symbol, etc.)
+//! The reference is a unique static symbol which is otherwise unused.
+//! The difficulty is to make sure that the compiler will not optimize away this data (it is local and unused).
+//! @param suffix Some unique suffix if the macro is invoked several times on the same line.
+//! @param addr An address to reference (string literal, external symbol, etc.)
+//! @hideinitializer
 //!
+#if defined(TS_GCC)
+    #define TS_STATIC_REFERENCE(suffix, addr) \
+        static __attribute__ ((used)) volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr)
+#else
+    // Keep this definition on one line because of TS_UNIQUE_NAME.
+    #define TS_STATIC_REFERENCE(suffix, addr) \
+        static volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr); static volatile const void* volatile const TS_UNIQUE_NAME(ref2##suffix) = &TS_UNIQUE_NAME(ref##suffix)
+#endif
+
+
+//----------------------------------------------------------------------------
+//! TSDuck namespace, containing all TSDuck classes and functions.
+//----------------------------------------------------------------------------
+
 namespace ts {
-    typedef char*     char_ptr;    //!< Pointer to @c char
-    typedef int8_t*   int8_ptr;    //!< Pointer to @c int8_t
-    typedef int16_t*  int16_ptr;   //!< Pointer to @c int16_t
-    typedef int32_t*  int32_ptr;   //!< Pointer to @c int32_t
-    typedef int64_t*  int64_ptr;   //!< Pointer to @c int64_t
-    typedef uint8_t*  uint8_ptr;   //!< Pointer to @c uint8_t
-    typedef uint16_t* uint16_ptr;  //!< Pointer to @c uint16_t
-    typedef uint32_t* uint32_ptr;  //!< Pointer to @c uint32_t
-    typedef uint64_t* uint64_ptr;  //!< Pointer to @c uint64_t
+
+    // Some common pointer types, typically for casting.
+    typedef char*           char_ptr;          //!< Pointer to @c char
+    typedef int8_t*         int8_ptr;          //!< Pointer to @c int8_t
+    typedef int16_t*        int16_ptr;         //!< Pointer to @c int16_t
+    typedef int32_t*        int32_ptr;         //!< Pointer to @c int32_t
+    typedef int64_t*        int64_ptr;         //!< Pointer to @c int64_t
+    typedef uint8_t*        uint8_ptr;         //!< Pointer to @c uint8_t
+    typedef uint16_t*       uint16_ptr;        //!< Pointer to @c uint16_t
+    typedef uint32_t*       uint32_ptr;        //!< Pointer to @c uint32_t
+    typedef uint64_t*       uint64_ptr;        //!< Pointer to @c uint64_t
     typedef const char*     const_char_ptr;    //!< Pointer to @c const char
     typedef const int8_t*   const_int8_ptr;    //!< Pointer to @c const int8_t
     typedef const int16_t*  const_int16_ptr;   //!< Pointer to @c const int16_t
@@ -1369,37 +1138,7 @@ namespace ts {
     typedef const uint16_t* const_uint16_ptr;  //!< Pointer to @c const uint16_t
     typedef const uint32_t* const_uint32_ptr;  //!< Pointer to @c const uint32_t
     typedef const uint64_t* const_uint64_ptr;  //!< Pointer to @c const uint64_t
-}
 
-
-//----------------------------------------------------------------------------
-// Request type for ioctl.
-//----------------------------------------------------------------------------
-
-namespace ts {
-    //!
-    //! Portable type for ioctl() request parameter.
-    //!
-#if defined(DOXYGEN)
-    typedef platform-dependent ioctl_request_t;
-#elif defined(TS_WINDOWS)
-    // Second parameter of ::DeviceIoControl().
-    typedef ::DWORD ioctl_request_t;
-#else
-    // Extract the type of the second parameter of ::ioctl().
-    // It is "unsigned long" on most Linux systems but "int" on Alpine Linux.
-    template<typename T>
-    T request_param_type(int (*ioctl_syscall)(int, T, ...));
-    typedef decltype(request_param_type(&::ioctl)) ioctl_request_t;
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Some integer constants.
-//----------------------------------------------------------------------------
-
-namespace ts {
     //!
     //! Constant meaning "no size", "not found" or "do not resize".
     //! An alternative value for the standard @c std::string::npos value.
@@ -1411,14 +1150,6 @@ namespace ts {
     const size_t NPOS = std::string::npos;
 #endif
 
-}
-
-
-//----------------------------------------------------------------------------
-// Time-related definition
-//----------------------------------------------------------------------------
-
-namespace ts {
     //!
     //! This integer type is used to represent any sub-quantity of seconds.
     //!
@@ -1495,14 +1226,7 @@ namespace ts {
     //! Number of milliseconds per day
     //!
     constexpr MilliSecond MilliSecPerDay = 1000 * 60 * 60 * 24;
-}
 
-
-//----------------------------------------------------------------------------
-// General purpose enumeration types
-//----------------------------------------------------------------------------
-
-namespace ts {
     //!
     //! Enumeration type used to indicate if the data referenced by a pointer shall be copied or shared.
     //!
@@ -1510,14 +1234,7 @@ namespace ts {
         COPY,  //!< Data shall be copied.
         SHARE  //!< Data shall be shared.
     };
-}
 
-
-//----------------------------------------------------------------------------
-// Tristate boolean.
-//----------------------------------------------------------------------------
-
-namespace ts {
     //!
     //! Tristate boolean.
     //! More generally:
@@ -1540,30 +1257,3 @@ namespace ts {
     template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
     Tristate ToTristate(INT i) { return Tristate(std::max<INT>(-1, std::min<INT>(1, i))); }
 }
-
-
-//----------------------------------------------------------------------------
-// Source code identification.
-//----------------------------------------------------------------------------
-
-//!
-//! This macro generates a reference to some address (string literal, external symbol, etc.)
-//! The reference is a unique static symbol which is otherwise unused.
-//! The difficulty is to make sure that the compiler will not optimize away this data (it is local and unused).
-//! @param suffix Some unique suffix if the macro is invoked several times on the same line.
-//! @param addr An address to reference (string literal, external symbol, etc.)
-//! @hideinitializer
-//!
-#if defined(TS_GCC)
-    #define TS_STATIC_REFERENCE(suffix, addr) \
-        static __attribute__ ((used)) volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr)
-#else
-    // Keep this definition on one line because of TS_UNIQUE_NAME.
-    #define TS_STATIC_REFERENCE(suffix, addr) \
-        static volatile const void* volatile const TS_UNIQUE_NAME(ref##suffix) = (addr); static volatile const void* volatile const TS_UNIQUE_NAME(ref2##suffix) = &TS_UNIQUE_NAME(ref##suffix)
-#endif
-
-// Obsolete macro, remove all references.
-#if !defined(DOXYGEN)
-    #define TSDUCK_SOURCE typedef int TS_UNIQUE_NAME(obsolete)
-#endif

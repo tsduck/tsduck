@@ -130,13 +130,13 @@ void ts::RST::deserializePayload(PSIBuffer& buf, const Section& section)
 
 void ts::RST::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
-    for (auto it = events.begin(); it != events.end(); ++it) {
-        buf.putUInt16(it->transport_stream_id);
-        buf.putUInt16(it->original_network_id);
-        buf.putUInt16(it->service_id);
-        buf.putUInt16(it->event_id);
+    for (auto& it : events) {
+        buf.putUInt16(it.transport_stream_id);
+        buf.putUInt16(it.original_network_id);
+        buf.putUInt16(it.service_id);
+        buf.putUInt16(it.event_id);
         buf.putBits(0xFF, 5);
-        buf.putBits(it->running_status, 3);
+        buf.putBits(it.running_status, 3);
     }
 }
 
@@ -164,13 +164,13 @@ void ts::RST::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 
 void ts::RST::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EventList::const_iterator it = events.begin(); it != events.end(); ++it) {
+    for (auto& it : events) {
         xml::Element* e = root->addElement(u"event");
-        e->setIntAttribute(u"transport_stream_id", it->transport_stream_id, true);
-        e->setIntAttribute(u"original_network_id", it->original_network_id, true);
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"event_id", it->event_id, true);
-        e->setEnumAttribute(RunningStatusNames, u"running_status", it->running_status);
+        e->setIntAttribute(u"transport_stream_id", it.transport_stream_id, true);
+        e->setIntAttribute(u"original_network_id", it.original_network_id, true);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setIntAttribute(u"event_id", it.event_id, true);
+        e->setEnumAttribute(RunningStatusNames, u"running_status", it.running_status);
     }
 }
 

@@ -505,8 +505,8 @@ void ts::SVRemovePlugin::processNITBAT(AbstractTransportListTable& table)
     processNITBATDescriptorList(table.descs);
 
     // Process each TS descriptor list
-    for (AbstractTransportListTable::TransportMap::iterator it = table.transports.begin(); it != table.transports.end(); ++it) {
-        processNITBATDescriptorList(it->second.descs);
+    for (auto& it : table.transports) {
+        processNITBATDescriptorList(it.second.descs);
     }
 
     // No need to get the same section layout as input.

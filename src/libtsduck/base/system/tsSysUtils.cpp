@@ -35,21 +35,31 @@
 #include "tsArgs.h"
 
 #if defined(TS_WINDOWS)
-#include <intrin.h>
-#include "tsWinUtils.h"
+    #include "tsWinUtils.h"
+    #include "tsBeforeStandardHeaders.h"
+    #include <intrin.h>
+    #include "tsAfterStandardHeaders.h"
+#elif defined(TS_LINUX)
+    #include "tsFileUtils.h"
+    #include "tsBeforeStandardHeaders.h"
+    #include <dlfcn.h>
+    #include "tsAfterStandardHeaders.h"
+#elif defined(TS_MAC)
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/resource.h>
+    #include <mach/mach.h>
+    #include <mach/message.h>
+    #include <mach/kern_return.h>
+    #include <mach/task_info.h>
+    #include <libproc.h>
+    #include <dlfcn.h>
+    #include "tsAfterStandardHeaders.h"
+    extern char **environ; // not defined in public headers
 #endif
 
-#if defined(TS_LINUX)
-#include "tsFileUtils.h"
-#endif
-
-#if defined(TS_MAC)
-#include <sys/resource.h>
-#include <mach/mach.h>
-#include <mach/message.h>
-#include <mach/kern_return.h>
-#include <mach/task_info.h>
-extern char **environ; // not defined in public headers
+// Required link libraries under Windows.
+#if defined(TS_WINDOWS) && defined(TS_MSC)
+    #pragma comment(lib, "psapi.lib")  // GetProcessMemoryInfo
 #endif
 
 // External calls to environment variables are not reentrant. Use a global mutex.
@@ -141,7 +151,7 @@ ts::UString ts::CallerLibraryFile()
     }
 
 #else
-#error "ts::CallerLibraryFile not implemented on this system"
+    #error "ts::CallerLibraryFile not implemented on this system"
 #endif
 }
 

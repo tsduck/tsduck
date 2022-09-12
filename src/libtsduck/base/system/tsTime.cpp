@@ -31,6 +31,13 @@
 #include "tsMemory.h"
 #include "tsTimeConfigurationFile.h"
 
+#if defined(TS_UNIX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/time.h>
+    #include <time.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 
 //----------------------------------------------------------------------------
 // Epochs

@@ -251,7 +251,7 @@ bool ts::LimitPlugin::start()
 
 ts::LimitPlugin::PIDContextPtr ts::LimitPlugin::getContext(PID pid)
 {
-    PIDContextMap::iterator it = _pidContexts.find(pid);
+    auto it = _pidContexts.find(pid);
     if (it != _pidContexts.end()) {
         return it->second;
     }

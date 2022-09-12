@@ -36,6 +36,12 @@
 #pragma once
 #include "tsRandomGenerator.h"
 
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <Wincrypt.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 namespace ts {
     //!
     //! System-provided PRNG (pseudo-random numbers generator).

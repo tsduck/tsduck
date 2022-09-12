@@ -182,8 +182,8 @@ void ts::TOT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
     // Add all regions in one or more local_time_offset_descriptor.
     LocalTimeOffsetDescriptor lto;
-    for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
-        lto.regions.push_back(*it);
+    for (auto& reg : regions) {
+        lto.regions.push_back(reg);
         if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
             dlist.add(buf.duck(), lto);
             lto.regions.clear();
@@ -233,8 +233,8 @@ void ts::TOT::buildXML(DuckContext& duck, xml::Element* root) const
     // Add one local_time_offset_descriptor per set of regions.
     // Each local_time_offset_descriptor can contain up to 19 regions.
     LocalTimeOffsetDescriptor lto;
-    for (RegionVector::const_iterator it = regions.begin(); it != regions.end(); ++it) {
-        lto.regions.push_back(*it);
+    for (auto& reg : regions) {
+        lto.regions.push_back(reg);
         if (lto.regions.size() >= LocalTimeOffsetDescriptor::MAX_REGION) {
             // The descriptor is full, flush it in the list.
             lto.toXML(duck, root);

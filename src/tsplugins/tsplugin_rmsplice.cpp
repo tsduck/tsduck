@@ -342,19 +342,19 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
         // Cancel an identified splice event. Search and remove from all PID's.
         tsp->verbose(u"cancelling splice event id 0x%X (%d)", {cmd.event_id, cmd.event_id});
         if (!_dryRun) {
-            for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
-                it->second.cancelEvent(cmd.event_id);
+            for (auto& it : _states) {
+                it.second.cancelEvent(cmd.event_id);
             }
         }
     }
     else if (cmd.immediate) {
         // Add an immediate splice event, which doesn't have a PTS value and is handled differently that scheduled splice events.
-        for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
+        for (auto& it : _states) {
             tsp->verbose(u"adding 'immediate' splice %s with event ID 0x%X (%d) on PID 0x%X (%d) at PTS %d (%.3f s)",
-                {cmd.splice_out ? u"out" : u"in", cmd.event_id, cmd.event_id, it->second.pid, it->second.pid, it->second.lastPTS,
-                double(it->second.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ)});
+                {cmd.splice_out ? u"out" : u"in", cmd.event_id, cmd.event_id, it.second.pid, it.second.pid, it.second.lastPTS,
+                double(it.second.lastPTS) / double(SYSTEM_CLOCK_SUBFREQ)});
             if (!_dryRun) {
-                it->second.addEvent(cmd, _tagsByPID);
+                it.second.addEvent(cmd, _tagsByPID);
             }
         }
     }
@@ -362,8 +362,8 @@ void ts::RMSplicePlugin::handleSection(SectionDemux& demux, const Section& secti
         // Add a new (or repeated) splice event for a given PTS value.
         tsp->verbose(u"adding splice %s at PTS %s with event ID 0x%X (%d)", {cmd.splice_out ? u"out" : u"in", cmd.program_pts.toString(), cmd.event_id, cmd.event_id});
         if (!_dryRun) {
-            for (StateByPID::iterator it = _states.begin(); it != _states.end(); ++it) {
-                it->second.addEvent(cmd, _tagsByPID);
+            for (auto& it : _states) {
+                it.second.addEvent(cmd, _tagsByPID);
             }
         }
     }
@@ -448,7 +448,7 @@ void ts::RMSplicePlugin::PIDState::addEvent(const SpliceInsert& cmd, const TagBy
 
 void ts::RMSplicePlugin::PIDState::cancelEvent(uint32_t event_id)
 {
-    for (EventByPTS::iterator it = events.begin(); it != events.end(); ) {
+    for (auto it = events.begin(); it != events.end(); ) {
         if (it->second.id == event_id) {
             // Remove this one.
             it = events.erase(it);
@@ -474,7 +474,7 @@ ts::ProcessorPlugin::Status ts::RMSplicePlugin::processPacket(TSPacket& pkt, TSP
     _demux.feedPacket(pkt);
 
     // Is this a PID which is subject to splicing?
-    const StateByPID::iterator it = _states.find(pid);
+    auto it = _states.find(pid);
     if (it != _states.end()) {
         PIDState& state(it->second);
 

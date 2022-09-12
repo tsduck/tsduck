@@ -35,6 +35,12 @@
 #include "tsSysInfo.h"
 #include "tsIntegerUtils.h"
 
+#if defined(TS_LINUX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/prctl.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors

@@ -34,7 +34,14 @@
 
 #pragma once
 #include "tsInterruptHandler.h"
-#include "tsThread.h"
+
+#if defined(TS_UNIX)
+    #include "tsThread.h"
+    #include "tsBeforeStandardHeaders.h"
+    #include <semaphore.h>
+    #include <signal.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
 
 namespace ts {
 

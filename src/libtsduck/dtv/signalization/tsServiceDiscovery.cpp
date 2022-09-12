@@ -168,7 +168,7 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
 {
     // Look for the service by name or by service
     uint16_t service_id = 0;
-    SDT::ServiceMap::const_iterator srv = sdt.services.end();
+    auto srv = sdt.services.end();
 
     if (!hasName()) {
         // Service is known by id only.
@@ -260,7 +260,7 @@ void ts::ServiceDiscovery::analyzeMGT(const MGT& mgt)
 void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
 {
     // Look for the service by name or by service
-    VCT::ChannelList::const_iterator srv = vct.channels.end();
+    auto srv = vct.channels.end();
 
     if (!hasName()) {
         // Service is known by id only.
@@ -317,7 +317,7 @@ void ts::ServiceDiscovery::analyzeVCT(const VCT& vct)
 void ts::ServiceDiscovery::processPAT(const PAT& pat)
 {
     // Locate the service in the PAT.
-    PAT::ServiceMap::const_iterator it = pat.pmts.end();
+    auto it = pat.pmts.end();
     if (hasId()) {
         // A service id was known, locate the service in the PAT.
         it = pat.pmts.find(getId());

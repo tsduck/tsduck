@@ -31,6 +31,12 @@
 #include "tsIPUtils.h"
 #include "tsMemory.h"
 
+#if defined(TS_UNIX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <netdb.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 // Local host address
 const ts::IPv4Address ts::IPv4Address::LocalHost(127, 0, 0, 1);
 

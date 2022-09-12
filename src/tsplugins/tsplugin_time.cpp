@@ -183,8 +183,8 @@ bool ts::TimePlugin::start()
 
     if (tsp->verbose()) {
         tsp->verbose(u"initial packet processing: %s", {_status_names.name(_status)});
-        for (TimeEventVector::iterator it = _events.begin(); it != _events.end(); ++it) {
-            tsp->verbose(u"packet %s after %s", {_status_names.name(it->status), it->time.format(Time::DATETIME)});
+        for (auto& it : _events) {
+            tsp->verbose(u"packet %s after %s", {_status_names.name(it.status), it.time.format(Time::DATETIME)});
         }
     }
 

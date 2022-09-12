@@ -47,6 +47,11 @@ TS_STATIC_INSTANCE(ts::Mutex, (), ActivationMutex)
     #endif
 #endif
 
+// On macOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
+#if defined(TS_MAC) && !defined(SA_ONESHOT)
+    #define SA_ONESHOT SA_RESETHAND
+#endif
+
 
 //----------------------------------------------------------------------------
 // Handler on UNIX platforms. Invoked in signal context.

@@ -185,10 +185,10 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     // If we cannot serialize a device in the current section, open a new section.
     // If a complete section is not large enough to serialize a device, the
     // device description is truncated.
-    for (auto it = devices.begin(); it != devices.end(); ++it) {
+    for (auto& dev : devices) {
 
         // Binary size of the device entry.
-        const size_t entry_size = 2 + it->second.target_descs.binarySize() + 2 + it->second.operational_descs.binarySize();
+        const size_t entry_size = 2 + dev.second.target_descs.binarySize() + 2 + dev.second.operational_descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
@@ -199,9 +199,9 @@ void ts::INT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // Insert device entry.
         // During serialization of the first descriptor loop, keep size for at least an empty second descriptor loop.
         buf.pushWriteSize(buf.size() - 2);
-        buf.putPartialDescriptorListWithLength(it->second.target_descs);
+        buf.putPartialDescriptorListWithLength(dev.second.target_descs);
         buf.popState();
-        buf.putPartialDescriptorListWithLength(it->second.operational_descs);
+        buf.putPartialDescriptorListWithLength(dev.second.operational_descs);
     }
 }
 
@@ -250,15 +250,14 @@ void ts::INT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"platform_id", platform_id, true);
     platform_descs.toXML(duck, root);
 
-    for (DeviceList::const_iterator it = devices.begin(); it != devices.end(); ++it) {
-        const Device& dev(it->second);
-        if (!dev.target_descs.empty() || !dev.operational_descs.empty()) {
+    for (auto& dev : devices) {
+        if (!dev.second.target_descs.empty() || !dev.second.operational_descs.empty()) {
             xml::Element* e = root->addElement(u"device");
-            if (!dev.target_descs.empty()) {
-                dev.target_descs.toXML(duck, e->addElement(u"target"));
+            if (!dev.second.target_descs.empty()) {
+                dev.second.target_descs.toXML(duck, e->addElement(u"target"));
             }
-            if (!dev.operational_descs.empty()) {
-                dev.operational_descs.toXML(duck, e->addElement(u"operational"));
+            if (!dev.second.operational_descs.empty()) {
+                dev.second.operational_descs.toXML(duck, e->addElement(u"operational"));
             }
         }
     }

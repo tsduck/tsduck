@@ -273,8 +273,8 @@ void ts::AbstractDescrambler::handlePMT(const PMT& pmt, PID)
     // Set global scrambling type from scrambling descriptor, if not specified on the command line.
     _scrambling.setScramblingType(scrambling_type, false);
     tsp->verbose(u"using scrambling mode: %s", {NameFromSection(u"ScramblingMode", _scrambling.scramblingType())});
-    for (ECMStreamMap::iterator it = _ecm_streams.begin(); it != _ecm_streams.end(); ++it) {
-        it->second->scrambling.setScramblingType(scrambling_type, false);
+    for (auto& it : _ecm_streams) {
+        it.second->scrambling.setScramblingType(scrambling_type, false);
     }
 }
 
@@ -339,7 +339,7 @@ void ts::AbstractDescrambler::handleSection(SectionDemux& demux, const Section& 
     tsp->log(2, u"got ECM (TID 0x%X) on PID %d (0x%X)", {sect.tableId(), ecm_pid, ecm_pid});
 
     // Get ECM stream context
-    ECMStreamMap::iterator ecm_it = _ecm_streams.find(ecm_pid);
+    auto ecm_it = _ecm_streams.find(ecm_pid);
     if (ecm_it == _ecm_streams.end()) {
         tsp->warning(u"got ECM on non-ECM PID %d (0x%X)", {ecm_pid, ecm_pid});
         return;
@@ -476,7 +476,7 @@ void ts::AbstractDescrambler::ECMThread::main()
             terminate = _parent->_stop_thread;
 
             // Decipher ECM's on all ECM PID's.
-            for (ECMStreamMap::iterator it = _parent->_ecm_streams.begin(); !terminate && it != _parent->_ecm_streams.end(); ++it) {
+            for (auto it = _parent->_ecm_streams.begin(); !terminate && it != _parent->_ecm_streams.end(); ++it) {
                 ECMStreamPtr& estream(it->second);
                 if (estream->new_ecm) {
                     // Found an ECM, decipher it. Note that the mutex is
@@ -546,7 +546,7 @@ ts::ProcessorPlugin::Status ts::AbstractDescrambler::processPacket(TSPacket& pkt
 
     // Get PID context. If the PID is not known as a scrambled PID,
     // with a corresponding ECM stream, we cannot descramble it.
-    ScrambledStreamMap::iterator ssit = _scrambled_streams.find(pid);
+    auto ssit = _scrambled_streams.find(pid);
     if (ssit == _scrambled_streams.end()) {
         return TSP_OK;
     }

@@ -30,6 +30,12 @@
 #include "tsSharedLibrary.h"
 #include "tsSysUtils.h"
 
+#if defined(TS_UNIX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <dlfcn.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor: Load a shared library

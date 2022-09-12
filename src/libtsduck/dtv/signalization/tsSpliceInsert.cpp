@@ -106,9 +106,9 @@ void ts::SpliceInsert::adjustPTS(uint64_t adjustment)
 
     // Adjust components splice times.
     if (!program_splice) {
-        for (SpliceByComponent::iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
-            if (it->second.set() && it->second.value() <= PTS_DTS_MASK) {
-                it->second = (it->second.value() + adjustment) & PTS_DTS_MASK;
+        for (auto& it : components_pts) {
+            if (it.second.set() && it.second.value() <= PTS_DTS_MASK) {
+                it.second = (it.second.value() + adjustment) & PTS_DTS_MASK;
             }
         }
     }
@@ -129,9 +129,9 @@ uint64_t ts::SpliceInsert::highestPTS() const
         }
         // Check components splice times.
         if (!program_splice) {
-            for (auto it = components_pts.begin(); it != components_pts.end(); ++it) {
-                if (it->second.set() && it->second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it->second.value() > result)) {
-                    result = it->second.value();
+            for (auto& it : components_pts) {
+                if (it.second.set() && it.second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it.second.value() > result)) {
+                    result = it.second.value();
                 }
             }
         }
@@ -149,9 +149,9 @@ uint64_t ts::SpliceInsert::lowestPTS() const
         }
         // Check components splice times.
         if (!program_splice) {
-            for (auto it = components_pts.begin(); it != components_pts.end(); ++it) {
-                if (it->second.set() && it->second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it->second.value() < result)) {
-                    result = it->second.value();
+            for (auto& it : components_pts) {
+                if (it.second.set() && it.second.value() <= PTS_DTS_MASK && (result == INVALID_PTS || it.second.value() < result)) {
+                    result = it.second.value();
                 }
             }
         }
@@ -183,10 +183,10 @@ void ts::SpliceInsert::display(TablesDisplay& disp, const UString& margin) const
         if (!program_splice) {
             // Program components switch individually.
             disp << margin << "Number of components: " << components_pts.size() << std::endl;
-            for (SpliceByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
-                disp << margin << UString::Format(u"  Component tag: 0x%X (%<d)", {it->first});
+            for (auto& it : components_pts) {
+                disp << margin << UString::Format(u"  Component tag: 0x%X (%<d)", {it.first});
                 if (!immediate) {
-                    disp << ", time PTS: " << it->second.toString();
+                    disp << ", time PTS: " << it.second.toString();
                 }
                 disp << std::endl;
             }
@@ -310,10 +310,10 @@ void ts::SpliceInsert::serialize(ByteBlock& data) const
         }
         if (!program_splice) {
             data.appendUInt8(uint8_t(components_pts.size()));
-            for (SpliceByComponent::const_iterator it = components_pts.begin(); it != components_pts.end(); ++it) {
-                data.appendUInt8(it->first);
+            for (auto& it : components_pts) {
+                data.appendUInt8(it.first);
                 if (!immediate) {
-                    it->second.serialize(data);
+                    it.second.serialize(data);
                 }
             }
         }
@@ -351,11 +351,11 @@ void ts::SpliceInsert::buildXML(DuckContext& duck, xml::Element* root) const
             e->setIntAttribute(u"duration", duration_pts);
         }
         if (!program_splice) {
-            for (auto it = components_pts.begin(); it != components_pts.end(); ++it) {
+            for (auto& it : components_pts) {
                 xml::Element* e = root->addElement(u"component");
-                e->setIntAttribute(u"component_tag", it->first);
-                if (!immediate && it->second.set()) {
-                    e->setIntAttribute(u"pts_time", it->second.value());
+                e->setIntAttribute(u"component_tag", it.first);
+                if (!immediate && it.second.set()) {
+                    e->setIntAttribute(u"pts_time", it.second.value());
                 }
             }
         }

@@ -91,32 +91,32 @@ ts::UString ts::SpliceSchedule::DumpSpliceTime(const DuckContext& duck, uint32_t
 
 void ts::SpliceSchedule::display(TablesDisplay& disp, const UString& margin) const
 {
-    for (EventList::const_iterator ev = events.begin(); ev != events.end(); ++ev) {
-        disp << margin << UString::Format(u"- Splice event id: 0x%X (%<d), cancel: %d", {ev->event_id, ev->canceled}) << std::endl;
+    for (auto& ev : events) {
+        disp << margin << UString::Format(u"- Splice event id: 0x%X (%<d), cancel: %d", {ev.event_id, ev.canceled}) << std::endl;
 
-        if (!ev->canceled) {
+        if (!ev.canceled) {
             disp << margin
-                 << "  Out of network: " << UString::YesNo(ev->splice_out)
-                 << ", program splice: " << UString::YesNo(ev->program_splice)
-                 << ", duration set: " << UString::YesNo(ev->use_duration)
+                 << "  Out of network: " << UString::YesNo(ev.splice_out)
+                 << ", program splice: " << UString::YesNo(ev.program_splice)
+                 << ", duration set: " << UString::YesNo(ev.use_duration)
                  << std::endl;
 
-            if (ev->program_splice) {
+            if (ev.program_splice) {
                 // The complete program switches at a given time.
-                disp << margin << "  UTC: " << DumpSpliceTime(disp.duck(), ev->program_utc) << std::endl;
+                disp << margin << "  UTC: " << DumpSpliceTime(disp.duck(), ev.program_utc) << std::endl;
             }
-            if (!ev->program_splice) {
+            if (!ev.program_splice) {
                 // Program components switch individually.
-                disp << margin << "  Number of components: " << ev->components_utc.size() << std::endl;
-                for (UTCByComponent::const_iterator it = ev->components_utc.begin(); it != ev->components_utc.end(); ++it) {
-                    disp << margin << UString::Format(u"    Component tag: 0x%X (%<d)", {it->first})
-                         << ", UTC: " << DumpSpliceTime(disp.duck(), it->second) << std::endl;
+                disp << margin << "  Number of components: " << ev.components_utc.size() << std::endl;
+                for (auto& it : ev.components_utc) {
+                    disp << margin << UString::Format(u"    Component tag: 0x%X (%<d)", {it.first})
+                         << ", UTC: " << DumpSpliceTime(disp.duck(), it.second) << std::endl;
                 }
             }
-            if (ev->use_duration) {
-                disp << margin << "  Duration PTS: " << PTSToString(ev->duration_pts) << ", auto return: " << UString::YesNo(ev->auto_return) << std::endl;
+            if (ev.use_duration) {
+                disp << margin << "  Duration PTS: " << PTSToString(ev.duration_pts) << ", auto return: " << UString::YesNo(ev.auto_return) << std::endl;
             }
-            disp << margin << UString::Format(u"  Unique program id: 0x%X (%<d), avail: 0x%X (%<d), avails expected: %d", {ev->program_id, ev->avail_num, ev->avails_expected}) << std::endl;
+            disp << margin << UString::Format(u"  Unique program id: 0x%X (%<d), avail: 0x%X (%<d), avails expected: %d", {ev.program_id, ev.avail_num, ev.avails_expected}) << std::endl;
         }
     }
 }
@@ -222,32 +222,32 @@ void ts::SpliceSchedule::serialize(ByteBlock& data) const
 {
     data.appendUInt8(uint8_t(events.size()));
 
-    for (auto ev = events.begin(); ev != events.end(); ++ev) {
-        data.appendUInt32(ev->event_id);
-        data.appendUInt8(ev->canceled ? 0xFF : 0x7F);
+    for (auto& ev : events) {
+        data.appendUInt32(ev.event_id);
+        data.appendUInt8(ev.canceled ? 0xFF : 0x7F);
 
-        if (!ev->canceled) {
-            data.appendUInt8((ev->splice_out ? 0x80 : 0x00) |
-                             (ev->program_splice ? 0x40 : 0x00) |
-                             (ev->use_duration ? 0x20 : 0x00) |
+        if (!ev.canceled) {
+            data.appendUInt8((ev.splice_out ? 0x80 : 0x00) |
+                             (ev.program_splice ? 0x40 : 0x00) |
+                             (ev.use_duration ? 0x20 : 0x00) |
                              0x1F);
-            if (ev->program_splice) {
-                data.appendUInt32(uint32_t(ev->program_utc));
+            if (ev.program_splice) {
+                data.appendUInt32(uint32_t(ev.program_utc));
             }
             else {
-                data.appendUInt8(uint8_t(ev->components_utc.size()));
-                for (auto it = ev->components_utc.begin(); it != ev->components_utc.end(); ++it) {
-                    data.appendUInt8(it->first);
-                    data.appendUInt32(uint32_t(it->second));
+                data.appendUInt8(uint8_t(ev.components_utc.size()));
+                for (auto& it : ev.components_utc) {
+                    data.appendUInt8(it.first);
+                    data.appendUInt32(uint32_t(it.second));
                 }
             }
-            if (ev->use_duration) {
-                data.appendUInt8((ev->auto_return ? 0xFE : 0x7E) | uint8_t(ev->duration_pts >> 32));
-                data.appendUInt32(uint32_t(ev->duration_pts));
+            if (ev.use_duration) {
+                data.appendUInt8((ev.auto_return ? 0xFE : 0x7E) | uint8_t(ev.duration_pts >> 32));
+                data.appendUInt32(uint32_t(ev.duration_pts));
             }
-            data.appendUInt16(ev->program_id);
-            data.appendUInt8(ev->avail_num);
-            data.appendUInt8(ev->avails_expected);
+            data.appendUInt16(ev.program_id);
+            data.appendUInt8(ev.avail_num);
+            data.appendUInt8(ev.avails_expected);
         }
     }
 }
@@ -259,28 +259,28 @@ void ts::SpliceSchedule::serialize(ByteBlock& data) const
 
 void ts::SpliceSchedule::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto ev = events.begin(); ev != events.end(); ++ev) {
+    for (auto& ev : events) {
         xml::Element* e = root->addElement(u"splice_event");
-        e->setIntAttribute(u"splice_event_id", ev->event_id, true);
-        e->setBoolAttribute(u"splice_event_cancel", ev->canceled);
-        if (!ev->canceled) {
-            e->setBoolAttribute(u"out_of_network", ev->splice_out);
-            e->setIntAttribute(u"unique_program_id", ev->program_id, true);
-            e->setIntAttribute(u"avail_num", ev->avail_num);
-            e->setIntAttribute(u"avails_expected", ev->avails_expected);
-            if (ev->use_duration) {
+        e->setIntAttribute(u"splice_event_id", ev.event_id, true);
+        e->setBoolAttribute(u"splice_event_cancel", ev.canceled);
+        if (!ev.canceled) {
+            e->setBoolAttribute(u"out_of_network", ev.splice_out);
+            e->setIntAttribute(u"unique_program_id", ev.program_id, true);
+            e->setIntAttribute(u"avail_num", ev.avail_num);
+            e->setIntAttribute(u"avails_expected", ev.avails_expected);
+            if (ev.use_duration) {
                 xml::Element* e1 = e->addElement(u"break_duration");
-                e1->setBoolAttribute(u"auto_return", ev->auto_return);
-                e1->setIntAttribute(u"duration", ev->duration_pts);
+                e1->setBoolAttribute(u"auto_return", ev.auto_return);
+                e1->setIntAttribute(u"duration", ev.duration_pts);
             }
-            if (ev->program_splice) {
-                e->setDateTimeAttribute(u"utc_splice_time", ToUTCTime(duck, ev->program_utc));
+            if (ev.program_splice) {
+                e->setDateTimeAttribute(u"utc_splice_time", ToUTCTime(duck, ev.program_utc));
             }
             else {
-                for (auto it = ev->components_utc.begin(); it != ev->components_utc.end(); ++it) {
+                for (auto& it : ev.components_utc) {
                     xml::Element* e1 = e->addElement(u"component");
-                    e1->setIntAttribute(u"component_tag", it->first);
-                    e1->setDateTimeAttribute(u"utc_splice_time", ToUTCTime(duck, it->second));
+                    e1->setIntAttribute(u"component_tag", it.first);
+                    e1->setDateTimeAttribute(u"utc_splice_time", ToUTCTime(duck, it.second));
                 }
             }
         }

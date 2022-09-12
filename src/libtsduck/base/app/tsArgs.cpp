@@ -551,8 +551,8 @@ ts::UString ts::Args::formatHelpOptions(size_t line_width) const
 
     // Build a descriptive string from individual options.
     bool titleDone = false;
-    for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
-        const IOption& opt(it->second);
+    for (auto& it : _iopts) {
+        const IOption& opt(it.second);
         if (!text.empty()) {
             text += LINE_FEED;
         }
@@ -585,9 +585,9 @@ void ts::Args::addOption(const IOption& opt)
 
     // If the new option has a short name, erase previous options with same short name.
     if (opt.short_name != 0) {
-        for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
-            if (it->second.short_name == opt.short_name) {
-                it->second.short_name = 0;
+        for (auto& it : _iopts) {
+            if (it.second.short_name == opt.short_name) {
+                it.second.short_name = 0;
                 break; // there was at most one
             }
         }
@@ -629,9 +629,9 @@ ts::UString ts::Args::optionNames(const ts::UChar* name, const ts::UString& sepa
 
 ts::Args& ts::Args::copyOptions(const Args& other, const bool replace)
 {
-    for (auto it = other._iopts.begin(); it != other._iopts.end(); ++it) {
-        if ((it->second.flags & IOPT_PREDEFINED) == 0 && (replace || !Contains(_iopts, it->second.name))) {
-            addOption(it->second);
+    for (auto& it : other._iopts) {
+        if ((it.second.flags & IOPT_PREDEFINED) == 0 && (replace || !Contains(_iopts, it.second.name))) {
+            addOption(it.second);
         }
     }
     return *this;
@@ -726,9 +726,9 @@ void ts::Args::exitOnError(bool force)
 
 ts::Args::IOption* ts::Args::search(UChar c)
 {
-    for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
-        if (it->second.short_name == c) {
-            return &it->second;
+    for (auto& it : _iopts) {
+        if (it.second.short_name == c) {
+            return &it.second;
         }
     }
     error(UString::Format(u"unknown option -%c", {c}));
@@ -744,20 +744,20 @@ ts::Args::IOption* ts::Args::search(const UString& name)
 {
     IOption* previous = nullptr;
 
-    for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
-        if (it->second.name == name) {
+    for (auto& it : _iopts) {
+        if (it.second.name == name) {
             // found an exact match
-            return &it->second;
+            return &it.second;
         }
-        else if (!name.empty() && it->second.name.find(name) == 0) {
+        else if (!name.empty() && it.second.name.find(name) == 0) {
             // found an abbreviated version
             if (previous == nullptr) {
                 // remember this one and continue searching
-                previous = &it->second;
+                previous = &it.second;
             }
             else {
                 // another one already found, ambiguous option
-                error(u"ambiguous option --" + name + u" (--" + previous->name + u", --" + it->second.name + u")");
+                error(u"ambiguous option --" + name + u" (--" + previous->name + u", --" + it.second.name + u")");
                 return nullptr;
             }
         }
@@ -786,7 +786,7 @@ ts::Args::IOption* ts::Args::search(const UString& name)
 ts::Args::IOption& ts::Args::getIOption(const UChar* name)
 {
     const UString name1(name == nullptr ? u"" : name);
-    IOptionMap::iterator it = _iopts.find(name1);
+    auto it = _iopts.find(name1);
     if (it != _iopts.end()) {
         return it->second;
     }
@@ -869,9 +869,9 @@ void ts::Args::getValues(UStringVector& values, const UChar* name) const
     values.clear();
     values.reserve(opt.values.size());
 
-    for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
-        if (it->string.set()) {
-            values.push_back(it->string.value());
+    for (auto& it : opt.values) {
+        if (it.string.set()) {
+            values.push_back(it.string.value());
         }
     }
 }
@@ -1001,9 +1001,9 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
     _args = arguments;
 
     // Clear previous values
-    for (IOptionMap::iterator it = _iopts.begin(); it != _iopts.end(); ++it) {
-        it->second.values.clear();
-        it->second.value_count = 0;
+    for (auto& it : _iopts) {
+        it.second.values.clear();
+        it.second.value_count = 0;
    }
 
     // Process default arguments from configuration file.
@@ -1139,8 +1139,8 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
     // Look for parameters/options number of occurences.
     // Don't do that if command already proven wrong.
     if (_is_valid) {
-        for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
-            const IOption& op(it->second);
+        for (auto& it : _iopts) {
+            const IOption& op(it.second);
             // Don't check number of occurences when the option has no value.
             // Specifying such an option multiple times is the same as once.
             if (op.type != NONE) {
@@ -1360,8 +1360,8 @@ ts::UString ts::Args::getHelpText(HelpFormat format, size_t line_width) const
         case HELP_OPTIONS: {
             // Options names, one by line.
             UString text;
-            for (auto it = _iopts.begin(); it != _iopts.end(); ++it) {
-                const IOption& opt(it->second);
+            for (auto& it : _iopts) {
+                const IOption& opt(it.second);
                 const UString desc(opt.optionType());
                 if (!text.empty()) {
                     text += LINE_FEED;
@@ -1449,8 +1449,7 @@ bool ts::Args::processArgsRedirection(UStringVector& args)
 {
     bool result = true;
 
-    UStringVector::iterator it = args.begin();
-    while (it != args.end()) {
+    for (auto it = args.begin(); it != args.end(); ) {
         if (it->startWith(u"@@")) {
             // An initial double @ means a single literal @. Remove the first @.
             it->erase(0, 1);

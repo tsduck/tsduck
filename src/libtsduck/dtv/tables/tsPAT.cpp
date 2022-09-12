@@ -126,7 +126,7 @@ void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     }
 
     // Add all services
-    for (auto it = pmts.begin(); it != pmts.end(); ++it) {
+    for (auto& it : pmts) {
 
         // If current section payload is full, close the current section.
         if (buf.remainingWriteBytes() < 4) {
@@ -134,8 +134,8 @@ void ts::PAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Add current service entry into the PAT section
-        buf.putUInt16(it->first);  // service_id
-        buf.putPID(it->second);    // pmt pid
+        buf.putUInt16(it.first);  // service_id
+        buf.putPID(it.second);    // pmt pid
     }
 }
 
@@ -166,10 +166,10 @@ void ts::PAT::buildXML(DuckContext& duck, xml::Element* root) const
     if (nit_pid != PID_NULL) {
         root->setIntAttribute(u"network_PID", nit_pid, true);
     }
-    for (ServiceMap::const_iterator it = pmts.begin(); it != pmts.end(); ++it) {
+    for (auto& it : pmts) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->first, true);
-        e->setIntAttribute(u"program_map_PID", it->second, true);
+        e->setIntAttribute(u"service_id", it.first, true);
+        e->setIntAttribute(u"program_map_PID", it.second, true);
     }
 }
 

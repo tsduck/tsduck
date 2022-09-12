@@ -278,8 +278,8 @@ void ts::TSAnalyzerReport::reportTS(Grid& grid, const UString& title)
                     grid.bothTruncateLeft(wide ? WIDE_SRV_COL2 : DEF_SRV_COL2, u'.'),
                     grid.right(wide ? WIDE_SRV_COL3 : DEF_SRV_COL3)});
 
-    for (ServiceContextMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
-        const ServiceContext& sv(*it->second);
+    for (const auto& it : _services) {
+        const ServiceContext& sv(*it.second);
         // Not that the decimal service id is always built but ignored when the layout of the first column contains only one field.
         grid.putLayout({{UString::Format(u"0x%X", {sv.service_id}), UString::Format(u"(%d)", {sv.service_id})},
                         {sv.getName(), sv.scrambled_pid_cnt > 0 ? u"S" : u"C"},
@@ -334,9 +334,9 @@ void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) co
     UString description(pc.fullDescription(true));
     if (!pc.ssu_oui.empty()) {
         bool first = true;
-        for (std::set<uint32_t>::const_iterator it = pc.ssu_oui.begin(); it != pc.ssu_oui.end(); ++it) {
+        for (auto oui : pc.ssu_oui) {
             description += first ? u" (SSU " : u", ";
-            description += names::OUI(*it);
+            description += names::OUI(oui);
             first = false;
         }
         description += u")";
@@ -373,8 +373,8 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     reportServiceHeader(grid, u"Global PID's", _global_scr_pids > 0, _global_bitrate, _ts_bitrate, wide);
     reportServiceSubtotal(grid, wide ? u"Subtotal" : u"Subt.", u"Global PSI/SI PID's (0x00-0x1F)", _psisi_scr_pids > 0, _psisi_bitrate, _ts_bitrate, wide);
 
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc(*it->second);
+    for (const auto& it : _pids) {
+        const PIDContext& pc(*it.second);
         if (pc.referenced && pc.services.empty() && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             reportServicePID(grid, pc);
         }
@@ -388,8 +388,8 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
         grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_unref_pkt_cnt, _unref_pid_cnt, _unref_pid_cnt - _unref_scr_pids, _unref_scr_pids}));
         reportServiceHeader(grid, u"Unreferenced PID's", _unref_scr_pids > 0, _unref_bitrate, _ts_bitrate, wide);
 
-        for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-            const PIDContext& pc(*it->second);
+        for (const auto& it : _pids) {
+            const PIDContext& pc(*it.second);
             if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
                 reportServicePID(grid, pc);
             }
@@ -398,9 +398,9 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
 
     // Display list of services
 
-    for (ServiceContextMap::const_iterator it = _services.begin(); it != _services.end(); ++it) {
+    for (const auto& it : _services) {
 
-        const ServiceContext& sv(*it->second);
+        const ServiceContext& sv(*it.second);
         grid.section();
         grid.putLine(UString::Format(u"Service: 0x%X (%d), TS: 0x%X (%d), Original Netw: 0x%X (%d)", {sv.service_id, sv.service_id, _ts_id, _ts_id, sv.orig_netw_id, sv.orig_netw_id}));
         grid.putLine(UString::Format(u"Service name: %s, provider: %s", {sv.getName(), sv.getProvider()}));
@@ -435,9 +435,8 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
 
 void ts::TSAnalyzerReport::reportServicesForPID(Grid& grid, const PIDContext& pc) const
 {
-    for (ServiceIdSet::const_iterator it = pc.services.begin(); it != pc.services.end(); ++it) {
-        const uint16_t serv_id = *it;
-        ServiceContextMap::const_iterator serv_it(_services.find(serv_id));
+    for (auto& serv_id : pc.services) {
+        auto serv_it = _services.find(serv_id);
         grid.putLine(UString::Format(u"Service: 0x%X (%d) %s", {serv_id, serv_id, serv_it == _services.end() ? UString() : serv_it->second->getName()}));
     }
 }
@@ -456,11 +455,11 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
     grid.putLine(u"PIDS ANALYSIS REPORT", title);
 
     // Loop on all analyzed PID's.
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
+    for (auto& it : _pids) {
 
         // Get PID description, ignore if no packet was found.
         // A PID can be declared, in a PMT for instance, but has no traffic on it.
-        const PIDContext& pc(*it->second);
+        const PIDContext& pc(*it.second);
         if (pc.ts_pkt_cnt == 0) {
             continue;
         }
@@ -502,9 +501,9 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
         }
 
         // Audio/video attributes
-        for (UStringVector::const_iterator it1 = pc.attributes.begin(); it1 != pc.attributes.end(); ++it1) {
-            if (!it1->empty()) {
-                grid.putLine(*it1);
+        for (auto& attr : pc.attributes) {
+            if (!attr.empty()) {
+                grid.putLine(attr);
             }
         }
 
@@ -512,8 +511,8 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
         reportServicesForPID(grid, pc);
 
         // List of System Software Update OUI's on this PID
-        for (std::set<uint32_t>::const_iterator it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            grid.putLine(u"SSU OUI: " + names::OUI(*it1, NamesFlags::FIRST));
+        for (auto oui : pc.ssu_oui) {
+            grid.putLine(u"SSU OUI: " + names::OUI(oui, NamesFlags::FIRST));
         }
         grid.subSection();
 
@@ -563,10 +562,10 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
     grid.putLine(u"TABLES & SECTIONS ANALYSIS REPORT", title);
 
     // Loop on all PID's
-    for (PIDContextMap::const_iterator pci = _pids.begin(); pci != _pids.end(); ++pci) {
+    for (auto pid_it : _pids) {
 
         // Get PID description, ignore if PID without sections
-        const PIDContext& pc(*pci->second);
+        const PIDContext& pc(*pid_it.second);
         if (pc.sections.empty()) {
             continue;
         }
@@ -579,8 +578,8 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
         reportServicesForPID(grid, pc);
 
         // Loop on all tables on this PID
-        for (ETIDContextMap::const_iterator it = pc.sections.begin(); it != pc.sections.end(); ++it) {
-            const ETIDContext& etc(*it->second);
+        for (auto& sec_it : pc.sections) {
+            const ETIDContext& etc(*sec_it.second);
             const TID tid = etc.etid.tid();
             const bool isShort = etc.etid.isShortSection();
 
@@ -719,8 +718,8 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
 
     // Report error per PID
 
-    for (PIDContextMap::const_iterator it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc(*it->second);
+    for (auto& pid_it : _pids) {
+        const PIDContext& pc(*pid_it.second);
         if (pc.exp_discont > 0) {
             error_count++;
             stm << UString::Format(u"PID:%d:0x%X: Discontinuities (expected): %d", {pc.pid, pc.pid, pc.exp_discont}) << std::endl;
@@ -750,11 +749,10 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
         if (pc.is_pcr_pid && pc.pcr_cnt == 0) {
             error_count++;
             stm << UString::Format(u"PID:%d:0x%X: No PCR, PCR PID of service%s", {pc.pid, pc.pid, pc.services.size() > 1 ? u"s" : u""});
-            for (ServiceIdSet::const_iterator i = pc.services.begin(); i != pc.services.end(); ++i) {
-                if (i != pc.services.begin()) {
-                    stm << ",";
-                }
-                stm << UString::Format(u" %d (0x%X)", {*i, *i});
+            bool first = true;
+            for (auto& srv : pc.services) {
+                stm << (first ? "" : ",") << UString::Format(u" %d (0x%<X)", {srv});
+                first = false;
             }
             stm << std::endl;
         }

@@ -36,6 +36,7 @@
 #include "tsReport.h"
 #include "tsVariable.h"
 #include "tsSingletonManager.h"
+#include "tsSystemBroadcast.h"
 
 namespace ts {
     //!

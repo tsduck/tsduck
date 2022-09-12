@@ -566,9 +566,9 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         // Add the CA_descriptor at program level or component level
         if (_component_level) {
             // Add a CA_descriptor in each scrambled component
-            for (PMT::StreamMap::iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                if (_scrambled_pids.test(it->first)) {
-                    it->second.descs.add(duck, ca_desc);
+            for (auto& it : pmt.streams) {
+                if (_scrambled_pids.test(it.first)) {
+                    it.second.descs.add(duck, ca_desc);
                 }
             }
         }

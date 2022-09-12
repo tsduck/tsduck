@@ -210,8 +210,8 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
 {
     // Build a set of TS id to serialize.
     TransportStreamIdSet ts_set;
-    for (TransportMap::const_iterator it = transports.begin(); it != transports.end(); ++it) {
-        ts_set.insert(it->first);
+    for (auto& tp : transports) {
+        ts_set.insert(tp.first);
     }
 
     // Minimum size of a section: empty top-level descriptor list and transport_stream_loop_length.
@@ -258,7 +258,7 @@ void ts::AbstractTransportListTable::serializePayload(BinaryTable& table, PSIBuf
         }
 
         // Locate transport description.
-        const TransportMap::const_iterator ts_iter(transports.find(ts_id));
+        const auto ts_iter = transports.find(ts_id);
         assert(ts_iter != transports.end());
         const DescriptorList& dlist(ts_iter->second.descs);
 

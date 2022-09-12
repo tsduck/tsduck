@@ -180,18 +180,15 @@ void ts::BATPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
 
     tsp->debug(u"got a BAT, version %d, bouquet id: %d (0x%X)", {bat.version, bat.bouquet_id, bat.bouquet_id});
 
-    // Remove the specified transport streams
-    bool found;
-    do {
-        found = false;
-        for (auto it = bat.transports.begin(); it != bat.transports.end(); ++it) {
-            if (_remove_ts_ids.count(it->first.transport_stream_id) != 0) {
-                found = true;
-                bat.transports.erase(it->first);
-                break; // iterator is broken
-            }
-        }
-    } while (found);
+    // Remove the specified transport streams.
+    for (auto it = bat.transports.begin(); it != bat.transports.end(); ) {
+         if (_remove_ts_ids.count(it->first.transport_stream_id) != 0) {
+             it = bat.transports.erase(it);
+         }
+         else {
+             ++it;
+         }
+    }
 
     // Process the global descriptor list
     processDescriptorList(bat.descs);

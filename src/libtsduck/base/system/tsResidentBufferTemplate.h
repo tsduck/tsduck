@@ -37,6 +37,12 @@
 #include "tsSysInfo.h"
 #include "tsFatal.h"
 
+#if defined(TS_UNIX)
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/mman.h>
+    #include "tsAfterStandardHeaders.h"
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor, based on required amount of T elements.

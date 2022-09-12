@@ -209,7 +209,7 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 
     // Add C++ revision level.
 #if defined(_MSVC_LANG)
-    // With MSVC, the standard macro __cplusplus is stucik at 199711 for obscure reasons.
+    // With MSVC, the standard macro __cplusplus is stuck at 199711 for obscure reasons.
     // The actual level of language standard is in the system-specific macro _MSVC_LANG.
     version.append(UString::Format(u", C++ std %04d.%02d", {_MSVC_LANG / 100, _MSVC_LANG % 100}));
 #elif defined(__cplusplus)

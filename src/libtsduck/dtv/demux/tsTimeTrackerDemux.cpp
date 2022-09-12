@@ -141,7 +141,7 @@ void ts::TimeTrackerDemux::feedPacket(const TSPacket& pkt)
 
 ts::MilliSecond ts::TimeTrackerDemux::pidDuration(PID pid) const
 {
-    const PIDContextMap::const_iterator it = _pids.find(pid);
+    auto it = _pids.find(pid);
     if (it != _pids.end() && it->second.isValid()) {
         // We have PTS references from the specified PID.
         return (it->second.duration() * 1000) / SYSTEM_CLOCK_SUBFREQ;
@@ -151,7 +151,7 @@ ts::MilliSecond ts::TimeTrackerDemux::pidDuration(PID pid) const
         return (_pcrTime.duration() * 1000) / SYSTEM_CLOCK_FREQ;
     }
     else {
-        // Ne reference available, no timing information.
+        // No reference available, no timing information.
         return 0;
     }
 }

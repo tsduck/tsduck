@@ -353,7 +353,7 @@ void ts::AESPlugin::processPAT(PAT& pat)
 {
     // Locate the service in the PAT
     assert(_service.hasId());
-    const PAT::ServiceMap::iterator it = pat.pmts.find (_service.getId());
+    auto it = pat.pmts.find(_service.getId());
 
     // If service not found, error
     if (it == pat.pmts.end()) {
