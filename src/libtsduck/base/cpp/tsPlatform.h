@@ -1243,9 +1243,9 @@ namespace ts {
     //! - Any negative value means "maybe" or "dont't know".
     //!
     enum class Tristate {
-        MAYBE = -1,  //! Undefined value (and more generally all negative values).
-        FALSE =  0,  //! Built-in false.
-        TRUE  =  1,  //! True value (and more generally all positive values).
+        Maybe = -1,  //! Undefined value (and more generally all negative values).
+        False =  0,  //! Built-in false.
+        True  =  1,  //! True value (and more generally all positive values).
     };
 
     //!

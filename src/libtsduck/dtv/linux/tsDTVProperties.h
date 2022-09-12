@@ -36,7 +36,20 @@
 #include "tsReport.h"
 #include "tsVariable.h"
 #include "tsSingletonManager.h"
-#include "tsSystemBroadcast.h"
+
+#include "tsBeforeStandardHeaders.h"
+#include <linux/dvb/version.h>
+#include <linux/dvb/frontend.h>
+#include <linux/dvb/dmx.h>
+#include <linux/version.h>
+#include "tsAfterStandardHeaders.h"
+
+//!
+//! @hideinitializer
+//! On Linux systems, identify the Linux DVB API version in one value.
+//! Example: TS_DVB_API_VERSION is 503 for DVB API version 5.3.
+//!
+#define TS_DVB_API_VERSION ((DVB_API_VERSION * 100) + DVB_API_VERSION_MINOR)
 
 namespace ts {
     //!

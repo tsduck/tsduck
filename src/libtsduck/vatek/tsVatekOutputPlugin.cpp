@@ -396,7 +396,7 @@ bool ts::VatekOutputPlugin::start()
                             TS_PUSH_WARNING()
                             TS_LLVM_NOWARNING(cast-qual)
                             tsp->info(u"modulation start - [%s:%s:%d]", {vatek_device_get_name(m_hchip), ui_enum_get_str(modulator_type,m_param.modulator.type)});
-                            TS_PUSH_WARNING()
+                            TS_POP_WARNING()
                         }
                         else {
                             tsp->error(u"start modulation device broadcasting fail : [%d]", { nres });

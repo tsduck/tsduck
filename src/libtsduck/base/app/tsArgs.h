@@ -336,7 +336,7 @@ namespace ts {
             INT32,     //!< Integer -2,147,483,648..2,147,483,647.
             INT64,     //!< 64-bit signed.
             ANUMBER,   //!< A subclass of AbstractNumber.
-            TRISTATE,  //!< Tristate value, ts::MAYBE if absent.
+            TRISTATE,  //!< Tristate value, ts::Maybe if absent.
         };
 
         //!
@@ -927,7 +927,7 @@ namespace ts {
         //! @param [out] value A variable receiving the tristate value of the option or parameter.
         //! The returned value is always one of the three valid Tristate values.
         //! When the option or parameter is not present in the command line or with fewer occurences
-        //! than @a index, the returned value is MAYBE. For options with optional values, if the
+        //! than @a index, the returned value is Maybe. For options with optional values, if the
         //! the option is present without value, the returned value is TRUE.
         //! @param [in] name The full name of the option. If the parameter is a null pointer or
         //! an empty string, this specifies a parameter, not an option. If the specified option
@@ -950,7 +950,7 @@ namespace ts {
         //! @return The tristate value of the option or parameter.
         //! The returned value is always one of the three valid Tristate values.
         //! When the option or parameter is not present in the command line or with fewer occurences
-        //! than @a index, the returned value is MAYBE. For options with optional values, if the
+        //! than @a index, the returned value is Maybe. For options with optional values, if the
         //! the option is present without value, the returned value is TRUE.
         //!
         Tristate tristateValue(const UChar* name = nullptr, size_t index = 0) const;

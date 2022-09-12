@@ -37,8 +37,11 @@
 #include "tsReport.h"
 #include "tsComIds.h"
 
-namespace ts {
+#include "tsBeforeStandardHeaders.h"
+#include <ObjIdl.h>
+#include "tsAfterStandardHeaders.h"
 
+namespace ts {
     //!
     //! Format a Windows error message (Windows-specific).
     //! @param [in] code An error status code.

@@ -890,23 +890,23 @@ void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index
     }
     if (index >= opt.values.size()) {
         // Option not present, meaning unspecified.
-        value = Tristate::MAYBE;
+        value = Tristate::Maybe;
     }
     else if (!opt.values[index].string.set()) {
         // Option present without value, meaning true.
-        value = Tristate::TRUE;
+        value = Tristate::True;
     }
     else if (!opt.values[index].string.value().toTristate(value)) {
         // Value present but not a valid tristate value. Should not occur if the
         // option was declared using TRISTATE type. So, this must be some string
         // option and we cannot decide the Tristate value.
-        value = Tristate::MAYBE;
+        value = Tristate::Maybe;
     }
 }
 
 ts::Tristate ts::Args::tristateValue(const UChar* name, size_t index) const
 {
-    Tristate value = Tristate::MAYBE;
+    Tristate value = Tristate::Maybe;
     getTristateValue(value, name, index);
     return value;
 }

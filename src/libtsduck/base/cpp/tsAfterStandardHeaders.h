@@ -34,7 +34,7 @@
 //!
 //----------------------------------------------------------------------------
 
-#pragma once
+// Do not use "#pragma once", can be used multiple times on purpose.
 
 // Must close a system header inclusion sequence.
 #if defined(TS_INSIDE_SYSTEM_HEADERS)
@@ -45,11 +45,6 @@
 
 // Restore warnings
 TS_POP_WARNING()
-
-// See [BUG.1] in tsBeforeStandardHeaders.h. Try to recover from this sh... bug in winioctl.h
-#if defined(TS_MSC)
-    #pragma warning(pop)  // one more to compensate for missing one in winioctl.h
-#endif
 
 // Some standard Windows headers have the very-very bad idea to define common
 // words as macros. Also, common function names, used by TSDuck, are defined
@@ -65,15 +60,6 @@ TS_POP_WARNING()
 #endif
 #if defined(MAX)
     #undef MAX
-#endif
-#if defined(TRUE)
-    #undef TRUE
-#endif
-#if defined(FALSE)
-    #undef FALSE
-#endif
-#if defined(MAYBE)
-    #undef MAYBE
 #endif
 #if defined(IGNORE)
     #undef IGNORE

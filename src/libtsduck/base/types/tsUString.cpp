@@ -1549,7 +1549,7 @@ bool ts::UString::toTristate(Tristate& value) const
 
     if (iValue == Enumeration::UNKNOWN) {
         // Invalid string and invalid integer.
-        value = Tristate::MAYBE;
+        value = Tristate::Maybe;
         return false;
     }
     else {
@@ -1558,16 +1558,16 @@ bool ts::UString::toTristate(Tristate& value) const
             case TSE_FALSE:
             case TSE_NO:
             case TSE_OFF:
-                value = Tristate::FALSE;
+                value = Tristate::False;
                 break;
             case TSE_TRUE:
             case TSE_YES:
             case TSE_ON:
-                value = Tristate::TRUE;
+                value = Tristate::True;
                 break;
             case TSE_MAYBE:
             case TSE_UNKNOWN:
-                value = Tristate::MAYBE;
+                value = Tristate::Maybe;
                 break;
             default:
                 // Got an integer value.

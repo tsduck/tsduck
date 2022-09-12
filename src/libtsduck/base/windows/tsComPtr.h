@@ -35,19 +35,23 @@
 #pragma once
 #include "tsCerrReport.h"
 
+#include "tsBeforeStandardHeaders.h"
+#include <ObjIdl.h>
+#include "tsAfterStandardHeaders.h"
+
 #if defined(DOXYGEN)
-//!
-//! When @c TS_COM_INSTRUMENTATION is externally defined and the application is
-//! compiled in debug mode, some Windows-specific classes using COM objects
-//! produce abundant trace messages on the standard error.
-//!
-#define TS_COM_INSTRUMENTATION 1
+    //!
+    //! When @c TS_COM_INSTRUMENTATION is externally defined and the application is
+    //! compiled in debug mode, some Windows-specific classes using COM objects
+    //! produce abundant trace messages on the standard error.
+    //!
+    #define TS_COM_INSTRUMENTATION 1
 #endif
 
 // Make sure that TS_COM_INSTRUMENTATION is undefined in release mode.
 // The massive amount of instrumentation messages is reserved to debug.
 #if defined(TS_COM_INSTRUMENTATION) && !defined(DEBUG)
-#undef TS_COM_INSTRUMENTATION
+    #undef TS_COM_INSTRUMENTATION
 #endif
 
 namespace ts {

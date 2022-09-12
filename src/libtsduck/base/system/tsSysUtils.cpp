@@ -38,6 +38,8 @@
     #include "tsWinUtils.h"
     #include "tsBeforeStandardHeaders.h"
     #include <intrin.h>
+    #include <io.h>
+    #include <psapi.h>
     #include "tsAfterStandardHeaders.h"
 #elif defined(TS_LINUX)
     #include "tsFileUtils.h"

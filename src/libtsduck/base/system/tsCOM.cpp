@@ -30,7 +30,10 @@
 #include "tsCOM.h"
 
 #if defined(TS_WINDOWS)
-#include "tsWinUtils.h"
+    #include "tsWinUtils.h"
+    #include "tsBeforeStandardHeaders.h"
+    #include <comutil.h>
+    #include "tsAfterStandardHeaders.h"
 #endif
 
 // Required link libraries under Windows.
@@ -42,7 +45,7 @@
     #endif
 #endif
 
-
+// Constructor, initialize COM.
 ts::COM::COM(Report& report) :
     _is_init(false)
 {
@@ -53,11 +56,13 @@ ts::COM::COM(Report& report) :
 #endif
 }
 
+// Destructor, deinitialize COM.
 ts::COM::~COM()
 {
     uninitialize();
 }
 
+// Perform an early COM uninitialize (before destructor).
 void ts::COM::uninitialize()
 {
 #if defined(TS_WINDOWS)

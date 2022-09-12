@@ -32,7 +32,11 @@
 #include "tsNullReport.h"
 #include "tsSysUtils.h"
 
-#if defined(TS_UNIX)
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <io.h>
+    #include "tsAfterStandardHeaders.h"
+#else
     #include "tsBeforeStandardHeaders.h"
     #include <sys/types.h>
     #include <sys/stat.h>

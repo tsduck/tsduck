@@ -34,6 +34,25 @@
 #include "tsMemory.h"
 #include "tsFatal.h"
 
+#include "tsBeforeStandardHeaders.h"
+#include <errors.h>
+#include <shellapi.h>
+#include <WinInet.h>
+#include <dshowasf.h>
+#include <ks.h>
+#include <ksproxy.h>
+#include <ksmedia.h>
+#include <bdatypes.h>
+#include <bdamedia.h>
+#include "tsAfterStandardHeaders.h"
+
+// Required link libraries under Windows.
+#if defined(TS_MSC)
+    #pragma comment(lib, "Shell32.lib")
+    #pragma comment(lib, "Wininet.lib")
+    #pragma comment(lib, "Quartz.lib")
+#endif
+
 
 //-----------------------------------------------------------------------------
 // Convert Windows strings to UString (empty on error)

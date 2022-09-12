@@ -36,6 +36,7 @@
 #pragma once
 #include "tsModulationArgs.h"
 #include "tsComPtr.h"
+#include "tsDirectShow.h"
 
 namespace ts {
     //!

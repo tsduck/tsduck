@@ -36,6 +36,7 @@
 #include "tsReport.h"
 #include "tsComPtr.h"
 #include "tsDeliverySystem.h"
+#include "tsDirectShow.h"
 
 namespace ts {
     //!
