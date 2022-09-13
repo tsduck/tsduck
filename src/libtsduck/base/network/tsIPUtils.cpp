@@ -30,17 +30,6 @@
 #include "tsIPUtils.h"
 #include "tsIPv4Address.h"
 
-#if defined(TS_MAC)
-    #include "tsBeforeStandardHeaders.h"
-    #include <ifaddrs.h>
-    #include "tsAfterStandardHeaders.h"
-#endif
-
-// Required link libraries under Windows.
-#if defined(TS_WINDOWS) && defined(TS_MSC)
-    #pragma comment(lib, "ws2_32.lib")
-#endif
-
 
 //----------------------------------------------------------------------------
 // Initialize IP usage. Shall be called once at least.

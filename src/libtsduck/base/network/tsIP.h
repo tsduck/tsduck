@@ -28,20 +28,33 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  @ingroup net
+//!  Include the multiple and messy system headers for IP networking.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2811
+#include "tsPlatform.h"
+
+#if defined(TS_WINDOWS)
+    #include "tsBeforeStandardHeaders.h"
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+    #include <mswsock.h>
+    #include "tsAfterStandardHeaders.h"
+    #if defined(TS_MSC)
+        #pragma comment(lib, "ws2_32.lib")
+    #endif
+#else
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/types.h>
+    #include <sys/socket.h>
+    #include <net/if.h>
+    #include <netinet/in.h>
+    #include <netinet/tcp.h>
+    #include <netdb.h>
+    #if defined(TS_MAC)
+        #include <ifaddrs.h>
+    #endif
+    #include "tsAfterStandardHeaders.h"
+#endif

@@ -41,21 +41,6 @@
 #include "tsIPv6Address.h"
 #include "tsIPv4SocketAddress.h"
 
-#if defined(TS_WINDOWS)
-    #include "tsBeforeStandardHeaders.h"
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <mswsock.h>
-    #include "tsAfterStandardHeaders.h"
-#else
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <net/if.h>
-    #include <netinet/tcp.h>
-    #include "tsAfterStandardHeaders.h"
-#endif
-
 namespace ts {
     //!
     //! Initialize the IP libraries in the current process.
