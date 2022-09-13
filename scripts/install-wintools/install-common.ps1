@@ -200,6 +200,23 @@ function Get-URL-In-HTML([string]$Url, [string]$Pattern, [string]$FallbackURL = 
     }
 }
 
+# Get an URL matching a pattern in a GitHub project release.
+function Get-URL-In-GitHub([string]$Repo, [string]$Pattern)
+{
+    $Url = (Invoke-RestMethod "https://api.github.com/repos/$Repo/releases?per_page=20" |
+            ForEach-Object { $_.assets } |
+            ForEach-Object { $_.browser_download_url } |
+            Select-String $Pattern |
+            Select-Object -First 1)
+
+    if (-not $Url) {
+        Exit-Script "No package matching '$Pattern' in GitHub repo $Repo"
+    }
+    else {
+        return [string]$Url
+    }
+}
+
 # Download a package.
 function Download-Package([string]$Url, [string]$InstallerPath)
 {
@@ -220,6 +237,19 @@ function Download-Package([string]$Url, [string]$InstallerPath)
 function Install-Standard-Exe([string]$ReleasePage, [string]$Pattern, [string]$FallbackURL = "", [string[]]$InstallerParams = @())
 {
     $Url = Get-URL-In-HTML $ReleasePage $Pattern $FallbackURL
+    $InstallerName = Get-URL-Local $Url
+    $InstallerPath = "$Destination\$InstallerName"
+    Download-Package $Url $InstallerPath
+    if (-not $NoInstall) {
+        Write-Output "Installing $InstallerName"
+        Start-Process -Wait -FilePath $InstallerPath -ArgumentList $InstallerParams
+    }
+}
+
+# Standard installation procedure for an executable installer from GitHub release assets.
+function Install-GitHub-Exe([string]$Repo, [string]$Pattern, [string[]]$InstallerParams = @())
+{
+    $Url = Get-URL-In-GitHub $Repo $Pattern
     $InstallerName = Get-URL-Local $Url
     $InstallerPath = "$Destination\$InstallerName"
     Download-Package $Url $InstallerPath

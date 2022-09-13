@@ -50,7 +50,7 @@
 #if defined(TS_MSC)
     #pragma comment(lib, "Shell32.lib")
     #pragma comment(lib, "Wininet.lib")
-    #pragma comment(lib, "Quartz.lib")
+    #pragma comment(lib, "quartz.lib")
 #endif
 
 

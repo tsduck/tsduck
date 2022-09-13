@@ -44,7 +44,7 @@ Write-Output "==== librist download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
-Install-Standard-Exe "https://github.com/tsduck/rist-installer/releases/latest" "*/librist-*.exe" "" @("/S")
+Install-GitHub-Exe 'tsduck/rist-installer' '/librist-.*\.exe$' @("/S")
 
 Propagate-Environment "LIBRIST"
 

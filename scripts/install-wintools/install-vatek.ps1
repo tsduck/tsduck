@@ -44,10 +44,6 @@ Write-Output "==== VATek SDK download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
-Install-Standard-Exe `
-    "https://github.com/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest" `
-    "*/VATek-Win64-*.exe" `
-    "" `
-    @("/verysilent", "/suppressmsgboxes", "/norestart")
+Install-GitHub-Exe 'VisionAdvanceTechnologyInc/vatek_sdk_2' '/VATek-Win64-.*\.exe$' @("/verysilent", "/suppressmsgboxes", "/norestart")
 
 Exit-Script
