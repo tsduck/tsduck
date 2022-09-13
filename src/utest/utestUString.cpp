@@ -1117,57 +1117,57 @@ void UStringTest::testToTristate()
 {
     ts::Tristate t;
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"yes").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::True, t);
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"True").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::True, t);
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"ON").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::True, t);
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"NO").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::False, t);
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"FaLsE").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::False, t);
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"off").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::False, t);
 
-    t = ts::Tristate::TRUE;
+    t = ts::Tristate::True;
     TSUNIT_ASSERT(ts::UString(u"MayBe").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::Maybe, t);
 
-    t = ts::Tristate::TRUE;
+    t = ts::Tristate::True;
     TSUNIT_ASSERT(ts::UString(u"Unknown").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::Maybe, t);
 
-    t = ts::Tristate::TRUE;
+    t = ts::Tristate::True;
     TSUNIT_ASSERT(ts::UString(u"0x0000").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::FALSE, t);
+    TSUNIT_EQUAL(ts::Tristate::False, t);
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"1").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::True, t);
 
-    t = ts::Tristate::MAYBE;
+    t = ts::Tristate::Maybe;
     TSUNIT_ASSERT(ts::UString(u"56469").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::TRUE, t);
+    TSUNIT_EQUAL(ts::Tristate::True, t);
 
-    t = ts::Tristate::TRUE;
+    t = ts::Tristate::True;
     TSUNIT_ASSERT(ts::UString(u"-1").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::Maybe, t);
 
-    t = ts::Tristate::TRUE;
+    t = ts::Tristate::True;
     TSUNIT_ASSERT(ts::UString(u"-56").toTristate(t));
-    TSUNIT_EQUAL(ts::Tristate::MAYBE, t);
+    TSUNIT_EQUAL(ts::Tristate::Maybe, t);
 
     TSUNIT_ASSERT(!ts::UString(u"abcd").toTristate(t));
     TSUNIT_ASSERT(!ts::UString(u"0df").toTristate(t));

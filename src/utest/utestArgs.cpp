@@ -805,14 +805,14 @@ void ArgsTest::testTristate()
     TSUNIT_ASSERT(args.present(u"opt7"));
     TSUNIT_ASSERT(!args.present(u"opt8"));
 
-    TSUNIT_EQUAL(ts::Tristate::TRUE,  args.tristateValue(u"opt1"));
-    TSUNIT_EQUAL(ts::Tristate::FALSE, args.tristateValue(u"opt2"));
-    TSUNIT_EQUAL(ts::Tristate::MAYBE, args.tristateValue(u"opt3"));
-    TSUNIT_EQUAL(ts::Tristate::TRUE,  args.tristateValue(u"opt4"));
-    TSUNIT_EQUAL(ts::Tristate::FALSE, args.tristateValue(u"opt5"));
-    TSUNIT_EQUAL(ts::Tristate::TRUE,  args.tristateValue(u"opt6"));
-    TSUNIT_EQUAL(ts::Tristate::MAYBE, args.tristateValue(u"opt7"));
-    TSUNIT_EQUAL(ts::Tristate::MAYBE, args.tristateValue(u"opt8"));
+    TSUNIT_EQUAL(ts::Tristate::True,  args.tristateValue(u"opt1"));
+    TSUNIT_EQUAL(ts::Tristate::False, args.tristateValue(u"opt2"));
+    TSUNIT_EQUAL(ts::Tristate::Maybe, args.tristateValue(u"opt3"));
+    TSUNIT_EQUAL(ts::Tristate::True,  args.tristateValue(u"opt4"));
+    TSUNIT_EQUAL(ts::Tristate::False, args.tristateValue(u"opt5"));
+    TSUNIT_EQUAL(ts::Tristate::True,  args.tristateValue(u"opt6"));
+    TSUNIT_EQUAL(ts::Tristate::Maybe, args.tristateValue(u"opt7"));
+    TSUNIT_EQUAL(ts::Tristate::Maybe, args.tristateValue(u"opt8"));
 }
 
 // Test case: ranges of integer values.
