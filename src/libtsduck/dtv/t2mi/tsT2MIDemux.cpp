@@ -225,7 +225,7 @@ void ts::T2MIDemux::processT2MI(PID pid, PIDContext& pc)
             }
 
             // Point to next T2-MI packet.
-            start += T2MI_HEADER_SIZE + payload_bytes + SECTION_CRC32_SIZE;
+            start += packet_size;
         }
 
         // Remove processed T2-MI packets.
