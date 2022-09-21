@@ -28,8 +28,13 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  This script updates the tsduck formula for the most recent version.
-#  By default, use the latest release. With --commit, use the latest commit.
+#  This script updates the "tsduck" Homebrew formula for the most recent
+#  version. The update is performed on the local copy of the homebrew-core
+#  repository. Homebrew is the open-source packager for macOS. TSDuck is
+#  distributed on macOS through Homebrew.
+#
+#  By default, use the latest official release of TSDuck on GitHub.
+#  With --commit, use the latest commit in the TSDuck repository on GitHub.
 #
 #-----------------------------------------------------------------------------
 
