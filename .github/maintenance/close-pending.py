@@ -48,7 +48,7 @@ purge = '--purge' in sys.argv
 # We cannot do the cleanup in a get_issues() loop because we change the search criteria and the list can be paginated.
 pending_issues = [i for i in tsgithub.repo.get_issues(state = 'all', labels = ['close pending'])]
 
-# Then, do the cleanup in a second 
+# Then, do the cleanup in a second pass.
 for issue in pending_issues:
     date = issue.updated_at.strftime('%Y-%m-%d')
     age = today - issue.updated_at.toordinal()

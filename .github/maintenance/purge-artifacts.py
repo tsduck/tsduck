@@ -36,6 +36,9 @@
 #  - Install: pip install requests
 #  - Documentation: https://requests.readthedocs.io/
 #
+#  We need the module "requests" to perform manual operations since PyGithub
+#  does not provide methods to operate on artifacts.
+#
 #-----------------------------------------------------------------------------
 
 import requests
