@@ -31,6 +31,8 @@
 #  This script updates the latest TSDuck release on GitHub with the proper
 #  title and body message, based on the list of assets.
 #
+#  Just display what should be done with option --dry-run or -n.
+#
 #  Steps:
 #  - Create and push the tag for the release.
 #  - Create the release on GitHub from that tag and upload binaries.
@@ -39,7 +41,10 @@
 #-----------------------------------------------------------------------------
 
 import re
+import sys
 import tsgithub
+
+dry_run = '-n' in sys.argv or '--dry-run' in sys.argv
 
 # Get latest release characteristics.
 release = tsgithub.repo.get_latest_release()
@@ -50,9 +55,7 @@ class body_builder:
     def __init__(self, release):
         # Get all assets in this release.
         self.text = ''
-        self.assets = []
-        for a in release.get_assets():
-            self.assets.append(a)
+        self.assets = [a for a in release.get_assets()]
     def get_text(self):
         return self.text
     def line(self, line):
@@ -93,9 +96,17 @@ body.line('* macOS: Included in Homebrew package')
 # Adjust release title and body.
 title = 'Version %s' % release.tag_name
 if title == release.title:
-    print('Release title is already set: %s' % title)
+    print('Release title is already set')
 if body.get_text() == release.body:
     print('Release body text is already set')
 if title != release.title or body.get_text() != release.body:
-    print('Updating release title and body text')
-    release.update_release(title, body.get_text())
+    if dry_run:
+        if title != release.title:
+            print('Title should be changed to: %s' % title)
+        if body.get_text() != release.body:
+            print('Body text should be changed to:')
+            print(body.get_text())
+    else:
+        # Actually perform the update.
+        print('Updating release title and body text')
+        release.update_release(title, body.get_text())

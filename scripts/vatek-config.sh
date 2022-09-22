@@ -30,7 +30,7 @@
 #
 #  Get configuration for Vatek core API on current Linux or macOS system.
 #  Vatek provides an open-source API on GitHub for their modulator chips.
-#  On macOS, the Homebrew package libatek provides a binary version.
+#  On macOS, the Homebrew package libvatek provides a binary version.
 #  On Linux, a binary tarball is downloaded by this script. When the
 #  binary tarball is not appropriate for the current system, the source
 #  code of the Vatek library is dowloaded and rebuilt.
