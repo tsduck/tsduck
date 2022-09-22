@@ -347,6 +347,7 @@
 #include "tsIntegerUtils.h"
 #include "tsInterruptHandler.h"
 #include "tsInvalidSectionHandlerInterface.h"
+#include "tsIP.h"
 #include "tsIPInputPlugin.h"
 #include "tsIPMACGenericStreamLocationDescriptor.h"
 #include "tsIPMACPlatformNameDescriptor.h"
