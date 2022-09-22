@@ -41,6 +41,12 @@
 #  - Install: pip install PyGithub
 #  - Documentation: https://pygithub.readthedocs.io/
 #
+#  Warning: There is a PyPI module named "github" which is different and
+#  incompatible with PyGitHub. The two declare the module "github" with
+#  different contents and classes. You cannot install the two at the same
+#  time. If you accidentally installed "github" instead of "PyGitHub",
+#  run "pip uninstall github" before "pip install PyGithub".
+#
 #-----------------------------------------------------------------------------
 
 import os
