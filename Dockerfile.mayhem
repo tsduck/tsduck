@@ -1,7 +1,7 @@
 FROM --platform=linux/amd64 ubuntu:22.04 as builder
 
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libedit-dev python-is-python3
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential libedit-dev python-is-python3 curl git
 
 COPY . /repo
 WORKDIR /repo
