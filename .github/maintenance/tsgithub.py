@@ -31,65 +31,92 @@
 #  This Pythonn module shall be imported by all scripts in this directory
 #  working on the TSDuck repository using GitHub.
 #
-#  When access permissions are required (to update the repo for instance),
-#  a GitHub access token is required. It is extracted in this order:
-#  1. Command line option --github-token TOKEN on the calling script
-#  2. Environment variable GITHUB_TOKEN
-#  3. Environment variable HOMEBREW_GITHUB_API_TOKEN
-#
-#  Prerequisite: PyGitHub
-#  - Install: pip install PyGithub
-#  - Documentation: https://pygithub.readthedocs.io/
-#
-#  Warning: There is a PyPI module named "github" which is different and
-#  incompatible with PyGitHub. The two declare the module "github" with
-#  different contents and classes. You cannot install the two at the same
-#  time. If you accidentally installed "github" instead of "PyGitHub",
-#  run "pip uninstall github" before "pip install PyGithub".
-#
 #-----------------------------------------------------------------------------
 
-import os
-import sys
-import github
+import re, os, sys, base64, github
 
-# Calling script name.
-script = os.path.basename(sys.argv[0])
+# A class referencing the repository based on command line options.
+class repository:
 
-# Command line options default values.
-token = None
-repo_name = 'tsduck/tsduck'
+    # Constructor.
+    def __init__(self, argv=sys.argv, open_repo=True):
+        # Keep a reference on argv. Options are removed as they are analyzed.
+        self.argv = argv
 
-# Decode command line options, remove common options from argv.
-i = 0
-while i < len(sys.argv):
-    if sys.argv[i] == '--github-token':
-        sys.argv.pop(i)
-        if i < len(sys.argv):
-            token = sys.argv[i]
-            sys.argv.pop(i)
-    elif sys.argv[i] == '--github-repo':
-        sys.argv.pop(i)
-        if i < len(sys.argv):
-            repo_name = sys.argv[i]
-            sys.argv.pop(i)
-    elif sys.argv[i] == '--github-debug':
-        sys.argv.pop(i)
-        github.enable_console_debug_logging()
-    else:
-        i += 1
+        # Calling script name.
+        self.script = os.path.basename(argv[0])
+        self.scriptdir = os.path.dirname(os.path.abspath(argv[0]))
 
-# Default value for token.
-if token is None:
-    for var in ['GITHUB_TOKEN', 'HOMEBREW_GITHUB_API_TOKEN']:
-        if var in os.environ:
-            token = os.environ[var]
-            break
-if token is None:
-    print('%s: warning: no GitHub access token defined, limited access only' % script, file=sys.stderr)
+        # Decode command line options, remove common options from argv.
+        self.token = self.get_opt(['--token'], os.getenv('GITHUB_TOKEN', os.getenv('HOMEBREW_GITHUB_API_TOKEN')))
+        self.repo_name = self.get_opt(['--repo'], 'tsduck/tsduck')
+        self.repo_branch = self.get_opt(['--branch'], 'master')
+        self.dry_run = self.has_opt(['-n', '--dry-run'])
+        self.verbose_mode = self.has_opt(['-v', '--verbose'])
 
-# Get GitHub connection.
-gh = github.Github(login_or_token = token, per_page = 100)
+        if self.has_opt(['--debug']):
+            github.enable_console_debug_logging()
 
-# Get TSDuck repository.
-repo = gh.get_repo(repo_name)
+        # Get TSDuck repository if required.
+        if open_repo:
+            if self.token is None:
+                self.warning('no GitHub access token defined, limited access only')
+            self.github = github.Github(login_or_token=self.token, per_page=100)
+            self.repo = self.github.get_repo(self.repo_name)
+        else:
+            self.github = None
+            self.repo = None
+
+    # Extract an option with a value from command line.
+    def get_opt(self, names, default=None):
+        if type(names) is str:
+            names = [names]
+        value = default
+        i = 0
+        while i < len(self.argv):
+            if self.argv[i] in names:
+                self.argv.pop(i)
+                if i < len(self.argv):
+                    value = self.argv[i]
+                    self.argv.pop(i)
+            else:
+                i += 1
+        return value
+
+    # Check if an option without value is in command line.
+    def has_opt(self, names):
+        if type(names) is str:
+            names = [names]
+        value = False
+        i = 0
+        while i < len(self.argv):
+            if self.argv[i] in names:
+                self.argv.pop(i)
+                value = True
+            else:
+                i += 1
+        return value
+
+    # Check that all command line options were recognized.
+    def check_opt_final(self):
+        if len(self.argv) > 1:
+            self.fatal('extraneous options: %s' % ' '.join(self.argv[1:]))
+
+    # Message reporting.
+    def verbose(self, message):
+        if self.verbose_mode:
+            print(message, file=sys.stderr)
+    def info(self, message):
+        print(message, file=sys.stderr)
+    def warning(self, message):
+        print('%s: warning: %s' % (self.script, message), file=sys.stderr)
+    def error(self, message):
+        print('%s: error: %s' % (self.script, message), file=sys.stderr)
+    def fatal(self, message):
+        self.error(message)
+        exit(1)
+
+    # Get the content of a text file in the repo.
+    def get_text_file(self, path):
+        file = self.repo.get_contents(path)
+        return base64.b64decode(file.content).decode('utf8')

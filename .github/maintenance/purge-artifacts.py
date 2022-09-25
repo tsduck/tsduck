@@ -32,22 +32,17 @@
 #  Only the 5 most recent versions of each artifact are left. Older artifacts
 #  are deleted.
 #
-#  Prerequisite: requests
-#  - Install: pip install requests
-#  - Documentation: https://requests.readthedocs.io/
-#
-#  We need the module "requests" to perform manual operations since PyGithub
-#  does not provide methods to operate on artifacts.
-#
 #-----------------------------------------------------------------------------
 
-import requests
-import tsgithub
+import sys, requests, tsgithub
+
+# Get command line options.
+repo = tsgithub.repository(sys.argv, False)
+repo.check_opt_final()
 
 # The number of copies to keep per artifact.
 KEEP = 5
-
-print('Purging artifacts in repo %s, keeping %d copies of each artifact ...' % (tsgithub.repo_name, KEEP))
+print('Purging artifacts in repo %s, keeping %d copies of each artifact ...' % (repo.repo_name, KEEP))
 
 # A dictionary of all artifact counts, by name.
 artifact_count = {}
@@ -62,18 +57,18 @@ error_size = 0
 # Loop on all pages of artifacts.
 # We need to get all artifacts first, and then delete the extraneous ones.
 # If we read a page, delete artifacts, then read next page, the page boundaries have changed.
-artifacts_url = 'https://api.github.com/repos/' + tsgithub.repo_name + '/actions/artifacts'
+artifacts_url = 'https://api.github.com/repos/' + repo.repo_name + '/actions/artifacts'
 url = artifacts_url + '?per_page=100'
 while url is not None:
     # Get a page of artifacts.
-    resp = requests.get(url, headers = {'Accept': 'application/vnd.github.v3+json'}, auth = ('', tsgithub.token))
+    resp = requests.get(url, headers = {'Accept': 'application/vnd.github.v3+json'}, auth = ('', repo.token))
     url = resp.links['next']['url'] if ('next' in resp.links and 'url' in resp.links['next']) else None
     data = resp.json()
     # Loop on all artifacts in that page.
     if 'artifacts' in data:
         for art in data['artifacts']:
             if 'name' in art and 'id' in art:
-                size = art['size'] if 'size' in art else 0
+                size = art['size_in_bytes'] if 'size_in_bytes' in art else 0
                 date = art['created_at'] if 'created_at' in art else ''
                 expired = 'expired' in art and art['expired']
                 total_count += 1
@@ -84,24 +79,27 @@ while url is not None:
                 if not expired and artifact_count[art['name']] < KEEP:
                     # Keep this artifact.
                     artifact_count[art['name']] += 1
+                    repo.verbose('Keeping {}, {:,} bytes, {}'.format(art['name'], size, date))
                 else:
+                    repo.verbose('Will delete {}, {:,} bytes{}'.format(art['name'], size, ' (expired)' if expired else ''))
                     to_delete.append({'id': art['id'], 'name': art['name'], 'size': size, 'date': date})
 
 # Actually delete the artifacts.
 for art in to_delete:
-    print('Deleting %s, id: %d, size: %d, date: %s' % (art['name'], art['id'], art['size'], art['date']))
-    resp = requests.delete('%s/%d' % (artifacts_url, art['id']), auth = ('', tsgithub.token))
-    if resp.ok:
-        deleted_count += 1
-        deleted_size += size
-    else:
-        print('Error: status code: %d, reason: %s' % (resp.status_code, resp.reason))
-        error_count += 1
-        error_size += size
+    repo.info('Deleting {}, id: {}, size: {:,}, date: {}'.format(art['name'], art['id'], art['size'], art['date']))
+    if not repo.dry_run:
+        resp = requests.delete('%s/%d' % (artifacts_url, art['id']), auth = ('', repo.token))
+        if resp.ok:
+            deleted_count += 1
+            deleted_size += size
+        else:
+            repo.error('status code: %d, reason: %s' % (resp.status_code, resp.reason))
+            error_count += 1
+            error_size += size
 
 # Print final summary.
 print('')
-print('== Total:     %5d files, %d bytes' % (total_count, total_size))
-print('== Deleted:   %5d files, %d bytes' % (deleted_count, deleted_size))
-print('== Error:     %5d files, %d bytes' % (error_count, error_size))
-print('== Remaining: %5d files, %d bytes' % (total_count - deleted_count - error_count, total_size - deleted_size - error_size))
+print('== Total:     {:5,} files, {:,} bytes'.format(total_count, total_size))
+print('== Deleted:   {:5,} files, {:,} bytes'.format(deleted_count, deleted_size))
+print('== Error:     {:5,} files, {:,} bytes'.format(error_count, error_size))
+print('== Remaining: {:5,} files, {:,} bytes'.format(total_count - deleted_count - error_count, total_size - deleted_size - error_size))
