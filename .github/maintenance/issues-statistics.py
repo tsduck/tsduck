@@ -35,8 +35,11 @@
 #
 #-----------------------------------------------------------------------------
 
-import sys
-import tsgithub
+import sys, tsgithub
+
+# Get command line options.
+repo = tsgithub.repository(sys.argv)
+repo.check_opt_final()
 
 # User context:
 class user_context:
@@ -66,7 +69,7 @@ class progress:
         elif self.count % 10 == 0:
             print('.', file=sys.stderr, end='', flush=True)
     def end(self):
-        print('. %d, done' % self.count, file=sys.stderr)
+        print('. %d done' % self.count, file=sys.stderr)
 
 # A dictionary of all users.
 users = {}
@@ -76,7 +79,7 @@ total = user_context('Total')
 
 # Analyze all issues.
 prog = progress('issues')
-for issue in tsgithub.repo.get_issues(state = 'all'):
+for issue in repo.repo.get_issues(state = 'all'):
     prog.more()
     user_name = issue.user.login
     if not user_name in users:
@@ -97,7 +100,7 @@ prog.end()
 
 # Analyze all comments
 prog = progress('comments')
-for comment in tsgithub.repo.get_issues_comments():
+for comment in repo.repo.get_issues_comments():
     prog.more()
     user_name = comment.user.login
     if not user_name in users:
