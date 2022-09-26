@@ -28,7 +28,7 @@
 #
 #-----------------------------------------------------------------------------
 #
-#  This Pythonn module shall be imported by all scripts in this directory
+#  This Python module shall be imported by all scripts in this directory
 #  working on the TSDuck repository using GitHub.
 #
 #-----------------------------------------------------------------------------
@@ -48,13 +48,15 @@ class repository:
         self.scriptdir = os.path.dirname(os.path.abspath(argv[0]))
 
         # Decode command line options, remove common options from argv.
-        self.token = self.get_opt(['--token'], os.getenv('GITHUB_TOKEN', os.getenv('HOMEBREW_GITHUB_API_TOKEN')))
-        self.repo_name = self.get_opt(['--repo'], 'tsduck/tsduck')
-        self.repo_branch = self.get_opt(['--branch'], 'master')
+        self.token = self.get_opt('--token', os.getenv('GITHUB_TOKEN', os.getenv('HOMEBREW_GITHUB_API_TOKEN')))
+        self.repo_name = self.get_opt('--repo', 'tsduck/tsduck')
+        self.repo_url = 'https://github.com/%s/' % self.repo_name
+        self.repo_branch = self.get_opt('--branch', 'master')
         self.dry_run = self.has_opt(['-n', '--dry-run'])
         self.verbose_mode = self.has_opt(['-v', '--verbose'])
+        self.debug_mode = self.has_opt('--debug')
 
-        if self.has_opt(['--debug']):
+        if self.debug_mode:
             github.enable_console_debug_logging()
 
         # Get TSDuck repository if required.
@@ -67,7 +69,7 @@ class repository:
             self.github = None
             self.repo = None
 
-    # Extract an option with a value from command line.
+    # Extract an option with a value from command line. Use a name or list of names.
     def get_opt(self, names, default=None):
         if type(names) is str:
             names = [names]
@@ -83,7 +85,7 @@ class repository:
                 i += 1
         return value
 
-    # Check if an option without value is in command line.
+    # Check if an option without value is in command line. Use a name or list of names.
     def has_opt(self, names):
         if type(names) is str:
             names = [names]

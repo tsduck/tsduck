@@ -51,7 +51,7 @@ repo.check_opt_final()
 # A regular expression matching a version number.
 pattern_version = r'\d+\.\d+-\d+'
 
-# A class which descibes one installer package.
+# A class which describes one installer package.
 class installer:
     def __init__(self, pattern, dev, name):
         self.pattern = pattern
