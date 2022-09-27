@@ -69,7 +69,7 @@ namespace ts {
             //! Constructor.
             //! @param [in] fact Message factory containing a binary message.
             //! @param [in] tag_ch_id Message tag for the channel id field.
-            //! @param [in] tag_ch_id Message tag for the stream id field.
+            //! @param [in] tag_st_id Message tag for the stream id field.
             //!
             StreamMessage(const tlv::MessageFactory& fact, TAG tag_ch_id, TAG tag_st_id);
 
