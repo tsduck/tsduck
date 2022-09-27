@@ -77,15 +77,16 @@ def open_html(text):
         if not os.path.isdir(tmpdir):
             os.mkdir(tmpdir)
     # Create the temporary file.
-    fd, url = tempfile.mkstemp(suffix='.html', dir=tmpdir, text=True)
+    fd, fname = tempfile.mkstemp(suffix='.html', dir=tmpdir, text=True)
     os.write(fd, text.encode())
     os.close(fd)
     # Open the HTML in a browser.
+    url = 'file://' + fname if os.name == 'posix' else fname
     webbrowser.open_new_tab(url)
     # Delete the temporary files after a delay to let the browser load the file.
     if not repo.debug_mode:
         time.sleep(2)
-        os.remove(url)
+        os.remove(fname)
 
 # Loop on all markdown files.
 for filename in repo.argv[1:]:
