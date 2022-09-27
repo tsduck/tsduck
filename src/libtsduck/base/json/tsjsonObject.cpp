@@ -63,13 +63,13 @@ void ts::json::Object::clear()
 
 ts::json::ValuePtr ts::json::Object::valuePtr(const UString& name)
 {
-    auto it = _fields.find(name);
+    const auto it = _fields.find(name);
     return it == _fields.end() || it->second.isNull() ? ValuePtr() : it->second;
 }
 
 const ts::json::Value& ts::json::Object::value(const UString& name) const
 {
-    auto it = _fields.find(name);
+    const auto it = _fields.find(name);
     if (it == _fields.end() || it->second.isNull()) {
         return NullValue;
     }
@@ -80,7 +80,7 @@ const ts::json::Value& ts::json::Object::value(const UString& name) const
 
 ts::json::Value& ts::json::Object::value(const UString& name, bool create, Type type)
 {
-    auto it = _fields.find(name);
+    const auto it = _fields.find(name);
     if (it != _fields.end() && !it->second.isNull()) {
         return *it->second;
     }
@@ -102,7 +102,7 @@ void ts::json::Object::remove(const UString& name)
 ts::json::ValuePtr ts::json::Object::extract(const UString& name)
 {
     ValuePtr result;
-    std::map<UString, ValuePtr>::const_iterator it = _fields.find(name);
+    const auto it = _fields.find(name);
     if (it != _fields.end()) {
         result = it->second;
         _fields.erase(name);
@@ -129,8 +129,8 @@ void ts::json::Object::add(const UString& name, const UString& value)
 void ts::json::Object::getNames(UStringList& names) const
 {
     names.clear();
-    for (std::map<UString, ValuePtr>::const_iterator it = _fields.begin(); it != _fields.end(); ++it) {
-        names.push_back(it->first);
+    for (const auto& it : _fields) {
+        names.push_back(it.first);
     }
 }
 
@@ -145,12 +145,14 @@ void ts::json::Object::print(TextFormatter& output) const
     output << "{" << ts::indent;
 
     // Format all fields.
-    for (std::map<UString, ValuePtr>::const_iterator it = _fields.begin(); it != _fields.end(); ++it) {
-        if (it != _fields.begin()) {
+    bool first = true;
+    for (const auto& it : _fields) {
+        if (!first) {
             output << ",";
         }
-        output << ts::endl << ts::margin << '"' << it->first.toJSON() << "\": ";
-        it->second->print(output);
+        output << ts::endl << ts::margin << '"' << it.first.toJSON() << "\": ";
+        it.second->print(output);
+        first = false;
     }
 
     // Unindent and closing sequence.

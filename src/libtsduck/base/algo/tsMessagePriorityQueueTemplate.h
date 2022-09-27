@@ -47,7 +47,7 @@ template <typename MSG, class MUTEX, class COMPARE>
 typename ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::SuperClass::MessageList::iterator
     ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::enqueuePlacement(const typename SuperClass::MessagePtr& msg, typename SuperClass::MessageList& list)
 {
-    typename SuperClass::MessageList::iterator loc(list.end());
+    auto loc = list.end();
 
     // Null pointers are stored at end (anywhere else would be probably fine).
     if (msg.isNull()) {
@@ -56,7 +56,7 @@ typename ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::SuperClass::MessageList:
 
     // Loop until the previous element is lower that msg.
     while (loc != list.begin()) {
-        const typename MessageQueue<MSG, MUTEX>::MessageList::iterator cur(loc);
+        const auto cur = loc;
         --loc;
         if (!loc->isNull() && !COMPARE()(*msg, **loc)) {
             return cur;

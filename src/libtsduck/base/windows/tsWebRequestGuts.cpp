@@ -267,13 +267,13 @@ bool ts::WebRequest::SystemGuts::init()
     ::DWORD headerLength = 0;
     UString headers;
     if (!_request._requestHeaders.empty()) {
-        for (HeadersMap::const_iterator it = _request._requestHeaders.begin(); it != _request._requestHeaders.end(); ++it) {
+        for (const auto& it : _request._requestHeaders) {
             if (!headers.empty()) {
                 headers.append(u"\r\n");
             }
-            headers.append(it->first);
+            headers.append(it.first);
             headers.append(u": ");
-            headers.append(it->second);
+            headers.append(it.second);
         }
         headerAddress = headers.wc_str();
         headerLength = ::DWORD(headers.size());

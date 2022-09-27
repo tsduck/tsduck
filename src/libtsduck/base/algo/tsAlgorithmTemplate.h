@@ -57,7 +57,7 @@ namespace ts {
         else  {
             // Building a combination in current
             bool more = true;
-            typename std::set<T>::const_iterator it = begin;
+            auto it = begin;
             while (more && it != end) {
                 const T& x (*it);
                 current.insert (x);
@@ -118,8 +118,8 @@ bool ts::EnumerateCombinations(const std::set<T>& values,
 template <typename ELEMENT, class CONTAINER>
 bool ts::AppendUnique(CONTAINER& container, const ELEMENT& e)
 {
-    for (typename CONTAINER::iterator it = container.begin(); it != container.end(); ++it) {
-        if (e == *it) {
+    for (const auto& it : container) {
+        if (e == it) {
             return false;  // already present
         }
     }
@@ -162,7 +162,7 @@ size_t ts::SmallestSize(const CONTAINER& container)
     }
     else {
         size_t smallest = std::numeric_limits<size_t>::max();
-        for (typename CONTAINER::const_iterator it = container.begin(); smallest > 0 && it != container.end(); ++it) {
+        for (auto it = container.begin(); smallest > 0 && it != container.end(); ++it) {
             smallest = std::min(smallest, it->size());
         }
         return smallest;
@@ -173,8 +173,8 @@ template <class CONTAINER>
 size_t ts::LargestSize(const CONTAINER& container)
 {
     size_t largest = 0;
-    for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
-        largest = std::max(largest, it->size());
+    for (auto& it : container) {
+        largest = std::max(largest, it.size());
     }
     return largest;
 }
@@ -188,8 +188,8 @@ template <class MAP>
 std::list<typename MAP::key_type> ts::MapKeys(const MAP& container)
 {
     std::list<typename MAP::key_type> keys;
-    for (typename MAP::const_iterator it = container.begin(); it != container.end(); ++it) {
-        keys.push_back(it->first);
+    for (auto& it : container) {
+        keys.push_back(it.first);
     }
     return keys;
 }
@@ -198,8 +198,8 @@ template <class MAP>
 std::list<typename MAP::mapped_type> ts::MapValues(const MAP& container)
 {
     std::list<typename MAP::mapped_type> values;
-    for (typename MAP::const_iterator it = container.begin(); it != container.end(); ++it) {
-        values.push_back(it->second);
+    for (auto& it : container) {
+        values.push_back(it.second);
     }
     return values;
 }

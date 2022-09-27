@@ -45,8 +45,7 @@ ts::PacketCounter ts::Section::PacketCount(const CONTAINER& container, bool pack
         size_t remain_in_pkt = 184; // remaining bytes in current TS packet payload.
         bool has_pf = false;        // current TS packet has a pointer field.
 
-        for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
-            const SectionPtr& sec(*it);
+        for (const auto& sec : container) {
             if (!sec.isNull() && sec->isValid()) {
 
                 // Total section size.
@@ -92,8 +91,7 @@ ts::PacketCounter ts::Section::PacketCount(const CONTAINER& container, bool pack
     }
     else {
         // Stuff end of sections. Each section use its own TS packets.
-        for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
-            const SectionPtr& sec(*it);
+        for (const auto& sec : container) {
             if (!sec.isNull() && sec->isValid()) {
                 pkt_count += sec->packetCount();
             }

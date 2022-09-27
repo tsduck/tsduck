@@ -81,15 +81,15 @@ void ts::ContentAdvisoryDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(0xFF, 2);
     buf.putBits(entries.size(), 6);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt8(it->rating_region);
-        buf.putUInt8(uint8_t(it->rating_values.size()));
-        for (auto it2 = it->rating_values.begin(); it2 != it->rating_values.end(); ++it2) {
+    for (const auto& it : entries) {
+        buf.putUInt8(it.rating_region);
+        buf.putUInt8(uint8_t(it.rating_values.size()));
+        for (auto it2 = it.rating_values.begin(); it2 != it.rating_values.end(); ++it2) {
             buf.putUInt8(it2->first);     // rating_dimension_j
             buf.putBits(0xFF, 4);
             buf.putBits(it2->second, 4);  // rating_value
         }
-        buf.putMultipleStringWithLength(it->rating_description);
+        buf.putMultipleStringWithLength(it.rating_description);
     }
 }
 
@@ -152,15 +152,15 @@ void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 
 void ts::ContentAdvisoryDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"region");
-        e->setIntAttribute(u"rating_region", it->rating_region, true);
-        for (auto it2 = it->rating_values.begin(); it2 != it->rating_values.end(); ++it2) {
+        e->setIntAttribute(u"rating_region", it.rating_region, true);
+        for (auto it2 = it.rating_values.begin(); it2 != it.rating_values.end(); ++it2) {
             xml::Element* e2 = e->addElement(u"dimension");
             e2->setIntAttribute(u"rating_dimension_j", it2->first, true);
             e2->setIntAttribute(u"rating_value", it2->second, true);
         }
-        it->rating_description.toXML(duck, e, u"rating_description", true);
+        it.rating_description.toXML(duck, e, u"rating_description", true);
     }
 }
 

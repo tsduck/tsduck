@@ -352,8 +352,8 @@ ts::UString ts::UString::Join(ITERATOR begin, ITERATOR end, const UString& separ
 template <class CONTAINER>
 bool ts::UString::isContainedSimilarIn(const CONTAINER& container) const
 {
-    for (typename CONTAINER::const_iterator it = container.begin(); it != container.end(); ++it) {
-        if (similar(*it)) {
+    for (const auto& it : container) {
+        if (similar(it)) {
             return true;
         }
     }

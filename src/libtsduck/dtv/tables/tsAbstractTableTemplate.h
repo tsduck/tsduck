@@ -47,8 +47,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap
     _table(table)
 {
     // Copy each entry one by one to ensure that the copied entries actually point to the constructed table.
-    for (typename EntryWithDescriptorsMap::const_iterator it = other.begin(); it != other.end(); ++it) {
-        (*this)[it->first] = it->second;
+    for (auto& it : other) {
+        (*this)[it.first] = it.second;
     }
 }
 
@@ -63,8 +63,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>& ts::AbstractTable::Entr
     if (&other != this) {
         // Clear and copy each entry one by one to ensure that the copied entries actually point to the target table.
         this->clear();
-        for (typename EntryWithDescriptorsMap::const_iterator it = other.begin(); it != other.end(); ++it) {
-            (*this)[it->first] = it->second;
+        for (auto& it : other) {
+            (*this)[it.first] = it.second;
         }
     }
     return *this;
@@ -76,8 +76,8 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>& ts::AbstractTable::En
     if (&other != this) {
         // Clear and move each entry one by one to ensure that the copied entries actually point to the target table.
         this->clear();
-        for (typename EntryWithDescriptorsMap::const_iterator it = other.begin(); it != other.end(); ++it) {
-            (*this)[it->first] = std::move(it->second);
+        for (auto& it : other) {
+            (*this)[it.first] = std::move(it.second);
         }
         // The other instance is still a valid map with valid entries.
         // But all entries have unspecified values.
@@ -120,7 +120,7 @@ template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::
 const ENTRY& ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::operator[](const KEY& key) const
 {
     // Here, we must not create any element (the instance is read-only).
-    const typename EntryWithDescriptorsMap::const_iterator it(this->find(key));
+    const auto it = this->find(key);
     if (it == this->end()) {
         // Same exception as std::map::at().
         throw std::out_of_range("unknown key in ts::AbstractTable::EntryWithDescriptorsMap");

@@ -710,8 +710,8 @@ bool ts::LoadEnvironment(Environment& env, const UString& fileName)
     UStringList lines;
     const bool ok = UString::Load(lines, fileName);
     if (ok) {
-        for (UStringList::const_iterator it = lines.begin(); it != lines.end(); ++it) {
-            AddNameValue(env, *it, false);
+        for (const auto& it : lines) {
+            AddNameValue(env, it, false);
         }
     }
     return ok;

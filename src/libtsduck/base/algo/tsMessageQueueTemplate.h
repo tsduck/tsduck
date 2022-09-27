@@ -258,7 +258,7 @@ bool ts::MessageQueue<MSG, MUTEX>::dequeue(MessagePtr& msg, MilliSecond timeout)
     }
 
     // Now, attempt to dequeue a message.
-    const typename MessageList::iterator it(dequeuePlacement(_queue));
+    const auto it = dequeuePlacement(_queue);
     if (it == _queue.end()) {
         // Queue empty or nothing to queue, no message
         return false;
@@ -283,7 +283,7 @@ template <typename MSG, class MUTEX>
 typename ts::MessageQueue<MSG, MUTEX>::MessagePtr ts::MessageQueue<MSG, MUTEX>::peek()
 {
     GuardMutex lock(_mutex);
-    const typename MessageList::iterator it(dequeuePlacement(_queue));
+    const auto it = dequeuePlacement(_queue);
     return it == _queue.end() ? MessagePtr() : *it;
 }
 

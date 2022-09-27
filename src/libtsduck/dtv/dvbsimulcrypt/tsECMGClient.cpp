@@ -410,7 +410,7 @@ void ts::ECMGClient::main()
                     ECMGClientHandlerInterface* handler = nullptr;
                     {
                         GuardMutex lock(_mutex);
-                        AsyncRequests::iterator it = _async_requests.find(resp->CP_number);
+                        auto it = _async_requests.find(resp->CP_number);
                         if (it != _async_requests.end()) {
                             handler = it->second;
                             _async_requests.erase(resp->CP_number);

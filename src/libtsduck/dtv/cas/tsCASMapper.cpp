@@ -74,8 +74,8 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
             const PAT pat(_duck, table);
             if (pat.isValid()) {
                 // Add a filter on each referenced PID to get all PMT's.
-                for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _demux.addPID(it->second);
+                for (auto pid : pat.pmts) {
+                    _demux.addPID(pid.second);
                 }
             }
             break;
@@ -94,8 +94,8 @@ void ts::CASMapper::handleTable(SectionDemux&, const BinaryTable& table)
                 // Identify all ECM PID's at program level.
                 analyzeCADescriptors(pmt.descs, true);
                 // Identify all ECM PID's at stream level.
-                for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    analyzeCADescriptors(it->second.descs, true);
+                for (const auto& it : pmt.streams) {
+                    analyzeCADescriptors(it.second.descs, true);
                 }
             }
             break;
@@ -134,25 +134,25 @@ void ts::CASMapper::analyzeCADescriptors(const DescriptorList& descs, bool is_ec
 uint16_t ts::CASMapper::casId(PID pid) const
 {
     // Get CAS id for this PID or get default CAS from context.
-    const PIDDescriptionMap::const_iterator it(_pids.find(pid));
+    const auto it = _pids.find(pid);
     return it == _pids.end() ? _duck.casId() : it->second.cas_id;
 }
 
 bool ts::CASMapper::isECM(PID pid) const
 {
-    const PIDDescriptionMap::const_iterator it(_pids.find(pid));
+    const auto it = _pids.find(pid);
     return it != _pids.end() && it->second.is_ecm;
 }
 
 bool ts::CASMapper::isEMM(PID pid) const
 {
-    const PIDDescriptionMap::const_iterator it(_pids.find(pid));
+    const auto it = _pids.find(pid);
     return it != _pids.end() && !it->second.is_ecm;
 }
 
 bool ts::CASMapper::getCADescriptor(PID pid, CADescriptorPtr& desc) const
 {
-    const PIDDescriptionMap::const_iterator it(_pids.find(pid));
+    const auto it = _pids.find(pid);
     if (it == _pids.end()) {
         desc.clear();
     }

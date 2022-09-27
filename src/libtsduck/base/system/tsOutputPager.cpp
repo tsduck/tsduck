@@ -82,8 +82,8 @@ ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly) :
         });
 
         // Search the predefined pager commands in the path.
-        for (std::list<PredefinedPager>::const_iterator itPager = pagers.begin(); itPager != pagers.end() && _pagerCommand.empty(); ++itPager) {
-            for (UStringList::const_iterator itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
+        for (auto itPager = pagers.begin(); itPager != pagers.end() && _pagerCommand.empty(); ++itPager) {
+            for (auto itDir = dirs.begin(); itDir != dirs.end() && _pagerCommand.empty(); ++itDir) {
                 // Full path of executable file.
                 const UString exe(*itDir + PathSeparator + itPager->command + TS_EXECUTABLE_SUFFIX);
                 if (FileExists(exe)) {

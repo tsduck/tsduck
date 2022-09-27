@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tstlvMessage.h"
+#include "tstlvMessageFactory.h"
 
 namespace ts {
     namespace tlv {
@@ -60,6 +61,13 @@ namespace ts {
             //! @param [in] ch_id Channel id.
             //!
             ChannelMessage(VERSION protocol_version, TAG tag, uint16_t ch_id = 0);
+
+            //!
+            //! Constructor.
+            //! @param [in] fact Message factory containing a binary message.
+            //! @param [in] tag_ch_id Message tag for the channel id field.
+            //!
+            ChannelMessage(const tlv::MessageFactory& fact, TAG tag_ch_id);
 
             //!
             //! Virtual destructor

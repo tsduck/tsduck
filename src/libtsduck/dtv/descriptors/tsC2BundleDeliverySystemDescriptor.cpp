@@ -95,14 +95,14 @@ ts::DID ts::C2BundleDeliverySystemDescriptor::extendedTag() const
 
 void ts::C2BundleDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt8(it->plp_id);
-        buf.putUInt8(it->data_slice_id);
-        buf.putUInt32(it->C2_system_tuning_frequency);
-        buf.putBits(it->C2_system_tuning_frequency_type, 2);
-        buf.putBits(it->active_OFDM_symbol_duration, 3);
-        buf.putBits(it->guard_interval, 3);
-        buf.putBit(it->master_channel);
+    for (const auto& it : entries) {
+        buf.putUInt8(it.plp_id);
+        buf.putUInt8(it.data_slice_id);
+        buf.putUInt32(it.C2_system_tuning_frequency);
+        buf.putBits(it.C2_system_tuning_frequency_type, 2);
+        buf.putBits(it.active_OFDM_symbol_duration, 3);
+        buf.putBits(it.guard_interval, 3);
+        buf.putBit(it.master_channel);
         buf.putBits(0x00, 7); // reserved_zero_future_use
     }
 }
@@ -155,15 +155,15 @@ void ts::C2BundleDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp
 
 void ts::C2BundleDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"plp");
-        e->setIntAttribute(u"plp_id", it->plp_id, true);
-        e->setIntAttribute(u"data_slice_id", it->data_slice_id, true);
-        e->setIntAttribute(u"C2_system_tuning_frequency", it->C2_system_tuning_frequency);
-        e->setIntAttribute(u"C2_system_tuning_frequency_type", it->C2_system_tuning_frequency_type);
-        e->setIntAttribute(u"active_OFDM_symbol_duration", it->active_OFDM_symbol_duration);
-        e->setIntEnumAttribute(C2DeliverySystemDescriptor::C2GuardIntervalNames, u"guard_interval", it->guard_interval);
-        e->setBoolAttribute(u"master_channel", it->master_channel);
+        e->setIntAttribute(u"plp_id", it.plp_id, true);
+        e->setIntAttribute(u"data_slice_id", it.data_slice_id, true);
+        e->setIntAttribute(u"C2_system_tuning_frequency", it.C2_system_tuning_frequency);
+        e->setIntAttribute(u"C2_system_tuning_frequency_type", it.C2_system_tuning_frequency_type);
+        e->setIntAttribute(u"active_OFDM_symbol_duration", it.active_OFDM_symbol_duration);
+        e->setIntEnumAttribute(C2DeliverySystemDescriptor::C2GuardIntervalNames, u"guard_interval", it.guard_interval);
+        e->setBoolAttribute(u"master_channel", it.master_channel);
     }
 }
 

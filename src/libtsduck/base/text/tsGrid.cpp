@@ -145,8 +145,8 @@ void ts::Grid::putMultiLine(const UString& text)
 {
     UStringList lines;
     text.splitLines(lines, _contentWidth, UString(), UString(), true);
-    for (UStringList::const_iterator it = lines.begin(); it != lines.end(); ++it) {
-        putLine(*it);
+    for (const auto& it : lines) {
+        putLine(it);
     }
 }
 
@@ -226,13 +226,13 @@ void ts::Grid::setLayout(const std::initializer_list<ColumnLayout> layout)
     _requestedLayout.reserve(layout.size());
 
     // Skip leading borders.
-    std::initializer_list<ColumnLayout>::const_iterator begin = layout.begin();
+    auto begin = layout.begin();
     while (begin != layout.end() && begin->isBorder()) {
         ++begin;
     }
 
     // Skip trailing borders.
-    std::initializer_list<ColumnLayout>::const_iterator end = layout.end();
+    auto end = layout.end();
     while (end != begin) {
         --end;
         if (!end->isBorder()) {
@@ -268,11 +268,11 @@ void ts::Grid::adjustLayout()
 
     // Compute total width.
     size_t allWidth = 0;
-    for (LayoutVector::iterator it = _layout.begin(); it != _layout.end(); ++it) {
-        if (!it->isBorder()) {
+    for (auto& it : _layout) {
+        if (!it.isBorder()) {
             textColCount++;
         }
-        allWidth += _marginWidth + it->_width;
+        allWidth += _marginWidth + it._width;
     }
 
     // If there is nothing to display, done.
@@ -293,7 +293,7 @@ void ts::Grid::adjustLayout()
         bool canDoMore = false;
         do {
             canDoMore = false;
-            for (LayoutVector::iterator it = _layout.begin(); it != _layout.end() && allWidth > _contentWidth; ++it) {
+            for (auto it = _layout.begin(); it != _layout.end() && allWidth > _contentWidth; ++it) {
                 if (!it->isBorder() && it->_width > minSize) {
                     const size_t less = std::min<size_t>(it->_width - minSize, lessPerCol);
                     it->_width -= less;
@@ -305,7 +305,7 @@ void ts::Grid::adjustLayout()
         // At this point, all columns are shrunk to the minimum.
         // Try deleting borders, starting by the end.
         // We should use a reverse_iterator but erase() only accepts an iterator.
-        for (LayoutVector::iterator it = _layout.end(); it != _layout.begin() && allWidth > _contentWidth; ) {
+        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _contentWidth; ) {
             --it;
             if (it->isBorder()) {
                 assert(allWidth >= it->_width + _marginWidth);
@@ -314,7 +314,7 @@ void ts::Grid::adjustLayout()
             }
         }
         // As a last chance, remove text columns, starting by the end.
-        for (LayoutVector::iterator it = _layout.end(); it != _layout.begin() && allWidth > _contentWidth; ) {
+        for (auto it = _layout.end(); it != _layout.begin() && allWidth > _contentWidth; ) {
             --it;
             assert(!it->isBorder());
             assert(allWidth >= it->_width + _marginWidth);
@@ -332,7 +332,7 @@ void ts::Grid::adjustLayout()
         // We allocate one more space is the last columns to compensate rounding.
         const size_t more = (_contentWidth - allWidth) / textColCount;
         const size_t evenMore = (_contentWidth - allWidth) % textColCount;
-        for (LayoutVector::iterator it = _layout.begin(); it != _layout.end(); ++it) {
+        for (auto it = _layout.begin(); it != _layout.end(); ++it) {
             if (!it->isBorder()) {
                 const size_t adjust = textColCount <= evenMore ? 1 : 0;
                 it->_width += more + adjust;
@@ -359,23 +359,23 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
     const UString margin(_marginWidth, ' ');
 
     // Iterator through text to display
-    std::initializer_list<ColumnText>::const_iterator iText = text.begin();
+    auto iText = text.begin();
     size_t currentWidth = 0;
     const ColumnText empty;
 
     // Loop on all declare columns.
-    for (LayoutVector::const_iterator iLayout = _layout.begin(); iLayout != _layout.end(); ++iLayout) {
+    for (auto iLayout : _layout) {
 
         // Left margin between columns (except for first column).
         if (currentWidth > 0) {
             _out << margin;
             currentWidth += _marginWidth;
         }
-        currentWidth += iLayout->_width;
+        currentWidth += iLayout._width;
 
-        if (iLayout->isBorder()) {
+        if (iLayout.isBorder()) {
             // Simply display the border character.
-            _out << iLayout->_pad;
+            _out << iLayout._pad;
         }
         else {
             // Text to display. The argument list may be shorter than the layout.
@@ -390,36 +390,36 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
             const UString& text1(txt->_texts[0]);
             const UString& text2(txt->_texts[1]);
 
-            if (text1.empty() && (iLayout->_justif != ColumnLayout::BOTH || text2.empty())) {
+            if (text1.empty() && (iLayout._justif != ColumnLayout::BOTH || text2.empty())) {
                 // Totally empty field, use spaces.
-                _out << std::string(iLayout->_width, ' ');
+                _out << std::string(iLayout._width, ' ');
             }
-            else if (iLayout->_justif == ColumnLayout::LEFT) {
+            else if (iLayout._justif == ColumnLayout::LEFT) {
                 // Only one text, left-justifed.
-                _out << text1.toJustifiedLeft(iLayout->_width, iLayout->_pad, true, 1);
+                _out << text1.toJustifiedLeft(iLayout._width, iLayout._pad, true, 1);
             }
-            else if (iLayout->_justif == ColumnLayout::RIGHT) {
+            else if (iLayout._justif == ColumnLayout::RIGHT) {
                 // Only one text, right-justifed.
-                _out << text1.toJustifiedRight(iLayout->_width, iLayout->_pad, true, 1);
+                _out << text1.toJustifiedRight(iLayout._width, iLayout._pad, true, 1);
             }
             else {
                 // Two text, a left-justified one and a right-justified one.
                 // The layout is:  text1 one-space pad-characters one-space text2.
-                assert(iLayout->_justif == ColumnLayout::BOTH);
+                assert(iLayout._justif == ColumnLayout::BOTH);
                 size_t leftWidth = text1.width();
                 size_t rightWidth = text2.width();
                 // Check if both texts fit in the line (the 2 spaces are never removed).
-                const bool fits = leftWidth + 2 + rightWidth <= iLayout->_width;
+                const bool fits = leftWidth + 2 + rightWidth <= iLayout._width;
                 if (!fits) {
                     // Strings are too large, truncate one of them or both.
-                    const size_t excess = leftWidth + 2 + rightWidth - iLayout->_width;
-                    if (iLayout->_truncation == ColumnLayout::LEFT) {
+                    const size_t excess = leftWidth + 2 + rightWidth - iLayout._width;
+                    if (iLayout._truncation == ColumnLayout::LEFT) {
                         // Truncate left one first.
                         const size_t leftExcess = std::min(leftWidth, excess);
                         leftWidth -= leftExcess;
                         rightWidth -= excess - leftExcess;
                     }
-                    else if (iLayout->_truncation == ColumnLayout::RIGHT) {
+                    else if (iLayout._truncation == ColumnLayout::RIGHT) {
                         // Truncate right one first.
                         const size_t rightExcess = std::min(rightWidth, excess);
                         rightWidth -= rightExcess;
@@ -442,11 +442,11 @@ void ts::Grid::putLayout(const std::initializer_list<ColumnText> text)
                     }
                 }
                 // Now, we have adjusted leftWidth and rightWidth to make sure the 2 texts fit on the line.
-                assert(leftWidth + 2 + rightWidth <= iLayout->_width);
+                assert(leftWidth + 2 + rightWidth <= iLayout._width);
                 _out << (fits ? text1 : text1.toTruncatedWidth(leftWidth, LEFT_TO_RIGHT))
-                     << (text1.empty() ? iLayout->_pad : SPACE)
-                     << UString(iLayout->_width - leftWidth - 2 - rightWidth, iLayout->_pad)
-                     << (text2.empty() ? iLayout->_pad : SPACE)
+                     << (text1.empty() ? iLayout._pad : SPACE)
+                     << UString(iLayout._width - leftWidth - 2 - rightWidth, iLayout._pad)
+                     << (text2.empty() ? iLayout._pad : SPACE)
                      << (fits ? text2 : text2.toTruncatedWidth(rightWidth, RIGHT_TO_LEFT));
             }
         }

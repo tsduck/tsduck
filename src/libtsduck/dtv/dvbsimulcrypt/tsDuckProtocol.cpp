@@ -32,7 +32,7 @@
 #include "tsSection.h"
 
 // Define protocol singleton instance
-TS_DEFINE_SINGLETON (ts::duck::Protocol);
+TS_DEFINE_SINGLETON(ts::duck::Protocol);
 
 
 //----------------------------------------------------------------------------

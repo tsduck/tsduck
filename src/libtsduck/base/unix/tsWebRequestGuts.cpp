@@ -446,8 +446,8 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
     // Set the request headers.
     if (status == ::CURLE_OK && !_request._requestHeaders.empty()) {
-        for (HeadersMap::const_iterator it = _request._requestHeaders.begin(); it != _request._requestHeaders.end(); ++it) {
-            const UString header(it->first + u": " + it->second);
+        for (const auto& it : _request._requestHeaders) {
+            const UString header(it.first + u": " + it.second);
             _headers = ::curl_slist_append(_headers, header.toUTF8().c_str());
         }
         status = ::curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _headers);

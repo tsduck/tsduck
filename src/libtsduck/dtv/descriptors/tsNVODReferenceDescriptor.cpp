@@ -79,10 +79,10 @@ void ts::NVODReferenceDescriptor::clearContent()
 
 void ts::NVODReferenceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->transport_stream_id);
-        buf.putUInt16(it->original_network_id);
-        buf.putUInt16(it->service_id);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.transport_stream_id);
+        buf.putUInt16(it.original_network_id);
+        buf.putUInt16(it.service_id);
     }
 }
 
@@ -124,11 +124,11 @@ void ts::NVODReferenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 
 void ts::NVODReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"transport_stream_id", it->transport_stream_id, true);
-        e->setIntAttribute(u"original_network_id", it->original_network_id, true);
-        e->setIntAttribute(u"service_id", it->service_id, true);
+        e->setIntAttribute(u"transport_stream_id", it.transport_stream_id, true);
+        e->setIntAttribute(u"original_network_id", it.original_network_id, true);
+        e->setIntAttribute(u"service_id", it.service_id, true);
     }
 }
 

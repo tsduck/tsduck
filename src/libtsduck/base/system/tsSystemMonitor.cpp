@@ -112,12 +112,12 @@ void ts::SystemMonitor::main()
     }
 
     // Start with the first period. There must be at least one if the configuration is valid.
-    PeriodList::const_iterator period = _periods.begin();
+    auto period = _periods.begin();
     assert(period != _periods.end());
     size_t period_index = 0;
 
     // Last period.
-    PeriodList::const_iterator last_period = _periods.end();
+    auto last_period = _periods.end();
     assert(last_period != _periods.begin());
     --last_period;
 

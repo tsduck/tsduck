@@ -163,8 +163,8 @@ void ts::MPEDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
                 // Remember our transport stream.
                 _ts_id = pat.ts_id;
                 // Add all PMT PID's to PSI demux.
-                for (PAT::ServiceMap::const_iterator it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _psi_demux.addPID(it->second);
+                for (const auto& it : pat.pmts) {
+                    _psi_demux.addPID(it.second);
                 }
             }
             break;
@@ -203,10 +203,10 @@ void ts::MPEDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
 void ts::MPEDemux::processPMT(const PMT& pmt)
 {
     // Loop on all components of the service.
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+    for (const auto& it : pmt.streams) {
 
-        const PID pid = it->first;
-        const PMT::Stream& stream(it->second);
+        const PID pid = it.first;
+        const PMT::Stream& stream(it.second);
 
         // Loop on all data_broadcast_id_descriptors for the component.
         for (size_t i = stream.descs.search(DID_DATA_BROADCAST_ID); i < stream.descs.count(); i = stream.descs.search(DID_DATA_BROADCAST_ID, i + 1)) {
@@ -252,9 +252,9 @@ void ts::MPEDemux::processINT(const INT& imnt)
     // of a device. But we should be prepared to incorrect signalization.
 
     processINTDescriptors(imnt.platform_descs);
-    for (INT::DeviceList::const_iterator it = imnt.devices.begin(); it != imnt.devices.end(); ++it) {
-        processINTDescriptors(it->second.target_descs);
-        processINTDescriptors(it->second.operational_descs);
+    for (const auto& it : imnt.devices) {
+        processINTDescriptors(it.second.target_descs);
+        processINTDescriptors(it.second.operational_descs);
     }
 }
 
@@ -275,7 +275,7 @@ void ts::MPEDemux::processINTDescriptors(const DescriptorList& descs)
             _int_tags.insert(ServiceTagToInt(desc.service_id, desc.component_tag));
 
             // Check if we already found the PMT for this service
-            const PMTMap::const_iterator it(_pmts.find(desc.service_id));
+            const auto it = _pmts.find(desc.service_id);
             PID pid = PID_NULL;
             if (it != _pmts.end() && (pid = it->second->componentTagToPID(desc.component_tag)) != PID_NULL) {
                 // Yes, the PMT was already found and it has a component with the specified tag.
