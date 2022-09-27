@@ -131,12 +131,14 @@ void ts::json::Array::print(TextFormatter& output) const
     output << "[" << ts::indent;
 
     // Format all fields.
-    for (std::vector<ValuePtr>::const_iterator it = _value.begin(); it != _value.end(); ++it) {
-        if (it != _value.begin()) {
+    bool first = true;
+    for (const auto& it : _value) {
+        if (!first) {
             output << ",";
         }
         output << ts::endl << ts::margin;
-        (*it)->print(output);
+        it->print(output);
+        first = false;
     }
 
     // Unindent and closing sequence.

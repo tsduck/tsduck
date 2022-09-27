@@ -118,8 +118,11 @@ void ts::SubRipGenerator::addFrame(MilliSecond showTimestamp, MilliSecond hideTi
 {
     // Empty lines are illegal in SRT. Make sure we have at least one non-empty line.
     bool notEmpty = false;
-    for (UStringList::const_iterator it = lines.begin(); !notEmpty && it != lines.end(); ++it) {
-        notEmpty = !it->empty();
+    for (const auto& it : lines) {
+        if (!it.empty()) {
+            notEmpty = true;
+            break;
+        }
     }
 
     // Generate the frame only when it is possible to do so.
@@ -130,10 +133,10 @@ void ts::SubRipGenerator::addFrame(MilliSecond showTimestamp, MilliSecond hideTi
                  << FormatDuration(showTimestamp, hideTimestamp) << std::endl;
 
         // Subsequent lines: Subtitle text.
-        for (UStringList::const_iterator it = lines.begin(); it != lines.end(); ++it) {
+        for (const auto& it : lines) {
             // Empty lines are illegal in SRT, skip them.
-            if (!it->empty()) {
-                *_stream << *it << std::endl;
+            if (!it.empty()) {
+                *_stream << it << std::endl;
             }
         }
         // Trailing empty line to mark the end of frame.

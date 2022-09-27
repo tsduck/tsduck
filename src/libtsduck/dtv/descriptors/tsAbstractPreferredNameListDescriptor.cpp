@@ -74,12 +74,12 @@ ts::AbstractPreferredNameListDescriptor::AbstractPreferredNameListDescriptor(Duc
 
 void ts::AbstractPreferredNameListDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        buf.putLanguageCode(it1->first); // language
-        buf.putUInt8(uint8_t(it1->second.size())); // name_count
-        for (auto it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
-            buf.putUInt8(it2->first);  // name_id
-            buf.putStringWithByteLength(it2->second);
+    for (const auto& it1 : entries) {
+        buf.putLanguageCode(it1.first); // language
+        buf.putUInt8(uint8_t(it1.second.size())); // name_count
+        for (const auto& it2 : it1.second) {
+            buf.putUInt8(it2.first);  // name_id
+            buf.putStringWithByteLength(it2.second);
         }
     }
 }
@@ -129,13 +129,13 @@ void ts::AbstractPreferredNameListDescriptor::DisplayDescriptor(TablesDisplay& d
 
 void ts::AbstractPreferredNameListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (LanguageMap::const_iterator it1 = entries.begin(); it1 != entries.end(); ++it1) {
+    for (const auto& it1 : entries) {
         xml::Element* e1 = root->addElement(u"language");
-        e1->setAttribute(u"code", it1->first);
-        for (NameByIdMap::const_iterator it2 = it1->second.begin(); it2 != it1->second.end(); ++it2) {
+        e1->setAttribute(u"code", it1.first);
+        for (const auto& it2 : it1.second) {
             xml::Element* e2 = e1->addElement(u"name");
-            e2->setIntAttribute(u"name_id", it2->first, true);
-            e2->setAttribute(u"name", it2->second);
+            e2->setIntAttribute(u"name_id", it2.first, true);
+            e2->setAttribute(u"name", it2.second);
         }
     }
 }

@@ -81,12 +81,12 @@ ts::EutelsatChannelNumberDescriptor::Entry::Entry(uint16_t onetw_id_, uint16_t t
 
 void ts::EutelsatChannelNumberDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->onetw_id);
-        buf.putUInt16(it->ts_id);
-        buf.putUInt16(it->service_id);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.onetw_id);
+        buf.putUInt16(it.ts_id);
+        buf.putUInt16(it.service_id);
         buf.putBits(0xFF, 4);
-        buf.putBits(it->ecn, 12);
+        buf.putBits(it.ecn, 12);
     }
 }
 
@@ -134,12 +134,12 @@ void ts::EutelsatChannelNumberDescriptor::DisplayDescriptor(TablesDisplay& disp,
 
 void ts::EutelsatChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"original_network_id", it->onetw_id, true);
-        e->setIntAttribute(u"transport_stream_id", it->ts_id, true);
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"eutelsat_channel_number", it->ecn, false);
+        e->setIntAttribute(u"original_network_id", it.onetw_id, true);
+        e->setIntAttribute(u"transport_stream_id", it.ts_id, true);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setIntAttribute(u"eutelsat_channel_number", it.ecn, false);
     }
 }
 

@@ -128,7 +128,7 @@ ts::emmgmux::Protocol::Protocol() :
 // Message factory for the protocol
 //----------------------------------------------------------------------------
 
-void ts::emmgmux::Protocol::factory (const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
+void ts::emmgmux::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     switch (fact.commandTag()) {
         case Tags::channel_setup:
@@ -248,18 +248,16 @@ void ts::emmgmux::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
 //----------------------------------------------------------------------------
 
 ts::emmgmux::ChannelSetup::ChannelSetup() :
-    ChannelMessage     (emmgmux::Protocol::Instance()->version(), Tags::channel_setup),
-    client_id          (0),
-    section_TSpkt_flag (false)
+    ChannelMessage(emmgmux::Protocol::Instance()->version(), Tags::channel_setup),
+    client_id(0),
+    section_TSpkt_flag(false)
 {
 }
 
 ts::emmgmux::ChannelSetup::ChannelSetup(const tlv::MessageFactory& fact) :
-    ChannelMessage     (fact.protocolVersion(),
-                        fact.commandTag(),
-                        fact.get<uint16_t>(Tags::data_channel_id)),
-    client_id          (fact.get<uint32_t>(Tags::client_id)),
-    section_TSpkt_flag (fact.get<bool>(Tags::section_TSpkt_flag))
+    ChannelMessage(fact, Tags::data_channel_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    section_TSpkt_flag(fact.get<bool>(Tags::section_TSpkt_flag))
 {
 }
 
@@ -273,7 +271,7 @@ void ts::emmgmux::ChannelSetup::serializeParameters(tlv::Serializer& fact) const
 ts::UString ts::emmgmux::ChannelSetup::dump(size_t indent) const
 {
     return UString::Format(u"%*schannel_setup (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpDecimal(indent, u"section_TSpkt_flag", section_TSpkt_flag ? 1 : 0);
@@ -285,29 +283,27 @@ ts::UString ts::emmgmux::ChannelSetup::dump(size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::ChannelTest::ChannelTest() :
-    ChannelMessage (emmgmux::Protocol::Instance()->version(), Tags::channel_test),
-    client_id      (0)
+    ChannelMessage(emmgmux::Protocol::Instance()->version(), Tags::channel_test),
+    client_id(0)
 {
 }
 
-ts::emmgmux::ChannelTest::ChannelTest (const tlv::MessageFactory& fact) :
-    ChannelMessage (fact.protocolVersion(),
-                    fact.commandTag(),
-                    fact.get<uint16_t> (Tags::data_channel_id)),
-    client_id      (fact.get<uint32_t> (Tags::client_id))
+ts::emmgmux::ChannelTest::ChannelTest(const tlv::MessageFactory& fact) :
+    ChannelMessage(fact, Tags::data_channel_id),
+    client_id(fact.get<uint32_t>(Tags::client_id))
 {
 }
 
-void ts::emmgmux::ChannelTest::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::ChannelTest::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
     fact.put(Tags::client_id,       client_id);
 }
 
-ts::UString ts::emmgmux::ChannelTest::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelTest::dump(size_t indent) const
 {
     return UString::Format(u"%*schannel_test (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id);
 }
@@ -318,32 +314,30 @@ ts::UString ts::emmgmux::ChannelTest::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::ChannelStatus::ChannelStatus() :
-    ChannelMessage     (emmgmux::Protocol::Instance()->version(), Tags::channel_status),
-    client_id          (0),
-    section_TSpkt_flag (false)
+    ChannelMessage(emmgmux::Protocol::Instance()->version(), Tags::channel_status),
+    client_id(0),
+    section_TSpkt_flag(false)
 {
 }
 
-ts::emmgmux::ChannelStatus::ChannelStatus (const tlv::MessageFactory& fact) :
-    ChannelMessage     (fact.protocolVersion(),
-                        fact.commandTag(),
-                        fact.get<uint16_t> (Tags::data_channel_id)),
-    client_id          (fact.get<uint32_t> (Tags::client_id)),
-    section_TSpkt_flag (fact.get<bool>   (Tags::section_TSpkt_flag))
+ts::emmgmux::ChannelStatus::ChannelStatus(const tlv::MessageFactory& fact) :
+    ChannelMessage(fact, Tags::data_channel_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    section_TSpkt_flag(fact.get<bool>(Tags::section_TSpkt_flag))
 {
 }
 
-void ts::emmgmux::ChannelStatus::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::ChannelStatus::serializeParameters(tlv::Serializer& fact) const
 {
-    fact.put(Tags::data_channel_id,    channel_id);
-    fact.put(Tags::client_id,          client_id);
+    fact.put(Tags::data_channel_id, channel_id);
+    fact.put(Tags::client_id, client_id);
     fact.put(Tags::section_TSpkt_flag, section_TSpkt_flag);
 }
 
-ts::UString ts::emmgmux::ChannelStatus::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelStatus::dump(size_t indent) const
 {
     return UString::Format(u"%*schannel_status (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpDecimal(indent, u"section_TSpkt_flag", section_TSpkt_flag ? 1 : 0);
@@ -355,29 +349,27 @@ ts::UString ts::emmgmux::ChannelStatus::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::ChannelClose::ChannelClose() :
-    ChannelMessage (emmgmux::Protocol::Instance()->version(), Tags::channel_close),
-    client_id      (0)
+    ChannelMessage(emmgmux::Protocol::Instance()->version(), Tags::channel_close),
+    client_id(0)
 {
 }
 
-ts::emmgmux::ChannelClose::ChannelClose (const tlv::MessageFactory& fact) :
-    ChannelMessage (fact.protocolVersion(),
-                    fact.commandTag(),
-                    fact.get<uint16_t> (Tags::data_channel_id)),
-    client_id      (fact.get<uint32_t> (Tags::client_id))
+ts::emmgmux::ChannelClose::ChannelClose(const tlv::MessageFactory& fact) :
+    ChannelMessage(fact, Tags::data_channel_id),
+    client_id(fact.get<uint32_t>(Tags::client_id))
 {
 }
 
-void ts::emmgmux::ChannelClose::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::ChannelClose::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
-    fact.put(Tags::client_id,       client_id);
+    fact.put(Tags::client_id, client_id);
 }
 
-ts::UString ts::emmgmux::ChannelClose::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelClose::dump(size_t indent) const
 {
     return UString::Format(u"%*schannel_close (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id);
 }
@@ -388,26 +380,24 @@ ts::UString ts::emmgmux::ChannelClose::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::ChannelError::ChannelError() :
-    ChannelMessage    (emmgmux::Protocol::Instance()->version(), Tags::channel_error),
-    client_id         (0),
-    error_status      (),
-    error_information ()
+    ChannelMessage(emmgmux::Protocol::Instance()->version(), Tags::channel_error),
+    client_id(0),
+    error_status(),
+    error_information()
 {
 }
 
-ts::emmgmux::ChannelError::ChannelError (const tlv::MessageFactory& fact) :
-    ChannelMessage    (fact.protocolVersion(),
-                       fact.commandTag(),
-                       fact.get<uint16_t> (Tags::data_channel_id)),
-    client_id         (fact.get<uint32_t> (Tags::client_id)),
-    error_status      (),
-    error_information ()
+ts::emmgmux::ChannelError::ChannelError(const tlv::MessageFactory& fact) :
+    ChannelMessage(fact, Tags::data_channel_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    error_status(),
+    error_information()
 {
     fact.get(Tags::error_status, error_status);
     fact.get(Tags::error_information, error_information);
 }
 
-void ts::emmgmux::ChannelError::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::ChannelError::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
     fact.put(Tags::client_id, client_id);
@@ -415,10 +405,10 @@ void ts::emmgmux::ChannelError::serializeParameters (tlv::Serializer& fact) cons
     fact.put(Tags::error_information, error_information);
 }
 
-ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
+ts::UString ts::emmgmux::ChannelError::dump(size_t indent) const
 {
     return UString::Format(u"%*schannel_error (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpVector(indent, u"error_status", error_status, Errors::Name) +
@@ -431,37 +421,34 @@ ts::UString ts::emmgmux::ChannelError::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamSetup::StreamSetup() :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_setup),
-    client_id     (0),
-    data_id       (0),
-    data_type     (0)
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_setup),
+    client_id(0),
+    data_id(0),
+    data_type(0)
 {
 }
 
-ts::emmgmux::StreamSetup::StreamSetup (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id)),
-    data_id       (fact.get<uint16_t> (Tags::data_id)),
-    data_type     (fact.get<uint8_t>  (Tags::data_type))
+ts::emmgmux::StreamSetup::StreamSetup(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    data_id(fact.get<uint16_t>(Tags::data_id)),
+    data_type(fact.get<uint8_t>(Tags::data_type))
 {
 }
 
-void ts::emmgmux::StreamSetup::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamSetup::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
-    fact.put(Tags::data_stream_id,  stream_id);
-    fact.put(Tags::client_id,       client_id);
-    fact.put(Tags::data_id,         data_id);
-    fact.put(Tags::data_type,       data_type);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
+    fact.put(Tags::data_id, data_id);
+    fact.put(Tags::data_type, data_type);
 }
 
-ts::UString ts::emmgmux::StreamSetup::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamSetup::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_setup (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id) +
@@ -475,28 +462,25 @@ ts::UString ts::emmgmux::StreamSetup::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamTest::StreamTest() :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_test),
-    client_id     (0)
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_test),
+    client_id(0)
 {
 }
 
-ts::emmgmux::StreamTest::StreamTest (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id))
+ts::emmgmux::StreamTest::StreamTest(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id))
 {
 }
 
-void ts::emmgmux::StreamTest::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamTest::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
-    fact.put(Tags::data_stream_id,  stream_id);
-    fact.put(Tags::client_id,       client_id);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
 }
 
-ts::UString ts::emmgmux::StreamTest::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamTest::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_test (" PROTOCOL_NAME u")\n", {indent, u""}) +
         tlv::Message::dump (indent) +
@@ -511,37 +495,34 @@ ts::UString ts::emmgmux::StreamTest::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamStatus::StreamStatus() :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_status),
-    client_id     (0),
-    data_id       (0),
-    data_type     (0)
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_status),
+    client_id(0),
+    data_id(0),
+    data_type(0)
 {
 }
 
-ts::emmgmux::StreamStatus::StreamStatus (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id)),
-    data_id       (fact.get<uint16_t> (Tags::data_id)),
-    data_type     (fact.get<uint8_t>  (Tags::data_type))
+ts::emmgmux::StreamStatus::StreamStatus(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    data_id(fact.get<uint16_t>(Tags::data_id)),
+    data_type(fact.get<uint8_t>(Tags::data_type))
 {
 }
 
-void ts::emmgmux::StreamStatus::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamStatus::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
-    fact.put(Tags::data_stream_id,  stream_id);
-    fact.put(Tags::client_id,       client_id);
-    fact.put(Tags::data_id,         data_id);
-    fact.put(Tags::data_type,       data_type);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
+    fact.put(Tags::data_id, data_id);
+    fact.put(Tags::data_type, data_type);
 }
 
-ts::UString ts::emmgmux::StreamStatus::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamStatus::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_status (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id) +
@@ -555,31 +536,28 @@ ts::UString ts::emmgmux::StreamStatus::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamCloseRequest::StreamCloseRequest() :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_close_request),
-    client_id     (0)
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_close_request),
+    client_id(0)
 {
 }
 
-ts::emmgmux::StreamCloseRequest::StreamCloseRequest (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id))
+ts::emmgmux::StreamCloseRequest::StreamCloseRequest(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id))
 {
 }
 
-void ts::emmgmux::StreamCloseRequest::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamCloseRequest::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
-    fact.put(Tags::data_stream_id,  stream_id);
-    fact.put(Tags::client_id,       client_id);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
 }
 
-ts::UString ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamCloseRequest::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_close_request (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id);
@@ -591,31 +569,28 @@ ts::UString ts::emmgmux::StreamCloseRequest::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamCloseResponse::StreamCloseResponse() :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_close_response),
-    client_id     (0)
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_close_response),
+    client_id(0)
 {
 }
 
-ts::emmgmux::StreamCloseResponse::StreamCloseResponse (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id))
+ts::emmgmux::StreamCloseResponse::StreamCloseResponse(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id))
 {
 }
 
-void ts::emmgmux::StreamCloseResponse::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamCloseResponse::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
-    fact.put(Tags::data_stream_id,  stream_id);
-    fact.put(Tags::client_id,       client_id);
+    fact.put(Tags::data_stream_id, stream_id);
+    fact.put(Tags::client_id, client_id);
 }
 
-ts::UString ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamCloseResponse::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_close_response (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id);
@@ -627,27 +602,24 @@ ts::UString ts::emmgmux::StreamCloseResponse::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamError::StreamError() :
-    StreamMessage     (emmgmux::Protocol::Instance()->version(), Tags::stream_error),
-    client_id         (0),
-    error_status      (),
-    error_information ()
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_error),
+    client_id(0),
+    error_status(),
+    error_information()
 {
 }
 
-ts::emmgmux::StreamError::StreamError (const tlv::MessageFactory& fact) :
-    StreamMessage     (fact.protocolVersion(),
-                       fact.commandTag(),
-                       fact.get<uint16_t> (Tags::data_channel_id),
-                       fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id         (fact.get<uint32_t> (Tags::client_id)),
-    error_status      (),
-    error_information ()
+ts::emmgmux::StreamError::StreamError(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    error_status(),
+    error_information()
 {
-    fact.get (Tags::error_status, error_status);
-    fact.get (Tags::error_information, error_information);
+    fact.get(Tags::error_status, error_status);
+    fact.get(Tags::error_information, error_information);
 }
 
-void ts::emmgmux::StreamError::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamError::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
     fact.put(Tags::data_stream_id, stream_id);
@@ -656,10 +628,10 @@ void ts::emmgmux::StreamError::serializeParameters (tlv::Serializer& fact) const
     fact.put(Tags::error_information, error_information);
 }
 
-ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamError::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_error (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id) +
@@ -673,25 +645,22 @@ ts::UString ts::emmgmux::StreamError::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamBWRequest::StreamBWRequest() :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_BW_request),
-    client_id     (0),
-    has_bandwidth (false),
-    bandwidth     (0)
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_BW_request),
+    client_id(0),
+    has_bandwidth(false),
+    bandwidth(0)
 {
 }
 
-ts::emmgmux::StreamBWRequest::StreamBWRequest (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id)),
-    has_bandwidth (1 == fact.count (Tags::bandwidth)),
-    bandwidth     (!has_bandwidth ? 0 : fact.get<int16_t> (Tags::bandwidth))
+ts::emmgmux::StreamBWRequest::StreamBWRequest(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    has_bandwidth(1 == fact.count(Tags::bandwidth)),
+    bandwidth(!has_bandwidth ? 0 : fact.get<int16_t>(Tags::bandwidth))
 {
 }
 
-void ts::emmgmux::StreamBWRequest::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamBWRequest::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
     fact.put(Tags::data_stream_id, stream_id);
@@ -701,10 +670,10 @@ void ts::emmgmux::StreamBWRequest::serializeParameters (tlv::Serializer& fact) c
     }
 }
 
-ts::UString ts::emmgmux::StreamBWRequest::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamBWRequest::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_BW_request (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id) +
@@ -717,25 +686,22 @@ ts::UString ts::emmgmux::StreamBWRequest::dump (size_t indent) const
 //----------------------------------------------------------------------------
 
 ts::emmgmux::StreamBWAllocation::StreamBWAllocation() :
-    StreamMessage (emmgmux::Protocol::Instance()->version(), Tags::stream_BW_allocation),
-    client_id     (0),
-    has_bandwidth (false),
-    bandwidth     (0)
+    StreamMessage(emmgmux::Protocol::Instance()->version(), Tags::stream_BW_allocation),
+    client_id(0),
+    has_bandwidth(false),
+    bandwidth(0)
 {
 }
 
-ts::emmgmux::StreamBWAllocation::StreamBWAllocation (const tlv::MessageFactory& fact) :
-    StreamMessage (fact.protocolVersion(),
-                   fact.commandTag(),
-                   fact.get<uint16_t> (Tags::data_channel_id),
-                   fact.get<uint16_t> (Tags::data_stream_id)),
-    client_id     (fact.get<uint32_t> (Tags::client_id)),
-    has_bandwidth (1 == fact.count (Tags::bandwidth)),
-    bandwidth     (!has_bandwidth ? 0 : fact.get<int16_t> (Tags::bandwidth))
+ts::emmgmux::StreamBWAllocation::StreamBWAllocation(const tlv::MessageFactory& fact) :
+    StreamMessage(fact, Tags::data_channel_id, Tags::data_stream_id),
+    client_id(fact.get<uint32_t>(Tags::client_id)),
+    has_bandwidth(1 == fact.count(Tags::bandwidth)),
+    bandwidth(!has_bandwidth ? 0 : fact.get<int16_t>(Tags::bandwidth))
 {
 }
 
-void ts::emmgmux::StreamBWAllocation::serializeParameters (tlv::Serializer& fact) const
+void ts::emmgmux::StreamBWAllocation::serializeParameters(tlv::Serializer& fact) const
 {
     fact.put(Tags::data_channel_id, channel_id);
     fact.put(Tags::data_stream_id, stream_id);
@@ -745,10 +711,10 @@ void ts::emmgmux::StreamBWAllocation::serializeParameters (tlv::Serializer& fact
     }
 }
 
-ts::UString ts::emmgmux::StreamBWAllocation::dump (size_t indent) const
+ts::UString ts::emmgmux::StreamBWAllocation::dump(size_t indent) const
 {
     return UString::Format(u"%*sstream_BW_allocation (" PROTOCOL_NAME u")\n", {indent, u""}) +
-        tlv::Message::dump (indent) +
+        tlv::Message::dump(indent) +
         dumpHexa(indent, u"client_id", client_id) +
         dumpHexa(indent, u"data_channel_id", channel_id) +
         dumpHexa(indent, u"data_stream_id", stream_id) +
@@ -781,7 +747,7 @@ ts::emmgmux::DataProvision::DataProvision(const tlv::MessageFactory& fact) :
     fact.get(Tags::datagram, params);
     datagram.resize(params.size());
     for (size_t i = 0; i < params.size(); ++i) {
-        datagram[i] = new ByteBlock (params[i].addr, params[i].length);
+        datagram[i] = new ByteBlock(params[i].addr, params[i].length);
     }
 }
 

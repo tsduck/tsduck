@@ -323,12 +323,12 @@ namespace ts {
             static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = nullptr)
             {
                 UString s;
-                for (typename std::vector<INT>::const_iterator it = val.begin(); it != val.end(); ++it) {
+                for (auto i : val) {
                     if (toString == nullptr) {
-                        s += dumpInteger(indent, name, *it);
+                        s += dumpInteger(indent, name, i);
                     }
                     else {
-                        s += UString::Format(u"%*s%s = %s\n", {indent, u"", name, toString(*it)});
+                        s += UString::Format(u"%*s%s = %s\n", {indent, u"", name, toString(i)});
                     }
                 }
                 return s;

@@ -138,11 +138,11 @@ void ts::ATSCTimeShiftedServiceDescriptor::DisplayDescriptor(TablesDisplay& disp
 
 void ts::ATSCTimeShiftedServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"time_shift", it->time_shift, false);
-        e->setIntAttribute(u"major_channel_number", it->major_channel_number, false);
-        e->setIntAttribute(u"minor_channel_number", it->minor_channel_number, false);
+        e->setIntAttribute(u"time_shift", it.time_shift, false);
+        e->setIntAttribute(u"major_channel_number", it.major_channel_number, false);
+        e->setIntAttribute(u"minor_channel_number", it.minor_channel_number, false);
     }
 }
 

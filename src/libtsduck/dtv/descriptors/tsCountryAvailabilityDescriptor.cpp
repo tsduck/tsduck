@@ -84,8 +84,8 @@ void ts::CountryAvailabilityDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBit(country_availability);
     buf.putBits(0xFF, 7);
-    for (size_t n = 0; n < country_codes.size(); ++n) {
-        buf.putLanguageCode(country_codes[n]);
+    for (const auto& code : country_codes) {
+        buf.putLanguageCode(code);
     }
 }
 
@@ -127,9 +127,9 @@ void ts::CountryAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 void ts::CountryAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"country_availability", country_availability);
-    for (UStringVector::const_iterator it = country_codes.begin(); it != country_codes.end(); ++it) {
+    for (const auto& code : country_codes) {
         xml::Element* e = root->addElement(u"country");
-        e->setAttribute(u"country_code", *it);
+        e->setAttribute(u"country_code", code);
     }
 }
 

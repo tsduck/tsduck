@@ -93,9 +93,9 @@ ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint
 
 void ts::ParentalRatingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putLanguageCode(it->country_code);
-        buf.putUInt8(it->rating);
+    for (const auto& it : entries) {
+        buf.putLanguageCode(it.country_code);
+        buf.putUInt8(it.rating);
     }
 }
 
@@ -145,10 +145,10 @@ void ts::ParentalRatingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 
 void ts::ParentalRatingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"country");
-        e->setAttribute(u"country_code", it->country_code);
-        e->setIntAttribute(u"rating", it->rating, true);
+        e->setAttribute(u"country_code", it.country_code);
+        e->setIntAttribute(u"rating", it.rating, true);
     }
 }
 

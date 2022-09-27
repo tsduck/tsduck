@@ -323,11 +323,11 @@ bool ts::TSScrambling::loadArgs(DuckContext& duck, Args& args)
     // Decode control words from hexa to binary
     _cw_list.clear();
     ByteBlock cw;
-    for (UStringList::iterator it = lines.begin(); it != lines.end(); ++it) {
-        it->trim();
-        if (!it->empty()) {
-            if (!it->hexaDecode(cw) || cw.size() != cwSize()) {
-                args.error(u"invalid control word \"%s\", specify %d hexa digits", {*it, 2 * cwSize()});
+    for (auto& it : lines) {
+        it.trim();
+        if (!it.empty()) {
+            if (!it.hexaDecode(cw) || cw.size() != cwSize()) {
+                args.error(u"invalid control word \"%s\", specify %d hexa digits", {it, 2 * cwSize()});
             }
             else {
                 _cw_list.push_back(cw);

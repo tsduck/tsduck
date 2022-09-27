@@ -84,19 +84,19 @@ void ts::CaptionServiceDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(0xFF, 3);
     buf.putBits(entries.size(), 5);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putLanguageCode(it->language);
-        buf.putBit(it->digital_cc);
+    for (const auto& it : entries) {
+        buf.putLanguageCode(it.language);
+        buf.putBit(it.digital_cc);
         buf.putBit(1);
-        if (it->digital_cc) {
-            buf.putBits(it->caption_service_number, 6);
+        if (it.digital_cc) {
+            buf.putBits(it.caption_service_number, 6);
         }
         else {
             buf.putBits(0xFF, 5);
-            buf.putBit(it->line21_field);
+            buf.putBit(it.line21_field);
         }
-        buf.putBit(it->easy_reader);
-        buf.putBit(it->wide_aspect_ratio);
+        buf.putBit(it.easy_reader);
+        buf.putBit(it.wide_aspect_ratio);
         buf.putBits(0xFFFF, 14);
     }
 }
@@ -166,18 +166,18 @@ void ts::CaptionServiceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 
 void ts::CaptionServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setAttribute(u"language", it->language);
-        e->setBoolAttribute(u"digital_cc", it->digital_cc);
-        if (it->digital_cc) {
-            e->setIntAttribute(u"caption_service_number", it->caption_service_number, true);
+        e->setAttribute(u"language", it.language);
+        e->setBoolAttribute(u"digital_cc", it.digital_cc);
+        if (it.digital_cc) {
+            e->setIntAttribute(u"caption_service_number", it.caption_service_number, true);
         }
         else {
-            e->setBoolAttribute(u"line21_field", it->line21_field);
+            e->setBoolAttribute(u"line21_field", it.line21_field);
         }
-        e->setBoolAttribute(u"easy_reader", it->easy_reader);
-        e->setBoolAttribute(u"wide_aspect_ratio", it->wide_aspect_ratio);
+        e->setBoolAttribute(u"easy_reader", it.easy_reader);
+        e->setBoolAttribute(u"wide_aspect_ratio", it.wide_aspect_ratio);
     }
 }
 

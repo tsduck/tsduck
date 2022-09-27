@@ -109,9 +109,9 @@ ts::UString ts::tlv::Message::dumpOptional(size_t indent, const UString& name, b
 
 ts::UString ts::tlv::Message::dumpVector(size_t indent, const UString& name, const std::vector<UString>& val)
 {
-    UString s;
-    for (std::vector<UString>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        s += UString::Format(u"%*s%s = \"%s\"\n", {indent, u"", name, *it});
+    UString result;
+    for (const auto& s : val) {
+        result += UString::Format(u"%*s%s = \"%s\"\n", {indent, u"", name, s});
     }
-    return s;
+    return result;
 }

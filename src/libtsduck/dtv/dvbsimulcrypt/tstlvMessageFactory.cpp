@@ -121,7 +121,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
             _error_info = 0; // offset in message
             return;
         }
-        _protocol_version = GetUInt8 (_msg_base);
+        _protocol_version = GetUInt8(_msg_base);
         if (_protocol_version != _protocol->_version) {
             _error_status = UnsupportedVersion;
             _error_info_is_offset = true;
@@ -131,7 +131,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
     }
 
     // Analyze the message envelope.
-    tlv::Analyzer cmd_anl (_msg_base + header_size, _msg_length - header_size);
+    tlv::Analyzer cmd_anl(_msg_base + header_size, _msg_length - header_size);
     if (cmd_anl.endOfMessage() || !cmd_anl.valid()) {
         _error_status = InvalidMessage;
         _error_info_is_offset = true;
@@ -144,18 +144,18 @@ void ts::tlv::MessageFactory::analyzeMessage()
     const void* params_list = cmd_anl.valueAddr();
 
     // Get an interator pointing to the definition of the command in the protocol description.
-    Protocol::CommandMap::const_iterator cmd_it = _protocol->_commands.find (_command_tag);
+    auto cmd_it = _protocol->_commands.find(_command_tag);
 
     // Check that the command exists
     if (cmd_it == _protocol->_commands.end()) {
         _error_status = UnknownCommandTag;
         _error_info_is_offset = true;
-        _error_info = uint16_t (header_size); // offset in message
+        _error_info = uint16_t(header_size); // offset in message
         return;
     }
 
     // Analyze the parameters
-    tlv::Analyzer parm_anl (params_list, params_length);
+    tlv::Analyzer parm_anl(params_list, params_length);
 
     while (!parm_anl.endOfMessage()) {
 
@@ -167,7 +167,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
         LENGTH      value_length = parm_anl.length();
 
         // Locate the description of this parameter tag in the protocol definition.
-        Protocol::ParameterMap::const_iterator parm_it = cmd_it->second.params.find (parm_tag);
+        auto parm_it = cmd_it->second.params.find(parm_tag);
 
         if (parm_it == cmd_it->second.params.end()) {
             // Parameter tag not found in protocol definition
@@ -179,11 +179,9 @@ void ts::tlv::MessageFactory::analyzeMessage()
 
         // Store the parameter into the message factory
         if (parm_it->second.compound != nullptr) {
-
             // The parameter is a compound TLV, analyze it.
             // Store the parameter value in the multimap for this command.
             // Analyze the compound parameter.
-
             auto it = _params.insert(ParameterMultimap::value_type(parm_tag, ExtParameter(tlv_addr, tlv_size, value_addr, value_length, new MessageFactory(tlv_addr, tlv_size, parm_it->second.compound))));
 
             // Check if the analysis is successful
@@ -197,19 +195,15 @@ void ts::tlv::MessageFactory::analyzeMessage()
             }
         }
         else if (value_length < parm_it->second.min_size || value_length > parm_it->second.max_size) {
-
             // The parameter is not a compound TLV and its length is not in protocol-defined range
-
             _error_status = InvalidParameterLength;
             _error_info_is_offset = true;
             _error_info = uint16_t(uint8_ptr(tlv_addr) - _msg_base); // offset
             return;
         }
         else {
-
             // The parameter is not a compound TLV and its length is fine.
             // Store the parameter value in the multimap for this command
-
             _params.insert(ParameterMultimap::value_type (parm_tag, ExtParameter(tlv_addr, tlv_size, value_addr, value_length)));
         }
 
@@ -229,17 +223,14 @@ void ts::tlv::MessageFactory::analyzeMessage()
     // and that all actual parameters are defined for this command in the
     // protocol. Now, we need to check that all protocol-defined parameters
     // are present, with a number of occurences in the allowed range.
-
-    Protocol::ParameterMap::const_iterator parm_it;
-
-    for (parm_it = cmd_it->second.params.begin(); parm_it != cmd_it->second.params.end(); ++parm_it) {
+    for (const auto& parm_it : cmd_it->second.params) {
 
         // Protocol-defined parameter tag:
-        TAG tag = parm_it->first;
+        TAG tag = parm_it.first;
         // Protocol-defined parameter properties:
-        const Protocol::Parameter& desc = parm_it->second;
+        const Protocol::Parameter& desc(parm_it.second);
         // Number of actual occurences in current command:
-        size_t count = _params.count (tag);
+        size_t count = _params.count(tag);
 
         if (count < desc.min_count || count > desc.max_count) {
             if (count == 0 && desc.min_count > 0) {
@@ -262,7 +253,7 @@ void ts::tlv::MessageFactory::analyzeMessage()
 
 void ts::tlv::MessageFactory::get(TAG tag, Parameter& param) const
 {
-    ParameterMultimap::const_iterator it = _params.find(tag);
+    const auto it = _params.find(tag);
     if (it == _params.end()) {
         throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", {tag}));
     }
@@ -280,11 +271,11 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<Parameter>& param) const
 {
     // Reinitialize result vector
     param.clear();
-    param.reserve (_params.count (tag));
+    param.reserve(_params.count(tag));
+
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
-    ParameterMultimap::const_iterator last = _params.upper_bound (tag);
-    for (; it != last; ++it) {
+    const auto last = _params.upper_bound(tag);
+    for (auto it = _params.lower_bound(tag); it != last; ++it) {
         param.push_back(it->second);
     }
 }
@@ -300,9 +291,8 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<bool>& param) const
     param.clear();
     param.reserve(_params.count(tag));
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
-    ParameterMultimap::const_iterator last = _params.upper_bound(tag);
-    for (; it != last; ++it) {
+    const auto last = _params.upper_bound(tag);
+    for (auto it = _params.lower_bound(tag); it != last; ++it) {
         checkParamSize<uint8_t> (tag, it);
         param.push_back(GetUInt8(it->second.addr) != 0);
     }
@@ -319,10 +309,10 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<std::string>& param) cons
     param.clear();
     param.resize(_params.count(tag));
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
-    ParameterMultimap::const_iterator last = _params.upper_bound(tag);
+    auto it = _params.lower_bound(tag);
+    const auto last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
-        param[i].assign(static_cast<const char*> (it->second.addr), it->second.length);
+        param[i].assign(static_cast<const char*>(it->second.addr), it->second.length);
     }
 }
 
@@ -333,7 +323,7 @@ void ts::tlv::MessageFactory::get(TAG tag, std::vector<std::string>& param) cons
 
 void ts::tlv::MessageFactory::getCompound(TAG tag, MessagePtr& param) const
 {
-    ParameterMultimap::const_iterator it = _params.find(tag);
+    const auto it = _params.find(tag);
     if (it == _params.end()) {
         throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", {tag}));
     }
@@ -356,8 +346,8 @@ void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MessagePtr>& para
     param.clear();
     param.resize(_params.count(tag));
     // Fill vector with parameter values
-    ParameterMultimap::const_iterator it = _params.lower_bound(tag);
-    ParameterMultimap::const_iterator last = _params.upper_bound(tag);
+    auto it = _params.lower_bound(tag);
+    const auto last = _params.upper_bound(tag);
     for (int i = 0; it != last; ++it, ++i) {
         if (it->second.compound.isNull()) {
             throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));

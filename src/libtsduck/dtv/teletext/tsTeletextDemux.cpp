@@ -612,18 +612,18 @@ void ts::TeletextDemux::processTeletextPage(PID pid, PIDContext& pc, int pageNum
 
 void ts::TeletextDemux::flushTeletext()
 {
-    for (PIDContextMap::iterator itPid = _pids.begin(); itPid != _pids.end(); ++itPid) {
-        for (TeletextPageMap::iterator itPage = itPid->second.pages.begin(); itPage != itPid->second.pages.end(); ++itPage) {
-            if (itPage->second.tainted) {
+    for (auto& itPid : _pids) {
+        for (auto& itPage : itPid.second.pages) {
+            if (itPage.second.tainted) {
                 // Use the last timestamp (ms) for end of message.
-                const MilliSecond ms = pidDuration(itPid->first);
+                const MilliSecond ms = pidDuration(itPid.first);
 
                 // This time, we do not subtract any frames, there will be no more frames.
-                itPage->second.hideTimestamp = ms;
+                itPage.second.hideTimestamp = ms;
 
                 beforeCallingHandler();
                 try {
-                    processTeletextPage(itPid->first, itPid->second, itPage->first);
+                    processTeletextPage(itPid.first, itPid.second, itPage.first);
                 }
                 catch (...) {
                     afterCallingHandler(false);
@@ -631,7 +631,7 @@ void ts::TeletextDemux::flushTeletext()
                 }
                 afterCallingHandler(true);
 
-                itPage->second.reset(ms);
+                itPage.second.reset(ms);
             }
         }
     }
@@ -647,16 +647,16 @@ int ts::TeletextDemux::frameCount(int page, PID pid) const
     const int bcdPage = pageBinaryToBcd(page);
 
     if (pid != PID_NULL) {
-        const PIDContextMap::const_iterator itPid = _pids.find(pid);
+        const auto itPid = _pids.find(pid);
         if (itPid != _pids.end()) {
-            const TeletextPageMap::const_iterator itPage = itPid->second.pages.find(bcdPage);
+            const auto itPage = itPid->second.pages.find(bcdPage);
             return itPage == itPid->second.pages.end() ? 0 : itPage->second.frameCount;
         }
     }
     else {
-        for (PIDContextMap::const_iterator itPid = _pids.begin(); itPid != _pids.end(); ++itPid) {
-            const TeletextPageMap::const_iterator itPage = itPid->second.pages.find(bcdPage);
-            if (itPage != itPid->second.pages.end() && itPage->second.frameCount > 0) {
+        for (const auto& itPid : _pids) {
+            const auto itPage = itPid.second.pages.find(bcdPage);
+            if (itPage != itPid.second.pages.end() && itPage->second.frameCount > 0) {
                 return itPage->second.frameCount;
             }
         }

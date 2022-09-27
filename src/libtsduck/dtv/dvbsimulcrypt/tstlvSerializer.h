@@ -315,8 +315,8 @@ namespace ts {
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
             void put(TAG tag, const std::vector<INT>& val)
             {
-                for (typename std::vector<INT>::const_iterator it = val.begin(); it != val.end(); ++it) {
-                    put<INT>(tag, *it);
+                for (auto i : val) {
+                    put<INT>(tag, i);
                 }
             }
 

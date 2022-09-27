@@ -98,7 +98,7 @@ void ts::ExtendedEventDescriptor::NormalizeNumbering(DuckContext& duck, uint8_t*
         if (tag == MY_DID && len >= 4) {
             UString lang;
             lang.assignFromUTF8(reinterpret_cast<const char*>(data + 1), 3);
-            SizeMap::iterator it(desc_last.find(lang));
+            const auto it = desc_last.find(lang);
             if (it == desc_last.end()) {
                 desc_last[lang] = 0;
                 desc_index[lang] = 0;
@@ -152,7 +152,7 @@ void ts::ExtendedEventDescriptor::splitAndAdd(DuckContext& duck, DescriptorList&
     // The event text is potentially split into several descriptors.
 
     // Iterate over all entries.
-    EntryList::const_iterator it = entries.begin();
+    auto it = entries.begin();
 
     // Iterate over event text.
     size_t text_index = 0;
@@ -223,9 +223,9 @@ void ts::ExtendedEventDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(last_descriptor_number, 4);
     buf.putLanguageCode(language_code);
     buf.pushWriteSequenceWithLeadingLength(8); // start length_of_items
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putStringWithByteLength(it->item_description);
-        buf.putStringWithByteLength(it->item);
+    for (const auto& it : entries) {
+        buf.putStringWithByteLength(it.item_description);
+        buf.putStringWithByteLength(it.item);
     }
     buf.popState(); // update length_of_items
     buf.putStringWithByteLength(text);
@@ -285,10 +285,10 @@ void ts::ExtendedEventDescriptor::buildXML(DuckContext& duck, xml::Element* root
     root->setAttribute(u"language_code", language_code);
     root->addElement(u"text")->addText(text);
 
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"item");
-        e->addElement(u"description")->addText(it->item_description);
-        e->addElement(u"name")->addText(it->item);
+        e->addElement(u"description")->addText(it.item_description);
+        e->addElement(u"name")->addText(it.item);
     }
 }
 

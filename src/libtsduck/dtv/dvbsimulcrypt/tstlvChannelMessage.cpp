@@ -46,6 +46,12 @@ ts::tlv::ChannelMessage::ChannelMessage(VERSION protocol_version, TAG tag, uint1
 {
 }
 
+ts::tlv::ChannelMessage::ChannelMessage(const tlv::MessageFactory& fact, TAG tag_ch_id) :
+    Message(fact.protocolVersion(), fact.commandTag()),
+    channel_id(fact.get<uint16_t>(tag_ch_id))
+{
+}
+
 ts::tlv::ChannelMessage::~ChannelMessage()
 {
 }

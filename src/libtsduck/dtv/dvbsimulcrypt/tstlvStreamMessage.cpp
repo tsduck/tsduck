@@ -46,6 +46,12 @@ ts::tlv::StreamMessage::StreamMessage(VERSION protocol_version, TAG tag, uint16_
 {
 }
 
+ts::tlv::StreamMessage::StreamMessage(const tlv::MessageFactory& fact, TAG tag_ch_id, TAG tag_st_id) :
+    ChannelMessage(fact, tag_ch_id),
+    stream_id(fact.get<uint16_t>(tag_st_id))
+{
+}
+
 ts::tlv::StreamMessage::~StreamMessage()
 {
 }

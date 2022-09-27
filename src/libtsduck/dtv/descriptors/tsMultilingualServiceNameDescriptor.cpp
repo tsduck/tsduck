@@ -78,10 +78,10 @@ ts::MultilingualServiceNameDescriptor::Entry::Entry(const UString& lang_, const 
 
 void ts::MultilingualServiceNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putLanguageCode(it->language);
-        buf.putStringWithByteLength(it->service_provider_name);
-        buf.putStringWithByteLength(it->service_name);
+    for (const auto& it : entries) {
+        buf.putLanguageCode(it.language);
+        buf.putStringWithByteLength(it.service_provider_name);
+        buf.putStringWithByteLength(it.service_name);
     }
 }
 
@@ -122,11 +122,11 @@ void ts::MultilingualServiceNameDescriptor::DisplayDescriptor(TablesDisplay& dis
 
 void ts::MultilingualServiceNameDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"language");
-        e->setAttribute(u"code", it->language);
-        e->setAttribute(u"service_provider_name", it->service_provider_name);
-        e->setAttribute(u"service_name", it->service_name);
+        e->setAttribute(u"code", it.language);
+        e->setAttribute(u"service_provider_name", it.service_provider_name);
+        e->setAttribute(u"service_name", it.service_name);
     }
 }
 

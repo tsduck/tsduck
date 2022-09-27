@@ -79,57 +79,57 @@ void ts::tlv::Serializer::closeTLV()
 
 void ts::tlv::Serializer::putUInt8(TAG tag, const std::vector<uint8_t>& val)
 {
-    for (std::vector<uint8_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putUInt8(tag, *it);
+    for (auto i : val) {
+        putUInt8(tag, i);
     }
 }
 
 void ts::tlv::Serializer::putUInt16(TAG tag, const std::vector<uint16_t>& val)
 {
-    for (std::vector<uint16_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putUInt16(tag, *it);
+    for (auto i : val) {
+        putUInt16(tag, i);
     }
 }
 
 void ts::tlv::Serializer::putUInt32(TAG tag, const std::vector<uint32_t>& val)
 {
-    for (std::vector<uint32_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putUInt32(tag, *it);
+    for (auto i : val) {
+        putUInt32(tag, i);
     }
 }
 
 void ts::tlv::Serializer::putUInt64(TAG tag, const std::vector<uint64_t>& val)
 {
-    for (std::vector<uint64_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putUInt64(tag, *it);
+    for (auto i : val) {
+        putUInt64(tag, i);
     }
 }
 
 void ts::tlv::Serializer::putInt8(TAG tag, const std::vector<int8_t>& val)
 {
-    for (std::vector<int8_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putInt8(tag, *it);
+    for (auto i : val) {
+        putInt8(tag, i);
     }
 }
 
 void ts::tlv::Serializer::putInt16(TAG tag, const std::vector<int16_t>& val)
 {
-    for (std::vector<int16_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putInt16(tag, *it);
+    for (auto i : val) {
+        putInt16(tag, i);
     }
 }
 
 void ts::tlv::Serializer::putInt32(TAG tag, const std::vector<int32_t>& val)
 {
-    for (std::vector<int32_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putInt32(tag, *it);
+    for (auto i : val) {
+        putInt32(tag, i);
     }
 }
 
 void ts::tlv::Serializer::putInt64(TAG tag, const std::vector<int64_t>& val)
 {
-    for (std::vector<int64_t>::const_iterator it = val.begin(); it != val.end(); ++it) {
-        putInt64(tag, *it);
+    for (auto i : val) {
+        putInt64(tag, i);
     }
 }
 
@@ -140,8 +140,8 @@ void ts::tlv::Serializer::putInt64(TAG tag, const std::vector<int64_t>& val)
 
 void ts::tlv::Serializer::putBool(TAG tag, const std::vector<bool>& val)
 {
-    for (std::vector<bool>::const_iterator it(val.begin()); it != val.end(); ++it) {
-        putBool(tag, *it);
+    for (auto i : val) {
+        putBool(tag, i);
     }
 }
 
@@ -152,8 +152,8 @@ void ts::tlv::Serializer::putBool(TAG tag, const std::vector<bool>& val)
 
 void ts::tlv::Serializer::put(TAG tag, const std::vector<std::string>& val)
 {
-    for (std::vector<std::string>::const_iterator it(val.begin()); it != val.end(); ++it) {
-        put(tag, *it);
+    for (auto i : val) {
+        put(tag, i);
     }
 }
 

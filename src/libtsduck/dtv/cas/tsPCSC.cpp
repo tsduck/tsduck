@@ -201,7 +201,6 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
     reader_name.clear();
 
     // Get the list of all smartcard readers
-
     ReaderStateVector states;
     ::LONG status = GetStates(context, states, timeout_ms);
 
@@ -210,14 +209,13 @@ bool ts::pcsc::MatchATR(const uint8_t* atr1,
     }
 
     // Look for smartcards, checking ATR is necessary
-
-    for (ReaderStateVector::const_iterator it = states.begin(); it != states.end(); ++it) {
-        if ((it->event_state & SCARD_STATE_PRESENT) != 0 && // card present
+    for (const auto& it : states) {
+        if ((it.event_state & SCARD_STATE_PRESENT) != 0 && // card present
             (atr == nullptr || // don't check ATR
-             MatchATR(it->atr.data(), it->atr.size(), atr, atr_size, atr_mask, atr_mask_size) ||
-             MatchATR(it->atr.data(), it->atr.size(), pwr, pwr_size, pwr_mask, pwr_mask_size))) {
+             MatchATR(it.atr.data(), it.atr.size(), atr, atr_size, atr_mask, atr_mask_size) ||
+             MatchATR(it.atr.data(), it.atr.size(), pwr, pwr_size, pwr_mask, pwr_mask_size))) {
             // Found
-            reader_name = it->reader;
+            reader_name = it.reader;
             return SCARD_S_SUCCESS;
         }
     }

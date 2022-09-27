@@ -85,12 +85,12 @@ ts::SkyLogicalChannelNumberDescriptor::Entry::Entry(uint16_t id_, uint8_t type_,
 void ts::SkyLogicalChannelNumberDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt16(region_id);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->service_id);
-        buf.putUInt8(it->service_type);
-        buf.putUInt16(it->channel_id);
-        buf.putUInt16(it->lcn);
-        buf.putUInt16(it->sky_id);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.service_id);
+        buf.putUInt8(it.service_type);
+        buf.putUInt16(it.channel_id);
+        buf.putUInt16(it.lcn);
+        buf.putUInt16(it.sky_id);
     }
 }
 
@@ -141,13 +141,13 @@ void ts::SkyLogicalChannelNumberDescriptor::buildXML(DuckContext& duck, xml::Ele
 {
     root->setIntAttribute(u"region_id", region_id, true);
 
-    for (EntryList::const_iterator it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"service_type", it->service_type, true);
-        e->setIntAttribute(u"channel_id", it->channel_id, true);
-        e->setIntAttribute(u"logical_channel_number", it->lcn, false);
-        e->setIntAttribute(u"sky_id", it->sky_id, true);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setIntAttribute(u"service_type", it.service_type, true);
+        e->setIntAttribute(u"channel_id", it.channel_id, true);
+        e->setIntAttribute(u"logical_channel_number", it.lcn, false);
+        e->setIntAttribute(u"sky_id", it.sky_id, true);
     }
 }
 

@@ -130,17 +130,17 @@ void ts::VBIDataDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 
 void ts::VBIDataDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it1 = services.begin(); it1 != services.end(); ++it1) {
-        buf.putUInt8(it1->data_service_id);
+    for (const auto& it1 : services) {
+        buf.putUInt8(it1.data_service_id);
         buf.pushWriteSequenceWithLeadingLength(8); // data_service_descriptor_length
-        if (it1->hasReservedBytes()) {
-            buf.putBytes(it1->reserved);
+        if (it1.hasReservedBytes()) {
+            buf.putBytes(it1.reserved);
         }
         else {
-            for (auto it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
+            for (const auto& it2 : it1.fields) {
                 buf.putBits(0xFF, 2);
-                buf.putBit(it2->field_parity);
-                buf.putBits(it2->line_offset, 5);
+                buf.putBit(it2.field_parity);
+                buf.putBits(it2.line_offset, 5);
             }
         }
         buf.popState(); // update data_service_descriptor_length
@@ -181,17 +181,17 @@ void ts::VBIDataDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::VBIDataDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it1 = services.begin(); it1 != services.end(); ++it1) {
+    for (const auto& it1 : services) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"data_service_id", it1->data_service_id);
-        if (it1->hasReservedBytes()) {
-            e->addHexaTextChild(u"reserved", it1->reserved, true);
+        e->setIntAttribute(u"data_service_id", it1.data_service_id);
+        if (it1.hasReservedBytes()) {
+            e->addHexaTextChild(u"reserved", it1.reserved, true);
         }
         else {
-            for (FieldList::const_iterator it2 = it1->fields.begin(); it2 != it1->fields.end(); ++it2) {
+            for (const auto& it2 : it1.fields) {
                 xml::Element* f = e->addElement(u"field");
-                f->setBoolAttribute(u"field_parity", it2->field_parity);
-                f->setIntAttribute(u"line_offset", it2->line_offset);
+                f->setBoolAttribute(u"field_parity", it2.field_parity);
+                f->setIntAttribute(u"line_offset", it2.line_offset);
             }
         }
     }

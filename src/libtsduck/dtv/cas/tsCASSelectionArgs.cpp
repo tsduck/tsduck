@@ -117,10 +117,10 @@ bool ts::CASSelectionArgs::loadArgs(DuckContext& duck, Args& args)
     }
 
     // Overridden by predefined CAS options:
-    for (auto cas = _predefined_cas.begin(); cas != _predefined_cas.end(); ++cas) {
-        if (args.present(cas->name)) {
-            min_cas_id = cas->min;
-            max_cas_id = cas->max;
+    for (const auto& cas : _predefined_cas) {
+        if (args.present(cas.name)) {
+            min_cas_id = cas.min;
+            max_cas_id = cas.max;
             cas_count++;
         }
     }
@@ -168,8 +168,8 @@ size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const CAT& cat, Repor
 size_t ts::CASSelectionArgs::addMatchingPIDs(PIDSet& pids, const PMT& pmt, Report& report) const
 {
     size_t pid_count = addMatchingPIDs(pids, pmt.descs, pmt.tableId(), report);
-    for (PMT::StreamMap::const_iterator it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        pid_count += addMatchingPIDs(pids, it->second.descs, pmt.tableId(), report);
+    for (const auto& it : pmt.streams) {
+        pid_count += addMatchingPIDs(pids, it.second.descs, pmt.tableId(), report);
     }
     return pid_count;
 }
