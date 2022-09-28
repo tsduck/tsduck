@@ -37,6 +37,8 @@
 #  artifact management (listing, deleting) from the pull request below.
 #  When the new version of PyGithub is available in PyPI, this script will
 #  replace the old one.
+#  PR: https://github.com/PyGithub/PyGithub/issues/2313
+#  @@@ END-TODO @@@
 #
 #-----------------------------------------------------------------------------
 
@@ -82,7 +84,7 @@ for art in artifacts:
                 deleted_count += 1
                 deleted_size += art.size_in_bytes
             else:
-                repo.error('canoot delete artifact %s' % (art.name))
+                repo.error('cannot delete artifact %s' % (art.name))
                 error_count += 1
                 error_size += art.size_in_bytes
 
