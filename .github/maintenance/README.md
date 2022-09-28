@@ -29,5 +29,5 @@ run `pip uninstall github` before `pip install PyGithub`.
 - Install: `pip install requests`
 - Documentation: https://requests.readthedocs.io/
 
-We need the module `requests` to perform manual operations on artifacts
-since `PyGithub` does not provide methods to operate on artifacts.
+The module `requests` is a dependency for `PyGithub` and should be
+automatically installed with `PyGithub`.
