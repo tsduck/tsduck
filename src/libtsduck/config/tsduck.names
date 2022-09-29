@@ -1995,7 +1995,7 @@ Bits = 16
 0xBF05 = HEVC temporal video subset for a frame rate of 100 Hz, 120 000/1 001 Hz, or 120 Hz
 0xBF06 = SMPTE SR 2094-10 DMI
 0xBF07 = SL-HDR2 DMI 
-0xBF08 = SMPTE SR 2094-10 DMI
+0xBF08 = SMPTE SR 2094-40 DMI
 0xBF09 = PQ10 HDR
 
 [ComponentTypeJapan]
