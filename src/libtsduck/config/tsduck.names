@@ -411,6 +411,8 @@ Bits = 8
 0x36 = Stereoscopic Video Info
 0x37 = Transport Profile
 0x38 = HEVC Video
+0x39 = VVC Video (H.222.0)
+0x3A = EVC Video (H.222.0)
 0x3F = MPEG-2 Extension
 0xFF = Forbidden Descriptor Id 0xFF
 # DVB-defined:
@@ -503,6 +505,7 @@ Bits = 8
 0xB3 = Mesh Logon initialize (ETSI EN 301 790)
 0xB5 = Implementation type (ETSI EN 301 790)
 0xB6 = LL FEC identifier (ETSI EN 301 790)
+0xD1 = AVS3 Video (T/AI 109.6)
 # Valid in a UNT (0x4B, Update Notification Table, ETSI TS 102 006):
 0x4B_FFFFFFFF_01 = UNT Scheduling
 0x4B_FFFFFFFF_02 = UNT Update
@@ -1125,7 +1128,12 @@ Bits = 8
 0x2D = ISO 23008-3 Audio with MHAS transport syntax – main stream
 0x2E = ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
 0x2F = Quality access units carried in sections
-0x32 = VVC/H.266 video (to be confirmed)
+0x30 = Media Orchestration Access Units carried in sections
+0x31 = HEVC substream containing Motion Constrained Tile Set
+0x32 = JPEG XS video, ISO/IEC 21122-2
+0x33 = VVC/H.266 video or VVC temporal video sub-bitstream, Annex A of ITUT H.266|ISO/IEC 23090-3
+0x34 = VVC/H.266 temporal video subset, Annex A of ITUT H.266|ISO/IEC 23090-3
+0x35 = EVC, ISO/IEC 23094-1
 0x7F = IPMP
 # ATSC values
 0x81 = ATSC AC-3 Audio
@@ -1148,6 +1156,7 @@ Bits = 8
 # 0xCE = C+ CMPS ECM
 # 0xCF = C+ CMPT (CMPS scenario)
 # 0xD0 = C+ Appli loader
+0xD4 = AVS3 video
 
 [StreamId]
 # In PES header.
@@ -1712,6 +1721,9 @@ Bits = 8
 0x1C = H.264/AVC frame compatible plano-stereoscopic HD digital television service
 0x1D = H.264/AVC frame compatible plano-stereoscopic HD NVOD time-shifted
 0x1E = H.264/AVC frame compatible plano-stereoscopic HD NVOD reference service
+0x20 = HEVC UHD up to 2160p120 or 4320p60
+0x21 = VVC
+0x22 = AVS3
 0x1F = HEVC digital television service
 # Additional values from ARIB STD-B10 (Japan ISDB):
 0xA1 = Special video service
@@ -1946,7 +1958,18 @@ Bits = 16
 0x9002 = HEVC Main Profile high definition video, 60 Hz
 0x9003 = HEVC Main 10 Profile high definition video, 60 Hz
 0x9004 = HEVC ultra high definition video
-0x9005-0x90FF = HEVC
+0x9005-0x9008 = HEVC
+0x9009-0x900F = HEVC reserved
+0x9010 = VVC Main-10 HDR (60 Hz) UHDTV-1 (2160p)
+0x9011 = VVC Main-10 HDR HFR (120 Hz) UHDTV-1 (2160p)
+0x9012 = VVC Main-10 HDR (60 Hz) UHDTV-2 (4320p)
+0x9013 = VVC Main-10 HDR HFR (120 Hz) UHDTV-2 (4320p)
+0x9014-0x901F VVC reserved
+0x9020 = AVS3 High-10 HDR (60 Hz) UHDTV-1 (2160p)
+0x9021 = AVS3 High-10 HDR HFR (120 Hz) UHDTV-1 (2160p)
+0x9022 = AVS3 High-10 HDR (60 Hz) UHDTV-2 (4320p)
+0x9023 = AVS3 High-10 HDR HFR (120 Hz) UHDTV-2 (4320p)
+0x9024-0x902f AVS3 reserved
 0x9100 = AC-4 main audio, mono
 0x9101 = AC-4 main audio, mono, dialogue enhancement enabled
 0x9102 = AC-4 main audio, stereo
@@ -1970,6 +1993,10 @@ Bits = 16
 0xBF03 = HEVC plano-stereoscopic top and bottom (TaB) frame-packing
 0xBF04 = HLG10 HDR
 0xBF05 = HEVC temporal video subset for a frame rate of 100 Hz, 120 000/1 001 Hz, or 120 Hz
+0xBF06 = SMPTE SR 2094-10 DMI
+0xBF07 = SL-HDR2 DMI 
+0xBF08 = SMPTE SR 2094-10 DMI
+0xBF09 = PQ10 HDR
 
 [ComponentTypeJapan]
 # In component_descriptor (Japanese version). See [ComponentType]
