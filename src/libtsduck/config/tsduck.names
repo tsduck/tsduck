@@ -1964,12 +1964,12 @@ Bits = 16
 0x9011 = VVC Main-10 HDR HFR (120 Hz) UHDTV-1 (2160p)
 0x9012 = VVC Main-10 HDR (60 Hz) UHDTV-2 (4320p)
 0x9013 = VVC Main-10 HDR HFR (120 Hz) UHDTV-2 (4320p)
-0x9014-0x901F VVC reserved
+0x9014-0x901F = VVC reserved
 0x9020 = AVS3 High-10 HDR (60 Hz) UHDTV-1 (2160p)
 0x9021 = AVS3 High-10 HDR HFR (120 Hz) UHDTV-1 (2160p)
 0x9022 = AVS3 High-10 HDR (60 Hz) UHDTV-2 (4320p)
 0x9023 = AVS3 High-10 HDR HFR (120 Hz) UHDTV-2 (4320p)
-0x9024-0x902f AVS3 reserved
+0x9024-0x902f = AVS3 reserved
 0x9100 = AC-4 main audio, mono
 0x9101 = AC-4 main audio, mono, dialogue enhancement enabled
 0x9102 = AC-4 main audio, stereo
