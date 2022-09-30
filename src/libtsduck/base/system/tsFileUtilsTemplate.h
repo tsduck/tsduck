@@ -116,9 +116,9 @@ bool ts::SearchWildcardAndAppend(CONTAINER& container, const UString& root, cons
         // Search all files under root and will select directories only.
         UStringList locals;
         ExpandWildcard(locals, root + PathSeparator + u"*");
-        for (auto loc = locals.begin(); loc != locals.end(); ++loc) {
-            if (IsDirectory(*loc) && (!skip_symlinks || !IsSymbolicLink(*loc))) {
-                status = SearchWildcardAndAppend(container, *loc, pattern, max_levels - 1) && status;
+        for (const auto& loc : locals) {
+            if (IsDirectory(loc) && (!skip_symlinks || !IsSymbolicLink(loc))) {
+                status = SearchWildcardAndAppend(container, loc, pattern, max_levels - 1) && status;
             }
         }
     }

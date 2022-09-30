@@ -342,8 +342,8 @@ void ts::EIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all events in time order.
-    for (auto evit = events.begin(); evit != events.end(); ++evit) {
-        const Event& ev(evit->second);
+    for (const auto& evit : events) {
+        const Event& ev(evit.second);
 
         // Binary size of the event entry.
         const size_t entry_size = EIT_EVENT_FIXED_SIZE + ev.descs.binarySize();
@@ -535,14 +535,14 @@ void ts::EIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"original_network_id", onetw_id, true);
     root->setIntAttribute(u"last_table_id", last_table_id, true);
 
-    for (auto it = events.begin(); it != events.end(); ++it) {
+    for (const auto& it : events) {
         xml::Element* e = root->addElement(u"event");
-        e->setIntAttribute(u"event_id", it->second.event_id, true);
-        e->setDateTimeAttribute(u"start_time", it->second.start_time);
-        e->setTimeAttribute(u"duration", it->second.duration);
-        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
-        e->setBoolAttribute(u"CA_mode", it->second.CA_controlled);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"event_id", it.second.event_id, true);
+        e->setDateTimeAttribute(u"start_time", it.second.start_time);
+        e->setTimeAttribute(u"duration", it.second.duration);
+        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it.second.running_status);
+        e->setBoolAttribute(u"CA_mode", it.second.CA_controlled);
+        it.second.descs.toXML(duck, e);
     }
 }
 
@@ -719,13 +719,13 @@ void ts::EIT::ExtractBinaryEvents(const SectionPtr& section, BinaryEventPtrMap& 
 void ts::EIT::SortEvents(BinaryEventPtrMap& events, Time& oldest)
 {
     // Loop on all services.
-    for (auto it = events.begin(); it != events.end(); ++it) {
+    for (auto& it : events) {
         // Sort the events by start date.
-        std::sort(it->second.begin(), it->second.end(), LessBinaryEventPtr);
+        std::sort(it.second.begin(), it.second.end(), LessBinaryEventPtr);
 
         // Check if the first event (oldest) has an older date.
-        if (!it->second.empty() && (oldest == Time::Epoch || it->second[0]->start_time < oldest)) {
-            oldest = it->second[0]->start_time;
+        if (!it.second.empty() && (oldest == Time::Epoch || it.second[0]->start_time < oldest)) {
+            oldest = it.second[0]->start_time;
         }
     }
 }

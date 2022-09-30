@@ -173,8 +173,8 @@ int MainCode(int argc, char *argv[])
         if (opt.verbose()) {
             std::cout << "Found " << devices.size() << " HiDes device" << (devices.size() > 1 ? "s" : "") << std::endl << std::endl;
         }
-        for (auto it = devices.begin(); it != devices.end(); ++it) {
-            std::cout << it->toString(opt.verbose()) << std::endl;
+        for (const auto& it : devices) {
+            std::cout << it.toString(opt.verbose()) << std::endl;
         }
     }
 

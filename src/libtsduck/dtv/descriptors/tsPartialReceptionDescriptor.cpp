@@ -72,8 +72,8 @@ void ts::PartialReceptionDescriptor::clearContent()
 
 void ts::PartialReceptionDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = service_ids.begin(); it != service_ids.end(); ++it) {
-        buf.putUInt16(*it);
+    for (auto it : service_ids) {
+        buf.putUInt16(it);
     }
 }
 
@@ -108,8 +108,8 @@ void ts::PartialReceptionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 
 void ts::PartialReceptionDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = service_ids.begin(); it != service_ids.end(); ++it) {
-        root->addElement(u"service")->setIntAttribute(u"id", *it, true);
+    for (auto it : service_ids) {
+        root->addElement(u"service")->setIntAttribute(u"id", it, true);
     }
 }
 

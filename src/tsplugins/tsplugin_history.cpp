@@ -253,9 +253,9 @@ bool ts::HistoryPlugin::start()
 bool ts::HistoryPlugin::stop()
 {
     // Report last packet of each PID
-    for (auto it = _cpids.begin(); it != _cpids.end(); ++it) {
-        if (it->second.pkt_count > 0) {
-            report(it->second.last_pkt, u"PID %d (0x%<X) last packet, %s", {it->first, it->second.scrambling ? u"scrambled" : u"clear"});
+    for (const auto& it : _cpids) {
+        if (it.second.pkt_count > 0) {
+            report(it.second.last_pkt, u"PID %d (0x%<X) last packet, %s", {it.first, it.second.scrambling ? u"scrambled" : u"clear"});
         }
     }
 
@@ -295,10 +295,10 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
                 report(u"PAT v%d, TS 0x%X", {table.version(), table.tableIdExtension()});
                 PAT pat(duck, table);
                 if (pat.isValid()) {
-                    // Filter all PMT PIDs
-                    for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                        _demux.addPID(it->second);
-                        _cpids[it->second].service_id = it->first;
+                    // Filter all PMT PIDs.
+                    for (const auto& it : pat.pmts) {
+                        _demux.addPID(it.second);
+                        _cpids[it.second].service_id = it.first;
                     }
                 }
             }
@@ -342,9 +342,9 @@ void ts::HistoryPlugin::handleTable(SectionDemux& demux, const BinaryTable& tabl
             if (pmt.isValid()) {
                 // Get components of the service, including ECM PID's
                 analyzeCADescriptors(pmt.descs, pmt.service_id);
-                for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    _cpids[it->first].service_id = pmt.service_id;
-                    analyzeCADescriptors(it->second.descs, pmt.service_id);
+                for (const auto& it : pmt.streams) {
+                    _cpids[it.first].service_id = pmt.service_id;
+                    analyzeCADescriptors(it.second.descs, pmt.service_id);
                 }
             }
             break;

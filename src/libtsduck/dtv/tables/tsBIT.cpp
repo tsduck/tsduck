@@ -150,8 +150,8 @@ void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     constexpr size_t payload_min_size = 2;
 
     // Add all broadcasters.
-    for (auto it = broadcasters.begin(); it != broadcasters.end(); ++it) {
-        const Broadcaster& bc(it->second);
+    for (const auto& it : broadcasters) {
+        const Broadcaster& bc(it.second);
 
         // Binary size of this broadcaster definition.
         const size_t entry_size = 3 + bc.descs.binarySize();
@@ -166,7 +166,7 @@ void ts::BIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Serialize the characteristics of the broadcaster. The section must be large enough to hold the entire descriptor list.
-        buf.putUInt8(it->first);  // broadcaster_id
+        buf.putUInt8(it.first);  // broadcaster_id
         buf.putDescriptorListWithLength(bc.descs);
     }
 }
@@ -206,10 +206,10 @@ void ts::BIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setBoolAttribute(u"broadcast_view_propriety", broadcast_view_propriety);
     descs.toXML(duck, root);
 
-    for (auto it = broadcasters.begin(); it != broadcasters.end(); ++it) {
+    for (const auto& it : broadcasters) {
         xml::Element* e = root->addElement(u"broadcaster");
-        e->setIntAttribute(u"broadcaster_id", it->first, true);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"broadcaster_id", it.first, true);
+        it.second.descs.toXML(duck, e);
     }
 }
 

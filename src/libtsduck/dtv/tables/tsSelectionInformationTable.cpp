@@ -159,11 +159,11 @@ void ts::SelectionInformationTable::buildXML(DuckContext& duck, xml::Element* ro
     root->setBoolAttribute(u"current", is_current);
     descs.toXML(duck, root);
 
-    for (auto it = services.begin(); it != services.end(); ++it) {
+    for (const auto& it : services) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->first, true);
-        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it->second.running_status);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"service_id", it.first, true);
+        e->setEnumAttribute(RST::RunningStatusNames, u"running_status", it.second.running_status);
+        it.second.descs.toXML(duck, e);
     }
 }
 

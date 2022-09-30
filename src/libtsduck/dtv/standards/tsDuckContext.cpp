@@ -463,9 +463,9 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"CAT or PMT to correctly identify the CA PID's.");
 
         // Predefined CAS options:
-        for (auto cas = _predefined_cas.begin(); cas != _predefined_cas.end(); ++cas) {
-            args.option(cas->second);
-            args.help(cas->second, UString::Format(u"Equivalent to --default-cas-id 0x%04X.", {cas->first}));
+        for (const auto& cas : _predefined_cas) {
+            args.option(cas.second);
+            args.help(cas.second, UString::Format(u"Equivalent to --default-cas-id 0x%04X.", {cas.first}));
         }
     }
 
@@ -653,9 +653,9 @@ bool ts::DuckContext::loadArgs(Args& args)
             count++;
         }
         // Predefined CAS options:
-        for (auto cas = _predefined_cas.begin(); cas != _predefined_cas.end(); ++cas) {
-            if (args.present(cas->second)) {
-                _casId = cas->first;
+        for (const auto& cas : _predefined_cas) {
+            if (args.present(cas.second)) {
+                _casId = cas.first;
                 count++;
             }
         }

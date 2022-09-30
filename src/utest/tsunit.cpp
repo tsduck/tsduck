@@ -214,9 +214,9 @@ tsunit::TestSuite::TestSuite(const std::string& name, Test* test) :
 tsunit::TestSuite::~TestSuite()
 {
     // Deallocate all test cases.`
-    for (auto it = _testmap.begin(); it != _testmap.end(); ++it) {
-        if (it->second != nullptr) {
-            delete it->second;
+    for (const auto& it : _testmap) {
+        if (it.second != nullptr) {
+            delete it.second;
         }
     }
     _testmap.clear();
@@ -245,9 +245,9 @@ void tsunit::TestSuite::runAfterTest()
 void tsunit::TestSuite::getAllTestNames(std::list<std::string>& names) const
 {
     names.clear();
-    for (auto it = _testmap.begin(); it != _testmap.end(); ++it) {
-        if (it->second != nullptr) {
-            names.push_back(it->second->getName());
+    for (const auto& it : _testmap) {
+        if (it.second != nullptr) {
+            names.push_back(it.second->getName());
         }
     }
 }
@@ -302,9 +302,9 @@ tsunit::TestRepository::TestRepository() :
 tsunit::TestRepository::~TestRepository()
 {
     // Deallocate all test suites.
-    for (auto it = _testsuites.begin(); it != _testsuites.end(); ++it) {
-        if (it->second != nullptr) {
-            delete it->second;
+    for (const auto& it : _testsuites) {
+        if (it.second != nullptr) {
+            delete it.second;
         }
     }
     _testsuites.clear();
@@ -314,9 +314,9 @@ tsunit::TestRepository::~TestRepository()
 void tsunit::TestRepository::getAllTestSuiteNames(std::list<std::string>& names) const
 {
     names.clear();
-    for (auto it = _testsuites.begin(); it != _testsuites.end(); ++it) {
-        if (it->second != nullptr) {
-            names.push_back(it->second->getName());
+    for (const auto& it : _testsuites) {
+        if (it.second != nullptr) {
+            names.push_back(it.second->getName());
         }
     }
 }
@@ -369,8 +369,8 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test)
         std::list<std::string> names;
         TestRepository* repo = TestRepository::instance();
         repo->getAllTestSuiteNames(names);
-        for (auto it = names.begin(); it != names.end(); ++it) {
-            suite = repo->getTestSuite(*it);
+        for (const auto& it : names) {
+            suite = repo->getTestSuite(it);
             if (suite != nullptr) {
                 ok = run(suite) && ok;
             }
@@ -381,8 +381,8 @@ bool tsunit::TestRunner::run(TestSuite* suite, TestCase* test)
         Test::debug() << "==== Running test suite " << suite->getName() << std::endl;
         std::list<std::string> names;
         suite->getAllTestNames(names);
-        for (auto it = names.begin(); it != names.end(); ++it) {
-            test = suite->getTestCase(*it);
+        for (const auto& it : names) {
+            test = suite->getTestCase(it);
             if (test != nullptr) {
                 ok = run(suite, test) && ok;
             }
@@ -595,16 +595,16 @@ int tsunit::Main::run()
         TestRepository* repo = TestRepository::instance();
         repo->getAllTestSuiteNames(suiteNames);
         // Loop on all test suites.
-        for (auto sname = suiteNames.begin(); sname != suiteNames.end(); ++sname) {
-            TestSuite* suite = repo->getTestSuite(*sname);
+        for (const auto& sname : suiteNames) {
+            TestSuite* suite = repo->getTestSuite(sname);
             if (suite != nullptr) {
                 // Test suite name alone
                 std::cout << suite->getName() << std::endl;
                 // Then loop on all individual tests in this test suite.
                 std::list<std::string> testNames;
                 suite->getAllTestNames(testNames);
-                for (auto tname = testNames.begin(); tname != testNames.end(); ++tname) {
-                    std::cout << "    " << suite->getName() << "::" << *tname << std::endl;
+                for (const auto& tname : testNames) {
+                    std::cout << "    " << suite->getName() << "::" << tname << std::endl;
                 }
             }
         }

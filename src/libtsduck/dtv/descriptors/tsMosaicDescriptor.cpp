@@ -96,33 +96,33 @@ void ts::MosaicDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(1);
     buf.putBits(number_of_vertical_elementary_cells, 3);
 
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
-        buf.putBits(it->logical_cell_id, 6);
+    for (const auto& it : cells) {
+        buf.putBits(it.logical_cell_id, 6);
         buf.putBits(0xFF, 7);
-        buf.putBits(it->logical_cell_presentation_info, 3);
+        buf.putBits(it.logical_cell_presentation_info, 3);
         buf.pushWriteSequenceWithLeadingLength(8); // elementary_cell_field_length
-        for (size_t i = 0; i < it->elementary_cell_ids.size(); ++i) {
+        for (size_t i = 0; i < it.elementary_cell_ids.size(); ++i) {
             buf.putBits(0xFF, 2);
-            buf.putBits(it->elementary_cell_ids[i], 6);
+            buf.putBits(it.elementary_cell_ids[i], 6);
         }
         buf.popState(); // update elementary_cell_field_length
-        buf.putUInt8(it->cell_linkage_info);
+        buf.putUInt8(it.cell_linkage_info);
 
-        switch (it->cell_linkage_info) {
+        switch (it.cell_linkage_info) {
             case 0x01:
-                buf.putUInt16(it->bouquet_id);
+                buf.putUInt16(it.bouquet_id);
                 break;
             case 0x02:
             case 0x03:
-                buf.putUInt16(it->original_network_id);
-                buf.putUInt16(it->transport_stream_id);
-                buf.putUInt16(it->service_id);
+                buf.putUInt16(it.original_network_id);
+                buf.putUInt16(it.transport_stream_id);
+                buf.putUInt16(it.service_id);
                 break;
             case 0x04:
-                buf.putUInt16(it->original_network_id);
-                buf.putUInt16(it->transport_stream_id);
-                buf.putUInt16(it->service_id);
-                buf.putUInt16(it->event_id);
+                buf.putUInt16(it.original_network_id);
+                buf.putUInt16(it.transport_stream_id);
+                buf.putUInt16(it.service_id);
+                buf.putUInt16(it.event_id);
                 break;
             default:
                 break;
@@ -237,29 +237,29 @@ void ts::MosaicDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"number_of_horizontal_elementary_cells", number_of_horizontal_elementary_cells);
     root->setIntAttribute(u"number_of_vertical_elementary_cells", number_of_vertical_elementary_cells);
 
-    for (auto it = cells.begin(); it != cells.end(); ++it) {
+    for (const auto& it : cells) {
         xml::Element* e = root->addElement(u"cell");
-        e->setIntAttribute(u"logical_cell_id", it->logical_cell_id, true);
-        e->setIntAttribute(u"logical_cell_presentation_info", it->logical_cell_presentation_info, true);
-        e->setIntAttribute(u"cell_linkage_info", it->cell_linkage_info, true);
-        for (size_t i = 0; i < it->elementary_cell_ids.size(); ++i) {
-            e->addElement(u"elementary_cell")->setIntAttribute(u"id", it->elementary_cell_ids[i], true);
+        e->setIntAttribute(u"logical_cell_id", it.logical_cell_id, true);
+        e->setIntAttribute(u"logical_cell_presentation_info", it.logical_cell_presentation_info, true);
+        e->setIntAttribute(u"cell_linkage_info", it.cell_linkage_info, true);
+        for (size_t i = 0; i < it.elementary_cell_ids.size(); ++i) {
+            e->addElement(u"elementary_cell")->setIntAttribute(u"id", it.elementary_cell_ids[i], true);
         }
-        switch (it->cell_linkage_info) {
+        switch (it.cell_linkage_info) {
             case 0x01:
-                e->setIntAttribute(u"bouquet_id", it->bouquet_id, true);
+                e->setIntAttribute(u"bouquet_id", it.bouquet_id, true);
                 break;
             case 0x02:
             case 0x03:
-                e->setIntAttribute(u"original_network_id", it->original_network_id, true);
-                e->setIntAttribute(u"transport_stream_id", it->transport_stream_id, true);
-                e->setIntAttribute(u"service_id", it->service_id, true);
+                e->setIntAttribute(u"original_network_id", it.original_network_id, true);
+                e->setIntAttribute(u"transport_stream_id", it.transport_stream_id, true);
+                e->setIntAttribute(u"service_id", it.service_id, true);
                 break;
             case 0x04:
-                e->setIntAttribute(u"original_network_id", it->original_network_id, true);
-                e->setIntAttribute(u"transport_stream_id", it->transport_stream_id, true);
-                e->setIntAttribute(u"service_id", it->service_id, true);
-                e->setIntAttribute(u"event_id", it->event_id, true);
+                e->setIntAttribute(u"original_network_id", it.original_network_id, true);
+                e->setIntAttribute(u"transport_stream_id", it.transport_stream_id, true);
+                e->setIntAttribute(u"service_id", it.service_id, true);
+                e->setIntAttribute(u"event_id", it.event_id, true);
                 break;
             default:
                 break;

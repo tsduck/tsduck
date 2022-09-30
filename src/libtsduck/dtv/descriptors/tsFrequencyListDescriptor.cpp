@@ -89,20 +89,20 @@ void ts::FrequencyListDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(0xFF, 6);
     buf.putBits(coding_type, 2);
-    for (auto it = frequencies.begin(); it != frequencies.end(); ++it) {
+    for (auto it : frequencies) {
         switch (coding_type) {
             case TERRESTRIAL: // binary coding in 10 Hz unit
-                buf.putUInt32(uint32_t(*it / 10));
+                buf.putUInt32(uint32_t(it / 10));
                 break;
             case SATELLITE: // 8-digit BCD coding in 10 kHz units
-                buf.putBCD(uint32_t(*it / 10000), 8);
+                buf.putBCD(uint32_t(it / 10000), 8);
                 break;
             case CABLE:  // 8-digit BCD coding in 100 Hz units
-                buf.putBCD(uint32_t(*it / 100), 8);
+                buf.putBCD(uint32_t(it / 100), 8);
                 break;
             case UNDEFINED: // assume binary coding in Hz.
             default:
-                buf.putUInt32(uint32_t(*it));
+                buf.putUInt32(uint32_t(it));
                 break;
         }
     }
@@ -167,8 +167,8 @@ void ts::FrequencyListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 void ts::FrequencyListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setEnumAttribute(CodingTypeEnum, u"coding_type", coding_type);
-    for (auto it = frequencies.begin(); it != frequencies.end(); ++it) {
-        root->addElement(u"centre_frequency")->setIntAttribute(u"value", *it);
+    for (auto it : frequencies) {
+        root->addElement(u"centre_frequency")->setIntAttribute(u"value", it);
     }
 }
 

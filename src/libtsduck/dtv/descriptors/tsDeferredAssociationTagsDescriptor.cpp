@@ -79,8 +79,8 @@ ts::DeferredAssociationTagsDescriptor::DeferredAssociationTagsDescriptor(DuckCon
 void ts::DeferredAssociationTagsDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.pushWriteSequenceWithLeadingLength(8); // association_tags_loop_length
-    for (auto it = association_tags.begin(); it != association_tags.end(); ++it) {
-        buf.putUInt16(*it);
+    for (auto it : association_tags) {
+        buf.putUInt16(it);
     }
     buf.popState(); // update association_tags_loop_length
     buf.putUInt16(transport_stream_id);
@@ -133,8 +133,8 @@ void ts::DeferredAssociationTagsDescriptor::buildXML(DuckContext& duck, xml::Ele
 {
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"program_number", program_number, true);
-    for (auto it = association_tags.begin(); it != association_tags.end(); ++it) {
-        root->addElement(u"association")->setIntAttribute(u"tag", *it, true);
+    for (auto it : association_tags) {
+        root->addElement(u"association")->setIntAttribute(u"tag", it, true);
     }
     root->addHexaTextChild(u"private_data", private_data, true);
 }

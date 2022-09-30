@@ -94,20 +94,20 @@ ts::DID ts::TargetRegionDescriptor::extendedTag() const
 void ts::TargetRegionDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putLanguageCode(country_code);
-    for (auto it = regions.begin(); it != regions.end(); ++it) {
-        const bool has_cc = it->country_code.size() == 3;
+    for (const auto& it : regions) {
+        const bool has_cc = it.country_code.size() == 3;
         buf.putBits(0xFF, 5);
         buf.putBit(has_cc);
-        buf.putBits(it->region_depth, 2);
+        buf.putBits(it.region_depth, 2);
         if (has_cc) {
-            buf.putLanguageCode(it->country_code);
+            buf.putLanguageCode(it.country_code);
         }
-        if (it->region_depth >= 1) {
-            buf.putUInt8(it->primary_region_code);
-            if (it->region_depth >= 2) {
-                buf.putUInt8(it->secondary_region_code);
-                if (it->region_depth >= 3) {
-                    buf.putUInt16(it->tertiary_region_code);
+        if (it.region_depth >= 1) {
+            buf.putUInt8(it.primary_region_code);
+            if (it.region_depth >= 2) {
+                buf.putUInt8(it.secondary_region_code);
+                if (it.region_depth >= 3) {
+                    buf.putUInt16(it.tertiary_region_code);
                 }
             }
         }
@@ -181,15 +181,15 @@ void ts::TargetRegionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 void ts::TargetRegionDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"country_code", country_code);
-    for (auto it = regions.begin(); it != regions.end(); ++it) {
+    for (const auto& it : regions) {
         xml::Element* e = root->addElement(u"region");
-        e->setAttribute(u"country_code", it->country_code, true);
-        if (it->region_depth >= 1) {
-            e->setIntAttribute(u"primary_region_code", it->primary_region_code, true);
-            if (it->region_depth >= 2) {
-                e->setIntAttribute(u"secondary_region_code", it->secondary_region_code, true);
-                if (it->region_depth >= 3) {
-                    e->setIntAttribute(u"tertiary_region_code", it->tertiary_region_code, true);
+        e->setAttribute(u"country_code", it.country_code, true);
+        if (it.region_depth >= 1) {
+            e->setIntAttribute(u"primary_region_code", it.primary_region_code, true);
+            if (it.region_depth >= 2) {
+                e->setIntAttribute(u"secondary_region_code", it.secondary_region_code, true);
+                if (it.region_depth >= 3) {
+                    e->setIntAttribute(u"tertiary_region_code", it.tertiary_region_code, true);
                 }
             }
         }

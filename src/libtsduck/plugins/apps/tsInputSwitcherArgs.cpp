@@ -273,8 +273,8 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     UStringVector remotes;
     args.getValues(remotes, u"allow");
     allowedRemote.clear();
-    for (auto it = remotes.begin(); it != remotes.end(); ++it) {
-        const IPv4Address addr(*it, args);
+    for (const auto& it : remotes) {
+        const IPv4Address addr(it, args);
         if (addr.hasAddress()) {
             allowedRemote.insert(addr);
         }

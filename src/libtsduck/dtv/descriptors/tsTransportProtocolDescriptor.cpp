@@ -156,17 +156,17 @@ void ts::TransportProtocolDescriptor::serializePayload(PSIBuffer& buf) const
             }
             buf.putBit(mpe.alignment_indicator);
             buf.putBits(0xFF, 7);
-            for (auto it = mpe.urls.begin(); it != mpe.urls.end(); ++it) {
-                buf.putStringWithByteLength(*it);
+            for (const auto& it : mpe.urls) {
+                buf.putStringWithByteLength(it);
             }
             break;
         }
         case MHP_PROTO_HTTP: {
-            for (auto it1 = http.begin(); it1 != http.end(); ++it1) {
-                buf.putStringWithByteLength(it1->URL_base);
-                buf.putUInt8(uint8_t(it1->URL_extensions.size()));
-                for (auto it2 = it1->URL_extensions.begin(); it2 != it1->URL_extensions.end(); ++it2) {
-                    buf.putStringWithByteLength(*it2);
+            for (const auto& it1 : http) {
+                buf.putStringWithByteLength(it1.URL_base);
+                buf.putUInt8(uint8_t(it1.URL_extensions.size()));
+                for (const auto& it2 : it1.URL_extensions) {
+                    buf.putStringWithByteLength(it2);
                 }
             }
             break;
@@ -352,18 +352,18 @@ void ts::TransportProtocolDescriptor::buildXML(DuckContext& duck, xml::Element* 
             proto->setOptionalIntAttribute(u"transport_stream_id", mpe.transport_stream_id, true);
             proto->setOptionalIntAttribute(u"service_id", mpe.service_id, true);
             proto->setBoolAttribute(u"alignment_indicator", mpe.alignment_indicator);
-            for (auto it = mpe.urls.begin(); it != mpe.urls.end(); ++it) {
-                proto->addElement(u"url")->setAttribute(u"value", *it);
+            for (const auto& it : mpe.urls) {
+                proto->addElement(u"url")->setAttribute(u"value", it);
             }
             break;
         }
         case MHP_PROTO_HTTP: {
             xml::Element* proto = root->addElement(u"http");
-            for (auto it1 = http.begin(); it1 != http.end(); ++it1) {
+            for (const auto& it1 : http) {
                 xml::Element* url = proto->addElement(u"url");
-                url->setAttribute(u"base", it1->URL_base);
-                for (auto it2 = it1->URL_extensions.begin(); it2 != it1->URL_extensions.end(); ++it2) {
-                    url->addElement(u"extension")->setAttribute(u"value", *it2);
+                url->setAttribute(u"base", it1.URL_base);
+                for (const auto& it2 : it1.URL_extensions) {
+                    url->addElement(u"extension")->setAttribute(u"value", it2);
                 }
             }
             break;

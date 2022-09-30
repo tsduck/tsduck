@@ -80,14 +80,14 @@ ts::ContentIdentifierDescriptor::CRID::CRID() :
 
 void ts::ContentIdentifierDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = crids.begin(); it != crids.end(); ++it) {
-        buf.putBits(it->crid_type, 6);
-        buf.putBits(it->crid_location, 2);
-        if (it->crid_location == 0) {
-            buf.putUTF8WithLength(it->crid);
+    for (const auto& it : crids) {
+        buf.putBits(it.crid_type, 6);
+        buf.putBits(it.crid_location, 2);
+        if (it.crid_location == 0) {
+            buf.putUTF8WithLength(it.crid);
         }
-        else if (it->crid_location == 1) {
-            buf.putUInt16(it->crid_ref);
+        else if (it.crid_location == 1) {
+            buf.putUInt16(it.crid_ref);
         }
     }
 }
@@ -140,15 +140,15 @@ void ts::ContentIdentifierDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 
 void ts::ContentIdentifierDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = crids.begin(); it != crids.end(); ++it) {
+    for (const auto& it : crids) {
         xml::Element* e = root->addElement(u"crid");
-        e->setIntAttribute(u"crid_type", it->crid_type, true);
-        e->setIntAttribute(u"crid_location", it->crid_location);
-        if (it->crid_location == 0) {
-            e->setAttribute(u"crid", it->crid);
+        e->setIntAttribute(u"crid_type", it.crid_type, true);
+        e->setIntAttribute(u"crid_location", it.crid_location);
+        if (it.crid_location == 0) {
+            e->setAttribute(u"crid", it.crid);
         }
-        else if (it->crid_location == 1) {
-            e->setIntAttribute(u"crid_ref", it->crid_ref, true);
+        else if (it.crid_location == 1) {
+            e->setIntAttribute(u"crid_ref", it.crid_ref, true);
         }
     }
 }

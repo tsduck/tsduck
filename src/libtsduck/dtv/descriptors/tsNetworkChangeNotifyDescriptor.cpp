@@ -104,22 +104,22 @@ ts::DID ts::NetworkChangeNotifyDescriptor::extendedTag() const
 
 void ts::NetworkChangeNotifyDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-        buf.putUInt16(it1->cell_id);
+    for (const auto& it1 : cells) {
+        buf.putUInt16(it1.cell_id);
         buf.pushWriteSequenceWithLeadingLength(8); // loop_length
-        for (auto it2 = it1->changes.begin(); it2 != it1->changes.end(); ++it2) {
-            const bool invariant_ts_present = it2->invariant_ts_tsid.set() && it2->invariant_ts_onid.set();
-            buf.putUInt8(it2->network_change_id);
-            buf.putUInt8(it2->network_change_version);
-            buf.putMJD(it2->start_time_of_change, MJD_SIZE);
-            buf.putSecondsBCD(it2->change_duration);
-            buf.putBits(it2->receiver_category, 3);
+        for (const auto& it2 : it1.changes) {
+            const bool invariant_ts_present = it2.invariant_ts_tsid.set() && it2.invariant_ts_onid.set();
+            buf.putUInt8(it2.network_change_id);
+            buf.putUInt8(it2.network_change_version);
+            buf.putMJD(it2.start_time_of_change, MJD_SIZE);
+            buf.putSecondsBCD(it2.change_duration);
+            buf.putBits(it2.receiver_category, 3);
             buf.putBit(invariant_ts_present);
-            buf.putBits(it2->change_type, 4);
-            buf.putUInt8(it2->message_id);
+            buf.putBits(it2.change_type, 4);
+            buf.putUInt8(it2.message_id);
             if (invariant_ts_present) {
-                buf.putUInt16(it2->invariant_ts_tsid.value());
-                buf.putUInt16(it2->invariant_ts_onid.value());
+                buf.putUInt16(it2.invariant_ts_tsid.value());
+                buf.putUInt16(it2.invariant_ts_onid.value());
             }
         }
         buf.popState(); // update loop_length
@@ -196,20 +196,20 @@ void ts::NetworkChangeNotifyDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 
 void ts::NetworkChangeNotifyDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
+    for (const auto& it1 : cells) {
         xml::Element* e1 = root->addElement(u"cell");
-        e1->setIntAttribute(u"cell_id", it1->cell_id, true);
-        for (auto it2 = it1->changes.begin(); it2 != it1->changes.end(); ++it2) {
+        e1->setIntAttribute(u"cell_id", it1.cell_id, true);
+        for (const auto& it2 : it1.changes) {
             xml::Element* e2 = e1->addElement(u"change");
-            e2->setIntAttribute(u"network_change_id", it2->network_change_id, true);
-            e2->setIntAttribute(u"network_change_version", it2->network_change_version, true);
-            e2->setDateTimeAttribute(u"start_time_of_change", it2->start_time_of_change);
-            e2->setTimeAttribute(u"change_duration", it2->change_duration);
-            e2->setIntAttribute(u"receiver_category", it2->receiver_category, true);
-            e2->setIntAttribute(u"change_type", it2->change_type, true);
-            e2->setIntAttribute(u"message_id", it2->message_id, true);
-            e2->setOptionalIntAttribute(u"invariant_ts_tsid", it2->invariant_ts_tsid, true);
-            e2->setOptionalIntAttribute(u"invariant_ts_onid", it2->invariant_ts_onid, true);
+            e2->setIntAttribute(u"network_change_id", it2.network_change_id, true);
+            e2->setIntAttribute(u"network_change_version", it2.network_change_version, true);
+            e2->setDateTimeAttribute(u"start_time_of_change", it2.start_time_of_change);
+            e2->setTimeAttribute(u"change_duration", it2.change_duration);
+            e2->setIntAttribute(u"receiver_category", it2.receiver_category, true);
+            e2->setIntAttribute(u"change_type", it2.change_type, true);
+            e2->setIntAttribute(u"message_id", it2.message_id, true);
+            e2->setOptionalIntAttribute(u"invariant_ts_tsid", it2.invariant_ts_tsid, true);
+            e2->setOptionalIntAttribute(u"invariant_ts_onid", it2.invariant_ts_onid, true);
         }
     }
 }

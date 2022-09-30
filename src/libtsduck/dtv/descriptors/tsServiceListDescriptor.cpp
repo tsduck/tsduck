@@ -78,8 +78,8 @@ ts::ServiceListDescriptor::Entry::Entry(uint16_t id, uint8_t type) :
 
 bool ts::ServiceListDescriptor::hasService(uint16_t id) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        if (it->service_id == id) {
+    for (const auto& it : entries) {
+        if (it.service_id == id) {
             return true;
         }
     }
@@ -93,14 +93,14 @@ bool ts::ServiceListDescriptor::hasService(uint16_t id) const
 
 bool ts::ServiceListDescriptor::addService(uint16_t id, uint8_t type)
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        if (it->service_id == id) {
+    for (auto& it : entries) {
+        if (it.service_id == id) {
             // The service alreay exists, only overwrite the service type.
-            if (it->service_type == type) {
+            if (it.service_type == type) {
                 return false; // descriptor not modified
             }
             else {
-                it->service_type = type;
+                it.service_type = type;
                 return true; // descriptor modified
             }
         }
@@ -118,9 +118,9 @@ bool ts::ServiceListDescriptor::addService(uint16_t id, uint8_t type)
 
 void ts::ServiceListDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->service_id);
-        buf.putUInt8(it->service_type);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.service_id);
+        buf.putUInt8(it.service_type);
     }
 }
 
@@ -158,10 +158,10 @@ void ts::ServiceListDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 
 void ts::ServiceListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"service_type", it->service_type, true);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setIntAttribute(u"service_type", it.service_type, true);
     }
 }
 

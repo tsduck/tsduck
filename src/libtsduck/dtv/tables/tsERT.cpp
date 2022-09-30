@@ -147,8 +147,8 @@ void ts::ERT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all relations.
-    for (auto it = relations.begin(); it != relations.end(); ++it) {
-        const Relation& rel(it->second);
+    for (const auto& it : relations) {
+        const Relation& rel(it.second);
 
         // Binary size of this entry.
         const size_t entry_size = 8 + rel.descs.binarySize();
@@ -207,13 +207,13 @@ void ts::ERT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"information_provider_id", information_provider_id, true);
     root->setIntAttribute(u"relation_type", relation_type);
 
-    for (auto it = relations.begin(); it != relations.end(); ++it) {
+    for (const auto& it : relations) {
         xml::Element* e = root->addElement(u"relation");
-        e->setIntAttribute(u"node_id", it->second.node_id, true);
-        e->setIntAttribute(u"collection_mode", it->second.collection_mode);
-        e->setIntAttribute(u"parent_node_id", it->second.parent_node_id, true);
-        e->setIntAttribute(u"reference_number", it->second.reference_number, true);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"node_id", it.second.node_id, true);
+        e->setIntAttribute(u"collection_mode", it.second.collection_mode);
+        e->setIntAttribute(u"parent_node_id", it.second.parent_node_id, true);
+        e->setIntAttribute(u"reference_number", it.second.reference_number, true);
+        it.second.descs.toXML(duck, e);
     }
 }
 

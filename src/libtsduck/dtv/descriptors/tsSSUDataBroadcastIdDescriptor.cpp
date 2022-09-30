@@ -122,15 +122,15 @@ void ts::SSUDataBroadcastIdDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt16(0x000A); // data_broadcast_id for SSU
     buf.pushWriteSequenceWithLeadingLength(8); // OUI_data_length
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt24(it->oui);
+    for (const auto& it : entries) {
+        buf.putUInt24(it.oui);
         buf.putBits(0xFF, 4);
-        buf.putBits(it->update_type, 4);
+        buf.putBits(it.update_type, 4);
         buf.putBits(0xFF, 2);
-        buf.putBit(it->update_version.set());
-        buf.putBits(it->update_version.value(0xFF), 5);
-        buf.putUInt8(uint8_t(it->selector.size()));
-        buf.putBytes(it->selector);
+        buf.putBit(it.update_version.set());
+        buf.putBits(it.update_version.value(0xFF), 5);
+        buf.putUInt8(uint8_t(it.selector.size()));
+        buf.putBytes(it.selector);
     }
     buf.popState(); // update OUI_data_length
     buf.putBytes(private_data);

@@ -72,8 +72,8 @@ void ts::DVBJApplicationDescriptor::clearContent()
 
 void ts::DVBJApplicationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = parameters.begin(); it != parameters.end(); ++it) {
-        buf.putStringWithByteLength(*it);
+    for (const auto& it : parameters) {
+        buf.putStringWithByteLength(it);
     }
 }
 
@@ -103,8 +103,8 @@ void ts::DVBJApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 
 void ts::DVBJApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = parameters.begin(); it != parameters.end(); ++it) {
-        root->addElement(u"parameter")->setAttribute(u"value", *it);
+    for (const auto& it : parameters) {
+        root->addElement(u"parameter")->setAttribute(u"value", it);
     }
 }
 

@@ -139,9 +139,9 @@ TSDUCKJNI jboolean JNICALL Java_io_tsduck_TSProcessor_start(JNIEnv* env, jobject
         ts::UString cmd(args.app_name);
         cmd.append(u" ");
         cmd.append(args.input.toString(ts::PluginType::INPUT));
-        for (auto it = args.plugins.begin(); it != args.plugins.end(); ++it) {
+        for (const auto& it : args.plugins) {
             cmd.append(u" ");
-            cmd.append(it->toString(ts::PluginType::PROCESSOR));
+            cmd.append(it.toString(ts::PluginType::PROCESSOR));
         }
         cmd.append(u" ");
         cmd.append(args.output.toString(ts::PluginType::OUTPUT));

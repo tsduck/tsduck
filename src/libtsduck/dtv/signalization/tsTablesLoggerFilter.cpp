@@ -214,8 +214,8 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
                     more_pids.set(new_pat.nit_pid);
                 }
                 // Check all PMT PID's.
-                for (auto it = new_pat.pmts.begin(); it != new_pat.pmts.end(); ++it) {
-                    const PID pmt_pid = it->second;
+                for (const auto& it : new_pat.pmts) {
+                    const PID pmt_pid = it.second;
                     if (pmt_pid != PID_NULL && !_pids.test(pmt_pid)) {
                         // This PMT PID was not yet known.
                         _pids.set(pmt_pid);

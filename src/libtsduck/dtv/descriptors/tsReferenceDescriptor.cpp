@@ -85,10 +85,10 @@ void ts::ReferenceDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt16(information_provider_id);
     buf.putUInt16(event_relation_id);
-    for (auto it = references.begin(); it != references.end(); ++it) {
-        buf.putUInt16(it->reference_node_id);
-        buf.putUInt8(it->reference_number);
-        buf.putUInt8(it->last_reference_number);
+    for (const auto& it : references) {
+        buf.putUInt16(it.reference_node_id);
+        buf.putUInt8(it.reference_number);
+        buf.putUInt8(it.last_reference_number);
     }
 }
 
@@ -137,11 +137,11 @@ void ts::ReferenceDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 {
     root->setIntAttribute(u"information_provider_id", information_provider_id, true);
     root->setIntAttribute(u"event_relation_id", event_relation_id, true);
-    for (auto it = references.begin(); it != references.end(); ++it) {
+    for (const auto& it : references) {
         xml::Element* e = root->addElement(u"reference");
-        e->setIntAttribute(u"reference_node_id", it->reference_node_id, true);
-        e->setIntAttribute(u"reference_number", it->reference_number, true);
-        e->setIntAttribute(u"last_reference_number", it->last_reference_number, true);
+        e->setIntAttribute(u"reference_node_id", it.reference_node_id, true);
+        e->setIntAttribute(u"reference_number", it.reference_number, true);
+        e->setIntAttribute(u"last_reference_number", it.last_reference_number, true);
     }
 }
 

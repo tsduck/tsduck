@@ -608,8 +608,8 @@ int ts::DektecControl::Guts::listDevicesJSON(const DektecDeviceVector& devices)
     // Display DTAPI and device drivers versions
     std::map<UString,UString> versions;
     GetDektecVersions(versions);
-    for (auto it = versions.begin(); it != versions.end(); ++it) {
-        root.query(u"versions", true).add(it->first, it->second);
+    for (const auto& it : versions) {
+        root.query(u"versions", true).add(it.first, it.second);
     }
 
     // Display device list

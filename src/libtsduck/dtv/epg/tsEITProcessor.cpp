@@ -378,20 +378,20 @@ void ts::EITProcessor::handleSection(SectionDemux& demux, const Section& section
         bool modified = false;
 
         // Rename EIT's.
-        for (auto it = _renamed.begin(); it != _renamed.end(); ++it) {
-            if (Match(it->first, srv_id, ts_id, net_id)) {
+        for (const auto& it : _renamed) {
+            if (Match(it.first, srv_id, ts_id, net_id)) {
                 // Rename the specified fields.
-                if (it->second.hasId()) {
+                if (it.second.hasId()) {
                     modified = true;
-                    sp->setTableIdExtension(it->second.getId(), false);
+                    sp->setTableIdExtension(it.second.getId(), false);
                 }
-                if (it->second.hasTSId()) {
+                if (it.second.hasTSId()) {
                     modified = true;
-                    sp->setUInt16(0, it->second.getTSId(), false);
+                    sp->setUInt16(0, it.second.getTSId(), false);
                 }
-                if (it->second.hasONId()) {
+                if (it.second.hasONId()) {
                     modified = true;
-                    sp->setUInt16(2, it->second.getONId(), false);
+                    sp->setUInt16(2, it.second.getONId(), false);
                 }
             }
         }

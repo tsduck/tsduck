@@ -170,8 +170,8 @@ void TunerTest::testScanDVBT()
         scan.getServices(services);
         debug() << "  found " << services.size() << " services" << std::endl;
 
-        for (auto srv = services.begin(); srv != services.end(); ++srv) {
-            debug() << "  service " << srv->getName() << ", LCN " << srv->getLCN() << std::endl;
+        for (const auto& srv : services) {
+            debug() << "  service " << srv.getName() << ", LCN " << srv.getLCN() << std::endl;
         }
 
         if (i == channels.size() - 1 || reopen) {

@@ -252,8 +252,8 @@ std::ostream& ts::ConfigFile::save(std::ostream& strm) const
 void ts::ConfigFile::getSectionNames(UStringVector& names) const
 {
     names.clear();
-    for (auto sec = _sections.begin(); sec != _sections.end(); ++sec) {
-        names.push_back(sec->first);
+    for (const auto& sec : _sections) {
+        names.push_back(sec.first);
     }
 }
 

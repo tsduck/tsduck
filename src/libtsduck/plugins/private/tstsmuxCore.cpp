@@ -658,23 +658,23 @@ void ts::tsmux::Core::Input::handlePAT(const PAT& pat)
     }
 
     // Add all services from input PAT into output PAT.
-    for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
+    for (const auto& it : pat.pmts) {
 
         // Origin of the service.
-        const uint16_t service_id = it->first;
+        const uint16_t service_id = it.first;
         Origin& origin(_core._service_origin[service_id]);
 
         if (!Contains(_core._output_pat.pmts, service_id)) {
             // New service found.
             _core._log.verbose(u"adding service 0x%X (%<d) from input #%d in PAT", {service_id, _plugin_index});
-            _core._output_pat.pmts[service_id] = it->second;
+            _core._output_pat.pmts[service_id] = it.second;
             origin.plugin_index = _plugin_index;
             modified = true;
         }
         else if (origin.plugin_index == _plugin_index) {
             // Already found in same input, maybe same PMT PID, modify if not the same.
-            modified = it->second != _core._output_pat.pmts[service_id];
-            _core._output_pat.pmts[service_id] = it->second;
+            modified = it.second != _core._output_pat.pmts[service_id];
+            _core._output_pat.pmts[service_id] = it.second;
         }
         else if (!_core._opt.ignoreConflicts) {
             _core._log.error(u"service conflict, service 0x%X (%<d) exists in input #%d and #%d, aborting", {service_id, origin.plugin_index, _plugin_index});
@@ -781,20 +781,20 @@ void ts::tsmux::Core::Input::handleNIT(const NIT& nit)
     _core._output_nit.descs.merge(_core._duck, nit.descs);
 
     // Loop on all transport streams in the input NIT.
-    for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-        const uint16_t tsid = it->first.transport_stream_id;
+    for (const auto& it : nit.transports) {
+        const uint16_t tsid = it.first.transport_stream_id;
         if (tsid == _ts_id) {
             // This is the description of the input transport stream.
             // Map it to the description of the output transport stream.
             NIT::Transport& ts(_core._output_nit.transports[TransportStreamId(_core._opt.outputTSId, _core._opt.outputNetwId)]);
-            ts.descs.merge(_core._duck, it->second.descs);
+            ts.descs.merge(_core._duck, it.second.descs);
             modified = true;
         }
         else if (tsid != _core._opt.outputTSId) {
             // This is the description of a transport stream which does not conflict
             // with the description of the output transport stream.
             NIT::Transport& ts(_core._output_nit.transports[TransportStreamId(tsid, _core._opt.outputNetwId)]);
-            ts.descs.merge(_core._duck, it->second.descs);
+            ts.descs.merge(_core._duck, it.second.descs);
             modified = true;
         }
     }
@@ -817,22 +817,22 @@ void ts::tsmux::Core::Input::handleSDT(const SDT& sdt)
     bool modified = false;
 
     // Add all services from input SDT into output SDT.
-    for (auto it = sdt.services.begin(); it != sdt.services.end(); ++it) {
+    for (const auto& it : sdt.services) {
 
         // Origin of the service.
-        const uint16_t service_id = it->first;
+        const uint16_t service_id = it.first;
         Origin& origin(_core._service_origin[service_id]);
 
         if (!Contains(_core._output_sdt.services, service_id)) {
             // New service found.
             _core._log.verbose(u"adding service 0x%X (%<d) from input #%d in SDT", {service_id, _plugin_index});
-            _core._output_sdt.services[service_id] = it->second;
+            _core._output_sdt.services[service_id] = it.second;
             origin.plugin_index = _plugin_index;
             modified = true;
         }
         else if (origin.plugin_index == _plugin_index) {
             // Already found in same input, maybe same service description but modify anywat.
-            _core._output_sdt.services[service_id] = it->second;
+            _core._output_sdt.services[service_id] = it.second;
             modified = true;
         }
         else if (!_core._opt.ignoreConflicts) {

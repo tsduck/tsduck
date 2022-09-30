@@ -320,10 +320,10 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
     ts::emmgmux::Protocol::Instance()->setVersion(protocolVersion);
 
     // Load sections from input files.
-    for (auto it = inputFiles.begin(); it != inputFiles.end(); ++it) {
+    for (const auto& it : inputFiles) {
         ts::SectionFile file(duck);
         file.setCRCValidation(ts::CRC32::CHECK);
-        if (file.load(*it)) {
+        if (file.load(it)) {
             sections.insert(sections.end(), file.sections().begin(), file.sections().end());
         }
     }

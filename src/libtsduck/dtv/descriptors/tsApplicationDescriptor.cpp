@@ -89,11 +89,11 @@ ts::ApplicationDescriptor::Profile::Profile() :
 void ts::ApplicationDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.pushWriteSequenceWithLeadingLength(8); // application_profiles_length
-    for (auto it = profiles.begin(); it != profiles.end(); ++it) {
-        buf.putUInt16(it->application_profile);
-        buf.putUInt8(it->version_major);
-        buf.putUInt8(it->version_minor);
-        buf.putUInt8(it->version_micro);
+    for (const auto& it : profiles) {
+        buf.putUInt16(it.application_profile);
+        buf.putUInt8(it.version_major);
+        buf.putUInt8(it.version_minor);
+        buf.putUInt8(it.version_micro);
     }
     buf.popState(); // update application_profiles_length
     buf.putBit(service_bound);
@@ -163,10 +163,10 @@ void ts::ApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     root->setBoolAttribute(u"service_bound", service_bound);
     root->setIntAttribute(u"visibility", visibility);
     root->setIntAttribute(u"application_priority", application_priority);
-    for (auto it = profiles.begin(); it != profiles.end(); ++it) {
+    for (const auto& it : profiles) {
         xml::Element* e = root->addElement(u"profile");
-        e->setIntAttribute(u"application_profile", it->application_profile, true);
-        e->setAttribute(u"version", UString::Format(u"%d.%d.%d", {it->version_major, it->version_minor, it->version_micro}));
+        e->setIntAttribute(u"application_profile", it.application_profile, true);
+        e->setAttribute(u"version", UString::Format(u"%d.%d.%d", {it.version_major, it.version_minor, it.version_micro}));
     }
     for (size_t i = 0; i < transport_protocol_labels.size(); ++i) {
         root->addElement(u"transport_protocol")->setIntAttribute(u"label", transport_protocol_labels[i], true);

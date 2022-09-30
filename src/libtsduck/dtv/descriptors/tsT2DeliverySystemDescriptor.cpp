@@ -123,22 +123,22 @@ void ts::T2DeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBits(transmission_mode, 3);
         buf.putBit(other_frequency);
         buf.putBit(tfs);
-        for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-            buf.putUInt16(it1->cell_id);
+        for (const auto& it1 : cells) {
+            buf.putUInt16(it1.cell_id);
             if (tfs) {
                 buf.pushWriteSequenceWithLeadingLength(8); // frequency_loop_length
-                for (auto it2 = it1->centre_frequency.begin(); it2 != it1->centre_frequency.end(); ++it2) {
-                    buf.putUInt32(uint32_t(*it2 / 10)); // encoded in units of 10 Hz
+                for (const auto& it2 : it1.centre_frequency) {
+                    buf.putUInt32(uint32_t(it2 / 10)); // encoded in units of 10 Hz
                 }
                 buf.popState(); // update frequency_loop_length
             }
             else {
-                buf.putUInt32(uint32_t((it1->centre_frequency.empty() ? 0 : it1->centre_frequency.front()) / 10)); // encoded in units of 10 Hz
+                buf.putUInt32(uint32_t((it1.centre_frequency.empty() ? 0 : it1.centre_frequency.front()) / 10)); // encoded in units of 10 Hz
             }
             buf.pushWriteSequenceWithLeadingLength(8); // subcell_info_loop_length
-            for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
-                buf.putUInt8(it2->cell_id_extension);
-                buf.putUInt32(uint32_t(it2->transposer_frequency / 10)); // encoded in units of 10 Hz
+            for (const auto& it2 : it1.subcells) {
+                buf.putUInt8(it2.cell_id_extension);
+                buf.putUInt32(uint32_t(it2.transposer_frequency / 10)); // encoded in units of 10 Hz
             }
             buf.popState(); // update subcell_info_loop_length
         }
@@ -288,16 +288,16 @@ void ts::T2DeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* r
         ext->setIntEnumAttribute(TransmissionModeNames, u"transmission_mode", transmission_mode);
         ext->setBoolAttribute(u"other_frequency", other_frequency);
         ext->setBoolAttribute(u"tfs", tfs);
-        for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
+        for (const auto& it1 : cells) {
             xml::Element* ce = ext->addElement(u"cell");
-            ce->setIntAttribute(u"cell_id", it1->cell_id, true);
-            for (auto it2 = it1->centre_frequency.begin(); it2 != it1->centre_frequency.end(); ++it2) {
-                ce->addElement(u"centre_frequency")->setIntAttribute(u"value", *it2, false);
+            ce->setIntAttribute(u"cell_id", it1.cell_id, true);
+            for (const auto& it2 : it1.centre_frequency) {
+                ce->addElement(u"centre_frequency")->setIntAttribute(u"value", it2, false);
             }
-            for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
+            for (const auto& it2 : it1.subcells) {
                 xml::Element* sub = ce->addElement(u"subcell");
-                sub->setIntAttribute(u"cell_id_extension", it2->cell_id_extension, true);
-                sub->setIntAttribute(u"transposer_frequency", it2->transposer_frequency, false);
+                sub->setIntAttribute(u"cell_id_extension", it2.cell_id_extension, true);
+                sub->setIntAttribute(u"transposer_frequency", it2.transposer_frequency, false);
             }
         }
     }

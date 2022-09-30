@@ -87,12 +87,12 @@ void ts::PluginEventHandlerRegistry::registerEventHandler(PluginEventHandlerInte
     if (handler != nullptr && !_calling_handlers) {
 
         // Look through the list to find an identical handler with the same criteria.
-        for (auto it = _handlers.begin(); it != _handlers.end(); ++it) {
-            if (it->first == handler &&
-                it->second.plugin_name.identical(criteria.plugin_name) &&
-                it->second.plugin_index.identical(criteria.plugin_index) &&
-                it->second.plugin_type.identical(criteria.plugin_type) &&
-                it->second.event_code.identical(criteria.event_code))
+        for (const auto& it : _handlers) {
+            if (it.first == handler &&
+                it.second.plugin_name.identical(criteria.plugin_name) &&
+                it.second.plugin_index.identical(criteria.plugin_index) &&
+                it.second.plugin_type.identical(criteria.plugin_type) &&
+                it.second.event_code.identical(criteria.event_code))
             {
                 // Already registered, do not duplicate.
                 return;
@@ -152,23 +152,23 @@ void ts::PluginEventHandlerRegistry::callEventHandlers(const PluginEventContext&
         _calling_handlers = true;
 
         // Loop on all registered handlers.
-        for (auto it = _handlers.begin(); it != _handlers.end(); ++it) {
+        for (const auto& it : _handlers) {
             // For each handler, if a criteria is specified and does not match, skip this handler.
-            if (it->second.event_code.set() && it->second.event_code.value() != context.eventCode()) {
+            if (it.second.event_code.set() && it.second.event_code.value() != context.eventCode()) {
                 continue;
             }
-            if (it->second.plugin_type.set() && it->second.plugin_type.value() != type) {
+            if (it.second.plugin_type.set() && it.second.plugin_type.value() != type) {
                 continue;
             }
-            if (it->second.plugin_index.set() && it->second.plugin_index.value() != context.pluginIndex()) {
+            if (it.second.plugin_index.set() && it.second.plugin_index.value() != context.pluginIndex()) {
                 continue;
             }
-            if (it->second.plugin_name.set() && it->second.plugin_name.value() != context.pluginName()) {
+            if (it.second.plugin_name.set() && it.second.plugin_name.value() != context.pluginName()) {
                 continue;
             }
             // No negative criteria, call the handler.
             try {
-                it->first->handlePluginEvent(context);
+                it.first->handlePluginEvent(context);
             }
             catch (...) {
                 // Absorb handler exceptions without notification.

@@ -143,8 +143,8 @@ void ts::LIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all local events.
-    for (auto it = events.begin(); it != events.end(); ++it) {
-        const Event& ev(it->second);
+    for (const auto& it : events) {
+        const Event& ev(it.second);
 
         // Binary size of this entry.
         const size_t entry_size = 4 + ev.descs.binarySize();
@@ -196,10 +196,10 @@ void ts::LIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
 
-    for (auto it = events.begin(); it != events.end(); ++it) {
+    for (const auto& it : events) {
         xml::Element* e = root->addElement(u"event");
-        e->setIntAttribute(u"local_event_id", it->second.local_event_id, true);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"local_event_id", it.second.local_event_id, true);
+        it.second.descs.toXML(duck, e);
     }
 }
 

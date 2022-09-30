@@ -80,11 +80,11 @@ ts::AbstractLogicalChannelDescriptor::Entry::Entry(uint16_t i, bool v, uint16_t 
 
 void ts::AbstractLogicalChannelDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->service_id);
-        buf.putBit(it->visible);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.service_id);
+        buf.putBit(it.visible);
         buf.putBits(0xFF, 5);
-        buf.putBits(it->lcn, 10);
+        buf.putBits(it.lcn, 10);
     }
 }
 
@@ -127,11 +127,11 @@ void ts::AbstractLogicalChannelDescriptor::DisplayDescriptor(TablesDisplay& disp
 
 void ts::AbstractLogicalChannelDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"logical_channel_number", it->lcn, false);
-        e->setBoolAttribute(u"visible_service", it->visible);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setIntAttribute(u"logical_channel_number", it.lcn, false);
+        e->setBoolAttribute(u"visible_service", it.visible);
     }
 }
 

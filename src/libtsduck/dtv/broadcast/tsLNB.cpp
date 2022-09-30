@@ -410,9 +410,9 @@ bool ts::LNB::LNBRepository::load(Report& report)
             node->getChildren(xband, u"band", 1);
 
         // Get all aliases. Don't stop on error.
-        for (auto it = xalias.begin(); it != xalias.end(); ++it) {
+        for (auto it : xalias) {
             UString alias;
-            lnb_ok = getNameAttribute(*it, alias, index_names) && lnb_ok;
+            lnb_ok = getNameAttribute(it, alias, index_names) && lnb_ok;
             // Check if the alias is suitable for command line usage.
             if (lnb_ok && lnb->_alias.empty()) {
                 bool ok = true;
@@ -427,14 +427,14 @@ bool ts::LNB::LNBRepository::load(Report& report)
         }
 
         // Get all bands.
-        for (auto it = xband.begin(); it != xband.end(); ++it) {
+        for (auto it : xband) {
             Band band;
             const bool band_ok =
-                (*it)->getIntAttribute<uint64_t>(band.low, u"low", true) &&
-                (*it)->getIntAttribute<uint64_t>(band.high, u"high", true) &&
-                (*it)->getIntAttribute<uint64_t>(band.oscillator, u"oscillator", true) &&
-                (*it)->getIntAttribute<uint64_t>(band.switch_freq, u"switch", false, 0) &&
-                (*it)->getIntEnumAttribute<Polarization>(band.polarity, PolarizationEnum, u"polarity", false, POL_NONE);
+                it->getIntAttribute<uint64_t>(band.low, u"low", true) &&
+                it->getIntAttribute<uint64_t>(band.high, u"high", true) &&
+                it->getIntAttribute<uint64_t>(band.oscillator, u"oscillator", true) &&
+                it->getIntAttribute<uint64_t>(band.switch_freq, u"switch", false, 0) &&
+                it->getIntEnumAttribute<Polarization>(band.polarity, PolarizationEnum, u"polarity", false, POL_NONE);
             if (band_ok) {
                 lnb->_bands.push_back(band);
             }
@@ -445,8 +445,8 @@ bool ts::LNB::LNBRepository::load(Report& report)
 
         // Register the new LNB with its name and all aliases.
         if (lnb_ok) {
-            for (auto it = index_names.begin(); it != index_names.end(); ++it) {
-                _lnbs.insert(std::make_pair(*it, lnb));
+            for (const auto& it : index_names) {
+                _lnbs.insert(std::make_pair(it, lnb));
             }
             // The last <lnb> with default="true" is the default one.
             // If there is no explicit default, the first <lnb> is the default one.

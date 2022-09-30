@@ -230,14 +230,14 @@ void ts::CIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"service_id", service_id, true);
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
-    for (auto it = prepend_strings.begin(); it != prepend_strings.end(); ++it) {
-        root->addElement(u"prepend_string")->setAttribute(u"value", *it);
+    for (const auto& it : prepend_strings) {
+        root->addElement(u"prepend_string")->setAttribute(u"value", it);
     }
-    for (auto it = crids.begin(); it != crids.end(); ++it) {
+    for (const auto& it : crids) {
         xml::Element* e = root->addElement(u"crid");
-        e->setIntAttribute(u"crid_ref", it->crid_ref, true);
-        e->setIntAttribute(u"prepend_string_index", it->prepend_string_index, false);
-        e->setAttribute(u"unique_string", it->unique_string);
+        e->setIntAttribute(u"crid_ref", it.crid_ref, true);
+        e->setIntAttribute(u"prepend_string_index", it.prepend_string_index, false);
+        e->setAttribute(u"unique_string", it.unique_string);
     }
 }
 

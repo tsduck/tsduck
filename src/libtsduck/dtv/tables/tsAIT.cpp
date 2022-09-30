@@ -183,7 +183,7 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     buf.pushWriteSequenceWithLeadingLength(12);
 
     // Add all transports
-    for (auto it = applications.begin(); it != applications.end(); ++it) {
+    for (const auto& it : applications) {
 
         // If we cannot at least add the fixed part of an application description, open a new section
         if (buf.remainingWriteBytes() < 9) {
@@ -191,7 +191,7 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Binary size of the application entry.
-        const size_t entry_size = 9 + it->second.descs.binarySize();
+        const size_t entry_size = 9 + it.second.descs.binarySize();
 
         // If we are not at the beginning of the application loop, make sure that the entire
         // application description fits in the section. If it does not fit, start a new section.
@@ -202,10 +202,10 @@ void ts::AIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
         // Serialize the characteristics of the application.
         // If the descriptor list is too large for an entire section, it is truncated.
-        buf.putUInt32(it->first.organization_id);
-        buf.putUInt16(it->first.application_id);
-        buf.putUInt8(it->second.control_code);
-        buf.putPartialDescriptorListWithLength(it->second.descs);
+        buf.putUInt32(it.first.organization_id);
+        buf.putUInt16(it.first.application_id);
+        buf.putUInt8(it.second.control_code);
+        buf.putPartialDescriptorListWithLength(it.second.descs);
     }
 
     // Add partial section.
@@ -277,7 +277,7 @@ void ts::AIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"application_type", application_type, true);
     descs.toXML(duck, root);
 
-    for (auto& app : applications) {
+    for (const auto& app : applications) {
         xml::Element* e = root->addElement(u"application");
         e->setIntAttribute(u"control_code", app.second.control_code, true);
         xml::Element* id = e->addElement(u"application_identifier");
