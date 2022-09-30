@@ -188,8 +188,8 @@ void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     buf.putUInt8(uint8_t(tests.size()));
 
     // Add description of all DCC tests.
-    for (auto it1 = tests.begin(); it1 != tests.end(); ++it1) {
-        const Test& test(it1->second);
+    for (const auto& it1 : tests) {
+        const Test& test(it1.second);
         buf.putBit(test.dcc_context);
         buf.putBits(0xFF, 3);
         buf.putBits(test.dcc_from_major_channel_number, 10);
@@ -207,8 +207,8 @@ void ts::DCCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         buf.putUInt8(uint8_t(test.terms.size()));
 
         // Add description of all DCC terms in this DCC test.
-        for (auto it2 = test.terms.begin(); it2 != test.terms.end(); ++it2) {
-            const Term& term(it2->second);
+        for (const auto& it2 : test.terms) {
+            const Term& term(it2.second);
             buf.putUInt8(term.dcc_selection_type);
             buf.putUInt64(term.dcc_selection_id);
             buf.putDescriptorListWithLength(term.descs, 0, NPOS, 10);
@@ -283,8 +283,8 @@ void ts::DCCT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"dcc_id", dcc_id, true);
     descs.toXML(duck, root);
 
-    for (auto it1 = tests.begin(); it1 != tests.end(); ++it1) {
-        const Test& test(it1->second);
+    for (const auto& it1 : tests) {
+        const Test& test(it1.second);
         xml::Element* e1 = root->addElement(u"dcc_test");
         e1->setEnumAttribute(DCCContextNames, u"dcc_context", test.dcc_context);
         e1->setIntAttribute(u"dcc_from_major_channel_number", test.dcc_from_major_channel_number);
@@ -295,8 +295,8 @@ void ts::DCCT::buildXML(DuckContext& duck, xml::Element* root) const
         e1->setDateTimeAttribute(u"dcc_end_time", test.dcc_end_time);
         test.descs.toXML(duck, e1);
 
-        for (auto it2 = test.terms.begin(); it2 != test.terms.end(); ++it2) {
-            const Term& term(it2->second);
+        for (const auto& it2 : test.terms) {
+            const Term& term(it2.second);
             xml::Element* e2 = e1->addElement(u"dcc_term");
             e2->setIntAttribute(u"dcc_selection_type", term.dcc_selection_type, true);
             e2->setIntAttribute(u"dcc_selection_id", term.dcc_selection_id, true);

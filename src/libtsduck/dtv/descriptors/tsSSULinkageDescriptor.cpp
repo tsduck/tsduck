@@ -134,10 +134,10 @@ void ts::SSULinkageDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt16(service_id);
     buf.putUInt8(LINKAGE_SSU);
     buf.pushWriteSequenceWithLeadingLength(8); // OUI_data_length
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt24(it->oui);
-        buf.putUInt8(uint8_t(it->selector.size()));
-        buf.putBytes(it->selector);
+    for (const auto& it : entries) {
+        buf.putUInt24(it.oui);
+        buf.putUInt8(uint8_t(it.selector.size()));
+        buf.putBytes(it.selector);
     }
     buf.popState(); // update OUI_data_length
     buf.putBytes(private_data);

@@ -576,8 +576,8 @@ bool ts::Buffer::resize(size_t size, bool reallocate)
 {
     // Get the max write pointer in saved values.
     size_t new_size = _state.wbyte + (_state.wbit + 7) / 8;
-    for (auto it = _saved_states.begin(); it != _saved_states.end(); ++it) {
-        new_size = std::max<size_t>(new_size, it->wbyte + (it->wbit + 7) / 8);
+    for (const auto& it : _saved_states) {
+        new_size = std::max<size_t>(new_size, it.wbyte + (it.wbit + 7) / 8);
     }
     assert(new_size <= _buffer_size);
 
@@ -603,8 +603,8 @@ bool ts::Buffer::resize(size_t size, bool reallocate)
         _buffer_size = new_buffer_size;
 
         // Make sure that all saved state don't allow more than new size.
-        for (auto it = _saved_states.begin(); it != _saved_states.end(); ++it) {
-            it->end = std::min(it->end, new_size);
+        for (auto& it : _saved_states) {
+            it.end = std::min(it.end, new_size);
         }
     }
 

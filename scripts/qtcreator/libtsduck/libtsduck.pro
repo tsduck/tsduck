@@ -7,6 +7,7 @@ INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -nam
 linux|mac {
     QMAKE_CXXFLAGS += $$system("curl-config --cflags")
     LIBS += $$system("curl-config --libs")
+    LIBS += $$system("$$PROJROOT/scripts/vatek-config.sh --ldlibs")
 }
 
 linux {

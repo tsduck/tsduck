@@ -99,9 +99,9 @@ void ts::ApplicationRecordingDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(initiating_replay);
     buf.putBits(0xFF, 2);
     buf.putUInt8(uint8_t(labels.size()));
-    for (auto it = labels.begin(); it != labels.end(); ++it) {
-        buf.putStringWithByteLength(it->label);
-        buf.putBits(it->storage_properties, 2);
+    for (const auto& it : labels) {
+        buf.putStringWithByteLength(it.label);
+        buf.putBits(it.storage_properties, 2);
         buf.putBits(0xFF, 6);
     }
     buf.putUInt8(uint8_t(component_tags.size()));
@@ -202,13 +202,13 @@ void ts::ApplicationRecordingDescriptor::buildXML(DuckContext& duck, xml::Elemen
     root->setBoolAttribute(u"av_synced", av_synced);
     root->setBoolAttribute(u"initiating_replay", initiating_replay);
 
-    for (auto it = labels.begin(); it != labels.end(); ++it) {
+    for (const auto& it : labels) {
         xml::Element* e = root->addElement(u"label");
-        e->setAttribute(u"label", it->label);
-        e->setIntAttribute(u"storage_properties", it->storage_properties & 0x03);
+        e->setAttribute(u"label", it.label);
+        e->setIntAttribute(u"storage_properties", it.storage_properties & 0x03);
     }
-    for (auto it = component_tags.begin(); it != component_tags.end(); ++it) {
-        root->addElement(u"component")->setIntAttribute(u"tag", *it, true);
+    for (auto it : component_tags) {
+        root->addElement(u"component")->setIntAttribute(u"tag", it, true);
     }
     root->addHexaTextChild(u"private", private_data, true);
     root->addHexaTextChild(u"reserved_future_use", reserved_future_use, true);

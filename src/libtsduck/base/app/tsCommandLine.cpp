@@ -65,8 +65,8 @@ bool ts::CommandLine::processRedirections(bool on)
 void ts::CommandLine::setShell(const UString& shell)
 {
     _shell = shell;
-    for (auto it = _commands.begin(); it != _commands.end(); ++it) {
-        it->second.args.setShell(_shell);
+    for (auto& it : _commands) {
+        it.second.args.setShell(_shell);
     }
 }
 
@@ -79,9 +79,9 @@ void ts::CommandLine::setCommandLineHandlerImpl(CommandLineHandler* handler, Com
 {
     if (name.empty()) {
         // Set all commands.
-        for (auto it = _commands.begin(); it != _commands.end(); ++it) {
-            it->second.handler = handler;
-            it->second.method = method;
+        for (auto& it : _commands) {
+            it.second.handler = handler;
+            it.second.method = method;
         }
     }
     else {
@@ -331,8 +331,8 @@ void ts::CommandLine::getSortedCmd(std::vector<const Cmd*>& cmds) const
     _cmd_enum.getAllNames(names);
     std::sort(names.begin(), names.end());
 
-    for (auto it1 = names.begin(); it1 != names.end(); ++it1) {
-        const auto it2 = _commands.find(_cmd_enum.value(*it1));
+    for (const auto& it1 : names) {
+        const auto it2 = _commands.find(_cmd_enum.value(it1));
         if (it2 != _commands.end()) {
             cmds.push_back(&it2->second);
         }

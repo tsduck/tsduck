@@ -73,9 +73,9 @@ namespace {
         void removeExtensionFile(const ts::UString& fileName);
         void getExtensionFiles(ts::UStringList& fileNames);
     private:
-        ts::Mutex                                    _mutex;     // Protected access to other fiekds.
-        std::map <ts::UString, const ts::NamesFile*> _files;     // Loaded instances by name.
-        ts::UStringList                              _extFiles;  // Additional names files.
+        ts::Mutex                                   _mutex;     // Protected access to other fiekds.
+        std::map<ts::UString, const ts::NamesFile*> _files;     // Loaded instances by name.
+        ts::UStringList                             _extFiles;  // Additional names files.
     };
 }
 
@@ -97,9 +97,9 @@ AllInstances::~AllInstances()
         PredefData[i].instance = nullptr;
     }
     // Deallocate all loaded files.
-    for (auto it = _files.begin(); it != _files.end(); ++it) {
-        delete it->second;
-        it->second = nullptr;
+    for (auto& it : _files) {
+        delete it.second;
+        it.second = nullptr;
     }
     _files.clear();
 }
@@ -121,20 +121,24 @@ const ts::NamesFile* AllInstances::getFile(const ts::UString& fileName, bool mer
 void AllInstances::deleteInstance(const ts::NamesFile* instance)
 {
     if (instance != nullptr) {
+        // If this is a predefined data file, forget its instance.
         for (size_t i = 0; i < PredefDataCount; ++i) {
             if (instance == PredefData[i].instance) {
                 PredefData[i].instance = nullptr;
                 break;
             }
         }
-        // Deallocate all loaded files.
-        for (auto it = _files.begin(); it != _files.end(); ++it) {
+        // Unregister the instance.
+        for (auto it = _files.begin(); it != _files.end(); ) {
             if (instance == it->second) {
-                delete it->second;
-                _files.erase(it);
-                break;
+                it = _files.erase(it);
+            }
+            else {
+                ++it;
             }
         }
+        // Deallocate the instance.
+        delete instance;
     }
 }
 
@@ -142,8 +146,8 @@ void AllInstances::deleteInstance(const ts::NamesFile* instance)
 void AllInstances::addExtensionFile(const ts::UString& fileName)
 {
     ts::GuardMutex lock(_mutex);
-    for (auto it = _extFiles.begin(); it != _extFiles.end(); ++it) {
-        if (*it == fileName) {
+    for (const auto& it : _extFiles) {
+        if (it == fileName) {
             return;
         }
     }
@@ -154,10 +158,12 @@ void AllInstances::addExtensionFile(const ts::UString& fileName)
 void AllInstances::removeExtensionFile(const ts::UString& fileName)
 {
     ts::GuardMutex lock(_mutex);
-    for (auto it = _extFiles.begin(); it != _extFiles.end(); ++it) {
+    for (auto it = _extFiles.begin(); it != _extFiles.end(); ) {
         if (*it == fileName) {
-            _extFiles.erase(it);
-            return;
+            it = _extFiles.erase(it);
+        }
+        else {
+            ++it;
         }
     }
 }
@@ -245,10 +251,10 @@ ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
         // Get list of extension names.
         UStringList files;
         AllInstances::Instance()->getExtensionFiles(files);
-        for (auto name = files.begin(); name != files.end(); ++name) {
-            const UString path(SearchConfigurationFile(*name));
+        for (const auto& name : files) {
+            const UString path(SearchConfigurationFile(name));
             if (path.empty()) {
-                _log.error(u"extension file '%s' not found", {*name});
+                _log.error(u"extension file '%s' not found", {name});
             }
             else {
                 loadFile(path);
@@ -380,8 +386,8 @@ bool ts::NamesFile::decodeDefinition(const UString& line, ConfigSection* section
 ts::NamesFile::~NamesFile()
 {
     // Deallocate all configuration sections.
-    for (auto it = _sections.begin(); it != _sections.end(); ++it) {
-        delete it->second;
+    for (auto it : _sections) {
+        delete it.second;
     }
     _sections.clear();
 }
@@ -411,8 +417,8 @@ ts::NamesFile::ConfigSection::ConfigSection() :
 ts::NamesFile::ConfigSection::~ConfigSection()
 {
     // Deallocate all configuration entries.
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        delete it->second;
+    for (const auto& it : entries) {
+        delete it.second;
     }
     entries.clear();
 }

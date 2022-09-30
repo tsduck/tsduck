@@ -85,13 +85,13 @@ ts::CellFrequencyLinkDescriptor::Subcell::Subcell() :
 
 void ts::CellFrequencyLinkDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-        buf.putUInt16(it1->cell_id);
-        buf.putUInt32(uint32_t(it1->frequency / 10)); // coded in 10 Hz unit
+    for (const auto& it1 : cells) {
+        buf.putUInt16(it1.cell_id);
+        buf.putUInt32(uint32_t(it1.frequency / 10)); // coded in 10 Hz unit
         buf.pushWriteSequenceWithLeadingLength(8);    // start write sequence
-        for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
-            buf.putUInt8(it2->cell_id_extension);
-            buf.putUInt32(uint32_t(it2->transposer_frequency / 10)); // coded in 10 Hz unit
+        for (const auto& it2 : it1.subcells) {
+            buf.putUInt8(it2.cell_id_extension);
+            buf.putUInt32(uint32_t(it2.transposer_frequency / 10)); // coded in 10 Hz unit
         }
         buf.popState(); // end write sequence
     }
@@ -146,14 +146,14 @@ void ts::CellFrequencyLinkDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 
 void ts::CellFrequencyLinkDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
+    for (const auto& it1 : cells) {
         xml::Element* e1 = root->addElement(u"cell");
-        e1->setIntAttribute(u"cell_id", it1->cell_id, true);
-        e1->setIntAttribute(u"frequency", it1->frequency);
-        for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
+        e1->setIntAttribute(u"cell_id", it1.cell_id, true);
+        e1->setIntAttribute(u"frequency", it1.frequency);
+        for (const auto& it2 : it1.subcells) {
             xml::Element* e2 = e1->addElement(u"subcell");
-            e2->setIntAttribute(u"cell_id_extension", it2->cell_id_extension, true);
-            e2->setIntAttribute(u"transposer_frequency", it2->transposer_frequency);
+            e2->setIntAttribute(u"cell_id_extension", it2.cell_id_extension, true);
+            e2->setIntAttribute(u"transposer_frequency", it2.transposer_frequency);
         }
     }
 }

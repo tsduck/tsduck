@@ -92,9 +92,9 @@ void ts::ISO639LanguageDescriptor::clearContent()
 
 void ts::ISO639LanguageDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putLanguageCode(it->language_code);
-        buf.putUInt8(it->audio_type);
+    for (const auto& it : entries) {
+        buf.putLanguageCode(it.language_code);
+        buf.putUInt8(it.audio_type);
     }
 }
 
@@ -131,10 +131,10 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 
 void ts::ISO639LanguageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"language");
-        e->setAttribute(u"code", it->language_code);
-        e->setIntAttribute(u"audio_type", it->audio_type, true);
+        e->setAttribute(u"code", it.language_code);
+        e->setIntAttribute(u"audio_type", it.audio_type, true);
     }
 }
 

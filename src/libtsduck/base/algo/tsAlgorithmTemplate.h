@@ -135,11 +135,10 @@ bool ts::AppendUnique(CONTAINER& container, const ELEMENT& e)
 template <class CONTAINER>
 void ts::RemoveDuplicates(CONTAINER& container)
 {
-    for (auto it = container.begin(); it != container.end(); ++it) {
-        auto it2 = it;
-        ++it2;
-        while (it2 != container.end()) {
-            if (*it2 == *it) {
+    for (auto it1 = container.begin(); it1 != container.end(); ++it1) {
+        auto it2 = it1;
+        for (++it2; it2 != container.end(); ) {
+            if (*it2 == *it1) {
                 it2 = container.erase(it2);
             }
             else {

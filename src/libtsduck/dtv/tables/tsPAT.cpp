@@ -188,11 +188,11 @@ bool ts::PAT::analyzeXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<PID>(nit_pid, u"network_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
         element->getChildren(xservice, u"service", 0, 0x10000);
 
-    for (auto it = xservice.begin(); it != xservice.end(); ++it) {
+    for (auto it : xservice) {
         uint16_t id = 0;
         PID pid = PID_NULL;
-        ok = (*it)->getIntAttribute(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
-             (*it)->getIntAttribute<PID>(pid, u"program_map_PID", true, 0, 0x0000, 0x1FFF);
+        ok = it->getIntAttribute(id, u"service_id", true, 0, 0x0000, 0xFFFF) &&
+             it->getIntAttribute<PID>(pid, u"program_map_PID", true, 0, 0x0000, 0x1FFF);
         if (ok) {
             pmts[id] = pid;
         }

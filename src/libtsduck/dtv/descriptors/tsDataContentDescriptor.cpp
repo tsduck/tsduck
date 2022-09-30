@@ -145,8 +145,8 @@ void ts::DataContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
     root->setAttribute(u"ISO_639_language_code", ISO_639_language_code);
     root->setAttribute(u"text", text);
     root->addHexaTextChild(u"selector_bytes", selector_bytes, true);
-    for (auto it = component_refs.begin(); it != component_refs.end(); ++it) {
-        root->addElement(u"component")->setIntAttribute(u"ref", *it, true);
+    for (const auto& it : component_refs) {
+        root->addElement(u"component")->setIntAttribute(u"ref", it, true);
     }
 }
 

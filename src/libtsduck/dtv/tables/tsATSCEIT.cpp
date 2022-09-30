@@ -224,14 +224,14 @@ void ts::ATSCEIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"source_id", source_id, true);
     root->setIntAttribute(u"protocol_version", protocol_version);
 
-    for (auto it = events.begin(); it != events.end(); ++it) {
+    for (const auto& it : events) {
         xml::Element* e = root->addElement(u"event");
-        e->setIntAttribute(u"event_id", it->second.event_id, true);
-        e->setDateTimeAttribute(u"start_time", it->second.start_time);
-        e->setIntAttribute(u"ETM_location", it->second.ETM_location, true);
-        e->setIntAttribute(u"length_in_seconds", it->second.length_in_seconds, false);
-        it->second.title_text.toXML(duck, e, u"title_text", true);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"event_id", it.second.event_id, true);
+        e->setDateTimeAttribute(u"start_time", it.second.start_time);
+        e->setIntAttribute(u"ETM_location", it.second.ETM_location, true);
+        e->setIntAttribute(u"length_in_seconds", it.second.length_in_seconds, false);
+        it.second.title_text.toXML(duck, e, u"title_text", true);
+        it.second.descs.toXML(duck, e);
     }
 }
 

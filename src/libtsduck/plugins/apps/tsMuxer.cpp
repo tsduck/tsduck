@@ -69,14 +69,14 @@ bool ts::Muxer::start(const MuxerArgs& args)
 
     // Debug message.
     if (_report.debug()) {
-        ts::UString cmd(args.appName);
+        UString cmd(args.appName);
         cmd.append(u" ");
-        for (auto it = args.inputs.begin(); it != args.inputs.end(); ++it) {
+        for (const auto& it : args.inputs) {
             cmd.append(u" ");
-            cmd.append(it->toString(ts::PluginType::INPUT));
+            cmd.append(it.toString(PluginType::INPUT));
         }
         cmd.append(u" ");
-        cmd.append(args.output.toString(ts::PluginType::OUTPUT));
+        cmd.append(args.output.toString(PluginType::OUTPUT));
         _report.debug(u"starting: %s", {cmd});
     }
 

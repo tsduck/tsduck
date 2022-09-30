@@ -78,9 +78,9 @@ ts::TargetIPv6SlashDescriptor::Address::Address(const IPv6Address& addr, uint8_t
 
 void ts::TargetIPv6SlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = addresses.begin(); it != addresses.end(); ++it) {
-        buf.putBytes(it->IPv6_addr.toBytes());
-        buf.putUInt8(it->IPv6_slash_mask);
+    for (const auto& it : addresses) {
+        buf.putBytes(it.IPv6_addr.toBytes());
+        buf.putUInt8(it.IPv6_slash_mask);
     }
 }
 
@@ -119,10 +119,10 @@ void ts::TargetIPv6SlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 
 void ts::TargetIPv6SlashDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = addresses.begin(); it != addresses.end(); ++it) {
+    for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPv6Attribute(u"IPv6_addr", it->IPv6_addr);
-        e->setIntAttribute(u"IPv6_slash_mask", it->IPv6_slash_mask);
+        e->setIPv6Attribute(u"IPv6_addr", it.IPv6_addr);
+        e->setIntAttribute(u"IPv6_slash_mask", it.IPv6_slash_mask);
     }
 }
 

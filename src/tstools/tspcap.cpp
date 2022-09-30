@@ -482,9 +482,9 @@ void FileAnalysis::listStreams(std::ostream& out, ts::MicroSecond duration)
     out << std::endl
         << ts::UString::Format(u"%-22s %-22s %-8s %11s %15s %12s", {u"Source", u"Destination", u"Protocol", u"Packets", u"Data bytes", u"Bitrate"})
         << std::endl;
-    for (auto it = _streams_stats.begin(); it != _streams_stats.end(); ++it) {
-        const StreamId& id(it->first);
-        const StatBlock& sb(it->second);
+    for (const auto& it : _streams_stats) {
+        const StreamId& id(it.first);
+        const StatBlock& sb(it.second);
         out << ts::UString::Format(u"%-22s %-22s %-8s %11'd %15'd %12'd",
                                    {id.source,
                                     id.destination,

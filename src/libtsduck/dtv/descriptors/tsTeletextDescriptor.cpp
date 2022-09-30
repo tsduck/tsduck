@@ -135,11 +135,11 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
 
 void ts::TeletextDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putLanguageCode(it->language_code);
-        buf.putBits(it->teletext_type, 5);
-        buf.putBits(it->magazineNumber(), 3);
-        buf.putUInt8(it->pageNumber());
+    for (const auto& it : entries) {
+        buf.putLanguageCode(it.language_code);
+        buf.putBits(it.teletext_type, 5);
+        buf.putBits(it.magazineNumber(), 3);
+        buf.putUInt8(it.pageNumber());
     }
 }
 
@@ -168,11 +168,11 @@ void ts::TeletextDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::TeletextDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"teletext");
-        e->setAttribute(u"language_code", it->language_code);
-        e->setIntAttribute(u"teletext_type", it->teletext_type, true);
-        e->setIntAttribute(u"page_number", it->page_number);
+        e->setAttribute(u"language_code", it.language_code);
+        e->setIntAttribute(u"teletext_type", it.teletext_type, true);
+        e->setIntAttribute(u"page_number", it.page_number);
     }
 }
 

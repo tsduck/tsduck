@@ -95,14 +95,14 @@ bool ts::PSIRepository::TableDescription::hasPID(PID pid) const
 
 void ts::PSIRepository::TableDescription::addPIDs(std::initializer_list<PID> morePIDs)
 {
-    for (auto it = morePIDs.begin(); it != morePIDs.end(); ++it) {
-        if (*it != PID_NULL) {
+    for (auto it : morePIDs) {
+        if (it != PID_NULL) {
             size_t i = 0;
-            while (i < pids.size() && pids[i] != PID_NULL && pids[i] != *it) {
+            while (i < pids.size() && pids[i] != PID_NULL && pids[i] != it) {
                 ++i;
             }
             if (i < pids.size()) {
-                pids[i] = *it;
+                pids[i] = it;
             }
         }
     }
@@ -225,8 +225,8 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
 
     // Store a copy of the table description for each table id.
     // This is a multimap, distinct definitions for the same table id accumulate.
-    for (auto it = tids.begin(); it != tids.end(); ++it) {
-        PSIRepository::Instance()->_tables.insert(std::make_pair(*it, desc));
+    for (auto it : tids) {
+        PSIRepository::Instance()->_tables.insert(std::make_pair(it, desc));
     }
 }
 
@@ -414,11 +414,11 @@ void ts::PSIRepository::getRegisteredTableIds(std::vector<TID>& ids) const
 {
     ids.clear();
     TID previous = TID_NULL;
-    for (auto it = _tables.begin(); it != _tables.end(); ++it) {
+    for (const auto& it : _tables) {
         // This is a multimap, the same key can be reused, use it once only.
-        if (it->first != previous) {
-            ids.push_back(it->first);
-            previous = it->first;
+        if (it.first != previous) {
+            ids.push_back(it.first);
+            previous = it.first;
         }
     }
 }
@@ -426,8 +426,8 @@ void ts::PSIRepository::getRegisteredTableIds(std::vector<TID>& ids) const
 void ts::PSIRepository::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
 {
     ids.clear();
-    for (auto it = _descriptors.begin(); it != _descriptors.end(); ++it) {
-        ids.push_back(it->first);
+    for (const auto& it : _descriptors) {
+        ids.push_back(it.first);
     }
 }
 

@@ -542,12 +542,12 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
     PSIRepository::Instance()->getRegisteredTablesModels(extfiles);
 
     // Load all extension files. Only report a warning in case of failure.
-    for (auto name = extfiles.begin(); name != extfiles.end(); ++name) {
+    for (const auto& name : extfiles) {
         // Load the extension file. Use searching rules.
         xml::Document extdoc(doc.report());
         xml::Element* elem = nullptr;
-        if (!extdoc.load(*name, true)) {
-            extdoc.report().error(u"Extension XML model file not found: %s", {*name});
+        if (!extdoc.load(name, true)) {
+            extdoc.report().error(u"Extension XML model file not found: %s", {name});
         }
         else if (extdoc.rootElement() != nullptr) {
             // Remove elements one by one.

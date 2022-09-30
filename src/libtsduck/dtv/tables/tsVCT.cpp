@@ -213,8 +213,8 @@ ts::VCT::ChannelList::const_iterator ts::VCT::findServiceInternal(Service& servi
 void ts::VCT::updateServices(DuckContext& duck, ServiceList& slist) const
 {
     // Loop on all services in the SDT.
-    for (auto vct_it = channels.begin(); vct_it != channels.end(); ++vct_it) {
-        const Channel& chan(vct_it->second);
+    for (const auto& vct_it : channels) {
+        const Channel& chan(vct_it.second);
 
         // Consider only services in this TS.
         if (chan.channel_TSID == transport_stream_id) {
@@ -472,27 +472,27 @@ void ts::VCT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"protocol_version", protocol_version);
     descs.toXML(duck, root);
 
-    for (auto it = channels.begin(); it != channels.end(); ++it) {
+    for (const auto& it : channels) {
         xml::Element* e = root->addElement(u"channel");
-        e->setAttribute(u"short_name", it->second.short_name);
-        e->setIntAttribute(u"major_channel_number", it->second.major_channel_number, false);
-        e->setIntAttribute(u"minor_channel_number", it->second.minor_channel_number, false);
-        e->setEnumAttribute(ModulationModeEnum, u"modulation_mode", it->second.modulation_mode);
-        e->setIntAttribute(u"carrier_frequency", it->second.carrier_frequency, false);
-        e->setIntAttribute(u"channel_TSID", it->second.channel_TSID, true);
-        e->setIntAttribute(u"program_number", it->second.program_number, true);
-        e->setIntAttribute(u"ETM_location", it->second.ETM_location, false);
-        e->setBoolAttribute(u"access_controlled", it->second.access_controlled);
-        e->setBoolAttribute(u"hidden", it->second.hidden);
+        e->setAttribute(u"short_name", it.second.short_name);
+        e->setIntAttribute(u"major_channel_number", it.second.major_channel_number, false);
+        e->setIntAttribute(u"minor_channel_number", it.second.minor_channel_number, false);
+        e->setEnumAttribute(ModulationModeEnum, u"modulation_mode", it.second.modulation_mode);
+        e->setIntAttribute(u"carrier_frequency", it.second.carrier_frequency, false);
+        e->setIntAttribute(u"channel_TSID", it.second.channel_TSID, true);
+        e->setIntAttribute(u"program_number", it.second.program_number, true);
+        e->setIntAttribute(u"ETM_location", it.second.ETM_location, false);
+        e->setBoolAttribute(u"access_controlled", it.second.access_controlled);
+        e->setBoolAttribute(u"hidden", it.second.hidden);
         if (_table_id == TID_CVCT) {
             // CVCT-specific fields.
-            e->setIntAttribute(u"path_select", it->second.path_select, false);
-            e->setBoolAttribute(u"out_of_band", it->second.out_of_band);
+            e->setIntAttribute(u"path_select", it.second.path_select, false);
+            e->setBoolAttribute(u"out_of_band", it.second.out_of_band);
         }
-        e->setBoolAttribute(u"hide_guide", it->second.hide_guide);
-        e->setEnumAttribute(ServiceTypeEnum, u"service_type", it->second.service_type);
-        e->setIntAttribute(u"source_id", it->second.source_id, true);
-        it->second.descs.toXML(duck, e);
+        e->setBoolAttribute(u"hide_guide", it.second.hide_guide);
+        e->setEnumAttribute(ServiceTypeEnum, u"service_type", it.second.service_type);
+        e->setIntAttribute(u"source_id", it.second.source_id, true);
+        it.second.descs.toXML(duck, e);
     }
 }
 

@@ -102,7 +102,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
     source->getAttributes(attributes);
 
     // Add attributes in the JSON object.
-    for (auto it = attributes.begin(); it != attributes.end(); ++it) {
+    for (const auto& it : attributes) {
 
         // JSON value of the attribute.
         json::ValuePtr jvalue;
@@ -115,7 +115,7 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
         bool boolModel = false;
         if (model != nullptr) {
             // Get description, empty string without error if not found.
-            model->getAttribute(description, it->first, false);
+            model->getAttribute(description, it.first, false);
             description.trim(true, false, false);
             intModel = description.startWith(u"uint", CASE_INSENSITIVE) || description.startWith(u"int", CASE_INSENSITIVE);
             boolModel = description.startWith(u"bool", CASE_INSENSITIVE);
@@ -124,12 +124,12 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
         // Try to convert as an integer or boolean if defined as such by the model.
         if (intModel) {
             // Should be an integer according to the model.
-            if (it->second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+            if (it.second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
                 if (intValue < -TS_CONST64(0xFFFFFFFF)) {
                     // This is a "very negative" value. This is typically a large unsigned hexadecimal value
                     // which will not be handled correctly when reading back the JSON file. We cannot use
                     // hexadecimal literals in JSON (new in JSON 5), so we leave it as a string.
-                    jvalue = new json::String(it->second);
+                    jvalue = new json::String(it.second);
                 }
                 else {
                     // Acceptable integer.
@@ -137,34 +137,34 @@ ts::json::ValuePtr ts::xml::JSONConverter::convertElementToJSON(const Element* m
                 }
             }
             else {
-                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be an integer", {it->first, source->name(), source->lineNumber(), it->second});
+                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be an integer", {it.first, source->name(), source->lineNumber(), it.second});
             }
         }
         else if (boolModel) {
             // Should be a boolean according to the model.
-            if (it->second.toBool(boolValue)) {
+            if (it.second.toBool(boolValue)) {
                 jvalue = json::Bool(boolValue);
             }
             else {
-                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be a boolean", {it->first, source->name(), source->lineNumber(), it->second});
+                source->report().warning(u"attribute '%s' in <%s> line %d is '%s' but should be a boolean", {it.first, source->name(), source->lineNumber(), it.second});
             }
         }
 
         // Try to enforce integer of boolean value if specified on command line.
-        if (jvalue.isNull() && xml_tweaks.x2jEnforceInteger && !intModel && it->second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+        if (jvalue.isNull() && xml_tweaks.x2jEnforceInteger && !intModel && it.second.toInteger(intValue, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
             jvalue = new json::Number(intValue);
         }
-        if (jvalue.isNull() && xml_tweaks.x2jEnforceBoolean && !boolModel && it->second.toBool(boolValue)) {
+        if (jvalue.isNull() && xml_tweaks.x2jEnforceBoolean && !boolModel && it.second.toBool(boolValue)) {
             jvalue = json::Bool(boolValue);
         }
 
         // Use a string value by default.
         if (jvalue.isNull()) {
-            jvalue = new json::String(it->second);
+            jvalue = new json::String(it.second);
         }
 
         // Add the attribute in the JSON object.
-        jobj->add(it->first, jvalue);
+        jobj->add(it.first, jvalue);
     }
 
     // Process the list of children, if any.
@@ -308,12 +308,12 @@ void ts::xml::JSONConverter::convertObjectToXML(Element* element, const json::Va
     UStringList names;
     object.getNames(names);
 
-    for (auto it = names.begin(); it != names.end(); ++it) {
-        const json::Value& child(object.value(*it));
-        if (it->similar(HashName)) {
+    for (const auto& it : names) {
+        const json::Value& child(object.value(it));
+        if (it.similar(HashName)) {
             // The "#name" was the name of the element, already used.
         }
-        else if (it->similar(HashNodes)) {
+        else if (it.similar(HashNodes)) {
             // The value must be an array of child elements.
             convertArrayToXML(element, child);
         }
@@ -329,7 +329,7 @@ void ts::xml::JSONConverter::convertObjectToXML(Element* element, const json::Va
         }
         else if (!child.isNull()) {
             // An attribute of the parent element.
-            element->setAttribute(ToElementName(*it), child.toString());
+            element->setAttribute(ToElementName(it), child.toString());
         }
     }
 }

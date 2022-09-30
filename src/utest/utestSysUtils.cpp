@@ -650,8 +650,8 @@ void SysUtilsTest::testSearchWildcard()
     ts::UStringList files;
     const bool ok = ts::SearchWildcard(files, u"/sys/devices", u"dvb*.frontend*");
     debug() << "SysUtilsTest::testSearchWildcard: searched dvb*.frontend* in /sys/devices, status = " << ts::UString::TrueFalse(ok) << std::endl;
-    for (auto it = files.begin(); it != files.end(); ++it) {
-        debug() << "    \"" << *it << "\"" << std::endl;
+    for (const auto& it : files) {
+        debug() << "    \"" << it << "\"" << std::endl;
     }
 #endif
 }

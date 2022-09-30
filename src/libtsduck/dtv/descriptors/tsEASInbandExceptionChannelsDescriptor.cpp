@@ -83,9 +83,9 @@ void ts::EASInbandExceptionChannelsDescriptor::clearContent()
 void ts::EASInbandExceptionChannelsDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(uint8_t(entries.size()));
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt8(it->RF_channel);
-        buf.putUInt16(it->program_number);
+    for (const auto& it : entries) {
+        buf.putUInt8(it.RF_channel);
+        buf.putUInt16(it.program_number);
     }
 }
 
@@ -129,10 +129,10 @@ void ts::EASInbandExceptionChannelsDescriptor::DisplayDescriptor(TablesDisplay& 
 
 void ts::EASInbandExceptionChannelsDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"exception");
-        e->setIntAttribute(u"RF_channel", it->RF_channel, false);
-        e->setIntAttribute(u"program_number", it->program_number, true);
+        e->setIntAttribute(u"RF_channel", it.RF_channel, false);
+        e->setIntAttribute(u"program_number", it.program_number, true);
     }
 }
 

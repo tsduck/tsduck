@@ -72,10 +72,10 @@ void ts::ExternalApplicationAuthorizationDescriptor::clearContent()
 
 void ts::ExternalApplicationAuthorizationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt32(it->application_identifier.organization_id);
-        buf.putUInt16(it->application_identifier.application_id);
-        buf.putUInt8(it->application_priority);
+    for (const auto& it : entries) {
+        buf.putUInt32(it.application_identifier.organization_id);
+        buf.putUInt16(it.application_identifier.application_id);
+        buf.putUInt8(it.application_priority);
     }
 }
 
@@ -111,11 +111,11 @@ void ts::ExternalApplicationAuthorizationDescriptor::DisplayDescriptor(TablesDis
 
 void ts::ExternalApplicationAuthorizationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"application");
-        e->setIntAttribute(u"organization_id", it->application_identifier.organization_id, true);
-        e->setIntAttribute(u"application_id", it->application_identifier.application_id, true);
-        e->setIntAttribute(u"application_priority", it->application_priority, false);
+        e->setIntAttribute(u"organization_id", it.application_identifier.organization_id, true);
+        e->setIntAttribute(u"application_id", it.application_identifier.application_id, true);
+        e->setIntAttribute(u"application_priority", it.application_priority, false);
     }
 }
 

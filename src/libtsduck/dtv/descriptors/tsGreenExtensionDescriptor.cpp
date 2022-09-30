@@ -91,13 +91,13 @@ void ts::GreenExtensionDescriptor::serializePayload(PSIBuffer& buf) const
     else {
         buf.putBits(constant_backlight_voltage_time_intervals.size(), 2);
         buf.putBits(0xFF, 6);
-        for (auto it = constant_backlight_voltage_time_intervals.begin(); it != constant_backlight_voltage_time_intervals.end(); ++it) {
-            buf.putUInt16(*it);
+        for (auto it : constant_backlight_voltage_time_intervals) {
+            buf.putUInt16(it);
         }
         buf.putBits(max_variations.size(), 2);
         buf.putBits(0xFF, 6);
-        for (auto it = max_variations.begin(); it != max_variations.end(); ++it) {
-            buf.putUInt16(*it);
+        for (auto it : max_variations) {
+            buf.putUInt16(it);
         }
     }
 }
@@ -146,11 +146,11 @@ void ts::GreenExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 
 void ts::GreenExtensionDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = constant_backlight_voltage_time_intervals.begin(); it != constant_backlight_voltage_time_intervals.end(); ++it) {
-        root->addElement(u"constant_backlight_voltage_time_interval")->setIntAttribute(u"value", *it);
+    for (auto it : constant_backlight_voltage_time_intervals) {
+        root->addElement(u"constant_backlight_voltage_time_interval")->setIntAttribute(u"value", it);
     }
-    for (auto it = max_variations.begin(); it != max_variations.end(); ++it) {
-        root->addElement(u"max_variation")->setIntAttribute(u"value", *it);
+    for (auto it : max_variations) {
+        root->addElement(u"max_variation")->setIntAttribute(u"value", it);
     }
 }
 

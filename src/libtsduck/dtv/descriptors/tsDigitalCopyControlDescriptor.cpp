@@ -96,14 +96,14 @@ void ts::DigitalCopyControlDescriptor::serializePayload(PSIBuffer& buf) const
     }
     if (!components.empty()) {
         buf.pushWriteSequenceWithLeadingLength(8); // component_control_length
-        for (auto it = components.begin(); it != components.end(); ++it) {
-            buf.putUInt8(it->component_tag);
-            buf.putBits(it->digital_recording_control_data, 2);
-            buf.putBit(it->maximum_bitrate.set());
+        for (const auto& it : components) {
+            buf.putUInt8(it.component_tag);
+            buf.putBits(it.digital_recording_control_data, 2);
+            buf.putBit(it.maximum_bitrate.set());
             buf.putBit(1);
-            buf.putBits(it->user_defined, 4);
-            if (it->maximum_bitrate.set()) {
-                buf.putUInt8(it->maximum_bitrate.value());
+            buf.putBits(it.user_defined, 4);
+            if (it.maximum_bitrate.set()) {
+                buf.putUInt8(it.maximum_bitrate.value());
             }
         }
         buf.popState(); // update component_control_length
@@ -188,12 +188,12 @@ void ts::DigitalCopyControlDescriptor::buildXML(DuckContext& duck, xml::Element*
     root->setIntAttribute(u"digital_recording_control_data", digital_recording_control_data, false);
     root->setIntAttribute(u"user_defined", user_defined, false);
     root->setOptionalIntAttribute(u"maximum_bitrate", maximum_bitrate, false);
-    for (auto it = components.begin(); it != components.end(); ++it) {
+    for (const auto& it : components) {
         xml::Element* e = root->addElement(u"component_control");
-        e->setIntAttribute(u"component_tag", it->component_tag, false);
-        e->setIntAttribute(u"digital_recording_control_data", it->digital_recording_control_data, false);
-        e->setIntAttribute(u"user_defined", it->user_defined, false);
-        e->setOptionalIntAttribute(u"maximum_bitrate", it->maximum_bitrate, false);
+        e->setIntAttribute(u"component_tag", it.component_tag, false);
+        e->setIntAttribute(u"digital_recording_control_data", it.digital_recording_control_data, false);
+        e->setIntAttribute(u"user_defined", it.user_defined, false);
+        e->setOptionalIntAttribute(u"maximum_bitrate", it.maximum_bitrate, false);
     }
 }
 

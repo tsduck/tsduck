@@ -76,8 +76,8 @@ ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor(DuckContext& duck, 
 void ts::TargetIPv6AddressDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBytes(IPv6_addr_mask.toBytes());
-    for (auto it = IPv6_addr.begin(); it != IPv6_addr.end(); ++it) {
-        buf.putBytes(it->toBytes());
+    for (const auto& it : IPv6_addr) {
+        buf.putBytes(it.toBytes());
     }
 }
 
@@ -116,8 +116,8 @@ void ts::TargetIPv6AddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 void ts::TargetIPv6AddressDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIPv6Attribute(u"IPv6_addr_mask", IPv6_addr_mask);
-    for (auto it = IPv6_addr.begin(); it != IPv6_addr.end(); ++it) {
-        root->addElement(u"address")->setIPv6Attribute(u"IPv6_addr", *it);
+    for (const auto& it : IPv6_addr) {
+        root->addElement(u"address")->setIPv6Attribute(u"IPv6_addr", it);
     }
 }
 

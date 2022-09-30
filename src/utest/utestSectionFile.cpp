@@ -719,14 +719,14 @@ void SectionFileTest::testMultiSectionsAtStreamLevelPMT()
     }
 
     TSUNIT_EQUAL(90, pmt2.streams.size());
-    for (auto si = pmt2.streams.begin(); si != pmt2.streams.end(); ++si) {
-        TSUNIT_EQUAL(es_pid, si->first);
+    for (const auto& si : pmt2.streams) {
+        TSUNIT_EQUAL(es_pid, si.first);
         es_pid++;
-        TSUNIT_EQUAL(stype, si->second.stream_type);
+        TSUNIT_EQUAL(stype, si.second.stream_type);
         stype++;
-        TSUNIT_EQUAL(2, si->second.descs.size());
-        for (size_t di = 0; di < si->second.descs.size(); ++di) {
-            ts::CAIdentifierDescriptor desc(duck, *si->second.descs[di]);
+        TSUNIT_EQUAL(2, si.second.descs.size());
+        for (size_t di = 0; di < si.second.descs.size(); ++di) {
+            ts::CAIdentifierDescriptor desc(duck, *si.second.descs[di]);
             TSUNIT_ASSERT(desc.isValid());
             TSUNIT_EQUAL(4, desc.casids.size());
             for (size_t ii = 0; ii < desc.casids.size(); ++ii) {

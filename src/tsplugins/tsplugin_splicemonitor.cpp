@@ -358,10 +358,10 @@ void ts::SpliceMonitorPlugin::handlePMT(const PMT& pmt, PID)
     }
     else {
         // Analyze all components in the PMT, looking for splice PID's.
-        for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-            if (it->second.stream_type == ST_SCTE35_SPLICE) {
+        for (const auto& it : pmt.streams) {
+            if (it.second.stream_type == ST_SCTE35_SPLICE) {
                 // This is a PID carrying splice information.
-                const PID spid = it->first;
+                const PID spid = it.first;
                 if (_splice_pid == PID_NULL || _splice_pid == spid) {
                     // This is a splice PID to monitor.
                     tsp->verbose(u"starting monitoring splice PID 0x%X (%<d)", {spid});
@@ -387,9 +387,9 @@ void ts::SpliceMonitorPlugin::handlePMT(const PMT& pmt, PID)
 
 void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 {
-    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        if (it->second.isAudio(duck) || it->second.isVideo(duck)) {
-            _splice_pids[it->first] = splice_pid;
+    for (const auto& it : pmt.streams) {
+        if (it.second.isAudio(duck) || it.second.isVideo(duck)) {
+            _splice_pids[it.first] = splice_pid;
         }
     }
 }
@@ -634,7 +634,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
         ctx.last_pts = pkt.getPTS();
         ctx.last_pts_packet = tsp->pluginPackets();
 
-        for (auto it = ctx.splice_events.begin(); it != ctx.splice_events.end();) {
+        for (auto it = ctx.splice_events.begin(); it != ctx.splice_events.end(); ) {
             SpliceEvent& evt(it->second);
 
             // Look for event occurrence.

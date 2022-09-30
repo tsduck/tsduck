@@ -107,8 +107,8 @@ void ts::AbstractTransportListTable::clearContent()
 
 void ts::AbstractTransportListTable::clearPreferredSections()
 {
-    for (auto it = transports.begin(); it != transports.end(); ++it) {
-        it->second.preferred_section = -1;
+    for (auto& it : transports) {
+        it.second.preferred_section = -1;
     }
 }
 
@@ -178,9 +178,9 @@ void ts::AbstractTransportListTable::addSection(BinaryTable& table, PSIBuffer& p
 bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_set, TransportStreamId& ts_id, int section_number) const
 {
     // Search one TS which should be serialized in current section
-    for (auto it = ts_set.begin(); it != ts_set.end(); ++it) {
-        if (transports[*it].preferred_section == section_number) {
-            ts_id = *it;
+    for (const auto& it : ts_set) {
+        if (transports[it].preferred_section == section_number) {
+            ts_id = it;
             ts_set.erase(it);
             return true;
         }
@@ -188,9 +188,9 @@ bool ts::AbstractTransportListTable::getNextTransport(TransportStreamIdSet& ts_s
 
     // No transport for this section.
     // Search one TS without section hint or with a previous section hint.
-    for (auto it = ts_set.begin(); it != ts_set.end(); ++it) {
-        if (transports[*it].preferred_section < section_number) { // including preferred_section == -1
-            ts_id = *it;
+    for (const auto& it : ts_set) {
+        if (transports[it].preferred_section < section_number) { // including preferred_section == -1
+            ts_id = it;
             ts_set.erase(it);
             return true;
         }

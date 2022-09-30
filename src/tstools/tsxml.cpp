@@ -198,9 +198,9 @@ Options::Options(int argc, char *argv[]) :
     use_model = tables_model || !model.empty();
 
     // An input file named "" or "-" means standard input.
-    for (auto it = infiles.begin(); it != infiles.end(); ++it) {
-        if (*it == u"-") {
-            it->clear();
+    for (auto& it : infiles) {
+        if (it == u"-") {
+            it.clear();
         }
     }
 

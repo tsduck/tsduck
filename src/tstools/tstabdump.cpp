@@ -259,8 +259,8 @@ int MainCode(int argc, char *argv[])
         ok = DumpFile(opt, u"");
     }
     else {
-        for (auto it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
-            ok = DumpFile(opt, *it) && ok;
+        for (const auto& it : opt.infiles) {
+            ok = DumpFile(opt, it) && ok;
         }
     }
 

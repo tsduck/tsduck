@@ -81,15 +81,15 @@ void ts::ContentAdvisoryDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(0xFF, 2);
     buf.putBits(entries.size(), 6);
-    for (const auto& it : entries) {
-        buf.putUInt8(it.rating_region);
-        buf.putUInt8(uint8_t(it.rating_values.size()));
-        for (auto it2 = it.rating_values.begin(); it2 != it.rating_values.end(); ++it2) {
-            buf.putUInt8(it2->first);     // rating_dimension_j
+    for (const auto& it1 : entries) {
+        buf.putUInt8(it1.rating_region);
+        buf.putUInt8(uint8_t(it1.rating_values.size()));
+        for (const auto& it2 : it1.rating_values) {
+            buf.putUInt8(it2.first);     // rating_dimension_j
             buf.putBits(0xFF, 4);
-            buf.putBits(it2->second, 4);  // rating_value
+            buf.putBits(it2.second, 4);  // rating_value
         }
-        buf.putMultipleStringWithLength(it.rating_description);
+        buf.putMultipleStringWithLength(it1.rating_description);
     }
 }
 
@@ -152,15 +152,15 @@ void ts::ContentAdvisoryDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 
 void ts::ContentAdvisoryDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (const auto& it : entries) {
+    for (const auto& it1 : entries) {
         xml::Element* e = root->addElement(u"region");
-        e->setIntAttribute(u"rating_region", it.rating_region, true);
-        for (auto it2 = it.rating_values.begin(); it2 != it.rating_values.end(); ++it2) {
+        e->setIntAttribute(u"rating_region", it1.rating_region, true);
+        for (auto it2 : it1.rating_values) {
             xml::Element* e2 = e->addElement(u"dimension");
-            e2->setIntAttribute(u"rating_dimension_j", it2->first, true);
-            e2->setIntAttribute(u"rating_value", it2->second, true);
+            e2->setIntAttribute(u"rating_dimension_j", it2.first, true);
+            e2->setIntAttribute(u"rating_value", it2.second, true);
         }
-        it.rating_description.toXML(duck, e, u"rating_description", true);
+        it1.rating_description.toXML(duck, e, u"rating_description", true);
     }
 }
 

@@ -161,10 +161,10 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     constexpr size_t payload_min_size = 4;
 
     // Add description of all elementary streams
-    for (auto it = streams.begin(); it != streams.end(); ++it) {
+    for (const auto& it : streams) {
 
         // Binary size of the stream entry.
-        const size_t entry_size = 5 + it->second.descs.binarySize();
+        const size_t entry_size = 5 + it.second.descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
@@ -173,9 +173,9 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Insert stream entry
-        buf.putUInt8(it->second.stream_type);
-        buf.putPID(it->first); // PID
-        buf.putPartialDescriptorListWithLength(it->second.descs);
+        buf.putUInt8(it.second.stream_type);
+        buf.putPID(it.first); // PID
+        buf.putPartialDescriptorListWithLength(it.second.descs);
     }
 }
 
@@ -440,7 +440,7 @@ bool ts::PMT::Stream::getComponentTag(uint8_t& tag) const
 ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
 {
     // Loop on all components of the service.
-    for (auto& it : streams) {
+    for (const auto& it : streams) {
         const PID pid = it.first;
         const PMT::Stream& stream(it.second);
         // Loop on all stream_identifier_descriptors.
@@ -461,9 +461,9 @@ ts::PID ts::PMT::componentTagToPID(uint8_t tag) const
 
 ts::PID ts::PMT::firstVideoPID(const DuckContext& duck) const
 {
-    for (auto it = streams.begin(); it != streams.end(); ++it) {
-        if (it->second.isVideo(duck)) {
-            return it->first;
+    for (const auto& it : streams) {
+        if (it.second.isVideo(duck)) {
+            return it.first;
         }
     }
     return PID_NULL; // not found

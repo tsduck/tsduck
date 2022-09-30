@@ -595,8 +595,8 @@ void ts::PCRExtractPlugin::handleTable(SectionDemux& demux, const BinaryTable& t
 void ts::PCRExtractPlugin::processPAT(const PAT& pat)
 {
     // Add all PMT PID's to the demux.
-    for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-        _demux.addPID(it->second);
+    for (const auto& it : pat.pmts) {
+        _demux.addPID(it.second);
     }
 }
 
@@ -619,15 +619,15 @@ void ts::PCRExtractPlugin::processPMT(const PMT& pmt)
     // Detect all service PID's and all potential SCTE 35 PID's.
     PIDSet servicePIDs;
     PIDSet splicePIDs;
-    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        const PID pid = it->first;
+    for (const auto& it : pmt.streams) {
+        const PID pid = it.first;
 
         // Associate a PCR PID with all PID's in the service.
         getPIDContext(pid)->pcr_pid = pmt.pcr_pid;
 
         // Track all components and splice information PID's in the service.
         if (_scte35) {
-            if (it->second.stream_type == ST_SCTE35_SPLICE) {
+            if (it.second.stream_type == ST_SCTE35_SPLICE) {
                 // This is a PID carrying splice information.
                 splicePIDs.set(pid);
                 scte35_found = true;

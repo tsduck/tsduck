@@ -330,20 +330,20 @@ void ts::CableEmergencyAlertTable::buildXML(DuckContext& duck, xml::Element* roo
         root->setIntAttribute(u"audio_OOB_source_ID", audio_OOB_source_ID, true);
     }
     alert_text.toXML(duck, root, u"alert_text", true);
-    for (auto it = locations.begin(); it != locations.end(); ++it) {
+    for (const auto& it : locations) {
         xml::Element* e = root->addElement(u"location");
-        e->setIntAttribute(u"state_code", it->state_code, false);
-        e->setIntAttribute(u"county_subdivision", it->county_subdivision, false);
-        e->setIntAttribute(u"county_code", it->county_code, false);
+        e->setIntAttribute(u"state_code", it.state_code, false);
+        e->setIntAttribute(u"county_subdivision", it.county_subdivision, false);
+        e->setIntAttribute(u"county_code", it.county_code, false);
     }
-    for (auto it = exceptions.begin(); it != exceptions.end(); ++it) {
+    for (const auto& it : exceptions) {
         xml::Element* e = root->addElement(u"exception");
-        if (it->in_band) {
-            e->setIntAttribute(u"major_channel_number", it->major_channel_number, false);
-            e->setIntAttribute(u"minor_channel_number", it->minor_channel_number, false);
+        if (it.in_band) {
+            e->setIntAttribute(u"major_channel_number", it.major_channel_number, false);
+            e->setIntAttribute(u"minor_channel_number", it.minor_channel_number, false);
         }
         else {
-            e->setIntAttribute(u"OOB_source_ID", it->OOB_source_ID, true);
+            e->setIntAttribute(u"OOB_source_ID", it.OOB_source_ID, true);
         }
     }
     descs.toXML(duck, root);

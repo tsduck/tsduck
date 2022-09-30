@@ -291,8 +291,8 @@ bool ts::InjectPlugin::getOptions()
     // Check if no or all files have a specific repetition rate.
     _specific_rates = false;
     _undefined_rates = false;
-    for (auto it = _infiles.begin(); it != _infiles.end(); ++it) {
-        if (it->repetition == 0) {
+    for (const auto& it : _infiles) {
+        if (it.repetition == 0) {
             _undefined_rates = true;
         }
         else {
@@ -357,34 +357,34 @@ bool ts::InjectPlugin::reloadFiles()
     SectionFile file(duck);
     file.setCRCValidation(_crc_op);
 
-    for (auto it = _infiles.begin(); it != _infiles.end(); ++it) {
+    for (auto& it : _infiles) {
         file.clear();
-        if (_poll_files && !FileExists(it->file_name)) {
+        if (_poll_files && !FileExists(it.file_name)) {
             // With --poll-files, we ignore non-existent files.
-            it->retry_count = 0;  // no longer needed to retry
+            it.retry_count = 0;  // no longer needed to retry
         }
-        else if (!file.load(it->file_name, _intype) || !_sections_opt.processSectionFile(file, *tsp)) {
+        else if (!file.load(it.file_name, _intype) || !_sections_opt.processSectionFile(file, *tsp)) {
             success = false;
-            if (it->retry_count > 0) {
-                it->retry_count--;
+            if (it.retry_count > 0) {
+                it.retry_count--;
             }
         }
         else {
             // File successfully loaded.
-            it->retry_count = 0;  // no longer needed to retry
-            _pzer.addSections(file.sections(), it->repetition);
+            it.retry_count = 0;  // no longer needed to retry
+            _pzer.addSections(file.sections(), it.repetition);
             tsp->verbose(u"loaded %d sections from %s, repetition rate: %s",
                          {file.sections().size(),
-                          xml::Document::IsInlineXML(it->file_name) ? u"inlined XML" : it->file_name,
-                          it->repetition > 0 ? UString::Decimal(it->repetition) + u" ms" : u"unspecified"});
+                          xml::Document::IsInlineXML(it.file_name) ? u"inlined XML" : it.file_name,
+                          it.repetition > 0 ? UString::Decimal(it.repetition) + u" ms" : u"unspecified"});
 
             if (_use_files_bitrate) {
-                assert(it->repetition != 0);
+                assert(it.repetition != 0);
                 // Number of TS packets of all sections after packetization.
                 const uint64_t packets = Section::PacketCount(file.sections(), _stuffing_policy != StuffPolicy::ALWAYS);
                 // Contribution of this file in bits every 1000 seconds.
                 // The repetition rate is in milliseconds.
-                bits_per_1000s += (packets * PKT_SIZE_BITS * MilliSecPerSec * 1000) / it->repetition;
+                bits_per_1000s += (packets * PKT_SIZE_BITS * MilliSecPerSec * 1000) / it.repetition;
             }
         }
     }

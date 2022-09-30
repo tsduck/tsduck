@@ -69,8 +69,8 @@ ts::CyclingPacketizer::SectionDesc::SectionDesc(const SectionPtr& sec, MilliSeco
 
 void ts::CyclingPacketizer::addSections(const SectionPtrVector& sects, MilliSecond rep_rate)
 {
-    for (auto it = sects.begin(); it != sects.end(); ++it) {
-        addSection(*it, rep_rate);
+    for (const auto& it : sects) {
+        addSection(it, rep_rate);
     }
 }
 

@@ -195,8 +195,8 @@ void ts::DCCSCT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     buf.putUInt8(uint8_t(updates.size()));
 
     // Add description of all updates.
-    for (auto it = updates.begin(); it != updates.end(); ++it) {
-        const Update& upd(it->second);
+    for (const auto& it : updates) {
+        const Update& upd(it.second);
         buf.putUInt8(upd.update_type);
 
         // Save position of update_data_length
@@ -323,25 +323,25 @@ void ts::DCCSCT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"dccsct_type", dccsct_type, true);
     descs.toXML(duck, root);
 
-    for (auto upd = updates.begin(); upd != updates.end(); ++upd) {
+    for (const auto& upd : updates) {
         xml::Element* e = root->addElement(u"update");
-        e->setEnumAttribute(UpdateTypeNames, u"update_type", upd->second.update_type);
-        upd->second.descs.toXML(duck, e);
-        switch (upd->second.update_type) {
+        e->setEnumAttribute(UpdateTypeNames, u"update_type", upd.second.update_type);
+        upd.second.descs.toXML(duck, e);
+        switch (upd.second.update_type) {
             case new_genre_category: {
-                e->setIntAttribute(u"genre_category_code", upd->second.genre_category_code, true);
-                upd->second.genre_category_name_text.toXML(duck, e, u"genre_category_name_text", false);
+                e->setIntAttribute(u"genre_category_code", upd.second.genre_category_code, true);
+                upd.second.genre_category_name_text.toXML(duck, e, u"genre_category_name_text", false);
                 break;
             }
             case new_state: {
-                e->setIntAttribute(u"dcc_state_location_code", upd->second.dcc_state_location_code, true);
-                upd->second.dcc_state_location_code_text.toXML(duck, e, u"dcc_state_location_code_text", false);
+                e->setIntAttribute(u"dcc_state_location_code", upd.second.dcc_state_location_code, true);
+                upd.second.dcc_state_location_code_text.toXML(duck, e, u"dcc_state_location_code_text", false);
                 break;
             }
             case new_county: {
-                e->setIntAttribute(u"state_code", upd->second.state_code, true);
-                e->setIntAttribute(u"dcc_county_location_code", upd->second.dcc_county_location_code, true);
-                upd->second.dcc_county_location_code_text.toXML(duck, e, u"dcc_county_location_code_text", false);
+                e->setIntAttribute(u"state_code", upd.second.state_code, true);
+                e->setIntAttribute(u"dcc_county_location_code", upd.second.dcc_county_location_code, true);
+                upd.second.dcc_county_location_code_text.toXML(duck, e, u"dcc_county_location_code_text", false);
                 break;
             }
             default: {

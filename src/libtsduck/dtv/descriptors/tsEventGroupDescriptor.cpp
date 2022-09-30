@@ -96,16 +96,16 @@ void ts::EventGroupDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(group_type, 4);
     buf.putBits(actual_events.size(), 4);
-    for (auto it = actual_events.begin(); it != actual_events.end(); ++it) {
-        buf.putUInt16(it->service_id);
-        buf.putUInt16(it->event_id);
+    for (const auto& it : actual_events) {
+        buf.putUInt16(it.service_id);
+        buf.putUInt16(it.event_id);
     }
     if (group_type == 4 || group_type == 5) {
-        for (auto it = other_events.begin(); it != other_events.end(); ++it) {
-            buf.putUInt16(it->original_network_id);
-            buf.putUInt16(it->transport_stream_id);
-            buf.putUInt16(it->service_id);
-            buf.putUInt16(it->event_id);
+        for (const auto& it : other_events) {
+            buf.putUInt16(it.original_network_id);
+            buf.putUInt16(it.transport_stream_id);
+            buf.putUInt16(it.service_id);
+            buf.putUInt16(it.event_id);
         }
     }
     else {
@@ -182,18 +182,18 @@ void ts::EventGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 void ts::EventGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"group_type", group_type);
-    for (auto it = actual_events.begin(); it != actual_events.end(); ++it) {
+    for (const auto& it : actual_events) {
         xml::Element* e = root->addElement(u"actual");
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"event_id", it->event_id, true);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setIntAttribute(u"event_id", it.event_id, true);
     }
     if (group_type == 4 || group_type == 5) {
-        for (auto it = other_events.begin(); it != other_events.end(); ++it) {
+        for (const auto& it : other_events) {
             xml::Element* e = root->addElement(u"other");
-            e->setIntAttribute(u"original_network_id", it->original_network_id, true);
-            e->setIntAttribute(u"transport_stream_id", it->transport_stream_id, true);
-            e->setIntAttribute(u"service_id", it->service_id, true);
-            e->setIntAttribute(u"event_id", it->event_id, true);
+            e->setIntAttribute(u"original_network_id", it.original_network_id, true);
+            e->setIntAttribute(u"transport_stream_id", it.transport_stream_id, true);
+            e->setIntAttribute(u"service_id", it.service_id, true);
+            e->setIntAttribute(u"event_id", it.event_id, true);
         }
     }
     else {

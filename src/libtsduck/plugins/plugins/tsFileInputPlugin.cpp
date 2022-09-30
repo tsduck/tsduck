@@ -147,9 +147,9 @@ bool ts::FileInputPlugin::getOptions()
     }
 
     // If any file name is '-', this is the standard input, an empty file name.
-    for (auto it = _filenames.begin(); it != _filenames.end(); ++it) {
-        if (*it == u"-") {
-            it->clear();
+    for (auto& it : _filenames) {
+        if (it == u"-") {
+            it.clear();
         }
     }
 
@@ -199,9 +199,9 @@ bool ts::FileInputPlugin::openFile(size_t name_index, size_t file_index)
 bool ts::FileInputPlugin::closeAllFiles()
 {
     bool ok = true;
-    for (auto it = _files.begin(); it != _files.end(); ++it) {
-        if (it->isOpen()) {
-            ok = it->close(*tsp) && ok;
+    for (auto& it : _files) {
+        if (it.isOpen()) {
+            ok = it.close(*tsp) && ok;
         }
     }
     return ok;
@@ -264,8 +264,8 @@ bool ts::FileInputPlugin::abortInput()
     _aborted = true;
 
     // Abort current operations on all files.
-    for (auto it = _files.begin(); it != _files.end(); ++it) {
-        it->abort();
+    for (auto& it : _files) {
+        it.abort();
     }
 
     return true;

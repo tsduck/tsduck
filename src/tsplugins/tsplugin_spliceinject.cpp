@@ -639,15 +639,15 @@ void ts::SpliceInjectPlugin::handlePMT(const PMT& pmt, PID)
     }
 
     // Inspect all components.
-    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
+    for (const auto& it : pmt.streams) {
         // By default, PTS are taken from the first video PID.
-        if (_pts_pid_act == PID_NULL && it->second.isVideo(duck)) {
-            _pts_pid_act = it->first;
+        if (_pts_pid_act == PID_NULL && it.second.isVideo(duck)) {
+            _pts_pid_act = it.first;
         }
         // Look for a component with a stream type 0x86.
-        if (_inject_pid_act == PID_NULL && it->second.stream_type == ST_SCTE35_SPLICE) {
+        if (_inject_pid_act == PID_NULL && it.second.stream_type == ST_SCTE35_SPLICE) {
             // Found an SCTE 35 splice information stream, use its PID.
-            _inject_pid_act = it->first;
+            _inject_pid_act = it.first;
             _packetizer.setPID(_inject_pid_act);
         }
     }
@@ -900,10 +900,10 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
             }
             else {
                 // Compute the earliest PTS in all components.
-                for (auto it = sit.splice_insert.components_pts.begin(); it != sit.splice_insert.components_pts.end(); ++it) {
-                    if (it->second.set()) {
-                        if (last_pts == INVALID_PTS || SequencedPTS(it->second.value(), last_pts)) {
-                            last_pts = it->second.value();
+                for (const auto& it : sit.splice_insert.components_pts) {
+                    if (it.second.set()) {
+                        if (last_pts == INVALID_PTS || SequencedPTS(it.second.value(), last_pts)) {
+                            last_pts = it.second.value();
                         }
                     }
                 }
@@ -1041,8 +1041,8 @@ bool ts::SpliceInjectPlugin::FileListener::updatePollFiles(UString& wildcard, Mi
 bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileList& files)
 {
     // Loop on all changed files.
-    for (auto it = files.begin(); it != files.end(); ++it) {
-        const PolledFile& file(**it);
+    for (const auto& it : files) {
+        const PolledFile& file(*it);
         if (file.getStatus() == PolledFile::ADDED || file.getStatus() == PolledFile::MODIFIED) {
             // Process added or modified files.
             const UString name(file.getFileName());

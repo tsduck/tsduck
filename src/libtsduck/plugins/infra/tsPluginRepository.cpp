@@ -267,18 +267,18 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
     size_t name_width = 0;
     if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
         if ((flags & LIST_INPUT) != 0) {
-            for (auto it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
-                name_width = std::max(name_width, it->first.width());
+            for (const auto& it : _inputPlugins) {
+                name_width = std::max(name_width, it.first.width());
             }
         }
         if ((flags & LIST_PACKET) != 0) {
-            for (auto it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
-                name_width = std::max(name_width, it->first.width());
+            for (const auto& it : _processorPlugins) {
+                name_width = std::max(name_width, it.first.width());
             }
         }
         if ((flags & LIST_OUTPUT) != 0) {
-            for (auto it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
-                name_width = std::max(name_width, it->first.width());
+            for (const auto& it : _outputPlugins) {
+                name_width = std::max(name_width, it.first.width());
             }
         }
     }
@@ -291,9 +291,9 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp input plugins:\n\n";
         }
-        for (auto it = _inputPlugins.begin(); it != _inputPlugins.end(); ++it) {
-            Plugin* p = it->second(&tsp);
-            ListOnePlugin(out, it->first, p, name_width, flags);
+        for (const auto& it : _inputPlugins) {
+            Plugin* p = it.second(&tsp);
+            ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
         }
     }
@@ -302,9 +302,9 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp output plugins:\n\n";
         }
-        for (auto it = _outputPlugins.begin(); it != _outputPlugins.end(); ++it) {
-            Plugin* p = it->second(&tsp);
-            ListOnePlugin(out, it->first, p, name_width, flags);
+        for (const auto& it : _outputPlugins) {
+            Plugin* p = it.second(&tsp);
+            ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
         }
     }
@@ -313,9 +313,9 @@ ts::UString ts::PluginRepository::listPlugins(bool loadAll, Report& report, int 
         if ((flags & (LIST_COMPACT | LIST_NAMES)) == 0) {
             out += u"\nList of tsp packet processor plugins:\n\n";
         }
-        for (auto it = _processorPlugins.begin(); it != _processorPlugins.end(); ++it) {
-            Plugin* p = it->second(&tsp);
-            ListOnePlugin(out, it->first, p, name_width, flags);
+        for (const auto& it : _processorPlugins) {
+            Plugin* p = it.second(&tsp);
+            ListOnePlugin(out, it.first, p, name_width, flags);
             delete p;
         }
     }

@@ -166,8 +166,8 @@ void ts::TunerDeviceInfo::LoadAll(std::vector<TunerDeviceInfo>& devices, Report&
     UStringList files;
     SearchFiles(files, u"/sys/devices", u"dvb*.frontend*", 16);
     devices.clear();
-    for (auto it = files.begin(); it != files.end(); ++it) {
-        devices.push_back(TunerDeviceInfo(*it, report));
+    for (const auto& it : files) {
+        devices.push_back(TunerDeviceInfo(it, report));
     }
 }
 
@@ -186,11 +186,11 @@ void ts::TunerDeviceInfo::SearchFiles(UStringList& files, const UString& root, c
         // Search all files under root.
         UStringList locals;
         ExpandWildcard(locals, root + PathSeparator + u"*");
-        for (auto loc = locals.begin(); loc != locals.end(); ++loc) {
+        for (const auto& loc : locals) {
             // Keep only directories which are not symbolic links (could loop).
-            if (IsDirectory(*loc) && !IsSymbolicLink(*loc)) {
+            if (IsDirectory(loc) && !IsSymbolicLink(loc)) {
                 // Filter out names which are known to be dead-ends with many files under.
-                const UString name(BaseName(*loc));
+                const UString name(BaseName(loc));
                 if (name != u"breakpoint" &&
                     name != u"tracepoint" &&
                     name != u"kprobe" &&
@@ -204,7 +204,7 @@ void ts::TunerDeviceInfo::SearchFiles(UStringList& files, const UString& root, c
                     !name.startWith(u"LNXSYS"))
                 {
                     // We can recurse.
-                    SearchFiles(files, *loc, pattern, levels - 1);
+                    SearchFiles(files, loc, pattern, levels - 1);
                 }
             }
         }

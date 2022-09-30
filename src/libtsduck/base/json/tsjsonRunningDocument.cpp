@@ -94,17 +94,17 @@ bool ts::json::RunningDocument::open(const ValuePtr& root, const UString& fileNa
             // Print all fields, except the one containing the array.
             UString last_name;
             size_t count = 0;
-            for (auto it = names.begin(); it != names.end(); ++it) {
-                const ValuePtr subval(value->valuePtr(*it));
+            for (const auto& it : names) {
+                const ValuePtr subval(value->valuePtr(it));
                 if (subval == path[pi+1]) {
                     // Field containing the array will be printed last.
-                    last_name = *it;
+                    last_name = it;
                 }
                 else {
                     if (count++ > 0) {
                         _text << ",";
                     }
-                    _text << ts::endl << ts::margin << '"' << it->toJSON() << "\": ";
+                    _text << ts::endl << ts::margin << '"' << it.toJSON() << "\": ";
                     subval->print(_text);
                 }
             }
@@ -199,8 +199,8 @@ bool ts::json::RunningDocument::searchArray(const ValuePtr& root, ValuePtrVector
         // Lookup all fields in the object.
         UStringList names;
         root->getNames(names);
-        for (auto it = names.begin(); it != names.end(); ++it) {
-            const ValuePtr val(root->valuePtr(*it));
+        for (const auto& it : names) {
+            const ValuePtr val(root->valuePtr(it));
             if (!val.isNull() && searchArray(val, path)) {
                 // Found an array in that branch.
                 return true;

@@ -43,7 +43,7 @@ template<typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type
 ts::TypedEnumeration<ENUM,N>::TypedEnumeration(const std::initializer_list<TypedNameValue> values) :
     Enumeration()
 {
-    for (auto it = values.begin(); it != values.end(); ++it) {
-        add(it->name, it->value);
+    for (const auto& it : values) {
+        add(it.name, it.value);
     }
 }

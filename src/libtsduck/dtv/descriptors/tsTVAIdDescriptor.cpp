@@ -78,10 +78,10 @@ ts::TVAIdDescriptor::TVAId::TVAId() :
 
 void ts::TVAIdDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = TVA_ids.begin(); it != TVA_ids.end(); ++it) {
-        buf.putUInt16(it->TVA_id);
+    for (const auto& it : TVA_ids) {
+        buf.putUInt16(it.TVA_id);
         buf.putBits(0xFF, 5);
-        buf.putBits(it->running_status, 3);
+        buf.putBits(it.running_status, 3);
     }
 }
 
@@ -122,10 +122,10 @@ void ts::TVAIdDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf,
 
 void ts::TVAIdDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = TVA_ids.begin(); it != TVA_ids.end(); ++it) {
+    for (const auto& it : TVA_ids) {
         xml::Element* e = root->addElement(u"TVA");
-        e->setIntAttribute(u"id", it->TVA_id, true);
-        e->setIntAttribute(u"running_status", it->running_status);
+        e->setIntAttribute(u"id", it.TVA_id, true);
+        e->setIntAttribute(u"running_status", it.running_status);
     }
 }
 

@@ -173,26 +173,26 @@ void ts::LinkageDescriptor::serializePayload(PSIBuffer& buf) const
     }
     else if (linkage_type >= LINKAGE_EXT_EVENT_MIN && linkage_type <= LINKAGE_EXT_EVENT_MAX) {
         buf.pushWriteSequenceWithLeadingLength(8); // loop_length
-        for (auto it = extended_event_linkage_info.begin(); it != extended_event_linkage_info.end(); ++it) {
-            buf.putUInt16(it->target_event_id);
-            buf.putBit(it->target_listed);
-            buf.putBit(it->event_simulcast);
-            buf.putBits(it->link_type, 2);
-            buf.putBits(it->target_id_type, 2);
-            buf.putBit(it->target_original_network_id.set());
-            buf.putBit(it->target_service_id.set());
-            if (it->target_id_type == 3) {
-                buf.putUInt16(it->user_defined_id);
+        for (const auto& it : extended_event_linkage_info) {
+            buf.putUInt16(it.target_event_id);
+            buf.putBit(it.target_listed);
+            buf.putBit(it.event_simulcast);
+            buf.putBits(it.link_type, 2);
+            buf.putBits(it.target_id_type, 2);
+            buf.putBit(it.target_original_network_id.set());
+            buf.putBit(it.target_service_id.set());
+            if (it.target_id_type == 3) {
+                buf.putUInt16(it.user_defined_id);
             }
             else {
-                if (it->target_id_type == 1) {
-                    buf.putUInt16(it->target_transport_stream_id);
+                if (it.target_id_type == 1) {
+                    buf.putUInt16(it.target_transport_stream_id);
                 }
-                if (it->target_original_network_id.set()) {
-                    buf.putUInt16(it->target_original_network_id.value());
+                if (it.target_original_network_id.set()) {
+                    buf.putUInt16(it.target_original_network_id.value());
                 }
-                if (it->target_service_id.set()) {
-                    buf.putUInt16(it->target_service_id.value());
+                if (it.target_service_id.set()) {
+                    buf.putUInt16(it.target_service_id.value());
                 }
             }
         }
@@ -462,25 +462,25 @@ void ts::LinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
     }
     else if (linkage_type >= LINKAGE_EXT_EVENT_MIN && linkage_type <= LINKAGE_EXT_EVENT_MAX) {
         xml::Element* extInfo = root->addElement(u"extended_event_linkage_info");
-        for (auto it = extended_event_linkage_info.begin(); it != extended_event_linkage_info.end(); ++it) {
+        for (const auto& it : extended_event_linkage_info) {
             xml::Element* e = extInfo->addElement(u"event");
-            e->setIntAttribute(u"target_event_id", it->target_event_id, true);
-            e->setBoolAttribute(u"target_listed", it->target_listed);
-            e->setBoolAttribute(u"event_simulcast", it->event_simulcast);
-            e->setIntAttribute(u"link_type", it->link_type, true);
-            e->setIntAttribute(u"target_id_type", it->target_id_type, true);
-            if (it->target_id_type == 3) {
-                e->setIntAttribute(u"user_defined_id", it->user_defined_id, true);
+            e->setIntAttribute(u"target_event_id", it.target_event_id, true);
+            e->setBoolAttribute(u"target_listed", it.target_listed);
+            e->setBoolAttribute(u"event_simulcast", it.event_simulcast);
+            e->setIntAttribute(u"link_type", it.link_type, true);
+            e->setIntAttribute(u"target_id_type", it.target_id_type, true);
+            if (it.target_id_type == 3) {
+                e->setIntAttribute(u"user_defined_id", it.user_defined_id, true);
             }
             else {
-                if (it->target_id_type == 1) {
-                    e->setIntAttribute(u"target_transport_stream_id", it->target_transport_stream_id, true);
+                if (it.target_id_type == 1) {
+                    e->setIntAttribute(u"target_transport_stream_id", it.target_transport_stream_id, true);
                 }
-                if (it->target_original_network_id.set()) {
-                    e->setIntAttribute(u"target_original_network_id", it->target_original_network_id.value(), true);
+                if (it.target_original_network_id.set()) {
+                    e->setIntAttribute(u"target_original_network_id", it.target_original_network_id.value(), true);
                 }
-                if (it->target_service_id.set()) {
-                    e->setIntAttribute(u"target_service_id", it->target_service_id.value(), true);
+                if (it.target_service_id.set()) {
+                    e->setIntAttribute(u"target_service_id", it.target_service_id.value(), true);
                 }
             }
         }
