@@ -475,6 +475,8 @@ namespace ts {
         DID_FTA_CONTENT_MGMT    = 0x7E, //!< DID for DVB FTA_content_management_descriptor
         DID_DVB_EXTENSION       = 0x7F, //!< DID for DVB extension_descriptor
 
+        DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
+
         // Valid in an AIT (Application Information Table, ETSI TS 102 809):
 
         DID_AIT_APPLICATION     = 0x00, //!< DID for AIT application_descriptor.
