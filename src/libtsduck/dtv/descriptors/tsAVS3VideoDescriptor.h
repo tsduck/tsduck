@@ -57,12 +57,10 @@ namespace ts {
         bool      td_mode_flag;                      //!< 1 bit.
         bool      library_stream_flag;               //!< 1 bit.
         bool      library_picture_enable_flag;       //!< 1 bit.
-                                                     //!< 2 bits reserved.
         uint8_t   colour_primaries;                  //!< 8 bits.
         uint8_t   transfer_characteristics;          //!< 8 bits.
         uint8_t   matrix_coefficients;               //!< 8 bits.
-                                                     //!< 8 bits reserved.
-                                                     //! 
+		
         //!
         //! Default constructor.
         //!
