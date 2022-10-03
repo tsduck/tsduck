@@ -51,7 +51,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 ts::VVCTimingAndHRDDescriptor::VVCTimingAndHRDDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     hrd_management_valid(false),
-    target_schedule_idx(),
     N_90khz(),
     K_90khz(),
     num_units_in_tick()
@@ -61,7 +60,6 @@ ts::VVCTimingAndHRDDescriptor::VVCTimingAndHRDDescriptor() :
 void ts::VVCTimingAndHRDDescriptor::clearContent()
 {
     hrd_management_valid = false;
-    target_schedule_idx.clear();
     N_90khz.clear();
     K_90khz.clear();
     num_units_in_tick.clear();
@@ -93,7 +91,7 @@ void ts::VVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
     const bool has_90kHz = N_90khz.set() && K_90khz.set();
     const bool info_present = num_units_in_tick.set();
     buf.putBit(hrd_management_valid);
-    buf.putBits(target_schedule_idx.value(0xFF), 6);
+    buf.putBits(0xFF, 6);
     buf.putBit(info_present);
     if (info_present) {
         buf.putBit(has_90kHz);
@@ -169,7 +167,7 @@ void ts::VVCTimingAndHRDDescriptor::buildXML(DuckContext& duck, xml::Element* ro
 // XML deserialization
 //----------------------------------------------------------------------------
 
-bool ts::HEVCTimingAndHRDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
+bool ts::VVCTimingAndHRDDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     return element->getBoolAttribute(hrd_management_valid, u"hrd_management_valid", true) &&
            element->getOptionalIntAttribute(N_90khz, u"N_90khz") &&
