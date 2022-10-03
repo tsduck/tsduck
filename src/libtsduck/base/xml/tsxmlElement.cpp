@@ -743,6 +743,88 @@ void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names)
 
 
 //----------------------------------------------------------------------------
+// Recursively merge another element into this one.
+//----------------------------------------------------------------------------
+
+bool ts::xml::Element::merge(Element* other, MergeAttributes attrOptions)
+{
+    // Ignore null or self merge.
+    if (other == nullptr || other == this) {
+        return true;
+    }
+
+    // Check that the elements have identical tags.
+    if (!name().similar(other->name())) {
+        report().error(u"Cannot merge XML element <%s>, line %d, with <%s>, line %d", {name(), lineNumber(), other->name(), other->lineNumber()});
+        return false;
+    }
+
+    // Merge attributes.
+    if (attrOptions != MergeAttributes::NONE) {
+        for (const auto& attr : other->_attributes) {
+            if (attrOptions == MergeAttributes::REPLACE || !hasAttribute(attr.second.name())) {
+                setAttribute(attr.second.name(), attr.second.value());
+            }
+        }
+    }
+
+    // Remove elements one by one from the node to merge.
+    xml::Element* elem = nullptr;
+    while ((elem = other->firstChildElement()) != nullptr) {
+        // We need to merge its content with an element of the same name in the main.
+        xml::Element* main = findFirstChild(elem->name(), true);
+        if (main == nullptr) {
+            // The tag did not exist in the main element, simply move is here.
+            elem->reparent(this);
+        }
+        else {
+            // Move all content into the main topic.
+            main->merge(elem, attrOptions);
+        }
+    }
+
+    // Finally, delete the (now empty) merged element.
+    delete other;
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Sort children elements by alphabetical order of tag name.
+//----------------------------------------------------------------------------
+
+void ts::xml::Element::sort(const UString& tagName)
+{
+    // Sort children in current element.
+    if (tagName.empty() || tagName.similar(name())) {
+        Element* child = firstChildElement();
+        while (child != nullptr) {
+            Element* next = child->nextSiblingElement();
+
+            // Go backward until we find a "pos" where to insert "child".
+            Element* prev = nullptr;
+            Element* pos = child;
+            while ((prev = pos->previousSiblingElement()) != nullptr && prev->name() > child->name()) {
+                pos = prev;
+            }
+            if (pos != child && pos != nullptr) {
+                child->moveBefore(pos);
+            }
+
+            child = next;
+        }
+    }
+
+    // Recursively sort children.
+    if (!tagName.empty()) {
+        for (Element* child = firstChildElement(); child != nullptr; child = child->nextSiblingElement()) {
+            child->sort(tagName);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Print the node.
 //----------------------------------------------------------------------------
 

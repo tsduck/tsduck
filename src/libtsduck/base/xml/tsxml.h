@@ -79,5 +79,17 @@ namespace ts {
         //! Specify an unlimited number of elements.
         //!
         static const size_t UNLIMITED = std::numeric_limits<size_t>::max();
+
+        //!
+        //! How to process attributes when merging XML elements.
+        //! In the merge process, there a main element and a secondary element which is merged into the main.
+        //! These declarations describe what to do when merging two elements with same tag.
+        //! @see Element::merge()
+        //!
+        enum class MergeAttributes {
+            NONE,      //!< Ignore attributes in the secondary element.
+            ADD,       //!< Add attributes from the secondary element which are not already present in the main element.
+            REPLACE,   //!< Unconditionally copy attributes from the secondary element into the main.
+        };
     }
 }

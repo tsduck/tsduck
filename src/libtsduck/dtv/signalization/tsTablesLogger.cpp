@@ -652,7 +652,7 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
             xml::Document doc(_report);
             doc.initialize(u"tsduck");
             table.toXML(_duck, doc.rootElement(), _xml_options);
-            doc.save(_xml_destination, 2, true);
+            doc.save(_xml_destination, 2);
         }
         else {
             // Just add the table in the running doc.

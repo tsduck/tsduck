@@ -210,7 +210,7 @@ namespace {
 
         // Load and save the model.
         ts::xml::Document doc;
-        return ts::SectionFile::LoadModel(doc, opt.withExtensions) && doc.save(outName, 2, true);
+        return ts::SectionFile::LoadModel(doc, opt.withExtensions) && doc.save(outName);
     }
 }
 
