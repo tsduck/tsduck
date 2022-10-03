@@ -242,7 +242,8 @@ void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
     if (buf.canReadBytes(8)) {
         uint8_t t1 = buf.getUInt8();
         uint8_t t2 = buf.getUInt8();
-        disp << margin << "Profile ID: " << Avs3Profile(t1) << " (" << UString::Hexa(t1) << "), Level ID: " << Avs3Level(t2) << " (" << UString::Hexa(t2);
+        disp << margin << "Profile ID: " << Avs3Profile(t1) << " (" << UString::Hexa(t1,2 * sizeof(uint8_t));
+		disp << "), Level ID: " << Avs3Level(t2) << " (" << UString::Hexa(t2, 2 * sizeof(uint8_t));
         disp << "), Multiple frame rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
         uint16_t t3 = buf.getBits<uint16_t>(4);
         uint16_t t4 = buf.getBits<uint16_t>(3);
