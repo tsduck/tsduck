@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include <array>
 #include "tsAbstractDescriptor.h"
 #include "tsVariable.h"
 
@@ -50,7 +49,6 @@ namespace ts {
         // Public members:
         uint8_t   profile_idc;                       //!< 7 bits.
         bool      tier;                              //!< 
-//        uint8_t   num_sub_profiles;                  //!< 8 bits.
         std::list<uint32_t> sub_profile_idc;             //!< array of 32 bit values.
         bool      progressive_source;                //!< 
         bool      interlaced_source;                 //!< 

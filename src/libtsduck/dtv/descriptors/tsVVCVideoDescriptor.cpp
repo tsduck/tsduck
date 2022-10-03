@@ -51,7 +51,6 @@ ts::VVCVideoDescriptor::VVCVideoDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     profile_idc(0),
     tier(false),
-//    num_sub_profiles(0),
     sub_profile_idc(),
     progressive_source(false),
     interlaced_source(false),
@@ -71,7 +70,6 @@ void ts::VVCVideoDescriptor::clearContent()
 {
     profile_idc = 0;
     tier = false;
-//    num_sub_profiles = 0;
     sub_profile_idc.clear(),
     progressive_source = false;
     interlaced_source = false;
@@ -81,6 +79,7 @@ void ts::VVCVideoDescriptor::clearContent()
     VVC_still_present = false;
     VVC_24hr_picture_present = false;
     HDR_WCG_idc = 3;
+	video_properties_tag = 0;
     temporal_id_min.clear();
     temporal_id_max.clear();
 }
