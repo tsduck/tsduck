@@ -248,7 +248,7 @@ void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         uint16_t t4 = buf.getBits<uint16_t>(3);
         disp << margin << "Frame rate code: " << AVS3FrameRate(t3) << " (" << t3 << "), Sample precision: " << AVS3SamplePrecision(t4) << " (" << t4 << ")";
         t4 = buf.getBits<uint16_t>(2);
-        disp << ", Chroma format: " << Avs3ChromaFormat(t4) << " (" <<buf.getBits<uint16_t>(4) << ")" << std::endl;
+        disp << ", Chroma format: " << Avs3ChromaFormat(t4) << " (" <<buf.getBits<uint16_t>(t4) << ")" << std::endl;
         disp << margin << "Temporal ID: " << UString::TrueFalse(buf.getBool()) << ", TD mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Library stream: " << UString::TrueFalse(buf.getBool()) << ", Library picture enable: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(2);
