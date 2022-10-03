@@ -158,6 +158,64 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
     }
 }
 
+char* VVCProfileIDC(INT pi) {
+	switch (pi) {
+		case  1: return "Main 10";
+		case 17: return "Multilayer Main 10";
+		case 33: return "Main 10 4:4:4";
+		case 49: return "Multilayer Main 10 4:4:4 ";
+		case 65: return "Main 10 Still Picture";
+		case 97: return "Main 10 4:4:4 Still Picture";
+	}
+	return "uknown";
+}
+
+char* VVCTier(bool t) {
+	return t ? "High" : "Main";
+}
+
+char* VVCHDRandWCG(INT hw) {
+    switch (hw) {
+		case 0: return "SDR";
+		case 1: return "WCG only";
+		case 2: return "HDR and WCG";
+		case 3: return "no indication";
+	}	
+	return "unknown";
+}
+
+char* VVCLevelIDC(INT li) {
+	// H.266, table A.1
+	switch (li) {
+		case  16: return "1.0";
+		case  32: return "2.0";
+		case  35: return "2.1";
+		case  48: return "3.0";
+		case  51: return "3.1";
+		case  64: return "4.0";
+		case  67: return "4.1";
+		case  80: return "5.0";
+		case  83: return "5.1";
+		case  86: return "5.2";
+		case  96: return "6.0";
+		case  99: return "6.1";
+		case 102: return "6.2";
+	}
+	return "unknown";
+}
+
+char *VVCVideoProperties(INT vp) {
+	// H.222.0 Table 2-135
+	switch (vp) {
+		case 0: return "not known";
+		case 1: return "BT709_YCC";
+		case 2: return "BT709_RGB";
+		case 3: return "BT601_525";
+		case 4: return "BT601_625";
+		case 5: return "FR709_RGB";
+	}
+	return "unknown";
+}
 
 //----------------------------------------------------------------------------
 // Static method to display a descriptor.
@@ -165,18 +223,21 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.canReadBytes(6)) {
-        disp << margin << "Profile IDC: " << UString::Hexa(buf.getBits<uint16_t>(7), 2*sizeof(uint8_t));
-        disp << ", tier: " << UString::TrueFalse(buf.getBool()) << std::endl;
+    if (buf.canReadBytes(8)) {
+        INT t;
+        t = buf.getBits<uint16_t>(7);
+        disp << margin << "Profile IDC: " << VVCProfileIDC(t) << " (" << UString::Hexa(t, 2);
+        disp << "), tier: " << VVCTier(buf.getBool()) << std::endl;
         uint8_t num_sub_profiles = buf.getUInt8();
         if (num_sub_profiles > 0) {
             disp << margin << "Sub profile IDC: ";
             for (uint8_t i = 0; i < num_sub_profiles; i++) {
                 disp << UString::Hexa(buf.getUInt32()) << " ";
-                if (i == num_sub_profiles)
+                if ((i + 1) % 6 == 0) {
                     disp << std::endl;
-                else if ((i+1) % 6 == 0)
-                    disp << std::endl << margin << "                 ";
+                    if (i != (num_sub_profiles - 1))
+                        disp << margin << "                 ";
+                }
             }
         }
         disp << margin << "Progressive source: " << UString::TrueFalse(buf.getBool());
@@ -184,14 +245,17 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", non packed: " << UString::TrueFalse(buf.getBool());
         disp << ", frame only: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(4);
-        disp << margin << "Level IDC: " << UString::Hexa(buf.getUInt8(), 2 * sizeof(uint8_t));
+        t=buf.getUInt8();
+        disp << margin << "Level IDC: " << VVCLevelIDC(t) << " (" << UString::Hexa(t, 2) << ")";
         const bool temporal = buf.getBool();
         disp << ", still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(5);
-        disp << margin << "HDR WCG idc: " << buf.getBits<uint16_t>(2);
+        t=buf.getBits<uint16_t>(2);
+        disp << margin << "HDR WCG idc: " << VVCHDRandWCG(t) << " (" << t << ")";
         buf.skipBits(2);
-        disp << ", video properties: " << buf.getBits<uint16_t>(4) << std::endl;
+		t=buf.getBits<uint16_t>(4);
+        disp << ", video properties: " << VVCVideoProperties(t) << "(" << t << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
