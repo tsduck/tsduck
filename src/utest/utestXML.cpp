@@ -62,6 +62,8 @@ public:
     void testEscape();
     void testTweaks();
     void testChannels();
+    void testMerge();
+    void testSort();
 
     TSUNIT_TEST_BEGIN(XMLTest);
     TSUNIT_TEST(testDocument);
@@ -73,6 +75,8 @@ public:
     TSUNIT_TEST(testEscape);
     TSUNIT_TEST(testTweaks);
     TSUNIT_TEST(testChannels);
+    TSUNIT_TEST(testMerge);
+    TSUNIT_TEST(testSort);
     TSUNIT_TEST_END();
 
 private:
@@ -487,4 +491,233 @@ void XMLTest::testChannels()
 {
     ts::xml::Document model(report());
     TSUNIT_ASSERT(model.load(ts::SectionFile::XML_TABLES_MODEL));
+}
+
+void XMLTest::testMerge()
+{
+    static const ts::UChar* const document1 =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root>\n"
+        u"  <node1 a1=\"v1\">Text in node1</node1>\n"
+        u"  <node3 foo=\"bar\">\n"
+        u"    <node31>\n"
+        u"      <node311 a=\"311\"/>\n"
+        u"      <node313 a=\"313\"/>\n"
+        u"    </node31>\n"
+        u"    <node33>\n"
+        u"      <node331 a=\"331\"/>\n"
+        u"    </node33>\n"
+        u"  </node3>\n"
+        u"</root>\n";
+
+    static const ts::UChar* const document2 =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root attr1=\"val1\">\n"
+        u"  <node1 a1=\"y1\" a2=\"y2\">=== in node1</node1>\n"
+        u"  <node2 b2=\"x2\">==== in node2</node2>\n"
+        u"  <node3>\n"
+        u"    <node31>\n"
+        u"      <node311 a=\"311-2\"/>\n"
+        u"      <node312 a=\"312-2\"/>\n"
+        u"      <node314 a=\"314-2\"/>\n"
+        u"    </node31>\n"
+        u"    <node32 b=\"32\"/>\n"
+        u"    <node33>\n"
+        u"      <node332 a=\"332\"/>\n"
+        u"    </node33>\n"
+        u"  </node3>\n"
+        u"  <node4/>\n"
+        u"</root>\n";
+
+    ts::xml::Document doc1(report());
+    ts::xml::Document doc2(report());
+    TSUNIT_ASSERT(doc1.parse(document1));
+    TSUNIT_ASSERT(doc2.parse(document2));
+    TSUNIT_EQUAL(2, doc1.childrenCount());
+    TSUNIT_EQUAL(2, doc2.childrenCount());
+
+    TSUNIT_ASSERT(doc1.rootElement()->merge(doc2.rootElement(), ts::xml::MergeAttributes::NONE));
+    TSUNIT_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root>\n"
+        u"  <node1 a1=\"v1\">Text in node1</node1>\n"
+        u"  <node3 foo=\"bar\">\n"
+        u"    <node31>\n"
+        u"      <node311 a=\"311\"/>\n"
+        u"      <node313 a=\"313\"/>\n"
+        u"      <node312 a=\"312-2\"/>\n"
+        u"      <node314 a=\"314-2\"/>\n"
+        u"    </node31>\n"
+        u"    <node33>\n"
+        u"      <node331 a=\"331\"/>\n"
+        u"      <node332 a=\"332\"/>\n"
+        u"    </node33>\n"
+        u"    <node32 b=\"32\"/>\n"
+        u"  </node3>\n"
+        u"  <node2 b2=\"x2\">==== in node2</node2>\n"
+        u"  <node4/>\n"
+        u"</root>\n",
+        doc1.toString());
+
+    doc1.clear();
+    doc2.clear();
+    TSUNIT_ASSERT(doc1.parse(document1));
+    TSUNIT_ASSERT(doc2.parse(document2));
+    TSUNIT_EQUAL(2, doc1.childrenCount());
+    TSUNIT_EQUAL(2, doc2.childrenCount());
+
+    TSUNIT_ASSERT(doc1.rootElement()->merge(doc2.rootElement(), ts::xml::MergeAttributes::ADD));
+    TSUNIT_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root attr1=\"val1\">\n"
+        u"  <node1 a1=\"v1\" a2=\"y2\">Text in node1</node1>\n"
+        u"  <node3 foo=\"bar\">\n"
+        u"    <node31>\n"
+        u"      <node311 a=\"311\"/>\n"
+        u"      <node313 a=\"313\"/>\n"
+        u"      <node312 a=\"312-2\"/>\n"
+        u"      <node314 a=\"314-2\"/>\n"
+        u"    </node31>\n"
+        u"    <node33>\n"
+        u"      <node331 a=\"331\"/>\n"
+        u"      <node332 a=\"332\"/>\n"
+        u"    </node33>\n"
+        u"    <node32 b=\"32\"/>\n"
+        u"  </node3>\n"
+        u"  <node2 b2=\"x2\">==== in node2</node2>\n"
+        u"  <node4/>\n"
+        u"</root>\n",
+        doc1.toString());
+
+    doc1.clear();
+    doc2.clear();
+    TSUNIT_ASSERT(doc1.parse(document1));
+    TSUNIT_ASSERT(doc2.parse(document2));
+    TSUNIT_EQUAL(2, doc1.childrenCount());
+    TSUNIT_EQUAL(2, doc2.childrenCount());
+
+    TSUNIT_ASSERT(doc1.rootElement()->merge(doc2.rootElement(), ts::xml::MergeAttributes::REPLACE));
+    TSUNIT_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root attr1=\"val1\">\n"
+        u"  <node1 a1=\"y1\" a2=\"y2\">Text in node1</node1>\n"
+        u"  <node3 foo=\"bar\">\n"
+        u"    <node31>\n"
+        u"      <node311 a=\"311-2\"/>\n"
+        u"      <node313 a=\"313\"/>\n"
+        u"      <node312 a=\"312-2\"/>\n"
+        u"      <node314 a=\"314-2\"/>\n"
+        u"    </node31>\n"
+        u"    <node33>\n"
+        u"      <node331 a=\"331\"/>\n"
+        u"      <node332 a=\"332\"/>\n"
+        u"    </node33>\n"
+        u"    <node32 b=\"32\"/>\n"
+        u"  </node3>\n"
+        u"  <node2 b2=\"x2\">==== in node2</node2>\n"
+        u"  <node4/>\n"
+        u"</root>\n",
+        doc1.toString());
+}
+
+void XMLTest::testSort()
+{
+    static const ts::UChar* const document =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root>\n"
+        u"  Text 1\n"
+        u"  <node3 a=\"1\"/>\n"
+        u"  Text 3\n"
+        u"  <node2/>\n"
+        u"  <node3 a=\"2\"/>\n"
+        u"  <node7>\n"
+        u"    <node7e/>\n"
+        u"    <node7d/>\n"
+        u"    <node7a/>\n"
+        u"    <node7g/>\n"
+        u"    <node7c/>\n"
+        u"    <node7z/>\n"
+        u"  </node7>\n"
+        u"  <node9/>\n"
+        u"  <node4/>\n"
+        u"  <node7>\n"
+        u"    <node7a1/>\n"
+        u"    <node7a2/>\n"
+        u"    <node7a4/>\n"
+        u"    <node7a3/>\n"
+        u"    <node7a5/>\n"
+        u"  </node7>\n"
+        u"  <node1/>\n"
+        u"  End\n"
+        u"</root>\n";
+
+    ts::xml::Document doc(report());
+    TSUNIT_ASSERT(doc.parse(document));
+    TSUNIT_EQUAL(2, doc.childrenCount());
+    doc.rootElement()->sort();
+
+    TSUNIT_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root>\n"
+        u"  Text 1\n"
+        u"  <node1/>\n"
+        u"  <node2/>\n"
+        u"  <node3 a=\"1\"/>\n"
+        u"  Text 3\n"
+        u"  <node3 a=\"2\"/>\n"
+        u"  <node4/>\n"
+        u"  <node7>\n"
+        u"    <node7e/>\n"
+        u"    <node7d/>\n"
+        u"    <node7a/>\n"
+        u"    <node7g/>\n"
+        u"    <node7c/>\n"
+        u"    <node7z/>\n"
+        u"  </node7>\n"
+        u"  <node7>\n"
+        u"    <node7a1/>\n"
+        u"    <node7a2/>\n"
+        u"    <node7a4/>\n"
+        u"    <node7a3/>\n"
+        u"    <node7a5/>\n"
+        u"  </node7>\n"
+        u"  <node9/>\n"
+        u"  End\n"
+        u"</root>\n",
+        doc.toString());
+
+    doc.clear();
+    TSUNIT_ASSERT(doc.parse(document));
+    TSUNIT_EQUAL(2, doc.childrenCount());
+    doc.rootElement()->sort(u"node7");
+
+    TSUNIT_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root>\n"
+        u"  Text 1\n"
+        u"  <node3 a=\"1\"/>\n"
+        u"  Text 3\n"
+        u"  <node2/>\n"
+        u"  <node3 a=\"2\"/>\n"
+        u"  <node7>\n"
+        u"    <node7a/>\n"
+        u"    <node7c/>\n"
+        u"    <node7d/>\n"
+        u"    <node7e/>\n"
+        u"    <node7g/>\n"
+        u"    <node7z/>\n"
+        u"  </node7>\n"
+        u"  <node9/>\n"
+        u"  <node4/>\n"
+        u"  <node7>\n"
+        u"    <node7a1/>\n"
+        u"    <node7a2/>\n"
+        u"    <node7a3/>\n"
+        u"    <node7a4/>\n"
+        u"    <node7a5/>\n"
+        u"  </node7>\n"
+        u"  <node1/>\n"
+        u"  End\n"
+        u"</root>\n",
+        doc.toString());
 }

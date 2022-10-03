@@ -118,7 +118,7 @@ bool ts::xml::Document::load(std::istream& strm)
     return parser.loadStream(strm) && parseNode(parser, nullptr);
 }
 
-bool ts::xml::Document::load(const UString& fileName, bool search, bool stdInputIfEmpty)
+bool ts::xml::Document::load(const UString& fileName, bool search)
 {
     // Specific case of inline XML content, when the string is not the name of a file but directly an XML content.
     if (IsInlineXML(fileName)) {
@@ -126,7 +126,7 @@ bool ts::xml::Document::load(const UString& fileName, bool search, bool stdInput
     }
 
     // Specific case of the standard input.
-    if (stdInputIfEmpty && (fileName.empty() || fileName == u"-")) {
+    if (fileName.empty() || fileName == u"-") {
         return load(std::cin);
     }
 
@@ -229,12 +229,12 @@ bool ts::xml::Document::parseNode(TextParser& parser, const Node* parent)
 // Save an XML file.
 //----------------------------------------------------------------------------
 
-bool ts::xml::Document::save(const UString& fileName, size_t indent, bool stdOutputIfEmpty)
+bool ts::xml::Document::save(const UString& fileName, size_t indent)
 {
     TextFormatter out(report());
     out.setIndentSize(indent);
 
-    if (stdOutputIfEmpty && (fileName.empty() || fileName == u"-")) {
+    if (fileName.empty() || fileName == u"-") {
         out.setStream(std::cout);
     }
     else if (!out.setFile(fileName)) {

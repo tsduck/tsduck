@@ -748,6 +748,21 @@ namespace ts {
             //!
             void getAttributesNamesInModificationOrder(UStringList& names) const;
 
+            //!
+            //! Recursively merge another element into this one.
+            //! @param [in,out] other Another element to merge. The @a other object is destroyed,
+            //! some of its nodes are reparented into the main object.
+            //! @param [in] attrOptions What to do with attributes when merging nodes with identical tags.
+            //!
+            bool merge(Element* other, MergeAttributes attrOptions = MergeAttributes::ADD);
+
+            //!
+            //! Sort children elements by alphabetical order of tag name.
+            //! @param [in] name When this parameter is not empty, recursively search for elements
+            //! with that tag name and sort their children elements.
+            //!
+            void sort(const UString& name = UString());
+
             // Inherited from xml::Node.
             virtual Node* clone() const override;
             virtual void clear() override;

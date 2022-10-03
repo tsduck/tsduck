@@ -156,6 +156,72 @@ void ts::xml::Node::reparent(Node* newParent, bool last)
 
 
 //----------------------------------------------------------------------------
+// Move the node before another node, potentially to a new parent.
+//----------------------------------------------------------------------------
+
+void ts::xml::Node::move(Node* newSibling, bool before)
+{
+    // Must be moved somewhere different.
+    if (newSibling == nullptr ||
+        newSibling->_parent == nullptr ||
+        newSibling == this ||
+        (before && newSibling == ringNext<Node>()) ||
+        (!before && newSibling == ringPrevious<Node>()))
+    {
+        return;
+    }
+
+    // Extract from the current parent.
+    if (newSibling->_parent == _parent) {
+        // Keep same parent, remove ourselves from the ring.
+        assert(!ringAlone()); // We cannot be alone since we already have a sibling.
+        if (_parent->_firstChild == this) {
+            _parent->_firstChild = ringNext<Node>();
+        }
+        ringRemove();
+    }
+    else {
+        // Move to a new parent, but not yet inserted in the ring.
+        reparent(nullptr);
+        _parent = newSibling->_parent;
+    }
+
+    // Insert somewhere else in the parent structure.
+    assert(_parent->_firstChild != nullptr); // Because of newSibling.
+    if (before) {
+        if (_parent->_firstChild == newSibling) {
+            _parent->_firstChild = this;
+        }
+        ringInsertBefore(newSibling);
+    }
+    else {
+        ringInsertAfter(newSibling);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Remove all comments in the XML node.
+//----------------------------------------------------------------------------
+
+void ts::xml::Node::removeComments(bool recurse)
+{
+    Node* child = firstChild();
+    while (child != nullptr) {
+        Node* next = child->nextSibling();
+        if (dynamic_cast<Comment*>(child) != nullptr) {
+            // The child is a comment and will cleanly remove itself from the list of children.
+            delete child;
+        }
+        else if (recurse) {
+            child->removeComments(true);
+        }
+        child = next;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Get the document into which the node is located.
 //----------------------------------------------------------------------------
 
@@ -219,12 +285,23 @@ ts::xml::Node* ts::xml::Node::previousSibling()
 
 
 //----------------------------------------------------------------------------
-// Find the next sibling element.
+// Find the next or previous sibling element.
 //----------------------------------------------------------------------------
 
 ts::xml::Element* ts::xml::Node::nextSiblingElement()
 {
     for (Node* child = nextSibling(); child != nullptr; child = child->nextSibling()) {
+        Element* elem = dynamic_cast<Element*>(child);
+        if (elem != nullptr) {
+            return elem;
+        }
+    }
+    return nullptr;
+}
+
+ts::xml::Element* ts::xml::Node::previousSiblingElement()
+{
+    for (Node* child = previousSibling(); child != nullptr; child = child->previousSibling()) {
         Element* elem = dynamic_cast<Element*>(child);
         if (elem != nullptr) {
             return elem;

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.32-2803
+VERSION 3.32-2828
 
 [NEW] New commands and plugins:
 
@@ -16,6 +16,7 @@ VERSION 3.32-2803
   * New options in existing commands and plugins:
     - Options --alt-group-id, --alt-language, --alt-name, --alt-type in input
       plugin "hls".
+    - Options --merge, --attributes-merge, --sort, --uncomment in "tsxml".
 
 -------------------------------------------------------------------------------
 
