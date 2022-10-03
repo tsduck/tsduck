@@ -407,6 +407,7 @@ namespace ts {
         DID_TRANSPORT_PROFILE   = 0x37, //!< DID for Transport Profile descriptor
         DID_HEVC_VIDEO          = 0x38, //!< DID for HEVC Video descriptor
         DID_VVC_VIDEO           = 0x39, //!< DID for VVC Video descriptor
+        DID_EVC_VIDEO           = 0x3A, //!< DID for VVC Video descriptor
         DID_MPEG_EXTENSION      = 0x3F, //!< DID for MPEG-2 Extension descriptor
 
         // Valid in DVB context:
@@ -775,6 +776,7 @@ namespace ts {
         MPEG_EDID_QUALITY_EXT   = 0x0F, //!< Ext.DID for quality_extension_descriptor
         MPEG_EDID_VIRT_SEGMENT  = 0x10, //!< Ext.DID for virtual_segmentation_descriptor
         MPEG_EDID_VVC_TIM_HRD   = 0x15, //!< Ext.DID for VVC_timing_and_HRD_descriptor.
+        MPEG_EDID_VVC_TIM_HRD   = 0x16, //!< Ext.DID for EVC_timing_and_HRD_descriptor.
         MPEG_EDID_NULL          = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
