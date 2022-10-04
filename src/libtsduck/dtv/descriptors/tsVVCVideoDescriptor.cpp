@@ -158,6 +158,10 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
     }
 }
 
+//----------------------------------------------------------------------------
+// Static method to display a descriptor.
+//----------------------------------------------------------------------------
+
 std::string VVCProfileIDC(INT pi) {
 	switch (pi) {
 		case  1: return "Main 10";
@@ -166,8 +170,8 @@ std::string VVCProfileIDC(INT pi) {
 		case 49: return "Multilayer Main 10 4:4:4 ";
 		case 65: return "Main 10 Still Picture";
 		case 97: return "Main 10 4:4:4 Still Picture";
+        default: return "unknown";
 	}
-	return "uknown";
 }
 
 std::string VVCTier(bool t) {
@@ -181,8 +185,8 @@ std::string VVCHDRandWCG(INT hw) {
 		case 1: return "WCG only";
 		case 2: return "HDR and WCG";
 		case 3: return "no indication";
+        default: return "unknown";
 	}	
-	return "unknown";
 }
 
 std::string VVCLevelIDC(INT li) {
@@ -201,8 +205,8 @@ std::string VVCLevelIDC(INT li) {
 		case  96: return "6.0";
 		case  99: return "6.1";
 		case 102: return "6.2";
+        default: return "unknown";
 	}
-	return "unknown";
 }
 
 std::string VVCVideoProperties(INT vp) {
@@ -214,13 +218,9 @@ std::string VVCVideoProperties(INT vp) {
 		case 3: return "BT601_525";
 		case 4: return "BT601_625";
 		case 5: return "FR709_RGB";
+        default: return "unknown";
 	}
-	return "unknown";
 }
-
-//----------------------------------------------------------------------------
-// Static method to display a descriptor.
-//----------------------------------------------------------------------------
 
 void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
