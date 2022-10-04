@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022-, Paul Higgs
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -49,7 +49,7 @@ namespace ts {
         // Public members:
         uint8_t   profile_idc;                       //!< 7 bits.
         bool      tier;                              //!< 
-        std::list<uint32_t> sub_profile_idc;             //!< array of 32 bit values.
+        std::vector<uint32_t> sub_profile_idc;             //!< array of 32 bit values.
         bool      progressive_source;                //!< 
         bool      interlaced_source;                 //!< 
         bool      non_packed_constraint;             //!< 

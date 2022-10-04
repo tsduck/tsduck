@@ -1007,6 +1007,21 @@
         AVC_24_hour_picture="bool, required"
         frame_packing_SEI_not_present="bool, default=false"/>
 
+    <AVS3_video_descriptor
+        profile_id="uint8, required"
+        level_id="uint8, required"
+        multiple_frame_rate_flag="bool, required"
+        frame_rate_code="uint4, required"
+        sample_precision="uint3, required"
+        chroma_format="uint3, required" 
+        temporal_id_flag="bool, required"
+        td_mode_flag="bool, required"
+        library_stream_flag="bool, required"
+        library_picture_enable_flag="bool, required"
+        colour_primaries="uint8, required"
+        transfer_characteristics="uint8, required"
+        matrix_coefficients="uint8, required"
+        
     <basic_local_event_descriptor
         segmentation_mode="uint4, required"
         start_time_NPT="uint33, optional"
@@ -1595,6 +1610,29 @@
                eutelsat_channel_number="uint10, required"/>
     </eutelsat_channel_number_descriptor>
 
+    <EVC_timing_and_HRD_descriptor
+        hrd_management_valid="bool, required"
+        N_90khz="uint32, optional"
+        K_90khz="uint32, optional"
+        num_units_in_tick="uint32, optional"/>
+
+    <EVC_video_descriptor
+        profile_idc="uint8, required"
+        level_idc="uint8, required"
+        toolset_idc_h="uint32, required"
+        toolset_idc_l="uint32, required"
+        progressive_source_flag="bool, required"
+        interlaced_source_flag="bool, required"
+        non_packed_constraint_flag="bool, required"
+        frame_only_constraint_flag="bool, required"
+        temporal_layer_subset_flag="bool, required"
+        EVC_still_present_flag="bool, required"
+        EVC_24hr_picture_present_flag="bool, required"  
+        HDR_WCG_idc="uint2, default=3"
+        video_properties_tag="uint4, default=3"
+        temporal_id_min="uint3, optional, specify both min and max or none"
+        temporal_id_max="uint3, optional, specify both min and max or none"/>
+    
     <event_group_descriptor group_type="uint4, required">
       <!-- One per event in actual network -->
       <actual service_id="uint16, required"
@@ -2925,6 +2963,34 @@
           maximum_duration="uint29, optional"/>
     </virtual_segmentation_descriptor>
 
+    <VVC_timing_and_HRD_descriptor
+        hrd_management_valid="bool, required"
+        N_90khz="uint32, optional"
+        K_90khz="uint32, optional"
+        num_units_in_tick="uint32, optional"/>
+
+    <VVC_video_descriptor
+        profile_idc="uint7, required"
+        tief_flag="bool, required"
+        num_sub_profiles="uint8, required"
+        sub_profile_idc="HEX, optional"
+        progressive_source_flag="bool, required"
+        interlaced_source_flag="bool, required"
+        non_packed_constraint_flag="bool, required"
+        frame_only_constraint_flag="bool, required"
+        level_idc="uint8, required"
+        temporal_layer_subset_flag="bool, required"
+        VVC_still_present_flag="bool, required"
+        VVC_24hr_picture_present_flag="bool, required"
+        HDR_WCG_idc="uint2, default=3"
+        video_properties_tag="uint4, default=3"
+        temporal_id_min="uint3, optional, specify both min and max or none"
+        temporal_id_max="uint3, optional, specify both min and max or none">
+      <sub_profile_idc>
+        Hexadecimal content
+      </sub_profile_idc>
+    </VVC_video_descriptor>
+      
   </_descriptors>
 
 </tsduck>

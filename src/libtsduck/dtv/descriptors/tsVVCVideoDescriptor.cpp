@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022-, Paul Higgs
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -79,7 +79,7 @@ void ts::VVCVideoDescriptor::clearContent()
     VVC_still_present = false;
     VVC_24hr_picture_present = false;
     HDR_WCG_idc = 3;
-	video_properties_tag = 0;
+    video_properties_tag = 0;
     temporal_id_min.clear();
     temporal_id_max.clear();
 }
@@ -99,7 +99,7 @@ void ts::VVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(profile_idc, 7);
     buf.putBit(tier);
-	buf.putBits(sub_profile_idc.size(), 8);
+    buf.putBits(sub_profile_idc.size(), 8);
     for (auto it : sub_profile_idc)
         buf.putUInt32(it);
     buf.putBit(progressive_source);
