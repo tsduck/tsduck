@@ -162,73 +162,73 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-static std::string VVCProfileIDC(INT pi) {
+ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint16_t pi) {
 	switch (pi) {
-		case  1: return "Main 10";
-		case 17: return "Multilayer Main 10";
-		case 33: return "Main 10 4:4:4";
-		case 49: return "Multilayer Main 10 4:4:4 ";
-		case 65: return "Main 10 Still Picture";
-		case 97: return "Main 10 4:4:4 Still Picture";
-		default: return "uknown";
+		case  1: return u"Main 10";
+		case 17: return u"Multilayer Main 10";
+		case 33: return u"Main 10 4:4:4";
+		case 49: return u"Multilayer Main 10 4:4:4 ";
+		case 65: return u"Main 10 Still Picture";
+		case 97: return u"Main 10 4:4:4 Still Picture";
+		default: return u"uknown";
 	}
 }
 
-static std::string VVCTier(bool t) {
-	return t ? "High" : "Main";
+ts::UString ts::VVCVideoDescriptor::VVCTier(bool t) {
+	return t ? u"High" : u"Main";
 }
 
-static std::string VVCHDRandWCG(INT hw) {
+ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint16_t hw) {
 	// H222.0, TAble 2-134
     switch (hw) {
-		case 0: return "SDR";
-		case 1: return "WCG only";
-		case 2: return "HDR and WCG";
-		case 3: return "no indication";
-		default: return "uknown";
+		case 0: return u"SDR";
+		case 1: return u"WCG only";
+		case 2: return u"HDR and WCG";
+		case 3: return u"no indication";
+		default: return u"uknown";
 	}	
 }
 
-static std::string VVCLevelIDC(INT li) {
+ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint16_t li) {
 	// H.266, Table A.1
 	switch (li) {
-		case  16: return "1.0";
-		case  32: return "2.0";
-		case  35: return "2.1";
-		case  48: return "3.0";
-		case  51: return "3.1";
-		case  64: return "4.0";
-		case  67: return "4.1";
-		case  80: return "5.0";
-		case  83: return "5.1";
-		case  86: return "5.2";
-		case  96: return "6.0";
-		case  99: return "6.1";
-		case 102: return "6.2";
-		default: return "uknown";
+		case  16: return u"1.0";
+		case  32: return u"2.0";
+		case  35: return u"2.1";
+		case  48: return u"3.0";
+		case  51: return u"3.1";
+		case  64: return u"4.0";
+		case  67: return u"4.1";
+		case  80: return u"5.0";
+		case  83: return u"5.1";
+		case  86: return u"5.2";
+		case  96: return u"6.0";
+		case  99: return u"6.1";
+		case 102: return u"6.2";
+		default: return u"uknown";
 	}
 }
 
-static std::string VVCVideoProperties(INT vp) {
+ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint16_t vp) {
 	// H.222.0 Table 2-135
 	switch (vp) {
-		case 0: return "not known";
-		case 1: return "BT709_YCC";
-		case 2: return "BT709_RGB";
-		case 3: return "BT601_525";
-		case 4: return "BT601_625";
-		case 5: return "FR709_RGB";
-		default: return "uknown";
+		case 0: return u"not known";
+		case 1: return u"BT709_YCC";
+		case 2: return u"BT709_RGB";
+		case 3: return u"BT601_525";
+		case 4: return u"BT601_625";
+		case 5: return u"FR709_RGB";
+		default: return u"uknown";
 	}
 }
 
 void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(8)) {
-        INT t;
+        uint16_t t;
         t = buf.getBits<uint16_t>(7);
-        disp << margin << "Profile IDC: " << VVCProfileIDC(t) << " (" << UString::Hexa(t, 2);
-        disp << "), tier: " << VVCTier(buf.getBool()) << std::endl;
+        disp << margin << "Profile IDC: " << VVCVideoDescriptor::VVCProfileIDC(t) << " (" << UString::Hexa(t, 2);
+        disp << "), tier: " << VVCVideoDescriptor::VVCTier(buf.getBool()) << std::endl;
         uint8_t num_sub_profiles = buf.getUInt8();
         if (num_sub_profiles > 0) {
             disp << margin << "Sub profile IDC: ";
@@ -247,16 +247,16 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", frame only: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(4);
         t=buf.getUInt8();
-        disp << margin << "Level IDC: " << VVCLevelIDC(t) << " (" << UString::Hexa(t, 2) << ")";
+        disp << margin << "Level IDC: " << VVCVideoDescriptor::VVCLevelIDC(t) << " (" << UString::Hexa(t, 2) << ")";
         const bool temporal = buf.getBool();
         disp << ", still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(5);
         t=buf.getBits<uint16_t>(2);
-        disp << margin << "HDR WCG idc: " << VVCHDRandWCG(t) << " (" << t << ")";
+        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(t) << " (" << t << ")";
         buf.skipBits(2);
 		t=buf.getBits<uint16_t>(4);
-        disp << ", video properties: " << VVCVideoProperties(t) << "(" << t << ")" << std::endl;
+        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(t) << "(" << t << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
