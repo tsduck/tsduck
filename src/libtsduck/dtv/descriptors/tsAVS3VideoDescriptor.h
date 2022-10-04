@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022-, Paul Higgs
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an AVS3C_video_descriptor
+//!  Representation of an AVS3_video_descriptor
 //!
 //----------------------------------------------------------------------------
 
