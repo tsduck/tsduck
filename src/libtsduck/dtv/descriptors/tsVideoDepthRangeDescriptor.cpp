@@ -92,18 +92,18 @@ ts::DID ts::VideoDepthRangeDescriptor::extendedTag() const
 
 void ts::VideoDepthRangeDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = ranges.begin(); it != ranges.end(); ++it) {
-        buf.putUInt8(it->range_type);
+    for (const auto& it : ranges) {
+        buf.putUInt8(it.range_type);
         buf.pushWriteSequenceWithLeadingLength(8); // range_length
-        switch (it->range_type) {
+        switch (it.range_type) {
             case 0:
-                buf.putBits(it->video_max_disparity_hint, 12);
-                buf.putBits(it->video_min_disparity_hint, 12);
+                buf.putBits(it.video_max_disparity_hint, 12);
+                buf.putBits(it.video_min_disparity_hint, 12);
                 break;
             case 1:
                 break;
             default:
-                buf.putBytes(it->range_selector);
+                buf.putBytes(it.range_selector);
                 break;
         }
         buf.popState(); // update range_length
@@ -168,15 +168,15 @@ void ts::VideoDepthRangeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 
 void ts::VideoDepthRangeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = ranges.begin(); it != ranges.end(); ++it) {
+    for (const auto& it : ranges) {
         xml::Element* e = root->addElement(u"range");
-        e->setIntAttribute(u"range_type", it->range_type, true);
-        if (it->range_type == 0) {
-            e->setIntAttribute(u"video_max_disparity_hint", it->video_max_disparity_hint);
-            e->setIntAttribute(u"video_min_disparity_hint", it->video_min_disparity_hint);
+        e->setIntAttribute(u"range_type", it.range_type, true);
+        if (it.range_type == 0) {
+            e->setIntAttribute(u"video_max_disparity_hint", it.video_max_disparity_hint);
+            e->setIntAttribute(u"video_min_disparity_hint", it.video_min_disparity_hint);
         }
-        else if (it->range_type > 1) {
-            e->addHexaTextChild(u"range_selector", it->range_selector, true);
+        else if (it.range_type > 1) {
+            e->addHexaTextChild(u"range_selector", it.range_selector, true);
         }
     }
 }

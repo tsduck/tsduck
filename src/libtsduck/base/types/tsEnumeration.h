@@ -283,8 +283,8 @@ namespace ts {
         void getAllNames(CONTAINER& names) const
         {
             names.clear();
-            for (auto it = _map.begin(); it != _map.end(); ++it) {
-                names.push_back(it->second);
+            for (const auto& it : _map) {
+                names.push_back(it.second);
             }
         }
 

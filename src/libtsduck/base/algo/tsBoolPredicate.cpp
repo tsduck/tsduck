@@ -31,8 +31,8 @@
 
 bool ts::MultiAnd(std::initializer_list<bool> args)
 {
-    for (auto it = args.begin(); it != args.end(); ++it) {
-        if (!*it) {
+    for (auto it : args) {
+        if (!it) {
             return false;
         }
     }
@@ -41,8 +41,8 @@ bool ts::MultiAnd(std::initializer_list<bool> args)
 
 bool ts::MultiOr(std::initializer_list<bool> args)
 {
-    for (auto it = args.begin(); it != args.end(); ++it) {
-        if (*it) {
+    for (auto it : args) {
+        if (it) {
             return true;
         }
     }

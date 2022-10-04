@@ -171,9 +171,9 @@ TSDUCKPY bool tspyStartTSProcessor(void* tsp, const tspyTSProcessorArgs* pyargs)
         ts::UString cmd(args.app_name);
         cmd.append(u" ");
         cmd.append(args.input.toString(ts::PluginType::INPUT));
-        for (auto it2 = args.plugins.begin(); it2 != args.plugins.end(); ++it2) {
+        for (const auto& it2 : args.plugins) {
             cmd.append(u" ");
-            cmd.append(it2->toString(ts::PluginType::PROCESSOR));
+            cmd.append(it2.toString(ts::PluginType::PROCESSOR));
         }
         cmd.append(u" ");
         cmd.append(args.output.toString(ts::PluginType::OUTPUT));

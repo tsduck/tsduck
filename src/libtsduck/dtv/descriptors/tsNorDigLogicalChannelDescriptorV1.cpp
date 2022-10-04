@@ -79,11 +79,11 @@ void ts::NorDigLogicalChannelDescriptorV1::clearContent()
 
 void ts::NorDigLogicalChannelDescriptorV1::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->service_id);
-        buf.putBit(it->visible);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.service_id);
+        buf.putBit(it.visible);
         buf.putBit(1);
-        buf.putBits(it->lcn, 14);
+        buf.putBits(it.lcn, 14);
     }
 }
 
@@ -126,11 +126,11 @@ void ts::NorDigLogicalChannelDescriptorV1::DisplayDescriptor(TablesDisplay& disp
 
 void ts::NorDigLogicalChannelDescriptorV1::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setIntAttribute(u"logical_channel_number", it->lcn, false);
-        e->setBoolAttribute(u"visible_service", it->visible);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setIntAttribute(u"logical_channel_number", it.lcn, false);
+        e->setBoolAttribute(u"visible_service", it.visible);
     }
 }
 

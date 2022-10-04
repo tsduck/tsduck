@@ -62,9 +62,9 @@ ts::TimeConfigurationFile::TimeConfigurationFile() :
     xml::ElementVector xleap;
     xleap_root->getIntAttribute(initial_seconds, u"initial", true, 0);
     xleap_root->getChildren(xleap, u"leap");
-    for (auto it = xleap.begin(); it != xleap.end(); ++it) {
+    for (const auto& it : xleap) {
         LeapSecond ls;
-        if ((*it)->getDateTimeAttribute(ls.after, u"after", true) && (*it)->getIntAttribute(ls.count, u"count", true)) {
+        if (it->getDateTimeAttribute(ls.after, u"after", true) && it->getIntAttribute(ls.count, u"count", true)) {
             leap_seconds.push_back(ls);
         }
     }

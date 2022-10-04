@@ -82,9 +82,9 @@ ts::PrefetchDescriptor::Entry::Entry(const UString& str, uint8_t pri) :
 void ts::PrefetchDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(transport_protocol_label);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putStringWithByteLength(it->label);
-        buf.putUInt8(it->prefetch_priority);
+    for (const auto& it : entries) {
+        buf.putStringWithByteLength(it.label);
+        buf.putUInt8(it.prefetch_priority);
     }
 }
 
@@ -131,10 +131,10 @@ void ts::PrefetchDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
 void ts::PrefetchDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_protocol_label", transport_protocol_label, true);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"module");
-        e->setAttribute(u"label", it->label);
-        e->setIntAttribute(u"prefetch_priority", it->prefetch_priority, false);
+        e->setAttribute(u"label", it.label);
+        e->setIntAttribute(u"prefetch_priority", it.prefetch_priority, false);
     }
 }
 

@@ -87,16 +87,16 @@ void ts::NorDigLogicalChannelDescriptorV2::clearContent()
 
 void ts::NorDigLogicalChannelDescriptorV2::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it1 = entries.begin(); it1 != entries.end(); ++it1) {
-        buf.putUInt8(it1->channel_list_id);
-        buf.putStringWithByteLength(it1->channel_list_name);
-        buf.putLanguageCode(it1->country_code);
+    for (const auto& it1 : entries) {
+        buf.putUInt8(it1.channel_list_id);
+        buf.putStringWithByteLength(it1.channel_list_name);
+        buf.putLanguageCode(it1.country_code);
         buf.pushWriteSequenceWithLeadingLength(8); // descriptor_length
-        for (auto it2 = it1->services.begin(); it2 != it1->services.end(); ++it2) {
-            buf.putUInt16(it2->service_id);
-            buf.putBit(it2->visible);
+        for (const auto& it2 : it1.services) {
+            buf.putUInt16(it2.service_id);
+            buf.putBit(it2.visible);
             buf.putBits(0xFF, 5);
-            buf.putBits(it2->lcn, 10);
+            buf.putBits(it2.lcn, 10);
         }
         buf.popState(); // update descriptor_length
     }
@@ -160,16 +160,16 @@ void ts::NorDigLogicalChannelDescriptorV2::DisplayDescriptor(TablesDisplay& disp
 
 void ts::NorDigLogicalChannelDescriptorV2::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it1 = entries.begin(); it1 != entries.end(); ++it1) {
+    for (const auto& it1 : entries) {
         xml::Element* e1 = root->addElement(u"channel_list");
-        e1->setIntAttribute(u"id", it1->channel_list_id, true);
-        e1->setAttribute(u"name", it1->channel_list_name);
-        e1->setAttribute(u"country_code", it1->country_code);
-        for (auto it2 = it1->services.begin(); it2 != it1->services.end(); ++it2) {
+        e1->setIntAttribute(u"id", it1.channel_list_id, true);
+        e1->setAttribute(u"name", it1.channel_list_name);
+        e1->setAttribute(u"country_code", it1.country_code);
+        for (const auto& it2 : it1.services) {
             xml::Element* e2 = e1->addElement(u"service");
-            e2->setIntAttribute(u"service_id", it2->service_id, true);
-            e2->setIntAttribute(u"logical_channel_number", it2->lcn, false);
-            e2->setBoolAttribute(u"visible_service", it2->visible);
+            e2->setIntAttribute(u"service_id", it2.service_id, true);
+            e2->setIntAttribute(u"logical_channel_number", it2.lcn, false);
+            e2->setBoolAttribute(u"visible_service", it2.visible);
         }
     }
 }

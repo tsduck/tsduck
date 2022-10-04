@@ -82,8 +82,8 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::serializePayload(PSIBuffer& bu
     buf.putBits(area_code, 12);
     buf.putBits(guard_interval, 2);
     buf.putBits(transmission_mode, 2);
-    for (auto it = frequencies.begin(); it != frequencies.end(); ++it) {
-        buf.putUInt16(HzToBin(*it));
+    for (auto it : frequencies) {
+        buf.putUInt16(HzToBin(it));
     }
 }
 
@@ -154,8 +154,8 @@ void ts::ISDBTerrestrialDeliverySystemDescriptor::buildXML(DuckContext& duck, xm
     root->setIntAttribute(u"area_code", area_code, true);
     root->setEnumAttribute(GuardIntervalNames, u"guard_interval", guard_interval);
     root->setEnumAttribute(TransmissionModeNames, u"transmission_mode", transmission_mode);
-    for (auto it = frequencies.begin(); it != frequencies.end(); ++it) {
-        root->addElement(u"frequency")->setIntAttribute(u"value", *it, false);
+    for (auto it : frequencies) {
+        root->addElement(u"frequency")->setIntAttribute(u"value", it, false);
     }
 }
 

@@ -172,35 +172,35 @@ bool ts::ChannelFile::TransportStream::addService(const ServicePtr& srv, ShareMo
 
 void ts::ChannelFile::TransportStream::addServices(const ServiceList& list)
 {
-    for (auto it = list.begin(); it != list.end(); ++it) {
-        if (it->hasId()) {
-            ServicePtr srv(serviceGetOrCreate(it->getId()));
-            if (it->hasName()) {
-                srv->name = it->getName();
+    for (const auto& it : list) {
+        if (it.hasId()) {
+            ServicePtr srv(serviceGetOrCreate(it.getId()));
+            if (it.hasName()) {
+                srv->name = it.getName();
             }
-            if (it->hasProvider()) {
-                srv->provider = it->getProvider();
+            if (it.hasProvider()) {
+                srv->provider = it.getProvider();
             }
-            if (it->hasLCN()) {
-                srv->lcn = it->getLCN();
+            if (it.hasLCN()) {
+                srv->lcn = it.getLCN();
             }
-            if (it->hasPMTPID()) {
-                srv->pmtPID = it->getPMTPID();
+            if (it.hasPMTPID()) {
+                srv->pmtPID = it.getPMTPID();
             }
-            if (it->hasTypeDVB()) {
-                srv->type = it->getTypeDVB();
+            if (it.hasTypeDVB()) {
+                srv->type = it.getTypeDVB();
             }
-            if (it->hasCAControlled()) {
-                srv->cas = it->getCAControlled();
+            if (it.hasCAControlled()) {
+                srv->cas = it.getCAControlled();
             }
-            if (it->hasTypeATSC()) {
-                srv->atscType = it->getTypeATSC();
+            if (it.hasTypeATSC()) {
+                srv->atscType = it.getTypeATSC();
             }
-            if (it->hasMajorIdATSC()) {
-                srv->atscMajorId = it->getMajorIdATSC();
+            if (it.hasMajorIdATSC()) {
+                srv->atscMajorId = it.getMajorIdATSC();
             }
-            if (it->hasMinorIdATSC()) {
-                srv->atscMinorId = it->getMinorIdATSC();
+            if (it.hasMinorIdATSC()) {
+                srv->atscMinorId = it.getMinorIdATSC();
             }
         }
     }
@@ -419,7 +419,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
     assert(root != nullptr);
     xml::ElementVector xnets;
     root->getChildren(xnets, u"network");
-    for (auto itnet = xnets.begin(); itnet != xnets.end(); ++itnet) {
+    for (auto itnet : xnets) {
 
         // Build a new Network object at end of our list of networks.
         const NetworkPtr net(new Network);
@@ -429,20 +429,20 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
         // Get network properties.
         xml::ElementVector xts;
         success =
-            (*itnet)->getIntAttribute<uint16_t>(net->id, u"id", true) &&
-            (*itnet)->getIntEnumAttribute(net->type, TunerTypeEnum, u"type", true) &&
-            (*itnet)->getChildren(xts, u"ts") &&
+            itnet->getIntAttribute<uint16_t>(net->id, u"id", true) &&
+            itnet->getIntEnumAttribute(net->type, TunerTypeEnum, u"type", true) &&
+            itnet->getChildren(xts, u"ts") &&
             success;
 
         // Get all TS in the network.
-        for (auto itts = xts.begin(); itts != xts.end(); ++itts) {
+        for (auto itts : xts) {
 
             // Get transport stream properties.
             uint16_t tsid = 0;
             uint16_t onid = 0;
             bool tsOk =
-                (*itts)->getIntAttribute<uint16_t>(tsid, u"id", true) &&
-                (*itts)->getIntAttribute<uint16_t>(onid, u"onid", false, 0xFFFF);
+                itts->getIntAttribute<uint16_t>(tsid, u"id", true) &&
+                itts->getIntAttribute<uint16_t>(onid, u"onid", false, 0xFFFF);
             success = tsOk && success;
 
             if (tsOk) {
@@ -452,7 +452,7 @@ bool ts::ChannelFile::parseDocument(const xml::Document& doc)
                 ts->onid = onid;
 
                 // Loop on all children elements. Exactly one should be tuner parameters, others must be <service>.
-                for (const xml::Element* e = (*itts)->firstChildElement(); e != nullptr; e = e->nextSiblingElement()) {
+                for (const xml::Element* e = itts->firstChildElement(); e != nullptr; e = e->nextSiblingElement()) {
                     if (e->name().similar(u"service")) {
                         // Get a service description.
                         const ServicePtr srv(new Service);
@@ -531,8 +531,8 @@ bool ts::ChannelFile::generateDocument(xml::Document& doc) const
     }
 
     // Format all networks.
-    for (auto itnet = _networks.begin(); itnet != _networks.end(); ++itnet) {
-        const NetworkPtr& net(*itnet);
+    for (const auto& itnet : _networks) {
+        const NetworkPtr& net(itnet);
         assert(!net.isNull());
 
         // Create one network element.

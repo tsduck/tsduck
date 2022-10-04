@@ -106,11 +106,11 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 
 void ts::SubtitlingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putLanguageCode(it->language_code);
-        buf.putUInt8(it->subtitling_type);
-        buf.putUInt16(it->composition_page_id);
-        buf.putUInt16(it->ancillary_page_id);
+    for (const auto& it : entries) {
+        buf.putLanguageCode(it.language_code);
+        buf.putUInt8(it.subtitling_type);
+        buf.putUInt16(it.composition_page_id);
+        buf.putUInt16(it.ancillary_page_id);
     }
 }
 
@@ -138,12 +138,12 @@ void ts::SubtitlingDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::SubtitlingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"subtitling");
-        e->setAttribute(u"language_code", it->language_code);
-        e->setIntAttribute(u"subtitling_type", it->subtitling_type, true);
-        e->setIntAttribute(u"composition_page_id", it->composition_page_id, true);
-        e->setIntAttribute(u"ancillary_page_id", it->ancillary_page_id, true);
+        e->setAttribute(u"language_code", it.language_code);
+        e->setIntAttribute(u"subtitling_type", it.subtitling_type, true);
+        e->setIntAttribute(u"composition_page_id", it.composition_page_id, true);
+        e->setIntAttribute(u"ancillary_page_id", it.ancillary_page_id, true);
     }
 }
 

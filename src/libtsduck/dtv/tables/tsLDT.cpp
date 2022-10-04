@@ -136,8 +136,8 @@ void ts::LDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all descriptions.
-    for (auto it = descriptions.begin(); it != descriptions.end(); ++it) {
-        const Description& des(it->second);
+    for (const auto& it : descriptions) {
+        const Description& des(it.second);
 
         // Binary size of this entry.
         const size_t entry_size = 4 + des.descs.binarySize();
@@ -153,7 +153,7 @@ void ts::LDT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         // the entire descriptor list, open a new section for the rest of the descriptors. In that case,
         // the common properties of the description must be repeated.
         for (size_t start_index = 0; ; ) {
-            buf.putUInt16(it->first); // description_id
+            buf.putUInt16(it.first); // description_id
             buf.putBits(0xFFFF, 12);
             start_index = buf.putPartialDescriptorListWithLength(des.descs, start_index);
 
@@ -202,10 +202,10 @@ void ts::LDT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"transport_stream_id", transport_stream_id, true);
     root->setIntAttribute(u"original_network_id", original_network_id, true);
 
-    for (auto it = descriptions.begin(); it != descriptions.end(); ++it) {
+    for (const auto& it : descriptions) {
         xml::Element* e = root->addElement(u"description");
-        e->setIntAttribute(u"description_id", it->first, true);
-        it->second.descs.toXML(duck, e);
+        e->setIntAttribute(u"description_id", it.first, true);
+        it.second.descs.toXML(duck, e);
     }
 }
 

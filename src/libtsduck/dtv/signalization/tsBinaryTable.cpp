@@ -249,9 +249,9 @@ ts::Standards ts::BinaryTable::definingStandards() const
 void ts::BinaryTable::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 {
     _tid_ext = tid_ext;
-    for (auto it = _sections.begin(); it != _sections.end(); ++it) {
-        if (!it->isNull()) {
-            (*it)->setTableIdExtension(tid_ext, recompute_crc);
+    for (const auto& it : _sections) {
+        if (!it.isNull()) {
+            it->setTableIdExtension(tid_ext, recompute_crc);
         }
     }
 }
@@ -259,9 +259,9 @@ void ts::BinaryTable::setTableIdExtension(uint16_t tid_ext, bool recompute_crc)
 void ts::BinaryTable::setVersion(uint8_t version, bool recompute_crc)
 {
     _version = version;
-    for (auto it = _sections.begin(); it != _sections.end(); ++it) {
-        if (!it->isNull()) {
-            (*it)->setVersion(version, recompute_crc);
+    for (const auto& it : _sections) {
+        if (!it.isNull()) {
+            it->setVersion(version, recompute_crc);
         }
     }
 }
@@ -269,9 +269,9 @@ void ts::BinaryTable::setVersion(uint8_t version, bool recompute_crc)
 void ts::BinaryTable::setSourcePID(PID pid)
 {
     _source_pid = pid;
-    for (auto it = _sections.begin(); it != _sections.end(); ++it) {
-        if (!it->isNull()) {
-            (*it)->setSourcePID(pid);
+    for (const auto& it : _sections) {
+        if (!it.isNull()) {
+            it->setSourcePID(pid);
         }
     }
 }
@@ -285,10 +285,10 @@ ts::PacketCounter ts::BinaryTable::firstTSPacketIndex() const
 {
     bool found = false;
     PacketCounter first = std::numeric_limits<PacketCounter>::max();
-    for (auto it = _sections.begin(); it != _sections.end(); ++it) {
-        if (!it->isNull()) {
+    for (const auto& it : _sections) {
+        if (!it.isNull()) {
             found = true;
-            first = std::min(first, (*it)->firstTSPacketIndex());
+            first = std::min(first, it->firstTSPacketIndex());
         }
     }
     return found ? first : 0;
@@ -297,9 +297,9 @@ ts::PacketCounter ts::BinaryTable::firstTSPacketIndex() const
 ts::PacketCounter ts::BinaryTable::lastTSPacketIndex() const
 {
     PacketCounter last = 0;
-    for (auto it = _sections.begin(); it != _sections.end(); ++it) {
-        if (!it->isNull()) {
-            last = std::max(last, (*it)->lastTSPacketIndex());
+    for (const auto& it : _sections) {
+        if (!it.isNull()) {
+            last = std::max(last, it->lastTSPacketIndex());
         }
     }
     return last;
@@ -330,13 +330,11 @@ void ts::BinaryTable::clear()
 size_t ts::BinaryTable::totalSize() const
 {
     size_t size = 0;
-
-    for (size_t i = 0; i < _sections.size(); ++i) {
-        if (!_sections[i].isNull() && _sections[i]->isValid()) {
-            size += _sections[i]->size();
+    for (const auto& it : _sections) {
+        if (!it.isNull() && it->isValid()) {
+            size += it->size();
         }
     }
-
     return size;
 }
 

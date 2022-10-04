@@ -91,19 +91,19 @@ ts::CellListDescriptor::Subcell::Subcell() :
 
 void ts::CellListDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
-        buf.putUInt16(it1->cell_id);
-        buf.putInt16(it1->cell_latitude);
-        buf.putInt16(it1->cell_longitude);
-        buf.putBits(it1->cell_extent_of_latitude, 12);
-        buf.putBits(it1->cell_extent_of_longitude, 12);
+    for (const auto& it1 : cells) {
+        buf.putUInt16(it1.cell_id);
+        buf.putInt16(it1.cell_latitude);
+        buf.putInt16(it1.cell_longitude);
+        buf.putBits(it1.cell_extent_of_latitude, 12);
+        buf.putBits(it1.cell_extent_of_longitude, 12);
         buf.pushWriteSequenceWithLeadingLength(8); // start write sequence
-        for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
-            buf.putUInt8(it2->cell_id_extension);
-            buf.putInt16(it2->subcell_latitude);
-            buf.putInt16(it2->subcell_longitude);
-            buf.putBits(it2->subcell_extent_of_latitude, 12);
-            buf.putBits(it2->subcell_extent_of_longitude, 12);
+        for (const auto& it2 : it1.subcells) {
+            buf.putUInt8(it2.cell_id_extension);
+            buf.putInt16(it2.subcell_latitude);
+            buf.putInt16(it2.subcell_longitude);
+            buf.putBits(it2.subcell_extent_of_latitude, 12);
+            buf.putBits(it2.subcell_extent_of_longitude, 12);
         }
         buf.popState(); // end write sequence
     }
@@ -218,20 +218,20 @@ ts::UString ts::CellListDescriptor::ToDegrees(int32_t value, bool is_latitude)
 
 void ts::CellListDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it1 = cells.begin(); it1 != cells.end(); ++it1) {
+    for (const auto& it1 : cells) {
         xml::Element* e1 = root->addElement(u"cell");
-        e1->setIntAttribute(u"cell_id", it1->cell_id, true);
-        e1->setIntAttribute(u"cell_latitude", it1->cell_latitude);
-        e1->setIntAttribute(u"cell_longitude", it1->cell_longitude);
-        e1->setIntAttribute(u"cell_extent_of_latitude", it1->cell_extent_of_latitude & 0x0FFF);
-        e1->setIntAttribute(u"cell_extent_of_longitude", it1->cell_extent_of_longitude & 0x0FFF);
-        for (auto it2 = it1->subcells.begin(); it2 != it1->subcells.end(); ++it2) {
+        e1->setIntAttribute(u"cell_id", it1.cell_id, true);
+        e1->setIntAttribute(u"cell_latitude", it1.cell_latitude);
+        e1->setIntAttribute(u"cell_longitude", it1.cell_longitude);
+        e1->setIntAttribute(u"cell_extent_of_latitude", it1.cell_extent_of_latitude & 0x0FFF);
+        e1->setIntAttribute(u"cell_extent_of_longitude", it1.cell_extent_of_longitude & 0x0FFF);
+        for (const auto& it2 : it1.subcells) {
             xml::Element* e2 = e1->addElement(u"subcell");
-            e2->setIntAttribute(u"cell_id_extension", it2->cell_id_extension, true);
-            e2->setIntAttribute(u"subcell_latitude", it2->subcell_latitude);
-            e2->setIntAttribute(u"subcell_longitude", it2->subcell_longitude);
-            e2->setIntAttribute(u"subcell_extent_of_latitude", it2->subcell_extent_of_latitude & 0x0FFF);
-            e2->setIntAttribute(u"subcell_extent_of_longitude", it2->subcell_extent_of_longitude & 0x0FFF);
+            e2->setIntAttribute(u"cell_id_extension", it2.cell_id_extension, true);
+            e2->setIntAttribute(u"subcell_latitude", it2.subcell_latitude);
+            e2->setIntAttribute(u"subcell_longitude", it2.subcell_longitude);
+            e2->setIntAttribute(u"subcell_extent_of_latitude", it2.subcell_extent_of_latitude & 0x0FFF);
+            e2->setIntAttribute(u"subcell_extent_of_longitude", it2.subcell_extent_of_longitude & 0x0FFF);
         }
     }
 }

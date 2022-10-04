@@ -597,14 +597,14 @@ void ts::PSIMerger::mergePAT()
     pat.version = (pat.version + 1) & SVERSION_MASK;
 
     // Add all services from merged stream into main PAT.
-    for (auto merge = _merge_pat.pmts.begin(); merge != _merge_pat.pmts.end(); ++merge) {
+    for (const auto& merge : _merge_pat.pmts) {
         // Check if the service already exists in the main PAT.
-        if (Contains(pat.pmts, merge->first)) {
-            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+        if (Contains(pat.pmts, merge.first)) {
+            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge.first, merge.first});
         }
         else {
-            pat.pmts[merge->first] = merge->second;
-            _duck.report().verbose(u"adding service 0x%X (%d) in PAT from merged stream", {merge->first, merge->first});
+            pat.pmts[merge.first] = merge.second;
+            _duck.report().verbose(u"adding service 0x%X (%d) in PAT from merged stream", {merge.first, merge.first});
         }
     }
 
@@ -674,14 +674,14 @@ void ts::PSIMerger::mergeSDT()
     sdt.version = (sdt.version + 1) & SVERSION_MASK;
 
     // Add all services from merged stream into main SDT.
-    for (auto merge = _merge_sdt.services.begin(); merge != _merge_sdt.services.end(); ++merge) {
+    for (const auto& merge : _merge_sdt.services) {
         // Check if the service already exists in the main SDT.
-        if (Contains(sdt.services, merge->first)) {
-            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge->first, merge->first});
+        if (Contains(sdt.services, merge.first)) {
+            _duck.report().error(u"service conflict, service 0x%X (%d) exists in the two streams, dropping from merged stream", {merge.first, merge.first});
         }
         else {
-            sdt.services[merge->first] = merge->second;
-            _duck.report().verbose(u"adding service \"%s\", id 0x%X (%d) in SDT from merged stream", {merge->second.serviceName(_duck), merge->first, merge->first});
+            sdt.services[merge.first] = merge.second;
+            _duck.report().verbose(u"adding service \"%s\", id 0x%X (%d) in SDT from merged stream", {merge.second.serviceName(_duck), merge.first, merge.first});
         }
     }
 

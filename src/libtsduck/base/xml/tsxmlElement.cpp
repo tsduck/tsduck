@@ -700,8 +700,8 @@ bool ts::xml::Element::getMACAttribute(MACAddress& value, const UString& name, b
 void ts::xml::Element::getAttributesNames(UStringList& names) const
 {
     names.clear();
-    for (auto it = _attributes.begin(); it != _attributes.end(); ++it) {
-        names.push_back(it->second.name());
+    for (const auto& it : _attributes) {
+        names.push_back(it.second.name());
     }
 }
 
@@ -713,8 +713,8 @@ void ts::xml::Element::getAttributesNames(UStringList& names) const
 void ts::xml::Element::getAttributes(std::map<UString,UString>& attr) const
 {
     attr.clear();
-    for (auto it = _attributes.begin(); it != _attributes.end(); ++it) {
-        attr[it->first] = it->second.value();
+    for (const auto& it : _attributes) {
+        attr[it.first] = it.second.value();
     }
 }
 
@@ -730,14 +730,14 @@ void ts::xml::Element::getAttributesNamesInModificationOrder(UStringList& names)
     NameMap nameMap;
 
     // Read all names and build a map indexed by sequence number.
-    for (auto it = _attributes.begin(); it != _attributes.end(); ++it) {
-        nameMap.insert(std::make_pair(it->second.sequence(), it->second.name()));
+    for (const auto& it : _attributes) {
+        nameMap.insert(std::make_pair(it.second.sequence(), it.second.name()));
     }
 
     // Then build the name list, ordered by sequence number.
     names.clear();
-    for (auto it = nameMap.begin(); it != nameMap.end(); ++it) {
-        names.push_back(it->second);
+    for (const auto& it : nameMap) {
+        names.push_back(it.second);
     }
 }
 

@@ -76,8 +76,8 @@ void ts::ServiceAvailabilityDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBit(availability);
     buf.putBits(0xFF, 7);
-    for (auto it = cell_ids.begin(); it != cell_ids.end(); ++it) {
-        buf.putUInt16(*it);
+    for (auto it : cell_ids) {
+        buf.putUInt16(it);
     }
 }
 
@@ -119,8 +119,8 @@ void ts::ServiceAvailabilityDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 void ts::ServiceAvailabilityDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"availability", availability);
-    for (auto it = cell_ids.begin(); it != cell_ids.end(); ++it) {
-        root->addElement(u"cell")->setIntAttribute(u"id", *it, true);
+    for (auto it : cell_ids) {
+        root->addElement(u"cell")->setIntAttribute(u"id", it, true);
     }
 }
 

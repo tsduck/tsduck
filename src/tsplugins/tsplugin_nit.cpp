@@ -344,10 +344,10 @@ bool ts::NITPlugin::mergeLastPAT()
         ServiceListDescriptor& sld(_collected_sld[tsid]);
 
         // Loop on all services in the PAT.
-        for (auto it = _last_pat.pmts.begin(); it != _last_pat.pmts.end(); ++it) {
-            if (!sld.hasService(it->first)) {
+        for (const auto& it : _last_pat.pmts) {
+            if (!sld.hasService(it.first)) {
                 modified = true;
-                sld.entries.push_back(ServiceListDescriptor::Entry(it->first, _default_srv_type));
+                sld.entries.push_back(ServiceListDescriptor::Entry(it.first, _default_srv_type));
             }
         }
 
@@ -379,16 +379,16 @@ bool ts::NITPlugin::mergeSDT(const SDT& sdt)
     ServiceListDescriptor& sld(_collected_sld[tsid]);
 
     // Loop on all services in the SDT.
-    for (auto it = sdt.services.begin(); it != sdt.services.end(); ++it) {
+    for (const auto& it : sdt.services) {
         // Get service type in the SDT.
-        uint8_t type = it->second.serviceType(duck);
+        uint8_t type = it.second.serviceType(duck);
         if (type == 0 && _add_all_srv_in_sld) {
             // Service type unknown in the SDT, use default service type.
             type = _default_srv_type;
         }
         if (type != 0) {
             // Update the service in the descriptor.
-            modified = sld.addService(it->first, type) || modified;
+            modified = sld.addService(it.first, type) || modified;
         }
     }
 
@@ -514,8 +514,8 @@ void ts::NITPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     processDescriptorList(nit.descs);
 
     // Process each TS descriptor list
-    for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-        processDescriptorList(it->second.descs);
+    for (auto& it : nit.transports) {
+        processDescriptorList(it.second.descs);
     }
 
     // Update service list descriptors from collected services (if necessary).
@@ -702,9 +702,9 @@ void ts::NITPlugin::processDescriptorList(DescriptorList& dlist)
 void ts::NITPlugin::updateServiceList(NIT& nit)
 {
     // Loop on all collected transport streams.
-    for (auto it1 = _collected_sld.begin(); it1 != _collected_sld.end(); ++it1) {
-        const TransportStreamId& tsid(it1->first);
-        const ServiceListDescriptor& sld(it1->second);
+    for (const auto& it1 : _collected_sld) {
+        const TransportStreamId& tsid(it1.first);
+        const ServiceListDescriptor& sld(it1.second);
 
         // Only consider transport streams with collected services.
         if (!sld.entries.empty()) {
@@ -724,8 +724,8 @@ void ts::NITPlugin::updateServiceList(NIT& nit)
                 ServiceListDescriptor desc(duck, *ts.descs[sld_index]);
                 if (desc.isValid()) {
                     // Merge the descriptors.
-                    for (auto it2 = sld.entries.begin(); it2 != sld.entries.end(); ++it2) {
-                        desc.addService(it2->service_id, it2->service_type);
+                    for (const auto& it2 : sld.entries) {
+                        desc.addService(it2.service_id, it2.service_type);
                     }
                 }
                 else {

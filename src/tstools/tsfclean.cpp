@@ -230,16 +230,16 @@ ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) 
     EITProcessor eit_proc(_opt.duck);
     eit_proc.removeOther();
     eit_proc.removeSchedule();
-    for (auto it = _pmts.begin(); it != _pmts.end(); ++it) {
-        eit_proc.keepService(it->second->pmt.service_id);
+    for (const auto& it : _pmts) {
+        eit_proc.keepService(it.second->pmt.service_id);
     }
 
     // Start output file. First, issue a full cycle of each PSI/SI.
     initCycle(_pat, _pat_pzer);
     initCycle(_cat, _cat_pzer);
     initCycle(_sdt, _sdt_pzer);
-    for (auto it = _pmts.begin(); it != _pmts.end(); ++it) {
-        initCycle(it->second->pmt, it->second->pzer);
+    for (const auto& it : _pmts) {
+        initCycle(it.second->pmt, it.second->pzer);
     }
 
     // In second pass, count input packets per PID.
@@ -331,16 +331,16 @@ void ts::FileCleaner::handlePAT(const PAT& pat, PID pid)
     else {
         // Updated PAT, add new services, check inconsistencies.
         _opt.verbose(u"got PAT update, version %d", {pat.version});
-        for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-            const auto cur = _pat.pmts.find(it->first);
+        for (const auto& it : pat.pmts) {
+            const auto cur = _pat.pmts.find(it.first);
             if (cur == _pat.pmts.end()) {
                 // Add new service in PAT update.
-                _opt.verbose(u"added service 0x%X (%<d) from PAT update", {it->first});
-                _pat.pmts[it->first] = it->second;
+                _opt.verbose(u"added service 0x%X (%<d) from PAT update", {it.first});
+                _pat.pmts[it.first] = it.second;
             }
-            else if (it->second != cur->second) {
+            else if (it.second != cur->second) {
                 // Existing service changes PMT PID, not allowed.
-                _opt.error(u"service 0x%X (%<d) changed PMT PID from 0x%X (%<d) to 0x%X (%<d) in PAT update", {it->first, cur->second, it->second});
+                _opt.error(u"service 0x%X (%<d) changed PMT PID from 0x%X (%<d) to 0x%X (%<d) in PAT update", {it.first, cur->second, it.second});
                 _success = false;
             }
         }
@@ -381,16 +381,16 @@ void ts::FileCleaner::handleSDT(const SDT& sdt, PID pid)
     else {
         // Updated SDT, add new services, merge others.
         _opt.verbose(u"got SDT update, version %d", {sdt.version});
-        for (auto it = sdt.services.begin(); it != sdt.services.end(); ++it) {
-            const auto cur = _sdt.services.find(it->first);
+        for (const auto& it : sdt.services) {
+            const auto cur = _sdt.services.find(it.first);
             if (cur == _sdt.services.end()) {
                 // Add new service in SDT update.
-                _opt.verbose(u"added service 0x%X (%<d) from SDT update", {it->first});
-                _sdt.services[it->first] = it->second;
+                _opt.verbose(u"added service 0x%X (%<d) from SDT update", {it.first});
+                _sdt.services[it.first] = it.second;
             }
             else {
                 // Existing service, merge descriptors.
-                cur->second.descs.merge(_opt.duck, it->second.descs);
+                cur->second.descs.merge(_opt.duck, it.second.descs);
             }
         }
     }
@@ -415,16 +415,16 @@ void ts::FileCleaner::handlePMT(const PMT& pmt, PID pid)
     else {
         // Updated PMT, add new components, merge others.
         _opt.verbose(u"got PMT update version %d, PID 0x%X (%<d), service id 0x%X (%<d)", {pmt.version, pid, pmt.service_id});
-        for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-            const auto cur = ctx->pmt.streams.find(it->first);
+        for (const auto& it : pmt.streams) {
+            const auto cur = ctx->pmt.streams.find(it.first);
             if (cur == ctx->pmt.streams.end()) {
                 // Add new component in PMT update.
-                _opt.verbose(u"added component PID 0x%X (%<d) from PMT update", {it->first});
-                ctx->pmt.streams[it->first] = it->second;
+                _opt.verbose(u"added component PID 0x%X (%<d) from PMT update", {it.first});
+                ctx->pmt.streams[it.first] = it.second;
             }
             else {
                 // Existing component, merge descriptors.
-                cur->second.descs.merge(_opt.duck, it->second.descs);
+                cur->second.descs.merge(_opt.duck, it.second.descs);
             }
         }
     }

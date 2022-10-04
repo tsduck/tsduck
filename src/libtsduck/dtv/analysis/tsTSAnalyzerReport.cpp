@@ -413,8 +413,8 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
 
         // Display all PID's of this service
         reportServiceHeader(grid, names::ServiceType(sv.service_type), sv.scrambled_pid_cnt > 0, sv.bitrate, _ts_bitrate, wide);
-        for (auto pid_it = _pids.begin(); pid_it != _pids.end(); ++pid_it) {
-            const PIDContext& pc(*pid_it->second);
+        for (const auto& pid_it : _pids) {
+            const PIDContext& pc(*pid_it.second);
             if (Contains(pc.services, sv.service_id)) {
                 reportServicePID(grid, pc);
             }
@@ -435,7 +435,7 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
 
 void ts::TSAnalyzerReport::reportServicesForPID(Grid& grid, const PIDContext& pc) const
 {
-    for (auto& serv_id : pc.services) {
+    for (const auto& serv_id : pc.services) {
         auto serv_it = _services.find(serv_id);
         grid.putLine(UString::Format(u"Service: 0x%X (%d) %s", {serv_id, serv_id, serv_it == _services.end() ? UString() : serv_it->second->getName()}));
     }
@@ -849,8 +849,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         << "access=" << (_global_scr_pids > 0 ? "scrambled" : "clear") << ":"
         << "pidlist=";
     bool first = true;
-    for (auto it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc(*it->second);
+    for (const auto& it : _pids) {
+        const PIDContext& pc(*it.second);
         if (pc.referenced && pc.services.size() == 0 && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             stm << (first ? "" : ",") << pc.pid;
             first = false;
@@ -869,8 +869,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         << "access=" << (_unref_scr_pids > 0 ? "scrambled" : "clear") << ":"
         << "pidlist=";
     first = true;
-    for (auto it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc (*it->second);
+    for (const auto& it : _pids) {
+        const PIDContext& pc (*it.second);
         if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             stm << (first ? "" : ",") << pc.pid;
             first = false;
@@ -879,8 +879,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
     stm << ":" << std::endl;
 
     // Print one line per service
-    for (auto it = _services.begin(); it != _services.end(); ++it) {
-        const ServiceContext& sv(*it->second);
+    for (const auto& it : _services) {
+        const ServiceContext& sv(*it.second);
         stm << "service:"
             << "id=" << sv.service_id << ":"
             << "tsid=" << _ts_id << ":"
@@ -907,10 +907,10 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         }
         stm << "pidlist=";
         first = true;
-        for (auto it_pid = _pids.begin(); it_pid != _pids.end(); ++it_pid) {
-            if (it_pid->second->services.count(sv.service_id) != 0) {
+        for (const auto& it_pid : _pids) {
+            if (it_pid.second->services.count(sv.service_id) != 0) {
                 // This PID belongs to the service
-                stm << (first ? "" : ",") << it_pid->first;
+                stm << (first ? "" : ",") << it_pid.first;
                 first = false;
             }
         }
@@ -921,8 +921,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
     }
 
     // Print one line per PID
-    for (auto it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc(*it->second);
+    for (const auto& it : _pids) {
+        const PIDContext& pc(*it.second);
         if (pc.ts_pkt_cnt == 0 && pc.optional) {
             continue;
         }
@@ -939,8 +939,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         if (pc.cas_id != 0) {
             stm << "cas=" << pc.cas_id << ":";
         }
-        for (auto it2 = pc.cas_operators.begin(); it2 != pc.cas_operators.end(); ++it2) {
-            stm << "operator=" << (*it2) << ":";
+        for (const auto& it2 : pc.cas_operators) {
+            stm << "operator=" << it2 << ":";
         }
         stm << "access=" << (pc.scrambled ? "scrambled" : "clear") << ":";
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {
@@ -967,8 +967,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         }
         else {
             first = true;
-            for (auto it1 = pc.services.begin(); it1 != pc.services.end(); ++it1) {
-                stm << (first ? "servlist=" : ",") << *it1;
+            for (const auto& it1 : pc.services) {
+                stm << (first ? "servlist=" : ",") << it1;
                 first = false;
             }
             if (!first) {
@@ -976,8 +976,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
             }
         }
         first = true;
-        for (auto it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            stm << (first ? "ssuoui=" : ",") << *it1;
+        for (const auto& it1 : pc.ssu_oui) {
+            stm << (first ? "ssuoui=" : ",") << it1;
             first = false;
         }
         if (!first) {
@@ -986,8 +986,8 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         if (pc.carry_t2mi) {
             stm << "t2mi:";
             first = true;
-            for (auto it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
-                stm << (first ? "plp=" : ",") << int(it1->first);
+            for (const auto& it1 : pc.t2mi_plp_ts) {
+                stm << (first ? "plp=" : ",") << int(it1.first);
                 first = false;
             }
             if (!first) {
@@ -1015,10 +1015,10 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
     }
 
     // Print one line per table
-    for (auto pci = _pids.begin(); pci != _pids.end(); ++pci) {
-        const PIDContext& pc(*pci->second);
-        for (auto it = pc.sections.begin(); it != pc.sections.end(); ++it) {
-            const ETIDContext& etc(*it->second);
+    for (const auto& pci : _pids) {
+        const PIDContext& pc(*pci.second);
+        for (const auto& it : pc.sections) {
+            const ETIDContext& etc(*it.second);
             stm << "table:"
                 << "pid=" << pc.pid << ":"
                 << "tid=" << int(etc.etid.tid()) << ":";
@@ -1111,8 +1111,8 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     root.query(u"ts.pids.global", true).add(u"bitrate", _global_bitrate.toInt());
     root.query(u"ts.pids.global", true).add(u"bitrate-204", ToBitrate204(_global_bitrate).toInt());
     root.query(u"ts.pids.global", true).add(u"is-scrambled", json::Bool(_global_scr_pids > 0));
-    for (auto it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc(*it->second);
+    for (const auto& it : _pids) {
+        const PIDContext& pc(*it.second);
         if (pc.referenced && pc.services.size() == 0 && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             root.query(u"ts.pids.global.pids", true, json::Type::Array).set(pc.pid);
         }
@@ -1126,8 +1126,8 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     root.query(u"ts.pids.unreferenced", true).add(u"bitrate", _unref_bitrate.toInt());
     root.query(u"ts.pids.unreferenced", true).add(u"bitrate-204", ToBitrate204(_unref_bitrate).toInt());
     root.query(u"ts.pids.unreferenced", true).add(u"is-scrambled", json::Bool(_unref_scr_pids > 0));
-    for (auto it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc (*it->second);
+    for (const auto& it : _pids) {
+        const PIDContext& pc (*it.second);
         if (!pc.referenced && (pc.ts_pkt_cnt != 0 || !pc.optional)) {
             root.query(u"ts.pids.unreferenced.pids", true, json::Type::Array).set(pc.pid);
         }
@@ -1148,8 +1148,8 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     }
 
     // One node per service
-    for (auto it = _services.begin(); it != _services.end(); ++it) {
-        const ServiceContext& sv(*it->second);
+    for (const auto& it : _services) {
+        const ServiceContext& sv(*it.second);
         json::Value& jv(root.query(u"services[]", true));
         jv.add(u"id", sv.service_id);
         jv.add(u"provider", sv.getProvider());
@@ -1173,17 +1173,17 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         if (sv.pcr_pid != 0 && sv.pcr_pid != PID_NULL) {
             jv.add(u"pcr-pid", sv.pcr_pid);
         }
-        for (auto it_pid = _pids.begin(); it_pid != _pids.end(); ++it_pid) {
-            if (it_pid->second->services.count(sv.service_id) != 0) {
+        for (const auto& it_pid : _pids) {
+            if (it_pid.second->services.count(sv.service_id) != 0) {
                 // This PID belongs to the service
-                jv.query(u"pids", true, json::Type::Array).set(it_pid->first);
+                jv.query(u"pids", true, json::Type::Array).set(it_pid.first);
             }
         }
     }
 
     // One node per PID
-    for (auto it = _pids.begin(); it != _pids.end(); ++it) {
-        const PIDContext& pc(*it->second);
+    for (const auto& it : _pids) {
+        const PIDContext& pc(*it.second);
         if (pc.ts_pkt_cnt == 0 && pc.optional) {
             continue;
         }
@@ -1198,8 +1198,8 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         if (pc.cas_id != 0) {
             jv.add(u"cas", pc.cas_id);
         }
-        for (auto it2 = pc.cas_operators.begin(); it2 != pc.cas_operators.end(); ++it2) {
-            jv.query(u"operators", true, json::Type::Array).set(*it2);
+        for (const auto& it2 : pc.cas_operators) {
+            jv.query(u"operators", true, json::Type::Array).set(it2);
         }
         jv.add(u"is-scrambled", json::Bool(pc.scrambled));
         if (pc.crypto_period != 0 && _ts_bitrate != 0) {
@@ -1219,15 +1219,15 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.add(u"service-count", pc.services.size());
         jv.add(u"unreferenced", json::Bool(!pc.referenced));
         jv.add(u"global", json::Bool(pc.services.size() == 0));
-        for (auto it1 = pc.services.begin(); it1 != pc.services.end(); ++it1) {
-            jv.query(u"services", true, json::Type::Array).set(*it1);
+        for (const auto& it1 : pc.services) {
+            jv.query(u"services", true, json::Type::Array).set(it1);
         }
-        for (auto it1 = pc.ssu_oui.begin(); it1 != pc.ssu_oui.end(); ++it1) {
-            jv.query(u"ssu-oui", true, json::Type::Array).set(*it1);
+        for (const auto& it1 : pc.ssu_oui) {
+            jv.query(u"ssu-oui", true, json::Type::Array).set(it1);
         }
         jv.add(u"t2mi", json::Bool(pc.carry_t2mi));
-        for (auto it1 = pc.t2mi_plp_ts.begin(); it1 != pc.t2mi_plp_ts.end(); ++it1) {
-            jv.query(u"plp", true, json::Type::Array).set(it1->first);
+        for (const auto& it1 : pc.t2mi_plp_ts) {
+            jv.query(u"plp", true, json::Type::Array).set(it1.first);
         }
         jv.add(u"bitrate", pc.bitrate.toInt());
         jv.add(u"bitrate-204", ToBitrate204(pc.bitrate).toInt());
@@ -1249,10 +1249,10 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
     }
 
     // One node per table
-    for (auto pci = _pids.begin(); pci != _pids.end(); ++pci) {
-        const PIDContext& pc(*pci->second);
-        for (auto it = pc.sections.begin(); it != pc.sections.end(); ++it) {
-            const ETIDContext& etc(*it->second);
+    for (const auto& pci : _pids) {
+        const PIDContext& pc(*pci.second);
+        for (const auto& it : pc.sections) {
+            const ETIDContext& etc(*it.second);
             json::Value& jv(root.query(u"tables[]", true));
             jv.add(u"pid", pc.pid);
             jv.add(u"tid", etc.etid.tid());

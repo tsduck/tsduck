@@ -86,24 +86,24 @@ ts::EASAudioFileDescriptor::Entry::Entry() :
 void ts::EASAudioFileDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(uint8_t(entries.size()));
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         buf.pushWriteSequenceWithLeadingLength(8); // loop_length
-        buf.putBit(!it->file_name.empty());
-        buf.putBits(it->audio_format, 7);
-        if (!it->file_name.empty()) {
-            buf.putUTF8WithLength(it->file_name);
+        buf.putBit(!it.file_name.empty());
+        buf.putBits(it.audio_format, 7);
+        if (!it.file_name.empty()) {
+            buf.putUTF8WithLength(it.file_name);
         }
-        buf.putUInt8(it->audio_source);
-        if (it->audio_source == 0x01) {
-            buf.putUInt16(it->program_number);
-            buf.putUInt32(it->carousel_id);
-            buf.putUInt16(it->application_id);
+        buf.putUInt8(it.audio_source);
+        if (it.audio_source == 0x01) {
+            buf.putUInt16(it.program_number);
+            buf.putUInt32(it.carousel_id);
+            buf.putUInt16(it.application_id);
         }
-        else if (it->audio_source == 0x02) {
-            buf.putUInt16(it->program_number);
-            buf.putUInt32(it->download_id);
-            buf.putUInt32(it->module_id);
-            buf.putUInt16(it->application_id);
+        else if (it.audio_source == 0x02) {
+            buf.putUInt16(it.program_number);
+            buf.putUInt32(it.download_id);
+            buf.putUInt32(it.module_id);
+            buf.putUInt16(it.application_id);
         }
         buf.popState(); // update loop_length;
     }
@@ -190,23 +190,23 @@ void ts::EASAudioFileDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 
 void ts::EASAudioFileDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"file");
-        e->setIntAttribute(u"audio_format", it->audio_format, true);
-        if (!it->file_name.empty()) {
-            e->setAttribute(u"file_name", it->file_name);
+        e->setIntAttribute(u"audio_format", it.audio_format, true);
+        if (!it.file_name.empty()) {
+            e->setAttribute(u"file_name", it.file_name);
         }
-        e->setIntAttribute(u"audio_source", it->audio_source, true);
-        if (it->audio_source == 0x01) {
-            e->setIntAttribute(u"program_number", it->program_number, true);
-            e->setIntAttribute(u"carousel_id", it->carousel_id, true);
-            e->setIntAttribute(u"application_id", it->application_id, true);
+        e->setIntAttribute(u"audio_source", it.audio_source, true);
+        if (it.audio_source == 0x01) {
+            e->setIntAttribute(u"program_number", it.program_number, true);
+            e->setIntAttribute(u"carousel_id", it.carousel_id, true);
+            e->setIntAttribute(u"application_id", it.application_id, true);
         }
-        else if (it->audio_source == 0x02) {
-            e->setIntAttribute(u"program_number", it->program_number, true);
-            e->setIntAttribute(u"download_id", it->download_id, true);
-            e->setIntAttribute(u"module_id", it->module_id, true);
-            e->setIntAttribute(u"application_id", it->application_id, true);
+        else if (it.audio_source == 0x02) {
+            e->setIntAttribute(u"program_number", it.program_number, true);
+            e->setIntAttribute(u"download_id", it.download_id, true);
+            e->setIntAttribute(u"module_id", it.module_id, true);
+            e->setIntAttribute(u"application_id", it.application_id, true);
         }
     }
 }

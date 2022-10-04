@@ -155,13 +155,13 @@ ts::UString ts::GetDektecVersions()
     GetDektecVersions(versions);
 
     UString result;
-    for (auto it = versions.begin(); it != versions.end(); ++it) {
+    for (const auto& it : versions) {
         if (!result.empty()) {
             result.append(u", ");
         }
-        result.append(it->first);
+        result.append(it.first);
         result.append(u": ");
-        result.append(it->second);
+        result.append(it.second);
     }
     return result;
 #endif
@@ -196,8 +196,8 @@ void ts::GetDektecVersions(std::map<UString,UString>& versions)
     // Get all Dektec drivers versions.
     std::vector<Dtapi::DtDriverVersionInfo> drv;
     if (Dtapi::DtapiGetDeviceDriverVersion(DTAPI_CAT_ALL, drv) == DTAPI_OK) {
-        for (auto it = drv.begin(); it != drv.end(); ++it) {
-            versions[UString::FromWChar(it->m_Name)].format(u"%d.%d.%d.%d", {it->m_Major, it->m_Minor, it->m_BugFix, it->m_Build});
+        for (const auto& it : drv) {
+            versions[UString::FromWChar(it.m_Name)].format(u"%d.%d.%d.%d", {it.m_Major, it.m_Minor, it.m_BugFix, it.m_Build});
         }
     }
 #endif

@@ -97,17 +97,17 @@ void ts::TargetRegionNameDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putLanguageCode(country_code);
     buf.putLanguageCode(ISO_639_language_code);
-    for (auto it = regions.begin(); it != regions.end(); ++it) {
+    for (const auto& it : regions) {
         buf.pushState();
-        buf.putStringWithByteLength(it->region_name);
+        buf.putStringWithByteLength(it.region_name);
         buf.swapState();
-        buf.putBits(it->region_depth, 2);
+        buf.putBits(it.region_depth, 2);
         buf.popState();
-        buf.putUInt8(it->primary_region_code);
-        if (it->region_depth >= 2) {
-            buf.putUInt8(it->secondary_region_code);
-            if (it->region_depth >= 3) {
-                buf.putUInt16(it->tertiary_region_code);
+        buf.putUInt8(it.primary_region_code);
+        if (it.region_depth >= 2) {
+            buf.putUInt8(it.secondary_region_code);
+            if (it.region_depth >= 3) {
+                buf.putUInt16(it.tertiary_region_code);
             }
         }
     }
@@ -173,14 +173,14 @@ void ts::TargetRegionNameDescriptor::buildXML(DuckContext& duck, xml::Element* r
 {
     root->setAttribute(u"country_code", country_code);
     root->setAttribute(u"ISO_639_language_code", ISO_639_language_code);
-    for (auto it = regions.begin(); it != regions.end(); ++it) {
+    for (const auto& it : regions) {
         xml::Element* e = root->addElement(u"region");
-        e->setAttribute(u"region_name", it->region_name, true);
-        e->setIntAttribute(u"primary_region_code", it->primary_region_code, true);
-        if (it->region_depth >= 2) {
-            e->setIntAttribute(u"secondary_region_code", it->secondary_region_code, true);
-            if (it->region_depth >= 3) {
-                e->setIntAttribute(u"tertiary_region_code", it->tertiary_region_code, true);
+        e->setAttribute(u"region_name", it.region_name, true);
+        e->setIntAttribute(u"primary_region_code", it.primary_region_code, true);
+        if (it.region_depth >= 2) {
+            e->setIntAttribute(u"secondary_region_code", it.secondary_region_code, true);
+            if (it.region_depth >= 3) {
+                e->setIntAttribute(u"tertiary_region_code", it.tertiary_region_code, true);
             }
         }
     }

@@ -65,9 +65,9 @@ void ts::AbstractMultilingualDescriptor::clearContent()
 
 void ts::AbstractMultilingualDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putLanguageCode(it->language);
-        buf.putStringWithByteLength(it->name);
+    for (const auto& it : entries) {
+        buf.putLanguageCode(it.language);
+        buf.putStringWithByteLength(it.name);
     }
 }
 
@@ -106,10 +106,10 @@ void ts::AbstractMultilingualDescriptor::DisplayDescriptor(TablesDisplay& disp, 
 
 void ts::AbstractMultilingualDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"language");
-        e->setAttribute(u"code", it->language);
-        e->setAttribute(_xml_attribute, it->name);
+        e->setAttribute(u"code", it.language);
+        e->setAttribute(_xml_attribute, it.name);
     }
 }
 

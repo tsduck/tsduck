@@ -77,9 +77,9 @@ ts::FMCDescriptor::Entry::Entry(uint16_t id, uint8_t fmc) :
 
 void ts::FMCDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->ES_ID);
-        buf.putUInt8(it->FlexMuxChannel);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.ES_ID);
+        buf.putUInt8(it.FlexMuxChannel);
     }
 }
 
@@ -118,10 +118,10 @@ void ts::FMCDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
 
 void ts::FMCDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"stream");
-        e->setIntAttribute(u"ES_ID", it->ES_ID, true);
-        e->setIntAttribute(u"FlexMuxChannel", it->FlexMuxChannel, true);
+        e->setIntAttribute(u"ES_ID", it.ES_ID, true);
+        e->setIntAttribute(u"FlexMuxChannel", it.FlexMuxChannel, true);
     }
 }
 

@@ -192,8 +192,8 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     const size_t payload_min_size = buf.currentWriteByteOffset();
 
     // Add all content versions.
-    for (auto it1 = versions.begin(); it1 != versions.end(); ++it1) {
-        const ContentVersion& cv(it1->second);
+    for (const auto& it1 : versions) {
+        const ContentVersion& cv(it1.second);
 
         // Binary size of the channel definition.
         const size_t entry_size = 8 + 8 * cv.schedules.size() + cv.descs.binarySize();
@@ -221,10 +221,10 @@ void ts::PCAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         buf.pushWriteSequenceWithLeadingLength(12);
 
         // Fill schedule loop.
-        for (auto it2 = cv.schedules.begin(); it2 != cv.schedules.end(); ++it2) {
+        for (const auto& it2 : cv.schedules) {
             // Serialize the schedule. See [Warning #2] above.
-            buf.putFullMJD(it2->start_time);
-            buf.putSecondsBCD(it2->duration);
+            buf.putFullMJD(it2.start_time);
+            buf.putSecondsBCD(it2.duration);
         }
 
         // Close the schedule_description_length sequence.
@@ -310,17 +310,17 @@ void ts::PCAT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"original_network_id", original_network_id, true);
     root->setIntAttribute(u"content_id", content_id, true);
 
-    for (auto it1 = versions.begin(); it1 != versions.end(); ++it1) {
+    for (const auto& it1 : versions) {
         xml::Element* e1 = root->addElement(u"version");
-        e1->setIntAttribute(u"content_version", it1->second.content_version, true);
-        e1->setIntAttribute(u"content_minor_version", it1->second.content_minor_version, true);
-        e1->setIntAttribute(u"version_indicator", it1->second.version_indicator, false);
-        for (auto it2 = it1->second.schedules.begin(); it2 != it1->second.schedules.end(); ++it2) {
+        e1->setIntAttribute(u"content_version", it1.second.content_version, true);
+        e1->setIntAttribute(u"content_minor_version", it1.second.content_minor_version, true);
+        e1->setIntAttribute(u"version_indicator", it1.second.version_indicator, false);
+        for (const auto& it2 : it1.second.schedules) {
             xml::Element* e2 = e1->addElement(u"schedule");
-            e2->setDateTimeAttribute(u"start_time", it2->start_time);
-            e2->setTimeAttribute(u"duration", it2->duration);
+            e2->setDateTimeAttribute(u"start_time", it2.start_time);
+            e2->setTimeAttribute(u"duration", it2.duration);
         }
-        it1->second.descs.toXML(duck, e1);
+        it1.second.descs.toXML(duck, e1);
     }
 }
 

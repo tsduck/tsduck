@@ -639,10 +639,10 @@ void ScanContext::nitScan()
     }
 
     // Process each TS descriptor list in the NIT.
-    for (auto it = nit->transports.begin(); it != nit->transports.end(); ++it) {
+    for (const auto& it : nit->transports) {
 
-        const ts::TransportStreamId& tsid(it->first);
-        const ts::DescriptorList& dlist(it->second.descs);
+        const ts::TransportStreamId& tsid(it.first);
+        const ts::DescriptorList& dlist(it.second.descs);
 
         for (size_t i = 0; i < dlist.count(); ++i) {
             // Try to get delivery system information from current descriptor

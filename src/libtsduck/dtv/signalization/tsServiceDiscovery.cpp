@@ -238,13 +238,13 @@ void ts::ServiceDiscovery::processSDT(const SDT& sdt)
 void ts::ServiceDiscovery::analyzeMGT(const MGT& mgt)
 {
     // Process all table types.
-    for (auto it = mgt.tables.begin(); it != mgt.tables.end(); ++it) {
+    for (const auto& it : mgt.tables) {
 
         // Intercept TVCT and CVCT, they contain the service names.
-        switch (it->second.table_type) {
+        switch (it.second.table_type) {
             case ATSC_TTYPE_TVCT_CURRENT:
             case ATSC_TTYPE_CVCT_CURRENT:
-                _demux.addPID(it->second.table_type_PID);
+                _demux.addPID(it.second.table_type_PID);
                 break;
             default:
                 break;

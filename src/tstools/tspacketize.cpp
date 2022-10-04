@@ -162,8 +162,8 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // If any non-zero repetition rate is specified, make sure that a bitrate is specified.
-    for (auto it = infiles.begin(); it != infiles.end(); ++it) {
-        if (it->repetition != 0 && bitrate == 0) {
+    for (const auto& it : infiles) {
+        if (it.repetition != 0 && bitrate == 0) {
             error(u"the PID bitrate must be specified when repetition rates are used");
             break;
         }
@@ -202,16 +202,16 @@ int MainCode(int argc, char *argv[])
         }
     }
     else {
-        for (auto it = opt.infiles.begin(); it != opt.infiles.end(); ++it) {
+        for (const auto& it : opt.infiles) {
             file.clear();
-            if (!file.load(it->file_name, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
+            if (!file.load(it.file_name, opt.inType) || !opt.sections_opt.processSectionFile(file, opt)) {
                 return EXIT_FAILURE;
             }
-            pzer.addSections(file.sections(), it->repetition);
+            pzer.addSections(file.sections(), it.repetition);
             if (opt.verbose()) {
-                std::cerr << "* Loaded " << file.sections().size() << " sections from " << it->display_name;
-                if (it->repetition > 0) {
-                    std::cerr << ", repetition rate: " << ts::UString::Decimal(it->repetition) << " ms";
+                std::cerr << "* Loaded " << file.sections().size() << " sections from " << it.display_name;
+                if (it.repetition > 0) {
+                    std::cerr << ", repetition rate: " << ts::UString::Decimal(it.repetition) << " ms";
                 }
                 std::cerr << std::endl;
             }

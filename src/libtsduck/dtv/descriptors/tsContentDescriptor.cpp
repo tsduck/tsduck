@@ -73,11 +73,11 @@ ts::ContentDescriptor::ContentDescriptor(DuckContext& duck, const Descriptor& de
 
 void ts::ContentDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putBits(it->content_nibble_level_1, 4);
-        buf.putBits(it->content_nibble_level_2, 4);
-        buf.putBits(it->user_nibble_1, 4);
-        buf.putBits(it->user_nibble_2, 4);
+    for (const auto& it : entries) {
+        buf.putBits(it.content_nibble_level_1, 4);
+        buf.putBits(it.content_nibble_level_2, 4);
+        buf.putBits(it.user_nibble_1, 4);
+        buf.putBits(it.user_nibble_2, 4);
     }
 }
 
@@ -113,11 +113,11 @@ void ts::ContentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 
 void ts::ContentDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"content");
-        e->setIntAttribute(u"content_nibble_level_1", it->content_nibble_level_1);
-        e->setIntAttribute(u"content_nibble_level_2", it->content_nibble_level_2);
-        e->setIntAttribute(u"user_byte", uint8_t((it->user_nibble_1 << 4) | it->user_nibble_2), true);
+        e->setIntAttribute(u"content_nibble_level_1", it.content_nibble_level_1);
+        e->setIntAttribute(u"content_nibble_level_2", it.content_nibble_level_2);
+        e->setIntAttribute(u"user_byte", uint8_t((it.user_nibble_1 << 4) | it.user_nibble_2), true);
     }
 }
 

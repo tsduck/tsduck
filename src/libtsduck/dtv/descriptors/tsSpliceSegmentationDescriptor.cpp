@@ -184,10 +184,10 @@ void ts::SpliceSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBits(device_restrictions, 2);
         if (!program_segmentation) {
             buf.putUInt8(uint8_t(pts_offsets.size()));
-            for (auto it = pts_offsets.begin(); it != pts_offsets.end(); ++it) {
-                buf.putUInt8(it->first);     // component_tag
+            for (const auto& it : pts_offsets) {
+                buf.putUInt8(it.first);     // component_tag
                 buf.putBits(0xFF, 7);
-                buf.putBits(it->second, 33); // pts_offset
+                buf.putBits(it.second, 33); // pts_offset
             }
         }
         if (segmentation_duration.set()) {
@@ -392,10 +392,10 @@ void ts::SpliceSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element*
             upid->addHexaText(segmentation_upid);
         }
         if (!program_segmentation) {
-            for (auto it = pts_offsets.begin(); it != pts_offsets.end(); ++it) {
+            for (const auto& it : pts_offsets) {
                 xml::Element* comp = root->addElement(u"component");
-                comp->setIntAttribute(u"component_tag", it->first);
-                comp->setIntAttribute(u"pts_offset", it->second);
+                comp->setIntAttribute(u"component_tag", it.first);
+                comp->setIntAttribute(u"pts_offset", it.second);
             }
         }
     }

@@ -48,11 +48,11 @@ ts::Charset::Charset(const UChar* name) :
 ts::Charset::Charset(std::initializer_list<const UChar*> names) :
     _name()
 {
-    for (auto it = names.begin(); it != names.end(); ++it) {
-        if (*it != nullptr && **it != CHAR_NULL) {
-            Repository::Instance()->add(*it, this);
+    for (auto it : names) {
+        if (it != nullptr && *it != CHAR_NULL) {
+            Repository::Instance()->add(it, this);
             if (_name.empty()) {
-                _name = *it;
+                _name = it;
             }
         }
     }

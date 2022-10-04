@@ -121,38 +121,38 @@ void ts::SHDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(diversity_mode, 4);
     buf.putBits(0xFF, 4);
-    for (auto it = modulations.begin(); it != modulations.end(); ++it) {
-        buf.putBit(it->is_ofdm);
-        buf.putBit(it->interleaver_presence);
-        buf.putBit(it->short_interleaver);
+    for (const auto& it : modulations) {
+        buf.putBit(it.is_ofdm);
+        buf.putBit(it.interleaver_presence);
+        buf.putBit(it.short_interleaver);
         buf.putBits(0xFF, 5);
-        if (it->is_ofdm) {
-            buf.putBits(it->ofdm.bandwidth, 3);
-            buf.putBit(it->ofdm.priority);
-            buf.putBits(it->ofdm.constellation_and_hierarchy, 3);
-            buf.putBits(it->ofdm.code_rate, 4);
-            buf.putBits(it->ofdm.guard_interval, 2);
-            buf.putBits(it->ofdm.transmission_mode, 2);
-            buf.putBit(it->ofdm.common_frequency);
+        if (it.is_ofdm) {
+            buf.putBits(it.ofdm.bandwidth, 3);
+            buf.putBit(it.ofdm.priority);
+            buf.putBits(it.ofdm.constellation_and_hierarchy, 3);
+            buf.putBits(it.ofdm.code_rate, 4);
+            buf.putBits(it.ofdm.guard_interval, 2);
+            buf.putBits(it.ofdm.transmission_mode, 2);
+            buf.putBit(it.ofdm.common_frequency);
         }
         else {
-            buf.putBits(it->tdm.polarization, 2);
-            buf.putBits(it->tdm.roll_off, 2);
-            buf.putBits(it->tdm.modulation_mode, 2);
-            buf.putBits(it->tdm.code_rate, 4);
-            buf.putBits(it->tdm.symbol_rate, 5);
+            buf.putBits(it.tdm.polarization, 2);
+            buf.putBits(it.tdm.roll_off, 2);
+            buf.putBits(it.tdm.modulation_mode, 2);
+            buf.putBits(it.tdm.code_rate, 4);
+            buf.putBits(it.tdm.symbol_rate, 5);
             buf.putBit(1);
         }
-        if (it->interleaver_presence) {
-            buf.putBits(it->common_multiplier, 6);
-            if (it->short_interleaver) {
+        if (it.interleaver_presence) {
+            buf.putBits(it.common_multiplier, 6);
+            if (it.short_interleaver) {
                 buf.putBits(0xFF, 2);
             }
             else {
-                buf.putBits(it->nof_late_taps, 6);
-                buf.putBits(it->nof_slices, 6);
-                buf.putBits(it->slice_distance, 8);
-                buf.putBits(it->non_late_increments, 6);
+                buf.putBits(it.nof_late_taps, 6);
+                buf.putBits(it.nof_slices, 6);
+                buf.putBits(it.slice_distance, 8);
+                buf.putBits(it.non_late_increments, 6);
             }
         }
     }
@@ -328,34 +328,34 @@ void ts::SHDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 void ts::SHDeliverySystemDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"diversity_mode", diversity_mode, true);
-    for (auto it = modulations.begin(); it != modulations.end(); ++it) {
+    for (const auto& it : modulations) {
         xml::Element* mod = root->addElement(u"modulation");
-        if (it->is_ofdm) {
+        if (it.is_ofdm) {
             xml::Element* e = mod->addElement(u"OFDM");
-            e->setIntEnumAttribute(BandwidthNames, u"bandwidth", it->ofdm.bandwidth);
-            e->setIntAttribute(u"priority", it->ofdm.priority);
-            e->setIntAttribute(u"constellation_and_hierarchy", it->ofdm.constellation_and_hierarchy);
-            e->setIntAttribute(u"code_rate", it->ofdm.code_rate);
-            e->setIntEnumAttribute(GuardIntervalNames, u"guard_interval", it->ofdm.guard_interval);
-            e->setIntEnumAttribute(TransmissionModeNames, u"transmission_mode", it->ofdm.transmission_mode);
-            e->setBoolAttribute(u"common_frequency", it->ofdm.common_frequency);
+            e->setIntEnumAttribute(BandwidthNames, u"bandwidth", it.ofdm.bandwidth);
+            e->setIntAttribute(u"priority", it.ofdm.priority);
+            e->setIntAttribute(u"constellation_and_hierarchy", it.ofdm.constellation_and_hierarchy);
+            e->setIntAttribute(u"code_rate", it.ofdm.code_rate);
+            e->setIntEnumAttribute(GuardIntervalNames, u"guard_interval", it.ofdm.guard_interval);
+            e->setIntEnumAttribute(TransmissionModeNames, u"transmission_mode", it.ofdm.transmission_mode);
+            e->setBoolAttribute(u"common_frequency", it.ofdm.common_frequency);
         }
         else {
             xml::Element* e = mod->addElement(u"TDM");
-            e->setIntEnumAttribute(PolarizationNames, u"polarization", it->tdm.polarization);
-            e->setIntEnumAttribute(RollOffNames, u"roll_off", it->tdm.roll_off);
-            e->setIntEnumAttribute(ModulationNames, u"modulation_mode", it->tdm.modulation_mode);
-            e->setIntAttribute(u"code_rate", it->tdm.code_rate);
-            e->setIntAttribute(u"symbol_rate", it->tdm.symbol_rate);
+            e->setIntEnumAttribute(PolarizationNames, u"polarization", it.tdm.polarization);
+            e->setIntEnumAttribute(RollOffNames, u"roll_off", it.tdm.roll_off);
+            e->setIntEnumAttribute(ModulationNames, u"modulation_mode", it.tdm.modulation_mode);
+            e->setIntAttribute(u"code_rate", it.tdm.code_rate);
+            e->setIntAttribute(u"symbol_rate", it.tdm.symbol_rate);
         }
-        if (it->interleaver_presence) {
+        if (it.interleaver_presence) {
             xml::Element* e = mod->addElement(u"interleaver");
-            e->setIntAttribute(u"common_multiplier", it->common_multiplier);
-            if (!it->short_interleaver) {
-                e->setIntAttribute(u"nof_late_taps", it->nof_late_taps);
-                e->setIntAttribute(u"nof_slices", it->nof_slices);
-                e->setIntAttribute(u"slice_distance", it->slice_distance);
-                e->setIntAttribute(u"non_late_increments", it->non_late_increments);
+            e->setIntAttribute(u"common_multiplier", it.common_multiplier);
+            if (!it.short_interleaver) {
+                e->setIntAttribute(u"nof_late_taps", it.nof_late_taps);
+                e->setIntAttribute(u"nof_slices", it.nof_slices);
+                e->setIntAttribute(u"slice_distance", it.slice_distance);
+                e->setIntAttribute(u"non_late_increments", it.non_late_increments);
             }
         }
     }

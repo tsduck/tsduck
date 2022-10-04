@@ -358,8 +358,8 @@ void ts::PCRAdjustPlugin::handleTable(SectionDemux& demux, const BinaryTable& ta
             const PAT pat(duck, table);
             if (pat.isValid()) {
                 // Add all PMT PID's to the demux to grab all PMT's.
-                for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _demux.addPID(it->second);
+                for (const auto& it : pat.pmts) {
+                    _demux.addPID(it.second);
                 }
             }
             break;
@@ -368,8 +368,8 @@ void ts::PCRAdjustPlugin::handleTable(SectionDemux& demux, const BinaryTable& ta
             const PMT pmt(duck, table);
             if (pmt.isValid() && pmt.pcr_pid != PID_NULL) {
                 // Remember PCR PID for all components.
-                for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    getContext(it->first)->pcr_ctx = getContext(pmt.pcr_pid);
+                for (const auto& it : pmt.streams) {
+                    getContext(it.first)->pcr_ctx = getContext(pmt.pcr_pid);
                 }
             }
             break;
@@ -449,8 +449,8 @@ ts::ProcessorPlugin::Status ts::PCRAdjustPlugin::processPacket(TSPacket& pkt, TS
         PIDContextPtr pcr_ctx;
         uint64_t pcr_delay = 0;
         uint64_t pcr_value = INVALID_PCR;
-        for (auto it = _pid_contexts.begin(); it != _pid_contexts.end(); ++it) {
-            const PIDContextPtr& cur_ctx(it->second);
+        for (const auto& it : _pid_contexts) {
+            const PIDContextPtr& cur_ctx(it.second);
             // Consider only PID's which contain PCR, ie. which are their own PCR reference.
             if (!cur_ctx.isNull() && !cur_ctx->pcr_ctx.isNull() && cur_ctx->pid == cur_ctx->pcr_ctx->pid) {
                 const uint64_t last_pcr = cur_ctx->lastPCR();

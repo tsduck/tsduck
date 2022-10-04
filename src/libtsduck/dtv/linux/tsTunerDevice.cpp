@@ -168,9 +168,9 @@ bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners)
     // Open all tuners
     tuners.reserve(names.size());
     bool ok = true;
-    for (auto it = names.begin(); it != names.end(); ++it) {
+    for (const auto& it : names) {
 
-        UString tuner_name(*it);
+        UString tuner_name(it);
         tuner_name.substitute(u".frontend", u":");
         tuner_name.substitute(u"/frontend", u":");
 
@@ -279,9 +279,9 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
         // If the name does not start with /dev/dvb, check if this is a known device full description.
         TunerPtrVector all_tuners;
         GetAllTuners(_duck, all_tuners);
-        for (auto it = all_tuners.begin(); it != all_tuners.end(); ++it) {
-            if (device_name.similar((*it)->deviceInfo())) {
-                fields.push_back((*it)->deviceName());
+        for (const auto& it : all_tuners) {
+            if (device_name.similar(it->deviceInfo())) {
+                fields.push_back(it->deviceName());
                 break;
             }
         }

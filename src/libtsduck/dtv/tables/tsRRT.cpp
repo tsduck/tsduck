@@ -248,14 +248,14 @@ void ts::RRT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"rating_region", rating_region, true);
     rating_region_name.toXML(duck, root, u"rating_region_name", true);
 
-    for (auto dim = dimensions.begin(); dim != dimensions.end(); ++dim) {
+    for (const auto& dim : dimensions) {
         xml::Element* xdim = root->addElement(u"dimension");
-        xdim->setBoolAttribute(u"graduated_scale", dim->graduated_scale);
-        dim->dimension_name.toXML(duck, xdim, u"dimension_name", true);
-        for (auto val = dim->values.begin(); val != dim->values.end(); ++val) {
+        xdim->setBoolAttribute(u"graduated_scale", dim.graduated_scale);
+        dim.dimension_name.toXML(duck, xdim, u"dimension_name", true);
+        for (const auto& val : dim.values) {
             xml::Element* xval = xdim->addElement(u"value");
-            val->abbrev_rating_value.toXML(duck, xval, u"abbrev_rating_value", true);
-            val->rating_value.toXML(duck, xval, u"rating_value", true);
+            val.abbrev_rating_value.toXML(duck, xval, u"abbrev_rating_value", true);
+            val.rating_value.toXML(duck, xval, u"rating_value", true);
         }
     }
 

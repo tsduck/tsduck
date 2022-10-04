@@ -84,10 +84,10 @@ void ts::ServiceLocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putPID(PCR_PID);
     buf.putUInt8(uint8_t(entries.size()));
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt8(it->stream_type);
-        buf.putPID(it->elementary_PID);
-        buf.putLanguageCode(it->ISO_639_language_code, true);
+    for (const auto& it : entries) {
+        buf.putUInt8(it.stream_type);
+        buf.putPID(it.elementary_PID);
+        buf.putLanguageCode(it.ISO_639_language_code, true);
     }
 }
 
@@ -147,12 +147,12 @@ void ts::ServiceLocationDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     if (PCR_PID != PID_NULL) {
         root->setIntAttribute(u"PCR_PID", PCR_PID, true);
     }
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"component");
-        e->setIntAttribute(u"stream_type", it->stream_type, true);
-        e->setIntAttribute(u"elementary_PID", it->elementary_PID, true);
-        if (!it->ISO_639_language_code.empty()) {
-            e->setAttribute(u"ISO_639_language_code", it->ISO_639_language_code);
+        e->setIntAttribute(u"stream_type", it.stream_type, true);
+        e->setIntAttribute(u"elementary_PID", it.elementary_PID, true);
+        if (!it.ISO_639_language_code.empty()) {
+            e->setAttribute(u"ISO_639_language_code", it.ISO_639_language_code);
         }
     }
 }

@@ -425,20 +425,20 @@ void ts::ZapPlugin::sendNewPAT()
 void ts::ZapPlugin::forgetServiceComponents(ServiceContext& ctx)
 {
     // Loop on all known component of the service.
-    for (auto pid = ctx.pids.begin(); pid != ctx.pids.end(); ++pid) {
+    for (auto pid : ctx.pids) {
 
         // Loop on all other services to check if the component is shared or not.
         bool shared = false;
         for (size_t i = 0; !shared && i < _services.size(); ++i) {
             // Do not test on the service itself.
             if (_services[i]->id_known && _services[i]->service_id != ctx.service_id) {
-                shared = Contains(_services[i]->pids, *pid);
+                shared = Contains(_services[i]->pids, pid);
             }
         }
 
         // If the PID is not shared, we no longer need to pass it.
         if (!shared) {
-            _pid_state[*pid] = TSPID_DROP;
+            _pid_state[pid] = TSPID_DROP;
         }
     }
 
@@ -840,8 +840,8 @@ bool ts::ZapPlugin::keepComponent(PID pid, const DescriptorList& descs, const US
     }
 
     // Test selected languages one by one.
-    for (auto it = languages.begin(); it != languages.end(); ++it) {
-        if (descs.searchLanguage(duck, *it) < descs.size()) {
+    for (const auto& it : languages) {
+        if (descs.searchLanguage(duck, it) < descs.size()) {
             return true; // language found.
         }
     }

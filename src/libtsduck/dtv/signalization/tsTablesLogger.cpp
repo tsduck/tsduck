@@ -142,8 +142,8 @@ void ts::TablesLogger::defineArgs(Args& args)
     _xml_tweaks.defineArgs(args);
 
     // Define options from all section filters.
-    for (auto it = _section_filters.begin(); it != _section_filters.end(); ++it) {
-        (*it)->defineFilterOptions(args);
+    for (const auto& it : _section_filters) {
+        it->defineFilterOptions(args);
     }
 
     args.option(u"all-once");
@@ -412,9 +412,9 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
 
     // Load options from all section filters.
     _initial_pids.reset();
-    for (auto it = _section_filters.begin(); it != _section_filters.end(); ++it) {
+    for (const auto& it : _section_filters) {
         PIDSet pids;
-        if (!(*it)->loadFilterOptions(_duck, args, pids)) {
+        if (!it->loadFilterOptions(_duck, args, pids)) {
             return false;
         }
         _initial_pids |= pids;
@@ -1179,9 +1179,9 @@ bool ts::TablesLogger::isFiltered(const Section& sect, uint16_t cas)
 
     // Call all section filters. Keep the section if all filters agree.
     // Make sure to call all filters, even after one returned false to collect additional PID's.
-    for (auto it = _section_filters.begin(); it != _section_filters.end(); ++it) {
+    for (const auto& it : _section_filters) {
         PIDSet pids;
-        if (!(*it)->filterSection(_duck, sect, cas, pids)) {
+        if (!it->filterSection(_duck, sect, cas, pids)) {
             status = false;
         }
         _demux.addPIDs(pids);

@@ -193,8 +193,8 @@ void ts::SVResyncPlugin::handleService(uint16_t ts_id, const Service& service, c
     if (service.match(_target_service) && pmt.isValid()) {
         // Found the target service. Get all components. We will adjust time stamps here.
         _target_pids.reset();
-        for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-            _target_pids.set(it->first);
+        for (const auto& it : pmt.streams) {
+            _target_pids.set(it.first);
         }
 
         // If the PCR PID changed, reset our PCR adjustment.

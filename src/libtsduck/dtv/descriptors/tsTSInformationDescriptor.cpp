@@ -96,11 +96,11 @@ void ts::TSInformationDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(length_of_ts_name, 6);
     buf.popState();     // move at current end of descriptor
 
-    for (auto it1 = transmission_types.begin(); it1 != transmission_types.end(); ++it1) {
-        buf.putUInt8(it1->transmission_type_info);
-        buf.putUInt8(uint8_t(it1->service_ids.size()));
-        for (auto it2 = it1->service_ids.begin(); it2 != it1->service_ids.end(); ++it2) {
-            buf.putUInt16(*it2);
+    for (const auto& it1 : transmission_types) {
+        buf.putUInt8(it1.transmission_type_info);
+        buf.putUInt8(uint8_t(it1.service_ids.size()));
+        for (auto it2 : it1.service_ids) {
+            buf.putUInt16(it2);
         }
     }
     buf.putBytes(reserved_future_use);
@@ -162,11 +162,11 @@ void ts::TSInformationDescriptor::buildXML(DuckContext& duck, xml::Element* root
 {
     root->setIntAttribute(u"remote_control_key_id", remote_control_key_id, true);
     root->setAttribute(u"ts_name", ts_name);
-    for (auto it1 = transmission_types.begin(); it1 != transmission_types.end(); ++it1) {
+    for (const auto& it1 : transmission_types) {
         xml::Element* e = root->addElement(u"transmission_type");
-        e->setIntAttribute(u"transmission_type_info", it1->transmission_type_info, true);
-        for (auto it2 = it1->service_ids.begin(); it2 != it1->service_ids.end(); ++it2) {
-            e->addElement(u"service")->setIntAttribute(u"id", *it2, true);
+        e->setIntAttribute(u"transmission_type_info", it1.transmission_type_info, true);
+        for (auto it2 : it1.service_ids) {
+            e->addElement(u"service")->setIntAttribute(u"id", it2, true);
         }
     }
     root->addHexaTextChild(u"reserved_future_use", reserved_future_use, true);

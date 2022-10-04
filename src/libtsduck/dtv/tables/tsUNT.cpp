@@ -427,20 +427,20 @@ void ts::UNT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"processing_order", processing_order, true);
     descs.toXML(duck, root);
 
-    for (auto it1 = devices.begin(); it1 != devices.end(); ++it1) {
-        const Devices& devs(it1->second);
+    for (const auto& it1 : devices) {
+        const Devices& devs(it1.second);
         xml::Element* e1 = root->addElement(u"devices");
         // Loop on compatibilityDescriptor() entries.
-        for (auto it2 = devs.compatibilityDescriptor.begin(); it2 != devs.compatibilityDescriptor.end(); ++it2) {
+        for (const auto& it2 : devs.compatibilityDescriptor) {
             xml::Element* e2 = e1->addElement(u"compatibilityDescriptor");
-            e2->setIntAttribute(u"descriptorType", it2->descriptorType, true);
-            e2->setIntAttribute(u"specifierType", it2->specifierType, true);
-            e2->setIntAttribute(u"specifierData", it2->specifierData, true);
-            e2->setIntAttribute(u"model", it2->model, true);
-            e2->setIntAttribute(u"version", it2->version, true);
+            e2->setIntAttribute(u"descriptorType", it2.descriptorType, true);
+            e2->setIntAttribute(u"specifierType", it2.specifierType, true);
+            e2->setIntAttribute(u"specifierData", it2.specifierData, true);
+            e2->setIntAttribute(u"model", it2.model, true);
+            e2->setIntAttribute(u"version", it2.version, true);
             // Loop on subdescriptors
-            for (size_t i3 = 0; i3 < it2->subDescriptors.count(); ++i3) {
-                const DescriptorPtr& desc(it2->subDescriptors[i3]);
+            for (size_t i3 = 0; i3 < it2.subDescriptors.count(); ++i3) {
+                const DescriptorPtr& desc(it2.subDescriptors[i3]);
                 if (!desc.isNull() && desc->isValid()) {
                     xml::Element* e3 = e2->addElement(u"subDescriptor");
                     e3->setIntAttribute(u"subDescriptorType", desc->tag(), true);
@@ -451,13 +451,13 @@ void ts::UNT::buildXML(DuckContext& duck, xml::Element* root) const
             }
         }
         // Loop on platform descriptions.
-        for (auto it2 = devs.platforms.begin(); it2 != devs.platforms.end(); ++it2) {
+        for (const auto& it2 : devs.platforms) {
             xml::Element* e2 = e1->addElement(u"platform");
-            if (!it2->second.target_descs.empty()) {
-                it2->second.target_descs.toXML(duck, e2->addElement(u"target"));
+            if (!it2.second.target_descs.empty()) {
+                it2.second.target_descs.toXML(duck, e2->addElement(u"target"));
             }
-            if (!it2->second.operational_descs.empty()) {
-                it2->second.operational_descs.toXML(duck, e2->addElement(u"operational"));
+            if (!it2.second.operational_descs.empty()) {
+                it2.second.operational_descs.toXML(duck, e2->addElement(u"operational"));
             }
         }
     }

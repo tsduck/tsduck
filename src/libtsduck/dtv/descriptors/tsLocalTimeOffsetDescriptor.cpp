@@ -83,14 +83,14 @@ void ts::LocalTimeOffsetDescriptor::clearContent()
 
 void ts::LocalTimeOffsetDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = regions.begin(); it != regions.end(); ++it) {
-        buf.putLanguageCode(it->country);
-        buf.putBits(it->region_id, 6);
+    for (const auto& it : regions) {
+        buf.putLanguageCode(it.country);
+        buf.putBits(it.region_id, 6);
         buf.putBit(1);
-        buf.putBit(it->time_offset < 0);
-        buf.putMinutesBCD(it->time_offset);
-        buf.putMJD(it->next_change, MJD_SIZE);
-        buf.putMinutesBCD(it->next_time_offset);
+        buf.putBit(it.time_offset < 0);
+        buf.putMinutesBCD(it.time_offset);
+        buf.putMJD(it.next_change, MJD_SIZE);
+        buf.putMinutesBCD(it.next_time_offset);
     }
 }
 
@@ -143,13 +143,13 @@ void ts::LocalTimeOffsetDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 
 void ts::LocalTimeOffsetDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = regions.begin(); it != regions.end(); ++it) {
+    for (const auto& it : regions) {
         xml::Element* e = root->addElement(u"region");
-        e->setAttribute(u"country_code", it->country);
-        e->setIntAttribute(u"country_region_id", it->region_id);
-        e->setIntAttribute(u"local_time_offset", it->time_offset);
-        e->setDateTimeAttribute(u"time_of_change", it->next_change);
-        e->setIntAttribute(u"next_time_offset", it->next_time_offset);
+        e->setAttribute(u"country_code", it.country);
+        e->setIntAttribute(u"country_region_id", it.region_id);
+        e->setIntAttribute(u"local_time_offset", it.time_offset);
+        e->setDateTimeAttribute(u"time_of_change", it.next_change);
+        e->setIntAttribute(u"next_time_offset", it.next_time_offset);
     }
 }
 

@@ -87,9 +87,9 @@ void ts::ServiceGroupDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(service_group_type, 4);
     buf.putBits(0xFF, 4);
     if (service_group_type == 1) {
-        for (auto it = simultaneous_services.begin(); it != simultaneous_services.end(); ++it) {
-            buf.putUInt16(it->primary_service_id);
-            buf.putUInt16(it->secondary_service_id);
+        for (const auto& it : simultaneous_services) {
+            buf.putUInt16(it.primary_service_id);
+            buf.putUInt16(it.secondary_service_id);
         }
     }
     else {
@@ -152,10 +152,10 @@ void ts::ServiceGroupDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 {
     root->setIntAttribute(u"service_group_type", service_group_type);
     if (service_group_type == 1) {
-        for (auto it = simultaneous_services.begin(); it != simultaneous_services.end(); ++it) {
+        for (const auto& it : simultaneous_services) {
             xml::Element* e = root->addElement(u"service");
-            e->setIntAttribute(u"primary_service_id", it->primary_service_id, true);
-            e->setIntAttribute(u"secondary_service_id", it->secondary_service_id, true);
+            e->setIntAttribute(u"primary_service_id", it.primary_service_id, true);
+            e->setIntAttribute(u"secondary_service_id", it.secondary_service_id, true);
         }
     }
     else {

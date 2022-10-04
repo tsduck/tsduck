@@ -84,20 +84,20 @@ void ts::AnnouncementSupportDescriptor::serializePayload(PSIBuffer& buf) const
 {
     // Rebuild announcement_support_indicator
     uint16_t indicator = 0;
-    for (auto it = announcements.begin(); it != announcements.end(); ++it) {
-        indicator |= uint16_t(1 << it->announcement_type);
+    for (const auto& it : announcements) {
+        indicator |= uint16_t(1 << it.announcement_type);
     }
 
     buf.putUInt16(indicator);
-    for (auto it = announcements.begin(); it != announcements.end(); ++it) {
-        buf.putBits(it->announcement_type, 4);
+    for (const auto& it : announcements) {
+        buf.putBits(it.announcement_type, 4);
         buf.putBit(1);
-        buf.putBits(it->reference_type, 3);
-        if (it->reference_type >= 1 && it->reference_type <= 3) {
-            buf.putUInt16(it->original_network_id);
-            buf.putUInt16(it->transport_stream_id);
-            buf.putUInt16(it->service_id);
-            buf.putUInt8(it->component_tag);
+        buf.putBits(it.reference_type, 3);
+        if (it.reference_type >= 1 && it.reference_type <= 3) {
+            buf.putUInt16(it.original_network_id);
+            buf.putUInt16(it.transport_stream_id);
+            buf.putUInt16(it.service_id);
+            buf.putUInt8(it.component_tag);
         }
     }
 }
@@ -191,15 +191,15 @@ void ts::AnnouncementSupportDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 
 void ts::AnnouncementSupportDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = announcements.begin(); it != announcements.end(); ++it) {
+    for (const auto& it : announcements) {
         xml::Element* e = root->addElement(u"announcement");
-        e->setIntAttribute(u"announcement_type", it->announcement_type);
-        e->setIntAttribute(u"reference_type", it->reference_type);
-        if (it->reference_type >= 1 && it->reference_type <= 3) {
-            e->setIntAttribute(u"original_network_id", it->original_network_id, true);
-            e->setIntAttribute(u"transport_stream_id", it->transport_stream_id, true);
-            e->setIntAttribute(u"service_id", it->service_id, true);
-            e->setIntAttribute(u"component_tag", it->component_tag, true);
+        e->setIntAttribute(u"announcement_type", it.announcement_type);
+        e->setIntAttribute(u"reference_type", it.reference_type);
+        if (it.reference_type >= 1 && it.reference_type <= 3) {
+            e->setIntAttribute(u"original_network_id", it.original_network_id, true);
+            e->setIntAttribute(u"transport_stream_id", it.transport_stream_id, true);
+            e->setIntAttribute(u"service_id", it.service_id, true);
+            e->setIntAttribute(u"component_tag", it.component_tag, true);
         }
     }
 }

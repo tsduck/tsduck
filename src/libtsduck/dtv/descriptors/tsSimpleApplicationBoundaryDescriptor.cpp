@@ -73,8 +73,8 @@ ts::SimpleApplicationBoundaryDescriptor::SimpleApplicationBoundaryDescriptor(Duc
 void ts::SimpleApplicationBoundaryDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(uint8_t(boundary_extension.size()));
-    for (auto it = boundary_extension.begin(); it != boundary_extension.end(); ++it) {
-        buf.putStringWithByteLength(*it);
+    for (const auto& it : boundary_extension) {
+        buf.putStringWithByteLength(it);
     }
 }
 
@@ -114,8 +114,8 @@ void ts::SimpleApplicationBoundaryDescriptor::DisplayDescriptor(TablesDisplay& d
 
 void ts::SimpleApplicationBoundaryDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = boundary_extension.begin(); it != boundary_extension.end(); ++it) {
-        root->addElement(u"prefix")->setAttribute(u"boundary_extension", *it);
+    for (const auto& it : boundary_extension) {
+        root->addElement(u"prefix")->setAttribute(u"boundary_extension", it);
     }
 }
 

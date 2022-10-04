@@ -271,15 +271,15 @@ void ts::ClearPlugin::processPAT(PAT& pat)
             _demux.removePID (_service.getPMTPID());
         }
         // Found PMT PID
-        _service.setPMTPID (it->second);
-        _demux.addPID (it->second);
+        _service.setPMTPID(it->second);
+        _demux.addPID(it->second);
     }
     else if (!pat.pmts.empty()) {
         // No service specified, use first one in PAT
         const auto it = pat.pmts.begin();
-        _service.setId (it->first);
-        _service.setPMTPID (it->second);
-        _demux.addPID (it->second);
+        _service.setId(it->first);
+        _service.setPMTPID(it->second);
+        _demux.addPID(it->second);
         tsp->verbose(u"using service %d (0x%X)", {_service.getId(), _service.getId()});
     }
     else {
@@ -298,11 +298,11 @@ void ts::ClearPlugin::processPMT(PMT& pmt)
 {
     // Collect all audio/video PIDS
     _clear_pids.reset();
-    for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-        const PID pid = it->first;
-        const PMT::Stream& stream (it->second);
+    for (const auto& it : pmt.streams) {
+        const PID pid = it.first;
+        const PMT::Stream& stream(it.second);
         if ((stream.isAudio(duck) && !_video_only) || (stream.isVideo(duck) && !_audio_only)) {
-            _clear_pids.set (pid);
+            _clear_pids.set(pid);
         }
     }
 }

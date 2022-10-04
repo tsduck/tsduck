@@ -92,10 +92,10 @@ void ts::SIPrimeTSDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putMJD(update_time, 2);  // date only
     buf.putUInt16(SI_prime_TS_network_id);
     buf.putUInt16(SI_prime_transport_stream_id);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt8(it->table_id);
-        buf.putUInt8(uint8_t(it->table_description.size()));
-        buf.putBytes(it->table_description);
+    for (const auto& it : entries) {
+        buf.putUInt8(it.table_id);
+        buf.putUInt8(uint8_t(it.table_description.size()));
+        buf.putBytes(it.table_description);
     }
 }
 
@@ -149,11 +149,11 @@ void ts::SIPrimeTSDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
     root->setDateAttribute(u"update_time", update_time);
     root->setIntAttribute(u"SI_prime_TS_network_id", SI_prime_TS_network_id, true);
     root->setIntAttribute(u"SI_prime_transport_stream_id", SI_prime_transport_stream_id, true);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"table");
-        e->setIntAttribute(u"id", it->table_id, true);
-        if (!it->table_description.empty()) {
-            e->addHexaText(it->table_description);
+        e->setIntAttribute(u"id", it.table_id, true);
+        if (!it.table_description.empty()) {
+            e->addHexaText(it.table_description);
         }
     }
 }

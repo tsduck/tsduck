@@ -80,14 +80,14 @@ ts::EmergencyInformationDescriptor::Event::Event() :
 
 void ts::EmergencyInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it1 = events.begin(); it1 != events.end(); ++it1) {
-        buf.putUInt16(it1->service_id);
-        buf.putBit(it1->started);
-        buf.putBit(it1->signal_level);
+    for (const auto& it1 : events) {
+        buf.putUInt16(it1.service_id);
+        buf.putBit(it1.started);
+        buf.putBit(it1.signal_level);
         buf.putBits(0xFF, 6);
         buf.pushWriteSequenceWithLeadingLength(8); // area_code_length
-        for (auto it2 = it1->area_codes.begin(); it2 != it1->area_codes.end(); ++it2) {
-            buf.putBits(*it2, 12);
+        for (const auto& it2 : it1.area_codes) {
+            buf.putBits(it2, 12);
             buf.putBits(0xFF, 4);
         }
         buf.popState(); // update area_code_length
@@ -145,13 +145,13 @@ void ts::EmergencyInformationDescriptor::DisplayDescriptor(TablesDisplay& disp, 
 
 void ts::EmergencyInformationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it1 = events.begin(); it1 != events.end(); ++it1) {
+    for (const auto& it1 : events) {
         xml::Element* e = root->addElement(u"event");
-        e->setIntAttribute(u"service_id", it1->service_id, true);
-        e->setBoolAttribute(u"started", it1->started);
-        e->setIntAttribute(u"signal_level", it1->signal_level);
-        for (auto it2 = it1->area_codes.begin(); it2 != it1->area_codes.end(); ++it2) {
-            e->addElement(u"area")->setIntAttribute(u"code", *it2, true);
+        e->setIntAttribute(u"service_id", it1.service_id, true);
+        e->setBoolAttribute(u"started", it1.started);
+        e->setIntAttribute(u"signal_level", it1.signal_level);
+        for (const auto& it2 : it1.area_codes) {
+            e->addElement(u"area")->setIntAttribute(u"code", it2, true);
         }
     }
 }

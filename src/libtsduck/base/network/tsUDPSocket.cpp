@@ -271,8 +271,8 @@ bool ts::UDPSocket::setBroadcastIfRequired(const IPv4Address destination, Report
     }
 
     // Loop on all local addresses and set broadcast when we match a local broadcast address.
-    for (auto it = locals.begin(); it != locals.end(); ++it) {
-        if (destination == it->broadcastAddress()) {
+    for (const auto& it : locals) {
+        if (destination == it.broadcastAddress()) {
             return setBroadcast(true, report);
         }
     }
@@ -376,19 +376,19 @@ bool ts::UDPSocket::dropMembership(Report& report)
     bool ok = true;
 
     // Drop all standard multicast groups.
-    for (auto it = _mcast.begin(); it != _mcast.end(); ++it) {
-        report.verbose(u"leaving multicast group %s from local address %s", {IPv4Address(it->data.imr_multiaddr), IPv4Address(it->data.imr_interface)});
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, SysSockOptPointer(&it->data), sizeof(it->data)) != 0) {
+    for (const auto& it : _mcast) {
+        report.verbose(u"leaving multicast group %s from local address %s", {IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface)});
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_MEMBERSHIP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
             report.error(u"error dropping multicast membership: %s", {SysSocketErrorCodeMessage()});
             ok = false;
         }
     }
 
     // Drop all source-specific multicast groups.
-    for (auto it = _ssmcast.begin(); it != _ssmcast.end(); ++it) {
+    for (const auto& it : _ssmcast) {
         report.verbose(u"leaving multicast group %s@%s from local address %s",
-                       {IPv4Address(it->data.imr_sourceaddr), IPv4Address(it->data.imr_multiaddr), IPv4Address(it->data.imr_interface)});
-        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, SysSockOptPointer(&it->data), sizeof(it->data)) != 0) {
+                       {IPv4Address(it.data.imr_sourceaddr), IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface)});
+        if (::setsockopt(getSocket(), IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, SysSockOptPointer(&it.data), sizeof(it.data)) != 0) {
             report.error(u"error dropping multicast membership: %s", {SysSocketErrorCodeMessage()});
             ok = false;
         }

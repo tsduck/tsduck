@@ -676,13 +676,15 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
     _utcDownload = _utcTermination = Time::CurrentUTC();
 
     // Loop on all lines in file.
-    for (auto it = _loadedContent.begin(); it != _loadedContent.end(); ++it) {
+    uint32_t lineNumber = 0;
+    for (const auto& it : _loadedContent) {
 
         // In non-strict mode, ignore leading and trailing spaces.
-        UString line(*it);
+        UString line(it);
         if (!strict) {
             line.trim();
         }
+        lineNumber++;
         report.log(2, u"playlist: %s", {line});
 
         // A line is one of blank, comment, tag, URI.
@@ -718,7 +720,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
             // The line contains a tag.
             switch (tag) {
                 case EXTM3U: {
-                    if (strict && it != _loadedContent.begin()) {
+                    if (strict && lineNumber > 1) {
                         report.error(u"misplaced: %s", {line});
                         _valid = false;
                     }

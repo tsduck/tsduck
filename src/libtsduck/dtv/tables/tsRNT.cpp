@@ -279,15 +279,15 @@ void ts::RNT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"context_id", context_id, true);
     root->setIntAttribute(u"context_id_type", context_id_type, true);
     descs.toXML(duck, root);
-    for (auto it1 = providers.begin(); it1 != providers.end(); ++it1) {
+    for (const auto& it1 : providers) {
         xml::Element* e1 = root->addElement(u"resolution_provider");
-        e1->setAttribute(u"name", it1->second.name);
-        it1->second.descs.toXML(duck, e1);
-        for (auto it2 = it1->second.CRID_authorities.begin(); it2 != it1->second.CRID_authorities.end(); ++it2) {
+        e1->setAttribute(u"name", it1.second.name);
+        it1.second.descs.toXML(duck, e1);
+        for (const auto& it2 : it1.second.CRID_authorities) {
             xml::Element* e2 = e1->addElement(u"CRID_authority");
-            e2->setAttribute(u"name", it2->second.name);
-            e2->setIntAttribute(u"policy", it2->second.policy);
-            it2->second.descs.toXML(duck, e2);
+            e2->setAttribute(u"name", it2.second.name);
+            e2->setIntAttribute(u"policy", it2.second.policy);
+            it2.second.descs.toXML(duck, e2);
         }
     }
 }
