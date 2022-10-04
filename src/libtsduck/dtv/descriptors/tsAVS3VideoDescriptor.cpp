@@ -141,7 +141,7 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-char *Avs3Profile(uint8_t profile_id) {
+std::string Avs3Profile(uint8_t profile_id) {
     switch (profile_id) {
         case 0x20: return "Main-8";
         case 0x22: return "Main-10";
@@ -151,7 +151,7 @@ char *Avs3Profile(uint8_t profile_id) {
     return "unknown";
 };
 
-char *Avs3Level(uint8_t level_id) {
+std::string Avs3Level(uint8_t level_id) {
     switch (level_id) {
         case 0x10: return "2.0.15";
         case 0x12: return "2.0.30";
@@ -198,7 +198,7 @@ char *Avs3Level(uint8_t level_id) {
     return "unknown";
 }
 
-char *AVS3FrameRate(uint16_t fr) {
+std::string AVS3FrameRate(uint16_t fr) {
     switch (fr) {
         case 0: return "forbidden"; break;
         case 1: return "24/1.001"; break;
@@ -219,7 +219,7 @@ char *AVS3FrameRate(uint16_t fr) {
     return "unknown";
 }
 
-char *AVS3SamplePrecision(uint16_t sp) {
+std::string AVS3SamplePrecision(uint16_t sp) {
     switch (sp) {
         case 0: return "forbidden"; break;
         case 1: return "8-bit"; break;
@@ -228,7 +228,7 @@ char *AVS3SamplePrecision(uint16_t sp) {
     return "unknown";
 }
 
-char *Avs3ChromaFormat(uint16_t cf) {
+std::string Avs3ChromaFormat(uint16_t cf) {
     switch (cf) {
         case 1: return "4:2:0"; 
         case 2: return "4:2:2"; 

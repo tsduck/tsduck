@@ -158,7 +158,7 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
     }
 }
 
-char* VVCProfileIDC(INT pi) {
+std::string VVCProfileIDC(INT pi) {
 	switch (pi) {
 		case  1: return "Main 10";
 		case 17: return "Multilayer Main 10";
@@ -170,11 +170,12 @@ char* VVCProfileIDC(INT pi) {
 	return "uknown";
 }
 
-char* VVCTier(bool t) {
+std::string VVCTier(bool t) {
 	return t ? "High" : "Main";
 }
 
-char* VVCHDRandWCG(INT hw) {
+std::string VVCHDRandWCG(INT hw) {
+	// H222.0, TAble 2-134
     switch (hw) {
 		case 0: return "SDR";
 		case 1: return "WCG only";
@@ -184,8 +185,8 @@ char* VVCHDRandWCG(INT hw) {
 	return "unknown";
 }
 
-char* VVCLevelIDC(INT li) {
-	// H.266, table A.1
+std::string VVCLevelIDC(INT li) {
+	// H.266, Table A.1
 	switch (li) {
 		case  16: return "1.0";
 		case  32: return "2.0";
@@ -204,7 +205,7 @@ char* VVCLevelIDC(INT li) {
 	return "unknown";
 }
 
-char *VVCVideoProperties(INT vp) {
+std::string VVCVideoProperties(INT vp) {
 	// H.222.0 Table 2-135
 	switch (vp) {
 		case 0: return "not known";
