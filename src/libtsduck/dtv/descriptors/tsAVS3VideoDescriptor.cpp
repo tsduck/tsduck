@@ -141,7 +141,7 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-std::string Avs3Profile(uint8_t profile_id) {
+static std::string Avs3Profile(uint8_t profile_id) {
     switch (profile_id) {
         case 0x20: return "Main-8";
         case 0x22: return "Main-10";
@@ -151,7 +151,7 @@ std::string Avs3Profile(uint8_t profile_id) {
     }
 }
 
-std::string Avs3Level(uint8_t level_id) {
+static std::string Avs3Level(uint8_t level_id) {
     switch (level_id) {
         case 0x10: return "2.0.15";
         case 0x12: return "2.0.30";
@@ -198,37 +198,37 @@ std::string Avs3Level(uint8_t level_id) {
     }
 }
 
-std::string AVS3FrameRate(uint16_t fr) {
+static std::string AVS3FrameRate(uint16_t fr) {
     switch (fr) {
-        case 0: return "forbidden"; break;
-        case 1: return "24/1.001"; break;
-        case 2: return "24"; break;
-        case 3: return "25"; break;
-        case 4: return "20/1.001"; break;
-        case 5: return "30"; break;
-        case 6: return "50"; break;
-        case 7: return "60/1.001"; break;
-        case 8: return "60"; break;
-        case 9: return "100"; break;
-        case 10: return "120"; break;
-        case 11: return "200"; break;
-        case 12: return "240"; break;
-        case 13: return "400"; break;
-        case 14: return "120/1.001"; break;
+        case 0: return "forbidden";
+        case 1: return "24/1.001";
+        case 2: return "24";
+        case 3: return "25";
+        case 4: return "20/1.001";
+        case 5: return "30";
+        case 6: return "50";
+        case 7: return "60/1.001";
+        case 8: return "60";
+        case 9: return "100";
+        case 10: return "120";
+        case 11: return "200";
+        case 12: return "240";
+        case 13: return "400";
+        case 14: return "120/1.001";
         default: return "uknown";
     }
 }
 
-std::string AVS3SamplePrecision(uint16_t sp) {
+static std::string AVS3SamplePrecision(uint16_t sp) {
     switch (sp) {
-        case 0: return "forbidden"; break;
-        case 1: return "8-bit"; break;
-        case 2: return "10-bit"; break;
+        case 0: return "forbidden";
+        case 1: return "8-bit";
+        case 2: return "10-bit";
         default: return "uknown";
     }
 }
 
-std::string Avs3ChromaFormat(uint16_t cf) {
+static std::string Avs3ChromaFormat(uint16_t cf) {
     switch (cf) {
         case 1: return "4:2:0"; 
         case 2: return "4:2:2"; 

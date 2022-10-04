@@ -162,7 +162,7 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-std::string VVCProfileIDC(INT pi) {
+static std::string VVCProfileIDC(INT pi) {
 	switch (pi) {
 		case  1: return "Main 10";
 		case 17: return "Multilayer Main 10";
@@ -174,11 +174,11 @@ std::string VVCProfileIDC(INT pi) {
 	}
 }
 
-std::string VVCTier(bool t) {
+static std::string VVCTier(bool t) {
 	return t ? "High" : "Main";
 }
 
-std::string VVCHDRandWCG(INT hw) {
+static std::string VVCHDRandWCG(INT hw) {
 	// H222.0, TAble 2-134
     switch (hw) {
 		case 0: return "SDR";
@@ -189,7 +189,7 @@ std::string VVCHDRandWCG(INT hw) {
 	}	
 }
 
-std::string VVCLevelIDC(INT li) {
+static std::string VVCLevelIDC(INT li) {
 	// H.266, Table A.1
 	switch (li) {
 		case  16: return "1.0";
@@ -209,7 +209,7 @@ std::string VVCLevelIDC(INT li) {
 	}
 }
 
-std::string VVCVideoProperties(INT vp) {
+static std::string VVCVideoProperties(INT vp) {
 	// H.222.0 Table 2-135
 	switch (vp) {
 		case 0: return "not known";
