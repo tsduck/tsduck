@@ -147,8 +147,8 @@ std::string Avs3Profile(uint8_t profile_id) {
         case 0x22: return "Main-10";
         case 0x30: return "High-8";
         case 0x32: return "High-10";
-    }
-    return "unknown";
+        default: return "unknown";
+    } 
 };
 
 std::string Avs3Level(uint8_t level_id) {
@@ -194,8 +194,8 @@ std::string Avs3Level(uint8_t level_id) {
         case 0x6A: return "10.2.120";
         case 0x69: return "10.4.120";
         case 0x6B: return "10.6.120";
+        default: return "unknown";
     }
-    return "unknown";
 }
 
 std::string AVS3FrameRate(uint16_t fr) {
@@ -215,8 +215,8 @@ std::string AVS3FrameRate(uint16_t fr) {
         case 12: return "240"; break;
         case 13: return "400"; break;
         case 14: return "120/1.001"; break;
+        default: return "unknown";
     }
-    return "unknown";
 }
 
 std::string AVS3SamplePrecision(uint16_t sp) {
@@ -224,16 +224,16 @@ std::string AVS3SamplePrecision(uint16_t sp) {
         case 0: return "forbidden"; break;
         case 1: return "8-bit"; break;
         case 2: return "10-bit"; break;
+        default: return "unknown";
     }
-    return "unknown";
 }
 
 std::string Avs3ChromaFormat(uint16_t cf) {
     switch (cf) {
         case 1: return "4:2:0"; 
         case 2: return "4:2:2"; 
+        default: return "unknown";
     }
-    return "unknown";
 }
 
 void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
