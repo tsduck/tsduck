@@ -1013,14 +1013,14 @@
         multiple_frame_rate_flag="bool, required"
         frame_rate_code="uint4, required"
         sample_precision="uint3, required"
-        chroma_format="uint3, required" 
+        chroma_format="uint3, required"
         temporal_id_flag="bool, required"
         td_mode_flag="bool, required"
         library_stream_flag="bool, required"
         library_picture_enable_flag="bool, required"
         colour_primaries="uint8, required"
         transfer_characteristics="uint8, required"
-        matrix_coefficients="uint8, required"
+        matrix_coefficients="uint8, required"/>
         
     <basic_local_event_descriptor
         segmentation_mode="uint4, required"
