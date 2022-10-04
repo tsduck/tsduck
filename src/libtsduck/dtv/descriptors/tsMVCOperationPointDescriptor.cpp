@@ -112,15 +112,15 @@ void ts::MVCOperationPointDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(AVC_compatible_flags, 2);
     buf.putUInt8(uint8_t(levels.size()));
 
-    for (auto it1 = levels.begin(); it1 != levels.end(); ++it1) {
-        buf.putUInt8(it1->level_idc);
-        buf.putUInt8(uint8_t(it1->operation_points.size()));
-        for (auto it2 = it1->operation_points.begin(); it2 != it1->operation_points.end(); ++it2) {
+    for (const auto& it1 : levels) {
+        buf.putUInt8(it1.level_idc);
+        buf.putUInt8(uint8_t(it1.operation_points.size()));
+        for (const auto& it2 : it1.operation_points) {
             buf.putBits(0xFF, 5);
-            buf.putBits(it2->applicable_temporal_id, 3);
-            buf.putUInt8(it2->num_target_output_views);
-            buf.putUInt8(uint8_t(it2->ES_references.size()));
-            for (auto it3 = it2->ES_references.begin(); it3 != it2->ES_references.end(); ++it3) {
+            buf.putBits(it2.applicable_temporal_id, 3);
+            buf.putUInt8(it2.num_target_output_views);
+            buf.putUInt8(uint8_t(it2.ES_references.size()));
+            for (auto it3 = it2.ES_references.begin(); it3 != it2.ES_references.end(); ++it3) {
                 buf.putBits(0xFF, 2);
                 buf.putBits(*it3, 6);
             }
@@ -216,14 +216,14 @@ void ts::MVCOperationPointDescriptor::buildXML(DuckContext& duck, xml::Element* 
     root->setBoolAttribute(u"constraint_set5", constraint_set5);
     root->setIntAttribute(u"AVC_compatible_flags", AVC_compatible_flags, false);
 
-    for (auto it1 = levels.begin(); it1 != levels.end(); ++it1) {
+    for (const auto& it1 : levels) {
         xml::Element* e1 = root->addElement(u"level");
-        e1->setIntAttribute(u"level_idc", it1->level_idc, true);
-        for (auto it2 = it1->operation_points.begin(); it2 != it1->operation_points.end(); ++it2) {
+        e1->setIntAttribute(u"level_idc", it1.level_idc, true);
+        for (const auto& it2 : it1.operation_points) {
             xml::Element* e2 = e1->addElement(u"operation_point");
-            e2->setIntAttribute(u"applicable_temporal_id", it2->applicable_temporal_id, false);
-            e2->setIntAttribute(u"num_target_output_views", it2->num_target_output_views, false);
-            for (auto it3 = it2->ES_references.begin(); it3 != it2->ES_references.end(); ++it3) {
+            e2->setIntAttribute(u"applicable_temporal_id", it2.applicable_temporal_id, false);
+            e2->setIntAttribute(u"num_target_output_views", it2.num_target_output_views, false);
+            for (auto it3 = it2.ES_references.begin(); it3 != it2.ES_references.end(); ++it3) {
                 e2->addElement(u"ES")->setIntAttribute(u"reference", *it3, true);
             }
         }

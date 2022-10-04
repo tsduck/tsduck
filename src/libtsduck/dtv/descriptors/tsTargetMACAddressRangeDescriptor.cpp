@@ -78,9 +78,9 @@ ts::TargetMACAddressRangeDescriptor::Range::Range(const MACAddress& addr1, const
 
 void ts::TargetMACAddressRangeDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = ranges.begin(); it != ranges.end(); ++it) {
-        buf.putUInt48(it->MAC_addr_low.address());
-        buf.putUInt48(it->MAC_addr_high.address());
+    for (const auto& it : ranges) {
+        buf.putUInt48(it.MAC_addr_low.address());
+        buf.putUInt48(it.MAC_addr_high.address());
     }
 }
 
@@ -119,10 +119,10 @@ void ts::TargetMACAddressRangeDescriptor::DisplayDescriptor(TablesDisplay& disp,
 
 void ts::TargetMACAddressRangeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = ranges.begin(); it != ranges.end(); ++it) {
+    for (const auto& it : ranges) {
         xml::Element* e = root->addElement(u"range");
-        e->setMACAttribute(u"MAC_addr_low", it->MAC_addr_low);
-        e->setMACAttribute(u"MAC_addr_high", it->MAC_addr_high);
+        e->setMACAttribute(u"MAC_addr_low", it.MAC_addr_low);
+        e->setMACAttribute(u"MAC_addr_high", it.MAC_addr_high);
     }
 }
 

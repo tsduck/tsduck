@@ -332,10 +332,10 @@ void ts::Grid::adjustLayout()
         // We allocate one more space is the last columns to compensate rounding.
         const size_t more = (_contentWidth - allWidth) / textColCount;
         const size_t evenMore = (_contentWidth - allWidth) % textColCount;
-        for (auto it = _layout.begin(); it != _layout.end(); ++it) {
-            if (!it->isBorder()) {
+        for (auto& it : _layout) {
+            if (!it.isBorder()) {
                 const size_t adjust = textColCount <= evenMore ? 1 : 0;
-                it->_width += more + adjust;
+                it._width += more + adjust;
                 allWidth += more + adjust;
                 textColCount--;
             }

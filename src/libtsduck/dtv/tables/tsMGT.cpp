@@ -146,8 +146,8 @@ void ts::MGT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     buf.putUInt16(uint16_t(tables.size()));
 
     // Add description of all table types.
-    for (auto it = tables.begin(); it != tables.end(); ++it) {
-        const TableType& tt(it->second);
+    for (const auto& it : tables) {
+        const TableType& tt(it.second);
         buf.putUInt16(tt.table_type);
         buf.putPID(tt.table_type_PID);
         buf.putBits(0xFF, 3);
@@ -255,13 +255,13 @@ void ts::MGT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"protocol_version", protocol_version);
     descs.toXML(duck, root);
 
-    for (auto it = tables.begin(); it != tables.end(); ++it) {
+    for (const auto& it : tables) {
         xml::Element* e = root->addElement(u"table");
-        e->setEnumAttribute(*TableTypeEnum::Instance(), u"type", it->second.table_type);
-        e->setIntAttribute(u"PID", it->second.table_type_PID, true);
-        e->setIntAttribute(u"version_number", it->second.table_type_version_number);
-        e->setIntAttribute(u"number_bytes", it->second.number_bytes);
-        it->second.descs.toXML(duck, e);
+        e->setEnumAttribute(*TableTypeEnum::Instance(), u"type", it.second.table_type);
+        e->setIntAttribute(u"PID", it.second.table_type_PID, true);
+        e->setIntAttribute(u"version_number", it.second.table_type_version_number);
+        e->setIntAttribute(u"number_bytes", it.second.number_bytes);
+        it.second.descs.toXML(duck, e);
     }
 }
 

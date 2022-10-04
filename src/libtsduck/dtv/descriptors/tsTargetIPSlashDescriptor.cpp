@@ -78,9 +78,9 @@ ts::TargetIPSlashDescriptor::Address::Address(const IPv4Address& addr, uint8_t m
 
 void ts::TargetIPSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = addresses.begin(); it != addresses.end(); ++it) {
-        buf.putUInt32(it->IPv4_addr.address());
-        buf.putUInt8(it->IPv4_slash_mask);
+    for (const auto& it : addresses) {
+        buf.putUInt32(it.IPv4_addr.address());
+        buf.putUInt8(it.IPv4_slash_mask);
     }
 }
 
@@ -119,10 +119,10 @@ void ts::TargetIPSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 
 void ts::TargetIPSlashDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = addresses.begin(); it != addresses.end(); ++it) {
+    for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPAttribute(u"IPv4_addr", it->IPv4_addr);
-        e->setIntAttribute(u"IPv4_slash_mask", it->IPv4_slash_mask);
+        e->setIPAttribute(u"IPv4_addr", it.IPv4_addr);
+        e->setIntAttribute(u"IPv4_slash_mask", it.IPv4_slash_mask);
     }
 }
 

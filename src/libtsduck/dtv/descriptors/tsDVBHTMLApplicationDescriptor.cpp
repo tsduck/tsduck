@@ -75,8 +75,8 @@ ts::DVBHTMLApplicationDescriptor::DVBHTMLApplicationDescriptor(DuckContext& duck
 void ts::DVBHTMLApplicationDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.pushWriteSequenceWithLeadingLength(8); // appid_set_length
-    for (size_t i = 0; i < application_ids.size(); ++i) {
-        buf.putUInt16(application_ids[i]);
+    for (auto it : application_ids) {
+        buf.putUInt16(it);
     }
     buf.popState(); // update appid_set_length
     buf.putString(parameter);
@@ -120,8 +120,8 @@ void ts::DVBHTMLApplicationDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 void ts::DVBHTMLApplicationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setAttribute(u"parameter", parameter);
-    for (auto it = application_ids.begin(); it != application_ids.end(); ++it) {
-        root->addElement(u"application")->setIntAttribute(u"id", *it, true);
+    for (auto it : application_ids) {
+        root->addElement(u"application")->setIntAttribute(u"id", it, true);
     }
 }
 

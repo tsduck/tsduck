@@ -81,12 +81,12 @@ void ts::ATSCTimeShiftedServiceDescriptor::serializePayload(PSIBuffer& buf) cons
 {
     buf.putBits(0xFF, 3);
     buf.putBits(entries.size(), 5);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         buf.putBits(0xFF, 6);
-        buf.putBits(it->time_shift, 10);
+        buf.putBits(it.time_shift, 10);
         buf.putBits(0xFF, 4);
-        buf.putBits(it->major_channel_number, 10);
-        buf.putBits(it->minor_channel_number, 10);
+        buf.putBits(it.major_channel_number, 10);
+        buf.putBits(it.minor_channel_number, 10);
     }
 }
 

@@ -77,48 +77,48 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc) co
     patch->getAttributes(attr);
 
     // Check if all attributes in doc element match the specific attributes in the patch element.
-    for (auto it = attr.begin(); it != attr.end(); ++it) {
+    for (const auto& it : attr) {
         // Ignore attributes starting with the special prefix.
-        if (!it->first.startWith(X_ATTR, CASE_INSENSITIVE) && !doc->hasAttribute(it->first, it->second)) {
+        if (!it.first.startWith(X_ATTR, CASE_INSENSITIVE) && !doc->hasAttribute(it.first, it.second)) {
             // No, the doc node does not meet the patch requirements.
             return true;
         }
     }
 
     // Now process all attribute modifications on the node attributes.
-    for (auto it = attr.begin(); it != attr.end(); ++it) {
-        if (it->first.startWith(X_ADD_PREFIX, CASE_INSENSITIVE)) {
+    for (auto it : attr) {
+        if (it.first.startWith(X_ADD_PREFIX, CASE_INSENSITIVE)) {
             // Add or replace an attribute.
-            UString name(it->first);
+            UString name(it.first);
             name.removePrefix(X_ADD_PREFIX, CASE_INSENSITIVE);
             if (!name.empty()) {
-                doc->setAttribute(name, it->second);
+                doc->setAttribute(name, it.second);
             }
         }
-        else if (it->first.startWith(X_DELETE_PREFIX, CASE_INSENSITIVE)) {
+        else if (it.first.startWith(X_DELETE_PREFIX, CASE_INSENSITIVE)) {
             // Delete an attribute.
-            UString name(it->first);
+            UString name(it.first);
             name.removePrefix(X_DELETE_PREFIX, CASE_INSENSITIVE);
             if (!name.empty()) {
                 doc->deleteAttribute(name);
             }
         }
-        else if (it->first.startWith(X_UPDATE_PREFIX, CASE_INSENSITIVE)) {
+        else if (it.first.startWith(X_UPDATE_PREFIX, CASE_INSENSITIVE)) {
             // Update an exiting attribute.
-            UString name(it->first);
+            UString name(it.first);
             name.removePrefix(X_UPDATE_PREFIX, CASE_INSENSITIVE);
             if (!name.empty() && doc->hasAttribute(name)) {
-                doc->setAttribute(name, it->second);
+                doc->setAttribute(name, it.second);
             }
         }
-        else if (it->first.similar(X_NODE_ATTR) && it->second.similar(u"delete")) {
+        else if (it.first.similar(X_NODE_ATTR) && it.second.similar(u"delete")) {
             // Remove this node from parent.
             // Deallocating the element call its destructor which removes it from parent.
             delete doc;
             return false;
         }
-        else if (it->first.startWith(X_ATTR, CASE_INSENSITIVE)) {
-            report().error(u"invalid special attribute '%s' in <%s>, line %d", {it->first, patch->name(), patch->lineNumber()});
+        else if (it.first.startWith(X_ATTR, CASE_INSENSITIVE)) {
+            report().error(u"invalid special attribute '%s' in <%s>, line %d", {it.first, patch->name(), patch->lineNumber()});
         }
     }
 
@@ -170,9 +170,9 @@ void ts::xml::PatchDocument::cleanupAttributes(Element* e) const
     e->getAttributesNames(attrNames);
 
     // Remove all attributes starting with the special prefix.
-    for (auto it = attrNames.begin(); it != attrNames.end(); ++it) {
-        if (it->startWith(X_ATTR, CASE_INSENSITIVE)) {
-            e->deleteAttribute(*it);
+    for (const auto& it : attrNames) {
+        if (it.startWith(X_ATTR, CASE_INSENSITIVE)) {
+            e->deleteAttribute(it);
         }
     }
 

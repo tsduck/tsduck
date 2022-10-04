@@ -435,20 +435,20 @@ bool ts::FilterPlugin::getOptions()
     _ranges.clear();
     UStringVector intervals;
     getValues(intervals, u"interval");
-    for (auto it = intervals.begin(); it != intervals.end(); ++it) {
+    for (const auto& it : intervals) {
         PacketCounter first = 0;
         PacketCounter second = 0;
-        if (it->scan(u"%d-%d", {&first, &second})) {
+        if (it.scan(u"%d-%d", {&first, &second})) {
             _ranges.push_back(std::make_pair(first, second));
         }
-        else if (it->scan(u"%d-", {&first})) {
+        else if (it.scan(u"%d-", {&first})) {
             _ranges.push_back(std::make_pair(first, std::numeric_limits<PacketCounter>::max()));
         }
-        else if (it->scan(u"%d", {&first})) {
+        else if (it.scan(u"%d", {&first})) {
             _ranges.push_back(std::make_pair(first, first));
         }
         else {
-            tsp->error(u"invalid packet range %s", {*it});
+            tsp->error(u"invalid packet range %s", {it});
             return false;
         }
     }
@@ -635,8 +635,8 @@ void ts::FilterPlugin::handleService(uint16_t ts_id, const Service& service, con
     tsp->debug(u"handling updated services, TS id: 0x%X (%<d), service: 0x%X (%<d), \"%s\"", {ts_id, service.getId(), service_name});
 
     // If the service is filtered by name from the command line, add its service id in the filters.
-    for (auto name = _service_names.begin(); name != _service_names.end(); ++name) {
-        if (service.hasId() && name->similar(service_name)) {
+    for (const auto& name : _service_names) {
+        if (service.hasId() && name.similar(service_name)) {
             _all_service_ids.insert(service.getId());
             break;
         }

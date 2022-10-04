@@ -86,10 +86,10 @@ void ts::SIParameterDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(parameter_version);
     buf.putMJD(update_time, 2);  // 2 bytes: date only
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt8(it->table_id);
-        buf.putUInt8(uint8_t(it->table_description.size()));
-        buf.putBytes(it->table_description);
+    for (const auto& it : entries) {
+        buf.putUInt8(it.table_id);
+        buf.putUInt8(uint8_t(it.table_description.size()));
+        buf.putBytes(it.table_description);
     }
 }
 
@@ -137,11 +137,11 @@ void ts::SIParameterDescriptor::buildXML(DuckContext& duck, xml::Element* root) 
 {
     root->setIntAttribute(u"parameter_version", parameter_version, true);
     root->setDateAttribute(u"update_time", update_time);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"table");
-        e->setIntAttribute(u"id", it->table_id, true);
-        if (!it->table_description.empty()) {
-            e->addHexaText(it->table_description);
+        e->setIntAttribute(u"id", it.table_id, true);
+        if (!it.table_description.empty()) {
+            e->addHexaText(it.table_description);
         }
     }
 }

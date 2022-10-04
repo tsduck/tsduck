@@ -318,11 +318,11 @@ bool ts::StatsPlugin::produceReport()
     }
 
     // Loop on all categories.
-    for (auto it = _ctx_map.begin(); it != _ctx_map.end(); ++it) {
+    for (const auto& it : _ctx_map) {
 
         // PID context.
-        const size_t index = it->first;
-        const Context& ctx(*(it->second));
+        const size_t index = it.first;
+        const Context& ctx(*(it.second));
 
         if (_log) {
             tsp->info(u"%s: 0x%X  Total: %8'd  IPD min: %3d  max: %5d  mean: %s  std-dev: %s",

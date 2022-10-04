@@ -111,8 +111,8 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
             else if (pds == PDS_BSKYB && tag == DID_LOGICAL_CHANNEL_SKY) {
                 SkyLogicalChannelNumberDescriptor desc(_duck, *ptr);
                 if (desc.isValid()) {
-                    for (auto it = desc.entries.begin(); it != desc.entries.end(); ++it) {
-                        addLCN(it->lcn, it->service_id, ts_id, onet_id);
+                    for (const auto& it : desc.entries) {
+                        addLCN(it.lcn, it.service_id, ts_id, onet_id);
                         count++;
                     }
                 }
@@ -120,8 +120,8 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
             else if (pds == PDS_EUTELSAT && tag == DID_EUTELSAT_CHAN_NUM) {
                 EutelsatChannelNumberDescriptor desc(_duck, *ptr);
                 if (desc.isValid()) {
-                    for (auto it = desc.entries.begin(); it != desc.entries.end(); ++it) {
-                        addLCN(it->ecn, it->service_id, it->ts_id, it->onetw_id);
+                    for (const auto& it : desc.entries) {
+                        addLCN(it.ecn, it.service_id, it.ts_id, it.onetw_id);
                         count++;
                     }
                 }
@@ -129,8 +129,8 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
             else if (pds == PDS_NORDIG && tag == DID_NORDIG_CHAN_NUM_V1) {
                 NorDigLogicalChannelDescriptorV1 desc(_duck, *ptr);
                 if (desc.isValid()) {
-                    for (auto it = desc.entries.begin(); it != desc.entries.end(); ++it) {
-                        addLCN(it->lcn, it->service_id, ts_id, onet_id);
+                    for (const auto& it : desc.entries) {
+                        addLCN(it.lcn, it.service_id, ts_id, onet_id);
                         count++;
                     }
                 }
@@ -138,9 +138,9 @@ size_t ts::LogicalChannelNumbers::addFromDescriptors(const DescriptorList& descs
             else if (pds == PDS_NORDIG && tag == DID_NORDIG_CHAN_NUM_V2) {
                 NorDigLogicalChannelDescriptorV2 desc(_duck, *ptr);
                 if (desc.isValid()) {
-                    for (auto it1 = desc.entries.begin(); it1 != desc.entries.end(); ++it1) {
-                        for (auto it2 = it1->services.begin(); it2 != it1->services.end(); ++it2) {
-                            addLCN(it2->lcn, it2->service_id, ts_id, onet_id);
+                    for (const auto& it1 : desc.entries) {
+                        for (const auto& it2 : it1.services) {
+                            addLCN(it2.lcn, it2.service_id, ts_id, onet_id);
                             count++;
                         }
                     }
@@ -160,8 +160,8 @@ size_t ts::LogicalChannelNumbers::addFromAbstractLCN(const AbstractLogicalChanne
 {
     size_t count = 0;
     if (desc.isValid()) {
-        for (auto it = desc.entries.begin(); it != desc.entries.end(); ++it) {
-            addLCN(it->lcn, it->service_id, ts_id, onet_id);
+        for (const auto& it : desc.entries) {
+            addLCN(it.lcn, it.service_id, ts_id, onet_id);
             count++;
         }
     }
@@ -177,11 +177,11 @@ size_t ts::LogicalChannelNumbers::addFromNIT(const NIT& nit, uint16_t ts_id, uin
 {
     size_t count = 0;
     if (nit.isValid()) {
-        for (auto it = nit.transports.begin(); it != nit.transports.end(); ++it) {
-            if ((ts_id == 0xFFFF || it->first.transport_stream_id == 0xFFFF || ts_id == it->first.transport_stream_id) &&
-                (onet_id == 0xFFFF || it->first.original_network_id == 0xFFFF || onet_id == it->first.original_network_id))
+        for (const auto& it : nit.transports) {
+            if ((ts_id == 0xFFFF || it.first.transport_stream_id == 0xFFFF || ts_id == it.first.transport_stream_id) &&
+                (onet_id == 0xFFFF || it.first.original_network_id == 0xFFFF || onet_id == it.first.original_network_id))
             {
-                count += addFromDescriptors(it->second.descs, it->first.transport_stream_id, it->first.original_network_id);
+                count += addFromDescriptors(it.second.descs, it.first.transport_stream_id, it.first.original_network_id);
             }
         }
     }
@@ -225,11 +225,11 @@ uint16_t ts::LogicalChannelNumbers::getLCN(uint16_t srv_id, uint16_t ts_id, uint
 void ts::LogicalChannelNumbers::getLCNs(std::map<uint16_t,ServiceIdTriplet>& lcns, uint16_t ts_id, uint16_t onet_id) const
 {
     lcns.clear();
-    for (auto it = _lcn_map.begin(); it != _lcn_map.end(); ++it) {
-        if ((ts_id == 0xFFFF || it->second.ts_id == 0xFFFF || ts_id == it->second.ts_id) &&
-            (onet_id == 0xFFFF || it->second.onet_id == 0xFFFF || onet_id == it->second.onet_id))
+    for (auto it : _lcn_map) {
+        if ((ts_id == 0xFFFF || it.second.ts_id == 0xFFFF || ts_id == it.second.ts_id) &&
+            (onet_id == 0xFFFF || it.second.onet_id == 0xFFFF || onet_id == it.second.onet_id))
         {
-            lcns.insert(std::make_pair(it->second.lcn, ServiceIdTriplet(it->first, it->second.ts_id, it->second.onet_id)));
+            lcns.insert(std::make_pair(it.second.lcn, ServiceIdTriplet(it.first, it.second.ts_id, it.second.onet_id)));
         }
     }
 }
@@ -270,15 +270,15 @@ size_t ts::LogicalChannelNumbers::updateServices(ServiceList& srv_list, bool rep
         bool found = false;
 
         // Loop on all services and update matching ones.
-        for (auto srv_it = srv_list.begin(); srv_it != srv_list.end(); ++srv_it) {
+        for (auto& srv_it : srv_list) {
             // Check if this service match the current LCN (onet id must match or be unspecified).
-            if (srv_it->hasId(lcn_it->first) &&
-                srv_it->hasTSId(lcn_it->second.ts_id) &&
-                (lcn_it->second.onet_id == 0xFFFF || !srv_it->hasONId() || srv_it->hasONId(lcn_it->second.onet_id)))
+            if (srv_it.hasId(lcn_it->first) &&
+                srv_it.hasTSId(lcn_it->second.ts_id) &&
+                (lcn_it->second.onet_id == 0xFFFF || !srv_it.hasONId() || srv_it.hasONId(lcn_it->second.onet_id)))
             {
                 found = true;
-                if (!srv_it->hasLCN(lcn_it->second.lcn)) {
-                    srv_it->setLCN(lcn_it->second.lcn);
+                if (!srv_it.hasLCN(lcn_it->second.lcn)) {
+                    srv_it.setLCN(lcn_it->second.lcn);
                     ++count;
                 }
             }
@@ -295,13 +295,13 @@ size_t ts::LogicalChannelNumbers::updateServices(ServiceList& srv_list, bool rep
 
     // Add remaining LCN's in the list of services.
     if (add) {
-        for (auto lcn_it = lcns.begin(); lcn_it != lcns.end(); ++lcn_it) {
+        for (const auto& lcn_it : lcns) {
             auto srv = srv_list.emplace(srv_list.end());
-            srv->setId(lcn_it->first);
-            srv->setLCN(lcn_it->second.lcn);
-            srv->setTSId(lcn_it->second.ts_id);
-            if (lcn_it->second.onet_id != 0xFFFF) {
-                srv->setONId(lcn_it->second.onet_id);
+            srv->setId(lcn_it.first);
+            srv->setLCN(lcn_it.second.lcn);
+            srv->setTSId(lcn_it.second.ts_id);
+            if (lcn_it.second.onet_id != 0xFFFF) {
+                srv->setONId(lcn_it.second.onet_id);
             }
             ++count;
         }

@@ -104,9 +104,9 @@ void ts::HEVCHierarchyExtensionDescriptor::serializePayload(PSIBuffer& buf) cons
     buf.putBits(hierarchy_ext_embedded_layer_index.size(), 6);
     buf.putBits(0xFF, 2);
     buf.putBits(hierarchy_channel, 6);
-    for (auto it = hierarchy_ext_embedded_layer_index.begin(); it != hierarchy_ext_embedded_layer_index.end(); ++it) {
+    for (const auto& it : hierarchy_ext_embedded_layer_index) {
         buf.putBits(0xFF, 2);
-        buf.putBits(*it, 6);
+        buf.putBits(it, 6);
     }
 }
 
@@ -171,8 +171,8 @@ void ts::HEVCHierarchyExtensionDescriptor::buildXML(DuckContext& duck, xml::Elem
     root->setIntAttribute(u"nuh_layer_id", nuh_layer_id, true);
     root->setBoolAttribute(u"tref_present", tref_present);
     root->setIntAttribute(u"hierarchy_channel", hierarchy_channel, true);
-    for (auto it = hierarchy_ext_embedded_layer_index.begin(); it != hierarchy_ext_embedded_layer_index.end(); ++it) {
-        root->addElement(u"embedded_layer")->setIntAttribute(u"hierarchy_layer_index", *it, true);
+    for (const auto& it : hierarchy_ext_embedded_layer_index) {
+        root->addElement(u"embedded_layer")->setIntAttribute(u"hierarchy_layer_index", it, true);
     }
 }
 
@@ -188,9 +188,9 @@ bool ts::HEVCHierarchyExtensionDescriptor::analyzeXML(DuckContext& duck, const x
         element->getIntAttribute(hierarchy_channel, u"hierarchy_channel", true, 0, 0, 0x3F) &&
         element->getChildren(xlayer, u"embedded_layer", 0, 0x3F);
 
-    for (auto it = xlayer.begin(); it != xlayer.end(); ++it) {
+    for (auto it : xlayer) {
         uint8_t id = 0;
-        ok = (*it)->getIntAttribute(id, u"hierarchy_layer_index", true, 0, 0, 0x3F);
+        ok = it->getIntAttribute(id, u"hierarchy_layer_index", true, 0, 0, 0x3F);
         hierarchy_ext_embedded_layer_index.push_back(id);
     }
     return ok;

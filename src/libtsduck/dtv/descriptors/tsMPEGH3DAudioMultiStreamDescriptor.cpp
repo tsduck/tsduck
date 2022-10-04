@@ -106,15 +106,15 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::serializePayload(PSIBuffer& buf) con
         buf.putBits(num_auxiliary_streams, 7);
         buf.putBit(1);
         buf.putBits(mae_groups.size(), 7);
-        for (auto it = mae_groups.begin(); it != mae_groups.end(); ++it) {
-            buf.putBits(it->mae_group_id, 7);
-            buf.putBit(it->is_in_main_stream);
+        for (const auto& it : mae_groups) {
+            buf.putBits(it.mae_group_id, 7);
+            buf.putBit(it.is_in_main_stream);
             // Warning [1]: ISO/IEC 13818-1 says "if (thisIsMainStream == '0') {".
             // But this is meaningless since we are already in a branch where thisIsMainStream is always '1'.
             // Given the semantics of the following two fields, this is more likely "if (isInMainStream == '0')".
-            if (!it->is_in_main_stream) {
-                buf.putBit(it->is_in_ts);
-                buf.putBits(it->auxiliary_stream_id, 7);
+            if (!it.is_in_main_stream) {
+                buf.putBit(it.is_in_ts);
+                buf.putBits(it.auxiliary_stream_id, 7);
             }
         }
     }
@@ -193,14 +193,14 @@ void ts::MPEGH3DAudioMultiStreamDescriptor::buildXML(DuckContext& duck, xml::Ele
     root->setIntAttribute(u"this_stream_id", this_stream_id, true);
     if (this_is_main_stream) {
         root->setIntAttribute(u"num_auxiliary_streams", num_auxiliary_streams, false);
-        for (auto it = mae_groups.begin(); it != mae_groups.end(); ++it) {
+        for (const auto& it : mae_groups) {
             xml::Element* e = root->addElement(u"mae_group");
-            e->setIntAttribute(u"mae_group_id", it->mae_group_id, true);
-            e->setBoolAttribute(u"is_in_main_stream", it->is_in_main_stream);
+            e->setIntAttribute(u"mae_group_id", it.mae_group_id, true);
+            e->setBoolAttribute(u"is_in_main_stream", it.is_in_main_stream);
             // See warning [1] above.
-            if (!it->is_in_main_stream) {
-                e->setBoolAttribute(u"is_in_ts", it->is_in_ts);
-                e->setIntAttribute(u"auxiliary_stream_id", it->auxiliary_stream_id, true);
+            if (!it.is_in_main_stream) {
+                e->setBoolAttribute(u"is_in_ts", it.is_in_ts);
+                e->setIntAttribute(u"auxiliary_stream_id", it.auxiliary_stream_id, true);
             }
         }
     }
@@ -222,13 +222,13 @@ bool ts::MPEGH3DAudioMultiStreamDescriptor::analyzeXML(DuckContext& duck, const 
         element->getChildren(xgroup, u"mae_group", 0, this_is_main_stream ? 127 : 0) &&
         element->getHexaTextChild(reserved, u"reserved", false, 0, 255);
 
-    for (auto it = xgroup.begin(); it != xgroup.end(); ++it) {
+    for (auto it : xgroup) {
         Group gr;
-        ok = (*it)->getIntAttribute(gr.mae_group_id, u"mae_group_id", true, 0, 0, 0x7F) &&
-             (*it)->getBoolAttribute(gr.is_in_main_stream, u"is_in_main_stream", true) &&
+        ok = it->getIntAttribute(gr.mae_group_id, u"mae_group_id", true, 0, 0, 0x7F) &&
+             it->getBoolAttribute(gr.is_in_main_stream, u"is_in_main_stream", true) &&
              // See warning [1] above.
-             (*it)->getBoolAttribute(gr.is_in_ts, u"is_in_ts", !gr.is_in_main_stream) &&
-             (*it)->getIntAttribute(gr.auxiliary_stream_id, u"auxiliary_stream_id", !gr.is_in_main_stream, 0, 0, 0x7F);
+             it->getBoolAttribute(gr.is_in_ts, u"is_in_ts", !gr.is_in_main_stream) &&
+             it->getIntAttribute(gr.auxiliary_stream_id, u"auxiliary_stream_id", !gr.is_in_main_stream, 0, 0, 0x7F);
         mae_groups.push_back(gr);
     }
     return ok;

@@ -514,28 +514,28 @@ void ts::ARIBCharsetCodeGenerator::generateFile(std::ostream& out)
     uint32_t single_slices = 0;   // Number of single-character slices.
 
     // Generate all slices in increasing order of base code point.
-    for (auto it = _slices.begin(); it != _slices.end(); ++it) {
+    for (const auto& it : _slices) {
 
         // The 32-bit encoded entry is made of 5 fields.
         const uint32_t entry =
-            (it->second.byte2 ? 0x80000000 : 0x00000000) |
-            (uint32_t(it->second.selector) << 24) |
-            (uint32_t(it->second.row) << 16) |
-            (uint32_t(it->second.index) << 8) |
-            uint32_t(it->second.count);
+            (it.second.byte2 ? 0x80000000 : 0x00000000) |
+            (uint32_t(it.second.selector) << 24) |
+            (uint32_t(it.second.row) << 16) |
+            (uint32_t(it.second.index) << 8) |
+            uint32_t(it.second.count);
 
         if (count++ % entries_per_line == 0) {
             out << "   ";
         }
-        out << UString::Format(u" {0x%X, 0x%X},", {it->first, entry});
+        out << UString::Format(u" {0x%X, 0x%X},", {it.first, entry});
         if (count % entries_per_line == 0) {
             out << std::endl;
         }
 
         // Keep statistics on slice sizes.
-        char_total += it->second.count;
-        max_slice_size = std::max<uint32_t>(max_slice_size, it->second.count);
-        if (it->second.count == 1) {
+        char_total += it.second.count;
+        max_slice_size = std::max<uint32_t>(max_slice_size, it.second.count);
+        if (it.second.count == 1) {
             single_slices++;
         }
     }
@@ -565,8 +565,8 @@ int MainCode(int argc, char *argv[])
     // List of character sets names.
     if (opt.list) {
         const ts::UStringList names(ts::Charset::GetAllNames());
-        for (auto it = names.begin(); it != names.end(); ++it) {
-            std::cout << *it << std::endl;
+        for (const auto& it : names) {
+            std::cout << it << std::endl;
         }
     }
 

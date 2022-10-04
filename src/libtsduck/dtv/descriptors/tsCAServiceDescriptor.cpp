@@ -82,8 +82,8 @@ void ts::CAServiceDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt16(CA_system_id);
     buf.putUInt8(ca_broadcaster_group_id);
     buf.putUInt8(message_control);
-    for (auto it = service_ids.begin(); it != service_ids.end(); ++it) {
-        buf.putUInt16(*it);
+    for (auto it : service_ids) {
+        buf.putUInt16(it);
     }
 }
 
@@ -129,8 +129,8 @@ void ts::CAServiceDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
     root->setIntAttribute(u"ca_broadcaster_group_id", ca_broadcaster_group_id, true);
     root->setIntAttribute(u"message_control", message_control);
-    for (auto it = service_ids.begin(); it != service_ids.end(); ++it) {
-        root->addElement(u"service")->setIntAttribute(u"id", *it, true);
+    for (auto it : service_ids) {
+        root->addElement(u"service")->setIntAttribute(u"id", it, true);
     }
 }
 

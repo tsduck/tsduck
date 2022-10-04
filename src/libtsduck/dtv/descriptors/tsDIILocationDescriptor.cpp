@@ -82,10 +82,10 @@ ts::DIILocationDescriptor::Entry::Entry(uint16_t id, uint16_t tag) :
 void ts::DIILocationDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(transport_protocol_label);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         buf.putBit(1);
-        buf.putBits(it->DII_identification, 15);
-        buf.putUInt16(it->association_tag);
+        buf.putBits(it.DII_identification, 15);
+        buf.putUInt16(it.association_tag);
     }
 }
 
@@ -131,10 +131,10 @@ void ts::DIILocationDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
 void ts::DIILocationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"transport_protocol_label", transport_protocol_label, true);
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"module");
-        e->setIntAttribute(u"DII_identification", it->DII_identification, true);
-        e->setIntAttribute(u"association_tag", it->association_tag, true);
+        e->setIntAttribute(u"DII_identification", it.DII_identification, true);
+        e->setIntAttribute(u"association_tag", it.association_tag, true);
     }
 }
 

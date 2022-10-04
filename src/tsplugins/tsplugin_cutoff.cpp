@@ -121,8 +121,8 @@ bool ts::CutoffPlugin::getOptions()
     UStringVector remotes;
     getValues(remotes, u"allow");
     _allowedRemote.clear();
-    for (auto it = remotes.begin(); it != remotes.end(); ++it) {
-        const IPv4Address addr(*it, *tsp);
+    for (const auto& it : remotes) {
+        const IPv4Address addr(it, *tsp);
         if (addr.hasAddress()) {
             _allowedRemote.insert(addr);
         }

@@ -94,9 +94,9 @@ void ts::ExtendedBroadcasterDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBits(affiliation_ids.size(), 4);
         buf.putBits(broadcasters.size(), 4);
         buf.putBytes(affiliation_ids);
-        for (auto it = broadcasters.begin(); it != broadcasters.end(); ++ it) {
-            buf.putUInt16(it->original_network_id);
-            buf.putUInt8(it->broadcaster_id);
+        for (const auto& it : broadcasters) {
+            buf.putUInt16(it.original_network_id);
+            buf.putUInt8(it.broadcaster_id);
         }
     }
     buf.putBytes(private_data);
@@ -169,13 +169,13 @@ void ts::ExtendedBroadcasterDescriptor::buildXML(DuckContext& duck, xml::Element
     root->setIntAttribute(u"broadcaster_type", broadcaster_type, true);
     if (broadcaster_type == 0x01 || broadcaster_type == 0x02) {
         root->setIntAttribute(u"terrestrial_broadcaster_id", terrestrial_broadcaster_id, true);
-        for (auto it = affiliation_ids.begin(); it != affiliation_ids.end(); ++it) {
-            root->addElement(u"affiliation")->setIntAttribute(u"id", *it, true);
+        for (const auto& it : affiliation_ids) {
+            root->addElement(u"affiliation")->setIntAttribute(u"id", it, true);
         }
-        for (auto it = broadcasters.begin(); it != broadcasters.end(); ++it) {
+        for (const auto& it : broadcasters) {
             xml::Element* e = root->addElement(u"broadcaster");
-            e->setIntAttribute(u"original_network_id", it->original_network_id, true);
-            e->setIntAttribute(u"broadcaster_id", it->broadcaster_id, true);
+            e->setIntAttribute(u"original_network_id", it.original_network_id, true);
+            e->setIntAttribute(u"broadcaster_id", it.broadcaster_id, true);
         }
     }
     root->addHexaTextChild(u"private_data", private_data, true);

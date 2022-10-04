@@ -349,8 +349,8 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
             // Got a PAT, add all PMT PID's to section demux.
             const PAT pat(_duck, table);
             if (pat.isValid()) {
-                for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _section_demux.addPID(it->second);
+                for (const auto& it : pat.pmts) {
+                    _section_demux.addPID(it.second);
                 }
             }
             break;
@@ -359,9 +359,9 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
             // Got a PMT, collect all stream types.
             const PMT pmt(_duck, table);
             if (pmt.isValid()) {
-                for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    _pid_types[it->first].stream_type = it->second.stream_type;
-                    _pid_types[it->first].default_codec = it->second.getCodec(_duck);
+                for (const auto& it : pmt.streams) {
+                    _pid_types[it.first].stream_type = it.second.stream_type;
+                    _pid_types[it.first].default_codec = it.second.getCodec(_duck);
                 }
             }
             break;

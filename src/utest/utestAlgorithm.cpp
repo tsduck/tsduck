@@ -87,11 +87,10 @@ namespace {
     std::ostream& operator<< (std::ostream& strm, const IdSet& s)
     {
         strm << "{";
-        for (auto it = s.begin(); it != s.end(); ++it) {
-            if (it != s.begin()) {
-                strm << ", ";
-            }
-            strm << *it;
+        bool first = true;
+        for (auto it : s) {
+            strm << (first ? "" : ", ") << it;
+            first = false;
         }
         return strm << "}";
     }

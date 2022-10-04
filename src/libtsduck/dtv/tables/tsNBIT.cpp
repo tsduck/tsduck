@@ -138,8 +138,8 @@ void ts::NBIT::deserializePayload(PSIBuffer& buf, const Section& section)
 void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 {
     // The section payload directly starts with the list of information sets.
-    for (auto it = informations.begin(); it != informations.end(); ++it) {
-        const Information& info(it->second);
+    for (const auto& it : informations) {
+        const Information& info(it.second);
 
         // Binary size of this entry.
         const size_t entry_size = 5 + 2 * info.key_ids.size() + 2 + info.descs.binarySize();
@@ -159,7 +159,7 @@ void ts::NBIT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         size_t key_count = std::min<size_t>(255, info.key_ids.size());
 
         for (size_t start_index = 0; ; ) {
-            buf.putUInt16(it->first); // information_id
+            buf.putUInt16(it.first); // information_id
             buf.putBits(info.information_type, 4);
             buf.putBits(info.description_body_location, 2);
             buf.putBits(0xFF, 2);
@@ -223,18 +223,18 @@ void ts::NBIT::buildXML(DuckContext& duck, xml::Element* root) const
     root->setIntAttribute(u"original_network_id", original_network_id, true);
     root->setBoolAttribute(u"body", isBody());
 
-    for (auto it = informations.begin(); it != informations.end(); ++it) {
+    for (const auto& it : informations) {
         xml::Element* e = root->addElement(u"information");
-        e->setIntAttribute(u"information_id", it->first, true);
-        e->setIntAttribute(u"information_type", it->second.information_type, true);
-        e->setIntAttribute(u"description_body_location", it->second.description_body_location, true);
-        if (it->second.user_defined != 0xFF) {
-            e->setIntAttribute(u"user_defined", it->second.user_defined, true);
+        e->setIntAttribute(u"information_id", it.first, true);
+        e->setIntAttribute(u"information_type", it.second.information_type, true);
+        e->setIntAttribute(u"description_body_location", it.second.description_body_location, true);
+        if (it.second.user_defined != 0xFF) {
+            e->setIntAttribute(u"user_defined", it.second.user_defined, true);
         }
-        for (size_t i = 0; i < it->second.key_ids.size(); ++i) {
-            e->addElement(u"key")->setIntAttribute(u"id", it->second.key_ids[i], true);
+        for (size_t i = 0; i < it.second.key_ids.size(); ++i) {
+            e->addElement(u"key")->setIntAttribute(u"id", it.second.key_ids[i], true);
         }
-        it->second.descs.toXML(duck, e);
+        it.second.descs.toXML(duck, e);
     }
 }
 

@@ -82,9 +82,9 @@ ts::DVBCharTableSingleByte::DVBCharTableSingleByte(const UChar* name, uint32_t t
     }
 
     // Combining diacritical marks which precede their base letter (and must be reversed from Unicode).
-    for (auto it = revDiac.begin(); it != revDiac.end(); ++it) {
-        if (*it >= 0xA0) {
-            _reversedDiacritical.set(*it - 0xA0);
+    for (auto it : revDiac) {
+        if (it >= 0xA0) {
+            _reversedDiacritical.set(it - 0xA0);
         }
     }
 }

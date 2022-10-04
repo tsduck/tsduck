@@ -349,17 +349,17 @@ void ts::TSRenamePlugin::processSDT(SDT& sdt)
 void ts::TSRenamePlugin::processNITBAT(AbstractTransportListTable& table, bool add_entry)
 {
     // Locate the transport stream, ignore original network id
-    for (auto it = table.transports.begin(); it != table.transports.end(); ++it) {
-        if (it->first.transport_stream_id == _old_ts_id) {
+    for (const auto& it : table.transports) {
+        if (it.first.transport_stream_id == _old_ts_id) {
 
-            const TransportStreamId new_tsid(_set_ts_id ? _new_ts_id : it->first.transport_stream_id,
-                                             _set_onet_id ? _new_onet_id : it->first.original_network_id);
+            const TransportStreamId new_tsid(_set_ts_id ? _new_ts_id : it.first.transport_stream_id,
+                                             _set_onet_id ? _new_onet_id : it.first.original_network_id);
 
-            if (new_tsid != it->first) {
+            if (new_tsid != it.first) {
                 // Add a new TS entry
-                table.transports[new_tsid] = it->second;
+                table.transports[new_tsid] = it.second;
                 if (!add_entry) {
-                    table.transports.erase(it->first);
+                    table.transports.erase(it.first);
                 }
             }
 

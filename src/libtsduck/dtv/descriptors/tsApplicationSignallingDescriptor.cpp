@@ -84,11 +84,11 @@ ts::ApplicationSignallingDescriptor::Entry::Entry(uint16_t type, uint8_t version
 
 void ts::ApplicationSignallingDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         buf.putBit(1);
-        buf.putBits(it->application_type, 15);
+        buf.putBits(it.application_type, 15);
         buf.putBits(0xFF, 3);
-        buf.putBits(it->AIT_version_number, 5);
+        buf.putBits(it.AIT_version_number, 5);
     }
 }
 
@@ -131,10 +131,10 @@ void ts::ApplicationSignallingDescriptor::DisplayDescriptor(TablesDisplay& disp,
 
 void ts::ApplicationSignallingDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"application");
-        e->setIntAttribute(u"application_type", it->application_type, true);
-        e->setIntAttribute(u"AIT_version_number", it->AIT_version_number, true);
+        e->setIntAttribute(u"application_type", it.application_type, true);
+        e->setIntAttribute(u"AIT_version_number", it.AIT_version_number, true);
     }
 }
 

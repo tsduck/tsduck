@@ -126,11 +126,11 @@ ts::HFBand::ChannelsRangeList::const_iterator ts::HFBand::getRange(uint32_t chan
 ts::UString ts::HFBand::channelList() const
 {
     UString list;
-    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+    for (const auto& it : _channels) {
         if (!list.empty()) {
             list.append(u", ");
         }
-        list.format(u"%d-%d", {it->first_channel, it->last_channel});
+        list.format(u"%d-%d", {it.first_channel, it.last_channel});
     }
     return list;
 }
@@ -286,19 +286,19 @@ uint32_t ts::HFBand::ChannelsRange::channelNumber(uint64_t frequency) const
 bool ts::HFBand::inBand(uint64_t frequency, bool strict) const
 {
     // Loop on all ranges of channels.
-    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
+    for (const auto& it : _channels) {
         // If the frequency is in this range.
-        if (frequency >= it->lowestFrequency(strict) && frequency <= it->highestFrequency(strict)) {
+        if (frequency >= it.lowestFrequency(strict) && frequency <= it.highestFrequency(strict)) {
             if (strict) {
                 // Check all channels individually.
-                uint64_t freq = it->base_frequency;
-                for (int32_t off = it->first_offset; off <= it->last_offset; ++off) {
-                    if (frequency >= freq + int64_t(it->first_offset) * int64_t(it->offset_width) &&
-                        frequency <= freq + int64_t(it->last_offset) * int64_t(it->offset_width))
+                uint64_t freq = it.base_frequency;
+                for (int32_t off = it.first_offset; off <= it.last_offset; ++off) {
+                    if (frequency >= freq + int64_t(it.first_offset) * int64_t(it.offset_width) &&
+                        frequency <= freq + int64_t(it.last_offset) * int64_t(it.offset_width))
                     {
                         return true;
                     }
-                    freq += it->channel_width;
+                    freq += it.channel_width;
                 }
                 return false; // not in a strict channel
             }
@@ -313,9 +313,9 @@ bool ts::HFBand::inBand(uint64_t frequency, bool strict) const
 
 uint32_t ts::HFBand::channelNumber(uint64_t frequency) const
 {
-    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
-        if (frequency >= it->lowestFrequency(true) && frequency <= it->highestFrequency(true)) {
-            return it->channelNumber(frequency);
+    for (const auto& it : _channels) {
+        if (frequency >= it.lowestFrequency(true) && frequency <= it.highestFrequency(true)) {
+            return it.channelNumber(frequency);
         }
     }
     return 0; // not found
@@ -323,10 +323,10 @@ uint32_t ts::HFBand::channelNumber(uint64_t frequency) const
 
 int32_t ts::HFBand::offsetCount(uint64_t frequency) const
 {
-    for (auto it = _channels.begin(); it != _channels.end(); ++it) {
-        if (it->offset_width > 0 && frequency >= it->lowestFrequency(true) && frequency <= it->highestFrequency(true)) {
-            const int32_t off = int32_t(int64_t(frequency) - int64_t(it->frequency(it->channelNumber(frequency), 0)));
-            const int32_t count = (std::abs(off) + int32_t(it->offset_width / 2)) / int32_t(it->offset_width);
+    for (const auto& it : _channels) {
+        if (it.offset_width > 0 && frequency >= it.lowestFrequency(true) && frequency <= it.highestFrequency(true)) {
+            const int32_t off = int32_t(int64_t(frequency) - int64_t(it.frequency(it.channelNumber(frequency), 0)));
+            const int32_t count = (std::abs(off) + int32_t(it.offset_width / 2)) / int32_t(it.offset_width);
             return off < 0 ? -count : count;
         }
     }
@@ -380,9 +380,9 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
     HFBandPtr hf(new HFBand(band_type));
 
     // Build list of regions.
-    for (auto it = xregions.begin(); it != xregions.end(); ++it) {
+    for (const auto& it : xregions) {
         UString name;
-        if ((*it)->getAttribute(name, u"name", true)) {
+        if (it->getAttribute(name, u"name", true)) {
             hf->_regions.push_back(name);
         }
         else {
@@ -391,18 +391,18 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
     }
 
     // Build ranges of channels.
-    for (auto it = xchannels.begin(); it != xchannels.end(); ++it) {
+    for (const auto& it : xchannels) {
         ChannelsRange chan;
         const bool ok =
-            (*it)->getIntAttribute<uint32_t>(chan.first_channel, u"first_channel", true) &&
-            (*it)->getIntAttribute<uint32_t>(chan.last_channel, u"last_channel", true, 0, chan.first_channel) &&
-            (*it)->getIntAttribute<uint64_t>(chan.base_frequency, u"base_frequency", true) &&
-            (*it)->getIntAttribute<uint64_t>(chan.channel_width, u"channel_width", true) &&
-            (*it)->getIntAttribute<int32_t>(chan.first_offset, u"first_offset", false, 0) &&
-            (*it)->getIntAttribute<int32_t>(chan.last_offset, u"last_offset", false, 0, chan.first_offset) &&
-            (*it)->getIntAttribute<uint64_t>(chan.offset_width, u"offset_width", false, 0) &&
-            (*it)->getIntEnumAttribute<Polarization>(chan.even_polarity, PolarizationEnum, u"even_polarity", false, POL_NONE) &&
-            (*it)->getIntEnumAttribute<Polarization>(chan.odd_polarity, PolarizationEnum, u"odd_polarity", false, POL_NONE);
+            it->getIntAttribute<uint32_t>(chan.first_channel, u"first_channel", true) &&
+            it->getIntAttribute<uint32_t>(chan.last_channel, u"last_channel", true, 0, chan.first_channel) &&
+            it->getIntAttribute<uint64_t>(chan.base_frequency, u"base_frequency", true) &&
+            it->getIntAttribute<uint64_t>(chan.channel_width, u"channel_width", true) &&
+            it->getIntAttribute<int32_t>(chan.first_offset, u"first_offset", false, 0) &&
+            it->getIntAttribute<int32_t>(chan.last_offset, u"last_offset", false, 0, chan.first_offset) &&
+            it->getIntAttribute<uint64_t>(chan.offset_width, u"offset_width", false, 0) &&
+            it->getIntEnumAttribute<Polarization>(chan.even_polarity, PolarizationEnum, u"even_polarity", false, POL_NONE) &&
+            it->getIntEnumAttribute<Polarization>(chan.odd_polarity, PolarizationEnum, u"odd_polarity", false, POL_NONE);
         success = success && ok;
         if (ok) {
             // Insert the channels range in the list.
@@ -412,7 +412,7 @@ ts::HFBand::HFBandPtr ts::HFBand::FromXML(const xml::Element* elem)
                 ++next;
             }
             if (next != hf->_channels.end() && next->first_channel <= chan.last_channel) {
-                elem->report().error(u"overlapping channel numbers, line %s", {(*it)->lineNumber()});
+                elem->report().error(u"overlapping channel numbers, line %s", {it->lineNumber()});
                 success = false;
             }
             else {
@@ -537,8 +537,8 @@ bool ts::HFBand::HFBandRepository::load(Report& report)
     }
 
     // Build a sorted list of region names.
-    for (auto it = regionSet.begin(); it != regionSet.end(); ++it) {
-        _allRegions.push_back(*it);
+    for (const auto& it : regionSet) {
+        _allRegions.push_back(it);
     }
 
     return success;
@@ -603,9 +603,9 @@ const ts::UStringList ts::HFBand::HFBandRepository::allBands(const UString& regi
 
     // Browse through the list of bands/regions.
     UStringList bands;
-    for (auto it = _objects.begin(); it != _objects.end(); ++it) {
-        if (it->first.region == reg) {
-            bands.push_back(it->second->_band_name);
+    for (const auto& it : _objects) {
+        if (it.first.region == reg) {
+            bands.push_back(it.second->_band_name);
         }
     }
     bands.sort();

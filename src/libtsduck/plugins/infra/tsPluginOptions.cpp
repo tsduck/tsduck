@@ -67,9 +67,9 @@ ts::UString ts::PluginOptions::toString(PluginType type) const
             break;
     }
     str.append(name);
-    for (auto it = args.begin(); it != args.end(); ++it) {
+    for (const auto& it : args) {
         str.append(u" ");
-        str.append(it->toQuoted());
+        str.append(it.toQuoted());
     }
     return str;
 }

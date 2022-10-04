@@ -227,8 +227,8 @@ void ts::BasicLocalEventDescriptor::buildXML(DuckContext& duck, xml::Element* ro
     else {
         root->addHexaTextChild(u"reserved_data", reserved_data, true);
     }
-    for (auto it = component_tags.begin(); it != component_tags.end(); ++it) {
-        root->addElement(u"component")->setIntAttribute(u"tag", *it, true);
+    for (auto it : component_tags) {
+        root->addElement(u"component")->setIntAttribute(u"tag", it, true);
     }
 }
 

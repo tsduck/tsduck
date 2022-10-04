@@ -248,8 +248,8 @@ namespace {
 
         // In non-verbose mode, simply list the versions in the same order as returned by GitHub.
         if (!opt.verbose()) {
-            for (auto it = rels.begin(); it != rels.end(); ++it) {
-                std::cout << (*it)->version() << std::endl;
+            for (const auto& it : rels) {
+                std::cout << it->version() << std::endl;
             }
             return true;
         }
@@ -267,8 +267,8 @@ namespace {
         size_t downloadsWidth = downloadsHeader.width();
         size_t dlPerDayWidth = dlPerDayHeader.width();
 
-        for (auto it = rels.begin(); it != rels.end(); ++it) {
-            versionWidth = std::max(versionWidth, (*it)->version().width());
+        for (const auto& it : rels) {
+            versionWidth = std::max(versionWidth, it->version().width());
         }
 
         // List them all.
@@ -284,14 +284,14 @@ namespace {
                   << ts::UString(dlPerDayWidth, u'-') << std::endl;
 
         ts::Time endDate(ts::Time::CurrentUTC());
-        for (auto it = rels.begin(); it != rels.end(); ++it) {
+        for (const auto& it : rels) {
             ts::GitHubRelease::AssetList assets;
-            (*it)->getAssets(assets);
-            const ts::Time startDate((*it)->publishDate());
+            it->getAssets(assets);
+            const ts::Time startDate(it->publishDate());
             const int days = int((endDate - startDate) / ts::MilliSecPerDay);
-            const int downloads = (*it)->assetDownloadCount();
+            const int downloads = it->assetDownloadCount();
             const int dlPerDay = days <= 0 ? downloads : downloads / days;
-            std::cout << (*it)->version().toJustifiedLeft(versionWidth) << "  "
+            std::cout << it->version().toJustifiedLeft(versionWidth) << "  "
                       << startDate.format(ts::Time::DATE).toJustifiedLeft(dateWidth) << "  "
                       << ts::UString::Decimal(assets.size()).toJustifiedRight(binariesWidth) << "  "
                       << ts::UString::Decimal(downloads).toJustifiedRight(downloadsWidth) << "  "
@@ -335,21 +335,21 @@ namespace {
         else {
             std::cout << "Binary packages:" << std::endl;
             size_t applyCount = 0;
-            for (auto it = assets.begin(); it != assets.end();  ++it) {
-                if (ts::GitHubRelease::IsPlatformAsset(it->name)) {
+            for (const auto& it : assets) {
+                if (ts::GitHubRelease::IsPlatformAsset(it.name)) {
                     ++applyCount;
                 }
-                std::cout << "  " << it->name << " (" << ts::UString::HumanSize(it->size);
-                if (it->downloadCount > 0) {
-                    std::cout << ts::UString::Format(u", %'d downloads", {it->downloadCount});
+                std::cout << "  " << it.name << " (" << ts::UString::HumanSize(it.size);
+                if (it.downloadCount > 0) {
+                    std::cout << ts::UString::Format(u", %'d downloads", {it.downloadCount});
                 }
                 std::cout << ")" << std::endl;
             }
             if (applyCount > 0) {
                 std::cout << "Available downloads for your system:" << std::endl;
-                for (auto it = assets.begin(); it != assets.end();  ++it) {
-                    if (ts::GitHubRelease::IsPlatformAsset(it->name)) {
-                        std::cout << "  " << it->url << std::endl;
+                for (const auto& it : assets) {
+                    if (ts::GitHubRelease::IsPlatformAsset(it.name)) {
+                        std::cout << "  " << it.url << std::endl;
                     }
                 }
             }
@@ -423,8 +423,8 @@ namespace {
                 }
             }
             else {
-                for (auto it = assets.begin(); it != assets.end();  ++it) {
-                    success = DownloadFile(opt, it->url, opt.out_dir + it->name, it->size) && success;
+                for (const auto& it : assets) {
+                    success = DownloadFile(opt, it.url, opt.out_dir + it.name, it.size) && success;
                 }
             }
         }
@@ -487,8 +487,8 @@ namespace {
         ts::GitHubRelease::AssetList assets;
         rel.getPlatformAssets(assets);
         ts::UStringList files;
-        for (auto it = assets.begin(); it != assets.end();  ++it) {
-            files.push_back(opt.out_dir + it->name);
+        for (const auto& it : assets) {
+            files.push_back(opt.out_dir + it.name);
         }
 
         // Get system info to determine which command to run.
@@ -560,8 +560,8 @@ namespace {
         std::cout << "New version " << remote << " is available (yours is " << current << ")" << std::endl;
         if (opt.verbose() && !assets.empty()) {
             std::cout << "Available downloads for your system:" << std::endl;
-            for (auto it = assets.begin(); it != assets.end(); ++it) {
-                std::cout << "  " << it->url << std::endl;
+            for (const auto& it : assets) {
+                std::cout << "  " << it.url << std::endl;
             }
         }
 

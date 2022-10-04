@@ -517,10 +517,10 @@ bool ts::EITInjectPlugin::FileListener::handlePolledFiles(const PolledFileList& 
     {
         GuardMutex lock(_plugin->_polled_files_mutex);
         // Insert one by one, avoiding duplicates.
-        for (auto it = files.begin(); it != files.end(); ++it) {
+        for (const auto& it : files) {
             // If file was updated (ie. not deleted) and not already present in _polled_files.
-            if ((*it)->updated() && std::find(_plugin->_polled_files.begin(), _plugin->_polled_files.end(), (*it)->getFileName()) == _plugin->_polled_files.end()) {
-                _plugin->_polled_files.push_back((*it)->getFileName());
+            if (it->updated() && std::find(_plugin->_polled_files.begin(), _plugin->_polled_files.end(), it->getFileName()) == _plugin->_polled_files.end()) {
+                _plugin->_polled_files.push_back(it->getFileName());
                 _plugin->_check_files = true;
             }
         }
@@ -545,18 +545,18 @@ void ts::EITInjectPlugin::loadFiles()
 {
     GuardMutex lock(_polled_files_mutex);
 
-    for (auto it = _polled_files.begin(); it != _polled_files.end(); ++it) {
+    for (const auto& it : _polled_files) {
 
         // Load events from the file into the EPG database
-        tsp->verbose(u"loading events from file %s", {*it});
+        tsp->verbose(u"loading events from file %s", {it});
         SectionFile secfile(duck);
-        if (secfile.load(*it)) {
+        if (secfile.load(it)) {
             _eit_gen.loadEvents(secfile);
         }
 
         // Delete file after successful load when required.
         if (_delete_files) {
-            DeleteFile(*it, *tsp);
+            DeleteFile(it, *tsp);
         }
     }
 

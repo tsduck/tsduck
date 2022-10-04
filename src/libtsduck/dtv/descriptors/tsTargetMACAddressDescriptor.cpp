@@ -76,8 +76,8 @@ void ts::TargetMACAddressDescriptor::clearContent()
 void ts::TargetMACAddressDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt48(MAC_addr_mask.address());
-    for (auto it = MAC_addr.begin(); it != MAC_addr.end(); ++it) {
-        buf.putUInt48(it->address());
+    for (const auto& it : MAC_addr) {
+        buf.putUInt48(it.address());
     }
 }
 
@@ -116,8 +116,8 @@ void ts::TargetMACAddressDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 void ts::TargetMACAddressDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setMACAttribute(u"MAC_addr_mask", MAC_addr_mask);
-    for (auto it = MAC_addr.begin(); it != MAC_addr.end(); ++it) {
-        root->addElement(u"address")->setMACAttribute(u"MAC_addr", *it);
+    for (const auto& it : MAC_addr) {
+        root->addElement(u"address")->setMACAttribute(u"MAC_addr", it);
     }
 }
 

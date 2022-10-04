@@ -115,8 +115,8 @@ ts::DuckExtensionRepository::Register::Register(const UString& name,
 namespace {
     ts::UString SearchFile(const ts::UStringList& dirs, const ts::UString& prefix, const ts::UString& name, const ts::UString& suffix)
     {
-        for (auto it = dirs.begin(); it != dirs.end(); ++it) {
-            const ts::UString filename(*it + ts::PathSeparator + prefix + name + suffix);
+        for (const auto& it : dirs) {
+            const ts::UString filename(it + ts::PathSeparator + prefix + name + suffix);
             if (ts::FileExists(filename)) {
                 return filename;
             }
@@ -134,8 +134,8 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 {
     // Compute max name width of all extensions.
     size_t width = 0;
-    for (auto ext = _extensions.begin(); ext != _extensions.end(); ++ext) {
-        width = std::max(width, ext->name.width());
+    for (const auto& ext : _extensions) {
+        width = std::max(width, ext.name.width());
     }
     width++; // spacing after name
 
@@ -149,28 +149,28 @@ ts::UString ts::DuckExtensionRepository::listExtensions(ts::Report& report)
 
     // Build the output text as a string.
     UString out;
-    for (auto ext = _extensions.begin(); ext != _extensions.end(); ++ext) {
+    for (const auto& ext : _extensions) {
 
         // First line: name and description.
-        out += UString::Format(u"%s %s\n", {ext->name.toJustifiedLeft(width, u'.', false, 1), ext->description});
+        out.format(u"%s %s\n", {ext.name.toJustifiedLeft(width, u'.', false, 1), ext.description});
 
         if (report.verbose()) {
             // Display full file names.
-            out += UString::Format(u"%*s Library: %s\n", {width, u"", ext->file_name});
-            for (size_t i = 0; i < ext->plugins.size(); ++i) {
-                out += UString::Format(u"%*s Plugin %s: %s\n", {width, u"", ext->plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext->plugins[i], TS_SHARED_LIB_SUFFIX)});
+            out.format(u"%*s Library: %s\n", {width, u"", ext.file_name});
+            for (size_t i = 0; i < ext.plugins.size(); ++i) {
+                out.format(u"%*s Plugin %s: %s\n", {width, u"", ext.plugins[i], SearchFile(plugins_dirs, u"tsplugin_", ext.plugins[i], TS_SHARED_LIB_SUFFIX)});
             }
-            for (size_t i = 0; i < ext->tools.size(); ++i) {
-                out += UString::Format(u"%*s Command %s: %s\n", {width, u"", ext->tools[i], SearchFile(tools_dirs, u"", ext->tools[i], TS_EXECUTABLE_SUFFIX)});
+            for (size_t i = 0; i < ext.tools.size(); ++i) {
+                out.format(u"%*s Command %s: %s\n", {width, u"", ext.tools[i], SearchFile(tools_dirs, u"", ext.tools[i], TS_EXECUTABLE_SUFFIX)});
             }
         }
         else {
             // Only display plugins and tools names.
-            if (!ext->plugins.empty()) {
-                out += UString::Format(u"%*s Plugins: %s\n", {width, u"", UString::Join(ext->plugins)});
+            if (!ext.plugins.empty()) {
+                out.format(u"%*s Plugins: %s\n", {width, u"", UString::Join(ext.plugins)});
             }
-            if (!ext->tools.empty()) {
-                out += UString::Format(u"%*s Commands: %s\n", {width, u"", UString::Join(ext->tools)});
+            if (!ext.tools.empty()) {
+                out.format(u"%*s Commands: %s\n", {width, u"", UString::Join(ext.tools)});
             }
         }
     }

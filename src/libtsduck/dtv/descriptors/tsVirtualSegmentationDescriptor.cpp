@@ -99,8 +99,8 @@ void ts::VirtualSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
         // Compute the maximum size in bits of all maximum_duration fields.
         // This is required to compute maximum_duration_length_minus_1 (MDL).
         size_t mdl_bits = 0;
-        for (auto it = partitions.begin(); it != partitions.end(); ++it) {
-            mdl_bits = std::max(mdl_bits, BitSize(it->maximum_duration.value(0)));
+        for (const auto& it : partitions) {
+            mdl_bits = std::max(mdl_bits, BitSize(it.maximum_duration.value(0)));
         }
 
         // MDL (max duration length) is the number of additional bytes, beyond the first 5 bits, in max_duration.
@@ -120,18 +120,18 @@ void ts::VirtualSegmentationDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putBit(1);
         }
 
-        for (auto it = partitions.begin(); it != partitions.end(); ++it) {
-            buf.putBit(!it->boundary_PID.set());
-            buf.putBits(it->partition_id, 3);
+        for (const auto& it : partitions) {
+            buf.putBit(!it.boundary_PID.set());
+            buf.putBits(it.partition_id, 3);
             buf.putBits(0xFF, 4);
-            buf.putBits(it->SAP_type_max, 3);
-            if (it->boundary_PID.set()) {
+            buf.putBits(it.SAP_type_max, 3);
+            if (it.boundary_PID.set()) {
                 buf.putBits(0xFF, 5);
-                buf.putBits(it->boundary_PID.value(), 13);
+                buf.putBits(it.boundary_PID.value(), 13);
                 buf.putBits(0xFF, 3);
             }
             else {
-                buf.putBits(it->maximum_duration.value(0), mdl * 8 + 5);
+                buf.putBits(it.maximum_duration.value(0), mdl * 8 + 5);
             }
         }
     }
@@ -221,12 +221,12 @@ void ts::VirtualSegmentationDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 void ts::VirtualSegmentationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setOptionalIntAttribute(u"ticks_per_second", ticks_per_second);
-    for (auto it = partitions.begin(); it != partitions.end(); ++it) {
+    for (const auto& it : partitions) {
         xml::Element* e = root->addElement(u"partition");
-        e->setIntAttribute(u"partition_id", it->partition_id);
-        e->setIntAttribute(u"SAP_type_max", it->SAP_type_max);
-        e->setOptionalIntAttribute(u"boundary_PID", it->boundary_PID, true);
-        e->setOptionalIntAttribute(u"maximum_duration", it->maximum_duration);
+        e->setIntAttribute(u"partition_id", it.partition_id);
+        e->setIntAttribute(u"SAP_type_max", it.SAP_type_max);
+        e->setOptionalIntAttribute(u"boundary_PID", it.boundary_PID, true);
+        e->setOptionalIntAttribute(u"maximum_duration", it.maximum_duration);
     }
 }
 

@@ -80,11 +80,11 @@ ts::TargetIPSourceSlashDescriptor::Address::Address(const IPv4Address& addr1, ui
 
 void ts::TargetIPSourceSlashDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = addresses.begin(); it != addresses.end(); ++it) {
-        buf.putUInt32(it->IPv4_source_addr.address());
-        buf.putUInt8(it->IPv4_source_slash_mask);
-        buf.putUInt32(it->IPv4_dest_addr.address());
-        buf.putUInt8(it->IPv4_dest_slash_mask);
+    for (const auto& it : addresses) {
+        buf.putUInt32(it.IPv4_source_addr.address());
+        buf.putUInt8(it.IPv4_source_slash_mask);
+        buf.putUInt32(it.IPv4_dest_addr.address());
+        buf.putUInt8(it.IPv4_dest_slash_mask);
     }
 }
 
@@ -127,12 +127,12 @@ void ts::TargetIPSourceSlashDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 
 void ts::TargetIPSourceSlashDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = addresses.begin(); it != addresses.end(); ++it) {
+    for (const auto& it : addresses) {
         xml::Element* e = root->addElement(u"address");
-        e->setIPAttribute(u"IPv4_source_addr", it->IPv4_source_addr);
-        e->setIntAttribute(u"IPv4_source_slash_mask", it->IPv4_source_slash_mask);
-        e->setIPAttribute(u"IPv4_dest_addr", it->IPv4_dest_addr);
-        e->setIntAttribute(u"IPv4_dest_slash_mask", it->IPv4_dest_slash_mask);
+        e->setIPAttribute(u"IPv4_source_addr", it.IPv4_source_addr);
+        e->setIntAttribute(u"IPv4_source_slash_mask", it.IPv4_source_slash_mask);
+        e->setIPAttribute(u"IPv4_dest_addr", it.IPv4_dest_addr);
+        e->setIntAttribute(u"IPv4_dest_slash_mask", it.IPv4_dest_slash_mask);
     }
 }
 

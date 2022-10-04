@@ -291,8 +291,8 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             const PAT pat(duck, table);
             if (pat.isValid()) {
                 // Collect all PMT PID's.
-                for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    const PID pid = it->second;
+                for (const auto& it : pat.pmts) {
+                    const PID pid = it.second;
                     _demux.addPID(pid);
                     getContext(pid)->psi = true;
                     tsp->debug(u"Adding PMT PID 0x%X (%d)", {pid, pid});
@@ -305,11 +305,11 @@ void ts::LimitPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
             if (pmt.isValid()) {
                 // Collect all component PID's.
                 tsp->debug(u"Found PMT in PID 0x%X (%d)", {table.sourcePID(), table.sourcePID()});
-                for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-                    const PID pid = it->first;
+                for (const auto& it : pmt.streams) {
+                    const PID pid = it.first;
                     const PIDContextPtr pc(getContext(pid));
-                    pc->audio = it->second.isAudio(duck);
-                    pc->video = it->second.isVideo(duck);
+                    pc->audio = it.second.isAudio(duck);
+                    pc->video = it.second.isVideo(duck);
                     tsp->debug(u"Found component PID 0x%X (%d)", {pid, pid});
                 }
             }

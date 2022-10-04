@@ -913,11 +913,11 @@ template <class CONTAINER>
 void ts::UString::quotedLine(const CONTAINER& container, UChar quoteCharacter, const UString& specialCharacters)
 {
     clear();
-    for (auto it = container.begin(); it != container.end(); ++it) {
+    for (const auto& it : container) {
         if (!empty()) {
             append(SPACE);
         }
-        append(it->toQuoted(quoteCharacter, specialCharacters));
+        append(it.toQuoted(quoteCharacter, specialCharacters));
     }
 }
 

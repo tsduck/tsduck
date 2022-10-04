@@ -358,18 +358,18 @@ void ts::PSILogger::handleTable(SectionDemux&, const BinaryTable& table)
                 }
                 // Reset all PMT PID's which disappeared or changed.
                 if (_previous_pat.isValid()) {
-                    for (auto prev_it = _previous_pat.pmts.begin(); prev_it != _previous_pat.pmts.end(); ++prev_it) {
-                        const auto new_it = pat.pmts.find(prev_it->first);
-                        if (new_it == pat.pmts.end() || new_it->second != prev_it->second) {
+                    for (const auto& prev_it : _previous_pat.pmts) {
+                        const auto new_it = pat.pmts.find(prev_it.first);
+                        if (new_it == pat.pmts.end() || new_it->second != prev_it.second) {
                             // Service disappeared or changed PMT PID, remove the previous PMT PID.
-                            _demux.removePID(prev_it->second);
+                            _demux.removePID(prev_it.second);
                         }
                     }
                 }
                 _previous_pat = pat;
                 // Add a filter on each referenced PID to get the PMT
-                for (auto it = pat.pmts.begin(); it != pat.pmts.end(); ++it) {
-                    _demux.addPID(it->second);
+                for (const auto& it : pat.pmts) {
+                    _demux.addPID(it.second);
                     _expected_pmt++;
                 }
                 // Also include NIT (considered as a PMT)

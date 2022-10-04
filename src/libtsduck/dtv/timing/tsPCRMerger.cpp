@@ -184,10 +184,10 @@ void ts::PCRMerger::handlePMT(const PMT& pmt, PID pid)
 
     // Record the PCR PID for each component in the service.
     if (pmt.pcr_pid != PID_NULL) {
-        for (auto it = pmt.streams.begin(); it != pmt.streams.end(); ++it) {
-            // it->first is the PID of the component
-            getContext(it->first)->pcr_pid = pmt.pcr_pid;
-            _duck.report().debug(u"associating PID 0x%X (%<d) to PCR PID 0x%X (%<d)", {it->first, pmt.pcr_pid});
+        for (const auto& it : pmt.streams) {
+            // it.first is the PID of the component
+            getContext(it.first)->pcr_pid = pmt.pcr_pid;
+            _duck.report().debug(u"associating PID 0x%X (%<d) to PCR PID 0x%X (%<d)", {it.first, pmt.pcr_pid});
         }
     }
 }

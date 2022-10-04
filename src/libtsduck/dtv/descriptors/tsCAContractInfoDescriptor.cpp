@@ -138,8 +138,8 @@ void ts::CAContractInfoDescriptor::buildXML(DuckContext& duck, xml::Element* roo
     root->setIntAttribute(u"CA_system_id", CA_system_id, true);
     root->setIntAttribute(u"CA_unit_id", CA_unit_id);
     root->setAttribute(u"fee_name", fee_name, true);
-    for (auto it = component_tags.begin(); it != component_tags.end(); ++it) {
-        root->addElement(u"component")->setIntAttribute(u"tag", *it, true);
+    for (auto it : component_tags) {
+        root->addElement(u"component")->setIntAttribute(u"tag", it, true);
     }
     root->addHexaTextChild(u"contract_verification_info", contract_verification_info, true);
 }

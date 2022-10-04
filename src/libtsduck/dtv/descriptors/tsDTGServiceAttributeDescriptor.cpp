@@ -79,11 +79,11 @@ void ts::DTGServiceAttributeDescriptor::clearContent()
 
 void ts::DTGServiceAttributeDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
-        buf.putUInt16(it->service_id);
+    for (const auto& it : entries) {
+        buf.putUInt16(it.service_id);
         buf.putBits(0xFF, 6);
-        buf.putBit(it->numeric_selection);
-        buf.putBit(it->visible_service);
+        buf.putBit(it.numeric_selection);
+        buf.putBit(it.visible_service);
     }
 }
 
@@ -126,11 +126,11 @@ void ts::DTGServiceAttributeDescriptor::DisplayDescriptor(TablesDisplay& disp, P
 
 void ts::DTGServiceAttributeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = entries.begin(); it != entries.end(); ++it) {
+    for (const auto& it : entries) {
         xml::Element* e = root->addElement(u"service");
-        e->setIntAttribute(u"service_id", it->service_id, true);
-        e->setBoolAttribute(u"numeric_selection", it->numeric_selection);
-        e->setBoolAttribute(u"visible_service", it->visible_service);
+        e->setIntAttribute(u"service_id", it.service_id, true);
+        e->setBoolAttribute(u"numeric_selection", it.numeric_selection);
+        e->setBoolAttribute(u"visible_service", it.visible_service);
     }
 }
 

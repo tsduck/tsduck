@@ -82,12 +82,12 @@ ts::AreaBroadcastingInformationDescriptor::Station::Station() :
 void ts::AreaBroadcastingInformationDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(uint8_t(stations.size()));
-    for (auto it = stations.begin(); it != stations.end(); ++it) {
-        buf.putUInt24(it->station_id);
-        buf.putUInt16(it->location_code);
-        buf.putUInt8(it->broadcast_signal_format);
-        buf.putUInt8(uint8_t(it->additional_station_info.size()));
-        buf.putBytes(it->additional_station_info);
+    for (const auto& it : stations) {
+        buf.putUInt24(it.station_id);
+        buf.putUInt16(it.location_code);
+        buf.putUInt8(it.broadcast_signal_format);
+        buf.putUInt8(uint8_t(it.additional_station_info.size()));
+        buf.putBytes(it.additional_station_info);
     }
 }
 
@@ -135,12 +135,12 @@ void ts::AreaBroadcastingInformationDescriptor::DisplayDescriptor(TablesDisplay&
 
 void ts::AreaBroadcastingInformationDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it = stations.begin(); it != stations.end(); ++it) {
+    for (const auto& it : stations) {
         xml::Element* e = root->addElement(u"station");
-        e->setIntAttribute(u"station_id", it->station_id, true);
-        e->setIntAttribute(u"location_code", it->location_code, true);
-        e->setIntAttribute(u"broadcast_signal_format", it->broadcast_signal_format, true);
-        e->addHexaTextChild(u"additional_station_info", it->additional_station_info, true);
+        e->setIntAttribute(u"station_id", it.station_id, true);
+        e->setIntAttribute(u"location_code", it.location_code, true);
+        e->setIntAttribute(u"broadcast_signal_format", it.broadcast_signal_format, true);
+        e->addHexaTextChild(u"additional_station_info", it.additional_station_info, true);
     }
 }
 

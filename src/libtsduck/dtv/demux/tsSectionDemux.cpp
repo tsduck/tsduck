@@ -622,9 +622,9 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
 void ts::SectionDemux::fixAndFlush(bool pack, bool fill_eit)
 {
     // Loop on all PID's.
-    for (auto it1 = _pids.begin(); it1 != _pids.end(); ++it1) {
-        const PID pid = it1->first;
-        PIDContext& pc(it1->second);
+    for (auto& it1 : _pids) {
+        const PID pid = it1.first;
+        PIDContext& pc(it1.second);
 
         // Mark that we are in the context of a table or section handler.
         // This is used to prevent the destruction of PID contexts during
@@ -632,9 +632,9 @@ void ts::SectionDemux::fixAndFlush(bool pack, bool fill_eit)
         beforeCallingHandler(pid);
         try {
             // Loop on all TID's currently found in the PID.
-            for (auto it2 = pc.tids.begin(); it2 != pc.tids.end(); ++it2) {
+            for (auto& it2 : pc.tids) {
                 // Force a notification of the partial table, if any.
-                it2->second.notify(*this, pack, fill_eit);
+                it2.second.notify(*this, pack, fill_eit);
             }
         }
         catch (...) {

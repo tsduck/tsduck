@@ -133,8 +133,8 @@ void ts::Args::getIntValues(std::vector<INT>& values, const UChar* name) const
     const IOption& opt(getIOption(name));
     values.clear();
     values.reserve(opt.value_count);
-    for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
-        for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+    for (const auto& it : opt.values) {
+        for (int64_t v = it.int_base; v < it.int_base + int64_t(it.int_count); ++v) {
             if (opt.inRange<int64_t>(v)) {
                 values.push_back(static_cast<INT>(v));
             }
@@ -152,8 +152,8 @@ void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
     values.clear();
-    for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
-        for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+    for (const auto& it : opt.values) {
+        for (int64_t v = it.int_base; v < it.int_base + int64_t(it.int_count); ++v) {
             if (opt.inRange<int64_t>(v)) {
                 values.insert(static_cast<INT>(v));
             }
@@ -172,8 +172,8 @@ void ts::Args::getIntValues(std::bitset<N>& values, const UChar* name, bool defV
     const IOption& opt(getIOption(name));
     if (opt.value_count > 0) {
         values.reset();
-        for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
-            for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+        for (const auto& it : opt.values) {
+            for (int64_t v = it.int_base; v < it.int_base + int64_t(it.int_count); ++v) {
                 if (v >= 0 && size_t(v) < values.size()) {
                     values.set(size_t(v));
                 }
@@ -202,8 +202,8 @@ void ts::Args::getBitMaskValue(INT& value, const UChar* name, const INT& def_val
     }
     else {
         value = static_cast<INT>(0);
-        for (auto it = opt.values.begin(); it != opt.values.end(); ++it) {
-            for (int64_t v = it->int_base; v < it->int_base + int64_t(it->int_count); ++v) {
+        for (const auto& it : opt.values) {
+            for (int64_t v = it.int_base; v < it.int_base + int64_t(it.int_count); ++v) {
                 if (opt.inRange<int64_t>(v)) {
                     value |= static_cast<INT>(v);
                 }

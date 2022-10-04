@@ -57,8 +57,8 @@ void ts::ConfigSection::reset()
 void ts::ConfigSection::getEntryNames(UStringVector& names) const
 {
     names.clear();
-    for (auto ent = _entries.begin(); ent != _entries.end(); ++ent) {
-        names.push_back(ent->first);
+    for (const auto& ent : _entries) {
+        names.push_back(ent.first);
     }
 }
 
@@ -193,9 +193,9 @@ void ts::ConfigSection::append(const UString& entry, const std::vector<bool>& va
 
 std::ostream& ts::ConfigSection::save(std::ostream& strm) const
 {
-    for (auto ent = _entries.begin(); ent != _entries.end(); ++ent) {
-        for (size_t i = 0; i < ent->second.size(); ++i) {
-            strm << ent->first << " = " << ent->second[i] << std::endl;
+    for (const auto& ent : _entries) {
+        for (const auto& conf : ent.second) {
+            strm << ent.first << " = " << conf << std::endl;
         }
     }
     return strm;
