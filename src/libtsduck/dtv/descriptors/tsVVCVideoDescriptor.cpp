@@ -70,7 +70,7 @@ void ts::VVCVideoDescriptor::clearContent()
 {
     profile_idc = 0;
     tier = false;
-    sub_profile_idc.clear(),
+    sub_profile_idc.clear();
     progressive_source = false;
     interlaced_source = false;
     non_packed_constraint = false;
@@ -99,7 +99,7 @@ void ts::VVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(profile_idc, 7);
     buf.putBit(tier);
-    buf.putUInt8((uint8_t)sub_profile_idc.size());
+	buf.putBits(sub_profile_idc.size(), 8);
     for (auto it = sub_profile_idc.begin(); it != sub_profile_idc.end(); ++it) {
         buf.putUInt32(*it);
     }
@@ -323,12 +323,12 @@ bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         for (size_t i = 0; ok && i < children.size(); ++i) {
             UString hexVal(u"");
             ok &= children[i]->getText(hexVal);
-            INT val = INT(0);
+            uint16_t val = 0;
             if (!hexVal.toInteger(val, u",")) {
                 element->report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", { hexVal, u"sub_profile_idc", element->lineNumber(), element->name() });
                 ok = false;
             }
-            else if (val < INT(0) || val > INT(0xFFFF)) {
+            else if (val < 0 || val > 0xFFFF) {
                 element->report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", { hexVal, 0, 0xFFFF, u"sub_profile_idc", element->lineNumber(), element->name() });
                 ok = false;
             }
