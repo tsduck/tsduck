@@ -141,98 +141,98 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-static std::string Avs3Profile(uint8_t profile_id) {
-    switch (profile_id) {
-        case 0x20: return "Main-8";
-        case 0x22: return "Main-10";
-        case 0x30: return "High-8";
-        case 0x32: return "High-10";
-        default: return "uknown";
+ts::UString ts::AVS3VideoDescriptor::Avs3Profile(uint8_t pi) {
+    switch (pi) {
+        case 0x20: return u"Main-8";
+        case 0x22: return u"Main-10";
+        case 0x30: return u"High-8";
+        case 0x32: return u"High-10";
+        default: return u"uknown";
     }
 }
 
-static std::string Avs3Level(uint8_t level_id) {
-    switch (level_id) {
-        case 0x10: return "2.0.15";
-        case 0x12: return "2.0.30";
-        case 0x14: return "2.0.60";
-        case 0x20: return "4.0.30";
-        case 0x22: return "4.0.60";
-        case 0x40: return "6.0.30";
-        case 0x42: return "6.2.30";
-        case 0x41: return "6.4.30";
-        case 0x43: return "6.6.30";
-        case 0x44: return "6.0.60";
-        case 0x46: return "6.2.60";
-        case 0x45: return "6.4.60";
-        case 0x47: return "6.6.60";
-        case 0x48: return "6.0.120";
-        case 0x4A: return "6.2.120";
-        case 0x49: return "6.4.120";
-        case 0x4B: return "6.6.120";
-        case 0x50: return "8.0.30";
-        case 0x52: return "8.2.30";
-        case 0x51: return "8.4.30";
-        case 0x53: return "8.6.30";
-        case 0x54: return "8.0.60";
-        case 0x56: return "8.2.60";
-        case 0x55: return "8.4.60";
-        case 0x57: return "8.6.60";
-        case 0x58: return "8.0.120";
-        case 0x5A: return "8.2.120";
-        case 0x59: return "8.4.120";
-        case 0x5B: return "8.6.120";
-        case 0x60: return "10.0.30";
-        case 0x62: return "10.2.30";
-        case 0x61: return "10.4.30";
-        case 0x63: return "10.6.30";
-        case 0x64: return "10.0.60";
-        case 0x66: return "10.2.60";
-        case 0x65: return "10.4.60";
-        case 0x67: return "10.6.60";
-        case 0x68: return "10.0.120";
-        case 0x6A: return "10.2.120";
-        case 0x69: return "10.4.120";
-        case 0x6B: return "10.6.120";
-        default: return "uknown";
+ts::UString ts::AVS3VideoDescriptor::Avs3Level(uint8_t li) {
+    switch (li) {
+        case 0x10: return u"2.0.15";
+        case 0x12: return u"2.0.30";
+        case 0x14: return u"2.0.60";
+        case 0x20: return u"4.0.30";
+        case 0x22: return u"4.0.60";
+        case 0x40: return u"6.0.30";
+        case 0x42: return u"6.2.30";
+        case 0x41: return u"6.4.30";
+        case 0x43: return u"6.6.30";
+        case 0x44: return u"6.0.60";
+        case 0x46: return u"6.2.60";
+        case 0x45: return u"6.4.60";
+        case 0x47: return u"6.6.60";
+        case 0x48: return u"6.0.120";
+        case 0x4A: return u"6.2.120";
+        case 0x49: return u"6.4.120";
+        case 0x4B: return u"6.6.120";
+        case 0x50: return u"8.0.30";
+        case 0x52: return u"8.2.30";
+        case 0x51: return u"8.4.30";
+        case 0x53: return u"8.6.30";
+        case 0x54: return u"8.0.60";
+        case 0x56: return u"8.2.60";
+        case 0x55: return u"8.4.60";
+        case 0x57: return u"8.6.60";
+        case 0x58: return u"8.0.120";
+        case 0x5A: return u"8.2.120";
+        case 0x59: return u"8.4.120";
+        case 0x5B: return u"8.6.120";
+        case 0x60: return u"10.0.30";
+        case 0x62: return u"10.2.30";
+        case 0x61: return u"10.4.30";
+        case 0x63: return u"10.6.30";
+        case 0x64: return u"10.0.60";
+        case 0x66: return u"10.2.60";
+        case 0x65: return u"10.4.60";
+        case 0x67: return u"10.6.60";
+        case 0x68: return u"10.0.120";
+        case 0x6A: return u"10.2.120";
+        case 0x69: return u"10.4.120";
+        case 0x6B: return u"10.6.120";
+        default: return u"uknown";
     }
 }
 
-static std::string AVS3FrameRate(uint16_t fr) {
+ts::UString ts::AVS3VideoDescriptor::AVS3FrameRate(uint16_t fr) {
     switch (fr) {
-        case 0: return "forbidden";
-        case 1: return "24/1.001";
-        case 2: return "24";
-        case 3: return "25";
-        case 4: return "20/1.001";
-        case 5: return "30";
-        case 6: return "50";
-        case 7: return "60/1.001";
-        case 8: return "60";
-        case 9: return "100";
-        case 10: return "120";
-        case 11: return "200";
-        case 12: return "240";
-        case 13: return "400";
-        case 14: return "120/1.001";
-        default: return "uknown";
+        case 0: return u"forbidden";
+        case 1: return u"24/1.001";
+        case 2: return u"24";
+        case 3: return u"25";
+        case 4: return u"20/1.001";
+        case 5: return u"30";
+        case 6: return u"50";
+        case 7: return u"60/1.001";
+        case 8: return u"60";
+        case 9: return u"100";
+        case 10: return u"120";
+        case 11: return u"200";
+        case 12: return u"240";
+        case 13: return u"400";
+        case 14: return u"120/1.001";
+        default: return u"uknown";
     }
 }
 
-static std::string AVS3SamplePrecision(uint16_t sp) {
+ts::UString ts::AVS3VideoDescriptor::AVS3SamplePrecision(uint16_t sp) {
     switch (sp) {
-        case 0: return "forbidden";
-        case 1: return "8-bit";
-        case 2: return "10-bit";
-        default: return "uknown";
+        case 0: return u"forbidden";
+        case 1: return u"8-bit";
+        case 2: return u"10-bit";
+        default: return u"uknown";
     }
 }
 
-static std::string Avs3ChromaFormat(uint16_t cf) {
+ts::UString ts::AVS3VideoDescriptor::Avs3ChromaFormat(uint16_t cf) {
     switch (cf) {
-        case 1: return "4:2:0"; 
-        case 2: return "4:2:2"; 
-        default: return "uknown";
+        case 1: return u"4:2:0"; 
+        case 2: return u"4:2:2"; 
+        default: return u"uknown";
     }
 }
 
@@ -240,15 +240,16 @@ void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 {
     if (buf.canReadBytes(8)) {
         uint8_t t1 = buf.getUInt8();
-        disp << margin << "Profile ID: " << Avs3Profile(t1) << " (" << UString::Hexa(t1,2 * sizeof(uint8_t));
+        disp << margin << "Profile ID: " << AVS3VideoDescriptor::Avs3Profile(t1) << " (" << UString::Hexa(t1, 2 * sizeof(uint8_t));
         t1 = buf.getUInt8();
-        disp << "), Level ID: " << Avs3Level(t1) << " (" << UString::Hexa(t1, 2 * sizeof(uint8_t));
+        disp << "), Level ID: " << AVS3VideoDescriptor::Avs3Level(t1) << " (" << UString::Hexa(t1, 2 * sizeof(uint8_t));
         disp << "), Multiple frame rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
         uint16_t t3 = buf.getBits<uint16_t>(4);
         uint16_t t4 = buf.getBits<uint16_t>(3);
-        disp << margin << "Frame rate code: " << AVS3FrameRate(t3) << " (" << t3 << "), Sample precision: " << AVS3SamplePrecision(t4) << " (" << t4 << ")";
+        disp << margin << "Frame rate code: " << AVS3VideoDescriptor::AVS3FrameRate(t3) << " (" << t3;
+        disp << "), Sample precision: " << AVS3VideoDescriptor::AVS3SamplePrecision(t4) << " (" << t4 << ")";
         t4 = buf.getBits<uint16_t>(2);
-        disp << ", Chroma format: " << Avs3ChromaFormat(t4) << " (" <<buf.getBits<uint16_t>(t4) << ")" << std::endl;
+        disp << ", Chroma format: " << AVS3VideoDescriptor::Avs3ChromaFormat(t4) << " (" <<buf.getBits<uint16_t>(t4) << ")" << std::endl;
         disp << margin << "Temporal ID: " << UString::TrueFalse(buf.getBool()) << ", TD mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Library stream: " << UString::TrueFalse(buf.getBool()) << ", Library picture enable: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(2);

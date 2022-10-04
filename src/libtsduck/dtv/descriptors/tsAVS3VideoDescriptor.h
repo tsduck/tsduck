@@ -76,6 +76,13 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
+    private:
+        static UString Avs3Profile(uint8_t pi);
+        static UString Avs3Level(uint8_t i);
+        static UString AVS3FrameRate(uint16_t fr);
+        static UString AVS3SamplePrecision(uint16_t sp);
+        static UString Avs3ChromaFormat(uint16_t cf);
+
     protected:
         // Inherited methods
         virtual void clearContent() override;
