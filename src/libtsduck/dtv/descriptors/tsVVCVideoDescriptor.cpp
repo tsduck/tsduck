@@ -328,10 +328,6 @@ bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
                 element->report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", { hexVal, u"sub_profile_idc", element->lineNumber(), element->name() });
                 ok = false;
             }
-            else if (val < 0 || val > 0xFFFF) {
-                element->report().error(u"'%s' must be in range %'d to %'d for attribute '%s' in <%s>, line %d", { hexVal, 0, 0xFFFF, u"sub_profile_idc", element->lineNumber(), element->name() });
-                ok = false;
-            }
         }
     }
 
