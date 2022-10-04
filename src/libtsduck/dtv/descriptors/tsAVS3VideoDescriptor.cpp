@@ -142,6 +142,7 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 //----------------------------------------------------------------------------
 
 ts::UString ts::AVS3VideoDescriptor::Avs3Profile(uint8_t pi) {
+    // T/AI 109.2, table B.1
     switch (pi) {
         case 0x20: return u"Main-8";
         case 0x22: return u"Main-10";
@@ -152,6 +153,7 @@ ts::UString ts::AVS3VideoDescriptor::Avs3Profile(uint8_t pi) {
 }
 
 ts::UString ts::AVS3VideoDescriptor::Avs3Level(uint8_t li) {
+    // T/AI 109.2, table B.2
     switch (li) {
         case 0x10: return u"2.0.15";
         case 0x12: return u"2.0.30";
@@ -199,6 +201,7 @@ ts::UString ts::AVS3VideoDescriptor::Avs3Level(uint8_t li) {
 }
 
 ts::UString ts::AVS3VideoDescriptor::AVS3FrameRate(uint16_t fr) {
+    // T/AI 109.2, table 48
     switch (fr) {
         case 0: return u"forbidden";
         case 1: return u"24/1.001";
@@ -220,6 +223,7 @@ ts::UString ts::AVS3VideoDescriptor::AVS3FrameRate(uint16_t fr) {
 }
 
 ts::UString ts::AVS3VideoDescriptor::AVS3SamplePrecision(uint16_t sp) {
+    // T/AI 109.2, table 45
     switch (sp) {
         case 0: return u"forbidden";
         case 1: return u"8-bit";
@@ -229,6 +233,7 @@ ts::UString ts::AVS3VideoDescriptor::AVS3SamplePrecision(uint16_t sp) {
 }
 
 ts::UString ts::AVS3VideoDescriptor::Avs3ChromaFormat(uint16_t cf) {
+    // T/AI 109.2, table 44
     switch (cf) {
         case 1: return u"4:2:0"; 
         case 2: return u"4:2:2"; 

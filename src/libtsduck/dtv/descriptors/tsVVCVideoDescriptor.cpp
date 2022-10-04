@@ -100,9 +100,8 @@ void ts::VVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(profile_idc, 7);
     buf.putBit(tier);
 	buf.putBits(sub_profile_idc.size(), 8);
-    for (auto it = sub_profile_idc.begin(); it != sub_profile_idc.end(); ++it) {
-        buf.putUInt32(*it);
-    }
+    for (auto it : sub_profile_idc)
+        buf.putUInt32(it);
     buf.putBit(progressive_source);
     buf.putBit(interlaced_source);
     buf.putBit(non_packed_constraint);
@@ -163,63 +162,63 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 //----------------------------------------------------------------------------
 
 ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint16_t pi) {
-	switch (pi) {
-		case  1: return u"Main 10";
-		case 17: return u"Multilayer Main 10";
-		case 33: return u"Main 10 4:4:4";
-		case 49: return u"Multilayer Main 10 4:4:4 ";
-		case 65: return u"Main 10 Still Picture";
-		case 97: return u"Main 10 4:4:4 Still Picture";
-		default: return u"uknown";
-	}
+    switch (pi) {
+        case  1: return u"Main 10";
+        case 17: return u"Multilayer Main 10";
+        case 33: return u"Main 10 4:4:4";
+        case 49: return u"Multilayer Main 10 4:4:4 ";
+        case 65: return u"Main 10 Still Picture";
+        case 97: return u"Main 10 4:4:4 Still Picture";
+        default: return u"uknown";
+    }
 }
 
 ts::UString ts::VVCVideoDescriptor::VVCTier(bool t) {
-	return t ? u"High" : u"Main";
+    return t ? u"High" : u"Main";
 }
 
 ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint16_t hw) {
-	// H222.0, TAble 2-134
+    // H222.0, TAble 2-134
     switch (hw) {
-		case 0: return u"SDR";
-		case 1: return u"WCG only";
-		case 2: return u"HDR and WCG";
-		case 3: return u"no indication";
-		default: return u"uknown";
-	}	
+        case 0: return u"SDR";
+        case 1: return u"WCG only";
+        case 2: return u"HDR and WCG";
+        case 3: return u"no indication";
+        default: return u"uknown";
+    }	
 }
 
 ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint16_t li) {
-	// H.266, Table A.1
-	switch (li) {
-		case  16: return u"1.0";
-		case  32: return u"2.0";
-		case  35: return u"2.1";
-		case  48: return u"3.0";
-		case  51: return u"3.1";
-		case  64: return u"4.0";
-		case  67: return u"4.1";
-		case  80: return u"5.0";
-		case  83: return u"5.1";
-		case  86: return u"5.2";
-		case  96: return u"6.0";
-		case  99: return u"6.1";
-		case 102: return u"6.2";
-		default: return u"uknown";
-	}
+    // H.266, Table A.1
+    switch (li) {
+        case  16: return u"1.0";
+        case  32: return u"2.0";
+        case  35: return u"2.1";
+        case  48: return u"3.0";
+        case  51: return u"3.1";
+        case  64: return u"4.0";
+        case  67: return u"4.1";
+        case  80: return u"5.0";
+        case  83: return u"5.1";
+        case  86: return u"5.2";
+        case  96: return u"6.0";
+        case  99: return u"6.1";
+        case 102: return u"6.2";
+        default: return u"uknown";
+    }
 }
 
 ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint16_t vp) {
-	// H.222.0 Table 2-135
-	switch (vp) {
-		case 0: return u"not known";
-		case 1: return u"BT709_YCC";
-		case 2: return u"BT709_RGB";
-		case 3: return u"BT601_525";
-		case 4: return u"BT601_625";
-		case 5: return u"FR709_RGB";
-		default: return u"uknown";
-	}
+    // H.222.0 Table 2-135
+    switch (vp) {
+        case 0: return u"not known";
+        case 1: return u"BT709_YCC";
+        case 2: return u"BT709_RGB";
+        case 3: return u"BT601_525";
+        case 4: return u"BT601_625";
+        case 5: return u"FR709_RGB";
+        default: return u"uknown";
+    }
 }
 
 void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
@@ -255,7 +254,7 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         t=buf.getBits<uint16_t>(2);
         disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(t) << " (" << t << ")";
         buf.skipBits(2);
-		t=buf.getBits<uint16_t>(4);
+        t=buf.getBits<uint16_t>(4);
         disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(t) << "(" << t << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
@@ -276,9 +275,9 @@ void ts::VVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->setIntAttribute(u"profile_idc", profile_idc, true);
     root->setBoolAttribute(u"tier_flag", tier);
     root->setIntAttribute(u"num_sub_profiles", sub_profile_idc.size());
-    for (auto it = sub_profile_idc.begin(); it != sub_profile_idc.end(); ++it) {
-        uint32_t sub_profile_idc_val = *it;
-        root->addHexaTextChild(u"sub_profile_idc", &sub_profile_idc_val, sizeof(uint32_t));
+    for (auto it : sub_profile_idc) {
+        uint32_t sub_profile_idc_val = it;
+        root->addHexaTextChild(u"sub_profile_idc", &sub_profile_idc_val, sizeof(sub_profile_idc_val));
     }
     root->setBoolAttribute(u"progressive_source_flag", progressive_source);
     root->setBoolAttribute(u"interlaced_source_flag", interlaced_source);
@@ -315,11 +314,9 @@ bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getBoolAttribute(VVC_24hr_picture_present, u"VVC_24hr_picture_present_flag", true) &&
         element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", false, 3, 0, 3) &&
         element->getIntAttribute(video_properties_tag, u"video_properties_tag", false, 0, 0, 15);
-
     if (ok) {
         xml::ElementVector children;
         ok &= element->getChildren(children, u"sub_profile_idc");
-
         for (size_t i = 0; ok && i < children.size(); ++i) {
             UString hexVal(u"");
             ok &= children[i]->getText(hexVal);
@@ -330,11 +327,9 @@ bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
             }
         }
     }
-
     if (ok && temporal_id_min.set() + temporal_id_max.set() == 1) {
         element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", { element->lineNumber(), element->name() });
         ok = false;
     }
-
     return ok;
 }
