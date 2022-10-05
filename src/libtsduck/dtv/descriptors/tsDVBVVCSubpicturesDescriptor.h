@@ -39,18 +39,18 @@
 namespace ts {
     //!
     //! Representation of a DVB VVC_subpictures_descriptor.
-    //! @see ETSI EN 300 468, 6.4.17.
+    //! @see ETSI EN 300 468, clause 6.4.17.
     //! @ingroup descriptor
     //!
     class TSDUCKDLL DVBVVCSubpicturesDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
-        bool              default_service_mode;
-        std::vector<uint8_t>   component_tag;
-        std::vector<uint8_t>   vvc_subpicture_id;
-        uint8_t           processing_mode;                //<! 3 bits.
-        UString           service_description;
+        bool              default_service_mode;           //!< EN 300 468 clause 6.4.17
+        std::vector<uint8_t>   component_tag;             //!< 8 bits, EN 300 468 clause 6.4.17
+        std::vector<uint8_t>   vvc_subpicture_id;         //!< 8 bits, EN 300 468 clause 6.4.17
+        uint8_t           processing_mode;                //!< 3 bits, EN 300 468 clause 6.4.17
+        UString           service_description;            //!< EN 300 468 clause 6.4.17
 
         //!
         //! Default constructor.
