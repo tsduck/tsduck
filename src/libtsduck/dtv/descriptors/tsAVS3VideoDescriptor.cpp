@@ -258,8 +258,10 @@ void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << margin << "Temporal ID: " << UString::TrueFalse(buf.getBool()) << ", TD mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Library stream: " << UString::TrueFalse(buf.getBool()) << ", Library picture enable: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(2);
-        disp << margin << "Colour primaries: " << int(buf.getUInt8()) << ", Transfer characteristics: " << int(buf.getUInt8());
-        disp << ", Matrix coefficients: " << int(buf.getUInt8()) << std::endl;
+        uint8_t cp = buf.getUInt8();
+        uint8_t tc = buf.getUInt8();
+        uint8_t mc = buf.getUInt8();
+        disp << margin << UString::Format(u"Colour primaries: %d, Transfer characteristics: %d, Matrix coefficients: %d", {cp, tc, mc}) << std::endl;
         buf.skipBits(8);
     }
 }
