@@ -255,7 +255,7 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(t) << " (" << t << ")";
         buf.skipBits(2);
         t=buf.getBits<uint16_t>(4);
-        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(t) << "(" << t << ")" << std::endl;
+        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(t) << " (" << t << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
