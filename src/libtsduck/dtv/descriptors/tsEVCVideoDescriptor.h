@@ -51,12 +51,12 @@ namespace ts {
         uint8_t   level_idc;                         //!< 8 bits.
         uint32_t  toolset_idc_h;                     //!< 32 bits.
         uint32_t  toolset_idc_l;                     //!< 32 bits.
-        bool      progressive_source;                //!< 
-        bool      interlaced_source;                 //!< 
-        bool      non_packed_constraint;             //!< 
-        bool      frame_only_constraint;             //!< 
-        bool      EVC_still_present;                 //!< 
-        bool      EVC_24hr_picture_present;          //!< 
+        bool      progressive_source;                //!< bool.
+        bool      interlaced_source;                 //!< bool.
+        bool      non_packed_constraint;             //!< bool.
+        bool      frame_only_constraint;             //!< bool.
+        bool      EVC_still_present;                 //!< bool.
+        bool      EVC_24hr_picture_present;          //!< bool.
         uint8_t   HDR_WCG_idc;                       //!< 2 bits.
         uint8_t   video_properties_tag;              //!< 4 bits.
         Variable<uint8_t> temporal_id_min;           //!< 3 bits, optional, specify both min and max or none.

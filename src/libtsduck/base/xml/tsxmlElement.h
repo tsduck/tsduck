@@ -753,6 +753,7 @@ namespace ts {
             //! @param [in,out] other Another element to merge. The @a other object is destroyed,
             //! some of its nodes are reparented into the main object.
             //! @param [in] attrOptions What to do with attributes when merging nodes with identical tags.
+            //! @return True on success, false on error.
             //!
             bool merge(Element* other, MergeAttributes attrOptions = MergeAttributes::ADD);
 
