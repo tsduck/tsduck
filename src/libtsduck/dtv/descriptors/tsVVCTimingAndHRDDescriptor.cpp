@@ -94,7 +94,7 @@ void ts::VVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(0xFF, 6);
     buf.putBit(info_present);
     if (info_present) {
-        buf.putBit(!has_90kHz); // inverted logic, note the '!', see issue #1065
+        buf.putBit(has_90kHz);
         buf.putBits(0xFF, 7);
         if (has_90kHz) {
             buf.putUInt32(N_90khz.value());
@@ -115,7 +115,7 @@ void ts::VVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
     buf.skipBits(6);
     const bool info_present = buf.getBool();
     if (info_present) {
-        const bool has_90kHz = !buf.getBool(); // inverted logic, see serializePayload()
+        const bool has_90kHz = buf.getBool();
         buf.skipBits(7);
         if (has_90kHz) {
             N_90khz = buf.getUInt32();
@@ -136,7 +136,7 @@ void ts::VVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
         disp << margin << "HRD management valid: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(6);
         if (buf.getBool()) { // info_present
-            const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
+            const bool has_90kHz = buf.getBool();
             buf.skipBits(7);
             if (has_90kHz && buf.canReadBytes(8)) {
                 disp << margin << UString::Format(u"90 kHz: N = %'d", {buf.getUInt32()});
