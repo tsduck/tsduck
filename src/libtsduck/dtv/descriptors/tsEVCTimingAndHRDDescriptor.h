@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022-, Paul Higgs
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,37 +28,52 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Definition of the various DTV standards which are used in TSDuck.
+//!  Representation of an EVC_timing_and_HRD_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
-#include "tsEnumUtils.h"
+#include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Bit masks for standards, used to qualify the signalization.
-    //! @ingroup mpeg
+    //! Representation of an VVC_timing_and_HRD_descriptor.
     //!
-    enum class Standards : uint16_t {
-        NONE  = 0x00,  //!< No known standard
-        MPEG  = 0x01,  //!< Defined by MPEG, common to all standards
-        DVB   = 0x02,  //!< Defined by ETSI/DVB.
-        SCTE  = 0x04,  //!< Defined by ANSI/SCTE.
-        ATSC  = 0x08,  //!< Defined by ATSC.
-        ISDB  = 0x10,  //!< Defined by ISDB.
-        JAPAN = 0x20,  //!< Defined in Japan only (typically in addition to ISDB).
-        ABNT  = 0x40,  //!< Defined by ABNT (Brazil, typically in addition to ISDB).
-        AVS   = 0x80,  //!< Defined by AVS Working Group of China.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.135.
+    //! @ingroup descriptor
+    //!
+    class TSDUCKDLL EVCTimingAndHRDDescriptor : public AbstractDescriptor
+    {
+    public:
+        // Public members:
+        bool               hrd_management_valid;  //!< See ISO/IEC 13818-1.
+        Variable<uint32_t> N_90khz;               //!< See ISO/IEC 13818-1.
+        Variable<uint32_t> K_90khz;               //!< See ISO/IEC 13818-1.
+        Variable<uint32_t> num_units_in_tick;     //!< See ISO/IEC 13818-1.
+
+        //!
+        //! Default constructor.
+        //!
+        EVCTimingAndHRDDescriptor();
+
+        //!
+        //! Constructor from a binary descriptor
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in] bin A binary descriptor to deserialize.
+        //!
+        EVCTimingAndHRDDescriptor(DuckContext& duck, const Descriptor& bin);
+
+        // Inherited methods
+        DeclareDisplayDescriptor();
+
+    protected:
+        // Inherited methods
+        virtual DID extendedTag() const override;
+        virtual void clearContent() override;
+        virtual void serializePayload(PSIBuffer&) const override;
+        virtual void deserializePayload(PSIBuffer&) override;
+        virtual void buildXML(DuckContext&, xml::Element*) const override;
+        virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
     };
-
-    //!
-    //! Return a string representing a list of standards.
-    //! @param [in] standards A bit mask of standards.
-    //! @return A string representing the standards.
-    //!
-    TSDUCKDLL UString StandardsNames(Standards standards);
 }
-
-TS_ENABLE_BITMASK_OPERATORS(ts::Standards);
