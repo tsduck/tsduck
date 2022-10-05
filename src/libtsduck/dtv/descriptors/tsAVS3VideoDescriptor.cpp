@@ -254,12 +254,12 @@ void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << margin << "Frame rate code: " << AVS3VideoDescriptor::AVS3FrameRate(t3) << " (" << t3;
         disp << "), Sample precision: " << AVS3VideoDescriptor::AVS3SamplePrecision(t4) << " (" << t4 << ")";
         t4 = buf.getBits<uint16_t>(2);
-        disp << ", Chroma format: " << AVS3VideoDescriptor::Avs3ChromaFormat(t4) << " (" <<buf.getBits<uint16_t>(t4) << ")" << std::endl;
+        disp << ", Chroma format: " << AVS3VideoDescriptor::Avs3ChromaFormat(t4) << " (" << t4 << ")" << std::endl;
         disp << margin << "Temporal ID: " << UString::TrueFalse(buf.getBool()) << ", TD mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Library stream: " << UString::TrueFalse(buf.getBool()) << ", Library picture enable: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(2);
         disp << margin << "Colour primaries: " << int(buf.getUInt8()) << ", Transfer characteristics: " << int(buf.getUInt8());
-        disp << ", Martix coefficients: " << int(buf.getUInt8()) << std::endl;
+        disp << ", Matrix coefficients: " << int(buf.getUInt8()) << std::endl;
         buf.skipBits(8);
     }
 }
