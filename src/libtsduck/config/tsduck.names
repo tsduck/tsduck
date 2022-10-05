@@ -807,6 +807,7 @@ Bits = 8
 0x18 = Protection Message
 0x19 = Audio Preselection
 0x20 = TTML Subtitling
+0x23 = VVC Subpictures
 
 [CASystemId]
 Bits = 16

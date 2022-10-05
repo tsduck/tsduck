@@ -814,6 +814,7 @@ namespace ts {
         EDID_PROTECTION_MSG     = 0x18, //!< Ext.DID for protection_message_descriptor
         EDID_AUDIO_PRESELECT    = 0x19, //!< Ext.DID for audio_preselection_descriptor
         EDID_TTML_SUBTITLING    = 0x20, //!< Ext.DID for TTML_subtitling_descriptor
+        EDID_VVC_SUBPICTURES    = 0x23, //<! Ext.DID for vvc_subpictures_descriptor
         EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
