@@ -159,8 +159,10 @@ void ts::EVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::EVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(12)) {
-        disp << margin << "Profile IDC: " << UString::Hexa(buf.getUInt8(), 2*sizeof(uint8_t)) << ", level IDC: " << UString::Hexa(buf.getUInt8(), 2 * sizeof(uint8_t)) << std::endl;
-        disp << margin << "Toolset h: " << UString::Hexa(buf.getUInt32(), 2 * sizeof(uint32_t)) << ", l: " << UString::Hexa(buf.getUInt32(), 2 * sizeof(uint32_t)) << std::endl;
+        disp << margin << "Profile IDC: " << UString::Hexa(buf.getUInt8());
+        disp << ", level IDC: " << UString::Hexa(buf.getUInt8()) << std::endl;
+        disp << margin << "Toolset h: " << UString::Hexa(buf.getUInt32());
+        disp << ", l: " << UString::Hexa(buf.getUInt32()) << std::endl;
         disp << margin << "Progressive source: " << UString::TrueFalse(buf.getBool());
         disp << ", interlaced source: " << UString::TrueFalse(buf.getBool());
         disp << ", non packed: " << UString::TrueFalse(buf.getBool());
