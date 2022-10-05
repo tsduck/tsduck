@@ -47,7 +47,7 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t   profile_idc;                       //!< 7 bits.
+        uint8_t   profile_idc;                       //!< 8 bits.
         uint8_t   level_idc;                         //!< 8 bits.
         uint32_t  toolset_idc_h;                     //!< 32 bits.
         uint32_t  toolset_idc_l;                     //!< 32 bits.

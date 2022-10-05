@@ -83,6 +83,16 @@ ts::LCEVCVideoDescriptor::LCEVCVideoDescriptor(DuckContext& duck, const Descript
 
 
 //----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::LCEVCVideoDescriptor::extendedTag() const
+{
+    return MY_EDID;
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -129,9 +139,12 @@ void ts::LCEVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::LCEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(4)) {
-        disp << margin << "LCEVC stream tag: " << UString::Hexa(buf.getUInt8(), 2 * sizeof(uint8_t));
-        disp << ", profile IDC: " << buf.getBits<uint16_t>(4) << ", level IDC: " << buf.getBits<uint16_t>(4) << std::endl;
-        disp << margin << "Processed planes: " << UString::TrueFalse(buf.getBool()) << ", picture type: " << UString::TrueFalse(buf.getBool());
+        disp << margin << "LCEVC stream tag: " << UString::Hexa(buf.getUInt8());
+        disp << ", profile IDC: " << buf.getBits<uint16_t>(4);
+        disp << ", level IDC: " << buf.getBits<uint16_t>(4);
+        disp << ", sublevel: " << buf.getBits<uint16_t>(2) << std::endl;
+        disp << margin << "Processed planes: " << UString::TrueFalse(buf.getBool());
+        disp << ", picture type: " << UString::TrueFalse(buf.getBool());
         disp << ", field type: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(3);
         disp << margin << "HDR WCG idc: " << buf.getBits<uint16_t>(2);       

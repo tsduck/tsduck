@@ -95,7 +95,7 @@ void ts::DVBVVCSubpicturesDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(default_service_mode);
     bool service_description_present = (service_description.length() > 0);
     buf.putBit(service_description_present);
-    uint8_t number_of_vvc_subpictures = component_tag.size() & 0xFF;
+    const size_t number_of_vvc_subpictures = std::min<size_t>(0x3F, std::min(component_tag.size(), vvc_subpicture_id.size()));
     buf.putBits(number_of_vvc_subpictures, 6);
     for (uint8_t i = 0; i < number_of_vvc_subpictures; i++) {
         buf.putUInt8(component_tag[i]);
@@ -103,8 +103,9 @@ void ts::DVBVVCSubpicturesDescriptor::serializePayload(PSIBuffer& buf) const
     }
     buf.putBits(0, 5); // reserved bits are zero here
     buf.putBits(processing_mode, 3);
-    if (service_description_present)
+    if (service_description_present) {
         buf.putStringWithByteLength(service_description);
+    }
 }
 
 
@@ -116,7 +117,7 @@ void ts::DVBVVCSubpicturesDescriptor::deserializePayload(PSIBuffer& buf)
 {
     default_service_mode = buf.getBool();
     bool service_description_present = buf.getBool();
-    uint8_t number_of_vvc_subpictures;
+    size_t number_of_vvc_subpictures = 0;
     buf.getBits(number_of_vvc_subpictures, 6);
     for (uint8_t i = 0; i < number_of_vvc_subpictures; i++) {
         component_tag.push_back(buf.getUInt8());
@@ -164,14 +165,14 @@ void ts::DVBVVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 void ts::DVBVVCSubpicturesDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"default_service_mode", default_service_mode);
-    for (size_t i = 0; i < component_tag.size(); i++) {
+    const size_t number_of_vvc_subpictures = std::min<size_t>(0x3F, std::min(component_tag.size(), vvc_subpicture_id.size()));
+    for (size_t i = 0; i < number_of_vvc_subpictures; i++) {
         ts::xml::Element* element = root->addElement(u"subpicture");
-        element->setIntAttribute(u"component_tag", component_tag[i]);
-        element->setIntAttribute(u"subpicture_id", vvc_subpicture_id[i]);
+        element->setIntAttribute(u"component_tag", component_tag[i], true);
+        element->setIntAttribute(u"subpicture_id", vvc_subpicture_id[i], true);
     }
     root->setIntAttribute(u"processing_mode", processing_mode);
-    if (service_description.length() > 0)
-        root->setAttribute(u"service_description", service_description);
+    root->setAttribute(u"service_description", service_description, true);
 }
 
 
@@ -181,18 +182,18 @@ void ts::DVBVVCSubpicturesDescriptor::buildXML(DuckContext& duck, xml::Element* 
 
 bool ts::DVBVVCSubpicturesDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
+    xml::ElementVector children;
     bool ok =
         element->getBoolAttribute(default_service_mode, u"default_service_mode", true) &&
         element->getIntAttribute(processing_mode, u"processing_mode", true, 0, 0, 7) &&
-        element->getAttribute(service_description, u"service_description", false);
-    if (ok) {
-        xml::ElementVector children;
-        ok &= element->getChildren(children, u"subpicture");
-        for (size_t i = 0; ok && i < children.size(); ++i) {
-            uint8_t ctag, sp_id;
-            ok &= children[i]->getIntAttribute(ctag, u"component_tag", true, 0, 0, 0xFF) &&
-                children[i]->getIntAttribute(sp_id, u"subpicture_id", true, 0, 0, 0xFF);
-        }
+        element->getAttribute(service_description, u"service_description", false) &&
+        element->getChildren(children, u"subpicture", 0, 0x3F);
+    for (size_t i = 0; ok && i < children.size(); ++i) {
+        uint8_t ctag, sp_id;
+        ok = children[i]->getIntAttribute(ctag, u"component_tag", true, 0, 0, 0xFF) &&
+             children[i]->getIntAttribute(sp_id, u"subpicture_id", true, 0, 0, 0xFF);
+        component_tag.push_back(ctag);
+        vvc_subpicture_id.push_back(sp_id);
     }
     return ok;
 }

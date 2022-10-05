@@ -334,6 +334,7 @@ namespace ts {
         PDS_OFCOM     = 0x0000233A, //!< Private data specifier for DTT UK (OFCOM, formerly ITC).
         PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
         PDS_ISDB      = 0x49534442, //!< Fake private data specifier for ISDB descriptors (value is "ISDB" in ASCII).
+        PDS_AVS       = 0x41565333, //!< Fake private data specifier for AVS descriptors (value is "AVS3" in ASCII).
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
     };
 
@@ -477,9 +478,7 @@ namespace ts {
         DID_FTA_CONTENT_MGMT    = 0x7E, //!< DID for DVB FTA_content_management_descriptor
         DID_DVB_EXTENSION       = 0x7F, //!< DID for DVB extension_descriptor
 
-        DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
-
-        // Valid in an AIT (Application Information Table, ETSI TS 102 809):
+        // Valid only in a DVB AIT (Application Information Table, ETSI TS 102 809):
 
         DID_AIT_APPLICATION     = 0x00, //!< DID for AIT application_descriptor.
         DID_AIT_APP_NAME        = 0x01, //!< DID for AIT application_name_descriptor.
@@ -501,7 +500,7 @@ namespace ts {
         DID_AIT_APP_USAGE       = 0x16, //!< DID for AIT application_usage_descriptor.
         DID_AIT_APP_BOUNDARY    = 0x17, //!< DID for AIT simple_application_boundary_descriptor.
 
-        // Valid in an INT (IP/MAC Notification Table, ETSI EN 301 192):
+        // Valid only in a DVB INT (IP/MAC Notification Table, ETSI EN 301 192):
 
         DID_INT_SMARTCARD       = 0x06, //!< DID for INT target_smartcard_descriptor
         DID_INT_MAC_ADDR        = 0x07, //!< DID for INT target_MAC_address_descriptor
@@ -519,7 +518,7 @@ namespace ts {
         DID_INT_ISP_ACCESS      = 0x14, //!< DID for INT ISP_access_mode_descriptor
         DID_INT_GEN_STREAM_LOC  = 0x15, //!< DID for INT IP/MAC_generic_stream_location_descriptor
 
-        // Valid in a UNT (Update Notification Table, ETSI TS 102 006):
+        // Valid only in a DVB UNT (Update Notification Table, ETSI TS 102 006):
 
         DID_UNT_SCHEDULING      = 0x01, //!< DID for UNT scheduling_descriptor
         DID_UNT_UPDATE          = 0x02, //!< DID for UNT update_descriptor
@@ -535,44 +534,7 @@ namespace ts {
         DID_UNT_ENHANCED_MSG    = 0x0C, //!< DID for UNT enhanced_message_descriptor
         DID_UNT_SSU_URI         = 0x0D, //!< DID for UNT ssu_uri_descriptor
 
-        // Valid in EAS (Emergency Alert System, SCTE 18).
-
-        DID_EAS_INBAND_DETAILS  = 0x00,  //!< DID for SCTE 18 In-Band Details Channel Descriptor
-        DID_EAS_INBAND_EXCEPTS  = 0x01,  //!< DID for SCTE 18 In-Band Exceptions Channel Descriptor
-        DID_EAS_AUDIO_FILE      = 0x02,  //!< DID for SCTE 18 Audio File Descriptor
-        DID_EAS_METADATA        = 0x03,  //!< DID for SCTE 18 / SCTE 164 Emergency Alert Metadata Descriptor
-
-        // Valid in a SIT (Splice Information Table, SCTE 35).
-
-        DID_SPLICE_AVAIL        = 0x00, //!< DID for SCTE 35 SIT avail_descriptor
-        DID_SPLICE_DTMF         = 0x01, //!< DID for SCTE 35 SIT DTMF_descriptor
-        DID_SPLICE_SEGMENT      = 0x02, //!< DID for SCTE 35 SIT segmentation_descriptor
-        DID_SPLICE_TIME         = 0x03, //!< DID for SCTE 35 SIT time_descriptor
-
-        // Valid in ATSC / SCTE context:
-
-        DID_ATSC_STUFFING       = 0x80, //!< DID for ATSC stuffing_descriptor
-        DID_ATSC_AC3            = 0x81, //!< DID for ATSC ac3_audio_stream_descriptor
-        DID_ATSC_PID            = 0x85, //!< DID for ATSC program_identifier_descriptor
-        DID_ATSC_CAPTION        = 0x86, //!< DID for ATSC caption_service_descriptor
-        DID_ATSC_CONTENT_ADVIS  = 0x87, //!< DID for ATSC content_advisory_descriptor
-        DID_CUE_IDENTIFIER      = 0x8A, //!< DID for SCTE 35 cue_identifier_descriptor
-        DID_ATSC_EXT_CHAN_NAME  = 0xA0, //!< DID for ATSC extended_channel_name_descriptor
-        DID_ATSC_SERVICE_LOC    = 0xA1, //!< DID for ATSC service_location_descriptor
-        DID_ATSC_TIME_SHIFT     = 0xA2, //!< DID for ATSC time_shifted_event_descriptor
-        DID_ATSC_COMPONENT_NAME = 0xA3, //!< DID for ATSC component_name_descriptor
-        DID_ATSC_DATA_BRDCST    = 0xA4, //!< DID for ATSC data_broadcast_descriptor
-        DID_ATSC_PID_COUNT      = 0xA5, //!< DID for ATSC pid_count_descriptor
-        DID_ATSC_DOWNLOAD       = 0xA6, //!< DID for ATSC download_descriptor
-        DID_ATSC_MPROTO_ENCAPS  = 0xA7, //!< DID for ATSC multiprotocol_encapsulation_descriptor
-        DID_ATSC_DCC_DEPARTING  = 0xA8, //!< DID for ATSC DCC_departing_request_descriptor
-        DID_ATSC_DCC_ARRIVING   = 0xA9, //!< DID for ATSC DCC_arriving_request_descriptor
-        DID_ATSC_REDIST_CONTROL = 0xAA, //!< DID for ATSC redistribution_control_descriptor
-        DID_ATSC_GENRE          = 0xAB, //!< DID for ATSC genre_descriptor
-        DID_ATSC_PRIVATE_INFO   = 0xAD, //!< DID for ATSC private_information_descriptor
-        DID_ATSC_ENHANCED_AC3   = 0xCC, //!< DID for ATSC E-AC-3_audio_stream_descriptor
-
-        // Valid after PDS_LOGIWAYS private_data_specifier
+        // Valid in DVB context after PDS_LOGIWAYS private_data_specifier
 
         DID_LW_SUBSCRIPTION      = 0x81, //!< DID for Logiways subscription_descriptor
         DID_LW_SCHEDULE          = 0xB0, //!< DID for Logiways schedule_descriptor
@@ -592,16 +554,16 @@ namespace ts {
         DID_LW_ORDER_CODE        = 0xBE, //!< DID for Logiways order_code_descriptor
         DID_LW_BOUQUET_REFERENCE = 0xBF, //!< DID for Logiways bouquet_reference_descriptor
 
-        // Valid after PDS_EUTELSAT private_data_specifier
+        // Valid in DVB context after PDS_EUTELSAT private_data_specifier
 
         DID_EUTELSAT_CHAN_NUM   = 0x83, //!< DID for eutelsat_channel_number_descriptor
 
-        // Valid after PDS_NORDIG private_data_specifier
+        // Valid in DVB context after PDS_NORDIG private_data_specifier
 
         DID_NORDIG_CHAN_NUM_V1  = 0x83, //!< DID for nordig_logical_channel_descriptor_v1
         DID_NORDIG_CHAN_NUM_V2  = 0x87, //!< DID for nordig_logical_channel_descriptor_v2
 
-        // Valid after PDS_EACEM/EICTA private_data_specifier
+        // Valid in DVB context after PDS_EACEM/EICTA private_data_specifier
 
         DID_LOGICAL_CHANNEL_NUM = 0x83, //!< DID for EACEM/EICTA logical_channel_number_descriptor
         DID_PREF_NAME_LIST      = 0x84, //!< DID for EACEM/EICTA preferred_name_list_descriptor
@@ -609,7 +571,7 @@ namespace ts {
         DID_EACEM_STREAM_ID     = 0x86, //!< DID for EACEM/EICTA eacem_stream_identifier_descriptor
         DID_HD_SIMULCAST_LCN    = 0x88, //!< DID for EACEM/EICTA HD_simulcast_logical_channel_number_descriptor
 
-        // Valid after PDS_OFCOM private_data_specifier
+        // Valid in DVB context after PDS_OFCOM private_data_specifier
 
         DID_OFCOM_LOGICAL_CHAN  = 0x83, //!< DID for OFCOM/DTG logical_channel_descriptor
         DID_OFCOM_PREF_NAME_LST = 0x84, //!< DID for OFCOM/DTG preferred_name_list_descriptor
@@ -619,7 +581,7 @@ namespace ts {
         DID_OFCOM_HD_SIMULCAST  = 0x88, //!< DID for OFCOM/DTG HD_simulcast_logical_channel_descriptor
         DID_OFCOM_GUIDANCE      = 0x89, //!< DID for OFCOM/DTG guidance_descriptor
 
-        // Valid after PDS_CANALPLUS private_data_specifier
+        // Valid in DVB context after PDS_CANALPLUS private_data_specifier
 
         DID_DTG_STREAM_IND      = 0x80, //!< DID for Canal+ DTG_Stream_indicator_descriptor
         DID_PIO_OFFSET_TIME     = 0X80, //!< DID for Canal+ pio_offset_time_descriptor
@@ -695,12 +657,50 @@ namespace ts {
         DID_DATA_COMPONENT_FD   = 0xFD, //!< DID for Canal+ data_component_descriptor
         DID_SYSTEM_MGMT_FE      = 0xFE, //!< DID for Canal+ system_management_descriptor
 
-        // Valid after PDS_BSKYB private_data_specifier
+        // Valid in DVB context after PDS_BSKYB private_data_specifier
 
         DID_LOGICAL_CHANNEL_SKY = 0xB1, //!< DID for BskyB logical_channel_number_by_region_descriptor
         DID_SERVICE_SKY         = 0xB2, //!< DID for BskyB service_descriptor
 
+        // Valid in ATSC / SCTE context:
+
+        DID_ATSC_STUFFING       = 0x80, //!< DID for ATSC stuffing_descriptor
+        DID_ATSC_AC3            = 0x81, //!< DID for ATSC ac3_audio_stream_descriptor
+        DID_ATSC_PID            = 0x85, //!< DID for ATSC program_identifier_descriptor
+        DID_ATSC_CAPTION        = 0x86, //!< DID for ATSC caption_service_descriptor
+        DID_ATSC_CONTENT_ADVIS  = 0x87, //!< DID for ATSC content_advisory_descriptor
+        DID_CUE_IDENTIFIER      = 0x8A, //!< DID for SCTE 35 cue_identifier_descriptor
+        DID_ATSC_EXT_CHAN_NAME  = 0xA0, //!< DID for ATSC extended_channel_name_descriptor
+        DID_ATSC_SERVICE_LOC    = 0xA1, //!< DID for ATSC service_location_descriptor
+        DID_ATSC_TIME_SHIFT     = 0xA2, //!< DID for ATSC time_shifted_event_descriptor
+        DID_ATSC_COMPONENT_NAME = 0xA3, //!< DID for ATSC component_name_descriptor
+        DID_ATSC_DATA_BRDCST    = 0xA4, //!< DID for ATSC data_broadcast_descriptor
+        DID_ATSC_PID_COUNT      = 0xA5, //!< DID for ATSC pid_count_descriptor
+        DID_ATSC_DOWNLOAD       = 0xA6, //!< DID for ATSC download_descriptor
+        DID_ATSC_MPROTO_ENCAPS  = 0xA7, //!< DID for ATSC multiprotocol_encapsulation_descriptor
+        DID_ATSC_DCC_DEPARTING  = 0xA8, //!< DID for ATSC DCC_departing_request_descriptor
+        DID_ATSC_DCC_ARRIVING   = 0xA9, //!< DID for ATSC DCC_arriving_request_descriptor
+        DID_ATSC_REDIST_CONTROL = 0xAA, //!< DID for ATSC redistribution_control_descriptor
+        DID_ATSC_GENRE          = 0xAB, //!< DID for ATSC genre_descriptor
+        DID_ATSC_PRIVATE_INFO   = 0xAD, //!< DID for ATSC private_information_descriptor
+        DID_ATSC_ENHANCED_AC3   = 0xCC, //!< DID for ATSC E-AC-3_audio_stream_descriptor
+
+        // Valid in SCTE EAS (Emergency Alert System, SCTE 18).
+
+        DID_EAS_INBAND_DETAILS  = 0x00,  //!< DID for SCTE 18 In-Band Details Channel Descriptor
+        DID_EAS_INBAND_EXCEPTS  = 0x01,  //!< DID for SCTE 18 In-Band Exceptions Channel Descriptor
+        DID_EAS_AUDIO_FILE      = 0x02,  //!< DID for SCTE 18 Audio File Descriptor
+        DID_EAS_METADATA        = 0x03,  //!< DID for SCTE 18 / SCTE 164 Emergency Alert Metadata Descriptor
+
+        // Valid only in a SCTE SIT (Splice Information Table, SCTE 35).
+
+        DID_SPLICE_AVAIL        = 0x00, //!< DID for SCTE 35 SIT avail_descriptor
+        DID_SPLICE_DTMF         = 0x01, //!< DID for SCTE 35 SIT DTMF_descriptor
+        DID_SPLICE_SEGMENT      = 0x02, //!< DID for SCTE 35 SIT segmentation_descriptor
+        DID_SPLICE_TIME         = 0x03, //!< DID for SCTE 35 SIT time_descriptor
+
         // Valid in ISDB context:
+
         DID_ISDB_MATERIAL_INFO  = 0x67, //!< DID for ISDB Material information descriptor, in LIT only (WARNING: conflict with DVB)
         DID_ISDB_HYBRID_INFO    = 0x68, //!< DID for ISDB Hybrid information descriptor (WARNING: conflict with DVB)
         DID_ISDB_HIERARCH_TRANS = 0xC0, //!< DID for ISDB Hierarchical transmission descriptor
@@ -752,6 +752,10 @@ namespace ts {
         DID_ISDB_EMERGENCY_INFO = 0xFC, //!< DID for ISDB Emergency information descriptor
         DID_ISDB_DATA_COMP      = 0xFD, //!< DID for ISDB Data component descriptor
         DID_ISDB_SYSTEM_MGMT    = 0xFE, //!< DID for ISDB System management descriptor
+
+        // Valid in AVS context (Chinese Audio Video Systems).
+
+        DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
     };
 
 

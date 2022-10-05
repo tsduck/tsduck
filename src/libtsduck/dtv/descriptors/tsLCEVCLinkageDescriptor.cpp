@@ -68,6 +68,16 @@ ts::LCEVCLinkageDescriptor::LCEVCLinkageDescriptor(DuckContext& duck, const Desc
 
 
 //----------------------------------------------------------------------------
+// This is an extension descriptor.
+//----------------------------------------------------------------------------
+
+ts::DID ts::LCEVCLinkageDescriptor::extendedTag() const
+{
+    return MY_EDID;
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -75,8 +85,9 @@ void ts::LCEVCLinkageDescriptor::serializePayload(PSIBuffer& buf) const
 {
     uint8_t num_lcevc_stream_tags = lcevc_stream_tags.size() & 0xFF;
     buf.putUInt8(num_lcevc_stream_tags);
-    for (auto it : lcevc_stream_tags)
+    for (auto it : lcevc_stream_tags) {
         buf.putUInt8(it);
+    }
 }
 
 
@@ -87,8 +98,9 @@ void ts::LCEVCLinkageDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::LCEVCLinkageDescriptor::deserializePayload(PSIBuffer& buf)
 {
     uint8_t num_lcevc_stream_tags = buf.getUInt8();
-    for (uint8_t i = 0; i < num_lcevc_stream_tags; i++)
+    for (uint8_t i = 0; i < num_lcevc_stream_tags; i++) {
         lcevc_stream_tags.push_back(buf.getUInt8());
+    }
 }
 
 
@@ -97,20 +109,13 @@ void ts::LCEVCLinkageDescriptor::deserializePayload(PSIBuffer& buf)
 //----------------------------------------------------------------------------
 
 void ts::LCEVCLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
-{
-    
+{    
     if (buf.canReadBytes(1)) {
-        uint8_t num_lcevc_stream_tags = buf.getUInt8();
-        if (num_lcevc_stream_tags > 0) {
-            disp << margin << "LCEVC stream tag: ";
-            for (uint8_t i = 0; i < num_lcevc_stream_tags; i++) {
-                disp << buf.getUInt8() << " ";
-                if ((i + 1) % 6 == 0) {
-                    disp << std::endl;
-                    if (i != (num_lcevc_stream_tags - 1))
-                        disp << margin << "                  ";
-                }
-            }
+        size_t size = buf.getUInt8();
+        size = std::min(size, buf.remainingReadBytes());
+        if (size > 0) {
+            disp.displayPrivateData(u"LCEVC stream tag", buf.currentReadAddress(), size, margin);
+            buf.skipBytes(size);
         }
     }
 }
@@ -122,11 +127,7 @@ void ts::LCEVCLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 
 void ts::LCEVCLinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 { 
-    root->setIntAttribute(u"num_lcevc_stream_tags", lcevc_stream_tags.size());
-        for (auto it : lcevc_stream_tags) {
-        uint8_t lcevc_stream_tag = it;
-        root->addHexaTextChild(u"lcevc_stream_tag", &lcevc_stream_tag, sizeof(lcevc_stream_tag));
-    }
+    root->addHexaTextChild(u"lcevc_stream_tag", lcevc_stream_tags, true);
 }
 
 
@@ -136,24 +137,5 @@ void ts::LCEVCLinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::LCEVCLinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    uint8_t num_lcevc_stream_tags;
-    bool ok = element->getIntAttribute(num_lcevc_stream_tags, u"num_lcevc_stream_tags", true, 0, 0x00, 0xFF);
-    if (ok) {
-        xml::ElementVector children;
-        ok &= element->getChildren(children, u"lcevc_stream_tag");
-        for (size_t i = 0; ok && i < children.size(); ++i) {
-            UString hexVal(u"");
-            ok &= children[i]->getText(hexVal);
-            uint16_t val = 0;
-            if (!hexVal.toInteger(val, u",")) {
-                element->report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", { hexVal, u"lcevc_stream_tag", element->lineNumber(), element->name() });
-                ok = false;
-            }
-            else if (val > 0xFF) {
-                element->report().error(u"'%s' is not in the range %d to %d attribute '%s' in <%s>, line %d", { hexVal, 0, 0xFF, u"lcevc_stream_tag", element->lineNumber(), element->name() });
-                ok = false;
-            }
-        }
-    }
-    return ok;
+    return element->getHexaTextChild(lcevc_stream_tags, u"lcevc_stream_tag", false, 0, MAX_DESCRIPTOR_SIZE - 1);
 }

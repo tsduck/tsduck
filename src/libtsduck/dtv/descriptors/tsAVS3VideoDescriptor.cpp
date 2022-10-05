@@ -38,9 +38,10 @@
 #define MY_XML_NAME u"AVS3_video_descriptor"
 #define MY_CLASS ts::AVS3VideoDescriptor
 #define MY_DID ts::DID_AVS3_VIDEO
+#define MY_PDS ts::PDS_AVS
 #define MY_STD ts::Standards::AVS
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, 0), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
@@ -141,18 +142,20 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::AVS3VideoDescriptor::Avs3Profile(uint8_t pi) {
+ts::UString ts::AVS3VideoDescriptor::Avs3Profile(uint8_t pi)
+{
     // T/AI 109.2, table B.1
     switch (pi) {
         case 0x20: return u"Main-8";
         case 0x22: return u"Main-10";
         case 0x30: return u"High-8";
         case 0x32: return u"High-10";
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
-ts::UString ts::AVS3VideoDescriptor::Avs3Level(uint8_t li) {
+ts::UString ts::AVS3VideoDescriptor::Avs3Level(uint8_t li)
+{
     // T/AI 109.2, table B.2
     switch (li) {
         case 0x10: return u"2.0.15";
@@ -196,11 +199,12 @@ ts::UString ts::AVS3VideoDescriptor::Avs3Level(uint8_t li) {
         case 0x6A: return u"10.2.120";
         case 0x69: return u"10.4.120";
         case 0x6B: return u"10.6.120";
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
-ts::UString ts::AVS3VideoDescriptor::AVS3FrameRate(uint16_t fr) {
+ts::UString ts::AVS3VideoDescriptor::AVS3FrameRate(uint16_t fr)
+{
     // T/AI 109.2, table 48
     switch (fr) {
         case 0: return u"forbidden";
@@ -218,26 +222,28 @@ ts::UString ts::AVS3VideoDescriptor::AVS3FrameRate(uint16_t fr) {
         case 12: return u"240";
         case 13: return u"400";
         case 14: return u"120/1.001";
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
-ts::UString ts::AVS3VideoDescriptor::AVS3SamplePrecision(uint16_t sp) {
+ts::UString ts::AVS3VideoDescriptor::AVS3SamplePrecision(uint16_t sp)
+{
     // T/AI 109.2, table 45
     switch (sp) {
         case 0: return u"forbidden";
         case 1: return u"8-bit";
         case 2: return u"10-bit";
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
-ts::UString ts::AVS3VideoDescriptor::Avs3ChromaFormat(uint16_t cf) {
+ts::UString ts::AVS3VideoDescriptor::Avs3ChromaFormat(uint16_t cf)
+{
     // T/AI 109.2, table 44
     switch (cf) {
         case 1: return u"4:2:0"; 
         case 2: return u"4:2:2"; 
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
@@ -295,13 +301,13 @@ void ts::AVS3VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    bool ok =
+    return
         element->getIntAttribute(profile_id, u"profile_id", true, 0, 0x00, 0xFF) &&
         element->getIntAttribute(level_id, u"level_id", true, 0, 0x00, 0xFF) &&
         element->getBoolAttribute(multiple_frame_rate_flag, u"multiple_frame_rate_flag", false) &&
         element->getIntAttribute(frame_rate_code, u"frame_rate_code", true, 0, 0x00, 0xFF) &&
         element->getIntAttribute(sample_precision, u"sample_precision", true, 0, 0x00, 0xFF) &&
-        element->getIntAttribute(chroma_format, u"chroma_format", true, 0, 0x00, 0xFF) &&
+        element->getIntAttribute(chroma_format, u"chroma_format", true, 0, 0x00, 0x03) &&
         element->getBoolAttribute(temporal_id_flag, u"temporal_id_flag", false) &&
         element->getBoolAttribute(td_mode_flag, u"td_mode_flag", false) &&
         element->getBoolAttribute(library_stream_flag, u"library_stream_flag", false) &&
@@ -309,5 +315,4 @@ bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getIntAttribute(colour_primaries, u"colour_primaries", true, 0, 0x00, 0xFF) &&
         element->getIntAttribute(transfer_characteristics, u"transfer_characteristics", true, 0, 0x00, 0xFF) &&
         element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true, 0, 0x00, 0xFF);
-    return ok;
 }

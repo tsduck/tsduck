@@ -49,7 +49,7 @@ namespace ts {
         // Public members:
         uint8_t   profile_idc;                       //!< 7 bits.
         bool      tier;                              //!< 
-        std::vector<uint32_t> sub_profile_idc;             //!< array of 32 bit values.
+        std::vector<uint32_t> sub_profile_idc;       //!< array of 32 bit values.
         bool      progressive_source;                //!< 
         bool      interlaced_source;                 //!< 
         bool      non_packed_constraint;             //!< 
