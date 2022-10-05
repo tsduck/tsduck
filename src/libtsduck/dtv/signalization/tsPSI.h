@@ -407,7 +407,7 @@ namespace ts {
         DID_TRANSPORT_PROFILE   = 0x37, //!< DID for Transport Profile descriptor
         DID_HEVC_VIDEO          = 0x38, //!< DID for HEVC Video descriptor
         DID_VVC_VIDEO           = 0x39, //!< DID for VVC Video descriptor
-        DID_EVC_VIDEO           = 0x3A, //!< DID for VVC Video descriptor
+        DID_EVC_VIDEO           = 0x3A, //!< DID for EVC Video descriptor
         DID_MPEG_EXTENSION      = 0x3F, //!< DID for MPEG-2 Extension descriptor
 
         // Valid in DVB context:
