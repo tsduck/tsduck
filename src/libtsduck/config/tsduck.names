@@ -33,6 +33,7 @@ Bits = 16
 0x0010 = ISDB
 0x0020 = Japan
 0x0040 = ABNT
+0x0080 = AVS
 
 [TableId]
 # MPEG table id: 0xsssscctt with
@@ -329,6 +330,7 @@ Bits = 32
 0x00600000 = Rhône Vision Cable
 0x41545343 = ATSC (fake PDS for ATSC descriptors)
 0x41555300 = Foxtel Management
+0x41565333 = AVS (fake PDS for AVS descriptors)
 0x44414E59 = NDS
 0x46524549 = NDS
 0x46534154 = BBC
@@ -505,7 +507,6 @@ Bits = 8
 0xB3 = Mesh Logon initialize (ETSI EN 301 790)
 0xB5 = Implementation type (ETSI EN 301 790)
 0xB6 = LL FEC identifier (ETSI EN 301 790)
-0xD1 = AVS3 Video (T/AI 109.6)
 # Valid in a UNT (0x4B, Update Notification Table, ETSI TS 102 006):
 0x4B_FFFFFFFF_01 = UNT Scheduling
 0x4B_FFFFFFFF_02 = UNT Update
@@ -708,6 +709,8 @@ Bits = 8
 0x41545343_AB = ATSC Genre
 0x41545343_AD = ATSC Private Information
 0x41545343_CC = ATSC E-AC-3 Audio Stream
+# AVS descriptors, using the fake PDS for AVS.
+0x41565333_D1 = AVS3 Video (T/AI 109.6)
 # ISDB descriptors, using the fake PDS for ISDB.
 # 0x67 = ISDB Material Information (WARNING: conflict with DVB)
 # 0x68 = ISDB Hybrid Information (WARNING: conflict with DVB)
@@ -778,6 +781,10 @@ Bits = 8
 0x0E = MPEG-H 3D Audio Command
 0x0F = Quality Extension
 0x10 = Virtual Segmentation
+0x15 = VVC timing and HRD
+0x16 = EVC timing and HRD
+0x17 = LCEVC video descriptor
+0x18 = LCEVC linkage
 
 [DVBExtendedDescriptorId]
 Bits = 8

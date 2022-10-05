@@ -158,16 +158,16 @@ void ts::EVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::EVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.canReadBytes(15)) {
+    if (buf.canReadBytes(12)) {
         disp << margin << "Profile IDC: " << UString::Hexa(buf.getUInt8(), 2*sizeof(uint8_t)) << ", level IDC: " << UString::Hexa(buf.getUInt8(), 2 * sizeof(uint8_t)) << std::endl;
-        disp << margin << "Toolset h:" << UString::Hexa(buf.getUInt32(), 2 * sizeof(uint32_t)) << ", l:" << UString::Hexa(buf.getUInt32(), 2 * sizeof(uint32_t)) << std::endl;
+        disp << margin << "Toolset h: " << UString::Hexa(buf.getUInt32(), 2 * sizeof(uint32_t)) << ", l: " << UString::Hexa(buf.getUInt32(), 2 * sizeof(uint32_t)) << std::endl;
         disp << margin << "Progressive source: " << UString::TrueFalse(buf.getBool());
         disp << ", interlaced source: " << UString::TrueFalse(buf.getBool());
         disp << ", non packed: " << UString::TrueFalse(buf.getBool());
         disp << ", frame only: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(1);
         const bool temporal = buf.getBool();
-        disp << "Still pictures: " << UString::TrueFalse(buf.getBool());
+        disp << margin << "Still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "HDR WCG idc: " << buf.getBits<uint16_t>(2);       
         buf.skipBits(2);
@@ -196,7 +196,6 @@ void ts::EVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
     root->setBoolAttribute(u"interlaced_source_flag", interlaced_source);
     root->setBoolAttribute(u"non_packed_constraint_flag", non_packed_constraint);
     root->setBoolAttribute(u"frame_only_constraint_flag", frame_only_constraint);
-    root->setBoolAttribute(u"temporal_layer_subset_flag", temporal_id_min.set() && temporal_id_max.set());
     root->setBoolAttribute(u"EVC_still_present_flag", EVC_still_present);
     root->setBoolAttribute(u"EVC_24hr_picture_present_flag", EVC_24hr_picture_present);
     root->setIntAttribute(u"HDR_WCG_idc", HDR_WCG_idc);
@@ -212,8 +211,8 @@ void ts::EVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::EVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    bool temporal_layer_subset_flag, ok =
-        element->getIntAttribute(profile_idc, u"profile_idc", true, 0, 0x00, 0x1F) &&
+    bool ok =
+        element->getIntAttribute(profile_idc, u"profile_idc", true) &&
         element->getIntAttribute(level_idc, u"level_idc", true) &&
         element->getIntAttribute(toolset_idc_h, u"toolset_idc_h", true) &&
         element->getIntAttribute(toolset_idc_l, u"toolset_idc_l", true) &&
@@ -221,14 +220,15 @@ bool ts::EVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getBoolAttribute(interlaced_source, u"interlaced_source_flag", true) &&
         element->getBoolAttribute(non_packed_constraint, u"non_packed_constraint_flag", true) &&
         element->getBoolAttribute(frame_only_constraint, u"frame_only_constraint_flag", true) &&
-        element->getBoolAttribute(temporal_layer_subset_flag, u"temporal_layer_subset_flag", true) &&
         element->getBoolAttribute(EVC_still_present, u"EVC_still_present_flag", true) &&
         element->getBoolAttribute(EVC_24hr_picture_present, u"EVC_24hr_picture_present_flag", true) &&
         element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", false, 3, 0, 3) &&
-        element->getIntAttribute(video_properties_tag, u"video_properties_tag", false, 0, 0, 15);
+        element->getIntAttribute(video_properties_tag, u"video_properties_tag", false, 0, 0, 15) &&
+        element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0, 7) &&
+        element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0, 7);
 
     if (ok && temporal_id_min.set() + temporal_id_max.set() == 1) {
-        element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", { element->lineNumber(), element->name() });
+        element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", {element->lineNumber(), element->name()});
         ok = false;
     }
 
