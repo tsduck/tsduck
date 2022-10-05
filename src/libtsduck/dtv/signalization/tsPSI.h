@@ -406,6 +406,8 @@ namespace ts {
         DID_STEREO_VIDEO_INFO   = 0x36, //!< DID for Stereoscopic Video Info descriptor
         DID_TRANSPORT_PROFILE   = 0x37, //!< DID for Transport Profile descriptor
         DID_HEVC_VIDEO          = 0x38, //!< DID for HEVC Video descriptor
+        DID_VVC_VIDEO           = 0x39, //!< DID for VVC Video descriptor
+        DID_EVC_VIDEO           = 0x3A, //!< DID for EVC Video descriptor
         DID_MPEG_EXTENSION      = 0x3F, //!< DID for MPEG-2 Extension descriptor
 
         // Valid in DVB context:
@@ -474,6 +476,8 @@ namespace ts {
         DID_XAIT_LOCATION       = 0x7D, //!< DID for DVB XAIT_location_descriptor (DVB-MHP)
         DID_FTA_CONTENT_MGMT    = 0x7E, //!< DID for DVB FTA_content_management_descriptor
         DID_DVB_EXTENSION       = 0x7F, //!< DID for DVB extension_descriptor
+
+        DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
 
         // Valid in an AIT (Application Information Table, ETSI TS 102 809):
 
@@ -771,6 +775,10 @@ namespace ts {
         MPEG_EDID_MPH3D_COMMAND = 0x0E, //!< Ext.DID for MPEGH_3D_audio_command_descriptor
         MPEG_EDID_QUALITY_EXT   = 0x0F, //!< Ext.DID for quality_extension_descriptor
         MPEG_EDID_VIRT_SEGMENT  = 0x10, //!< Ext.DID for virtual_segmentation_descriptor
+        MPEG_EDID_VVC_TIM_HRD   = 0x15, //!< Ext.DID for VVC_timing_and_HRD_descriptor.
+        MPEG_EDID_EVC_TIM_HRD   = 0x16, //!< Ext.DID for EVC_timing_and_HRD_descriptor.
+        MPEG_EDID_LCEVC_VIDEO   = 0x17, //!< Ext.DID for LCEVC_video_descriptor.
+        MPEG_EDID_LCEVC_LINKAGE = 0x18, //!< Ext.DID for LCEVC_linkage_descriptor.
         MPEG_EDID_NULL          = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
@@ -806,6 +814,7 @@ namespace ts {
         EDID_PROTECTION_MSG     = 0x18, //!< Ext.DID for protection_message_descriptor
         EDID_AUDIO_PRESELECT    = 0x19, //!< Ext.DID for audio_preselection_descriptor
         EDID_TTML_SUBTITLING    = 0x20, //!< Ext.DID for TTML_subtitling_descriptor
+        EDID_VVC_SUBPICTURES    = 0x23, //!< Ext.DID for vvc_subpictures_descriptor
         EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
