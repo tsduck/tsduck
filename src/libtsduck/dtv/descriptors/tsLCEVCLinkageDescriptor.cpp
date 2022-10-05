@@ -149,7 +149,7 @@ bool ts::LCEVCLinkageDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
                 element->report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", { hexVal, u"lcevc_stream_tag", element->lineNumber(), element->name() });
                 ok = false;
             }
-            else if (val < 0 || val > 0xFF) {
+            else if (val > 0xFF) {
                 element->report().error(u"'%s' is not in the range %d to %d attribute '%s' in <%s>, line %d", { hexVal, 0, 0xFF, u"lcevc_stream_tag", element->lineNumber(), element->name() });
                 ok = false;
             }
