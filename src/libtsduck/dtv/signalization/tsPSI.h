@@ -777,6 +777,8 @@ namespace ts {
         MPEG_EDID_VIRT_SEGMENT  = 0x10, //!< Ext.DID for virtual_segmentation_descriptor
         MPEG_EDID_VVC_TIM_HRD   = 0x15, //!< Ext.DID for VVC_timing_and_HRD_descriptor.
         MPEG_EDID_EVC_TIM_HRD   = 0x16, //!< Ext.DID for EVC_timing_and_HRD_descriptor.
+        MPEG_EDID_LCEVC_VIDEO   = 0x17, //!< Ext.DID for LCEVC_video_descriptor.
+        MPEG_EDID_LCEVC_LINKAGE = 0x18, //!< Ext.DID for LCEVC_linkage_descriptor.
         MPEG_EDID_NULL          = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
