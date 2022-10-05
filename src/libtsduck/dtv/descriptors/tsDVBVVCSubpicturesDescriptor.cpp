@@ -53,12 +53,9 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 ts::DVBVVCSubpicturesDescriptor::DVBVVCSubpicturesDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
     default_service_mode(false),
- //   service_description_present(false),
- //   number_of_vvc_subpictures(0),
     component_tag(),
     vvc_subpicture_id(),
     processing_mode(0),
- //   service_description_length(0),
     service_description()
 {
 }
@@ -66,12 +63,9 @@ ts::DVBVVCSubpicturesDescriptor::DVBVVCSubpicturesDescriptor() :
 void ts::DVBVVCSubpicturesDescriptor::clearContent()
 {
     default_service_mode = false;
- //   service_description_present = false;
- //   number_of_vvc_subpictures = 0;
     component_tag.clear();
     vvc_subpicture_id.clear();
     processing_mode = 0;
- //   service_description_length = 0;
     service_description.erase();
 }
 
@@ -128,6 +122,7 @@ void ts::DVBVVCSubpicturesDescriptor::deserializePayload(PSIBuffer& buf)
         component_tag.push_back(buf.getUInt8());
         vvc_subpicture_id.push_back(buf.getUInt8());
     }
+    buf.skipBits(5);
     buf.getBits(processing_mode, 3);
     if (service_description_present) {
         uint8_t service_description_length = buf.getUInt8();
