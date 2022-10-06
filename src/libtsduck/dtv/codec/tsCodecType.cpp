@@ -54,6 +54,7 @@ const ts::Enumeration ts::CodecTypeEnum({
     {u"DTS-HD",        int(ts::CodecType::DTSHD)},
     {u"Teletext",      int(ts::CodecType::TELETEXT)},
     {u"DVB Subtitles", int(ts::CodecType::DVB_SUBTITLES)},
+    {u"AVS3",          int(ts::CodecType::AVS3)},
 });
 
 const ts::Enumeration ts::CodecTypeArgEnum({
@@ -89,4 +90,110 @@ const ts::Enumeration ts::CodecTypeArgEnum({
     {u"DTSHD",         int(ts::CodecType::DTSHD)},
     {u"Teletext",      int(ts::CodecType::TELETEXT)},
     {u"DVBSubtitles",  int(ts::CodecType::DVB_SUBTITLES)},
+    {u"AVS3",          int(ts::CodecType::AVS3)},
 });
+
+bool ts::CodecTypeIsAudio(CodecType ct)
+{
+    switch (ct) {
+        case CodecType::MPEG1_AUDIO:
+        case CodecType::MPEG2_AUDIO:
+        case CodecType::MP3:
+        case CodecType::AAC:
+        case CodecType::AC3:
+        case CodecType::EAC3:
+        case CodecType::AC4:
+        case CodecType::HEAAC:
+        case CodecType::DTS:
+        case CodecType::DTSHD:
+            return true;
+
+        case CodecType::UNDEFINED:
+        case CodecType::MPEG1_VIDEO:
+        case CodecType::MPEG2_VIDEO:
+        case CodecType::MPEG4_VIDEO:
+        case CodecType::J2K:
+        case CodecType::AVC:
+        case CodecType::HEVC:
+        case CodecType::VVC:
+        case CodecType::EVC:
+        case CodecType::LCEVC:
+        case CodecType::VP9:
+        case CodecType::AV1:
+        case CodecType::TELETEXT:
+        case CodecType::DVB_SUBTITLES:
+        case CodecType::AVS3:
+        default:
+            return false;
+    }
+}
+
+bool ts::CodecTypeIsVideo(CodecType ct)
+{
+    switch (ct) {
+        case CodecType::MPEG1_VIDEO:
+        case CodecType::MPEG2_VIDEO:
+        case CodecType::MPEG4_VIDEO:
+        case CodecType::J2K:
+        case CodecType::AVC:
+        case CodecType::HEVC:
+        case CodecType::VVC:
+        case CodecType::EVC:
+        case CodecType::LCEVC:
+        case CodecType::VP9:
+        case CodecType::AV1:
+        case CodecType::AVS3:
+            return true;
+
+        case CodecType::UNDEFINED:
+        case CodecType::MPEG1_AUDIO:
+        case CodecType::MPEG2_AUDIO:
+        case CodecType::MP3:
+        case CodecType::AAC:
+        case CodecType::AC3:
+        case CodecType::EAC3:
+        case CodecType::AC4:
+        case CodecType::HEAAC:
+        case CodecType::DTS:
+        case CodecType::DTSHD:
+        case CodecType::TELETEXT:
+        case CodecType::DVB_SUBTITLES:
+        default:
+            return false;
+    }
+}
+
+bool ts::CodecTypeIsSubtitles(CodecType ct)
+{
+    switch (ct) {
+        case CodecType::TELETEXT:
+        case CodecType::DVB_SUBTITLES:
+            return true;
+
+        case CodecType::UNDEFINED:
+        case CodecType::MPEG1_VIDEO:
+        case CodecType::MPEG1_AUDIO:
+        case CodecType::MPEG2_VIDEO:
+        case CodecType::MPEG2_AUDIO:
+        case CodecType::MP3:
+        case CodecType::AAC:
+        case CodecType::AC3:
+        case CodecType::EAC3:
+        case CodecType::AC4:
+        case CodecType::MPEG4_VIDEO:
+        case CodecType::HEAAC:
+        case CodecType::J2K:
+        case CodecType::AVC:
+        case CodecType::HEVC:
+        case CodecType::VVC:
+        case CodecType::EVC:
+        case CodecType::LCEVC:
+        case CodecType::VP9:
+        case CodecType::AV1:
+        case CodecType::DTS:
+        case CodecType::DTSHD:
+        case CodecType::AVS3:
+        default:
+            return false;
+    }
+}

@@ -186,11 +186,7 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
 bool ts::PMT::Stream::isVideo(const DuckContext& duck) const
 {
-    return StreamTypeIsVideo(stream_type) ||
-        descs.search(DID_AVC_VIDEO) < descs.count() ||
-        descs.search(DID_HEVC_VIDEO) < descs.count() ||
-        descs.search(DID_MPEG4_VIDEO) < descs.count() ||
-        descs.search(DID_J2K_VIDEO) < descs.count();
+    return StreamTypeIsVideo(stream_type) || CodecTypeIsVideo(getCodec(duck));
 }
 
 
@@ -205,30 +201,15 @@ bool ts::PMT::Stream::isAudio(const DuckContext& duck) const
         return true;
     }
 
-    const bool isdb = bool(duck.standards() & Standards::ISDB);
+    // Check code type.
+    const CodecType codec = getCodec(duck);
+    if (codec != CodecType::UNDEFINED) {
+        return CodecTypeIsAudio(codec);
+    }
 
-    // Other audio components may have "PES private data" stream type
-    // but are identified by specific descriptors.
-    for (size_t index = 0; index < descs.count(); ++index) {
-        const DescriptorPtr& dsc(descs[index]);
-        if (!dsc.isNull() && dsc->isValid()) {
-            const DID did = dsc->tag();
-            const EDID edid(descs.edid(index));
-            if (did == DID_DTS ||
-                did == DID_AC3 ||
-                did == DID_ENHANCED_AC3 ||
-                did == DID_AAC ||
-                did == DID_MPEG2_AAC_AUDIO ||
-                did == DID_MPEG4_AUDIO ||
-                did == DID_MPEG4_AUDIO_EXT ||
-                edid == EDID::ExtensionDVB(EDID_AC4) ||
-                edid == EDID::ExtensionDVB(EDID_DTS_NEURAL) ||
-                edid == EDID::ExtensionDVB(EDID_DTS_HD_AUDIO) ||
-                (isdb && did == DID_ISDB_AUDIO_COMP))
-            {
-                return true;
-            }
-        }
+    // Look for ISDB audio component (unspecified codec).
+    if (bool(duck.standards() & Standards::ISDB) && descs.search(DID_ISDB_AUDIO_COMP) < descs.count()) {
+        return true;
     }
 
     return false;
@@ -300,6 +281,7 @@ ts::PIDClass ts::PMT::Stream::getClass(const DuckContext& duck) const
 ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
 {
     const bool atsc = bool(duck.standards() & Standards::ATSC);
+    const bool avs = bool(duck.standards() & Standards::AVS);
 
     // Try classes of stream types.
     if (StreamTypeIsAVC(stream_type)) {
@@ -355,6 +337,10 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     return CodecType::AVC;
                 case DID_HEVC_VIDEO:
                     return CodecType::HEVC;
+                case DID_VVC_VIDEO:
+                    return CodecType::VVC;
+                case DID_EVC_VIDEO:
+                    return CodecType::EVC;
                 case DID_MPEG4_VIDEO:
                     return CodecType::MPEG4_VIDEO;
                 case DID_J2K_VIDEO:
@@ -376,6 +362,11 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                 case DID_TELETEXT:
                 case DID_VBI_TELETEXT:
                     return CodecType::TELETEXT;
+                case DID_AVS3_VIDEO:
+                    if (avs) {
+                        return CodecType::AVS3;
+                    }
+                    break;
                 case DID_MPEG_EXTENSION: {
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
@@ -384,6 +375,13 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                             case MPEG_EDID_HEVC_OP_POINT:
                             case MPEG_EDID_HEVC_HIER_EXT:
                                 return CodecType::HEVC;
+                            case MPEG_EDID_VVC_TIM_HRD:
+                                return CodecType::VVC;
+                            case MPEG_EDID_EVC_TIM_HRD:
+                                return CodecType::EVC;
+                            case MPEG_EDID_LCEVC_VIDEO:
+                            case MPEG_EDID_LCEVC_LINKAGE:
+                                return CodecType::LCEVC;
                             default:
                                 break;
                         }
@@ -394,10 +392,14 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                     // Lookup extended tag.
                     if (dsc->payloadSize() >= 1) {
                         switch (dsc->payload()[0]) {
+                            case EDID_DTS_NEURAL:
+                                return CodecType::DTS;
                             case EDID_DTS_HD_AUDIO:
                                 return CodecType::DTSHD;
                             case EDID_AC4:
                                 return CodecType::AC4;
+                            case EDID_VVC_SUBPICTURES:
+                                return CodecType::VVC;
                             default:
                                 break;
                         }

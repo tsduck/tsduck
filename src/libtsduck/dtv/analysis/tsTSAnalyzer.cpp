@@ -954,6 +954,22 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 }
                 break;
             }
+            case DID_VVC_VIDEO: {
+                if (ps != nullptr) {
+                    // The presence of this descriptor indicates a VVC video track.
+                    ps->description = u"VVC Video";
+                    ps->carry_video = true;
+                }
+                break;
+            }
+            case DID_EVC_VIDEO: {
+                if (ps != nullptr) {
+                    // The presence of this descriptor indicates an EVC video track.
+                    ps->description = u"EVC Video";
+                    ps->carry_video = true;
+                }
+                break;
+            }
             case DID_SUBTITLING: {
                 if (ps != nullptr) {
                     ps->description = u"Subtitles";
@@ -980,6 +996,23 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                 if (ps != nullptr) {
                     // The presence of this descriptor indicates a PID carrying an AIT.
                     ps->comment = u"AIT";
+                }
+                break;
+            }
+            case DID_MPEG_EXTENSION: {
+                // MPEG extension descriptor: need to look at the descriptor_tag_extension.
+                if (size >= 1) {
+                    switch (data[0]) {
+                        case MPEG_EDID_LCEVC_VIDEO: {
+                            // The presence of this descriptor indicates an LCEVC video track.
+                            ps->description = u"LCEVC Video";
+                            ps->carry_video = true;
+                            break;
+                        }
+                        default: {
+                            break;
+                        }
+                    }
                 }
                 break;
             }
