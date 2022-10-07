@@ -51,6 +51,11 @@ namespace ts {
         //! internal characteristics of Node. However, if we make this inheritance private,
         //! the dynamic_cast operations in RingNode fail. This is a very annoying C++ feature.
         //!
+        //  TODO: RingNode properties are never used into subclasses or client classes.
+        //  It should be "private RingNode". For some reason, all XML unitary tests fail when
+        //  the parent class is not public (seen on Ubuntu 22 with GCC 11). Need to investigate
+        //  the root cause for this and then hide the superclass.
+        //
         class TSDUCKDLL Node : public RingNode
         {
         public:
@@ -81,7 +86,26 @@ namespace ts {
             //! @param [in] last If true, the child is added at the end of the list of children.
             //! If false, it is added at the beginning.
             //!
-            virtual void reparent(Node* newParent, bool last = true);
+            void reparent(Node* newParent, bool last = true);
+
+            //!
+            //! Move the node before another node, potentially to a new parent.
+            //! @param [in,out] newSibling A new sibling. The node will be moved before this one.
+            //!
+            void moveBefore(Node* newSibling) { move(newSibling, true); }
+
+            //!
+            //! Move the node after another node, potentially to a new parent.
+            //! @param [in,out] newSibling A new sibling. The node will be moved after this one.
+            //!
+            void moveAfter(Node* newSibling) { move(newSibling, false); }
+
+            //!
+            //! Move the node before or after another node, potentially to a new parent.
+            //! @param [in,out] newSibling A new sibling. The node will be moved before or after this one.
+            //! @param [in] before If true, move the node before @a newSibling, after it otherwise.
+            //!
+            void move(Node* newSibling, bool before);
 
             //!
             //! Get the parent's node.
@@ -205,6 +229,18 @@ namespace ts {
             Element* nextSiblingElement();
 
             //!
+            //! Find the previous sibling element.
+            //! @return Element address or zero if not found.
+            //!
+            const Element* previousSiblingElement() const { return (const_cast<Node*>(this))->previousSiblingElement(); }
+
+            //!
+            //! Find the previous sibling element.
+            //! @return Element address or zero if not found.
+            //!
+            Element* previousSiblingElement();
+
+            //!
             //! Get the value of the node.
             //!
             //! The semantic of the @e value depends on the node subclass:
@@ -225,6 +261,12 @@ namespace ts {
             //! @see value()
             //!
             void setValue(const UString& value) { _value = value; }
+
+            //!
+            //! Remove all comments in the XML node.
+            //! @param [in] recurse If true, apply recursively to all children nodes.
+            //!
+            void removeComments(bool recurse);
 
             //!
             //! Return a node type name, mainly for debug purpose.

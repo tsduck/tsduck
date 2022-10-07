@@ -97,7 +97,7 @@ void ts::HEVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(target_schedule_idx.value(0xFF), 5);
     buf.putBit(info_present);
     if (info_present) {
-        buf.putBit(has_90kHz);
+        buf.putBit(!has_90kHz); // inverted logic, note the '!', see issue #1065
         buf.putBits(0xFF, 7);
         if (has_90kHz) {
             buf.putUInt32(N_90khz.value());
@@ -115,7 +115,7 @@ void ts::HEVCTimingAndHRDDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::HEVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
 {
     hrd_management_valid = buf.getBool();
-    const bool target_schedule_idx_not_present= buf.getBool();
+    const bool target_schedule_idx_not_present = buf.getBool();
     if (target_schedule_idx_not_present) {
         buf.skipBits(5);
     }
@@ -124,7 +124,7 @@ void ts::HEVCTimingAndHRDDescriptor::deserializePayload(PSIBuffer& buf)
     }
     const bool info_present = buf.getBool();
     if (info_present) {
-        const bool has_90kHz = buf.getBool();
+        const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
         buf.skipBits(7);
         if (has_90kHz) {
             N_90khz = buf.getUInt32();
@@ -150,7 +150,7 @@ void ts::HEVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             disp << margin << UString::Format(u"Target schedule idx: 0x%x (%<d)", {buf.getBits<uint8_t>(5)}) << std::endl;
         }
         if (buf.getBool()) { // info_present
-            const bool has_90kHz = buf.getBool();
+            const bool has_90kHz = !buf.getBool();  // inverted logic, see serializePayload()
             buf.skipBits(7);
             if (has_90kHz && buf.canReadBytes(8)) {
                 disp << margin << UString::Format(u"90 kHz: N = %'d", {buf.getUInt32()});
