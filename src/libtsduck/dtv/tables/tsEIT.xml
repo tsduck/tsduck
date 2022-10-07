@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Event Information Table (DVB version, ATSC uses another form of EIT) -->
+    <!-- If type="pf", this is an EITp/f -->
+    <!-- If type="uint4", this is an EITs with TID 0x50+type (actual) or 0x60+type (other) -->
+    <EIT type="pf|uint4, default=pf"
+         version="uint5, default=0"
+         current="bool, default=true"
+         actual="bool, default=true"
+         service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required"
+         segment_last_section_number="uint8, ignored (legacy)"
+         last_table_id="uint8, default=same as table id">
+      <_any in="_metadata"/>
+      <!-- One per event -->
+      <event event_id="uint16, required"
+             start_time="YYYY-MM-DD hh:mm:ss, required"
+             duration="hh:mm:ss, required"
+             running_status="undefined|not-running|starting|pausing|running|off-air, default=undefined"
+             CA_mode="bool, default=false"
+             preferred_section="uint8, ignored (legacy)">
+        <_any in="_descriptors"/>
+      </event>
+    </EIT>
+
+  </_tables>
+</tsduck>

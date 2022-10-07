@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <T2MI_descriptor
+        t2mi_stream_id="uint3, required"
+        num_t2mi_streams_minus_one="uint3, default=0"
+        pcr_iscr_common_clock_flag="bool, default=false">
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </T2MI_descriptor>
+
+  </_descriptors>
+</tsduck>

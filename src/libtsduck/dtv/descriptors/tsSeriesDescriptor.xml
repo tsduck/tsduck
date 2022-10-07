@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <series_descriptor
+        series_id="uint16, required"
+        repeat_label="uint4, required"
+        program_pattern="uint3, required"
+        expire_date="YYYY-MM-DD, optional"
+        episode_number="uint12, required"
+        last_episode_number="uint12, required"
+        series_name="string, optional"/>
+
+  </_descriptors>
+</tsduck>

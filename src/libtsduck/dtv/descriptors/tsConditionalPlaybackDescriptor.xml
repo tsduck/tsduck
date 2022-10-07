@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <conditional_playback_descriptor
+        CA_system_id="uint16, required"
+        CA_PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </conditional_playback_descriptor>
+
+  </_descriptors>
+</tsduck>

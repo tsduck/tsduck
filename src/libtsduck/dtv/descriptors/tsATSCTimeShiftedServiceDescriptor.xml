@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_time_shifted_service_descriptor>
+      <!-- One per service -->
+      <service time_shift="uint10, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"/>
+    </ATSC_time_shifted_service_descriptor>
+
+  </_descriptors>
+</tsduck>

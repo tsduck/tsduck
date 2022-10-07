@@ -35,15 +35,31 @@
 DONT_BUILD_DEPS := TRUE
 include ../../../Makefile.inc
 
-# Copy TSDuck configuration files in output bin directory.
+CONFIGS_SRC  = $(filter-out %.skeleton.xml,$(wildcard tsduck*.xml tsduck*.names)) tsduck.dektec.names
+CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
+TABLES_SRC   = tsduck.tables.skeleton.xml
+TABLES_SUBS  = $(wildcard ../dtv/tables/*.xml ../dtv/descriptors/*.xml)
+TABLES_DEST  = $(BINDIR)/tsduck.tables.model.xml
 
-default: $(addprefix $(BINDIR)/,$(wildcard tsduck*.xml tsduck*.names) tsduck.dektec.names)
+default: $(CONFIGS_DEST)
 	@true
+
+# Copy TSDuck configuration files in output bin directory.
 
 $(BINDIR)/%: %
 	@echo '  [COPY] $<'; \
 	mkdir -p $(BINDIR); \
 	cp $< $@
+
+# Generate the complete signalization model: tsduck.tables.model.xml
+# This can be done only when tsxml is generated.
+
+.PHONY: post-build
+post-build: $(TABLES_DEST)
+	@true
+$(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(BINDIR)/tsxml
+	@echo '  [GEN] $(notdir $@)'; \
+	$(BINDIR)/tsxml --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
 
 # Generate the Dektec names file from DTAPI.h.
 
@@ -56,12 +72,15 @@ tsduck.dektec.names: $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
 
 # Install configuration files.
 
-.PHONY: install install-tools install-devel install-linux-config
+.PHONY: install install-tools install-post-build install-devel install-linux-config
 install: install-tools install-devel
 
 install-tools: tsduck.dektec.names $(if $(MACOS),,install-linux-config)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
-	install -m 644 tsduck*.xml tsduck*.names $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -m 644 $(CONFIGS_SRC) $(SYSROOT)$(SYSPREFIX)/share/tsduck
+install-post-build: $(TABLES_DEST)
+	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -m 644 $(TABLES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 install-linux-config:
 	install -d -m 755 $(SYSROOT)$(UDEVDIR) $(SYSROOT)$(ETCDIR)/security/console.perms.d
 	install -m 644 80-tsduck.rules $(SYSROOT)$(UDEVDIR)

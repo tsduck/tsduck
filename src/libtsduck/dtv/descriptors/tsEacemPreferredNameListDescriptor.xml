@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <eacem_preferred_name_list_descriptor>
+      <!-- One per language -->
+      <language code="char3, required">
+        <!-- One per name -->
+        <name name_id="uint8, required" name="string, required"/>
+      </language>
+    </eacem_preferred_name_list_descriptor>
+
+  </_descriptors>
+</tsduck>

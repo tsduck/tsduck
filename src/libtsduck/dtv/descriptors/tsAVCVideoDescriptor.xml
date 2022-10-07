@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <AVC_video_descriptor
+        profile_idc="uint8, required"
+        constraint_set0="bool, required"
+        constraint_set1="bool, required"
+        constraint_set2="bool, required"
+        constraint_set3="bool, default=false"
+        constraint_set4="bool, default=false"
+        constraint_set5="bool, default=false"
+        AVC_compatible_flags="uint2, required"
+        level_idc="uint8, required"
+        AVC_still_present="bool, required"
+        AVC_24_hour_picture="bool, required"
+        frame_packing_SEI_not_present="bool, default=false"/>
+
+  </_descriptors>
+</tsduck>

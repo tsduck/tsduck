@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <digital_copy_control_descriptor
+        digital_recording_control_data="uint2, required"
+        user_defined="uint4, default=0"
+        maximum_bitrate="uint8, optional">
+      <!-- One per component in the service -->
+      <component_control
+          component_tag="uint8, required"
+          digital_recording_control_data="uint2, required"
+          user_defined="uint4, default=0"
+          maximum_bitrate="uint8, optional"/>
+    </digital_copy_control_descriptor>
+
+  </_descriptors>
+</tsduck>

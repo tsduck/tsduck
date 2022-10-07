@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <association_tag_descriptor
+        association_tag="uint16, required"
+        use="uint16, required">
+      <selector_bytes>
+        Hexadecimal content
+      </selector_bytes>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </association_tag_descriptor>
+
+  </_descriptors>
+</tsduck>

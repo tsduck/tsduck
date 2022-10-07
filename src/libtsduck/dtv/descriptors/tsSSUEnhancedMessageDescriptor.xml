@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <SSU_enhanced_message_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        ISO_639_language_code="char3, required"
+        message_index="uint5, required">
+      <text>String</text>
+    </SSU_enhanced_message_descriptor>
+
+  </_descriptors>
+</tsduck>

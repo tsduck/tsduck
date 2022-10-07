@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <NPT_endpoint_descriptor
+        start_NPT="uint33, required"
+        stop_NPT="uint33, required"/>
+
+  </_descriptors>
+</tsduck>

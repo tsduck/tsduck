@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <S2_satellite_delivery_system_descriptor
+        backwards_compatibility="bool, default=false"
+        TS_GS_mode="uint2, default=3"
+        scrambling_sequence_index="uint18, optional"
+        input_stream_identifier="uint8, optional"
+        timeslice_number="uint8, optional"/>
+
+  </_descriptors>
+</tsduck>

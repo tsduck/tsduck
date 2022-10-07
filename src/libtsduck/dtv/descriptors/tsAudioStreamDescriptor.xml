@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <audio_stream_descriptor
+        free_format="bool, required"
+        ID="uint1, required"
+        layer="uint2, required"
+        variable_rate_audio="bool, required"/>
+
+  </_descriptors>
+</tsduck>

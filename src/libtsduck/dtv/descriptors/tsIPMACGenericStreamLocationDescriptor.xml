@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <IPMAC_generic_stream_location_descriptor
+        interactive_network_id="uint16, required"
+        modulation_system_type="DVB-S2|DVB-T2|DVB-C2|DVB-NGH|uint8, required"
+        modulation_system_id="uint16, default=0"
+        PHY_stream_id="uint16, default=0">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <selector_bytes>Hexadecimal content</selector_bytes>
+    </IPMAC_generic_stream_location_descriptor>
+
+  </_descriptors>
+</tsduck>

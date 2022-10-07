@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- IP/MAC Notification Table -->
+    <INT version="uint5, default=0"
+         current="bool, default=true"
+         action_type="uint8, default=0x01"
+         processing_order="uint8, default=0x00"
+         platform_id="uint24, required">
+      <_any in="_metadata"/>
+      <!-- Plaform-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per device -->
+      <device>
+        <target>
+          <_any in="_descriptors"/>
+        </target>
+        <operational>
+          <_any in="_descriptors"/>
+        </operational>
+      </device>
+    </INT>
+
+  </_tables>
+</tsduck>

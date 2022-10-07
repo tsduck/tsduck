@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <HEVC_hierarchy_extension_descriptor
+        extension_dimension_bits="uint16, required"
+        hierarchy_layer_index="uint6, required"
+        temporal_id="uint3, required"
+        nuh_layer_id="uint6, required"
+        tref_present="bool, required"
+        hierarchy_channel="uint6, required">
+      <embedded_layer hierarchy_layer_index="uint6, required"/>
+    </HEVC_hierarchy_extension_descriptor>
+
+  </_descriptors>
+</tsduck>

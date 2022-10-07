@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <URI_linkage_descriptor
+        uri_linkage_type="uint8, required"
+        uri="string, required"
+        min_polling_interval="uint16, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </URI_linkage_descriptor>
+
+  </_descriptors>
+</tsduck>

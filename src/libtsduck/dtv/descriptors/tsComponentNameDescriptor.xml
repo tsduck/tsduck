@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <component_name_descriptor>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <component_name_string>
+        <string language="char3, required" text="string, required"/>
+      </component_name_string>
+    </component_name_descriptor>
+
+  </_descriptors>
+</tsduck>

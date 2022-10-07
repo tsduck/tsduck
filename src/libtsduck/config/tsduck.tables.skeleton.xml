@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+ TSDuck - The MPEG Transport Stream Toolkit
+ Copyright (c) 2005-2022, Thierry Lelegard
+ All rights reserved.
+
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
+
+ 1. Redistributions of source code must retain the above copyright notice,
+    this list of conditions and the following disclaimer.
+ 2. Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in the
+    documentation and/or other materials provided with the distribution.
+
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+ THE POSSIBILITY OF SUCH DAMAGE.
+
+                 - - - - - - - - - - - - - - - -
+
+ Template for TSDuck XML files describing PSI/SI tables.
+ See the TSDuck user's guide, section 2.5.3, "XML model files".
+ Actual tables and descriptors will be merged from their individual XML files.
+
+-->
+<tsduck>
+
+  <!-- A valid file is composed of a suite of any number of table structures -->
+  <_any in="_tables"/>
+
+  <!-- Tables metadata can be found in any table, they are not part of the table itself -->
+  <_metadata>
+    <metadata PID="uint13, optional"
+              time="YYYY-MM-DD hh:mm:ss, optional"
+              first_ts_packet="uint64, optional"
+              last_ts_packet="uint64, optional"/>
+  </_metadata>
+
+  <!-- Definitions of tables -->
+  <_tables>
+
+    <!-- Individual tables are defined in src/libtsduck/dtv/tables/*.xml files -->
+
+    <!-- Generic short table -->
+    <generic_short_table
+        table_id="uint8, required"
+        private="bool, default=true">
+
+      Hexadecimal content.
+
+      Generic table with binary payload of one short section,
+      to be used when a specific table is not yet implemented.
+      The body of this element shall contain an even number of
+      hexadecimal digits, the payload of the short section.
+
+      The private indicator shall be false on MPEG-defined sections
+      and preferably true on DVB-defined and user-defined sections.
+
+      <_any in="_metadata"/>
+    </generic_short_table>
+
+    <!-- Generic long table -->
+    <generic_long_table
+        table_id="uint8, required"
+        table_id_ext="uint16, default=0xFFFF"
+        version="uint5, default=0"
+        current="bool, default=true"
+        private="bool, default=true">
+     <_any in="_metadata"/>
+      <!-- One per section -->
+      <section>
+
+        Hexadecimal content.
+
+        Generic table with binary payload of long sections,
+        to be used when a specific table is not yet implemented.
+        The body of the section elements shall contain an even number of
+        hexadecimal digits, the payload of the long section. The CRC32
+        field is not part of this payload, it will be recomputed.
+
+        The private indicator shall be false on MPEG-defined sections
+        and preferably true on DVB-defined and user-defined sections.
+
+      </section>
+    </generic_long_table>
+
+  </_tables>
+
+  <!-- Definitions of descriptors -->
+  <_descriptors>
+
+    <!-- Individual descriptors are defined in src/libtsduck/dtv/descriptors/*.xml files -->
+
+    <!-- Generic descriptor (for unsupported descriptors) -->
+    <generic_descriptor tag="uint8, required">
+
+      Hexadecimal content.
+
+      Generic descriptor with binary payload, to be used when a specific
+      descriptor is not yet implemented. The body of this element shall
+      contain an even number of hexadecimal digits.
+
+    </generic_descriptor>
+
+  </_descriptors>
+
+</tsduck>

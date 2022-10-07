@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <DVB_stuffing_descriptor>
+      Hexadecimal content
+    </DVB_stuffing_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <stuffing_descriptor>
+      Hexadecimal content
+    </stuffing_descriptor>
+
+  </_descriptors>
+</tsduck>

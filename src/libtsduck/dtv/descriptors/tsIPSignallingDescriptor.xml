@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ip_signalling_descriptor platform_id="uint24, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </ip_signalling_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <S2X_satellite_delivery_system_descriptor
+        receiver_profiles="uint5, required"
+        S2X_mode="uint2, required"
+        TS_GS_S2X_mode="uint2, required"
+        scrambling_sequence_index="uint18, optional"
+        timeslice_number="uint8, required for S2X_mode==2">
+      <!-- Master channel is required -->
+      <master_channel
+          frequency="SatelliteFrequencyHz, required"
+          orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+          west_east_flag="east|west, required"
+          polarization="horizontal|vertical|left|right, required"
+          roll_off="0.35|0.25|0.20|0.15|0.10|0.05|uint3, required"
+          symbol_rate="SatelliteSymbolRate, required"
+          input_stream_identifier="uint8, optional"/>
+      <!-- When S2X_mode==3, there must be exactly 1 or 2 channel_bond -->
+      <channel_bond
+          frequency="SatelliteFrequencyHz, required"
+          orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+          west_east_flag="east|west, required"
+          polarization="horizontal|vertical|left|right, required"
+          roll_off="0.35|0.25|0.20|0.15|0.10|0.05|uint3, required"
+          symbol_rate="SatelliteSymbolRate, required"
+          input_stream_identifier="uint8, optional"/>
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </S2X_satellite_delivery_system_descriptor>
+
+  </_descriptors>
+</tsduck>

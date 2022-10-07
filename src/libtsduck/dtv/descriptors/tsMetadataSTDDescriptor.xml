@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <metadata_STD_descriptor
+        metadata_input_leak_rate="uint22, required"
+        metadata_buffer_size="uint22, required"
+        metadata_output_leak_rate="uint22, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Application Information Table -->
+    <AIT version="uint5, default=0"
+         current="bool, default=true"
+         test_application_flag="bool, default=true"
+         application_type="uint15, required">
+      <_any in="_metadata"/>
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per application -->
+      <application control_code="uint8, required">
+        <application_identifier organization_id="uint32, required" application_id="uint16, required"/>
+        <_any in="_descriptors"/>
+      </application>
+    </AIT>
+
+  </_tables>
+</tsduck>

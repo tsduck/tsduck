@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <basic_local_event_descriptor
+        segmentation_mode="uint4, required"
+        start_time_NPT="uint33, optional"
+        end_time_NPT="uint33, optional"
+        start_time="hh:mm:ss, optional"
+        duration="hh:mm:ss, optional"
+        start_time_extension="mmm, optional"
+        duration_extension="mmm, optional">
+      <reserved_data>
+        Hexadecimal content
+      </reserved_data>
+      <component tag="uint8, required"/>
+    </basic_local_event_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <short_node_information_descriptor
+        ISO_639_language_code="char3, required"
+        node_name="string, optional"
+        text="string, optional"/>
+
+  </_descriptors>
+</tsduck>

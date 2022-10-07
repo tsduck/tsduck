@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <node_relation_descriptor
+        reference_type="uint4, default=0"
+        information_provider_id="uint16, optional"
+        event_relation_id="uint16, optional"
+        reference_node_id="uint16, required"
+        reference_number="uint8, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <network_name_descriptor network_name="string, required"/>
+
+  </_descriptors>
+</tsduck>

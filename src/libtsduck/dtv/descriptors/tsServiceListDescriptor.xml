@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <service_list_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               service_type="uint8, required"/>
+    </service_list_descriptor>
+
+  </_descriptors>
+</tsduck>

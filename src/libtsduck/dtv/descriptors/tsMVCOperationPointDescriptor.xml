@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MVC_operation_point_descriptor
+        profile_idc="uint8, required"
+        constraint_set0="bool, required"
+        constraint_set1="bool, required"
+        constraint_set2="bool, required"
+        constraint_set3="bool, required"
+        constraint_set4="bool, required"
+        constraint_set5="bool, required"
+        AVC_compatible_flags="uint2, required">
+      <!-- One per level -->
+      <level level_idc="uint8, required">
+        <operation_point
+            applicable_temporal_id="uint3, required"
+            num_target_output_views="uint8, required">
+          <ES reference="uint6, required"/>
+        </operation_point>
+      </level>
+    </MVC_operation_point_descriptor>
+
+  </_descriptors>
+</tsduck>

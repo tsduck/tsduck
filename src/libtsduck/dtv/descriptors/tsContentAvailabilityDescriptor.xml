@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <content_availability_descriptor
+        copy_restriction_mode="bool, required"
+        image_constraint_token="bool, required"
+        retention_mode="bool, required"
+        retention_state="uint3, required"
+        encryption_mode="bool, required">
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </content_availability_descriptor>
+
+  </_descriptors>
+</tsduck>

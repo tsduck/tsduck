@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <DVB_time_shifted_service_descriptor reference_service_id="uint16, required"/>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <time_shifted_service_descriptor reference_service_id="uint16, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dtg_service_attribute_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               numeric_selection="bool, required"
+               visible_service="bool, required"/>
+    </dtg_service_attribute_descriptor>
+
+  </_descriptors>
+</tsduck>

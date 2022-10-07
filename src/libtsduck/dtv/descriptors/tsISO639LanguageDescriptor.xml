@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISO_639_language_descriptor>
+      <!-- One per language -->
+      <language code="char3, required" audio_type="uint8, required"/>
+    </ISO_639_language_descriptor>
+
+  </_descriptors>
+</tsduck>

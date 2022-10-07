@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <CA_contract_info_descriptor
+        CA_system_id="uint16, required"
+        CA_unit_id="uint4, required"
+        fee_name="string, optional">
+      <!-- One per component -->
+      <component tag="uint8, required"/>
+      <contract_verification_info>
+        Hexadecimal content
+      </contract_verification_info>
+    </CA_contract_info_descriptor>
+
+  </_descriptors>
+</tsduck>

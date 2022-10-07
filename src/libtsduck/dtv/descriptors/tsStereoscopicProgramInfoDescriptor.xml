@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <stereoscopic_program_info_descriptor stereoscopic_service_type="uint3, required"/>
+
+  </_descriptors>
+</tsduck>

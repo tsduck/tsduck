@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- ISDB Index Transmission information Table -->
+    <ITT version="uint5, default=0"
+         current="bool, default=true"
+         event_id="uint16, required">
+      <_any in="_metadata"/>
+      <_any in="_descriptors"/>
+    </ITT>
+
+  </_tables>
+</tsduck>

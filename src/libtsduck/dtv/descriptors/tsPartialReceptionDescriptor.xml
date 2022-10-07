@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <partial_reception_descriptor>
+      <service id="uint16, required"/>
+    </partial_reception_descriptor>
+
+  </_descriptors>
+</tsduck>

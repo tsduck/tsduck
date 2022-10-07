@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <DTS_HD_descriptor>
+      <!-- Each substructure is optional and may appear at most once -->
+      <substream_core
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_core>
+      <substream_0
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_0>
+      <substream_1
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_1>
+      <substream_2
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_2>
+      <substream_3
+          channel_count="uint5, required"
+          LFE="bool, required"
+          sampling_frequency="uint4, required"
+          sample_resolution="bool, required">
+        <!-- From 1 to 8 asset_info -->
+        <asset_info
+            asset_construction="uint5, required"
+            vbr="bool, required"
+            post_encode_br_scaling="bool, required"
+            bit_rate="uint13, required"
+            component_type="uint8, optional"
+            ISO_639_language_code="char3, optional"/>
+      </substream_3>
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DTS_HD_descriptor>
+
+  </_descriptors>
+</tsduck>

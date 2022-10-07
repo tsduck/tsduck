@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <eacem_stream_identifier_descriptor version_byte="uint8, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <EVC_video_descriptor
+        profile_idc="uint8, required"
+        level_idc="uint8, required"
+        toolset_idc_h="uint32, required"
+        toolset_idc_l="uint32, required"
+        progressive_source_flag="bool, required"
+        interlaced_source_flag="bool, required"
+        non_packed_constraint_flag="bool, required"
+        frame_only_constraint_flag="bool, required"
+        EVC_still_present_flag="bool, required"
+        EVC_24hr_picture_present_flag="bool, required"
+        HDR_WCG_idc="uint2, default=3"
+        video_properties_tag="uint4, default=0"
+        temporal_id_min="uint3, optional, specify both min and max or none"
+        temporal_id_max="uint3, optional, specify both min and max or none"/>
+
+  </_descriptors>
+</tsduck>

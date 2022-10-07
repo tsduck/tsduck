@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <!-- EACEM private descriptor -->
+    <eacem_logical_channel_number_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </eacem_logical_channel_number_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <logical_channel_number_descriptor>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint10, required"
+               visible_service="bool, default=true"/>
+    </logical_channel_number_descriptor>
+
+  </_descriptors>
+</tsduck>

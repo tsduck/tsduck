@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <CP_descriptor
+        CP_system_id="uint16, required"
+        CP_PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </CP_descriptor>
+
+  </_descriptors>
+</tsduck>

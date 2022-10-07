@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_AC3_audio_stream_descriptor
+        sample_rate_code="uint3, required"
+        bsid="uint5, required"
+        bit_rate_code="uint6, required"
+        surround_mode="uint2, required"
+        bsmod="uint3, required"
+        num_channels="uint4, required"
+        full_svc="bool, required"
+        mainid="uint3, optional"
+        priority="uint2, optional"
+        asvcflags="uint8, optional"
+        text="string, optional"
+        language="char3, optional"
+        language_2="char3, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </ATSC_AC3_audio_stream_descriptor>
+
+  </_descriptors>
+</tsduck>

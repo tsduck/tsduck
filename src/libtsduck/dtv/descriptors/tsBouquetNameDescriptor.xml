@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <bouquet_name_descriptor bouquet_name="string, required"/>
+
+  </_descriptors>
+</tsduck>

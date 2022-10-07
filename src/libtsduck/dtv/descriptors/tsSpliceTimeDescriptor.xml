@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <splice_time_descriptor
+        identifier="uint32, default=0x43554549"
+        TAI_seconds="uint48, required"
+        TAI_ns="uint32, required"
+        UTC_offset="uint16, required"/>
+
+  </_descriptors>
+</tsduck>

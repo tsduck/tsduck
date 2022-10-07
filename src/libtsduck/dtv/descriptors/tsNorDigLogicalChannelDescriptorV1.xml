@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <nordig_logical_channel_descriptor_v1>
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               logical_channel_number="uint14, required"
+               visible_service="bool, default=true"/>
+    </nordig_logical_channel_descriptor_v1>
+
+  </_descriptors>
+</tsduck>

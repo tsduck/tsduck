@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <!-- DVB version of an AC4 descriptor -->
+    <DVB_AC4_descriptor
+        ac4_dialog_enhancement_enabled="bool, optional"
+        ac4_channel_mode="uint2, optional">
+      <ac4_dsi_toc>
+        Hexadecimal content
+      </ac4_dsi_toc>
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_AC4_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <AC4_descriptor
+        ac4_dialog_enhancement_enabled="bool, optional"
+        ac4_channel_mode="uint2, optional">
+      <ac4_dsi_toc>
+        Hexadecimal content
+      </ac4_dsi_toc>
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </AC4_descriptor>
+
+  </_descriptors>
+</tsduck>

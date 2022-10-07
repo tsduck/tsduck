@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <splice_DTMF_descriptor
+        identifier="uint32, default=0x43554549"
+        preroll="uint8, required"
+        DTMF="string, required"/>
+
+  </_descriptors>
+</tsduck>

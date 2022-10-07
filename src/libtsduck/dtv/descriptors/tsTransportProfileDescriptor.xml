@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <transport_profile_descriptor transport_profile="uint8, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </transport_profile_descriptor>
+
+  </_descriptors>
+</tsduck>

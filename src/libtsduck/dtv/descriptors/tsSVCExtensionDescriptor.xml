@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <SVC_extension_descriptor
+        width="uint16, required"
+        height="uint16, required"
+        frame_rate="uint16, required"
+        average_bitrate="uint16, required"
+        maximum_bitrate="uint16, required"
+        dependency_id="uint3, required"
+        quality_id_start="uint4, required"
+        quality_id_end="uint4, required"
+        temporal_id_start="uint3, required"
+        temporal_id_end="uint3, required"
+        no_sei_nal_unit_present="bool, required"/>
+
+  </_descriptors>
+</tsduck>

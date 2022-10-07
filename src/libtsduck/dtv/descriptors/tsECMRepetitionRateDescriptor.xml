@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ECM_repetition_rate_descriptor
+        CA_system_id="uint16, required"
+        ECM_repetition_rate="uint16, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </ECM_repetition_rate_descriptor>
+
+  </_descriptors>
+</tsduck>

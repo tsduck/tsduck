@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <deferred_association_tags_descriptor
+        transport_stream_id="uint16, required"
+        program_number="uint16, required">
+      <!-- One per association tag -->
+      <association tag="uint16, required"/>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </deferred_association_tags_descriptor>
+
+  </_descriptors>
+</tsduck>

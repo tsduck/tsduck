@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <!-- DVB version of an Enhanced-AC3 descriptor -->
+    <DVB_enhanced_AC3_descriptor
+        mixinfoexists="bool, required"
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </DVB_enhanced_AC3_descriptor>
+
+    <!-- Previous version, still accepted for compatibility -->
+    <enhanced_AC3_descriptor
+        mixinfoexists="bool, required"
+        component_type="uint8, optional"
+        bsid="uint8, optional"
+        mainid="uint8, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </enhanced_AC3_descriptor>
+
+  </_descriptors>
+</tsduck>

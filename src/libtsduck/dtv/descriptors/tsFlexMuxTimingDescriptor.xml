@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <flexmux_timing_descriptor
+        FCR_ES_ID="uint16, required"
+        FCRResolution="uint32, required"
+        FCRLength="uint8, required"
+        FmxRateLength="uint8, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <graphics_constraints_descriptor
+        can_run_without_visible_ui="bool, required"
+        handles_configuration_changed="bool, required"
+        handles_externally_controlled_video="bool, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <graphics_configuration>
+        Hexadecimal content
+      </graphics_configuration>
+    </graphics_constraints_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <SSU_location_descriptor
+        data_broadcast_id="uint16, required"
+        association_tag="uint16, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </SSU_location_descriptor>
+
+  </_descriptors>
+</tsduck>

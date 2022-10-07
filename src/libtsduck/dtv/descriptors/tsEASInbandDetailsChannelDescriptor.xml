@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <EAS_inband_details_channel_descriptor
+        details_RF_channel="uint8, required"
+        details_program_number="uint16, required">
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+    </EAS_inband_details_channel_descriptor>
+
+  </_descriptors>
+</tsduck>

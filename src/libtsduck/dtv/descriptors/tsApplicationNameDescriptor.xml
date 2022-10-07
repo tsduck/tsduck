@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <application_name_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per language -->
+      <language code="char3, required" application_name="string, required"/>
+    </application_name_descriptor>
+
+  </_descriptors>
+</tsduck>

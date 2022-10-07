@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dvb_j_application_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per parameter: -->
+      <parameter value="string, required"/>
+    </dvb_j_application_descriptor>
+
+  </_descriptors>
+</tsduck>

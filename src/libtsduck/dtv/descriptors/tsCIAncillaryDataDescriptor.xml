@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <CI_ancillary_data_descriptor>
+      <ancillary_data>
+        Hexadecimal content
+      </ancillary_data>
+    </CI_ancillary_data_descriptor>
+
+  </_descriptors>
+</tsduck>

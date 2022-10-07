@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <simple_application_location_descriptor initial_path="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </simple_application_location_descriptor>
+
+  </_descriptors>
+</tsduck>

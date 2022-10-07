@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- DSM-CC Stream Descriptors Table -->
+    <DSMCC_stream_descriptors_table
+        version="uint5, default=0"
+        current="bool, default=true"
+        table_id_extension="uint16, default=0xFFFF">
+      <_any in="_metadata"/>
+      <_any in="_descriptors"/>
+    </DSMCC_stream_descriptors_table>
+
+  </_tables>
+</tsduck>

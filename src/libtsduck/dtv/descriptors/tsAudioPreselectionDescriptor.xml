@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <audio_preselection_descriptor>
+      <!-- One entry per preselection, up to 31 preselections -->
+      <preselection
+          preselection_id="uint5, required"
+          audio_rendering_indication="uint3, required"
+          audio_description="bool, default=false"
+          spoken_subtitles="bool, default=false"
+          dialogue_enhancement="bool, default=false"
+          interactivity_enabled="bool, default=false"
+          ISO_639_language_code="char3, optional"
+          message_id="uint8, optional">
+        <multi_stream_info>
+          <!-- One per auxiliary component, up to 7 components -->
+          <component tag="uint8, required"/>
+        </multi_stream_info>
+        <future_extension>
+          Hexadecimal content
+        </future_extension>
+      </preselection>
+    </audio_preselection_descriptor>
+
+  </_descriptors>
+</tsduck>

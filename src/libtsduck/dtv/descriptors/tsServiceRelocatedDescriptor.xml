@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <service_relocated_descriptor
+        old_original_network_id="uint16, required"
+        old_transport_stream_id="uint16, required"
+        old_service_id="uint16, required"/>
+
+  </_descriptors>
+</tsduck>

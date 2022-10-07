@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEGH_3D_audio_descriptor
+        mpegh_3da_profile_level_indication="uint8, required"
+        interactivity_enabled="bool, required"
+        reference_channel_layout="uint6, required">
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </MPEGH_3D_audio_descriptor>
+
+  </_descriptors>
+</tsduck>

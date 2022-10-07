@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Update Notification Table -->
+    <UNT version="uint5, default=0"
+         current="bool, default=true"
+         action_type="uint8, default=0x01"
+         OUI="uint24, required"
+         processing_order="uint8, default=0x00">
+      <_any in="_metadata"/>
+      <!-- Common descriptors, apply to all SSU -->
+      <_any in="_descriptors"/>
+      <!-- One per set of devices -->
+      <devices>
+        <!-- More than one allowed, individual descriptor inside compatibilityDescriptor() -->
+        <compatibilityDescriptor
+            descriptorType="uint8, required"
+            specifierType="uint8, default=0x01"
+            specifierData="uint24, required"
+            model="uint16, default=0x00"
+            version="uint16, default=0x00">
+          <!-- Several subdescriptors -->
+          <subDescriptor subDescriptorType="uint8, required">
+            Hexadecimal content
+          </subDescriptor>
+        </compatibilityDescriptor>
+        <!-- One per platform -->
+        <platform>
+          <target>
+            <_any in="_descriptors"/>
+          </target>
+          <operational>
+            <_any in="_descriptors"/>
+          </operational>
+        </platform>
+      </devices>
+    </UNT>
+
+  </_tables>
+</tsduck>

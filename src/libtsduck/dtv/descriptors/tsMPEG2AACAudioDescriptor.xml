@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEG2_AAC_audio_descriptor
+        MPEG2_AAC_profile="uint8, required"
+        MPEG2_AAC_channel_configuration="uint8, required"
+        MPEG2_AAC_additional_information="uint8, required"/>
+
+  </_descriptors>
+</tsduck>

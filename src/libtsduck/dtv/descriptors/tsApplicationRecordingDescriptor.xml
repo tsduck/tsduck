@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <application_recording_descriptor
+        scheduled_recording="bool, required"
+        trick_mode_aware="bool, required"
+        time_shift="bool, required"
+        dynamic="bool, required"
+        av_synced="bool, required"
+        initiating_replay="bool, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per label -->
+      <label label="string, required" storage_properties="uint2, required"/>
+      <!-- One per component tag -->
+      <component tag="uint8, required"/>
+      <private>
+        Hexadecimal content
+      </private>
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </application_recording_descriptor>
+
+  </_descriptors>
+</tsduck>

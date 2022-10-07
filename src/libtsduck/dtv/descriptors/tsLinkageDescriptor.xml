@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <linkage_descriptor
+        transport_stream_id="uint16, required"
+        original_network_id="uint16, required"
+        service_id="uint16, required"
+        linkage_type="uint8, required">
+      <!-- if linkage_type == 0x08 -->
+      <mobile_handover_info
+          handover_type="uint4, required"
+          origin_type="NIT|SDT, required"
+          network_id="uint16, required if hand-over_type is 0x01, 0x02, 0x03"
+          initial_service_id="uint16, required if origin_type is NIT"/>
+      <!-- else if linkage_type == 0x0D -->
+      <event_linkage_info
+          target_event_id="uint16, required"
+          target_listed="bool, required"
+          event_simulcast="bool, required"/>
+      <!-- else if linkage_type >= 0x0E && linkage_type <= 0x1F -->
+      <extended_event_linkage_info>
+        <!-- For each event -->
+        <event
+            target_event_id="uint16, required"
+            target_listed="bool, required"
+            event_simulcast="bool, required"
+            link_type="uint2, required"
+            target_id_type="uint2, required"
+            user_defined_id="uint16, required if target_id_type == 3"
+            target_transport_stream_id="uint16, required if target_id_type == 1"
+            target_original_network_id="uint16, optional"
+            target_service_id="uint16, optional"/>
+      </extended_event_linkage_info>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </linkage_descriptor>
+
+  </_descriptors>
+</tsduck>

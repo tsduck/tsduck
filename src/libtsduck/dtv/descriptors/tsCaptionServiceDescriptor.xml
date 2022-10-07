@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <caption_service_descriptor>
+      <!-- One per service -->
+      <service language="char3, required"
+               digital_cc="bool, required"
+               line21_field="bool, optional"
+               caption_service_number="uint6, required"
+               easy_reader="bool, required"
+               wide_aspect_ratio="bool, required"/>
+    </caption_service_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <supplementary_audio_descriptor
+        mix_type="uint1, required"
+        editorial_classification="uint5, required"
+        language_code="char3, optional">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </supplementary_audio_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <application_signalling_descriptor>
+      <!-- One per application -->
+      <application application_type="uint15, required"
+                   AIT_version_number="uint5, required"/>
+    </application_signalling_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <green_extension_descriptor>
+      <constant_backlight_voltage_time_interval value="uint16, required"/>
+      <max_variation value="uint16, required"/>
+    </green_extension_descriptor>
+
+  </_descriptors>
+</tsduck>

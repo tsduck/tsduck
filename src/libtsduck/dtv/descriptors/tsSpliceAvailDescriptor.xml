@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <splice_avail_descriptor
+        identifier="uint32, default=0x43554549"
+        provider_avail_id="uint32, required"/>
+
+  </_descriptors>
+</tsduck>

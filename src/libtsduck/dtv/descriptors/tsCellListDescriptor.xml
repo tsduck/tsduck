@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <cell_list_descriptor>
+      <!-- One per cell -->
+      <cell cell_id="uint16, required"
+            cell_latitude="int16, required"
+            cell_longitude="int16, required"
+            cell_extent_of_latitude="uint12, required"
+            cell_extent_of_longitude="uint12, required">
+        <!-- One per subcell -->
+        <subcell cell_id_extension="uint8, required"
+                 subcell_latitude="int16, required"
+                 subcell_longitude="int16, required"
+                 subcell_extent_of_latitude="uint12, required"
+                 subcell_extent_of_longitude="uint12, required"/>
+      </cell>
+    </cell_list_descriptor>
+
+  </_descriptors>
+</tsduck>

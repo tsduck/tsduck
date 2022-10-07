@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <multiplex_buffer_descriptor
+        MB_buffer_size="uint24, required"
+        TB_leak_rate="uint24, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <carousel_identifier_descriptor carousel_id="uint32, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </carousel_identifier_descriptor>
+
+  </_descriptors>
+</tsduck>

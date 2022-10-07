@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dvb_j_application_location_descriptor
+        base_directory="string, required"
+        classpath_extension="string, required"
+        initial_class="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_j_application_location_descriptor>
+
+  </_descriptors>
+</tsduck>

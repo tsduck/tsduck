@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEG4_audio_descriptor MPEG4_audio_profile_and_level="uint8, required"/>
+
+  </_descriptors>
+</tsduck>

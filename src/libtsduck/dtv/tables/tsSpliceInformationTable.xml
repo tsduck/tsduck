@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Splice Information Table (ANSI/SCTE 35) -->
+    <splice_information_table
+        protocol_version="uint8, default=0"
+        pts_adjustment="uint33, default=0"
+        tier="uint12, default=0xFFF">
+      <_any in="_metadata"/>
+      <!-- Splice commands, only one of them is allowed -->
+      <splice_null/>
+      <splice_schedule>
+        <!-- One per splice event -->
+        <splice_event
+            splice_event_id="uint32, required"
+            splice_event_cancel="bool, default=false"
+            out_of_network="bool, required when splice_event_cancel is false"
+            utc_splice_time="YYYY-MM-DD hh:mm:ss or uint32, required when splice_event_cancel is false and program_splice_flag is to be set"
+            unique_program_id="uint16, required when splice_event_cancel is false"
+            avail_num="uint8, default=0"
+            avails_expected="uint8, default=0">
+          <!-- Optional -->
+          <break_duration auto_return="bool, required" duration="uint33, required"/>
+          <!-- One per component when splice_event_cancel is false and utc_splice_time is not specified -->
+          <component component_tag="uint8, required" utc_splice_time="YYYY-MM-DD hh:mm:ss or uint32, required"/>
+        </splice_event>
+      </splice_schedule>
+      <splice_insert
+          splice_event_id="uint32, required"
+          splice_event_cancel="bool, default=false"
+          out_of_network="bool, required when splice_event_cancel is false"
+          splice_immediate="bool, default=false"
+          pts_time="uint33, required when splice_event_cancel is false and splice_immediate is false and program_splice_flag is to be set"
+          unique_program_id="uint16, required when splice_event_cancel is false"
+          avail_num="uint8, default=0"
+          avails_expected="uint8, default=0">
+        <!-- Optional -->
+        <break_duration auto_return="bool, required" duration="uint33, required"/>
+        <!-- One per component when splice_event_cancel is false and pts_time is not specified -->
+        <component component_tag="uint8, required" pts_time="uint33, required when splice_immediate is false"/>
+      </splice_insert>
+      <time_signal pts_time="uint33, optional"/>
+      <bandwidth_reservation/>
+      <private_command identifier="uint32, required">
+        Hexadecimal content
+      </private_command>
+      <!-- Splice descriptors, depend on splice command -->
+      <_any in="_descriptors"/>
+    </splice_information_table>
+
+  </_tables>
+</tsduck>
