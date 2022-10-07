@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <country_availability_descriptor country_availability="bool, required">
+      <!-- One per country -->
+      <country country_code="char3, required"/>
+    </country_availability_descriptor>
+
+  </_descriptors>
+</tsduck>

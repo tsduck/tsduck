@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Resolution provider Notification Table -->
+    <RNT version="uint5, default=0"
+         current="bool, default=true"
+         context_id="uint16, required"
+         context_id_type="uint8, required">
+      <_any in="_metadata"/>
+      <_any in="_descriptors"/>
+      <!-- One per resolution provider -->
+      <resolution_provider name="string, required">
+        <_any in="_descriptors"/>
+        <!-- One per CRID authority -->
+        <CRID_authority name="string, required" policy="uint2, required">
+          <_any in="_descriptors"/>
+        </CRID_authority>
+      </resolution_provider>
+    </RNT>
+
+  </_tables>
+</tsduck>

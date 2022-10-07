@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <SH_delivery_system_descriptor diversity_mode="uint4, required">
+      <!-- Number of modulations depends on the SH config, e.g. 1 in SFN, 2 in non-SFN -->
+      <modulation>
+        <!-- Modulation type: exactly one of TDM or OFDM must be present -->
+        <TDM
+            polarization="horizontal|vertical|left|right, required"
+            roll_off="0.35|0.25|0.15|reserved, required"
+            modulation_mode="QPSK|8PSK|16APSK|reserved, required"
+            code_rate="uint4, required"
+            symbol_rate="uint5, required"/>
+        <OFDM
+            bandwidth="8MHz|7MHz|6MHz|5MHz|1.7MHz|uint3, required"
+            priority="uint1, required"
+            constellation_and_hierarchy="uint3, required"
+            code_rate="uint4, required"
+            guard_interval="1/32|1/16|1/8|1/4|uint2, required"
+            transmission_mode="1k|2k|4k|8k|uint2, required"
+            common_frequency="bool, required"/>
+        <!-- At most one interleaver, optional fields must be all absent or all present -->
+        <interleaver
+            common_multiplier="uint6, required"
+            nof_late_taps="uint6, optional"
+            nof_slices="uint6, optional"
+            slice_distance="uint8, optional"
+            non_late_increments="uint6, optional"/>
+      </modulation>
+    </SH_delivery_system_descriptor>
+
+  </_descriptors>
+</tsduck>

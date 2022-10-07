@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_EAC3_audio_descriptor
+        mixinfoexists="bool, required"
+        full_service="bool, required"
+        audio_service_type="uint3, required"
+        number_of_channels="uint3, required"
+        bsid="uint5, optional"
+        priority="uint2, optional"
+        mainid="uint3, optional"
+        asvc="uint8, optional"
+        substream1="uint8, optional"
+        substream2="uint8, optional"
+        substream3="uint8, optional"
+        language="char3, optional"
+        language_2="char3, optional"
+        substream1_lang="char3, optional"
+        substream2_lang="char3, optional"
+        substream3_lang="char3, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </ATSC_EAC3_audio_descriptor>
+
+  </_descriptors>
+</tsduck>

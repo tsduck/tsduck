@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <SSU_subgroup_association_descriptor subgroup_tag="uint40, required"/>
+
+  </_descriptors>
+</tsduck>

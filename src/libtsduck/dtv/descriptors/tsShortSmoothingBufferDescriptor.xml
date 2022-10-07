@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <short_smoothing_buffer_descriptor
+        sb_size="uint2, required"
+        sb_leak_rate="uint6, required">
+      Hexadecimal content (optional DVB-reserved data)
+    </short_smoothing_buffer_descriptor>
+
+  </_descriptors>
+</tsduck>

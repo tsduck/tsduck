@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Running Status Table -->
+    <RST>
+      <_any in="_metadata"/>
+      <!-- One per event -->
+      <event transport_stream_id="uint16, required"
+             original_network_id="uint16, required"
+             service_id="uint16, required"
+             event_id="uint16, required"
+             running_status="undefined|not-running|starting|pausing|running|off-air, required"/>
+    </RST>
+
+  </_tables>
+</tsduck>

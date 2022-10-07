@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <partial_transport_stream_descriptor
+        peak_rate="uint22, required"
+        minimum_overall_smoothing_rate="uint22, default=0x3FFFFF"
+        maximum_overall_smoothing_buffer="uint14, default=0x3FFF"/>
+
+  </_descriptors>
+</tsduck>

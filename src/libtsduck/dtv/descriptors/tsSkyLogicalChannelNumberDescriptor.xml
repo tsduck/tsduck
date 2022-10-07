@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <sky_logical_channel_number_descriptor region_id="uint16, required">
+      <!-- One per service -->
+      <service service_id="uint16, required"
+               service_type="uint8, required"
+               channel_id="uint16, required"
+               logical_channel_number="uint16, required"
+               sky_id="uint16, required"/>
+    </sky_logical_channel_number_descriptor>
+
+  </_descriptors>
+</tsduck>

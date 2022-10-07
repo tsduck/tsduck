@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <AAC_descriptor
+        profile_and_level="uint8, required"
+        SAOC_DE="bool, default=false"
+        AAC_type="uint8, optional">
+      <additional_info>
+        Hexadecimal content
+      </additional_info>
+    </AAC_descriptor>
+
+  </_descriptors>
+</tsduck>

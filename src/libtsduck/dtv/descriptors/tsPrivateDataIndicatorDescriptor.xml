@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <private_data_indicator_descriptor private_data_indicator="uint32, required"/>
+
+  </_descriptors>
+</tsduck>

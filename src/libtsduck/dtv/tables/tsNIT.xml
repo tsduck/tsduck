@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Network Information Table -->
+    <NIT version="uint5, default=0"
+         current="bool, default=true"
+         network_id="uint16, required"
+         actual="bool, default=true">
+      <_any in="_metadata"/>
+      <!-- Network-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per transport stream -->
+      <transport_stream transport_stream_id="uint16, required"
+                        original_network_id="uint16, required"
+                        preferred_section="uint8, optional">
+        <_any in="_descriptors"/>
+      </transport_stream>
+    </NIT>
+
+  </_tables>
+</tsduck>

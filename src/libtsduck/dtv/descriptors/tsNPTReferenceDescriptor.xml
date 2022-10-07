@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <NPT_reference_descriptor
+        post_discontinuity="bool, default=false"
+        content_id="uint7, default=0x7F"
+        STC_reference="uint33, required"
+        NPT_reference="uint33, required"
+        scale_numerator="uint16, required"
+        scale_denominator="uint16, required"/>
+
+  </_descriptors>
+</tsduck>

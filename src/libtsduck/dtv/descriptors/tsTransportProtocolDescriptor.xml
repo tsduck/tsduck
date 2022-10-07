@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <transport_protocol_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- Only one of the following shall be present -->
+      <!-- For protocol id 1: -->
+      <object_carousel
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          component_tag="uint8, required"/>
+      <!-- For protocol id 2: -->
+      <ip_mpe
+          original_network_id="uint16, optional"
+          transport_stream_id="uint16, optional"
+          service_id="uint16, optional"
+          alignment_indicator="bool, required">
+        <!-- One per URL -->
+        <url value="string, required"/>
+      </ip_mpe>
+      <!-- For protocol id 3: -->
+      <http>
+        <!-- One per URL -->
+        <url base="string, required">
+          <!-- One per URL extension -->
+          <extension value="string, required"/>
+        </url>
+      </http>
+      <!-- For other (unknown) protocol ids: -->
+      <protocol id="uint16, required">
+        Hexadecimal content
+      </protocol>
+    </transport_protocol_descriptor>
+
+  </_descriptors>
+</tsduck>

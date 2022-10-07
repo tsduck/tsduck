@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <content_labelling_descriptor
+        metadata_application_format="uint16, required"
+        metadata_application_format_identifier="uint32, optional"
+        content_time_base_indicator="uint4, required"
+        content_time_base_value="uint33, optional"
+        metadata_time_base_value="uint33, optional"
+        content_id="uint7, optional">
+      <content_reference_id>
+        Hexadecimal content
+      </content_reference_id>
+      <time_base_association_data>
+        Hexadecimal content
+      </time_base_association_data>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </content_labelling_descriptor>
+
+  </_descriptors>
+</tsduck>

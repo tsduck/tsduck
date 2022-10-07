@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <prefetch_descriptor transport_protocol_label="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per module -->
+      <module label="string, required" prefetch_priority="int, 1 to 100, required"/>
+    </prefetch_descriptor>
+
+  </_descriptors>
+</tsduck>

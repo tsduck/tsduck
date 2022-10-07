@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <video_window_descriptor
+        horizontal_offset="uint14, required"
+        vertical_offset="uint14, required"
+        window_priority="uint4, required"/>
+
+  </_descriptors>
+</tsduck>

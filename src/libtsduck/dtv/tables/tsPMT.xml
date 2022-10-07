@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Program Map Table -->
+    <PMT version="uint5, default=0"
+         current="bool, default=true"
+         service_id="uint16, required"
+         PCR_PID="uint13, default=0x1FFF">
+      <_any in="_metadata"/>
+      <!-- Program-level descriptors -->
+      <_any in="_descriptors"/>
+      <!-- One per elementary stream -->
+      <component stream_type="uint8, required" elementary_PID="uint13, require">
+        <_any in="_descriptors"/>
+      </component>
+    </PMT>
+
+  </_tables>
+</tsduck>

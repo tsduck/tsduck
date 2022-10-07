@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <copyright_descriptor copyright_identifier="uint32, required">
+      <additional_copyright_info>
+        Hexadecimal content
+      </additional_copyright_info>
+    </copyright_descriptor>
+
+  </_descriptors>
+</tsduck>

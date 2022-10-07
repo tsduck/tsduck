@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <stereoscopic_video_info_descriptor
+        base_video="bool, required"
+        leftview="bool, optional"
+        usable_as_2D="bool, optional"
+        horizontal_upsampling_factor="uint4, optional"
+        vertical_upsampling_factor="uint4, optional"/>
+
+  </_descriptors>
+</tsduck>

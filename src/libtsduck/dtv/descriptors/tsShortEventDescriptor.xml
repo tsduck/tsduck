@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <short_event_descriptor language_code="char3, required">
+      <event_name>String</event_name>
+      <text>String</text>
+    </short_event_descriptor>
+
+  </_descriptors>
+</tsduck>

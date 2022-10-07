@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- ATSC Rating Region Table -->
+    <RRT version="uint5, default=0"
+         protocol_version="uint8, default=0"
+         rating_region="uint8, required">
+      <_any in="_metadata"/>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <rating_region_name>
+        <string language="char3, required" text="string, required"/>
+      </rating_region_name>
+      <!-- One per dimension -->
+      <dimension graduated_scale="bool, required">
+        <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+        <dimension_name>
+          <string language="char3, required" text="string, required"/>
+        </dimension_name>
+        <!-- One per rating value -->
+        <value>
+          <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+          <abbrev_rating_value>
+            <string language="char3, required" text="string, required"/>
+          </abbrev_rating_value>
+          <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+          <rating_value>
+            <string language="char3, required" text="string, required"/>
+          </rating_value>
+        </value>
+      </dimension>
+      <_any in="_descriptors"/>
+    </RRT>
+
+  </_tables>
+</tsduck>

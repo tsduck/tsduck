@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <stream_event_descriptor
+        event_id="uint16, required"
+        event_NPT="uint33, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+      <private_text>
+        ASCII string to be used instead of private_data
+      </private_text>
+    </stream_event_descriptor>
+
+  </_descriptors>
+</tsduck>

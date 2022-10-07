@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <FTA_content_management_descriptor
+        user_defined="bool, required"
+        do_not_scramble="bool, required"
+        control_remote_access_over_internet="uint2, required"
+        do_not_apply_revocation="bool, required"/>
+
+  </_descriptors>
+</tsduck>

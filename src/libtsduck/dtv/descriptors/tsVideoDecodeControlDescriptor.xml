@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <video_decode_control_descriptor
+        still_picture="bool, required"
+        sequence_end_code="bool, required"
+        video_encode_format="uint4, required"
+        reserved_future_use="uint2, default=3"/>
+
+  </_descriptors>
+</tsduck>

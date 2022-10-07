@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <SL_descriptor ES_ID="uint16, required"/>
+
+  </_descriptors>
+</tsduck>

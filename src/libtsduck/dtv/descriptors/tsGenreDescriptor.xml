@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <genre_descriptor>
+      <!-- One per attribute -->
+      <attribute value="uint8, required"/>
+    </genre_descriptor>
+
+  </_descriptors>
+</tsduck>

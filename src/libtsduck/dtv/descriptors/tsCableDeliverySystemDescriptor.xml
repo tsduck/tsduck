@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <cable_delivery_system_descriptor
+        frequency="FrequencyHz, required"
+        FEC_outer="undefined|none|RS, default=RS"
+        modulation="auto|16-QAM|32-QAM|64-QAM|128-QAM|256-QAM, default=16-QAM"
+        symbol_rate="SymbolRate, required"
+        FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|none, required"/>
+
+  </_descriptors>
+</tsduck>

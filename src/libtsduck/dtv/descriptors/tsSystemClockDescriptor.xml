@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <system_clock_descriptor
+        external_clock_reference="bool required"
+        clock_accuracy_integer="uint6, required"
+        clock_accuracy_exponent="uint3, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <parental_rating_descriptor>
+      <!-- One per country -->
+      <country country_code="char3, required"
+               rating="uint8, required"/>
+    </parental_rating_descriptor>
+
+  </_descriptors>
+</tsduck>

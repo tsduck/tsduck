@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <target_background_grid_descriptor
+        horizontal_size="uint14, required"
+        vertical_size="uint14, required"
+        aspect_ratio_information="uint4, required"/>
+
+  </_descriptors>
+</tsduck>

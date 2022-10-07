@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <EAS_metadata_descriptor fragment_number="uint8, default=1">
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- The text inside this element is an XML fragment -->
+    </EAS_metadata_descriptor>
+
+  </_descriptors>
+</tsduck>

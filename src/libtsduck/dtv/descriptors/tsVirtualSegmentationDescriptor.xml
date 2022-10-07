@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <virtual_segmentation_descriptor ticks_per_second="uint21, optional">
+      <!-- One per partition -->
+      <partition
+          partition_id="uint3, required"
+          SAP_type_max="uint3, required"
+          boundary_PID="uint13, optional"
+          maximum_duration="uint29, optional"/>
+    </virtual_segmentation_descriptor>
+
+  </_descriptors>
+</tsduck>

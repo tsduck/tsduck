@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <LCEVC_video_descriptor
+        lcevc_stream_tag="uint8, required"
+        profile_idc="uint4, required"
+        level_idc="uint4, required"
+        sublevel_idc="uint2, required"
+        processed_planes_type_flag="bool, required"
+        picture_type_bit_flag="bool, required"
+        field_type_bit_flag="bool, required"
+        HDR_WCG_idc="uint2, default=3"
+        video_properties_tag="uint4, default=0"/>
+
+  </_descriptors>
+</tsduck>

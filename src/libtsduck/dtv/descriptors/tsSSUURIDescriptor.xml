@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <SSU_uri_descriptor
+        max_holdoff_time="uint8, required"
+        min_polling_interval="uint8, required"
+        uri="string, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -35,7 +35,9 @@ include ../Makefile.inc
 
 default:
 	+@$(call F_RECURSE,libtsduck tsplugins tstools $(if $(NOTEST),,utest) $(if $(CROSS),,utils))
+	@$(MAKE) -C libtsduck/config post-build
 
 .PHONY: install install-tools install-devel
 install install-tools install-devel:
 	@$(call F_RECURSE,libtsduck tsplugins tstools utils)
+	@$(MAKE) -C libtsduck/config install-post-build

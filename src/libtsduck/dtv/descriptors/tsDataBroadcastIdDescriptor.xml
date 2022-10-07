@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <data_broadcast_id_descriptor data_broadcast_id="uint16, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+    </data_broadcast_id_descriptor>
+
+  </_descriptors>
+</tsduck>

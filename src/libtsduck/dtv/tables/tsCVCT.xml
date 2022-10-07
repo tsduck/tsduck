@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- ATSC Cable Virtual Channel Table -->
+    <CVCT version="uint5, default=0"
+          current="bool, default=true"
+          protocol_version="uint8, default=0"
+          transport_stream_id="uint16, required">
+      <_any in="_metadata"/>
+      <!-- Common descriptors loop -->
+      <_any in="_descriptors"/>
+      <!-- One per channel -->
+      <channel short_name="string, required"
+               major_channel_number="uint10, required"
+               minor_channel_number="uint10, required"
+               modulation_mode="analog|64-QAM|256-QAM|8-VSB|16-VSB|uint8, required"
+               carrier_frequency="uint32, default=0"
+               channel_TSID="uint16, required"
+               program_number="uint16, required"
+               ETM_location="uint2, default=0"
+               access_controlled="bool, default=false"
+               hidden="bool, default=false"
+               path_select="uint1, default=0"
+               out_of_band="bool, default=false"
+               hide_guide="bool, default=false"
+               service_type="analog|dtv|audio|data|software|uint6, default=dtv"
+               source_id="uint16, required">
+        <_any in="_descriptors"/>
+      </channel>
+    </CVCT>
+
+  </_tables>
+</tsduck>

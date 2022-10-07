@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <data_content_descriptor
+        data_component_id="uint16, required"
+        entry_component="uint8, required"
+        ISO_639_language_code="char3, required"
+        text="string, required">
+      <selector_bytes>Hexadecimal content</selector_bytes>
+      <!-- One per component_ref -->
+      <component ref="uint8, required"/>
+    </data_content_descriptor>
+
+  </_descriptors>
+</tsduck>

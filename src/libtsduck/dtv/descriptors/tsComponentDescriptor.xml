@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <component_descriptor
+        stream_content="uint4, required"
+        stream_content_ext="uint4, default=0xF"
+        component_type="uint8, required"
+        component_tag="uint8, default=0"
+        language_code="char3, required"
+        text="string, optional"/>
+
+  </_descriptors>
+</tsduck>

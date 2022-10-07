@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <smoothing_buffer_descriptor
+        sb_leak_rate="uint22, required"
+        sb_size="uint22, required"/>
+
+  </_descriptors>
+</tsduck>

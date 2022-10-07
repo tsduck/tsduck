@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <EAS_inband_exception_channels_descriptor>
+      <!-- Must be in a cable_emergency_alert_table (table id 0xD8) -->
+      <!-- One entry per exception channel -->
+      <exception RF_channel="uint8, required" program_number="uint16, required"/>
+    </EAS_inband_exception_channels_descriptor>
+
+  </_descriptors>
+</tsduck>

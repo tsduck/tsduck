@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <telephone_descriptor
+        foreign_availability="bool, required"
+        connection_type="uint5, required"
+        country_prefix="string, 3 chars max, optional"
+        international_area_code="string, 7 chars max, optional"
+        operator_code="string, 3 chars max, optional"
+        national_area_code="string, 7 chars max, optional"
+        core_number="string, 15 chars max, optional"/>
+
+  </_descriptors>
+</tsduck>

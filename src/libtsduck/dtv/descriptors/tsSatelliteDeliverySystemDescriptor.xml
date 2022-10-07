@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <satellite_delivery_system_descriptor
+        frequency="SatelliteFrequencyHz, required"
+        orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+        west_east_flag="east|west, required"
+        polarization="horizontal|vertical|left|right, required"
+        roll_off="0.35|0.25|0.20|reserved, default=0.35"
+        modulation_system="DVB-S|DVB-S2|ISDB-S, required"
+        modulation_type="auto|QPSK|8PSK|16-QAM|ISDB-S|2.6GHzMobile|AdvancedCS, Default=QPSK|ISDB-S"
+        symbol_rate="SatelliteSymbolRate, required"
+        FEC_inner="undefined|1/2|2/3|3/4|5/6|7/8|8/9|3/5|4/5|9/10|ISDB-S|2.6GHzMobile|AdvancedCS|none, required"/>
+
+  </_descriptors>
+</tsduck>

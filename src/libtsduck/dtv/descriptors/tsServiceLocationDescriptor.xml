@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <service_location_descriptor PCR_PID="uint13, optional">
+      <!-- One per component -->
+      <component stream_type="uint8, required"
+                 elementary_PID="uint13, required"
+                 ISO_639_language_code="char3, optional"/>
+    </service_location_descriptor>
+
+  </_descriptors>
+</tsduck>

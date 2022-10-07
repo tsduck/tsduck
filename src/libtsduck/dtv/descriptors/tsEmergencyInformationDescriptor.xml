@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <emergency_information_descriptor>
+      <!-- One entry per event -->
+      <event service_id="uint16, required"
+             started="bool, required"
+             signal_level="uint1, required">
+        <!-- One entry per area code -->
+        <area code="uint12, required"/>
+      </event>
+    </emergency_information_descriptor>
+
+  </_descriptors>
+</tsduck>

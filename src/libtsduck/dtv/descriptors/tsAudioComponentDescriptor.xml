@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <audio_component_descriptor
+        stream_content="uint4, default=2"
+        component_type="uint8, required"
+        component_tag="uint8, required"
+        stream_type="uint8, required"
+        simulcast_group_tag="uint8, default=0xFF"
+        main_component="bool, default=true"
+        quality_indicator="uint2, required"
+        sampling_rate="uint3, required"
+        ISO_639_language_code="char3, required"
+        ISO_639_language_code_2="char3, optional"
+        text="string, optional"/>
+
+  </_descriptors>
+</tsduck>

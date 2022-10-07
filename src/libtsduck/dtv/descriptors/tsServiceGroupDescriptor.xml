@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <service_group_descriptor service_group_type="uint4, required">
+      <!-- One per service when service_group_type == 1 -->
+      <service primary_service_id="uint16, required"
+               secondary_service_id="uint16, required"/>
+      <!-- Optional private data for other group types -->
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </service_group_descriptor>
+
+  </_descriptors>
+</tsduck>

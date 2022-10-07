@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <target_IP_address_descriptor IPv4_addr_mask="IPv4 address, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+      <!-- One per IPv4 address: -->
+      <address IPv4_addr="IPv4 address, required"/>
+    </target_IP_address_descriptor>
+
+  </_descriptors>
+</tsduck>

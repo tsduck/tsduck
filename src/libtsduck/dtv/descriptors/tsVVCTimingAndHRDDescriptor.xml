@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <VVC_timing_and_HRD_descriptor
+        hrd_management_valid="bool, required"
+        N_90khz="uint32, optional"
+        K_90khz="uint32, optional"
+        num_units_in_tick="uint32, optional"/>
+
+  </_descriptors>
+</tsduck>

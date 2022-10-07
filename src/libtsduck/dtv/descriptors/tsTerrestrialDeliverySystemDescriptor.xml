@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <terrestrial_delivery_system_descriptor
+        centre_frequency="TerrestrialFrequencyHz, required"
+        bandwidth="8MHz|7MHz|6MHz|5MHz, required"
+        priority="HP|LP, required"
+        no_time_slicing="bool, required"
+        no_MPE_FEC="bool, required"
+        constellation="QPSK|16-QAM|64-QAM, required"
+        hierarchy_information="uint3, required"
+        code_rate_HP_stream="1/2|2/3|3/4|5/6|7/8, required"
+        code_rate_LP_stream="1/2|2/3|3/4|5/6|7/8, required"
+        guard_interval="1/32|1/16|1/8|1/4, required"
+        transmission_mode="2k|8k|4k, required"
+        other_frequency="bool, required"/>
+
+  </_descriptors>
+</tsduck>

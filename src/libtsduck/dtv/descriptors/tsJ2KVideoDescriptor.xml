@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <J2K_video_descriptor
+        profile_and_level="uint16, required"
+        horizontal_size="uint32, required"
+        vertical_size="uint32, required"
+        max_bit_rate="uint32, required"
+        max_buffer_size="uint32, required"
+        DEN_frame_rate="uint16, required"
+        NUM_frame_rate="uint16, required"
+        color_specification="uint8, required"
+        still_mode="bool, required"
+        interlaced_video="bool, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </J2K_video_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- DVB Content Identifier Table -->
+    <CIT version="uint5, default=0"
+         current="bool, default=true"
+         service_id="uint16, required"
+         transport_stream_id="uint16, required"
+         original_network_id="uint16, required">
+      <_any in="_metadata"/>
+      <!-- One per prepend string -->
+      <prepend_string value="string, required"/>
+      <!-- One per CRID (Content Reference Identifier) -->
+      <crid crid_ref="uint16, required"
+            prepend_string_index="uint8, optional"
+            unique_string="string, required"/>
+    </CIT>
+
+  </_tables>
+</tsduck>

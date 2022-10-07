@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <simple_application_boundary_descriptor>
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per prefix: -->
+      <prefix boundary_extension="string, required"/>
+    </simple_application_boundary_descriptor>
+
+  </_descriptors>
+</tsduck>

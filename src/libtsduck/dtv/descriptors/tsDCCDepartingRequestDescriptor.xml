@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dcc_departing_request_descriptor dcc_departing_request_type="uint8, required">
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <dcc_departing_request_text>
+        <string language="char3, required" text="string, required"/>
+      </dcc_departing_request_text>
+    </dcc_departing_request_descriptor>
+
+  </_descriptors>
+</tsduck>

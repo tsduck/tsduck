@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <IBP_descriptor
+        closed_gop="bool, required"
+        identical_gop="bool, required"
+        max_gop_length="uint14, required"/>
+
+  </_descriptors>
+</tsduck>

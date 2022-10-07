@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <dvb_html_application_location_descriptor
+        physical_root="string, required"
+        initial_path="string, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+    </dvb_html_application_location_descriptor>
+
+  </_descriptors>
+</tsduck>

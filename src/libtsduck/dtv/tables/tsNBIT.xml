@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- ISDB Network Board Information Table -->
+    <NBIT version="uint5, default=0"
+          current="bool, default=true"
+          original_network_id="uint16, required"
+          body="bool, default=true">
+      <_any in="_metadata"/>
+      <!-- One per information set -->
+      <information
+          information_id="uint16, required"
+          information_type="uint4, required"
+          description_body_location="uint2, required"
+          user_defined="uint8, default=0xFF">
+        <!-- One per key_id entry -->
+        <key id="uint16, required"/>
+        <_any in="_descriptors"/>
+      </information>
+    </NBIT>
+
+  </_tables>
+</tsduck>

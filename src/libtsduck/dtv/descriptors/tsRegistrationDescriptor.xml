@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <registration_descriptor format_identifier="uint32, required">
+      <additional_identification_info>
+        Hexadecimal content (optional element)
+      </additional_identification_info>
+    </registration_descriptor>
+
+  </_descriptors>
+</tsduck>

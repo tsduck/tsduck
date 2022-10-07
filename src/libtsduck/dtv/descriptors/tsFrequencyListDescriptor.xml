@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <frequency_list_descriptor
+        coding_type="undefined|satellite|cable|terrestrial|uint2, required">
+      <!-- List of frequencies -->
+      <centre_frequency value="FrequencyHz, required"/>
+    </frequency_list_descriptor>
+
+  </_descriptors>
+</tsduck>

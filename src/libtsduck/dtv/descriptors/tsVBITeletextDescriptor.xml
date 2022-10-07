@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <VBI_teletext_descriptor>
+      <!-- One per page -->
+      <teletext language_code="char3, required"
+                teletext_type="uint5, required"
+                page_number="uint16, required"/>
+    </VBI_teletext_descriptor>
+
+  </_descriptors>
+</tsduck>

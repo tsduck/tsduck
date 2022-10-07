@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <IPMAC_platform_name_descriptor
+        language_code="char3, required"
+        text="string, required">
+      <!-- Must be in an INT (table id 0x4C) -->
+    </IPMAC_platform_name_descriptor>
+
+  </_descriptors>
+</tsduck>

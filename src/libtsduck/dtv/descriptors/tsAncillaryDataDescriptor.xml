@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ancillary_data_descriptor ancillary_data_identifier="uint8, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ISDB_access_control_descriptor
+        CA_system_id="uint16, required"
+        transmission_type="uint3, default=7"
+        PID="uint13, required">
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </ISDB_access_control_descriptor>
+
+  </_descriptors>
+</tsduck>

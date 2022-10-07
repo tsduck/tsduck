@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <ATSC_stuffing_descriptor>
+      Hexadecimal content
+    </ATSC_stuffing_descriptor>
+
+  </_descriptors>
+</tsduck>

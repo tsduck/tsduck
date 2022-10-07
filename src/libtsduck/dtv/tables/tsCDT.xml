@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- ISDB Common Data Table -->
+    <CDT version="uint5, default=0"
+         current="bool, default=true"
+         download_data_id="uint16, required"
+         original_network_id="uint16, required"
+         data_type="uint8, required">
+      <_any in="_metadata"/>
+      <_any in="_descriptors"/>
+      <data_module>
+        Hexadecimal content
+      </data_module>
+    </CDT>
+
+
+  </_tables>
+</tsduck>

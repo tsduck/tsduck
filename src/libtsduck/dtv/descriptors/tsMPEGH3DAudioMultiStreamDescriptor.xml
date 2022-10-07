@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEGH_3D_audio_multi_stream_descriptor
+        this_is_main_stream="bool, required"
+        this_stream_id="uint7, required"
+        num_auxiliary_streams="uint7, optional">
+      <!-- One per group -->
+      <mae_group
+          mae_group_id="uint7, required"
+          is_in_main_stream="bool, required"
+          is_in_ts="bool, optional"
+          auxiliary_stream_id="uint7, optional"/>
+      <reserved>
+        Hexadecimal content
+      </reserved>
+    </MPEGH_3D_audio_multi_stream_descriptor>
+
+  </_descriptors>
+</tsduck>

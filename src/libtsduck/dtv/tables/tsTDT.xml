@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Time and Date Table -->
+    <TDT UTC_time="YYYY-MM-DD hh:mm:ss, required">
+      <_any in="_metadata"/>
+    </TDT>
+
+  </_tables>
+</tsduck>

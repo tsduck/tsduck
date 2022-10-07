@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <multiplex_buffer_utilization_descriptor
+        LTW_offset_lower_bound="uint15, optional"
+        LTW_offset_upper_bound="uint15, optional"/>
+
+  </_descriptors>
+</tsduck>

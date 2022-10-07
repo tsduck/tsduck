@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <application_icons_descriptor
+        icon_locator="string, required"
+        icon_flags="uint16, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <reserved_future_use>
+        Hexadecimal content
+      </reserved_future_use>
+    </application_icons_descriptor>
+
+  </_descriptors>
+</tsduck>

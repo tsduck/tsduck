@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <image_icon_descriptor
+        descriptor_number="uint4, required"
+        last_descriptor_number="uint4, required"
+        icon_id="uint3, required"
+        icon_transport_mode="uint2, optional"
+        coordinate_system="uint3, optional"
+        icon_horizontal_origin="uint12, optional"
+        icon_vertical_origin="uint12, optional"
+        icon_type="string, optional"
+        url="string, optional">
+      <icon_data>
+        Hexadecimal content
+      </icon_data>
+    </image_icon_descriptor>
+
+  </_descriptors>
+</tsduck>

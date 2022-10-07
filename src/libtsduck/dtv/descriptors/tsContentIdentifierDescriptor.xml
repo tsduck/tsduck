@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <content_identifier_descriptor>
+      <crid crid_type="uint6, required"
+            crid_location="uint2, required"
+            crid_ref="uint16, optional"
+            crid="string, optional"/>
+    </content_identifier_descriptor>
+
+  </_descriptors>
+</tsduck>

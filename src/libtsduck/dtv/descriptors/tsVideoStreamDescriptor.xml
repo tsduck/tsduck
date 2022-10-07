@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <video_stream_descriptor
+        multiple_frame_rate="bool, required"
+        frame_rate_code="uint4, required"
+        MPEG_1_only="bool, required"
+        constrained_parameter="bool, required"
+        still_picture="bool, required"
+        profile_and_level_indication="uint8, required when MPEG_1_only='false'"
+        chroma_format="uint2, required when MPEG_1_only='false'"
+        frame_rate_extension="bool, required when MPEG_1_only='false'"/>
+
+  </_descriptors>
+</tsduck>

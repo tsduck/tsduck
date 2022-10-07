@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <metadata_pointer_descriptor
+        metadata_application_format="uint16, required"
+        metadata_application_format_identifier="uint32, optional"
+        metadata_format="uint8, required"
+        metadata_format_identifier="uint32, optional"
+        metadata_service_id="uint8, required"
+        MPEG_carriage_flags="uint2, required"
+        program_number="uint16, optional"
+        transport_stream_location="uint16, optional"
+        transport_stream_id="uint16, optional">
+      <metadata_locator>
+        Hexadecimal content
+      </metadata_locator>
+      <private_data>
+        Hexadecimal content
+      </private_data>
+    </metadata_pointer_descriptor>
+
+  </_descriptors>
+</tsduck>

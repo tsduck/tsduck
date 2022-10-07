@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Discontinuity Information Table -->
+    <discontinuity_information_table transition="bool, required">
+      <_any in="_metadata"/>
+    </discontinuity_information_table>
+
+  </_tables>
+</tsduck>

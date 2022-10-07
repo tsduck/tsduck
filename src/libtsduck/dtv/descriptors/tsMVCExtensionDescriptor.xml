@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MVC_extension_descriptor
+        average_bitrate="uint16, required"
+        maximum_bitrate="uint16, required"
+        view_association_not_present="bool, required"
+        base_view_is_left_eyeview="bool, required"
+        view_order_index_min="uint10, required"
+        view_order_index_max="uint10, required"
+        temporal_id_start="uint3, required"
+        temporal_id_end="uint3, required"
+        no_sei_nal_unit_present="bool, required"
+        no_prefix_nal_unit_present="bool, required"/>
+
+  </_descriptors>
+</tsduck>

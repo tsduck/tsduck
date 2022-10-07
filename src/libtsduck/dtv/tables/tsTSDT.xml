@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Transport Stream Description Table -->
+    <TSDT version="uint5, default=0"
+          current="bool, default=true">
+      <_any in="_metadata"/>
+      <_any in="_descriptors"/>
+    </TSDT>
+
+  </_tables>
+</tsduck>

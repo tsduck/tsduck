@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <system_management_descriptor
+        broadcasting_flag="uint2, required"
+        broadcasting_identifier="uint6, required"
+        additional_broadcasting_identification="uint8, required">
+      <additional_identification_info>
+        Hexadecimal content
+      </additional_identification_info>
+    </system_management_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <DSNG_descriptor station_identification="string, required"/>
+
+  </_descriptors>
+</tsduck>

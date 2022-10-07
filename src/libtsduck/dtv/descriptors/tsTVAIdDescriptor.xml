@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <TVA_id_descriptor>
+      <TVA id="uint16, required" running_status="uint3, required"/>
+    </TVA_id_descriptor>
+
+  </_descriptors>
+</tsduck>

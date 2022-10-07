@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <time_slice_fec_identifier_descriptor
+        time_slicing="bool, required"
+        mpe_fec="uint2, required"
+        frame_size="uint3, required"
+        max_burst_duration="uint8, required"
+        max_average_rate="uint4, required"
+        time_slice_fec_id="uint4, default=0">
+      <id_selector_bytes>Hexadecimal content</id_selector_bytes>
+    </time_slice_fec_identifier_descriptor>
+
+  </_descriptors>
+</tsduck>

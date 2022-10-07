@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <application_descriptor
+        service_bound="bool, required"
+        visibility="uint2, required"
+        application_priority="uint8, required">
+      <!-- Must be in an AIT (table id 0x74) -->
+      <!-- One per profile -->
+      <profile
+          application_profile="uint16, required"
+          version="string 'major.minor.micro', required"/>
+      <!-- One per transport_protocol_label -->
+      <transport_protocol label="uint8, required"/>
+    </application_descriptor>
+
+  </_descriptors>
+</tsduck>

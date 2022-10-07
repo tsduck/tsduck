@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <board_information_descriptor title="string, required" text="string, required"/>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <protection_message_descriptor>
+      <!-- One per component, up to 15 components -->
+      <component tag="uint8, required"/>
+    </protection_message_descriptor>
+
+  </_descriptors>
+</tsduck>

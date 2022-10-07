@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_tables>
+
+    <!-- Cable Emergency Alert (ANSI/SCTE 18) -->
+    <cable_emergency_alert_table
+        sequence_number="uint5, required"
+        protocol_version="uint8, default=0"
+        EAS_event_ID="uint16, required"
+        EAS_originator_code="char3, required"
+        EAS_event_code="string, required"
+        alert_message_time_remaining="uint8, optional"
+        event_start_time="YYYY-MM-DD hh:mm:ss, optional"
+        event_duration="uint16, optional"
+        alert_priority="uint4, required"
+        details_OOB_source_ID="uint16, optional"
+        details_major_channel_number="uint10, optional"
+        details_minor_channel_number="uint10, optional"
+        audio_OOB_source_ID="uint16, optional">
+      <_any in="_metadata"/>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <nature_of_activation_text>
+        <string language="char3, required" text="string, required"/>
+      </nature_of_activation_text>
+      <!-- Optional ATSC multiple_string_structure() containing one or more strings -->
+      <alert_text>
+        <string language="char3, required" text="string, required"/>
+      </alert_text>
+      <!-- From 1 to 31 location structures -->
+      <location
+          state_code="uint8, required"
+          county_subdivision="uint4, required"
+          county_code="uint10, required"/>
+      <!-- Up to 255 exception structures -->
+      <!-- Specify either exception_major_channel_number+exception_minor_channel_number or exception_OOB_source_ID -->
+      <exception
+          major_channel_number="uint10, optional"
+          minor_channel_number="uint10, optional"
+          OOB_source_ID="uint16, optional"/>
+      <_any in="_descriptors"/>
+    </cable_emergency_alert_table>
+
+  </_tables>
+</tsduck>
