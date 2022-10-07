@@ -2,7 +2,7 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <!-- Must be included at the end of each .vcxproj file -->
-  
+
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="PropertySheets">
     <Import Label="LocalAppDataPlatform"
@@ -10,5 +10,17 @@
             Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" />
   </ImportGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+
+  <!-- After building tsxml, we can generate the XML definitions for all tables and descriptors -->
+  <ItemGroup>
+    <SigXML1 Include="$(TSDuckRootDir)src\libtsduck\dtv\tables\*.xml;$(TSDuckRootDir)src\libtsduck\dtv\descriptors\*.xml"/>
+  </ItemGroup>
+  <PropertyGroup Label="UserMacros">
+    <SigXML2>@(SigXML1)</SigXML2>
+    <SignalizationXML>$(SigXML2.Replace(';',' '))</SignalizationXML>
+  </PropertyGroup>
+  <Target Name="AfterBuild" Condition="'$(ProjectName)'=='tsxml'">
+    <Exec Command="$(OutDir)tsxml.exe --merge $(TSDuckRootDir)src\libtsduck\config\tsduck.tables.skeleton.xml $(SignalizationXML) --sort _tables --sort _descriptors --uncomment -o $(OutDir)tsduck.tables.model.xml"/>
+  </Target>
 
 </Project>
