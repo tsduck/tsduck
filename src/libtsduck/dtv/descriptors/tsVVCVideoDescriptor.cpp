@@ -100,8 +100,9 @@ void ts::VVCVideoDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBits(profile_idc, 7);
     buf.putBit(tier);
     buf.putBits(sub_profile_idc.size(), 8);
-    for (auto it : sub_profile_idc)
+    for (auto it : sub_profile_idc) {
         buf.putUInt32(it);
+    }
     buf.putBit(progressive_source);
     buf.putBit(interlaced_source);
     buf.putBit(non_packed_constraint);
@@ -134,8 +135,9 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBits(profile_idc, 7);
     tier = buf.getBool();
     uint8_t num_sub_profiles = buf.getUInt8();
-    for (uint8_t i = 0; i < num_sub_profiles; i++)
+    for (uint8_t i = 0; i < num_sub_profiles; i++) {
         sub_profile_idc.push_back(buf.getUInt32());
+    }
     progressive_source = buf.getBool();
     interlaced_source = buf.getBool();
     non_packed_constraint = buf.getBool();
@@ -161,7 +163,8 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint16_t pi) {
+ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint16_t pi)
+{
     switch (pi) {
         case  1: return u"Main 10";
         case 17: return u"Multilayer Main 10";
@@ -169,26 +172,29 @@ ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint16_t pi) {
         case 49: return u"Multilayer Main 10 4:4:4 ";
         case 65: return u"Main 10 Still Picture";
         case 97: return u"Main 10 4:4:4 Still Picture";
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
-ts::UString ts::VVCVideoDescriptor::VVCTier(bool t) {
+ts::UString ts::VVCVideoDescriptor::VVCTier(bool t)
+{
     return t ? u"High" : u"Main";
 }
 
-ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint16_t hw) {
+ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint16_t hw)
+{
     // H222.0, TAble 2-134
     switch (hw) {
         case 0: return u"SDR";
         case 1: return u"WCG only";
         case 2: return u"HDR and WCG";
         case 3: return u"no indication";
-        default: return u"uknown";
+        default: return u"unknown";
     }	
 }
 
-ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint16_t li) {
+ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint16_t li)
+{
     // H.266, Table A.1
     switch (li) {
         case  16: return u"1.0";
@@ -204,11 +210,12 @@ ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint16_t li) {
         case  96: return u"6.0";
         case  99: return u"6.1";
         case 102: return u"6.2";
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
-ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint16_t vp) {
+ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint16_t vp)
+{
     // H.222.0 Table 2-135
     switch (vp) {
         case 0: return u"not known";
@@ -217,45 +224,46 @@ ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint16_t vp) {
         case 3: return u"BT601_525";
         case 4: return u"BT601_625";
         case 5: return u"FR709_RGB";
-        default: return u"uknown";
+        default: return u"unknown";
     }
 }
 
 void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    if (buf.canReadBytes(8)) {
-        uint16_t t;
-        t = buf.getBits<uint16_t>(7);
-        disp << margin << "Profile IDC: " << VVCVideoDescriptor::VVCProfileIDC(t) << " (" << UString::Hexa(t, 2);
+    if (buf.canReadBytes(2)) {
+        const uint8_t profile_idc = buf.getBits<uint8_t>(7);
+        disp << margin << "Profile IDC: " << VVCVideoDescriptor::VVCProfileIDC(profile_idc) << " (" << UString::Hexa(profile_idc);
         disp << "), tier: " << VVCVideoDescriptor::VVCTier(buf.getBool()) << std::endl;
-        uint8_t num_sub_profiles = buf.getUInt8();
+        const size_t num_sub_profiles = buf.getUInt8();
         if (num_sub_profiles > 0) {
-            disp << margin << "Sub profile IDC: ";
+            disp << margin << "Sub profile IDC:";
             for (uint8_t i = 0; i < num_sub_profiles; i++) {
-                disp << UString::Hexa(buf.getUInt32()) << " ";
+                disp << " " << UString::Hexa(buf.getUInt32());
                 if ((i + 1) % 6 == 0) {
                     disp << std::endl;
-                    if (i != (num_sub_profiles - 1))
+                    if (i != (num_sub_profiles - 1)) {
                         disp << margin << "                 ";
+                    }
                 }
             }
+            disp << std::endl;
         }
         disp << margin << "Progressive source: " << UString::TrueFalse(buf.getBool());
         disp << ", interlaced source: " << UString::TrueFalse(buf.getBool());
         disp << ", non packed: " << UString::TrueFalse(buf.getBool());
         disp << ", frame only: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(4);
-        t=buf.getUInt8();
-        disp << margin << "Level IDC: " << VVCVideoDescriptor::VVCLevelIDC(t) << " (" << UString::Hexa(t, 2) << ")";
+        const uint8_t level_idc = buf.getUInt8();
+        disp << margin << "Level IDC: " << VVCVideoDescriptor::VVCLevelIDC(level_idc) << " (" << UString::Hexa(level_idc) << ")";
         const bool temporal = buf.getBool();
         disp << ", still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(5);
-        t=buf.getBits<uint16_t>(2);
-        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(t) << " (" << t << ")";
+        const uint16_t wcg_idc = buf.getBits<uint16_t>(2);
+        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(wcg_idc) << " (" << wcg_idc << ")";
         buf.skipBits(2);
-        t=buf.getBits<uint16_t>(4);
-        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(t) << " (" << t << ")" << std::endl;
+        const uint16_t vprop_tag = buf.getBits<uint16_t>(4);
+        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(vprop_tag) << " (" << vprop_tag << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
@@ -274,17 +282,14 @@ void ts::VVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 { 
     root->setIntAttribute(u"profile_idc", profile_idc, true);
     root->setBoolAttribute(u"tier_flag", tier);
-    root->setIntAttribute(u"num_sub_profiles", sub_profile_idc.size());
     for (auto it : sub_profile_idc) {
-        uint32_t sub_profile_idc_val = it;
-        root->addHexaTextChild(u"sub_profile_idc", &sub_profile_idc_val, sizeof(sub_profile_idc_val));
+        root->addElement(u"sub_profile_idc")->setIntAttribute(u"value", it, true);
     }
     root->setBoolAttribute(u"progressive_source_flag", progressive_source);
     root->setBoolAttribute(u"interlaced_source_flag", interlaced_source);
     root->setBoolAttribute(u"non_packed_constraint_flag", non_packed_constraint);
     root->setBoolAttribute(u"frame_only_constraint_flag", frame_only_constraint);
     root->setIntAttribute(u"level_idc", level_idc, true);
-    root->setBoolAttribute(u"temporal_layer_subset_flag", temporal_id_min.set() && temporal_id_max.set());
     root->setBoolAttribute(u"VVC_still_present_flag", VVC_still_present);
     root->setBoolAttribute(u"VVC_24hr_picture_present_flag", VVC_24hr_picture_present);
     root->setIntAttribute(u"HDR_WCG_idc", HDR_WCG_idc);
@@ -300,11 +305,10 @@ void ts::VVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    uint8_t num_sub_profiles = 0;
+    xml::ElementVector children;
     bool ok =
-        element->getIntAttribute(profile_idc, u"profile_idc", true, 0, 0x00, 0x1F) &&
+        element->getIntAttribute(profile_idc, u"profile_idc", true, 0, 0x00, 0x7F) &&
         element->getBoolAttribute(tier, u"tier_flag", true) &&
-        element->getIntAttribute(num_sub_profiles, u"num_sub_profiles", false, 0, 0x00, 0xFF) &&
         element->getBoolAttribute(progressive_source, u"progressive_source_flag", true) &&
         element->getBoolAttribute(interlaced_source, u"interlaced_source_flag", true) &&
         element->getBoolAttribute(non_packed_constraint, u"non_packed_constraint_flag", true) &&
@@ -313,19 +317,14 @@ bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getBoolAttribute(VVC_still_present, u"VVC_still_present_flag", true) &&
         element->getBoolAttribute(VVC_24hr_picture_present, u"VVC_24hr_picture_present_flag", true) &&
         element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", false, 3, 0, 3) &&
-        element->getIntAttribute(video_properties_tag, u"video_properties_tag", false, 0, 0, 15);
-    if (ok) {
-        xml::ElementVector children;
-        ok &= element->getChildren(children, u"sub_profile_idc");
-        for (size_t i = 0; ok && i < children.size(); ++i) {
-            UString hexVal(u"");
-            ok &= children[i]->getText(hexVal);
-            uint16_t val = 0;
-            if (!hexVal.toInteger(val, u",")) {
-                element->report().error(u"'%s' is not a valid integer value for attribute '%s' in <%s>, line %d", { hexVal, u"sub_profile_idc", element->lineNumber(), element->name() });
-                ok = false;
-            }
-        }
+        element->getIntAttribute(video_properties_tag, u"video_properties_tag", false, 0, 0, 15) &&
+        element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0, 7) &&
+        element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0, 7) &&
+        element->getChildren(children, u"sub_profile_idc");
+    for (size_t i = 0; ok && i < children.size(); ++i) {
+        uint32_t value = 0;
+        ok = children[i]->getIntAttribute(value, u"value", true);
+        sub_profile_idc.push_back(value);
     }
     if (ok && temporal_id_min.set() + temporal_id_max.set() == 1) {
         element->report().error(u"line %d: in <%s>, attributes 'temporal_id_min' and 'temporal_id_max' must be both present or both omitted", { element->lineNumber(), element->name() });

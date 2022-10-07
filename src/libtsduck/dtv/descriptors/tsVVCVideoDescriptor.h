@@ -48,15 +48,15 @@ namespace ts {
     public:
         // Public members:
         uint8_t   profile_idc;                       //!< 7 bits.
-        bool      tier;                              //!< 
-        std::vector<uint32_t> sub_profile_idc;             //!< array of 32 bit values.
-        bool      progressive_source;                //!< 
-        bool      interlaced_source;                 //!< 
-        bool      non_packed_constraint;             //!< 
-        bool      frame_only_constraint;             //!< 
+        bool      tier;                              //!< bool.
+        std::vector<uint32_t> sub_profile_idc;       //!< array of 32 bit values.
+        bool      progressive_source;                //!< bool.
+        bool      interlaced_source;                 //!< bool.
+        bool      non_packed_constraint;             //!< bool.
+        bool      frame_only_constraint;             //!< bool.
         uint8_t   level_idc;                         //!< 8 bits.
-        bool      VVC_still_present;                 //!< 
-        bool      VVC_24hr_picture_present;          //!< 
+        bool      VVC_still_present;                 //!< bool.
+        bool      VVC_24hr_picture_present;          //!< bool.
         uint8_t   HDR_WCG_idc;                       //!< 2 bits.
         uint8_t   video_properties_tag;              //!< 4 bits.
         Variable<uint8_t> temporal_id_min;           //!< 3 bits, optional, specify both min and max or none.

@@ -47,7 +47,7 @@ namespace ts {
     {
     public:
         // Public members:
-        std::vector<uint8_t> lcevc_stream_tags;       //!< array of 8 bit values.
+        ByteBlock lcevc_stream_tags;       //!< array of 8 bit values.
 
         //!
         //! Default constructor.
@@ -66,6 +66,7 @@ namespace ts {
 
     protected:
         // Inherited methods
+        virtual DID extendedTag() const override;
         virtual void clearContent() override;
         virtual void serializePayload(PSIBuffer&) const override;
         virtual void deserializePayload(PSIBuffer&) override;

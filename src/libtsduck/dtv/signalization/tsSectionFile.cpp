@@ -545,40 +545,13 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
     for (const auto& name : extfiles) {
         // Load the extension file. Use searching rules.
         xml::Document extdoc(doc.report());
-        xml::Element* elem = nullptr;
         if (!extdoc.load(name, true)) {
             extdoc.report().error(u"Extension XML model file not found: %s", {name});
         }
-        else if (extdoc.rootElement() != nullptr) {
-            // Remove elements one by one.
-            while ((elem = extdoc.rootElement()->firstChildElement()) != nullptr) {
-                if (!elem->name().startWith(u"_")) {
-                    // The element does not start with an underscore.
-                    // Simply move the element inside the main model.
-                    elem->reparent(root);
-                }
-                else {
-                    // The element starts with an underscore.
-                    // We need to merge its content with an element of the same name in the model.
-                    xml::Element* topic = root->findFirstChild(elem->name(), true);
-                    if (topic == nullptr) {
-                        // The topic did not exist in the main model, simply move is here.
-                        elem->reparent(root);
-                    }
-                    else {
-                        // Move all content into the main topic.
-                        xml::Element* e = nullptr;
-                        while ((e = elem->firstChildElement()) != nullptr) {
-                            e->reparent(topic);
-                        }
-                        // Finally, delete the (now empty) element from the extension.
-                        delete elem;
-                    }
-                }
-            }
+        else {
+            root->merge(extdoc.rootElement());
         }
     }
-
     return true;
 }
 
@@ -591,7 +564,7 @@ bool ts::SectionFile::loadXML(const UString& file_name)
 {
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
-    return doc.load(file_name, false, true) && parseDocument(doc);
+    return doc.load(file_name, false) && parseDocument(doc);
 }
 
 bool ts::SectionFile::loadXML(std::istream& strm)
@@ -648,7 +621,7 @@ bool ts::SectionFile::saveXML(const UString& file_name) const
 {
     xml::Document doc(_report);
     doc.setTweaks(_xmlTweaks);
-    return generateDocument(doc) && doc.save(file_name, 2, true);
+    return generateDocument(doc) && doc.save(file_name);
 }
 
 ts::UString ts::SectionFile::toXML() const

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.32-2803
+VERSION 3.32-2865
 
 [NEW] New commands and plugins:
 
@@ -13,9 +13,14 @@ VERSION 3.32-2803
 
   * In "mpeinject" plugin, it is now possible to multiplex several input UDP
     stream into one single output MPE PID.
+  * Added support for VVC, EVC, LCEVC, AVS3 descriptors.
   * New options in existing commands and plugins:
     - Options --alt-group-id, --alt-language, --alt-name, --alt-type in input
       plugin "hls".
+    - Options --merge, --attributes-merge, --sort, --uncomment in "tsxml".
+    - Options --avs in "tsanalyze", "tsdate", "tsp", "tspsi", "tsscan",
+      "tstabcomp", "tstabdump", "tstables" and plugins "analyze", "psi",
+      "rmorphan", "tables".
 
 -------------------------------------------------------------------------------
 

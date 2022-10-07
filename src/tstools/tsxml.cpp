@@ -49,7 +49,7 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
-//  Command line options
+// Command line options
 //----------------------------------------------------------------------------
 
 namespace {
@@ -59,21 +59,25 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext      duck;          // TSDuck execution contexts.
-        ts::UStringVector    infiles;       // Input file names.
-        ts::UString          outfile;       // Output file name.
-        ts::UString          model;         // Model file name.
-        ts::UStringVector    patches;       // XML patch files,.
-        bool                 reformat;      // Reformat input files.
-        bool                 xml_line;      // Output XML on one single line.
-        bool                 tables_model;  // Use table model file.
-        bool                 use_model;     // There is a model to use.
-        bool                 from_json;     // Perform an automated JSON-to-XML conversion on input.
-        bool                 need_output;   // An output file is needed.
-        ts::UString          xml_prefix;    // Prefix in XML line.
-        size_t               indent;        // Output indentation.
-        ts::xml::Tweaks      xml_tweaks;    // XML formatting options.
-        ts::json::OutputArgs json;          // JSON output options.
+        ts::DuckContext          duck;          // TSDuck execution contexts.
+        ts::UStringVector        infiles;       // Input file names.
+        ts::UString              outfile;       // Output file name.
+        ts::UString              model;         // Model file name.
+        ts::UStringVector        patches;       // XML patch files.
+        ts::UStringVector        sorted_tags;   // Sort the content of these tags.
+        bool                     reformat;      // Reformat input files.
+        bool                     uncomment;     // Remove comments.
+        bool                     xml_line;      // Output XML on one single line.
+        bool                     tables_model;  // Use table model file.
+        bool                     use_model;     // There is a model to use.
+        bool                     from_json;     // Perform an automated JSON-to-XML conversion on input.
+        bool                     merge_inputs;  // Merge all input XML files as one.
+        bool                     need_output;   // An output file is needed.
+        ts::UString              xml_prefix;    // Prefix in XML line.
+        size_t                   indent;        // Output indentation.
+        ts::xml::Tweaks          xml_tweaks;    // XML formatting options.
+        ts::xml::MergeAttributes merge_attr;    // How to merge attributes (with merge_inputs);
+        ts::json::OutputArgs     json;          // JSON output options.
     };
 }
 
@@ -84,15 +88,19 @@ Options::Options(int argc, char *argv[]) :
     outfile(),
     model(),
     patches(),
+    sorted_tags(),
     reformat(false),
+    uncomment(false),
     xml_line(false),
     tables_model(false),
     use_model(false),
     from_json(false),
+    merge_inputs(false),
     need_output(false),
     xml_prefix(),
     indent(2),
     xml_tweaks(),
+    merge_attr(ts::xml::MergeAttributes::NONE),
     json()
 {
     json.defineArgs(*this, true, u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
@@ -102,6 +110,15 @@ Options::Options(int argc, char *argv[]) :
 
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"", u"Specify the list of input files. If any is specified as '-', the standard input is used.");
+
+    option(u"attributes-merge", 0, ts::Enumeration({
+        {u"add",     int(ts::xml::MergeAttributes::ADD)},
+        {u"none",    int(ts::xml::MergeAttributes::NONE)},
+        {u"replace", int(ts::xml::MergeAttributes::REPLACE)},
+    }));
+    help(u"attributes-merge", u"name",
+         u"With --merge, specify how attributes are processed in merged node. "
+         u"The default is \"add\", meaning that new attributes are added, others are ignored.");
 
     option(u"channel", 'c');
     help(u"channel",
@@ -129,6 +146,11 @@ Options::Options(int argc, char *argv[]) :
          u"A shortcut for '--model tsduck.lnbs.model.xml'. "
          u"It verifies that the input files are valid satellite LNB definition files.");
 
+    option(u"merge");
+    help(u"merge",
+         u"Merge all input files as one, instead of processing all input files one by one. "
+         u"With this option, all input XML files must have the same root tag.");
+
     option(u"model", 'm', FILENAME);
     help(u"model", u"filename",
          u"Specify an XML model file which is used to validate all input files.");
@@ -154,11 +176,20 @@ Options::Options(int argc, char *argv[]) :
          u"This option is useful to generate an expected output file format. "
          u"If more than one input file is specified, they are all reformatted in the same output file.");
 
+    option(u"sort", 's', STRING, 0, UNLIMITED_COUNT);
+    help(u"sort", u"name",
+         u"Specify that the sub-elements of all XML structures with the specified tag name will be sorted in alphanumerical order. "
+         u"Several --sort options can be specified.");
+
     option(u"tables", 't');
     help(u"tables",
          u"A shortcut for '--model " + ts::UString(ts::SectionFile::XML_TABLES_MODEL) + "'. "
          u"Table definitions for installed TSDuck extensions are also merged in the main model. "
          u"It verifies that the input files are valid PSI/SI tables files.");
+
+    option(u"uncomment");
+    help(u"uncomment",
+         u"Remove comments from the XML documents.");
 
     option(u"xml-line", 0, STRING, 0, 1, 0, UNLIMITED_VALUE, true);
     help(u"xml-line", u"'prefix'",
@@ -173,12 +204,16 @@ Options::Options(int argc, char *argv[]) :
 
     getValues(infiles, u"");
     getValues(patches, u"patch");
+    getValues(sorted_tags, u"sort");
     getValue(outfile, u"output");
     getIntValue(indent, u"indent", 2);
     getValue(xml_prefix, u"xml-line");
+    getIntValue(merge_attr, u"attributes-merge", ts::xml::MergeAttributes::ADD);
     reformat = present(u"reformat") || !patches.empty();
     xml_line = present(u"xml-line");
     from_json = present(u"from-json");
+    merge_inputs = present(u"merge");
+    uncomment = present(u"uncomment");
 
     // Get model file.
     if (present(u"model") + present(u"tables") + present(u"channel") + present(u"hf-band") + present(u"lnb") > 1) {
@@ -205,14 +240,103 @@ Options::Options(int argc, char *argv[]) :
     }
 
     // An output file wil be produced.
-    need_output = reformat || json.useFile() || from_json;
+    need_output = reformat || uncomment || merge_inputs || json.useFile() || from_json;
 
     exitOnError();
 }
 
 
 //----------------------------------------------------------------------------
-//  Program entry point
+// Load a document.
+//----------------------------------------------------------------------------
+
+namespace {
+    bool LoadDocument(Options& opt, const ts::xml::JSONConverter& model, ts::xml::Document& doc, const ts::UString& file_name)
+    {
+        doc.setTweaks(opt.xml_tweaks);
+        bool ok = true;
+
+        if (opt.from_json) {
+            // Load a JSON fil and convert it to XML.
+            ts::json::ValuePtr root;
+            ok = ts::json::LoadFile(root, file_name, opt) && model.convertToXML(*root, doc, false);
+        }
+        else {
+            // Load a true XML file.
+            ok = doc.load(file_name, false);
+        }
+
+        if (!ok) {
+            opt.error(u"error loading %s", {ts::xml::Document::DisplayFileName(file_name, true)});
+            return false;
+        }
+
+        // Validate the file according to the model.
+        if (opt.use_model && !model.validate(doc)) {
+            opt.error(u"%s is not conformant with the XML model", {ts::xml::Document::DisplayFileName(file_name, true)});
+            return false;
+        }
+
+        return doc.rootElement() != nullptr;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a document.
+//----------------------------------------------------------------------------
+
+namespace {
+    void ProcessDocument(Options& opt, const ts::TablePatchXML& patch, ts::xml::Document& doc)
+    {
+        // Apply all patches one by one.
+        patch.applyPatches(doc);
+
+        // Remove comments.
+        if (opt.uncomment) {
+            doc.removeComments(true);
+        }
+
+        // Sort the content of the specified tags.
+        for (const auto& name : opt.sorted_tags) {
+            doc.rootElement()->sort(name);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Save a document.
+//----------------------------------------------------------------------------
+
+namespace {
+    void SaveDocument(Options& opt, const ts::xml::JSONConverter& model, ts::xml::Document& doc)
+    {
+        if (opt.xml_line) {
+            // Output XML result as one line on error log.
+            // Use a text formatter for one-liner.
+            ts::TextFormatter text(opt);
+            text.setString();
+            text.setEndOfLineMode(ts::TextFormatter::EndOfLineMode::SPACING);
+            doc.print(text);
+            opt.info(opt.xml_prefix + text.toString());
+        }
+        if (opt.json.useJSON()) {
+            // Perform XML to JSON conversion.
+            const ts::json::ValuePtr jobj(model.convertToJSON(doc));
+            // Output JSON result.
+            opt.json.report(*jobj, std::cout, opt);
+        }
+        else if (opt.need_output) {
+            // Same XML output on stdout (possibly already redirected to a file).
+            doc.save(u"", opt.indent);
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Program entry point
 //----------------------------------------------------------------------------
 
 int MainCode(int argc, char *argv[])
@@ -245,60 +369,29 @@ int MainCode(int argc, char *argv[])
     // Redirect standard output only if required.
     ts::OutputRedirector out(opt.need_output ? opt.outfile : u"", opt, std::cout, std::ios::out);
 
-    // Now process each input file one by one.
-    for (size_t i = 0; i < opt.infiles.size(); ++i) {
-
-        const ts::UString& file_name(opt.infiles[i]);
-        const ts::UString display_name(ts::xml::Document::DisplayFileName(file_name, true));
-
-        // Load the input file.
+    if (opt.merge_inputs && opt.infiles.size() > 1) {
+        // Load all input files as one merged document.
         ts::xml::Document doc(opt);
-        doc.setTweaks(opt.xml_tweaks);
-        bool ok = true;
-        if (opt.from_json) {
-            // Load a JSON fil and convert it to XML.
-            ts::json::ValuePtr root;
-            ok = ts::json::LoadFile(root, file_name, opt) && model.convertToXML(*root, doc, false);
+        bool ok = LoadDocument(opt, model, doc, opt.infiles[0]);
+        for (size_t i = 1; ok && i < opt.infiles.size(); ++i) {
+            ts::xml::Document subdoc(opt);
+            ok = LoadDocument(opt, model, subdoc, opt.infiles[i]) && doc.rootElement()->merge(subdoc.rootElement(), opt.merge_attr);
         }
-        else {
-            // Load a true XML file.
-            ok = doc.load(file_name, false, true);
-        }
-        if (!ok) {
-            opt.error(u"error loading %s", {display_name});
-        }
-
-        // Validate the file according to the model.
-        if (ok && opt.use_model && !model.validate(doc)) {
-            opt.error(u"%s is not conformant with the XML model", {display_name});
-            ok = false;
-        }
-
-        // Apply all patches one by one.
-        patch.applyPatches(doc);
-
-        // Output the modified / reformatted document.
         if (ok) {
-            if (opt.xml_line) {
-                // Output XML result as one line on error log.
-                // Use a text formatter for one-liner.
-                ts::TextFormatter text(opt);
-                text.setString();
-                text.setEndOfLineMode(ts::TextFormatter::EndOfLineMode::SPACING);
-                doc.print(text);
-                opt.info(opt.xml_prefix + text.toString());
-            }
-            if (opt.json.useJSON()) {
-                // Perform XML to JSON conversion.
-                const ts::json::ValuePtr jobj(model.convertToJSON(doc));
-                // Output JSON result.
-                opt.json.report(*jobj, std::cout, opt);
-            }
-            else if (opt.reformat || opt.from_json) {
-                // Same XML output on stdout (possibly already redirected to a file).
-                doc.save(u"", opt.indent, true);
+            ProcessDocument(opt, patch, doc);
+            SaveDocument(opt, model, doc);
+        }
+    }
+    else {
+        // Process each input file one by one.
+        for (const auto& file : opt.infiles) {
+            ts::xml::Document doc(opt);
+            if (LoadDocument(opt, model, doc, file)) {
+                ProcessDocument(opt, patch, doc);
+                SaveDocument(opt, model, doc);
             }
         }
     }
+
     return opt.valid() && !opt.gotErrors() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

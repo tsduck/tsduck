@@ -191,6 +191,11 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
         // Same principle for ISDB.
         return PDS_ISDB;
     }
+    else if (bool(_accStandards & Standards::AVS)) {
+        // We have previously found AVS signalization, use the fake PDS for AVS.
+        // This allows interpretation of AVS descriptors in MPEG-defined tables (eg. PMT).
+        return PDS_AVS;
+    }
     else {
         // Really no PDS to use.
         return 0;
@@ -398,7 +403,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"The available table names are " +
                   UString::Join(DVBCharset::GetAllNames()) + u".");
 
-        args.option(u"europe", 0);
+        args.option(u"europe");
         args.help(u"europe",
                   u"A synonym for '--default-charset ISO-8859-15'. This is a handy shortcut "
                   u"for commonly incorrect signalization on some European satellites. In that "
@@ -413,14 +418,14 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
     // Options relating to default standards.
     if (cmdOptionsMask & CMD_STANDARDS) {
 
-        args.option(u"abnt", 0);
+        args.option(u"abnt");
         args.help(u"abnt",
                   u"Assume that the transport stream is an ISDB one with ABNT-defined variants. "
                   u"ISDB streams are normally automatically detected from their signalization but "
                   u"there is no way to determine if this is an original ARIB-defined ISDB or "
                   u"an ABNT-defined variant.");
 
-        args.option(u"atsc", 0);
+        args.option(u"atsc");
         args.help(u"atsc",
                   u"Assume that the transport stream is an ATSC one. ATSC streams are normally "
                   u"automatically detected from their signalization. This option is only "
@@ -428,14 +433,18 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"ATSC-specific table. For instance, when a PMT with ATSC-specific "
                   u"descriptors is found before the first ATSC MGT or VCT.");
 
-        args.option(u"isdb", 0);
+        args.option(u"avs");
+        args.help(u"avs",
+                  u"Assume that the transport stream is an AVS one with AVS-specific descriptors.");
+
+        args.option(u"isdb");
         args.help(u"isdb",
                   u"Assume that the transport stream is an ISDB one. ISDB streams are normally "
                   u"automatically detected from their signalization. This option is only "
                   u"useful when ISDB-related stuff are found in the TS before the first "
                   u"ISDB-specific table.");
 
-        args.option(u"ignore-leap-seconds", 0);
+        args.option(u"ignore-leap-seconds");
         args.help(u"ignore-leap-seconds",
                   u"Do not include explicit leap seconds in some UTC computations. "
                   u"Currently, this applies to SCTE 35 splice_schedule() commands only.");
@@ -498,7 +507,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         if (_definedCmdOptions & CMD_TIMEREF) {
             options.push_back(u"--time-reference JST");
         }
-        args.option(u"japan", 0);
+        args.option(u"japan");
         args.help(u"japan",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on Japanese transport streams.");
@@ -522,7 +531,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         if (_definedCmdOptions & CMD_TIMEREF) {
             options.push_back(u"--time-reference UTC+8");
         }
-        args.option(u"philippines", 0);
+        args.option(u"philippines");
         args.help(u"philippines",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on Philippines transport streams.");
@@ -546,7 +555,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         if (_definedCmdOptions & CMD_TIMEREF) {
             options.push_back(u"--time-reference UTC-3");
         }
-        args.option(u"brazil", 0);
+        args.option(u"brazil");
         args.help(u"brazil",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on South American ISDB-Tb transport streams.");
@@ -563,7 +572,7 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
         if (_definedCmdOptions & CMD_HF_REGION) {
             options.push_back(u"--hf-band-region usa");
         }
-        args.option(u"usa", 0);
+        args.option(u"usa");
         args.help(u"usa",
                   u"A synonym for '" + UString::Join(options, u" ") + u"'. "
                   u"This is a handy shortcut when working on North American transport streams.");
@@ -632,6 +641,9 @@ bool ts::DuckContext::loadArgs(Args& args)
     if (_definedCmdOptions & CMD_STANDARDS) {
         if (args.present(u"atsc")) {
             _cmdStandards |= Standards::ATSC;
+        }
+        if (args.present(u"avs")) {
+            _cmdStandards |= Standards::AVS;
         }
         if (args.present(u"isdb") || args.present(u"japan")) {
             _cmdStandards |= Standards::ISDB;

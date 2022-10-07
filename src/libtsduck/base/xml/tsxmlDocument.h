@@ -76,19 +76,15 @@ namespace ts {
             //!
             //! Load and parse an XML file.
             //! @param [in] fileName Name of the XML file to load.
+            //! If @a fileName is empty or "-", read the standard input.
             //! If @a fileName starts with "<?xml", this is considered as "inline XML content".
             //! The document is loaded from this string instead of reading a file.
-            //! @param [in] search If true, use a search algorithm for the XML file:
-            //! If @a fileName is not found and does not contain any directory part, search this file
-            //! in the following places:
-            //! - Directory of the current executable.
-            //! - All directories in @c TSPLUGINS_PATH environment variable.
-            //! - All directories in @c LD_LIBRARY_PATH environment variable (UNIX only).
-            //! - All directories in @c PATH (UNIX) or @c Path (Windows) environment variable.
-            //! @param [in] stdInputIfEmpty If true and if @a fileName is empty or "-", read the standard input.
+            //! @param [in] search If true, search the XML file in the TSDuck configuration directories
+            //! if @a fileName is not found and does not contain any directory part.
             //! @return True on success, false on error.
+            //! @see SearchConfigurationFile()
             //!
-            bool load(const UString& fileName, bool search = true, bool stdInputIfEmpty = false);
+            bool load(const UString& fileName, bool search = true);
 
             //!
             //! Load and parse an XML file.
@@ -100,11 +96,11 @@ namespace ts {
             //!
             //! Save an XML file.
             //! @param [in] fileName Name of the XML file to save.
+            //! If @a fileName is empty or "-", writes to the standard output.
             //! @param [in] indent Indentation width of each level.
-            //! @param [in] stdOutputIfEmpty If true and if @a fileName is empty or "-", writes to the standard output.
             //! @return True on success, false on error.
             //!
-            bool save(const UString& fileName, size_t indent = 2, bool stdOutputIfEmpty = false);
+            bool save(const UString& fileName, size_t indent = 2);
 
             //!
             //! Check if a "file name" is in fact inline XML content instead of a file name.
@@ -123,13 +119,13 @@ namespace ts {
 
             //!
             //! Get the root element of the document.
-            //! @return The root element of the document or zero if there is none.
+            //! @return The root element of the document or a null pointer if there is none.
             //!
             const Element* rootElement() const { return firstChildElement(); }
 
             //!
             //! Get the root element of the document.
-            //! @return The root element of the document or zero if there is none.
+            //! @return The root element of the document or or a null pointer if there is none.
             //!
             Element* rootElement() { return firstChildElement(); }
 
