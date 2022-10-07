@@ -35,6 +35,8 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
+#include <algorithm>
+
 #define MY_XML_NAME u"AVS3_video_descriptor"
 #define MY_CLASS ts::AVS3VideoDescriptor
 #define MY_DID ts::DID_AVS3_VIDEO
@@ -242,7 +244,7 @@ ts::UString ts::AVS3VideoDescriptor::Avs3ChromaFormat(uint16_t cf)
     // T/AI 109.2, table 44
     switch (cf) {
         case 1: return u"4:2:0"; 
-        case 2: return u"4:2:2"; 
+ //       case 2: return u"4:2:2";   // not currently permitted in T/AI 109.2
         default: return u"unknown";
     }
 }
@@ -303,18 +305,28 @@ void ts::AVS3VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    return
-        element->getIntAttribute(profile_id, u"profile_id", true, 0, 0x00, 0xFF) &&
-        element->getIntAttribute(level_id, u"level_id", true, 0, 0x00, 0xFF) &&
+    bool ok=
+        element->getIntAttribute(profile_id, u"profile_id", true, 0, 0x20, 0x32) &&
+        element->getIntAttribute(level_id, u"level_id", true, 0, 0x10, 0x6B) &&
         element->getBoolAttribute(multiple_frame_rate_flag, u"multiple_frame_rate_flag", false) &&
-        element->getIntAttribute(frame_rate_code, u"frame_rate_code", true, 0, 0x00, 0xFF) &&
-        element->getIntAttribute(sample_precision, u"sample_precision", true, 0, 0x00, 0xFF) &&
-        element->getIntAttribute(chroma_format, u"chroma_format", true, 0, 0x00, 0x03) &&
+        element->getIntAttribute(frame_rate_code, u"frame_rate_code", true, 0, 0x01, 0x0D) &&
+        element->getIntAttribute(sample_precision, u"sample_precision", true, 0, 0x01, 0x02) &&
+        element->getIntAttribute(chroma_format, u"chroma_format", true, 0, 0x01, 0x01) &&
         element->getBoolAttribute(temporal_id_flag, u"temporal_id_flag", false) &&
         element->getBoolAttribute(td_mode_flag, u"td_mode_flag", false) &&
         element->getBoolAttribute(library_stream_flag, u"library_stream_flag", false) &&
         element->getBoolAttribute(library_picture_enable_flag, u"library_picture_enable_flag", false) &&
-        element->getIntAttribute(colour_primaries, u"colour_primaries", true, 0, 0x00, 0xFF) &&
-        element->getIntAttribute(transfer_characteristics, u"transfer_characteristics", true, 0, 0x00, 0xFF) &&
-        element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true, 0, 0x00, 0xFF);
+        element->getIntAttribute(colour_primaries, u"colour_primaries", true, 0, 1, 9) &&
+        element->getIntAttribute(transfer_characteristics, u"transfer_characteristics", true, 0, 1, 14) &&
+        element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true, 0, 1, 9); // although 3 is 'reserved'
+
+    if (std::find(valid_profile_ids.begin(), valid_profile_ids.end(), profile_id) == valid_profile_ids.end()) {
+        element->report().error(u"'%d' is not a valid profile_id in <%s>, line %d", { profile_id, element->name(), element->lineNumber() });
+        ok = false;
+    }
+    if (std::find(valid_level_ids.begin(), valid_level_ids.end(), level_id) == valid_level_ids.end()) {
+        element->report().error(u"'%d' is not a valid level_id in <%s>, line %d", { level_id, element->name(), element->lineNumber() });
+        ok = false;
+    }
+    return ok;
 }
