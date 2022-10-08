@@ -66,6 +66,7 @@ namespace ts {
         DTSHD,         //!< HD Digital Theater Systems audio, aka DTS++.
         TELETEXT,      //!< Teletext pages or subtitles, ETSI EN 300 706.
         DVB_SUBTITLES, //!< DVB subtitles, ETSI EN 300 743.
+        AVS3,          //!< AVS3 video (AVS is Chinese Audio Video Standards).
     };
 
     //!
@@ -81,4 +82,25 @@ namespace ts {
     //! @see CodecTypeEnum
     //!
     TSDUCKDLL extern const Enumeration CodecTypeArgEnum;
+
+    //!
+    //! Check if a codec type value indicates an audio stream.
+    //! @param [in] ct Codec type.
+    //! @return True if @a ct indicates an audio stream.
+    //!
+    TSDUCKDLL bool CodecTypeIsAudio(CodecType ct);
+
+    //!
+    //! Check if a codec type value indicates a video stream.
+    //! @param [in] ct Codec type.
+    //! @return True if @a ct indicates a video stream.
+    //!
+    TSDUCKDLL bool CodecTypeIsVideo(CodecType ct);
+
+    //!
+    //! Check if a codec type value indicates a subtitle stream.
+    //! @param [in] ct Codec type.
+    //! @return True if @a ct indicates a subtitle stream.
+    //!
+    TSDUCKDLL bool CodecTypeIsSubtitles(CodecType ct);
 }
