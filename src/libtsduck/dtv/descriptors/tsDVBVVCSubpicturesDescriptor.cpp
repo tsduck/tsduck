@@ -36,7 +36,7 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
-#define MY_XML_NAME u"dvb_vvc_subpictures_descriptor"
+#define MY_XML_NAME u"vvc_subpictures_descriptor"
 #define MY_XML_NAME_LEGACY u"VVC_subpictures_descriptor"
 #define MY_CLASS ts::DVBVVCSubpicturesDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
