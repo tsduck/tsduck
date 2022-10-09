@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Must be included at the end of the .vcxproj file for the TSDuck library (DLL or static) -->
+
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-end.props" />
+  </ImportGroup>
+
+  <Target Name="AfterBuild">
+    <Copy SourceFiles="@(LibConfigXML);@(LibConfigNames)" DestinationFolder="$(OutDir)" />
+  </Target>
+
+</Project>
