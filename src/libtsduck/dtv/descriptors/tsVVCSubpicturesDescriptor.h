@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
@@ -42,7 +41,7 @@ namespace ts {
     //! @see ETSI EN 300 468, clause 6.4.17.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL DVBVVCSubpicturesDescriptor : public AbstractDescriptor
+    class TSDUCKDLL VVCSubpicturesDescriptor : public AbstractDescriptor
     {
     public:
         // Public members:
@@ -55,14 +54,14 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        DVBVVCSubpicturesDescriptor();
+        VVCSubpicturesDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        DVBVVCSubpicturesDescriptor(DuckContext& duck, const Descriptor& bin);
+        VVCSubpicturesDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();

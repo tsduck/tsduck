@@ -34,9 +34,6 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
-
-#include <vector>
 
 namespace ts {
     //!
@@ -85,14 +82,8 @@ namespace ts {
         static UString AVS3SamplePrecision(uint16_t sp);
         static UString Avs3ChromaFormat(uint16_t cf);
 
-        // T/AI 109.2 Table B.1
-        std::vector<uint8_t> valid_profile_ids {0x20, 0x22, 0x30, 0x32};
-
-        // T/AI 109.2 Table B.2
-        std::vector<uint8_t> valid_level_ids {0x10, 0x12, 0x14, 0x20, 0x22,
-                                              0x40, 0x42, 0x41, 0x43, 0x44, 0x46, 0x45, 0x47, 0x48, 0x4a, 0x49, 0x4b,
-                                              0x50, 0x52, 0x51, 0x53, 0x54, 0x56, 0x55, 0x57, 0x58, 0x5a, 0x59, 0x5b, 
-                                              0x60, 0x62, 0x61, 0x63, 0x64, 0x66, 0x65, 0x67, 0x68, 0x6a, 0x69, 0x6b};
+        static const std::vector<uint8_t> valid_profile_ids;
+        static const std::vector<uint8_t> valid_level_ids;
 
     protected:
         // Inherited methods
