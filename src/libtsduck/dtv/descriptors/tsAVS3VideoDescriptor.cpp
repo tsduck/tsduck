@@ -45,6 +45,19 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
+// T/AI 109.2 Table B.1
+const std::vector<uint8_t> ts::AVS3VideoDescriptor::valid_profile_ids {
+    0x20, 0x22, 0x30, 0x32
+};
+
+// T/AI 109.2 Table B.2
+const std::vector<uint8_t> ts::AVS3VideoDescriptor::valid_level_ids {
+    0x10, 0x12, 0x14, 0x20, 0x22,
+    0x40, 0x42, 0x41, 0x43, 0x44, 0x46, 0x45, 0x47, 0x48, 0x4a, 0x49, 0x4b,
+    0x50, 0x52, 0x51, 0x53, 0x54, 0x56, 0x55, 0x57, 0x58, 0x5a, 0x59, 0x5b,
+    0x60, 0x62, 0x61, 0x63, 0x64, 0x66, 0x65, 0x67, 0x68, 0x6a, 0x69, 0x6b
+};
+
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -244,7 +257,7 @@ ts::UString ts::AVS3VideoDescriptor::Avs3ChromaFormat(uint16_t cf)
     // T/AI 109.2, table 44
     switch (cf) {
         case 1: return u"4:2:0"; 
- //       case 2: return u"4:2:2";   // not currently permitted in T/AI 109.2
+//      case 2: return u"4:2:2";   // not currently permitted in T/AI 109.2
         default: return u"unknown";
     }
 }
@@ -305,7 +318,7 @@ void ts::AVS3VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
 
 bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    bool ok=
+    bool ok =
         element->getIntAttribute(profile_id, u"profile_id", true, 0, 0x20, 0x32) &&
         element->getIntAttribute(level_id, u"level_id", true, 0, 0x10, 0x6B) &&
         element->getBoolAttribute(multiple_frame_rate_flag, u"multiple_frame_rate_flag", false) &&
@@ -321,11 +334,11 @@ bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true, 0, 1, 9); // although 3 is 'reserved'
 
     if (std::find(valid_profile_ids.begin(), valid_profile_ids.end(), profile_id) == valid_profile_ids.end()) {
-        element->report().error(u"'%d' is not a valid profile_id in <%s>, line %d", { profile_id, element->name(), element->lineNumber() });
+        element->report().error(u"'%d' is not a valid profile_id in <%s>, line %d", {profile_id, element->name(), element->lineNumber()});
         ok = false;
     }
     if (std::find(valid_level_ids.begin(), valid_level_ids.end(), level_id) == valid_level_ids.end()) {
-        element->report().error(u"'%d' is not a valid level_id in <%s>, line %d", { level_id, element->name(), element->lineNumber() });
+        element->report().error(u"'%d' is not a valid level_id in <%s>, line %d", {level_id, element->name(), element->lineNumber()});
         ok = false;
     }
     return ok;

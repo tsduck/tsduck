@@ -2,14 +2,14 @@
 <tsduck>
   <_descriptors>
 
-    <dvb_vvc_subpictures_descriptor
+    <vvc_subpictures_descriptor
       default_service_mode="bool, required"
       processing_mode="uint3, required"
       service_description="string, optional">
       <subpicture
         component_tag="uint8, required"
         subpicture_id="uint8, required"/>
-    </dvb_vvc_subpictures_descriptor>
+    </vvc_subpictures_descriptor>
 
   </_descriptors>
 </tsduck>

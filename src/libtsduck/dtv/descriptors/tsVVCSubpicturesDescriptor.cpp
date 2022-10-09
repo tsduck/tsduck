@@ -27,9 +27,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsDVBVVCSubpicturesDescriptor.h"
+#include "tsVVCSubpicturesDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -37,21 +36,20 @@
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"vvc_subpictures_descriptor"
-#define MY_XML_NAME_LEGACY u"VVC_subpictures_descriptor"
-#define MY_CLASS ts::DVBVVCSubpicturesDescriptor
+#define MY_CLASS ts::VVCSubpicturesDescriptor
 #define MY_DID ts::DID_DVB_EXTENSION
 #define MY_EDID ts::EDID_VVC_SUBPICTURES
 #define MY_STD ts::Standards::DVB
 
-TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor, MY_XML_NAME_LEGACY);
+TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
 
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::DVBVVCSubpicturesDescriptor::DVBVVCSubpicturesDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
+ts::VVCSubpicturesDescriptor::VVCSubpicturesDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     default_service_mode(false),
     component_tag(),
     vvc_subpicture_id(),
@@ -60,7 +58,7 @@ ts::DVBVVCSubpicturesDescriptor::DVBVVCSubpicturesDescriptor() :
 {
 }
 
-void ts::DVBVVCSubpicturesDescriptor::clearContent()
+void ts::VVCSubpicturesDescriptor::clearContent()
 {
     default_service_mode = false;
     component_tag.clear();
@@ -69,8 +67,8 @@ void ts::DVBVVCSubpicturesDescriptor::clearContent()
     service_description.erase();
 }
 
-ts::DVBVVCSubpicturesDescriptor::DVBVVCSubpicturesDescriptor(DuckContext& duck, const Descriptor& desc) :
-    DVBVVCSubpicturesDescriptor()
+ts::VVCSubpicturesDescriptor::VVCSubpicturesDescriptor(DuckContext& duck, const Descriptor& desc) :
+    VVCSubpicturesDescriptor()
 {
     deserialize(duck, desc);
 }
@@ -80,7 +78,7 @@ ts::DVBVVCSubpicturesDescriptor::DVBVVCSubpicturesDescriptor(DuckContext& duck, 
 // This is an extension descriptor.
 //----------------------------------------------------------------------------
 
-ts::DID ts::DVBVVCSubpicturesDescriptor::extendedTag() const
+ts::DID ts::VVCSubpicturesDescriptor::extendedTag() const
 {
     return MY_EDID;
 }
@@ -90,7 +88,7 @@ ts::DID ts::DVBVVCSubpicturesDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBVVCSubpicturesDescriptor::serializePayload(PSIBuffer& buf) const
+void ts::VVCSubpicturesDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBit(default_service_mode);
     bool service_description_present = (service_description.length() > 0);
@@ -113,7 +111,7 @@ void ts::DVBVVCSubpicturesDescriptor::serializePayload(PSIBuffer& buf) const
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::DVBVVCSubpicturesDescriptor::deserializePayload(PSIBuffer& buf)
+void ts::VVCSubpicturesDescriptor::deserializePayload(PSIBuffer& buf)
 {
     default_service_mode = buf.getBool();
     bool service_description_present = buf.getBool();
@@ -136,7 +134,7 @@ void ts::DVBVVCSubpicturesDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBVVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
+void ts::VVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
         disp << margin << "Default service mode: " << UString::TrueFalse(buf.getBool());
@@ -162,7 +160,7 @@ void ts::DVBVVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSI
 // XML serialization
 //----------------------------------------------------------------------------
 
-void ts::DVBVVCSubpicturesDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
+void ts::VVCSubpicturesDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setBoolAttribute(u"default_service_mode", default_service_mode);
     const size_t number_of_vvc_subpictures = std::min<size_t>(0x3F, std::min(component_tag.size(), vvc_subpicture_id.size()));
@@ -180,7 +178,7 @@ void ts::DVBVVCSubpicturesDescriptor::buildXML(DuckContext& duck, xml::Element* 
 // XML deserialization
 //----------------------------------------------------------------------------
 
-bool ts::DVBVVCSubpicturesDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
+bool ts::VVCSubpicturesDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector children;
     bool ok =
