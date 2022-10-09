@@ -2,19 +2,8 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-common-begin.props" />
+    <Import Project="msvc-libtsduck-begin.props" />
   </ImportGroup>
-
-  <ItemGroup>
-    <LibHeaders     Include="$(TSDuckRootDir)src\libtsduck\**\*.h"   Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**"/>
-    <LibSources     Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp" Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;$(TSDuckRootDir)src\libtsduck\**\linux\**;$(TSDuckRootDir)src\libtsduck\**\mac\**"/>
-    <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\config\*.xml"/>
-    <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\config\*.names"/>
-    <Xml            Include="@(LibConfigXML)"/>
-    <None           Include="@(LibConfigNames)"/>
-    <ClInclude      Include="@(LibHeaders)"/>
-    <ClCompile      Include="@(LibSources)"/>
-  </ItemGroup>
 
   <PropertyGroup Label="Globals">
     <ProjectGuid>{25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6}</ProjectGuid>
@@ -31,18 +20,8 @@
     <Import Project="msvc-use-java.props"/>
   </ImportGroup>
 
-  <ItemDefinitionGroup>
-    <ClCompile>
-      <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(TSDuckLibDirsInternal);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-    </ClCompile>
-  </ItemDefinitionGroup>
-
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-common-end.props" />
+    <Import Project="msvc-libtsduck-end.props" />
   </ImportGroup>
-
-  <Target Name="AfterBuild">
-    <Copy SourceFiles="@(LibConfigXML);@(LibConfigNames)" DestinationFolder="$(OutDir)" />
-  </Target>
 
 </Project>

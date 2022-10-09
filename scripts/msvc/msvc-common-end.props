@@ -12,15 +12,21 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
 
   <!-- After building tsxml, we can generate the XML definitions for all tables and descriptors -->
-  <ItemGroup>
-    <SigXML1 Include="$(TSDuckRootDir)src\libtsduck\dtv\tables\*.xml;$(TSDuckRootDir)src\libtsduck\dtv\descriptors\*.xml"/>
-  </ItemGroup>
-  <PropertyGroup Label="UserMacros">
-    <SigXML2>@(SigXML1)</SigXML2>
-    <SignalizationXML>$(SigXML2.Replace(';',' '))</SignalizationXML>
-  </PropertyGroup>
   <Target Name="AfterBuild" Condition="'$(ProjectName)'=='tsxml'">
-    <Exec Command="$(OutDir)tsxml.exe --merge $(TSDuckRootDir)src\libtsduck\config\tsduck.tables.skeleton.xml $(SignalizationXML) --sort _tables --sort _descriptors --uncomment -o $(OutDir)tsduck.tables.model.xml"/>
+    <PropertyGroup>
+      <SigRoot>$(TSDuckRootDir)src\libtsduck\dtv\</SigRoot>
+    </PropertyGroup>
+    <ItemGroup>
+      <SigFiles1 Include="$(SigRoot)tables\*.xml;$(SigRoot)descriptors\*.xml"/>
+    </ItemGroup>
+    <PropertyGroup>
+      <SigFiles2>@(SigFiles1,' ')</SigFiles2>
+      <!-- Reduce the length of the list of files, will use the removed prefix as working directory -->
+      <!-- Without this, MSBuild fails with "command too long" -->
+      <SigFiles>$(SigFiles2.Replace('$(SigRoot)',''))</SigFiles>
+    </PropertyGroup>
+    <Exec WorkingDirectory="$(SigRoot)"
+          Command="$(OutDir)tsxml.exe --merge $(TSDuckRootDir)src\libtsduck\config\tsduck.tables.skeleton.xml $(SigFiles) --sort _tables --sort _descriptors --uncomment -o $(OutDir)tsduck.tables.model.xml"/>
   </Target>
 
 </Project>

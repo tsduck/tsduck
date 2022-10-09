@@ -79,7 +79,7 @@ function Exit-Script([string]$Message = "")
 {
     $Code = 0
     if ($Message -ne "") {
-        Write-Output "ERROR: $Message"
+        Write-Host "ERROR: $Message"
         $Code = 1
     }
     if (-not $NoPause) {
@@ -272,6 +272,12 @@ function Install-Standard-Msi([string]$ReleasePage, [string]$Pattern, [string]$F
     }
 }
 
+# Get system-wide environment variable.
+function Get-Environment([string]$Name)
+{
+    return [System.Environment]::GetEnvironmentVariable($Name, [System.EnvironmentVariableTarget]::Machine)
+}
+
 # Define system-wide environment variable.
 function Define-Environment([string]$Name, [string]$Value)
 {
@@ -284,8 +290,42 @@ function Propagate-Environment([string]$Name, [string]$Value = "")
 {
     if ($GitHubActions) {
         if ($Value -eq "") {
-            $Value = [System.Environment]::GetEnvironmentVariable($Name, "Machine")
+            $Value = Get-Environment $Name
         }
         Write-Output "${Name}=${Value}" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    }
+}
+
+# Add a directory in a system path.
+function Add-Directory-To-Path([string]$Dir, [string]$PathName = "Path")
+{
+    $Value = Get-Environment $PathName
+    if (";$Value;" -notlike "*;$Dir;*") {
+        Write-Output "Adding $Dir to $PathName"
+        Define-Environment $PathName "$Value;$Dir"
+    }
+}
+
+# Add a shortcut in the startup menu.
+function Add-Start-Menu-Entry([string]$Name, [string]$Target, [string]$MenuSubDir = "", $AllUsers = $false)
+{
+    if (Test-Path "$Target") {
+        if ($AllUsers) {
+            $MenuDir = [Environment]::GetFolderPath('CommonStartMenu') + "\Programs"
+        }
+        else {
+            $MenuDir = [Environment]::GetFolderPath('StartMenu') + "\Programs"
+        }
+        if ($MenuSubDir -ne "") {
+            $MenuDir += "\$MenuSubDir"
+            if (-not (Test-Path -PathType Container $MenuDir)) {
+                [void](New-Item $MenuDir -ItemType Directory)
+            }
+        }
+        Remove-Item "$MenuDir\$Name.lnk" -Force -ErrorAction Ignore
+        $WScriptShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WScriptShell.CreateShortcut("$MenuDir\$Name.lnk")
+        $Shortcut.TargetPath = $Target
+        $Shortcut.Save()
     }
 }

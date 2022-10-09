@@ -161,8 +161,8 @@ Section "Tools & Plugins" SectionTools
     SetOutPath "$INSTDIR\bin"
     File /x *_static.exe /x tsprofiling.exe /x tsmux.exe "${BinDir}\ts*.exe"
     File "${BinDir}\ts*.dll"
-    File "${RootDir}\src\libtsduck\config\tsduck*.xml"
-    File "${RootDir}\src\libtsduck\config\tsduck*.names"
+    File "${BinDir}\ts*.xml"
+    File "${BinDir}\ts*.names"
 
 SectionEnd
 
