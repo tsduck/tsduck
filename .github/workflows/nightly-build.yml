@@ -88,6 +88,33 @@ jobs:
       if: env.REBUILD == 'true'
       run: bin/Release-Win32/tsversion.exe --version=all
 
+    - name: Test installation (64-bit)
+      if: env.REBUILD == 'true'
+      run: |
+        Start-Process -Wait -FilePath installers/TSDuck-Win64-${{ env.VERSION }}.exe -ArgumentList @("/S" "/all=true")
+        # Propagate updated Path to next steps.
+        $path = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
+        Write-Output "Path=$path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+    - name: Download test suite
+      if: env.REBUILD == 'true'
+      run: |
+        $ProgressPreference = 'SilentlyContinue'
+        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
+        Expand-Archive test.zip -DestinationPath . -Force
+        Move-Item tsduck-test-master test-suite -Force
+
+    - name: Run test suite on installed version
+      if: env.REBUILD == 'true'
+      shell: bash
+      run: |
+        test-suite/run-all-tests.sh && status=$? || status=$?
+        for f in $(find test-suite/tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
+
     - name: Upload version
       if: env.REBUILD == 'true'
       uses: actions/upload-artifact@master
@@ -158,11 +185,27 @@ jobs:
 
     - name: Build TSDuck
       if: env.REBUILD == 'true'
-      run: make -j5 && make deb
+      run: make -j5 && make installer
 
     - name: Check built version
       if: env.REBUILD == 'true'
       run: source scripts/setenv.sh && tsversion --version=all
+
+    - name: Test installation
+      if: env.REBUILD == 'true'
+      run: make install-installer
+
+    - name: Run test suite on installed version
+      if: env.REBUILD == 'true'
+      run: |
+        mkdir -p test-suite
+        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C test-suite
+        test-suite/run-all-tests.sh && status=$? || status=$?
+        for f in $(find test-suite/tmp -name '*.diff'); do
+            echo "==== $f";
+            cat "$f"
+        done
+        exit $status
 
     - name: Prepare upload package
       if: env.REBUILD == 'true'
