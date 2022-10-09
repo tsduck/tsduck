@@ -92,9 +92,13 @@ jobs:
       if: env.REBUILD == 'true'
       run: |
         Start-Process -Wait -FilePath installers/TSDuck-Win64-${{ env.VERSION }}.exe -ArgumentList @("/S", "/all=true")
-        # Propagate updated Path to next steps.
-        $path = [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine)
-        Write-Output "Path=$path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        # Propagate updated paths to next steps.
+        $path       = [System.Environment]::GetEnvironmentVariable("Path",       [System.EnvironmentVariableTarget]::Machine)
+        $pythonpath = [System.Environment]::GetEnvironmentVariable("PYTHONPATH", [System.EnvironmentVariableTarget]::Machine)
+        $classpath  = [System.Environment]::GetEnvironmentVariable("CLASSPATH",  [System.EnvironmentVariableTarget]::Machine)
+        Write-Output "Path=$path"             | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "PYTHONPATH=$pythonpath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+        Write-Output "CLASSPATH=$classpath"   | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
     - name: Download test suite
       if: env.REBUILD == 'true'
