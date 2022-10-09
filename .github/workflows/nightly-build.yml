@@ -102,14 +102,15 @@ jobs:
         $ProgressPreference = 'SilentlyContinue'
         Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
         Expand-Archive test.zip -DestinationPath . -Force
-        Move-Item tsduck-test-master test-suite -Force
+        Move-Item tsduck-test-master ../tsduck-test -Force
 
     - name: Run test suite on installed version
       if: env.REBUILD == 'true'
       shell: bash
       run: |
-        test-suite/run-all-tests.sh && status=$? || status=$?
-        for f in $(find test-suite/tmp -name '*.diff'); do
+        cd ../tsduck-test
+        ./run-all-tests.sh && status=$? || status=$?
+        for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
         done
@@ -198,10 +199,11 @@ jobs:
     - name: Run test suite on installed version
       if: env.REBUILD == 'true'
       run: |
-        mkdir -p test-suite
-        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C test-suite
-        test-suite/run-all-tests.sh && status=$? || status=$?
-        for f in $(find test-suite/tmp -name '*.diff'); do
+        mkdir -p ../tsduck-test
+        cd ../tsduck-test
+        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1
+        ./run-all-tests.sh && status=$? || status=$?
+        for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
             cat "$f"
         done
