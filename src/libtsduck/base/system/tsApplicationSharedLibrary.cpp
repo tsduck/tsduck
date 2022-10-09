@@ -161,19 +161,33 @@ void ts::ApplicationSharedLibrary::GetPluginList(UStringVector& files, const USt
     files.clear();
 
     // Get list of directories to search path, then same directory as executable.
-    UStringList dirs;
-    GetSearchPath(dirs, library_path);
+    UStringList path_dirs;
+    GetSearchPath(path_dirs, library_path);
+
+    // Assume that distinct shared libraries with the same base name contain the same plugin,
+    // or two distinct versions of the same plugin. Since they are likely to contain the same
+    // symbols, do nat load them both. Keep a set of loaded base names.
+    std::set<UString> basenames;
 
     // Try in each directory.
     size_t index = 0;
     CERR.log(2, u"Searching for plugins %s*%s", {prefix, TS_SHARED_LIB_SUFFIX});
-    for (const auto& it : dirs) {
+    for (const auto& dir : path_dirs) {
         // Get list of shared library files matching the requested pattern in this directory.
-        CERR.log(2, u"Searching in \"%s\"", {it});
-        ExpandWildcardAndAppend(files, it + PathSeparator + prefix + u"*" TS_SHARED_LIB_SUFFIX);
-        // Debug: list newly found files.
+        CERR.log(2, u"Searching in \"%s\"", {dir});
+        ExpandWildcardAndAppend(files, dir + PathSeparator + prefix + u"*" TS_SHARED_LIB_SUFFIX);
+        // Eliminate files with already registered base names.
         while (index < files.size()) {
-            CERR.log(2, u"  \"%s\"", {files[index++]});
+            const UString base(BaseName(files[index]));
+            if (basenames.find(base) != basenames.end()) {
+                CERR.log(2, u"  \"%s\", duplicated, ignored", {files[index]});
+                files.erase(files.begin() + index);
+            }
+            else {
+                basenames.insert(base);
+                CERR.log(2, u"  \"%s\"", {files[index]});
+                index++;
+            }
         }
     }
 
