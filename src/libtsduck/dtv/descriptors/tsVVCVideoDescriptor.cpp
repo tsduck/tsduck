@@ -290,7 +290,7 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
             buf.skipBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<int>(3);
             buf.skipBits(5);
-            disp << ", max: " << buf.getBits<uint>(3) << std::endl;
+            disp << ", max: " << buf.getBits<int>(3) << std::endl;
         }
     }
 }
