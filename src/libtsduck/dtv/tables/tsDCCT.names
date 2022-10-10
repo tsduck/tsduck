@@ -1,0 +1,23 @@
+[DCCT.selection_type]
+Bits = 8
+0x00 = Unconditional channel change
+0x01 = Numeric Postal Code Inclusion
+0x02 = Alphanumeric Postal Code Inclusion
+0x05 = Demographic Category: one or more
+0x06 = Demographic Category: all
+0x07 = Genre Category: one or more
+0x08 = Genre Category: all
+0x09 = Cannot Be Authorized
+0x0C = Geographic Location Inclusion
+0x0D = Rating Blocked
+0x0F = Return To Original Channel
+0x11 = Numeric Postal Code Exclusion
+0x12 = Alphanumeric Postal Code Exclusion
+0x16 = Demographic Category: all non-member
+0x17 = Genre Category: one or more non-member
+0x18 = Genre Category: all non-member
+0x1C = Geographic Location Exclusion
+0x20 = Viewer-Direct-Select Button A
+0x21 = Viewer-Direct-Select Button B
+0x22 = Viewer-Direct-Select Button C
+0x23 = Viewer-Direct-Select Button D

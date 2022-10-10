@@ -1,0 +1,87 @@
+[AVS3_video_descriptor.profile]
+Bits = 8
+# T/AI 109.2, table B.1
+0x20 = Main-8
+0x22 = Main-10
+0x30 = High-8
+0x32 = High-10
+
+[AVS3_video_descriptor.level]
+Bits = 8
+# T/AI 109.2, table B.2
+0x10 = 2.0.15
+0x12 = 2.0.30
+0x14 = 2.0.60
+0x20 = 4.0.30
+0x22 = 4.0.60
+0x40 = 6.0.30
+0x42 = 6.2.30
+0x41 = 6.4.30
+0x43 = 6.6.30
+0x44 = 6.0.60
+0x46 = 6.2.60
+0x45 = 6.4.60
+0x47 = 6.6.60
+0x48 = 6.0.120
+0x4A = 6.2.120
+0x49 = 6.4.120
+0x4B = 6.6.120
+0x50 = 8.0.30
+0x52 = 8.2.30
+0x51 = 8.4.30
+0x53 = 8.6.30
+0x54 = 8.0.60
+0x56 = 8.2.60
+0x55 = 8.4.60
+0x57 = 8.6.60
+0x58 = 8.0.120
+0x5A = 8.2.120
+0x59 = 8.4.120
+0x5B = 8.6.120
+0x60 = 10.0.30
+0x62 = 10.2.30
+0x61 = 10.4.30
+0x63 = 10.6.30
+0x64 = 10.0.60
+0x66 = 10.2.60
+0x65 = 10.4.60
+0x67 = 10.6.60
+0x68 = 10.0.120
+0x6A = 10.2.120
+0x69 = 10.4.120
+0x6B = 10.6.120
+
+[AVS3_video_descriptor.frame_rate]
+Bits = 4
+# T/AI 109.2, table 48
+0 = forbidden
+1 = 24/1.001
+2 = 24
+3 = 25
+4 = 20/1.001
+5 = 30
+6 = 50
+7 = 60/1.001
+8 = 60
+9 = 100
+10 = 120
+11 = 200
+12 = 240
+13 = 400
+14 = 120/1.001
+15 = unknown
+
+[AVS3_video_descriptor.sample_precision]
+Bits = 3
+# T/AI 109.2, table 45
+0 = forbidden
+1 = 8-bit
+2 = 10-bit
+
+[AVS3_video_descriptor.chroma_format]
+Bits = 2
+# T/AI 109.2, table 44
+0 = forbidden
+1 = 4:2:0
+2 = 4:2:2  # not currently permitted in T/AI 109.2
+3 = unknown

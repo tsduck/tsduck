@@ -1,0 +1,10 @@
+[basic_local_event_descriptor.Mode]
+# In ISDB basic_local_event_descriptor
+Bits = 4
+0 = Invalid
+1 = NPT
+2 = Relative time
+3 = Relative time (STC reference descriptor is used together)
+4 = JST time
+5 = JST time (STC reference descriptor is used together)
+6-15 = Reserved

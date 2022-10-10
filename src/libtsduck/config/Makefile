@@ -35,13 +35,23 @@
 DONT_BUILD_DEPS := TRUE
 include ../../../Makefile.inc
 
-CONFIGS_SRC  = $(filter-out %.skeleton.xml,$(wildcard tsduck*.xml tsduck*.names))
+CONFIGS_SRC  = $(filter-out %.skeleton.xml %.skeleton.names,$(wildcard tsduck*.xml tsduck*.names))
 CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
 TABLES_SRC   = tsduck.tables.skeleton.xml
 TABLES_SUBS  = $(wildcard ../dtv/tables/*.xml ../dtv/descriptors/*.xml)
 TABLES_DEST  = $(BINDIR)/tsduck.tables.model.xml
+NAMES_SRC    = tsduck.skeleton.names
+NAMES_SUBS   = $(wildcard ../base/*/*.names ../dtv/*/*.names)
+NAMES_DEST   = $(BINDIR)/tsduck.names
 
-default: $(CONFIGS_DEST)
+# Main build targets.
+# The complete signalization model, tsduck.tables.model.xml, can be generated only when tsxml is generated.
+
+.PHONY: post-build
+
+default: $(CONFIGS_DEST) $(NAMES_DEST)
+	@true
+post-build: $(TABLES_DEST)
 	@true
 
 # Copy TSDuck configuration files in output bin directory.
@@ -51,15 +61,15 @@ $(BINDIR)/%: %
 	mkdir -p $(BINDIR); \
 	cp $< $@
 
-# Generate the complete signalization model: tsduck.tables.model.xml
-# This can be done only when tsxml is generated.
+# Generate the complete configuration files from separate files.
 
-.PHONY: post-build
-post-build: $(TABLES_DEST)
-	@true
 $(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(BINDIR)/tsxml
 	@echo '  [GEN] $(notdir $@)'; \
 	$(BINDIR)/tsxml --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
+
+$(NAMES_DEST): $(NAMES_SRC) $(NAMES_SUBS)
+	@echo '  [GEN] $(notdir $@)'; \
+	cat $(NAMES_SRC) $(NAMES_SUBS) >$@
 
 # Generate the Dektec names file from DTAPI.h.
 
@@ -74,9 +84,9 @@ tsduck.dektec.names: $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
 
 .PHONY: install-tools install-post-build install-devel install-linux-config
 
-install-tools: tsduck.dektec.names $(if $(MACOS),,install-linux-config)
+install-tools: tsduck.dektec.names $(NAMES_DEST) $(if $(MACOS),,install-linux-config)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
-	install -m 644 $(CONFIGS_SRC) $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -m 644 $(CONFIGS_SRC) $(NAMES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 install-post-build: $(TABLES_DEST)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	install -m 644 $(TABLES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
