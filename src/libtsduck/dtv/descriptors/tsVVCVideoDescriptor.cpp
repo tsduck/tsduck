@@ -60,7 +60,7 @@ ts::VVCVideoDescriptor::VVCVideoDescriptor() :
     VVC_still_present(false),
     VVC_24hr_picture_present(false),
     HDR_WCG_idc(3),
-    video_properties_tag(0),    
+    video_properties_tag(0),
     temporal_id_min(),
     temporal_id_max()
 {
@@ -190,7 +190,7 @@ ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint8_t hw)
         case 2: return u"HDR and WCG";
         case 3: return u"no indication";
         default: return u"unknown";
-    }	
+    }
 }
 
 ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint8_t li)
@@ -216,8 +216,8 @@ ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint8_t li)
 
 ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint8_t hdr_wcg_idc, uint8_t vprop_tag)
 {
-    uint16_t combi_val = (hdr_wcg_idc << 8) + vprop_tag;
-   
+    const uint16_t combi_val = uint16_t(uint16_t(hdr_wcg_idc) << 8) | vprop_tag;
+
     switch (combi_val) {
 
         // H.222.0 Table 2-135
@@ -243,7 +243,7 @@ ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint8_t hdr_wcg_idc, uint
         case 0x0204: return u"BT2100_PQ_RGB";
         case 0x0205: return u"BT2100_HLG_RGB";
 
-        // H.222.0 Table 2-138 
+        // H.222.0 Table 2-138
         case 0x0300:return u"not known";
 
         default: return u"reserved";
@@ -288,9 +288,9 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(hdr_wcg_idc, vprop_tag) << " (" << int(vprop_tag) << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
-            disp << margin << "Temporal id min: " << buf.getBits<uint8_t>(3);
+            disp << margin << "Temporal id min: " << buf.getBits<int>(3);
             buf.skipBits(5);
-            disp << ", max: " << buf.getBits<uint8_t>(3) << std::endl;
+            disp << ", max: " << buf.getBits<uint>(3) << std::endl;
         }
     }
 }
@@ -301,7 +301,7 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
 //----------------------------------------------------------------------------
 
 void ts::VVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
-{ 
+{
     root->setIntAttribute(u"profile_idc", profile_idc, true);
     root->setBoolAttribute(u"tier_flag", tier);
     for (auto it : sub_profile_idc) {
