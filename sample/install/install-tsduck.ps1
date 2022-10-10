@@ -166,8 +166,12 @@ if (-not $NoInstall) {
 
 # Propagate Path in next jobs for GitHub Actions.
 if ($GitHubActions) {
-    $path = [System.Environment]::GetEnvironmentVariable("Path","Machine")
-    Write-Output "Path=$path" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    $path       = [System.Environment]::GetEnvironmentVariable("Path",       [System.EnvironmentVariableTarget]::Machine)
+    $pythonpath = [System.Environment]::GetEnvironmentVariable("PYTHONPATH", [System.EnvironmentVariableTarget]::Machine)
+    $classpath  = [System.Environment]::GetEnvironmentVariable("CLASSPATH",  [System.EnvironmentVariableTarget]::Machine)
+    Write-Output "Path=$path"             | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    Write-Output "PYTHONPATH=$pythonpath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+    Write-Output "CLASSPATH=$classpath"   | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 }
 
 Exit-Script
