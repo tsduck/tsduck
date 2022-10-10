@@ -12,8 +12,8 @@
         level_idc="uint8, required"
         VVC_still_present_flag="bool, required"
         VVC_24hr_picture_present_flag="bool, required"
-        HDR_WCG_idc="uint2, default=3"
-        video_properties_tag="uint4, default=0"
+        HDR_WCG_idc="uint2, required"
+        video_properties_tag="uint4, required"
         temporal_id_min="uint3, optional, specify both min and max or none"
         temporal_id_max="uint3, optional, specify both min and max or none">
       <sub_profile_idc value="uint32, required"/>
