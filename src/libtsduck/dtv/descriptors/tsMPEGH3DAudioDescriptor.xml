@@ -6,6 +6,9 @@
         mpegh_3da_profile_level_indication="uint8, required"
         interactivity_enabled="bool, required"
         reference_channel_layout="uint6, required">
+      <CompatibleSetIndication>
+        Hexadecimal content
+      </CompatibleSetIndication>
       <reserved>
         Hexadecimal content
       </reserved>
