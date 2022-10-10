@@ -216,7 +216,7 @@ ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint8_t li)
 
 ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint8_t hdr_wcg_idc, uint8_t vprop_tag)
 {
-    uint16_t combi_val = (hdr_wcg_idc << 8) + vprop_tag;
+    const uint16_t combi_val = uint16_t(uint16_t(hdr_wcg_idc) << 8) | vprop_tag;
 
     switch (combi_val) {
 
