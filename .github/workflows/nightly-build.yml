@@ -92,6 +92,8 @@ jobs:
       if: env.REBUILD == 'true'
       run: |
         Start-Process -Wait -FilePath installers/TSDuck-Win64-${{ env.VERSION }}.exe -ArgumentList @("/S", "/all=true")
+        # View installed files.
+        Get-ChildItem -Recurse $env:ProgramFiles\TSDuck
         # Propagate updated paths to next steps.
         $path       = [System.Environment]::GetEnvironmentVariable("Path",       [System.EnvironmentVariableTarget]::Machine)
         $pythonpath = [System.Environment]::GetEnvironmentVariable("PYTHONPATH", [System.EnvironmentVariableTarget]::Machine)
@@ -113,6 +115,9 @@ jobs:
       shell: bash
       run: |
         cd ../tsduck-test
+        echo "PATH: $PATH"
+        echo "PYTHONPATH: $PYTHONPATH"
+        echo "CLASSPATH: $CLASSPATH"
         ./run-all-tests.sh && status=$? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";

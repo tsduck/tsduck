@@ -259,7 +259,7 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         const size_t num_sub_profiles = buf.getUInt8();
         if (num_sub_profiles > 0) {
             disp << margin << "Sub profile IDC:";
-            for (uint8_t i = 0; i < num_sub_profiles; i++) {
+            for (size_t i = 0; i < num_sub_profiles; i++) {
                 disp << " " << UString::Hexa(buf.getUInt32());
                 if ((i + 1) % 6 == 0) {
                     disp << std::endl;
@@ -281,16 +281,16 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(5);
-        const uint8_t hdr_wcg_idc = buf.getBits<uint8_t>(2);
-        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(hdr_wcg_idc) << " (" << int(hdr_wcg_idc) << ")";
+        const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
+        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(hdr_wcg_idc) << " (" << hdr_wcg_idc << ")";
         buf.skipBits(2);
-        const uint8_t vprop_tag = buf.getBits<uint8_t>(4);
-        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(hdr_wcg_idc, vprop_tag) << " (" << int(vprop_tag) << ")" << std::endl;
+        const uint16_t vprop_tag = buf.getBits<uint16_t>(4);
+        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(hdr_wcg_idc, vprop_tag) << " (" << vprop_tag << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
-            disp << margin << "Temporal id min: " << buf.getBits<int>(3);
+            disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
             buf.skipBits(5);
-            disp << ", max: " << buf.getBits<int>(3) << std::endl;
+            disp << ", max: " << buf.getBits<uint16_t>(3) << std::endl;
         }
     }
 }
