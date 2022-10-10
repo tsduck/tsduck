@@ -193,8 +193,7 @@ $(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB)
 
 # Installation targets.
 
-.PHONY: install install-tools install-devel
-install: install-tools install-devel
+.PHONY: install-tools install-devel
 
 install-tools: $(SHARED_LIBTSDUCK)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)
