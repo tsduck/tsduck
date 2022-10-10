@@ -54,6 +54,7 @@ ts::MPEGH3DAudioDescriptor::MPEGH3DAudioDescriptor() :
     mpegh_3da_profile_level_indication(0),
     interactivity_enabled(false),
     reference_channel_layout(0),
+    CompatibleSetIndication(),
     reserved()
 {
 }
@@ -63,6 +64,7 @@ void ts::MPEGH3DAudioDescriptor::clearContent()
     mpegh_3da_profile_level_indication = 0;
     interactivity_enabled = false;
     reference_channel_layout = 0;
+    CompatibleSetIndication.clear();
     reserved.clear();
 }
 
@@ -91,8 +93,16 @@ void ts::MPEGH3DAudioDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(mpegh_3da_profile_level_indication);
     buf.putBit(interactivity_enabled);
-    buf.putBits(0xFFFF, 9);
+    bool compatibleProfileSetsPresent = (CompatibleSetIndication.size() > 0);
+    buf.putBit(!compatibleProfileSetsPresent);
+    buf.putBits(0xFFFF, 8);
     buf.putBits(reference_channel_layout, 6);
+    if (!compatibleProfileSetsPresent == 0) {
+        buf.putBits(CompatibleSetIndication.size(), 8);
+        for (auto it : CompatibleSetIndication) {
+            buf.putBits(it, 8);
+        }
+    }
     buf.putBytes(reserved);
 }
 
@@ -105,8 +115,14 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
 {
     mpegh_3da_profile_level_indication = buf.getUInt8();
     interactivity_enabled = buf.getBool();
-    buf.skipBits(9);
+    bool compatibleProfileSetsPresent = buf.getBool();
+    buf.skipBits(8);
     buf.getBits(reference_channel_layout, 6);
+    if (compatibleProfileSetsPresent == 0) {
+        uint8_t numCompatibleSets = buf.getUInt8();
+        for (uint8_t i=0; i <numCompatibleSets; i++)
+            CompatibleSetIndication.push_back(buf.getUInt8());
+    }
     buf.getBytes(reserved);
 }
 
@@ -115,13 +131,52 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
+ts::UString ts::MPEGH3DAudioDescriptor::CompatibleProfileLevelSet(uint8_t value)
+{
+    // see ISO/IEC 23008-3 Table 67
+    switch (value) {
+        case 0x00: return u"reserved for ISO";
+        case 0x01: return u"Main profile L1";
+        case 0x02: return u"Main profile L2";
+        case 0x03: return u"Main profile L3";
+        case 0x04: return u"Main profile L4";
+        case 0x05: return u"Main profile L5";
+        case 0x06: return u"High profile L1";
+        case 0x07: return u"High profile L2";
+        case 0x08: return u"High profile L3";
+        case 0x09: return u"High profile L4";
+        case 0x0A: return u"High profile L5";
+        case 0x0B: return u"Low Complexity profile L1";
+        case 0x0C: return u"Low Complexity profile L2";
+        case 0x0D: return u"Low Complexity profile L3";
+        case 0x0E: return u"Low Complexity profile L4";
+        case 0x0F: return u"Low Complexity profile L5";
+        case 0x10: return u"Baseline profile L1";
+        case 0x11: return u"Baseline profile L2";
+        case 0x12: return u"Baseline profile L3";
+        case 0x13: return u"Baseline profile L4";
+        case 0x14: return u"Baseline profile L5";
+        default: return u"reserved";
+    }
+}
+
 void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        disp << margin << UString::Format(u"3D-audio profile level indication: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
+        uint8_t profile_level_id;
+        profile_level_id = buf.getUInt8();
+        disp << margin << UString::Format(u"3D-audio profile level indication: %s (0x%X)", { CompatibleProfileLevelSet(profile_level_id), profile_level_id }) << std::endl;
         disp << margin << UString::Format(u"Interactivity enabled: %s", {buf.getBool()}) << std::endl;
-        buf.skipBits(9);
+        bool compatibleProfileSetsPresent = buf.getBool();
+        buf.skipBits(8);
         disp << margin << UString::Format(u"Reference channel layout: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
+        if (compatibleProfileSetsPresent == 0) {
+            uint8_t  numCompatibleSets = buf.getUInt8();
+            for (uint8_t i = 0; i < numCompatibleSets; i++) {
+                profile_level_id = buf.getUInt8();
+                disp << margin << UString::Format(u"Compatible Set Indication: %s (0x%X)", { CompatibleProfileLevelSet(profile_level_id), profile_level_id }) << std::endl;
+            }
+        }
         disp.displayPrivateData(u"Reserved data", buf, NPOS, margin);
     }
 }
@@ -136,6 +191,11 @@ void ts::MPEGH3DAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root)
     root->setIntAttribute(u"mpegh_3da_profile_level_indication", mpegh_3da_profile_level_indication, true);
     root->setBoolAttribute(u"interactivity_enabled", interactivity_enabled);
     root->setIntAttribute(u"reference_channel_layout", reference_channel_layout, true);
+    if (CompatibleSetIndication.size() > 0)
+        for (auto it : CompatibleSetIndication) {
+            uint8_t value = it;
+            root->addHexaTextChild(u"CompatibleSetIndication", (const void*)&value, sizeof(uint8_t));
+        }
     root->addHexaTextChild(u"reserved", reserved, true);
 }
 
@@ -146,8 +206,10 @@ void ts::MPEGH3DAudioDescriptor::buildXML(DuckContext& duck, xml::Element* root)
 
 bool ts::MPEGH3DAudioDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
+    xml::ElementVector children;
     return element->getIntAttribute(mpegh_3da_profile_level_indication, u"mpegh_3da_profile_level_indication", true) &&
            element->getBoolAttribute(interactivity_enabled, u"interactivity_enabled", true) &&
            element->getIntAttribute(reference_channel_layout, u"reference_channel_layout", true, 0, 0, 0x3F) &&
+           element->getChildren(children, u"CompatibleSetIndication", 0, 0xFF) &&
            element->getHexaTextChild(reserved, u"reserved", false, 0, 251);
 }
