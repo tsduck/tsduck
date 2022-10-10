@@ -1,0 +1,9 @@
+[STC_reference_descriptor.Mode]
+Bits = 4
+0 = Invalid
+1 = NPT
+2 = Undefined
+3 = Relative time
+4 = Undefined
+5 = JST time
+6-15 = Reserved

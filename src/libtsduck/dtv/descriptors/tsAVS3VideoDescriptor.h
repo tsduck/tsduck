@@ -59,7 +59,7 @@ namespace ts {
         uint8_t   colour_primaries;                  //!< 8 bits.
         uint8_t   transfer_characteristics;          //!< 8 bits.
         uint8_t   matrix_coefficients;               //!< 8 bits.
-		
+
         //!
         //! Default constructor.
         //!
@@ -75,16 +75,6 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
-    private:
-        static UString Avs3Profile(uint8_t pi);
-        static UString Avs3Level(uint8_t i);
-        static UString AVS3FrameRate(uint16_t fr);
-        static UString AVS3SamplePrecision(uint16_t sp);
-        static UString Avs3ChromaFormat(uint16_t cf);
-
-        static const std::vector<uint8_t> valid_profile_ids;
-        static const std::vector<uint8_t> valid_level_ids;
-
     protected:
         // Inherited methods
         virtual void clearContent() override;
@@ -92,5 +82,9 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
+
+    private:
+        static const std::vector<uint8_t> valid_profile_ids;
+        static const std::vector<uint8_t> valid_level_ids;
     };
 }

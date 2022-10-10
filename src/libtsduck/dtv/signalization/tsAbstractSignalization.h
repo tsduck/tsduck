@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
+#include "tsNamesFile.h"
 #include "tsxml.h"
 
 namespace ts {
@@ -126,6 +127,42 @@ namespace ts {
         //! XML tag name for generic tables with long sections.
         //!
         static const UChar* const XML_GENERIC_LONG_TABLE;
+
+        //!
+        //! Get a name from a specified section in the DVB names file.
+        //! @tparam INT An integer type.
+        //! @param [in] xml_name Table or descriptor name, as used in XML structures.
+        //! @param [in] section Name of section to search. Not case-sensitive. The actual section in
+        //! the names file is prefixed by the XML name, followed by a dot.
+        //! @param [in] value Value to get the name for.
+        //! @param [in] flags Presentation flags.
+        //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @param [in] alternate Display this integer value if flags ALTERNATE is set.
+        //! @return The corresponding name.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+        static UString DataName(const UChar* xml_name, const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternate = 0)
+        {
+            return NamesFile::Instance(NamesFile::Predefined::DTV)->
+                    nameFromSection(UString::Format(u"%s.%s", {xml_name, section}), NamesFile::Value(value), flags, bits, NamesFile::Value(alternate));
+        }
+
+        //!
+        //! Get a name from a specified section in the DVB names file for that signalization structure.
+        //! @tparam INT An integer type.
+        //! @param [in] section Name of section to search. Not case-sensitive. The actual section in
+        //! the names file is prefixed by the XML name of the structure, followed by a dot.
+        //! @param [in] value Value to get the name for.
+        //! @param [in] flags Presentation flags.
+        //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @param [in] alternate Display this integer value if flags ALTERNATE is set.
+        //! @return The corresponding name.
+        //!
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
+        UString dataName(const UChar* section, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternate = 0)
+        {
+            return DataName<INT>(_xml_name, section, value, flags, bits, alternate);
+        }
 
     protected:
         //!

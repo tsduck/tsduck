@@ -163,99 +163,11 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint8_t pi)
-{
-    switch (pi) {
-        case  1: return u"Main 10";
-        case 17: return u"Multilayer Main 10";
-        case 33: return u"Main 10 4:4:4";
-        case 49: return u"Multilayer Main 10 4:4:4 ";
-        case 65: return u"Main 10 Still Picture";
-        case 97: return u"Main 10 4:4:4 Still Picture";
-        default: return u"unknown";
-    }
-}
-
-ts::UString ts::VVCVideoDescriptor::VVCTier(bool t)
-{
-    return t ? u"High" : u"Main";
-}
-
-ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint8_t hw)
-{
-    // H222.0, TAble 2-134
-    switch (hw) {
-        case 0: return u"SDR";
-        case 1: return u"WCG only";
-        case 2: return u"HDR and WCG";
-        case 3: return u"no indication";
-        default: return u"unknown";
-    }
-}
-
-ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint8_t li)
-{
-    // H.266, Table A.1
-    switch (li) {
-        case  16: return u"1.0";
-        case  32: return u"2.0";
-        case  35: return u"2.1";
-        case  48: return u"3.0";
-        case  51: return u"3.1";
-        case  64: return u"4.0";
-        case  67: return u"4.1";
-        case  80: return u"5.0";
-        case  83: return u"5.1";
-        case  86: return u"5.2";
-        case  96: return u"6.0";
-        case  99: return u"6.1";
-        case 102: return u"6.2";
-        default: return u"unknown";
-    }
-}
-
-ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint8_t hdr_wcg_idc, uint8_t vprop_tag)
-{
-    const uint16_t combi_val = uint16_t(uint16_t(hdr_wcg_idc) << 8) | vprop_tag;
-
-    switch (combi_val) {
-
-        // H.222.0 Table 2-135
-        case 0x0000: return u"not known";
-        case 0x0001: return u"BT709_YCC";
-        case 0x0002: return u"BT709_RGB";
-        case 0x0003: return u"BT601_525";
-        case 0x0004: return u"BT601_625";
-        case 0x0005: return u"FR709_RGB";
-
-        // H.222.0 Table 2-136
-        case 0x0100: return u"not known";
-        case 0x0101: return u"BT2020_YCC_NCL";
-        case 0x0102: return u"BT2020_RBG";
-        case 0x0103: return u"FR2020_RGB";
-        case 0x0104: return u"FRP3D34_YCC";
-
-        // H.222.0 Table 2-137
-        case 0x0200: return u"not known";
-        case 0x0201: return u"BT2100_PQ_YCC";
-        case 0x0202: return u"BT2100_HLG_YCC";
-        case 0x0203: return u"BT2100_PQ_ICTCP";
-        case 0x0204: return u"BT2100_PQ_RGB";
-        case 0x0205: return u"BT2100_HLG_RGB";
-
-        // H.222.0 Table 2-138
-        case 0x0300:return u"not known";
-
-        default: return u"reserved";
-    }
-}
-
 void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        const uint8_t profile_idc = buf.getBits<uint8_t>(7);
-        disp << margin << "Profile IDC: " << VVCVideoDescriptor::VVCProfileIDC(profile_idc) << " (" << UString::Hexa(profile_idc);
-        disp << "), tier: " << VVCVideoDescriptor::VVCTier(buf.getBool()) << std::endl;
+        disp << margin << "Profile IDC: " << DataName(MY_XML_NAME, u"profile_idc", buf.getBits<uint8_t>(7), NamesFlags::VALUE);
+        disp << ", tier: " << DataName(MY_XML_NAME, u"tier", buf.getBool()) << std::endl;
         const size_t num_sub_profiles = buf.getUInt8();
         if (num_sub_profiles > 0) {
             disp << margin << "Sub profile IDC:";
@@ -275,17 +187,16 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", non packed: " << UString::TrueFalse(buf.getBool());
         disp << ", frame only: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(4);
-        const uint8_t level_idc = buf.getUInt8();
-        disp << margin << "Level IDC: " << VVCVideoDescriptor::VVCLevelIDC(level_idc) << " (" << UString::Hexa(level_idc) << ")";
+        disp << margin << "Level IDC: " << DataName(MY_XML_NAME, u"level_idc", buf.getUInt8(), NamesFlags::VALUE);
         const bool temporal = buf.getBool();
         disp << ", still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(5);
-        const uint8_t hdr_wcg_idc = buf.getBits<uint8_t>(2);
-        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(hdr_wcg_idc) << " (" << uint16_t(hdr_wcg_idc) << ")";
+        const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
+        disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::VALUE | NamesFlags::DECIMAL);
         buf.skipBits(2);
-        const uint8_t vprop_tag = buf.getBits<uint8_t>(4);
-        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(hdr_wcg_idc, vprop_tag) << " (" << uint16_t(vprop_tag) << ")" << std::endl;
+        const uint16_t vprop = buf.getBits<uint16_t>(4);
+        disp << ", video properties: " << DataName(MY_XML_NAME, u"video_properties", (hdr_wcg_idc << 8) | vprop) << " (" << vprop << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
