@@ -57,11 +57,8 @@ endif
 
 # The tsconfig shell script is part of the installation.
 
-.PHONY: install install-tools install-devel
-install: install-tools install-devel
-install-tools:
+.PHONY: install install-tools
+install install-tools:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/bin $(SYSROOT)$(BASHCOMP_DIR)
 	install -m 755 tsconfig $(SYSROOT)$(SYSPREFIX)/bin
 	install -m 644 tsconfig-completion.bash $(SYSROOT)$(BASHCOMP_DIR)/tsconfig
-install-devel:
-	@true
