@@ -163,7 +163,7 @@ void ts::VVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint16_t pi)
+ts::UString ts::VVCVideoDescriptor::VVCProfileIDC(uint8_t pi)
 {
     switch (pi) {
         case  1: return u"Main 10";
@@ -181,7 +181,7 @@ ts::UString ts::VVCVideoDescriptor::VVCTier(bool t)
     return t ? u"High" : u"Main";
 }
 
-ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint16_t hw)
+ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint8_t hw)
 {
     // H222.0, TAble 2-134
     switch (hw) {
@@ -193,7 +193,7 @@ ts::UString ts::VVCVideoDescriptor::VVCHDRandWCG(uint16_t hw)
     }	
 }
 
-ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint16_t li)
+ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint8_t li)
 {
     // H.266, Table A.1
     switch (li) {
@@ -214,17 +214,39 @@ ts::UString ts::VVCVideoDescriptor::VVCLevelIDC(uint16_t li)
     }
 }
 
-ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint16_t vp)
+ts::UString ts::VVCVideoDescriptor::VVCVideoProperties(uint8_t hdr_wcg_idc, uint8_t vprop_tag)
 {
-    // H.222.0 Table 2-135
-    switch (vp) {
-        case 0: return u"not known";
-        case 1: return u"BT709_YCC";
-        case 2: return u"BT709_RGB";
-        case 3: return u"BT601_525";
-        case 4: return u"BT601_625";
-        case 5: return u"FR709_RGB";
-        default: return u"unknown";
+    uint16_t combi_val = (hdr_wcg_idc << 8) + vprop_tag;
+   
+    switch (combi_val) {
+
+        // H.222.0 Table 2-135
+        case 0x0000: return u"not known";
+        case 0x0001: return u"BT709_YCC";
+        case 0x0002: return u"BT709_RGB";
+        case 0x0003: return u"BT601_525";
+        case 0x0004: return u"BT601_625";
+        case 0x0005: return u"FR709_RGB";
+
+        // H.222.0 Table 2-136
+        case 0x0100: return u"not known";
+        case 0x0101: return u"BT2020_YCC_NCL";
+        case 0x0102: return u"BT2020_RBG";
+        case 0x0103: return u"FR2020_RGB";
+        case 0x0104: return u"FRP3D34_YCC";
+
+        // H.222.0 Table 2-137
+        case 0x0200: return u"not known";
+        case 0x0201: return u"BT2100_PQ_YCC";
+        case 0x0202: return u"BT2100_HLG_YCC";
+        case 0x0203: return u"BT2100_PQ_ICTCP";
+        case 0x0204: return u"BT2100_PQ_RGB";
+        case 0x0205: return u"BT2100_HLG_RGB";
+
+        // H.222.0 Table 2-138 
+        case 0x0300:return u"not known";
+
+        default: return u"reserved";
     }
 }
 
@@ -259,16 +281,16 @@ void ts::VVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(5);
-        const uint16_t wcg_idc = buf.getBits<uint16_t>(2);
-        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(wcg_idc) << " (" << wcg_idc << ")";
+        const uint8_t hdr_wcg_idc = buf.getBits<uint8_t>(2);
+        disp << margin << "HDR WCG idc: " << VVCVideoDescriptor::VVCHDRandWCG(hdr_wcg_idc) << " (" << hdr_wcg_idc << ")";
         buf.skipBits(2);
-        const uint16_t vprop_tag = buf.getBits<uint16_t>(4);
-        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(vprop_tag) << " (" << vprop_tag << ")" << std::endl;
+        const uint8_t vprop_tag = buf.getBits<uint8_t>(4);
+        disp << ", video properties: " << VVCVideoDescriptor::VVCVideoProperties(hdr_wcg_idc, vprop_tag) << " (" << vprop_tag << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
-            disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
+            disp << margin << "Temporal id min: " << buf.getBits<uint8_t>(3);
             buf.skipBits(5);
-            disp << ", max: " << buf.getBits<uint16_t>(3) << std::endl;
+            disp << ", max: " << buf.getBits<uint8_t>(3) << std::endl;
         }
     }
 }
@@ -316,8 +338,8 @@ bool ts::VVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getIntAttribute(level_idc, u"level_idc", true) &&
         element->getBoolAttribute(VVC_still_present, u"VVC_still_present_flag", true) &&
         element->getBoolAttribute(VVC_24hr_picture_present, u"VVC_24hr_picture_present_flag", true) &&
-        element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", false, 3, 0, 3) &&
-        element->getIntAttribute(video_properties_tag, u"video_properties_tag", false, 0, 0, 15) &&
+        element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", true, 3, 0, 3) &&
+        element->getIntAttribute(video_properties_tag, u"video_properties_tag", true, 0, 0, 15) &&
         element->getOptionalIntAttribute(temporal_id_min, u"temporal_id_min", 0, 7) &&
         element->getOptionalIntAttribute(temporal_id_max, u"temporal_id_max", 0, 7) &&
         element->getChildren(children, u"sub_profile_idc");
