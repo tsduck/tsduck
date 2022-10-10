@@ -96,7 +96,7 @@ install-linux-config:
 	install -m 644 80-tsduck.perms $(SYSROOT)$(ETCDIR)/security/console.perms.d
 install-devel:
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig
-	sed -e 's|{{VERSION}}|$(shell $(SCRIPTSDIR)/get-version-from-sources.sh --dotted)|g' \
+	sed -e 's|{{VERSION}}|$(shell $(SCRIPTSDIR)/get-version-from-sources.py --dotted)|g' \
 	    -e 's|{{PREFIX}}|$(SYSPREFIX)|g' \
 	    -e 's|{{LIBDIR}}|$(USRLIBDIR)|g' \
 	    $(if $(NOSRT),-e 's|srt||g') \
