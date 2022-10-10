@@ -78,11 +78,11 @@ namespace ts {
         DeclareDisplayDescriptor();
 
     private:
-        static UString VVCProfileIDC(uint16_t pi);	
+        static UString VVCProfileIDC(uint8_t pi);	
         static UString VVCTier(bool t);
-        static UString VVCHDRandWCG(uint16_t hw);
-        static UString VVCLevelIDC(uint16_t li);
-        static UString VVCVideoProperties(uint16_t vp);
+        static UString VVCHDRandWCG(uint8_t hw);
+        static UString VVCLevelIDC(uint8_t li);
+        static UString VVCVideoProperties(uint8_t hdr_wcg_idc, uint8_t vprop_tag);
 		
     protected:
         // Inherited methods
