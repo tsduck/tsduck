@@ -38,6 +38,9 @@ default:
 	@$(MAKE) -C libtsduck/config post-build
 
 .PHONY: install install-tools install-devel
-install install-tools install-devel:
+install: install-tools install-devel
+install-tools:
 	@$(call F_RECURSE,libtsduck tsplugins tstools utils)
 	@$(MAKE) -C libtsduck/config install-post-build
+install-devel:
+	@$(call F_RECURSE,libtsduck)

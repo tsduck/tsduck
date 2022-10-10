@@ -33,7 +33,7 @@
 
 include ../../Makefile.inc
 
-.PHONY: shlibs install install-tools install-devel
+.PHONY: shlibs install install-tools
 
 ifeq ($(STATIC),)
 
@@ -45,23 +45,18 @@ default: shlibs
 shlibs: $(SHLIBS)
 $(SHLIBS): $(SHARED_LIBTSDUCK)
 
-install: install-tools install-devel
-install-tools: $(SHLIBS)
+install install-tools: $(SHLIBS)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR)/tsduck
 	$(if $(NO_TSPLUGINS),rm -rf $(addsuffix $(SO_SUFFIX),$(addprefix $(SYSROOT)$(USRLIBDIR)/tsduck/,$(NO_TSPLUGINS)),))
 	$(if $(MACOS),rm -rf $(SYSROOT)$(USRLIBDIR)/tsduck/*.so,)
 	install -m 644 $(SHLIBS) $(SYSROOT)$(USRLIBDIR)/tsduck
-install-devel:
-	@true
 
 else
 
 # With static link, we compile only (in a specific directory), we do not build shared objects.
 default: $(addprefix $(OBJDIR)/,$(addsuffix .o,$(TSPLUGINS)))
 	@true
-install-tools:
-	@true
-install-devel:
+install install-tools:
 	@true
 
 endif
