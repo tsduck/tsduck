@@ -50,7 +50,7 @@ DEKTEC_DEST  = $(BINDIR)/tsduck.dektec.names
 
 .PHONY: post-build
 
-default: $(CONFIGS_DEST) $(NAMES_DEST)
+default: $(CONFIGS_DEST) $(NAMES_DEST) $(DEKTEC_DEST)
 	@true
 post-build: $(TABLES_DEST)
 	@true
