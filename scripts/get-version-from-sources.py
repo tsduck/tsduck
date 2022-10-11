@@ -46,7 +46,7 @@ def run(cmd, err=subprocess.STDOUT):
 
 # Get the content of a text file.
 def read(filename):
-    with open(filename, 'r') as f:
+    with open(filename, 'r', encoding='utf-8') as f:
         return f.read()
 
 # Get a description of the distro.

@@ -47,6 +47,9 @@ export DOT_PATH=$(which dot 2>/dev/null)
 [[ -n "DOT_PATH" ]] && export HAVE_DOT=YES || export HAVE_DOT=NO
 export DOXY_INCLUDE_PATH=$(find "$SRCDIR" -type d | tr '\n' ' ')
 
+# Generate a summary file of all signalization.
+"$ROOTDIR/src/doc/signalization-gen.py"
+
 # Run doxygen.
 cd "$DOCDIR"
 if [[ $(doxygen --version) == *1.8.17* ]]; then

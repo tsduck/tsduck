@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-libtsduck-begin.props" />
+    <Import Project="msvc-common-begin.props"/>
   </ImportGroup>
 
   <PropertyGroup Label="Globals">
@@ -20,8 +20,20 @@
     <Import Project="msvc-use-java.props"/>
   </ImportGroup>
 
+  <ItemGroup>
+    <ClInclude Include="@(LibPublicHeaders);@(LibPrivateHeaders)"/>
+    <ClCompile Include="@(LibSources)"/>
+  </ItemGroup>
+
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(TSDuckLibDirsInternal);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+
   <ImportGroup Label="PropertySheets">
-    <Import Project="msvc-libtsduck-end.props" />
+    <Import Project="msvc-common-end.props"/>
+    <Import Project="msvc-build-config-files.props"/>
   </ImportGroup>
 
 </Project>

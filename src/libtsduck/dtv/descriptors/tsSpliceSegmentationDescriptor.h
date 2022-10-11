@@ -55,7 +55,7 @@ namespace ts {
         typedef std::map<uint8_t, uint64_t> PTSOffsetByComponent;
 
         // SpliceSegmentationDescriptor public members:
-        uint32_t  identifier;                  //!< Descriptor owner, 0x43554549 (“CUEI”).
+        uint32_t  identifier;                  //!< Descriptor owner, 0x43554549 ("CUEI").
         uint32_t  segmentation_event_id;       //!< Event id.
         bool      segmentation_event_cancel;   //!< When true, event is canceled, other fields are ignored.
         bool      program_segmentation;        //!< When true, all components are segmented.
