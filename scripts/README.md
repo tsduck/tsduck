@@ -12,6 +12,27 @@ Building TSDuck and its binary installers does not use Visual Studio; the
 scripts directly call MSBuild (a Microsoft equivalent of make, using project
 files in XML format).
 
+## Portable tools (macOS, Linux, Windows)
+
+- `build-dektec-names.py` : Build the file tsduck.dektec.names from the Dektec
+  header DTAPI.h. This is a "names" files for the capabilities of the devices.
+
+- `build-project-files.py` : Build the project files for "Qt Creator" and
+  "Visual Studio" (also used by MSBuild) for all TSDuck commands and plugins.
+  See more details in the leading comments in the script.
+
+- `build-tsduck-header.py` : Build the `tsduck.h` header file which include
+  all public headers of the TSDuck library. Adding new source files in the
+  TSDuck library is a common task. Each time a new public file is added,
+  `tsduck.h` must be updated. This script is automatically invoked by the
+  makefile in `libtsduck`.
+
+- `cleanup.py` : Complete cleanup of the directory tree, removing all generated
+  or temporary files.
+
+- `get-version-from-sources.py` : Extract the TSDuck version number from the
+  source files.
+
 ## Build scripts on Windows
 
 - `msvc` : A subdirectory containing all project files for Visual Studio. All
@@ -36,15 +57,6 @@ files in XML format).
   It automatically invokes `build.ps1`. So, to build TSDuck installers from a
   freshly cloned repository, just run this script.
 
-- `build-project-files.ps1` : Build the project files for "Qt Creator" and
-  "Visual Studio". See `build-project-files.py`.
-
-- `build-tsduck-header.ps1` : This script builds the `tsduck.h` header file which
-  includes all public headers of the library. See `build-tsduck-header.py`.
-
-- `cleanup.ps1` : This script does a complete cleanup of the directory tree,
-  removing all generated or temporary files. See `cleanup.py`.
-
 - `tsduck.nsi` : This file is an NSIS script to build the binary installers of
   TSDuck. It is used by `build-installer.ps1`.
 
@@ -66,23 +78,17 @@ files in XML format).
   force compilation and link processes to run with a lower priority to avoid
   killing the system while compiling using Visual Studio.
 
-## Project files for Linux and macOS
+The following scripts are just conveniences to run the corresponding `.py`
+scripts from the Windows explorer:
 
-- `build-project-files.py` : Build the project files for "Qt Creator" and
-  "Visual Studio" (also used by MSBuild) for all TSDuck commands and plugins.
-  See more details in the leading comments in the script.
+- `build-project-files.ps1`
+- `build-tsduck-header.ps1`
+- `cleanup.ps1`
+
+## Project files for Linux and macOS
 
 - `build-remote.sh` : Build the TSDuck installers on a remote system, either a
   running physical system or a local VM to start.
-
-- `build-tsduck-header.py` : This script builds the `tsduck.h` header file which
-  includes all public headers of the TSDuck library. Adding new source files
-  in the TSDuck library is a common task. Each time a new public file is added,
-  `tsduck.h` must be updated. This script is automatically invoked by the
-  makefile in `libtsduck`.
-
-- `get-version-from-sources.py` : Extract the TSDuck version number from the
-  source files.
 
 - `install-prerequisites.sh` : This script downloads and installs all
   pre-requisite packages to build TSDuck on Linux or macOS.
