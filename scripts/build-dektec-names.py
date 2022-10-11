@@ -43,7 +43,7 @@ with open(sys.argv[2], 'w') as output:
     print('# Auto-generated file', file=output)
     print('[DtCaps]', file=output)
     if sys.argv[1] != '':
-        with open(sys.argv[1], 'r') as input:
+        with open(sys.argv[1], 'r', encoding='utf-8') as input:
             for line in input:
                 match = re.search(r'#define\s+DTAPI_CAP_.*\sDtapi::DtCaps\(([\d]+)\)\s*//\s*(.+)$', line.strip())
                 if match is not None:

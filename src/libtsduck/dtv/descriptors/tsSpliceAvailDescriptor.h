@@ -49,7 +49,7 @@ namespace ts {
     {
     public:
         // SpliceAvailDescriptor public members:
-        uint32_t identifier;         //!< Descriptor owner, 0x43554549 (“CUEI”).
+        uint32_t identifier;         //!< Descriptor owner, 0x43554549 ("CUEI").
         uint32_t provider_avail_id;  //!< Provider id.
 
         //!

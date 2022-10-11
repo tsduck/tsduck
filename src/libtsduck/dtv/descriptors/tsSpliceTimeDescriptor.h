@@ -50,7 +50,7 @@ namespace ts {
     {
     public:
         // SpliceTimeDescriptor public members:
-        uint32_t identifier;   //!< Descriptor owner, 0x43554549 (“CUEI”).
+        uint32_t identifier;   //!< Descriptor owner, 0x43554549 ("CUEI").
         uint64_t TAI_seconds;  //!< 48 bits, International Atomic Time (TAI) seconds.
         uint32_t TAI_ns;       //!< TAI nano-seconds.
         uint16_t UTC_offset;   //!< Offset in seconds from UTC time.
