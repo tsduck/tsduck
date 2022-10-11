@@ -18,6 +18,11 @@
       <NamesContents Include="$([System.IO.File]::ReadAllText(%(NamesFiles.Identity)))"/>
     </ItemGroup>
     <WriteLinesToFile File="$(OutDir)tsduck.names" Lines="@(NamesContents)" Overwrite="true"/>
+    <!-- Build tsduck.dektec.names from DTAPI -->
+    <Exec Condition="'$(DtapiIncludePath)'!=''"
+          Command="$(TSDuckRootDir)scripts\build-dektec-names.py '$(DtapiIncludePath)\DTAPI.h' '$(OutDir)tsduck.dektec.names'"/>
+    <Exec Condition="'$(DtapiIncludePath)'==''"
+          Command="$(TSDuckRootDir)scripts\build-dektec-names.py NUL: '$(OutDir)tsduck.dektec.names'"/>
   </Target>
 
 </Project>

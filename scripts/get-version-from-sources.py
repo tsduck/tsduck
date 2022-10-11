@@ -52,7 +52,7 @@ def read(filename):
 # Get a description of the distro.
 def distro():
     if os.name == 'nt':
-        return 'Win%d' % (8 * struct.calcsize('P'))
+        return '-Win%d' % (8 * struct.calcsize('P'))
     if os.uname().sysname == 'Darwin':
         version = re.sub(r'\s', '', run(['sw_vers', '-productVersion']))
         return '.macos' + re.sub(r'\..*', '', version)

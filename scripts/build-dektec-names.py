@@ -1,4 +1,5 @@
-﻿#-----------------------------------------------------------------------------
+#!/usr/bin/env python
+#-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2022, Thierry Lelegard
@@ -26,31 +27,24 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
+# 
+#  Build the file tsduck.dektec.names, containing Dektec-specific names.
+#  Syntax: build-dektec-names.py in-file out-file
+# 
+#-----------------------------------------------------------------------------
 
-<#
- .SYNOPSIS
+import sys, re
 
-  Get the TSDuck version string from the source files.
-
- .PARAMETER Windows
-
-  Return a "version info" string for Windows executable.
-#>
-[CmdletBinding()]
-param(
-    [switch]$Windows = $false
-)
-
-$RootDir = (Split-Path -Parent $PSScriptRoot)
-$SrcDir = (Join-Path $RootDir "src")
-
-$Major = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
-$Minor = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
-$Commit = ((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
-
-if ($Windows) {
-    Write-Output "${Major}.${Minor}.${Commit}.0"
-}
-else {
-    Write-Output "${Major}.${Minor}-${Commit}"
-}
+if len(sys.argv) != 3:
+    print('Usage: %s in-file out-file' % sys.argv[0], file=sys.stderr)
+    exit(1)
+    
+with open(sys.argv[2], 'w') as output:
+    print('# Auto-generated file', file=output)
+    print('[DtCaps]', file=output)
+    if sys.argv[1] != '':
+        with open(sys.argv[1], 'r') as input:
+            for line in input:
+                match = re.search(r'#define\s+DTAPI_CAP_.*\sDtapi::DtCaps\(([\d]+)\)\s*//\s*(.+)$', line.strip())
+                if match is not None:
+                    print('%s = %s' % (match.group(1), match.group(2)), file=output)
