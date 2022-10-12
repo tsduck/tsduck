@@ -66,9 +66,6 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
-    private:
-        static UString CompatibleProfileLevelSet(uint8_t value);
-
     protected:
         // Inherited methods
         virtual DID extendedTag() const override;
