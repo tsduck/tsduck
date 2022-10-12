@@ -180,8 +180,8 @@ jobs:
     - name: Check if rebuild is necessary
       run: |
         remote_version=$(curl -sL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
-        version=$(scripts/get-version-from-sources.sh)
-        fullversion=$(scripts/get-version-from-sources.sh --full)
+        version=$(scripts/get-version-from-sources.py)
+        fullversion=$(scripts/get-version-from-sources.py --full)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
         echo "VERSION=$version" >>$GITHUB_ENV
@@ -272,7 +272,7 @@ jobs:
     - name: Check if rebuild is necessary
       run: |
         remote_version=$(curl -sL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
-        version=$(scripts/get-version-from-sources.sh)
+        version=$(scripts/get-version-from-sources.py)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"
         echo "VERSION=$version" >>$GITHUB_ENV
