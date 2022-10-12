@@ -159,8 +159,8 @@ void ts::EVCVideoDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::EVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(12)) {
-        disp << margin << "Profile IDC: " << UString::Hexa(buf.getUInt8());
-        disp << ", level IDC: " << UString::Hexa(buf.getUInt8()) << std::endl;
+        disp << margin << "Profile IDC: " << DataName(MY_XML_NAME, u"profile_idc", buf.getUInt8(), NamesFlags::VALUE);
+        disp << ", level IDC: "<< DataName(MY_XML_NAME, u"level_idc", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
         disp << margin << "Toolset h: " << UString::Hexa(buf.getUInt32());
         disp << ", l: " << UString::Hexa(buf.getUInt32()) << std::endl;
         disp << margin << "Progressive source: " << UString::TrueFalse(buf.getBool());
@@ -170,10 +170,12 @@ void ts::EVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         buf.skipBits(1);
         const bool temporal = buf.getBool();
         disp << margin << "Still pictures: " << UString::TrueFalse(buf.getBool());
-        disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        disp << margin << "HDR WCG idc: " << buf.getBits<uint16_t>(2);       
+        disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl; 
+        const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
+        disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::VALUE | NamesFlags::DECIMAL);
         buf.skipBits(2);
-        disp << ", video properties: " << buf.getBits<uint16_t>(4) << std::endl;
+        const uint16_t vprop = buf.getBits<uint16_t>(4);
+        disp << ", video properties: " << DataName(MY_XML_NAME, u"video_properties", (hdr_wcg_idc << 8) | vprop) << " (" << vprop << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
             buf.skipBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
