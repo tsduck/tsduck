@@ -122,9 +122,14 @@ jobs:
     - name: Install dependencies
       run: |
         scripts/install-prerequisites.ps1 -GitHubActions -NoDoxygen -NoPause
+    - name: Dependencies check
+      run: |
+        Write-Output "Path=${env:Path}"
+        python --version
     - name: Build TSDuck
       run: |
         scripts/build.ps1 -${{ matrix.target }} -${{ matrix.configuration }} -Parallel 5 -NoLowPriority -NoPause
+        Get-ChildItem bin/${{ matrix.configuration }}-${{ matrix.suffix }}
     - name: Check built version
       run: |
         bin/${{ matrix.configuration }}-${{ matrix.suffix }}/tsversion.exe --version=all
