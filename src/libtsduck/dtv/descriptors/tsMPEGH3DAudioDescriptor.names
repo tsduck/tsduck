@@ -1,0 +1,49 @@
+[MPEGH_3D_audio_descriptor.mpegh_3da_profile_level_indication]
+Bits = 8
+# see ISO/IEC 23008-3 Table 67
+0  = reserved for ISO
+1  = Main profile L1
+2  = Main profile L2
+3  = Main profile L3
+4  = Main profile L4
+5  = Main profile L5
+6  = High profile L1
+7  = High profile L2
+8  = High profile L3
+9  = High profile L4
+10 = High profile L5
+11 = Low Complexity profile L1
+12 = Low Complexity profile L2
+13 = Low Complexity profile L3
+14 = Low Complexity profile L4
+15 = Low Complexity profile L5
+16 = Baseline profile L1
+17 = Baseline profile L2
+18 = Baseline profile L3
+19 = Baseline profile L4
+20 = Baseline profile L5
+
+[MPEGH_3D_audio_descriptor.reference_channel_layout]
+Bits = 6
+# see ISO/IEC 23001-8 clause 8.2
+0 = any
+1 = 1/0.0
+2 = 2/0.0
+3 = 3/0.0
+4 = 3/1.0
+5 = 3/2.0
+6 = 3/2.1
+7 = 5/2.1
+8 = 1+1
+9 = 2/1.0
+10 = 2/2.0
+11 = 3/3.1
+12 = 3/4.1
+13 = 11/11.2
+14 = 5/2.1
+15 = 5/5.2
+16 = 5/4.1
+17 = 6/5.1
+18 = 6/7.1
+19 = 5/6.1
+20 = 7/6.1
