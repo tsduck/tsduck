@@ -140,16 +140,18 @@ void ts::LCEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 {
     if (buf.canReadBytes(4)) {
         disp << margin << "LCEVC stream tag: " << UString::Hexa(buf.getUInt8());
-        disp << ", profile IDC: " << buf.getBits<uint16_t>(4);
+        disp << ", profile IDC: " << DataName(MY_XML_NAME, u"profile_idc", buf.getBits<uint16_t>(4), NamesFlags::VALUE);
         disp << ", level IDC: " << buf.getBits<uint16_t>(4);
         disp << ", sublevel: " << buf.getBits<uint16_t>(2) << std::endl;
         disp << margin << "Processed planes: " << UString::TrueFalse(buf.getBool());
         disp << ", picture type: " << UString::TrueFalse(buf.getBool());
         disp << ", field type: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(3);
-        disp << margin << "HDR WCG idc: " << buf.getBits<uint16_t>(2);       
+        const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
+        disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::VALUE | NamesFlags::DECIMAL);
         buf.skipBits(2);
-        disp << ", video properties: " << buf.getBits<uint16_t>(4) << std::endl;
+        const uint16_t vprop = buf.getBits<uint16_t>(4);
+        disp << ", video properties: " << DataName(MY_XML_NAME, u"video_properties", (hdr_wcg_idc << 8) | vprop) << " (" << vprop << ")" << std::endl;
     }
 }
 
