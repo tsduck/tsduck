@@ -8,7 +8,16 @@
   </ImportGroup>
 
   <Target Name="AfterBuild">
+    <!-- Copy .xml and .names into destination -->
     <Copy SourceFiles="@(LibConfigXML);@(LibConfigNames)" DestinationFolder="$(OutDir)" />
+    <!-- Build tsduck.names from all .names files -->
+    <ItemGroup>
+      <NamesFiles Include="$(TSDuckRootDir)src\libtsduck\config\tsduck.skeleton.names;
+                           $(TSDuckRootDir)src\libtsduck\base\*\*.names;
+                           $(TSDuckRootDir)src\libtsduck\dtv\*\*.names;"/>
+      <NamesContents Include="$([System.IO.File]::ReadAllText(%(NamesFiles.Identity)))"/>
+    </ItemGroup>
+    <WriteLinesToFile File="$(OutDir)tsduck.names" Lines="@(NamesContents)" Overwrite="true"/>
   </Target>
 
 </Project>

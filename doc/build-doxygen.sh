@@ -42,7 +42,7 @@ SRCDIR="$ROOTDIR/src/libtsduck"
 mkdir -p "$DOXYDIR"
 
 # Environment variables, used in Doxyfile.
-export TS_FULL_VERSION=$("$ROOTDIR/scripts/get-version-from-sources.sh")
+export TS_FULL_VERSION=$("$ROOTDIR/scripts/get-version-from-sources.py")
 export DOT_PATH=$(which dot 2>/dev/null)
 [[ -n "DOT_PATH" ]] && export HAVE_DOT=YES || export HAVE_DOT=NO
 export DOXY_INCLUDE_PATH=$(find "$SRCDIR" -type d | tr '\n' ' ')

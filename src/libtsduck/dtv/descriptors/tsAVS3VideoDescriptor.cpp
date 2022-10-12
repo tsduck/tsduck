@@ -157,133 +157,23 @@ void ts::AVS3VideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::AVS3VideoDescriptor::Avs3Profile(uint8_t pi)
-{
-    // T/AI 109.2, table B.1
-    switch (pi) {
-        case 0x20: return u"Main-8";
-        case 0x22: return u"Main-10";
-        case 0x30: return u"High-8";
-        case 0x32: return u"High-10";
-        default: return u"unknown";
-    }
-}
-
-ts::UString ts::AVS3VideoDescriptor::Avs3Level(uint8_t li)
-{
-    // T/AI 109.2, table B.2
-    switch (li) {
-        case 0x10: return u"2.0.15";
-        case 0x12: return u"2.0.30";
-        case 0x14: return u"2.0.60";
-        case 0x20: return u"4.0.30";
-        case 0x22: return u"4.0.60";
-        case 0x40: return u"6.0.30";
-        case 0x42: return u"6.2.30";
-        case 0x41: return u"6.4.30";
-        case 0x43: return u"6.6.30";
-        case 0x44: return u"6.0.60";
-        case 0x46: return u"6.2.60";
-        case 0x45: return u"6.4.60";
-        case 0x47: return u"6.6.60";
-        case 0x48: return u"6.0.120";
-        case 0x4A: return u"6.2.120";
-        case 0x49: return u"6.4.120";
-        case 0x4B: return u"6.6.120";
-        case 0x50: return u"8.0.30";
-        case 0x52: return u"8.2.30";
-        case 0x51: return u"8.4.30";
-        case 0x53: return u"8.6.30";
-        case 0x54: return u"8.0.60";
-        case 0x56: return u"8.2.60";
-        case 0x55: return u"8.4.60";
-        case 0x57: return u"8.6.60";
-        case 0x58: return u"8.0.120";
-        case 0x5A: return u"8.2.120";
-        case 0x59: return u"8.4.120";
-        case 0x5B: return u"8.6.120";
-        case 0x60: return u"10.0.30";
-        case 0x62: return u"10.2.30";
-        case 0x61: return u"10.4.30";
-        case 0x63: return u"10.6.30";
-        case 0x64: return u"10.0.60";
-        case 0x66: return u"10.2.60";
-        case 0x65: return u"10.4.60";
-        case 0x67: return u"10.6.60";
-        case 0x68: return u"10.0.120";
-        case 0x6A: return u"10.2.120";
-        case 0x69: return u"10.4.120";
-        case 0x6B: return u"10.6.120";
-        default: return u"unknown";
-    }
-}
-
-ts::UString ts::AVS3VideoDescriptor::AVS3FrameRate(uint16_t fr)
-{
-    // T/AI 109.2, table 48
-    switch (fr) {
-        case 0: return u"forbidden";
-        case 1: return u"24/1.001";
-        case 2: return u"24";
-        case 3: return u"25";
-        case 4: return u"20/1.001";
-        case 5: return u"30";
-        case 6: return u"50";
-        case 7: return u"60/1.001";
-        case 8: return u"60";
-        case 9: return u"100";
-        case 10: return u"120";
-        case 11: return u"200";
-        case 12: return u"240";
-        case 13: return u"400";
-        case 14: return u"120/1.001";
-        default: return u"unknown";
-    }
-}
-
-ts::UString ts::AVS3VideoDescriptor::AVS3SamplePrecision(uint16_t sp)
-{
-    // T/AI 109.2, table 45
-    switch (sp) {
-        case 0: return u"forbidden";
-        case 1: return u"8-bit";
-        case 2: return u"10-bit";
-        default: return u"unknown";
-    }
-}
-
-ts::UString ts::AVS3VideoDescriptor::Avs3ChromaFormat(uint16_t cf)
-{
-    // T/AI 109.2, table 44
-    switch (cf) {
-        case 1: return u"4:2:0"; 
-//      case 2: return u"4:2:2";   // not currently permitted in T/AI 109.2
-        default: return u"unknown";
-    }
-}
-
 void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(8)) {
-        uint8_t t1 = buf.getUInt8();
-        disp << margin << "Profile ID: " << AVS3VideoDescriptor::Avs3Profile(t1) << " (" << UString::Hexa(t1, 2 * sizeof(uint8_t));
-        t1 = buf.getUInt8();
-        disp << "), Level ID: " << AVS3VideoDescriptor::Avs3Level(t1) << " (" << UString::Hexa(t1, 2 * sizeof(uint8_t));
-        disp << "), Multiple frame rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        uint16_t t3 = buf.getBits<uint16_t>(4);
-        uint16_t t4 = buf.getBits<uint16_t>(3);
-        disp << margin << "Frame rate code: " << AVS3VideoDescriptor::AVS3FrameRate(t3) << " (" << t3;
-        disp << "), Sample precision: " << AVS3VideoDescriptor::AVS3SamplePrecision(t4) << " (" << t4 << ")";
-        t4 = buf.getBits<uint16_t>(2);
-        disp << ", Chroma format: " << AVS3VideoDescriptor::Avs3ChromaFormat(t4) << " (" << t4 << ")" << std::endl;
+        disp << margin << "Profile ID: " << DataName(MY_XML_NAME, u"profile", buf.getUInt8(), NamesFlags::VALUE);
+        disp << ", Level ID: " << DataName(MY_XML_NAME, u"level", buf.getUInt8(), NamesFlags::VALUE);
+        disp << ", Multiple frame rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
+        disp << margin << "Frame rate code: " << DataName(MY_XML_NAME, u"frame_rate", buf.getBits<uint8_t>(4), NamesFlags::VALUE | NamesFlags::DECIMAL);
+        disp << ", Sample precision: " << DataName(MY_XML_NAME, u"sample_precision", buf.getBits<uint8_t>(3), NamesFlags::VALUE | NamesFlags::DECIMAL);
+        disp << ", Chroma format: " << DataName(MY_XML_NAME, u"chroma_format", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         disp << margin << "Temporal ID: " << UString::TrueFalse(buf.getBool());
         disp << ", TD mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Library stream: " << UString::TrueFalse(buf.getBool());
         disp << ", Library picture enable: " << UString::TrueFalse(buf.getBool()) << std::endl;
         buf.skipBits(2);
-        uint8_t cp = buf.getUInt8();
-        uint8_t tc = buf.getUInt8();
-        uint8_t mc = buf.getUInt8();
+        const uint8_t cp = buf.getUInt8();
+        const uint8_t tc = buf.getUInt8();
+        const uint8_t mc = buf.getUInt8();
         disp << margin << UString::Format(u"Colour primaries: %d, Transfer characteristics: %d, Matrix coefficients: %d", {cp, tc, mc}) << std::endl;
         buf.skipBits(8);
     }

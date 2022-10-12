@@ -42,9 +42,6 @@ files in XML format).
 - `build-tsduck-header.ps1` : This script builds the `tsduck.h` header file which
   includes all public headers of the library. See `build-tsduck-header.py`.
 
-- `get-version-from-sources.ps1` : Extract the TSDuck version number from the
-  source files.
-
 - `cleanup.ps1` : This script does a complete cleanup of the directory tree,
   removing all generated or temporary files. See `cleanup.py`.
 
@@ -84,7 +81,7 @@ files in XML format).
   `tsduck.h` must be updated. This script is automatically invoked by the
   makefile in `libtsduck`.
 
-- `get-version-from-sources.sh` : Extract the TSDuck version number from the
+- `get-version-from-sources.py` : Extract the TSDuck version number from the
   source files.
 
 - `install-prerequisites.sh` : This script downloads and installs all
