@@ -49,7 +49,7 @@ namespace ts {
     {
     public:
         // SpliceDTMFDescriptor public members:
-        uint32_t identifier;  //!< Descriptor owner, 0x43554549 (“CUEI”).
+        uint32_t identifier;  //!< Descriptor owner, 0x43554549 ("CUEI").
         uint8_t  preroll;     //!< Pre-roll time in tenths of seconds.
         UString  DTMF;        //!< Dial string (only '*', '#' and '0'-'9' are allowed).
 

@@ -46,13 +46,13 @@ def run(cmd, err=subprocess.STDOUT):
 
 # Get the content of a text file.
 def read(filename):
-    with open(filename, 'r') as f:
+    with open(filename, 'r', encoding='utf-8') as f:
         return f.read()
 
 # Get a description of the distro.
 def distro():
     if os.name == 'nt':
-        return 'Win%d' % (8 * struct.calcsize('P'))
+        return '-Win%d' % (8 * struct.calcsize('P'))
     if os.uname().sysname == 'Darwin':
         version = re.sub(r'\s', '', run(['sw_vers', '-productVersion']))
         return '.macos' + re.sub(r'\..*', '', version)

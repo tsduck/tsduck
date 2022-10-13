@@ -43,13 +43,14 @@ TABLES_DEST  = $(BINDIR)/tsduck.tables.model.xml
 NAMES_SRC    = tsduck.skeleton.names
 NAMES_SUBS   = $(wildcard ../base/*/*.names ../dtv/*/*.names)
 NAMES_DEST   = $(BINDIR)/tsduck.names
+DEKTEC_DEST  = $(BINDIR)/tsduck.dektec.names
 
 # Main build targets.
 # The complete signalization model, tsduck.tables.model.xml, can be generated only when tsxml is generated.
 
 .PHONY: post-build
 
-default: $(CONFIGS_DEST) $(NAMES_DEST)
+default: $(CONFIGS_DEST) $(NAMES_DEST) $(DEKTEC_DEST)
 	@true
 post-build: $(TABLES_DEST)
 	@true
@@ -71,22 +72,17 @@ $(NAMES_DEST): $(NAMES_SRC) $(NAMES_SUBS)
 	@echo '  [GEN] $(notdir $@)'; \
 	cat $(NAMES_SRC) $(NAMES_SUBS) >$@
 
-# Generate the Dektec names file from DTAPI.h.
-
-tsduck.dektec.names: $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
-	@echo '  [GEN] $@'; \
-	echo '# Auto-generated file' >$@; \
-	echo '[DtCaps]' >>$@; \
-	grep '#define *DTAPI_CAP_.* Dtapi::DtCaps([0-9][0-9]*) *//' '$<' | \
-	    sed -e 's|.*Dtapi::DtCaps(||' -e 's|) *// *| = |' -e 's| *\r*$$||' >>$@
+$(DEKTEC_DEST): $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
+	@echo '  [GEN] $(notdir $@)'; \
+	$(SCRIPTSDIR)/build-dektec-names.py $(if $<,$<,/dev/null) $@
 
 # Install configuration files.
 
 .PHONY: install-tools install-post-build install-devel install-linux-config
 
-install-tools: tsduck.dektec.names $(NAMES_DEST) $(if $(MACOS),,install-linux-config)
+install-tools: $(NAMES_DEST) $(DEKTEC_DEST) $(if $(MACOS),,install-linux-config)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
-	install -m 644 $(CONFIGS_SRC) $(NAMES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	install -m 644 $(CONFIGS_SRC) $(NAMES_DEST) $(DEKTEC_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
 install-post-build: $(TABLES_DEST)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	install -m 644 $(TABLES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck

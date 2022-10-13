@@ -61,18 +61,16 @@ else {
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
 $DocDir = $PSScriptRoot
-$SrcDir = (Join-Path $RootDir "src")
+$SrcDir = "$RootDir\src"
 
 # Input and output file names.
-$DocIn = (Join-Path $DocDir "tsduck.docx")
-$DocOut = (Join-Path $DocDir "tsduck.pdf")
+$DocIn = "$DocDir\tsduck.docx"
+$DocOut = "$DocDir\tsduck.pdf"
 
 # Get TSDuck version. Increment commit count since we are going to create a new version.
-$Major = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MAJOR ").ToString() -replace "#define TS_VERSION_MAJOR *","")
-$Minor = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_VERSION_MINOR ").ToString() -replace "#define TS_VERSION_MINOR *","")
-$Commit = [int]((Get-Content $SrcDir\libtsduck\tsVersion.h | Select-String -Pattern "#define TS_COMMIT ").ToString() -replace "#define TS_COMMIT *","")
-$Commit = $Commit + 1
-$Version = "${Major}.${Minor}-${Commit}"
+$Version = (& "$RootDir\scripts\get-version-from-sources.py" --main)
+$Commit = [int](& "$RootDir\scripts\get-version-from-sources.py" --commit) + 1
+$Version = "${Version}-${Commit}"
 
 # The following properties are set in the document:
 # - Version (e.g. 3.9-575)

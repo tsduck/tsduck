@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- A target to copy .xml and .names into destination -->
+
+  <Target Name="CopyConfig">
+    <ItemGroup>
+      <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\config\*.xml"
+                      Exclude="$(TSDuckRootDir)src\libtsduck\config\*.skeleton.xml"/>
+      <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\config\*.names"
+                      Exclude="$(TSDuckRootDir)src\libtsduck\config\*.skeleton.names"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(LibConfigXML);@(LibConfigNames)" DestinationFolder="$(OutDir)" />
+  </Target>
+
+  <!-- A target to build tsduck.names from all .names files -->
+
+  <Target Name="BuildNames">
+    <ItemGroup>
+      <NamesFiles Include="$(TSDuckRootDir)src\libtsduck\config\tsduck.skeleton.names;
+                           $(TSDuckRootDir)src\libtsduck\base\*\*.names;
+                           $(TSDuckRootDir)src\libtsduck\dtv\*\*.names;"/>
+      <NamesContents Include="$([System.IO.File]::ReadAllText(%(NamesFiles.Identity)))"/>
+    </ItemGroup>
+	<Message Text="Building $(OutDir)tsduck.names"/>
+    <WriteLinesToFile File="$(OutDir)tsduck.names" Lines="@(NamesContents)" Overwrite="true"/>
+  </Target>
+
+  <!-- A target to build tsduck.dektec.names from DTAPI -->
+
+  <Target Name="DektecNames">
+    <PropertyGroup Condition="'$(DtapiIncludePath)'!=''">
+      <DektecInput>$(DtapiIncludePath)\DTAPI.h</DektecInput>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(DtapiIncludePath)'==''">
+      <DektecInput>NUL:</DektecInput>
+    </PropertyGroup>
+	<Message Text="Building $(OutDir)tsduck.dektec.names"/>
+    <Exec ConsoleToMSBuild='true'
+          Command='"$(TSDuckRootDir)scripts\build-dektec-names.py" "$(DektecInput)" "$(OutDir)tsduck.dektec.names"'>
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
+    </Exec>
+  </Target>
+
+  <Target Name='AfterBuild'>
+    <CallTarget Targets='CopyConfig'/>
+    <CallTarget Targets='BuildNames'/>
+    <CallTarget Targets='DektecNames'/>
+  </Target>
+
+</Project>

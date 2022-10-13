@@ -63,7 +63,7 @@ if (-not $JavaBin) {
 [void] (New-Directory $BinDir)
 
 # Build the manifest for the TSDuck JAR.
-$Version = (& $PSScriptRoot\get-version-from-sources.ps1)
+$Version = (& $PSScriptRoot\get-version-from-sources.py)
 Get-Content "$SrcRoot\Manifest.txt" |
     ForEach-Object {
         $_ -replace "{{VERSION}}","$Version"
