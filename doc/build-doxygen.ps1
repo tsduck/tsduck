@@ -73,12 +73,9 @@ $DoxyFile = "$PSScriptRoot\Doxyfile"
 
 # Get the product version.
 if (-not $Version) {
-    $VersionFile = "$SrcDir\libtsduck\tsVersion.h"
-    $VersionMajor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MAJOR  *') -replace '^ *#define  *TS_VERSION_MAJOR  *' -replace ' *$'
-    $VersionMinor = (Get-Content $VersionFile | Select-String '^ *#define  *TS_VERSION_MINOR  *') -replace '^ *#define  *TS_VERSION_MINOR  *' -replace ' *$'
-    $VersionCommit = (Get-Content $VersionFile | Select-String '^ *#define  *TS_COMMIT  *') -replace '^ *#define  *TS_COMMIT  *' -replace ' *$'
+    $Version = (& "$RootDir\scripts\get-version-from-sources.py")
 }
-$env:TS_FULL_VERSION = "${VersionMajor}.${VersionMinor}-${VersionCommit}"
+$env:TS_FULL_VERSION = $Version
 
 # List of include directories.
 $env:DOXY_INCLUDE_PATH = (Get-ChildItem "$SrcDir\libtsduck" -Recurse -Directory | ForEach-Object { $_.FullName }) -join " "
@@ -122,6 +119,9 @@ if ($DoxyExe) {
         [void](New-Item -Path $DoxyDir -ItemType Directory -Force)
     }
     $DoxyDir = (Resolve-Path $DoxyDir)
+
+	# Generate a summary file of all signalization.
+    & "$SrcDir\doc\signalization-gen.py"
 
     # Generate documentation.
     Write-Host "Running Doxygen..."
