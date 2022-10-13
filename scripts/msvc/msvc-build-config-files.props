@@ -37,7 +37,7 @@
     </PropertyGroup>
 	<Message Text="Building $(OutDir)tsduck.dektec.names"/>
     <Exec ConsoleToMSBuild='true'
-          Command='"$(TSDuckRootDir)scripts\build-dektec-names.py" "$(DektecInput)" "$(OutDir)tsduck.dektec.names"'>
+          Command='python "$(TSDuckRootDir)scripts\build-dektec-names.py" --debug "$(DektecInput)" "$(OutDir)tsduck.dektec.names"'>
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
     </Exec>
   </Target>
