@@ -159,8 +159,8 @@ if (-not $NoBuild) {
 
 # Get version name.
 $GetVersion = (Join-Path $PSScriptRoot get-version-from-sources.py)
-$Version = (& $GetVersion)
-$VersionInfo = (& $GetVersion --windows)
+$Version = (python $GetVersion)
+$VersionInfo = (python $GetVersion --windows)
 
 # A function to build a binary installer.
 function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [string]$HeadersDir)
