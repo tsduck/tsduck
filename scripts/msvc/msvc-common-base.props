@@ -4,7 +4,7 @@
   <!-- Common base definition for all types of targets -->
 
   <PropertyGroup Label="Configuration">
-    <TSDuckRootDir>$(SolutionDir)..\..\</TSDuckRootDir>
+    <TSDuckRootDir>$([System.IO.Path]::GetFullPath('$(SolutionDir)..\..\'))</TSDuckRootDir>
     <OutDir>$(TSDuckRootDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
