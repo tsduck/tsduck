@@ -340,14 +340,14 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"passthrough", ustream_remux_passthrough},
     }));
     help(u"remux", 
-         u"remux: Lock the first PCR to keep USB transfer TS stably, TS must contain PCR to operate"
-         u"Passthrough: Bypass TS without padding NullPacket (Input bitrate = Output bitrate)");
+         u"remux: Lock the first PCR to keep USB transfer TS stable, TS must contain some PCR to operate.\n"
+         u"passthrough: Bypass TS without padding null packets (input bitrate = output bitrate).");
 
     option(u"pcradjust", 0, Enumeration({
-    {u"disable",       pcr_disable},
-    {u"adjust",        pcr_adjust},
-        }));
-    help(u"pcradjust", u" Adjust the buffer transmission speed according to different application.");
+        {u"disable", pcr_disable},
+        {u"adjust",  pcr_adjust},
+    }));
+    help(u"pcradjust", u"Adjust the buffer transmission speed according to different application.");
 
     memset(&m_param, 0, sizeof(usbstream_param));
     m_param.r2param.freqkhz = 473000;

@@ -31,7 +31,7 @@
 #include "tsVersionString.h"
 #include "tsGitHubRelease.h"
 #include "tsNullReport.h"
-#include "tsCerrReport.h"
+#include "tsVatekUtils.h"
 #include "tsSysInfo.h"
 #include "tsSysUtils.h"
 #include "tsFileUtils.h"
@@ -67,6 +67,7 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
     {u"http",     int(ts::VersionInfo::Format::HTTP)},
     {u"srt",      int(ts::VersionInfo::Format::SRT)},
     {u"rist",     int(ts::VersionInfo::Format::RIST)},
+    {u"vatek",    int(ts::VersionInfo::Format::VATEK)},
     {u"all",      int(ts::VersionInfo::Format::ALL)},
 });
 
@@ -296,6 +297,10 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The version of Dektec components.
             return GetDektecVersions();
         }
+        case Format::VATEK: {
+            // The version of Dektec components.
+            return ts::GetVatekVersion();
+        }
         case Format::HTTP: {
             // The version of the HTTP library.
             return WebRequest::GetLibraryVersion();
@@ -315,6 +320,7 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
                 u"System: " + GetVersion(Format::SYSTEM) + LINE_FEED +
                 u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
                 u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
+                u"VATek: " + GetVersion(Format::VATEK) + LINE_FEED +
                 u"Web library: " + GetVersion(Format::HTTP) + LINE_FEED +
                 u"SRT library: " + GetVersion(Format::SRT) + LINE_FEED +
                 u"RIST library: " + GetVersion(Format::RIST);
