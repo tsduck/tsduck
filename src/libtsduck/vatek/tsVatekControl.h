@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2022, Richie Chang, Vision Advance Technology Inc. (VATek)
+// Copyright (c) 2022, Vision Advance Technology Inc. (VATek)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -67,5 +67,6 @@ namespace ts {
     private:
         DuckContext _duck;
         int32_t     _dev_index;  // Vatek device index, -1 for all devices
+        int32_t     write_index;     // Vatek write FW
     };
 }

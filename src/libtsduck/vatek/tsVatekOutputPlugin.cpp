@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2022, Richie Chang, Vision Advance Technology Inc. (VATek)
+// Copyright (c) 2022, Vision Advance Technology Inc. (VATek)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -60,7 +60,6 @@ bool ts::VatekOutputPlugin::isRealTime()
 {
     return true;
 }
-
 
 //----------------------------------------------------------------------------
 // Output plugin constructor
@@ -336,17 +335,25 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"The supported modulation types depend on the device model. "
          u"The default modulation type is DVB-T.");
 
-    option(u"remux", 'r', Enumeration({
+    option(u"remux", 0, Enumeration({
         {u"remux",       ustream_remux_pcr},
         {u"passthrough", ustream_remux_passthrough},
     }));
-    help(u"remux", u"Either remux PCR values or transparently pass the TS. The default is remux.");
+    help(u"remux", 
+         u"remux: Lock the first PCR to keep USB transfer TS stably, TS must contain PCR to operate"
+         u"Passthrough: Bypass TS without padding NullPacket (Input bitrate = Output bitrate)");
+
+    option(u"pcradjust", 0, Enumeration({
+    {u"disable",       pcr_disable},
+    {u"adjust",        pcr_adjust},
+        }));
+    help(u"pcradjust", u" Adjust the buffer transmission speed according to different application.");
 
     memset(&m_param, 0, sizeof(usbstream_param));
     m_param.r2param.freqkhz = 473000;
     m_param.mode = ustream_mode_async;
     m_param.remux = ustream_remux_pcr;
-    m_param.pcradjust = pcr_adjust;
+    m_param.pcradjust = pcr_disable;
 
     m_param.async.bitrate = 0;
     m_param.async.mode = uasync_mode_cbr;
@@ -416,7 +423,6 @@ bool ts::VatekOutputPlugin::start()
     return is_vatek_success(nres);
 }
 
-
 //----------------------------------------------------------------------------
 // Output stop method
 //----------------------------------------------------------------------------
@@ -446,7 +452,6 @@ bool ts::VatekOutputPlugin::stop()
     m_param.r2param.freqkhz = 473000;
     return true;
 }
-
 
 //----------------------------------------------------------------------------
 // Output method
@@ -502,7 +507,6 @@ bool ts::VatekOutputPlugin::send(const TSPacket* pkts, const TSPacketMetadata* m
     }
 }
 
-
 //----------------------------------------------------------------------------
 // Get output bitrate
 //----------------------------------------------------------------------------
@@ -549,6 +553,7 @@ vatek_result ts::VatekOutputPlugin::configParam()
         m_param.r2param.freqkhz = uint32_t(intValue<uint64_t>(u"frequency", uint64_t(m_param.r2param.freqkhz) * 1000) / 1000);
         getIntValue(m_index, u"device", 0);
         getIntValue(m_param.remux, u"remux", m_param.remux);
+        getIntValue(m_param.pcradjust, u"pcradjust", m_param.pcradjust);
         debugParams();
     }
 
