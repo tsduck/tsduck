@@ -1,0 +1,40 @@
+[LCEVC_video_descriptor.profile_idc]
+Bits = 4
+# ISO/IEC 23094-2, Annex A.3
+0 = Main
+1 = Main 4:4:4
+
+[LCEVC_video_descriptor.hdr_wcg_idc]
+Bits = 2
+# H222.0, Table 2-134
+0 = SDR
+1 = WCG only
+2 = HDR and WCG
+3 = no indication
+
+[LCEVC_video_descriptor.video_properties]
+Bits = 16
+# Most significant byte: hdr_wcg_idc
+# Least significant byte: video_properties_tag
+# H.222.0 Table 2-135
+0x0000 = not known
+0x0001 = BT709_YCC
+0x0002 = BT709_RGB
+0x0003 = BT601_525
+0x0004 = BT601_625
+0x0005 = FR709_RGB
+# H.222.0 Table 2-136
+0x0100 = not known
+0x0101 = BT2020_YCC_NCL
+0x0102 = BT2020_RBG
+0x0103 = FR2020_RGB
+0x0104 = FRP3D34_YCC
+# H.222.0 Table 2-137
+0x0200 = not known
+0x0201 = BT2100_PQ_YCC
+0x0202 = BT2100_HLG_YCC
+0x0203 = BT2100_PQ_ICTCP
+0x0204 = BT2100_PQ_RGB
+0x0205 = BT2100_HLG_RGB
+# H.222.0 Table 2-138
+0x0300 = not known

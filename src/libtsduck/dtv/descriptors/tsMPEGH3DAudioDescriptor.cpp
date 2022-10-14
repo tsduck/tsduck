@@ -128,50 +128,18 @@ void ts::MPEGH3DAudioDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::MPEGH3DAudioDescriptor::CompatibleProfileLevelSet(uint8_t value)
-{
-    // see ISO/IEC 23008-3 Table 67
-    switch (value) {
-        case 0x00: return u"reserved for ISO";
-        case 0x01: return u"Main profile L1";
-        case 0x02: return u"Main profile L2";
-        case 0x03: return u"Main profile L3";
-        case 0x04: return u"Main profile L4";
-        case 0x05: return u"Main profile L5";
-        case 0x06: return u"High profile L1";
-        case 0x07: return u"High profile L2";
-        case 0x08: return u"High profile L3";
-        case 0x09: return u"High profile L4";
-        case 0x0A: return u"High profile L5";
-        case 0x0B: return u"Low Complexity profile L1";
-        case 0x0C: return u"Low Complexity profile L2";
-        case 0x0D: return u"Low Complexity profile L3";
-        case 0x0E: return u"Low Complexity profile L4";
-        case 0x0F: return u"Low Complexity profile L5";
-        case 0x10: return u"Baseline profile L1";
-        case 0x11: return u"Baseline profile L2";
-        case 0x12: return u"Baseline profile L3";
-        case 0x13: return u"Baseline profile L4";
-        case 0x14: return u"Baseline profile L5";
-        default: return u"reserved";
-    }
-}
-
 void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(3)) {
-        uint8_t profile_level_id = buf.getUInt8();
-        disp << margin << UString::Format(u"3D-audio profile level indication: %s (0x%X)", {CompatibleProfileLevelSet(profile_level_id), profile_level_id}) << std::endl;
+        disp << margin << "3D-audio profile level indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
         disp << margin << UString::Format(u"Interactivity enabled: %s", {buf.getBool()}) << std::endl;
         const bool compatibleProfileSetsPresent = !buf.getBool(); // bit=0 means present
         buf.skipBits(8);
-        disp << margin << UString::Format(u"Reference channel layout: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;
+        disp << margin << U"Reference channel layout: " << DataName(MY_XML_NAME, u"reference_channel_layout", buf.getBits<uint8_t>(6), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         if (compatibleProfileSetsPresent) {
             const uint8_t numCompatibleSets = buf.getUInt8();
-            for (uint8_t i = 0; buf.canRead() && i < numCompatibleSets; i++) {
-                profile_level_id = buf.getUInt8();
-                disp << margin << UString::Format(u"Compatible Set Indication: %s (0x%X)", {CompatibleProfileLevelSet(profile_level_id), profile_level_id}) << std::endl;
-            }
+            for (uint8_t i = 0; buf.canRead() && i < numCompatibleSets; i++)
+                disp << margin << "Compatible Set Indication: " << DataName(MY_XML_NAME, u"mpegh_3da_profile_level_indication", buf.getUInt8(), NamesFlags::VALUE) << std::endl;
         }
         disp.displayPrivateData(u"Reserved data", buf, NPOS, margin);
     }
