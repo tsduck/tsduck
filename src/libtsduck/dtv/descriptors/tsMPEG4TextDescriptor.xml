@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEG-4_text_descriptor
+      textFormat="uint8, required"
+      textConfigLength="uint16, required"
+      ThreeGPPBaseFormat="uint8, required"
+      profileLevel="uint8, required"
+      durationClock="uint24, required"
+      sampleDescriptionFlags="uint2, required"
+      >
+      <Compatible_3GPPFormat>
+        Decimal Content
+      </Compatible_3GPPFormat>
+      <Sample_index_and_description
+        sample_index="uint8, required"
+        textFormat="uint8, required">
+        Hexadecimal Content
+      </Sample_index_and_description>
+    </MPEG-4_text_descriptor>
+
+  </_descriptors>
+</tsduck>

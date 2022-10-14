@@ -1,0 +1,20 @@
+[MPEG-4_text_descriptor.ThreeGPPBaseFormat]
+Bits = 8
+0x10 = Timed Text as specified in 3GPP TS 26.245
+
+
+[MPEG-4_text_descriptor.profileLevel]
+Bits = 8
+0x10 = Base profile, base level
+
+
+[MPEG-4_text_descriptor.sampleDescriptionFlags]
+Bits = 2
+1 = Out-of-band only
+2 = In-band only
+3 = Both in-band and out-of-band
+
+
+[MPEG-4_text_descriptor.textFormat]
+1          = Timed Text as specified in 3GPP TS 26.245
+0xF0-=0xFE = User-private
