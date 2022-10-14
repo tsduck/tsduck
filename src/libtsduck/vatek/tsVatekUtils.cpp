@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2022, Thierry Lelegard
@@ -25,23 +25,48 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Version identification of TSDuck.
-//!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-#pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2914
+#include "tsVatekUtils.h"
+
+#if !defined(TS_NO_VATEK)
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(5027)
+#include <vatek_sdk_device.h>
+TS_POP_WARNING()
+#endif
+
+
+//-----------------------------------------------------------------------------
+// Check if this version of TSDuck was built with VATek support.
+//-----------------------------------------------------------------------------
+
+bool ts::HasVatekSupport()
+{
+#if defined(TS_NO_VATEK)
+    return false;
+#else
+    return true;
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
+// Get the version of VATek library.
+//-----------------------------------------------------------------------------
+
+ts::UString ts::GetVatekVersion()
+{
+#if defined(TS_NO_VATEK)
+    return u"This version of TSDuck was compiled without Dektec support";
+#elif !defined(VATEK_VERSION)
+    return u"3.06 or lower";
+#else
+    UString version;
+    version.format(u"libvatek version %d.%02d", {VATEK_VERSION / 10000, (VATEK_VERSION / 100) % 100});
+#if (VATEK_VERSION % 100) != 0
+    version.format(u".%02d", {VATEK_VERSION % 100});
+#endif
+    return version;
+#endif
+}

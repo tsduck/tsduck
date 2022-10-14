@@ -67,6 +67,5 @@ namespace ts {
     private:
         DuckContext _duck;
         int32_t     _dev_index;  // Vatek device index, -1 for all devices
-        int32_t     write_index;     // Vatek write FW
     };
 }

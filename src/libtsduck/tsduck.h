@@ -735,6 +735,7 @@
 #include "tsVariable.h"
 #include "tsVatekControl.h"
 #include "tsVatekOutputPlugin.h"
+#include "tsVatekUtils.h"
 #include "tsVBIDataDescriptor.h"
 #include "tsVBITeletextDescriptor.h"
 #include "tsVCT.h"

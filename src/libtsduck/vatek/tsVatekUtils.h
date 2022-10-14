@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2022, Thierry Lelegard
@@ -25,23 +25,27 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  @ingroup hardware
+//!  Some basic utilities for VATek devices.
 //!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2914
+#include "tsUString.h"
+
+namespace ts {
+    //!
+    //! Check if this version of TSDuck was built with VATek support.
+    //! @return True is VATek devices are supported.
+    //!
+    TSDUCKDLL bool HasVatekSupport();
+
+    //!
+    //! Get the version of VATek library.
+    //! @return A string describing the VATek version (or the lack of VATek support).
+    //!
+    TSDUCKDLL UString GetVatekVersion();
+}
