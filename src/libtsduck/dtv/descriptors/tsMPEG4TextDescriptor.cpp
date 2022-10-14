@@ -110,6 +110,17 @@ ts::MPEG4TextDescriptor::MPEG4TextDescriptor(DuckContext& duck, const Descriptor
     deserialize(duck, desc);
 }
 
+ts::Sample_index_and_description_type::Sample_index_and_description_type() :
+    sample_index(0),
+    SampleDescription()
+{
+}
+
+ts::TextConfig_type::TextConfig_type() :
+    textFormat(0),
+    formatSpecificTextConfig()
+{
+}
 
 //----------------------------------------------------------------------------
 // Serialization
@@ -183,7 +194,7 @@ void ts::MPEG4TextDescriptor::deserializePayload(PSIBuffer& buf)
     if (SampleDescription_carriage_flag) {
         uint8_t number_of_SampleDescriptions = buf.getUInt8();;
         for (uint8_t i = 0; i < number_of_SampleDescriptions; i++) {
-            struct Sample_index_and_desctiption_type new_sample;
+            Sample_index_and_description_type new_sample;
             new_sample.sample_index = buf.getUInt8();
             new_sample.SampleDescription.textFormat = buf.getUInt8();
             uint16_t _textConfigLength = buf.getUInt16();
