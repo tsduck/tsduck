@@ -16,5 +16,5 @@ Bits = 2
 
 
 [MPEG-4_text_descriptor.textFormat]
-1          = Timed Text as specified in 3GPP TS 26.245
-0xF0-=0xFE = User-private
+1         = Timed Text as specified in 3GPP TS 26.245
+0xF0-0xFE = User-private
