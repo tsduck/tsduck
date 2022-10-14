@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard
+// Copyright (c) 2022-, Paul Higgs
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -28,43 +28,52 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an MPEG-defined MPEGH_3D_audio_descriptor.
+//!  Representation of a TTML_subtitling_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Representation of an MPEG-defined MPEGH_3D_audio_descriptor.
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.106.
+    //! Representation of a TTML_subtitling_descriptor.
+    //! @see ETSI EN 303 560, clause 5.2.1.1.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL MPEGH3DAudioDescriptor : public AbstractDescriptor
+    class TSDUCKDLL TTMLSubtitlingDescriptor : public AbstractDescriptor
     {
     public:
-        // MPEGH3DAudioDescriptor public members:
-        uint8_t   mpegh_3da_profile_level_indication;  //!< MPEGH 3D-audio profile.
-        bool      interactivity_enabled;               //!< 3D audio stream contains elements which enables user interactivity.
-        uint8_t   reference_channel_layout;            //!< 6 bits, see "ChannelConfiguration" in ISO/IEC 23001-8.
-        ByteBlock CompatibleSetIndication;             //!< array of 8 bit values according to ISO/IEC 23008-3
-        ByteBlock reserved;                            //!< Reserved data.
+        // Public members:
+        UString              language_code;          //!< 24 bits, EN 303 560
+        uint8_t              subtitle_purpose;       //!< 6 bits, EN 303 560
+        uint8_t              TTS_suitability;        //<! 2 bits
+        std::vector<uint8_t> dvb_ttml_profile;       //!< set of 8 bit values
+        Variable<uint32_t>   qualifier;             //!< 32 bits, 
+        std::vector<uint8_t> font_id;                //!< set of 7 bit values
+        UString              service_name;
+        size_t               reserved_zero_future_use_bytes;  //<! arbitrary number of zero value bytes - not specified in EN 303 560
 
         //!
         //! Default constructor.
         //!
-        MPEGH3DAudioDescriptor();
+        TTMLSubtitlingDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        MPEGH3DAudioDescriptor(DuckContext& duck, const Descriptor& bin);
+        TTMLSubtitlingDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();
+
+    private:
+        static UString TTML_qualifier(uint32_t qualifier);
+        static UString TTML_subtitle_purpose(uint8_t purpose);
+        static UString TTML_suitability(uint8_t suitability);
 
     protected:
         // Inherited methods
