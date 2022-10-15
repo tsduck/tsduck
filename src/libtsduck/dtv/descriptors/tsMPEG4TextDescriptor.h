@@ -42,32 +42,39 @@ namespace ts {
     //! @see ITU-T H.222.0 clause 2.6.70 and ISO/IEC 14496-17
     //! @ingroup descriptor
     //!
-    
-    class TextConfig_type 
-    {
-    public:
-        uint8_t              textFormat;               //!< 8 bits, ISO/IEC 14496-17, clause 5.2
-        ByteBlock            formatSpecificTextConfig; //!< 16 bits, ISO/IEC 14496-17, clause 5.2
-        //!
-        //! Default constructor.
-        //!
-        TextConfig_type();
-    };
-
-    class Sample_index_and_description_type 
-    {
-    public:
-        uint8_t              sample_index;            //!< 8 bits, ISO/IEC 14496-17, clause 7.5
-        TextConfig_type      SampleDescription;       //!< 8 bits, ISO/IEC 14496-17, clause 7.5
-        //!
-        //! Default constructor.
-        //!
-        Sample_index_and_description_type();
-    };
-
     class TSDUCKDLL MPEG4TextDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! TextConfig entry.
+        //! @see ISO/IEC 14496-17, clause 5.2
+        //!
+        class TSDUCKDLL TextConfig_type
+        {
+        public:
+            uint8_t              textFormat;               //!< 8 bits, ISO/IEC 14496-17, clause 5.2
+            ByteBlock            formatSpecificTextConfig; //!< 16 bits, ISO/IEC 14496-17, clause 5.2
+            //!
+            //! Default constructor.
+            //!
+            TextConfig_type();
+        };
+
+        //!
+        //! Sample_index_and_description entry.
+        //! @see ISO/IEC 14496-17, clause 7.5
+        //!
+        class TSDUCKDLL Sample_index_and_description_type
+        {
+        public:
+            uint8_t              sample_index;            //!< 8 bits, ISO/IEC 14496-17, clause 7.5
+            TextConfig_type      SampleDescription;       //!< 8 bits, ISO/IEC 14496-17, clause 7.5
+            //!
+            //! Default constructor.
+            //!
+            Sample_index_and_description_type();
+        };
+
         // Public members:
         uint8_t            textFormat;              //!< 8 bits, ISO/IEC 14496-17, clause 5.2
         uint8_t            ThreeGPPBaseFormat;      //!< 8 bits, ISO/IEC 14496-17, clause 7.5

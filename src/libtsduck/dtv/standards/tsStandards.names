@@ -1,0 +1,12 @@
+[Standards]
+# Name of bits in lists of standards.
+# Private to TSDuck, must match values in file tsStandards.h.
+Bits = 16
+0x0000 = none
+0x0001 = MPEG
+0x0002 = DVB
+0x0004 = SCTE
+0x0008 = ATSC
+0x0010 = ISDB
+0x0020 = Japan
+0x0040 = ABNT

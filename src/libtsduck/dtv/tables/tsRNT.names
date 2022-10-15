@@ -1,0 +1,16 @@
+[RNT.ContextIdType]
+# In Resolution provider Notification Table
+Bits = 8
+0x00 = context_id is a bouquet_id
+0x01 = context_id is an original_network_id
+0x02 = context_id is a network_id
+0x03-0x7F = DVB reserved
+0x80-0xFF = User defined
+
+[RNT.AuthorityPolicy]
+# In Resolution provider Notification Table
+Bits = 2
+0 = CRID's are permanent
+1 = CRID's are transient
+2 = CRID's may be either transient or permanent
+3 = Reserved
