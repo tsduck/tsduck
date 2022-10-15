@@ -103,11 +103,13 @@ void ts::TTMLSubtitlingDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(!font_id.empty());
     buf.putBit(qualifier.set());
     buf.putBits(0x00, 2);
-    buf.putBits(dvb_ttml_profile.size(), 8);
-    for (auto it : dvb_ttml_profile)
+    buf.putBits(dvb_ttml_profile.size(), 4);
+    for (auto it : dvb_ttml_profile) {
         buf.putUInt8(it);
-    if (qualifier.set())
+    }
+    if (qualifier.set()) {
         buf.putUInt32(qualifier.value());
+    }
     if (!font_id.empty()) {
         buf.putBits(font_id.size(), 8);
         for (auto it : font_id) {
@@ -116,8 +118,9 @@ void ts::TTMLSubtitlingDescriptor::serializePayload(PSIBuffer& buf) const
         }
     }
     buf.putStringWithByteLength(service_name);
-    for (size_t i = 0; i < reserved_zero_future_use_bytes; i++)
+    for (size_t i = 0; i < reserved_zero_future_use_bytes; i++) {
         buf.putUInt8(0x00);
+    }
 }
 
 
@@ -128,18 +131,19 @@ void ts::TTMLSubtitlingDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::TTMLSubtitlingDescriptor::deserializePayload(PSIBuffer& buf)
 {
     buf.getLanguageCode(language_code);
-    buf.getBits(subtitle_purpose,6);
+    buf.getBits(subtitle_purpose, 6);
     buf.getBits(TTS_suitability, 2);
     bool essential_font_usage_flag = buf.getBool();
     bool qualifier_present_flag = buf.getBool();
     buf.skipBits(2);
     uint8_t dvb_ttml_profile_count;  
     buf.getBits(dvb_ttml_profile_count, 4);
-    for (uint8_t i = 0; i < dvb_ttml_profile_count; i++)
+    for (uint8_t i = 0; i < dvb_ttml_profile_count; i++) {
         dvb_ttml_profile.push_back(buf.getUInt8());
-
-    if (qualifier_present_flag)
+    }
+    if (qualifier_present_flag) {
         qualifier = buf.getUInt32();
+    }
     if (essential_font_usage_flag) {
         uint8_t t_font_id, font_count = buf.getUInt8();
         for (uint8_t i = 0; i < font_count; i++) {
@@ -149,8 +153,8 @@ void ts::TTMLSubtitlingDescriptor::deserializePayload(PSIBuffer& buf)
         }
     }
     buf.getStringWithByteLength(service_name);
-    ByteBlock reserved_zero_future_use = buf.getBytes();
-    reserved_zero_future_use_bytes = reserved_zero_future_use.size();
+    reserved_zero_future_use_bytes = buf.remainingReadBytes();
+    buf.skipBytes(reserved_zero_future_use_bytes);
 }
 
 
@@ -231,8 +235,8 @@ void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 {
     if (buf.canReadBytes(5)) {
         disp << margin << "ISO 639 language code: " << buf.getLanguageCode() << std::endl;
-        disp << margin << "Subtitle purpose: " << TTMLSubtitlingDescriptor::TTML_subtitle_purpose(buf.getBits<uint8_t>(6));
-        disp << ", TTS suitability: " << TTMLSubtitlingDescriptor::TTML_suitability(buf.getBits<uint8_t>(2)) << std::endl;
+        disp << margin << "Subtitle purpose: " << TTML_subtitle_purpose(buf.getBits<uint8_t>(6));
+        disp << ", TTS suitability: " << TTML_suitability(buf.getBits<uint8_t>(2)) << std::endl;
         bool essential_font_usage_flag = buf.getBool();
         bool qualifier_present_flag = buf.getBool();
         buf.skipBits(2);
@@ -244,16 +248,18 @@ void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
                 disp << " " << UString::Hexa(buf.getUInt8());
                 if ((i + 1) % ITEMS_PER_LINE == 0) {
                     disp << std::endl;
-                    if (i != (dvb_ttml_profile_count - 1))
+                    if (i != (dvb_ttml_profile_count - 1)) {
                         disp << margin << "                 ";
+                    }
                 }
             }
-            if (i % ITEMS_PER_LINE != 0)
+            if (i % ITEMS_PER_LINE != 0) {
                 disp << std::endl;
+            }
         }
         if (qualifier_present_flag) {
             const uint32_t qualifier = buf.getUInt32();
-            disp << margin << "Qualifier: (" << UString::Hexa(qualifier) << ") " << TTMLSubtitlingDescriptor::TTML_qualifier(qualifier) << std::endl;
+            disp << margin << "Qualifier: (" << UString::Hexa(qualifier) << ") " << TTML_qualifier(qualifier) << std::endl;
         }
         if (essential_font_usage_flag) {
             disp << margin << "Essential font IDs:";
@@ -264,16 +270,19 @@ void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
                 disp << " " << UString::Hexa(font_id);
                 if ((i + 1) % ITEMS_PER_LINE == 0) {
                     disp << std::endl;
-                    if (i != (font_count - 1))
+                    if (i != (font_count - 1)) {
                         disp << margin << "                   ";
+                    }
                 }
             }
-            if (i % ITEMS_PER_LINE != 0)
+            if (i % ITEMS_PER_LINE != 0) {
                 disp << std::endl;
+            }
         }
         UString service_name = buf.getStringWithByteLength();
-        if (!service_name.empty())
+        if (!service_name.empty()) {
             disp << margin << "Service Name: " << service_name << std::endl;
+        }
     }
 }
 
@@ -290,11 +299,11 @@ void ts::TTMLSubtitlingDescriptor::buildXML(DuckContext& duck, xml::Element* roo
      for (auto it : dvb_ttml_profile) {
          root->addElement(u"dvb_ttml_profile")->setIntAttribute(u"value", it, true);
      }
-     root->setOptionalIntAttribute(u"qualifier", qualifier);
+     root->setOptionalIntAttribute(u"qualifier", qualifier, true);
      for (auto it : font_id) {
          root->addElement(u"font_id")->setIntAttribute(u"value", it, true);
      }
-     root->setAttribute(u"service_name", service_name);
+     root->setAttribute(u"service_name", service_name, true);
      root->setIntAttribute(u"reserved_zero_future_count", reserved_zero_future_use_bytes);
 }
 

@@ -61,7 +61,7 @@ jobs:
         catch {
             $remote_version = ""
         }
-        $version = (& scripts\get-version-from-sources.py)
+        $version = (python scripts\get-version-from-sources.py)
         $rebuild = ($version -ne $remote_version).ToString().ToLower()
         $version | Out-File version.txt
         Write-Output "Current version: $version, latest on tsduck.io: $remote_version"

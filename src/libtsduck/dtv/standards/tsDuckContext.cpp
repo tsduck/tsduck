@@ -191,11 +191,6 @@ ts::PDS ts::DuckContext::actualPDS(PDS pds) const
         // Same principle for ISDB.
         return PDS_ISDB;
     }
-    else if (bool(_accStandards & Standards::AVS)) {
-        // We have previously found AVS signalization, use the fake PDS for AVS.
-        // This allows interpretation of AVS descriptors in MPEG-defined tables (eg. PMT).
-        return PDS_AVS;
-    }
     else {
         // Really no PDS to use.
         return 0;
@@ -433,10 +428,6 @@ void ts::DuckContext::defineOptions(Args& args, int cmdOptionsMask)
                   u"ATSC-specific table. For instance, when a PMT with ATSC-specific "
                   u"descriptors is found before the first ATSC MGT or VCT.");
 
-        args.option(u"avs");
-        args.help(u"avs",
-                  u"Assume that the transport stream is an AVS one with AVS-specific descriptors.");
-
         args.option(u"isdb");
         args.help(u"isdb",
                   u"Assume that the transport stream is an ISDB one. ISDB streams are normally "
@@ -641,9 +632,6 @@ bool ts::DuckContext::loadArgs(Args& args)
     if (_definedCmdOptions & CMD_STANDARDS) {
         if (args.present(u"atsc")) {
             _cmdStandards |= Standards::ATSC;
-        }
-        if (args.present(u"avs")) {
-            _cmdStandards |= Standards::AVS;
         }
         if (args.present(u"isdb") || args.present(u"japan")) {
             _cmdStandards |= Standards::ISDB;

@@ -34,10 +34,9 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsAlgorithm.h"
 
-#include <algorithm>
-
-#define MY_XML_NAME u"MPEG-4_text_descriptor"
+#define MY_XML_NAME u"MPEG4_text_descriptor"
 #define MY_CLASS ts::MPEG4TextDescriptor
 #define MY_DID ts::DID_MPEG4_TEXT
 #define MY_STD ts::Standards::DVB
@@ -68,7 +67,6 @@ const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_profileLevel_values 
 ts::MPEG4TextDescriptor::MPEG4TextDescriptor() :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     textFormat(0),
-    textConfigLength(0),
     ThreeGPPBaseFormat(0),
     profileLevel(0),
     durationClock(0),
@@ -88,7 +86,6 @@ ts::MPEG4TextDescriptor::MPEG4TextDescriptor() :
 void ts::MPEG4TextDescriptor::clearContent()
 {
     textFormat = 0;
-    textConfigLength = 0;
     ThreeGPPBaseFormat = 0;
     profileLevel = 0;
     durationClock = 0;
@@ -129,16 +126,16 @@ ts::TextConfig_type::TextConfig_type() :
 void ts::MPEG4TextDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(textFormat);
-    buf.putUInt16(textConfigLength);
+    buf.pushWriteSequenceWithLeadingLength(16); // textConfigLength
     buf.putUInt8(ThreeGPPBaseFormat);
     buf.putUInt8(profileLevel);
     buf.putUInt24(durationClock);
-    bool contains_list_of_compatible_3GPPFormats_flag = !Compatible_3GPPFormat.empty();
+    const bool contains_list_of_compatible_3GPPFormats_flag = !Compatible_3GPPFormat.empty();
     buf.putBits(contains_list_of_compatible_3GPPFormats_flag, 1);
     buf.putBits(sampleDescriptionFlags, 2);
-    bool SampleDescription_carriage_flag = !Sample_index_and_description.empty();
+    const bool SampleDescription_carriage_flag = !Sample_index_and_description.empty();
     buf.putBits(SampleDescription_carriage_flag, 1);
-    bool positioning_information_flag = scene_width.set() || scene_height.set() || horizontal_scene_offset.set() || vertical_scene_offset.set();
+    const bool positioning_information_flag = scene_width.set() || scene_height.set() || horizontal_scene_offset.set() || vertical_scene_offset.set();
     buf.putBits(positioning_information_flag, 1);
     buf.putBits(0xFF, 3);
     buf.putUInt8(layer);
@@ -146,12 +143,11 @@ void ts::MPEG4TextDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putUInt16(text_track_height);
     if (contains_list_of_compatible_3GPPFormats_flag) {
         buf.putUInt8(uint8_t(Compatible_3GPPFormat.size()));
-        for (auto it : Compatible_3GPPFormat)
-            buf.putUInt8(it);
+        buf.putBytes(Compatible_3GPPFormat);
     }
     if (SampleDescription_carriage_flag) {
         buf.putUInt8(uint8_t(Sample_index_and_description.size()));
-        for (auto it : Sample_index_and_description) {
+        for (const auto& it : Sample_index_and_description) {
             buf.putUInt8(it.sample_index);
             buf.putUInt8(it.SampleDescription.textFormat);
             buf.putUInt16(uint16_t(it.SampleDescription.formatSpecificTextConfig.size()));
@@ -159,11 +155,12 @@ void ts::MPEG4TextDescriptor::serializePayload(PSIBuffer& buf) const
         }
     }
     if (positioning_information_flag) {
-        buf.putUInt16(scene_width.set() ? scene_width.value() : 0);
-        buf.putUInt16(scene_height.set() ? scene_height.value() : 0);
-        buf.putUInt16(horizontal_scene_offset.set() ? horizontal_scene_offset.value() : 0);
-        buf.putUInt16(vertical_scene_offset.set() ? vertical_scene_offset.value() : 0);
+        buf.putUInt16(scene_width.value(0));
+        buf.putUInt16(scene_height.value(0));
+        buf.putUInt16(horizontal_scene_offset.value(0));
+        buf.putUInt16(vertical_scene_offset.value(0));
     }
+    buf.popState(); // update textConfigLength
 }
 
 
@@ -174,31 +171,30 @@ void ts::MPEG4TextDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::MPEG4TextDescriptor::deserializePayload(PSIBuffer& buf)
 {
     textFormat = buf.getUInt8();
-    textConfigLength = buf.getUInt16();
+    buf.pushReadSizeFromLength(16); // textConfigLength
     ThreeGPPBaseFormat = buf.getUInt8();
     profileLevel = buf.getUInt8();
     durationClock = buf.getUInt24();
-    bool contains_list_of_compatible_3GPPFormats_flag = buf.getBool();
+    const bool contains_list_of_compatible_3GPPFormats_flag = buf.getBool();
     buf.getBits(sampleDescriptionFlags, 2);
-    bool SampleDescription_carriage_flag = buf.getBool();
-    bool positioning_information_flag = buf.getBool();
+    const bool SampleDescription_carriage_flag = buf.getBool();
+    const bool positioning_information_flag = buf.getBool();
     buf.skipBits(3);
     layer = buf.getUInt8();
     text_track_width = buf.getUInt16();
     text_track_height = buf.getUInt16();
     if (contains_list_of_compatible_3GPPFormats_flag) {
-        uint8_t number_of_formats = buf.getUInt8();
-        for (uint8_t i = 0; i < number_of_formats; i++)
-            Compatible_3GPPFormat.push_back(buf.getUInt8());
+        const uint8_t number_of_formats = buf.getUInt8();
+        buf.getBytes(Compatible_3GPPFormat, number_of_formats);
     }
     if (SampleDescription_carriage_flag) {
-        uint8_t number_of_SampleDescriptions = buf.getUInt8();;
+        const uint8_t number_of_SampleDescriptions = buf.getUInt8();
         for (uint8_t i = 0; i < number_of_SampleDescriptions; i++) {
             Sample_index_and_description_type new_sample;
             new_sample.sample_index = buf.getUInt8();
             new_sample.SampleDescription.textFormat = buf.getUInt8();
-            uint16_t _textConfigLength = buf.getUInt16();
-            new_sample.SampleDescription.formatSpecificTextConfig = buf.getBytes(_textConfigLength);
+            const uint16_t textConfigLength = buf.getUInt16();
+            buf.getBytes(new_sample.SampleDescription.formatSpecificTextConfig, textConfigLength);
             Sample_index_and_description.push_back(new_sample);
         }
     }
@@ -208,6 +204,7 @@ void ts::MPEG4TextDescriptor::deserializePayload(PSIBuffer& buf)
         horizontal_scene_offset = buf.getUInt16();
         vertical_scene_offset = buf.getUInt16();
     }
+    buf.popState(); // end of textConfigLength
 }
 
 
@@ -218,8 +215,7 @@ void ts::MPEG4TextDescriptor::deserializePayload(PSIBuffer& buf)
 ts::UString ts::MPEG4TextDescriptor::TimedText_TS26245(ByteBlock formatSpecificTextConfig) 
 {
     // TODO - format the paramater according to 3GPP TS 26.245
-    ts::UString res(formatSpecificTextConfig);
-    return res;
+    return UString::Dump(formatSpecificTextConfig, UString::SINGLE_LINE);
 }
 
 void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
@@ -228,43 +224,52 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 
     if (buf.canReadBytes(8)) {
         disp << margin << "Text format: " << DataName(MY_XML_NAME, u"textFormat", buf.getUInt8(), NamesFlags::VALUE);
-        disp << ", config length: " << buf.getUInt16() << std::endl;
+        buf.pushReadSizeFromLength(16); // textConfigLength
+        disp << ", config length: " << buf.remainingReadBytes() << std::endl;
         disp << margin << "3GPP base format: " << DataName(MY_XML_NAME, u"ThreeGPPBaseFormat", buf.getUInt8(), NamesFlags::VALUE);
         disp << ", level: " << DataName(MY_XML_NAME, u"profileLevel", buf.getUInt8(), NamesFlags::VALUE);
-        disp << ", clock frequency: " << buf.getUInt24() << "Hz" << std::endl;
-        bool contains_list_of_compatible_3GPPFormats_flag = buf.getBool();
+        disp << ", clock frequency: " << UString::Decimal(buf.getUInt24()) << " Hz" << std::endl;
+        const bool contains_list_of_compatible_3GPPFormats_flag = buf.getBool();
         disp << margin << "Sample description: " << DataName(MY_XML_NAME, u"sampleDescriptionFlags", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
-        bool SampleDescription_carriage_flag = buf.getBool();
-        bool positioning_information_flag = buf.getBool();
+        const bool SampleDescription_carriage_flag = buf.getBool();
+        const bool positioning_information_flag = buf.getBool();
         buf.skipBits(3);
         disp << margin << "Layer: " << int(buf.getUInt8());
-        disp << ", text track width=" << buf.getUInt16() << " height=" << buf.getUInt16() << std::endl;
+        disp << ", text track width=" << buf.getUInt16() << ", height=" << buf.getUInt16() << std::endl;
         if (contains_list_of_compatible_3GPPFormats_flag) {
-            uint8_t i, number_of_formats = buf.getUInt8();
+            const uint8_t number_of_formats = buf.getUInt8();
+            uint8_t i = 0;
             disp << margin << "Compatible 3GPP formats:";
             for (i = 0; i < number_of_formats; i++) {
                 disp << " " << int(buf.getUInt8());
                 if ((i + 1) % ITEMS_PER_LINE == 0) {
                     disp << std::endl;
-                    if (i != (number_of_formats - 1))
+                    if (i != (number_of_formats - 1)) {
                         disp << margin << "                        ";
+                    }
                 }
             }
-            if (i % ITEMS_PER_LINE != 0)
+            if (i % ITEMS_PER_LINE != 0) {
                 disp << std::endl;
+            }
         }
         if (SampleDescription_carriage_flag) {
-            uint8_t i, number_of_SampleDescriptions = buf.getUInt8();
-            for (i = 0; i < number_of_SampleDescriptions; i++) {
-                disp << margin << UString::Format(u"Sample description[%d]: index=0x%X", { i, buf.getUInt8() });
-                uint8_t textFormat = buf.getUInt8();
-                disp << " format: " << DataName(MY_XML_NAME, u"textFormat", textFormat, NamesFlags::VALUE);
-                uint16_t textConfigLength = buf.getUInt16();
-                disp << " length: " << textConfigLength << std::endl;
-                if (textFormat == 0x01)
-                    disp << margin << TimedText_TS26245(buf.getBytes(textConfigLength));
-                else disp << margin << buf.getBytes(textConfigLength);
-                disp << std::endl;
+            const uint8_t number_of_SampleDescriptions = buf.getUInt8();
+            for (uint8_t i = 0; i < number_of_SampleDescriptions; i++) {
+                disp << margin << UString::Format(u"Sample description[%d]: index=0x%X", {i, buf.getUInt8()});
+                const uint8_t textFormat = buf.getUInt8();
+                disp << ", format: " << DataName(MY_XML_NAME, u"textFormat", textFormat, NamesFlags::VALUE);
+                const uint16_t textConfigLength = buf.getUInt16();
+                disp << ", length: " << textConfigLength << std::endl;
+                if (textConfigLength > 0) {
+                    if (textFormat == 0x01) {
+                        disp << margin << TimedText_TS26245(buf.getBytes(textConfigLength));
+                    }
+                    else {
+                        disp << margin << UString::Dump(buf.getBytes(textConfigLength), UString::SINGLE_LINE);
+                    }
+                    disp << std::endl;
+                }
             }
         }
         if (positioning_information_flag) {
@@ -273,6 +278,7 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
             disp << ", Scene offset horizontal=" << buf.getUInt16();
             disp << ", vertical=" << buf.getUInt16() << std::endl;
         }
+        buf.popState(); // end of textConfigLength
     }
 }
 
@@ -284,11 +290,11 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
 void ts::MPEG4TextDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"textFormat", textFormat);
-    root->setIntAttribute(u"textConfigLength", textConfigLength);
-    root->setIntAttribute(u"ThreeGPPBaseFormat", ThreeGPPBaseFormat);
-    root->setIntAttribute(u"profileLevel", profileLevel);
+    root->setIntAttribute(u"ThreeGPPBaseFormat", ThreeGPPBaseFormat, true);
+    root->setIntAttribute(u"profileLevel", profileLevel, true);
     root->setIntAttribute(u"durationClock", durationClock);
-    root->setIntAttribute(u"layer", layer);
+    root->setIntAttribute(u"sampleDescriptionFlags", sampleDescriptionFlags);
+    root->setIntAttribute(u"layer", layer, true);
     root->setIntAttribute(u"text_track_width", text_track_width);
     root->setIntAttribute(u"text_track_height", text_track_height);
     root->setOptionalIntAttribute(u"scene_width", scene_width);
@@ -296,13 +302,13 @@ void ts::MPEG4TextDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
     root->setOptionalIntAttribute(u"horizontal_scene_offset", horizontal_scene_offset);
     root->setOptionalIntAttribute(u"vertical_scene_offset", vertical_scene_offset);
     for (auto it : Compatible_3GPPFormat) {
-        root->addElement(u"Compatible_3GPPFormat")->addText(UString::Format(u"%d", { it }));
+        root->addElement(u"Compatible_3GPPFormat")->setIntAttribute(u"value", it);
     }
-    for (auto it : Sample_index_and_description) {
-        ts::xml::Element *newE = root->addElement(u"Sample_index_and_description");
-        newE->setIntAttribute(u"sample_index", it.sample_index);
-        newE->setIntAttribute(u"textFormat", it.SampleDescription.textFormat);
-        newE->addHexaText(it.SampleDescription.formatSpecificTextConfig);
+    for (const auto& it : Sample_index_and_description) {
+        xml::Element* e = root->addElement(u"Sample_index_and_description");
+        e->setIntAttribute(u"sample_index", it.sample_index);
+        e->setIntAttribute(u"textFormat", it.SampleDescription.textFormat);
+        e->addHexaText(it.SampleDescription.formatSpecificTextConfig, true);
     }
 }
 
@@ -317,11 +323,13 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
     xml::ElementVector Sample_index_and_description_children;
     bool ok =
         element->getIntAttribute(textFormat, u"textFormat", true) &&
-        element->getIntAttribute(textConfigLength, u"textConfigLength", true) &&
         element->getIntAttribute(ThreeGPPBaseFormat, u"ThreeGPPBaseFormat", true) &&
         element->getIntAttribute(profileLevel, u"profileLevel", true) &&
-        element->getIntAttribute(durationClock, u"durationClock", true) &&
-        element->getIntAttribute(sampleDescriptionFlags, u"sampleDescriptionFlags", true) &&
+        element->getIntAttribute(durationClock, u"durationClock", true, 0, 0, 0x00FFFFFF) &&
+        element->getIntAttribute(sampleDescriptionFlags, u"sampleDescriptionFlags", true, 0, 0, 3) &&
+        element->getIntAttribute(layer, u"layer", true) &&
+        element->getIntAttribute(text_track_width, u"text_track_width", true) &&
+        element->getIntAttribute(text_track_height, u"text_track_height", true) &&
         element->getOptionalIntAttribute(scene_width, u"scene_width") &&
         element->getOptionalIntAttribute(scene_height, u"scene_height") &&
         element->getOptionalIntAttribute(horizontal_scene_offset, u"horizontal_scene_offset") &&
@@ -329,34 +337,39 @@ bool ts::MPEG4TextDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getChildren(Compatible_3GPPFormat_children, u"Compatible_3GPPFormat") &&
         element->getChildren(Sample_index_and_description_children, u"Sample_index_and_description");
 
-    if (std::find(allowed_3GPPBaseFormat_values.begin(), allowed_3GPPBaseFormat_values.end(), ThreeGPPBaseFormat) == allowed_3GPPBaseFormat_values.end()) {
-        element->report().error(u"line %d: in <%s>, attribute 'ThreeGPPBaseFormat' has a reserved value (0x%X)", { element->lineNumber(), element->name(), ThreeGPPBaseFormat });
+    if (!Contains(allowed_3GPPBaseFormat_values, ThreeGPPBaseFormat)) {
+        element->report().error(u"line %d: in <%s>, attribute 'ThreeGPPBaseFormat' has a reserved value (0x%X)", {element->lineNumber(), element->name(), ThreeGPPBaseFormat});
         ok = false;
     }
-    if (std::find(allowed_profileLevel_values.begin(), allowed_profileLevel_values.end(), profileLevel) == allowed_profileLevel_values.end()) {
-        element->report().error(u"line %d: in <%s>, attribute 'profileLevel' has a reserved value (%d)", { element->lineNumber(), element->name(), profileLevel });
+    if (!Contains(allowed_profileLevel_values, profileLevel)) {
+        element->report().error(u"line %d: in <%s>, attribute 'profileLevel' has a reserved value (%d)", {element->lineNumber(), element->name(), profileLevel});
         ok = false;
     }
-    uint8_t num_optionals = scene_width.set() + scene_height.set() + horizontal_scene_offset.set() + vertical_scene_offset.set();
+    const uint8_t num_optionals = scene_width.set() + scene_height.set() + horizontal_scene_offset.set() + vertical_scene_offset.set();
     if (ok && (num_optionals > 0 && num_optionals < 4)) {
-        element->report().error(u"line %d: in <%s>, attributes 'scene_width', 'scene_height', 'horizontal_scene_offset' and 'vertical_scene_offset' must all be present or all omitted", { element->lineNumber(), element->name() });
+        element->report().error(u"line %d: in <%s>, attributes 'scene_width', 'scene_height', 'horizontal_scene_offset' and 'vertical_scene_offset' must all be present or all omitted", {element->lineNumber(), element->name()});
         ok = false;
     }
     for (auto it : Compatible_3GPPFormat_children) {
-        uint8_t value;
-        ok = it->value().UString::scan(u"%d", { &value });
-        if (std::find(allowed_3GPPBaseFormat_values.begin(), allowed_3GPPBaseFormat_values.end(), value) == allowed_3GPPBaseFormat_values.end()) {
-            element->report().error(u"line %d: in <%s>, element 'Compatible_3GPPFormat' has a reserved value (0x%X)", { element->lineNumber(), element->name(), value });
+        uint8_t value = 0;
+        ok &= it->getIntAttribute(value, u"value", true);
+        if (!Contains(allowed_3GPPBaseFormat_values, value)) {
+            element->report().error(u"line %d: in <%s>, element 'Compatible_3GPPFormat' has a reserved value (0x%X)", {element->lineNumber(), element->name(), value});
             ok = false;
         }
+        Compatible_3GPPFormat.push_back(value);
     }
     for (auto it : Sample_index_and_description_children) {
-        uint8_t value;
-        ok = it->getIntAttribute(value, u"textFormat");
-        if (ok && std::find(allowed_textFormat_values.begin(), allowed_textFormat_values.end(), value) == allowed_textFormat_values.end()) {
-            element->report().error(u"line %d: in <%s>, attribute 'textFormat' has a reserved value (0x%X)", { element->lineNumber(), element->name(), value });
+        Sample_index_and_description_type sample;
+        ok = ok &&
+             it->getIntAttribute(sample.sample_index, u"sample_index", true) &&
+             it->getIntAttribute(sample.SampleDescription.textFormat, u"textFormat") &&
+             it->getHexaText(sample.SampleDescription.formatSpecificTextConfig);
+        if (ok && !Contains(allowed_textFormat_values, sample.SampleDescription.textFormat)) {
+            element->report().error(u"line %d: in <%s>, attribute 'textFormat' has a reserved value (0x%X)", {element->lineNumber(), element->name(), sample.SampleDescription.textFormat});
             ok = false;
         }
+        Sample_index_and_description.push_back(sample);
     }
     return ok;
 }

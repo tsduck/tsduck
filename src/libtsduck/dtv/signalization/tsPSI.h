@@ -334,7 +334,7 @@ namespace ts {
         PDS_OFCOM     = 0x0000233A, //!< Private data specifier for DTT UK (OFCOM, formerly ITC).
         PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
         PDS_ISDB      = 0x49534442, //!< Fake private data specifier for ISDB descriptors (value is "ISDB" in ASCII).
-        PDS_AVS       = 0x41565333, //!< Fake private data specifier for AVS descriptors (value is "AVS3" in ASCII).
+        PDS_AVS       = 0x41565356, //!< Private data specifier for AVS Working Group of China (value is "AVSV" in ASCII).
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
     };
 
@@ -662,6 +662,10 @@ namespace ts {
         DID_LOGICAL_CHANNEL_SKY = 0xB1, //!< DID for BskyB logical_channel_number_by_region_descriptor
         DID_SERVICE_SKY         = 0xB2, //!< DID for BskyB service_descriptor
 
+        // Valid in DVB context after PDS_AVS private_data_specifier
+
+        DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
+
         // Valid in ATSC / SCTE context:
 
         DID_ATSC_STUFFING       = 0x80, //!< DID for ATSC stuffing_descriptor
@@ -752,10 +756,6 @@ namespace ts {
         DID_ISDB_EMERGENCY_INFO = 0xFC, //!< DID for ISDB Emergency information descriptor
         DID_ISDB_DATA_COMP      = 0xFD, //!< DID for ISDB Data component descriptor
         DID_ISDB_SYSTEM_MGMT    = 0xFE, //!< DID for ISDB System management descriptor
-
-        // Valid in AVS context (Chinese Audio Video Systems).
-
-        DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
     };
 
 
