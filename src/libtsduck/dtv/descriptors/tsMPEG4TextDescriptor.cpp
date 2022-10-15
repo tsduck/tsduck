@@ -263,7 +263,9 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
                 disp << ", length: " << textConfigLength << std::endl;
                 if (textConfigLength > 0) {
                     if (textFormat == 0x01) {
-                        disp << margin << TimedText_TS26245(buf.getBytes(textConfigLength));
+                        // Need to extract string first because of issue with MSVC in C++20 mode.
+                        const UString line(TimedText_TS26245(buf.getBytes(textConfigLength)));
+                        disp << margin << line;
                     }
                     else {
                         disp << margin << UString::Dump(buf.getBytes(textConfigLength), UString::SINGLE_LINE);
