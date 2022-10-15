@@ -281,7 +281,6 @@ ts::PIDClass ts::PMT::Stream::getClass(const DuckContext& duck) const
 ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
 {
     const bool atsc = bool(duck.standards() & Standards::ATSC);
-    const bool avs = bool(duck.standards() & Standards::AVS);
 
     // Try classes of stream types.
     if (StreamTypeIsAVC(stream_type)) {
@@ -330,6 +329,7 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
 
     // Look up descriptors until one indicates something useful.
     for (size_t index = 0; index < descs.count(); ++index) {
+        const PDS pds = descs.privateDataSpecifier(index);
         const DescriptorPtr& dsc(descs[index]);
         if (!dsc.isNull() && dsc->isValid()) {
             switch (dsc->tag()) {
@@ -363,7 +363,7 @@ ts::CodecType ts::PMT::Stream::getCodec(const DuckContext& duck) const
                 case DID_VBI_TELETEXT:
                     return CodecType::TELETEXT;
                 case DID_AVS3_VIDEO:
-                    if (avs) {
+                    if (pds == PDS_AVS) {
                         return CodecType::AVS3;
                     }
                     break;

@@ -135,7 +135,7 @@ void ts::MPEGH3DAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
         disp << margin << UString::Format(u"Interactivity enabled: %s", {buf.getBool()}) << std::endl;
         const bool compatibleProfileSetsPresent = !buf.getBool(); // bit=0 means present
         buf.skipBits(8);
-        disp << margin << U"Reference channel layout: " << DataName(MY_XML_NAME, u"reference_channel_layout", buf.getBits<uint8_t>(6), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
+        disp << margin << "Reference channel layout: " << DataName(MY_XML_NAME, u"reference_channel_layout", buf.getBits<uint8_t>(6), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         if (compatibleProfileSetsPresent) {
             const uint8_t numCompatibleSets = buf.getUInt8();
             for (uint8_t i = 0; buf.canRead() && i < numCompatibleSets; i++)

@@ -4,16 +4,19 @@
     
     <!-- note each byte of the ISO_639_langiuage_code represents an ASCII character -->
     <TTML_subtitling_descriptor
-      ISO_639_language_code="uint24, required" 
-      subtitle_purpose="uint6, required"
-      TTS_suitability="uint2, required"
-      qualifier="uint32, optional"
-      service_name="string, optional"
-      reserved_zero_future_count="uint8, required">
-      <dvb_ttml_profile 
-        value="uint8, required"/>
-      <font_id
-        value="uint7, required"/>
+        ISO_639_language_code="char3, required" 
+        subtitle_purpose="uint6, required"
+        TTS_suitability="uint2, required"
+        qualifier="uint32, optional"
+        service_name="string, optional"
+        reserved_zero_future_count="uint8, default=0">
+
+      <!-- one per dvb_ttml_profile value -->
+      <dvb_ttml_profile value="uint8, required"/>
+
+      <!-- one per font_id value -->
+      <font_id value="uint7, required"/>
+
     </TTML_subtitling_descriptor>
 
   </_descriptors>

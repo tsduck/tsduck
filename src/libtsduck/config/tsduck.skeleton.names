@@ -33,7 +33,6 @@ Bits = 16
 0x0010 = ISDB
 0x0020 = Japan
 0x0040 = ABNT
-0x0080 = AVS
 
 [TableId]
 # MPEG table id: 0xsssscctt with
@@ -330,7 +329,7 @@ Bits = 32
 0x00600000 = Rhône Vision Cable
 0x41545343 = ATSC (fake PDS for ATSC descriptors)
 0x41555300 = Foxtel Management
-0x41565333 = AVS (fake PDS for AVS descriptors)
+0x41565356 = AVS
 0x44414E59 = NDS
 0x46524549 = NDS
 0x46534154 = BBC
@@ -665,7 +664,7 @@ Bits = 8
 0x00000010_86 = EICTA Stream Identifier
 0x00000010_88 = HD Simulcast Logical Channel Number
 # With PDS for EACEM/EICTA.
-# Descriptors are in defined in IEC/CENELEC 62216-1 "Baseline terrestrial receiver specification".
+# Descriptors are defined in IEC/CENELEC 62216-1 "Baseline terrestrial receiver specification".
 0x00000028_83 = Logical Channel Number
 0x00000028_84 = Preferred Name List
 0x00000028_85 = Preferred Name Identifier
@@ -680,7 +679,7 @@ Bits = 8
 0x00000002_B1 = Sky Channel Number
 0x00000002_B2 = Sky Service
 # With PDS for OFCOM/ITC (UK DTT).
-# Descriptors are in defined in the "D-Book".
+# Descriptors are defined in the "D-Book".
 0x0000233A_83 = UK DTT Logical Channel
 0x0000233A_84 = UK DTT Preferred Name List
 0x0000233A_85 = UK DTT Preferred Name Identifier
@@ -709,8 +708,9 @@ Bits = 8
 0x41545343_AB = ATSC Genre
 0x41545343_AD = ATSC Private Information
 0x41545343_CC = ATSC E-AC-3 Audio Stream
-# AVS descriptors, using the fake PDS for AVS.
-0x41565333_D1 = AVS3 Video (T/AI 109.6)
+# With PDS for AVS.
+# Descriptors are defined by the AVS Working Group of China.
+0x41565356_D1 = AVS3 Video (T/AI 109.6)
 # ISDB descriptors, using the fake PDS for ISDB.
 # 0x67 = ISDB Material Information (WARNING: conflict with DVB)
 # 0x68 = ISDB Hybrid Information (WARNING: conflict with DVB)
