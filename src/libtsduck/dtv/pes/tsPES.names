@@ -1,0 +1,78 @@
+#
+# TSDuck - The MPEG Transport Stream Toolkit
+# Copyright (c) 2005-2022, Thierry Lelegard
+# All rights reserved.
+#
+# Configuration file containing names for tsPES.h.
+#
+
+[StreamId]
+# In PES header.
+Bits = 8
+0xBC = Program stream map
+0xBD = Private stream 1
+0xBE = Padding stream
+0xBF = Private stream 2
+0xC0 = Audio 0
+0xC1 = Audio 1
+0xC2 = Audio 2
+0xC3 = Audio 3
+0xC4 = Audio 4
+0xC5 = Audio 5
+0xC6 = Audio 6
+0xC7 = Audio 7
+0xC8 = Audio 8
+0xC9 = Audio 9
+0xCA = Audio 10
+0xCB = Audio 11
+0xCC = Audio 12
+0xCD = Audio 13
+0xCE = Audio 14
+0xCF = Audio 15
+0xD0 = Audio 16
+0xD1 = Audio 17
+0xD2 = Audio 18
+0xD3 = Audio 19
+0xD4 = Audio 20
+0xD5 = Audio 21
+0xD6 = Audio 22
+0xD7 = Audio 23
+0xD8 = Audio 24
+0xD9 = Audio 25
+0xDA = Audio 26
+0xDB = Audio 27
+0xDC = Audio 28
+0xDD = Audio 29
+0xDE = Audio 30
+0xDF = Audio 31
+0xE0 = Video 0
+0xE1 = Video 1
+0xE2 = Video 2
+0xE3 = Video 3
+0xE4 = Video 4
+0xE5 = Video 5
+0xE6 = Video 6
+0xE7 = Video 7
+0xE8 = Video 8
+0xE9 = Video 9
+0xEA = Video 10
+0xEB = Video 11
+0xEC = Video 12
+0xED = Video 13
+0xEE = Video 14
+0xEF = Video 15
+0xF0 = ECM stream
+0xF1 = EMM stream
+0xF2 = DSM-CC Data
+0xF3 = ISO-13522 Hypermedia
+0xF4 = H.222.1 type A
+0xF5 = H.222.1 type B
+0xF6 = H.222.1 type C
+0xF7 = H.222.1 type D
+0xF8 = H.222.1 type E
+0xF9 = Ancillary stream
+0xFA = MPEG-4 SL-packetized stream
+0xFB = MPEG-4 FlexMux stream
+0xFC = MPEG-7 metadata stream
+0xFD = Extended stream id
+0xFF = Program stream directory

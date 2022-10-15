@@ -1,0 +1,118 @@
+#
+# TSDuck - The MPEG Transport Stream Toolkit
+# Copyright (c) 2005-2022, Thierry Lelegard
+# All rights reserved.
+#
+# Configuration file containing names for tsAVC.h.
+#
+
+[AVCProfile]
+Bits = 8
+44 = CAVLC 4:4:4 intra profile
+66 = baseline profile
+77 = main profile
+83 = scalable baseline profile
+86 = scalable high profile
+88 = extended profile
+100 = high profile
+110 = high 10 profile
+122 = high 4:2:2 profile
+244 = high 4:4:4 predictive profile
+
+[AVCUnitType]
+# Access unit, aka "NALunit"
+Bits = 5
+0  = Unspecified
+1  = Coded slice of a non-IDR picture
+2  = Coded slice data partition A
+3  = Coded slice data partition B
+4  = Coded slice data partition C
+5  = Coded slice of an IDR picture
+6  = Supplemental enhancement information (SEI)
+7  = Sequence parameter set
+8  = Picture parameter set
+9  = Access unit delimiter
+10 = End of sequence
+11 = End of stream
+12 = Filler data
+13 = Sequence parameter set extension
+14 = Prefix NAL unit in scalable extension
+15 = Subset sequence parameter set
+16 = Depth parameter set
+19 = Coded slice without partitioning
+20 = Coded slice in scalable extension
+21 = Coded slice extension or 3D-AVC texture view
+
+[AVCSEIType]
+# AVC SEI type (see H.264 section D.1)
+Bits = 8
+0 = buffering_period
+1 = pic_timing
+2 = pan_scan_rect
+3 = filler_payload
+4 = user_data_registered_itu_t_t35
+5 = user_data_unregistered
+6 = recovery_point
+7 = dec_ref_pic_marking_repetition
+8 = spare_pic
+9 = scene_info
+10 = sub_seq_info
+11 = sub_seq_layer_characteristics
+12 = sub_seq_characteristics
+13 = full_frame_freeze
+14 = full_frame_freeze_release
+15 = full_frame_snapshot
+16 = progressive_refinement_segment_start
+17 = progressive_refinement_segment_end
+18 = motion_constrained_slice_group_set
+19 = film_grain_characteristics
+20 = deblocking_filter_display_preference
+21 = stereo_video_info
+22 = post_filter_hint
+23 = tone_mapping_info
+24 = scalability_info
+25 = sub_pic_scalable_layer
+26 = non_required_layer_rep
+27 = priority_layer_info
+28 = layers_not_present
+29 = layer_dependency_change
+30 = scalable_nesting
+31 = base_layer_temporal_hrd
+32 = quality_layer_integrity_check
+33 = redundant_pic_property
+34 = tl0_picture_index
+35 = tl_switching_point
+36 = parallel_decoding_info
+37 = mvc_scalable_nesting
+38 = view_scalability_info
+39 = multiview_scene_info
+40 = multiview_acquisition_info
+41 = non_required_view_component
+42 = view_dependency_change
+43 = operation_points_not_present
+44 = base_view_temporal_hrd
+45 = frame_packing_arrangement
+46 = multiview_view_position
+47 = display_orientation
+48 = mvcd_scalable_nesting
+49 = mvcd_view_scalability_info
+50 = depth_representation_info
+51 = three_dimensional_reference_displays_info
+52 = depth_timing
+53 = depth_sampling_info
+54 = constrained_depth_parameter_set_identifier
+56 = green_metadata
+137 = mastering_display_colour_volume
+142 = colour_remapping_info
+144 = content_light_level_info
+147 = alternative_transfer_characteristics
+148 = ambient_viewing_environment
+149 = content_colour_volume
+150 = equirectangular_projection
+151 = cubemap_projection
+154 = sphere_rotation
+155 = regionwise_packing
+156 = omni_viewport
+181 = alternative_depth_info
+200 = manifest
+201 = prefix_indication

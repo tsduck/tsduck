@@ -107,13 +107,13 @@ ts::MPEG4TextDescriptor::MPEG4TextDescriptor(DuckContext& duck, const Descriptor
     deserialize(duck, desc);
 }
 
-ts::Sample_index_and_description_type::Sample_index_and_description_type() :
+ts::MPEG4TextDescriptor::Sample_index_and_description_type::Sample_index_and_description_type() :
     sample_index(0),
     SampleDescription()
 {
 }
 
-ts::TextConfig_type::TextConfig_type() :
+ts::MPEG4TextDescriptor::TextConfig_type::TextConfig_type() :
     textFormat(0),
     formatSpecificTextConfig()
 {

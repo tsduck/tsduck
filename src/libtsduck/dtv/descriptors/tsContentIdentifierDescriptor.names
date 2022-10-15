@@ -1,0 +1,17 @@
+[content_identifier_descriptor.CRIDType]
+# In content_identifier_descriptor
+Bits = 6
+0x00 = No type defined
+0x01 = CRID references the item of content that this event is an instance of
+0x02 = CRID references a series that this event belongs to
+0x03 = CRID references a recommendation (group or single item of content)
+0x04-0x1F = DVB reserved
+0x20-0x3F = User private
+
+[content_identifier_descriptor.CRIDLocation]
+# In content_identifier_descriptor
+Bits = 2
+0 = Carried explicitly within descriptor
+1 = Carried in Content Identifier Table (CIT)
+2 = DVB reserved
+3 = DVB reserved

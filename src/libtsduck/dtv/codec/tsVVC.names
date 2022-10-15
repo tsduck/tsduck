@@ -1,0 +1,33 @@
+#
+# TSDuck - The MPEG Transport Stream Toolkit
+# Copyright (c) 2005-2022, Thierry Lelegard
+# All rights reserved.
+#
+# Configuration file containing names for tsVVC.h.
+#
+
+[VVCUnitType]
+# Access unit, aka "NALunit" for VVC
+Bits = 6
+0  = Coded slice of a trailing picture or subpicture
+1  = Coded slice of an STSA picture or subpicture
+2  = Coded slice of a RADL picture or subpicture
+3  = Coded slice of a RASL picture or subpicture
+7  = Coded slice of an IDR picture or subpicture (W-RADL)
+8  = Coded slice of an IDR picture or subpicture (N-LP)
+9  = Coded slice of a CRA picture or subpicture
+10 = Coded slice of a GDR picture or subpicture
+12 = Operating point information
+13 = Decoding capability information
+14 = Video parameter set
+15 = Sequence parameter set
+16 = Picture parameter set
+17 = Adaptation parameter set (prefix)
+18 = Adaptation parameter set (suffix)
+19 = Picture header
+20 = Access Unit delimiter
+21 = End of sequence
+22 = End of bitstream
+23 = Supplemental enhancement information (prefix)
+24 = Supplemental enhancement information (suffix)
+25 = Filler data

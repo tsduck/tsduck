@@ -894,6 +894,7 @@ namespace ts {
         ST_AC3_AUDIO        = 0x81, //!< AC-3 Audio (ATSC only)
         ST_SCTE35_SPLICE    = 0x86, //!< SCTE 35 splice information tables
         ST_EAC3_AUDIO       = 0x87, //!< Enhanced-AC-3 Audio (ATSC only)
+        ST_AVS3             = 0xD4, //!< AVS3 video
     };
 
     //!
