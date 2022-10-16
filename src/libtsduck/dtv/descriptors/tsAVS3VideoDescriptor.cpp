@@ -34,8 +34,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-
-#include <algorithm>
+#include "tsAlgorithm.h"
 
 #define MY_XML_NAME u"AVS3_video_descriptor"
 #define MY_CLASS ts::AVS3VideoDescriptor
@@ -223,11 +222,11 @@ bool ts::AVS3VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getIntAttribute(transfer_characteristics, u"transfer_characteristics", true, 0, 1, 14) &&
         element->getIntAttribute(matrix_coefficients, u"matrix_coefficients", true, 0, 1, 9); // although 3 is 'reserved'
 
-    if (std::find(valid_profile_ids.begin(), valid_profile_ids.end(), profile_id) == valid_profile_ids.end()) {
+    if (!Contains(valid_profile_ids, profile_id)) {
         element->report().error(u"'%d' is not a valid profile_id in <%s>, line %d", {profile_id, element->name(), element->lineNumber()});
         ok = false;
     }
-    if (std::find(valid_level_ids.begin(), valid_level_ids.end(), level_id) == valid_level_ids.end()) {
+    if (!Contains(valid_level_ids, level_id)) {
         element->report().error(u"'%d' is not a valid level_id in <%s>, line %d", {level_id, element->name(), element->lineNumber()});
         ok = false;
     }
