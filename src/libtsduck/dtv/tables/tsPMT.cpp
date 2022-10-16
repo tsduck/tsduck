@@ -509,11 +509,23 @@ void ts::PMT::getStreamsOrder(std::vector<PID>& order) const
 
 void ts::PMT::setStreamsOrder(const std::vector<PID>& order)
 {
+    // First pass: get initial ordering.
+    std::vector<PID> input;
+    getStreamsOrder(input);
+
+    // Second pass: Assign ordering hints to explicitly sorted PID's.
     size_t count = 0;
     for (PID pid : order) {
         const auto it = streams.find(pid);
         if (it != streams.end()) {
             it->second.order_hint = count++;
+        }
+    }
+
+    // Third pass: reassign increasing ordering numbers for unspecified PID's, same order as previously.
+    for (PID pid : input) {
+        if (!Contains(order, pid)) {
+            streams[pid].order_hint = count++;
         }
     }
 }

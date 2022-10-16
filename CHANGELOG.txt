@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.32-2865
+VERSION 3.32-2934
 
 [NEW] New commands and plugins:
 
@@ -18,9 +18,7 @@ VERSION 3.32-2865
     - Options --alt-group-id, --alt-language, --alt-name, --alt-type in input
       plugin "hls".
     - Options --merge, --attributes-merge, --sort, --uncomment in "tsxml".
-    - Options --avs in "tsanalyze", "tsdate", "tsp", "tspsi", "tsscan",
-      "tstabcomp", "tstabdump", "tstables" and plugins "analyze", "psi",
-      "rmorphan", "tables".
+    - Options --sort-languages, --sort-pids in plugin "pmt".
 
 -------------------------------------------------------------------------------
 
