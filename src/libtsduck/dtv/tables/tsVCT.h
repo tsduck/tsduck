@@ -52,8 +52,9 @@ namespace ts {
         //! Description of a virtual channel.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
         //!
-        struct TSDUCKDLL Channel : public EntryWithDescriptors
+        class TSDUCKDLL Channel : public EntryWithDescriptors
         {
+        public:
             UString  short_name;             //!< Channel short name (up to 7 characters).
             uint16_t major_channel_number;   //!< 10 bits, major channel number.
             uint16_t minor_channel_number;   //!< 10 bits, minor channel number.

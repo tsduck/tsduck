@@ -48,8 +48,9 @@ namespace ts {
         //!
         //! Description of a device.
         //!
-        struct TSDUCKDLL Device : public EntryBase
+        class TSDUCKDLL Device : public EntryBase
         {
+        public:
             DescriptorList target_descs;       //!< Target descriptor loop, describes the target device.
             DescriptorList operational_descs;  //!< Operational descriptor loop, describes the operations on the target device.
 

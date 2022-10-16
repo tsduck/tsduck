@@ -35,7 +35,6 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
-#include "tsTime.h"
 
 namespace ts {
     //!

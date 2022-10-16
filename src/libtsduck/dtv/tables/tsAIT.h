@@ -52,8 +52,9 @@ namespace ts {
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
-        struct TSDUCKDLL Application : public EntryWithDescriptors
+        class TSDUCKDLL Application : public EntryWithDescriptors
         {
+        public:
             uint8_t control_code;  //!< Control code of the application
 
             //!
