@@ -40,7 +40,6 @@
 #include "tsFileUtils.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
-#include "tsTSPacket.h"
 #include "tsCerrReport.h"
 #include "tsunit.h"
 

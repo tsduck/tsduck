@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"HEVC_hierarchy_extension_descriptor"
 #define MY_CLASS ts::HEVCHierarchyExtensionDescriptor
@@ -139,7 +138,7 @@ void ts::HEVCHierarchyExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp
         disp << margin << UString::Format(u"Extension dimension bits: 0x%X", {bits}) << std::endl;
         for (size_t bit = 0; bit < 16; ++bit) {
             if ((bits & (0x8000 >> bit)) != 0) {
-                disp << margin << "  Bit " << bit << ": " << NameFromSection(u"HEVCExtensionDimensionBits", bit) << std::endl;
+                disp << margin << "  Bit " << bit << ": " << DataName(MY_XML_NAME, u"ExtensionDimensionBits", bit) << std::endl;
             }
         }
         disp << margin << UString::Format(u"Hierarchy layer index: 0x%X (%<d)", {buf.getBits<uint8_t>(6)}) << std::endl;

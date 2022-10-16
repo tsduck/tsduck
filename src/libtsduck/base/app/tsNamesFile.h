@@ -237,9 +237,11 @@ namespace ts {
         // The name of the section is the key in a map.
         class ConfigSection
         {
+            TS_NOCOPY(ConfigSection);
         public:
-            size_t          bits;     // Number of significant bits in values of the type.
-            ConfigEntryMap  entries;  // All entries, indexed by names.
+            size_t          bits;      // Number of significant bits in values of the type.
+            ConfigEntryMap  entries;   // All entries, indexed by names.
+            UString         inherit;   // Redirect to this section if value not found.
 
             ConfigSection();
             ~ConfigSection();
@@ -268,6 +270,12 @@ namespace ts {
 
         // Load a configuration file and merge its content into this instance.
         void loadFile(const UString& fileName);
+
+        // Get the section and name from a value, empty if not found. Section can be null.
+        void getName(const UString& sectionName, Value value, ConfigSection*& section, UString& name) const;
+
+        // Normalized section name.
+        static UString NormalizedSectionName(const UString& sectionName) { return sectionName.toTrimmed().toLower(); }
 
         // Names private fields.
         Report&          _log;           // Error logger.
