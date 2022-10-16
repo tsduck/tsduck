@@ -1,0 +1,12 @@
+[metadata_pointer_descriptor.metadata_format]
+Inherit = metadata_descriptor.metadata_format
+
+[metadata_pointer_descriptor.application_format]
+Inherit = metadata_descriptor.application_format
+
+[metadata_pointer_descriptor.carriage_flags]
+Bits = 2
+0 = Carriage in the same TS
+1 = Carriage in a different TS
+2 = Carriage in a program stream
+3 = Undefined
