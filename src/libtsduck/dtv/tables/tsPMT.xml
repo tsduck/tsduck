@@ -11,7 +11,7 @@
       <!-- Program-level descriptors -->
       <_any in="_descriptors"/>
       <!-- One per elementary stream -->
-      <component stream_type="uint8, required" elementary_PID="uint13, require">
+      <component stream_type="uint8, required" elementary_PID="uint13, required">
         <_any in="_descriptors"/>
       </component>
     </PMT>

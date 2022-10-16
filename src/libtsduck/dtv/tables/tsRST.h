@@ -48,8 +48,9 @@ namespace ts {
         //!
         //! Description of an event.
         //!
-        struct TSDUCKDLL Event
+        class TSDUCKDLL Event
         {
+        public:
             Event();                       //!< Constructor.
             uint16_t transport_stream_id;  //!< Transport stream id.
             uint16_t original_network_id;  //!< Original network id.
