@@ -32,7 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsConfigFile.h"
-#include "tsSysUtils.h"
 #include "tsunit.h"
 
 
