@@ -98,6 +98,8 @@ namespace ts {
         DescriptorList       _add_descs;             // List of descriptors to add at program level
         DescriptorListByPID  _add_pid_descs;         // Lists of descriptors to add by PID
         AudioLanguageOptionsVector _languages;       // Audio languages to set
+        std::vector<PID>     _sort_pids;             // Sorting order of PIDs in PMT
+        UStringVector        _sort_languages;        // Sorting order of audio and subtitles PIDs in PMT
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
@@ -142,7 +144,9 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
     _cleanup_priv_desc(false),
     _add_descs(nullptr),
     _add_pid_descs(),
-    _languages()
+    _languages(),
+    _sort_pids(),
+    _sort_languages()
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
@@ -271,6 +275,17 @@ ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
          u"In the component with the specified PID, add a stream_identifier_descriptor "
          u"with the specified id. Several --set-stream-identifier options may be "
          u"specified.");
+
+    option(u"sort-languages", 0, STRING);
+    help(u"sort-languages", u"lang1,lang2,...",
+         u"Sort the elementary streams carrying audio and subtitles in the specified order of languages. "
+         u"The languages must be 3-letter ISO-639 codes.");
+
+    option(u"sort-pids", 0, STRING);
+    help(u"sort-pids", u"pid1,pid2,...",
+         u"Sort the elementary streams in the specified order of PID's. "
+         u"Non-existent PID's are ignored. "
+         u"Unlisted PID's, if any, are placed after the others.");
 }
 
 
@@ -374,13 +389,15 @@ bool ts::PMTPlugin::start()
     _moved_pids.clear();
     _add_descs.clear();
     _add_pid_descs.clear();
+    _sort_pids.clear();
+    _sort_languages.clear();
 
     // Get option values
     duck.loadArgs(*this);
     _set_servid = present(u"new-service-id");
-    _new_servid = intValue<uint16_t>(u"new-service-id");
+    getIntValue(_new_servid, u"new-service-id");
     _set_pcrpid = present(u"pcr-pid");
-    _new_pcrpid = intValue<PID>(u"pcr-pid");
+    getIntValue(_new_pcrpid, u"pcr-pid");
     getIntValue(_pds, u"pds");
     _ac3_atsc2dvb = present(u"ac3-atsc2dvb");
     _eac3_atsc2dvb = present(u"eac3-atsc2dvb");
@@ -465,6 +482,23 @@ bool ts::PMTPlugin::start()
         else {
             return false;
         }
+    }
+
+    // Get elementary streams sorting criteria.
+    if (!value(u"sort-pids").toIntegers(_sort_pids, u"", u",", 0, u".", 0, PID_MAX - 1)) {
+        tsp->error(u"invalid list of PID's in --sort-pids");
+        return false;
+    }
+    value(u"sort-languages").toLower().split(_sort_languages, COMMA, true, true);
+    for (const auto& lang : _sort_languages) {
+        if (lang.length() != 3) {
+            tsp->error(u"invalid language '%s' in --sort-languages", {lang});
+            return false;
+        }
+    }
+    if (!_sort_pids.empty() && !_sort_languages.empty()) {
+        tsp->error(u"--sort-pids and --sort-languages are mutually exclusive");
+        return false;
     }
 
     // Get PMT PID or service description
@@ -659,7 +693,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
         }
     }
 
-    // ---- Finally, do PID remapping
+    // ---- PID remapping
 
     for (const auto& mpid : _moved_pids) {
         // Check if component exists
@@ -667,6 +701,46 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
             pmt.streams[mpid.second] = pmt.streams[mpid.first];
             pmt.streams.erase(mpid.first);
         }
+    }
+
+    // --- Sorting elementary streams
+
+    if (!_sort_pids.empty()) {
+        pmt.setStreamsOrder(_sort_pids);
+    }
+    if (!_sort_languages.empty()) {
+        std::vector<PID> input;  // input sort order
+        std::vector<PID> output; // output sort order, video PID's come first
+        std::vector<PID> other;  // other PID's
+        // Classify input PID's. Video PID's are placed first in output PMT.
+        pmt.getStreamsOrder(input);
+        for (PID pid : input) {
+            if (pmt.streams[pid].isVideo(duck)) {
+                output.push_back(pid);
+            }
+            else {
+                other.push_back(pid);
+            }
+        }
+        // Sort other PID's by language.
+        for (const auto& lang : _sort_languages) {
+            for (PID& pid : other) {
+                const auto& stream(pmt.streams[pid]);
+                if (stream.descs.searchLanguage(duck, lang) < stream.descs.size()) {
+                    // This audio or subtitles PID has this language.
+                    output.push_back(pid);
+                    pid = PID_NULL;
+                }
+            }
+        }
+        // Append PID's with unspecified language.
+        for (PID pid : other) {
+            if (pid != PID_NULL) {
+                output.push_back(pid);
+            }
+        }
+        // And sort the PID's...
+        pmt.setStreamsOrder(output);
     }
 
     // Reserialize modified PMT.

@@ -573,7 +573,13 @@ bool ts::UString::ToIntegerHelper(const UChar* start, const UChar* end, INT& val
 //----------------------------------------------------------------------------
 
 template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type*>
-bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSeparators, const UString& listSeparators, size_type decimals, const UString& decimalSeparators) const
+bool ts::UString::toIntegers(CONTAINER& container,
+                             const UString& thousandSeparators,
+                             const UString& listSeparators,
+                             size_type decimals,
+                             const UString& decimalSeparators,
+                             typename CONTAINER::value_type minValue,
+                             typename CONTAINER::value_type maxValue) const
 {
     // Let's name int_type the integer type.
     // In all STL standard containers, value_type is a typedef for the element type.
@@ -603,7 +609,10 @@ bool ts::UString::toIntegers(CONTAINER& container, const UString& thousandSepara
         }
         // Decode segment
         int_type value = static_cast<int_type>(0);
-        if (!substr(start, end - start).toInteger<int_type>(value, thousandSeparators, decimals, decimalSeparators)) {
+        if (!substr(start, end - start).toInteger<int_type>(value, thousandSeparators, decimals, decimalSeparators) ||
+            value < minValue ||
+            value > maxValue)
+        {
             return false;
         }
         container.push_back(value);
