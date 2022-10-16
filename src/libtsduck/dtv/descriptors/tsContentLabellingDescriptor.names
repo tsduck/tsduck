@@ -1,0 +1,10 @@
+[content_labelling_descriptor.application_format]
+Inherit = metadata_descriptor.application_format
+
+[content_labelling_descriptor.time_base_indicator]
+Bits = 4
+0 = No content time base defined in this descriptor
+1 = Use of STC
+2 = Use of NPT
+3-7 = Reserved
+8-15 = Use of privately defined content time base

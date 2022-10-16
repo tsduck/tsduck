@@ -1,0 +1,28 @@
+[metadata_descriptor.decoder_config_flags]
+Bits = 3
+0 = None
+1 = Configuration is in the decoder_config_byte field
+2 = Configuration is in the same metadata service
+3 = Configuration is in a DSM-CC carousel
+4 = Configuration is in another metadata service
+5 = Reserved
+6 = Reserved
+7 = Privately defined
+
+[metadata_descriptor.metadata_format]
+Bits = 8
+0x00-0x0F = Reserved
+0x10 = ISO/IEC 15938-1 TeM
+0x11 = ISO/IEC 15938-1 BiM
+0x12-0x3E = Reserved
+0x40-0xFE = Defined by metadata application format Private use
+0xFF = Defined by metadata_format_identifier field
+
+[metadata_descriptor.application_format]
+Bits = 16
+0x0000-0x000F = Reserved
+0x0010 = ISO 15706 (ISAN) encoded in its binary form
+0x0011 = ISO 15706-2 (V-ISAN) encoded in its binary form
+0x0012-0x00FF = Reserved
+0x0100-0xFFFE = User defined
+0xFFFF = Defined by the metadata_application_format_identifier field

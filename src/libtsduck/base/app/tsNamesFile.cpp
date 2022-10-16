@@ -346,9 +346,15 @@ bool ts::NamesFile::decodeDefinition(const UString& line, ConfigSection* section
     // Allowed "thousands separators" (ignored characters)
     const UString ignore(u".,_");
 
-    // Special case: specification of size in bits of values in this section.
+    // Special cases (not values):
     if (range.similar(u"bits")) {
+        // Specification of size in bits of values in this section.
         return value.toInteger(section->bits, ignore, 0, UString());
+    }
+    else if (range.similar(u"inherit")) {
+        // Name of a section where to search unknown values here.
+        section->inherit = value;
+        return true;
     }
 
     // Decode "first[-last]"
@@ -386,7 +392,7 @@ bool ts::NamesFile::decodeDefinition(const UString& line, ConfigSection* section
 ts::NamesFile::~NamesFile()
 {
     // Deallocate all configuration sections.
-    for (auto it : _sections) {
+    for (const auto& it : _sections) {
         delete it.second;
     }
     _sections.clear();
@@ -410,7 +416,8 @@ ts::NamesFile::ConfigEntry::ConfigEntry(Value l, const UString& n) :
 
 ts::NamesFile::ConfigSection::ConfigSection() :
     bits(0),
-    entries()
+    entries(),
+    inherit()
 {
 }
 
@@ -585,14 +592,53 @@ ts::UString ts::NamesFile::Formatted(Value value, const UString& name, NamesFlag
 
 
 //----------------------------------------------------------------------------
+// Get the section and name from a value, empty if not found.
+//----------------------------------------------------------------------------
+
+void ts::NamesFile::getName(const UString& sectionName, Value value, ConfigSection*& section, UString& name) const
+{
+    // Normalized section name.
+    UString sname(NormalizedSectionName(sectionName));
+
+    // Limit the number of inheritance levels to avoid infinite loop.
+    int levels = 16;
+
+    // Loop on inherited sections, until a name is found.
+    for (;;) {
+        // Get the section.
+        const auto it = _sections.find(sname);
+        if (it == _sections.end()) {
+            // Section not found, no name.
+            section = nullptr;
+            name.clear();
+            return;
+        }
+
+        // Get the name of the value in the section.
+        section = it->second;
+        name = section->getName(value);
+
+        // Return when name found or no "superclass" or too many levels of inheritance.
+        if (!name.empty() || section->inherit.empty() || levels-- <= 0) {
+            return;
+        }
+
+        // Loop on "superclass".
+        sname = NormalizedSectionName(section->inherit);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Check if a name exists in a specified section.
 //----------------------------------------------------------------------------
 
 bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 {
-    // Get the section, normalize the section name.
-    const auto it = _sections.find(sectionName.toTrimmed().toLower());
-    return it != _sections.end() && !it->second->getName(value).empty();
+    ConfigSection* section = nullptr;
+    UString name;
+    getName(sectionName, value, section, name);
+    return !name.empty();
 }
 
 
@@ -602,16 +648,16 @@ bool ts::NamesFile::nameExists(const UString& sectionName, Value value) const
 
 ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value value, NamesFlags flags, size_t bits, Value alternateValue) const
 {
-    // Get the section, normalize the section name.
-    const auto it = _sections.find(sectionName.toTrimmed().toLower());
-    const ConfigSection* section = it == _sections.end() ? nullptr : it->second;
+    ConfigSection* section = nullptr;
+    UString name;
+    getName(sectionName, value, section, name);
 
     if (section == nullptr) {
         // Non-existent section, no name.
         return Formatted(value, UString(), flags, bits, alternateValue);
     }
     else {
-        return Formatted(value, section->getName(value), flags, bits != 0 ? bits : section->bits, alternateValue);
+        return Formatted(value, name, flags, bits != 0 ? bits : section->bits, alternateValue);
     }
 }
 
@@ -622,23 +668,20 @@ ts::UString ts::NamesFile::nameFromSection(const UString& sectionName, Value val
 
 ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionName, Value value1, Value value2, NamesFlags flags, size_t bits, Value alternateValue) const
 {
-    // Get the section, normalize the section name.
-    const auto it = _sections.find(sectionName.toTrimmed().toLower());
-    const ConfigSection* section = it == _sections.end() ? nullptr : it->second;
+    ConfigSection* section = nullptr;
+    UString name;
+    getName(sectionName, value1, section, name);
 
     if (section == nullptr) {
         // Non-existent section, no name.
         return Formatted(value1, UString(), flags, bits, alternateValue);
     }
+    else if (!name.empty()) {
+        // value1 has a name
+        return Formatted(value1, name, flags, bits != 0 ? bits : section->bits, alternateValue);
+    }
     else {
-        const UString name(section->getName(value1));
-        if (!name.empty()) {
-            // value1 has a name
-            return Formatted(value1, name, flags, bits != 0 ? bits : section->bits, alternateValue);
-        }
-        else {
-            // value1 has no name, use value2.
-            return Formatted(value2, section->getName(value2), flags, bits != 0 ? bits : section->bits, alternateValue);
-        }
+        // value1 has no name, use value2, restart from the beginning in case of inheritance.
+        return nameFromSection(sectionName, value2, flags, bits, alternateValue);
     }
 }

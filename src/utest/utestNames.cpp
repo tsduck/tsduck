@@ -33,6 +33,7 @@
 
 #include "tsNamesFile.h"
 #include "tsNames.h"
+#include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsDuckContext.h"
 #include "tsMPEG2.h"
@@ -48,6 +49,8 @@
 class NamesTest: public tsunit::Test
 {
 public:
+    NamesTest();
+
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
@@ -91,6 +94,7 @@ public:
     void testHiDes();
     void testIP();
     void testExtension();
+    void testInheritance();
 
     TSUNIT_TEST_BEGIN(NamesTest);
     TSUNIT_TEST(testConfigFile);
@@ -133,7 +137,11 @@ public:
     TSUNIT_TEST(testHiDes);
     TSUNIT_TEST(testIP);
     TSUNIT_TEST(testExtension);
+    TSUNIT_TEST(testInheritance);
     TSUNIT_TEST_END();
+
+private:
+    ts::UString _tempFileName;
 };
 
 TSUNIT_REGISTER(NamesTest);
@@ -143,14 +151,25 @@ TSUNIT_REGISTER(NamesTest);
 // Initialization.
 //----------------------------------------------------------------------------
 
+// Constructor.
+NamesTest::NamesTest() :
+    _tempFileName()
+{
+}
+
 // Test suite initialization method.
 void NamesTest::beforeTest()
 {
+    if (_tempFileName.empty()) {
+        _tempFileName = ts::TempFile(u".names");
+    }
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 // Test suite cleanup method.
 void NamesTest::afterTest()
 {
+    ts::DeleteFile(_tempFileName, NULLREP);
 }
 
 
@@ -465,17 +484,63 @@ void NamesTest::testIP()
 void NamesTest::testExtension()
 {
     // Create a temporary names file.
-    const ts::UString file(ts::AbsoluteFilePath(ts::TempFile()));
-    debug() << "NamesTest::testExtension: extension file: " << file << std::endl;
-    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"[CASystemId]", u"0xF123 = test-cas"}), file));
+    debug() << "NamesTest::testExtension: extension file: " << _tempFileName << std::endl;
+    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({u"[CASystemId]", u"0xF123 = test-cas"}), _tempFileName));
 
     ts::DuckContext duck;
     ts::NamesFile::DeleteInstance(ts::NamesFile::Predefined::DTV);
-    ts::NamesFile::RegisterExtensionFile reg(file);
+    ts::NamesFile::RegisterExtensionFile reg(_tempFileName);
     TSUNIT_EQUAL(u"test-cas", ts::names::CASId(duck, 0xF123));
-    ts::NamesFile::UnregisterExtensionFile(file);
+    ts::NamesFile::UnregisterExtensionFile(_tempFileName);
     ts::NamesFile::DeleteInstance(ts::NamesFile::Predefined::DTV);
+}
 
-    // Delete temporary file
-    ts::DeleteFile(file);
+void NamesTest::testInheritance()
+{
+    // Create a temporary names file.
+    TSUNIT_ASSERT(ts::UString::Save(ts::UStringVector({
+        u"[level1]",
+        u"Bits = 8",
+        u"1 = value1",
+        u"[level2]",
+        u"Bits = 8",
+        u"Inherit = level1",
+        u"2 = value2",
+        u"[level3]",
+        u"Bits = 8",
+        u"Inherit = level2",
+        u"3 = value3",
+    }), _tempFileName));
+
+    ts::NamesFile file(_tempFileName);
+
+    TSUNIT_ASSERT(file.nameExists(u"level3", 3));
+    TSUNIT_ASSERT(file.nameExists(u"level3", 2));
+    TSUNIT_ASSERT(file.nameExists(u"level3", 1));
+    TSUNIT_ASSERT(!file.nameExists(u"level3", 0));
+
+    TSUNIT_ASSERT(!file.nameExists(u"level2", 3));
+    TSUNIT_ASSERT(file.nameExists(u"level2", 2));
+    TSUNIT_ASSERT(file.nameExists(u"level2", 1));
+    TSUNIT_ASSERT(!file.nameExists(u"level2", 0));
+
+    TSUNIT_ASSERT(!file.nameExists(u"level1", 3));
+    TSUNIT_ASSERT(!file.nameExists(u"level1", 2));
+    TSUNIT_ASSERT(file.nameExists(u"level1", 1));
+    TSUNIT_ASSERT(!file.nameExists(u"level1", 0));
+
+    TSUNIT_EQUAL(u"value3", file.nameFromSection(u"level3", 3));
+    TSUNIT_EQUAL(u"value2", file.nameFromSection(u"level3", 2));
+    TSUNIT_EQUAL(u"value1", file.nameFromSection(u"level3", 1));
+    TSUNIT_EQUAL(u"unknown (0x00)", file.nameFromSection(u"level3", 0));
+
+    TSUNIT_EQUAL(u"unknown (0x03)", file.nameFromSection(u"level2", 3));
+    TSUNIT_EQUAL(u"value2", file.nameFromSection(u"level2", 2));
+    TSUNIT_EQUAL(u"value1", file.nameFromSection(u"level2", 1));
+    TSUNIT_EQUAL(u"unknown (0x00)", file.nameFromSection(u"level2", 0));
+
+    TSUNIT_EQUAL(u"unknown (0x03)", file.nameFromSection(u"level1", 3));
+    TSUNIT_EQUAL(u"unknown (0x02)", file.nameFromSection(u"level1", 2));
+    TSUNIT_EQUAL(u"value1", file.nameFromSection(u"level1", 1));
+    TSUNIT_EQUAL(u"unknown (0x00)", file.nameFromSection(u"level1", 0));
 }
