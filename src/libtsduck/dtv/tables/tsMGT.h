@@ -52,8 +52,9 @@ namespace ts {
         //! Description of a table type.
         //! Note: by inheriting from EntryWithDescriptors, there is a public field "DescriptorList descs".
         //!
-        struct TSDUCKDLL TableType : public EntryWithDescriptors
+        class TSDUCKDLL TableType : public EntryWithDescriptors
         {
+        public:
             uint16_t table_type;                 //!< Referenced table type (this is not a table id).
             PID      table_type_PID;             //!< PID carrying this referenced table.
             uint8_t  table_type_version_number;  //!< 5 bits, version_number of the referenced table.

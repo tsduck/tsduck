@@ -74,7 +74,8 @@ ts::PMT::PMT(DuckContext& duck, const BinaryTable& table) :
 
 ts::PMT::Stream::Stream(const AbstractTable* table, uint8_t type) :
     EntryWithDescriptors(table),
-    stream_type(type)
+    stream_type(type),
+    order_hint(NPOS)
 {
 }
 
@@ -127,6 +128,10 @@ void ts::PMT::deserializePayload(PSIBuffer& buf, const Section& section)
         Stream& str(streams[pid]);
         str.stream_type = type;
         buf.getDescriptorListWithLength(str.descs);
+        // When not already specified otherwise, keep the order of deserialization.
+        if (str.order_hint == NPOS) {
+            str.order_hint = streams.size() - 1;
+        }
     }
 }
 
@@ -160,11 +165,16 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     // Minimum size of a section: fixed part and empty program-level descriptor list.
     constexpr size_t payload_min_size = 4;
 
-    // Add description of all elementary streams
-    for (const auto& it : streams) {
+    // Order of serialization.
+    std::vector<PID> pids;
+    getStreamsOrder(pids);
+
+    // Add description of all elementary streams.
+    for (PID pid : pids) {
+        const auto& stream(streams[pid]);
 
         // Binary size of the stream entry.
-        const size_t entry_size = 5 + it.second.descs.binarySize();
+        const size_t entry_size = 5 + stream.descs.binarySize();
 
         // If the current entry does not fit into the section, create a new section, unless we are at the beginning of the section.
         if (entry_size > buf.remainingWriteBytes() && buf.currentWriteByteOffset() > payload_min_size) {
@@ -173,9 +183,9 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
         }
 
         // Insert stream entry
-        buf.putUInt8(it.second.stream_type);
-        buf.putPID(it.first); // PID
-        buf.putPartialDescriptorListWithLength(it.second.descs);
+        buf.putUInt8(stream.stream_type);
+        buf.putPID(pid);
+        buf.putPartialDescriptorListWithLength(stream.descs);
     }
 }
 
@@ -473,6 +483,43 @@ ts::PID ts::PMT::firstVideoPID(const DuckContext& duck) const
 
 
 //----------------------------------------------------------------------------
+// Get the insertion order of streams in the PMT.
+//----------------------------------------------------------------------------
+
+void ts::PMT::getStreamsOrder(std::vector<PID>& order) const
+{
+    // Build a multimap of PID's, indexed by order_hint.
+    std::multimap<size_t, PID> map;
+    for (const auto& str : streams) {
+        map.insert(std::make_pair(str.second.order_hint, str.first));
+    }
+
+    // Build a vector of PID's from this order.
+    order.clear();
+    order.reserve(map.size());
+    for (const auto& it : map) {
+        order.push_back(it.second);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Define the insertion order of streams in the PMT.
+//----------------------------------------------------------------------------
+
+void ts::PMT::setStreamsOrder(const std::vector<PID>& order)
+{
+    size_t count = 0;
+    for (PID pid : order) {
+        const auto it = streams.find(pid);
+        if (it != streams.end()) {
+            it->second.order_hint = count++;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // A static method to display a PMT section.
 //----------------------------------------------------------------------------
 
@@ -511,11 +558,17 @@ void ts::PMT::buildXML(DuckContext& duck, xml::Element* root) const
     }
     descs.toXML(duck, root);
 
-    for (auto& st : streams) {
+    // Order of serialization.
+    std::vector<PID> pids;
+    getStreamsOrder(pids);
+
+    // Add description of all elementary streams.
+    for (PID pid : pids) {
+        const auto& stream(streams[pid]);
         xml::Element* e = root->addElement(u"component");
-        e->setIntAttribute(u"elementary_PID", st.first, true);
-        e->setIntAttribute(u"stream_type", st.second.stream_type, true);
-        st.second.descs.toXML(duck, e);
+        e->setIntAttribute(u"elementary_PID", pid, true);
+        e->setIntAttribute(u"stream_type", stream.stream_type, true);
+        stream.descs.toXML(duck, e);
     }
 }
 
@@ -534,11 +587,18 @@ bool ts::PMT::analyzeXML(DuckContext& duck, const xml::Element* element)
         element->getIntAttribute<PID>(pcr_pid, u"PCR_PID", false, PID_NULL, 0x0000, 0x1FFF) &&
         descs.fromXML(duck, children, element, u"component");
 
-    for (size_t index = 0; ok && index < children.size(); ++index) {
+    for (auto e : children) {
         PID pid = PID_NULL;
-        ok = children[index]->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF) &&
-             children[index]->getIntAttribute(streams[pid].stream_type, u"stream_type", true, 0, 0x00, 0xFF) &&
-             streams[pid].descs.fromXML(duck, children[index]);
+        ok = e->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF);
+        if (ok && Contains(streams, pid)) {
+            element->report().error(u"line %d: in <%s>, duplicated <%s> for PID 0x%X (%<d)", {e->lineNumber(), element->name(), e->name(), pid});
+            ok = false;
+        }
+        if (ok) {
+            ok = e->getIntAttribute(streams[pid].stream_type, u"stream_type", true) && streams[pid].descs.fromXML(duck, e);
+            // Keep the order of deserialization.
+            streams[pid].order_hint = streams.size() - 1;
+        }
     }
     return ok;
 }
