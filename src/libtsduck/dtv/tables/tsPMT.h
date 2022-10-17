@@ -57,7 +57,6 @@ namespace ts {
         {
         public:
             uint8_t stream_type;  //!< Stream type, one of ST_* (eg ts::ST_MPEG2_VIDEO).
-            size_t  order_hint;   //!< Preferred insertion index when serializing the PMT or NPOS if unspecified.
 
             //!
             //! Constructor.
@@ -178,21 +177,6 @@ namespace ts {
         //! @return The first video PID or PID_NULL if none is found.
         //!
         PID firstVideoPID(const DuckContext& duck) const;
-
-        //!
-        //! Get the insertion order of streams in the PMT.
-        //! The result is based on the @a order_hint fields in the Streams structures.
-        //! @param [out] order Order of streams by PID in the PMT.
-        //!
-        void getStreamsOrder(std::vector<PID>& order) const;
-
-        //!
-        //! Define the insertion order of streams in the PMT.
-        //! This can be precisely set using the @a order_hint fields in the Streams structures.
-        //! This method is a helper which sets these fields.
-        //! @param [in] order Order of streams by PID in the PMT.
-        //!
-        void setStreamsOrder(const std::vector<PID>& order);
 
         // Inherited methods
         virtual bool isPrivate() const override;
