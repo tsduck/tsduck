@@ -51,8 +51,9 @@ namespace ts {
         //! Note: by inheriting from EntryWithDescriptors, there is a
         //! public field "DescriptorList descs".
         //!
-        struct TSDUCKDLL Service : public EntryWithDescriptors
+        class TSDUCKDLL Service : public EntryWithDescriptors
         {
+        public:
             uint8_t running_status;  //!< Running status of the event.
 
             //!
