@@ -706,14 +706,14 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
     // --- Sorting elementary streams
 
     if (!_sort_pids.empty()) {
-        pmt.setStreamsOrder(_sort_pids);
+        pmt.streams.setOrder(_sort_pids);
     }
     if (!_sort_languages.empty()) {
         std::vector<PID> input;  // input sort order
         std::vector<PID> output; // output sort order, video PID's come first
         std::vector<PID> other;  // other PID's
         // Classify input PID's. Video PID's are placed first in output PMT.
-        pmt.getStreamsOrder(input);
+        pmt.streams.getOrder(input);
         for (PID pid : input) {
             if (pmt.streams[pid].isVideo(duck)) {
                 output.push_back(pid);
@@ -740,7 +740,7 @@ void ts::PMTPlugin::modifyTable(BinaryTable& table, bool& is_target, bool& reins
             }
         }
         // And sort the PID's...
-        pmt.setStreamsOrder(output);
+        pmt.streams.setOrder(output);
     }
 
     // Reserialize modified PMT.

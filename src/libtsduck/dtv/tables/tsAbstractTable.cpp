@@ -102,11 +102,13 @@ bool ts::AbstractTable::useTrailingCRC32() const
 //----------------------------------------------------------------------------
 
 ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table) :
+    EntryBase(NPOS),
     descs(table)
 {
 }
 
 ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table, const EntryWithDescriptors& other) :
+    EntryBase(NPOS),
     descs(table, other.descs)
 {
 }
@@ -116,6 +118,7 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
     if (&other != this) {
         // Copying the descriptor list preserves the associated table of the target.
         descs = other.descs;
+        order_hint = other.order_hint;
     }
     return *this;
 }
@@ -125,6 +128,7 @@ ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors
     if (&other != this) {
         // Moving the descriptor list preserves the associated table of the target.
         descs = std::move(other.descs);
+        order_hint = other.order_hint;
     }
     return *this;
 }
