@@ -9,7 +9,6 @@ TSDuck - List of features to be implemented or fixed
   ISO/IEC 13818-1 / H.222 (MPEG system layer)
   - With embedded data structures from ISO/IEC 14496-1 (MPEG-4 system):
     - 2.6.40   IOD_descriptor
-    - 2.6.50   FmxBufferSize_descriptor
   - With embedded data structures from ISO/IEC 14496-3 (MPEG-4 Audio):
     - 2.6.72   MPEG4_audio_extension_descriptor
   - With embedded data structures from ISO/IEC 23002-3 (MPEG-C auxiliairy video):
