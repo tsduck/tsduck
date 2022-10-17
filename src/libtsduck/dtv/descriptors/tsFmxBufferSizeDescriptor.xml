@@ -11,7 +11,7 @@
       <!-- 0..n -->
       <FlexMuxBufferDescriptor
         flexMuxChannel="uint8, required"
-        FB_BufferSize="uint24, required">
+        FB_BufferSize="uint24, required"/>
     </FmxBufferSize_descriptor>
 
   </_descriptors>
