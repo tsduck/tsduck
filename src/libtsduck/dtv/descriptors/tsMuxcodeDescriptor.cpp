@@ -155,7 +155,7 @@ void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
         for (uint8_t i = 0; i < _substructureCount; i++) {
             uint8_t _slotCount = buf.getBits<uint8_t>(5);
             disp << margin << " substructure[" << int(i) << "], repetition count: " << buf.getBits<uint16_t>(3) << std::endl;
-            for (uint8_t k = 0; i < _slotCount; k++) {
+            for (uint8_t k = 0; k < _slotCount; k++) {
                 disp << margin << "  M4 mux channel: " << int(buf.getUInt8());
                 disp << ", byte count: " << int(buf.getUInt8()) << std::endl;
             }
