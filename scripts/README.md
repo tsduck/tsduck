@@ -14,6 +14,8 @@ files in XML format).
 
 ## Portable tools (macOS, Linux, Windows)
 
+- `tsbuild.py` : A common code module for all Python scripts here.
+
 - `build-dektec-names.py` : Build the file tsduck.dektec.names from the Dektec
   header DTAPI.h. This is a "names" files for the capabilities of the devices.
 
@@ -45,7 +47,7 @@ files in XML format).
 - `tsduck.rc` : The Microsoft resource file which is used to build the various
   TSDuck executables.
 
-- `build-common.psm1` : A common code module for all PowerShell scripts here.
+- `tsbuild.psm1` : A common code module for all PowerShell scripts here.
 
 - `build.ps1` : This script builds all TSDuck code, executables and DLL's.
 

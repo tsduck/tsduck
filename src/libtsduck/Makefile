@@ -93,15 +93,13 @@ OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SOURCES))))
 default: headers libs
 	+@$(call F_RECURSE,config python java)
 
-# The tsduck.h header is automatically generated from all headers using BUILD_PROJ_FILES.
-
-BUILD_TSDUCK_H = $(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py
+# The tsduck.h header is automatically generated from all headers.
 
 .PHONY: headers
 headers: tsduck.h
-tsduck.h: $(BUILD_TSDUCK_H) $(SRCROOT)/HEADER.txt $(filter-out tsduck.h %Template.h,$(wildcard *.h */*.h */*/*.h))
+tsduck.h: $(SRCROOT)/HEADER.txt $(filter-out tsduck.h %Template.h,$(wildcard *.h */*.h */*/*.h))
 	@echo '  [REBUILD] $@'; \
-	$(BUILD_TSDUCK_H) >$@
+	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py $@
 
 # This header file is regenerated and, normally, make should know that they must be
 # finished before building tsVersionInfo.o. However, the .dep file contains full paths

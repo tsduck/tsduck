@@ -73,7 +73,7 @@ $DoxyFile = "$PSScriptRoot\Doxyfile"
 
 # Get the product version.
 if (-not $Version) {
-    $Version = (& "$RootDir\scripts\get-version-from-sources.py")
+    $Version = (python "$RootDir\scripts\get-version-from-sources.py")
 }
 $env:TS_FULL_VERSION = $Version
 
@@ -120,8 +120,8 @@ if ($DoxyExe) {
     }
     $DoxyDir = (Resolve-Path $DoxyDir)
 
-	# Generate a summary file of all signalization.
-    & "$SrcDir\doc\signalization-gen.py"
+    # Generate a summary file of all signalization.
+    python "$SrcDir\doc\signalization-gen.py"
 
     # Generate documentation.
     Write-Host "Running Doxygen..."

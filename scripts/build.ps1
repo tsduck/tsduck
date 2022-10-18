@@ -107,7 +107,7 @@ Set-StrictMode -Version 3
 if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
 }
-Import-Module -Force -Name (Join-Path $PSScriptRoot build-common.psm1)
+Import-Module -Force -Name "${PSScriptRoot}\tsbuild.psm1"
 
 # Apply defaults.
 if (-not $Debug -and -not $Release -and -not $Installer) {
@@ -120,11 +120,11 @@ if (-not $Win32 -and -not $Win64) {
 
 # Get the project directories.
 $RootDir = (Split-Path -Parent $PSScriptRoot)
-$ProjDir = (Join-Path $PSScriptRoot "msvc")
-$SolutionFileName = (Join-Path $ProjDir "tsduck.sln")
+$ProjDir = "${PSScriptRoot}\msvc"
+$SolutionFileName = "${ProjDir}\tsduck.sln"
 
 # Make sure that Git hooks are installed.
-& (Join-Path $PSScriptRoot git-hook-update.ps1) -NoPause
+python "${PSScriptRoot}\git-hook-update.py
 
 # Lower process priority so that the build does not eat up all CPU.
 if (-not $NoLowPriority) {
@@ -182,7 +182,7 @@ function Call-MSBuild ([string] $configuration, [string] $platform, [string] $ta
 }
 
 # Build targets
-$AllTargets = @(Select-String -Path (Join-Path $ProjDir "*.vcxproj") -Pattern '<RootNameSpace>' |
+$AllTargets = @(Select-String -Path "${ProjDir}\*.vcxproj" -Pattern '<RootNameSpace>' |
                 ForEach-Object { $_ -replace '.*<RootNameSpace> *','' -replace ' *</RootNameSpace>.*','' })
 $plugins = ($AllTargets | Select-String "tsplugin_*") -join ';'
 $commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "tsp_static", "setpath", "utest*")) -join ';'
@@ -232,7 +232,7 @@ else {
 
 # Build the Java bindings
 if (-not $NoJava) {
-    & (Join-Path $PSScriptRoot build-java.ps1) -NoPause
+    & "${PSScriptRoot}\build-java.ps1" -NoPause
 }
 
 Exit-Script -NoPause:$NoPause
