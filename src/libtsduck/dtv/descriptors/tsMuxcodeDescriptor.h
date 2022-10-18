@@ -28,51 +28,62 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an VVC_video_descriptor
+//!  Representation of an MuxCode_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Representation of a VVC_video_descriptor.
+    //! Representation of an MuxCode descriptor.
     //!
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.129.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.48 and ISO/IEC 14496-1, 7.4.2.5.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL VVCVideoDescriptor : public AbstractDescriptor
-    {
+
+    class substructure_type {
     public:
-        // Public members:
-        uint8_t   profile_idc;                       //!< 7 bits.
-        bool      tier;                              //!< bool.
-        std::vector<uint32_t> sub_profile_idc;       //!< array of 32 bit values.
-        bool      progressive_source;                //!< bool.
-        bool      interlaced_source;                 //!< bool.
-        bool      non_packed_constraint;             //!< bool.
-        bool      frame_only_constraint;             //!< bool.
-        uint8_t   level_idc;                         //!< 8 bits.
-        bool      VVC_still_present;                 //!< bool.
-        bool      VVC_24hr_picture_present;          //!< bool.
-        uint8_t   HDR_WCG_idc;                       //!< 2 bits.
-        uint8_t   video_properties_tag;              //!< 4 bits.
-        Variable<uint8_t> temporal_id_min;           //!< 3 bits, optional, specify both min and max or none.
-        Variable<uint8_t> temporal_id_max;           //!< 3 bits, optional, specify both min and max or none.
+        uint8_t     repititionCount;            //!< 3 bits
+        std::vector<uint8_t> m4MuxChannel;      //!< list of 8 bit values
+        std::vector<uint8_t> numberOfBytes;     //!< list of 8 bit values
 
         //!
         //! Default constructor.
         //!
-        VVCVideoDescriptor();
+        substructure_type();
+    };
+
+    class MuxCodeTableEntry_type {
+    public:
+        uint8_t     MuxCode;        //!< 4 bits
+        uint8_t     version;        //!< 4 bits
+        std::vector<substructure_type> substructure;
+
+        //!
+        //! Default constructor.
+        //!
+        MuxCodeTableEntry_type();
+    };
+
+    class TSDUCKDLL MuxCodeDescriptor : public AbstractDescriptor 
+    {
+    public:
+        // Public members:
+        std::vector<MuxCodeTableEntry_type> MuxCodeTableEntry;
+
+        //!
+        //! Default constructor.
+        //!
+        MuxCodeDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        VVCVideoDescriptor(DuckContext& duck, const Descriptor& bin);
+        MuxCodeDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();

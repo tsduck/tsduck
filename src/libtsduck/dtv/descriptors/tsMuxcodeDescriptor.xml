@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MuxCode_descriptor>
+      <MuxCodeEntry
+        MuxCode="uint4, required"
+        version="uint4, required">
+        <substructure
+          repetitionCount="uint3, required">
+          <slot
+            m4MuxChannel="uint8, required"
+            numberOfBytes="uint8, required"/>
+        </substructure>
+      </MuxCodeEntry>
+    </MuxCode_descriptor>
+
+  </_descriptors>
+</tsduck>
