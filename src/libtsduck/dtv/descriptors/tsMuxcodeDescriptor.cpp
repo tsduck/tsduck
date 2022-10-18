@@ -149,8 +149,8 @@ void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
     uint8_t MuxCodeIndex = 0;
     while (buf.canReadBytes(3)) {
         buf.skipBits(8);
-        disp << margin << "index[" << int(MuxCodeIndex++) << "] MuxCode: " << buf.getBits<uint16_t>(2);
-        disp << ", version: " << buf.getBits<uint16_t>(2) << std::endl;
+        disp << margin << "index[" << int(MuxCodeIndex++) << "] MuxCode: " << buf.getBits<uint16_t>(4);
+        disp << ", version: " << buf.getBits<uint16_t>(4) << std::endl;
         uint8_t _substructureCount = buf.getUInt8();
         for (uint8_t i = 0; i < _substructureCount; i++) {
             uint8_t _slotCount = buf.getBits<uint8_t>(5);
@@ -205,8 +205,10 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
 
         xml::ElementVector subStructures;
         ok &= MuxCodeEntries[i]->getChildren(subStructures, u"substructure");
-        ok &= subStructures.size() <= MAX_SUBSTRUCTURES;
-
+        if (subStructures.size() > MAX_SUBSTRUCTURES) {
+            element->report().error(u"only %d <substructure> elements are permitted [<%s>, line %d]", { MAX_SUBSTRUCTURES, element->name(), element->lineNumber() });
+            ok = false;
+        }
         for (size_t j = 0; ok && j < subStructures.size(); ++j) {
             substructure_type _substructure;
 
@@ -219,7 +221,10 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
             }
             xml::ElementVector slots;
             ok &= subStructures[j]->getChildren(slots, u"slot");
-            ok &= slots.size() <= MAX_SLOTS;
+            if (slots.size() > MAX_SLOTS) {
+                element->report().error(u"only %d <slot> elements are permitted [<%s>, line %d]", { MAX_SLOTS, element->name(), element->lineNumber() });
+                ok = false;
+            }
 
             for (size_t k = 0; ok && k < slots.size(); k++) {
                 uint32_t _tmp;
@@ -228,6 +233,8 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
                 ok &= slots[k]->getIntAttribute(_tmp, u"numberOfBytes", true, 0, 0, 0xFF);
                 _substructure.numberOfBytes.push_back(uint8_t(_tmp));
             }
+            MuxCodeEntry.substructure.push_back(_substructure);
+            
         }
         MuxCodeTableEntry.push_back(MuxCodeEntry);
     }
