@@ -274,7 +274,7 @@ install-deb:
 
 .PHONY: git-hooks
 git-hooks:
-	@$(SCRIPTSDIR)/git-hook-update.sh
+	@$(PYTHON) $(SCRIPTSDIR)/git-hook-update.py
 
 # Count lines of code: Run cloc on the source code tree starting at current directory.
 
