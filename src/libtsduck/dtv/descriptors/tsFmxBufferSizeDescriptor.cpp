@@ -132,13 +132,13 @@ void ts::FmxBufferSizeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuff
 void ts::FmxBufferSizeDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     ts::xml::Element* _default = root->addElement(u"DefaultFlexMuxBufferDescriptor");
-    _default->setIntAttribute(u"flexMuxChannel", DefaultFlexMuxBufferDescriptor.flexMuxChnnel, true);
-    _default->setIntAttribute(u"FB_BufferSize", DefaultFlexMuxBufferDescriptor.FB_BufferSize, true);
+    _default->setIntAttribute(u"flexMuxChannel", DefaultFlexMuxBufferDescriptor.flexMuxChnnel);
+    _default->setIntAttribute(u"FB_BufferSize", DefaultFlexMuxBufferDescriptor.FB_BufferSize);
 
     for (auto it : FlexMuxBufferDescriptor) {
         ts::xml::Element* _buffer = root->addElement(u"FlexMuxBufferDescriptor");
-        _buffer->setIntAttribute(u"flexMuxChannel", it.flexMuxChnnel, true);
-        _buffer->setIntAttribute(u"FB_BufferSize", it.FB_BufferSize, true);
+        _buffer->setIntAttribute(u"flexMuxChannel", it.flexMuxChnnel);
+        _buffer->setIntAttribute(u"FB_BufferSize", it.FB_BufferSize);
     }
 }
 

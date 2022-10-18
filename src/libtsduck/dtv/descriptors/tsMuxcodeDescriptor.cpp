@@ -172,17 +172,17 @@ void ts::MuxCodeDescriptor::buildXML(DuckContext& duck, xml::Element* root) cons
 {
     for (auto it : MuxCodeTableEntry) {
         ts::xml::Element* _entry = root->addElement(u"MuxCodeEntry");
-        _entry->setIntAttribute(u"MuxCode", it.MuxCode, true);
-        _entry->setIntAttribute(u"version", it.version, true);
+        _entry->setIntAttribute(u"MuxCode", it.MuxCode);
+        _entry->setIntAttribute(u"version", it.version);
 
         for (auto it2 : it.substructure) {
             ts::xml::Element* _substructure = _entry->addElement(u"substructure");
-            _substructure->setIntAttribute(u"repetitionCount", it2.repititionCount, true);
+            _substructure->setIntAttribute(u"repetitionCount", it2.repititionCount);
             uint8_t slotCount = uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size()));
             for (uint8_t k = 0; k < slotCount; k++) {
                 ts::xml::Element* _slot = _substructure->addElement(u"slot");
-                _slot->setIntAttribute(u"m4MuxChannel", it2.m4MuxChannel[k], true);
-                _slot->setIntAttribute(u"numberOfBytes", it2.numberOfBytes[k], true);
+                _slot->setIntAttribute(u"m4MuxChannel", it2.m4MuxChannel[k]);
+                _slot->setIntAttribute(u"numberOfBytes", it2.numberOfBytes[k]);
             }
         }
     }
