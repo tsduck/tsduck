@@ -210,7 +210,13 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
         for (size_t j = 0; ok && j < subStructures.size(); ++j) {
             substructure_type _substructure;
 
-            ok &= subStructures[j]->getIntAttribute(_substructure.repititionCount, u"repetitionCount", 0, 0, 0x07);
+            ok &= subStructures[j]->getIntAttribute(_substructure.repititionCount, u"repetitionCount", true, 0, 0, 0x07);
+
+            if ((_substructure.repititionCount == 0) && j != (subStructures.size() - 1)) {
+                // repetitionCount of zero is only permitted in the last substructire (ISO/IEC 14496-1 clause 7.4.2.5.2)
+                element->report().error(u"repetitionCount=='%d' is only valid the last <substructure> [<%s>, line %d]", { _substructure.repititionCount, element->name(), element->lineNumber() });
+                ok = false;
+            }
             xml::ElementVector slots;
             ok &= subStructures[j]->getChildren(slots, u"slot");
             ok &= slots.size() <= MAX_SLOTS;
