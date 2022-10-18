@@ -28,51 +28,56 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Representation of an VVC_video_descriptor
+//!  Representation of an FMXBufferSize_descriptor
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
-    //! Representation of a VVC_video_descriptor.
+    //! Representation of an MuxCode descriptor.
     //!
-    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.129.
+    //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.50.
     //! @ingroup descriptor
     //!
-    class TSDUCKDLL VVCVideoDescriptor : public AbstractDescriptor
-    {
+
+    class FlexMuxBufferDescriptor_type {
+        //!
+        //! details about the FlexMuxBufferDescriptor() are no longer provided in ISO/IEC 14496-1
+        //! as indicated by ISO/IEC 13818-1. 
+        //! This syntax can be found in section 7.2 of "The MPEG-4 Book" by Fernando Pereira and 
+        //! Touradj Ebrahimi. IMSC Press 2002. ISBN 0130616214
+        //! 
     public:
-        // Public members:
-        uint8_t   profile_idc;                       //!< 7 bits.
-        bool      tier;                              //!< bool.
-        std::vector<uint32_t> sub_profile_idc;       //!< array of 32 bit values.
-        bool      progressive_source;                //!< bool.
-        bool      interlaced_source;                 //!< bool.
-        bool      non_packed_constraint;             //!< bool.
-        bool      frame_only_constraint;             //!< bool.
-        uint8_t   level_idc;                         //!< 8 bits.
-        bool      VVC_still_present;                 //!< bool.
-        bool      VVC_24hr_picture_present;          //!< bool.
-        uint8_t   HDR_WCG_idc;                       //!< 2 bits.
-        uint8_t   video_properties_tag;              //!< 4 bits.
-        Variable<uint8_t> temporal_id_min;           //!< 3 bits, optional, specify both min and max or none.
-        Variable<uint8_t> temporal_id_max;           //!< 3 bits, optional, specify both min and max or none.
+        uint8_t     flexMuxChnnel;      //!< 8 bits
+        uint32_t    FB_BufferSize;      //!< 24 bits
 
         //!
         //! Default constructor.
         //!
-        VVCVideoDescriptor();
+        FlexMuxBufferDescriptor_type();
+    };
+
+    class TSDUCKDLL FmxBufferSizeDescriptor : public AbstractDescriptor
+    {
+    public:
+        // Public members:
+        FlexMuxBufferDescriptor_type                DefaultFlexMuxBufferDescriptor;
+        std::vector<FlexMuxBufferDescriptor_type>   FlexMuxBufferDescriptor;
+
+        //!
+        //! Default constructor.
+        //!
+        FmxBufferSizeDescriptor();
 
         //!
         //! Constructor from a binary descriptor
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        VVCVideoDescriptor(DuckContext& duck, const Descriptor& bin);
+        FmxBufferSizeDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();

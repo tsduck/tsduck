@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <FmxBufferSize_descriptor>
+      <!-- always required -->
+      <DefaultFlexMuxBufferDescriptor
+        flexMuxChannel="uint8, required"
+        FB_BufferSize="uint24, required"/>
+
+      <!-- 0..n -->
+      <FlexMuxBufferDescriptor
+        flexMuxChannel="uint8, required"
+        FB_BufferSize="uint24, required"/>
+    </FmxBufferSize_descriptor>
+
+  </_descriptors>
+</tsduck>
