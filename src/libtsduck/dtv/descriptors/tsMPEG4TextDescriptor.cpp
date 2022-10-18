@@ -235,7 +235,8 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         const bool positioning_information_flag = buf.getBool();
         buf.skipBits(3);
         disp << margin << "Layer: " << int(buf.getUInt8());
-        disp << ", text track width=" << buf.getUInt16() << ", height=" << buf.getUInt16() << std::endl;
+        disp << ", text track width=" << buf.getUInt16();
+        disp << ", height=" << buf.getUInt16() << std::endl;
         if (contains_list_of_compatible_3GPPFormats_flag) {
             const uint8_t number_of_formats = buf.getUInt8();
             uint8_t i = 0;
