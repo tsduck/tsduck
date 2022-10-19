@@ -40,9 +40,9 @@ CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
 TABLES_SRC   = tsduck.tables.skeleton.xml
 TABLES_SUBS  = $(wildcard ../dtv/tables/*.xml ../dtv/descriptors/*.xml)
 TABLES_DEST  = $(BINDIR)/tsduck.tables.model.xml
-NAMES_SRC    = tsduck.skeleton.names
+NAMES_SRC    = tsduck.dtv.skeleton.names
 NAMES_SUBS   = $(wildcard ../base/*/*.names ../dtv/*/*.names)
-NAMES_DEST   = $(BINDIR)/tsduck.names
+NAMES_DEST   = $(BINDIR)/tsduck.dtv.names
 DEKTEC_DEST  = $(BINDIR)/tsduck.dektec.names
 
 # Main build targets.
@@ -83,6 +83,7 @@ $(DEKTEC_DEST): $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
 install-tools: $(NAMES_DEST) $(DEKTEC_DEST) $(if $(MACOS),,install-linux-config)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	install -m 644 $(CONFIGS_SRC) $(NAMES_DEST) $(DEKTEC_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck
+	rm -f $(SYSROOT)$(SYSPREFIX)/share/tsduck/tsduck.names
 install-post-build: $(TABLES_DEST)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck
 	install -m 644 $(TABLES_DEST) $(SYSROOT)$(SYSPREFIX)/share/tsduck

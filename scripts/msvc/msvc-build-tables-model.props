@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- A target to build the XML definitions for all tables and descriptors -->
+
+  <PropertyGroup>
+    <DtvRoot>$(TSDuckRootDir)src\libtsduck\dtv\</DtvRoot>
+    <TablesSkeletonXml>$(TSDuckRootDir)src\libtsduck\config\tsduck.tables.skeleton.xml</TablesSkeletonXml>
+    <TablesModelXml>$(OutDir)tsduck.tables.model.xml</TablesModelXml>
+  </PropertyGroup>
+  <ItemGroup>
+    <DtvXmlFiles Include="$(DtvRoot)tables\*.xml;$(DtvRoot)descriptors\*.xml"/>
+  </ItemGroup>
+
+  <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);$(DtvXmlFiles)" Outputs="$(TablesModelXml)">
+	<Message Text="Building $(TablesModelXml)" Importance="high"/>
+    <PropertyGroup>
+      <!-- Reduce the length of the list of files, will use the removed prefix as working directory -->
+      <!-- Without this, MSBuild fails with "command too long" -->
+      <DtvXmlFilesSpace>@(DtvXmlFiles,' ')</DtvXmlFilesSpace>
+      <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
+    </PropertyGroup>
+    <Exec WorkingDirectory="$(DtvRoot)"
+          Command="$(OutDir)tsxml.exe --merge $(TablesSkeletonXml) $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o $(TablesModelXml)"/>
+  </Target>
+
+</Project>

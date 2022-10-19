@@ -40,10 +40,6 @@
 
   Generate everything which is needed for installer.
 
- .PARAMETER NoJava
-
-  Do not build the Java bindings (done by default).
-
  .PARAMETER NoLowPriority
 
   Do not lower the process priority.
@@ -91,7 +87,6 @@ param(
     [int]$Parallel = 0,
     [switch]$GitPull = $false,
     [switch]$Installer = $false,
-    [switch]$NoJava = $false,
     [switch]$NoLowPriority = $false,
     [switch]$Debug = $false,
     [switch]$Release = $false,
@@ -123,8 +118,13 @@ $RootDir = (Split-Path -Parent $PSScriptRoot)
 $ProjDir = "${PSScriptRoot}\msvc"
 $SolutionFileName = "${ProjDir}\tsduck.sln"
 
+# Search git command.
+$git = (Search-File "git.exe" @($env:Path, 'C:\Program Files\Git\cmd', 'C:\Program Files (x86)\Git\cmd'))
+
 # Make sure that Git hooks are installed.
-python "${PSScriptRoot}\git-hook-update.py
+if ($git -ne $null) {
+    python "${PSScriptRoot}\git-hook-update.py"
+}
 
 # Lower process priority so that the build does not eat up all CPU.
 if (-not $NoLowPriority) {
@@ -142,9 +142,7 @@ Write-Output "MSBuild version $MSBuildVersionString ($MSBuildVersion)"
 
 # Update git repository if requested.
 if ($GitPull) {
-    # Search git command.
-    $git = (Search-File "git.exe" @($env:Path, 'C:\Program Files\Git\cmd', 'C:\Program Files (x86)\Git\cmd'))
-    if (-not $git) {
+    if ($git -eq $null) {
         Exit-Script -NoPause:$NoPause "Git not found"
     }
     Push-Location $RootDir
@@ -228,11 +226,6 @@ else {
     if ($Debug -and $Win32) {
         Call-MSBuild Debug Win32 $targets
     }
-}
-
-# Build the Java bindings
-if (-not $NoJava) {
-    & "${PSScriptRoot}\build-java.ps1" -NoPause
 }
 
 Exit-Script -NoPause:$NoPause
