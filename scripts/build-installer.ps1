@@ -101,11 +101,12 @@ if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "
 Import-Module -Force -Name "${PSScriptRoot}\tsbuild.psm1"
 
 # Get the project directories.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
-$MsvcDir = "${PSScriptRoot}\msvc"
-$SrcDir  = "${RootDir}\src"
-$BinRoot = "${RootDir}\bin"
-$JarFile = "${BinRoot}\java\tsduck.jar"
+$RootDir    = (Split-Path -Parent $PSScriptRoot)
+$MsvcDir    = "${PSScriptRoot}\msvc"
+$SrcDir     = "${RootDir}\src"
+$BinRoot    = "${RootDir}\bin"
+$BinInclude = "${BinRoot}\include"
+$JarFile    = "${BinRoot}\java\tsduck.jar"
 $InstallerDir = "${RootDir}\installers"
 
 # Apply defaults.
@@ -196,12 +197,14 @@ if (-not $NoInstaller) {
     $TempDir = New-TempDirectory
     $Exclude = @("*\unix\*", "*\linux\*", "*\mac\*", "*\private\*")
     if ($NoTeletext) {
-        $Exclude += "*\tsduck.h"
         $Exclude += "*\tsTeletextDemux.h"
         $Exclude += "*\tsTeletextPlugin.h"
-        Get-Content "${SrcDir}\libtsduck\tsduck.h" | `
+        Get-Content "${BinInclude}\tsduck.h" | `
             Where-Object { ($_ -notmatch 'tsTeletextDemux.h') -and ($_ -notmatch 'tsTeletextPlugin.h') } | `
             Out-File -Encoding ascii "${TempDir}\tsduck.h"
+    }
+    else {
+        Copy-Item "${BinInclude}\tsduck.h" "${TempDir}\tsduck.h"
     }
     Get-ChildItem "${SrcDir}\libtsduck" -Recurse -Include "*.h" | `
         Where-Object {

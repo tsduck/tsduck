@@ -24,10 +24,8 @@ files in XML format).
   See more details in the leading comments in the script.
 
 - `build-tsduck-header.py` : Build the `tsduck.h` header file which include
-  all public headers of the TSDuck library. Adding new source files in the
-  TSDuck library is a common task. Each time a new public file is added,
-  `tsduck.h` must be updated. This script is automatically invoked by the
-  makefile in `libtsduck`.
+  all public headers of the TSDuck library. This script is automatically invoked
+  by the makefile in `libtsduck` and Windows MSBuild project files.
 
 - `cleanup.py` : Complete cleanup of the directory tree, removing all generated
   or temporary files.
@@ -52,15 +50,12 @@ files in XML format).
 - `build.ps1` : This script builds all TSDuck code, executables and DLL's.
 
 - `build-java.ps1` : This script builds the Java bindings for TSDuck. It is
-  automatically invoked by `build.ps1` and there is no need to explicitly
-  run it.
+  automatically invoked by the MSBuild project files and there is no need to
+  explicitly run it.
 
 - `build-installer.ps1` : This script builds the binary installers for TSDuck.
   It automatically invokes `build.ps1`. So, to build TSDuck installers from a
   freshly cloned repository, just run this script.
-
-- `tsduck.nsi` : This file is an NSIS script to build the binary installers of
-  TSDuck. It is used by `build-installer.ps1`.
 
 - `tsduck.props` : This Visual Studio property file is installed with the TSDuck
   development environment. It is referenced by third-party applications using
@@ -84,7 +79,6 @@ The following scripts are just conveniences to run the corresponding `.py`
 scripts from the Windows explorer:
 
 - `build-project-files.ps1`
-- `build-tsduck-header.ps1`
 - `cleanup.ps1`
 
 ## Project files for Linux and macOS
@@ -104,7 +98,7 @@ scripts from the Windows explorer:
   is used only to develop and debug TSDuck. Building an official and complete
   version of TSDuck shall be done using make outside Qt Creator.
 
-## Configuration files for Linux
+## Configuration files for installer packages
 
 - `tsduck.spec` : RPM specification file to create TSDuck `.rpm` packages on
   Fedora, RedHat, CentOS, AlmaLinux and other clones.
@@ -112,5 +106,8 @@ scripts from the Windows explorer:
 - `tsduck.control` : Template for Debian control file, used to create `.deb`
   packages for TSDuck on Ubuntu, Debian, Rapsbian and other derivatives.
 
-- `tsduck-dev.control` : Template for Debian control file, used to create `.deb`
-  packages for TSDuck development environment.
+- `tsduck-dev.control` : Template for Debian control file, used to create
+  `.deb` packages for TSDuck development environment.
+
+- `tsduck.nsi` : Windows NSIS script to build the binary installers of
+  TSDuck. It is used by `build-installer.ps1`.

@@ -48,10 +48,10 @@ def collect_headers(root):
     # Loop on all files in directory
     for name in os.listdir(root):
         path = root + os.sep + name
-        if name not in exclude and fnmatch.fnmatch(name, '*.h') and not fnmatch.fnmatch(name, '*Template.h'):
-            headers[index].append(name)
-        elif os.path.isdir(path):
+        if os.path.isdir(path):
             collect_headers(path)
+        elif name not in exclude and fnmatch.fnmatch(name, '*.h') and not fnmatch.fnmatch(name, '*Template.h'):
+            headers[index].append(name)
 
 # Generate the header file.
 def generate_header(out):
