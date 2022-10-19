@@ -1565,7 +1565,9 @@ namespace ts {
                         const UString& thousandSeparators = UString(),
                         const UString& listSeparators = UString(u",; "),
                         size_type decimals = 0,
-                        const UString& decimalSeparators = UString(u".")) const;
+                        const UString& decimalSeparators = UString(u"."),
+                        typename CONTAINER::value_type minValue = std::numeric_limits<typename CONTAINER::value_type>::min(),
+                        typename CONTAINER::value_type maxValue = std::numeric_limits<typename CONTAINER::value_type>::max()) const;
 
         //!
         //! Format a string containing a decimal value.

@@ -106,6 +106,18 @@ namespace ts {
         //!
         class TSDUCKDLL EntryBase
         {
+        public:
+            //!
+            //! Preferred insertion index when serializing the table or NPOS if unspecified.
+            //! This is an informational hint which can be used or ignored.
+            //!
+            size_t order_hint;
+
+            //!
+            //! Default constructor.
+            //! @param [in] order Ordering hint, unspecified by default.
+            //!
+            explicit EntryBase(size_t order = NPOS) : order_hint(order) {}
         };
 
         //!
@@ -179,15 +191,19 @@ namespace ts {
             //!
             //! Basic constructor.
             //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in] auto_ordering If true, each time an entry is added, its @a order_hint, if previously unset
+            //! (meaning set to NPOS) is set to one higher than the highest @a order_hint in all entries. This ensures
+            //! that the order of insertion is preserved, at the expense of a small performance penalty
+            //! each time an entry is added.
             //!
-            explicit EntryWithDescriptorsMap(const AbstractTable* table);
+            explicit EntryWithDescriptorsMap(const AbstractTable* table, bool auto_ordering = false);
 
             //!
             //! Basic copy-like constructor.
             //! @param [in] table Parent table. A descriptor list is always attached to a table.
             //! @param [in] other Another instance to copy.
             //!
-            EntryWithDescriptorsMap(const AbstractTable* table, const SuperClass& other);
+            EntryWithDescriptorsMap(const AbstractTable* table, const EntryWithDescriptorsMap& other);
 
             //!
             //! Assignment operator.
@@ -226,9 +242,31 @@ namespace ts {
             //!
             const ENTRY& operator[](const KEY& key) const;
 
+            //!
+            //! Get the insertion order of entries in the table.
+            //! The result is based on the @a order_hint fields in the EntryBase structures.
+            //! @param [out] order Order of entries by key in the table.
+            //!
+            void getOrder(std::vector<KEY>& order) const;
+
+            //!
+            //! Define the insertion order of entries in the table.
+            //! This can be precisely set using the @a order_hint fields in the EntryBase structures.
+            //! This method is a helper which sets these fields.
+            //! @param [in] order Order of entries by key in the table.
+            //!
+            void setOrder(const std::vector<KEY>& order);
+
+            //!
+            //! Get the next ordering hint to be used in an entry to make sure it is considered the last one.
+            //! @return The next ordering hint to be used.
+            //!
+            size_t nextOrder() const;
+
         private:
             // Parent table (zero for descriptor list object outside a table).
             const AbstractTable* const _table;
+            bool _auto_ordering;
 
             // Inaccessible operations.
             EntryWithDescriptorsMap() = delete;
