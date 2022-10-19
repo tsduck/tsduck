@@ -53,7 +53,7 @@ ts::PMT::PMT(uint8_t version_, bool is_current_, uint16_t service_id_, PID pcr_p
     service_id(service_id_),
     pcr_pid(pcr_pid_),
     descs(this),
-    streams(this)
+    streams(this, true)
 {
 }
 
@@ -74,8 +74,7 @@ ts::PMT::PMT(DuckContext& duck, const BinaryTable& table) :
 
 ts::PMT::Stream::Stream(const AbstractTable* table, uint8_t type) :
     EntryWithDescriptors(table),
-    stream_type(type),
-    order_hint(NPOS)
+    stream_type(type)
 {
 }
 
@@ -128,10 +127,6 @@ void ts::PMT::deserializePayload(PSIBuffer& buf, const Section& section)
         Stream& str(streams[pid]);
         str.stream_type = type;
         buf.getDescriptorListWithLength(str.descs);
-        // When not already specified otherwise, keep the order of deserialization.
-        if (str.order_hint == NPOS) {
-            str.order_hint = streams.size() - 1;
-        }
     }
 }
 
@@ -167,7 +162,7 @@ void ts::PMT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
 
     // Order of serialization.
     std::vector<PID> pids;
-    getStreamsOrder(pids);
+    streams.getOrder(pids);
 
     // Add description of all elementary streams.
     for (PID pid : pids) {
@@ -483,43 +478,6 @@ ts::PID ts::PMT::firstVideoPID(const DuckContext& duck) const
 
 
 //----------------------------------------------------------------------------
-// Get the insertion order of streams in the PMT.
-//----------------------------------------------------------------------------
-
-void ts::PMT::getStreamsOrder(std::vector<PID>& order) const
-{
-    // Build a multimap of PID's, indexed by order_hint.
-    std::multimap<size_t, PID> map;
-    for (const auto& str : streams) {
-        map.insert(std::make_pair(str.second.order_hint, str.first));
-    }
-
-    // Build a vector of PID's from this order.
-    order.clear();
-    order.reserve(map.size());
-    for (const auto& it : map) {
-        order.push_back(it.second);
-    }
-}
-
-
-//----------------------------------------------------------------------------
-// Define the insertion order of streams in the PMT.
-//----------------------------------------------------------------------------
-
-void ts::PMT::setStreamsOrder(const std::vector<PID>& order)
-{
-    size_t count = 0;
-    for (PID pid : order) {
-        const auto it = streams.find(pid);
-        if (it != streams.end()) {
-            it->second.order_hint = count++;
-        }
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // A static method to display a PMT section.
 //----------------------------------------------------------------------------
 
@@ -560,7 +518,7 @@ void ts::PMT::buildXML(DuckContext& duck, xml::Element* root) const
 
     // Order of serialization.
     std::vector<PID> pids;
-    getStreamsOrder(pids);
+    streams.getOrder(pids);
 
     // Add description of all elementary streams.
     for (PID pid : pids) {
@@ -590,14 +548,14 @@ bool ts::PMT::analyzeXML(DuckContext& duck, const xml::Element* element)
     for (auto e : children) {
         PID pid = PID_NULL;
         ok = e->getIntAttribute<PID>(pid, u"elementary_PID", true, 0, 0x0000, 0x1FFF);
-        if (ok && Contains(streams, pid)) {
-            element->report().error(u"line %d: in <%s>, duplicated <%s> for PID 0x%X (%<d)", {e->lineNumber(), element->name(), e->name(), pid});
-            ok = false;
-        }
         if (ok) {
-            ok = e->getIntAttribute(streams[pid].stream_type, u"stream_type", true) && streams[pid].descs.fromXML(duck, e);
-            // Keep the order of deserialization.
-            streams[pid].order_hint = streams.size() - 1;
+            if (Contains(streams, pid)) {
+                element->report().error(u"line %d: in <%s>, duplicated <%s> for PID 0x%X (%<d)", {e->lineNumber(), element->name(), e->name(), pid});
+                ok = false;
+            }
+            else {
+                ok = e->getIntAttribute(streams[pid].stream_type, u"stream_type", true) && streams[pid].descs.fromXML(duck, e);
+            }
         }
     }
     return ok;
