@@ -459,7 +459,7 @@ bool ts::UString::Load(CONTAINER& container, const UString& fileName)
 //----------------------------------------------------------------------------
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators) const
+bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_type decimals, const UString& decimalSeparators, INT minValue, INT maxValue) const
 {
     // Locate actual begin and end of integer value. Skip leading redundant '+' sign.
     const UChar* start = data();
@@ -472,7 +472,7 @@ bool ts::UString::toInteger(INT& value, const UString& thousandSeparators, size_
     }
 
     // Decode the value. Use unsigned or signed version.
-    return ToIntegerHelper(start, end, value, thousandSeparators, decimals, decimalSeparators);
+    return ToIntegerHelper(start, end, value, thousandSeparators, decimals, decimalSeparators) && value >= minValue && value <= maxValue;
 }
 
 
@@ -609,10 +609,7 @@ bool ts::UString::toIntegers(CONTAINER& container,
         }
         // Decode segment
         int_type value = static_cast<int_type>(0);
-        if (!substr(start, end - start).toInteger<int_type>(value, thousandSeparators, decimals, decimalSeparators) ||
-            value < minValue ||
-            value > maxValue)
-        {
+        if (!substr(start, end - start).toInteger<int_type>(value, thousandSeparators, decimals, decimalSeparators, minValue, maxValue)) {
             return false;
         }
         container.push_back(value);

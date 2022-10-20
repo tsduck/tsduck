@@ -1524,13 +1524,17 @@ namespace ts {
         //! All extra decimals are accepted but ignored.
         //! @param [in] decimalSeparators A string of characters which are interpreted as decimal point.
         //! A decimal point is allowed only in base 10.
+        //! @param [in] minValue minimum allowed value for the decoded integer.
+        //! @param [in] maxValue maximum allowed value for the decoded integer.
         //! @return True on success, false on error (invalid string).
         //!
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool toInteger(INT& value,
                        const UString& thousandSeparators = UString(),
                        size_type decimals = 0,
-                       const UString& decimalSeparators = u".") const;
+                       const UString& decimalSeparators = u".",
+                       INT minValue = std::numeric_limits<INT>::min(),
+                       INT maxValue = std::numeric_limits<INT>::max()) const;
 
         //!
         //! Convert a string containing a list of integers into a container of integers.
@@ -1558,6 +1562,8 @@ namespace ts {
         //! All extra decimals are accepted but ignored.
         //! @param [in] decimalSeparators A string of characters which are interpreted as decimal point.
         //! A decimal point is allowed only in base 10.
+        //! @param [in] minValue minimum allowed value for the decoded integers.
+        //! @param [in] maxValue maximum allowed value for the decoded integers.
         //! @return True on success, false on error (invalid string).
         //!
         template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type* = nullptr>
