@@ -42,36 +42,33 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.48 and ISO/IEC 14496-1, 7.4.2.5.
     //! @ingroup descriptor
     //!
-
-    class substructure_type {
-    public:
-        uint8_t     repititionCount;            //!< 3 bits
-        std::vector<uint8_t> m4MuxChannel;      //!< list of 8 bit values
-        std::vector<uint8_t> numberOfBytes;     //!< list of 8 bit values
-
-        //!
-        //! Default constructor.
-        //!
-        substructure_type();
-    };
-
-    class MuxCodeTableEntry_type {
-    public:
-        uint8_t     MuxCode;        //!< 4 bits
-        uint8_t     version;        //!< 4 bits
-        std::vector<substructure_type> substructure;
-
-        //!
-        //! Default constructor.
-        //!
-        MuxCodeTableEntry_type();
-    };
-
-    class TSDUCKDLL MuxCodeDescriptor : public AbstractDescriptor 
+    class TSDUCKDLL MuxCodeDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! Mux code substructure.
+        //!
+        class TSDUCKDLL substructure_type {
+        public:
+            uint8_t     repititionCount;         //!< 3 bits
+            std::vector<uint8_t> m4MuxChannel;   //!< list of 8 bit values
+            std::vector<uint8_t> numberOfBytes;  //!< list of 8 bit values
+            substructure_type();                 //!< Default constructor.
+        };
+
+        //!
+        //! One mux code table entry.
+        //!
+        class TSDUCKDLL MuxCodeTableEntry_type {
+        public:
+            uint8_t MuxCode;                              //!< 4 bits
+            uint8_t version;                              //!< 4 bits
+            std::vector<substructure_type> substructure;  //!< Mux code substructure
+            MuxCodeTableEntry_type();                     //!< Default constructor.
+        };
+
         // Public members:
-        std::vector<MuxCodeTableEntry_type> MuxCodeTableEntry;
+        std::vector<MuxCodeTableEntry_type> MuxCodeTableEntry;  //!< All mux codes.
 
         //!
         //! Default constructor.

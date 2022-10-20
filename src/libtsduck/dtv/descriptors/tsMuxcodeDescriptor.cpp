@@ -45,18 +45,19 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 auto constexpr MAX_SUBSTRUCTURES = 0xFF;    // 8 bits for the substructureCount
 auto constexpr MAX_SLOTS = 0x1F;            // 5 bits for the slotCount
 
+
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::substructure_type::substructure_type() :
+ts::MuxCodeDescriptor::substructure_type::substructure_type() :
     repititionCount(0),
     m4MuxChannel(),
     numberOfBytes()
 {
 }
 
-ts::MuxCodeTableEntry_type::MuxCodeTableEntry_type() :
+ts::MuxCodeDescriptor::MuxCodeTableEntry_type::MuxCodeTableEntry_type() :
     MuxCode(0),
     version(0),
     substructure()
@@ -115,7 +116,7 @@ void ts::MuxCodeDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::MuxCodeDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    while (buf.canReadBytes(3)) {    
+    while (buf.canReadBytes(3)) {
         uint8_t length = buf.getUInt8();
         if (buf.canReadBytes(length)) {
             MuxCodeTableEntry_type newMuxCodeEntry;
@@ -234,7 +235,7 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
                 _substructure.numberOfBytes.push_back(uint8_t(_tmp));
             }
             MuxCodeEntry.substructure.push_back(_substructure);
-            
+
         }
         MuxCodeTableEntry.push_back(MuxCodeEntry);
     }

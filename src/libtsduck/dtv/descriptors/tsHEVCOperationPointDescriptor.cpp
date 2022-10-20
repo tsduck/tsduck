@@ -51,31 +51,32 @@ constexpr auto   MAX_numEsInOp = 0x3F;                    // 6 bits for numEsInO
 
 constexpr size_t PROFILE_TIER_LEVEL_INFO_SIZE = 96 / 8;   // number of bytes for 96 bits
 
+
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::ES_in_OP_type::ES_in_OP_type() :
+ts::HEVCOperationPointDescriptor::ES_in_OP_type::ES_in_OP_type() :
     necessary_layer_flag(false),
     output_layer_flag(false),
     ptl_ref_idx(0)
 {
 }
 
-ts::ES_type::ES_type() :
+ts::HEVCOperationPointDescriptor::ES_type::ES_type() :
     prepend_dependencies(false),
     ES_reference(0)
 {
 }
 
-ts::operation_point_type::operation_point_type() :
+ts::HEVCOperationPointDescriptor::operation_point_type::operation_point_type() :
     target_ols(0),
     ESs(),
     ESinOPs(),
     constant_frame_rate_info_idc(0),
     applicable_temporal_id(0),
     frame_rate_indicator(),
-    avg_bit_rate(), 
+    avg_bit_rate(),
     max_bit_rate()
 {
 }
@@ -219,7 +220,7 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         buf.getBits(num_ptl, 6);
         for (uint8_t i = 0; i < num_ptl; i++)
             disp << margin << "profile_tier_level_info[" << int(i) << "] " << UString::Dump(buf.getBytes(PROFILE_TIER_LEVEL_INFO_SIZE), UString::SINGLE_LINE) << std::endl;
- 
+
         uint8_t operation_points_count = buf.getUInt8();
         for (uint8_t i = 0; i < operation_points_count; i++) {
             disp << margin << "operation point[ " << int(i) << "]  target OLS: " << int(buf.getUInt8()) << std::endl;
@@ -277,7 +278,7 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 
 void ts::HEVCOperationPointDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it : profile_tier_level_infos) 
+    for (auto it : profile_tier_level_infos)
         root->addElement(u"profile_tier_level_info")->addHexaText(it);
     for (auto it : operation_points) {
         ts::xml::Element* op = root->addElement(u"operation_point");
@@ -306,7 +307,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
 {
     xml::ElementVector _profile_tier_levels, _operation_points;
 
-    bool ok = element->getChildren(_profile_tier_levels, u"profile_tier_level_info") && 
+    bool ok = element->getChildren(_profile_tier_levels, u"profile_tier_level_info") &&
               element->getChildren(_operation_points, u"operation_point");
 
     if (ok && _profile_tier_levels.size() > MAX_PROFILE_TIER_LEVELS) {
@@ -317,7 +318,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
         element->report().error(u"only %d <operation_point> elements are permitted [<%s>, line %d]", { MAX_OPERATION_POINTS, element->name(), element->lineNumber() });
         ok = false;
     }
-    
+
     for (size_t i = 0; ok && i < _profile_tier_levels.size(); i++) {
         ByteBlock ptli;
         ok &= _profile_tier_levels[i]->getHexaText(ptli);

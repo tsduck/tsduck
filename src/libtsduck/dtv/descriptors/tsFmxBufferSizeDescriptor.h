@@ -42,30 +42,28 @@ namespace ts {
     //! @see ISO/IEC 13818-1, ITU-T Rec. H.222.0, 2.6.50.
     //! @ingroup descriptor
     //!
-
-    class FlexMuxBufferDescriptor_type {
-        //!
-        //! details about the FlexMuxBufferDescriptor() are no longer provided in ISO/IEC 14496-1
-        //! as indicated by ISO/IEC 13818-1. 
-        //! This syntax can be found in section 7.2 of "The MPEG-4 Book" by Fernando Pereira and 
-        //! Touradj Ebrahimi. IMSC Press 2002. ISBN 0130616214
-        //! 
-    public:
-        uint8_t     flexMuxChnnel;      //!< 8 bits
-        uint32_t    FB_BufferSize;      //!< 24 bits
-
-        //!
-        //! Default constructor.
-        //!
-        FlexMuxBufferDescriptor_type();
-    };
-
     class TSDUCKDLL FmxBufferSizeDescriptor : public AbstractDescriptor
     {
     public:
+        //!
+        //! One FlexMux description.
+        //!
+        //! Details about the FlexMuxBufferDescriptor() are no longer provided in ISO/IEC 14496-1
+        //! as indicated by ISO/IEC 13818-1.
+        //!
+        //! This syntax can be found in section 7.2 of "The MPEG-4 Book" by Fernando Pereira and
+        //! Touradj Ebrahimi. IMSC Press 2002. ISBN 0130616214
+        //!
+        class TSDUCKDLL FlexMuxBufferDescriptor_type {
+        public:
+            uint8_t     flexMuxChnnel;       //!< 8 bits
+            uint32_t    FB_BufferSize;       //!< 24 bits
+            FlexMuxBufferDescriptor_type();  //!< Default constructor.
+        };
+
         // Public members:
-        FlexMuxBufferDescriptor_type                DefaultFlexMuxBufferDescriptor;
-        std::vector<FlexMuxBufferDescriptor_type>   FlexMuxBufferDescriptor;
+        FlexMuxBufferDescriptor_type              DefaultFlexMuxBufferDescriptor;  //!< Default FlexMux.
+        std::vector<FlexMuxBufferDescriptor_type> FlexMuxBufferDescriptor;         //!< Other FlexMux.
 
         //!
         //! Default constructor.

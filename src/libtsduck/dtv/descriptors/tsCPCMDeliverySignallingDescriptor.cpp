@@ -49,19 +49,19 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::CPSvector::CPSvector() :
+ts::CPCMDeliverySignallingDescriptor::CPSvector::CPSvector() :
     C_and_R_regime_mask(0),
     cps_byte()
 {
 }
 
-void ts::CPSvector::clearContent() 
+void ts::CPCMDeliverySignallingDescriptor::CPSvector::clearContent()
 {
     C_and_R_regime_mask = 0;
     cps_byte.clear();
 }
 
-ts::CPCMv1Signalling::CPCMv1Signalling() :
+ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::CPCMv1Signalling() :
     copy_control(0),
     do_not_cpcm_scramble(false),
     viewable(false),
@@ -86,7 +86,7 @@ ts::CPCMv1Signalling::CPCMv1Signalling() :
 {
 }
 
-void ts::CPCMv1Signalling::clearContent()
+void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::clearContent()
 {
     copy_control = 0;
     do_not_cpcm_scramble = false;
@@ -146,7 +146,7 @@ ts::DID ts::CPCMDeliverySignallingDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-void ts::CPCMv1Signalling::serializePayload(PSIBuffer& buf) const
+void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(copy_control, 3);
     buf.putBit(do_not_cpcm_scramble);
@@ -194,11 +194,11 @@ void ts::CPCMDeliverySignallingDescriptor::serializePayload(PSIBuffer& buf)  con
 {
     buf.putUInt8(cpcm_version);
     switch (cpcm_version) {
-    case 0x01:
-        cpcm_v1_delivery_signalling.serializePayload(buf);
-        break;
-    default:
-        break;
+        case 0x01:
+            cpcm_v1_delivery_signalling.serializePayload(buf);
+            break;
+        default:
+            break;
     }
 }
 
@@ -207,7 +207,7 @@ void ts::CPCMDeliverySignallingDescriptor::serializePayload(PSIBuffer& buf)  con
 // Deserialization
 //----------------------------------------------------------------------------
 
-void ts::CPCMv1Signalling::deserializePayload(PSIBuffer& buf)
+void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::deserializePayload(PSIBuffer& buf)
 {
     buf.getBits(copy_control, 3);
     do_not_cpcm_scramble = buf.getBool();
@@ -257,11 +257,11 @@ void ts::CPCMDeliverySignallingDescriptor::deserializePayload(PSIBuffer& buf)
 {
     cpcm_version = buf.getUInt8();
     switch (cpcm_version) {
-    case 0x01:
-        cpcm_v1_delivery_signalling.deserializePayload(buf);
-        break;
-    default:
-        cpcm_v1_delivery_signalling.clearContent();
+        case 0x01:
+            cpcm_v1_delivery_signalling.deserializePayload(buf);
+            break;
+        default:
+            cpcm_v1_delivery_signalling.clearContent();
     }
 }
 
@@ -279,7 +279,7 @@ void ts::CPCMDeliverySignallingDescriptor::deserializePayload(PSIBuffer& buf)
   (byte & 0x08 ? '1' : '0'), \
   (byte & 0x04 ? '1' : '0'), \
   (byte & 0x02 ? '1' : '0'), \
-  (byte & 0x01 ? '1' : '0') 
+  (byte & 0x01 ? '1' : '0')
 
 void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
