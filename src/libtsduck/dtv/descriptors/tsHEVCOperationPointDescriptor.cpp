@@ -318,7 +318,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
         ok = false;
     }
     
-    for (uint8_t i = 0; ok && i < _profile_tier_levels.size(); i++) {
+    for (size_t i = 0; ok && i < _profile_tier_levels.size(); i++) {
         ByteBlock ptli;
         ok &= _profile_tier_levels[i]->getHexaText(ptli);
         if (ok && (ptli.size() != PROFILE_TIER_LEVEL_INFO_SIZE)) {
@@ -328,7 +328,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
         profile_tier_level_infos.push_back(ptli);
     }
 
-    for (uint8_t i = 0; ok && i < _operation_points.size(); i++) {
+    for (size_t i = 0; ok && i < _operation_points.size(); i++) {
         operation_point_type op;
         ok &= _operation_points[i]->getIntAttribute(op.target_ols, u"target_ols", true, 0, 0, 0xFF);
 
@@ -340,7 +340,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
             _operation_points[i]->report().error(u"only %d <ES> elements are permitted [<%s>, line %d]", { MAX_ES_POINTS, _operation_points[i]->name(), _operation_points[i]->lineNumber() });
             ok = false;
         }
-        for (uint8_t j = 0; j < _ES.size(); j++) {
+        for (size_t j = 0; j < _ES.size(); j++) {
             ES_type newES;
             ok &= _ES[j]->getBoolAttribute(newES.prepend_dependencies, u"prepend_dependencies") &&
                   _ES[j]->getIntAttribute(newES.ES_reference, u"ES_reference", true, 0, 0, 0x3F);
@@ -351,7 +351,7 @@ bool ts::HEVCOperationPointDescriptor::analyzeXML(DuckContext& duck, const xml::
             _operation_points[i]->report().error(u"only %d <ESinOP> elements are permitted [<%s>, line %d]", { MAX_numEsInOp, _operation_points[i]->name(), _operation_points[i]->lineNumber() });
             ok = false;
         }
-        for (uint8_t k = 0; k < _ESinOP.size(); k++) {
+        for (size_t k = 0; k < _ESinOP.size(); k++) {
             ES_in_OP_type newESinOP;
             ok &= _ESinOP[k]->getBoolAttribute(newESinOP.necessary_layer_flag, u"necessary_layer") &&
                   _ESinOP[k]->getBoolAttribute(newESinOP.output_layer_flag, u"output_layer") &&
