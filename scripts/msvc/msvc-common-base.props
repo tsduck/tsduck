@@ -5,7 +5,8 @@
 
   <PropertyGroup Label="Configuration">
     <TSDuckRootDir>$([System.IO.Path]::GetFullPath('$(SolutionDir)..\..\'))</TSDuckRootDir>
-    <OutDir>$(TSDuckRootDir)bin\$(Configuration)-$(Platform)\</OutDir>
+    <BinRootDir>$(TSDuckRootDir)bin\</BinRootDir>
+    <OutDir>$(BinRootDir)$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(OutDir)$(ProjectName)\</IntDir>
   </PropertyGroup>
 

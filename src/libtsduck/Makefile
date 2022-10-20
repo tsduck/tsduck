@@ -68,7 +68,7 @@ endif
 
 include ../../Makefile.inc
 
-# Some source files are located in subdirectories but should be considered as part of libtsduck.
+# Most source files are located in subdirectories but should be considered as part of libtsduck.
 
 VPATH := $(filter-out %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
@@ -93,21 +93,19 @@ OBJS = $(addprefix $(OBJDIR)/,$(addsuffix .o,$(basename $(SOURCES))))
 default: headers libs
 	+@$(call F_RECURSE,config python java)
 
-# The tsduck.h header is automatically generated from all headers using BUILD_PROJ_FILES.
+# The tsduck.h header is automatically generated from all headers.
 
-BUILD_TSDUCK_H = $(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py
+TSDUCK_H = $(BINDIR)/include/tsduck.h
 
 .PHONY: headers
-headers: tsduck.h
-tsduck.h: $(BUILD_TSDUCK_H) $(SRCROOT)/HEADER.txt $(filter-out tsduck.h %Template.h,$(wildcard *.h */*.h */*/*.h))
+headers: $(TSDUCK_H)
+$(TSDUCK_H): $(SRCROOT)/HEADER.txt $(filter-out %Template.h,$(wildcard *.h */*.h */*/*.h))
 	@echo '  [REBUILD] $@'; \
-	$(BUILD_TSDUCK_H) >$@
+	mkdir -p $(dir $@); \
+	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py $@
 
-# This header file is regenerated and, normally, make should know that they must be
-# finished before building tsVersionInfo.o. However, the .dep file contains full paths
-# of dependencies and make cannot realize it is the same header files.
-
-$(OBJDIR)/tsduck.o: tsduck.h
+$(OBJDIR)/tsduck.o: $(TSDUCK_H)
+$(OBJDIR)/tsduck.o: CXXFLAGS_INCLUDES += -I$(dir $(TSDUCK_H))
 
 # Some libraries are used internally to libtsduck only.
 
@@ -124,10 +122,6 @@ $(OBJDIR)/tsSHA256.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 $(OBJDIR)/tsSHA512.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 $(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 
-# Dektec code (if not empty) is encapsulated into the TSDuck library.
-
-OBJS += $(DTAPI_OBJECT)
-
 # Add libtsduck internal headers when compiling libtsduck.
 
 CXXFLAGS_INCLUDES += $(addprefix -I,$(PRIVATE_INCLUDES))
@@ -140,11 +134,14 @@ CXXFLAGS_INCLUDES += $(addprefix -I,$(PRIVATE_INCLUDES))
 libs: $(STATIC_LIBTSDUCK) $(if $(STATIC),,$(SHARED_LIBTSDUCK))
 
 # The shared library contains all modules.
+# We change the current directory to OBJDIR and use object file names without directory,
+# otherwise the command line is too long when the directory path is long.
 
-$(SHARED_LIBTSDUCK): $(OBJS)
+$(SHARED_LIBTSDUCK): $(OBJS) $(DTAPI_OBJECT)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [LD] $@'; \
-	$(CXX) $(CXXFLAGS) $(SOFLAGS) $^ $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	cd $(OBJDIR); \
+	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
 # tables, descriptors, charsets and plugins. These classes use self-registration
@@ -187,9 +184,13 @@ endif
 
 # Build the static library using one single big 'ar'. There are so many object files
 # that this is much faster than individual 'ar' commands per object module.
+# We change the current directory to OBJDIR and use object file names without directory,
+# otherwise the command line is too long when the directory path is long.
 
-$(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB)
-	@echo '  [AR] $@'; $(AR) $(ARFLAGS) $@ $^
+$(STATIC_LIBTSDUCK): $(OBJS_STATIC_LIB) $(DTAPI_OBJECT)
+	@echo '  [AR] $@'; \
+	cd $(OBJDIR); \
+	$(AR) $(ARFLAGS) $@ $(notdir $(OBJS_STATIC_LIB)) $(DTAPI_OBJECT)
 
 # Installation targets.
 
@@ -201,11 +202,11 @@ install-tools: $(SHARED_LIBTSDUCK)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	+@$(call F_RECURSE,config python java)
 
-install-devel: $(STATIC_LIBTSDUCK) tsduck.h
+install-devel: $(STATIC_LIBTSDUCK) $(TSDUCK_H)
 	rm -rf $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
-	install -m 644 $(addsuffix /*.h,$(PUBLIC_INCLUDES)) $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	install -m 644 $(addsuffix /*.h,$(PUBLIC_INCLUDES)) $(TSDUCK_H) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	$(if $(NOTELETEXT),rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsTeletextDemux.h)
 	$(if $(NOTELETEXT),rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsTeletextPlugin.h)
 	$(if $(NOTELETEXT),$(SED) -i -e '/TeletextDemux/d' -e '/TeletextPlugin/d' $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h)

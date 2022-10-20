@@ -47,7 +47,7 @@ namespace {
         bool merge;
     };
     Predef PredefData[] = {
-        {nullptr, u"tsduck.names", true},          // DTV
+        {nullptr, u"tsduck.dtv.names", true},      // DTV
         {nullptr, u"tsduck.ip.names", false},      // IP
         {nullptr, u"tsduck.oui.names", false},     // OUI
         {nullptr, u"tsduck.dektec.names", false},  // DEKTEC

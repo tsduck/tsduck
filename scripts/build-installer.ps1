@@ -98,15 +98,16 @@ Set-StrictMode -Version 3
 if (((Get-ExecutionPolicy) -ne "Unrestricted") -and ((Get-ExecutionPolicy) -ne "RemoteSigned")) {
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force -ErrorAction:SilentlyContinue
 }
-Import-Module -Force -Name (Join-Path $PSScriptRoot build-common.psm1)
+Import-Module -Force -Name "${PSScriptRoot}\tsbuild.psm1"
 
 # Get the project directories.
-$RootDir = (Split-Path -Parent $PSScriptRoot)
-$MsvcDir = (Join-Path $PSScriptRoot "msvc")
-$SrcDir = (Join-Path $RootDir "src")
-$BinRoot = (Join-Path $RootDir "bin")
-$JarFile = (Join-Path (Join-Path $BinRoot "java") "tsduck.jar")
-$InstallerDir = (Join-Path $RootDir "installers")
+$RootDir    = (Split-Path -Parent $PSScriptRoot)
+$MsvcDir    = "${PSScriptRoot}\msvc"
+$SrcDir     = "${RootDir}\src"
+$BinRoot    = "${RootDir}\bin"
+$BinInclude = "${BinRoot}\include"
+$JarFile    = "${BinRoot}\java\tsduck.jar"
+$InstallerDir = "${RootDir}\installers"
 
 # Apply defaults.
 if (-not $Win32 -and -not $Win64) {
@@ -149,7 +150,7 @@ if (-not $NoLowPriority) {
 if (-not $NoBuild) {
     Write-Output "Compiling..."
     Push-Location
-    & (Join-Path $PSScriptRoot build.ps1) -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority -NoTeletext:$NoTeletext
+    & "$PSScriptRoot\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority -NoTeletext:$NoTeletext
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {
@@ -158,9 +159,8 @@ if (-not $NoBuild) {
 }
 
 # Get version name.
-$GetVersion = (Join-Path $PSScriptRoot get-version-from-sources.py)
-$Version = (python $GetVersion)
-$VersionInfo = (python $GetVersion --windows)
+$Version = (python "${PSScriptRoot}\get-version-from-sources.py")
+$VersionInfo = (python "${PSScriptRoot}\get-version-from-sources.py" --windows)
 
 # A function to build a binary installer.
 function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [string]$HeadersDir)
@@ -168,10 +168,10 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [str
     Write-Output "Building installer for $Arch..."
 
     # Full bin directory.
-    $BinDir = (Join-Path $BinRoot "Release-${BinSuffix}")
+    $BinDir = "${BinRoot}\Release-${BinSuffix}"
 
     # NSIS script for this project.
-    $NsisScript = Join-Path $PSScriptRoot "tsduck.nsi"
+    $NsisScript = "${PSScriptRoot}\tsduck.nsi"
 
     # Base name of the MSVC redistributable.
     $VCRedistName = (Get-Item $VCRedist).Name
@@ -197,14 +197,16 @@ if (-not $NoInstaller) {
     $TempDir = New-TempDirectory
     $Exclude = @("*\unix\*", "*\linux\*", "*\mac\*", "*\private\*")
     if ($NoTeletext) {
-        $Exclude += "*\tsduck.h"
         $Exclude += "*\tsTeletextDemux.h"
         $Exclude += "*\tsTeletextPlugin.h"
-        Get-Content (Join-Multipath @($SrcDir, "libtsduck", "tsduck.h")) | `
+        Get-Content "${BinInclude}\tsduck.h" | `
             Where-Object { ($_ -notmatch 'tsTeletextDemux.h') -and ($_ -notmatch 'tsTeletextPlugin.h') } | `
-            Out-File -Encoding ascii (Join-Path $TempDir tsduck.h)
+            Out-File -Encoding ascii "${TempDir}\tsduck.h"
     }
-    Get-ChildItem (Join-Path $SrcDir libtsduck) -Recurse -Include "*.h" | `
+    else {
+        Copy-Item "${BinInclude}\tsduck.h" "${TempDir}\tsduck.h"
+    }
+    Get-ChildItem "${SrcDir}\libtsduck" -Recurse -Include "*.h" | `
         Where-Object {
             $fname = $_.FullName
             ($Exclude | ForEach-Object { $fname -like $_ }) -notcontains $true
@@ -237,10 +239,10 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
     Write-Output "Building portable installer for $InstallerSuffix..."
 
     # Full bin directory.
-    $BinDir = (Join-Path $BinRoot "Release-${BinSuffix}")
+    $BinDir = "${BinRoot}\Release-${BinSuffix}"
 
     # Package name.
-    $ZipFile = (Join-Path $InstallerDir "TSDuck-${InstallerSuffix}-${Version}-Portable.zip")
+    $ZipFile = "${InstallerDir}\TSDuck-${InstallerSuffix}-${Version}-Portable.zip"
 
     # Create a temporary directory.
     $TempDir = New-TempDirectory
@@ -248,28 +250,28 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
     Push-Location $TempDir
     try {
         # Build directory tree and copy files.
-        $TempRoot = (New-Directory @($TempDir, "TSDuck"))
-        Copy-Item (Join-Path $RootDir "LICENSE.txt") -Destination $TempRoot
-        Copy-Item (Join-Path $RootDir "OTHERS.txt") -Destination $TempRoot
+        $TempRoot = (New-Directory "${TempDir}\TSDuck")
+        Copy-Item "${RootDir}\LICENSE.txt" -Destination $TempRoot
+        Copy-Item "${RootDir}\OTHERS.txt" -Destination $TempRoot
 
-        $TempBin = (New-Directory @($TempRoot, "bin"))
-        Copy-Item (Join-Path $BinDir "ts*.exe") -Exclude "*_static.exe" -Destination $TempBin
-        Copy-Item (Join-Path $BinDir "ts*.dll") -Destination $TempBin
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "config", "tsduck*.xml")) -Destination $TempBin
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "config", "tsduck*.names")) -Destination $TempBin
+        $TempBin = (New-Directory "${TempRoot}\bin")
+        Copy-Item "${BinDir}\ts*.exe" -Exclude "*_static.exe" -Destination $TempBin
+        Copy-Item "${BinDir}\ts*.dll" -Destination $TempBin
+        Copy-Item "${SrcDir}\libtsduck\config\tsduck*.xml" -Destination $TempBin
+        Copy-Item "${SrcDir}\libtsduck\config\tsduck*.names" -Destination $TempBin
 
-        $TempDoc = (New-Directory @($TempRoot, "doc"))
-        Copy-Item (Join-Multipath @($RootDir, "doc", "tsduck.pdf")) -Destination $TempDoc
-        Copy-Item (Join-Path $RootDir "CHANGELOG.txt") -Destination $TempDoc
+        $TempDoc = (New-Directory "${TempRoot}\doc")
+        Copy-Item "${RootDir}\doc\tsduck.pdf" -Destination $TempDoc
+        Copy-Item "${RootDir}\CHANGELOG.txt" -Destination $TempDoc
 
-        $TempPython = (New-Directory @($TempRoot, "python"))
-        Copy-Item (Join-Multipath @($SrcDir, "libtsduck", "python", "*.py")) -Destination $TempPython
+        $TempPython = (New-Directory "${TempRoot}\python")
+        Copy-Item "${SrcDir}\libtsduck\python\*.py" -Destination $TempPython
 
-        $TempJava = (New-Directory @($TempRoot, "java"))
+        $TempJava = (New-Directory "${TempRoot}\java")
         Copy-Item $JarFile -Destination $TempJava
 
-        $TempSetup = (New-Directory @($TempRoot, "setup"))
-        Copy-Item (Join-Path $BinDir "setpath.exe") -Destination $TempSetup
+        $TempSetup = (New-Directory "${TempRoot}\setup")
+        Copy-Item "${BinDir}\setpath.exe" -Destination $TempSetup
         Copy-Item $VCRedist -Destination $TempSetup
 
         # Create the zip file.

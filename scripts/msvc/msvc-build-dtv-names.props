@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- A target to build tsduck.dtv.names from all .names files -->
+
+  <ItemGroup>
+    <DtvNamesFiles Include="$(TSDuckRootDir)src\libtsduck\config\tsduck.dtv.skeleton.names;
+                            $(TSDuckRootDir)src\libtsduck\base\*\*.names;
+                            $(TSDuckRootDir)src\libtsduck\dtv\*\*.names;"/>
+  </ItemGroup>
+
+  <Target Name="BuildDtvNames" Inputs="@(DtvNamesFiles)" Outputs="$(OutDir)tsduck.dtv.names">
+    <Message Text="Building $(OutDir)tsduck.dtv.names" Importance="high"/>
+    <ItemGroup>
+      <NamesContents Include="$([System.IO.File]::ReadAllText(%(DtvNamesFiles.Identity)))"/>
+    </ItemGroup>
+    <WriteLinesToFile File="$(OutDir)tsduck.dtv.names" Lines="@(NamesContents)" Overwrite="true"/>
+  </Target>
+
+</Project>

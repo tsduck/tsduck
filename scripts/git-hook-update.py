@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env python
 #-----------------------------------------------------------------------------
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
@@ -37,37 +37,44 @@
 #  The template for a hook script is:
 #
 #    #!/usr/bin/env bash
-#    exec $GIT_DIR/../scripts/git-hook.sh <hook-name>
+#    $(dirname "$0")/../scripts/git-hook.sh <hook-name>
 #
 #-----------------------------------------------------------------------------
 
-SCRIPT=$(basename $BASH_SOURCE)
-ROOTDIR=$(cd $(dirname $BASH_SOURCE)/..; pwd)
+import tsbuild, sys, os, stat
 
-GITHOOKS_DIR="$ROOTDIR/.git/hooks"
-GITHOOKS_CMD="scripts/git-hook.sh"
-GITHOOKS_LIST="pre-commit post-merge"
+root_dir = tsbuild.repo_root()
+githooks_dir = root_dir + '/.git/hooks'
+githooks_list = ('pre-commit', 'post-merge')
 
 # Give up if not in a Git repo.
-[[ -d "$GITHOOKS_DIR" ]] || exit 0
+if not os.path.isdir(githooks_dir):
+    exit(0)
 
 # Activate Git LFS at user level.
-cd "$HOME"
-(git config --list --global | fgrep -q filter.lfs) || git lfs install
+if 'filter.lfs' not in tsbuild.run(['git', 'config', '--list', '--global'], cwd=os.getenv('HOME')):
+    print('Activating Git LFS at user level')
+    tsbuild.run(['git', 'lfs', 'install'])
 
 # Activate Git LFS in repo (replace some Git hooks).
-cd "$ROOTDIR"
-(cat "$GITHOOKS_DIR"/* 2>/dev/null | grep -q 'git  *lfs') || git lfs update --force
+lfs_set = False
+for filename in os.listdir(githooks_dir):
+    file = githooks_dir + os.sep + filename
+    if os.path.isfile(file) and 'git lfs' in tsbuild.read(file):
+        lfs_set = True
+        break;
+if not lfs_set:
+    print('Activating Git LFS at repository level')
+    tsbuild.run(['git', 'lfs', 'update', '--force'], cwd=root_dir)
 
 # Update all hooks.
-for hook in $GITHOOKS_LIST; do
-    hookfile="$GITHOOKS_DIR/$hook"
-    if [[ ! -e "$hookfile" ]]; then
-        echo '#!/usr/bin/env bash' >"$hookfile"
-        chmod a+x "$hookfile"
-    fi
-    if ! fgrep -q "/../../$GITHOOKS_CMD $hook" "$hookfile"; then
-        echo "Updating Git hook $hook"
-        echo "\$(dirname \$0)/../../$GITHOOKS_CMD $hook" >>"$hookfile"
-    fi
-done
+for hook in githooks_list:
+    file = githooks_dir + os.sep + hook
+    content = tsbuild.read(file) if os.path.isfile(file) else ''
+    if '/scripts/git-hook.sh' not in content:
+        print('Updating Git hook %s' % hook)
+        if content == '':
+            content = '#!/usr/bin/env bash\n'
+        content += '$(dirname "$0")/../../scripts/git-hook.sh ' + hook + '\n'
+        tsbuild.write(file, content)
+        os.chmod(file, stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR | stat.S_IRGRP | stat.S_IXGRP)
