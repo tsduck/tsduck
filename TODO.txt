@@ -13,8 +13,6 @@ TSDuck - List of features to be implemented or fixed
     - 2.6.72   MPEG4_audio_extension_descriptor
   - With embedded data structures from ISO/IEC 23002-3 (MPEG-C auxiliairy video):
     - 2.6.74   auxiliary_video_stream_descriptor
-  - With embedded data structures from ISO/IEC 23008-2 / H.265 (HEVC):
-    - 2.6.100  HEVC_operation_point_descriptor
   - With embedded data structures from ISO/IEC 23008-3 (High efficiency 3D audio):
     - 2.6.108  MPEGH_3D_audio_config_descriptor
     - 2.6.110  MPEGH_3D_audio_scene_descriptor
