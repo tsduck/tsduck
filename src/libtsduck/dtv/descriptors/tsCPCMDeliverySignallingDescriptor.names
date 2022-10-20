@@ -1,0 +1,25 @@
+[cpcm_delivery_signalling_descriptor.copy_control]
+Bits = 3
+# ETSI TS 102 825-4 table 9
+0 = Not Asserted
+1 = Copy Once
+2 = Copy No More
+3 = Copy Never - Zero Retention Not Asserted
+4 = Copy Never - Zero Retention Asserted
+5-7 = reserved
+
+[cpcm_delivery_signalling_descriptor.move_copy_propagation]
+Bits = 2
+# ETSI TS 102 825-4 table 10
+0 = MLAD - Copying and/or Movement within the same Localized AD is allowed.
+1 = MGAD - Copying and/or Movement within the same Geographically-constrained AD is allowed.
+2 = MAD - Copying and/or Movement within the same Authorized Domain is allowed.
+3 = MCPCM - Copying and/or Movement to any CPCM-compliant Storage Entity is allowed.
+
+[cpcm_delivery_signalling_descriptor.view_propagation]
+Bits = 2
+# ETSI TS 102 825-4 table 11
+0 = VLAD - Viewing, i.e. Consumption, within the same Localized AD is allowed.
+1 = VGAD - Viewing, i.e. Consumption, within the same Geographically-constrained AD is allowed.
+2 = VAD - Viewing, i.e. Consumption, within the same Authorized Domain is allowed.
+3 = VCPCM - Viewing, i.e. Consumption, using any CPCM-compliant Storage Entity is allowed.
