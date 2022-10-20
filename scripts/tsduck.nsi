@@ -138,6 +138,7 @@ Section "Tools & Plugins" SectionTools
     Delete "$INSTDIR\bin\tsduck.xml"
     Delete "$INSTDIR\bin\tsduck.channels.xml"
     Delete "$INSTDIR\bin\tsduck.dvb.names"
+    Delete "$INSTDIR\bin\tsduck.names"
 
     ; Delete obsolete plugins from previous versions.
     ; Maintenance: also update Makefile.inc

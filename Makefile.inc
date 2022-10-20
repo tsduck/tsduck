@@ -774,7 +774,7 @@ ifeq ($(DONT_BUILD_DEPS),)
 endif
 
 ifeq ($(DONT_BUILD_DEPS),)
-    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(CURCPP) $(wildcard *.cpp)))))
+    -include $(addprefix $(OBJDIR)/,$(addsuffix .dep,$(notdir $(basename $(CURCPP) $(filter-out tsduck.cpp,$(wildcard *.cpp))))))
 endif
 
 #-----------------------------------------------------------------------------
