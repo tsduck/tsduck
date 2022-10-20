@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <HEVC_operation_point_descriptor>
+      <profile_tier_level_info>
+        Hexadecimal Content
+      </profile_tier_level_info>
+      <operation_point 
+          target_ols="uint8, required"
+          constant_frame_rate_info_idc="uint2, required"
+          applicable_temporal_id="uint3, required"
+          frame_rate_indicator="uint12, default=0"
+          avg_bit_rate="uint24, default=0"
+          max_bit_rate="uint24, default=0">
+        <ES 
+          prepend_dependencies="bool, required"
+          ES_reference="uint6, required"/>
+        <ESinOP 
+          necessary_layer="bool, required"
+          output_layer="bool, required"
+          ptl_ref_idx="uint6, required"/>
+      </operation_point>
+    </HEVC_operation_point_descriptor>
+      
+  </_descriptors>
+</tsduck>
