@@ -47,7 +47,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::FlexMuxBufferDescriptor_type::FlexMuxBufferDescriptor_type() :
+ts::FmxBufferSizeDescriptor::FlexMuxBufferDescriptor_type::FlexMuxBufferDescriptor_type() :
     flexMuxChnnel(0),
     FB_BufferSize(0)
 {
@@ -79,7 +79,7 @@ ts::FmxBufferSizeDescriptor::FmxBufferSizeDescriptor(DuckContext& duck, const De
 //----------------------------------------------------------------------------
 
 void ts::FmxBufferSizeDescriptor::serializePayload(PSIBuffer& buf) const
-{ 
+{
     buf.putUInt8(DefaultFlexMuxBufferDescriptor.flexMuxChnnel);
     buf.putUInt24(DefaultFlexMuxBufferDescriptor.FB_BufferSize);
     for (auto it : FlexMuxBufferDescriptor) {
@@ -148,7 +148,7 @@ void ts::FmxBufferSizeDescriptor::buildXML(DuckContext& duck, xml::Element* root
 //----------------------------------------------------------------------------
 
 bool ts::FmxBufferSizeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
-{ 
+{
     xml::ElementVector DefaultFlexMuxBuffer;
     bool ok = element->getChildren(DefaultFlexMuxBuffer, u"DefaultFlexMuxBufferDescriptor");
     ok &= DefaultFlexMuxBuffer.size() == 1;
