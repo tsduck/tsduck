@@ -1,0 +1,9 @@
+[area_broadcasting_information_descriptor.BroadcastSignalFormat]
+Bits = 8
+0x00 = Undefined
+0x01 = Full segment area broadcasting
+0x02 = One-segment area broadcasting
+0x03 = One-segment area broadcasting with Null
+0x04 = Undefined
+0x05 = Full segment broadcasting for multimedia transmission
+0x06 = One-segment area broadcasting dedicated to multimedia transmission

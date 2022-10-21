@@ -1,0 +1,6 @@
+[PCAT.VersionIndicator]
+Bits = 2
+0 = Whole version is target (designation of contents version is invalid)
+1 = Target is the version after the designated version
+2 = Target is the version before the designated version
+3 = Target is only the designated version

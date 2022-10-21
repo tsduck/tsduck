@@ -363,7 +363,7 @@ void ts::UNT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         for (size_t desc_index = 0; buf.canRead() && descriptorCount-- > 0 && buf.canReadBytes(11); ++desc_index) {
             disp << margin
                  << "  - Descriptor " << desc_index
-                 << ", type " << NameFromSection(u"CompatibilityDescriptorType", buf.getUInt8(), NamesFlags::HEXA_FIRST)
+                 << ", type " << DataName(MY_XML_NAME, u"CompatibilityDescriptorType", buf.getUInt8(), NamesFlags::HEXA_FIRST)
                  << std::endl;
 
             // Get current compatibility descriptor content, based on 8-bit length field.

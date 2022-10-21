@@ -1,0 +1,19 @@
+[data_component_descriptor.DataComponentId]
+# See ARIB STD-B10, Part 2, Annex J
+Bits = 16
+0x0007 = ARIB XML-base multimedia coding
+0x0008 = ARIB subtitle & teletext coding
+0x0009 = ARIB data download
+0x000A = G-guide (G-Guide Gold)
+0x000B = BML for 110°E CS
+0x000C = Multimedia coding for digital terrestrial broadcasting (A profile)
+0x000D = Multimedia coding for digital terrestrial broadcasting (C profile)
+0x000E = Multimedia coding for digital terrestrial broadcasting (P profile)
+0x000F = Multimedia coding for digital terrestrial broadcasting (E profile)
+0x0010 = Real-time data service (Mobile profile)
+0x0011 = Accumulation-type data service (Mobile profile)
+0x0012 = Subtitle coding for digital terrestrial broadcasting (C profile)
+0x0013 = Multimedia coding for digital terrestrial broadcasting (P2 profile)
+0x0014 = Data carousel scheme for TYPE2 content transmission
+0x0015 = DSM-CC section scheme for transmission of program start time information
+0x0016 = ARIB descriptive language type metadata coding

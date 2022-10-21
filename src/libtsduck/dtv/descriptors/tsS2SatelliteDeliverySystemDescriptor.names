@@ -1,0 +1,6 @@
+[S2_satellite_delivery_system_descriptor.TSGSS2Mode]
+Bits = 2
+0 = generic packetized
+1 = GSE
+2 = Transport Stream
+3 = reserved

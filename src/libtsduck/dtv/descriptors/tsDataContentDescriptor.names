@@ -1,0 +1,2 @@
+[data_content_descriptor.DataComponentId]
+Inherit = data_component_descriptor.DataComponentId
