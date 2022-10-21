@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- A target to build tsduck.h -->
+
+  <Target Name="BuildTSDuckHeader" Inputs="@(LibPublicHeaders)" Outputs="$(BinRootDir)include\tsduck.h">
+    <Message Text="Building $(BinRootDir)include\tsduck.h" Importance="high"/>
+    <MakeDir Directories="$(BinRootDir)include" Condition="!Exists('$(BinRootDir)include')"  />
+    <Exec ConsoleToMSBuild='true'
+          Command='python "$(TSDuckRootDir)scripts\build-tsduck-header.py" "$(BinRootDir)include\tsduck.h"'>
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
+    </Exec>
+  </Target>
+
+</Project>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- A target to build tsduck.dektec.names from DTAPI -->
+
+  <PropertyGroup Condition="'$(DtapiIncludePath)'!=''">
+    <DektecInput>$(DtapiIncludePath)\DTAPI.h</DektecInput>
+    <DektecDep>$(DektecInput)</DektecDep>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DtapiIncludePath)'==''">
+    <DektecInput>NUL:</DektecInput>
+    <DektecDep></DektecDep>
+  </PropertyGroup>
+
+  <Target Name="BuildDektecNames"
+          Inputs="$(DektecDep);$(TSDuckRootDir)scripts\build-dektec-names.py"
+          Outputs="$(OutDir)tsduck.dektec.names">
+    <Message Text="Building $(OutDir)tsduck.dektec.names" Importance="high"/>
+    <Exec ConsoleToMSBuild='true'
+          Command='python "$(TSDuckRootDir)scripts\build-dektec-names.py" "$(DektecInput)" "$(OutDir)tsduck.dektec.names"'>
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
+    </Exec>
+  </Target>
+
+</Project>
