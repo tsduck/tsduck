@@ -735,10 +735,10 @@ void ts::EIT::SortEvents(BinaryEventPtrMap& events, Time& oldest)
 // Static method to reorganize EIT sections according to ETSI TS 101 211.
 //----------------------------------------------------------------------------
 
-void ts::EIT::ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, const Time& reftime)
+void ts::EIT::ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, const Time& reftime, EITOptions options)
 {
     SectionPtrVector out_sections;
-    EITGenerator eit_gen(duck);
+    EITGenerator eit_gen(duck, PID_EIT, options);
 
     if (reftime != Time::Epoch) {
         eit_gen.setCurrentTime(reftime);
@@ -765,6 +765,7 @@ void ts::EIT::ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, 
     }
 
     // Return the list of output sections.
+    eit_gen.dumpInternalState(10);
     eit_gen.saveEITs(out_sections);
     sections.swap(out_sections);
 }

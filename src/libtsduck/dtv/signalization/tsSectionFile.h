@@ -40,6 +40,7 @@
 #include "tsBinaryTable.h"
 #include "tsUString.h"
 #include "tsDVBCharTable.h"
+#include "tsEITOptions.h"
 #include "tsxmlTweaks.h"
 #include "tsTablesPtr.h"
 #include "tsCerrReport.h"
@@ -460,10 +461,11 @@ namespace ts {
         //! @param [in] reftime Reference time for EIT schedule. Only the date part is used.
         //! This is the "last midnight" according to which EIT segments are assigned. By
         //! default, the oldest event start time is used.
+        //! @param [in] options Generation options for EIT (p/f and/or schedule, actual and/or other).
         //! @see ts::EIT::ReorganizeSections()
         //! @see ETSI TS 101 211, section 4.1.4
         //!
-        void reorganizeEITs(const Time& reftime = Time());
+        void reorganizeEITs(const Time& reftime = Time(), EITOptions options = EITOptions::GEN_ALL);
 
         //!
         //! This static method loads the XML model for tables and descriptors.

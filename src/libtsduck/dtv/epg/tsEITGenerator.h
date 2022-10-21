@@ -33,31 +33,13 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsEITOptions.h"
 #include "tsEITRepetitionProfile.h"
 #include "tsSectionFile.h"
 #include "tsSectionDemux.h"
 #include "tsPacketizer.h"
 #include "tsServiceIdTriplet.h"
 #include "tsTSPacket.h"
-#include "tsEnumUtils.h"
-
-namespace ts {
-    //!
-    //! EIT generation options.
-    //! The options can be specified as a byte mask.
-    //!
-    enum class EITOption {
-        GEN_NONE        = 0x0000,   //!< Generate nothing.
-        GEN_ACTUAL      = 0x0001,   //!< Generate EIT actual.
-        GEN_OTHER       = 0x0002,   //!< Generate EIT other.
-        GEN_PF          = 0x0004,   //!< Generate EIT present/following.
-        GEN_SCHED       = 0x0008,   //!< Generate EIT schedule.
-        GEN_ALL         = 0x000F,   //!< Generate all EIT's.
-        LOAD_INPUT      = 0x0010,   //!< Use input EIT's as EPG data.
-        PACKET_STUFFING = 0x0020,   //!< Insert stuffing inside TS packet at end of EIT section. Do not pack EIT sections.
-    };
-}
-TS_ENABLE_BITMASK_OPERATORS(ts::EITOption);
 
 namespace ts {
     //!
@@ -207,7 +189,7 @@ namespace ts {
         //!
         explicit EITGenerator(DuckContext& duck,
                               PID pid = PID_EIT,
-                              EITOption options = EITOption::GEN_ALL | EITOption::LOAD_INPUT,
+                              EITOptions options = EITOptions::GEN_ALL | EITOptions::LOAD_INPUT,
                               const EITRepetitionProfile& profile = EITRepetitionProfile::SatelliteCable);
 
         //!
@@ -221,7 +203,7 @@ namespace ts {
         //! If EIT generation is already started, existing EIT's are not affected.
         //! @param [in] options EIT generation options.
         //!
-        void setOptions(EITOption options);
+        void setOptions(EITOptions options);
 
         //!
         //! Set a new EIT repetition profile.
@@ -491,7 +473,7 @@ namespace ts {
         PacketCounter        _ref_time_pkt;      // Packet index at last reference time.
         PacketCounter        _eit_inter_pkt;     // Inter-packet distance in the EIT PID (zero if unbound).
         PacketCounter        _last_eit_pkt;      // Packet index at last EIT insertion.
-        EITOption            _options;           // EIT generation options flags.
+        EITOptions           _options;           // EIT generation options flags.
         EITRepetitionProfile _profile;           // EIT repetition profile.
         SectionDemux         _demux;             // Section demux for input stream, get PAT, TDT, TOT, EIT.
         Packetizer           _packetizer;        // Packetizer for generated EIT's.

@@ -38,7 +38,7 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid, EITOption options, const EITRepetitionProfile& profile) :
+ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid, EITOptions options, const EITRepetitionProfile& profile) :
     _duck(duck),
     _eit_pid(pid),
     _actual_ts_id(0),
@@ -67,7 +67,7 @@ ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid, EITOption options, co
     _demux.addPID(PID_TDT);
 
     // We need to analyze input EIT's only if they feed the EPG.
-    if (bool(_options & EITOption::LOAD_INPUT)) {
+    if (bool(_options & EITOptions::LOAD_INPUT)) {
         _demux.addPID(_eit_pid);
     }
 }
@@ -258,7 +258,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
     bool success = true;
 
     // Description of the service.
-    EService& srv(_services[service_id]);
+    EService* srv = nullptr;
 
     // Number of loaded event.
     size_t ev_count = 0;
@@ -279,7 +279,13 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
 
         // Discard events in the past.
         if (now != Time::Epoch && ev->end_time <= now) {
+            _duck.report().log(2, u"discard obsolete event id 0x%X (%<d), %s, ending %s", {ev->event_id, service_id, ev->end_time});
             continue;
+        }
+
+        // Create the service only when we know we have some event to insert.
+        if (srv == nullptr) {
+            srv = &_services[service_id];
         }
 
         // Locate or allocate the segment for that event. At this stage, we only create this
@@ -287,16 +293,16 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
         // empty intermediate segments. This will be done in regenerateSchedule().
 
         const Time seg_start_time(EIT::SegmentStartTime(ev->start_time));
-        auto seg_iter = srv.segments.begin();
-        while (seg_iter != srv.segments.end() && (*seg_iter)->start_time < seg_start_time) {
+        auto seg_iter = srv->segments.begin();
+        while (seg_iter != srv->segments.end() && (*seg_iter)->start_time < seg_start_time) {
             ++seg_iter;
         }
-        if (seg_iter == srv.segments.end() || (*seg_iter)->start_time != seg_start_time) {
+        if (seg_iter == srv->segments.end() || (*seg_iter)->start_time != seg_start_time) {
             // The segment does not exist, create it.
             _duck.report().debug(u"creating EIT segment starting at %s for %s", {seg_start_time, service_id});
             const ESegmentPtr seg(new ESegment(seg_start_time));
             CheckNonNull(seg.pointer());
-            seg_iter = srv.segments.insert(seg_iter, seg);
+            seg_iter = srv->segments.insert(seg_iter, seg);
         }
         ESegment& seg(**seg_iter);
 
@@ -314,12 +320,13 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
         ev_count++;
 
         // Mark all EIT schedule in this segment as to be regenerated.
-        _regenerate = srv.regenerate = seg.regenerate = true;
+        _regenerate = srv->regenerate = seg.regenerate = true;
     }
 
     // If some events were added, it may be necessary to regenerate the EIT p/f in this service.
     if (ev_count > 0) {
-        regeneratePresentFollowing(service_id, srv, now);
+        assert(srv != nullptr);
+        regeneratePresentFollowing(service_id, *srv, now);
     }
     return success;
 }
@@ -462,13 +469,13 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
         // Does this service changes between actual and other?
         const bool new_actual = srv_iter.first.transport_stream_id == new_ts_id;
         const bool new_other = srv_iter.first.transport_stream_id == old_ts_id;
-        const bool need_eit = (new_actual && bool(_options & EITOption::GEN_ACTUAL)) || (new_other && bool(_options & EITOption::GEN_OTHER));
+        const bool need_eit = (new_actual && bool(_options & EITOptions::GEN_ACTUAL)) || (new_other && bool(_options & EITOptions::GEN_OTHER));
 
         // Test if this service shall switch between actual and other.
         if (new_other || new_actual) {
 
             // Process EIT p/f.
-            if (bool(_options & EITOption::GEN_PF)) {
+            if (bool(_options & EITOptions::GEN_PF)) {
                 if (need_eit && (srv.pf[0].isNull() || srv.pf[1].isNull())) {
                     // At least one EIT p/f shall be rebuilt.
                     regeneratePresentFollowing(srv_iter.first, srv_iter.second, now);
@@ -490,8 +497,8 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
             }
 
             // Process EIT schedule (all segments, all sections).
-            if (bool(_options & EITOption::GEN_SCHED)) {
-                if ((_options & (EITOption::GEN_ACTUAL | EITOption::GEN_OTHER)) == (EITOption::GEN_ACTUAL | EITOption::GEN_OTHER)) {
+            if (bool(_options & EITOptions::GEN_SCHED)) {
+                if ((_options & (EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) == (EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) {
                     // Actual and others are both requested. Toggle the state of existing sections.
                     for (const auto& seg_iter : srv.segments) {
                         const ESegment& seg(*seg_iter);
@@ -528,14 +535,14 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
 // Set new EIT generation options.
 //----------------------------------------------------------------------------
 
-void ts::EITGenerator::setOptions(EITOption options)
+void ts::EITGenerator::setOptions(EITOptions options)
 {
     // Update the options.
-    const EITOption old_options = _options;
+    const EITOptions old_options = _options;
     _options = options;
 
     // If the new options request to load events from input EIT's, demux the EIT PID.
-    if (bool(options & EITOption::LOAD_INPUT)) {
+    if (bool(options & EITOptions::LOAD_INPUT)) {
         _demux.addPID(_eit_pid);
     }
     else {
@@ -546,8 +553,8 @@ void ts::EITGenerator::setOptions(EITOption options)
     const Time now(getCurrentTime());
 
     // Check the configuration has changed for EIT p/f and EIT schedule, respectively.
-    const bool pf_changed = (_options & (EITOption::GEN_PF | EITOption::GEN_ACTUAL | EITOption::GEN_OTHER)) != (old_options & (EITOption::GEN_PF | EITOption::GEN_ACTUAL | EITOption::GEN_OTHER));
-    const bool sched_changed = (_options & (EITOption::GEN_SCHED | EITOption::GEN_ACTUAL | EITOption::GEN_OTHER)) != (old_options & (EITOption::GEN_SCHED | EITOption::GEN_ACTUAL | EITOption::GEN_OTHER));
+    const bool pf_changed = (_options & (EITOptions::GEN_PF | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) != (old_options & (EITOptions::GEN_PF | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER));
+    const bool sched_changed = (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) != (old_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER));
 
     // If the combination of EIT to generate has changed, regenerate EIT.
     if ((pf_changed || sched_changed) && _actual_ts_id_set && now != Time::Epoch) {
@@ -559,11 +566,11 @@ void ts::EITGenerator::setOptions(EITOption options)
             EService& srv(srv_iter.second);
 
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
-            const bool need_eit = (actual && bool(_options & EITOption::GEN_ACTUAL)) || (!actual && bool(_options & EITOption::GEN_OTHER));
+            const bool need_eit = (actual && bool(_options & EITOptions::GEN_ACTUAL)) || (!actual && bool(_options & EITOptions::GEN_OTHER));
 
             // Process EIT p/f.
             if (pf_changed) {
-                if (!need_eit || !(_options & EITOption::GEN_PF)) {
+                if (!need_eit || !(_options & EITOptions::GEN_PF)) {
                     // Remove existing EIT p/f sections.
                     for (size_t i = 0; i < srv.pf.size(); ++i) {
                         if (!srv.pf[i].isNull()) {
@@ -580,7 +587,7 @@ void ts::EITGenerator::setOptions(EITOption options)
 
             // Process EIT schedule (all segments, all sections).
             if (sched_changed) {
-                if (!need_eit || !(_options & EITOption::GEN_SCHED)) {
+                if (!need_eit || !(_options & EITOptions::GEN_SCHED)) {
                     // We no longer need the EIT schedule.
                     for (auto& seg_iter : srv.segments) {
                         ESegment& seg(*seg_iter);
@@ -742,7 +749,7 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
 
     const bool actual = _actual_ts_id == service_id.transport_stream_id;
 
-    if (!(_options & EITOption::GEN_PF) || (actual && !(_options & EITOption::GEN_ACTUAL)) || (!actual && !(_options & EITOption::GEN_OTHER))) {
+    if (!(_options & EITOptions::GEN_PF) || (actual && !(_options & EITOptions::GEN_ACTUAL)) || (!actual && !(_options & EITOptions::GEN_OTHER))) {
         // This type of EIT cannot be (no time ref) or shall not be (excluded) generated. If sections exist, delete them.
         for (size_t i = 0; i < srv.pf.size(); ++i) {
             if (!srv.pf[i].isNull()) {
@@ -856,8 +863,8 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
 
             // Check if EIT schedule are needed for the service.
-            const bool need_eits = (actual && (_options & (EITOption::GEN_SCHED | EITOption::GEN_ACTUAL)) == (EITOption::GEN_SCHED | EITOption::GEN_ACTUAL)) ||
-                                   (!actual && (_options & (EITOption::GEN_SCHED | EITOption::GEN_OTHER)) == (EITOption::GEN_SCHED | EITOption::GEN_OTHER));
+            const bool need_eits = (actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) == (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) ||
+                                   (!actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_OTHER)) == (EITOptions::GEN_SCHED | EITOptions::GEN_OTHER));
 
             // Remove initial segments before last midnight.
             while (!srv.segments.empty() && srv.segments.front()->start_time < last_midnight) {
@@ -1118,7 +1125,7 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
 
 bool ts::EITGenerator::doStuffing()
 {
-    return bool(_options & EITOption::PACKET_STUFFING);
+    return bool(_options & EITOptions::PACKET_STUFFING);
 }
 
 void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& section)
@@ -1180,7 +1187,7 @@ void ts::EITGenerator::handleSection(SectionDemux& demux, const Section& section
         // A PAT section is used to define the transport stream id if not already known.
         setTransportStreamId(section.tableIdExtension());
     }
-    else if (EIT::IsEIT(tid) && bool(_options & EITOption::LOAD_INPUT)) {
+    else if (EIT::IsEIT(tid) && bool(_options & EITOptions::LOAD_INPUT)) {
         // Use input EIT's as EPG data when specified in the generation options.
         loadEvents(section);
     }

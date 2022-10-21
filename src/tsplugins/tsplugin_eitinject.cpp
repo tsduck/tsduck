@@ -98,7 +98,7 @@ namespace ts {
         bool          _wait_first_batch;
         bool          _use_system_time;
         Time          _start_time;
-        EITOption     _eit_options;
+        EITOptions    _eit_options;
         BitRate       _eit_bitrate;
         UString       _files;
         MilliSecond   _poll_interval;
@@ -142,7 +142,7 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
     _wait_first_batch(false),
     _use_system_time(false),
     _start_time(),
-    _eit_options(EITOption::GEN_ALL),
+    _eit_options(EITOptions::GEN_ALL),
     _eit_bitrate(0),
     _files(),
     _poll_interval(0),
@@ -317,32 +317,32 @@ bool ts::EITInjectPlugin::getOptions()
     }
 
     // Combination of EIT generation options.
-    _eit_options = EITOption::GEN_NONE;
+    _eit_options = EITOptions::GEN_NONE;
     if (present(u"actual")) {
-        _eit_options |= EITOption::GEN_ACTUAL;
+        _eit_options |= EITOptions::GEN_ACTUAL;
     }
     if (present(u"other")) {
-        _eit_options |= EITOption::GEN_OTHER;
+        _eit_options |= EITOptions::GEN_OTHER;
     }
-    if (!(_eit_options & (EITOption::GEN_ACTUAL | EITOption::GEN_OTHER))) {
+    if (!(_eit_options & (EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER))) {
         // Generate EIT actual and other by default.
-        _eit_options |= EITOption::GEN_ACTUAL | EITOption::GEN_OTHER;
+        _eit_options |= EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER;
     }
     if (present(u"pf")) {
-        _eit_options |= EITOption::GEN_PF;
+        _eit_options |= EITOptions::GEN_PF;
     }
     if (present(u"schedule")) {
-        _eit_options |= EITOption::GEN_SCHED;
+        _eit_options |= EITOptions::GEN_SCHED;
     }
-    if (!(_eit_options & (EITOption::GEN_PF | EITOption::GEN_SCHED))) {
+    if (!(_eit_options & (EITOptions::GEN_PF | EITOptions::GEN_SCHED))) {
         // Generate EIT p/f and schedule by default.
-        _eit_options |= EITOption::GEN_PF | EITOption::GEN_SCHED;
+        _eit_options |= EITOptions::GEN_PF | EITOptions::GEN_SCHED;
     }
     if (present(u"incoming-eits")) {
-        _eit_options |= EITOption::LOAD_INPUT;
+        _eit_options |= EITOptions::LOAD_INPUT;
     }
     if (present(u"stuffing")) {
-        _eit_options |= EITOption::PACKET_STUFFING;
+        _eit_options |= EITOptions::PACKET_STUFFING;
     }
 
     // EIT repetition cycles. First, use a generic profile, then customize individual values.
@@ -356,7 +356,7 @@ bool ts::EITInjectPlugin::getOptions()
     updateIntValue(_eit_profile.cycle_seconds[size_t(EITProfile::SCHED_OTHER_LATER)], u"cycle-schedule-other-later");
 
     // We need at least one of --files and --incoming-eits.
-    if (_files.empty() && !(_eit_options & EITOption::LOAD_INPUT)) {
+    if (_files.empty() && !(_eit_options & EITOptions::LOAD_INPUT)) {
         tsp->error(u"specify at least one of --files and --incoming-eits");
         return false;
     }

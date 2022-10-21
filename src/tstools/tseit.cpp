@@ -45,12 +45,12 @@ TS_MAIN(MainCode);
 //----------------------------------------------------------------------------
 
 namespace ts {
-    class EITOptions: public Args
+    class EITMainOptions: public Args
     {
-        TS_NOBUILD_NOCOPY(EITOptions);
+        TS_NOBUILD_NOCOPY(EITMainOptions);
     public:
-        EITOptions(int argc, char *argv[]);
-        virtual ~EITOptions() override;
+        EITMainOptions(int argc, char *argv[]);
+        virtual ~EITMainOptions() override;
 
         bool          exit_error;
         UStringVector commands;
@@ -65,7 +65,7 @@ namespace ts {
 }
 
 // Constructor: get command line options.
-ts::EITOptions::EITOptions(int argc, char *argv[]) :
+ts::EITMainOptions::EITMainOptions(int argc, char *argv[]) :
     Args(u"Manipulate EIT's through commands", u"[options]"),
     exit_error(false),
     commands(),
@@ -196,12 +196,12 @@ ts::EITOptions::EITOptions(int argc, char *argv[]) :
 }
 
 // Destructor.
-ts::EITOptions::~EITOptions()
+ts::EITMainOptions::~EITMainOptions()
 {
 }
 
 // Build full help text.
-ts::UString ts::EITOptions::getHelpText(HelpFormat format, size_t line_width) const
+ts::UString ts::EITMainOptions::getHelpText(HelpFormat format, size_t line_width) const
 {
     // Initial text from superclass.
     UString text(Args::getHelpText(format, line_width));
@@ -225,14 +225,14 @@ namespace ts {
     {
         TS_NOBUILD_NOCOPY(EITCommand);
     public:
-        EITCommand(EITOptions& opt);
+        EITCommand(EITMainOptions& opt);
         virtual ~EITCommand() override;
 
     private:
-        EITOptions&  _opt;
+        EITMainOptions&  _opt;
         DuckContext  _duck;
         BitRate      _ts_bitrate;
-        EITOption    _eit_options;
+        EITOptions   _eit_options;
         EITGenerator _eit_gen;
 
         // Get full path of an input or output directory.
@@ -267,11 +267,11 @@ ts::EITCommand::~EITCommand()
 // EIT database manipulation constructor.
 //----------------------------------------------------------------------------
 
-ts::EITCommand::EITCommand(EITOptions& opt) :
+ts::EITCommand::EITCommand(EITMainOptions& opt) :
     _opt(opt),
     _duck(&_opt),
     _ts_bitrate(0),
-    _eit_options(EITOption::GEN_ALL | EITOption::LOAD_INPUT),
+    _eit_options(EITOptions::GEN_ALL | EITOptions::LOAD_INPUT),
     _eit_gen(_duck, PID_EIT, _eit_options, EITRepetitionProfile::SatelliteCable)
 {
     // Connect this object as command handler for all commands.
@@ -448,35 +448,35 @@ ts::CommandStatus ts::EITCommand::set(const UString& command, Args& args)
 {
     bool set_options = false;
     if (args.present(u"pf")) {
-        _eit_options |= EITOption::GEN_PF;
+        _eit_options |= EITOptions::GEN_PF;
         set_options = true;
     }
     if (args.present(u"no-pf")) {
-        _eit_options &= ~EITOption::GEN_PF;
+        _eit_options &= ~EITOptions::GEN_PF;
         set_options = true;
     }
     if (args.present(u"schedule")) {
-        _eit_options |= EITOption::GEN_SCHED;
+        _eit_options |= EITOptions::GEN_SCHED;
         set_options = true;
     }
     if (args.present(u"no-schedule")) {
-        _eit_options &= ~EITOption::GEN_SCHED;
+        _eit_options &= ~EITOptions::GEN_SCHED;
         set_options = true;
     }
     if (args.present(u"actual")) {
-        _eit_options |= EITOption::GEN_ACTUAL;
+        _eit_options |= EITOptions::GEN_ACTUAL;
         set_options = true;
     }
     if (args.present(u"no-actual")) {
-        _eit_options &= ~EITOption::GEN_ACTUAL;
+        _eit_options &= ~EITOptions::GEN_ACTUAL;
         set_options = true;
     }
     if (args.present(u"other")) {
-        _eit_options |= EITOption::GEN_OTHER;
+        _eit_options |= EITOptions::GEN_OTHER;
         set_options = true;
     }
     if (args.present(u"no-other")) {
-        _eit_options &= ~EITOption::GEN_OTHER;
+        _eit_options &= ~EITOptions::GEN_OTHER;
         set_options = true;
     }
     if (set_options) {
@@ -523,7 +523,7 @@ int MainCode(int argc, char *argv[])
     ts::EditLine::setDefaultNextPrompt(u">>> ");
 
     // Get command line options.
-    ts::EITOptions opt(argc, argv);
+    ts::EITMainOptions opt(argc, argv);
     ts::EITCommand dbase(opt);
 
     ts::CommandStatus status = ts::CommandStatus::SUCCESS;
