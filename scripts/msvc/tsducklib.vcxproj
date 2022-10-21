@@ -18,6 +18,11 @@
     <Import Project="msvc-disable-srt.props" />
     <Import Project="msvc-disable-rist.props"/>
     <Import Project="msvc-use-java.props"/>
+    <Import Project="msvc-build-config-files.props"/>
+    <Import Project="msvc-build-dtv-names.props"/>
+    <Import Project="msvc-build-dektec-names.props"/>
+    <Import Project="msvc-build-tsduck-jar.props"/>
+    <Import Project="msvc-build-tsduck-header.props"/>
   </ImportGroup>
 
   <ItemGroup>
@@ -27,13 +32,23 @@
 
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(TSDuckLibDirsInternal);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(TSDuckLibDirs);$(TSDuckLibDirsInternal);$(BinRootDir)include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
 
   <ImportGroup Label="PropertySheets">
     <Import Project="msvc-common-end.props"/>
-    <Import Project="msvc-build-config-files.props"/>
   </ImportGroup>
+
+  <Target Name='BeforeBuildLibrary' BeforeTargets='PrepareForBuild'>
+    <CallTarget Targets='BuildTSDuckHeader'/>
+  </Target>
+
+  <Target Name='AfterBuildLibrary' AfterTargets='Build'>
+    <CallTarget Targets='BuildConfigFiles'/>
+    <CallTarget Targets='BuildDtvNames'/>
+    <CallTarget Targets='BuildDektecNames'/>
+    <CallTarget Targets='BuildTSDuckJar'/>
+  </Target>
 
 </Project>

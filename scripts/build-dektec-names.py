@@ -35,32 +35,19 @@
 
 import sys, os, re
 
-debug_mode = '--debug' in sys.argv
-def debug(msg):
-    if debug_mode:
-        print('[debug] %s' % msg)
-
-if debug_mode:
-    sys.argv.remove('--debug')
 if len(sys.argv) != 3:
     print('Usage: %s in-file out-file' % sys.argv[0], file=sys.stderr)
     exit(1)
 
 input_file = sys.argv[1]
 output_file = sys.argv[2]
-debug('script: %s' % os.path.abspath(sys.argv[0]))
-debug('input file: %s' % input_file)
-debug('output file: %s' % output_file)
     
 with open(output_file, 'w') as output:
     print('# Auto-generated file', file=output)
     print('[DtCaps]', file=output)
-    if sys.argv[1] != '':
+    if input_file != '':
         with open(input_file, 'r', encoding='utf-8') as input:
             for line in input:
                 match = re.search(r'#define\s+DTAPI_CAP_.*\sDtapi::DtCaps\(([\d]+)\)\s*//\s*(.+)$', line.strip())
                 if match is not None:
                     print('%s = %s' % (match.group(1), match.group(2)), file=output)
-
-debug('output file exists: %s' % os.path.exists(output_file))
-debug('output file size: %d' % os.path.getsize(output_file) if os.path.exists(output_file) else 0)
