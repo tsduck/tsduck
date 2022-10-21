@@ -1,0 +1,9 @@
+[quality_extension_descriptor.metric_code]
+Bits = 32
+0x70736e72 = PSRN, Peak Signal Noise Ratio
+0x7373696d = SSIM, Structural Similarity Index
+0x6d73696d = MS-SSIM, Multi-Scale Structural Similarity Index
+0x6a313434 = VQM,Video Quality Metric
+0x6a323437 = PEVQ, Perceptual Evaluation of Video Quality
+0x6d6f7073 = MOS, Mean Opinion Score
+0x66736967 = FSIG, Frame Significance

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <quality_extension_descriptor field_size_bytes="uint8, required">
+      <!-- between 1 and 255 metric codes to be provied (although only 7 are defined) -->
+      <metric code="uint32, required"/>
+    </quality_extension_descriptor>
+    
+  </_descriptors>
+</tsduck>
