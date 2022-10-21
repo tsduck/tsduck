@@ -1,0 +1,11 @@
+[C2_delivery_system_descriptor.C2TuningType]
+Bits = 2
+0 = Data Slice tuning frequency
+1 = C2 system centre frequency
+2 = Initial tuning position for a dependent static data slice
+
+[C2_delivery_system_descriptor.C2SymbolDuration]
+Bits = 3
+0 = 448 μs (4k FFT mode for 8MHz CATV systems)
+1 = 597,33 μs (4k FFT mode for 6MHz CATV systems)
+

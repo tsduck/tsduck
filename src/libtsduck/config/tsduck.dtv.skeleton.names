@@ -8,14 +8,6 @@
 # files from all source directories under src/libtsduck.
 #
 
-[CPSystemId]
-Bits = 16
-0x0000 = DVB CPCM Content Licence
-0x0001 = DVB CPCM Auxiliary Data
-0x0002 = DVB CPCM Revocation List
-0x0100 = DTCP Renewability Messages
-0x0101 = HDCP Renewability Messages
-
 [DataStreamAlignment]
 # In data_stream_alignment_descriptor
 Bits = 8
@@ -798,16 +790,6 @@ Bits = 8
 0xFE = enginnering services
 0xFF = other
 
-[SpliceCommandType]
-# In SCTE 35 splice_information_table
-Bits = 8
-0x00 = SpliceNull
-0x04 = SpliceSchedule
-0x05 = SpliceInsert
-0x06 = TimeSignal
-0x07 = BandwidthReservation
-0xFF = PrivateCommand
-
 [SpliceSegmentationUpIdType]
 # In SCTE 35 segmentation_descriptor
 Bits = 8
@@ -909,55 +891,6 @@ Bits = 8
 0x20 = MPEG-4 ancillary data (ETSI TS 101 154)
 0x40 = RDS via UECP (ETSI TS 101 154)
 0x80 = reserved_0 for future use
-
-[EcmgScsErrors]
-# In DVB SimulCrypt ECMG <=> SCS protocol (ETSI TS 103 197)
-Bits = 16
-0x0001 = invalid message
-0x0002 = unsupported protocol version
-0x0003 = unknown message_type value
-0x0004 = message too long
-0x0005 = unknown Super_CAS_id value
-0x0006 = unknown ECM_channel_id value
-0x0007 = unknown ECM_stream_id value
-0x0008 = too many channels on this ECMG
-0x0009 = too many ECM streams on this channel
-0x000A = too many ECM streams on this ECMG
-0x000B = not enough control words to compute ECM
-0x000C = ECMG out of storage capacity
-0x000D = ECMG out of computational resources
-0x000E = unknown parameter_type value
-0x000F = inconsistent length for DVB parameter
-0x0010 = missing mandatory DVB parameter
-0x0011 = invalid value for DVB parameter
-0x0012 = unknown ECM_id value
-0x0013 = ECM_channel_id value already in use
-0x0014 = ECM_stream_id value already in use
-0x0015 = ECM_id value already in use
-
-[EmmgPdgMuxErrors]
-# In DVB SimulCrypt EMMG/PDG <=> MUX protocol (ETSI TS 103 197)
-Bits = 16
-0x0001 = invalid message
-0x0002 = unsupported protocol version
-0x0003 = unknown message_type value
-0x0004 = message too long
-0x0005 = unknown data_stream_id value
-0x0006 = unknown data_channel_id value
-0x0007 = too many channels on this MUX
-0x0008 = too many data streams on this channel
-0x0009 = too many data streams on this MUX
-0x000A = unknown parameter_type
-0x000B = inconsistent length for DVB parameter
-0x000C = missing mandatory DVB parameter
-0x000D = invalid value for DVB parameter
-0x000E = unknown client_id value
-0x000F = exceeded bandwidth
-0x0010 = unknown data_id value
-0x0011 = data_channel_id value already in use
-0x0012 = data_stream_id value already in use
-0x0013 = data_id value already in use
-0x0014 = client_id value already in use
 
 [ApplicationIconFlags]
 # In application_icons_descriptor
@@ -1127,19 +1060,6 @@ Bits = 3
 4 = Multichannel audio (> 2 channels; <= 3/2 + LFE channels)
 5 = Multichannel audio (> 3/2 + LFE channels)
 
-[C2TuningType]
-# In DVB C2_delivery_system_descriptor.
-Bits = 2
-0 = Data Slice tuning frequency
-1 = C2 system centre frequency
-2 = Initial tuning position for a dependent static data slice
-
-[C2SymbolDuration]
-# In DVB C2_delivery_system_descriptor.
-Bits = 3
-0 = 448 μs (4k FFT mode for 8MHz CATV systems)
-1 = 597,33 μs (4k FFT mode for 6MHz CATV systems)
-
 [SHConstellationHierarchy]
 # In DVB SH_delivery_system_descriptor.
 Bits = 3
@@ -1164,29 +1084,6 @@ Bits = 4
 9 = 1/2 complementary
 10 = 2/3 standard
 11 = 2/3 complementary
-
-[S2XMode]
-# In DVB S2X_satellite_delivery_system_descriptor.
-Bits = 2
-1 = S2X
-2 = S2X + time slicing
-3 = S2X + channel bonding
-
-[TSGSS2XMode]
-# In DVB S2X_satellite_delivery_system_descriptor.
-Bits = 2
-0 = generic packetized
-1 = GSE
-2 = GSE high efficiency mode
-3 = Transport Stream
-
-[TSGSS2Mode]
-# In DVB S2_satellite_delivery_system_descriptor.
-Bits = 2
-0 = generic packetized
-1 = GSE
-2 = Transport Stream
-3 = reserved
 
 [NetworkChangeType]
 # In network_change_notify_descriptor
@@ -1364,16 +1261,6 @@ Bits = 8
 0x03-0x0E = reserved
 0x0F-0xFF = user_private
 
-[CompatibilityDescriptorType]
-# In compatibilityDescriptor() of UNT
-Bits = 8
-0x00 = pad descriptor
-0x01 = system hardware descriptor
-0x02 = system software descriptor
-0x03-0x3F = ISO/IEC 13818-6 reserved
-0x40-0x7F = reserved for future use
-0x80-0xFF = user defined
-
 [SSUUpdateFlag]
 # In update_descriptor
 Bits = 2
@@ -1397,26 +1284,6 @@ Bits = 4
 Bits = 3
 0-6 = Undefined
 7   = Broadcast route
-
-[ISDBDataComponentId]
-# In ISDB data_component_descriptor, see ARIB STD-B10, Part 2, Annex J
-Bits = 16
-0x0007 = ARIB XML-base multimedia coding
-0x0008 = ARIB subtitle & teletext coding
-0x0009 = ARIB data download
-0x000A = G-guide (G-Guide Gold)
-0x000B = BML for 110°E CS
-0x000C = Multimedia coding for digital terrestrial broadcasting (A profile)
-0x000D = Multimedia coding for digital terrestrial broadcasting (C profile)
-0x000E = Multimedia coding for digital terrestrial broadcasting (P profile)
-0x000F = Multimedia coding for digital terrestrial broadcasting (E profile)
-0x0010 = Real-time data service (Mobile profile)
-0x0011 = Accumulation-type data service (Mobile profile)
-0x0012 = Subtitle coding for digital terrestrial broadcasting (C profile)
-0x0013 = Multimedia coding for digital terrestrial broadcasting (P2 profile)
-0x0014 = Data carousel scheme for TYPE2 content transmission
-0x0015 = DSM-CC section scheme for transmission of program start time information
-0x0016 = ARIB descriptive language type metadata coding
 
 [ISDBCopyControl]
 # In ISDB digital_copy_control_descriptor
@@ -1523,93 +1390,6 @@ Bits = 4
 1 = Digital terrestrial television broadcast
 2 = Digital terrestrial sound broadcast
 
-[ISDBInformationType]
-# In ISDB NBIT section
-Bits = 4
-0x0 = Undefined
-0x1 = Information
-0x2 = Information with service_id
-0x3 = Information with genre
-0x04-0x0F = Reserved for future use
-
-[ISDBDescriptionBodyLocation]
-# In ISDB NBIT section
-Bits = 2
-0 = Undefined
-1 = Info is in actual TS table
-2 = Info is in SI prime TS table
-3 = Reserved for future use
-
-[PCATVersionIndicator]
-# In ISDB PCAT
-Bits = 2
-0 = Whole version is target (designation of contents version is invalid)
-1 = Target is the version after the designated version
-2 = Target is the version before the designated version
-3 = Target is only the designated version
-
-[SatellitePolarization]
-# In DVB and ISDB satellite_delivery_system_descriptor
-Bits = 2
-0 = linear - horizontal
-1 = linear - vertical
-2 = circular - left
-3 = circular - right
-
-[DVBSatelliteModulationType]
-# In DVB satellite_delivery_system_descriptor
-Bits = 2
-0 = auto
-1 = QPSK
-2 = 8-PSK
-3 = 16-QAM
-
-[ISDBSatelliteModulationType]
-# In ISDB satellite_delivery_system_descriptor
-Bits = 5
-0  = auto
-1  = QPSK
-8  = ISDB-S/TC8PSK
-9  = 2.6GHz band digital satellite sound broadcasting
-10 = Advanced narrow-band CS digital broadcasting
-
-[DVBS2RollOff]
-# In DVB satellite_delivery_system_descriptor
-Bits = 2
-0 = alpha=0.35
-1 = alpha=0.25
-2 = alpha=0.20
-3 = undefined
-
-[DVBSatelliteFEC]
-# In DVB satellite_delivery_system_descriptor
-Bits = 4
-0  = undefined
-1  = 1/2
-2  = 2/3
-3  = 3/4
-4  = 5/6
-5  = 7/8
-6  = 8/9
-7  = 3/5
-8  = 4/5
-9  = 9/10
-15 = none
-
-[ISDBSatelliteFEC]
-# In ISDB satellite_delivery_system_descriptor
-Bits = 4
-0  = undefined
-1  = 1/2
-2  = 2/3
-3  = 3/4
-4  = 5/6
-5  = 7/8
-8  = ISDB-S/TC8PSK
-9  = 2.6GHz band digital satellite sound broadcasting
-10 = Advanced narrow-band CS digital broadcasting
-15 = none
-
 [ISDBEventGroupType]
 # In ISDB event_group_descriptor
 Bits = 4
@@ -1632,41 +1412,3 @@ Bits = 4
 0 = MPD (Media Presentation Descriptor) in MPEG-DASH (ISO/IEC 23009-1)
 1 = Playback control descriptor in IPTV VOD spec (IPTV FJ STD-0002)
 2 = With a TS time stamp according to IPTV VOD spec (IPTV FJ STD-0002)
-
-[ISDBBroadcastSignalFormat]
-# In ISDB area_broadcasting_information_descriptor
-Bits = 8
-0x00 = Undefined
-0x01 = Full segment area broadcasting
-0x02 = One-segment area broadcasting
-0x03 = One-segment area broadcasting with Null
-0x04 = Undefined
-0x05 = Full segment broadcasting for multimedia transmission
-0x06 = One-segment area broadcasting dedicated to multimedia transmission
-
-[ISDBProgramPattern]
-# In ISDB series_descriptor
-Bits = 3
-0 = Nonscheduled
-1 = Regular program (every day, every day except weekend, only weekends, etc.)
-2 = Programmed about once a week
-3 = Programmed about once a month
-4 = Programmed several events in a day
-5 = Division of long hour program
-6 = Program for regular or irregular accumulation
-7 = Undefined
-
-[ISDBRelationType]
-# In ISDB Event Relation Table (ERT)
-Bits = 4
-0 = Reserved
-1 = Relation for the contents description (indicates tree structure to describe contents)
-2 = Relation for navigation (indicates tree structure to assist display and selection)
-
-[ISDBCollectionMode]
-# In ISDB Event Relation Table (ERT)
-Bits = 4
-0 = Group (bag)
-1 = Concatenation (sequential)
-2 = Selection (alternate)
-3 = Parallel

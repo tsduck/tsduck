@@ -1,0 +1,14 @@
+[NBIT.InformationType]
+Bits = 4
+0x0 = Undefined
+0x1 = Information
+0x2 = Information with service_id
+0x3 = Information with genre
+0x04-0x0F = Reserved for future use
+
+[NBIT.DescriptionBodyLocation]
+Bits = 2
+0 = Undefined
+1 = Info is in actual TS table
+2 = Info is in SI prime TS table
+3 = Reserved for future use

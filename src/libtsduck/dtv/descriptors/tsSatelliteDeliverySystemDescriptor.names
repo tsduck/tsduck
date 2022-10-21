@@ -1,0 +1,60 @@
+[satellite_delivery_system_descriptor.Polarization]
+Bits = 2
+0 = linear - horizontal
+1 = linear - vertical
+2 = circular - left
+3 = circular - right
+
+[satellite_delivery_system_descriptor.DVBModulation]
+# In DVB version of satellite_delivery_system_descriptor
+Bits = 2
+0 = auto
+1 = QPSK
+2 = 8-PSK
+3 = 16-QAM
+
+[satellite_delivery_system_descriptor.ISDBModulation]
+# In ISDB version of satellite_delivery_system_descriptor
+Bits = 5
+0  = auto
+1  = QPSK
+8  = ISDB-S/TC8PSK
+9  = 2.6GHz band digital satellite sound broadcasting
+10 = Advanced narrow-band CS digital broadcasting
+
+[satellite_delivery_system_descriptor.DVBS2RollOff]
+# In DVB-S2 version of satellite_delivery_system_descriptor
+Bits = 2
+0 = alpha=0.35
+1 = alpha=0.25
+2 = alpha=0.20
+3 = undefined
+
+[satellite_delivery_system_descriptor.DVBSatelliteFEC]
+# In DVB version of satellite_delivery_system_descriptor
+Bits = 4
+0  = undefined
+1  = 1/2
+2  = 2/3
+3  = 3/4
+4  = 5/6
+5  = 7/8
+6  = 8/9
+7  = 3/5
+8  = 4/5
+9  = 9/10
+15 = none
+
+[satellite_delivery_system_descriptor.ISDBSatelliteFEC]
+# In ISDB version of satellite_delivery_system_descriptor
+Bits = 4
+0  = undefined
+1  = 1/2
+2  = 2/3
+3  = 3/4
+4  = 5/6
+5  = 7/8
+8  = ISDB-S/TC8PSK
+9  = 2.6GHz band digital satellite sound broadcasting
+10 = Advanced narrow-band CS digital broadcasting
+15 = none

@@ -1,0 +1,5 @@
+[C2_bundle_delivery_system_descriptor.C2TuningType]
+Inherit = C2_delivery_system_descriptor.C2TuningType
+
+[C2_bundle_delivery_system_descriptor.C2SymbolDuration]
+Inherit = C2_delivery_system_descriptor.C2SymbolDuration

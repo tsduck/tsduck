@@ -1,0 +1,14 @@
+[ERT.RelationType]
+# In ISDB Event Relation Table (ERT)
+Bits = 4
+0 = Reserved
+1 = Relation for the contents description (indicates tree structure to describe contents)
+2 = Relation for navigation (indicates tree structure to assist display and selection)
+
+[ERT.CollectionMode]
+# In ISDB Event Relation Table (ERT)
+Bits = 4
+0 = Group (bag)
+1 = Concatenation (sequential)
+2 = Selection (alternate)
+3 = Parallel

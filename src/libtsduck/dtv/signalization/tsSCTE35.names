@@ -1,0 +1,9 @@
+[SpliceCommandType]
+# In SCTE 35 splice_information_table
+Bits = 8
+0x00 = SpliceNull
+0x04 = SpliceSchedule
+0x05 = SpliceInsert
+0x06 = TimeSignal
+0x07 = BandwidthReservation
+0xFF = PrivateCommand

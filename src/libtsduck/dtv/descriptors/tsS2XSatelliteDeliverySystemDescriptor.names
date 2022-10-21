@@ -1,0 +1,15 @@
+[S2X_satellite_delivery_system_descriptor.Polarization]
+Inherit = satellite_delivery_system_descriptor.Polarization
+
+[S2X_satellite_delivery_system_descriptor.S2XMode]
+Bits = 2
+1 = S2X
+2 = S2X + time slicing
+3 = S2X + channel bonding
+
+[S2X_satellite_delivery_system_descriptor.TSGSS2XMode]
+Bits = 2
+0 = generic packetized
+1 = GSE
+2 = GSE high efficiency mode
+3 = Transport Stream

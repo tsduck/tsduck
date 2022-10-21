@@ -1,0 +1,23 @@
+[EmmgPdgMuxErrors]
+# In DVB SimulCrypt EMMG/PDG <=> MUX protocol (ETSI TS 103 197)
+Bits = 16
+0x0001 = invalid message
+0x0002 = unsupported protocol version
+0x0003 = unknown message_type value
+0x0004 = message too long
+0x0005 = unknown data_stream_id value
+0x0006 = unknown data_channel_id value
+0x0007 = too many channels on this MUX
+0x0008 = too many data streams on this channel
+0x0009 = too many data streams on this MUX
+0x000A = unknown parameter_type
+0x000B = inconsistent length for DVB parameter
+0x000C = missing mandatory DVB parameter
+0x000D = invalid value for DVB parameter
+0x000E = unknown client_id value
+0x000F = exceeded bandwidth
+0x0010 = unknown data_id value
+0x0011 = data_channel_id value already in use
+0x0012 = data_stream_id value already in use
+0x0013 = data_id value already in use
+0x0014 = client_id value already in use

@@ -1,0 +1,7 @@
+[CP_descriptor.CPSystemId]
+Bits = 16
+0x0000 = DVB CPCM Content Licence
+0x0001 = DVB CPCM Auxiliary Data
+0x0002 = DVB CPCM Revocation List
+0x0100 = DTCP Renewability Messages
+0x0101 = HDCP Renewability Messages
