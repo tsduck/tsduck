@@ -19,8 +19,6 @@ TSDuck - List of features to be implemented or fixed
     - 2.6.112  MPEGH_3D_audio_text_label_descriptor
     - 2.6.116  MPEGH_3D_audio_DRC_loudness_descriptor
     - 2.6.118  MPEGH_3D_audio_command_descriptor
-  - With embedded data structures from ISO/IEC 23001-10 (Metrics in ISO-BMFF):
-    - 2.6.119  quality_extension_descriptor
 
   ETSI TS 102 323 (Carriage and signalling of TV-Anytime information)
   - 5.3.5   RAR_over_DVB_stream_descriptor (RNT-specific)
