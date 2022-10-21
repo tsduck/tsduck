@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.32-2934
+VERSION 3.32-2963
 
 [NEW] New commands and plugins:
 
@@ -19,6 +19,8 @@ VERSION 3.32-2934
       plugin "hls".
     - Options --merge, --attributes-merge, --sort, --uncomment in "tsxml".
     - Options --sort-languages, --sort-pids in plugin "pmt".
+    - Options --eit-actual, --eit-other, --eit-pf, --eit-schedule in
+      "tspacketize", "tstabcomp", plugin "inject".
 
 -------------------------------------------------------------------------------
 

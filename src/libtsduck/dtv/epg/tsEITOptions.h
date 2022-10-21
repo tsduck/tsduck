@@ -28,20 +28,27 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  EIT generation options.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 32
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 2966
+#include "tsEnumUtils.h"
+
+namespace ts {
+    //!
+    //! EIT generation options.
+    //! The options can be specified as a byte mask.
+    //!
+    enum class EITOptions {
+        GEN_NONE        = 0x0000,   //!< Generate nothing.
+        GEN_ACTUAL      = 0x0001,   //!< Generate EIT actual.
+        GEN_OTHER       = 0x0002,   //!< Generate EIT other.
+        GEN_PF          = 0x0004,   //!< Generate EIT present/following.
+        GEN_SCHED       = 0x0008,   //!< Generate EIT schedule.
+        GEN_ALL         = 0x000F,   //!< Generate all EIT's.
+        LOAD_INPUT      = 0x0010,   //!< Use input EIT's as EPG data.
+        PACKET_STUFFING = 0x0020,   //!< Insert stuffing inside TS packet at end of EIT section. Do not pack EIT sections.
+    };
+}
+TS_ENABLE_BITMASK_OPERATORS(ts::EITOptions);

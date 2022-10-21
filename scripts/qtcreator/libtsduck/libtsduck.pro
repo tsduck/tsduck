@@ -24,4 +24,4 @@ QMAKE_CXXFLAGS += $$system("$$PROJROOT/scripts/vatek-config.sh --cflags")
 
 DISTFILES += $$TS_CONFIG_FILES
 HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\*")
-SOURCES   += $$system("find $$SRCROOT/libtsduck -name \\*.cpp ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\*")
+SOURCES   += $$system("find $$SRCROOT/libtsduck -name \\*.cpp ! -path \\*/windows/\\* ! -path \\*/$$NOSYSDIR/\\* ! -name tsduck.cpp")

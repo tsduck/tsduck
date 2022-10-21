@@ -268,9 +268,9 @@ void ts::SectionFile::collectLastTable()
 // Reorganize all EIT sections according to ETSI TS 101 211.
 //----------------------------------------------------------------------------
 
-void ts::SectionFile::reorganizeEITs(const ts::Time& reftime)
+void ts::SectionFile::reorganizeEITs(const ts::Time& reftime, EITOptions options)
 {
-    EIT::ReorganizeSections(_duck, _sections, reftime);
+    EIT::ReorganizeSections(_duck, _sections, reftime, options);
     rebuildTables();
 }
 

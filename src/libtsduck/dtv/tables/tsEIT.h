@@ -36,6 +36,7 @@
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
 #include "tsServiceIdTriplet.h"
+#include "tsEITOptions.h"
 #include "tsTime.h"
 
 namespace ts {
@@ -412,11 +413,13 @@ namespace ts {
         //! @param [in] reftime Reference UTC time for EIT schedule. Only the date part is used.
         //! This is the "last midnight" according to which EIT segments are assigned. By
         //! default, the oldest event start time is used.
+        //! @param [in] options Generation options for EIT (p/f and/or schedule, actual and/or other).
         //!
         //! @see ETSI TS 101 211, 4.1.4
         //! @see EITGenerator
+        //! @see EITOption
         //!
-        static void ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, const Time& reftime = Time());
+        static void ReorganizeSections(DuckContext& duck, SectionPtrVector& sections, const Time& reftime = Time(), EITOptions options = EITOptions::GEN_ALL);
 
         //!
         //! Modify an EIT-schedule section to make it "standalone", outside any other table.
