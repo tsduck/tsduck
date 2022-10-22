@@ -1,0 +1,7 @@
+[transport_profile_descriptor.Profile]
+Bits = 8
+0x00 = unspecified
+0x01 = Complete profile
+0x02 = Adaptive profile
+0x03-0x0E = reserved
+0x0F-0xFF = user_private

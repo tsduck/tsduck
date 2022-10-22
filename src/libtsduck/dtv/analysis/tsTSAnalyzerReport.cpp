@@ -30,8 +30,6 @@
 #include "tsTSAnalyzerReport.h"
 #include "tsNames.h"
 #include "tsjsonObject.h"
-#include "tsjsonString.h"
-#include "tsjsonNumber.h"
 #include "tsAlgorithm.h"
 
 
@@ -336,7 +334,7 @@ void ts::TSAnalyzerReport::reportServicePID(Grid& grid, const PIDContext& pc) co
         bool first = true;
         for (auto oui : pc.ssu_oui) {
             description += first ? u" (SSU " : u", ";
-            description += names::OUI(oui);
+            description += NameFromOUI(oui);
             first = false;
         }
         description += u")";
@@ -512,7 +510,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // List of System Software Update OUI's on this PID
         for (auto oui : pc.ssu_oui) {
-            grid.putLine(u"SSU OUI: " + names::OUI(oui, NamesFlags::FIRST));
+            grid.putLine(u"SSU OUI: " + NameFromOUI(oui, NamesFlags::FIRST));
         }
         grid.subSection();
 

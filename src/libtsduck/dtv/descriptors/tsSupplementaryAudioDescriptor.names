@@ -1,0 +1,12 @@
+[supplementary_audio_descriptor.MixType]
+Bits = 1
+0 = supplementary stream
+1 = complete and independent stream
+
+[supplementary_audio_descriptor.Class]
+Bits = 5
+0 = main audio
+1 = audio description for the visually impaired
+2 = clean audio for the hearing impaired
+3 = spoken subtitles for the visually impaired
+4 = dependent parametric data stream

@@ -1,0 +1,17 @@
+[announcement_support_descriptor.Type]
+Bits = 4
+0 = Emergency alarm
+1 = Road Traffic flash
+2 = Public Transport flash
+3 = Warning message
+4 = News flash
+5 = Weather flash
+6 = Event announcement
+7 = Personal call
+
+[announcement_support_descriptor.ReferenceType]
+Bits = 3
+0 = In usual audio stream of the service
+1 = In separate audio stream in the service
+2 = In a different service within the same transport stream
+3 = in a different service within a different transport stream

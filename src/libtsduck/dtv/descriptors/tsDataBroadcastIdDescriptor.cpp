@@ -153,7 +153,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorSSU(TablesDisplay& disp, PSIB
     buf.pushReadSizeFromLength(8); // OUI_data_length
 
     while (buf.canReadBytes(6)) {
-        disp << margin << "OUI: " << names::OUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
         buf.skipBits(4);
         const uint8_t upd_type = buf.getBits<uint8_t>(4);
         disp << margin << UString::Format(u"  Update type: 0x%X (", {upd_type});

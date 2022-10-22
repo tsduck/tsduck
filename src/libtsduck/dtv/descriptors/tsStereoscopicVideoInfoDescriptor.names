@@ -1,0 +1,8 @@
+[stereoscopic_video_info_descriptor.UpsamplingFactor]
+Bits = 4
+0 = Forbidden
+1 = Unspecified
+2 = Same as coded resolution of base view
+3 = 3/4 coded resolution of base view
+4 = 2/3 coded resolution of base view
+5 = 1/2 coded resolution of base view

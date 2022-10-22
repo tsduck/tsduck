@@ -1,0 +1,8 @@
+[event_group_descriptor.Type]
+Bits = 4
+0 = undefined
+1 = Event common
+2 = Event relay
+3 = Event movement
+4 = Event relay to other networks
+5 = Event movement from other networks

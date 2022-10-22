@@ -1,0 +1,4 @@
+[service_group_descriptor.Type]
+Bits = 4
+0 = undefined
+1 = Server type simultaneous service

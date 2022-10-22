@@ -35,6 +35,7 @@
 #include "tsTeletextDescriptor.h"
 #include "tsBinaryTable.h"
 #include "tsDuckContext.h"
+#include "tsCASFamily.h"
 #include "tsNames.h"
 #include "tsAlgorithm.h"
 

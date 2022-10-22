@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsByteBlock.h"
 #include "tsSafePtr.h"
 #include "tsMutex.h"
 #include "tsNullReport.h"

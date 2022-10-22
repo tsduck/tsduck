@@ -1,0 +1,13 @@
+[image_icon_descriptor.TransportMode]
+Bits = 2
+0 = Delivered in the icon_data_bytes
+1 = Identified by URL
+2-3 = DVB-reserved
+
+[image_icon_descriptor.CoordinateSystem]
+Bits = 3
+0 = Coordinates 720x576
+1 = Coordinates 1280x720
+2 = Coordinates 1920x1080
+3-6 = DVB reserved
+7 = User Private

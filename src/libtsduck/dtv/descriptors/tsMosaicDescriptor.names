@@ -1,0 +1,15 @@
+[mosaic_descriptor.LogicalCellPresentation]
+Bits = 3
+0 = undefined
+1 = video
+2 = still picture
+3 = graphics/text
+4-7 = reserved for future use
+
+[mosaic_descriptor.CellLinkageInfo]
+Bits = 8
+0x00 = undefined
+0x01 = bouquet related
+0x02 = service related
+0x03 = other mosaic related
+0x04 = event related

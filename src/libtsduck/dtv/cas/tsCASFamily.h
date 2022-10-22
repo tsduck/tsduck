@@ -33,7 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -60,4 +60,11 @@ namespace ts {
     //! @return A CAS family enumeration value.
     //!
     TSDUCKDLL CASFamily CASFamilyOf(uint16_t ca_system_id);
+
+    //!
+    //! Name of Conditional Access Families.
+    //! @param [in] cas CAS family
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString CASFamilyName(CASFamily cas);
 }

@@ -283,6 +283,47 @@ namespace ts {
         size_t           _configErrors;  // Number of errors in configuration file.
         ConfigSectionMap _sections;      // Configuration sections.
     };
+
+    //!
+    //! Get a name from a specified section in the DTV names file.
+    //! @tparam INT An integer name.
+    //! @param [in] sectionName Name of section to search. Not case-sensitive.
+    //! @param [in] value Value to get the name for.
+    //! @param [in] flags Presentation flags.
+    //! @param [in] bits Nominal size in bits of the data, optional.
+    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+    //! @return The corresponding name.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
+    UString NameFromDTV(const UString& sectionName, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = static_cast<INT>(0))
+    {
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSection(sectionName, NamesFile::Value(value), flags, bits, NamesFile::Value(alternateValue));
+    }
+
+    //!
+    //! Get a name from a specified section in the DTV names file, with alternate fallback value.
+    //! @tparam INT An integer name.
+    //! @param [in] sectionName Name of section to search. Not case-sensitive.
+    //! @param [in] value1 Value to get the name for.
+    //! @param [in] value2 Alternate value if no name is found for @a value1.
+    //! @param [in] flags Presentation flags.
+    //! @param [in] bits Nominal size in bits of the data, optional.
+    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
+    //! @return The corresponding name.
+    //!
+    template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value, int>::type = 0>
+    UString NameFromDTVWithFallback(const UString& sectionName, INT value1, INT value2, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = static_cast<INT>(0))
+    {
+        return NamesFile::Instance(NamesFile::Predefined::DTV)->nameFromSectionWithFallback(sectionName, NamesFile::Value(value1), NamesFile::Value(value2), flags, bits, NamesFile::Value(alternateValue));
+    }
+
+    //!
+    //! Get the name of an OUI (IEEE-assigned Organizationally Unique Identifier), 24 bits.
+    //! @param [in] oui Organizationally Unique Identifier), 24 bits.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString NameFromOUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME);
 }
 
 //!

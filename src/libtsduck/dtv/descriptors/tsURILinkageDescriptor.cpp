@@ -121,7 +121,7 @@ void ts::URILinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 {
     if (buf.canReadBytes(2)) {
         const uint8_t type = buf.getUInt8();
-        disp << margin << "URI linkage type: " << NameFromSection(u"URILinkageType", type, NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "URI linkage type: " << DataName(MY_XML_NAME, u"LinkageType", type, NamesFlags::HEXA_FIRST) << std::endl;
         disp << margin << "URI: " << buf.getStringWithByteLength() << std::endl;
         if ((type == 0x00 || type == 0x01) && buf.canReadBytes(2)) {
             const int interval = buf.getUInt16();

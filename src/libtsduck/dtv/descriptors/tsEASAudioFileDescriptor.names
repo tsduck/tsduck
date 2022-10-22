@@ -1,0 +1,13 @@
+[EAS_audio_file_descriptor.Format]
+Bits = 8
+0x01 = Audio Interchange File Format (AIFF) ‐ Basic
+0x02 = Audio Interchange File Format (AIFF) ‐ Extended
+0x03 = Waveform audio format (WAV) ‐ Basic
+0x04 = Waveform audio format (WAV) ‐ Extended
+0x05 = MPEG‐1 Audio Layer 3 (MP3) ‐ Basic
+0x06 = MPEG‐1 Audio Layer 3 (MP3) ‐ Extended
+
+[EAS_audio_file_descriptor.Source]
+Bits = 8
+0x01 = Out‐of‐band DSM‐CC Object Carousel
+0x02 = Out‐of‐band DSM‐CC Data Carousel

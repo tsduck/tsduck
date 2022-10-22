@@ -1,0 +1,16 @@
+[system_management_descriptor.Broadcasting]
+Bits = 2
+0   = Broadcasting
+1-2 = Non-broadcasting
+3   = Undefined
+
+[system_management_descriptor.Identifier]
+Bits = 6
+0x00 = Undefined
+0x01 = Satellite using 27 MHz bandwidth in 12.2 to 12.75 GHz band
+0x02 = Satellite using 34.5 MHz bandwidth in 11.7 to 12.2 GHz band
+0x03 = Terrestrial television
+0x04 = Satellite using 34.5 MHz bandwidth in 12.2 to 12.75 GHz band
+0x05 = Terrestrial sound
+0x06 = Satellites or broadcasting stations in 2630 to 2655 MHz band
+0x07 = Satellite advanced narrow-band using 27 MHz bandwidth in 12.2 to 12.75 GHz band

@@ -1,0 +1,72 @@
+[ATSC_AC3_audio_stream_descriptor.SampleRateCode]
+Bits = 3
+0 = 48 kHz
+1 = 44.1 kHz
+2 = 32 kHz
+3 = Reserved
+4 = 48 or 44.1 kHz
+5 = 48 or 32 kHz
+6 = 44.1 or 32 kHz
+7 = 48 or 44.1 or 32 kHz
+
+[ATSC_AC3_audio_stream_descriptor.BitRateCode]
+# The value in the descriptor is 6 bits long.
+# The MSB indicates if the bitrate is exact (0) or an upper limit (1).
+Bits = 5
+0  = 32 kb/s
+1  = 40 kb/s
+2  = 48 kb/s
+3  = 56 kb/s
+4  = 64 kb/s
+5  = 80 kb/s
+6  = 96 kb/s
+7  = 112 kb/s
+8  = 128 kb/s
+9  = 160 kb/s
+10 = 192 kb/s
+11 = 224 kb/s
+12 = 256 kb/s
+13 = 320 kb/s
+14 = 384 kb/s
+15 = 448 kb/s
+16 = 512 kb/s
+17 = 576 kb/s
+18 = 640 kb/s
+
+[ATSC_AC3_audio_stream_descriptor.SurroundMode]
+# The MSB indicates if the bitrate is exact (0) or an upper limit (1).
+Bits = 2
+0 = Not indicated
+1 = NOT Dolby surround encoded
+2 = Dolby surround encoded
+3 = Reserved
+
+[ATSC_AC3_audio_stream_descriptor.BitStreamMode]
+Bits = 3
+0 = main audio service: complete main (CM)
+1 = main audio service: music and effects (ME)
+2 = associated service: visually impaired (VI)
+3 = associated service: hearing impaired (HI)
+4 = associated service: dialogue (D)
+5 = associated service: commentary (C)
+6 = associated service: emergency (E)
+7 = associated service: voice over (VO)
+
+[ATSC_AC3_audio_stream_descriptor.NumChannels]
+Bits = 4
+0  = 1 + 1
+1  = 1/0
+2  = 2/0
+3  = 3/0
+4  = 2/1
+5  = 3/1
+6  = 2/2
+7  = 3/2
+8  = 1
+9  = 2 max
+10 = 3 max
+11 = 4 max
+12 = 5 max
+13 = 6 max
+14 = Reserved
+15 = Reserved

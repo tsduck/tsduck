@@ -129,7 +129,7 @@ void ts::ServiceGroupDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
     if (buf.canReadBytes(1)) {
         const uint8_t type = buf.getBits<uint8_t>(4);
         buf.skipBits(4);
-        disp << margin << "Group type: " << NameFromSection(u"ISDBServiceGroupType", type, NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Group type: " << DataName(MY_XML_NAME, u"Type", type, NamesFlags::DECIMAL_FIRST) << std::endl;
         if (type == 1) {
             disp << margin << "Simultaneous services:" << (buf.canRead() ? "" : " none") << std::endl;
             while (buf.canReadBytes(4)) {

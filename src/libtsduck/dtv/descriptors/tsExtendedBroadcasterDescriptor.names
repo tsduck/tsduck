@@ -1,0 +1,5 @@
+[extended_broadcaster_descriptor.Type]
+Bits = 4
+0 = Reserved
+1 = Digital terrestrial television broadcast
+2 = Digital terrestrial sound broadcast

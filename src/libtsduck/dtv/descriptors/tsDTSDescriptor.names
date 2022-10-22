@@ -1,0 +1,68 @@
+[DTS_descriptor.SampleRate]
+Bits = 4
+0 = invalid
+1 = 8 kHz
+2 = 16 kHz
+3 = 32 kHz
+4 = 64 kHz
+5 = 128 kHz
+6 = 11.025 kHz
+7 = 22.05 kHz
+8 = 44.1 kHz
+9 = 88.2 kHz
+10 = 176.4 kHz
+11 = 12 kHz
+12 = 24 kHz
+13 = 48 kHz
+14 = 96 kHz
+15 = 192 kHz
+
+[DTS_descriptor.BitRate]
+Bits = 5
+5 = 128 kb/s
+6 = 192 kb/s
+7 = 224 kb/s
+8 = 256 kb/s
+9 = 320 kb/s
+10 = 384 kb/s
+11 = 448 kb/s
+12 = 512 kb/s
+13 = 576 kb/s
+14 = 640 kb/s
+15 = 768 kb/s
+16 = 920 kb/s
+17 = 1024 kb/s
+18 = 1152 kb/s
+19 = 1280 kb/s
+20 = 1344 kb/s
+21 = 1408 kb/s
+22 = 1411.2 kb/s
+23 = 1472 kb/s
+24 = 1536 kb/s
+25 = 1920 kb/s
+26 = 2048 kb/s
+27 = 3072 kb/s
+28 = 3840 kb/s
+29 = open
+30 = variable
+31 = lossless
+
+[DTS_descriptor.SurroundMode]
+Bits = 8
+0 = 1 / mono
+1 = illegal
+2 = 2 / L+R (stereo)
+3 = 2 / (L+R) + (L-R) (sum-difference)
+4 = 2 / LT+RT (left & right total)
+5 = 3 / C+L+R
+6 = 3 / L+R+S
+7 = 4 / C+L+R+S
+8 = 4 / L+R+SL+SR
+9 = 5 / C+L+R+SL+SR
+
+[DTS_descriptor.ExtendedSurroundMode]
+Bits = 8
+0 = none
+1 = matrixed
+2 = discrete
+3 = undefined

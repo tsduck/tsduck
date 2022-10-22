@@ -1,0 +1,10 @@
+[video_decode_control_descriptor.EncodeFormat]
+Bits = 4
+0 = 1080p
+1 = 1080i
+2 = 720p
+3 = 480p
+4 = 480i
+5 = 240p
+6 = 120p
+7 = Reserved

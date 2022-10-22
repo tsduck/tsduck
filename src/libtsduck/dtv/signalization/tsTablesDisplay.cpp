@@ -723,7 +723,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         edid = EDID::ExtensionMPEG(ext);
         size--;
         // Display extended descriptor header
-        strm << margin << "MPEG extended descriptor: " << NameFromSection(u"MPEGExtendedDescriptorId", ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
+        strm << margin << "MPEG extended descriptor: " << NameFromDTV(u"MPEGExtendedDescriptorId", ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
     }
     else if (did == DID_DVB_EXTENSION && size >= 1) {
         // Extension descriptor, the extension id is in the first byte of the payload.

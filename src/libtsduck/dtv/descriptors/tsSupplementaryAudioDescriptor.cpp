@@ -154,8 +154,8 @@ bool ts::SupplementaryAudioDescriptor::analyzeXML(DuckContext& duck, const xml::
 void ts::SupplementaryAudioDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        disp << margin << "Mix type: " << NameFromSection(u"SuppAudioMixType", buf.getBit()) << std::endl;
-        disp << margin << "Editorial classification: " << NameFromSection(u"SuppAudioClass", buf.getBits<uint8_t>(5)) << std::endl;
+        disp << margin << "Mix type: " << DataName(MY_XML_NAME, u"MixType", buf.getBit()) << std::endl;
+        disp << margin << "Editorial classification: " << DataName(MY_XML_NAME, u"Class", buf.getBits<uint8_t>(5)) << std::endl;
         buf.skipBits(1);
         if (buf.getBool() && buf.canReadBytes(3)) {
             disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
