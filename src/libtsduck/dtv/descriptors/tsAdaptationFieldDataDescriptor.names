@@ -1,0 +1,11 @@
+[adaptation_field_data_descriptor.DataIdentifier]
+# Bit field
+Bits = 8
+0x01 = Announcement switching data field (ETSI TS 101 154)
+0x02 = AU_information data field (ETSI TS 101 154)
+0x04 = PVR_assist_information_data_field (ETSI TS 101 154)
+0x08 = tsap_timeline (DVB BlueBook A167-2)
+0x10 = reserved_0 for future use
+0x20 = reserved_0 for future use
+0x40 = reserved_0 for future use
+0x80 = reserved_0 for future use

@@ -765,7 +765,7 @@ void ts::PESPlugin::handleSEI(PESDemux& demux, const PESPacket& pkt, uint32_t se
     }
 
     // Now display the SEI.
-    *_out << "* " << prefix(pkt) << ", SEI type " << NameFromSection(u"AVCSEIType", sei_type, NamesFlags::FIRST) << std::endl;
+    *_out << "* " << prefix(pkt) << ", SEI type " << NameFromDTV(u"AVCSEIType", sei_type, NamesFlags::FIRST) << std::endl;
     *_out << UString::Format(u"  Offset in PES payload: %d, size: %d bytes", {offset, size}) << std::endl;
 
     size_t dsize = size;

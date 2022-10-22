@@ -1,0 +1,4 @@
+[ISDB_access_control_descriptor.CATransmissionType]
+Bits = 3
+0-6 = Undefined
+7   = Broadcast route

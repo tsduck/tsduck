@@ -1,0 +1,6 @@
+[stereoscopic_program_info_descriptor.ServiceType]
+Bits = 3
+0 = Unspecified
+1 = 2D-only (monoscopic) service
+2 = Frame-compatible stereoscopic 3D service
+3 = Service-compatible stereoscopic 3D service

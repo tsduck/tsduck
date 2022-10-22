@@ -1,0 +1,14 @@
+[application_icons_descriptor.IconFlags]
+Bits = 16
+0x0001 = 32 x 32 for square pixel display
+0x0002 = 32 x 32 for broadcast pixels on 4:3 display
+0x0004 = 24 x 32 for broadcast pixels on 16:9 display
+0x0008 = 64 x 64 for square pixel display
+0x0010 = 64 x 64 for broadcast pixels on 4:3 display
+0x0020 = 48 x 64 for broadcast pixels on 16:9 display
+0x0040 = 128 x 128 for square pixel display
+0x0080 = 128 x 128 for broadcast pixels on 4:3 display
+0x0100 = 96 x 128 for broadcast pixels on 16:9 display
+0x0200 = 256 x 256 for square pixel display
+0x0400 = 256 x 256 for broadcast pixels on 4:3 display
+0x0800 = 192 x 256 for broadcast pixels on 16:9 display

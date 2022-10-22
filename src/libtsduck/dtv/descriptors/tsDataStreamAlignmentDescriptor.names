@@ -1,0 +1,6 @@
+[data_stream_alignment_descriptor.DataStreamAlignment]
+Bits = 8
+0x01 = Slice or video access unit
+0x02 = Video access unit
+0x03 = GOP or SEQ
+0x04 = SEQ

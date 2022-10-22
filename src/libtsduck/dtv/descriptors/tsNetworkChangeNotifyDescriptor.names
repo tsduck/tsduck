@@ -1,0 +1,12 @@
+[network_change_notify_descriptor.ChangeType]
+Bits = 4
+0x0 = Message only
+0x1 = Minor - default
+0x2 = Minor - multiplex removed
+0x3 = Minor - service changed
+0x4-0x7 = reserved for future use for other minor changes
+0x8 = Major - default
+0x9 = Major - multiplex frequency changed
+0xA = Major - multiplex coverage changed
+0xB = Major - multiplex added
+0xC-0xF = reserved for future use for other major changes

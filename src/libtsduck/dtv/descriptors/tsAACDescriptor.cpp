@@ -125,7 +125,7 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
         disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(6);
         if (has_AAC_type && buf.canRead()) {
-            disp << margin << "AAC type: " << NameFromSection(u"ComponentType", 0x6F00 | buf.getUInt8(), NamesFlags::HEXA_FIRST, 8) << std::endl;
+            disp << margin << "AAC type: " << NameFromDTV(u"ComponentType", 0x6F00 | buf.getUInt8(), NamesFlags::HEXA_FIRST, 8) << std::endl;
         }
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
@@ -143,7 +143,7 @@ ts::UString ts::AACDescriptor::aacTypeString() const
 
 ts::UString ts::AACDescriptor::aacTypeString(uint8_t type)
 {
-    return NameFromSection(u"ComponentType", 0x6F00 | type, NamesFlags::NAME, 8);
+    return NameFromDTV(u"ComponentType", 0x6F00 | type, NamesFlags::NAME, 8);
 }
 
 

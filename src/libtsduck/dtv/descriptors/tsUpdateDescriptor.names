@@ -1,0 +1,15 @@
+[update_descriptor.SSUUpdateFlag]
+Bits = 2
+0 = Update has to be activated manually
+1 = Update may be performed automatically
+2 = reserved for future use
+3 = reserved for future use
+
+[update_descriptor.SSUUpdateMethod]
+Bits = 4
+0    = Immediate update: performed whatever the IRD state
+1    = IRD available: update when not interfere with user
+2    = Next restart: update at next IRD restart
+3-7  = reserved for future use
+8-14 = private use
+15   = reserved

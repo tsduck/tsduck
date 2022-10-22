@@ -1,0 +1,8 @@
+[URI_linkage_descriptor.LinkageType]
+Bits = 8
+0x00 = Online SDT (OSDT) for CI Plus
+0x01 = DVB-IPTV SD&S
+0x02 = Material Resolution Server (MRS) for companion screen applications
+0x03-0x5F = Reserved for registration to DVB specifications
+0x60-0x7F = Reserved for registration to standardised systems through the DVB Project Office
+0x80-0xFF =  user defined

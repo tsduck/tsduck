@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsNames.h"
+#include "tsCASFamily.h"
 #include "tsDuckContext.h"
 
 
@@ -38,7 +39,7 @@
 ts::UString ts::names::TID(const DuckContext& duck, uint8_t tid, uint16_t cas, NamesFlags flags)
 {
     // Where to search table ids.
-    const NamesFile* const repo = File();
+    const NamesFile* const repo = NamesFile::Instance(NamesFile::Predefined::DTV);
     const UString section(u"TableId");
     const NamesFile::Value casValue = NamesFile::Value(CASFamilyOf(cas)) << 8;
     const NamesFile::Value tidValue = NamesFile::Value(tid);
@@ -101,9 +102,10 @@ ts::UString ts::names::TID(const DuckContext& duck, uint8_t tid, uint16_t cas, N
 
 bool ts::names::HasTableSpecificName(uint8_t did, uint8_t tid)
 {
+    const NamesFile* const repo = NamesFile::Instance(NamesFile::Predefined::DTV);
     return tid != TID_NULL &&
         did < 0x80 &&
-        File()->nameExists(u"DescriptorId", (NamesFile::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | NamesFile::Value(did));
+        repo->nameExists(u"DescriptorId", (NamesFile::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | NamesFile::Value(did));
 }
 
 ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, NamesFlags flags)
@@ -111,15 +113,15 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, NamesFlags fl
     if (did >= 0x80 && pds != 0 && pds != PDS_NULL) {
         // If this is a private descriptor, only consider the private value.
         // Do not fallback because the same value with PDS == 0 can be different.
-        return File()->nameFromSection(u"DescriptorId", (NamesFile::Value(pds) << 8) | NamesFile::Value(did), flags, 8);
+        return NameFromDTV(u"DescriptorId", (NamesFile::Value(pds) << 8) | NamesFile::Value(did), flags, 8);
     }
     else if (tid != 0xFF) {
         // Could be a table-specific descriptor.
         const NamesFile::Value fullValue = (NamesFile::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | NamesFile::Value(did);
-        return File()->nameFromSectionWithFallback(u"DescriptorId", fullValue, NamesFile::Value(did), flags, 8);
+        return NameFromDTVWithFallback(u"DescriptorId", fullValue, NamesFile::Value(did), flags, 8);
     }
     else {
-        return File()->nameFromSection(u"DescriptorId", NamesFile::Value(did), flags, 8);
+        return NameFromDTV(u"DescriptorId", NamesFile::Value(did), flags, 8);
     }
 }
 
@@ -129,78 +131,68 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, NamesFlags fl
 
 ts::UString ts::names::EDID(uint8_t edid, NamesFlags flags)
 {
-    return File()->nameFromSection(u"DVBExtendedDescriptorId", NamesFile::Value(edid), flags, 8);
+    return NameFromDTV(u"DVBExtendedDescriptorId", NamesFile::Value(edid), flags, 8);
 }
 
 ts::UString ts::names::StreamType(uint8_t type, NamesFlags flags)
 {
-    return File()->nameFromSection(u"StreamType", NamesFile::Value(type), flags, 8);
+    return NameFromDTV(u"StreamType", NamesFile::Value(type), flags, 8);
 }
 
 ts::UString ts::names::PrivateDataSpecifier(uint32_t pds, NamesFlags flags)
 {
-    return File()->nameFromSection(u"PrivateDataSpecifier", NamesFile::Value(pds), flags, 32);
-}
-
-ts::UString ts::names::CASFamily(ts::CASFamily cas)
-{
-    return File()->nameFromSection(u"CASFamily", NamesFile::Value(cas), NamesFlags::NAME | NamesFlags::DECIMAL);
+    return NameFromDTV(u"PrivateDataSpecifier", NamesFile::Value(pds), flags, 32);
 }
 
 ts::UString ts::names::CASId(const DuckContext& duck, uint16_t id, NamesFlags flags)
 {
     const UChar* section = bool(duck.standards() & Standards::ISDB) ? u"ARIBCASystemId" : u"CASystemId";
-    return File()->nameFromSection(section, NamesFile::Value(id), flags, 16);
+    return NameFromDTV(section, NamesFile::Value(id), flags, 16);
 }
 
 ts::UString ts::names::BouquetId(uint16_t id, NamesFlags flags)
 {
-    return File()->nameFromSection(u"BouquetId", NamesFile::Value(id), flags, 16);
+    return NameFromDTV(u"BouquetId", NamesFile::Value(id), flags, 16);
 }
 
 ts::UString ts::names::OriginalNetworkId(uint16_t id, NamesFlags flags)
 {
-    return File()->nameFromSection(u"OriginalNetworkId", NamesFile::Value(id), flags, 16);
+    return NameFromDTV(u"OriginalNetworkId", NamesFile::Value(id), flags, 16);
 }
 
 ts::UString ts::names::NetworkId(uint16_t id, NamesFlags flags)
 {
-    return File()->nameFromSection(u"NetworkId", NamesFile::Value(id), flags, 16);
+    return NameFromDTV(u"NetworkId", NamesFile::Value(id), flags, 16);
 }
 
 ts::UString ts::names::PlatformId(uint32_t id, NamesFlags flags)
 {
-    return File()->nameFromSection(u"PlatformId", NamesFile::Value(id), flags, 24);
+    return NameFromDTV(u"PlatformId", NamesFile::Value(id), flags, 24);
 }
 
 ts::UString ts::names::DataBroadcastId(uint16_t id, NamesFlags flags)
 {
-    return File()->nameFromSection(u"DataBroadcastId", NamesFile::Value(id), flags, 16);
-}
-
-ts::UString ts::names::OUI(uint32_t oui, NamesFlags flags)
-{
-    return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags, 24);
+    return NameFromDTV(u"DataBroadcastId", NamesFile::Value(id), flags, 16);
 }
 
 ts::UString ts::names::StreamId(uint8_t sid, NamesFlags flags)
 {
-    return File()->nameFromSection(u"StreamId", NamesFile::Value(sid), flags, 8);
+    return NameFromDTV(u"StreamId", NamesFile::Value(sid), flags, 8);
 }
 
 ts::UString ts::names::PESStartCode(uint8_t code, NamesFlags flags)
 {
-    return File()->nameFromSection(u"PESStartCode", NamesFile::Value(code), flags, 8);
+    return NameFromDTV(u"PESStartCode", NamesFile::Value(code), flags, 8);
 }
 
 ts::UString ts::names::AspectRatio(uint8_t ar, NamesFlags flags)
 {
-    return File()->nameFromSection(u"AspectRatio", NamesFile::Value(ar), flags, 8);
+    return NameFromDTV(u"AspectRatio", NamesFile::Value(ar), flags, 8);
 }
 
 ts::UString ts::names::ChromaFormat(uint8_t cf, NamesFlags flags)
 {
-    return File()->nameFromSection(u"ChromaFormat", NamesFile::Value(cf), flags, 8);
+    return NameFromDTV(u"ChromaFormat", NamesFile::Value(cf), flags, 8);
 }
 
 ts::UString ts::names::AccessUnitType(CodecType codec, uint8_t type, NamesFlags flags)
@@ -216,7 +208,7 @@ ts::UString ts::names::AccessUnitType(CodecType codec, uint8_t type, NamesFlags 
         table = u"VVCUnitType";
     }
     if (table != nullptr) {
-        return File()->nameFromSection(table, NamesFile::Value(type), flags, 8);
+        return NameFromDTV(table, NamesFile::Value(type), flags, 8);
     }
     else {
         return NamesFile::Formatted(NamesFile::Value(type), u"unknown", flags, 8);
@@ -225,67 +217,47 @@ ts::UString ts::names::AccessUnitType(CodecType codec, uint8_t type, NamesFlags 
 
 ts::UString ts::names::AVCProfile(int profile, NamesFlags flags)
 {
-    return File()->nameFromSection(u"AVCProfile", NamesFile::Value(profile), flags, 8);
+    return NameFromDTV(u"AVCProfile", NamesFile::Value(profile), flags, 8);
 }
 
 ts::UString ts::names::ServiceType(uint8_t type, NamesFlags flags)
 {
-    return File()->nameFromSection(u"ServiceType", NamesFile::Value(type), flags, 8);
+    return NameFromDTV(u"ServiceType", NamesFile::Value(type), flags, 8);
 }
 
 ts::UString ts::names::LinkageType(uint8_t type, NamesFlags flags)
 {
-    return File()->nameFromSection(u"LinkageType", NamesFile::Value(type), flags, 8);
+    return NameFromDTV(u"LinkageType", NamesFile::Value(type), flags, 8);
 }
 
 ts::UString ts::names::TeletextType(uint8_t type, NamesFlags flags)
 {
-    return File()->nameFromSection(u"TeletextType", NamesFile::Value(type), flags, 8);
+    return NameFromDTV(u"TeletextType", NamesFile::Value(type), flags, 8);
 }
 
 ts::UString ts::names::RunningStatus(uint8_t status, NamesFlags flags)
 {
-    return File()->nameFromSection(u"RunningStatus", NamesFile::Value(status), flags, 8);
+    return NameFromDTV(u"RunningStatus", NamesFile::Value(status), flags, 8);
 }
 
 ts::UString ts::names::AudioType(uint8_t type, NamesFlags flags)
 {
-    return File()->nameFromSection(u"AudioType", NamesFile::Value(type), flags, 8);
+    return NameFromDTV(u"AudioType", NamesFile::Value(type), flags, 8);
 }
 
 ts::UString ts::names::SubtitlingType(uint8_t type, NamesFlags flags)
 {
-    return File()->nameFromSection(u"SubtitlingType", NamesFile::Value(type), flags, 8);
-}
-
-ts::UString ts::names::DTSSampleRateCode(uint8_t x, NamesFlags flags)
-{
-    return File()->nameFromSection(u"DTSSampleRate", NamesFile::Value(x), flags, 8);
-}
-
-ts::UString ts::names::DTSBitRateCode(uint8_t x, NamesFlags flags)
-{
-    return File()->nameFromSection(u"DTSBitRate", NamesFile::Value(x), flags, 8);
-}
-
-ts::UString ts::names::DTSSurroundMode(uint8_t x, NamesFlags flags)
-{
-    return File()->nameFromSection(u"DTSSurroundMode", NamesFile::Value(x), flags, 8);
-}
-
-ts::UString ts::names::DTSExtendedSurroundMode(uint8_t x, NamesFlags flags)
-{
-    return File()->nameFromSection(u"DTSExtendedSurroundMode", NamesFile::Value(x), flags, 8);
+    return NameFromDTV(u"SubtitlingType", NamesFile::Value(type), flags, 8);
 }
 
 ts::UString ts::names::ScramblingControl(uint8_t scv, NamesFlags flags)
 {
-    return File()->nameFromSection(u"ScramblingControl", NamesFile::Value(scv), flags, 8);
+    return NameFromDTV(u"ScramblingControl", NamesFile::Value(scv), flags, 8);
 }
 
 ts::UString ts::names::T2MIPacketType(uint8_t type, NamesFlags flags)
 {
-    return File()->nameFromSection(u"T2MIPacketType", NamesFile::Value(type), flags, 8);
+    return NameFromDTV(u"T2MIPacketType", NamesFile::Value(type), flags, 8);
 }
 
 
@@ -322,7 +294,7 @@ ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, Nam
 
     if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
-        return File()->nameFromSection(u"ComponentTypeJapan", NamesFile::Value(nType), flags | NamesFlags::ALTERNATE, 16, dType);
+        return NameFromDTV(u"ComponentTypeJapan", nType, flags | NamesFlags::ALTERNATE, 16, dType);
     }
     else if ((nType & 0xFF00) == 0x3F00) {
         return SubtitlingType(nType & 0x00FF, flags);
@@ -331,7 +303,7 @@ ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, Nam
         return AC3ComponentType(nType & 0x00FF, flags);
     }
     else {
-        return File()->nameFromSection(u"ComponentType", NamesFile::Value(nType), flags | NamesFlags::ALTERNATE, 16, dType);
+        return NameFromDTV(u"ComponentType", nType, flags | NamesFlags::ALTERNATE, 16, dType);
     }
 }
 
@@ -344,15 +316,15 @@ ts::UString ts::names::Content(const DuckContext& duck, uint8_t x, NamesFlags fl
 {
     if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
-        return File()->nameFromSection(u"ContentIdJapan", NamesFile::Value(x), flags, 8);
+        return NameFromDTV(u"ContentIdJapan", NamesFile::Value(x), flags, 8);
     }
     else if (bool(duck.standards() & Standards::ABNT)) {
         // ABNT (Brazil) / ISDB uses a completely different mapping.
-        return File()->nameFromSection(u"ContentIdABNT", NamesFile::Value(x), flags, 8);
+        return NameFromDTV(u"ContentIdABNT", NamesFile::Value(x), flags, 8);
     }
     else {
         // Standard DVB mapping.
-        return File()->nameFromSection(u"ContentId", NamesFile::Value(x), flags, 8);
+        return NameFromDTV(u"ContentId", NamesFile::Value(x), flags, 8);
     }
 }
 

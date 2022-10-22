@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsByteBlock.h"
 #include "tsVariable.h"
 #include "tsTime.h"
 

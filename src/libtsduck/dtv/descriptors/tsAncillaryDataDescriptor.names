@@ -1,0 +1,11 @@
+[ancillary_data_descriptor.DataIdentifier]
+# Bit field
+Bits = 8
+0x01 = DVD-Video Ancillary Data (ETSI TS 101 154)
+0x02 = Extended Ancillary Data (ETSI TS 101 154)
+0x04 = Announcement Switching Data (ETSI TS 101 154)
+0x08 = DAB Ancillary Data (ETSI EN 300 401)
+0x10 = Scale Factor Error Check (ScF-CRC) (ETSI TS 101 154)
+0x20 = MPEG-4 ancillary data (ETSI TS 101 154)
+0x40 = RDS via UECP (ETSI TS 101 154)
+0x80 = reserved_0 for future use

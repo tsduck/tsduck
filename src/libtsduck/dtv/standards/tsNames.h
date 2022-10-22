@@ -36,8 +36,6 @@
 #pragma once
 #include "tsNamesFile.h"
 #include "tsPSI.h"
-#include "tsEnumUtils.h"
-#include "tsCASFamily.h"
 #include "tsCodecType.h"
 
 namespace ts {
@@ -45,18 +43,9 @@ namespace ts {
     class DuckContext;
 
     //!
-    //! Namespace for functions returning MPEG/DVB names.
+    //! Namespace for functions returning Digital TV names.
     //!
     namespace names {
-        //!
-        //! Get the NamesFile instance for all MPEG/DVB names.
-        //! @return A pointer to the NamesFile instance for all MPEG/DVB names.
-        //!
-        inline const NamesFile* File()
-        {
-            return NamesFile::Instance(NamesFile::Predefined::DTV);
-        }
-
         //!
         //! Name of Table ID.
         //! @param [in] duck TSDuck execution context (used to select from conflicting standards).
@@ -200,13 +189,6 @@ namespace ts {
         TSDUCKDLL UString CASId(const DuckContext& duck, uint16_t casid, NamesFlags flags = NamesFlags::NAME);
 
         //!
-        //! Name of Conditional Access Families.
-        //! @param [in] cas CAS family
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString CASFamily(ts::CASFamily cas);
-
-        //!
         //! Name of Running Status (in SDT).
         //! @param [in] rs Running Status (in SDT).
         //! @param [in] flags Presentation flags.
@@ -239,38 +221,6 @@ namespace ts {
         //! @return The corresponding name.
         //!
         TSDUCKDLL UString AC3ComponentType(uint8_t t, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of DTS Audio Sample Rate code.
-        //! @param [in] c DTS Audio Sample Rate code.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString DTSSampleRateCode(uint8_t c, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of DTS Audio Bit Rate Code.
-        //! @param [in] c DTS Audio Bit Rate Code.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString DTSBitRateCode(uint8_t c, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of DTS Audio Surround Mode.
-        //! @param [in] mode DTS Audio Surround Mode.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString DTSSurroundMode(uint8_t mode, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of DTS Audio Extended Surround Mode.
-        //! @param [in] mode DTS Audio Extended Surround Mode.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString DTSExtendedSurroundMode(uint8_t mode, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of content name (in Content Descriptor).
@@ -330,35 +280,11 @@ namespace ts {
         TSDUCKDLL UString DataBroadcastId(uint16_t id, NamesFlags flags = NamesFlags::NAME);
 
         //!
-        //! Name of OUI (IEEE-assigned Organizationally Unique Identifier), 24 bits.
-        //! @param [in] oui Organizationally Unique Identifier), 24 bits.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString OUI(uint32_t oui, NamesFlags flags = NamesFlags::NAME);
-
-        //!
         //! Name of T2-MI packet type.
         //! @param [in] type T2-MI packet type.
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
         TSDUCKDLL UString T2MIPacketType(uint8_t type, NamesFlags flags = NamesFlags::NAME);
-    }
-
-    //!
-    //! Get a name from a specified section in the DVB names file.
-    //! @tparam INT An integer name.
-    //! @param [in] sectionName Name of section to search. Not case-sensitive.
-    //! @param [in] value Value to get the name for.
-    //! @param [in] flags Presentation flags.
-    //! @param [in] bits Nominal size in bits of the data, optional.
-    //! @param [in] alternateValue Display this integer value if flags ALTERNATE is set.
-    //! @return The corresponding name.
-    //!
-    template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type = 0>
-    UString NameFromSection(const UString& sectionName, INT value, NamesFlags flags = NamesFlags::NAME, size_t bits = 0, INT alternateValue = 0)
-    {
-        return names::File()->nameFromSection(sectionName, NamesFile::Value(value), flags, bits, NamesFile::Value(alternateValue));
     }
 }

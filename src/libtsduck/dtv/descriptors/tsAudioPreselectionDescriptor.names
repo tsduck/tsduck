@@ -1,0 +1,7 @@
+[audio_preselection_descriptor.Rendering]
+Bits = 3
+0 = No preference given for the reproduction channel layout
+1 = Preferred reproduction channel layout is stereo
+2 = Preferred reproduction channel layout is two-dimensional (e.g. 5.1)
+3 = Preferred reproduction channel layout is three-dimensional
+4 = Content is pre-rendered for consumption with headphones

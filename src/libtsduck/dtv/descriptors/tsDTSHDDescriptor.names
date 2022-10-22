@@ -1,0 +1,81 @@
+[DTS_HD_descriptor.SamplingFrequency]
+# In substream_info() of DTS-HD_descriptor()
+Bits = 4
+0 = 8 kHz
+1 = 16 kHz
+2 = 32 kHz
+3 = 64 kHz
+4 = 128 kHz
+5 = 22.05 kHz
+6 = 44.1 kHz
+7 = 88.2 kHz
+8 = 176.4 kHz
+9 = 352.8 kHz
+10 = 12 kHz
+11 = 24 kHz
+12 = 48 kHz
+13 = 96 kHz
+14 = 192 kHz
+15 = 348 kHz
+
+[DTS_HD_descriptor.AssetConstruction]
+# In asset_info() of DTS-HD_descriptor()
+# MSB=0 for substream, MSB=1 for extensions substreams
+Bits = 5
+0x0001 = Core
+0x0002 = Core, XCH
+0x0003 = Core, XXCH
+0x0004 = Core, X96
+0x0005 = Core
+0x0006 = Core
+0x0007 = Core, XCH
+0x0008 = Core, XXCH
+0x0009 = Core
+0x000A = Core
+0x000B = Core, XCH
+0x000C = Core, XXCH
+0x000D = Core
+0x000E = Core
+0x000F = Core, XCH
+0x0010 = Core, X96
+0x0105 = XXCH
+0x0106 = XBR
+0x0107 = XBR
+0x0108 = XBR
+0x0109 = XXCH, XBR
+0x010A = X96
+0x010B = X96
+0x010C = X96
+0x010D = XXCH, X96
+0x010E = XLL
+0x010F = XLL
+0x0110 = XLL
+0x0111 = XLL
+0x0112 = LBR
+0x0113 = Core
+0x0114 = Core, XXCH
+0x0115 = Core, XLL
+
+[DTS_HD_descriptor.ServiceType]
+# In asset_info() of DTS-HD_descriptor()
+Bits = 3
+0 = Complete Main
+1 = Music and Effects
+2 = Visually Impaired
+3 = Hearing Impaired
+4 = Dialogue
+5 = Commentary
+6 = Emergency
+7 = Voiceover
+
+[DTS_HD_descriptor.NumberOfChannels]
+# In asset_info() of DTS-HD_descriptor()
+Bits = 3
+0 = Mono
+1 = Reserved
+2 = 2 channel (stereo, LoRo)
+3 = 2 channel matrix encoded (stereo, LtRt)
+4 = Multichannel audio (> 2 channels)
+5 = Reserved
+6 = Reserved
+7 = Reserved

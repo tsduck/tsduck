@@ -1,0 +1,12 @@
+[hierarchy_descriptor.HierarchyType]
+Bits = 8
+0x01 = Spatial Scalability
+0x02 = SNR Scalability
+0x03 = Temporal Scalability
+0x04 = Data partitioning
+0x05 = Extension bitstream
+0x06 = Private Stream
+0x07 = Multi-view Profile
+0x08 = Combined Scalability
+0x09 = MVC video sub-bitstream or MVCD video sub-bitstream
+0x0F = Base layer or base view sub-bitstream

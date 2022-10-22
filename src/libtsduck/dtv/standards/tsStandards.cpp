@@ -38,7 +38,7 @@
 ts::UString ts::StandardsNames(Standards standards)
 {
     if (standards == Standards::NONE) {
-        return NameFromSection(u"Standards", 0, NamesFlags::NAME);
+        return NameFromDTV(u"Standards", 0, NamesFlags::NAME);
     }
     else {
         UString list;
@@ -47,7 +47,7 @@ ts::UString ts::StandardsNames(Standards standards)
                 if (!list.empty()) {
                     list.append(u", ");
                 }
-                list.append(NameFromSection(u"Standards", std::underlying_type<Standards>::type(mask), NamesFlags::NAME));
+                list.append(NameFromDTV(u"Standards", std::underlying_type<Standards>::type(mask), NamesFlags::NAME));
             }
         }
         return list;

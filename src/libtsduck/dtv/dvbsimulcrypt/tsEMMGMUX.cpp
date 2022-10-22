@@ -185,7 +185,7 @@ void ts::emmgmux::Protocol::factory(const tlv::MessageFactory& fact, tlv::Messag
 
 ts::UString ts::emmgmux::Errors::Name(uint16_t status)
 {
-    return NameFromSection(u"EmmgPdgMuxErrors", status, NamesFlags::HEXA_FIRST);
+    return NameFromDTV(u"EmmgPdgMuxErrors", status, NamesFlags::HEXA_FIRST);
 }
 
 

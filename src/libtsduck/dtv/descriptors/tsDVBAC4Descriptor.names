@@ -1,0 +1,6 @@
+[DVB_AC4_descriptor.ChannelMode]
+Bits = 8
+0 = Mono
+1 = Stereo
+2 = Multi-channel
+3 = Reserved

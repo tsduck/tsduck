@@ -1,0 +1,5 @@
+[hybrid_information_descriptor.Format]
+Bits = 4
+0 = MPD (Media Presentation Descriptor) in MPEG-DASH (ISO/IEC 23009-1)
+1 = Playback control descriptor in IPTV VOD spec (IPTV FJ STD-0002)
+2 = With a TS time stamp according to IPTV VOD spec (IPTV FJ STD-0002)

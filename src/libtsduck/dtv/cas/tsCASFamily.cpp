@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCASFamily.h"
+#include "tsNamesFile.h"
 #include "tsPSI.h"
 
 
@@ -63,4 +64,14 @@ ts::CASFamily ts::CASFamilyOf(uint16_t casid)
             return it->family;
         }
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Name of Conditional Access Families.
+//----------------------------------------------------------------------------
+
+ts::UString ts::CASFamilyName(CASFamily cas)
+{
+    return NameFromDTV(u"CASFamily", cas, NamesFlags::NAME | NamesFlags::DECIMAL);
 }

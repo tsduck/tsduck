@@ -108,7 +108,7 @@ void ts::ApplicationIconsDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             disp << margin << UString::Format(u"Icon flags: 0x%X", {flags}) << std::endl;
             for (uint16_t mask = 0x0001; mask != 0; mask <<= 1) {
                 if ((flags & mask) != 0) {
-                    disp << margin << "  - " << NameFromSection(u"ApplicationIconFlags", mask) << std::endl;
+                    disp << margin << "  - " << DataName(MY_XML_NAME, u"IconFlags", mask) << std::endl;
                 }
             }
             disp.displayPrivateData(u"Reserved bytes", buf, NPOS, margin);

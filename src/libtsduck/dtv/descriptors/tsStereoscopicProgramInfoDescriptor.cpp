@@ -91,7 +91,7 @@ void ts::StereoscopicProgramInfoDescriptor::DisplayDescriptor(TablesDisplay& dis
 {
     if (buf.canReadBytes(1)) {
         buf.skipBits(5);
-        disp << margin << "Stereoscopic service type: " << NameFromSection(u"StereoscopicServiceType", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Stereoscopic service type: " << DataName(MY_XML_NAME, u"ServiceType", buf.getBits<uint8_t>(3), NamesFlags::DECIMAL_FIRST) << std::endl;
     }
 }
 

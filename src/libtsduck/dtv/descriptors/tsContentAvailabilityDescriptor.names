@@ -1,0 +1,10 @@
+[content_availability_descriptor.RetentionState]
+Bits = 3
+0 = No limit
+1 = 1 week
+2 = 2 days
+3 = 1 day
+4 = 12 hours
+5 = 6 hours
+6 = 3 hours
+7 = 1 hour and half

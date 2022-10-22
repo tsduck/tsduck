@@ -1,0 +1,8 @@
+[VBI_data_descriptor.ServiceId]
+Bits = 8
+0x01 = EBU teletext
+0x02 = Inverted teletext
+0x04 = VPS, Video Programming System
+0x05 = WSS, Wide Screen Signaling
+0x06 = Closed captioning
+0x07 = Monochrome 4:2:2 samples

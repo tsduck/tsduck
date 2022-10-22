@@ -1,0 +1,6 @@
+[FTA_content_management_descriptor.RemoteAccessInternet]
+Bits = 2
+0 = Enabled
+1 = Enabled but only within a managed domain
+2 = Enabled but only within a managed domain and after a certain short period of time
+3 = Not allowed, except within a managed domain after a specified long (possibly indefinite) period of time

@@ -347,7 +347,7 @@ void ts::LinkageDescriptor::DisplayPrivateSSU(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // OUI_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << "OUI: " << names::OUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "OUI: " << NameFromOUI(buf.getUInt24(), NamesFlags::FIRST) << std::endl;
         const size_t len = buf.getUInt8();
         disp.displayPrivateData(u"Selector data", buf, len, margin);
     }

@@ -1,0 +1,36 @@
+[audio_component_descriptor.ComponentType]
+Bits = 8
+0x00 = Reserved for future use
+0x01 = 1/0 mode (single monaural channel)
+0x02 = 1/0 + 1/0 mode (dual monaural channel)
+0x03 = 2/0 mode (stereo)
+0x04 = 2/1 mode
+0x05 = 3/0 mode
+0x06 = 2/2 mode
+0x07 = 3/1 mode
+0x08 = 3/2 mode
+0x09 = 3/2 + LFE mode
+0x0A-0x3F = Reserved for future use
+0x40 = Commentary for visually disabled persons
+0x41 = Voice for audibly disabled persons
+0x42-0xAF = Reserved for future use
+0xB0-0xFE = Defined by the broadcaster
+0xFF = Reserved for future use
+
+[audio_component_descriptor.Sampling]
+Bits = 3
+0 = Reserved
+1 = 16 kHz
+2 = 22.05 kHz
+3 = 24 kHz
+4 = Reserved
+5 = 32 kHz
+6 = 44.1k Hz
+7 = 48 kHz
+
+[audio_component_descriptor.Quality]
+Bits = 2
+0 = Reserved
+1 = Mode 1
+2 = Mode 2
+3 = Mode 3

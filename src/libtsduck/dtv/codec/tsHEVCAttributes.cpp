@@ -79,7 +79,7 @@ ts::UString ts::HEVCAttributes::levelName() const
 
 ts::UString ts::HEVCAttributes::profileName() const
 {
-    return _is_valid? NameFromSection(u"HEVCProfile", _profile) : UString();
+    return _is_valid? NameFromDTV(u"HEVCProfile", _profile) : UString();
 }
 
 ts::UString ts::HEVCAttributes::chromaFormatName() const

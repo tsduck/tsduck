@@ -1,0 +1,6 @@
+[digital_copy_control_descriptor.CopyControl]
+Bits = 2
+0 = Copy can be made without control condition
+1 = Defined by service provider
+2 = Copy can be made for only one generation
+3 = Copy is forbidden

@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsByteBlock.h"
 #include "tsTS.h"
 
 namespace ts {

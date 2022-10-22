@@ -101,8 +101,8 @@ void ts::SystemManagementDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::SystemManagementDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        disp << margin << "Broadcasting flag: " << NameFromSection(u"SystemManagementBroadcasting", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
-        disp << margin << "Broadcasting identifier: " << NameFromSection(u"SystemManagementIdentifier", buf.getBits<uint8_t>(6), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Broadcasting flag: " << DataName(MY_XML_NAME, u"Broadcasting", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << margin << "Broadcasting identifier: " << DataName(MY_XML_NAME, u"Identifier", buf.getBits<uint8_t>(6), NamesFlags::DECIMAL_FIRST) << std::endl;
         disp << margin << UString::Format(u"Additional broadcasting id: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         disp.displayPrivateData(u"Additional identification info", buf, NPOS, margin);
     }

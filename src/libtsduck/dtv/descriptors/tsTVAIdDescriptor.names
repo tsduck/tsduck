@@ -1,0 +1,10 @@
+[TVA_id_descriptor.RunningStatus]
+Bits = 3
+0 = reserved
+1 = not yet running
+2 = starting
+3 = paused
+4 = running
+5 = cancelled
+6 = completed
+7 = reserved

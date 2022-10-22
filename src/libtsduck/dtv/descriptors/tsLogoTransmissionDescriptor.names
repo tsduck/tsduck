@@ -1,0 +1,5 @@
+[logo_transmission_descriptor.Type]
+Bits = 8
+0x01 = CDT transmission scheme 1: direct download data identification
+0x02 = CDT transmission scheme 2: indirectly with download data identification
+0x03 = Simple logo system

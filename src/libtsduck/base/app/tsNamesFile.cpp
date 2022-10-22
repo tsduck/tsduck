@@ -685,3 +685,13 @@ ts::UString ts::NamesFile::nameFromSectionWithFallback(const UString& sectionNam
         return nameFromSection(sectionName, value2, flags, bits, alternateValue);
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Get the name of an OUI (IEEE-assigned Organizationally Unique Identifier).
+//----------------------------------------------------------------------------
+
+ts::UString ts::NameFromOUI(uint32_t oui, NamesFlags flags)
+{
+    return NamesFile::Instance(NamesFile::Predefined::OUI)->nameFromSection(u"OUI", NamesFile::Value(oui), flags, 24);
+}

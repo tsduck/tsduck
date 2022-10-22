@@ -35,6 +35,7 @@
 #include "tsPluginRepository.h"
 #include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
+#include "tsCASFamily.h"
 #include "tsNames.h"
 #include "tsVariable.h"
 #include "tsTime.h"

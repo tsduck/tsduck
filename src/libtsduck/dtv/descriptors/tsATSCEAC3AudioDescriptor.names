@@ -1,0 +1,19 @@
+[ATSC_EAC3_audio_descriptor.ServiceType]
+Bits = 3
+0 = complete main (CM)
+1 = music and effects (ME)
+2 = visually impaired (VI)
+3 = hearing impaired (HI)
+4 = dialogue (D)
+5 = commentary (C)
+6 = emergency (E)
+7 = voice over (VO)
+
+[ATSC_EAC3_audio_descriptor.NumChannels]
+Bits = 3
+0 = Mono
+1 = 1+1 Mode
+2 = 2-channel (stereo)
+3 = 2-channel Dolby Surround encoded (stereo)
+4 = Multichannel audio (> 2 channels; <= 3/2 + LFE channels)
+5 = Multichannel audio (> 3/2 + LFE channels)

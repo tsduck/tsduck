@@ -29,7 +29,7 @@
 
 #include "tsDTSDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
+#include "tsNamesFile.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -121,13 +121,13 @@ void ts::DTSDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::DTSDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(5)) {
-        disp << margin << "Sample rate code: " << names::DTSSampleRateCode(buf.getBits<uint8_t>(4)) << std::endl;
-        disp << margin << "Bit rate code: " << names::DTSBitRateCode(buf.getBits<uint8_t>(6)) << std::endl;
+        disp << margin << "Sample rate code: " << DataName(MY_XML_NAME, u"SampleRate", buf.getBits<uint8_t>(4)) << std::endl;
+        disp << margin << "Bit rate code: " << DataName(MY_XML_NAME, u"BitRate", buf.getBits<uint8_t>(6)) << std::endl;
         disp << margin << "NBLKS: " << buf.getBits<uint16_t>(7) << std::endl;
         disp << margin << "FSIZE: " << buf.getBits<uint16_t>(14) << std::endl;
-        disp << margin << "Surround mode: " << names::DTSSurroundMode(buf.getBits<uint8_t>(6)) << std::endl;
+        disp << margin << "Surround mode: " << DataName(MY_XML_NAME, u"SurroundMode", buf.getBits<uint8_t>(6)) << std::endl;
         disp << margin << "LFE (Low Frequency Effect) audio channel: " << UString::OnOff(buf.getBool()) << std::endl;
-        disp << margin << "Extended surround flag: " << names::DTSExtendedSurroundMode(buf.getBits<uint8_t>(2)) << std::endl;
+        disp << margin << "Extended surround flag: " << DataName(MY_XML_NAME, u"ExtendedSurroundMode", buf.getBits<uint8_t>(2)) << std::endl;
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
 }

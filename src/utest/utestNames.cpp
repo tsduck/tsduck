@@ -36,6 +36,7 @@
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsDuckContext.h"
+#include "tsCASFamily.h"
 #include "tsMPEG2.h"
 #include "tsAVC.h"
 #include "tsPES.h"
@@ -181,7 +182,6 @@ void NamesTest::testConfigFile()
 {
     const ts::NamesFile* const dtv = ts::NamesFile::Instance(ts::NamesFile::Predefined::DTV);
     debug() << "NamesTest: DTV configuration file: " << dtv->configurationFile() << std::endl;
-    TSUNIT_EQUAL(dtv, ts::names::File());
     TSUNIT_ASSERT(!dtv->configurationFile().empty());
     TSUNIT_ASSERT(ts::FileExists(dtv->configurationFile()));
     TSUNIT_EQUAL(0, dtv->errorCount());
@@ -265,12 +265,12 @@ void NamesTest::testPrivateDataSpecifier()
 
 void NamesTest::testCASFamily()
 {
-    TSUNIT_EQUAL(u"Other", ts::names::CASFamily(ts::CAS_OTHER));
-    TSUNIT_EQUAL(u"MediaGuard", ts::names::CASFamily(ts::CAS_MEDIAGUARD));
-    TSUNIT_EQUAL(u"Nagravision", ts::names::CASFamily(ts::CAS_NAGRA));
-    TSUNIT_EQUAL(u"Viaccess", ts::names::CASFamily(ts::CAS_VIACCESS));
-    TSUNIT_EQUAL(u"ThalesCrypt", ts::names::CASFamily(ts::CAS_THALESCRYPT));
-    TSUNIT_EQUAL(u"SafeAccess", ts::names::CASFamily(ts::CAS_SAFEACCESS));
+    TSUNIT_EQUAL(u"Other", ts::CASFamilyName(ts::CAS_OTHER));
+    TSUNIT_EQUAL(u"MediaGuard", ts::CASFamilyName(ts::CAS_MEDIAGUARD));
+    TSUNIT_EQUAL(u"Nagravision", ts::CASFamilyName(ts::CAS_NAGRA));
+    TSUNIT_EQUAL(u"Viaccess", ts::CASFamilyName(ts::CAS_VIACCESS));
+    TSUNIT_EQUAL(u"ThalesCrypt", ts::CASFamilyName(ts::CAS_THALESCRYPT));
+    TSUNIT_EQUAL(u"SafeAccess", ts::CASFamilyName(ts::CAS_SAFEACCESS));
 }
 
 void NamesTest::testCASId()
@@ -292,7 +292,7 @@ void NamesTest::testDataBroadcastId()
 
 void NamesTest::testOUI()
 {
-    TSUNIT_EQUAL(ts::MICRO_SIGN + ts::UString(u"Tech Tecnologia"), ts::names::OUI(0xF8E7B5));
+    TSUNIT_EQUAL(ts::MICRO_SIGN + ts::UString(u"Tech Tecnologia"), ts::NameFromOUI(0xF8E7B5));
 }
 
 void NamesTest::testOriginalNetworkId()
@@ -385,22 +385,22 @@ void NamesTest::testScramblingControl()
 
 void NamesTest::testDTSExtendedSurroundMode()
 {
-    TSUNIT_EQUAL(u"matrixed", ts::names::DTSExtendedSurroundMode(1));
+    TSUNIT_EQUAL(u"matrixed", ts::NameFromDTV(u"DTS_descriptor.ExtendedSurroundMode", 1));
 }
 
 void NamesTest::testDTSSurroundMode()
 {
-    TSUNIT_EQUAL(u"3 / C+L+R", ts::names::DTSSurroundMode(5));
+    TSUNIT_EQUAL(u"3 / C+L+R", ts::NameFromDTV(u"DTS_descriptor.SurroundMode", 5));
 }
 
 void NamesTest::testDTSBitRateCode()
 {
-    TSUNIT_EQUAL(u"512 kb/s", ts::names::DTSBitRateCode(12));
+    TSUNIT_EQUAL(u"512 kb/s", ts::NameFromDTV(u"DTS_descriptor.BitRate", 12));
 }
 
 void NamesTest::testDTSSampleRateCode()
 {
-    TSUNIT_EQUAL(u"22.05 kHz", ts::names::DTSSampleRateCode(7));
+    TSUNIT_EQUAL(u"22.05 kHz", ts::NameFromDTV(u"DTS_descriptor.SampleRate", 7));
 }
 
 void NamesTest::testAC3ComponentType()

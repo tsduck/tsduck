@@ -37,7 +37,6 @@
 #include "tsEDID.h"
 #include "tsPSI.h"
 #include "tsTablesPtr.h"
-#include "tsByteBlock.h"
 
 namespace ts {
     //!
