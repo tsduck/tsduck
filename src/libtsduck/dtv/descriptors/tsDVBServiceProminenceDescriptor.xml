@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <service_prominence_descriptor>
+      <sogi
+        SOGI_flag="bool, required"
+        SOGI_priority="uint12, required"
+        service_id="uint16, optional">
+        <target_region
+          country_code="string, optional"
+          primary_region_code="uint8, optional"
+          secondary_region_code="uint8, optional"
+          tertiary_region_code="uint8, optional"/>
+      </sogi>
+      <private_data>
+        Hexadecimal Content
+      </private_data>
+
+    </service_prominence_descriptor>
+
+  </_descriptors>
+</tsduck>

@@ -1,0 +1,17 @@
+[DTS_UHD_descriptor.FrameDurationCode]
+Bits = 2
+0 = 512 samples
+1 = 1024 samples
+2 = 2048 samples
+3 = 4096 samples
+
+[DTS_UHD_descriptor.MaxPayloadCode]
+Bits = 3
+0 = 2048 bytes
+1 = 4096 bytes
+2 = 8192 bytes
+3 = 16384 bytes
+4 = 32768 bytes
+5 = 65536 bytes
+6 = 131072 bytes
+7 = reserved

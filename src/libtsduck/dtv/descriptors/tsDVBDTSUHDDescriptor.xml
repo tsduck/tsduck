@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <DTS_UHD_descriptor
+      DecoderProfileCode="uint6, required"
+      FrameDurationCode="uint2, required"
+      MaxPayloadCode="uint2, required"
+      StreamIndex="uint3, required">
+      <codec_selector>
+        Hexadecimal Content
+      </codec_selector>
+
+    </DTS_UHD_descriptor>
+
+  </_descriptors>
+</tsduck>
