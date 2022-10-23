@@ -43,43 +43,50 @@ namespace ts {
     //! @see ETSI EN 300 468, clause 6.4.18.
     //! @ingroup descriptor
     //!
-    //! note: SOGI = Service Of General Interest
-
+    //! Note: SOGI = Service Of General Interest
+    //!
     class TSDUCKDLL DVBServiceProminenceDescriptor : public AbstractDescriptor
     {
     public:
         //! 
-        //! definition of a service prominence region
+        //! Definition of a service prominence region.
         //! 
         class SOGI_region_type {
         public:
-            Variable<UString>   country_code;
-            Variable<uint8_t>   primary_region_code;
-            Variable<uint8_t>   secondary_region_code;
-            Variable<uint16_t>  tertiary_region_code;
+            Variable<UString>  country_code;           //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint8_t>  primary_region_code;    //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint8_t>  secondary_region_code;  //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint16_t> tertiary_region_code;   //!< ETSI EN 300 468, clause 6.4.18.
 
-            SOGI_region_type();
-            void clearContent();
+            SOGI_region_type();   //!< Constructor.
+            void clearContent();  //!< Clear content.
         };
+
         //! 
-        //! definition of a service of general interest indication
-        //! prominence values (flag & priority) and applicable regions
+        //! Definition of a service of general interest indication
+        //! prominence values (flag & priority) and applicable regions.
         //! 
         class SOGI_type {
         public:
-            bool                            SOGI_flag;
-            uint16_t                        SOGI_priority;
-            Variable<uint16_t>              service_id;
-            std::vector<SOGI_region_type>   regions;
+            bool                          SOGI_flag;      //!< ETSI EN 300 468, clause 6.4.18.
+            uint16_t                      SOGI_priority;  //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint16_t>            service_id;     //!< ETSI EN 300 468, clause 6.4.18.
+            std::vector<SOGI_region_type> regions;        //!< ETSI EN 300 468, clause 6.4.18.
 
-            SOGI_type();
-            void clearContent();
-            void display(TablesDisplay&, const UString&);
+            SOGI_type();          //!< Constructor.
+            void clearContent();  //!< Clear content.
+
+            //!
+            //! Display this object.
+            //! @param [in,out] display Display engine.
+            //! @param [in] margin Left margin content.
+            //!
+            void display(TablesDisplay& display, const UString& margin);
         };
 
         // Public members:
-        std::vector<SOGI_type>  SOGI_list;
-        ByteBlock               private_data;
+        std::vector<SOGI_type> SOGI_list;     //!< List of SOGI.
+        ByteBlock              private_data;  //!< Private data bytes.
 
         //!
         //! Default constructor.
