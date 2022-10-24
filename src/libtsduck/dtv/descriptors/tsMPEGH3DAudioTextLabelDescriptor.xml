@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <MPEGH_3D_audio_text_label_descriptor
+        _3dAudioSceneInfoID="uint8, required"
+        numReservedBytes="uint16, optional">
+
+      <DescriptionLanguage descriptionLanguage="char3, required">
+        <GroupDescription 
+          mae_descriptionGroupID="uint7, required"
+          groupDescription="string, required"/>
+        
+        <SwitchGroupDescription 
+          mae_descriptionSwitchGroupID="uint5, required"
+          switchGroupDescription="string, required"/>
+        
+        <GroupPresetDescription 
+          mae_descriptionGroupPresetID="uint5, required"
+          groupPresetDescription="string, required"/>
+   
+      </DescriptionLanguage>
+      
+    </MPEGH_3D_audio_text_label_descriptor>
+
+  </_descriptors>
+</tsduck>
