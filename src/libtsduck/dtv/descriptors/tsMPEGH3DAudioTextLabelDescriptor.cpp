@@ -175,7 +175,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::deserializePayload(PSIBuffer& buf)
         }
         buf.skipBits(3);
         uint8_t numGroupPresetsDescriptions = buf.getBits<uint8_t>(5);
-        for (uint8_t n = 0; n < numSwitchGroupDescriptions; n++) {
+        for (uint8_t n = 0; n < numGroupPresetsDescriptions; n++) {
             groupPresetsDescription_type newGroupPresetsDescription;
             buf.skipBits(3);
             newGroupPresetsDescription.mae_descriptionGroupPresetID = buf.getBits<uint8_t>(5);
@@ -255,7 +255,7 @@ void ts::MPEGH3DAudioTextLabelDescriptor::buildXML(DuckContext& duck, xml::Eleme
         for (auto groupPreset : desclanguage.group_preset_descriptions) {
             ts::xml::Element* groupPresetDescription = description->addElement(u"GroupPresetDescription");
             groupPresetDescription->setIntAttribute(u"mae_descriptionGroupPresetID", groupPreset.mae_descriptionGroupPresetID);
-            groupPresetDescription->setAttribute(u"groupPresetDescription, ", groupPreset.groupDescriptionPresetData);
+            groupPresetDescription->setAttribute(u"groupPresetDescription", groupPreset.groupDescriptionPresetData);
         }
     }
     root->setOptionalIntAttribute(u"numReservedBytes", numReservedBytes);
