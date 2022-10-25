@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.32-2970
+VERSION 3.32-2973
 
 [NEW] New commands and plugins:
 
@@ -21,6 +21,12 @@ VERSION 3.32-2970
     - Options --sort-languages, --sort-pids in plugin "pmt".
     - Options --eit-actual, --eit-other, --eit-pf, --eit-schedule in
       "tspacketize", "tstabcomp", plugin "inject".
+
+[BUG] Bug fixes:
+
+  * Fixed issue #1070: In the plugin "scrambler", do not fail at startup if
+    the bitrate is not immediately known. Simply wait for the bitrate to be
+    known before scheduling crypto-periods and ECM's.
 
 -------------------------------------------------------------------------------
 

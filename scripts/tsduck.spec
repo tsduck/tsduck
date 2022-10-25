@@ -29,6 +29,7 @@ BuildRequires:  srt-devel
 %endif
 %if 0%{!?norist:1}
 Requires:       librist
+BuildRequires:  librist-devel
 %endif
 %if 0%{!?novatek:1}
 %if 0%{?fedora}
@@ -48,8 +49,20 @@ process MPEG Transport Streams (TS), either as recorded files or live streams.
 Summary:        Development files for %{name}
 Group:          Development/Libraries
 Requires:       %{name} = %{version}-%{release}
+%if 0%{!?noeditline:1}
+Requires:       libedit-devel
+%endif
 %if 0%{!?nopcsc:1}
 Requires:       pcsc-lite-devel
+%endif
+%if 0%{!?nocurl:1}
+Requires:       libcurl-devel
+%endif
+%if 0%{!?nosrt:1}
+Requires:       srt-devel
+%endif
+%if 0%{!?norist:1}
+Requires:       librist-devel
 %endif
 
 %description    devel
