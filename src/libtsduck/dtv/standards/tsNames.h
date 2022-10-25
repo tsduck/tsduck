@@ -156,28 +156,13 @@ namespace ts {
         TSDUCKDLL UString ServiceType(uint8_t st, NamesFlags flags = NamesFlags::NAME);
 
         //!
-        //! Name of linkage type (in Linkage Descriptor).
-        //! @param [in] lt Linkage type (in Linkage Descriptor).
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString LinkageType(uint8_t lt, NamesFlags flags = NamesFlags::NAME);
-
-        //!
         //! Name of subtitling type (in Subtitling Descriptor).
+        //! @param [in] duck TSDuck execution context (used to select from other standards).
         //! @param [in] st Subtitling type (in Subtitling Descriptor).
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString SubtitlingType(uint8_t st, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of Teletext type (in Teletext Descriptor).
-        //! @param [in] tt Teletext type (in Teletext Descriptor).
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString TeletextType(uint8_t tt, NamesFlags flags = NamesFlags::NAME);
+        TSDUCKDLL UString SubtitlingType(const DuckContext& duck, uint8_t st, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Conditional Access System Id (in CA Descriptor).
@@ -210,9 +195,10 @@ namespace ts {
         //! @param [in] ct Component Type (in Component Descriptor).
         //! Combination of stream_content_ext (4 bits), stream_content (4 bits) and component_type (8 bits).
         //! @param [in] flags Presentation flags.
+        //! @param [in] bits Nominal size in bits of the data, optional.
         //! @return The corresponding name.
         //!
-        TSDUCKDLL UString ComponentType(const DuckContext& duck, uint16_t ct, NamesFlags flags = NamesFlags::NAME);
+        TSDUCKDLL UString ComponentType(const DuckContext& duck, uint16_t ct, NamesFlags flags = NamesFlags::NAME, size_t bits = 16);
 
         //!
         //! Name of AC-3 Component Type.

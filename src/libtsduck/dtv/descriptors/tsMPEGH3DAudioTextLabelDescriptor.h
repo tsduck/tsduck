@@ -46,43 +46,53 @@ namespace ts {
     class TSDUCKDLL MPEGH3DAudioTextLabelDescriptor : public AbstractDescriptor
     {
     public:
-        // Public members:
-
+        //!
+        //! Group description.
+        //!
         class groupDescription_type {
         public:
             uint8_t     mae_descriptionGroupID;     //!< 7 bits - ISO/IEC 13818-1, 2.6.113.
             UString     groupDescriptionData;       //!< variable length - ISO/IEC 13818-1, 2.6.113.
 
-            groupDescription_type();
+            groupDescription_type();                //!< Constructor.
         };
+        //!
+        //! Switch group description.
+        //!
         class switchGroupDescription_type {
         public:
             uint8_t     mae_descriptionSwitchGroupID;     //!< 5 bits - ISO/IEC 13818-1, 2.6.113.
             UString     switchGroupDescriptionData;       //!< variable length - ISO/IEC 13818-1, 2.6.113.
 
-            switchGroupDescription_type();
+            switchGroupDescription_type();                //!< Constructor.
         };
+        //!
+        //! Group presets description.
+        //!
         class groupPresetsDescription_type {
         public:
             uint8_t     mae_descriptionGroupPresetID;     //!< 5 bits - ISO/IEC 13818-1, 2.6.113.
             UString     groupDescriptionPresetData;       //!< variable length - ISO/IEC 13818-1, 2.6.113.
 
-            groupPresetsDescription_type();
+            groupPresetsDescription_type();               //!< Constructor.
         };
-
+        //!
+        //! Description language.
+        //!
         class descriptionLanguage_type {
         public:
-            UString     descriptionLanguage;         //!< 3 byte language code - ISO/IEC 13818-1, 2.6.113.
-            std::vector<groupDescription_type>        group_descriptions;
-            std::vector<switchGroupDescription_type>  switch_group_descriptions;
-            std::vector<groupPresetsDescription_type> group_preset_descriptions;
+            UString                                   descriptionLanguage;         //!< 3 byte language code - ISO/IEC 13818-1, 2.6.113.
+            std::vector<groupDescription_type>        group_descriptions;          //!< ISO/IEC 13818-1, 2.6.113.
+            std::vector<switchGroupDescription_type>  switch_group_descriptions;   //!< ISO/IEC 13818-1, 2.6.113.
+            std::vector<groupPresetsDescription_type> group_preset_descriptions;   //!< ISO/IEC 13818-1, 2.6.113.
 
-            descriptionLanguage_type();
+            descriptionLanguage_type();               //!< Constructor.
         };
 
-        uint8_t                                _3dAudioSceneInfoID;               //!< 8 bits - ISO/IEC 13818-1, 2.6.107.
-        std::vector<descriptionLanguage_type>  description_languages;
-        ts::Variable<size_t>                   numReservedBytes;
+        // Public members:
+        uint8_t                                _3dAudioSceneInfoID;     //!< 8 bits - ISO/IEC 13818-1, 2.6.107.
+        std::vector<descriptionLanguage_type>  description_languages;   //!< ISO/IEC 13818-1, 2.6.107.
+        ts::Variable<size_t>                   numReservedBytes;        //!< Additional bytes.
 
         //!
         //! Default constructor.
