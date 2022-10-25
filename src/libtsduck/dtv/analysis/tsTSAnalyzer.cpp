@@ -977,7 +977,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     const SubtitlingDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
-                        AppendUnique(ps->attributes, names::SubtitlingType(e.subtitling_type));
+                        AppendUnique(ps->attributes, names::SubtitlingType(_duck, e.subtitling_type));
                     }
                 }
                 break;
@@ -988,7 +988,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     const TeletextDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
-                        AppendUnique(ps->attributes, names::TeletextType(e.teletext_type));
+                        AppendUnique(ps->attributes, NameFromDTV(u"teletext_descriptor.teletext_type", e.teletext_type));
                     }
                 }
                 break;

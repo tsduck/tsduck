@@ -45,6 +45,7 @@
 #include "tsScramblingDescriptor.h"
 
 #define DEFAULT_ECM_BITRATE 30000
+#define DEFAULT_ECM_INTER_PACKET  7000  // When bitrate is unknown, use 10 ECM/s for TS @10Mb/s
 #define ASYNC_HANDLER_EXTRA_STACK_SIZE (1024 * 1024)
 
 
@@ -176,6 +177,7 @@ namespace ts {
 
         // ScramblerPlugin state
         volatile bool     _abort;               // Error (service not found, etc)
+        bool              _wait_bitrate;        // Waiting for bitrate to start scheduling ECM and CP.
         bool              _degraded_mode;       // In degraded mode (see comments above)
         PacketCounter     _packet_count;        // Complete TS packet counter
         PacketCounter     _scrambled_count;     // Summary of scrambled packets
@@ -194,6 +196,9 @@ namespace ts {
         size_t            _current_ecm;         // Index to current ECM (ECM being broadcast)
         TSScrambling      _scrambling;          // Scrambler
         CyclingPacketizer _pzer_pmt;            // Packetizer for modified PMT
+
+        // Initialize ECM and CP scheduling.
+        void initializeScheduling();
 
         // Return current/next CryptoPeriod for CW or ECM
         CryptoPeriod& currentCW()  { return _cp[_current_cw]; }
@@ -246,6 +251,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _channel_status(),
     _stream_status(),
     _abort(false),
+    _wait_bitrate(false),
     _degraded_mode(false),
     _packet_count(0),
     _scrambled_count(0),
@@ -414,16 +420,17 @@ bool ts::ScramblerPlugin::start()
     _scrambled_count = 0;
     _ecm_cc = 0;
     _abort = false;
+    _wait_bitrate = false;
     _degraded_mode = false;
     _ts_bitrate = 0;
-    _pkt_insert_ecm = 0;
-    _pkt_change_cw = 0;
-    _pkt_change_ecm = 0;
     _partial_clear = 0;
     _update_pmt = false;
     _delay_start = 0;
     _current_cw = 0;
     _current_ecm = 0;
+
+    // As long as the bitrate is unknown, delay changes to infinite.
+    _pkt_insert_ecm = _pkt_change_cw = _pkt_change_ecm = std::numeric_limits<PacketCounter>::max();
 
     // Initialize the scrambling engine.
     if (!_scrambling.start()) {
@@ -500,19 +507,12 @@ bool ts::ScramblerPlugin::stop()
 
 
 //----------------------------------------------------------------------------
-//  This method processes the PMT of the service.
+// This method processes the PMT of the service.
 //----------------------------------------------------------------------------
 
 void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
 {
     assert(_use_service);
-
-    // We need to know the bitrate in order to schedule crypto-periods or ECM insertion.
-    if (_ts_bitrate == 0 && (_need_cp || _need_ecm)) {
-        tsp->error(u"unknown bitrate, cannot schedule crypto-periods");
-        _abort = true;
-        return;
-    }
 
     // Need a modifiable version of the PMT.
     PMT pmt(table);
@@ -585,6 +585,27 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         _pzer_pmt.addTable(duck, pmt);
     }
 
+    // We need to know the bitrate in order to schedule crypto-periods or ECM insertion.
+    if (_need_cp || _need_ecm) {
+        if (_ts_bitrate == 0) {
+            _wait_bitrate = true;
+            tsp->warning(u"unknown bitrate, scheduling of crypto-periods is delayed");
+        }
+        else {
+            initializeScheduling();
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Initialize ECM and CP scheduling.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::initializeScheduling()
+{
+    assert(_ts_bitrate != 0);
+
     // Next crypto-period.
     if (_need_cp) {
         _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
@@ -592,14 +613,19 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
 
     // Initialize ECM insertion.
     if (_need_ecm) {
-
         // Insert current ECM packets as soon as possible.
         _pkt_insert_ecm = _packet_count;
 
         // Next ECM may start before or after next crypto-period
         _pkt_change_ecm = _delay_start > 0 ?
-            _pkt_change_cw + PacketDistance(_ts_bitrate, _delay_start) :
-            _pkt_change_cw - PacketDistance(_ts_bitrate, _delay_start);
+                    _pkt_change_cw + PacketDistance(_ts_bitrate, _delay_start) :
+                    _pkt_change_cw - PacketDistance(_ts_bitrate, _delay_start);
+    }
+
+    // No longer wait for bitrate.
+    if (_wait_bitrate) {
+        _wait_bitrate = false;
+        tsp->info(u"bitrate now known, %'d b/s, starting scheduling crypto-periods", {_ts_bitrate});
     }
 }
 
@@ -641,6 +667,7 @@ bool ts::ScramblerPlugin::tryExitDegradedMode()
         return true;
     }
     assert(_need_ecm);
+    assert(_ts_bitrate != 0);
 
     // We are in degraded mode. If next ECM not yet ready, stay degraded
     if (!nextECM().ecmReady()) {
@@ -684,7 +711,7 @@ bool ts::ScramblerPlugin::changeCW()
         _current_cw = (_current_cw + 1) & 0x01;
 
         // Determine new transition point.
-        if (_need_cp) {
+        if (_need_cp && _ts_bitrate != 0) {
             _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
         }
 
@@ -704,7 +731,7 @@ bool ts::ScramblerPlugin::changeCW()
         }
 
         // Determine new transition point.
-        if (_need_cp) {
+        if (_need_cp && _ts_bitrate != 0) {
             _pkt_change_cw = _packet_count + PacketDistance(_ts_bitrate, _ecmg_args.cp_duration);
         }
 
@@ -719,7 +746,7 @@ bool ts::ScramblerPlugin::changeCW()
 void ts::ScramblerPlugin::changeECM()
 {
     // Allowed to change CW only if not in degraded mode
-    if (_need_ecm && !inDegradedMode()) {
+    if (_need_ecm && _ts_bitrate != 0 && !inDegradedMode()) {
 
         // Point to next crypto-period
         _current_ecm = (_current_ecm + 1) & 0x01;
@@ -752,6 +779,9 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TS
     const BitRate br = tsp->bitrate();
     if (br != 0) {
         _ts_bitrate = br;
+        if (_wait_bitrate) {
+            initializeScheduling();
+        }
     }
 
     // Filter interesting sections to discover the service.
@@ -798,7 +828,7 @@ ts::ProcessorPlugin::Status ts::ScramblerPlugin::processPacket(TSPacket& pkt, TS
 
         // Compute next insertion point (approximate)
         assert(_ecm_bitrate != 0);
-        _pkt_insert_ecm += BitRate(_ts_bitrate / _ecm_bitrate).toInt();
+        _pkt_insert_ecm += _ts_bitrate == 0 ? DEFAULT_ECM_INTER_PACKET : BitRate(_ts_bitrate / _ecm_bitrate).toInt();
 
         // Try to exit from degraded mode, if we were in.
         // Note that return false means unrecoverable error here.
@@ -908,6 +938,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 
 bool ts::ScramblerPlugin::CryptoPeriod::initScramblerKey() const
 {
+    _plugin->debug(u"starting crypto-period %'d at packet %'d", {_cp_number, _plugin->_packet_count});
+
     // Change the parity of the scrambled packets.
     // Set our random current control word if no fixed CW.
     return _plugin->_scrambling.setEncryptParity(_cp_number) &&

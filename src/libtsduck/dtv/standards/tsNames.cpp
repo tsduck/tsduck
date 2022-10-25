@@ -225,16 +225,6 @@ ts::UString ts::names::ServiceType(uint8_t type, NamesFlags flags)
     return NameFromDTV(u"ServiceType", NamesFile::Value(type), flags, 8);
 }
 
-ts::UString ts::names::LinkageType(uint8_t type, NamesFlags flags)
-{
-    return NameFromDTV(u"LinkageType", NamesFile::Value(type), flags, 8);
-}
-
-ts::UString ts::names::TeletextType(uint8_t type, NamesFlags flags)
-{
-    return NameFromDTV(u"TeletextType", NamesFile::Value(type), flags, 8);
-}
-
 ts::UString ts::names::RunningStatus(uint8_t status, NamesFlags flags)
 {
     return NameFromDTV(u"RunningStatus", NamesFile::Value(status), flags, 8);
@@ -245,9 +235,9 @@ ts::UString ts::names::AudioType(uint8_t type, NamesFlags flags)
     return NameFromDTV(u"AudioType", NamesFile::Value(type), flags, 8);
 }
 
-ts::UString ts::names::SubtitlingType(uint8_t type, NamesFlags flags)
+ts::UString ts::names::SubtitlingType(const DuckContext& duck, uint8_t type, NamesFlags flags)
 {
-    return NameFromDTV(u"SubtitlingType", NamesFile::Value(type), flags, 8);
+    return ComponentType(duck, 0xF300 | type, flags, 8);
 }
 
 ts::UString ts::names::ScramblingControl(uint8_t scv, NamesFlags flags)
@@ -265,7 +255,7 @@ ts::UString ts::names::T2MIPacketType(uint8_t type, NamesFlags flags)
 // Component Type (in Component Descriptor)
 //----------------------------------------------------------------------------
 
-ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, NamesFlags flags)
+ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, NamesFlags flags, size_t bits)
 {
     // There is a special case here. The binary layout of the 16 bits are:
     //   stream_content_ext (4 bits)
@@ -294,16 +284,13 @@ ts::UString ts::names::ComponentType(const DuckContext& duck, uint16_t type, Nam
 
     if (bool(duck.standards() & Standards::JAPAN)) {
         // Japan / ISDB uses a completely different mapping.
-        return NameFromDTV(u"ComponentTypeJapan", nType, flags | NamesFlags::ALTERNATE, 16, dType);
-    }
-    else if ((nType & 0xFF00) == 0x3F00) {
-        return SubtitlingType(nType & 0x00FF, flags);
+        return NameFromDTV(u"ComponentTypeJapan", nType, flags | NamesFlags::ALTERNATE, bits, dType);
     }
     else if ((nType & 0xFF00) == 0x4F00) {
         return AC3ComponentType(nType & 0x00FF, flags);
     }
     else {
-        return NameFromDTV(u"ComponentType", nType, flags | NamesFlags::ALTERNATE, 16, dType);
+        return NameFromDTV(u"ComponentType", nType, flags | NamesFlags::ALTERNATE, bits, dType);
     }
 }
 

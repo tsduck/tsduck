@@ -119,7 +119,7 @@ void ts::TeletextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << margin << "Language: " << buf.getLanguageCode();
         const uint8_t type = buf.getBits<uint8_t>(5);
         disp << UString::Format(u", Type: %d (0x%<X)", {type}) << std::endl;
-        disp << margin << "Type: " << names::TeletextType(type) << std::endl;
+        disp << margin << "Type: " << DataName(MY_XML_NAME, u"teletext_type", type) << std::endl;
         const uint8_t mag = buf.getBits<uint8_t>(3);
         const uint8_t page = buf.getUInt8();
         Entry e;

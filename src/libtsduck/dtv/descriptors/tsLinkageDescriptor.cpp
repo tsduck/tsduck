@@ -279,7 +279,7 @@ void ts::LinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
         disp << margin << UString::Format(u"Original network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
         disp << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
         const uint8_t ltype = buf.getUInt8();
-        disp << margin << UString::Format(u"Linkage type: %s", {names::LinkageType(ltype, NamesFlags::FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"Linkage type: %s", {DataName(MY_XML_NAME, u"linkage_type", ltype, NamesFlags::FIRST)}) << std::endl;
 
         // Variable part
         switch (ltype) {

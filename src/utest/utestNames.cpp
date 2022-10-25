@@ -425,17 +425,18 @@ void NamesTest::testComponentType()
 
 void NamesTest::testSubtitlingType()
 {
-    TSUNIT_EQUAL(u"DVB subtitles, high definition", ts::names::SubtitlingType(0x14));
+    ts::DuckContext duck;
+    TSUNIT_EQUAL(u"DVB subtitles, high definition", ts::names::SubtitlingType(duck, 0x14));
 }
 
 void NamesTest::testLinkageType()
 {
-    TSUNIT_EQUAL(u"data broadcast service", ts::names::LinkageType(0x06));
+    TSUNIT_EQUAL(u"data broadcast service", ts::NameFromDTV(u"linkage_descriptor.linkage_type", 0x06));
 }
 
 void NamesTest::testTeletextType()
 {
-    TSUNIT_EQUAL(u"Teletext subtitles", ts::names::TeletextType(2));
+    TSUNIT_EQUAL(u"Teletext subtitles", ts::NameFromDTV(u"teletext_descriptor.teletext_type", 2));
 }
 
 void NamesTest::testRunningStatus()

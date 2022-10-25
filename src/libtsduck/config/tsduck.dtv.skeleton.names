@@ -60,15 +60,6 @@ Bits = 8
 0xC1 = Storage type service using TLV
 0xC2 = Multimedia services
 
-[TeletextType]
-# In teletext_descriptor
-Bits = 8
-0x01 = Initial Teletext page
-0x02 = Teletext subtitles
-0x03 = Additional information page
-0x04 = Programme schedule page
-0x05 = Teletext subtitles for hearing impaired
-
 [AudioType]
 # In ISO-639_language_descriptor
 Bits = 8
@@ -76,26 +67,6 @@ Bits = 8
 0x01 = clean effects
 0x02 = hearing impaired
 0x03 = visual impaired commentary
-
-[SubtitlingType]
-# In subtitling_descriptor
-Bits = 8
-0x01 = EBU Teletext subtitles
-0x02 = Associated EBU Teletext
-0x03 = VBI data
-0x10 = DVB subtitles, no aspect ratio
-0x11 = DVB subtitles, 4:3 aspect ratio
-0x12 = DVB subtitles, 16:9 aspect ratio
-0x13 = DVB subtitles, 2.21:1 aspect ratio
-0x14 = DVB subtitles, high definition
-0x20 = DVB subtitles for hard of hearing, no aspect ratio
-0x21 = DVB subtitles for hard of hearing, 4:3 aspect ratio
-0x22 = DVB subtitles for hard of hearing, 16:9 aspect ratio
-0x23 = DVB subtitles for hard of hearing, 2.21:1 aspect ratio
-0x24 = DVB subtitles for hard of hearing, high definition
-0x30 = Open (in-vision) sign language interpretation for the deaf
-0x31 = Closed sign language interpretation for the deaf
-0x40 = Video up-sampled from standard definition source
 
 [ComponentType]
 # In component_descriptor
@@ -138,37 +109,37 @@ Bits = 16
 0x2F49-0x2FFF = MPEG-1 audio
 0x3F00 = Subtitles
 0x3F01 = EBU Teletext subtitles
-0x3F02 = associated EBU Teletext
+0x3F02 = Associated EBU Teletext
 0x3F03 = VBI data
 0x3F04-0x3F0F = Subtitles
-0x3F10 = DVB subtitles (normal) with no monitor aspect ratio criticality
-0x3F11 = DVB subtitles (normal) for display on 4:3 aspect ratio monitor
-0x3F12 = DVB subtitles (normal) for display on 16:9 aspect ratio monitor
-0x3F13= DVB subtitles (normal) for display on 2.21:1 aspect ratio monitor
-0x3F14 = DVB subtitles (normal) for display on a high definition monitor
-0x3F15 = DVB subtitles (normal) with planostereoscopic disparity for display on a high definition monitor
-0x3F16 = DVB subtitles (normal) for display on an ultra high definition monitor
+0x3F10 = DVB subtitles, no aspect ratio
+0x3F11 = DVB subtitles, 4:3 aspect ratio
+0x3F12 = DVB subtitles, 16:9 aspect ratio
+0x3F13 = DVB subtitles, 2.21:1 aspect ratio
+0x3F14 = DVB subtitles, high definition
+0x3F15 = DVB subtitles, plano-stereoscopic disparity, high definition
+0x3F16 = DVB subtitles, ultra high definition
 0x3F17-0x3F1F = Subtitles
-0x3F20 = DVB subtitles (for the hard of hearing) with no monitor aspect ratio criticality
-0x3F21 = DVB subtitles (for the hard of hearing) for display on 4:3 aspect ratio monitor
-0x3F22 = DVB subtitles (for the hard of hearing) for display on 16:9 aspect ratio monitor
-0x3F23 = DVB subtitles (for the hard of hearing) for display on 2.21:1 aspect ratio monitor
-0x3F24 = DVB subtitles (for the hard of hearing) for display on a high definition monitor
-0x3F25 = DVB subtitles (for the hard of hearing) with plano-stereoscopic disparity for display on a high definition monitor
-0x3F26 = DVB subtitles (for the hard of hearing) for display on an ultra high definition monitor
+0x3F20 = DVB subtitles for hard of hearing, no aspect ratio
+0x3F21 = DVB subtitles for hard of hearing, 4:3 aspect ratio
+0x3F22 = DVB subtitles for hard of hearing, 16:9 aspect ratio
+0x3F23 = DVB subtitles for hard of hearing, 2.21:1 aspect ratio
+0x3F24 = DVB subtitles for hard of hearing, high definition
+0x3F25 = DVB subtitles for hard of hearing, plano-stereoscopic disparity, high definition
+0x3F26 = DVB subtitles for hard of hearing, ultra high definition
 0x3F27-0x3F2F = Subtitles
-0x3F30 = Subtitles, open (in-vision) sign language interpretation for the deaf
-0x3F31 = Subtitles, closed sign language interpretation for the deaf
+0x3F30 = Open (in-vision) sign language interpretation for the deaf
+0x3F31 = Closed sign language interpretation for the deaf
 0x3F32-0x3F3F = Subtitles
-0x3F40 = Subtitles, video spatial resolution has been upscaled from lower resolution source material
-0x3F41 = Subtitles, Video is standard dynamic range (SDR)
-0x3F42 = Subtitles, Video is high dynamic range (HDR) remapped from standard dynamic range (SDR) source material
-0x3F43 = Subtitles, Video is high dynamic range (HDR) up-converted from standard dynamic range (SDR) source material
-0x3F44 = Subtitles, Video is standard frame rate, less than or equal to 60 Hz (see note 7)
-0x3F45 = Subtitles, High frame rate video generated from lower frame rate source material (see note 7)
-0x3F46-0x3F7F = Subtitles
-0x3F80 = Subtitles, dependent SAOC-DE data stream
-0x3F81-0x3FFF = Subtitles
+0x3F40 = Video spatial resolution has been upscaled from lower resolution source material
+0x3F41 = Video is standard dynamic range (SDR)
+0x3F42 = Video is high dynamic range (HDR) remapped from standard dynamic range (SDR) source material
+0x3F43 = Video is high dynamic range (HDR) up-converted from standard dynamic range (SDR) source material
+0x3F44 = Video is standard frame rate, less than or equal to 60 Hz (see note 7)
+0x3F45 = High frame rate video generated from lower frame rate source material (see note 7)
+0x3F46-0x3F7F = Reserved
+0x3F80 = Dependent SAOC-DE data stream
+0x3F81-0x3FFF = Reserved
 0x4F00-0x4F7F = AC-3
 0x4F80-0x4FFF = Enhanced AC-3
 0x5F00 = H.264/AVC
