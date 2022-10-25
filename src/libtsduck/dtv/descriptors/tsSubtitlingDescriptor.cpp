@@ -93,7 +93,7 @@ void ts::SubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
         disp << margin << "Language: " << buf.getLanguageCode();
         const uint8_t type = buf.getUInt8();
         disp << UString::Format(u", Type: %d (0x%<X)", {type}) << std::endl;
-        disp << margin << "Type: " << names::SubtitlingType(type) << std::endl;
+        disp << margin << "Type: " << names::SubtitlingType(disp.duck(), type) << std::endl;
         disp << margin << UString::Format(u"Composition page: %d (0x%<X)", {buf.getUInt16()});
         disp << UString::Format(u", Ancillary page: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
     }

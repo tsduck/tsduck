@@ -4,7 +4,6 @@
 ServiceType : tsNames.cpp
 TeletextType : tsNames.cpp
 AudioType : tsNames.cpp
-SubtitlingType : tsNames.cpp
 ComponentType : tsNames.cpp tsAACDescriptor.cpp
 ComponentTypeJapan : tsNames.cpp
 ScramblingControl : tsNames.cpp
