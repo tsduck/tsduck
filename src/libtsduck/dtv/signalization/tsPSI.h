@@ -165,6 +165,7 @@ namespace ts {
         TID_BAT           = 0x4A, //!< Table id for Bouquet Association Table
         TID_UNT           = 0x4B, //!< Table id for Update Notification Table (SSU, ETSI TS 102 006)
         TID_INT           = 0x4C, //!< Table id for IP/MAC Notification Table (MPE, ETSI EN 301 192)
+        TID_SAT           = 0x4D, //!< Table id for Satellite Access Table
         TID_EIT_PF_ACT    = 0x4E, //!< Table id for EIT present/following - Actual network
         TID_EIT_PF_OTH    = 0x4F, //!< Table id for EIT present/following - Other network
         TID_EIT_S_ACT_MIN = 0x50, //!< Table id for EIT schedule - Actual network
