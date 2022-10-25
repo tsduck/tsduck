@@ -1,0 +1,7 @@
+[teletext_descriptor.teletext_type]
+Bits = 8
+0x01 = Initial Teletext page
+0x02 = Teletext subtitles
+0x03 = Additional information page
+0x04 = Programme schedule page
+0x05 = Teletext subtitles for hearing impaired

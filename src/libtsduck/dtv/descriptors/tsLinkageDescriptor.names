@@ -1,0 +1,15 @@
+[linkage_descriptor.linkage_type]
+Bits = 8
+0x01 = information service
+0x02 = EPG service
+0x03 = CA replacement service
+0x04 = TS containing complete Network/Bouquet SI
+0x05 = service replacement service
+0x06 = data broadcast service
+0x07 = RCS map
+0x08 = mobile hand-over
+0x09 = system software update service
+0x0A = TS containing SSU BAT or NIT
+0x0B = IP/MAC notification service
+0x0C = TS containing INT BAT or NIT
+0x0D = event linkage
