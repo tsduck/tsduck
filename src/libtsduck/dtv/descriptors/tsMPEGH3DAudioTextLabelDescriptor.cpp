@@ -137,9 +137,11 @@ void ts::MPEGH3DAudioTextLabelDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putStringWithByteLength(groupPreset.groupDescriptionPresetData);
         }
     }
-    if (numReservedBytes.set())
-        for (uint8_t i = 0; i < numReservedBytes.value(); i++)
+    if (numReservedBytes.set()) {
+        for (size_t i = 0; i < numReservedBytes.value(); i++) {
             buf.putUInt8(0xFF);
+        }
+    }
 }
 
 
