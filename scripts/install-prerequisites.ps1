@@ -44,6 +44,11 @@
  .PARAMETER NoDoxygen
 
   Do not install doxygen and its dependencies. Install everything else to
+  build the project binaries and installers.
+
+ .PARAMETER NoInstaller
+
+  Do not install NSIS and its dependencies. Install everything else to
   build the project binaries.
 
  .PARAMETER NoPause
@@ -57,6 +62,7 @@ param(
     [switch]$ForceDownload = $false,
     [switch]$GitHubActions = $false,
     [switch]$NoDoxygen = $false,
+    [switch]$NoInstaller = $false,
     [switch]$NoPause = $false
 )
 
@@ -66,9 +72,11 @@ if (-not $NoDoxygen) {
     & "$InsDir\install-graphviz.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
     & "$InsDir\install-doxygen.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 }
+if (-not $NoInstaller) {
+    & "$InsDir\install-nsis.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
+}
 & "$InsDir\install-git.ps1"     -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-git-lfs.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
-& "$InsDir\install-nsis.ps1"    -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-python.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-libsrt.ps1"  -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
 & "$InsDir\install-librist.ps1" -NoPause -ForceDownload:$ForceDownload -GitHubActions:$GitHubActions
