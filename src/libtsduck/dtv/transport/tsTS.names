@@ -1,0 +1,7 @@
+[ts.scrambling_control]
+# In TS header
+Bits = 2
+0 = clear
+1 = DVB-reserved (1)
+2 = even
+3 = odd

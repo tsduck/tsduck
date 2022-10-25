@@ -1,0 +1,25 @@
+[INT.platform_id]
+# Allocated by DVB
+Bits = 24
+0x000001 = TV digitale mobile, Telecom Italia
+0x000002 = Digita TV Mobile 1, Digita Oy
+0x000003 = Digita TV Mobile 2, Digita Oy
+0x000004 = TV digitale mobile, Telecom Italia
+0x00000A = Horizonsat
+0x002283 = DTT Russian Federation, RTRN
+0x00A2A0 = Kentavr DVB-H
+0x028001 = DVB-H Austria, Media Broadcast
+0x090001 = Dialog Mobile TV
+0x0E9001 = Levira Mobile TV
+0x168001 = PT MAC, PT. Mediatama Anugrah Citra
+0x168002 = Trenmobile, PT. Citra Karya Investasi
+0x170001 = Mobision, Alsumaria TV
+0x1CA001 = MiTV DVB-H, MiTV Networks Malaysia
+0x210001 = DVB-H by Digitenne, KPN Broadcast Services
+0x260001 = Dream Mobile TV, Philippines Multimedia System
+0x260002 = MyTV, 360media, SMART
+0x260003 = RMN Platform, Radio Mindanao
+0x283001 = Dominanta
+0x2E0001 = Sudatel Mobile TV
+0x348001 = ICO Satellite Services
+0x704001 = VTC Mobile TV

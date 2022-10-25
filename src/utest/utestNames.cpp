@@ -39,6 +39,9 @@
 #include "tsCASFamily.h"
 #include "tsMPEG2.h"
 #include "tsAVC.h"
+#include "tsCodecType.h"
+#include "tsDVBAC3Descriptor.h"
+#include "tsComponentDescriptor.h"
 #include "tsPES.h"
 #include "tsunit.h"
 
@@ -338,38 +341,38 @@ void NamesTest::testStreamType()
 
 void NamesTest::testStreamId()
 {
-    TSUNIT_EQUAL(u"ISO-13522 Hypermedia", ts::names::StreamId(ts::SID_ISO13522));
-    TSUNIT_EQUAL(u"Audio 24", ts::names::StreamId(0xD8));
-    TSUNIT_EQUAL(u"Video 12", ts::names::StreamId(0xEC));
+    TSUNIT_EQUAL(u"ISO-13522 Hypermedia", ts::NameFromDTV(u"pes.stream_id", ts::SID_ISO13522));
+    TSUNIT_EQUAL(u"Audio 24", ts::NameFromDTV(u"pes.stream_id", 0xD8));
+    TSUNIT_EQUAL(u"Video 12", ts::NameFromDTV(u"pes.stream_id", 0xEC));
 }
 
 void NamesTest::testPESStartCode()
 {
-    TSUNIT_EQUAL(u"ISO-13522 Hypermedia", ts::names::PESStartCode(ts::SID_ISO13522));
-    TSUNIT_EQUAL(u"Audio 24", ts::names::PESStartCode(0xD8));
-    TSUNIT_EQUAL(u"Video 12", ts::names::PESStartCode(0xEC));
-    TSUNIT_EQUAL(u"Slice 117", ts::names::PESStartCode(0x75));
-    TSUNIT_EQUAL(u"Sequence header", ts::names::PESStartCode(0xB3));
+    TSUNIT_EQUAL(u"ISO-13522 Hypermedia", ts::NameFromDTV(u"pes.stream_id", ts::SID_ISO13522));
+    TSUNIT_EQUAL(u"Audio 24", ts::NameFromDTV(u"pes.stream_id", 0xD8));
+    TSUNIT_EQUAL(u"Video 12", ts::NameFromDTV(u"pes.stream_id", 0xEC));
+    TSUNIT_EQUAL(u"Slice 117", ts::NameFromDTV(u"pes.stream_id", 0x75));
+    TSUNIT_EQUAL(u"Sequence header", ts::NameFromDTV(u"pes.stream_id", 0xB3));
 }
 
 void NamesTest::testAspectRatio()
 {
-    TSUNIT_EQUAL(u"16:9", ts::names::AspectRatio(ts::AR_16_9));
+    TSUNIT_EQUAL(u"16:9", ts::NameFromDTV(u"mpeg2.aspect_ratio", ts::AR_16_9));
 }
 
 void NamesTest::testChromaFormat()
 {
-    TSUNIT_EQUAL(u"4:2:0", ts::names::ChromaFormat(ts::CHROMA_420));
+    TSUNIT_EQUAL(u"4:2:0", ts::NameFromDTV(u"mpeg2.chroma_format", ts::CHROMA_420));
 }
 
 void NamesTest::testAVCUnitType()
 {
-    TSUNIT_EQUAL(u"Picture parameter set", ts::names::AccessUnitType(ts::CodecType::AVC, ts::AVC_AUT_PICPARAMS));
+    TSUNIT_EQUAL(u"Picture parameter set", ts::AccessUnitTypeName(ts::CodecType::AVC, ts::AVC_AUT_PICPARAMS));
 }
 
 void NamesTest::testAVCProfile()
 {
-    TSUNIT_EQUAL(u"extended profile", ts::names::AVCProfile(88));
+    TSUNIT_EQUAL(u"extended profile", ts::NameFromDTV(u"avc.profile", 88));
 }
 
 void NamesTest::testServiceType()
@@ -380,7 +383,7 @@ void NamesTest::testServiceType()
 
 void NamesTest::testScramblingControl()
 {
-    TSUNIT_EQUAL(u"even", ts::names::ScramblingControl(2));
+    TSUNIT_EQUAL(u"even", ts::NameFromDTV(u"ts.scrambling_control", 2));
 }
 
 void NamesTest::testDTSExtendedSurroundMode()
@@ -405,28 +408,30 @@ void NamesTest::testDTSSampleRateCode()
 
 void NamesTest::testAC3ComponentType()
 {
-    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::AC3ComponentType(0x92));
-    TSUNIT_EQUAL(u"0x92 (Enhanced AC-3, combined, visually impaired, 2 channels)", ts::names::AC3ComponentType(0x92, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::DVBAC3Descriptor::ComponentTypeName(0x92));
+    TSUNIT_EQUAL(u"0x92 (Enhanced AC-3, combined, visually impaired, 2 channels)", ts::DVBAC3Descriptor::ComponentTypeName(0x92, ts::NamesFlags::FIRST));
 }
 
 void NamesTest::testComponentType()
 {
     ts::DuckContext duck;
-    TSUNIT_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::names::ComponentType(duck, 0x0105));
-    TSUNIT_EQUAL(u"DVB subtitles, no aspect ratio", ts::names::ComponentType(duck, 0x0310));
-    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::names::ComponentType(duck, 0x0492));
-    TSUNIT_EQUAL(u"MPEG-2 high definition video, > 16:9 aspect ratio, 30 Hz", ts::names::ComponentType(duck, 0x0110));
-    TSUNIT_EQUAL(u"MPEG-2 video", ts::names::ComponentType(duck, 0x01B4));
+    TSUNIT_EQUAL(u"MPEG-2 video, 4:3 aspect ratio, 30 Hz", ts::ComponentDescriptor::ComponentTypeName(duck, 1, 0, 0x05));
+    TSUNIT_EQUAL(u"DVB subtitles, no aspect ratio", ts::ComponentDescriptor::ComponentTypeName(duck, 3, 0, 0x10));
+    TSUNIT_EQUAL(u"Enhanced AC-3, combined, visually impaired, 2 channels", ts::ComponentDescriptor::ComponentTypeName(duck, 4, 0, 0x92));
+    TSUNIT_EQUAL(u"0x0492 (Enhanced AC-3, combined, visually impaired, 2 channels)", ts::ComponentDescriptor::ComponentTypeName(duck, 4, 0, 0x92, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"MPEG-2 high definition video, > 16:9 aspect ratio, 30 Hz", ts::ComponentDescriptor::ComponentTypeName(duck, 1, 0, 0x10));
+    TSUNIT_EQUAL(u"MPEG-2 video", ts::ComponentDescriptor::ComponentTypeName(duck, 1, 0, 0xB4));
+    TSUNIT_EQUAL(u"0x0341 (Video is standard dynamic range (SDR))", ts::ComponentDescriptor::ComponentTypeName(duck, 3, 0, 0x41, ts::NamesFlags::FIRST));
 
     duck.addStandards(ts::Standards::JAPAN);
-    TSUNIT_EQUAL(u"unknown (0x0110)", ts::names::ComponentType(duck, 0x0110));
-    TSUNIT_EQUAL(u"Video 1080i(1125i), >16:9 aspect ratio", ts::names::ComponentType(duck, 0x01B4));
+    TSUNIT_EQUAL(u"unknown (0x0110)", ts::ComponentDescriptor::ComponentTypeName(duck, 1, 0, 0x10));
+    TSUNIT_EQUAL(u"Video 1080i(1125i), >16:9 aspect ratio", ts::ComponentDescriptor::ComponentTypeName(duck, 1, 0, 0xB4));
 }
 
 void NamesTest::testSubtitlingType()
 {
     ts::DuckContext duck;
-    TSUNIT_EQUAL(u"DVB subtitles, high definition", ts::names::SubtitlingType(duck, 0x14));
+    TSUNIT_EQUAL(u"DVB subtitles, high definition", ts::ComponentDescriptor::ComponentTypeName(duck, 3, 0, 0x14));
 }
 
 void NamesTest::testLinkageType()
@@ -446,19 +451,19 @@ void NamesTest::testRunningStatus()
 
 void NamesTest::testAudioType()
 {
-    TSUNIT_EQUAL(u"hearing impaired", ts::names::AudioType(2));
+    TSUNIT_EQUAL(u"hearing impaired", ts::NameFromDTV(u"ISO_639_language_descriptor.audio_type", 2));
 }
 
 void NamesTest::testT2MIPacketType()
 {
-    TSUNIT_EQUAL(u"Individual addressing", ts::names::T2MIPacketType(0x21));
+    TSUNIT_EQUAL(u"Individual addressing", ts::NameFromDTV(u"t2mi.packet_type", 0x21));
 }
 
 void NamesTest::testPlatformId()
 {
-    TSUNIT_EQUAL(u"Horizonsat", ts::names::PlatformId(10));
-    TSUNIT_EQUAL(u"0x000004 (TV digitale mobile, Telecom Italia)", ts::names::PlatformId(4, ts::NamesFlags::FIRST));
-    TSUNIT_EQUAL(u"VTC Mobile TV (0x704001)", ts::names::PlatformId(0x704001, ts::NamesFlags::VALUE));
+    TSUNIT_EQUAL(u"Horizonsat", ts::NameFromDTV(u"INT.platform_id", 10));
+    TSUNIT_EQUAL(u"0x000004 (TV digitale mobile, Telecom Italia)", ts::NameFromDTV(u"INT.platform_id", 4, ts::NamesFlags::FIRST));
+    TSUNIT_EQUAL(u"VTC Mobile TV (0x704001)", ts::NameFromDTV(u"INT.platform_id", 0x704001, ts::NamesFlags::VALUE));
 }
 
 void NamesTest::testDektec()

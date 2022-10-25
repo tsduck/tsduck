@@ -68,6 +68,18 @@ namespace ts {
         // Inherited methods
         DeclareDisplayDescriptor();
 
+        //!
+        //! Name of a Component Type.
+        //! @param [in] duck TSDuck execution context (used to select from other standards).
+        //! @param [in] stream_content Stream content (4 bits).
+        //! @param [in] stream_content_ext Stream content extension (4 bits). Ignored for @a stream_content in the range 1..8.
+        //! @param [in] component_type Component type.
+        //! @param [in] flags Presentation flags.
+        //! @param [in] bits Nominal size in bits of the data, optional.
+        //! @return The corresponding name.
+        //!
+        static UString ComponentTypeName(const DuckContext& duck, uint8_t stream_content, uint8_t stream_content_ext, uint8_t component_type, NamesFlags flags = NamesFlags::NAME, size_t bits = 16);
+
     protected:
         // Inherited methods
         virtual void clearContent() override;

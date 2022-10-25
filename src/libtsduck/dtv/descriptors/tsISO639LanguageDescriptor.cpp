@@ -29,7 +29,6 @@
 
 #include "tsISO639LanguageDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
@@ -87,6 +86,16 @@ void ts::ISO639LanguageDescriptor::clearContent()
 
 
 //----------------------------------------------------------------------------
+// Get a string representing the audio type.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ISO639LanguageDescriptor::Entry::audioTypeName(NamesFlags flags) const
+{
+    return DataName(MY_XML_NAME, u"audio_type", audio_type, flags);
+}
+
+
+//----------------------------------------------------------------------------
 // Serialization
 //----------------------------------------------------------------------------
 
@@ -120,7 +129,7 @@ void ts::ISO639LanguageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
 {
     while (buf.canReadBytes(4)) {
         disp << margin << "Language: " << buf.getLanguageCode();
-        disp << ", Type: " << names::AudioType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << ", Type: " << DataName(MY_XML_NAME, u"audio_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
     }
 }
 

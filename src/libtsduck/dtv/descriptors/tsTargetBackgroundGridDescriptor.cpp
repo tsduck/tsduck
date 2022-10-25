@@ -29,7 +29,6 @@
 
 #include "tsTargetBackgroundGridDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -98,7 +97,7 @@ void ts::TargetBackgroundGridDescriptor::DisplayDescriptor(TablesDisplay& disp, 
     if (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Size: %d", {buf.getBits<uint16_t>(14)});
         disp << UString::Format(u"x%d", {buf.getBits<uint16_t>(14)});
-        disp << ", aspect ratio: " << NameFromDTV(u"AspectRatio", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
+        disp << ", aspect ratio: " << NameFromDTV(u"mpeg2.aspect_ratio", buf.getBits<uint8_t>(4), NamesFlags::DECIMAL_FIRST) << std::endl;
     }
 }
 

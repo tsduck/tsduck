@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsPlatform.h"
-#include "tsUString.h"
 #include "tsStringifyInterface.h"
 
 namespace ts {

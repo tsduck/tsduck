@@ -70,6 +70,14 @@ namespace ts {
         virtual DescriptorDuplication duplicationMode() const override;
         virtual bool merge(const AbstractDescriptor& desc) override;
 
+        //!
+        //! Name of an AC-3 Component Type.
+        //! @param [in] type AC-3 Component Type.
+        //! @param [in] flags Presentation flags.
+        //! @return The corresponding name.
+        //!
+        static UString ComponentTypeName(uint8_t type, NamesFlags flags = NamesFlags::NAME);
+
     protected:
         // Inherited methods
         virtual void clearContent() override;

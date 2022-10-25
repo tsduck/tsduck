@@ -146,7 +146,7 @@ void ts::AudioComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
     if (buf.canReadBytes(9)) {
         buf.skipBits(4);
         disp << margin << UString::Format(u"Content type: 0x%X (%<d)", {buf.getBits<uint8_t>(4)}) << std::endl;
-        disp << margin << "Component type: " << DataName(MY_XML_NAME, u"ComponentType", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+        disp << margin << "Component type: " << DataName(MY_XML_NAME, u"component_type", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         disp << margin << UString::Format(u"Component tag: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
         disp << margin << "Stream type: " << names::StreamType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         const uint8_t group = buf.getUInt8();

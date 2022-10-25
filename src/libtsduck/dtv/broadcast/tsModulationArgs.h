@@ -37,8 +37,8 @@
 #include "tsDisplayInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"
+#include "tsBitRate.h"
 #include "tsLNB.h"
-#include "tsTS.h"
 
 namespace ts {
 
