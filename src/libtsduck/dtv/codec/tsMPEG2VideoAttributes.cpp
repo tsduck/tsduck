@@ -30,6 +30,7 @@
 #include "tsMPEG2VideoAttributes.h"
 #include "tsMemory.h"
 #include "tsMPEG2.h"
+#include "tsNamesFile.h"
 
 
 //----------------------------------------------------------------------------
@@ -104,6 +105,26 @@ ts::UString ts::MPEG2VideoAttributes::frameRateName() const
     else {
         return UString::Format(u"@%d.%02d Hz", {fr100 / 100, fr100 % 100});
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Get display aspect ratio name.
+//----------------------------------------------------------------------------
+
+ts::UString ts::MPEG2VideoAttributes::aspectRatioName() const
+{
+    return _is_valid ? NameFromDTV(u"mpeg2.aspect_ratio", _ar_code) : UString();
+}
+
+
+//----------------------------------------------------------------------------
+// Get chroma format name.
+//----------------------------------------------------------------------------
+
+ts::UString ts::MPEG2VideoAttributes::chromaFormatName() const
+{
+    return _is_valid ? NameFromDTV(u"mpeg2.chroma_format", _cf_code) : UString();
 }
 
 

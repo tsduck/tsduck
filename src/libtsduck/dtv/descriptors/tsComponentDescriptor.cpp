@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsComponentDescriptor.h"
+#include "tsDVBAC3Descriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -113,12 +113,62 @@ void ts::ComponentDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::ComponentDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(6)) {
-        disp << margin << "Content/type: " << names::ComponentType(disp.duck(), buf.getUInt16(), NamesFlags::FIRST) << std::endl;
+        const uint8_t stream_content_ext = buf.getBits<uint8_t>(4);
+        const uint8_t stream_content = buf.getBits<uint8_t>(4);
+        const uint8_t component_type = buf.getUInt8();
+        disp << margin << "Content/type: " << ComponentTypeName(disp.duck(), stream_content, stream_content_ext, component_type, NamesFlags::FIRST) << std::endl;
         disp << margin << UString::Format(u"Component tag: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
         disp << margin << "Language: " << buf.getLanguageCode() << std::endl;
         if (buf.canRead()) {
             disp << margin << "Description: \"" << buf.getString() << "\"" << std::endl;
         }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Name of a Component Type.
+//----------------------------------------------------------------------------
+
+ts::UString ts::ComponentDescriptor::ComponentTypeName(const DuckContext& duck, uint8_t stream_content, uint8_t stream_content_ext, uint8_t component_type, NamesFlags flags, size_t bits)
+{
+    // There is a special case here. The binary layout of the 16 bits in the .names
+    // file is based on table 26 (component_descriptor) in ETSI EN 300 468.
+    //
+    //   stream_content (4 bits) || stream_content_ext (4 bits) || component_type (8 bits).
+    //
+    // In the beginning, stream_content_ext did not exist and, as a reserved field, was 0xF.
+    // Starting with stream_content > 8, stream_content_ext appeared and may have different
+    // values. Logically, stream_content_ext is a subsection of stream_content but the memory
+    // layout in a binary component_descriptor is:
+    //
+    //   stream_content_ext (4 bits) || stream_content (4 bits) || component_type (8 bits).
+
+    // Stream content and extension use 4 bits.
+    stream_content &= 0x0F;
+    if (stream_content >= 1 && stream_content <= 8) {
+        stream_content_ext = 0x0F;
+    }
+    else {
+        stream_content_ext &= 0x0F;
+    }
+
+    // Value to use for name lookup:
+    const uint16_t nType = uint16_t((uint16_t(stream_content) << 12) | (uint16_t(stream_content_ext) << 8) | component_type);
+
+    // To display the value, we use the real binary value where stream_content_ext
+    // is forced to zero when stream_content is in the range 1 to 8. Value to display:
+    const uint16_t dType = uint16_t((stream_content >= 1 && stream_content <= 8 ? 0 : (uint16_t(stream_content_ext) << 12)) | (uint16_t(stream_content) << 8) | component_type);
+
+    if (bool(duck.standards() & Standards::JAPAN)) {
+        // Japan / ISDB uses a completely different mapping.
+        return DataName(MY_XML_NAME, u"component_type.japan", nType, flags | NamesFlags::ALTERNATE, bits, dType);
+    }
+    else if (stream_content == 4) {
+        return NamesFile::Formatted(dType, AC3Descriptor::ComponentTypeName(uint8_t(nType)), flags, 16);
+    }
+    else {
+        return DataName(MY_XML_NAME, u"component_type", nType, flags | NamesFlags::ALTERNATE, bits, dType);
     }
 }
 

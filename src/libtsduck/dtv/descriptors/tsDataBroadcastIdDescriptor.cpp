@@ -212,7 +212,7 @@ void ts::DataBroadcastIdDescriptor::DisplaySelectorINT(TablesDisplay& disp, PSIB
 {
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(5)) {
-        disp << margin << "- Platform id: " << names::PlatformId(buf.getUInt24(), NamesFlags::HEXA_FIRST) << std::endl;
+        disp << margin << "- Platform id: " << DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEXA_FIRST) << std::endl;
         disp << margin << UString::Format(u"  Action type: 0x%X, version: ", {buf.getUInt8()});
         buf.skipBits(2);
         if (buf.getBool()) {

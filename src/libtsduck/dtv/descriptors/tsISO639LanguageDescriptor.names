@@ -1,0 +1,6 @@
+[ISO_639_language_descriptor.audio_type]
+Bits = 8
+0x00 = undefined
+0x01 = clean effects
+0x02 = hearing impaired
+0x03 = visual impaired commentary

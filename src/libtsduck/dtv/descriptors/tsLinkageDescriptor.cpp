@@ -385,7 +385,7 @@ void ts::LinkageDescriptor::DisplayPrivateINT(TablesDisplay& disp, PSIBuffer& bu
 {
     buf.pushReadSizeFromLength(8); // platform_id_data_length
     while (buf.canReadBytes(4)) {
-        disp << margin << UString::Format(u"- Platform id: %s", {ts::names::PlatformId(buf.getUInt24(), NamesFlags::HEXA_FIRST)}) << std::endl;
+        disp << margin << UString::Format(u"- Platform id: %s", {DataName(u"INT", u"platform_id", buf.getUInt24(), NamesFlags::HEXA_FIRST)}) << std::endl;
         buf.pushReadSizeFromLength(8); // platform_name_loop_length
         while (buf.canReadBytes(4)) {
             disp << margin << "  Language: " << buf.getLanguageCode();

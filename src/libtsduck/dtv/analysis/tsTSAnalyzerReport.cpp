@@ -495,7 +495,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         // Type of PES data, if available
         if (pc.same_stream_id) {
-            grid.putLine(u"PES stream id: " + names::StreamId(pc.pes_stream_id, NamesFlags::FIRST));
+            grid.putLine(u"PES stream id: " + NameFromDTV(u"pes.stream_id", pc.pes_stream_id, NamesFlags::FIRST));
         }
 
         // Audio/video attributes

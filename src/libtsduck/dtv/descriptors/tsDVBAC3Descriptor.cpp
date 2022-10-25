@@ -135,6 +135,44 @@ void ts::DVBAC3Descriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Name of an AC-3 Component Type.
+//----------------------------------------------------------------------------
+
+ts::UString ts::DVBAC3Descriptor::ComponentTypeName(uint8_t type, NamesFlags flags)
+{
+    UString s((type & 0x80) != 0 ? u"Enhanced AC-3" : u"AC-3");
+
+    s += (type & 0x40) != 0 ? u", full" : u", combined";
+
+    switch (type & 0x38) {
+        case 0x00: s += u", complete main"; break;
+        case 0x08: s += u", music and effects"; break;
+        case 0x10: s += u", visually impaired"; break;
+        case 0x18: s += u", hearing impaired"; break;
+        case 0x20: s += u", dialogue"; break;
+        case 0x28: s += u", commentary"; break;
+        case 0x30: s += u", emergency"; break;
+        case 0x38: s += (type & 0x40) ? u", karaoke" : u", voiceover"; break;
+        default: assert(false); // unreachable
+    }
+
+    switch (type & 0x07) {
+        case 0: s += u", mono"; break;
+        case 1: s += u", 1+1 channel"; break;
+        case 2: s += u", 2 channels"; break;
+        case 3: s += u", 2 channels dolby surround"; break;
+        case 4: s += u", multichannel > 2"; break;
+        case 5: s += u", multichannel > 5.1"; break;
+        case 6: s += u", multiple substreams"; break;
+        case 7: s += u", reserved"; break;
+        default: assert(false); // unreachable
+    }
+
+    return NamesFile::Formatted(type, s, flags, 8);
+}
+
+
+//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -147,7 +185,7 @@ void ts::DVBAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf
         const bool asvc_flag = buf.getBool();
         buf.skipBits(4);
         if (component_type_flag && buf.canReadBytes(1)) {
-            disp << margin << "Component type: " << names::AC3ComponentType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Component type: " << ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         }
         if (bsid_flag && buf.canReadBytes(1)) {
             disp << margin << UString::Format(u"AC-3 coding version: %d (0x%<X)", {buf.getUInt8()}) << std::endl;

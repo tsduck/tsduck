@@ -1,12 +1,4 @@
-#
-# TSDuck - The MPEG Transport Stream Toolkit
-# Copyright (c) 2005-2022, Thierry Lelegard
-# All rights reserved.
-#
-# Configuration file containing names for tsAVC.h.
-#
-
-[AVCProfile]
+[avc.profile]
 Bits = 8
 44 = CAVLC 4:4:4 intra profile
 66 = baseline profile
@@ -19,7 +11,7 @@ Bits = 8
 122 = high 4:2:2 profile
 244 = high 4:4:4 predictive profile
 
-[AVCUnitType]
+[avc.unit_type]
 # Access unit, aka "NALunit"
 Bits = 5
 0  = Unspecified
@@ -43,7 +35,7 @@ Bits = 5
 20 = Coded slice in scalable extension
 21 = Coded slice extension or 3D-AVC texture view
 
-[AVCSEIType]
+[avc.sei_type]
 # AVC SEI type (see H.264 section D.1)
 Bits = 8
 0 = buffering_period
