@@ -36,6 +36,9 @@
 #include "tsjson.h"
 
 namespace ts {
+
+    class TextFormatter;
+
     namespace json {
         //!
         //! Abstract base class of a JSON value.

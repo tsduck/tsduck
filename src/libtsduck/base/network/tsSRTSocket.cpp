@@ -31,7 +31,7 @@
 #include "tsSingletonManager.h"
 #include "tsArgs.h"
 #include "tsjsonObject.h"
-#include "tsjsonNumber.h"
+#include "tsTextFormatter.h"
 #include "tsTime.h"
 #include "tsMemory.h"
 #include "tsMutex.h"

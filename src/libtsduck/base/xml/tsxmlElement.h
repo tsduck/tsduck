@@ -341,6 +341,38 @@ namespace ts {
             }
 
             //!
+            //! Set an attribute with a floating-point value to a node.
+            //! @tparam FLT A floating-point type.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute value.
+            //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
+            //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
+            //! @param [in] force_sign If true, force a '+' sign for positive values.
+            //!
+            template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+            void setFloatAttribute(const UString& name, FLT value, size_t width = 0, size_t precision = 6, bool force_sign = false)
+            {
+                refAttribute(name).setFloat<FLT>(value, width, precision, force_sign);
+            }
+
+            //!
+            //! Set an optional attribute with a floating-point value to a node.
+            //! @tparam FLT A floating-point type.
+            //! @param [in] name Attribute name.
+            //! @param [in] value Attribute optional value. If the variable is not set, no attribute is set.
+            //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
+            //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
+            //! @param [in] force_sign If true, force a '+' sign for positive values.
+            //!
+            template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+            void setOptionalFloatAttribute(const UString& name, const Variable<FLT>& value, size_t width = 0, size_t precision = 6, bool force_sign = false)
+            {
+                if (value.set()) {
+                    refAttribute(name).setFloat<FLT>(value.value(), width, precision, force_sign);
+                }
+            }
+
+            //!
             //! Set an enumeration attribute of a node.
             //! @param [in] definition The definition of enumeration values.
             //! @param [in] name Attribute name.
@@ -667,6 +699,77 @@ namespace ts {
             {
                 value.setDefault(defValue);
                 return getIntEnumAttribute(value.value(), definition, name, required, defValue);
+            }
+
+            //!
+            //! Get a floating-point attribute of an XML element.
+            //! @tparam FLT A floating-point type.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename FLT,
+                      typename FLT1 = FLT,
+                      typename FLT2 = FLT,
+                      typename FLT3 = FLT,
+                      typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+            bool getFloatAttribute(FLT& value,
+                                   const UString& name,
+                                   bool required = false,
+                                   FLT1 defValue = static_cast<FLT>(0.0),
+                                   FLT2 minValue = std::numeric_limits<FLT>::lowest(),
+                                   FLT3 maxValue = std::numeric_limits<FLT>::max()) const;
+
+            //!
+            //! Get an optional floating-point attribute of an XML element.
+            //! @tparam FLT A floating-point type.
+            //! @param [out] value Returned value of the attribute. If the attribute is not present, the variable is reset.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename FLT,
+                      typename FLT1 = FLT,
+                      typename FLT2 = FLT,
+                      typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+            bool getOptionalFloatAttribute(Variable<FLT>& value,
+                                           const UString& name,
+                                           FLT1 minValue = std::numeric_limits<FLT>::lowest(),
+                                           FLT2 maxValue = std::numeric_limits<FLT>::max()) const;
+
+            //!
+            //! Get an optional floating-point attribute of an XML element.
+            //! getVariableFloatAttribute() is different from getOptionalFloatAttribute() in the result.
+            //! With getOptionalFloatAttribute(), if the attribute is missing, the Variable is unset.
+            //! With getVariableFloatAttribute(), if the attribute is missing, the Variable is set with the default value.
+            //! @tparam FLT A floating-point type.
+            //! @param [out] value Returned value of the attribute.
+            //! @param [in] name Name of the attribute.
+            //! @param [in] required If true, generate an error if the attribute is not found.
+            //! @param [in] defValue Default value to return if the attribute is not present.
+            //! @param [in] minValue Minimum allowed value for the attribute.
+            //! @param [in] maxValue Maximum allowed value for the attribute.
+            //! @return True on success, false on error.
+            //!
+            template <typename FLT,
+                      typename FLT1 = FLT,
+                      typename FLT2 = FLT,
+                      typename FLT3 = FLT,
+                      typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+            bool getVariableFloatAttribute(Variable<FLT>& value,
+                                           const UString& name,
+                                           bool required = false,
+                                           FLT1 defValue = static_cast<FLT>(0),
+                                           FLT2 minValue = std::numeric_limits<FLT>::lowest(),
+                                           FLT3 maxValue = std::numeric_limits<FLT>::max()) const
+            {
+                value.setDefault(defValue);
+                return getFloatAttribute(value.value(), name, required, defValue, minValue, maxValue);
             }
 
             //!
