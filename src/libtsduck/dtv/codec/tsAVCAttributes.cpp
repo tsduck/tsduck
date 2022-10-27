@@ -79,12 +79,12 @@ ts::UString ts::AVCAttributes::levelName() const
 
 ts::UString ts::AVCAttributes::profileName() const
 {
-    return _is_valid ? names::AVCProfile(_profile) : UString();
+    return _is_valid ? NameFromDTV(u"avc.profile", _profile) : UString();
 }
 
 ts::UString ts::AVCAttributes::chromaFormatName() const
 {
-    return _is_valid ? names::ChromaFormat(_chroma) : UString();
+    return _is_valid ? NameFromDTV(u"mpeg2.chroma_format", _chroma) : UString();
 }
 
 

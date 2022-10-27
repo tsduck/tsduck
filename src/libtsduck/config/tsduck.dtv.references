@@ -2,13 +2,6 @@
 # This is a temporary information file for remaining modularization of .names files.
 
 ServiceType : tsNames.cpp
-TeletextType : tsNames.cpp
-AudioType : tsNames.cpp
-ComponentType : tsNames.cpp tsAACDescriptor.cpp
-ComponentTypeJapan : tsNames.cpp
-ScramblingControl : tsNames.cpp
-T2MIPacketType : tsNames.cpp
 ContentId : tsNames.cpp
 ContentIdJapan : tsNames.cpp
 ContentIdABNT : tsNames.cpp
-PlatformId : tsNames.cpp

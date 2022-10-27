@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBEnhancedAC3Descriptor.h"
+#include "tsDVBAC3Descriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -179,7 +179,7 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         const bool substream3_flag = buf.getBool();
 
         if (component_type_flag && buf.canReadBytes(1)) {
-            disp << margin << "Component type: " << names::AC3ComponentType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Component type: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         }
         if (bsid_flag && buf.canReadBytes(1)) {
             disp << margin << UString::Format(u"AC-3 coding version: %d (0x%<X)", {buf.getUInt8()}) << std::endl;
@@ -194,13 +194,13 @@ void ts::DVBEnhancedAC3Descriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
             disp << margin << "Substream 0: Mixing control metadata" << std::endl;
         }
         if (substream1_flag && buf.canReadBytes(1)) {
-            disp << margin << "Substream 1: " << names::AC3ComponentType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Substream 1: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         }
         if (substream2_flag && buf.canReadBytes(1)) {
-            disp << margin << "Substream 2: " << names::AC3ComponentType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Substream 2: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         }
         if (substream3_flag && buf.canReadBytes(1)) {
-            disp << margin << "Substream 3: " << names::AC3ComponentType(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+            disp << margin << "Substream 3: " << DVBAC3Descriptor::ComponentTypeName(buf.getUInt8(), NamesFlags::FIRST) << std::endl;
         }
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }

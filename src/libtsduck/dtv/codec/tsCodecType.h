@@ -35,6 +35,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsNamesFile.h"
 
 namespace ts {
     //!
@@ -103,4 +104,13 @@ namespace ts {
     //! @return True if @a ct indicates a subtitle stream.
     //!
     TSDUCKDLL bool CodecTypeIsSubtitles(CodecType ct);
+
+    //!
+    //! Name of AVC/HEVC/VVC access unit (aka "NALunit") type.
+    //! @param [in] codec One of AVC, HEVC, VVC.
+    //! @param [in] ut Access unit type.
+    //! @param [in] flags Presentation flags.
+    //! @return The corresponding name.
+    //!
+    TSDUCKDLL UString AccessUnitTypeName(CodecType codec, uint8_t ut, NamesFlags flags = NamesFlags::NAME);
 }

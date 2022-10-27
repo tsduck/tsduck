@@ -36,7 +36,6 @@
 #pragma once
 #include "tsNamesFile.h"
 #include "tsPSI.h"
-#include "tsCodecType.h"
 
 namespace ts {
 
@@ -99,70 +98,12 @@ namespace ts {
         TSDUCKDLL UString StreamType(uint8_t st, NamesFlags flags = NamesFlags::NAME);
 
         //!
-        //! Name of Stream ID (in PES header).
-        //! @param [in] sid Stream ID (in PES header).
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString StreamId(uint8_t sid, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of PES start code value.
-        //! @param [in] code PES start code value.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString PESStartCode(uint8_t code, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of aspect ratio values (in MPEG-1/2 video sequence header).
-        //! @param [in] a Aspect ratio value (in MPEG-1/2 video sequence header).
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString AspectRatio(uint8_t a, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of Chroma format values (in MPEG-1/2 video sequence header).
-        //! @param [in] c Chroma format value (in MPEG-1/2 video sequence header).
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString ChromaFormat(uint8_t c, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of AVC/HEVC/VVC access unit (aka "NALunit") type.
-        //! @param [in] codec One of AVC, HEVC, VVC.
-        //! @param [in] ut Access unit type.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString AccessUnitType(CodecType codec, uint8_t ut, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of AVC (ISO 14496-10, ITU H.264) profile.
-        //! @param [in] p AVC profile.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString AVCProfile(int p, NamesFlags flags = NamesFlags::NAME);
-
-        //!
         //! Name of service type (in Service Descriptor).
         //! @param [in] st Service type (in Service Descriptor).
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
         TSDUCKDLL UString ServiceType(uint8_t st, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of subtitling type (in Subtitling Descriptor).
-        //! @param [in] duck TSDuck execution context (used to select from other standards).
-        //! @param [in] st Subtitling type (in Subtitling Descriptor).
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString SubtitlingType(const DuckContext& duck, uint8_t st, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Conditional Access System Id (in CA Descriptor).
@@ -182,33 +123,6 @@ namespace ts {
         TSDUCKDLL UString RunningStatus(uint8_t rs, NamesFlags flags = NamesFlags::NAME);
 
         //!
-        //! Name of audio type (in ISO639 Language Descriptor).
-        //! @param [in] at Audio type (in ISO639 Language Descriptor).
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString AudioType(uint8_t at, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of Component Type (in Component Descriptor).
-        //! @param [in] duck TSDuck execution context (used to select from other standards).
-        //! @param [in] ct Component Type (in Component Descriptor).
-        //! Combination of stream_content_ext (4 bits), stream_content (4 bits) and component_type (8 bits).
-        //! @param [in] flags Presentation flags.
-        //! @param [in] bits Nominal size in bits of the data, optional.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString ComponentType(const DuckContext& duck, uint16_t ct, NamesFlags flags = NamesFlags::NAME, size_t bits = 16);
-
-        //!
-        //! Name of AC-3 Component Type.
-        //! @param [in] t AC-3 Component Type.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString AC3ComponentType(uint8_t t, NamesFlags flags = NamesFlags::NAME);
-
-        //!
         //! Name of content name (in Content Descriptor).
         //! @param [in] duck TSDuck execution context (used to select from other standards).
         //! @param [in] c Content name.
@@ -216,14 +130,6 @@ namespace ts {
         //! @return The corresponding name.
         //!
         TSDUCKDLL UString Content(const DuckContext& duck, uint8_t c, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of scrambling control value in TS header
-        //! @param [in] sc Scrambling control value in TS header
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString ScramblingControl(uint8_t sc, NamesFlags flags = NamesFlags::NAME);
 
         //!
         //! Name of Bouquet Id.
@@ -250,27 +156,11 @@ namespace ts {
         TSDUCKDLL UString NetworkId(uint16_t id, NamesFlags flags = NamesFlags::NAME);
 
         //!
-        //! Name of Platform Id.
-        //! @param [in] id Platform Id.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString PlatformId(uint32_t id, NamesFlags flags = NamesFlags::NAME);
-
-        //!
         //! Name of Data broadcast id (in Data Broadcast Id Descriptor).
         //! @param [in] id Data broadcast id (in Data Broadcast Id Descriptor).
         //! @param [in] flags Presentation flags.
         //! @return The corresponding name.
         //!
         TSDUCKDLL UString DataBroadcastId(uint16_t id, NamesFlags flags = NamesFlags::NAME);
-
-        //!
-        //! Name of T2-MI packet type.
-        //! @param [in] type T2-MI packet type.
-        //! @param [in] flags Presentation flags.
-        //! @return The corresponding name.
-        //!
-        TSDUCKDLL UString T2MIPacketType(uint8_t type, NamesFlags flags = NamesFlags::NAME);
     }
 }

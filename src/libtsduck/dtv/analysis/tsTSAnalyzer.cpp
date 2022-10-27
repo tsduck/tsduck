@@ -913,7 +913,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
                         if (e.audio_type != 0) {
-                            ps->comment = names::AudioType(e.audio_type);
+                            ps->comment = e.audioTypeName();
                         }
                     }
                 }
@@ -977,7 +977,7 @@ void ts::TSAnalyzer::analyzeDescriptors(const DescriptorList& descs, ServiceCont
                     const SubtitlingDescriptor desc(_duck, bindesc);
                     for (auto& e : desc.entries) {
                         AppendUnique(ps->languages, e.language_code);
-                        AppendUnique(ps->attributes, names::SubtitlingType(_duck, e.subtitling_type));
+                        AppendUnique(ps->attributes, e.subtitlingTypeName());
                     }
                 }
                 break;

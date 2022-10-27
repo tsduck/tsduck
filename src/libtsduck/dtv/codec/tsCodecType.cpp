@@ -93,6 +93,11 @@ const ts::Enumeration ts::CodecTypeArgEnum({
     {u"AVS3",          int(ts::CodecType::AVS3)},
 });
 
+
+//----------------------------------------------------------------------------
+// Check if a codec type value indicates an audio stream.
+//----------------------------------------------------------------------------
+
 bool ts::CodecTypeIsAudio(CodecType ct)
 {
     switch (ct) {
@@ -127,6 +132,11 @@ bool ts::CodecTypeIsAudio(CodecType ct)
             return false;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Check if a codec type value indicates a video stream.
+//----------------------------------------------------------------------------
 
 bool ts::CodecTypeIsVideo(CodecType ct)
 {
@@ -163,6 +173,11 @@ bool ts::CodecTypeIsVideo(CodecType ct)
     }
 }
 
+
+//----------------------------------------------------------------------------
+// Check if a codec type value indicates a subtitle stream.
+//----------------------------------------------------------------------------
+
 bool ts::CodecTypeIsSubtitles(CodecType ct)
 {
     switch (ct) {
@@ -195,5 +210,30 @@ bool ts::CodecTypeIsSubtitles(CodecType ct)
         case CodecType::AVS3:
         default:
             return false;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Name of AVC/HEVC/VVC access unit (aka "NALunit") type.
+//----------------------------------------------------------------------------
+
+ts::UString ts::AccessUnitTypeName(CodecType codec, uint8_t type, NamesFlags flags)
+{
+    const UChar* table = nullptr;
+    if (codec == CodecType::AVC) {
+        table = u"avc.unit_type";
+    }
+    else if (codec == CodecType::HEVC) {
+        table = u"hevc.unit_type";
+    }
+    else if (codec == CodecType::VVC) {
+        table = u"vvc.unit_type";
+    }
+    if (table != nullptr) {
+        return NameFromDTV(table, NamesFile::Value(type), flags, 8);
+    }
+    else {
+        return NamesFile::Formatted(NamesFile::Value(type), u"unknown", flags, 8);
     }
 }

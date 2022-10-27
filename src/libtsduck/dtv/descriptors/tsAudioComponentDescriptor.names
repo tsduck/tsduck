@@ -1,4 +1,4 @@
-[audio_component_descriptor.ComponentType]
+[audio_component_descriptor.component_type]
 Bits = 8
 0x00 = Reserved for future use
 0x01 = 1/0 mode (single monaural channel)
