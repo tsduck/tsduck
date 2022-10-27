@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsxmlNode.h"
 #include "tsxmlTweaks.h"
 #include "tsEnumeration.h"
 #include "tsTime.h"
@@ -144,6 +143,20 @@ namespace ts {
             void setIntEnum(const Enumeration& definition, INT value)
             {
                 setString(definition.name(int(value), true, 2 * sizeof(INT)));
+            }
+
+            //!
+            //! Set an attribute with a floating point value to a node.
+            //! @tparam FLT a floating point type.
+            //! @param [in] value Attribute value.
+            //! @param [in] width Width of the formatted number, not including the optional prefix and separator.
+            //! @param [in] precision Precision to use after the decimal point.  Default is 6 digits.
+            //! @param [in] force_sign If true, force a '+' sign for positive values.
+            //!
+            template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+            void setFloat(FLT value, size_t width = 0, size_t precision = 6, bool force_sign = false)
+            {
+                setString(UString::Float(double(value), width, precision, force_sign));
             }
 
             //!

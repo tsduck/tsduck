@@ -2408,12 +2408,28 @@ bool ts::UString::ArgMixOutContext::processField()
 ts::UString ts::UString::Float(double value, size_type width, size_type precision, bool force_sign)
 {
     // Slightly oversized buffer.
-    char valueStr[10 + std::numeric_limits<double>::digits - std::numeric_limits<double>::min_exponent];
+    char valueStr[32 + std::numeric_limits<double>::digits - std::numeric_limits<double>::min_exponent];
+
+    // Build formatting string.
+    std::string format("%");
     if (force_sign) {
-        std::snprintf(valueStr, sizeof(valueStr), "%+*.*f", int(width), int(precision), value);
+        format.append("+");
+    }
+    format.append("*.*l");
+    if (std::fabs(value) > 0.001 && std::fabs(value) < 10000.0) {
+        // Use a float representation.
+        format.append("f");
     }
     else {
-        std::snprintf(valueStr, sizeof(valueStr), "%*.*f", int(width), int(precision), value);
+        // Use a exponent representation.
+        format.append("e");
     }
+
+    // Format the result.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(format-nonliteral)
+    std::snprintf(valueStr, sizeof(valueStr), format.c_str(), int(width), int(precision), value);
+    TS_POP_WARNING()
+
     return FromUTF8(valueStr);
 }

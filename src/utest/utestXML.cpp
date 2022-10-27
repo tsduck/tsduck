@@ -33,6 +33,7 @@
 
 #include "tsxmlModelDocument.h"
 #include "tsxmlElement.h"
+#include "tsxmlDeclaration.h"
 #include "tsSectionFile.h"
 #include "tsTextFormatter.h"
 #include "tsCerrReport.h"
@@ -64,6 +65,8 @@ public:
     void testChannels();
     void testMerge();
     void testSort();
+    void testGetFloat();
+    void testSetFloat();
 
     TSUNIT_TEST_BEGIN(XMLTest);
     TSUNIT_TEST(testDocument);
@@ -77,6 +80,8 @@ public:
     TSUNIT_TEST(testChannels);
     TSUNIT_TEST(testMerge);
     TSUNIT_TEST(testSort);
+    TSUNIT_TEST(testGetFloat);
+    TSUNIT_TEST(testSetFloat);
     TSUNIT_TEST_END();
 
 private:
@@ -718,6 +723,58 @@ void XMLTest::testSort()
         u"  </node7>\n"
         u"  <node1/>\n"
         u"  End\n"
+        u"</root>\n",
+        doc.toString());
+}
+
+void XMLTest::testGetFloat()
+{
+    static const ts::UChar* const document =
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root>\n"
+        u"  <node a='12.34' b='45' c='1.34e-12' d='xyz'/>\n"
+        u"</root>\n";
+
+    ts::xml::Document doc(report());
+    TSUNIT_ASSERT(doc.parse(document));
+    TSUNIT_EQUAL(2, doc.childrenCount());
+
+    ts::xml::Element* root = doc.rootElement();
+    TSUNIT_ASSERT(root != nullptr);
+
+    ts::xml::Element* node = root->findFirstChild(u"node", true);
+    TSUNIT_ASSERT(node != nullptr);
+
+    double dbl = 0.0;
+    TSUNIT_ASSERT(node->getFloatAttribute(dbl, u"a", true));
+    TSUNIT_EQUAL(12.34, dbl);
+
+    float flt = 0.0;
+    TSUNIT_ASSERT(node->getFloatAttribute(flt, u"b", true));
+    TSUNIT_EQUAL(45.0, flt);
+
+    TSUNIT_ASSERT(node->getFloatAttribute(dbl, u"c", true));
+    TSUNIT_EQUAL(1.34e-12, dbl);
+
+    TSUNIT_ASSERT(!node->getFloatAttribute(dbl, u"d"));
+
+    TSUNIT_ASSERT(node->getFloatAttribute(flt, u"e", false, 52.12));
+    TSUNIT_EQUAL(52.12, flt);
+}
+
+void XMLTest::testSetFloat()
+{
+    ts::xml::Document doc(report());
+    new ts::xml::Declaration(&doc, ts::xml::Declaration::DEFAULT_XML_DECLARATION);
+    ts::xml::Element* root = new ts::xml::Element(&doc, u"root");
+    ts::xml::Element* node = new ts::xml::Element(root, u"node");
+    node->setFloatAttribute(u"a", 12.34);
+    node->setFloatAttribute(u"b", 4.5e-13);
+
+    TSUNIT_EQUAL(
+        u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+        u"<root>\n"
+        u"  <node a=\"12.340000\" b=\"4.500000e-13\"/>\n"
         u"</root>\n",
         doc.toString());
 }

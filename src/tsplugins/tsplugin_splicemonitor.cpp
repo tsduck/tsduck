@@ -41,6 +41,7 @@
 #include "tsSpliceInformationTable.h"
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsForkPipe.h"
+#include "tsjsonObject.h"
 #include "tsjsonOutputArgs.h"
 #include "tsjsonRunningDocument.h"
 #include "tsxmlJSONConverter.h"

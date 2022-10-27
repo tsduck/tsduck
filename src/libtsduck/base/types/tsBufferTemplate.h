@@ -179,7 +179,7 @@ bool ts::Buffer::putBits(INT value, size_t bits)
 // Internal put integer method.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_floating_point<INT>::value, int>::type>
 bool ts::Buffer::putint(INT value, size_t bytes, void (*putBE)(void*,INT), void (*putLE)(void*,INT))
 {
     // Internally used to write up to 8 bytes (64-bit integers).

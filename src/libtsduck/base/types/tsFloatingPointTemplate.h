@@ -77,13 +77,13 @@ ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::description() const
 
 template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
 ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::toString(size_t min_width,
-                                                 bool right_justified,
-                                                 UChar separator,
-                                                 bool force_sign,
-                                                 size_t decimals,
-                                                 bool force_decimals,
-                                                 UChar decimal_dot,
-                                                 UChar pad) const
+                                                        bool right_justified,
+                                                        UChar separator,
+                                                        bool force_sign,
+                                                        size_t decimals,
+                                                        bool force_decimals,
+                                                        UChar decimal_dot,
+                                                        UChar pad) const
 {
     // 6 decimal digits by default.
     if (decimals == NPOS) {
@@ -92,7 +92,7 @@ ts::UString ts::FloatingPoint<FLOAT_T,PREC,N>::toString(size_t min_width,
 
     // Format the floating point number in a slightly oversized UTF-8 buffer.
     std::string str8(std::numeric_limits<float_t>::max_digits10 + decimals + 10, '\0');
-    std::snprintf(&str8[0], str8.length() - 1, "%.*f", int(decimals), double(_value));
+    std::snprintf(&str8[0], str8.length() - 1, "%.*lf", int(decimals), double(_value));
 
     // Work on UString from now on.
     UString str;

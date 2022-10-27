@@ -102,6 +102,7 @@ public:
     void testToQuotedLine();
     void testFromQuotedLine();
     void testIndent();
+    void testToFloat();
 
     TSUNIT_TEST_BEGIN(UStringTest);
     TSUNIT_TEST(testIsSpace);
@@ -156,6 +157,7 @@ public:
     TSUNIT_TEST(testToQuotedLine);
     TSUNIT_TEST(testFromQuotedLine);
     TSUNIT_TEST(testIndent);
+    TSUNIT_TEST(testToFloat);
     TSUNIT_TEST_END();
 
 private:
@@ -2175,4 +2177,28 @@ void UStringTest::testIndent()
     TSUNIT_EQUAL(u"  ", ts::UString(u"  ").toIndented(4));
     TSUNIT_EQUAL(u"      a", ts::UString(u"  a").toIndented(4));
     TSUNIT_EQUAL(u"    a\n\n  b\n  c d", ts::UString(u"  a\n\nb\nc d").toIndented(2));
+}
+
+void UStringTest::testToFloat()
+{
+    double val = 0.0;
+    TSUNIT_ASSERT(!ts::UString().toFloat(val));
+
+    TSUNIT_ASSERT(ts::UString(u"1.23").toFloat(val));
+    TSUNIT_EQUAL(1.23, val);
+
+    TSUNIT_ASSERT(!ts::UString(u"1c.23").toFloat(val));
+    TSUNIT_EQUAL(1.0, val);
+
+    TSUNIT_ASSERT(!ts::UString(u"c.23").toFloat(val));
+    TSUNIT_EQUAL(0.0, val);
+
+    TSUNIT_ASSERT(ts::UString(u"-34.56e-4").toFloat(val));
+    TSUNIT_EQUAL(-34.56e-4, val);
+
+    TSUNIT_ASSERT(ts::UString(u"78.31e12").toFloat(val));
+    TSUNIT_EQUAL(78.31e12, val);
+
+    TSUNIT_ASSERT(!ts::UString(u"1.2").toFloat(val, -1.0, 1.0));
+    TSUNIT_EQUAL(1.2, val);
 }

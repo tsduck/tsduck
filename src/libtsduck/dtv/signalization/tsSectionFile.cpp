@@ -29,9 +29,8 @@
 
 #include "tsSectionFile.h"
 #include "tsAbstractTable.h"
-#include "tsAbstractDescriptor.h"
 #include "tsBinaryTable.h"
-#include "tsTablesDisplay.h"
+#include "tsReportWithPrefix.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlJSONConverter.h"
