@@ -66,6 +66,13 @@ namespace ts {
             //! @param [in] type Audio type.
             //!
             Entry(const UString& code, uint8_t type);
+
+            //!
+            //! Get a string representing the audio type.
+            //! @param [in] flags Presentation flags.
+            //! @return A string representing the audio type.
+            //!
+            UString audioTypeName(NamesFlags flags = NamesFlags::NAME) const;
         };
 
         //!

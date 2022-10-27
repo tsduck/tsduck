@@ -42,6 +42,7 @@
 #include "tsTunerGraph.h"
 #include "tsDirectShowUtils.h"
 #include "tsSinkFilter.h"
+#include "tsTS.h"
 
 
 //-----------------------------------------------------------------------------

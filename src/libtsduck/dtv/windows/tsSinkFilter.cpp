@@ -35,6 +35,7 @@
 #include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 #include "tsIntegerUtils.h"
+#include "tsTS.h"
 
 // Trace every low-level operation when COM instrumentation is enabled.
 #if defined(TS_COM_INSTRUMENTATION)

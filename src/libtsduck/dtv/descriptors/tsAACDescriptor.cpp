@@ -28,13 +28,13 @@
 //----------------------------------------------------------------------------
 
 #include "tsAACDescriptor.h"
+#include "tsComponentDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"AAC_descriptor"
 #define MY_CLASS ts::AACDescriptor
@@ -125,7 +125,7 @@ void ts::AACDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, c
         disp << margin << UString::Format(u"SOAC DE flag: %s", {buf.getBool()}) << std::endl;
         buf.skipBits(6);
         if (has_AAC_type && buf.canRead()) {
-            disp << margin << "AAC type: " << NameFromDTV(u"ComponentType", 0x6F00 | buf.getUInt8(), NamesFlags::HEXA_FIRST, 8) << std::endl;
+            disp << margin << "AAC type: " << ComponentDescriptor::ComponentTypeName(disp.duck(), 6, 0, buf.getUInt8(), NamesFlags::HEXA_FIRST, 8) << std::endl;
         }
         disp.displayPrivateData(u"Additional information", buf, NPOS, margin);
     }
@@ -143,7 +143,8 @@ ts::UString ts::AACDescriptor::aacTypeString() const
 
 ts::UString ts::AACDescriptor::aacTypeString(uint8_t type)
 {
-    return NameFromDTV(u"ComponentType", 0x6F00 | type, NamesFlags::NAME, 8);
+    DuckContext duck; // only needed by component_descriptor when in Japan.
+    return ComponentDescriptor::ComponentTypeName(duck, 6, 0, type, NamesFlags::NAME, 8);
 }
 
 

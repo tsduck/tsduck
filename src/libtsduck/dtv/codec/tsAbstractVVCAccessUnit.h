@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsAbstractVideoAccessUnit.h"
-#include "tsAVCParser.h"
 
 namespace ts {
     //!

@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsVariable.h"
 
 namespace ts {
     //!
@@ -73,6 +72,12 @@ namespace ts {
             //! @param [in] ancil Ancillary page identifier.
             //!
             Entry(const UString& code, uint8_t subt = 0, uint16_t comp = 0, uint16_t ancil = 0);
+
+            //!
+            //! Get the name of the subtitling type.
+            //! @return The name of the subtitling type.
+            //!
+            UString subtitlingTypeName() const;
         };
 
         //!

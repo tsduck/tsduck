@@ -1,0 +1,14 @@
+[t2mi.packet_type]
+Bits = 8
+0x00 = Baseband Frame
+0x01 = Auxiliary stream I/Q data
+0x02 = Arbitrary cell insertion
+0x10 = L1-current
+0x11 = L1-future
+0x12 = P2 bias balancing cells
+0x20 = DVB-T2 timestamp
+0x21 = Individual addressing
+0x30 = FEF part: Null
+0x31 = FEF part: I/Q data
+0x32 = FEF part: composite
+0x33 = FEF sub-part

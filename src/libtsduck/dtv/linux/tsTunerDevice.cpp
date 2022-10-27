@@ -38,7 +38,7 @@
 #include "tsSysUtils.h"
 #include "tsFileUtils.h"
 #include "tsSignalAllocator.h"
-#include "tsNullReport.h"
+#include "tsTS.h"
 #include "tsMemory.h"
 #include "tsTunerDeviceInfo.h"
 

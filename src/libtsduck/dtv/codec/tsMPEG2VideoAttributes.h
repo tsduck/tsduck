@@ -34,8 +34,6 @@
 
 #pragma once
 #include "tsAbstractAudioVideoAttributes.h"
-#include "tsNames.h"
-#include "tsTS.h"
 
 namespace ts {
     //!
@@ -83,7 +81,7 @@ namespace ts {
         //! Get display aspect ratio name.
         //! @return Display aspect ratio as a string.
         //!
-        UString aspectRatioName() const {return _is_valid ? names::AspectRatio(_ar_code) : UString();}
+        UString aspectRatioName() const;
 
         //!
         //! Check if refresh mode is progressive.
@@ -115,7 +113,7 @@ namespace ts {
         //! Get chroma format name.
         //! @return Chroma format as a string.
         //!
-        UString chromaFormatName() const {return _is_valid ? names::ChromaFormat(_cf_code) : UString();}
+        UString chromaFormatName() const;
 
         //!
         //! Get frame rate: approximate value per second.
