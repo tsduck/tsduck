@@ -57,7 +57,7 @@ namespace {
     char toHexa(uint8_t nibble)
     {
         nibble &= 0x0F;
-        return nibble < 10 ? '0' + nibble : 'A' + nibble - 10;
+        return nibble < 10 ? char('0' + nibble) : char('A' + nibble - 10);
     }
 
     // A lowercase version of a string.

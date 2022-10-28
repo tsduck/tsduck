@@ -497,7 +497,7 @@ namespace tsunit {
     std::string toStringImpl(T value, const char* format);
 
     template<typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
-    std::string toString(T value) { return toStringImpl(static_cast<double>(value), std::fabs(value) > 0.00001 && std::fabs(value) < 10000.0 ? "%lf" :  "%le"); }
+    std::string toString(T value) { return toStringImpl(static_cast<double>(value), static_cast<double>(std::fabs(value)) > 0.00001 && static_cast<double>(std::fabs(value)) < 10000.0 ? "%lf" :  "%le"); }
 
     template<typename T, typename std::enable_if<!std::is_floating_point<T>::value && std::is_signed<typename underlying_type<T>::type>::value>::type* = nullptr>
     std::string toString(T value) { return toStringImpl(static_cast<long long>(value), "%lld"); }
@@ -685,7 +685,7 @@ template<typename ETYPE,
 void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const std::string& estr, const std::string& astr, const char* file, int line)
 {
     constexpr double epsilon = 100.0 * static_cast<double>(std::numeric_limits<ATYPE>::epsilon());
-    const double diff = static_cast<double>(std::fabs(expected - actual));
+    const double diff = std::fabs(static_cast<double>(expected) - static_cast<double>(actual));
     const double aexp = static_cast<double>(std::fabs(expected));
     const double aact = static_cast<double>(std::fabs(actual));
     if (diff <= (aexp < aact ? aact : aexp) * epsilon) {

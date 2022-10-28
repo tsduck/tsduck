@@ -2407,16 +2407,14 @@ bool ts::UString::ArgMixOutContext::processField()
 
 ts::UString ts::UString::Float(double value, size_type width, size_type precision, bool force_sign)
 {
-    // Slightly oversized buffer.
-    char valueStr[32 + std::numeric_limits<double>::digits - std::numeric_limits<double>::min_exponent];
-
     // Build formatting string.
     std::string format("%");
     if (force_sign) {
         format.append("+");
     }
     format.append("*.*l");
-    if (std::fabs(value) > 0.001 && std::fabs(value) < 10000.0) {
+    const double avalue = std::fabs(value);
+    if (avalue < std::numeric_limits<double>::epsilon() || (avalue > 0.001 && avalue < 100000.0)) {
         // Use a float representation.
         format.append("f");
     }
@@ -2425,11 +2423,15 @@ ts::UString ts::UString::Float(double value, size_type width, size_type precisio
         format.append("e");
     }
 
+    // Oversized buffer.
+    std::string str(32 + width + std::numeric_limits<double>::digits - std::numeric_limits<double>::min_exponent, '\0');
+
     // Format the result.
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(format-nonliteral)
-    std::snprintf(valueStr, sizeof(valueStr), format.c_str(), int(width), int(precision), value);
+    TS_LLVM_NOWARNING(format-nonliteral)
+    std::snprintf(&str[0], str.size(), format.c_str(), int(width), int(precision), value);
     TS_POP_WARNING()
 
-    return FromUTF8(valueStr);
+    return FromUTF8(str.c_str());
 }
