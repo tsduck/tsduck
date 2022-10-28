@@ -158,7 +158,7 @@ bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool r
         return false;
     }
     else if (val < FLT(minValue) || val > FLT(maxValue)) {
-        report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", {str, minValue, maxValue, name, this->name(), lineNumber()});
+        report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", {str, double(minValue), double(maxValue), name, this->name(), lineNumber()});
         return false;
     }
     else {

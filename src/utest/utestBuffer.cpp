@@ -34,6 +34,9 @@
 #include "tsBuffer.h"
 #include "tsunit.h"
 
+// Some floating-point literal (implicitly double) are used as ieee_float32_t
+TS_LLVM_NOWARNING(implicit-float-conversion)
+
 
 //----------------------------------------------------------------------------
 // The test fixture
