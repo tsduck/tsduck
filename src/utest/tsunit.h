@@ -54,6 +54,7 @@
 #pragma warning(disable:4626)  // assignment operator was implicitly defined as deleted
 #pragma warning(disable:4710)  // 'xxx' : function not inlined
 #pragma warning(disable:4711)  // function 'xxx' selected for automatic inline expansion
+#pragma warning(disable:4738)  // storing 32-bit float result in memory, possible loss of performance
 #pragma warning(disable:4774)  // format string expected in argument N is not a string literal
 #pragma warning(disable:4820)  // 'n' bytes padding added after data member 'nnnnn'
 #pragma warning(disable:5026)  // move constructor was implicitly defined as deleted
