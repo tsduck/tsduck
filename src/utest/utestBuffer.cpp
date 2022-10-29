@@ -36,6 +36,8 @@
 
 // Some floating-point literal (implicitly double) are used as ieee_float32_t
 TS_LLVM_NOWARNING(implicit-float-conversion)
+TS_MSC_NOWARNING(4056) // overflow in floating-point constant arithmetic
+TS_MSC_NOWARNING(4305) // truncation from 'double' to 'ts::ieee_float32_t'
 
 
 //----------------------------------------------------------------------------

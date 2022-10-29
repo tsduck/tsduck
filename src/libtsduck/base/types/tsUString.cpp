@@ -2430,6 +2430,7 @@ ts::UString ts::UString::Float(double value, size_type width, size_type precisio
     TS_PUSH_WARNING()
     TS_GCC_NOWARNING(format-nonliteral)
     TS_LLVM_NOWARNING(format-nonliteral)
+    TS_MSC_NOWARNING(4774) // 'snprintf' : format string expected in argument 3 is not a string literal
     std::snprintf(&str[0], str.size(), format.c_str(), int(width), int(precision), value);
     TS_POP_WARNING()
 
