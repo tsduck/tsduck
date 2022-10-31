@@ -33,6 +33,7 @@
 #include "tsjsonArray.h"
 #include "tsjsonNull.h"
 #include "tsjsonNumber.h"
+#include "tsjsonObject.h"
 #include "tsjsonString.h"
 
 const ts::UString ts::xml::JSONConverter::HashName(u"#name");

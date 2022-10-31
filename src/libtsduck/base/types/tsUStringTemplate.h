@@ -623,6 +623,27 @@ bool ts::UString::toIntegers(CONTAINER& container,
 
 
 //----------------------------------------------------------------------------
+// Convert a string into a floating-point.
+//----------------------------------------------------------------------------
+
+template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type*>
+bool ts::UString::toFloat(FLT& value, FLT minValue, FLT maxValue) const
+{
+    // Convert to an 8-bit string.
+    std::string str;
+    toTrimmed().toUTF8(str);
+
+    // Use a good old scanf to decode the value.
+    // Use an additional dummy character to make sure there is nothing more to read.
+    double flt = 0.0;
+    char dummy = 0;
+    const int count = ::sscanf(str.c_str(), "%lf%c", &flt, &dummy);
+    value = FLT(flt);
+    return count == 1 && value >= minValue && value <= maxValue;
+}
+
+
+//----------------------------------------------------------------------------
 // Append an array of C-strings to a container of strings.
 //----------------------------------------------------------------------------
 

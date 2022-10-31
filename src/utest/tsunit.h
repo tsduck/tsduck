@@ -54,6 +54,7 @@
 #pragma warning(disable:4626)  // assignment operator was implicitly defined as deleted
 #pragma warning(disable:4710)  // 'xxx' : function not inlined
 #pragma warning(disable:4711)  // function 'xxx' selected for automatic inline expansion
+#pragma warning(disable:4738)  // storing 32-bit float result in memory, possible loss of performance
 #pragma warning(disable:4774)  // format string expected in argument N is not a string literal
 #pragma warning(disable:4820)  // 'n' bytes padding added after data member 'nnnnn'
 #pragma warning(disable:5026)  // move constructor was implicitly defined as deleted
@@ -73,8 +74,10 @@
 #pragma clang diagnostic ignored "-Wdocumentation-unknown-command" // Should work but fails with clang 10.0.0 on Linux
 #endif
 
+#include <limits>
 #include <map>
 #include <list>
+#include <vector>
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -314,6 +317,9 @@ namespace tsunit {
 //! @cond nodoxygen
 namespace tsunit {
 
+    // Generic vector of bytes.
+    typedef std::vector<uint8_t> Bytes;
+
     // Generic root class for named objects.
     class Named
     {
@@ -492,7 +498,7 @@ namespace tsunit {
     std::string toStringImpl(T value, const char* format);
 
     template<typename T, typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
-    std::string toString(T value) { return toStringImpl(static_cast<double>(value), "%lf"); }
+    std::string toString(T value) { return toStringImpl(static_cast<double>(value), static_cast<double>(std::fabs(value)) > 0.00001 && static_cast<double>(std::fabs(value)) < 10000.0 ? "%lf" :  "%le"); }
 
     template<typename T, typename std::enable_if<!std::is_floating_point<T>::value && std::is_signed<typename underlying_type<T>::type>::value>::type* = nullptr>
     std::string toString(T value) { return toStringImpl(static_cast<long long>(value), "%lld"); }
@@ -502,6 +508,8 @@ namespace tsunit {
 
     template<typename T>
     std::string toString(const T* value) { return toStringImpl<size_t>(reinterpret_cast<size_t>(value), "0x%zX"); }
+
+    std::string toString(const Bytes& value);
 
     // Explicitly convert UTF-16 to UTF-8
     std::string convertFromUTF16(const std::u16string& u16);
@@ -568,6 +576,9 @@ namespace tsunit {
         // Assert equal for pointer types.
         template<typename T>
         static void equal(const T* expected, const T* actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
+
+        // Assert equal for vectors of bytes.
+        static void equal(const Bytes& expected, const Bytes& actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber);
     };
 
     // Specialization for char C-strings.
@@ -674,7 +685,11 @@ template<typename ETYPE,
          typename std::enable_if<std::is_floating_point<ATYPE>::value>::type*>
 void tsunit::Assertions::equal(const ETYPE& expected, const ATYPE& actual, const std::string& estr, const std::string& astr, const char* file, int line)
 {
-    if (std::fabs(static_cast<double>(expected) - static_cast<double>(actual)) < 0.000001) { // precision ?
+    constexpr double epsilon = 100.0 * static_cast<double>(std::numeric_limits<ATYPE>::epsilon());
+    const double diff = std::fabs(static_cast<double>(expected) - static_cast<double>(actual));
+    const double aexp = static_cast<double>(std::fabs(expected));
+    const double aact = static_cast<double>(std::fabs(actual));
+    if (diff <= (aexp < aact ? aact : aexp) * epsilon) {
         ++_passedCount;
     }
     else {

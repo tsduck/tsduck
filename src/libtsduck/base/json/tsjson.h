@@ -35,7 +35,6 @@
 #pragma once
 #include "tsUString.h"
 #include "tsSafePtr.h"
-#include "tsTextFormatter.h"
 #include "tsTextParser.h"
 #include "tsNullReport.h"
 #include "tsEnumeration.h"
