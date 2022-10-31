@@ -270,7 +270,7 @@ void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp,
                 }
                 else
                     disp << ", s";
-                disp << ",econdary region: " << int(r.secondary_region_code.value());
+                disp << "econdary region: " << int(r.secondary_region_code.value());
 
                 if (r.tertiary_region_code.set()) {
                     if (!drawn) {
@@ -279,7 +279,7 @@ void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp,
                     }
                     else
                         disp << ", t";
-                    disp << ",ertiary region: " << int(r.tertiary_region_code.value());
+                    disp << "ertiary region: " << int(r.tertiary_region_code.value());
                 }
             }
         }
