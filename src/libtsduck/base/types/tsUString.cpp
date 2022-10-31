@@ -2407,13 +2407,32 @@ bool ts::UString::ArgMixOutContext::processField()
 
 ts::UString ts::UString::Float(double value, size_type width, size_type precision, bool force_sign)
 {
-    // Slightly oversized buffer.
-    char valueStr[10 + std::numeric_limits<double>::digits - std::numeric_limits<double>::min_exponent];
+    // Build formatting string.
+    std::string format("%");
     if (force_sign) {
-        std::snprintf(valueStr, sizeof(valueStr), "%+*.*f", int(width), int(precision), value);
+        format.append("+");
+    }
+    format.append("*.*l");
+    const double avalue = std::fabs(value);
+    if (avalue < std::numeric_limits<double>::epsilon() || (avalue > 0.001 && avalue < 100000.0)) {
+        // Use a float representation.
+        format.append("f");
     }
     else {
-        std::snprintf(valueStr, sizeof(valueStr), "%*.*f", int(width), int(precision), value);
+        // Use a exponent representation.
+        format.append("e");
     }
-    return FromUTF8(valueStr);
+
+    // Oversized buffer.
+    std::string str(32 + width + std::numeric_limits<double>::digits - std::numeric_limits<double>::min_exponent, '\0');
+
+    // Format the result.
+    TS_PUSH_WARNING()
+    TS_GCC_NOWARNING(format-nonliteral)
+    TS_LLVM_NOWARNING(format-nonliteral)
+    TS_MSC_NOWARNING(4774) // 'snprintf' : format string expected in argument 3 is not a string literal
+    std::snprintf(&str[0], str.size(), format.c_str(), int(width), int(precision), value);
+    TS_POP_WARNING()
+
+    return FromUTF8(str.c_str());
 }

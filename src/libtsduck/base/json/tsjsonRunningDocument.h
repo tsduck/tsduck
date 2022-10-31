@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsjson.h"
+#include "tsTextFormatter.h"
 
 namespace ts {
     namespace json {

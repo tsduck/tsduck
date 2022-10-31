@@ -29,8 +29,9 @@
 
 #include "tsjsonOutputArgs.h"
 #include "tsArgs.h"
-#include "tsjsonObject.h"
+#include "tsjsonValue.h"
 #include "tsjsonRunningDocument.h"
+#include "tsTextFormatter.h"
 
 
 //----------------------------------------------------------------------------

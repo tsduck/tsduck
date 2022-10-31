@@ -1576,6 +1576,23 @@ namespace ts {
                         typename CONTAINER::value_type maxValue = std::numeric_limits<typename CONTAINER::value_type>::max()) const;
 
         //!
+        //! Convert a string into a floating-point.
+        //!
+        //! This string must contain the representation of a floating-point value.
+        //!
+        //! @tparam FLT A floating-point type.
+        //! The toFloat() function decodes floating-point values of this type.
+        //! @param [out] value The returned decoded value.
+        //! @param [in] minValue Minimum allowed value for the decoded value.
+        //! @param [in] maxValue Maximum allowed value for the decoded value.
+        //! @return True on success, false on error (invalid string).
+        //!
+        template <typename FLT, typename std::enable_if<std::is_floating_point<FLT>::value>::type* = nullptr>
+        bool toFloat(FLT& value,
+                     FLT minValue = std::numeric_limits<FLT>::lowest(),
+                     FLT maxValue = std::numeric_limits<FLT>::max()) const;
+
+        //!
         //! Format a string containing a decimal value.
         //! @tparam INT An integer type.
         //! @param [in] value The integer value to format.

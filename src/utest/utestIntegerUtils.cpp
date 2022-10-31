@@ -32,8 +32,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsIntegerUtils.h"
-#include "tsVersion.h"
-#include "tsVersionInfo.h"
 #include "tsunit.h"
 
 

@@ -35,6 +35,7 @@
 #pragma once
 #include "tsMemory.h"
 #include "tsByteBlock.h"
+#include "tsFloatUtils.h"
 #include "tsUString.h"
 #include "tsVariable.h"
 
@@ -885,6 +886,20 @@ namespace ts {
         int64_t getInt64() { return _big_endian ? GetInt64BE(rdb(8)) : GetInt64LE(rdb(8)); }
 
         //!
+        //! Read the next 32 bits as an IEEE float value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded IEEE float value, according to the current endianness of the buffer.
+        //!
+        ieee_float32_t getFloat32() { return _big_endian ? GetFloat32BE(rdb(4)) : GetFloat32LE(rdb(4)); }
+
+        //!
+        //! Read the next 64 bits as an IEEE float value and advance the read pointer.
+        //! Set the read error flag if there are not enough bits to read.
+        //! @return The decoded IEEE float value, according to the current endianness of the buffer.
+        //!
+        ieee_float64_t getFloat64() { return _big_endian ? GetFloat64BE(rdb(8)) : GetFloat64LE(rdb(8)); }
+
+        //!
         //! Write an 8-bit unsigned integer value and advance the write pointer.
         //! @param [in] i 8-bit unsigned integer value to write.
         //! @return True on success, false if there is not enough space to write (and set write error flag).
@@ -981,6 +996,20 @@ namespace ts {
         //! @return True on success, false if there is not enough space to write (and set write error flag).
         //!
         bool putInt64(int64_t i) { return putint(i, 8, PutInt64BE, PutInt64LE); }
+
+        //!
+        //! Write a 32-bit IEEE float value and advance the write pointer.
+        //! @param [in] f 32-bit IEEE float value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putFloat32(ieee_float32_t f) { return putint(f, 4, PutFloat32BE, PutFloat32LE); }
+
+        //!
+        //! Write a 64-bit IEEE float value and advance the write pointer.
+        //! @param [in] f 32-bit IEEE float value to write.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putFloat64(ieee_float64_t f) { return putint(f, 8, PutFloat64BE, PutFloat64LE); }
 
         //!
         //! Read the next 4*n bits as a Binary Coded Decimal (BCD) value and advance the read pointer.
@@ -1331,7 +1360,7 @@ namespace ts {
         const uint8_t* rdb(size_t bytes);
 
         // Internal put integer method.
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
+        template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_floating_point<INT>::value, int>::type = 0>
         bool putint(INT value, size_t bytes, void (*putBE)(void*,INT), void (*putLE)(void*,INT));
 
         // Request some read size. Return actually possible read size. Set read error if lower than requested.

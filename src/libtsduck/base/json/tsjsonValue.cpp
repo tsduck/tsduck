@@ -29,6 +29,7 @@
 
 #include "tsjsonValue.h"
 #include "tsjsonNull.h"
+#include "tsTextFormatter.h"
 
 
 //----------------------------------------------------------------------------

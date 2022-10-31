@@ -53,6 +53,13 @@ namespace {
     // The prefix string for error messages.
     const char errorPrefix[] = "*** ";
 
+    // An hexadecimal character.
+    char toHexa(uint8_t nibble)
+    {
+        nibble &= 0x0F;
+        return nibble < 10 ? char('0' + nibble) : char('A' + nibble - 10);
+    }
+
     // A lowercase version of a string.
     std::string lowerString(const std::string& name)
     {
@@ -91,6 +98,24 @@ namespace {
         }
         return res.empty() ? name : res;
     }
+}
+
+//---------------------------------------------------------------------------------
+// Convert to string.
+//---------------------------------------------------------------------------------
+
+std::string tsunit::toString(const Bytes& value)
+{
+    std::string str;
+    str.reserve(3 * value.size());
+    for (uint8_t b : value) {
+        if (!str.empty()) {
+            str += ' ';
+        }
+        str += toHexa(b >> 4);
+        str += toHexa(b & 0x0F);
+    }
+    return str;
 }
 
 //---------------------------------------------------------------------------------
@@ -519,6 +544,20 @@ void tsunit::Assertions::assumption(bool cond, const std::string& expression, co
         Failure fail("weak assumption failure", "condition: " + expression, sourcefile, linenumber);
         std::cout << std::endl << errorPrefix << TestRunner::getCurrentTestName() << ", " << fail.what() << std::endl;
     }
+}
+
+void tsunit::Assertions::equal(const Bytes& expected, const Bytes& actual, const std::string& estring, const std::string& vstring, const char* sourcefile, int linenumber)
+{
+    if (expected == actual) {
+        ++_passedCount;
+    }
+    else {
+        ++_failedAssertionsCount;
+        const std::string details1("expected: " + toString(expected) + " (\"" + estring + "\")");
+        const std::string details2("actual:   " + toString(actual) + " (\"" + vstring + "\")");
+        throw Failure("incorrect value", details1 + "\n" + details2, sourcefile, linenumber);
+    }
+
 }
 
 //---------------------------------------------------------------------------------

@@ -134,3 +134,61 @@ bool ts::xml::Element::getOptionalIntEnumAttribute(Variable<INT>& value, const E
         return false;
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Get a floating-point attribute of an XML element.
+//----------------------------------------------------------------------------
+
+template <typename FLT, typename FLT1, typename FLT2, typename FLT3, typename std::enable_if<std::is_floating_point<FLT>::value>::type*>
+bool ts::xml::Element::getFloatAttribute(FLT& value, const UString& name, bool required, FLT1 defValue, FLT2 minValue, FLT3 maxValue) const
+{
+    const Attribute& attr(attribute(name, !required));
+    if (!attr.isValid()) {
+        // Attribute not present.
+        value = FLT(defValue);
+        return !required;
+    }
+
+    // Attribute found, get its value.
+    UString str(attr.value());
+    FLT val = FLT(0.0);
+    if (!str.toFloat(val)) {
+        report().error(u"'%s' is not a valid floating-point value for attribute '%s' in <%s>, line %d", {str, name, this->name(), lineNumber()});
+        return false;
+    }
+    else if (val < FLT(minValue) || val > FLT(maxValue)) {
+        report().error(u"'%s' must be in range %f to %f for attribute '%s' in <%s>, line %d", {str, double(minValue), double(maxValue), name, this->name(), lineNumber()});
+        return false;
+    }
+    else {
+        value = val;
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Get an optional floating-point attribute of an XML element.
+//----------------------------------------------------------------------------
+
+template <typename FLT, typename FLT1, typename FLT2, typename std::enable_if<std::is_floating_point<FLT>::value>::type*>
+bool ts::xml::Element::getOptionalFloatAttribute(Variable<FLT>& value, const UString& name, FLT1 minValue, FLT2 maxValue) const
+{
+    FLT v = FLT(0.0);
+    if (!hasAttribute(name)) {
+        // Attribute not present, ok.
+        value.clear();
+        return true;
+    }
+    else if (getFloatAttribute<FLT>(v, name, false, FLT(0.0), minValue, maxValue)) {
+        // Attribute present, correct value.
+        value = v;
+        return true;
+    }
+    else {
+        // Attribute present, incorrect value.
+        value.clear();
+        return false;
+    }
+}

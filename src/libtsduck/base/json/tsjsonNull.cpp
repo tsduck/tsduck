@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsjsonNull.h"
+#include "tsTextFormatter.h"
 
 // A general-purpose constant null JSON value.
 ts::json::Null ts::json::NullValue;

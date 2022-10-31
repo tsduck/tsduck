@@ -35,7 +35,7 @@
 #pragma once
 #include "tsxmlDocument.h"
 #include "tsxmlModelDocument.h"
-#include "tsjsonObject.h"
+#include "tsjson.h"
 #include "tsReport.h"
 
 namespace ts {

@@ -31,6 +31,7 @@
 #include "tsjsonString.h"
 #include "tsjsonNumber.h"
 #include "tsjsonNull.h"
+#include "tsTextFormatter.h"
 
 
 //----------------------------------------------------------------------------

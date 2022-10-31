@@ -33,12 +33,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsxml.h"
+#include "tsxmlTweaks.h"
 #include "tsRingNode.h"
-#include "tsNullReport.h"
-#include "tsReportWithPrefix.h"
 #include "tsTextFormatter.h"
 #include "tsTextParser.h"
-#include "tsxmlTweaks.h"
 
 namespace ts {
     namespace xml {

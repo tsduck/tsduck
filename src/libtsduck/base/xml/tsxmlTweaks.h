@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsxml.h"
 #include "tsUChar.h"
 
 namespace ts {
