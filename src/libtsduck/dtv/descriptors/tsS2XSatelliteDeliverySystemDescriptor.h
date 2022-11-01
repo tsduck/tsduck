@@ -104,6 +104,7 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
+        friend class S2Xv2SatelliteDeliverySystemDescriptor;
         // Enumerations for XML.
         static const Enumeration RollOffNames;
 

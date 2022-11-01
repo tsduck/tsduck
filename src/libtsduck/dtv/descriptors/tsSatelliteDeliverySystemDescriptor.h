@@ -121,6 +121,7 @@ namespace ts {
 
     private:
         friend class S2XSatelliteDeliverySystemDescriptor;
+        friend class S2Xv2SatelliteDeliverySystemDescriptor;
         static DeliverySystem ResolveDeliverySystem(const DuckContext&, DeliverySystem);
 
         // Enumerations for XML.
