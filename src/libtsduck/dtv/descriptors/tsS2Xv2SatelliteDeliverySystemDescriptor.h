@@ -61,7 +61,7 @@ namespace ts {
         uint8_t                 polarization;                           //!< 2 bits, polarization.
         uint8_t                 TS_GS_S2X_mode;                         //!< 2 bits, TS-GS S2X mode.
         uint8_t                 receiver_profiles;                      //!< 5 bits, receiver_profiles bit mask.
-        uint32_t                satellite_id;                           //<! 24 bits
+        uint32_t                satellite_id;                           //!< 24 bits
         uint32_t                frequency;                              //!< Frequency in Hz.
         uint32_t                symbol_rate;                            //!< Symbol rate in symbols/second.
         uint8_t                 input_stream_identifier;                //!< 8 bits
