@@ -822,6 +822,7 @@ namespace ts {
         EDID_DTS_UHD            = 0x21, //!< Ext.DID for DTS-UHD_descriptor
         EDID_SERVICE_PROMINENCE = 0x22, //!< Ext.DID for service_prominence_descriptor
         EDID_VVC_SUBPICTURES    = 0x23, //!< Ext.DID for vvc_subpictures_descriptor
+        EDID_S2XV2_DELIVERY     = 0x24, //!< Ext.DID for S2Xv2_satellite_delivery_system_descriptor
         EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
