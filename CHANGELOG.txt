@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.33-2985
+VERSION 3.33-2986
+
+[NEW] New commands and plugins:
+
+  * Added command "tscrc32" to manually compute CRC32 as used in MPEG sections.
 
 [BUG] Bug fixes:
 
