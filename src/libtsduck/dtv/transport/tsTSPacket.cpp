@@ -29,7 +29,7 @@
 
 #include "tsTSPacket.h"
 #include "tsPES.h"
-#include "tsNames.h"
+#include "tsNamesFile.h"
 #include "tsByteBlock.h"
 
 

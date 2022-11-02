@@ -245,11 +245,11 @@ namespace {
         std::ifstream file;
 
         // Open input file (standard input if no file is specified or file name is empty).
-        if (filename.empty()) {
+        if (filename.empty() || filename == u"-") {
             // Use standard input.
             in = &std::cin;
             // Try to put standard input in binary mode
-            SetBinaryModeStdin(opt);
+            ts::SetBinaryModeStdin(opt);
         }
         else {
             // Dump named files. Open the file in binary mode. Will be closed by destructor.
@@ -303,12 +303,12 @@ int MainCode(int argc, char *argv[])
     }
     else {
         // Dump named files.
-        for (size_t i = 0; i < opt.infiles.size(); ++i) {
+        for (const auto& name : opt.infiles) {
             if (opt.raw_file) {
-                DumpRawFile(opt, opt.infiles[i], out);
+                DumpRawFile(opt, name, out);
             }
             else {
-                DumpTSFile(opt, opt.infiles[i], out);
+                DumpTSFile(opt, name, out);
             }
         }
     }
