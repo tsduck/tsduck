@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.33-2985
+
+[BUG] Bug fixes:
+
+  * When an invalid / truncated section had a very large declared length,
+    intermediate valid sections were ignored.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.32-2973
 
 [NEW] New commands and plugins:
