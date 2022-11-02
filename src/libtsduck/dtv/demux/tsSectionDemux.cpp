@@ -302,10 +302,11 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     if (!pkt.hasPayload() || header_size >= PKT_SIZE) {
         return;
     }
+    uint8_t pointer_field = 0xFF;
+    const uint8_t* payload = nullptr;
+    size_t payload_size = 0;
 
-    uint8_t pointer_field;
-    const uint8_t* payload;
-    size_t payload_size;
+    // Packet index of start of next section to analyze.
     PacketCounter pusi_pkt_index = pc.pusi_pkt_index;
 
     if (pkt.getPUSI()) {
@@ -333,7 +334,8 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             pc.syncLost();
             return;
         }
-        if (pointer_field == 0) {
+        // Adjust packet index of start of next section if there is nothing before it.
+        if (pointer_field == 0 && pc.ts.empty()) {
             pusi_pkt_index = _packet_count;
         }
     }
@@ -369,27 +371,19 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
     const uint8_t* ts_start = pc.ts.data();
     size_t ts_size = pc.ts.size();
 
-    // If current packet has a PUSI, locate start of this new section
-    // inside the TS buffer. This is not useful to locate the section but
-    // it is used to check that the previous section was not truncated
-    // (example: detect incorrect stream as generated with old version
-    // of Thomson Grass Valley NetProcessor).
-
+    // If current packet has a PUSI, locate start of this new section inside the TS buffer.
+    // This is not useful to locate the section but it is used to check that the previous section was not truncated.
     const uint8_t* pusi_section = nullptr;
-
     if (pkt.getPUSI()) {
         pusi_section = ts_start + ts_size - payload_size + pointer_field;
     }
 
     // Loop on all complete sections in the buffer.
-    // If there is less than 3 bytes in the buffer, we cannot even
-    // determine the section length.
-
+    // If there is less than 3 bytes in the buffer, we cannot even determine the section length.
     while (ts_size >= 3) {
 
         // If start of next area is 0xFF (invalid TID value), the rest of
         // the packet is stuffing. Skip it, unless there is a PUSI later.
-
         if (ts_start[0] == 0xFF) {
             if (pusi_section != nullptr && ts_start < pusi_section) {
                 // We can resync at a PUSI later in the TS buffer.
@@ -405,7 +399,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         }
 
         // Get section header.
-
         bool section_ok = true;
         const TID tid = ts_start[0];
         ETID etid(tid);
@@ -413,7 +406,6 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         uint16_t section_length = (GetUInt16(ts_start + 1) & 0x0FFF) + SHORT_SECTION_HEADER_SIZE;
 
         // Lose synchronization when invalid section length.
-
         if (section_length > MAX_PRIVATE_SECTION_SIZE ||
             section_length < MIN_SHORT_SECTION_SIZE ||
             (long_header && section_length < MIN_LONG_SECTION_SIZE))
@@ -433,14 +425,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             }
         }
 
-        // Exit when end of section is missing. Wait for next TS packets.
-
-        if (ts_size < section_length) {
-            break;
-        }
-
         // If we detect that the section is incorrectly truncated, skip it.
-
         if (pusi_section != nullptr && ts_start < pusi_section && ts_start + section_length > pusi_section) {
             const uint16_t actual_length = uint16_t(pusi_section - ts_start);
             _duck.report().log(_ts_error_level, u"truncated section: %'d bytes instead of %'d, PID 0x%X (%<d), TID 0x%X (%<d), packet index %'d", {actual_length, section_length, pid, tid, _packet_count});
@@ -450,8 +435,12 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
             section_length = actual_length;
         }
 
-        // We have a complete section in the pc.ts buffer. Analyze it.
+        // Exit when end of section is missing. Wait for next TS packets.
+        if (ts_size < section_length) {
+            break;
+        }
 
+        // We have a complete section in the pc.ts buffer. Analyze it.
         uint8_t version = 0;
         bool is_next = false;
         uint8_t section_number = 0;
@@ -601,9 +590,7 @@ void ts::SectionDemux::processPacket(const TSPacket& pkt)
         pusi_pkt_index = _packet_count;
     }
 
-    // If an incomplete section remains in the buffer, move it back to
-    // the start of the buffer.
-
+    // If an incomplete section remains in the buffer, move it back to the start of the buffer.
     if (ts_size <= 0) {
         // TS buffer becomes empty
         pc.ts.clear();
