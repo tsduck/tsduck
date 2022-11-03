@@ -67,8 +67,12 @@ def list_all_structures(output, dirname, title, label):
                     for line in input:
                         match = re.search(r'@see\s+(.*)$', line)
                         if match is not None:
-                            doc = match.group(1).replace(' section ', ' ')
+                            doc = match.group(1)
+                            doc = re.sub(r'[, ]*\| *', ', ', doc)
+                            doc = re.sub(r'[, ]* section +', ', ', doc)
+                            doc = re.sub(r'[, ]* clause +', ', ', doc)
                             doc = re.sub(r'[\.\s]*$', '', doc)
+                            doc = re.sub(r'ITU-T +Rec\.* H', 'ITU-T H', doc)
                             doc = re.sub(r'^SCTE', 'ANSI/SCTE', doc)
                             lines.append('| %s | ts::%s | %s' % (xml, classname, doc))
                             break
