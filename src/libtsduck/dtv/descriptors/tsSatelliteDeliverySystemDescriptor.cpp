@@ -29,8 +29,6 @@
 
 #include "tsSatelliteDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsBCD.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"

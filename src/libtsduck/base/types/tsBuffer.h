@@ -410,6 +410,51 @@ namespace ts {
         bool skipBits(size_t bits);
 
         //!
+        //! Skip read reserved bits forward.
+        //! @param [in] bits Number of reserved bits to skip.
+        //! @param [in] expected Expected value of each reserved bit. Must be 0 or 1, default is 1.
+        //! For each reserved bit which does not have the expected value, a "reserved bit error" is logged.
+        //! @return True on success, false if would got beyond write pointer (and set read error flag).
+        //! @see reservedBitsError()
+        //!
+        bool skipReservedBits(size_t bits, int expected = 1);
+
+        //!
+        //! Check if there were "reserved bits errors".
+        //! @return True if there were "reserved bits errors".
+        //! @see skipReservedBits()
+        //!
+        bool reservedBitsError() const { return !_reserved_bits_errors.empty(); }
+
+        //!
+        //! Return a string describing the "reserved bits errors".
+        //! @param [in] base_offset Artificial base offset in bytes which is used to describe the placement of each bit error.
+        //! When the Buffer instance describes the payload of a structure, specify the structure header size as base_offset
+        //! in order to display each bit error relatively to the complete structure.
+        //! @param [in] margin Prepend that string to each line.
+        //! @return A string describing the "reserved bits errors". This is a mul
+        //! @see skipReservedBits()
+        //!
+        UString reservedBitsErrorString(size_t base_offset = 0, const UString& margin = UString())
+        {
+            return ReservedBitsErrorString(_reserved_bits_errors, base_offset, margin);
+        }
+
+        //!
+        //! This static method returns a string describing "reserved bits errors".
+        //! @param [in,out] errors A vector of error description. Each value is made of
+        //! byte offset || bit offset (3 bits) || expected bit value (1 bit).
+        //! The vector is sorted first.
+        //! @param [in] base_offset Artificial base offset in bytes which is used to describe the placement of each bit error.
+        //! When the Buffer instance describes the payload of a structure, specify the structure header size as base_offset
+        //! in order to display each bit error relatively to the complete structure.
+        //! @param [in] margin Prepend that string to each line.
+        //! @return A string describing the "reserved bits errors". This is a mul
+        //! @see skipReservedBits()
+        //!
+        static UString ReservedBitsErrorString(std::vector<size_t>& errors, size_t base_offset = 0, const UString& margin = UString());
+
+        //!
         //! Skip read bytes backward.
         //! @param [in] bytes Number of bytes to skip back.
         //! @return True on success, false if would got beyond start of buffer (and set read error flag).
@@ -1406,16 +1451,17 @@ namespace ts {
             void clear();
         };
 
-        uint8_t*           _buffer;        // Base address of memory buffer.
-        size_t             _buffer_size;   // Size of addressable area in _buffer.
-        bool               _allocated;     // If true, _buffer was internally allocated and must be freed later.
-        bool               _big_endian;    // Read/write integers in big endian mode (false means little endian).
-        bool               _read_error;    // Read error encountered (passed end of stream for instance).
-        bool               _write_error;   // Write error encountered (passed end of stream for instance).
-        bool               _user_error;    // User-generated error.
-        State              _state;         // Read/write indexes.
-        std::vector<State> _saved_states;  // Stack of saved states.
-        uint8_t            _realigned[8];  // 64-bit intermediate buffer to read realigned integer.
+        uint8_t*            _buffer;        // Base address of memory buffer.
+        size_t              _buffer_size;   // Size of addressable area in _buffer.
+        bool                _allocated;     // If true, _buffer was internally allocated and must be freed later.
+        bool                _big_endian;    // Read/write integers in big endian mode (false means little endian).
+        bool                _read_error;    // Read error encountered (passed end of stream for instance).
+        bool                _write_error;   // Write error encountered (passed end of stream for instance).
+        bool                _user_error;    // User-generated error.
+        State               _state;         // Read/write indexes.
+        std::vector<State>  _saved_states;  // Stack of saved states.
+        uint8_t             _realigned[8];  // 64-bit intermediate buffer to read realigned integer.
+        std::vector<size_t> _reserved_bits_errors;  // Errors in reserved bits (byte offset || bit offset (3 bits) || expected bit (1 bit)).
     };
 
     //! @cond nodoxygen

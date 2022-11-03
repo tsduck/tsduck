@@ -71,9 +71,9 @@ ts::PSIBuffer::PSIBuffer(DuckContext& duck, const Section& section) :
 ts::PID ts::PSIBuffer::getPID()
 {
     if (readIsByteAligned()) {
-        return getUInt16() & 0x1FFF;
+        skipReservedBits(3);
     }
-    else if (currentReadBitOffset() % 8 == 3) {
+    if (currentReadBitOffset() % 8 == 3) {
         return getBits<PID>(13);
     }
     else {
@@ -484,7 +484,7 @@ size_t ts::PSIBuffer::getUnalignedLength(size_t length_bits)
         return 0;
     }
     if (readIsByteAligned()) {
-        skipBits(16 - length_bits);
+        skipReservedBits(16 - length_bits);
     }
     const size_t length = getBits<size_t>(length_bits);
     const size_t actual_length = std::min(length, remainingReadBytes());

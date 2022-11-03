@@ -321,6 +321,40 @@ void ts::TablesDisplay::displaySection(const Section& section, const UString& ma
         extra_margin = u"  ";
     }
 
+    // Validate reserved bits in the section header.
+    std::vector<size_t> errors;
+    const uint8_t byte1 = section.content()[1];
+    // The private_indicator must be zero in an MPEG-defined table.
+    if (section.tableId() <= TID_MPEG_LAST && (byte1 & 0x40) != 0) {
+        errors.push_back((1 << 4) | (1 << 1) | 0);
+    }
+    // The private_indicator must be set in a DVB-defined table.
+    // Other standards do not always follow the MPEG rules.
+    if (bool(section.definingStandards() & Standards::DVB) && (byte1 & 0x40) == 0) {
+        errors.push_back((1 << 4) | (1 << 1) | 1);
+    }
+    // Two reserved bits.
+    if ((byte1 & 0x20) == 0) {
+        errors.push_back((1 << 4) | (2 << 1) | 1);
+    }
+    if ((byte1 & 0x10) == 0) {
+        errors.push_back((1 << 4) | (3 << 1) | 1);
+    }
+    if (section.isLongSection()) {
+        const uint8_t byte5 = section.content()[5];
+        // Two reserved bits.
+        if ((byte5 & 0x80) == 0) {
+            errors.push_back((5 << 4) | (0 << 1) | 1);
+        }
+        if ((byte5 & 0x40) == 0) {
+            errors.push_back((5 << 4) | (1 << 1) | 1);
+        }
+    }
+    if (!errors.empty()) {
+        strm << margin << extra_margin << "Reserved bits incorrectly set in section header:" << std::endl;
+        strm << Buffer::ReservedBitsErrorString(errors, 0, margin + extra_margin + u"  ") << std::endl;
+    }
+
     // Display section body
     displaySectionData(section, margin + extra_margin, cas);
 }
@@ -342,6 +376,11 @@ void ts::TablesDisplay::displaySectionData(const Section& section, const UString
         PSIBuffer buf(_duck, section.payload(), section.payloadSize());
         handler(*this, section, buf, margin);
         displayExtraData(buf, margin);
+        if (buf.reservedBitsError()) {
+            std::ostream& strm(_duck.out());
+            strm << margin << "Reserved bits incorrectly set:" << std::endl;
+            strm << buf.reservedBitsErrorString(section.headerSize(), margin + u"  ") << std::endl;
+        }
     }
     else {
         displayUnkownSectionData(section, margin);
@@ -711,6 +750,9 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
 {
     std::ostream& strm(_duck.out());
 
+    // Descriptor header size, before payload.
+    size_t header_size = 2;
+
     // Compute extended descriptor id.
     EDID edid;
     if (did >= 0x80) {
@@ -721,6 +763,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         // MPEG extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
         edid = EDID::ExtensionMPEG(ext);
+        header_size++;
         size--;
         // Display extended descriptor header
         strm << margin << "MPEG extended descriptor: " << NameFromDTV(u"MPEGExtendedDescriptorId", ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
@@ -729,6 +772,7 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         // Extension descriptor, the extension id is in the first byte of the payload.
         const uint8_t ext = *payload++;
         edid = EDID::ExtensionDVB(ext);
+        header_size++;
         size--;
         // Display extended descriptor header
         strm << margin << "Extended descriptor: " << names::EDID(ext, NamesFlags::VALUE | NamesFlags::BOTH) << std::endl;
@@ -744,6 +788,10 @@ void ts::TablesDisplay::displayDescriptorData(DID did, const uint8_t* payload, s
         PSIBuffer buf(_duck, payload, size);
         handler(*this, buf, margin, did, tid, _duck.actualPDS(pds));
         displayExtraData(buf, margin);
+        if (buf.reservedBitsError()) {
+            strm << margin << "Reserved bits incorrectly set:" << std::endl;
+            strm << buf.reservedBitsErrorString(header_size, margin + u"  ") << std::endl;
+        }
     }
     else {
         displayUnkownDescriptor(did, payload, size, margin, tid, _duck.actualPDS(pds));

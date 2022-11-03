@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"S2_satellite_delivery_system_descriptor"
 #define MY_CLASS ts::S2SatelliteDeliverySystemDescriptor
@@ -108,11 +107,11 @@ void ts::S2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     const bool multiple_input_stream_flag = buf.getBool();
     backwards_compatibility_indicator = buf.getBool();
     const bool not_timeslice_flag = buf.getBool();
-    buf.skipBits(2);
+    buf.skipReservedBits(2);
     buf.getBits(TS_GS_mode, 2);
 
     if (scrambling_sequence_selector) {
-        buf.skipBits(6);
+        buf.skipReservedBits(6);
         buf.getBits(scrambling_sequence_index, 18);
     }
     if (multiple_input_stream_flag) {
@@ -135,11 +134,11 @@ void ts::S2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         const bool multiple_input_stream_flag = buf.getBool();
         disp << margin << UString::Format(u"Backward compatibility: %s", {buf.getBool()}) << std::endl;
         const bool not_timeslice_flag = buf.getBool();
-        buf.skipBits(2);
+        buf.skipReservedBits(2);
         disp << margin << "TS/GS mode: " << DataName(MY_XML_NAME, u"TSGSS2Mode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
 
         if (scrambling_sequence_selector && buf.canReadBytes(3)) {
-            buf.skipBits(6);
+            buf.skipReservedBits(6);
             disp << margin << UString::Format(u"Scrambling sequence index: 0x%05X", {buf.getBits<uint32_t>(18)}) << std::endl;
         }
         if (multiple_input_stream_flag && buf.canReadBytes(1)) {

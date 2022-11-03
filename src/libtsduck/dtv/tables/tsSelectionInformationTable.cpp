@@ -108,7 +108,7 @@ void ts::SelectionInformationTable::deserializePayload(PSIBuffer& buf, const Sec
     buf.getDescriptorListWithLength(descs);
     while (buf.canRead()) {
         Service& srv(services[buf.getUInt16()]);
-        buf.skipBits(1);
+        buf.skipReservedBits(1);
         buf.getBits(srv.running_status, 3);
         buf.getDescriptorListWithLength(srv.descs);
     }
@@ -142,7 +142,7 @@ void ts::SelectionInformationTable::DisplaySection(TablesDisplay& disp, const ts
     disp.displayDescriptorListWithLength(section, buf, margin, u"Global information:");
     while (buf.canReadBytes(4)) {
         disp << margin << UString::Format(u"Service id: %d (0x%<X)", {buf.getUInt16()});
-        buf.skipBits(1);
+        buf.skipReservedBits(1);
         disp << ", Status: " << RST::RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
         disp.displayDescriptorListWithLength(section, buf, margin);
     }

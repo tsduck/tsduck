@@ -218,12 +218,12 @@ void ts::SDT::deserializePayload(PSIBuffer& buf, const Section& section)
     // Get fixed part.
     ts_id = section.tableIdExtension();
     onetw_id = buf.getUInt16();
-    buf.skipBits(8);
+    buf.skipReservedBits(8);
 
     // Get services description
     while (buf.canRead()) {
         ServiceEntry& serv(services[buf.getUInt16()]);
-        buf.skipBits(6);
+        buf.skipReservedBits(6);
         serv.EITs_present = buf.getBool();
         serv.EITpf_present = buf.getBool();
         buf.getBits(serv.running_status, 3);
@@ -382,12 +382,12 @@ void ts::SDT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
 {
     disp << margin << UString::Format(u"Transport Stream Id: %d (0x%<X)", {section.tableIdExtension()}) << std::endl;
     disp << margin << UString::Format(u"Original Network Id: %d (0x%<X)", {buf.getUInt16()}) << std::endl;
-    buf.skipBits(8);
+    buf.skipReservedBits(8);
 
     // Services description
     while (buf.canRead()) {
         disp << margin << UString::Format(u"Service Id: %d (0x%<X)", {buf.getUInt16()});
-        buf.skipBits(6);
+        buf.skipReservedBits(6);
         disp << ", EITs: " << UString::YesNo(buf.getBool());
         disp << ", EITp/f: " << UString::YesNo(buf.getBool());
         const uint8_t running_status = buf.getBits<uint8_t>(3);

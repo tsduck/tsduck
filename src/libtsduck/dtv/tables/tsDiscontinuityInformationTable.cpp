@@ -77,7 +77,7 @@ void ts::DiscontinuityInformationTable::clearContent()
 void ts::DiscontinuityInformationTable::deserializePayload(PSIBuffer& buf, const Section& section)
 {
     transition = buf.getBool();
-    buf.skipBits(7);
+    buf.skipReservedBits(7);
 }
 
 
@@ -100,7 +100,7 @@ void ts::DiscontinuityInformationTable::DisplaySection(TablesDisplay& disp, cons
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "Transition: " << UString::YesNo(buf.getBool()) << std::endl;
-        buf.skipBits(7);
+        buf.skipReservedBits(7);
     }
 }
 
