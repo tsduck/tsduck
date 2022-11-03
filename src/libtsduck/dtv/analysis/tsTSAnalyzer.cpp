@@ -29,6 +29,8 @@
 
 #include "tsTSAnalyzer.h"
 #include "tsT2MIPacket.h"
+#include "tsTVCT.h"
+#include "tsCVCT.h"
 #include "tsAACDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
@@ -272,6 +274,12 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     inv_ts_sc_cnt(0),
     inv_pes_start(0),
     t2mi_cnt(0),
+    first_pcr(INVALID_PCR),
+    last_pcr(INVALID_PCR),
+    first_pts(INVALID_PTS),
+    last_pts(INVALID_PTS),
+    first_dts(INVALID_DTS),
+    last_dts(INVALID_DTS),
     pcr_cnt(0),
     ts_pcr_bitrate(0),
     bitrate(0),
@@ -286,8 +294,8 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     cur_ts_sc_pkt(0),
     cryptop_cnt(0),
     cryptop_ts_cnt(0),
-    last_pcr(0),
-    last_pcr_pkt(0),
+    br_last_pcr(INVALID_PCR),
+    br_last_pcr_pkt(0),
     ts_bitrate_sum(0),
     ts_bitrate_cnt(0)
 {
@@ -1563,20 +1571,23 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
         ps->cur_continuity = pkt.getCC();
     }
 
-    // Process PCR
+    // Process clocks.
+    const uint64_t pcr = pkt.getPCR();
+    const uint64_t pts = pkt.getPTS();
+    const uint64_t dts = pkt.getDTS();
     if (broken_rate) {
-        // Suspected packet loss, forget last PCR.
-        ps->last_pcr = 0;
+        // Suspected packet loss, forget the last PCR with use to compute bitrate.
+        ps->br_last_pcr = INVALID_PCR;
     }
-    if (pkt.hasPCR()) {
-        uint64_t pcr(pkt.getPCR());
+    if (pcr != INVALID_PCR) {
         // Count PID's with PCR
-        if (ps->pcr_cnt++ == 0)
+        if (ps->pcr_cnt++ == 0) {
             _pcr_pid_cnt++;
+        }
         // If last PCR valid, compute transport rate between the two
-        if (ps->last_pcr != 0 && ps->last_pcr < pcr) {
+        if (ps->br_last_pcr != INVALID_PCR && ps->br_last_pcr < pcr) {
             // Compute transport rate in b/s since last PCR
-            BitRate ts_bitrate = BitRate((packet_index - ps->last_pcr_pkt) * SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS) / (pcr - ps->last_pcr);
+            BitRate ts_bitrate = BitRate((packet_index - ps->br_last_pcr_pkt) * SYSTEM_CLOCK_FREQ * PKT_SIZE_BITS) / (pcr - ps->br_last_pcr);
             // Per-PID statistics:
             ps->ts_bitrate_sum += ts_bitrate;
             ps->ts_bitrate_cnt++;
@@ -1585,8 +1596,25 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
             _ts_bitrate_cnt++;
         }
         // Save PCR for next calculation
+        ps->br_last_pcr = pcr;
+        ps->br_last_pcr_pkt = packet_index;
+        // Save first and last PCR? outside of bitrate computation.
+        if (ps->first_pcr == INVALID_PCR) {
+            ps->first_pcr = pcr;
+        }
         ps->last_pcr = pcr;
-        ps->last_pcr_pkt = packet_index;
+    }
+    if (pts != INVALID_PTS) {
+        if (ps->first_pts == INVALID_PTS) {
+            ps->first_pts = pts;
+        }
+        ps->last_pts = pts;
+    }
+    if (dts != INVALID_PTS) {
+        if (ps->first_dts == INVALID_DTS) {
+            ps->first_dts = dts;
+        }
+        ps->last_dts = dts;
     }
 
     // Check PES start code: PES packet headers start with the constant
