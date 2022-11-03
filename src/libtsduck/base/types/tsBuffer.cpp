@@ -103,7 +103,8 @@ ts::Buffer::Buffer(size_t size) :
     _user_error(false),
     _state(false, size),
     _saved_states(),
-    _realigned()
+    _realigned(),
+    _reserved_bits_errors()
 {
     _buffer = new uint8_t[_buffer_size];
     CheckNonNull(_buffer);
@@ -142,6 +143,7 @@ void ts::Buffer::reset(size_t size)
     _state.wbit = 0;
     _state.end = size;
     _saved_states.clear();
+    _reserved_bits_errors.clear();
 }
 
 
@@ -159,7 +161,8 @@ ts::Buffer::Buffer(void* data, size_t size, bool read_only) :
     _user_error(false),
     _state(read_only, size),
     _saved_states(),
-    _realigned()
+    _realigned(),
+    _reserved_bits_errors()
 {
     if (_state.read_only) {
         _state.wbyte = _state.end;
@@ -194,6 +197,7 @@ void ts::Buffer::reset(void* data, size_t size, bool read_only)
     _state.wbyte = _state.read_only ? _state.end : 0;
     _state.wbit = 0;
     _saved_states.clear();
+    _reserved_bits_errors.clear();
 }
 
 
@@ -211,7 +215,8 @@ ts::Buffer::Buffer(const void* data, size_t size) :
     _user_error(false),
     _state(true, size),
     _saved_states(),
-    _realigned()
+    _realigned(),
+    _reserved_bits_errors()
 {
     _state.wbyte = _buffer_size;
 }
@@ -243,6 +248,7 @@ void ts::Buffer::reset(const void* data, size_t size)
     _state.end = _state.wbyte = _buffer_size;
     _state.wbit = 0;
     _saved_states.clear();
+    _reserved_bits_errors.clear();
 }
 
 
@@ -260,7 +266,8 @@ ts::Buffer::Buffer(const Buffer& other) :
     _user_error(other._user_error),
     _state(other._state),
     _saved_states(other._saved_states),
-    _realigned()
+    _realigned(),
+    _reserved_bits_errors(other._reserved_bits_errors)
 {
     if (_buffer != nullptr && _allocated) {
         // Private internal buffer, copy resources.
@@ -285,7 +292,8 @@ ts::Buffer::Buffer(Buffer&& other) :
     _user_error(other._user_error),
     _state(other._state),
     _saved_states(std::move(other._saved_states)),
-    _realigned()
+    _realigned(),
+    _reserved_bits_errors(std::move(other._reserved_bits_errors))
 {
     // Clear state of moved buffer.
     other._buffer = nullptr;
@@ -316,6 +324,7 @@ ts::Buffer& ts::Buffer::operator=(const Buffer& other)
         _user_error = other._user_error;
         _state = other._state;
         _saved_states = other._saved_states;
+        _reserved_bits_errors = other._reserved_bits_errors;
 
         // Process buffer content.
         if (_buffer != nullptr && _allocated) {
@@ -351,6 +360,7 @@ ts::Buffer& ts::Buffer::operator=(Buffer&& other)
         _write_error = other._write_error;
         _state = other._state;
         _saved_states = std::move(other._saved_states);
+        _reserved_bits_errors = std::move(other._reserved_bits_errors);
 
         // Clear state of moved buffer.
         other._buffer = nullptr;
@@ -912,6 +922,41 @@ bool ts::Buffer::backBits(size_t bits)
         _state.rbit = rpos & 7;
         return true;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Skip read reserved bits forward.
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::skipReservedBits(size_t bits, int expected)
+{
+    expected &= 1;  // force 0 or 1
+    while (!_read_error && bits-- > 0) {
+        if (getBit() != expected && !_read_error) {
+            // Invalid reserved bit.
+            _reserved_bits_errors.push_back((currentReadBitOffset() << 1) | expected);
+        }
+    }
+    return !_read_error;
+}
+
+
+//----------------------------------------------------------------------------
+// This static method returns a string describing "reserved bits errors".
+//----------------------------------------------------------------------------
+
+ts::UString ts::Buffer::ReservedBitsErrorString(std::vector<size_t>& errors, size_t base_offset, const UString& margin)
+{
+    UString message;
+    std::sort(errors.begin(), errors.end());
+    for (size_t value : errors) {
+        if (!message.empty()) {
+            message.append(UString::EOL);
+        }
+        message.format(u"%sByte %d, bit #%d should be '%d'", {margin, (value >> 4) + base_offset, (value >> 1) & 0x07, value & 0x01});
+    }
+    return message;
 }
 
 

@@ -151,6 +151,11 @@ namespace ts {
         static constexpr size_type UTF8_CHAR_MAX_SIZE = 4;
 
         //!
+        //! End-of-line sequence for the operating system.
+        //!
+        static const UString EOL;
+
+        //!
         //! Default separator string for groups of thousands, a comma.
         //!
         static const UString DEFAULT_THOUSANDS_SEPARATOR;

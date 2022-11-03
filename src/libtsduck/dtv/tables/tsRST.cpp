@@ -117,7 +117,7 @@ void ts::RST::deserializePayload(PSIBuffer& buf, const Section& section)
         event.original_network_id = buf.getUInt16();
         event.service_id = buf.getUInt16();
         event.event_id = buf.getUInt16();
-        buf.skipBits(5);
+        buf.skipReservedBits(5);
         buf.getBits(event.running_status, 3);
         events.push_back(event);
     }
@@ -152,7 +152,7 @@ void ts::RST::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
         disp << UString::Format(u", Orig. Netw.: %d (0x%<X)", {buf.getUInt16()});
         disp << UString::Format(u", Service: %d (0x%<X)", {buf.getUInt16()});
         disp << UString::Format(u", Event: %d (0x%<X)", {buf.getUInt16()});
-        buf.skipBits(5);
+        buf.skipReservedBits(5);
         disp << ", Status: " << RunningStatusNames.name(buf.getBits<uint8_t>(3)) << std::endl;
     }
 }

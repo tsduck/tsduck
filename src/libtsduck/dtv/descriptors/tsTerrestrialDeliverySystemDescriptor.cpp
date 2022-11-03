@@ -120,7 +120,7 @@ void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     high_priority = buf.getBool();
     no_time_slicing = buf.getBool();
     no_mpe_fec = buf.getBool();
-    buf.skipBits(2);
+    buf.skipReservedBits(2);
     buf.getBits(constellation, 2);
     buf.getBits(hierarchy, 3);
     buf.getBits(code_rate_hp, 3);
@@ -128,7 +128,7 @@ void ts::TerrestrialDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
     buf.getBits(guard_interval, 2);
     buf.getBits(transmission_mode, 2);
     other_frequency = buf.getBool();
-    buf.skipBits(32);
+    buf.skipReservedBits(32);
 }
 
 
@@ -152,7 +152,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
         disp << margin << "Priority: " << (buf.getBool() ? "high" : "low");
         disp << ", Time slicing: " << (buf.getBool() ? "unused" : "used");
         disp << ", MPE-FEC: " << (buf.getBool() ? "unused" : "used") << std::endl;
-        buf.skipBits(2);
+        buf.skipReservedBits(2);
         disp << margin << "Constellation pattern: ";
         switch (buf.getBits<uint8_t>(2)) {
             case 0:  disp << "QPSK"; break;
@@ -211,7 +211,7 @@ void ts::TerrestrialDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& d
             default: assert(false);
         }
         disp << ", other frequencies: " << UString::YesNo(buf.getBool()) << std::endl;
-        buf.skipBits(32);
+        buf.skipReservedBits(32);
     }
 }
 

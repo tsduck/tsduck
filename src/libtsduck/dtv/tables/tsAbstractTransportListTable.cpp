@@ -126,7 +126,7 @@ void ts::AbstractTransportListTable::deserializePayload(PSIBuffer& buf, const Se
     buf.getDescriptorListWithLength(descs);
 
     // Transport stream loop.
-    buf.skipBits(4);
+    buf.skipReservedBits(4);
     buf.pushReadSizeFromLength(12); // transport_stream_loop_length
     while (buf.canRead()) {
         const uint16_t tsid = buf.getUInt16();

@@ -40,6 +40,14 @@
 // The UTF-8 Byte Order Mark
 const char* const ts::UString::UTF8_BOM = "\xEF\xBB\xBF";
 
+// End-of-line sequence for the operating system..
+const ts::UString ts::UString::EOL
+#if defined(TS_WINDOWS)
+    ("\r\n");
+#else
+    ("\n");
+#endif
+
 // Default separator string for groups of thousands, a comma.
 const ts::UString ts::UString::DEFAULT_THOUSANDS_SEPARATOR(1, u',');
 

@@ -29,7 +29,6 @@
 
 #include "tsAudioStreamDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -91,7 +90,7 @@ void ts::AudioStreamDescriptor::deserializePayload(PSIBuffer& buf)
     ID = buf.getBit();
     buf.getBits(layer, 2);
     variable_rate_audio = buf.getBool();
-    buf.skipBits(3);
+    buf.skipReservedBits(3);
 }
 
 
@@ -107,7 +106,7 @@ void ts::AudioStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
         const uint8_t layer = buf.getBits<uint8_t>(2);
         disp << ", variable rate: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << UString::Format(u"ID: %d, layer: %d", {id, layer}) << std::endl;
-        buf.skipBits(3);
+        buf.skipReservedBits(3);
     }
 }
 

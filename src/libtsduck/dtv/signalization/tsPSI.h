@@ -154,6 +154,7 @@ namespace ts {
         TID_DSMCC_DDM     = 0x3C, //!< Table id for DSM-CC Download Data Messages
         TID_DSMCC_SD      = 0x3D, //!< Table id for DSM-CC Stream Descriptors
         TID_DSMCC_PD      = 0x3E, //!< Table id for DSM-CC Private Data
+        TID_MPEG_LAST     = 0x3F, //!< Last MPEG-defined table id.
         TID_NULL          = 0xFF, //!< Reserved table id value, end of TS packet PSI payload
 
         // Valid in DVB context:

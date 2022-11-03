@@ -29,7 +29,6 @@
 
 #include "tsCableDeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsBCD.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -100,7 +99,7 @@ void ts::CableDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 void ts::CableDeliverySystemDescriptor::deserializePayload(PSIBuffer& buf)
 {
     frequency = 100 * buf.getBCD<uint64_t>(8);  // coded in 100 Hz units
-    buf.skipBits(12);
+    buf.skipReservedBits(12);
     buf.getBits(FEC_outer, 4);
     modulation = buf.getUInt8();
     symbol_rate = 100 * buf.getBCD<uint64_t>(7);  // coded in 100 sym/s units.
@@ -180,7 +179,7 @@ void ts::CableDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay& disp, P
     if (buf.canReadBytes(11)) {
         disp << margin << UString::Format(u"Frequency: %d", {buf.getBCD<uint32_t>(4)});
         disp << UString::Format(u".%04d MHz", {buf.getBCD<uint32_t>(4)}) << std::endl;
-        buf.skipBits(12);
+        buf.skipReservedBits(12);
         const uint8_t fec_outer = buf.getBits<uint8_t>(4);
         const uint8_t modulation = buf.getUInt8();
         disp << margin << UString::Format(u"Symbol rate: %d", {buf.getBCD<uint32_t>(3)});

@@ -107,7 +107,7 @@ void ts::NIT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     disp.displayDescriptorListWithLength(section, buf, margin, u"Network information:");
 
     // Transport stream loop
-    buf.skipBits(4);
+    buf.skipReservedBits(4);
     buf.pushReadSizeFromLength(12); // transport_stream_loop_length
     while (buf.canReadBytes(6)) {
         const uint16_t tsid = buf.getUInt16();

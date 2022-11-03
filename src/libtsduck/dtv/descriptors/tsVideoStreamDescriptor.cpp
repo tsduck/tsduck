@@ -114,7 +114,7 @@ void ts::VideoStreamDescriptor::deserializePayload(PSIBuffer& buf)
         profile_and_level_indication = buf.getUInt8();
         buf.getBits(chroma_format, 2);
         frame_rate_extension = buf.getBool();
-        buf.skipBits(5);
+        buf.skipReservedBits(5);
     }
 }
 
@@ -135,7 +135,7 @@ void ts::VideoStreamDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer
             disp << margin << UString::Format(u"Profile and level: 0x%X (%<d)", {buf.getUInt8()}) << std::endl;
             disp << margin << "Chroma format: " << NameFromDTV(u"mpeg2.chroma_format", buf.getBits<uint8_t>(2), NamesFlags::FIRST) << std::endl;
             disp << margin << UString::Format(u"Frame rate extension: %s", {buf.getBool()}) << std::endl;
-            buf.skipBits(5);
+            buf.skipReservedBits(5);
         }
     }
 }

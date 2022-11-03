@@ -29,7 +29,6 @@
 
 #include "tsHierarchyDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -114,12 +113,12 @@ void ts::HierarchyDescriptor::deserializePayload(PSIBuffer& buf)
     no_spatial_scalability = buf.getBool();
     no_quality_scalability = buf.getBool();
     buf.getBits(hierarchy_type, 4);
-    buf.skipBits(2);
+    buf.skipReservedBits(2);
     buf.getBits(hierarchy_layer_index, 6);
     tref_present = buf.getBool();
-    buf.skipBits(1);
+    buf.skipReservedBits(1);
     buf.getBits(hierarchy_embedded_layer_index, 6);
-    buf.skipBits(2);
+    buf.skipReservedBits(2);
     buf.getBits(hierarchy_channel, 6);
 }
 
@@ -136,12 +135,12 @@ void ts::HierarchyDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << margin << "No spatial scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "No quality scalability: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Hierarchy type: " << DataName(MY_XML_NAME, u"HierarchyType", buf.getBits<uint8_t>(4), NamesFlags::BOTH_FIRST) << std::endl;
-        buf.skipBits(2);
+        buf.skipReservedBits(2);
         disp << margin << UString::Format(u"Hierarchy layer index: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
         disp << margin << "Tref present: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        buf.skipBits(1);
+        buf.skipReservedBits(1);
         disp << margin << UString::Format(u"Hierarchy embedded layer index: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
-        buf.skipBits(2);
+        buf.skipReservedBits(2);
         disp << margin << UString::Format(u"Hierarchy channel: %d", {buf.getBits<uint8_t>(6)}) << std::endl;
     }
 }
