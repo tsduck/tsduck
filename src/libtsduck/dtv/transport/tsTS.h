@@ -299,6 +299,7 @@ namespace ts {
         PID_TOT        = 0x0014, //!< PID for Time Offset Table
         PID_NETSYNC    = 0x0015, //!< PID for Network synchronization
         PID_RNT        = 0x0016, //!< PID for Resolution Notification Table (TV-Anytime)
+        PID_SAT        = 0x001B, //!< PID for Satellite Access Table
         PID_INBSIGN    = 0x001C, //!< PID for Inband Signalling
         PID_MEASURE    = 0x001D, //!< PID for Measurement
         PID_DIT        = 0x001E, //!< PID for Discontinuity Information Table
