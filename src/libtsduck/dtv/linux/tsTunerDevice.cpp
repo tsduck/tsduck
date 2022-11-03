@@ -1141,6 +1141,140 @@ bool ts::TunerDevice::dishControl(const ModulationArgs& params, const LNB::Trans
 }
 
 
+static void splitUnicableParams(const char *unicable_params,
+        const char **version, const char **userband_slot, const char **userband_frequency_mhz)
+{
+    *version = unicable_params;
+    *userband_slot = strchr(*version, ',');
+    if (!*userband_slot) {
+        fprintf(stderr, "Missing two commas in unicable params '%s'.\n", unicable_params);
+        exit(-1);
+    }
+    (*userband_slot)++;
+
+    *userband_frequency_mhz = strchr(*userband_slot, ',');
+    if (!*userband_frequency_mhz) {
+        fprintf(stderr, "Missing comma in unicable params '%s'.\n", unicable_params);
+        exit(-1);
+    }
+    (*userband_frequency_mhz)++;
+}
+
+
+static void checkUnicableVersion(const char *unicable_params)
+{
+    const char *version_str, *slot_str, *freq_str;
+    splitUnicableParams(unicable_params, &version_str, &slot_str, &freq_str);
+
+    int version = strtol(version_str, nullptr, 10);
+    if (version == 1) {
+        fprintf(stderr, "Unicable version 1 is not supported.\n");
+        exit(-1);
+    }
+    if (version != 2) {
+        fprintf(stderr, "Invalid unicable version specified in unicable params.\n");
+        exit(-1);
+    }
+}
+
+
+static int getUserbandSlotNumber(const char *unicable_params)
+{
+    const char *version_str, *slot_str, *freq_str;
+    splitUnicableParams(unicable_params, &version_str, &slot_str, &freq_str);
+
+    int rv = strtol(slot_str, nullptr, 10);
+    if (rv < 1 || rv > 32) {
+        fprintf(stderr, "Userband slot ('%s') is out-of-range in unicable params.\n",
+            slot_str);
+        exit(-1);
+    }
+
+    return rv;
+}
+
+
+static uint32_t getUserbandFrequencyMhz(const char *unicable_params)
+{
+    const char *version_str, *slot_str, *freq_str;
+    splitUnicableParams(unicable_params, &version_str, &slot_str, &freq_str);
+
+    uint32_t rv = strtoul(freq_str, nullptr, 10);
+    if (rv < 1 || rv > 2000) {
+        fprintf(stderr, "Userband frequency out-of-range in unicable params.\n");
+        exit(-1);
+    }
+
+    return rv;
+}
+
+
+bool ts::TunerDevice::configUnicableSwitch(const ModulationArgs& params)
+{
+    // Setup structure for 15ms
+    ::timespec delay;
+    delay.tv_sec = 0;
+    delay.tv_nsec = 15000000;
+
+    // Stop 22 kHz continuous tone (was on if previously tuned on high band)
+    if (ioctl_fe_set_tone(_frontend_fd, SEC_TONE_OFF) < 0) {
+        _duck.report().error(u"DVB frontend FE_SET_TONE error: %s", {SysErrorCodeMessage()});
+        return false;
+    }
+
+    // Set output voltage to 18V to signal that we're going to send a command.
+    if (ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_18) < 0) {
+        _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error: %s", {SysErrorCodeMessage()});
+        return false;
+    }
+
+    // Wait at least 15ms.
+    ::nanosleep(&delay, nullptr);
+
+    std::string unicable_params = params.unicable.value().toUTF8();
+    const int user_band_slot = getUserbandSlotNumber(unicable_params.c_str());
+    const int channel_frequency_mhz = params.frequency.value() / 1000000;
+    const bool is_horizontal = (params.polarity == POL_HORIZONTAL);
+
+    bool is_high_band = false;
+    unsigned oscillator_frequency_mhz = 9750;
+    if (channel_frequency_mhz >= 11700) {
+        is_high_band = true;
+        oscillator_frequency_mhz = 10600;
+    }
+    const unsigned intermediate_frequency_mhz = channel_frequency_mhz - oscillator_frequency_mhz;
+    const unsigned tuning_word_mhz = intermediate_frequency_mhz - 100;
+
+    // Send Unicable 2 commands.
+    ::dvb_diseqc_master_cmd cmd;
+    cmd.msg_len = 4;    // Message size (meaningful bytes in msg)
+    cmd.msg[0] = 0x70;  // Channel change message ID.
+    cmd.msg[1] = ((((user_band_slot - 1) & 0x1f) << 3) & 0xF8)
+            | ((tuning_word_mhz >> 8) & 0x7);
+    cmd.msg[2] = tuning_word_mhz & 0xff;
+    cmd.msg[3] = (((params.satellite_number.value() & 0x3f) << 2) & 0xFC)
+            | (is_horizontal ? 0x02 : 0x00)
+            | (is_high_band ? 0x01 : 0x00);
+
+    if (::ioctl(_frontend_fd, ioctl_request_t(FE_DISEQC_SEND_MASTER_CMD), &cmd) < 0) {
+        _duck.report().error(u"DVB frontend FE_DISEQC_SEND_MASTER_CMD error: %s", {SysErrorCodeMessage()});
+        return false;
+    }
+
+    // Wait 15ms
+    ::nanosleep(&delay, nullptr);
+
+    // Set output voltage to 13V and leave it that way, to signal we continue
+    // to want our userband to be generated.
+    if (ioctl_fe_set_voltage(_frontend_fd, SEC_VOLTAGE_13) < 0) {
+        _duck.report().error(u"DVB frontend FE_SET_VOLTAGE error: %s", {SysErrorCodeMessage()});
+        return false;
+    }
+
+    return true;
+}
+
+
 //-----------------------------------------------------------------------------
 // Tune to the specified parameters and start receiving.
 //-----------------------------------------------------------------------------
@@ -1168,30 +1302,42 @@ bool ts::TunerDevice::tune(ModulationArgs& params)
 
     // In case of satellite delivery, we need to control the dish.
     if (IsSatelliteDelivery(params.delivery_system.value())) {
-        if (!params.lnb.set()) {
-            _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
-        }
-        else {
-            _duck.report().debug(u"using LNB %s", {params.lnb.value()});
-            // Compute transposition information from the LNB.
-            LNB::Transposition trans;
-            if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), _duck.report())) {
-                return false;
-            }
-            // For satellite, Linux DVB API uses an intermediate frequency in kHz
-            freq = uint32_t(trans.intermediate_frequency / 1000);
-            // We need to control the dish only if this is not a "stacked" transposition.
-            if (trans.stacked) {
-                _duck.report().debug(u"LNB uses stacked transposition, no dish control required");
+        if (!params.unicable.set()) {
+            if (!params.lnb.set()) {
+                _duck.report().warning(u"no LNB set for satellite delivery %s", {DeliverySystemEnum.name(params.delivery_system.value())});
             }
             else {
-                // Setup the dish (polarity, band).
-                if (!dishControl(params, trans)) {
+                _duck.report().debug(u"using LNB %s", {params.lnb.value()});
+                // Compute transposition information from the LNB.
+                LNB::Transposition trans;
+                if (!params.lnb.value().transpose(trans, params.frequency.value(), params.polarity.value(POL_NONE), _duck.report())) {
                     return false;
                 }
-                // Clear tuner state again.
-                discardFrontendEvents();
+                // For satellite, Linux DVB API uses an intermediate frequency in kHz
+                freq = uint32_t(trans.intermediate_frequency / 1000);
+                // We need to control the dish only if this is not a "stacked" transposition.
+                if (trans.stacked) {
+                    _duck.report().debug(u"LNB uses stacked transposition, no dish control required");
+                }
+                else {
+                    // Setup the dish (polarity, band).
+                    if (!dishControl(params, trans)) {
+                        return false;
+                    }
+                    // Clear tuner state again.
+                    discardFrontendEvents();
+                }
             }
+        } else {
+            std::string unicable_params = params.unicable.value().toUTF8();
+            checkUnicableVersion(unicable_params.c_str());
+            freq = getUserbandFrequencyMhz(unicable_params.c_str()) * 1000ul;
+            if (!configUnicableSwitch(params)) {
+                return false;
+            }
+
+            // Clear tuner state again.
+            discardFrontendEvents();
         }
     }
 

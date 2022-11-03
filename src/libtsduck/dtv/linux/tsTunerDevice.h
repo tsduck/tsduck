@@ -128,8 +128,11 @@ namespace ts {
         // Hard close of the tuner, report can be null.
         void hardClose(Report*);
 
-        // Setup the dish for satellite tuners.
+        // Setup the dish for non-Unicable satellite tuners.
         bool dishControl(const ModulationArgs&, const LNB::Transposition&);
+
+        // Unicable alternative of dishControl().
+        bool configUnicableSwitch(const ModulationArgs&);
 
         // Extract DTV_STAT_* properties and store it into a SignalState.
         static void GetStat(SignalState& state, Variable<SignalState::Value> SignalState::* field, const DTVProperties& props, uint32_t cmd);

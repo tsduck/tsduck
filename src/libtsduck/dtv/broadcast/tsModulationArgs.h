@@ -425,6 +425,10 @@ namespace ts {
         //! Default value for inner stream id.
         //!
         static constexpr uint32_t DEFAULT_STREAM_ID = STREAM_ID_DISABLE;
+        //!
+        //! .
+        //!
+        Variable<UString> unicable;
 
         //!
         //! Default constructor.
