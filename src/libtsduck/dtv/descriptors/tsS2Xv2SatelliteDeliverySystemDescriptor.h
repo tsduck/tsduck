@@ -46,11 +46,6 @@ namespace ts {
     class TSDUCKDLL S2Xv2SatelliteDeliverySystemDescriptor : public AbstractDeliverySystemDescriptor
     {
     public:
-        //!
-        //! Description of a channel.
-        //! There is one master channel and up to 2 bonded channels.
-        //!
-
         // S2Xv2SatelliteDeliverySystemDescriptor public members:
         uint32_t                delivery_system_id;                     //!< 32 bits
         uint8_t                 S2Xv2_mode;                             //!< 4 bits, S2Xv2 mode.
@@ -75,7 +70,6 @@ namespace ts {
         uint32_t                payload_scrambling_index;               //!< 20 bits
         Variable<uint32_t>      beamhopping_time_plan_id;               //!< 32 bits
         uint8_t                 superframe_pilots_WH_sequence_number;   //!< 5 bits
-
         ByteBlock               reserved_future_use;                    //!< For future modes.
 
         //!
@@ -101,6 +95,5 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer&) override;
         virtual void buildXML(DuckContext&, xml::Element*) const override;
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
-
     };
 }
