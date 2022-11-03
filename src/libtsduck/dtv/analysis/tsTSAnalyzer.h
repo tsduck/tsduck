@@ -44,8 +44,7 @@
 #include "tsTDT.h"
 #include "tsTOT.h"
 #include "tsMGT.h"
-#include "tsTVCT.h"
-#include "tsCVCT.h"
+#include "tsVCT.h"
 #include "tsSTT.h"
 #include "tsTime.h"
 #include "tsUString.h"
@@ -337,6 +336,12 @@ namespace ts {
             uint64_t      inv_ts_sc_cnt;   //!< Number of invalid scrambling control in TS headers.
             uint64_t      inv_pes_start;   //!< Number of invalid PES start code.
             uint64_t      t2mi_cnt;        //!< Number of T2-MI packets.
+            uint64_t      first_pcr;       //!< First PCR value in the PID, if any.
+            uint64_t      last_pcr;        //!< Last PCR value in the PID, if any.
+            uint64_t      first_pts;       //!< First PTS value in the PID, if any.
+            uint64_t      last_pts;        //!< Last PTS value in the PID, if any.
+            uint64_t      first_dts;       //!< First DTS value in the PID, if any.
+            uint64_t      last_dts;        //!< Last DTS value in the PID, if any.
             uint64_t      pcr_cnt;         //!< Number of PCR's.
             BitRate       ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
             BitRate       bitrate;         //!< Average PID bitrate in b/s.
@@ -347,20 +352,20 @@ namespace ts {
             std::map<uint8_t,uint64_t> t2mi_plp_ts;   //!< For T2-MI streams, map key = PLP (Physical Layer Pipe) to value = number of embedded TS packets.
 
             // Public members - Analysis data:
-            uint8_t        cur_continuity;  //!< Current continuity count.
+            uint8_t       cur_continuity;   //!< Current continuity count.
             MPEG2AudioAttributes audio2;    //!< Last MPEG-2 audio attributes.
 
             // Public members - Analysis data: Crypto-period evaluation:
-            uint8_t        cur_ts_sc;       //!< Current scrambling control in TS header.
-            uint64_t       cur_ts_sc_pkt;   //!< First packet index of current crypto-period.
-            uint64_t       cryptop_cnt;     //!< Number of crypto-periods.
-            uint64_t       cryptop_ts_cnt;  //!< Number of TS packets in all crypto-periods.
+            uint8_t       cur_ts_sc;        //!< Current scrambling control in TS header.
+            uint64_t      cur_ts_sc_pkt;    //!< First packet index of current crypto-period.
+            uint64_t      cryptop_cnt;      //!< Number of crypto-periods.
+            uint64_t      cryptop_ts_cnt;   //!< Number of TS packets in all crypto-periods.
 
             // Public members - Analysis data: Bitrate evaluation
-            uint64_t       last_pcr;        //!< Last PCR value.
-            uint64_t       last_pcr_pkt;    //!< Index of packet with last PCR.
-            BitRate        ts_bitrate_sum;  //!< Sum of all computed TS bitrates.
-            uint64_t       ts_bitrate_cnt;  //!< Number of computed TS bitrates.
+            uint64_t      br_last_pcr;      //!< Last PCR value in the PID, for bitrate computation.
+            uint64_t      br_last_pcr_pkt;  //!< Index of packet with last PCR.
+            BitRate       ts_bitrate_sum;   //!< Sum of all computed TS bitrates.
+            uint64_t      ts_bitrate_cnt;   //!< Number of computed TS bitrates.
 
             //!
             //! Default constructor.
