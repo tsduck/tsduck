@@ -165,6 +165,7 @@ namespace ts {
         TID_BAT           = 0x4A, //!< Table id for Bouquet Association Table
         TID_UNT           = 0x4B, //!< Table id for Update Notification Table (SSU, ETSI TS 102 006)
         TID_INT           = 0x4C, //!< Table id for IP/MAC Notification Table (MPE, ETSI EN 301 192)
+        TID_SAT           = 0x4D, //!< Table id for Satellite Access Table
         TID_EIT_PF_ACT    = 0x4E, //!< Table id for EIT present/following - Actual network
         TID_EIT_PF_OTH    = 0x4F, //!< Table id for EIT present/following - Other network
         TID_EIT_S_ACT_MIN = 0x50, //!< Table id for EIT schedule - Actual network
@@ -821,6 +822,7 @@ namespace ts {
         EDID_DTS_UHD            = 0x21, //!< Ext.DID for DTS-UHD_descriptor
         EDID_SERVICE_PROMINENCE = 0x22, //!< Ext.DID for service_prominence_descriptor
         EDID_VVC_SUBPICTURES    = 0x23, //!< Ext.DID for vvc_subpictures_descriptor
+        EDID_S2XV2_DELIVERY     = 0x24, //!< Ext.DID for S2Xv2_satellite_delivery_system_descriptor
         EDID_NULL               = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 

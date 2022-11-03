@@ -1,0 +1,24 @@
+[S2Xv2_satellite_delivery_system_descriptor.Polarization]
+Inherit = satellite_delivery_system_descriptor.Polarization
+
+[S2Xv2_satellite_delivery_system_descriptor.TSGSS2Xv2Mode]
+Inherit = satellite_delivery_system_descriptor.TSGSS2XMode
+
+[S2Xv2_satellite_delivery_system_descriptor.S2Xv2_mode]
+Bits = 4
+1 = S2X
+2 = S2X + time slicing
+4 = S2X superframe (Annex E)
+5 = S2X superframe (Annex E) + timeslicing (Annex M)
+
+[S2Xv2_satellite_delivery_system_descriptor.NCR_version]
+Bits = 1
+0 = NCR
+1 = NCR_v2
+
+[S2Xv2_satellite_delivery_system_descriptor.channel_bond]
+Bits = 2
+0 = Not part of a channel bond
+1 = Channel bond master
+2 = Channel bond secondary
+3 = reserved

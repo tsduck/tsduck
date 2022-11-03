@@ -787,8 +787,9 @@ Bits = 8
 0x19 = Audio Preselection
 0x20 = TTML Subtitling
 0x21 = DTS UHD
-0x22 = DVB Service Prominence
+0x22 = Service Prominence
 0x23 = VVC Subpictures
+0x24 = S2Xv2 Satellite Delivery System
 
 [StreamType]
 # In PMT

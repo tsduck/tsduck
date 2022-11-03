@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <S2Xv2_satellite_delivery_system_descriptor
+        delivery_system_id="uint32, required"
+        S2Xv2_mode="1|2|4|5|uint4, required"
+        roll_off="0.35|0.25|0.20|0.15|0.10|0.05|uint3, required"
+        NCR_version="uint1, required"
+        channel_bond="uint2, required"
+        polarization="horizontal|vertical|left|right, required"
+        TS_GS_S2X_mode="uint2, required"
+        receiver_profiles="uint5, required"
+        satellite_id="uint24, required"
+        frequency="SatelliteFrequencyHz, required"
+        symbol_rate="SatelliteSymbolRate, required"
+        input_stream_identifier="uint8, optional"
+        scrambling_sequence_index="uint18, required for S2Xv2_mode==2 or S2Xv2_mode==5"
+        timeslice_number="uint8, required for S2Xv2_mode==2 or S2Xv2_mode==5">
+
+        <!-- one or two secondary delivery systems to be included if channel_bond==1 -->
+        <secondary_delivery_system
+          id="uint32, required"/>
+
+        <!-- required if S2Xv2_mode==4 or S2Xv2_mode==5 -->
+        <superframe
+          SOSF_WH_sequence_number="uint8, required"
+          reference_scrambling_index="uint20, required"
+          SFFI="uint4, optional"
+          payload_scrambling_index="uint20, required"
+          beamhopping_time_plan_id="uint32, optional"
+          superframe_pilots_WH_sequence_number="uint5, required"/>
+
+        <reserved_future_use>
+          Hexadecimal content
+        </reserved_future_use>
+      </S2Xv2_satellite_delivery_system_descriptor>
+
+  </_descriptors>
+</tsduck>
