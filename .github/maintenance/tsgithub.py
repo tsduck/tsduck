@@ -33,7 +33,7 @@
 #
 #-----------------------------------------------------------------------------
 
-import re, os, sys, base64, github
+import re, os, sys, base64, datetime, github
 
 # A class referencing the repository based on command line options.
 class repository:
@@ -122,3 +122,42 @@ class repository:
     def get_text_file(self, path):
         file = self.repo.get_contents(path)
         return base64.b64decode(file.content).decode('utf8')
+
+# A progressive display context.
+class progress:
+    def __init__(self, name):
+        print('Fetching %s ' % name, file=sys.stderr, end='', flush=True)
+        self.count = 0
+    def more(self):
+        self.count += 1
+        if self.count % 100 == 0:
+            print(' %d ' % self.count, file=sys.stderr, end='', flush=True)
+        elif self.count % 10 == 0:
+            print('.', file=sys.stderr, end='', flush=True)
+    def end(self):
+        print('. %d done' % self.count, file=sys.stderr)
+
+# Convert a date or string as datetime.
+def to_datetime(date):
+    if isinstance(date, datetime.datetime):
+        return date
+    if not isinstance(date, str):
+        return datetime.now()
+    try:
+        return datetime.fromisoformat(date)
+    except:
+        pass
+    date = re.sub(r'^[\w]*,\s*', '', date) # remove weekday, if any
+    match = re.match(r'\s*(\d{2}\s+[a-zA-Z]{3}\s+\d{4}\s+\d{2}:\d{2}:\d{2})', date)
+    if match is not None:
+        try:
+            return datetime.datetime.strptime(match.group(1), '%d %b %Y %H:%M:%S')
+        except:
+            pass
+    match = re.match(r'\s*(\d{2}\s+[a-zA-Z]{3}\s+\d{4})', date)
+    if match is not None:
+        try:
+            return datetime.datetime.strptime(match.group(1), '%d %b %Y')
+        except:
+            pass
+    return datetime.now()
