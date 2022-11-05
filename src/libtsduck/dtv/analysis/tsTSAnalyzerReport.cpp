@@ -364,7 +364,6 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     grid.putLine(u"SERVICES ANALYSIS REPORT", title);
 
     // Display global pids
-
     grid.section();
     grid.putLine(u"Global PID's");
     grid.putLine(UString::Format(u"TS packets: %'d, PID's: %d (clear: %d, scrambled: %d)", {_global_pkt_cnt, _global_pid_cnt, _global_pid_cnt - _global_scr_pids, _global_scr_pids}));
@@ -379,7 +378,6 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     }
 
     // Display unreferenced pids
-
     if (_unref_pid_cnt > 0) {
         grid.section();
         grid.putLine(u"Unreferenced PID's");
@@ -395,7 +393,6 @@ void ts::TSAnalyzerReport::reportServices(Grid& grid, const UString& title)
     }
 
     // Display list of services
-
     for (const auto& it : _services) {
 
         const ServiceContext& sv(*it.second);
@@ -453,7 +450,7 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
     grid.putLine(u"PIDS ANALYSIS REPORT", title);
 
     // Loop on all analyzed PID's.
-    for (auto& it : _pids) {
+    for (const auto& it : _pids) {
 
         // Get PID description, ignore if no packet was found.
         // A PID can be declared, in a PMT for instance, but has no traffic on it.
@@ -541,6 +538,22 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
                             {pc.ts_pcr_bitrate > 0 ? u"TSrate:" : u"", pc.ts_pcr_bitrate > 0 ? UString::Format(u"%'d b/s", {pc.ts_pcr_bitrate}) : u""},
                             {pc.carry_pes ? u"Inv.Start:" : u"", pc.carry_pes ? UString::Decimal(pc.inv_pes_start) : u""}});
         }
+
+        const bool has_pcr = pc.first_pcr != INVALID_PCR;
+        const bool has_pts = pc.first_pts != INVALID_PTS;
+        const bool has_dts = pc.first_dts != INVALID_DTS;
+
+        if (has_pcr || has_pts || has_dts) {
+            grid.setLayout({grid.left(24), grid.left(24), grid.left(21)});
+            grid.putLayout({{u"Clock values range:"}});
+            grid.setLayout({grid.bothTruncateLeft(24, u'.'), grid.bothTruncateLeft(24, u'.'), grid.bothTruncateLeft(21, u'.')});
+            grid.putLayout({{has_pcr ? u"PCR:" : u"", has_pcr ? UString::Decimal(pc.first_pcr) : u""},
+                            {has_pts ? u"PTS:" : u"", has_pts ? UString::Decimal(pc.first_pts) : u""},
+                            {has_dts ? u"DTS:" : u"", has_dts ? UString::Decimal(pc.first_dts) : u""}});
+            grid.putLayout({{has_pcr ? u"to:" : u"", has_pcr ? UString::Decimal(pc.last_pcr) : u""},
+                            {has_pts ? u"to:" : u"", has_pts ? UString::Decimal(pc.last_pts) : u""},
+                            {has_dts ? u"to:" : u"", has_dts ? UString::Decimal(pc.last_dts) : u""}});
+        }
     }
 
     grid.closeTable();
@@ -560,7 +573,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
     grid.putLine(u"TABLES & SECTIONS ANALYSIS REPORT", title);
 
     // Loop on all PID's
-    for (auto pid_it : _pids) {
+    for (const auto& pid_it : _pids) {
 
         // Get PID description, ignore if PID without sections
         const PIDContext& pc(*pid_it.second);
@@ -576,7 +589,7 @@ void ts::TSAnalyzerReport::reportTables(Grid& grid, const UString& title)
         reportServicesForPID(grid, pc);
 
         // Loop on all tables on this PID
-        for (auto& sec_it : pc.sections) {
+        for (const auto& sec_it : pc.sections) {
             const ETIDContext& etc(*sec_it.second);
             const TID tid = etc.etid.tid();
             const bool isShort = etc.etid.isShortSection();
@@ -669,7 +682,6 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
     }
 
     // Report global errors
-
     if (_invalid_sync > 0) {
         error_count++;
         stm << UString::Format(u"TS:%d:0x%X: TS packets with invalid sync byte: %d", {_ts_id, _ts_id, _invalid_sync}) << std::endl;
@@ -688,7 +700,6 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
     }
 
     // Report missing standard DVB tables
-
     if (!_tid_present[TID_PAT]) {
         error_count++;
         stm << UString::Format(u"TS:%d:0x%X: No PAT", {_ts_id, _ts_id}) << std::endl;
@@ -715,7 +726,6 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
     }
 
     // Report error per PID
-
     for (auto& pid_it : _pids) {
         const PIDContext& pc(*pid_it.second);
         if (pc.exp_discont > 0) {
@@ -757,7 +767,6 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
     }
 
     // Summary
-
     stm << "SUMMARY: Error count: " << error_count << std::endl;
 }
 
@@ -1009,6 +1018,15 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
         else {
             stm << "unitstart=" << pc.unit_start_cnt << ":";
         }
+        if (pc.first_pcr != INVALID_PCR) {
+            stm << "firstpcr=" << pc.first_pcr << ":lastpcr=" << pc.last_pcr << ":";
+        }
+        if (pc.first_pts != INVALID_PTS) {
+            stm << "firstpts=" << pc.first_pts << ":lastpts=" << pc.last_pts << ":";
+        }
+        if (pc.first_dts != INVALID_DTS) {
+            stm << "firstdts=" << pc.first_dts << ":lastdts=" << pc.last_dts << ":";
+        }
         stm << "description=" << pc.fullDescription(true) << std::endl;
     }
 
@@ -1243,6 +1261,18 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         }
         else {
             jv.add(u"unit-start", pc.unit_start_cnt);
+        }
+        if (pc.first_pcr != INVALID_PCR) {
+            jv.add(u"first-pcr", pc.first_pcr);
+            jv.add(u"last-pcr", pc.last_pcr);
+        }
+        if (pc.first_pts != INVALID_PTS) {
+            jv.add(u"first-pts", pc.first_pts);
+            jv.add(u"last-pts", pc.last_pts);
+        }
+        if (pc.first_dts != INVALID_DTS) {
+            jv.add(u"first-dts", pc.first_dts);
+            jv.add(u"last-dts", pc.last_dts);
         }
     }
 
