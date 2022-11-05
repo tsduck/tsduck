@@ -42,6 +42,9 @@ param(
 
 Write-Output "==== NSIS download and installation procedure"
 
+# Try this to avoid issue on sourceforge.net
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 . "$PSScriptRoot\install-common.ps1"
 
 Install-Standard-Exe `
