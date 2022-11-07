@@ -46,9 +46,9 @@ namespace ts {
     {
     public:
         // MPEGH3DAudioDescriptor public members:
-        uint8_t   mpegh_3da_profile_level_indication;  //!< MPEGH 3D-audio profile.
+        uint8_t   mpegh_3da_profile_level_indication;  //!< MPEGH 3D-audio profile per ISO/IEC 23008-03.
         bool      interactivity_enabled;               //!< 3D audio stream contains elements which enables user interactivity.
-        uint8_t   reference_channel_layout;            //!< 6 bits, see "ChannelConfiguration" in ISO/IEC 23001-8.
+        uint8_t   reference_channel_layout;            //!< 6 bits, see "ChannelConfiguration" in ISO/IEC 23001-8 -> ISO//IEC 23091-3.
         ByteBlock CompatibleSetIndication;             //!< array of 8 bit values according to ISO/IEC 23008-3
         ByteBlock reserved;                            //!< Reserved data.
 
