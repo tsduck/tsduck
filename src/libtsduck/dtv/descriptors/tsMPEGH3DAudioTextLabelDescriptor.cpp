@@ -198,30 +198,30 @@ void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp,
 {
     if (buf.canReadBytes(2)) {
         disp << margin << "3D Audio Scene Id: " << int(buf.getUInt8()) << std::endl;
-        buf.skipBits(4);
+        buf.skipReservedBits(4);
         uint8_t numDescLanguages = buf.getBits<uint8_t>(4);
         for (uint8_t i = 0; i < numDescLanguages; i++) {
             disp << margin << "Description Language: " << buf.getLanguageCode() << std::endl;
-            buf.skipBits(1);
+            buf.skipReservedBits(1);
             uint8_t numGroupDescriptions = buf.getBits<uint8_t>(7);
             for (uint8_t n = 0; n < numGroupDescriptions; n++) {
-                buf.skipBits(1);
+                buf.skipReservedBits(1);
                 disp << margin << UString::Format(u" Group Description [%d] id: %d - ", { n, buf.getBits<uint8_t>(7) });
                 const UString groupDescriptionData(buf.getStringWithByteLength());
                 disp << "\"" << groupDescriptionData << "\"" << std::endl;
             }
-            buf.skipBits(3);
+            buf.skipReservedBits(3);
             uint8_t numSwitchGroupDescriptions = buf.getBits<uint8_t>(5);
             for (uint8_t n = 0; n < numSwitchGroupDescriptions; n++) {
-                buf.skipBits(3);
+                buf.skipReservedBits(3);
                 disp << margin << UString::Format(u" Switch Group Description [%d] id: %d - ", { n, buf.getBits<uint8_t>(5) });
                 const UString switchGroupDescriptionData(buf.getStringWithByteLength());
                 disp << "\"" << switchGroupDescriptionData << "\"" << std::endl;
             }
-            buf.skipBits(3);
+            buf.skipReservedBits(3);
             uint8_t numGroupPresetsDescriptions = buf.getBits<uint8_t>(5);
             for (uint8_t n = 0; n < numGroupPresetsDescriptions; n++) {
-                buf.skipBits(3);
+                buf.skipReservedBits(3);
                 disp << margin << UString::Format(u" Group Preset Description [%d] id: %d - ", { n, buf.getBits<uint8_t>(5) });
                 const UString groupPresetDescriptionData(buf.getStringWithByteLength());
                 disp << "\"" << groupPresetDescriptionData << "\"" << std::endl;

@@ -35,6 +35,7 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsAlgorithm.h"
+#include "tsTabulateVector.h"
 
 #define MY_XML_NAME u"MPEG4_text_descriptor"
 #define MY_CLASS ts::MPEG4TextDescriptor
@@ -220,8 +221,6 @@ ts::UString ts::MPEG4TextDescriptor::TimedText_TS26245(ByteBlock formatSpecificT
 
 void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
-    constexpr auto ITEMS_PER_LINE = 6;
-
     if (buf.canReadBytes(8)) {
         disp << margin << "Text format: " << DataName(MY_XML_NAME, u"textFormat", buf.getUInt8(), NamesFlags::VALUE);
         buf.pushReadSizeFromLength(16); // textConfigLength
@@ -233,26 +232,16 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << margin << "Sample description: " << DataName(MY_XML_NAME, u"sampleDescriptionFlags", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
         const bool SampleDescription_carriage_flag = buf.getBool();
         const bool positioning_information_flag = buf.getBool();
-        buf.skipBits(3);
+        buf.skipBits(3);  // ISO/IEC 14496-17 is not explicit on the value of reserved buts
         disp << margin << "Layer: " << int(buf.getUInt8());
         disp << ", text track width=" << buf.getUInt16();
         disp << ", height=" << buf.getUInt16() << std::endl;
         if (contains_list_of_compatible_3GPPFormats_flag) {
             const uint8_t number_of_formats = buf.getUInt8();
-            uint8_t i = 0;
-            disp << margin << "Compatible 3GPP formats:";
-            for (i = 0; i < number_of_formats; i++) {
-                disp << " " << int(buf.getUInt8());
-                if ((i + 1) % ITEMS_PER_LINE == 0) {
-                    disp << std::endl;
-                    if (i != (number_of_formats - 1)) {
-                        disp << margin << "                        ";
-                    }
-                }
-            }
-            if (i % ITEMS_PER_LINE != 0) {
-                disp << std::endl;
-            }
+            std::vector<uint8_t> Compatible3GPPFormats;
+            for (uint8_t i = 0; i < number_of_formats; i++)
+                Compatible3GPPFormats.push_back(buf.getUInt8());
+            tsTabulateVector(disp, margin + u"Compatible 3GPP formats:", Compatible3GPPFormats, true, 6);
         }
         if (SampleDescription_carriage_flag) {
             const uint8_t number_of_SampleDescriptions = buf.getUInt8();

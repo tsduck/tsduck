@@ -147,7 +147,7 @@ void ts::VVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
             uint8_t id = buf.getUInt8();
             disp << margin << UString::Format(u"subpicture[%d] component_tag: %d, vvc_subpicture_id: %d", { i, tag, id }) << std::endl;
         }
-        buf.skipBits(5);
+        buf.skipReservedBits(5, 0);
         disp << margin << UString::Format(u"Processing mode: %d", {buf.getBits<uint16_t>(3)}) << std::endl;
         if (sdpresent) {
             disp << margin << "Service description: \"" << buf.getStringWithByteLength() << "\"" << std::endl;

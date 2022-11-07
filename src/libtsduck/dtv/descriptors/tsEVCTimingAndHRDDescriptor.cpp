@@ -134,10 +134,10 @@ void ts::EVCTimingAndHRDDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBu
 {
     if (buf.canReadBytes(1)) {
         disp << margin << "HRD management valid: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        buf.skipBits(6);
+        buf.skipReservedBits(6);
         if (buf.getBool()) { // info_present
             const bool has_90kHz = buf.getBool();
-            buf.skipBits(7);
+            buf.skipReservedBits(7);
             if (has_90kHz && buf.canReadBytes(8)) {
                 disp << margin << UString::Format(u"90 kHz: N = %'d", {buf.getUInt32()});
                 disp << UString::Format(u", K = %'d", {buf.getUInt32()}) << std::endl;

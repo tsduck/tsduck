@@ -215,7 +215,7 @@ void ts::HEVCOperationPointDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(2)) {
-        buf.skipBits(2);
+        buf.skipReservedBits(2);
         uint8_t num_ptl;
         buf.getBits(num_ptl, 6);
         for (uint8_t i = 0; i < num_ptl; i++)
@@ -227,11 +227,11 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 
             uint8_t ES_count = buf.getUInt8();
             for (uint8_t j = 0; j < ES_count; j++) {
-                buf.skipBits(1);
+                buf.skipReservedBits(1);
                 disp << margin << "  ES[" << int(j) << "] prepend dependencies : " << UString::TrueFalse(buf.getBool());
                 disp << ", ES reference: " << buf.getBits<uint16_t>(6) << std::endl;
             }
-            buf.skipBits(2);
+            buf.skipReservedBits(2);
             uint8_t numEsInOp;
             buf.getBits(numEsInOp, 6);
             for (uint8_t k = 0; k < numEsInOp; k++) {
@@ -239,7 +239,7 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
                 disp << ", output layer: " << UString::TrueFalse(buf.getBool());
                 disp << ", PTL ref index: " << buf.getBits<uint16_t>(6) << std::endl;
             }
-            buf.skipBits(1);
+            buf.skipReservedBits(1);
             bool avg_bit_rate_info_flag = buf.getBool();
             bool max_bit_rate_info_flag = buf.getBool();
             uint8_t constant_frame_rate_info_idx = buf.getBits<uint8_t>(2);
@@ -247,7 +247,7 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
             bool shown = false;
             if (constant_frame_rate_info_idx > 0) {
                 disp << margin << "  ";
-                buf.skipBits(4);
+                buf.skipReservedBits(4);
                 disp << "Frame rate indicator: " << buf.getBits<uint16_t>(12);
                 shown = true;
             }

@@ -140,7 +140,7 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(_sogi.SOGI_flag);            // SOGI_flag
         buf.putBit(!_sogi.regions.empty());     // target_region_flag
         buf.putBit(_sogi.service_id.set());     // service_flag
-        buf.putBit(0);                          // reserved_future_use
+        buf.putBit(1);                          // reserved_future_use
         buf.putBits(_sogi.SOGI_priority, 12);   // SOGI_priority
         if (_sogi.service_id.set())
             buf.putUInt16(_sogi.service_id.value());    // service_id 
@@ -161,7 +161,7 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
             }
             buf.putUInt8(target_region_loop_length);
             for (auto _region : _sogi.regions) {
-                buf.putBits(0x00, 5);
+                buf.putBits(0xFF, 5);
                 buf.putBit(_region.country_code.set());
                 uint8_t region_depth = _region.primary_region_code.set() + _region.secondary_region_code.set() + _region.tertiary_region_code.set();
                 buf.putBits(region_depth, 2);
@@ -244,9 +244,9 @@ void ts::DVBServiceProminenceDescriptor::deserializePayload(PSIBuffer& buf)
 
 void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp, const UString& margin)
 {
-    disp << margin << "flag: " << UString::TrueFalse(SOGI_flag) << ", priority: " << SOGI_priority;
+    disp << margin << "SOGI flag: " << UString::TrueFalse(SOGI_flag) << ", priority: " << SOGI_priority;
     if (service_id.set())
-        disp << ", service id:" << service_id.value();
+        disp << ", service id: " << service_id.value();
     disp << std::endl;
     for (auto r : regions) {
         bool drawn = false;
@@ -297,7 +297,7 @@ void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, 
             s.SOGI_flag = buf.getBool();
             bool target_region_flag = buf.getBool();
             bool service_flag = buf.getBool();
-            buf.skipBits(1);
+            buf.skipReservedBits(1);
             buf.getBits(s.SOGI_priority, 12);
             SOGI_list_length -= 2;
             if (service_flag) {
@@ -309,7 +309,7 @@ void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, 
                 SOGI_list_length--;
                 while (target_region_loop_length > 0) {
                     SOGI_region_type r;
-                    buf.skipBits(5);
+                    buf.skipReservedBits(5);
                     bool country_code_flag = buf.getBool();
                     uint8_t region_depth = buf.getBits<uint8_t>(2);
                     target_region_loop_length--; SOGI_list_length--;

@@ -128,6 +128,8 @@ ts::DID ts::S2Xv2SatelliteDeliverySystemDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
+
+
 void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt32(delivery_system_id);
@@ -145,8 +147,8 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
     buf.putBits(TS_GS_S2X_mode, 2);
     buf.putBits(receiver_profiles, 5);
     buf.putUInt24(satellite_id);
-    buf.putUInt32(frequency);
-    buf.putUInt32(symbol_rate);
+    buf.putBCD(frequency / 10000, 8);  // unit is 10 kHz
+    buf.putBCD(symbol_rate / 100, 8); // unit is 100 sym/s
     if (multiple_input_stream_flag) 
         buf.putUInt8(input_stream_identifier);
     if (S2Xv2_mode == 1 || S2Xv2_mode == 2) {
@@ -205,8 +207,8 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
     TS_GS_S2X_mode = buf.getBits<uint8_t>(2);
     receiver_profiles = buf.getBits<uint8_t>(5);
     satellite_id = buf.getUInt24();
-    frequency = buf.getUInt32();
-    symbol_rate = buf.getUInt32();
+    frequency = buf.getBCD<uint64_t>(8) * 10000;  // unit is 10 Hz
+    symbol_rate = symbol_rate = buf.getBCD<uint64_t>(8) * 100;  // unit is 100 sym/sec
     if (multiple_input_stream_flag) {
         input_stream_identifier = buf.getUInt8();
     } 
@@ -257,7 +259,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         disp << ", S2Xv2 mode: " << DataName(MY_XML_NAME, u"S2Xv2_mode", _S2Xv2_mode, NamesFlags::VALUE);
         bool _multiple_input_stream_flag = buf.getBool();
         disp << ", Roll-off factor: " << S2XSatelliteDeliverySystemDescriptor::RollOffNames.name(buf.getBits<uint8_t>(3)) << std::endl;
-        buf.skipBits(5);
+        buf.skipReservedBits(3, 0);
         disp << margin << "NCR version: " << DataName(MY_XML_NAME, u"NCR_version", buf.getBits<uint8_t>(1), NamesFlags::VALUE);
         uint8_t _channel_bond = buf.getBits<uint8_t>(2);
         disp << ", channel bond: " << DataName(MY_XML_NAME, u"channel_bond", _channel_bond, NamesFlags::VALUE);
@@ -266,7 +268,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         if (_S2Xv2_mode == 1 || _S2Xv2_mode == 2)
             _scrambling_sequence_selector = buf.getBits<uint8_t>(1);
         else
-            buf.skipBits(1);
+            buf.skipReservedBits(1, 0);
         disp << margin << "TS/GS S2X mode: " << DataName(MY_XML_NAME, u"TSGSS2Xv2Mode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
         const uint8_t _receiver_profiles = buf.getBits<uint8_t>(5);
         disp << margin << UString::Format(u"Receiver profiles: 0x%X", { _receiver_profiles });
@@ -283,47 +285,47 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         disp << std::endl;
 
         disp << margin << UString::Format(u"Satellite id : 0x%X", { buf.getUInt24() });
-        disp << UString::Format(u", frequency: %d", { buf.getBCD<uint32_t>(3) });
+        disp << UString::Format(u", frequency: %d", {buf.getBCD<uint32_t>(3)});
         disp << UString::Format(u".%05d GHz", { buf.getBCD<uint32_t>(5) });
-        disp << UString::Format(u", symbol rate: %d", { buf.getBCD<uint32_t>(4) });
-        disp << UString::Format(u".%05d", { buf.getBCD<uint32_t>(4) }) << std::endl;
-
+        disp << UString::Format(u", symbol rate: %d", {buf.getBCD<uint32_t>(4)});
+        disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
+ 
         disp << margin << "Multiple input stream: " << UString::YesNo(_multiple_input_stream_flag);
         if (_multiple_input_stream_flag) 
             disp << ", input stream id: " << int(buf.getUInt8());
         if (_S2Xv2_mode == 1 || _S2Xv2_mode == 2) 
             if (_scrambling_sequence_selector == 1) {
-                buf.skipBits(6);
+                buf.skipReservedBits(6, 0);
                 disp << ", scrambling_sequence_index: " << buf.getBits<uint32_t>(18);
             }
-        disp << std::endl;
         if (_S2Xv2_mode == 2 || _S2Xv2_mode == 5) 
-            disp << margin << "Timeslice number: " << int(buf.getUInt8()) << std::endl;
+            disp << ", timeslice number: " << int(buf.getUInt8());
+        disp << std::endl;
 
         if (_channel_bond == 1) {
-            buf.skipBits(7);
+            buf.skipReservedBits(7, 0);
             uint8_t _num_channel_bonds_minus1 = buf.getBits<uint8_t>(1);
-            disp << margin << "Secondary delivery system id" << (_num_channel_bonds_minus1 == 0 ? "" : "s") << ": ";
+            disp << margin << "Secondary delivery system id" << (_num_channel_bonds_minus1+1 == 1 ? "" : "s") << ": ";
             for (uint8_t j=0; j< _num_channel_bonds_minus1+1; j++)
-                UString::Format(u"0x08%X ", { buf.getUInt32() });
+                disp << UString::Format(u"0x08%X ", { buf.getUInt32() });
             disp << std::endl;
         }
         if (_S2Xv2_mode == 4 || _S2Xv2_mode == 5) {
             disp << margin << "SOSF WH sequence: " << int(buf.getUInt8());
             bool _SFFI_selector = buf.getBool();
             bool _beam_hopping_time_plan_selector = buf.getBool();
-            buf.skipBits(2);
+            buf.skipReservedBits(2, 0);
             disp << ", reference scrambling index: " << buf.getBits<uint32_t>(20);
             if (_SFFI_selector) 
                 disp << ", SFFI: " << int(buf.getBits<uint8_t>(4));
             else
-                buf.skipBits(4);
+                buf.skipReservedBits(4, 0);
             disp << std::endl;
             disp << margin << "Payload scrambling index: " << buf.getBits<uint32_t>(20);
             if (_beam_hopping_time_plan_selector)
                 disp << ", beamhopping time plan selector: " << buf.getUInt32();
             disp << ", superframe pilots WH sequence number: " << int(buf.getBits<uint8_t>(5)) << std::endl;
-            buf.skipBits(3);
+            buf.skipReservedBits(3, 0);
         }
         disp.displayPrivateData(u"Reserved for future use", buf, NPOS, margin);
     }
@@ -393,8 +395,8 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
         element->getIntAttribute(TS_GS_S2X_mode, u"TS_GS_S2X_mode", true, 0, 0, 0x03) &&
         element->getIntAttribute(receiver_profiles, u"receiver_profiles", true, 0, 0, 0x1F) &&
         element->getIntAttribute(satellite_id, u"satellite_id", true, 0, 0, 0xFFFFFF) &&
-        element->getIntAttribute(frequency, u"frequency", true) &&
-        element->getIntAttribute(symbol_rate, u"symbol_rate", true);
+        element->getIntAttribute(frequency, u"frequency", true, 0, 0, 999999990000) &&
+        element->getIntAttribute(symbol_rate, u"symbol_rate", true, 0, 0, 9999999900);
 
     if (ok && element->hasAttribute(u"input_stream_identifier")) {
         ok &= element->getIntAttribute(input_stream_identifier, u"input_stream_identifier", true);

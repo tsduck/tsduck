@@ -2,7 +2,7 @@
 Inherit = satellite_delivery_system_descriptor.Polarization
 
 [S2Xv2_satellite_delivery_system_descriptor.TSGSS2Xv2Mode]
-Inherit = satellite_delivery_system_descriptor.TSGSS2XMode
+Inherit = S2X_satellite_delivery_system_descriptor.TSGSS2XMode
 
 [S2Xv2_satellite_delivery_system_descriptor.S2Xv2_mode]
 Bits = 4
