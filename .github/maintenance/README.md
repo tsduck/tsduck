@@ -17,6 +17,7 @@ All scripts accept the following common options:
 
 - Install: `pip install PyGithub`
 - Documentation: https://pygithub.readthedocs.io/
+- Minimum required version: 1.57
 
 Warning: There is a PyPI module named `github` which is different and
 incompatible with `PyGitHub`. The two declare the module `github` with

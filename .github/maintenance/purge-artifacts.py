@@ -30,23 +30,26 @@
 #
 #  This script purges extraneous artifacts in the TSDuck GitHub repo CI/CD.
 #  Only the 5 most recent versions of each artifact are left. Older artifacts
-#  are deleted.
+#  are deleted. Require PyGithub version 1.57 or higher.
 #
 #-----------------------------------------------------------------------------
 
-import sys, requests, tsgithub
+import sys, tsgithub
 
 # Get command line options.
-repo = tsgithub.repository(sys.argv, False)
+repo = tsgithub.repository(sys.argv)
 repo.check_opt_final()
 
 # The number of copies to keep per artifact.
 KEEP = 5
 print('Purging artifacts in repo %s, keeping %d copies of each artifact ...' % (repo.repo_name, KEEP))
 
+# First, get all artifacts at once.
+# We cannot do the cleanup in a get_artifacts() loop because we delete some and the list can be paginated.
+artifacts = [i for i in repo.repo.get_artifacts()]
+
 # A dictionary of all artifact counts, by name.
 artifact_count = {}
-to_delete = []
 total_count = 0
 total_size = 0
 deleted_count = 0
@@ -54,48 +57,28 @@ deleted_size = 0
 error_count = 0
 error_size = 0
 
-# Loop on all pages of artifacts.
-# We need to get all artifacts first, and then delete the extraneous ones.
-# If we read a page, delete artifacts, then read next page, the page boundaries have changed.
-artifacts_url = 'https://api.github.com/repos/' + repo.repo_name + '/actions/artifacts'
-url = artifacts_url + '?per_page=100'
-while url is not None:
-    # Get a page of artifacts.
-    resp = requests.get(url, headers = {'Accept': 'application/vnd.github.v3+json'}, auth = ('', repo.token))
-    url = resp.links['next']['url'] if ('next' in resp.links and 'url' in resp.links['next']) else None
-    data = resp.json()
-    # Loop on all artifacts in that page.
-    if 'artifacts' in data:
-        for art in data['artifacts']:
-            if 'name' in art and 'id' in art:
-                size = art['size_in_bytes'] if 'size_in_bytes' in art else 0
-                date = art['created_at'] if 'created_at' in art else ''
-                expired = 'expired' in art and art['expired']
-                total_count += 1
-                total_size += size
-                if art['name'] not in artifact_count:
-                    # First time we see this artifact.
-                    artifact_count[art['name']] = 0
-                if not expired and artifact_count[art['name']] < KEEP:
-                    # Keep this artifact.
-                    artifact_count[art['name']] += 1
-                    repo.verbose('Keeping {}, {:,} bytes, {}'.format(art['name'], size, date))
-                else:
-                    repo.verbose('Will delete {}, {:,} bytes{}'.format(art['name'], size, ' (expired)' if expired else ''))
-                    to_delete.append({'id': art['id'], 'name': art['name'], 'size': size, 'date': date})
-
-# Actually delete the artifacts.
-for art in to_delete:
-    repo.info('Deleting {}, id: {}, size: {:,}, date: {}'.format(art['name'], art['id'], art['size'], art['date']))
-    if not repo.dry_run:
-        resp = requests.delete('%s/%d' % (artifacts_url, art['id']), auth = ('', repo.token))
-        if resp.ok:
-            deleted_count += 1
-            deleted_size += size
-        else:
-            repo.error('status code: %d, reason: %s' % (resp.status_code, resp.reason))
-            error_count += 1
-            error_size += size
+# Then, do the cleanup in a second pass.
+for art in artifacts:
+    total_count += 1
+    total_size += art.size_in_bytes
+    date = art.created_at.strftime('%Y-%m-%d')
+    if art.name not in artifact_count:
+        # First time we see this artifact.
+        artifact_count[art.name] = 0
+    if not art.expired and artifact_count[art.name] < KEEP:
+        # Keep this artifact.
+        artifact_count[art.name] += 1
+        repo.verbose('Keeping {}, {:,} bytes, {}'.format(art.name, art.size_in_bytes, date))
+    else:
+        repo.info('Deleting {}, {:,} bytes, {}{}'.format(art.name, art.size_in_bytes, date, ' (expired)' if art.expired else ''))
+        if not repo.dry_run:
+            if art.delete():
+                deleted_count += 1
+                deleted_size += art.size_in_bytes
+            else:
+                repo.error('cannot delete artifact %s' % (art.name))
+                error_count += 1
+                error_size += art.size_in_bytes
 
 # Print final summary.
 print('')

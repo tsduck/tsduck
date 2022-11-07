@@ -57,20 +57,6 @@ class user_context:
         return '%-20s %8d %8d %8d %8d %8d' % (self.name, self.issues, self.prs, self.comments, self.total(), self.characters)
     header = '%-20s %8s %8s %8s %8s %8s' % ('User name', 'Issues', 'PR', 'Comments', 'Total', 'Size')
 
-# A progressive display context.
-class progress:
-    def __init__(self, name):
-        print('Fetching %s ' % name, file=sys.stderr, end='', flush=True)
-        self.count = 0
-    def more(self):
-        self.count += 1
-        if self.count % 100 == 0:
-            print(' %d ' % self.count, file=sys.stderr, end='', flush=True)
-        elif self.count % 10 == 0:
-            print('.', file=sys.stderr, end='', flush=True)
-    def end(self):
-        print('. %d done' % self.count, file=sys.stderr)
-
 # A dictionary of all users.
 users = {}
 
@@ -78,7 +64,7 @@ users = {}
 total = user_context('Total')
 
 # Analyze all issues.
-prog = progress('issues')
+prog = tsgithub.progress('issues')
 for issue in repo.repo.get_issues(state = 'all'):
     prog.more()
     user_name = issue.user.login
@@ -99,7 +85,7 @@ for issue in repo.repo.get_issues(state = 'all'):
 prog.end()
 
 # Analyze all comments
-prog = progress('comments')
+prog = tsgithub.progress('comments')
 for comment in repo.repo.get_issues_comments():
     prog.more()
     user_name = comment.user.login
