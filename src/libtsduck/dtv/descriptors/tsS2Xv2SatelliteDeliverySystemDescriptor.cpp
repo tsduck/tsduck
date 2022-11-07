@@ -208,7 +208,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
     receiver_profiles = buf.getBits<uint8_t>(5);
     satellite_id = buf.getUInt24();
     frequency = buf.getBCD<uint64_t>(8) * 10000;  // unit is 10 Hz
-    symbol_rate = symbol_rate = buf.getBCD<uint64_t>(8) * 100;  // unit is 100 sym/sec
+    symbol_rate = buf.getBCD<uint64_t>(8) * 100;  // unit is 100 sym/sec
     if (multiple_input_stream_flag) {
         input_stream_identifier = buf.getUInt8();
     } 
