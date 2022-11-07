@@ -68,6 +68,16 @@ $AdminUserName = (Get-CimInstance -ClassName Win32_UserAccount -Filter "LocalAcc
 # Without this, Invoke-WebRequest is awfully slow.
 $ProgressPreference = 'SilentlyContinue'
 
+# Force TLS 1.2 as default.
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
+# User agent for downloads.
+$UserAgent = "Wget"
+
+# Retry when downloading packages.
+$DownloadRetryCount = 3
+$DownloadRetrySeconds = 5
+
 # Create the directory for external products or use default.
 if (-not $Destination) {
     $Destination = (New-Object -ComObject Shell.Application).NameSpace('shell:Downloads').Self.Path
@@ -154,7 +164,7 @@ function Get-HTML([string]$Url, [switch]$Fatal = $false)
     $status = 0
     $message = ""
     try {
-        $response = Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $Url
+        $response = Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Uri $Url
         $status = [int][Math]::Floor($response.StatusCode / 100)
     }
     catch {
@@ -225,8 +235,16 @@ function Download-Package([string]$Url, [string]$InstallerPath)
         Write-Output "$InstallerName already downloaded, use -ForceDownload to download again"
     }
     else {
-        Write-Output "Downloading $Url ..."
-        Invoke-WebRequest -UseBasicParsing -UserAgent Download -Uri $Url -OutFile $InstallerPath
+        # We do some retries since some sites are sometimes not responsive (seen on sourceforge).
+        for ($i=1; $i -le $DownloadRetryCount; $i++) {
+            Write-Output "Downloading $Url ..."
+            Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Uri $Url -OutFile $InstallerPath -ErrorAction Continue
+            if ((Test-Path $InstallerPath) -or ($i -ge $DownloadRetryCount)) {
+                break
+            }
+            Write-Output "Downloaded failed, will retry in $DownloadRetrySeconds seconds"
+            Start-Sleep -Seconds $DownloadRetrySeconds
+        }
         if (-not (Test-Path $InstallerPath)) {
             Exit-Script "$Url download failed"
         }
