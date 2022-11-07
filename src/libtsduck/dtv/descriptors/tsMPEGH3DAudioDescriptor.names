@@ -25,7 +25,7 @@ Bits = 8
 
 [MPEGH_3D_audio_descriptor.reference_channel_layout]
 Bits = 6
-# see ISO/IEC 23001-8 clause 8.2
+# see ISO/IEC 23001-8 clause 8.2 and ISO/IEC 23091-3 clause 6.2
 0 = any
 1 = 1/0.0
 2 = 2/0.0
