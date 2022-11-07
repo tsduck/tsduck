@@ -146,10 +146,10 @@ void ts::LCEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
         disp << margin << "Processed planes: " << UString::TrueFalse(buf.getBool());
         disp << ", picture type: " << UString::TrueFalse(buf.getBool());
         disp << ", field type: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        buf.skipBits(3);
+        buf.skipReservedBits(3);
         const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
         disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::VALUE | NamesFlags::DECIMAL);
-        buf.skipBits(2);
+        buf.skipReservedBits(2, 0);
         const uint16_t vprop = buf.getBits<uint16_t>(4);
         disp << ", video properties: " << DataName(MY_XML_NAME, u"video_properties", (hdr_wcg_idc << 8) | vprop) << " (" << vprop << ")" << std::endl;
     }

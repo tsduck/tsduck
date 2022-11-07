@@ -169,12 +169,12 @@ void ts::AVS3VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         disp << ", TD mode: " << UString::TrueFalse(buf.getBool()) << std::endl;
         disp << margin << "Library stream: " << UString::TrueFalse(buf.getBool());
         disp << ", Library picture enable: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        buf.skipBits(2);
+        buf.skipBits(2); // T/AI 109.6 is not explicit on the value for reserved bits
         const uint8_t cp = buf.getUInt8();
         const uint8_t tc = buf.getUInt8();
         const uint8_t mc = buf.getUInt8();
         disp << margin << UString::Format(u"Colour primaries: %d, Transfer characteristics: %d, Matrix coefficients: %d", {cp, tc, mc}) << std::endl;
-        buf.skipBits(8);
+        buf.skipBits(8); // T/AI 109.6 is not explicit on the value for reserved bits
     }
 }
 

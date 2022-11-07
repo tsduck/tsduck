@@ -149,7 +149,7 @@ void ts::MuxCodeDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& bu
 {
     uint8_t MuxCodeIndex = 0;
     while (buf.canReadBytes(3)) {
-        buf.skipBits(8);
+        buf.skipBits(8);  // length
         disp << margin << "index[" << int(MuxCodeIndex++) << "] MuxCode: " << buf.getBits<uint16_t>(4);
         disp << ", version: " << buf.getBits<uint16_t>(4) << std::endl;
         uint8_t _substructureCount = buf.getUInt8();

@@ -30,6 +30,7 @@
 #include "tsTTMLSubtitlingDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
+#include "tsTabulateVector.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
@@ -42,8 +43,6 @@
 #define MY_STD ts::Standards::DVB
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
-
-constexpr auto ITEMS_PER_LINE = 6;
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -239,50 +238,35 @@ void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         disp << ", TTS suitability: " << TTML_suitability(buf.getBits<uint8_t>(2)) << std::endl;
         bool essential_font_usage_flag = buf.getBool();
         bool qualifier_present_flag = buf.getBool();
-        buf.skipBits(2);
+        buf.skipReservedBits(2, 0);
         uint8_t i, dvb_ttml_profile_count;
         buf.getBits(dvb_ttml_profile_count, 4);
         if (dvb_ttml_profile_count > 0) {
-            disp << margin << "DVB TTML profile:";
-            for (i = 0; i < dvb_ttml_profile_count; i++) {
-                disp << " " << UString::Hexa(buf.getUInt8());
-                if ((i + 1) % ITEMS_PER_LINE == 0) {
-                    disp << std::endl;
-                    if (i != (dvb_ttml_profile_count - 1)) {
-                        disp << margin << "                 ";
-                    }
-                }
-            }
-            if (i % ITEMS_PER_LINE != 0) {
-                disp << std::endl;
-            }
+            std::vector<uint8_t> subtitle_profiles;
+            for (i = 0; i < dvb_ttml_profile_count; i++)
+                subtitle_profiles.push_back(buf.getUInt8());
+            tsTabulateVector(disp, margin + u"DVB TTML profile:", subtitle_profiles);
         }
         if (qualifier_present_flag) {
             const uint32_t qualifier = buf.getUInt32();
             disp << margin << "Qualifier: (" << UString::Hexa(qualifier) << ") " << TTML_qualifier(qualifier) << std::endl;
         }
         if (essential_font_usage_flag) {
-            disp << margin << "Essential font IDs:";
-            uint8_t font_id,font_count = buf.getUInt8();
+            std::vector<uint8_t> essential_fonts;
+            uint8_t font_count = buf.getUInt8();
             for (i = 0; i < font_count; i++) {
-                buf.skipBits(1);
-                buf.getBits(font_id, 7);
-                disp << " " << UString::Hexa(font_id);
-                if ((i + 1) % ITEMS_PER_LINE == 0) {
-                    disp << std::endl;
-                    if (i != (font_count - 1)) {
-                        disp << margin << "                   ";
-                    }
-                }
+                buf.skipReservedBits(1, 0);
+                essential_fonts.push_back(buf.getBits<uint8_t>(7));
             }
-            if (i % ITEMS_PER_LINE != 0) {
-                disp << std::endl;
-            }
+            tsTabulateVector(disp, margin + u"Essential font IDs:", essential_fonts);
         }
         UString service_name = buf.getStringWithByteLength();
         if (!service_name.empty()) {
             disp << margin << "Service Name: " << service_name << std::endl;
         }
+        ByteBlock reserved_zero_future_use = buf.getBytes();
+        if (!reserved_zero_future_use.empty())
+            tsTabulateVector(disp, margin + u"reserved_zero_future_use:", reserved_zero_future_use);
     }
 }
 

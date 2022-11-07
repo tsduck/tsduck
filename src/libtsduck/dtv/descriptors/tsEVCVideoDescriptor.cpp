@@ -167,19 +167,19 @@ void ts::EVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", interlaced source: " << UString::TrueFalse(buf.getBool());
         disp << ", non packed: " << UString::TrueFalse(buf.getBool());
         disp << ", frame only: " << UString::TrueFalse(buf.getBool()) << std::endl;
-        buf.skipBits(1);
+        buf.skipReservedBits(1);
         const bool temporal = buf.getBool();
         disp << margin << "Still pictures: " << UString::TrueFalse(buf.getBool());
         disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl; 
         const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
         disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::VALUE | NamesFlags::DECIMAL);
-        buf.skipBits(2);
+        buf.skipReservedBits(2);
         const uint16_t vprop = buf.getBits<uint16_t>(4);
         disp << ", video properties: " << DataName(MY_XML_NAME, u"video_properties", (hdr_wcg_idc << 8) | vprop) << " (" << vprop << ")" << std::endl;
         if (temporal && buf.canReadBytes(2)) {
-            buf.skipBits(5);
+            buf.skipReservedBits(5);
             disp << margin << "Temporal id min: " << buf.getBits<uint16_t>(3);
-            buf.skipBits(5);
+            buf.skipReservedBits(5);
             disp << ", max: " << buf.getBits<uint16_t>(3) << std::endl;
         }
     }

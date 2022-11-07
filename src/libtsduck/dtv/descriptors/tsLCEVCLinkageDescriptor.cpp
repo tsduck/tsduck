@@ -34,6 +34,7 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsTabulateVector.h"
 
 #define MY_XML_NAME u"LCEVC_linkage_descriptor"
 #define MY_CLASS ts::LCEVCLinkageDescriptor
@@ -111,12 +112,11 @@ void ts::LCEVCLinkageDescriptor::deserializePayload(PSIBuffer& buf)
 void ts::LCEVCLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {    
     if (buf.canReadBytes(1)) {
-        size_t size = buf.getUInt8();
-        size = std::min(size, buf.remainingReadBytes());
-        if (size > 0) {
-            disp.displayPrivateData(u"LCEVC stream tag", buf.currentReadAddress(), size, margin);
-            buf.skipBytes(size);
-        }
+        size_t num_lcevc_stream_tags = buf.getUInt8();
+        std::vector<uint8_t> lcevc_stream_tag;
+        for (uint8_t i = 0; i < num_lcevc_stream_tags; i++)
+            lcevc_stream_tag.push_back(buf.getUInt8());
+        tsTabulateVector(disp, margin+u"LCEVC stream tag: ", lcevc_stream_tag);
     }
 }
 
