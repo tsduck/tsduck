@@ -499,17 +499,17 @@ ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
 
-ifeq ($(MACOS),)
+ifneq ($(LINUX),)
     # Link flags on Linux
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
-else ifeq ($(FREEBSD),)
-    # Link flags on Linux
+else ifneq ($(FREEBSD),)
+    # Link flags on FreeBSD
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/freebsd
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
-else
+else ifneq ($(MACOS),)
     # Link flags on macOS
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
     LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
