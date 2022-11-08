@@ -36,7 +36,7 @@ ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
 // A local mutex to avoid multiple activations.
 TS_STATIC_INSTANCE(ts::Mutex, (), ActivationMutex)
 
-// On UNIX platforms, we use a semaphore (sem_t). On MacOS, the address of the
+// On UNIX platforms, we use a semaphore (sem_t). On macOS, the address of the
 // semaphore is returned by sem_open. On other UNIX, the semaphore instance is
 // initialized by sem_init.
 #if defined(TS_UNIX)
@@ -47,8 +47,8 @@ TS_STATIC_INSTANCE(ts::Mutex, (), ActivationMutex)
     #endif
 #endif
 
-// On macOS, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
-#if defined(TS_MAC) && !defined(SA_ONESHOT)
+// On BSD, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
+#if (defined(TS_MAC) || defined(TS_FREEBSD)) && !defined(SA_ONESHOT)
     #define SA_ONESHOT SA_RESETHAND
 #endif
 

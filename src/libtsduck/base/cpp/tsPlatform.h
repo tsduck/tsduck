@@ -234,6 +234,10 @@
     //!
     #define TS_LINUX
     //!
+    //! Defined when compiled for a FreeBSD target platform.
+    //!
+    #define TS_FREEBSD
+    //!
     //! Defined when compiled for a macOS target platform.
     //!
     #define TS_MAC
@@ -257,6 +261,10 @@
 #elif defined(WIN32) || defined(_WIN32) || defined(WIN64) || defined(_WIN64)
     #if !defined(TS_WINDOWS)
         #define TS_WINDOWS 1
+    #endif
+#elif defined(__FreeBSD__) || defined(TS_FREEBSD)
+    #if !defined(TS_FREEBSD)
+        #define TS_FREEBSD 1
     #endif
 #elif defined(__gnu_linux__) || defined(TS_LINUX) || defined(__linux__) || defined(linux)
     #if !defined(TS_LINUX)
@@ -287,7 +295,7 @@
     #define TS_ANDROID 1
 #endif
 
-#if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
+#if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_FREEBSD) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
     #define TS_UNIX 1
 #endif
 
@@ -449,12 +457,12 @@
 // Should really use "#warning" instead of "#error" but #warning is a
 // GCC extension while #error is standard.
 
-#if !defined(TS_LINUX) && !defined(TS_WINDOWS) && !defined(TS_MAC)
-    #error "TSDuck has been tested on Linux, macOS and Windows only, review this code"
+#if !defined(TS_LINUX) && !defined(TS_WINDOWS) && !defined(TS_MAC) && !defined(TS_FREEBSD)
+    #error "TSDuck has been tested on Linux, macOS, FreeBSD and Windows only, review this code"
 #endif
 
-#if !defined(TS_GCC) && !defined(TS_MSC)
-    #error "TSDuck has been tested with GCC and MSVC compilers only, review this code"
+#if !defined(TS_GCC) && !defined(TS_LLVM) && !defined(TS_MSC)
+    #error "TSDuck has been tested with GCC, LLVM (Clang) and MSVC compilers only, review this code"
 #endif
 
 // Byte order

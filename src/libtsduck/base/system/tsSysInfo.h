@@ -83,6 +83,11 @@ namespace ts {
         //!
         bool isMacOS() const { return _isMacOS; }
         //!
+        //! Check if the running operating system is FreeBSD.
+        //! @return True if the running operating system is FreeBSD.
+        //!
+        bool isFreeBSD() const { return _isFreeBSD; }
+        //!
         //! Check if the running operating system is Windows.
         //! @return True if the running operating system is Windows.
         //!
@@ -97,6 +102,16 @@ namespace ts {
         //! @return True if the CPU is the 64-bit extension of IA-32.
         //!
         bool isIntel64() const { return _isIntel64; }
+        //!
+        //! Check if the CPU is Arm-32.
+        //! @return True if the CPU is Arm-32.
+        //!
+        bool isArm32() const { return _isArm32; }
+        //!
+        //! Check if the CPU is Arm-64, also known as aarch64.
+        //! @return True if the CPU is Arm-64.
+        //!
+        bool isArm64() const { return _isArm64; }
         //!
         //! Get the operating system version.
         //! @return The operating system version.
@@ -131,9 +146,12 @@ namespace ts {
         bool    _isDebian;
         bool    _isRaspbian;
         bool    _isMacOS;
+        bool    _isFreeBSD;
         bool    _isWindows;
         bool    _isIntel32;
         bool    _isIntel64;
+        bool    _isArm32;
+        bool    _isArm64;
         UString _systemVersion;
         UString _systemName;
         UString _hostName;

@@ -167,12 +167,12 @@ TMPROOT = $(INSTALLERDIR)/tmp
 tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
-	tar -cpf - sample/sample-*/japanese-tables.bin \
+	$(TAR) -cpf - sample/sample-*/japanese-tables.bin \
 	    $(patsubst %,--exclude '%',.git $(if $(NOTELETEXT),tsTeletextDemux.* tsTeletextPlugin.*) $(shell cat .gitignore)) \
-	    . | tar -C $(TMPROOT)/$(TARNAME) -xpf -
+	    . | $(TAR) -C $(TMPROOT)/$(TARNAME) -xpf -
 	$(if $(NOTELETEXT),$(SED) -i -e '/TeletextDemux/d' -e '/TeletextPlugin/d' $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h)
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
-	tar -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
+	$(TAR) -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)
 
 # Installer target: rpm or deb.
@@ -226,7 +226,7 @@ install-rpm:
 # DEB package building (Debian, Ubuntu, Linux Mint, Raspbian, etc.)
 # Make deb-dev depend on deb-tools to force serialization in case of -j.
 
-DEB_ARCH = $(shell dpkg-architecture -qDEB_BUILD_ARCH)
+DEB_ARCH = $(if $(wildcard /etc/*debian*),$(shell dpkg-architecture -qDEB_BUILD_ARCH))
 
 .PHONY: deb deb-tools deb-dev
 deb: deb-tools deb-dev
@@ -296,7 +296,7 @@ COVERITY_SOURCES = src
 coverity:
 	rm -rf $(COVERITY_DIR)
 	$(COVERITY) --dir $(COVERITY_DIR) $(MAKE) -C $(COVERITY_SOURCES)
-	tar czf $(COVERITY_DIR).tgz $(COVERITY_DIR)
+	$(TAR) czf $(COVERITY_DIR).tgz $(COVERITY_DIR)
 
 # Static code analysis: Run cppcheck on the source code tree.
 # In debug mode, the diagnostics are more aggressive but may be false positive.

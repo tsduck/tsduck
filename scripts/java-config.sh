@@ -56,14 +56,22 @@ EOF
 
 # Locate Java home
 cmd_home() {
+    local system=$(uname -s)
     if [[ -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
         # Explicit value
         echo "$JAVA_HOME"
-    elif [[ $(uname -s) == Darwin ]]; then
+    elif [[ $system == Darwin ]]; then
         # macOS
         javac=$(find -L /Library/Java/JavaVirtualMachines/openjdk.jdk -name javac -perm +444 2>/dev/null | tail -1)
         [[ -z "$javac" ]] && javac=$(find -L /Library/Java/JavaVirtualMachines -name javac -perm +444 2>/dev/null | tail -1)
         [[ -n "$javac" ]] && dirname $(dirname "$javac")
+    elif [[ $system == FreeBSD  ]]; then
+        # One or more version under /usr/local, use the last one.
+        local jhome=
+        for dir in /usr/local/*jdk*; do
+            [[ -e $dir/bin/javac && -e $dir/include/jni.h ]] && jhome=$dir
+        done
+        [[ -n $jhome ]] && echo $jhome
     elif [[ -f /etc/gentoo-release ]]; then
         # Gentoo Linux does not use symbolic links into jdk for java and javac
         jdk=$(ls -d /etc/java-config*/current-system-vm 2>/dev/null | tail -1)

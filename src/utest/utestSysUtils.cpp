@@ -399,12 +399,11 @@ void SysUtilsTest::testErrorCode()
     const ts::UString codeMessage(ts::SysErrorCodeMessage(code));
     const ts::UString successMessage(ts::SysErrorCodeMessage(ts::SYS_SUCCESS));
 
-    debug()
-        << "SysUtilsTest: sizeof(ts::SysErrorCode) = " << sizeof(ts::SysErrorCode) << std::endl
-        << "SysUtilsTest: ts::SYS_SUCCESS = " << ts::SYS_SUCCESS << std::endl
-        << "SysUtilsTest: SUCCESS message = \"" << successMessage << "\"" << std::endl
-        << "SysUtilsTest: test code = " << code << std::endl
-        << "SysUtilsTest: test code message = \"" << codeMessage << "\"" << std::endl;
+    debug() << "SysUtilsTest: sizeof(ts::SysErrorCode) = " << sizeof(ts::SysErrorCode) << std::endl
+            << "SysUtilsTest: ts::SYS_SUCCESS = " << ts::SYS_SUCCESS << std::endl
+            << "SysUtilsTest: SUCCESS message = \"" << successMessage << "\"" << std::endl
+            << "SysUtilsTest: test code = " << code << std::endl
+            << "SysUtilsTest: test code message = \"" << codeMessage << "\"" << std::endl;
 
     TSUNIT_ASSERT(!codeMessage.empty());
     TSUNIT_ASSERT(!successMessage.empty());
@@ -545,13 +544,12 @@ void SysUtilsTest::testFileTime()
     const ts::Time fileUtc(ts::GetFileModificationTimeUTC(tmpName));
     const ts::Time fileLocal(ts::GetFileModificationTimeLocal(tmpName));
 
-    debug()
-        << "SysUtilsTest: file: " << tmpName << std::endl
-        << "SysUtilsTest:      before:      " << before << std::endl
-        << "SysUtilsTest:      before base: " << beforeBase << std::endl
-        << "SysUtilsTest:      file UTC:    " << fileUtc << std::endl
-        << "SysUtilsTest:      after:       " << after << std::endl
-        << "SysUtilsTest:      file local:  " << fileLocal << std::endl;
+    debug() << "SysUtilsTest: file: " << tmpName << std::endl
+            << "SysUtilsTest:      before:      " << before << std::endl
+            << "SysUtilsTest:      before base: " << beforeBase << std::endl
+            << "SysUtilsTest:      file UTC:    " << fileUtc << std::endl
+            << "SysUtilsTest:      after:       " << after << std::endl
+            << "SysUtilsTest:      file local:  " << fileLocal << std::endl;
 
     // Check that file modification occured between before and after.
     // Some systems may not store the milliseconds in the file time.
@@ -674,7 +672,7 @@ void SysUtilsTest::testProcessMetrics()
 
     ts::GetProcessMetrics(pm1);
     debug() << "ProcessMetricsTest: CPU time (1) = " << pm1.cpu_time << " ms" << std::endl
-                 << "ProcessMetricsTest: virtual memory (1) = " << pm1.vmem_size << " bytes" << std::endl;
+            << "ProcessMetricsTest: virtual memory (1) = " << pm1.vmem_size << " bytes" << std::endl;
 
     TSUNIT_ASSERT(pm1.cpu_time >= 0);
     TSUNIT_ASSERT(pm1.vmem_size > 0);
@@ -688,7 +686,7 @@ void SysUtilsTest::testProcessMetrics()
     ts::ProcessMetrics pm2;
     ts::GetProcessMetrics(pm2);
     debug() << "ProcessMetricsTest: CPU time (2) = " << pm2.cpu_time << " ms" << std::endl
-                 << "ProcessMetricsTest: virtual memory (2) = " << pm2.vmem_size << " bytes" << std::endl;
+            << "ProcessMetricsTest: virtual memory (2) = " << pm2.vmem_size << " bytes" << std::endl;
 
     TSUNIT_ASSERT(pm2.cpu_time >= 0);
     TSUNIT_ASSERT(pm2.cpu_time >= pm1.cpu_time);
@@ -699,44 +697,55 @@ void SysUtilsTest::testIsTerminal()
 {
 #if defined(TS_WINDOWS)
     debug() << "SysUtilsTest::testIsTerminal: stdin  = \"" << ts::WinDeviceName(::GetStdHandle(STD_INPUT_HANDLE)) << "\"" << std::endl
-        << "SysUtilsTest::testIsTerminal: stdout = \"" << ts::WinDeviceName(::GetStdHandle(STD_OUTPUT_HANDLE)) << "\"" << std::endl
-        << "SysUtilsTest::testIsTerminal: stderr = \"" << ts::WinDeviceName(::GetStdHandle(STD_ERROR_HANDLE)) << "\"" << std::endl;
+            << "SysUtilsTest::testIsTerminal: stdout = \"" << ts::WinDeviceName(::GetStdHandle(STD_OUTPUT_HANDLE)) << "\"" << std::endl
+            << "SysUtilsTest::testIsTerminal: stderr = \"" << ts::WinDeviceName(::GetStdHandle(STD_ERROR_HANDLE)) << "\"" << std::endl;
 #endif
     debug() << "SysUtilsTest::testIsTerminal: StdInIsTerminal = " << ts::UString::TrueFalse(ts::StdInIsTerminal())
-        << ", StdOutIsTerminal = " << ts::UString::TrueFalse(ts::StdOutIsTerminal())
-        << ", StdErrIsTerminal = " << ts::UString::TrueFalse(ts::StdErrIsTerminal())
-        << std::endl;
+            << ", StdOutIsTerminal = " << ts::UString::TrueFalse(ts::StdOutIsTerminal())
+            << ", StdErrIsTerminal = " << ts::UString::TrueFalse(ts::StdErrIsTerminal())
+            << std::endl;
 }
 
 void SysUtilsTest::testSysInfo()
 {
     debug() << "SysUtilsTest::testSysInfo: " << std::endl
-                 << "    isLinux = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isLinux()) << std::endl
-                 << "    isFedora = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isFedora()) << std::endl
-                 << "    isRedHat = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isRedHat()) << std::endl
-                 << "    isUbuntu = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isUbuntu()) << std::endl
-                 << "    isDebian = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isDebian()) << std::endl
-                 << "    isMacOS = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isMacOS()) << std::endl
-                 << "    isWindows = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isWindows()) << std::endl
-                 << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel32()) << std::endl
-                 << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel64()) << std::endl
-                 << "    systemVersion = \"" << ts::SysInfo::Instance()->systemVersion() << '"' << std::endl
-                 << "    systemName = \"" << ts::SysInfo::Instance()->systemName() << '"' << std::endl
-                 << "    hostName = \"" << ts::SysInfo::Instance()->hostName() << '"' << std::endl
-                 << "    memoryPageSize = " << ts::SysInfo::Instance()->memoryPageSize() << std::endl;
+            << "    isLinux = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isLinux()) << std::endl
+            << "    isFedora = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isFedora()) << std::endl
+            << "    isRedHat = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isRedHat()) << std::endl
+            << "    isUbuntu = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isUbuntu()) << std::endl
+            << "    isDebian = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isDebian()) << std::endl
+            << "    isMacOS = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isMacOS()) << std::endl
+            << "    isFreeBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isFreeBSD()) << std::endl
+            << "    isWindows = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isWindows()) << std::endl
+            << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel32()) << std::endl
+            << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel64()) << std::endl
+            << "    isArm32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isArm32()) << std::endl
+            << "    isArm64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isArm64()) << std::endl
+            << "    systemVersion = \"" << ts::SysInfo::Instance()->systemVersion() << '"' << std::endl
+            << "    systemName = \"" << ts::SysInfo::Instance()->systemName() << '"' << std::endl
+            << "    hostName = \"" << ts::SysInfo::Instance()->hostName() << '"' << std::endl
+            << "    memoryPageSize = " << ts::SysInfo::Instance()->memoryPageSize() << std::endl;
 
 #if defined(TS_WINDOWS)
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
 #elif defined(TS_LINUX)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
 #elif defined(TS_MAC)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
+#elif defined(TS_FREEBSD)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(ts::SysInfo::Instance()->isFreeBSD());
 #endif
 
     // We can't predict the memory page size, except that it must be a multiple of 256.

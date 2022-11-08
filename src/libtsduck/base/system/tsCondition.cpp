@@ -30,6 +30,11 @@
 #include "tsCondition.h"
 #include "tsTime.h"
 
+// Clang can be too clever here: calling function 'pthread_cond_wait' requires holding mutex 'mutex._mutex' exclusively
+// We encapsulate the calls and these checks cannot be done in this module.
+// This warning has been seen on FreeBSD only.
+TS_LLVM_NOWARNING(thread-safety-analysis)
+
 
 //----------------------------------------------------------------------------
 // Constructor

@@ -9,7 +9,7 @@ on Windows and Linux. macOS can only support files and networking for TS input a
 Some protocols such as SRT and RIST require external libraries which may
 not be available on all platforms or all versions of a specific distro.
 
-# Unix systems (Linux and macOS) {#unixbuild}
+# Unix systems (Linux, FreeBSD and macOS) {#unixbuild}
 
 ## Pre-requisites {#requnix}
 
@@ -30,11 +30,13 @@ Currently, the script supports the following operating systems:
 - Red Hat Enterprise Linux
 - CentOS
 - Alma Linux
+- Rocky Linux
 - openSUSE Linux
 - Arch Linux
 - Alpine Linux
 - Gentoo
 - Linux Mint
+- FreeBSD
 
 Since all packages are pulled from the standard repositories of each distro,
 there is generally no need to re-run this script later. The packages will be
@@ -53,6 +55,11 @@ Vatek API: On Linux, the command `make` at the top level will automatically down
 Linux version of the Vatek API from the GitHub. There is currectly no Linux packet for
 the Vatek API. On Windows and macOS, binary packages are available and are installed
 by the install-prerequisites script.
+
+FreeBSD: The standard BSD `make` command uses an old syntax. The makefiles in the TSDuck
+project use a GNU Make syntax and are not compatible with the BSD `make` command.
+As part of prerequisites for FreeBSD, GNU Make is installed under the name `gmake`.
+In all build commands in this page, when `make` is mentioned, use `gmake` on FreeBSD.
 
 ## Building the TSDuck binaries alone {#buildunix}
 
