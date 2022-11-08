@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2022, Thierry Lelegard
@@ -25,36 +25,18 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup net
-//!  Include the multiple and messy system headers for IP networking.
-//!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-#pragma once
-#include "tsPlatform.h"
+#include "tsTunerDevice.h"
+#include "tsReport.h"
 
-#if defined(TS_WINDOWS)
-    #include "tsBeforeStandardHeaders.h"
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <mswsock.h>
-    #include "tsAfterStandardHeaders.h"
-    #if defined(TS_MSC)
-        #pragma comment(lib, "ws2_32.lib")
-    #endif
-#else
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <net/if.h>
-    #include <netinet/in.h>
-    #include <netinet/tcp.h>
-    #include <netdb.h>
-    #if defined(TS_MAC) || defined(TS_FREEBSD)
-        #include <ifaddrs.h>
-    #endif
-    #include "tsAfterStandardHeaders.h"
-#endif
+
+//-----------------------------------------------------------------------------
+// FreeBSD implementation of services from ts::TunerBase.
+//-----------------------------------------------------------------------------
+
+bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners)
+{
+    duck.report().error(u"Digital tuners are not implemented on FreeBSD");
+    return false;
+}

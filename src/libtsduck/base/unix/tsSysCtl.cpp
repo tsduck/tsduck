@@ -26,35 +26,44 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup net
-//!  Include the multiple and messy system headers for IP networking.
-//!
+
+#include "tsSysCtl.h"
+#include <ctype.h>
+
+
+//----------------------------------------------------------------------------
+// Get a Unix sysctl(2) string value.
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsPlatform.h"
+ts::UString ts::SysCtrlString(std::initializer_list<int> oid)
+{
+#if defined(TS_MAC) || defined(TS_FREEBSD)
 
-#if defined(TS_WINDOWS)
-    #include "tsBeforeStandardHeaders.h"
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <mswsock.h>
-    #include "tsAfterStandardHeaders.h"
-    #if defined(TS_MSC)
-        #pragma comment(lib, "ws2_32.lib")
-    #endif
+    std::vector<int> vecoid(oid.begin(), oid.end());
+
+    // First step, get the returned size of the string.
+    size_t length = 0;
+    if (::sysctl(&vecoid[0], u_int(vecoid.size()), nullptr, &length, nullptr, 0) < 0) {
+        return UString();
+    }
+
+    // Then get the string with the right buffer size.
+    std::string name(length, '\0');
+    if (::sysctl(&vecoid[0], u_int(vecoid.size()), &name[0], &length, nullptr, 0) < 0) {
+        return UString();
+    }
+
+    // Cleanup end of string.
+    while (!name.empty() && (name.back() == '\0' || ::isspace(name.back()))) {
+        name.pop_back();
+    }
+
+    return UString::FromUTF8(name);
+
 #else
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <net/if.h>
-    #include <netinet/in.h>
-    #include <netinet/tcp.h>
-    #include <netdb.h>
-    #if defined(TS_MAC) || defined(TS_FREEBSD)
-        #include <ifaddrs.h>
-    #endif
-    #include "tsAfterStandardHeaders.h"
+
+    // sysctl(2) not implemented on this platform.
+    return UString();
+
 #endif
+}

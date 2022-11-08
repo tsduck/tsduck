@@ -145,9 +145,10 @@ cmd_libs() {
 cmd_staticlibs() {
     local srt=$(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a /opt/homebrew/lib/libsrt.a 2>/dev/null | head -1)
     local rist=$(ls /usr/lib/librist.a /usr/local/lib/librist.a /opt/homebrew/lib/librist.a 2>/dev/null | head -1)
-    local atomic=
-    [[ $SYSTEM == Linux ]] && atomic="-latomic"
-    echo "$(cmd_lib)/libtsduck.a $srt $rist $(curl-config --static-libs 2>/dev/null) -ledit $atomic $(libs_common)"
+    local other=
+    [[ $SYSTEM == Linux ]] && other="$other -latomic"
+    [[ $SYSTEM == FreeBSD ]] && other="$other -lprocstat"
+    echo "$(cmd_lib)/libtsduck.a $srt $rist $(curl-config --static-libs 2>/dev/null) -ledit $other $(libs_common)"
 }
 
 version_major() {

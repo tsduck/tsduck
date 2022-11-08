@@ -30,10 +30,13 @@
 #include "tsSysInfo.h"
 #include "tsSysUtils.h"
 #include "tsMemory.h"
+
 #if defined(TS_MAC)
-#include "tsMacPList.h"
-#include <sys/param.h>
-#include <sys/sysctl.h>
+    #include "tsMacPList.h"
+#endif
+
+#if defined(TS_UNIX)
+    #include "tsSysCtl.h"
 #endif
 
 // Define singleton instance
@@ -60,6 +63,11 @@ ts::SysInfo::SysInfo() :
 #else
     _isMacOS(false),
 #endif
+#if defined(TS_FREEBSD)
+    _isFreeBSD(true),
+#else
+    _isFreeBSD(false),
+#endif
 #if defined(TS_WINDOWS)
     _isWindows(true),
 #else
@@ -75,6 +83,16 @@ ts::SysInfo::SysInfo() :
 #else
     _isIntel64(false),
 #endif
+#if defined(TS_ARM)
+    _isArm32(true),
+#else
+    _isArm32(false),
+#endif
+#if defined(TS_ARM64)
+    _isArm64(true),
+#else
+    _isArm64(false),
+#endif
     _systemVersion(),
     _systemName(),
     _hostName(),
@@ -83,9 +101,9 @@ ts::SysInfo::SysInfo() :
 #elif defined(TS_X86_64)
     _cpuName(u"Intel x86-64"),
 #elif defined(TS_ARM64)
-    _cpuName(u"ARM-64"),
+    _cpuName(u"Arm-64"),
 #elif defined(TS_ARM)
-    _cpuName(u"ARM"),
+    _cpuName(u"Arm-32"),
 #elif defined(TS_MIPS)
     _cpuName(u"MIPS"),
 #elif defined(TS_SPARC)
@@ -152,20 +170,24 @@ ts::SysInfo::SysInfo() :
     }
 
     // Get kernel version.
-    int mib[2];
-    size_t len = 0;
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_OSRELEASE;
-    if (::sysctl(mib, 2, nullptr, &len, nullptr, 0) == 0) {
-        std::string version(len, 0);
-        if (::sysctl(mib, 2, &version[0], &len, nullptr, 0) == 0) {
-            if (!_systemVersion.empty()) {
-                _systemVersion += u", ";
-            }
-            // Implicitely remove trailing zeroes from sysctl() result.
-            version.resize(len);
-            _systemVersion += u"Darwin " + UString::FromUTF8(version.c_str());
+    const UString osrelease(SysCtrlString({CTL_KERN, KERN_OSRELEASE}));
+    if (!osrelease.empty()) {
+        if (!_systemVersion.empty()) {
+            _systemVersion += u", ";
         }
+        _systemVersion += u"Darwin " + osrelease;
+    }
+
+#elif defined(TS_FREEBSD)
+
+    _systemName = SysCtrlString({CTL_KERN, KERN_OSTYPE});
+    if (_systemName.empty()) {
+        _systemName = u"FreeBSD";
+    }
+
+    _systemVersion = SysCtrlString({CTL_KERN, KERN_VERSION});
+    if (_systemVersion.empty()) {
+        _systemVersion = SysCtrlString({CTL_KERN, KERN_OSRELEASE});
     }
 
 #elif defined(TS_WINDOWS)

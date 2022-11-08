@@ -31,6 +31,12 @@
 #include "tsTime.h"
 #include "tsMemory.h"
 
+// Clang can be too clever here.
+// We encapsulate the calls and these checks cannot be done in this module.
+// This warning has been seen on FreeBSD only.
+TS_LLVM_NOWARNING(thread-safety-analysis)
+TS_LLVM_NOWARNING(thread-safety-negative)
+
 // On MacOS, we must do polling on mutex "lock with timeout".
 // We use 10 ms, expressed in nanoseconds.
 #if defined(TS_MAC)

@@ -36,7 +36,7 @@
 
 import tsbuild, sys, os, fnmatch
 
-headers = {'': [], 'private': [], 'unix': [], 'linux': [], 'mac': [], 'windows': []}
+headers = {'': [], 'private': [], 'unix': [], 'linux': [], 'mac': [], 'freebsd': [], 'windows': []}
 exclude = ['tsduck.h', 'tsBeforeStandardHeaders.h', 'tsAfterStandardHeaders.h']
 
 # Recursively collect header files.
