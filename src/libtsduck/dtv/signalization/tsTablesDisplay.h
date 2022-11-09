@@ -378,6 +378,71 @@ namespace ts {
                         size_t innerIndent,
                         const TLVSyntax& tlv);
 
+        //!
+        //! Display the 32-bit values in a structured manner with specified number of items on each line
+        //! 
+        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] values  List of values to be output in hexadecimal form
+        //! @param [in] margin  Left margin content (default: "").
+        //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
+        //! @param [in] num_per_line  Number of values to be output on a single line (default: 6)
+        //!  
+        void displayVector(const UString& title,
+                           std::vector<uint32_t> values, 
+                           const UString& margin = UString(), 
+                           bool space_first = true, 
+                           size_t num_per_line = 6);
+
+        //!
+        //! Display the 16-bit values in a structured manner with specified number of items on each line
+        //! 
+        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] values  List of values to be output in hexadecimal form
+        //! @param [in] margin  Left margin content (default: "").
+        //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
+        //! @param [in] num_per_line  Number of values to be output on a single line (default: 6)
+        //!
+        void displayVector(const UString& title,
+                           std::vector<uint16_t> values, 
+                           const UString& margin = UString(), 
+                           bool space_first = true, 
+                           size_t num_per_line = 6);
+
+        //!
+        //! Display the 8-bit values in a structured manner with specified number of items on each line
+        //! 
+        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] values  List of values to be output in hexadecimal form
+        //! @param [in] margin  Left margin content (default: "").
+        //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
+        //! @param [in] num_per_line  Number of values to be output on a single line (default: 8)
+        //! 
+        void displayVector(const UString& title,
+                           std::vector<uint8_t> values, 
+                           const UString& margin = UString(), 
+                           bool space_first = true, 
+                           size_t num_per_line = 8);
+
+        //!
+        //! Display boolean values in a structured manner using the characters specified and with the specified 
+        //! number of items on each line
+        //! 
+        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] values  List of values to be output in hexadecimal form
+        //! @param [in] margin Left  margin content (default: "").
+        //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
+        //! @param [in] num_per_line  Number of values to be output on a single line (default: 6)
+        //! @param [in] true_val  Character to display when the value is true (default: '1')
+        //! @param [in] false_val  Character to display when the value is false (default: '0')
+        //! 
+        void displayVector(const UString& title,
+                           std::vector<bool> values,
+                           const UString& margin = UString(), 
+                           bool space_first = false, 
+                           size_t num_per_line = 40, 
+                           char true_val = '1', 
+                           char false_val = '0');
+
     private:
         DuckContext&    _duck;            // Reference to the associated TSDuck context.
         bool            _raw_dump;        // Raw dump of section, no interpretation.
