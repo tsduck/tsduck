@@ -95,7 +95,7 @@ void ts::VVCSubpicturesDescriptor::serializePayload(PSIBuffer& buf) const
     buf.putBit(service_description_present);
     const size_t number_of_vvc_subpictures = std::min<size_t>(0x3F, std::min(component_tag.size(), vvc_subpicture_id.size()));
     buf.putBits(number_of_vvc_subpictures, 6);
-    for (uint8_t i = 0; i < number_of_vvc_subpictures; i++) {
+    for (size_t i = 0; i < number_of_vvc_subpictures; i++) {
         buf.putUInt8(component_tag[i]);
         buf.putUInt8(vvc_subpicture_id[i]);
     }
@@ -117,7 +117,7 @@ void ts::VVCSubpicturesDescriptor::deserializePayload(PSIBuffer& buf)
     bool service_description_present = buf.getBool();
     size_t number_of_vvc_subpictures = 0;
     buf.getBits(number_of_vvc_subpictures, 6);
-    for (uint8_t i = 0; i < number_of_vvc_subpictures; i++) {
+    for (size_t i = 0; i < number_of_vvc_subpictures; i++) {
         component_tag.push_back(buf.getUInt8());
         vvc_subpicture_id.push_back(buf.getUInt8());
     }
@@ -140,7 +140,7 @@ void ts::VVCSubpicturesDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
         disp << margin << "Default service mode: " << UString::TrueFalse(buf.getBool());
         const bool sdpresent = buf.getBool();
         disp << ", service description present: " << UString::TrueFalse(sdpresent) << std::endl;
-        uint8_t num_subpics;
+        uint8_t num_subpics = 0;
         buf.getBits(num_subpics, 6);
         for (uint8_t i = 0; i < num_subpics; i++) {
             uint8_t tag = buf.getUInt8();
