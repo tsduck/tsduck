@@ -69,6 +69,8 @@ jobs:
       LLVM: ${{ matrix.llvm }}
       BINDIR: ${{ matrix.bindir }}
       CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
+      ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      REFERENCE_REPO: ${{ github.repository }}
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -84,8 +86,15 @@ jobs:
       run: make test
     - name: Download test suite
       run: |
+        # Try to download '<repo>-test' from the pull request owner, if there is one.
+        if curl -f -s -L "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+            echo "Downloaded test suite from $ORIGIN_REPO"
+        else
+            curl -f -s -L "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
+            echo "Downloaded test suite from $REFERENCE_REPO"
+        fi
         mkdir -p ../tsduck-test
-        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1 -C ../tsduck-test
+        tar -C ../tsduck-test -x -z -f test.tgz --strip 1
     - name: Run test suite
       run: |
         make test-suite && status=$? || status=$?
@@ -117,6 +126,8 @@ jobs:
     runs-on: windows-latest
     env:
       STDCPP: stdcpp${{ matrix.std }}
+      ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      REFERENCE_REPO: ${{ github.repository }}
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -144,10 +155,22 @@ jobs:
         bin/${{ matrix.configuration }}-${{ matrix.suffix }}/utests-tsducklib.exe
     - name: Download test suite
       run: |
+        # Try to download '<repo>-test' from the pull request owner, if there is one.
+        $Previous = $ErrorActionPreference
+        $ErrorActionPreference = 'SilentlyContinue'
         $ProgressPreference = 'SilentlyContinue'
-        Invoke-WebRequest -UseBasicParsing -Uri https://github.com/tsduck/tsduck-test/archive/master.zip -OutFile test.zip
-        Expand-Archive test.zip -DestinationPath . -Force
-        Move-Item tsduck-test-master ../tsduck-test -Force
+        Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:ORIGIN_REPO}-test/archive/master.zip
+        $ErrorActionPreference = $Previous
+        if (Test-Path test.zip) {
+            Write-Output "Downloaded test suite from ${env:ORIGIN_REPO}"
+        }
+        else {
+            Invoke-WebRequest -UseBasicParsing -OutFile test.zip -Uri https://github.com/${env:REFERENCE_REPO}-test/archive/master.zip
+            Write-Output "Downloaded test suite from ${env:REFERENCE_REPO}"
+        }
+        [void] (New-Item -Type Directory -Force tmp)
+        Expand-Archive test.zip -DestinationPath tmp -Force
+        Move-Item tmp\* ..\tsduck-test -Force
     - name: Run test suite
       shell: bash
       run: |
