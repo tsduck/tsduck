@@ -30,7 +30,6 @@
 #include "tsTTMLSubtitlingDescriptor.h"
 #include "tsDescriptor.h"
 #include "tsTablesDisplay.h"
-#include "tsTabulateVector.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
@@ -245,7 +244,7 @@ void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
             std::vector<uint8_t> subtitle_profiles;
             for (i = 0; i < dvb_ttml_profile_count; i++)
                 subtitle_profiles.push_back(buf.getUInt8());
-            tsTabulateVector(disp, margin + u"DVB TTML profile:", subtitle_profiles);
+            disp.displayVector(u"DVB TTML profile:", subtitle_profiles, margin);
         }
         if (qualifier_present_flag) {
             const uint32_t qualifier = buf.getUInt32();
@@ -258,15 +257,13 @@ void ts::TTMLSubtitlingDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuf
                 buf.skipReservedBits(1, 0);
                 essential_fonts.push_back(buf.getBits<uint8_t>(7));
             }
-            tsTabulateVector(disp, margin + u"Essential font IDs:", essential_fonts);
+            disp.displayVector(u"Essential font IDs:", essential_fonts, margin);
         }
         UString service_name = buf.getStringWithByteLength();
         if (!service_name.empty()) {
             disp << margin << "Service Name: " << service_name << std::endl;
         }
-        ByteBlock reserved_zero_future_use = buf.getBytes();
-        if (!reserved_zero_future_use.empty())
-            tsTabulateVector(disp, margin + u"reserved_zero_future_use:", reserved_zero_future_use);
+        disp.displayPrivateData(u"reserved_zero_future_use", buf, NPOS, margin);
     }
 }
 

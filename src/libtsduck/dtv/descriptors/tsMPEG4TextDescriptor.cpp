@@ -35,7 +35,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 #include "tsAlgorithm.h"
-#include "tsTabulateVector.h"
 
 #define MY_XML_NAME u"MPEG4_text_descriptor"
 #define MY_CLASS ts::MPEG4TextDescriptor
@@ -241,7 +240,7 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
             std::vector<uint8_t> Compatible3GPPFormats;
             for (uint8_t i = 0; i < number_of_formats; i++)
                 Compatible3GPPFormats.push_back(buf.getUInt8());
-            tsTabulateVector(disp, margin + u"Compatible 3GPP formats:", Compatible3GPPFormats, true, 6);
+            disp.displayVector(u"Compatible 3GPP formats:", Compatible3GPPFormats, margin);
         }
         if (SampleDescription_carriage_flag) {
             const uint8_t number_of_SampleDescriptions = buf.getUInt8();
