@@ -74,7 +74,7 @@ $(NAMES_DEST): $(NAMES_SRC) $(NAMES_SUBS)
 
 $(DEKTEC_DEST): $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
 	@echo '  [GEN] $(notdir $@)'; \
-	$(SCRIPTSDIR)/build-dektec-names.py $(if $<,$<,/dev/null) $@
+	$(PYTHON) $(SCRIPTSDIR)/build-dektec-names.py $(if $<,$<,/dev/null) $@
 
 # Install configuration files.
 
