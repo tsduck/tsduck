@@ -238,7 +238,11 @@ function Download-Package([string]$Url, [string]$InstallerPath)
         # We do some retries since some sites are sometimes not responsive (seen on sourceforge).
         for ($i=1; $i -le $DownloadRetryCount; $i++) {
             Write-Output "Downloading $Url ..."
-            Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Uri $Url -OutFile $InstallerPath -ErrorAction Continue
+            # If the environment had set "stop on error", suspend and restore it after download.
+            $Previous = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Uri $Url -OutFile $InstallerPath
+            $ErrorActionPreference = $Previous
             if ((Test-Path $InstallerPath) -or ($i -ge $DownloadRetryCount)) {
                 break
             }
