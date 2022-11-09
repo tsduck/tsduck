@@ -102,7 +102,9 @@ install-devel:
 	    $(if $(NOCURL),-e 's|libcurl||g') \
 	    $(if $(NOEDITLINE),-e 's|libedit||g') \
 	    $(if $(NOVATEK),-e 's|libusb-1.0||g') \
-	    $(if $(MACOS),-e 's| *-lrt *| |g' -e 's| *-latomic *| |g') \
+	    $(if $(MACOS),-e 's| *-lrt *| |g') \
+	    $(if $(MACOS)$(FREEBSD),-e 's| *-latomic *| |g') \
+	    $(if $(FREEBSD),,-e 's| *-lprocstat *| |g') \
 	    -e 's|:[ ,]*|: |g' -e 's|,[ ,]*|, |g' -e 's|[ ,]*$$||' -e '/: *$$/d' \
 	    tsduck.pc >$(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
 	chmod 644 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc

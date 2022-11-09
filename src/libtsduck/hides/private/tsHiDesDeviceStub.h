@@ -40,7 +40,7 @@
 namespace {
     bool NotImplemented(ts::Report& report)
     {
-        report.error(u"HiDes devices are not implemented on macOS");
+        report.error(u"HiDes devices are not implemented on this system");
         return false;
     }
 }

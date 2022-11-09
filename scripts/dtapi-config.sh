@@ -265,6 +265,7 @@ get-url()
 # Get local tarball file name.
 get-tarball()
 {
+    [[ $SYSTEM != linux ]] && return
     local link=$(readlink "$BINDIR/dektec-tarball")
     local tarball=
     [[ -n "$link" ]] && tarball="$BINDIR/$link"

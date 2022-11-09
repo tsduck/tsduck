@@ -50,12 +50,7 @@ $(BINDIR)/utest: $(OBJS) $(SHARED_LIBTSDUCK)
 # Add libraries which are otherwise only used by the libtsduck shared object.
 $(BINDIR)/utest_static: $(filter-out $(OBJDIR)/utestPluginRepository.o,$(OBJS)) $(STATIC_LIBTSDUCK)
 	@echo '  [LD] $@'; \
-	$(CC) $(LDFLAGS) $^ \
-	      $(if $(NOSRT),,-lsrt) \
-	      $(if $(NORIST),,-lrist) \
-	      $(if $(NOCURL),,$(shell curl-config --libs)) \
-	      $(if $(NOEDITLINE),,-ledit) \
-	      $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 
 # Run tests.
 # Use make UTESTFLAGS="-d -t ClassTest::testName" for one single test in debug mode.

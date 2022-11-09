@@ -124,6 +124,7 @@ F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
 # Also use command python3 when available, fallback as python alone.
 
 ifeq ($(SED),)
+    export TAR    := $(call F_COMMAND,gtar,tar)
     export SED    := $(call F_COMMAND,gsed,sed)
     export GREP   := $(call F_COMMAND,ggrep,grep)
     export FGREP  := $(call F_COMMAND,gfgrep,fgrep)
@@ -149,14 +150,16 @@ SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
 #   CPU cores, CPU_COUNT is typically twice CORE_COUNT
 # - ETCDIR : system configuration directory; /etc if $(SYSPREFIX) is /usr
 #   and $(SYSPREFIX)/etc otherwise
+# - FREEBSD : non-empty on FreeBSD systems
 # - HOSTNAME : host name without domain name
+# - LINUX : non-empty on Linux systems
 # - LINUXBREW : to be set on input; force a compilation in a Homebrew
 #   environment on Linux. Homebrew on Linux (aka "Linuxbrew") installs a
 #   non-standard environment where libraries are fetched from $HOMEBREW_PREFIX
 #   instead of /usr. By default, ignore the Homebrew environment on Linux and
 #   build using system libraries.
 # - LOCAL_ARCH : local processor exact architecture ("x86_64", "armv7l", etc)
-# - LOCAL_OS : operating system (linux, darwin)
+# - LOCAL_OS : operating system (linux, darwin, freebsd)
 # - MAIN_ARCH : target processor architecture family ("x86_64", "arm", etc)
 # - MACOS : non-empty on macOS systems
 # - SO_SUFFIX : shared libraries suffix (".so", ".dylib")
@@ -182,7 +185,9 @@ ifeq ($(LOCAL_OS),)
     export HOSTNAME   := $(firstword $(subst ., ,$(shell hostname 2>/dev/null)))
 endif
 
+LINUX = $(if $(findstring linux,$(LOCAL_OS)),true)
 MACOS = $(if $(findstring darwin,$(LOCAL_OS)),true)
+FREEBSD = $(if $(findstring freebsd,$(LOCAL_OS)),true)
 
 ifneq ($(M32),)
     # 32-bit cross-comppilation.
@@ -203,6 +208,11 @@ ifeq ($(CPU_COUNT),)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
         export CORE_COUNT := $(shell sysctl -n hw.physicalcpu 2>/dev/null)
         export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+    else ifneq ($(FREEBSD),)
+        export CPU_COUNT  := $(shell sysctl -n kern.smp.cpus 2>/dev/null)
+        export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        export CORE_COUNT := $(shell sysctl -n kern.smp.cores 2>/dev/null)
+        export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
     else
         export CPU_COUNT  := $(shell nproc 2>/dev/null)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
@@ -213,8 +223,9 @@ endif
 
 # On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
 # On Linux, when Homebrew is forced, use it as alternative development root.
+# On FreeBSD, the packages are installed in /usr/local.
 
-ifneq ($(MACOS)$(LINUXBREW),)
+ifneq ($(MACOS)$(LINUXBREW)$(FREEBSD),)
     $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)))
     ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
 else
@@ -224,14 +235,14 @@ endif
 # Locate system directories.
 
 USELIB64  := $(if $(findstring linux-x86_64,$(LOCAL_OS)-$(MAIN_ARCH)),$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true)))
-SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT),/usr)
+SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD),$(ALTDEVROOT),/usr)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
 # Locate bash completions facility.
-BASHCOMP_DIR ?= $(if $(MACOS)$(LINUXBREW),$(ALTDEVROOT)/etc/bash_completion.d,$(SYSPREFIX)/share/bash-completion/completions)
-BASHCOMP_AUTO = $(if $(MACOS)$(LINUXBREW),,true)
+BASHCOMP_DIR ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD),$(ALTDEVROOT)/etc/bash_completion.d,$(SYSPREFIX)/share/bash-completion/completions)
+BASHCOMP_AUTO = $(if $(MACOS)$(LINUXBREW)$(FREEBSD),,true)
 
 #-----------------------------------------------------------------------------
 # Output directories for final binaries and objects.
@@ -369,13 +380,13 @@ endif
 # Get current compiler version, usually in form x.y.z
 
 ifeq ($(GCC_VERSION_DONE),)
-    export GCC_VERSION_DONE = true
+    export GCC_VERSION_DONE := true
     export GCC_VERSION := $(shell $(GCC) -dumpversion 2>/dev/null)
     export GCC_MAJOR := $(firstword $(subst .,$(SPACE),$(GCC_VERSION)))
     export LLVM_VERSION := $(shell clang -dumpversion 2>/dev/null)
     export LLVM_MAJOR := $(firstword $(subst .,$(SPACE),$(LLVM_VERSION)))
-    export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | grep -i -e gcc -e g++),true)
-    export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | grep -i clang),true)
+    export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i -e gcc -e g++),true)
+    export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i clang),true)
     export LLVM_12 := $(call F_GE,$(LLVM_MAJOR),12)
     export GCC_5 := $(call F_GE,$(GCC_MAJOR),5)
     export GCC_6 := $(call F_GE,$(GCC_MAJOR),6)
@@ -474,7 +485,7 @@ LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
 
 # External libraries
 
-LDLIBS += -lstdc++ -lpthread $(if $(MACOS),,-lrt -latomic) -lm
+LDLIBS += -lstdc++ -lpthread $(if $(MACOS),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
@@ -488,12 +499,17 @@ ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 # $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
 
-ifeq ($(MACOS),)
+ifneq ($(LINUX),)
     # Link flags on Linux
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
-else
+else ifneq ($(FREEBSD),)
+    # Link flags on FreeBSD
+    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/freebsd
+    LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
+    SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
+else ifneq ($(MACOS),)
     # Link flags on macOS
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
     LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
@@ -535,6 +551,7 @@ else
     NOCURL     = true
     NOPCSC     = true
     NODTAPI    = true
+    NOVATEK    = true
     NOSRT      = true
     NORIST     = true
     NOEDITLINE = true
@@ -551,6 +568,7 @@ ifneq ($(CROSS)$(CROSS_TARGET),)
     NOCURL     = true
     NOPCSC     = true
     NODTAPI    = true
+    NOVATEK    = true
     NOSRT      = true
     NORIST     = true
     NOEDITLINE = true
@@ -571,10 +589,15 @@ ifeq ($(NOCURL),)
     NOCURL := $(if $(call F_SEARCH,curl-config),,true)
 endif
 
-ifneq ($(MACOS),)
-    # Dektec and HiDes devices are not supported on macOS (no driver).
+ifneq ($(MACOS)$(FREEBSD),)
+    # Dektec and HiDes devices are not supported on macOS or FreeBSD (no driver).
     NODTAPI = true
     NOHIDES = true
+endif
+
+ifneq ($(FREEBSD),)
+    # Vatek library has not yet been validated on FreeBSD.
+    NOVATEK = true
 endif
 
 ifneq ($(NODEKTEC),)
@@ -619,8 +642,8 @@ ifneq ($(NOPCSC),)
 else ifneq ($(MACOS),)
     # On macOS, use PCSC.framework
     LDLIBS_PCSC = -framework PCSC
-else ifneq ($(LINUXBREW),)
-    # PCSC on Linuxbrew
+else ifneq ($(LINUXBREW)$(FREEBSD),)
+    # PCSC on Linuxbrew or FreeBSD
     CXXFLAGS_INCLUDES += -I$(ALTDEVROOT)/include/PCSC
     LDLIBS_PCSC = -lpcsclite
 else
@@ -646,7 +669,7 @@ endif
 # when linking applications against the TSDuck static library.
 
 LIBTSDUCK_CXXFLAGS_INCLUDES +=
-LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC)
+LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(LINUX),-latomic)
 
 ifneq ($(NODTAPI),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
@@ -697,7 +720,8 @@ endif
 # List of libtsduck directories containing private and public headers.
 
 ifeq ($(PUBLIC_INCLUDES),)
-    export ALL_INCLUDES := $(filter-out %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
+    export OTHER_OS   := $(filter-out $(subst darwin,mac,$(LOCAL_OS)),linux mac freebsd windows)
+    export ALL_INCLUDES := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
     export PRIVATE_INCLUDES := $(filter %/private,$(ALL_INCLUDES))
     export PUBLIC_INCLUDES := $(filter-out %/private,$(ALL_INCLUDES))
 endif
@@ -791,7 +815,7 @@ unixify:
 	  mv -f $$f.tmp $$f; \
 	done
 	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
-	  dos2unix -q $$f; \
+	  dos2unix $(if $(FREEBSD),,-q) $$f; \
 	  $(SED) -i -e 's/  *$$//' $$f; \
 	done
 

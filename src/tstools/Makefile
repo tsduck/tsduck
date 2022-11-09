@@ -48,7 +48,8 @@ ifeq ($(STATIC),)
     $(EXECS): $(SHARED_LIBTSDUCK)
 else
     # With static link, we compile in a specific directory and we link tsp with all plugins.
-    LDFLAGS_EXTRA = -static
+    LDFLAGS_EXTRA += -static
+    LDLIBS_EXTRA += $(LIBTSDUCK_LDLIBS)
     $(BINDIR)/tsp: $(addprefix $(BINDIR)/objs-tsplugins/,$(addsuffix .o,$(TSPLUGINS)))
     $(EXECS): $(STATIC_LIBTSDUCK)
 endif

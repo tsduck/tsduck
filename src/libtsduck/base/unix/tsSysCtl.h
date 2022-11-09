@@ -28,33 +28,29 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup net
-//!  Include the multiple and messy system headers for IP networking.
+//!  @ingroup unix
+//!  Reading Unix sysctl(2) values.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsUString.h"
 
-#if defined(TS_WINDOWS)
+// Definition of sysctl OID codes.
+#if defined(TS_MAC) || defined(TS_FREEBSD)
     #include "tsBeforeStandardHeaders.h"
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <mswsock.h>
-    #include "tsAfterStandardHeaders.h"
-    #if defined(TS_MSC)
-        #pragma comment(lib, "ws2_32.lib")
-    #endif
-#else
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <net/if.h>
-    #include <netinet/in.h>
-    #include <netinet/tcp.h>
-    #include <netdb.h>
-    #if defined(TS_MAC) || defined(TS_FREEBSD)
-        #include <ifaddrs.h>
-    #endif
+    #include <sys/param.h>
+    #include <sys/sysctl.h>
     #include "tsAfterStandardHeaders.h"
 #endif
+
+namespace ts {
+    //!
+    //! Get a Unix sysctl(2) string value.
+    //! This function now works on BSD systems only (macOS, FreeBSD).
+    //! Linux no longer supports sysctl(2), replaced by the /proc/sys filesystem.
+    //! @param [in] oid Identifier of the data to return as a list of int values.
+    //! @return The string value or empty if not found.
+    //!
+    TSDUCKDLL UString SysCtrlString(std::initializer_list<int> oid);
+}

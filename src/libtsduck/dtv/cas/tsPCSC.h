@@ -55,7 +55,7 @@
     #if defined(TS_MSC)
        #pragma comment(lib, "winscard.lib")
     #endif
-#elif defined(TS_MAC)
+#elif defined(TS_MAC) || defined(TS_FREEBSD)
     #include "tsBeforeStandardHeaders.h"
     #include <PCSC/wintypes.h>
     #include <PCSC/winscard.h>
