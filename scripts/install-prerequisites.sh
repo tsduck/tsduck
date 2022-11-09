@@ -53,6 +53,7 @@
 #  - Alpine Linux
 #  - Gentoo
 #  - Linux Mint
+#  - FreeBSD
 #
 #-----------------------------------------------------------------------------
 
@@ -115,6 +116,17 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     # Register the openjdk jvm.
     [[ -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]] || \
         sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+
+#-----------------------------------------------------------------------------
+# FreeBSD
+#
+# Update command: sudo pkg update; sudo pkg upgrade
+#-----------------------------------------------------------------------------
+
+elif [[ "$SYSTEM" == "FreeBSD" ]]; then
+
+    pkglist="git git-lfs curl zip doxygen graphviz bash gsed gnugrep gmake gtar unix2dos coreutils srt librist libedit pcsc-lite python openjdk11"
+    sudo pkg install -y $PKGOPTS $pkglist
 
 #-----------------------------------------------------------------------------
 # Ubuntu

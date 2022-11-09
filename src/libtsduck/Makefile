@@ -70,7 +70,7 @@ include ../../Makefile.inc
 
 # Most source files are located in subdirectories but should be considered as part of libtsduck.
 
-VPATH := $(filter-out %/windows %/$(if $(MACOS),linux,mac),$(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp)))))
+VPATH := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard */*.cpp */*/*.cpp)))))
 VPATH_SOURCES := $(sort $(notdir $(wildcard $(addsuffix /*.cpp,$(VPATH)))))
 
 # Implicit search directives.

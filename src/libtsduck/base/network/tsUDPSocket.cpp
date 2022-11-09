@@ -84,11 +84,20 @@ bool ts::UDPSocket::open(Report& report)
 
     // Set the IP_PKTINFO option. This option is used to get the destination address of all
     // UDP packets arriving on this socket. Actual socket option is an int.
+    // On FreeBSD, this option is replaced by IP_RECVDSTADDR.
+#if defined(IP_PKTINFO)
     int opt = 1;
     if (::setsockopt(getSocket(), IPPROTO_IP, IP_PKTINFO, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
         report.error(u"error setting socket IP_PKTINFO option: %s", {SysSocketErrorCodeMessage()});
         return false;
     }
+#elif defined(IP_RECVDSTADDR)
+    int opt = 1;
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_RECVDSTADDR, SysSockOptPointer(&opt), sizeof(opt)) != 0) {
+        report.error(u"error setting socket IP_RECVDSTADDR option: %s", {SysSocketErrorCodeMessage()});
+        return false;
+    }
+#endif
 
     return true;
 }
@@ -605,10 +614,18 @@ ts::SysSocketErrorCode ts::UDPSocket::receiveOne(void* data,
     for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != nullptr; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {
 
         // Look for destination IP address.
+        // IP_PKTINFO is used on all Unix, except FreeBSD.
+#if defined(IP_PKTINFO)
         if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_PKTINFO && cmsg->cmsg_len >= sizeof(::in_pktinfo)) {
             const ::in_pktinfo* info = reinterpret_cast<const ::in_pktinfo*>(CMSG_DATA(cmsg));
             destination = IPv4SocketAddress(info->ipi_addr, _local_address.port());
         }
+#elif defined(IP_RECVDSTADDR)
+        if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_RECVDSTADDR && cmsg->cmsg_len >= sizeof(::in_addr)) {
+            const ::in_addr* info = reinterpret_cast<const ::in_addr*>(CMSG_DATA(cmsg));
+            destination = IPv4SocketAddress(*info, _local_address.port());
+        }
+#endif
 
         // On Linux, look for receive timestamp.
 #if defined(TS_LINUX)

@@ -57,6 +57,17 @@
     #include <dlfcn.h>
     #include "tsAfterStandardHeaders.h"
     extern char **environ; // not defined in public headers
+#elif defined(TS_FREEBSD)
+    #include "tsSysCtl.h"
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/user.h>
+    #include <sys/resource.h>
+    #include <libprocstat.h>
+    #include <kvm.h>
+    #include <signal.h>
+    #include <dlfcn.h>
+    #include "tsAfterStandardHeaders.h"
+    extern char **environ; // not defined in public headers
 #endif
 
 // Required link libraries under Windows.
@@ -92,7 +103,7 @@ ts::UString ts::ExecutableFile()
     // MacOS implementation.
     // The function proc_pidpath is documented as "private" and "subject to change".
     // Another option is _NSGetExecutablePath (not tested here yet).
-    int length;
+    int length = 0;
     char name[PROC_PIDPATHINFO_MAXSIZE];
     if ((length = ::proc_pidpath(getpid(), name, sizeof(name))) < 0) {
         throw ts::Exception(u"proc_pidpath error", errno);
@@ -102,6 +113,11 @@ ts::UString ts::ExecutableFile()
         return UString::FromUTF8(name, length);
     }
 
+#elif defined(TS_FREEBSD)
+
+    // FreeBSD implementation.
+    // We use the sysctl() MIB and the OID for the current executable is:
+    return SysCtrlString({CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1}); // -1 means current process
 
 #else
 #error "ts::ExecutableFile not implemented on this system"
@@ -399,6 +415,39 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
         throw ts::Exception(u"task_info error");
     }
     metrics.vmem_size = taskinfo.virtual_size;
+
+    // Then get CPU time using getrusage.
+    ::rusage usage;
+    const int status2 = ::getrusage(RUSAGE_SELF, &usage);
+    if (status2 < 0) {
+        throw ts::Exception(u"getrusage error");
+    }
+
+    // Add system time and user time, in milliseconds.
+    metrics.cpu_time =
+        MilliSecond(usage.ru_stime.tv_sec) * MilliSecPerSec +
+        MilliSecond(usage.ru_stime.tv_usec) / MicroSecPerMilliSec +
+        MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
+        MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
+
+#elif defined(TS_FREEBSD)
+
+    // FreeBSD implementation.
+    // First, get the virtual memory size using procstat_getprocs() on current process.
+    ::procstat* pstat = ::procstat_open_sysctl();
+    if (pstat == NULL) {
+        throw ts::Exception(u"procstat_open_sysctl error");
+    }
+
+    unsigned int kproc_count = 0;
+    ::kinfo_proc* kproc = ::procstat_getprocs(pstat, KERN_PROC_PID, ::getpid(), &kproc_count);
+    if (kproc == NULL || kproc_count == 0) {
+        throw ts::Exception(u"procstat_getprocs error");
+    }
+    metrics.vmem_size = kproc->ki_size;
+
+    procstat_freeprocs(pstat, kproc);
+    procstat_close(pstat);
 
     // Then get CPU time using getrusage.
     ::rusage usage;
