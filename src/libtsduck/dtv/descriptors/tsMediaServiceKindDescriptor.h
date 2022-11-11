@@ -62,8 +62,8 @@ namespace ts {
             uint8_t              configuration_type;     //!< 2 bits
             uint8_t              lang_len_idc;           //!< 2 bits
             uint8_t              lang_len;               //!< 8 bits, only used if lang_len_idc==7
-            UString              language_code;
-            std::vector<uint8_t> media_service_types;
+            UString              language_code;          //!< BCP47 compliant language code
+            std::vector<uint8_t> media_service_types;    //!< service types associated with this language
 
             language_media_pair_type();
         };
@@ -75,8 +75,8 @@ namespace ts {
             Variable<uint8_t>                       ID_length_code;          //!< 3 bits
             Variable<uint16_t>                      ID_type;                 //!< 13 bits
             uint8_t                                 ID_len;                  //!< 8 bits, only used if ID_length_code==0
-            UString                                 media_ID_field;         
-            std::vector<language_media_pair_type>   language_media_service_type_pairs;
+            UString                                 media_ID_field;          //!< identifier of the data element
+            std::vector<language_media_pair_type>   language_media_service_type_pairs;  //!< list of laguage/servive type pairs for this media type
 
             media_service_kind_type();
         };

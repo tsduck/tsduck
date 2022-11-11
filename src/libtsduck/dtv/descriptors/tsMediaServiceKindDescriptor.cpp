@@ -174,6 +174,7 @@ void ts::MediaServiceKindDescriptor::deserializePayload(PSIBuffer& buf)
                 case 1: newLanguagePair.lang_len = 2; break;
                 case 2: newLanguagePair.lang_len = 3; break;
                 case 3: newLanguagePair.lang_len = 0; break; // 3 is reserved 
+                default: break;
             }
             newLanguagePair.language_code = buf.getUTF8(newLanguagePair.lang_len);
             for (uint8_t k = 0; k < _lang_purpose_cnt; k++)
@@ -225,6 +226,7 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
                 case 1: _lang_len = 2; break;
                 case 2: _lang_len = 3; break;
                 case 3: _lang_len = 0; ok = false; break;
+                default: break;
             }
             disp << ", language: " << ((_lang_len == 0) ? UString(u"!! length error!!") : buf.getUTF8(_lang_len)) << std::endl;
             UStringVector purposes;
