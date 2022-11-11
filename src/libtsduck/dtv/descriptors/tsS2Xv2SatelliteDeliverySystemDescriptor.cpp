@@ -128,8 +128,6 @@ ts::DID ts::S2Xv2SatelliteDeliverySystemDescriptor::extendedTag() const
 // Serialization
 //----------------------------------------------------------------------------
 
-
-
 void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt32(delivery_system_id);
@@ -140,10 +138,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
     buf.putBits(NCR_version, 1);
     buf.putBits(channel_bond, 2);
     buf.putBits(polarization, 2);
-    if (S2Xv2_mode == 1 || S2Xv2_mode == 2) 
-        buf.putBit(scrambling_sequence_index.set());
-    else 
-        buf.putBit(0);
+    buf.putBit((S2Xv2_mode == 1 || S2Xv2_mode == 2) ? scrambling_sequence_index.set() : 0);
     buf.putBits(TS_GS_S2X_mode, 2);
     buf.putBits(receiver_profiles, 5);
     buf.putUInt24(satellite_id);
@@ -157,13 +152,15 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
             buf.putBits(scrambling_sequence_index.value(), 18);
         }
     }
-    if (S2Xv2_mode == 2 || S2Xv2_mode == 5) 
+    if (S2Xv2_mode == 2 || S2Xv2_mode == 5) {
         buf.putUInt8(timeslice_number);
+    }
     if (channel_bond == 1) {
         buf.putBits(0x00, 7);
         buf.putBits(num_channel_bonds_minus1, 1);
-        for (auto it : secondary_delivery_system_ids)
+        for (auto it : secondary_delivery_system_ids) {
             buf.putUInt32(it);
+        }
     }
     if (S2Xv2_mode == 4 || S2Xv2_mode == 5) {
         buf.putUInt8(SOSF_WH_sequence_number);
@@ -173,9 +170,9 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
         buf.putBits(reference_scrambling_index, 20);
         buf.putBits(SFFI.set() ? SFFI.value() : 0x00, 4);
         buf.putBits(payload_scrambling_index, 20);
-
-        if (beamhopping_time_plan_id.set())
+        if (beamhopping_time_plan_id.set()) {
             buf.putUInt32(beamhopping_time_plan_id.value());
+        }
         buf.putBits(superframe_pilots_WH_sequence_number, 5);
         buf.putBits(0x00, 3);
     }
@@ -224,8 +221,9 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
     if (channel_bond == 1) {
         buf.skipBits(7);
         num_channel_bonds_minus1 = buf.getBits<uint8_t>(1);
-        for (uint8_t j = 0; j < num_channel_bonds_minus1+1; j++)
+        for (uint8_t j = 0; j < num_channel_bonds_minus1 + 1; j++) {
             secondary_delivery_system_ids.push_back(buf.getUInt32());
+        }
     }
     if (S2Xv2_mode == 4 || S2Xv2_mode == 5) {
         SOSF_WH_sequence_number = buf.getUInt8();
@@ -233,13 +231,16 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
         bool _beam_hopping_time_plan_selector = buf.getBool();
         buf.skipBits(2);
         reference_scrambling_index = buf.getBits<uint32_t>(20);
-        if (_SFFI_selector) 
+        if (_SFFI_selector) {
             SFFI = buf.getBits<uint8_t>(4);
-        else
+        }
+        else {
             buf.skipBits(4);
+        }
         payload_scrambling_index = buf.getBits<uint32_t>(20);
-        if (_beam_hopping_time_plan_selector)
+        if (_beam_hopping_time_plan_selector) {
             beamhopping_time_plan_id = buf.getUInt32();
+        }
         superframe_pilots_WH_sequence_number = buf.getBits<uint8_t>(5);
         buf.skipBits(3);
     }
@@ -265,23 +266,30 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         disp << ", channel bond: " << DataName(MY_XML_NAME, u"channel_bond", _channel_bond, NamesFlags::VALUE);
         disp << ", polarization: " << DataName(MY_XML_NAME, u"Polarization", buf.getBits<uint8_t>(2), NamesFlags::VALUE) << std::endl;
         uint8_t _scrambling_sequence_selector = 0;
-        if (_S2Xv2_mode == 1 || _S2Xv2_mode == 2)
+        if (_S2Xv2_mode == 1 || _S2Xv2_mode == 2) {
             _scrambling_sequence_selector = buf.getBits<uint8_t>(1);
-        else
+        }
+        else {
             buf.skipReservedBits(1, 0);
+        }
         disp << margin << "TS/GS S2X mode: " << DataName(MY_XML_NAME, u"TSGSS2Xv2Mode", buf.getBits<uint8_t>(2), NamesFlags::DECIMAL_FIRST) << std::endl;
         const uint8_t _receiver_profiles = buf.getBits<uint8_t>(5);
         disp << margin << UString::Format(u"Receiver profiles: 0x%X", { _receiver_profiles });
-        if ((_receiver_profiles & 0x01) != 0) 
+        if ((_receiver_profiles & 0x01) != 0) {
             disp << ", broadcast services";
-        if ((_receiver_profiles & 0x02) != 0) 
+        }
+        if ((_receiver_profiles & 0x02) != 0) {
             disp << ", interactive services";
-        if ((_receiver_profiles & 0x04) != 0) 
+        }
+        if ((_receiver_profiles & 0x04) != 0) {
             disp << ", DSNG";
-        if ((_receiver_profiles & 0x08) != 0) 
+        }
+        if ((_receiver_profiles & 0x08) != 0) {
             disp << ", professional services";
-        if ((_receiver_profiles & 0x10) != 0) 
+        }
+        if ((_receiver_profiles & 0x10) != 0) {
             disp << ", VL-SNR";
+        }
         disp << std::endl;
 
         disp << margin << UString::Format(u"Satellite id : 0x%X", { buf.getUInt24() });
@@ -291,23 +299,27 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
  
         disp << margin << "Multiple input stream: " << UString::YesNo(_multiple_input_stream_flag);
-        if (_multiple_input_stream_flag) 
+        if (_multiple_input_stream_flag) {
             disp << ", input stream id: " << int(buf.getUInt8());
-        if (_S2Xv2_mode == 1 || _S2Xv2_mode == 2) 
+        }
+        if (_S2Xv2_mode == 1 || _S2Xv2_mode == 2) {
             if (_scrambling_sequence_selector == 1) {
                 buf.skipReservedBits(6, 0);
                 disp << ", scrambling_sequence_index: " << buf.getBits<uint32_t>(18);
             }
-        if (_S2Xv2_mode == 2 || _S2Xv2_mode == 5) 
+        }
+        if (_S2Xv2_mode == 2 || _S2Xv2_mode == 5) {
             disp << ", timeslice number: " << int(buf.getUInt8());
+        }
         disp << std::endl;
 
         if (_channel_bond == 1) {
             buf.skipReservedBits(7, 0);
             uint8_t _num_channel_bonds_minus1 = buf.getBits<uint8_t>(1);
             disp << margin << "Secondary delivery system id" << (_num_channel_bonds_minus1+1 == 1 ? "" : "s") << ": ";
-            for (uint8_t j=0; j< _num_channel_bonds_minus1+1; j++)
+            for (uint8_t j = 0; j < _num_channel_bonds_minus1 + 1; j++) {
                 disp << UString::Format(u"0x08%X ", { buf.getUInt32() });
+            }
             disp << std::endl;
         }
         if (_S2Xv2_mode == 4 || _S2Xv2_mode == 5) {
@@ -316,14 +328,17 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
             bool _beam_hopping_time_plan_selector = buf.getBool();
             buf.skipReservedBits(2, 0);
             disp << ", reference scrambling index: " << buf.getBits<uint32_t>(20);
-            if (_SFFI_selector) 
+            if (_SFFI_selector) {
                 disp << ", SFFI: " << int(buf.getBits<uint8_t>(4));
-            else
+            }
+            else {
                 buf.skipReservedBits(4, 0);
+            }
             disp << std::endl;
             disp << margin << "Payload scrambling index: " << buf.getBits<uint32_t>(20);
-            if (_beam_hopping_time_plan_selector)
+            if (_beam_hopping_time_plan_selector) {
                 disp << ", beamhopping time plan selector: " << buf.getUInt32();
+            }
             disp << ", superframe pilots WH sequence number: " << int(buf.getBits<uint8_t>(5)) << std::endl;
             buf.skipReservedBits(3, 0);
         }
@@ -350,13 +365,15 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::buildXML(DuckContext& duck, xml
     root->setIntAttribute(u"satellite_id", satellite_id, true);
     root->setIntAttribute(u"frequency", frequency);
     root->setIntAttribute(u"symbol_rate", symbol_rate);
-    if (multiple_input_stream_flag)
+    if (multiple_input_stream_flag) {
         root->setIntAttribute(u"input_stream_identifier", input_stream_identifier);
-    if (S2Xv2_mode == 1 || S2Xv2_mode == 2) 
+    }
+    if (S2Xv2_mode == 1 || S2Xv2_mode == 2) {
         root->setOptionalIntAttribute(u"scrambling_sequence_index", scrambling_sequence_index);
-
-    if (S2Xv2_mode == 2 || S2Xv2_mode == 5)
+    }
+    if (S2Xv2_mode == 2 || S2Xv2_mode == 5) {
         root->setIntAttribute(u"timeslice_number", timeslice_number);
+    }
     if (channel_bond == 1) {
         for (auto sds : secondary_delivery_system_ids) {
             xml::Element* e = root->addElement(u"secondary_delivery_system");
@@ -400,24 +417,29 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
 
     if (ok && element->hasAttribute(u"input_stream_identifier")) {
         ok &= element->getIntAttribute(input_stream_identifier, u"input_stream_identifier", true);
-        if (ok)
+        if (ok) {
             multiple_input_stream_flag = true;
+        }
     }
-    if (ok && (S2Xv2_mode == 1 || S2Xv2_mode == 2))
-         ok &= element->getOptionalIntAttribute(scrambling_sequence_index, u"scrambling_sequence_index", 0, 0x3FFFF);
-    if (ok && (S2Xv2_mode == 2 || S2Xv2_mode == 5)) 
+    if (ok && (S2Xv2_mode == 1 || S2Xv2_mode == 2)) {
+        ok &= element->getOptionalIntAttribute(scrambling_sequence_index, u"scrambling_sequence_index", 0, 0x3FFFF);
+    }
+    if (ok && (S2Xv2_mode == 2 || S2Xv2_mode == 5)) {
         ok &= element->getIntAttribute(timeslice_number, u"timeslice_number", true);
+    }
     if (channel_bond == 1) {
         xml::ElementVector secondary_delivery_systems;
         ok &= element->getChildren(secondary_delivery_systems, u"secondary_delivery_system", 1, 2);
         for (size_t i = 0; ok && i < secondary_delivery_systems.size(); ++i) {
             uint32_t _secondary_delivery_system_id;
             ok &= secondary_delivery_systems[i]->getIntAttribute(_secondary_delivery_system_id, u"id", true);
-            if (ok)
+            if (ok) {
                 secondary_delivery_system_ids.push_back(_secondary_delivery_system_id);
+            }
         }
-        if (ok)
+        if (ok) {
             num_channel_bonds_minus1 = (secondary_delivery_systems.size() == 1) ? 0 : 1;
+        }
     }
     if (ok && (S2Xv2_mode == 4 || S2Xv2_mode == 5)) {
         xml::ElementVector _superframes;
@@ -427,12 +449,13 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
                 _superframes[0]->getIntAttribute(reference_scrambling_index, u"reference_scrambling_index", true, 0, 0, 0xFFFFF) &&
                 _superframes[0]->getIntAttribute(payload_scrambling_index, u"payload_scrambling_index", true, 0, 0, 0xFFFFF) &&
                 _superframes[0]->getIntAttribute(superframe_pilots_WH_sequence_number, u"superframe_pilots_WH_sequence_number", true, 0, 0, 0x1F);
-            if (ok && _superframes[0]->hasAttribute(u"SFFI")) 
+            if (ok && _superframes[0]->hasAttribute(u"SFFI")) {
                 ok &= _superframes[0]->getOptionalIntAttribute(SFFI, u"SFFI", 0, 0xF);
-            if (ok && _superframes[0]->hasAttribute(u"beamhopping_time_plan_id")) 
+            }
+            if (ok && _superframes[0]->hasAttribute(u"beamhopping_time_plan_id")) {
                 ok &= _superframes[0]->getOptionalIntAttribute(beamhopping_time_plan_id, u"beamhopping_time_plan_id");
-        }
-            
+            }
+        }      
     }
     return ok;
 }

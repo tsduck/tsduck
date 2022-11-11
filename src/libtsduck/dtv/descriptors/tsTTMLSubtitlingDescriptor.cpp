@@ -182,9 +182,9 @@ ts::UString ts::TTMLSubtitlingDescriptor::TTML_qualifier(uint32_t quali) {
     res += u", ";
     res += ((quali & 0x00800000) ? u"monochrome" : u"coloured");
 
-    if (quali & 0x00400000)
+    if (quali & 0x00400000) {
         res += u", enhanced contrast";
-
+    }
     res += u", position=";
     switch ((quali & 0x003C0000) >> 18) {
         case 0x0: res += u"default"; break;
@@ -193,7 +193,6 @@ ts::UString ts::TTMLSubtitlingDescriptor::TTML_qualifier(uint32_t quali) {
         case 0x3: res += u"fast"; break;
         default: res += u"reserved";
     }
-
     return res;
 }
 

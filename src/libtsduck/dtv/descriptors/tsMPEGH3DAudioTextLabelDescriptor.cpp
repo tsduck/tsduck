@@ -53,11 +53,13 @@ ts::MPEGH3DAudioTextLabelDescriptor::groupDescription_type::groupDescription_typ
     groupDescriptionData()
 {
 }
+
 ts::MPEGH3DAudioTextLabelDescriptor::switchGroupDescription_type::switchGroupDescription_type() :
     mae_descriptionSwitchGroupID(0),
     switchGroupDescriptionData()
 {
 }
+
 ts::MPEGH3DAudioTextLabelDescriptor::groupPresetsDescription_type::groupPresetsDescription_type() :
     mae_descriptionGroupPresetID(0),
     groupDescriptionPresetData()
@@ -228,8 +230,9 @@ void ts::MPEGH3DAudioTextLabelDescriptor::DisplayDescriptor(TablesDisplay& disp,
             }
         }
         ByteBlock reserved = buf.getBytes();
-        if (!reserved.empty())
+        if (!reserved.empty()) {
             disp << margin << "reserved: " << UString::Dump(reserved, UString::SINGLE_LINE) << std::endl;
+        }
     }
 }
 

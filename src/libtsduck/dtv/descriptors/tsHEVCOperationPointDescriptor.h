@@ -30,7 +30,6 @@
 //!  @file
 //!  Representation of an HEVC_operation_point_descriptor.
 //!
-//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -54,7 +53,8 @@ namespace ts {
             bool        necessary_layer_flag;  //!< 1 bit
             bool        output_layer_flag;     //!< 1 bit
             uint8_t     ptl_ref_idx;           //!< 6 bits
-            ES_in_OP_type();                   //!< Constructor.
+
+            ES_in_OP_type();        //!< Constructor
         };
 
         //!
@@ -64,7 +64,8 @@ namespace ts {
         public:
             bool        prepend_dependencies;  //!< 1 bit
             uint8_t     ES_reference;          //!< 6 bits
-            ES_type();                         //!< Constructor.
+
+            ES_type();              //!< Constructor
         };
 
         //!
@@ -80,7 +81,8 @@ namespace ts {
             Variable<uint16_t>          frame_rate_indicator;           //!< 12 bits
             Variable<uint32_t>          avg_bit_rate;                   //!< 24 bits
             Variable<uint32_t>          max_bit_rate;                   //!< 24 bits
-            operation_point_type();                                     //!< Constructor.
+
+            operation_point_type();         //!< Constructor
         };
 
         // public members:

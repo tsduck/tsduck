@@ -57,7 +57,7 @@ namespace ts {
         uint8_t                 TS_GS_S2X_mode;                         //!< 2 bits, TS-GS S2X mode.
         uint8_t                 receiver_profiles;                      //!< 5 bits, receiver_profiles bit mask.
         uint32_t                satellite_id;                           //!< 24 bits
-	uint64_t                frequency;                              //!< Frequency in GHz. (%05d.%03d)
+	    uint64_t                frequency;                              //!< Frequency in GHz. (%05d.%03d)
         uint64_t                symbol_rate;                            //!< Symbol rate in Msymbols/second. (%04d.%04d)
         uint8_t                 input_stream_identifier;                //!< 8 bits
         Variable<uint32_t>      scrambling_sequence_index;              //!< 18 bits

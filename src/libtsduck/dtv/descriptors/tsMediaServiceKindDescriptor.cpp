@@ -177,8 +177,9 @@ void ts::MediaServiceKindDescriptor::deserializePayload(PSIBuffer& buf)
                 default: break;
             }
             newLanguagePair.language_code = buf.getUTF8(newLanguagePair.lang_len);
-            for (uint8_t k = 0; k < _lang_purpose_cnt; k++)
+            for (uint8_t k = 0; k < _lang_purpose_cnt; k++) {
                 newLanguagePair.media_service_types.push_back(buf.getUInt8());
+            }
             newMSK.language_media_service_type_pairs.push_back(newLanguagePair);
         }
         media_service_kinds.push_back(newMSK);
@@ -329,8 +330,9 @@ bool ts::MediaServiceKindDescriptor::analyzeXML(DuckContext& duck, const xml::El
                             break;
                     }
                 }
-                if (ok && (newMSK.ID_len != 0))
+                if (ok && (newMSK.ID_len != 0)) {
                     ok &= children[i]->getAttribute(newMSK.media_ID_field, u"media_ID", true, UString('*', newMSK.ID_len), newMSK.ID_len, newMSK.ID_len);
+                }
             }
             xml::ElementVector mediaPairs;
             ok &= children[i]->getChildren(mediaPairs, u"language_media_pair", 0, 0x7);

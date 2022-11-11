@@ -55,12 +55,6 @@ ts::CPCMDeliverySignallingDescriptor::CPSvector::CPSvector() :
 {
 }
 
-void ts::CPCMDeliverySignallingDescriptor::CPSvector::clearContent()
-{
-    C_and_R_regime_mask = 0;
-    cps_byte.clear();
-}
-
 ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::CPCMv1Signalling() :
     copy_control(0),
     do_not_cpcm_scramble(false),
@@ -96,7 +90,6 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::clearContent()
     move_and_copy_propagation_information = 0;
     view_propagation_information = 0;
     remote_access_record_flag = false;
-
     export_beyond_trust = false;
     disable_analogue_sd_export = false;
     disable_analogue_sd_consumption = false;
@@ -172,14 +165,18 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::serializePayload(PS
         buf.putMJD(view_window_start.value(), 5);
         buf.putMJD(view_window_end.value(), 5);
     }
-    if (view_period_from_first_playback.set())
+    if (view_period_from_first_playback.set()) {
         buf.putUInt16(view_period_from_first_playback.value());
-    if (simultaneous_view_count.set())
+    }
+    if (simultaneous_view_count.set()) {
         buf.putUInt8(simultaneous_view_count.value());
-    if (remote_access_delay.set())
+    }
+    if (remote_access_delay.set()) {
         buf.putUInt16(remote_access_delay.value());
-    if (remote_access_date.set())
+    }
+    if (remote_access_date.set()) {
         buf.putMJD(remote_access_date.value(), 5);
+    }
     if (!cps_vector.empty()) {
         buf.putBits(cps_vector.size(), 8);
         for (auto it : cps_vector) {
@@ -233,14 +230,18 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::deserializePayload(
         view_window_start = buf.getMJD(5);
         view_window_end = buf.getMJD(5);
     }
-    if (view_period_activated)
+    if (view_period_activated) {
         view_period_from_first_playback = buf.getUInt16();
-    if (simultaneous_view_count_activated)
+    }
+    if (simultaneous_view_count_activated) {
         simultaneous_view_count = buf.getUInt8();
-    if (remote_access_delay_flag)
+    }
+    if (remote_access_delay_flag) {
         remote_access_delay = buf.getUInt16();
-    if (remote_access_date_flag)
+    }
+    if (remote_access_date_flag) {
         remote_access_date = buf.getMJD(5);
+    }
     if (export_controlled_cps) {
         uint8_t cps_vector_count = buf.getUInt8();
         for (uint8_t i = 0; i < cps_vector_count; i++) {
@@ -316,14 +317,18 @@ void ts::CPCMDeliverySignallingDescriptor::DisplayDescriptor(TablesDisplay& disp
                 disp << margin << "View window start: " << buf.getMJD(5).format(ts::Time::FieldMask::DATETIME);
                 disp << ", end: " << buf.getMJD(5).format(ts::Time::FieldMask::DATETIME) << std::endl;
             }
-            if (view_period_activated)
+            if (view_period_activated) {
                 disp << margin << "View period: " << buf.getUInt16() << " (15 minute periods)" << std::endl;
-            if (simultaneous_view_count_activated)
+            }
+            if (simultaneous_view_count_activated) {
                 disp << margin << "Simultaneous view count " << int(buf.getUInt8()) << std::endl;
-            if (remote_access_delay_flag)
+            }
+            if (remote_access_delay_flag) {
                 disp << margin << "Remote access delay: " << buf.getUInt16() << " (15 minute periods)" << std::endl;
-            if (remote_access_date_flag)
+            }
+            if (remote_access_date_flag) {
                 disp << margin << "Remote access date: " << buf.getMJD(5).format(ts::Time::FieldMask::DATETIME) << std::endl;
+            }
             if (export_controlled_cps) {
                 uint8_t cps_vector_count = buf.getUInt8();
                 for (uint8_t i = 0; i < cps_vector_count; i++) {
@@ -363,16 +368,18 @@ void ts::CPCMDeliverySignallingDescriptor::buildXML(DuckContext& duck, xml::Elem
         v1->setBoolAttribute(u"disable_analogue_hd_consumption", cpcm_v1_delivery_signalling.disable_analogue_hd_consumption);
         v1->setBoolAttribute(u"image_constraint", cpcm_v1_delivery_signalling.image_constraint);
 
-        if (cpcm_v1_delivery_signalling.view_window_start.set())
+        if (cpcm_v1_delivery_signalling.view_window_start.set()) {
             v1->setDateTimeAttribute(u"view_window_start", cpcm_v1_delivery_signalling.view_window_start.value());
-        if (cpcm_v1_delivery_signalling.view_window_end.set())
+        }
+        if (cpcm_v1_delivery_signalling.view_window_end.set()) {
             v1->setDateTimeAttribute(u"view_window_end", cpcm_v1_delivery_signalling.view_window_end.value());
+        }
         v1->setOptionalIntAttribute(u"view_period_from_first_playback", cpcm_v1_delivery_signalling.view_period_from_first_playback);
         v1->setOptionalIntAttribute(u"simultaneous_view_count", cpcm_v1_delivery_signalling.simultaneous_view_count);
         v1->setOptionalIntAttribute(u"remote_access_delay", cpcm_v1_delivery_signalling.remote_access_delay);
-        if (cpcm_v1_delivery_signalling.remote_access_date.set())
+        if (cpcm_v1_delivery_signalling.remote_access_date.set()) {
             v1->setDateTimeAttribute(u"remote_access_date", cpcm_v1_delivery_signalling.remote_access_date.value());
-
+        }
         for (auto it : cpcm_v1_delivery_signalling.cps_vector) {
             ts::xml::Element* cps = v1->addElement(u"cps");
             cps->setIntAttribute(u"C_and_R_regime_mask", it.C_and_R_regime_mask);

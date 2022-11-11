@@ -150,17 +150,16 @@ void ts::FmxBufferSizeDescriptor::buildXML(DuckContext& duck, xml::Element* root
 bool ts::FmxBufferSizeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector DefaultFlexMuxBuffer;
-    bool ok = element->getChildren(DefaultFlexMuxBuffer, u"DefaultFlexMuxBufferDescriptor");
-    ok &= DefaultFlexMuxBuffer.size() == 1;
-    ok &= DefaultFlexMuxBuffer[0]->getIntAttribute(DefaultFlexMuxBufferDescriptor.flexMuxChnnel, u"flexMuxChannel", true, 0, 0, 0xFF);
-    ok &= DefaultFlexMuxBuffer[0]->getIntAttribute(DefaultFlexMuxBufferDescriptor.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
+    bool ok = element->getChildren(DefaultFlexMuxBuffer, u"DefaultFlexMuxBufferDescriptor", 1, 1);
+    ok &= DefaultFlexMuxBuffer[0]->getIntAttribute(DefaultFlexMuxBufferDescriptor.flexMuxChnnel, u"flexMuxChannel", true, 0, 0, 0xFF) &&
+        DefaultFlexMuxBuffer[0]->getIntAttribute(DefaultFlexMuxBufferDescriptor.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
 
     xml::ElementVector FlexMuxBuffers;
     ok &= element->getChildren(FlexMuxBuffers, u"FlexMuxBufferDescriptor");
     for (size_t i = 0; ok && i < FlexMuxBuffers.size(); i++) {
         FlexMuxBufferDescriptor_type newMuxBuffer;
-        ok &= FlexMuxBuffers[i]->getIntAttribute(newMuxBuffer.flexMuxChnnel, u"flexMuxChannel", true, 0, 0, 0xFF);
-        ok &= FlexMuxBuffers[i]->getIntAttribute(newMuxBuffer.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
+        ok &= FlexMuxBuffers[i]->getIntAttribute(newMuxBuffer.flexMuxChnnel, u"flexMuxChannel", true, 0, 0, 0xFF) &&
+            FlexMuxBuffers[i]->getIntAttribute(newMuxBuffer.FB_BufferSize, u"FB_BufferSize", true, 0, 0, 0xFFFFFF);
         FlexMuxBufferDescriptor.push_back(newMuxBuffer);
     }
     return ok;

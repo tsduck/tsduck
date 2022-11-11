@@ -71,22 +71,6 @@ ts::DVBServiceProminenceDescriptor::DVBServiceProminenceDescriptor() :
 {
 }
 
-void ts::DVBServiceProminenceDescriptor::SOGI_region_type::clearContent()
-{
-    country_code.clear();
-    primary_region_code.clear();
-    secondary_region_code.clear();
-    tertiary_region_code.clear();
-}
-
-void ts::DVBServiceProminenceDescriptor::SOGI_type::clearContent()
-{
-    SOGI_flag = false;
-    SOGI_priority = 0;
-    service_id.clear();
-    regions.clear();
-}
-
 void ts::DVBServiceProminenceDescriptor::clearContent()
 {
     SOGI_list.clear();
@@ -119,20 +103,26 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
     uint8_t SOGI_list_length = 0;
     for (auto _sogi : SOGI_list) {
         SOGI_list_length += 2;      // SOGI_flag, target_region_flag, service_flag, reserved(1), SOGI_priority(12)
-        if (_sogi.service_id.set())
+        if (_sogi.service_id.set()) {
             SOGI_list_length += 2;  // service_id(16)
-        if (!_sogi.regions.empty())
+        }
+        if (!_sogi.regions.empty()) {
             SOGI_list_length += 1;  // terget_region_loop_length(8)
+        }
         for (auto _region : _sogi.regions) {
             SOGI_list_length += 1;  // reserved_future_use(5), country_code_flag, region_depth(2)
-            if (_region.country_code.set())
+            if (_region.country_code.set()) {
                 SOGI_list_length += 3;  // country_code(24)
-            if (_region.primary_region_code.set())
+            }
+            if (_region.primary_region_code.set()) {
                 SOGI_list_length += 1;  // primary_region_code(8)
-            if (_region.secondary_region_code.set())
+            }
+            if (_region.secondary_region_code.set()) {
                 SOGI_list_length += 1;  // secondary_region_code(8)
-            if (_region.tertiary_region_code.set())
+            }
+            if (_region.tertiary_region_code.set()) {
                 SOGI_list_length += 2;  // tertiary_region_code(16)
+            }
         }
     }
     buf.putUInt8(SOGI_list_length);
@@ -142,20 +132,23 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(_sogi.service_id.set());     // service_flag
         buf.putBit(1);                          // reserved_future_use
         buf.putBits(_sogi.SOGI_priority, 12);   // SOGI_priority
-        if (_sogi.service_id.set())
+        if (_sogi.service_id.set()) {
             buf.putUInt16(_sogi.service_id.value());    // service_id 
+        }
         if (!_sogi.regions.empty()) {
             uint8_t target_region_loop_length = 0;
             for (auto _region : _sogi.regions) {
                 target_region_loop_length += 1;     // reserved_future_use(5), country_code_flag, region_depth(2)
-                if (_region.country_code.set())
+                if (_region.country_code.set()) {
                     target_region_loop_length += 3;  // country_code(24)
+                }
                 if (_region.primary_region_code.set()) {
                     target_region_loop_length += 1;  // primary_region_code(8)
                     if (_region.secondary_region_code.set()) {
                         target_region_loop_length += 1;  // secondary_region_code(8)
-                        if (_region.tertiary_region_code.set())
+                        if (_region.tertiary_region_code.set()) {
                             target_region_loop_length += 2;  // tertiary_region_code(16)
+                        }
                     }
                 }
             }
@@ -165,21 +158,24 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
                 buf.putBit(_region.country_code.set());
                 uint8_t region_depth = _region.primary_region_code.set() + _region.secondary_region_code.set() + _region.tertiary_region_code.set();
                 buf.putBits(region_depth, 2);
-                if (_region.country_code.set())
+                if (_region.country_code.set()) {
                     buf.putLanguageCode(_region.country_code.value());
+                }
                 if (_region.primary_region_code.set()) {
                     buf.putUInt8(_region.primary_region_code.value());
                     if (_region.secondary_region_code.set()) {
                         buf.putUInt8(_region.secondary_region_code.value());
-                        if (_region.tertiary_region_code.set())
+                        if (_region.tertiary_region_code.set()) {
                             buf.putUInt16(_region.tertiary_region_code.value());
+                        }
                     }
                 }
             }
         }
     }
-    if (!private_data.empty())
+    if (!private_data.empty()) {
         buf.putBytes(private_data);
+    }
 }
 
 
@@ -259,8 +255,9 @@ void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp,
                 disp << margin << "P";
                 drawn = true;
             }
-            else
+            else {
                 disp << ", p";
+            }
             disp << "rimary region: " << int(r.primary_region_code.value());
 
             if (r.secondary_region_code.set()) {
@@ -268,8 +265,9 @@ void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp,
                     disp << margin << "S";
                     drawn = true;
                 }
-                else
+                else {
                     disp << ", s";
+                }
                 disp << "econdary region: " << int(r.secondary_region_code.value());
 
                 if (r.tertiary_region_code.set()) {
@@ -277,14 +275,16 @@ void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp,
                         disp << margin << "T";
                         drawn = true;
                     }
-                    else
+                    else {
                         disp << ", t";
+                    }
                     disp << "ertiary region: " << int(r.tertiary_region_code.value());
                 }
             }
         }
-        if (drawn)
+        if (drawn) {
             disp << std::endl;
+        }
     }
 }
 
@@ -362,8 +362,9 @@ void ts::DVBServiceProminenceDescriptor::buildXML(DuckContext& duck, xml::Elemen
                 r->setIntAttribute(u"primary_region_code", _region.primary_region_code.value());
                 if (_region.secondary_region_code.set()) {
                     r->setIntAttribute(u"secondary_region_code", _region.secondary_region_code.value());
-                    if (_region.tertiary_region_code.set())
+                    if (_region.tertiary_region_code.set()) {
                         r->setIntAttribute(u"tertiary_region_code", _region.tertiary_region_code.value());
+                    }
                 }
             }
         }
@@ -397,8 +398,9 @@ bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml
             ok &= rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF);
             if (ok && r.primary_region_code.set()) {
                 ok &= rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF);
-                if (ok && r.secondary_region_code.set()) 
+                if (ok && r.secondary_region_code.set()) {
                     ok &= rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
+                }
             }
             if (!(r.country_code.set() || r.primary_region_code.set())) {
                 rgn->report().error(u"@country_code and/or @primary_region_code must be present in a <%s>, line %d", { rgn->name(), rgn->lineNumber() });

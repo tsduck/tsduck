@@ -55,10 +55,8 @@ namespace ts {
         public:
             uint8_t              textFormat;               //!< 8 bits, ISO/IEC 14496-17, clause 5.2
             ByteBlock            formatSpecificTextConfig; //!< 16 bits, ISO/IEC 14496-17, clause 5.2
-            //!
-            //! Default constructor.
-            //!
-            TextConfig_type();
+
+            TextConfig_type();                      //!< Constructor
         };
 
         //!
@@ -69,11 +67,10 @@ namespace ts {
         {
         public:
             uint8_t              sample_index;            //!< 8 bits, ISO/IEC 14496-17, clause 7.5
-            TextConfig_type      SampleDescription;       //!< 8 bits, ISO/IEC 14496-17, clause 7.5
-            //!
-            //! Default constructor.
-            //!
-            Sample_index_and_description_type();
+            TextConfig_type      SampleDescription;       //!< ISO/IEC 14496-17, clause 7.5
+
+
+            Sample_index_and_description_type();    //!< Constructor
         };
 
         // Public members:

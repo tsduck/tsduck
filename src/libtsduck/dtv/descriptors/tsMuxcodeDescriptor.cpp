@@ -90,9 +90,10 @@ void ts::MuxCodeDescriptor::serializePayload(PSIBuffer& buf) const
 {
     for (auto it : MuxCodeTableEntry) {
         uint8_t _length = 2;  // 4 bit MuxCode, 4 bit version, 8 bit substructureCount
-        for (auto it2 : it.substructure)
+        for (auto it2 : it.substructure) {
             _length += 1 + // 5 bit slotCount, 3 bit repetitionCode
-                      (2 * uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size())));
+                (2 * uint8_t(std::min(it2.m4MuxChannel.size(), it2.numberOfBytes.size())));
+        }
         buf.putUInt8(_length);
         buf.putBits(it.MuxCode, 4);
         buf.putBits(it.version, 4);
@@ -226,7 +227,6 @@ bool ts::MuxCodeDescriptor::analyzeXML(DuckContext& duck, const xml::Element* el
                 element->report().error(u"only %d <slot> elements are permitted [<%s>, line %d]", { MAX_SLOTS, element->name(), element->lineNumber() });
                 ok = false;
             }
-
             for (size_t k = 0; ok && k < slots.size(); k++) {
                 uint32_t _tmp;
                 ok &= slots[k]->getIntAttribute(_tmp, u"m4MuxChannel", true, 0, 0, 0xFF);
