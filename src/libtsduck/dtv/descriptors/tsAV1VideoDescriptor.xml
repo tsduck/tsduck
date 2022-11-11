@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <AV1_video_descriptor
+        version="uint7, required"
+        seq_profile="uint3, required"
+        seq_level_idx_0="uint5, required"
+        seq_tier_0="uint1, required"
+        high_bitdepth="bool, required"
+        twelve_bit="bool, required"
+        monochrome="bool, required"
+        chroma_subsampling_x="bool, required"
+        chroma_subsampling_y="bool, required"
+        chroma_sample_position="unknown|vertical|colocated, required"
+        HDR_WCG_idc="uint2, required"
+        initial_presentation_delay_minus_one="uint4, optional"
+        />
+
+  </_descriptors>
+</tsduck>

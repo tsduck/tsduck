@@ -381,7 +381,7 @@ namespace ts {
         //!
         //! Display the 32-bit values in a structured manner with specified number of items on each line
         //! 
-        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] title  Label that identifies the values
         //! @param [in] values  List of values to be output in hexadecimal form
         //! @param [in] margin  Left margin content (default: "").
         //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
@@ -396,7 +396,7 @@ namespace ts {
         //!
         //! Display the 16-bit values in a structured manner with specified number of items on each line
         //! 
-        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] title  Label that identifies the values
         //! @param [in] values  List of values to be output in hexadecimal form
         //! @param [in] margin  Left margin content (default: "").
         //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
@@ -411,7 +411,7 @@ namespace ts {
         //!
         //! Display the 8-bit values in a structured manner with specified number of items on each line
         //! 
-        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] title  Label that identifies the values
         //! @param [in] values  List of values to be output in hexadecimal form
         //! @param [in] margin  Left margin content (default: "").
         //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
@@ -427,7 +427,7 @@ namespace ts {
         //! Display boolean values in a structured manner using the characters specified and with the specified 
         //! number of items on each line
         //! 
-        //! @param [in] title  Label that identifies the values, including any margin characters
+        //! @param [in] title  Label that identifies the values
         //! @param [in] values  List of values to be output in hexadecimal form
         //! @param [in] margin Left  margin content (default: "").
         //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
@@ -442,6 +442,21 @@ namespace ts {
                            size_t num_per_line = 40, 
                            char true_val = '1', 
                            char false_val = '0');
+
+        //!
+        //! Display the string values in a tabular manner with specified number of items on each line
+        //! 
+        //! @param [in] title  Label that identifies the values
+        //! @param [in] values  List of values to be output in hexadecimal form
+        //! @param [in] margin  Left margin content (default: "").
+        //! @param [in] space_first  When set, inserts a space character before the value (default: true)
+        //! @param [in] num_per_line  Number of values to be output on a single line (default: 3)
+        //! 
+        void displayVector(const UString& title,
+            UStringVector values,
+            const UString& margin = UString(),
+            bool space_first = true,
+            size_t num_per_line = 3);
 
     private:
         DuckContext&    _duck;            // Reference to the associated TSDuck context.

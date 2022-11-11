@@ -337,6 +337,7 @@ namespace ts {
         PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
         PDS_ISDB      = 0x49534442, //!< Fake private data specifier for ISDB descriptors (value is "ISDB" in ASCII).
         PDS_AVS       = 0x41565356, //!< Private data specifier for AVS Working Group of China (value is "AVSV" in ASCII).
+        PDS_AOM       = 0x414F4D53, //!< Private data specifier for the Alliance for Open Media (AOM) (value is "AOMS" in ASCII).
         PDS_NULL      = 0xFFFFFFFF, //!< An invalid private data specifier, can be used as placeholder.
     };
 
@@ -667,6 +668,7 @@ namespace ts {
         // Valid in DVB context after PDS_AVS private_data_specifier
 
         DID_AVS3_VIDEO          = 0xD1, //!< DID for AVS3 video descriptor, as defined in T/AI 109.6
+        DID_AV1_VIDEO           = 0xD2, //!< PLACEHOLDER for AV1 video descriptor
 
         // Valid in ATSC / SCTE context:
 
@@ -785,6 +787,7 @@ namespace ts {
         MPEG_EDID_EVC_TIM_HRD   = 0x16, //!< Ext.DID for EVC_timing_and_HRD_descriptor.
         MPEG_EDID_LCEVC_VIDEO   = 0x17, //!< Ext.DID for LCEVC_video_descriptor.
         MPEG_EDID_LCEVC_LINKAGE = 0x18, //!< Ext.DID for LCEVC_linkage_descriptor.
+        MPEG_EDID_MEDIA_SVC_KIND = 0x19, //!< Ext.DID for Media_service_kind_descriptor
         MPEG_EDID_NULL          = 0xFF, //!< Invalid EDID value, can be used as placeholder.
     };
 
