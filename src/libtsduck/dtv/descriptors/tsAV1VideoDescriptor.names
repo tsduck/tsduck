@@ -1,0 +1,42 @@
+[AV1_video_descriptor.hdr_wcg_idc]
+Bits = 2
+0 = SDR
+1 = WCG only
+2 = HDR and WCG
+3 = no indication
+
+[AV1_video_descriptor.seq_level_idx]
+Bits = 5
+0 = 2.0
+1 = 2.1
+2 = 2.2
+3 = 2.3
+4 = 3.0
+5 = 3.1
+6 = 3.2
+7 = 3.3
+8 = 4.0
+9 = 4.1
+10 = 4.2
+11 = 4.3
+12 = 5.0
+13 = 5.1
+14 = 5.2
+15 = 5.3
+16 = 6.0
+17 = 6.1
+18 = 6.2
+19 = 6.3
+20 = 7.0
+21 = 7.1
+22 = 7.2
+23 = 7.2
+24-30 = Reserved
+31 = Maximum
+
+[AV1_video_descriptor.chroma_sample_position]
+Bits = 5
+0 = Unknown
+1 = Vertical
+2 = Co-located
+3 = RESERVED

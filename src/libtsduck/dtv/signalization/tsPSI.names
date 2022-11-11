@@ -300,6 +300,7 @@ Bits = 32
 0x00532D41 = Scientific Atlanta
 0x00564F4F = VOO (Tecteo)
 0x00600000 = Rhône Vision Cable
+0x414F4D53 = AOM
 0x41545343 = ATSC (fake PDS for ATSC descriptors)
 0x41555300 = Foxtel Management
 0x41565356 = AVS
@@ -660,6 +661,9 @@ Bits = 8
 0x0000233A_87 = UK DTT Short Service Name
 0x0000233A_88 = UK DTT HD Simulcast Logical Channel Number
 0x0000233A_89 = UK DTT Guidance
+# With PDS for AOM.
+# Descriptors are defined by the Alliance for Open Media.
+0x414F4D53_D2 = AV1 Video
 # ATSC descriptors, using the fake PDS for ATSC.
 0x41545343_80 = ATSC Stuffing
 0x41545343_81 = ATSC AC-3 Audio
@@ -758,6 +762,7 @@ Bits = 8
 0x16 = EVC timing and HRD
 0x17 = LCEVC video descriptor
 0x18 = LCEVC linkage
+0x19 = Media Service Kind
 
 [DVBExtendedDescriptorId]
 Bits = 8

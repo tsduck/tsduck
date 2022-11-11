@@ -946,7 +946,8 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint8_t>
 // specified and with the specified number of items on each line
 //----------------------------------------------------------------------------
 
-void ts::TablesDisplay::displayVector(const UString& title, std::vector<bool> values, const UString& margin, bool space_first, size_t num_per_line, char true_val, char false_val)
+void ts::TablesDisplay::displayVector(const UString& title, std::vector<bool> values, const UString& margin, bool space_first, size_t num_per_line, char true_val,
+    char false_val)
 {
     if (!values.empty()) {
         std::ostream& strm(_duck.out());
@@ -954,6 +955,35 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<bool> va
         strm << margin << title;
         for (size_t j = 0; j < values.size(); j++) {
             strm << (space_first ? " " : "") << (values[j] ? true_val : false_val);
+            if ((j + 1) % num_per_line == 0) {
+                strm << std::endl;
+                if (j != (values.size() - 1)) {
+                    strm << myMargin;
+                }
+            }
+        }
+        if (values.size() % num_per_line != 0) {
+            strm << std::endl;
+        }
+    }
+}
+
+//----------------------------------------------------------------------------
+// Display string values in a tabular manner with the values being left 
+// aligned and with the specified number of items on each line
+//----------------------------------------------------------------------------
+
+void ts::TablesDisplay::displayVector(const UString& title, UStringVector values, const UString& margin, bool space_first, size_t num_per_line)
+{
+    if (!values.empty()) {
+        size_t _maxlen = 0;
+        for (auto i : values) { if (i.length() > _maxlen) _maxlen = i.length(); }
+
+        std::ostream& strm(_duck.out());
+        UString myMargin(margin.length() + title.length(), ' ');
+        strm << margin << title;
+        for (size_t j = 0; j < values.size(); j++) {
+            strm << (space_first ? " " : "") << values[j].toJustifiedLeft(_maxlen);
             if ((j + 1) % num_per_line == 0) {
                 strm << std::endl;
                 if (j != (values.size() - 1)) {

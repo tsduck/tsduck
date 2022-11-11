@@ -1,0 +1,61 @@
+[Media_service_kind_descriptor.media_description_flag]
+Bits = 1
+# ISO/IEC 13818-1 Amd.1, clause 2.6.142
+0 = self
+1 = associate
+
+[Media_service_kind_descriptor.media_type]
+Bits = 2
+# ISO/IEC 13818-1 Amd.1, clause 2.6.142
+0 = unknown
+1 = video
+2 = audio
+3 = text/data
+
+[Media_service_kind_descriptor.ID_type]
+Bits = 13
+# ISO/IEC 13818-1 Amd.1, clause 2.6.142
+0x0000-0x01FF = Reserved for MPEG
+0x0200-0x02FF = According to ANSI SCTE/35 Table 22
+0x0300-0x0FFF = Reserved for MPEG
+0x1000-0x1FFF = User private
+
+
+[Media_service_kind_descriptor.configuration_type]
+Bits = 2
+# ISO/IEC 13818-1 Amd.1, clause 2.6.142
+0 = complete
+1 = partial
+2 = complete combination
+3 = reserved
+
+[Media_service_kind_descriptor.purpose]
+Bits = 8
+# ISO/IEC 13818-1 Amd.1, clause 2.6.142
+0x00 = undefined
+0x01 = main
+0x02 = alternate
+0x03 = supplementary
+0x04 = emergency
+0x05 = description
+0x06 = enhanced-audio-intelligibility
+0x07 = dub
+0x08 = primary commentary
+0x09 = primary
+0x0A = native
+0x0B = music & effects
+0x0C = dialogue
+0x0D = voice-over
+0x0E = sign
+0x0F = multi-view
+0x10 = karaoke
+0x11 = caption
+0x12 = subtitle
+0x13 = forced-subtitle
+0x14 = metadata
+0x15 = non-primary
+0x16 = substitution
+0x17 = alternate commentary
+0x18 = stadium sound
+0x19-0xEF = Reserved
+0xF0-0xFF = User private
