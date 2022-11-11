@@ -113,8 +113,9 @@ void ts::LCEVCLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
     if (buf.canReadBytes(1)) {
         size_t num_lcevc_stream_tags = buf.getUInt8();
         std::vector<uint8_t> lcevc_stream_tag;
-        for (uint8_t i = 0; i < num_lcevc_stream_tags; i++)
+        for (uint8_t i = 0; i < num_lcevc_stream_tags; i++) {
             lcevc_stream_tag.push_back(buf.getUInt8());
+        }
         disp.displayVector(u"LCEVC stream tag:", lcevc_stream_tag, margin);
     }
 }

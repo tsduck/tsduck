@@ -59,7 +59,6 @@ namespace ts {
             Variable<uint16_t> tertiary_region_code;   //!< ETSI EN 300 468, clause 6.4.18.
 
             SOGI_region_type();   //!< Constructor.
-            void clearContent();  //!< Clear content.
         };
 
         //! 
@@ -74,7 +73,6 @@ namespace ts {
             std::vector<SOGI_region_type> regions;        //!< ETSI EN 300 468, clause 6.4.18.
 
             SOGI_type();          //!< Constructor.
-            void clearContent();  //!< Clear content.
 
             //!
             //! Display this object.

@@ -50,10 +50,11 @@ namespace ts {
         //!
         class TSDUCKDLL substructure_type {
         public:
-            uint8_t     repititionCount;         //!< 3 bits
-            std::vector<uint8_t> m4MuxChannel;   //!< list of 8 bit values
-            std::vector<uint8_t> numberOfBytes;  //!< list of 8 bit values
-            substructure_type();                 //!< Default constructor.
+            uint8_t                 repititionCount;    //!< 3 bits
+            std::vector<uint8_t>    m4MuxChannel;       //!< list of 8 bit values
+            std::vector<uint8_t>    numberOfBytes;      //!< list of 8 bit values
+
+            substructure_type();            //!< Constructor            
         };
 
         //!
@@ -61,10 +62,11 @@ namespace ts {
         //!
         class TSDUCKDLL MuxCodeTableEntry_type {
         public:
-            uint8_t MuxCode;                              //!< 4 bits
-            uint8_t version;                              //!< 4 bits
-            std::vector<substructure_type> substructure;  //!< Mux code substructure
-            MuxCodeTableEntry_type();                     //!< Default constructor.
+            uint8_t                         MuxCode;       //!< 4 bits
+            uint8_t                         version;       //!< 4 bits
+            std::vector<substructure_type>  substructure;  //!< Mux code substructure
+
+            MuxCodeTableEntry_type();       //!< Constructor                    
         };
 
         // Public members:

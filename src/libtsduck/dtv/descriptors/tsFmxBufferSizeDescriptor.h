@@ -58,7 +58,8 @@ namespace ts {
         public:
             uint8_t     flexMuxChnnel;       //!< 8 bits
             uint32_t    FB_BufferSize;       //!< 24 bits
-            FlexMuxBufferDescriptor_type();  //!< Default constructor.
+
+            FlexMuxBufferDescriptor_type();     //!< Constructor
         };
 
         // Public members:

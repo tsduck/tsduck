@@ -121,8 +121,9 @@ void ts::HEVCOperationPointDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putBits(0xFF, 2);
     buf.putBits(profile_tier_level_infos.size(), 6);
-    for (auto it : profile_tier_level_infos)
+    for (auto it : profile_tier_level_infos) {
         buf.putBytes(it);
+    }
     buf.putBits(operation_points.size(), 8);
     for (auto it : operation_points) {
         buf.putUInt8(it.target_ols);
@@ -148,10 +149,12 @@ void ts::HEVCOperationPointDescriptor::serializePayload(PSIBuffer& buf) const
             buf.putBits(0xFF, 4);
             buf.putBits(it.frame_rate_indicator.set() ? it.frame_rate_indicator.value() : 0xFFFF, 12);
         }
-        if (it.avg_bit_rate.set())
+        if (it.avg_bit_rate.set()) {
             buf.putBits(it.avg_bit_rate.value(), 24);
-        if (it.max_bit_rate.set())
+        }
+        if (it.max_bit_rate.set()) {
             buf.putBits(it.max_bit_rate.value(), 24);
+        }
     }
 }
 
@@ -198,11 +201,12 @@ void ts::HEVCOperationPointDescriptor::deserializePayload(PSIBuffer& buf)
             buf.skipBits(4);
             buf.getBits(newOperationPoint.frame_rate_indicator, 12);
         }
-        if (avg_bit_rate_info_flag)
+        if (avg_bit_rate_info_flag) {
             newOperationPoint.avg_bit_rate = buf.getUInt24();
-        if (max_bit_rate_info_flag)
+        }
+        if (max_bit_rate_info_flag) {
             newOperationPoint.max_bit_rate = buf.getUInt24();
-
+        }
         operation_points.push_back(newOperationPoint);
     }
 }
@@ -218,9 +222,9 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
         buf.skipReservedBits(2);
         uint8_t num_ptl;
         buf.getBits(num_ptl, 6);
-        for (uint8_t i = 0; i < num_ptl; i++)
+        for (uint8_t i = 0; i < num_ptl; i++) {
             disp << margin << "profile_tier_level_info[" << int(i) << "] " << UString::Dump(buf.getBytes(PROFILE_TIER_LEVEL_INFO_SIZE), UString::SINGLE_LINE) << std::endl;
-
+        }
         uint8_t operation_points_count = buf.getUInt8();
         for (uint8_t i = 0; i < operation_points_count; i++) {
             disp << margin << "operation point[ " << int(i) << "]  target OLS: " << int(buf.getUInt8()) << std::endl;
@@ -252,21 +256,28 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
                 shown = true;
             }
             if (avg_bit_rate_info_flag) {
-                if (!shown)
+                if (!shown) {
                     disp << margin << "  ";
-                else disp << ", ";
+                }
+                else {
+                    disp << ", ";
+                }
                 disp << "Avg. bit rate: " << buf.getUInt24();
                 shown = true;
             }
             if (max_bit_rate_info_flag) {
-                if (!shown)
+                if (!shown) {
                     disp << margin << "  ";
-                else disp << ", ";
+                }
+                else {
+                    disp << ", ";
+                }
                 disp << "Max. bit rate: " << buf.getUInt24();
                 shown = true;
             }
-            if (shown)
+            if (shown) {
                 disp << std::endl;
+            }
         }
     }
 }
@@ -278,8 +289,9 @@ void ts::HEVCOperationPointDescriptor::DisplayDescriptor(TablesDisplay& disp, PS
 
 void ts::HEVCOperationPointDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto it : profile_tier_level_infos)
+    for (auto it : profile_tier_level_infos) {
         root->addElement(u"profile_tier_level_info")->addHexaText(it);
+    }
     for (auto it : operation_points) {
         ts::xml::Element* op = root->addElement(u"operation_point");
         op->setIntAttribute(u"target_ols", it.target_ols);

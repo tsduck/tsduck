@@ -47,9 +47,9 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t             version;                                //!< 7 bits.
-        uint8_t             seq_profile;                            //!< 3 bits.
-        uint8_t             seq_level_idx_0;                        //!< 3 bits.
+        uint8_t             version;                                //!< 7 bits. version of the descriptor - must be 1
+        uint8_t             seq_profile;                            //!< 3 bits. same as value in Sequence Header OBU in the AV1 video stream.
+        uint8_t             seq_level_idx_0;                        //!< 3 bits. same as value in Sequence Header OBU in the AV1 video stream.
         uint8_t             seq_tier_0;                             //!< 1 bit.
         bool                high_bitdepth;                          //!< 1 bit.
         bool                twelve_bit;                             //!< 1 bit.
@@ -57,8 +57,8 @@ namespace ts {
         bool                chroma_subsampling_x;                   //!< 1 bit.
         bool                chroma_subsampling_y;                   //!< 1 bit.
         uint8_t             chroma_sample_position;                 //!< 2 bits.
-        uint8_t             HDR_WCG_idc;                            //!< 2 bits.
-        Variable<uint8_t>   initial_presentation_delay_minus_one;   //!< 4 bits
+        uint8_t             HDR_WCG_idc;                            //!< 2 bits. indicates the presence or absence of HDR and WCG components in the PID
+        Variable<uint8_t>   initial_presentation_delay_minus_one;   //!< 4 bits. !!not used in MPEG2-TS!!
 
         //!
         //! Default constructor.

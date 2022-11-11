@@ -238,8 +238,9 @@ void ts::MPEG4TextDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& 
         if (contains_list_of_compatible_3GPPFormats_flag) {
             const uint8_t number_of_formats = buf.getUInt8();
             std::vector<uint8_t> Compatible3GPPFormats;
-            for (uint8_t i = 0; i < number_of_formats; i++)
+            for (uint8_t i = 0; i < number_of_formats; i++) {
                 Compatible3GPPFormats.push_back(buf.getUInt8());
+            }
             disp.displayVector(u"Compatible 3GPP formats:", Compatible3GPPFormats, margin);
         }
         if (SampleDescription_carriage_flag) {

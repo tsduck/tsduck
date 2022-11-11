@@ -86,16 +86,18 @@ void ts::QualityExtensionDescriptor::serializePayload(PSIBuffer& buf) const
 {
     buf.putUInt8(field_size_bytes);
     buf.putBits(metric_codes.size(), 8);
-    for (auto it : metric_codes)
+    for (auto it : metric_codes) {
         buf.putUInt32(it);
+    }
 }
 
 void ts::QualityExtensionDescriptor::deserializePayload(PSIBuffer& buf)
 {
     field_size_bytes = buf.getUInt8();
     uint8_t metric_count = buf.getUInt8();
-    for (uint8_t i = 1; i <= metric_count; i++)
+    for (uint8_t i = 1; i <= metric_count; i++) {
         metric_codes.push_back(buf.getUInt32());
+    }
 }
 
 
@@ -122,8 +124,9 @@ void ts::QualityExtensionDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
 void ts::QualityExtensionDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
     root->setIntAttribute(u"field_size_bytes", field_size_bytes);
-    for (auto it : metric_codes)
+    for (auto it : metric_codes) {
         root->addElement(u"metric")->setIntAttribute(u"code", it, true);
+    }
 }
 
 bool ts::QualityExtensionDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)

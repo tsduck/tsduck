@@ -51,8 +51,7 @@ namespace ts {
     //!> more language code/media_service_type pairs.
     //!> If the same media component is described at a Program Leveland an Elementary Level, then 
     //!> the Elementary stream media_service_kind description shall take precedence.
-
-    //
+    //!
     class TSDUCKDLL MediaServiceKindDescriptor : public AbstractDescriptor
     {
     public:
@@ -65,7 +64,7 @@ namespace ts {
             UString              language_code;          //!< BCP47 compliant language code
             std::vector<uint8_t> media_service_types;    //!< service types associated with this language
 
-            language_media_pair_type();
+            language_media_pair_type();        //!< Constructor
         };
 
         class media_service_kind_type {
@@ -78,7 +77,7 @@ namespace ts {
             UString                                 media_ID_field;          //!< identifier of the data element
             std::vector<language_media_pair_type>   language_media_service_type_pairs;  //!< list of laguage/servive type pairs for this media type
 
-            media_service_kind_type();
+            media_service_kind_type();          //!< Constructor
         };
 
         // Public members:

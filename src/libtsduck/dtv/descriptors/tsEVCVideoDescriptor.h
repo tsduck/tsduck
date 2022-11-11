@@ -59,8 +59,8 @@ namespace ts {
         bool      EVC_24hr_picture_present;          //!< bool.
         uint8_t   HDR_WCG_idc;                       //!< 2 bits.
         uint8_t   video_properties_tag;              //!< 4 bits.
-        Variable<uint8_t> temporal_id_min;           //!< 3 bits, optional, specify both min and max or none.
-        Variable<uint8_t> temporal_id_max;           //!< 3 bits, optional, specify both min and max or none.
+        Variable<uint8_t> temporal_id_min;           //!< 3 bits, optional, specify both min and max or neither.
+        Variable<uint8_t> temporal_id_max;           //!< 3 bits, optional, specify both min and max or neither.
 
         //!
         //! Default constructor.
