@@ -8,6 +8,7 @@
     <TablesSkeletonXml>$(TSDuckRootDir)src\libtsduck\config\tsduck.tables.skeleton.xml</TablesSkeletonXml>
     <TablesModelXml>$(OutDir)tsduck.tables.model.xml</TablesModelXml>
   </PropertyGroup>
+
   <ItemGroup>
     <DtvXmlFiles Include="$(DtvRoot)tables\*.xml;$(DtvRoot)descriptors\*.xml"/>
   </ItemGroup>
@@ -56,7 +57,7 @@
       <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
     </PropertyGroup>
     <Exec WorkingDirectory="$(DtvRoot)"
-          Command='"$(TsXmlExe)" --merge $(TablesSkeletonXml) $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o $(TablesModelXml)'/>
+          Command='"$(TsXmlExe)" --merge "$(TablesSkeletonXml)" $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o "$(TablesModelXml)"'/>
   </Target>
 
 </Project>

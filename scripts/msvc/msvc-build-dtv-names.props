@@ -11,10 +11,10 @@
 
   <Target Name="BuildDtvNames" Inputs="@(DtvNamesFiles)" Outputs="$(OutDir)tsduck.dtv.names">
     <Message Text="Building $(OutDir)tsduck.dtv.names" Importance="high"/>
-    <ItemGroup>
-      <NamesContents Include="$([System.IO.File]::ReadAllText(%(DtvNamesFiles.Identity)))"/>
-    </ItemGroup>
-    <WriteLinesToFile File="$(OutDir)tsduck.dtv.names" Lines="@(NamesContents)" Overwrite="true"/>
+    <Exec ConsoleToMSBuild='true'
+          Command='python "$(TSDuckRootDir)scripts\build-dtv-names.py" "$(OutDir)tsduck.dtv.names" "$(TSDuckRootDir)src\libtsduck\config\tsduck.dtv.skeleton.names" "$(TSDuckRootDir)src\libtsduck\base" "$(TSDuckRootDir)src\libtsduck\dtv"'>
+      <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
+    </Exec>
   </Target>
 
 </Project>
