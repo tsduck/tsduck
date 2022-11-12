@@ -40,8 +40,7 @@ CONFIGS_DEST = $(addprefix $(BINDIR)/,$(CONFIGS_SRC))
 TABLES_SRC   = tsduck.tables.skeleton.xml
 TABLES_SUBS  = $(wildcard ../dtv/tables/*.xml ../dtv/descriptors/*.xml)
 TABLES_DEST  = $(BINDIR)/tsduck.tables.model.xml
-NAMES_SRC    = tsduck.dtv.skeleton.names
-NAMES_SUBS   = $(wildcard ../base/*/*.names ../dtv/*/*.names)
+NAMES_SRC    = tsduck.dtv.skeleton.names $(wildcard ../base/*/*.names ../dtv/*/*.names)
 NAMES_DEST   = $(BINDIR)/tsduck.dtv.names
 DEKTEC_DEST  = $(BINDIR)/tsduck.dektec.names
 
@@ -68,9 +67,9 @@ $(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(BINDIR)/tsxml
 	@echo '  [GEN] $(notdir $@)'; \
 	$(BINDIR)/tsxml --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
 
-$(NAMES_DEST): $(NAMES_SRC) $(NAMES_SUBS)
+$(NAMES_DEST): $(NAMES_SRC)
 	@echo '  [GEN] $(notdir $@)'; \
-	cat $(NAMES_SRC) $(NAMES_SUBS) >$@
+	$(PYTHON) $(SCRIPTSDIR)/build-dtv-names.py $@ $^
 
 $(DEKTEC_DEST): $(shell $(SCRIPTSDIR)/dtapi-config.sh --header)
 	@echo '  [GEN] $(notdir $@)'; \
