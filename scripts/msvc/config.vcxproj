@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!-- Project file to build the configuration files only -->
+
+  <Target Name='Default'>
+    <CallTarget Targets='BuildConfigFiles'/>
+    <CallTarget Targets='BuildDtvNames'/>
+    <CallTarget Targets='BuildDektecNames'/>
+    <CallTarget Targets='BuildTSDuckHeader'/>
+    <CallTarget Targets='BuildTablesModel'/>
+  </Target>
+
+  <ImportGroup>
+    <Import Project="msvc-common-begin.props"/>
+    <Import Project="msvc-common-base.props" />
+    <Import Project="msvc-use-dtapi.props"/>
+    <Import Project="msvc-build-config-files.props"/>
+    <Import Project="msvc-build-dtv-names.props"/>
+    <Import Project="msvc-build-dektec-names.props"/>
+    <Import Project="msvc-build-tsduck-header.props"/>
+    <Import Project="msvc-build-tables-model.props"/>
+  </ImportGroup>
+
+</Project>
