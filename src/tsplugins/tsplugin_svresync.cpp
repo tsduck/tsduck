@@ -196,6 +196,7 @@ void ts::SVResyncPlugin::handleService(uint16_t ts_id, const Service& service, c
         for (const auto& it : pmt.streams) {
             _target_pids.set(it.first);
         }
+        _target_pids.set(pmt.pcr_pid);
 
         // If the PCR PID changed, reset our PCR adjustment.
         if (pmt.pcr_pid != _target_pcr_pid) {
