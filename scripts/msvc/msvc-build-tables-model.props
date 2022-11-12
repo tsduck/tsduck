@@ -12,6 +12,41 @@
     <DtvXmlFiles Include="$(DtvRoot)tables\*.xml;$(DtvRoot)descriptors\*.xml"/>
   </ItemGroup>
 
+  <Choose>
+    <!-- Find a tsxml.exe somewhere -->
+    <!-- During a normal build, it is always in $(OutDir) -->
+    <When Condition="Exists('$(OutDir)tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(OutDir)tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Release-x64\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Release-x64\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Release-Win32\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Release-Win32\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Debug-x64\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Debug-x64\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <When Condition="Exists('$(BinRootDir)Debug-Win32\tsxml.exe')">
+      <PropertyGroup>
+        <TsXmlExe>$(BinRootDir)Debug-Win32\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </When>
+    <Otherwise>
+      <PropertyGroup>
+        <TsXmlExe>$(TSDUCK)\bin\tsxml.exe</TsXmlExe>
+      </PropertyGroup>
+    </Otherwise>
+  </Choose>
+
   <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);$(DtvXmlFiles)" Outputs="$(TablesModelXml)">
 	<Message Text="Building $(TablesModelXml)" Importance="high"/>
     <PropertyGroup>
@@ -21,7 +56,7 @@
       <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
     </PropertyGroup>
     <Exec WorkingDirectory="$(DtvRoot)"
-          Command="$(OutDir)tsxml.exe --merge $(TablesSkeletonXml) $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o $(TablesModelXml)"/>
+          Command='"$(TsXmlExe)" --merge $(TablesSkeletonXml) $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o $(TablesModelXml)'/>
   </Target>
 
 </Project>
