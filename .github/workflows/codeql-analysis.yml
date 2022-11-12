@@ -36,9 +36,10 @@ name: CodeQL security analysis
 # Trigger the workflow on push or pull request, for master branch only.
 on:
   push:
-    branches: [ master ]
+    branches: ['master', 'main']
   pull_request:
-    branches: [ master ]
+    branches: ['master', 'main']
+  workflow_dispatch:
 
 jobs:
   analyze:

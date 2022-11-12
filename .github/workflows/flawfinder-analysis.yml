@@ -43,9 +43,9 @@ name: FlawFinder security analysis
 on:
   workflow_dispatch:
   # push:
-  #   branches: [ master ]
+  #   branches: ['master', 'main']
   # pull_request:
-  #   branches: [ master ]
+  #   branches: ['master', 'main']
 
 jobs:
   flawfinder:

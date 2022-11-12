@@ -53,6 +53,13 @@ files in XML format).
   automatically invoked by the MSBuild project files and there is no need to
   explicitly run it.
 
+- `build-config-files.ps1` : This script builds the .names and .xml configuration
+  files for TSDuck. This script calls MSBuild with the corresponding targets. It
+  is useful to quickly rebuild the configuration files when a .names or .xml
+  file was modified but, since these files are MSBuild targets, they are
+  automatically rebuilt by the MSBuild project and there is no need to
+  explicitly run this script.
+
 - `build-installer.ps1` : This script builds the binary installers for TSDuck.
   It automatically invokes `build.ps1`. So, to build TSDuck installers from a
   freshly cloned repository, just run this script.
