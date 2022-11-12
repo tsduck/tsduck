@@ -257,8 +257,8 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
         $TempBin = (New-Directory "${TempRoot}\bin")
         Copy-Item "${BinDir}\ts*.exe" -Exclude "*_static.exe" -Destination $TempBin
         Copy-Item "${BinDir}\ts*.dll" -Destination $TempBin
-        Copy-Item "${SrcDir}\libtsduck\config\tsduck*.xml" -Destination $TempBin
-        Copy-Item "${SrcDir}\libtsduck\config\tsduck*.names" -Destination $TempBin
+        Copy-Item "${BinDir}\ts*.xml" -Destination $TempBin
+        Copy-Item "${BinDir}\ts*.names" -Destination $TempBin
 
         $TempDoc = (New-Directory "${TempRoot}\doc")
         Copy-Item "${RootDir}\doc\tsduck.pdf" -Destination $TempDoc

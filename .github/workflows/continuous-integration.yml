@@ -29,19 +29,43 @@
 #
 #  GitHub Actions configuration file : Continuous Integration
 #
+#  The workflow is triggered on push or pull request, for master branch only.
+#  Manual dispatch from the GitHub UI is also allowed.
+#
+#  TSDuck is built on Ubuntu, macOS and Windows, using C++11 (or C++14) and
+#  C++20 levels of standards. The doxygen documentation is also generated to
+#  verify that no documentation is missing.
+#
+#  Testing strategy: The low-level unitary tests and the high-level test suite
+#  are run on all builds. The high-level test suite is in a separate repo
+#  named tsduck-test. The tests must use the appropriate tsduck-test repo for
+#  the current workflow. It may not be appropriate to use tsduck/tsduck-test,
+#  for instance when the current commit or pull request added new features
+#  or legitimately modified the test reference output. Some effort is made
+#  to locate the "right" tsduck-test repo:
+#
+#  - First, the "origin" repo is located. This can be:
+#    . tsduck/tsduck when directly pushing here.
+#    . USER/tsduck when a user pushes on its forked repo USER/tsduck.
+#    . USER/tsduck when a user submits a pull request to tsduck/tsduck.
+#  - Then we try to grab the test suite from repo "origin"-test, meaning
+#    either tsduck/tsduck-test or USER/tsduck-test.
+#  - If this repo does not exist, we grab the "reference" repo from
+#    tsduck/tsduck-test
+#
 #-----------------------------------------------------------------------------
 
 name: Continuous integration
 
-# Trigger the workflow on push or pull request, for master branch only.
 on:
   push:
-    branches: [master]
+    branches: ['master', 'main']
   pull_request:
-    branches: [master]
+    branches: ['master', 'main']
+  workflow_dispatch:
 
-# Build on Ubuntu, macOS and Windows, using C++11 (C++14 on Windows) and C++20 levels of standards.
 jobs:
+
   build_unix:
     strategy:
       fail-fast: false
@@ -70,7 +94,7 @@ jobs:
       BINDIR: ${{ matrix.bindir }}
       CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-      REFERENCE_REPO: ${{ github.repository }}
+      REFERENCE_REPO: tsduck/tsduck
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -127,7 +151,7 @@ jobs:
     env:
       STDCPP: stdcpp${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
-      REFERENCE_REPO: ${{ github.repository }}
+      REFERENCE_REPO: tsduck/tsduck
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
