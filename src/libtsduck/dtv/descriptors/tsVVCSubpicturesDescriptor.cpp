@@ -166,8 +166,8 @@ void ts::VVCSubpicturesDescriptor::buildXML(DuckContext& duck, xml::Element* roo
     const size_t number_of_vvc_subpictures = std::min<size_t>(0x3F, std::min(component_tag.size(), vvc_subpicture_id.size()));
     for (size_t i = 0; i < number_of_vvc_subpictures; i++) {
         ts::xml::Element* element = root->addElement(u"subpicture");
-        element->setIntAttribute(u"component_tag", component_tag[i], true);
-        element->setIntAttribute(u"subpicture_id", vvc_subpicture_id[i], true);
+        element->setIntAttribute(u"component_tag", component_tag[i]);
+        element->setIntAttribute(u"subpicture_id", vvc_subpicture_id[i]);
     }
     root->setIntAttribute(u"processing_mode", processing_mode);
     root->setAttribute(u"service_description", service_description, true);
