@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<tsduck>
+  <_descriptors>
+
+    <HEVC_subregion_descriptor
+        SubstreamIDsPerLine="uint7, required"
+        TotalSubstreamIDs="uint8, required"
+        LevelFullPanorama="uint8, required">
+
+      <SubregionLayout
+          PreambleSubstreamID="uint7, optional"
+          Level="uint8, required"
+          PictureSizeHor="uint16, required"
+          PictureSizeVer="uint16, required">
+
+        <Pattern>
+          <Substream offset="int8, required"/>
+        </Pattern>
+
+      </SubregionLayout>
+
+    </HEVC_subregion_descriptor>
+
+  </_descriptors>
+</tsduck>
