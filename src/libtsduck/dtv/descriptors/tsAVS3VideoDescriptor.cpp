@@ -188,16 +188,16 @@ void ts::AVS3VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) co
     root->setIntAttribute(u"profile_id", profile_id, true);
     root->setIntAttribute(u"level_id", level_id, true);
     root->setBoolAttribute(u"multiple_frame_rate_flag", multiple_frame_rate_flag);
-    root->setIntAttribute(u"frame_rate_code", frame_rate_code, true);
-    root->setIntAttribute(u"sample_precision", sample_precision, true);
-    root->setIntAttribute(u"chroma_format", chroma_format, true);
+    root->setIntAttribute(u"frame_rate_code", frame_rate_code);
+    root->setIntAttribute(u"sample_precision", sample_precision);
+    root->setIntAttribute(u"chroma_format", chroma_format);
     root->setBoolAttribute(u"temporal_id_flag", temporal_id_flag);
     root->setBoolAttribute(u"td_mode_flag", td_mode_flag);
     root->setBoolAttribute(u"library_stream_flag", library_stream_flag);
     root->setBoolAttribute(u"library_picture_enable_flag", library_picture_enable_flag);
-    root->setIntAttribute(u"colour_primaries", colour_primaries, true);
-    root->setIntAttribute(u"transfer_characteristics", transfer_characteristics, true);
-    root->setIntAttribute(u"matrix_coefficients", matrix_coefficients, true);
+    root->setIntAttribute(u"colour_primaries", colour_primaries);
+    root->setIntAttribute(u"transfer_characteristics", transfer_characteristics);
+    root->setIntAttribute(u"matrix_coefficients", matrix_coefficients);
 }
 
 
