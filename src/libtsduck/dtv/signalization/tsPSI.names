@@ -758,9 +758,13 @@ Bits = 8
 0x0E = MPEG-H 3D Audio Command
 0x0F = Quality Extension
 0x10 = Virtual Segmentation
+0x11 = Timed Metadata Extension
+0x12 = HEVC Tile Substream
+0x13 = HEVC Subregion
+0x14 = JPEG XS Video
 0x15 = VVC timing and HRD
 0x16 = EVC timing and HRD
-0x17 = LCEVC video descriptor
+0x17 = LCEVC video
 0x18 = LCEVC linkage
 0x19 = Media Service Kind
 
