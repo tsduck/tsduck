@@ -2,11 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.33-2986
+VERSION 3.33-3034
 
 [NEW] New commands and plugins:
 
   * Added command "tscrc32" to manually compute CRC32 as used in MPEG sections.
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Option --set-label on plugin 'svresync".
 
 [BUG] Bug fixes:
 
