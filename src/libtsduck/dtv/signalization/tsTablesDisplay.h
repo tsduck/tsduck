@@ -424,6 +424,21 @@ namespace ts {
                            size_t num_per_line = 8);
 
         //!
+        //! Display the signed 8-bit values in a structured manner with specified number of items on each line
+        //! 
+        //! @param [in] title  Label that identifies the values
+        //! @param [in] values  List of values to be output in hexadecimal form
+        //! @param [in] margin  Left margin content (default: "").
+        //! @param [in] space_first  When set, inserts a space character before the hexadecimal value (default: true)
+        //! @param [in] num_per_line  Number of values to be output on a single line (default: 8)
+        //! 
+        void displayVector(const UString& title,
+                           std::vector<int8_t> values,
+                           const UString& margin = UString(),
+                           bool space_first = true,
+                           size_t num_per_line = 8);
+
+        //!
         //! Display boolean values in a structured manner using the characters specified and with the specified 
         //! number of items on each line
         //! 

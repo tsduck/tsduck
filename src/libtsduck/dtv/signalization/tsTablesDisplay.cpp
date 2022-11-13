@@ -942,6 +942,37 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint8_t>
 
 
 //----------------------------------------------------------------------------
+// Display the signed 8-bit values in a structured manner with specified 
+// number of items on each line
+//----------------------------------------------------------------------------
+
+void ts::TablesDisplay::displayVector(const UString& title, std::vector<int8_t> values, const UString& margin, bool space_first, size_t num_per_line)
+{
+    if (!values.empty()) {
+        std::ostream& strm(_duck.out());
+        UString myMargin(margin.length() + title.length(), ' ');
+        bool hasNegative = false;
+        for (size_t i = 0; !hasNegative && i < values.size(); i++) {
+            if (values[i] < 0) { hasNegative = true; }
+        }
+        strm << margin << title;
+        for (size_t j = 0; j < values.size(); j++) {
+            strm << (space_first ? " " : "") << UString::Format(u"%d", { values[j] }).toJustifiedLeft(hasNegative?4:3);
+            if ((j + 1) % num_per_line == 0) {
+                strm << std::endl;
+                if (j != (values.size() - 1)) {
+                    strm << myMargin;
+                }
+            }
+        }
+        if (values.size() % num_per_line != 0) {
+            strm << std::endl;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Display boolean values in a structured manner using the characters
 // specified and with the specified number of items on each line
 //----------------------------------------------------------------------------
