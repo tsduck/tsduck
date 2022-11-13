@@ -29,12 +29,12 @@
 
 #include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 
 #define MY_XML_NAME u"private_data_specifier_descriptor"
 #define MY_CLASS ts::PrivateDataSpecifierDescriptor

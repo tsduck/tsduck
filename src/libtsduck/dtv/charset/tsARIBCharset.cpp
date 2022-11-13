@@ -116,7 +116,6 @@
 
 #include "tsARIBCharset.h"
 #include "tsUString.h"
-#include "tsByteBlock.h"
 
 // Define single instance
 const ts::ARIBCharset ts::ARIBCharset::B24({u"ARIB-STD-B24", u"ARIB"});

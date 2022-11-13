@@ -29,7 +29,6 @@
 
 #include "tsAIT.h"
 #include "tsBinaryTable.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"

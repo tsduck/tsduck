@@ -43,19 +43,21 @@ namespace ts {
     //! @see ISO/IEC 13818-1 (Amd.1) 2.6.141
     //! @ingroup descriptor
     //!
-    //! The media_service_kind_descriptor can read on the Program or PID ES stream itself or can 
-    //! read on auxiliary PID ES that are dependent on the principal PID media component ES (i.e. 
-    //! in most cases the principal media component is video). The media service kind descriptor 
-    //! can also read upon the entire program to describe content with a single principal media 
-    //! component. Multiple data elements (N) can be included in the descriptor each with one or 
+    //! The media_service_kind_descriptor can read on the Program or PID ES stream itself or can
+    //! read on auxiliary PID ES that are dependent on the principal PID media component ES (i.e.
+    //! in most cases the principal media component is video). The media service kind descriptor
+    //! can also read upon the entire program to describe content with a single principal media
+    //! component. Multiple data elements (N) can be included in the descriptor each with one or
     //! more language code/media_service_type pairs.
-    //! If the same media component is described at a Program Leveland an Elementary Level, then 
+    //! If the same media component is described at a Program Leveland an Elementary Level, then
     //! the Elementary stream media_service_kind description shall take precedence.
     //!
     class TSDUCKDLL MediaServiceKindDescriptor : public AbstractDescriptor
     {
     public:
-
+        //!
+        //! An association between a language and a service type.
+        //!
         class language_media_pair_type {
         public:
             uint8_t              configuration_type;     //!< 2 bits
@@ -67,6 +69,9 @@ namespace ts {
             language_media_pair_type();        //!< Constructor
         };
 
+        //!
+        //! Description of a media service.
+        //!
         class media_service_kind_type {
         public:
             uint8_t                                 media_description_flag;  //!< 1 bit
@@ -75,13 +80,13 @@ namespace ts {
             Variable<uint16_t>                      ID_type;                 //!< 13 bits
             uint8_t                                 ID_len;                  //!< 8 bits, only used if ID_length_code==0
             UString                                 media_ID_field;          //!< identifier of the data element
-            std::vector<language_media_pair_type>   language_media_service_type_pairs;  //!< list of laguage/servive type pairs for this media type
+            std::vector<language_media_pair_type>   language_media_service_type_pairs;  //!< list of language/service type pairs for this media type
 
             media_service_kind_type();          //!< Constructor
         };
 
         // Public members:
-        std::vector<media_service_kind_type>     media_service_kinds;
+        std::vector<media_service_kind_type>     media_service_kinds;  //!< Description of all media services.
 
         //!
         //! Default constructor.

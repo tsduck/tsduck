@@ -29,7 +29,6 @@
 
 #include "tsParentalRatingDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"

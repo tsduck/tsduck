@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsDVBCharTableSingleByte.h"
-#include "tsByteBlock.h"
 #include "tsUString.h"
 #include "tsAlgorithm.h"
 

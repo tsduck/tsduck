@@ -37,7 +37,6 @@
 #include "tsT2MIDescriptor.h"
 #include "tsT2MIPacket.h"
 #include "tsTSFile.h"
-#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------

@@ -33,7 +33,6 @@
 
 #include "tsMain.h"
 #include "tsArgs.h"
-#include "tsFileUtils.h"
 #include "tsTelnetConnection.h"
 #include "tsTSPControlCommand.h"
 TS_MAIN(MainCode);

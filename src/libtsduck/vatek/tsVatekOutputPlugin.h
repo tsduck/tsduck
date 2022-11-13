@@ -36,13 +36,10 @@
 #if !defined(TS_NO_VATEK) || defined(DOXYGEN)
 
 #include "tsOutputPlugin.h"
-
-TS_PUSH_WARNING()
-TS_MSC_NOWARNING(5027)
-TS_MSC_NOWARNING(4244)
+#include "tsBeforeStandardHeaders.h"
 #include <vatek_sdk_usbstream.h>
 #include <core/base/output_modulator.h>
-TS_POP_WARNING()
+#include "tsAfterStandardHeaders.h"
 
 namespace ts {
     //!

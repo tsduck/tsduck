@@ -42,7 +42,6 @@
 #include "tsSDT.h"
 #include "tsTS.h"
 #include "tsFileUtils.h"
-#include "tsSysUtils.h"
 TS_MAIN(MainCode);
 
 

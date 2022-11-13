@@ -36,7 +36,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 #include "tsBCD.h"
 
 #define MY_XML_NAME u"S2Xv2_satellite_delivery_system_descriptor"
