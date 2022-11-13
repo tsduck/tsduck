@@ -43,9 +43,7 @@
 #include "tsNIT.h"
 #include "tsTransportStreamId.h"
 #include "tsDescriptorList.h"
-#include "tsTime.h"
 #include "tsFileUtils.h"
-#include "tsNullReport.h"
 TS_MAIN(MainCode);
 
 #define DEFAULT_PSI_TIMEOUT   10000 // ms

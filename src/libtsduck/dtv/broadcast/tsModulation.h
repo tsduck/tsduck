@@ -34,7 +34,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsDeliverySystem.h"
 #include "tsEnumeration.h"
 #include "tsVariable.h"
 #include "tsReport.h"

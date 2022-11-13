@@ -33,7 +33,6 @@
 #include "tsDescriptor.h"
 #include "tsHFBand.h"
 #include "tsArgs.h"
-#include "tsSysUtils.h"
 #include "tsNullReport.h"
 #include "tsBCD.h"
 #include "tsDektec.h"

@@ -29,13 +29,12 @@
 
 #include "tsSIPrimeTSDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsMJD.h"
+#include "tsNames.h"
 
 #define MY_XML_NAME u"SI_prime_TS_descriptor"
 #define MY_CLASS ts::SIPrimeTSDescriptor

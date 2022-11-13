@@ -33,14 +33,9 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
-#include "tsBinaryTable.h"
 #include "tsSectionFileArgs.h"
-#include "tsDVBCharTable.h"
 #include "tsxmlTweaks.h"
-#include "tsxmlJSONConverter.h"
 #include "tsReportWithPrefix.h"
-#include "tsInputRedirector.h"
-#include "tsOutputRedirector.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 TS_MAIN(MainCode);

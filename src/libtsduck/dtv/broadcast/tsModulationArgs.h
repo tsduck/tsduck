@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsObject.h"
+#include "tsDeliverySystem.h"
 #include "tsDisplayInterface.h"
 #include "tsVariable.h"
 #include "tsModulation.h"

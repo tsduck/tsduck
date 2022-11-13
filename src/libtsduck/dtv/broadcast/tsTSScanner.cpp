@@ -30,6 +30,7 @@
 #include "tsTSScanner.h"
 #include "tsBinaryTable.h"
 #include "tsTime.h"
+#include "tsTSPacket.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
 #include "tsLogicalChannelNumbers.h"

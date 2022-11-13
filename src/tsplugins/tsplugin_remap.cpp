@@ -39,7 +39,6 @@
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
-#include "tsCASFamily.h"
 #include "tsCADescriptor.h"
 #include "tsSafePtr.h"
 

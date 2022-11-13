@@ -35,16 +35,13 @@
 #pragma once
 #include "tsTableHandlerInterface.h"
 #include "tsTuner.h"
-#include "tsTSPacket.h"
 #include "tsSectionDemux.h"
 #include "tsPAT.h"
-#include "tsPMT.h"
 #include "tsSDT.h"
 #include "tsNIT.h"
 #include "tsMGT.h"
 #include "tsVCT.h"
 #include "tsSafePtr.h"
-#include "tsCerrReport.h"
 
 namespace ts {
     //!

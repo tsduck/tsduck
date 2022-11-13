@@ -38,7 +38,6 @@
 #include "tsTunerArgs.h"
 #include "tsSignalState.h"
 #include "tsModulationArgs.h"
-#include "tsSysUtils.h"
 
 
 //----------------------------------------------------------------------------

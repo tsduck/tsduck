@@ -39,7 +39,6 @@
 #include "tsNames.h"
 #include "tsEITProcessor.h"
 #include "tsPAT.h"
-#include "tsPMT.h"
 #include "tsSDT.h"
 #include "tsBAT.h"
 #include "tsNIT.h"

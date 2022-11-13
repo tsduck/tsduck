@@ -30,7 +30,6 @@
 #include "tsC2BundleDeliverySystemDescriptor.h"
 #include "tsC2DeliverySystemDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"

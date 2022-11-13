@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 
 #define MY_XML_NAME u"logo_transmission_descriptor"
 #define MY_CLASS ts::LogoTransmissionDescriptor

@@ -35,7 +35,9 @@ bool tsVatekOutputPluginIsEmpty = true; // Avoid warning about empty module.
 
 #include "tsVatekOutputPlugin.h"
 #include "tsPluginRepository.h"
+#include "tsBeforeStandardHeaders.h"
 #include <cross/cross_os_api.h>
+#include "tsAfterStandardHeaders.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"vatek", ts::VatekOutputPlugin);
 
@@ -339,7 +341,7 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"remux",       ustream_remux_pcr},
         {u"passthrough", ustream_remux_passthrough},
     }));
-    help(u"remux", 
+    help(u"remux",
          u"remux: Lock the first PCR to keep USB transfer TS stable, TS must contain some PCR to operate.\n"
          u"passthrough: Bypass TS without padding null packets (input bitrate = output bitrate).");
 

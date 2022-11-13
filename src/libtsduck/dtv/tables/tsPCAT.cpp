@@ -34,9 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
-#include "tsMJD.h"
-#include "tsBCD.h"
 
 #define MY_XML_NAME u"PCAT"
 #define MY_CLASS ts::PCAT

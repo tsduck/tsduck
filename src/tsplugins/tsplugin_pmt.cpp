@@ -36,7 +36,6 @@
 #include "tsPluginRepository.h"
 #include "tsServiceDiscovery.h"
 #include "tsAudioLanguageOptions.h"
-#include "tsPAT.h"
 #include "tsPMT.h"
 #include "tsCADescriptor.h"
 #include "tsStreamIdentifierDescriptor.h"

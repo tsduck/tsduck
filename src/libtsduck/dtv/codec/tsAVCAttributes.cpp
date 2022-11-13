@@ -29,7 +29,7 @@
 
 #include "tsAVCAttributes.h"
 #include "tsAVCSequenceParameterSet.h"
-#include "tsNames.h"
+#include "tsNamesFile.h"
 
 
 //----------------------------------------------------------------------------
