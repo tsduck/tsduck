@@ -8,6 +8,7 @@
     <TablesSkeletonXml>$(TSDuckRootDir)src\libtsduck\config\tsduck.tables.skeleton.xml</TablesSkeletonXml>
     <TablesModelXml>$(OutDir)tsduck.tables.model.xml</TablesModelXml>
   </PropertyGroup>
+
   <ItemGroup>
     <DtvXmlFiles Include="$(DtvRoot)tables\*.xml;$(DtvRoot)descriptors\*.xml"/>
   </ItemGroup>
@@ -15,7 +16,7 @@
   <Choose>
     <!-- Find a tsxml.exe somewhere -->
     <!-- During a normal build, it is always in $(OutDir) -->
-    <When Condition="Exists('$(OutDir)tsxml.exe')">
+    <When Condition="'$(ProjectName)' == 'tsxml' OR Exists('$(OutDir)tsxml.exe')">
       <PropertyGroup>
         <TsXmlExe>$(OutDir)tsxml.exe</TsXmlExe>
       </PropertyGroup>
@@ -40,11 +41,11 @@
         <TsXmlExe>$(BinRootDir)Debug-Win32\tsxml.exe</TsXmlExe>
       </PropertyGroup>
     </When>
-    <Otherwise>
+    <When Condition="'$(TSDUCK)' != '' AND Exists('$(TSDUCK)\bin\tsxml.exe')">
       <PropertyGroup>
         <TsXmlExe>$(TSDUCK)\bin\tsxml.exe</TsXmlExe>
       </PropertyGroup>
-    </Otherwise>
+    </When>
   </Choose>
 
   <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);$(DtvXmlFiles)" Outputs="$(TablesModelXml)">
@@ -55,8 +56,9 @@
       <DtvXmlFilesSpace>@(DtvXmlFiles,' ')</DtvXmlFilesSpace>
       <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
     </PropertyGroup>
+    <Error Condition="'$(TsXmlExe)' == ''" Text="No tsxml.exe found, rebuild the project first"/>
     <Exec WorkingDirectory="$(DtvRoot)"
-          Command='"$(TsXmlExe)" --merge $(TablesSkeletonXml) $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o $(TablesModelXml)'/>
+          Command='"$(TsXmlExe)" --merge "$(TablesSkeletonXml)" $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o "$(TablesModelXml)"'/>
   </Target>
 
 </Project>
