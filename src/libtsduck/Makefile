@@ -99,8 +99,8 @@ TSDUCK_H = $(BINDIR)/include/tsduck.h
 
 .PHONY: headers
 headers: $(TSDUCK_H)
-$(TSDUCK_H): $(SRCROOT)/HEADER.txt $(filter-out %Template.h,$(wildcard *.h */*.h */*/*.h))
-	@echo '  [REBUILD] $@'; \
+$(TSDUCK_H): $(filter-out %Template.h,$(wildcard *.h */*.h */*/*.h))
+	@echo '  [GEN] $(notdir $@)'; \
 	mkdir -p $(dir $@); \
 	$(PYTHON) $(SCRIPTSDIR)/build-tsduck-header.py $@
 

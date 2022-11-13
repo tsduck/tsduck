@@ -64,8 +64,7 @@ def generate_header(out):
     del headers['unix']
 
     # Insert common source file header.
-    with open(rootdir + '/src/HEADER.txt') as f:
-        print(f.read(), file=out)
+    tsbuild.write_source_header('//', 'TSDuck global header (include all headers)', file=out)
 
     # Print include directives.
     intro = '#pragma once'

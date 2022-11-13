@@ -1,12 +1,5 @@
-#
-# TSDuck - The MPEG Transport Stream Toolkit
-# Copyright (c) 2005-2022, Thierry Lelegard
-# All rights reserved.
-#
-# Configuration file containing names for all identifiers in DTV.
-# This is a base file which is merged at build time with all *.names
-# files from all source directories under src/libtsduck.
-#
+# Base file containing names for all identifiers in DTV.
+# Merged at build time with all other *.names files.
 
 [ServiceType]
 # In service descriptor (DVB)
