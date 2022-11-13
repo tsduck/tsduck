@@ -54,22 +54,24 @@ namespace ts {
 
     private:
         // Command line options:
-        UString _target_service;  // Target service to resync.
-        UString _ref_service;     // Reference service.
-        PID     _ref_pid;         // Reference PID.
+        UString _target_service;                 // Target service to resync.
+        UString _ref_service;                    // Reference service.
+        PID     _ref_pid;                        // Reference PID.
+        TSPacketMetadata::LabelSet _set_labels;  // Labels to set on modified packets
 
         // Working data:
-        PID                _cur_ref_pid;       // Current reference PID.
-        uint64_t           _last_ref_pcr;      // Last PCR value in the reference PID.
-        PacketCounter      _last_ref_packet;   // Packet index for _last_ref_pcr.
-        uint64_t           _delta_pts;         // Value to add in target PTS and DTS (modulo PTS_DTS_SCALE).
-        bool               _bitrate_error;     // PCR adjustment does not take into account packet distance between ref and target PCR.
-        PacketCounter      _pcr_adjust_count;  // Number of adjusted PCR.
-        PacketCounter      _pts_adjust_count;  // Number of adjusted PTS.
-        PacketCounter      _dts_adjust_count;  // Number of adjusted DTS.
-        PID                _target_pcr_pid;    // Main PCR PID of target service, just to detect change.
-        PIDSet             _target_pids;       // Components of the target service, where to adjust PCR, PTS, DTS.
-        SignalizationDemux _demux;             // Analyze the transport stream.
+        PID                _cur_ref_pid;         // Current reference PID.
+        uint64_t           _last_ref_pcr;        // Last PCR value in the reference PID.
+        PacketCounter      _last_ref_packet;     // Packet index for _last_ref_pcr.
+        uint64_t           _delta_pts;           // Value to add in target PTS and DTS (modulo PTS_DTS_SCALE).
+        bool               _bitrate_error;       // PCR adjustment does not take into account packet distance between ref and target PCR.
+        PacketCounter      _pcr_adjust_count;    // Number of adjusted PCR.
+        PacketCounter      _pts_adjust_count;    // Number of adjusted PTS.
+        PacketCounter      _dts_adjust_count;    // Number of adjusted DTS.
+        PID                _target_pcr_pid;      // Main PCR PID of target service, just to detect change.
+        PIDSet             _target_pids;         // Components of the target service, where to adjust PCR, PTS, DTS.
+        PIDSet             _modified_pids;       // PID's with actually modified packets.
+        SignalizationDemux _demux;               // Analyze the transport stream.
 
         // Implementation of SignalizationHandlerInterface
         virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed) override;
@@ -88,6 +90,7 @@ ts::SVResyncPlugin::SVResyncPlugin (TSP* tsp_) :
     _target_service(),
     _ref_service(),
     _ref_pid(PID_NULL),
+    _set_labels(),
     _cur_ref_pid(PID_NULL),
     _last_ref_pcr(INVALID_PCR),
     _last_ref_packet(0),
@@ -98,6 +101,7 @@ ts::SVResyncPlugin::SVResyncPlugin (TSP* tsp_) :
     _dts_adjust_count(0),
     _target_pcr_pid(PID_NULL),
     _target_pids(),
+    _modified_pids(),
     _demux(duck, this)
 {
     // We need to define character sets to specify service names.
@@ -123,6 +127,12 @@ ts::SVResyncPlugin::SVResyncPlugin (TSP* tsp_) :
          u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
          u"The name is not case sensitive and blanks are ignored. "
          u"Exactly one of --service-reference and --pid-reference must be specified.");
+
+    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    help(u"set-label", u"label1[-label2]",
+         u"Set the specified labels on the modified PID's. "
+         u"On each PID, the label is first set on the first modified packet, and then on all packets of the PID. "
+         u"Several --set-label options may be specified.");
 }
 
 
@@ -136,7 +146,7 @@ bool ts::SVResyncPlugin::getOptions()
     getValue(_target_service, u"");
     getValue(_ref_service, u"service-reference");
     getIntValue(_ref_pid, u"pid-reference", PID_NULL);
-
+    getIntValues(_set_labels, u"set-label");
     if (count(u"service-reference") + count(u"pid-reference") != 1) {
         tsp->error(u"exactly one of --service-reference and --pid-reference must be specified");
     }
@@ -158,6 +168,7 @@ bool ts::SVResyncPlugin::start()
     _bitrate_error = false;
     _target_pcr_pid = PID_NULL;
     _target_pids.reset();
+    _modified_pids.reset();
 
     _demux.reset();
     _demux.addFullFilters();
@@ -220,17 +231,19 @@ void ts::SVResyncPlugin::handleService(uint16_t ts_id, const Service& service, c
 
 ts::ProcessorPlugin::Status ts::SVResyncPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
+    const PID pid = pkt.getPID();
+
     // Pass all packets to the demux.
     _demux.feedPacket(pkt);
 
     // Collect PCR in the reference PID.
-    if (_cur_ref_pid != PID_NULL && pkt.getPID() == _cur_ref_pid && pkt.hasPCR()) {
+    if (_cur_ref_pid != PID_NULL && pid == _cur_ref_pid && pkt.hasPCR()) {
         _last_ref_pcr = pkt.getPCR();
         _last_ref_packet = tsp->pluginPackets();
     }
 
     // Adjust time stamps in the target service (if we have a reference).
-    if (_last_ref_pcr != INVALID_PCR && _target_pids.test(pkt.getPID())) {
+    if (_last_ref_pcr != INVALID_PCR && _target_pids.test(pid)) {
 
         // If the target packet contains a PCR, adjust the time difference between the two services.
         if (pkt.hasPCR()) {
@@ -260,18 +273,25 @@ ts::ProcessorPlugin::Status ts::SVResyncPlugin::processPacket(TSPacket& pkt, TSP
             // Replace PCR with extrapolated reference PCR.
             pkt.setPCR(ref_pcr);
             _pcr_adjust_count++;
+            _modified_pids.set(pid);
         }
 
         // Adjust PTS and DTS.
         if (pkt.hasPTS()) {
             pkt.setPTS((pkt.getPTS() + _delta_pts) % PTS_DTS_SCALE);
             _pts_adjust_count++;
+            _modified_pids.set(pid);
         }
         if (pkt.hasDTS()) {
             pkt.setDTS((pkt.getDTS() + _delta_pts) % PTS_DTS_SCALE);
             _dts_adjust_count++;
+            _modified_pids.set(pid);
         }
     }
 
+    // Set label on modified PID's.
+    if (_set_labels.any() && _modified_pids.test(pid)) {
+        pkt_data.setLabels(_set_labels);
+    }
     return TSP_OK;
 }
