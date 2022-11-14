@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsjsonOutputArgs.h"
-#include "tsDVBCharTable.h"
 
 namespace ts {
 

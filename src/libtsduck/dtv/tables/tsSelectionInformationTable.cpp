@@ -29,9 +29,7 @@
 
 #include "tsSelectionInformationTable.h"
 #include "tsRST.h"
-#include "tsNames.h"
 #include "tsBinaryTable.h"
-#include "tsStreamIdentifierDescriptor.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"

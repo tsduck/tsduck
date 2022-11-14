@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsAlgorithm.h"
 
 #define MY_XML_NAME u"AV1_video_descriptor"
 #define MY_CLASS ts::AV1VideoDescriptor
@@ -44,12 +43,13 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
+
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
 ts::AV1VideoDescriptor::AV1VideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     version(0),
     seq_profile(0),
     seq_level_idx_0(0),
@@ -71,7 +71,7 @@ void ts::AV1VideoDescriptor::clearContent()
     seq_profile = 0;
     seq_level_idx_0 = 0;
     seq_tier_0 = 0;
-    high_bitdepth = false; 
+    high_bitdepth = false;
     twelve_bit = false;
     monochrome = false;
     chroma_subsampling_x = false;
@@ -216,7 +216,7 @@ void ts::AV1VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 bool ts::AV1VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     int csp = 0;
-    bool ok = 
+    bool ok =
         element->getIntAttribute(version, u"version", true, 1, 1, 1) &&
         element->getIntAttribute(seq_profile, u"seq_profile", true, 0, 0x00, 0x7) &&
         element->getIntAttribute(seq_level_idx_0, u"seq_level_idx_0", true, 0, 0x00, 0x1F) &&

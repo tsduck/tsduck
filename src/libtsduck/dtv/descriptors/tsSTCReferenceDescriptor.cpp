@@ -33,7 +33,6 @@
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
-#include "tsNames.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"STC_reference_descriptor"

@@ -33,14 +33,10 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
-#include "tsMemory.h"
 #include "tsjsonOutputArgs.h"
 #include "tsTSFile.h"
-#include "tsTextFormatter.h"
 #include "tsFileUtils.h"
 #include "tsjsonObject.h"
-#include "tsjsonString.h"
-#include "tsjsonNumber.h"
 TS_MAIN(MainCode);
 
 #define DEFAULT_BUFFERED_PACKETS 10000

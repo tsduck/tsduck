@@ -29,13 +29,12 @@
 
 #include "tsSIParameterDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsMJD.h"
+#include "tsNames.h"
 
 #define MY_XML_NAME u"SI_parameter_descriptor"
 #define MY_CLASS ts::SIParameterDescriptor

@@ -28,10 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsVCT.h"
-#include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
-#include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"

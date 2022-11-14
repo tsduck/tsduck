@@ -30,12 +30,11 @@
 #include "tsVatekControl.h"
 
 #if !defined(TS_NO_VATEK)
-TS_PUSH_WARNING()
-TS_MSC_NOWARNING(5027)
+#include "tsBeforeStandardHeaders.h"
 #include <vatek_sdk_device.h>
 #include <core/ui/ui_props_api.h>
 #include <core/ui/ui_props/ui_props_chip.h>
-TS_POP_WARNING()
+#include "tsAfterStandardHeaders.h"
 #endif
 
 

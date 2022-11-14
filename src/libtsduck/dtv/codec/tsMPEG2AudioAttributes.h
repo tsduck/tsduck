@@ -34,7 +34,7 @@
 
 #pragma once
 #include "tsAbstractAudioVideoAttributes.h"
-#include "tsTS.h"
+#include "tsBitRate.h"
 
 namespace ts {
     //!

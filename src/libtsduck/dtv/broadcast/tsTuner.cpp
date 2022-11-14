@@ -30,7 +30,6 @@
 #include "tsTuner.h"
 #include "tsTunerDevice.h"
 #include "tsTunerEmulator.h"
-#include "tsNullReport.h"
 #include "tsDuckContext.h"
 
 

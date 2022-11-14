@@ -29,7 +29,7 @@
 
 #include "tsHEVCAttributes.h"
 #include "tsHEVCSequenceParameterSet.h"
-#include "tsNames.h"
+#include "tsNamesFile.h"
 
 
 //----------------------------------------------------------------------------

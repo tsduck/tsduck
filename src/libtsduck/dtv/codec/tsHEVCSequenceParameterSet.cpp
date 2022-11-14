@@ -29,7 +29,6 @@
 
 #include "tsHEVCSequenceParameterSet.h"
 #include "tsHEVC.h"
-#include "tsMPEG2.h"
 
 
 //----------------------------------------------------------------------------

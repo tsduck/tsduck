@@ -40,7 +40,6 @@
 #include "tsSpliceInformationTable.h"
 #include "tsRegistrationDescriptor.h"
 #include "tsSCTE35.h"
-#include "tsNames.h"
 
 
 //----------------------------------------------------------------------------
