@@ -783,6 +783,10 @@ namespace ts {
         MPEG_EDID_MPH3D_COMMAND = 0x0E, //!< Ext.DID for MPEGH_3D_audio_command_descriptor
         MPEG_EDID_QUALITY_EXT   = 0x0F, //!< Ext.DID for quality_extension_descriptor
         MPEG_EDID_VIRT_SEGMENT  = 0x10, //!< Ext.DID for virtual_segmentation_descriptor
+        MPEG_EDID_TIMED_METADATA_EXT = 0x11, //!< Ext.DID for timed_metadata_extension_descriptor
+        MPEG_EDID_HEVC_TILE_SSTRM = 0x12, //!< Ext.DID for HEVC_tile_substream_descriptor
+        MPEG_EDID_HEVC_SUBREGION = 0x13, //!< Ext.DID for HEVC_subregion_descriptor
+        MPEG_EDID_JXS_VIDEO     = 0x14, //!< Ext.DID for JXS_video_descriptor
         MPEG_EDID_VVC_TIM_HRD   = 0x15, //!< Ext.DID for VVC_timing_and_HRD_descriptor.
         MPEG_EDID_EVC_TIM_HRD   = 0x16, //!< Ext.DID for EVC_timing_and_HRD_descriptor.
         MPEG_EDID_LCEVC_VIDEO   = 0x17, //!< Ext.DID for LCEVC_video_descriptor.
