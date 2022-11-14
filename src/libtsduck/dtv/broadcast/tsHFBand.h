@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsModulation.h"
-#include "tsEnumeration.h"
 #include "tsMutex.h"
 #include "tsSafePtr.h"
 #include "tsCerrReport.h"

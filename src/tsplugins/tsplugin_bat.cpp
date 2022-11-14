@@ -34,8 +34,6 @@
 
 #include "tsAbstractTablePlugin.h"
 #include "tsPluginRepository.h"
-#include "tsServiceDescriptor.h"
-#include "tsService.h"
 #include "tsBAT.h"
 
 

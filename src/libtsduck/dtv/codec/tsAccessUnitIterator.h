@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsCodecType.h"
-#include "tsEnumeration.h"
 #include "tsPSI.h"
 
 namespace ts {

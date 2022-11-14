@@ -29,12 +29,12 @@
 
 #include "tsCADescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 #include "tsDescriptorList.h"
 
 #define MY_XML_NAME u"CA_descriptor"

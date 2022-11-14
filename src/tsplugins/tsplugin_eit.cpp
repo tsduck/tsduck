@@ -41,7 +41,6 @@
 #include "tsPAT.h"
 #include "tsTDT.h"
 #include "tsSDT.h"
-#include "tsEIT.h"
 #include "tsMJD.h"
 
 

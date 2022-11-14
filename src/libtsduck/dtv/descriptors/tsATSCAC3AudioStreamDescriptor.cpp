@@ -34,7 +34,6 @@
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
-#include "tsNames.h"
 #include "tsDVBCharTableUTF16.h"
 #include "tsDVBCharTableSingleByte.h"
 

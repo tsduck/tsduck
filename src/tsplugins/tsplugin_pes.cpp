@@ -41,8 +41,6 @@
 #include "tsHEVCSequenceParameterSet.h"
 #include "tsVVCAccessUnitDelimiter.h"
 #include "tsAlgorithm.h"
-#include "tsNames.h"
-#include "tsMemory.h"
 #include "tsPES.h"
 #include "tsAVC.h"
 #include "tsHEVC.h"

@@ -28,13 +28,13 @@
 //----------------------------------------------------------------------------
 
 #include "tsPMT.h"
-#include "tsNames.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 
 #define MY_XML_NAME u"PMT"
 #define MY_CLASS ts::PMT

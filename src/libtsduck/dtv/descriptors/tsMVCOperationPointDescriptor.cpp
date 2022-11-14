@@ -29,7 +29,6 @@
 
 #include "tsMVCOperationPointDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"

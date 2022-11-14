@@ -29,7 +29,6 @@
 
 #include "tsLocalTimeOffsetDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsBCD.h"
 #include "tsMJD.h"
 #include "tsTablesDisplay.h"

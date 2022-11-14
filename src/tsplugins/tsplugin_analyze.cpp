@@ -36,7 +36,6 @@
 #include "tsTSAnalyzerReport.h"
 #include "tsTSSpeedMetrics.h"
 #include "tsFileNameGenerator.h"
-#include "tsFileUtils.h"
 
 
 //----------------------------------------------------------------------------

@@ -63,7 +63,7 @@ const std::vector<uint8_t> ts::AVS3VideoDescriptor::valid_level_ids {
 //----------------------------------------------------------------------------
 
 ts::AVS3VideoDescriptor::AVS3VideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
     profile_id(0),
     level_id(0),
     multiple_frame_rate_flag(false),

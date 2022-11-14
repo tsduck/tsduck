@@ -36,8 +36,6 @@
 #include "tsCASSelectionArgs.h"
 #include "tsBinaryTable.h"
 #include "tsSectionDemux.h"
-#include "tsDescriptorList.h"
-#include "tsPIDOperator.h"
 #include "tsPAT.h"
 
 

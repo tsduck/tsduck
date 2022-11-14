@@ -35,7 +35,6 @@
 #include "tsInputRedirector.h"
 #include "tsOutputRedirector.h"
 #include "tsByteBlock.h"
-#include "tsFatal.h"
 #include "tsTS.h"
 TS_MAIN(MainCode);
 

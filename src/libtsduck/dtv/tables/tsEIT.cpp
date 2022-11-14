@@ -32,7 +32,6 @@
 #include "tsAlgorithm.h"
 #include "tsNames.h"
 #include "tsRST.h"
-#include "tsBCD.h"
 #include "tsMJD.h"
 #include "tsBinaryTable.h"
 #include "tsTablesDisplay.h"

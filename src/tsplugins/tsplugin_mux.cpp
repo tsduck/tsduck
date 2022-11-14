@@ -35,7 +35,6 @@
 #include "tsPluginRepository.h"
 #include "tsTSFile.h"
 #include "tsContinuityAnalyzer.h"
-#include "tsMemory.h"
 
 
 //----------------------------------------------------------------------------

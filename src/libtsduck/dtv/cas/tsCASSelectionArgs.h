@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCASFamily.h"
 #include "tsDescriptorList.h"
 #include "tsNullReport.h"
 #include "tsCAT.h"

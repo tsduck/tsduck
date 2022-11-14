@@ -29,7 +29,6 @@
 
 #include "tsDVBCharset.h"
 #include "tsUString.h"
-#include "tsByteBlock.h"
 #include "tsDVBCharTableSingleByte.h"
 #include "tsDVBCharTableUTF8.h"
 

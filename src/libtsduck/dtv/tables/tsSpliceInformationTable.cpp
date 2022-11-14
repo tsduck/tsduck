@@ -29,7 +29,6 @@
 
 #include "tsSpliceInformationTable.h"
 #include "tsBinaryTable.h"
-#include "tsNames.h"
 #include "tsxmlElement.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"

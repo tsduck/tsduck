@@ -29,7 +29,6 @@
 
 #include "tsBitrateDifferenceDVBT.h"
 #include "tsModulation.h"
-#include "tsGuardMutex.h"
 
 
 //----------------------------------------------------------------------------

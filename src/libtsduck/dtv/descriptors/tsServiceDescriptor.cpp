@@ -29,12 +29,12 @@
 
 #include "tsServiceDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsNames.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIBuffer.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
+#include "tsNames.h"
 
 #define MY_XML_NAME u"service_descriptor"
 #define MY_CLASS ts::ServiceDescriptor
