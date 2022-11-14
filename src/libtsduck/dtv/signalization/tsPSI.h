@@ -904,7 +904,11 @@ namespace ts {
         ST_MPH3D_MAIN       = 0x2D, //!< ISO 23008-3 Audio with MHAS transport syntax – main stream
         ST_MPH3D_AUX        = 0x2E, //!< ISO 23008-3 Audio with MHAS transport syntax – auxiliary stream
         ST_QUALITY          = 0x2F, //!< Quality access units carried in sections
-        ST_VVC_VIDEO        = 0x32, //!< Possibly VVC/H.266 video (value to be confirmed, other possible values to be determined)
+        ST_JPEG_XS_VIDEO    = 0x32, //!< JPEG XS video stream conforming to ISO/IEC 21122-2
+        ST_VVC_VIDEO        = 0x33, //!< VVC/H.266 video or VVC/H.266 temporal subvideo
+        ST_VVC_VIDEO_SUBSET = 0x34, //!< VVC/H.266 temporal video subset of a VVC video stream
+        ST_EVC_VIDEO        = 0x35, //!< EVC video or EVC temporal sub-video
+        ST_LCEVC_VIDEO      = 0x36, //!< LCEVC video stream according to ISO/IEC 23094-2 
         ST_IPMP             = 0x7F, //!< IPMP stream
         ST_AC3_AUDIO        = 0x81, //!< AC-3 Audio (ATSC only)
         ST_SCTE35_SPLICE    = 0x86, //!< SCTE 35 splice information tables

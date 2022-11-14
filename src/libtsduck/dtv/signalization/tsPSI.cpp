@@ -91,7 +91,11 @@ bool ts::StreamTypeIsVideo(uint8_t st)
            st == ST_J2K_VIDEO     ||
            st == ST_MPEG2_3D_VIEW ||
            StreamTypeIsAVC(st)    ||
-           StreamTypeIsHEVC(st);
+           StreamTypeIsHEVC(st)   ||
+           StreamTypeIsVVC(st)    ||
+           st == ST_JPEG_XS_VIDEO ||
+           st == ST_EVC_VIDEO     ||
+           st == ST_LCEVC_VIDEO;
 }
 
 
@@ -132,7 +136,8 @@ bool ts::StreamTypeIsVVC(uint8_t st)
 {
     // Warning: at this time, the stream types for VVC / H.266 are still unclear.
     // Be sure to verity this on further versions of the ISO 13818-1 standard.
-    return st == ST_VVC_VIDEO;
+    return st == ST_VVC_VIDEO        ||
+           st == ST_VVC_VIDEO_SUBSET;
 }
 
 
