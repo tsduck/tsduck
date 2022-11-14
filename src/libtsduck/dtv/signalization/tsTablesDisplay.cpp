@@ -957,7 +957,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<int8_t> 
         }
         strm << margin << title;
         for (size_t j = 0; j < values.size(); j++) {
-            strm << (space_first ? " " : "") << UString::Format(u"%d", { values[j] }).toJustifiedLeft(hasNegative?4:3);
+            strm << (space_first ? " " : "") << UString::Format(u"%d", { values[j] }).toJustifiedRight(hasNegative?4:3);
             if ((j + 1) % num_per_line == 0) {
                 strm << std::endl;
                 if (j != (values.size() - 1)) {
