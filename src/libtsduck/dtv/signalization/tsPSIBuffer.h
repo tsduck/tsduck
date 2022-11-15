@@ -335,6 +335,41 @@ namespace ts {
         Second getSecondsBCD();
 
         //!
+        //! Get (deserialize) an integer value in "vluimsbf5" format.
+        //!
+        //! This weird format is defined in ISO/IEC 23005-6 as follow:
+        //!
+        //! "vluimsbf5: Variable length unsigned integer most significant bit first representation consisting of two parts.
+        //! The first part defines the number n of 4-bit fields used for the value representation, encoded by a sequence of
+        //! n-1 "1" bits, followed by a "0" bit signaling its end. The second part contains the value of the integer encoded
+        //! using the number of bit fields specified in the first part."
+        //!
+        //! Very similar to the following (for connoisseurs only):
+        //!
+        //! "And Saint Attila raised the hand grenade up on high, saying, 'O Lord, bless this thy hand grenade, that with it
+        //! thou mayst blow thine enemies to tiny bits, in thy mercy.' And the Lord did grin. And the people did feast upon
+        //! the lambs, and sloths, and carp, and anchovies, and orangutans, and breakfast cereals, and fruit bats, and large
+        //! chulapas. And the Lord spake, saying, 'First shalt thou take out the Holy Pin. Then shalt thou count to three,
+        //! no more, no less. Three shall be the number thou shalt count, and the number of the counting shall be three.
+        //! Four shalt thou not count, neither count thou two, excepting that thou then proceed to three. Five is right out.
+        //! Once the number three, being the third number, be reached, then lobbest thou thy Holy Hand Grenade of Antioch
+        //! towards thy foe, who, being naughty in My sight, shall snuff it.'"
+        //!
+        //! Generate a read error when there is not enough bytes.
+        //! @return The decoded integer value as a 64-bit integer.
+        //!
+        uint64_t getVluimsbf5();
+
+        //!
+        //! Put (serialize) an integer value in "vluimsbf5" format.
+        //! Generate a write error when the buffer is not large enough.
+        //!
+        //! @param [in] duration A number of minutes.
+        //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //!
+        bool putVluimsbf5(uint64_t value);
+
+        //!
         //! Put (serialize) a complete descriptor list.
         //!
         //! Generate a write error when the buffer is not large enough to write all descriptors or when the
