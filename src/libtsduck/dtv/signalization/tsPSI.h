@@ -35,7 +35,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsEnumeration.h"
 
 namespace ts {

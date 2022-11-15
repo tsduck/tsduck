@@ -38,6 +38,7 @@
 #include "tsEITProcessor.h"
 #include "tsTSFile.h"
 #include "tsPAT.h"
+#include "tsCAT.h"
 #include "tsPMT.h"
 #include "tsSDT.h"
 #include "tsTS.h"

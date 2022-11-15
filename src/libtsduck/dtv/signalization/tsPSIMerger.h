@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsSectionDemux.h"
-#include "tsCerrReport.h"
 #include "tsCyclingPacketizer.h"
 #include "tsVariable.h"
 #include "tsEnumUtils.h"

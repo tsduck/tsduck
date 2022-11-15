@@ -34,16 +34,16 @@
 
 #pragma once
 #include "tsxmlJSONConverter.h"
-#include "tsxmlElement.h"
 #include "tsjson.h"
+#include "tsTime.h"
 #include "tsSection.h"
 #include "tsBinaryTable.h"
+#include "tsCRC32.h"
+#include "tsBinaryTable.h"
 #include "tsUString.h"
-#include "tsDVBCharTable.h"
 #include "tsEITOptions.h"
 #include "tsxmlTweaks.h"
 #include "tsTablesPtr.h"
-#include "tsCerrReport.h"
 
 namespace ts {
     //!

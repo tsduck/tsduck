@@ -30,6 +30,11 @@
 #include "tsServiceDiscovery.h"
 #include "tsDuckContext.h"
 #include "tsBinaryTable.h"
+#include "tsPAT.h"
+#include "tsSDT.h"
+#include "tsMGT.h"
+#include "tsCVCT.h"
+#include "tsTVCT.h"
 
 
 //----------------------------------------------------------------------------

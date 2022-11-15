@@ -33,12 +33,10 @@
 #include "tsTablesDisplay.h"
 #include "tsBinaryTable.h"
 #include "tsSectionFile.h"
-#include "tsxmlComment.h"
 #include "tsxmlElement.h"
 #include "tsjsonArray.h"
 #include "tsjsonObject.h"
 #include "tsTSPacket.h"
-#include "tsNames.h"
 
 #define MIN_CLEAR_PACKETS 100000
 

@@ -31,7 +31,6 @@
 #include "tsMemory.h"
 
 
-
 //----------------------------------------------------------------------------
 // Constructor: associate the analyzer object with the address
 // and size of the binary message. The corresponding memory area

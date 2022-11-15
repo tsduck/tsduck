@@ -34,6 +34,7 @@
 #include "tsMain.h"
 #include "tsDuckContext.h"
 #include "tsTablePatchXML.h"
+#include "tsxmlElement.h"
 #include "tsxmlModelDocument.h"
 #include "tsxmlJSONConverter.h"
 #include "tsjsonValue.h"

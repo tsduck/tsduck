@@ -34,9 +34,15 @@
 
 #pragma once
 #include "tsSignalizationHandlerInterface.h"
+#include "tsService.h"
 #include "tsSectionDemux.h"
+#include "tsCodecType.h"
 #include "tsSafePtr.h"
 #include "tsAlgorithm.h"
+#include "tsTime.h"
+#include "tsPAT.h"
+#include "tsPMT.h"
+#include "tsNIT.h"
 
 namespace ts {
     //!
