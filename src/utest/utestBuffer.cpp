@@ -31,7 +31,8 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsBuffer.h"
+#include "tsPSIBuffer.h"
+#include "tsDuckContext.h"
 #include "tsunit.h"
 
 // Some floating-point literal (implicitly double) are used as ieee_float32_t
@@ -112,6 +113,8 @@ public:
     void testPutFloat32BE();
     void testPutFloat64LE();
     void testPutFloat64BE();
+    void testGetVluimsbf5();
+    void testPutVluimsbf5();
 
     TSUNIT_TEST_BEGIN(BufferTest);
     TSUNIT_TEST(testConstructors);
@@ -176,6 +179,8 @@ public:
     TSUNIT_TEST(testPutFloat32BE);
     TSUNIT_TEST(testPutFloat64LE);
     TSUNIT_TEST(testPutFloat64BE);
+    TSUNIT_TEST(testGetVluimsbf5);
+    TSUNIT_TEST(testPutVluimsbf5);
     TSUNIT_TEST_END();
 
 private:
@@ -2071,4 +2076,44 @@ void BufferTest::testPutFloat64BE()
 
     mem.resize(8);
     TSUNIT_EQUAL((tsunit::Bytes{0x47, 0xEF, 0xFF, 0xFF, 0xE0, 0x00, 0x00, 0x00}), mem);
+}
+
+void BufferTest::testGetVluimsbf5()
+{
+    ts::DuckContext duck;
+
+    static const uint8_t bin1[] = {0x00};
+    ts::PSIBuffer b(duck, bin1, sizeof(bin1));
+    TSUNIT_EQUAL(0x00, b.getVluimsbf5());
+    TSUNIT_EQUAL(5, b.currentReadBitOffset());
+
+    static const uint8_t bin2[] = {0xC2, 0x46};
+    b.reset(bin2, sizeof(bin2));
+    TSUNIT_EQUAL(0x0123, b.getVluimsbf5());
+    TSUNIT_EQUAL(15, b.currentReadBitOffset());
+}
+
+void BufferTest::testPutVluimsbf5()
+{
+    ts::DuckContext duck;
+    tsunit::Bytes mem(32);
+    ts::PSIBuffer b(duck, mem.data(), mem.size());
+
+    TSUNIT_ASSERT(!b.readOnly());
+    TSUNIT_EQUAL(0, b.currentWriteByteOffset());
+
+    TSUNIT_ASSERT(b.putVluimsbf5(0));
+    TSUNIT_ASSERT(!b.writeError());
+    TSUNIT_ASSERT(!b.endOfWrite());
+    TSUNIT_EQUAL(5, b.currentWriteBitOffset());
+
+    mem.resize(1);
+    TSUNIT_EQUAL((tsunit::Bytes{0x00}), mem);
+
+    mem.resize(32);
+    b.reset(mem.data(), mem.size());
+    TSUNIT_ASSERT(b.putVluimsbf5(0x123));
+    TSUNIT_EQUAL(15, b.currentWriteBitOffset());
+    mem.resize(2);
+    TSUNIT_EQUAL((tsunit::Bytes{0xC2, 0x46}), mem);
 }
