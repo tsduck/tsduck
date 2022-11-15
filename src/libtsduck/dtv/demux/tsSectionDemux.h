@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsAbstractDemux.h"
+#include "tsTablesPtr.h"
 #include "tsTableHandlerInterface.h"
 #include "tsSectionHandlerInterface.h"
 #include "tsInvalidSectionHandlerInterface.h"

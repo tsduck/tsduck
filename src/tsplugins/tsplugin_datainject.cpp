@@ -34,6 +34,7 @@
 
 #include "tsPluginRepository.h"
 #include "tsSwitchableReport.h"
+#include "tsSection.h"
 #include "tsPacketizer.h"
 #include "tsEMMGMUX.h"
 #include "tstlvConnection.h"

@@ -33,11 +33,11 @@
 //----------------------------------------------------------------------------
 
 #pragma once
+#include "tsTS.h"
 #include "tsEDID.h"
-#include "tsSection.h"
+#include "tsStandards.h"
 #include "tsTablesPtr.h"
 #include "tsSingletonManager.h"
-#include "tsNamesFile.h"
 #include "tsVersionInfo.h"
 
 namespace ts {

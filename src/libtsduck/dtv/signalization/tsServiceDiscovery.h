@@ -34,14 +34,10 @@
 
 #pragma once
 #include "tsService.h"
+#include "tsTablesPtr.h"
 #include "tsSectionDemux.h"
-#include "tsNullReport.h"
 #include "tsSignalizationHandlerInterface.h"
-#include "tsPAT.h"
-#include "tsSDT.h"
-#include "tsMGT.h"
-#include "tsTVCT.h"
-#include "tsCVCT.h"
+#include "tsPMT.h"
 
 namespace ts {
     //!

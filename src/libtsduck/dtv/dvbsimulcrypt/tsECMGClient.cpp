@@ -29,7 +29,6 @@
 
 #include "tsECMGClient.h"
 #include "tsGuardCondition.h"
-#include "tsTime.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::ECMGClient::RECEIVER_STACK_SIZE;

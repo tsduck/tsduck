@@ -28,11 +28,11 @@
 //----------------------------------------------------------------------------
 
 #include "tsEMMGClient.h"
-#include "tsIPUtils.h"
 #include "tsGuardMutex.h"
 #include "tsGuardCondition.h"
 #include "tsOneShotPacketizer.h"
 #include "tstlvSerializer.h"
+#include "tsSection.h"
 #include "tsTSPacket.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)

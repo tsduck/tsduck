@@ -33,8 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractLongTable.h"
-#include "tsDescriptorList.h"
+#include "tsPlatform.h"
 
 namespace ts {
     //!

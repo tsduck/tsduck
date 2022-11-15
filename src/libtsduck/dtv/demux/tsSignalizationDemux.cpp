@@ -35,6 +35,18 @@
 #include "tsLogicalChannelNumbers.h"
 #include "tsCADescriptor.h"
 #include "tsISDBAccessControlDescriptor.h"
+#include "tsCAT.h"
+#include "tsSDT.h"
+#include "tsBAT.h"
+#include "tsRST.h"
+#include "tsTDT.h"
+#include "tsTOT.h"
+#include "tsTSDT.h"
+#include "tsMGT.h"
+#include "tsCVCT.h"
+#include "tsTVCT.h"
+#include "tsRRT.h"
+#include "tsSTT.h"
 
 
 //----------------------------------------------------------------------------
