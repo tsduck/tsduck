@@ -104,7 +104,7 @@ uint8_t* ts::ByteBlock::enlarge(size_type n)
 {
     const size_type oldsize = this->size();
     resize(oldsize + n);
-    return &(*this)[oldsize];
+    return data() + oldsize;
 }
 
 //----------------------------------------------------------------------------
