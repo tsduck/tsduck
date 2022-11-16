@@ -29,7 +29,7 @@
 
 #include "tsECMGSCS.h"
 #include "tstlvMessageFactory.h"
-#include "tsNames.h"
+#include "tsNamesFile.h"
 
 // Define protocol singleton instance
 TS_DEFINE_SINGLETON(ts::ecmgscs::Protocol);

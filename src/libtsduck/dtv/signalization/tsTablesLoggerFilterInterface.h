@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsCASFamily.h"
 #include "tsSafePtr.h"
 #include "tsTS.h"
 

@@ -28,11 +28,13 @@
 //----------------------------------------------------------------------------
 
 #include "tsSectionFile.h"
+#include "tsSection.h"
 #include "tsAbstractTable.h"
 #include "tsBinaryTable.h"
 #include "tsReportWithPrefix.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
+#include "tsxmlElement.h"
 #include "tsxmlJSONConverter.h"
 #include "tsjsonNull.h"
 #include "tsFileUtils.h"

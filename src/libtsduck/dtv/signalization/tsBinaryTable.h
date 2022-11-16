@@ -35,7 +35,6 @@
 #pragma once
 #include "tsAbstractDefinedByStandards.h"
 #include "tsTablesPtr.h"
-#include "tsSection.h"
 #include "tsTS.h"
 #include "tsxml.h"
 

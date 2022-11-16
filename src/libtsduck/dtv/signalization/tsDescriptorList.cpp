@@ -30,7 +30,6 @@
 #include "tsDescriptorList.h"
 #include "tsAbstractDescriptor.h"
 #include "tsAbstractTable.h"
-#include "tsPrivateDataSpecifierDescriptor.h"
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 

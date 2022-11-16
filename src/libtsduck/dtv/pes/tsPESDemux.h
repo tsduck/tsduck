@@ -39,6 +39,7 @@
 #include "tsMPEG2AudioAttributes.h"
 #include "tsMPEG2VideoAttributes.h"
 #include "tsAVCAttributes.h"
+#include "tsHEVCAttributes.h"
 #include "tsAC3Attributes.h"
 #include "tsSectionDemux.h"
 

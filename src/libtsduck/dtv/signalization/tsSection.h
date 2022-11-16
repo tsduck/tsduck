@@ -37,7 +37,6 @@
 #include "tsDemuxedData.h"
 #include "tsCerrReport.h"
 #include "tsByteBlock.h"
-#include "tsTablesPtr.h"
 #include "tsCRC32.h"
 #include "tsETID.h"
 #include "tsTS.h"

@@ -29,8 +29,8 @@
 
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
-#include "tsVersionInfo.h"
 #include "tsAlgorithm.h"
+#include "tsCerrReport.h"
 #include "tsNames.h"
 
 TS_DEFINE_SINGLETON(ts::PSIRepository);

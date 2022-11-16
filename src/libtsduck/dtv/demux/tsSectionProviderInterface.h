@@ -34,7 +34,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSection.h"
+#include "tsTS.h"
+#include "tsTablesPtr.h"
 
 namespace ts {
     //!

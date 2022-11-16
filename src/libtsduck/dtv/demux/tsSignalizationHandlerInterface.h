@@ -33,27 +33,33 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsService.h"
-// MPEG-defined tables:
-#include "tsPAT.h"
-#include "tsCAT.h"
-#include "tsPMT.h"
-#include "tsTSDT.h"
-// DVB-defined tables:
-#include "tsNIT.h"
-#include "tsSDT.h"
-#include "tsBAT.h"
-#include "tsRST.h"
-#include "tsTDT.h"
-#include "tsTOT.h"
-// ATSC-defined tables:
-#include "tsMGT.h"
-#include "tsCVCT.h"
-#include "tsTVCT.h"
-#include "tsRRT.h"
-#include "tsSTT.h"
+#include "tsTS.h"
+#include "tsPSI.h"
 
 namespace ts {
+
+    class Time;
+    class Service;
+    // MPEG-defined tables:
+    class PAT;
+    class CAT;
+    class PMT;
+    class TSDT;
+    // DVB-defined tables:
+    class NIT;
+    class SDT;
+    class BAT;
+    class RST;
+    class TDT;
+    class TOT;
+    // ATSC-defined tables:
+    class MGT;
+    class VCT;
+    class CVCT;
+    class TVCT;
+    class RRT;
+    class STT;
+
     //!
     //! General-purpose signalization handler interface.
     //! A subclass may choose to implement any handler.

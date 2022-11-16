@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsCyclingPacketizer.h"
+#include "tsSection.h"
 #include "tsNames.h"
 
 
