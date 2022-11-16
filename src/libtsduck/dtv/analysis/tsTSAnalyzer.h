@@ -343,6 +343,11 @@ namespace ts {
             uint64_t      first_dts;       //!< First DTS value in the PID, if any.
             uint64_t      last_dts;        //!< Last DTS value in the PID, if any.
             uint64_t      pcr_cnt;         //!< Number of PCR's.
+            uint64_t      pts_cnt;         //!< Number of PTS's.
+            uint64_t      dts_cnt;         //!< Number of DTS's.
+            uint64_t      pcr_leap_cnt;    //!< Number of leaps in PCR's (potential time discontinuities).
+            uint64_t      pts_leap_cnt;    //!< Number of leaps in PTS's (potential time discontinuities).
+            uint64_t      dts_leap_cnt;    //!< Number of leaps in DTS's (potential time discontinuities).
             BitRate       ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
             BitRate       bitrate;         //!< Average PID bitrate in b/s.
             uint16_t      cas_id;          //!< For EMM and ECM streams.
