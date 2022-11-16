@@ -34,17 +34,15 @@
 
 #pragma once
 #include "tsBuffer.h"
+#include "tsDuckContext.h"
+#include "tsSection.h"
+#include "tsDescriptorList.h"
+#include "tsATSCMultipleString.h"
 #include "tsTime.h"
 #include "tsCharset.h"
 #include "tsTS.h"
 
 namespace ts {
-
-    class DuckContext;
-    class Section;
-    class DescriptorList;
-    class ATSCMultipleString;
-
     //!
     //! A specialized subclass of ts::Buffer for PSI serialization.
     //! @ingroup mpeg
@@ -364,8 +362,9 @@ namespace ts {
         //! Put (serialize) an integer value in "vluimsbf5" format.
         //! Generate a write error when the buffer is not large enough.
         //!
-        //! @param [in] duration A number of minutes.
+        //! @param [in] value An integer to serialize.
         //! @return True on success, false if there is not enough space to write (and set write error flag).
+        //! @see getVluimsbf5()
         //!
         bool putVluimsbf5(uint64_t value);
 
