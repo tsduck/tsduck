@@ -30,7 +30,6 @@
 #include "tsSRTInputPlugin.h"
 #include "tsPluginRepository.h"
 #include "tsIPProtocols.h"
-#include "tsSysUtils.h"
 
 #if !defined(TS_NO_SRT)
 TS_REGISTER_INPUT_PLUGIN(u"srt", ts::SRTInputPlugin);

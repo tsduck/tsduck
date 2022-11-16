@@ -68,7 +68,7 @@ namespace ts {
             uint8_t                     Level;                  //!< Value of the profile as specified in ISO/IEC 23008-2 that applies to the subregion layout
             uint16_t                    PictureSizeHor;         //!< Horizontal subregion dimension, measured in pixels
             uint16_t                    PictureSizeVer;         //!< Vertical subregion dimension, measured in pixels
-            std::vector<pattern_type>   Patterns;
+            std::vector<pattern_type>   Patterns;               //!< Patterns
 
             subregion_layout_type();    //!< Constructor
         };
@@ -77,7 +77,7 @@ namespace ts {
         uint8_t                             SubstreamIDsPerLine;    //!< 7 bits. The number of HEVC tile substreams that are coded representations of tiles that are arranged horizontally and span the width of the whole panorama.
         uint8_t                             TotalSubstreamIDs;      //!< Total number of HEVC tile substreams that represent tiles for the whole panorama.
         uint8_t                             LevelFullPanorama;      //!< Level of the profile as specified in ISO/IEC 23008-2 that applies to the whole panorama.
-        std::vector<subregion_layout_type>  SubregionLayouts;
+        std::vector<subregion_layout_type>  SubregionLayouts;       //!< Subregion layouts.
 
         //!
         //! Default constructor.

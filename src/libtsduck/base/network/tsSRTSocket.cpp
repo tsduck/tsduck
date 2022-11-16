@@ -1169,6 +1169,7 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"receive.interval", true).add(u"packets", stats.pktRecv);
             root.query(u"receive.interval", true).add(u"lost-packets", stats.pktRcvLoss);
             root.query(u"receive.interval", true).add(u"dropped-packets", stats.pktRcvDrop);
+            root.query(u"receive.instant", true).add(u"delivery-delay-ms", stats.msRcvTsbPdDelay);
         }
         if ((mode & SRTStatMode::SEND) != SRTStatMode::NONE) {
             root.query(u"send.total", true).add(u"bytes", stats.byteSentTotal);
@@ -1181,7 +1182,9 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             root.query(u"send.interval", true).add(u"retransmit-packets", stats.pktRetrans);
             root.query(u"send.interval", true).add(u"lost-packets", stats.pktSndLoss);
             root.query(u"send.interval", true).add(u"dropped-packets", stats.pktSndDrop);
+            root.query(u"send.instant", true).add(u"delivery-delay-ms", stats.msSndTsbPdDelay);
         }
+        root.query(u"global.instant", true).add(u"rtt-ms", int64_t(stats.msRTT));
         // Generate one line.
         TextFormatter text(report);
         text.setString();
@@ -1214,6 +1217,17 @@ bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
             none = false;
             msg.format(u"\n  Interval sent: %'d bytes, %'d packets, retransmit: %'d packets, lost: %'d packets, dropped: %'d packets",
                        {stats.byteSent, stats.pktSent, stats.pktRetrans, stats.pktSndLoss, stats.pktSndDrop});
+        }
+        if ((show_send || show_receive) && (mode & SRTStatMode::INTERVAL) != SRTStatMode::NONE) {
+            none = false;
+            msg.append(u"\n  Timestamp-based delivery delay");
+            if (show_receive) {
+                msg.format(u", receive: %d ms", {stats.msRcvTsbPdDelay});
+            }
+            if (show_send) {
+                msg.format(u", send: %d ms", {stats.msSndTsbPdDelay});
+            }
+            msg.format(u", RTT: %f ms", {stats.msRTT});
         }
         if (none) {
             msg.append(u" none available");
