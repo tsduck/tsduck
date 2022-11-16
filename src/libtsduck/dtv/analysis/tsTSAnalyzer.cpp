@@ -281,6 +281,11 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     first_dts(INVALID_DTS),
     last_dts(INVALID_DTS),
     pcr_cnt(0),
+    pts_cnt(0),
+    dts_cnt(0),
+    pcr_leap_cnt(0),
+    pts_leap_cnt(0),
+    dts_leap_cnt(0),
     ts_pcr_bitrate(0),
     bitrate(0),
     cas_id(0),
@@ -1595,22 +1600,41 @@ void ts::TSAnalyzer::feedPacket(const TSPacket& pkt)
             _ts_bitrate_sum += ts_bitrate;
             _ts_bitrate_cnt++;
         }
+        // Detect PCR leaps.
+        if (ps->last_pcr != INVALID_PCR && (ps->last_pcr > pcr || (pcr - ps->last_pcr) > SYSTEM_CLOCK_FREQ)) {
+            // PCR wrap-up or more than one second diff.
+            ps->pcr_leap_cnt++;
+        }
         // Save PCR for next calculation
         ps->br_last_pcr = pcr;
         ps->br_last_pcr_pkt = packet_index;
-        // Save first and last PCR? outside of bitrate computation.
+        // Save first and last PCR outside of bitrate computation.
         if (ps->first_pcr == INVALID_PCR) {
             ps->first_pcr = pcr;
         }
         ps->last_pcr = pcr;
     }
     if (pts != INVALID_PTS) {
+        ps->pts_cnt++;
+        if (ps->last_pts != INVALID_PTS) {
+            // PTS are allowed to be out-of-order.
+            const uint64_t diff = pts > ps->last_pts ? pts - ps->last_pts : ps->last_pts - pts;
+            if (diff > 3 * SYSTEM_CLOCK_SUBFREQ) {
+                // PTS wrap-up or more than 3 seconds diff.
+                ps->pts_leap_cnt++;
+            }
+        }
         if (ps->first_pts == INVALID_PTS) {
             ps->first_pts = pts;
         }
         ps->last_pts = pts;
     }
-    if (dts != INVALID_PTS) {
+    if (dts != INVALID_DTS) {
+        ps->dts_cnt++;
+        if (ps->last_dts != INVALID_DTS && (ps->last_dts > dts || (dts - ps->last_dts) > 3 * SYSTEM_CLOCK_SUBFREQ)) {
+            // DTS wrap-up or more than 3 seconds diff.
+            ps->dts_leap_cnt++;
+        }
         if (ps->first_dts == INVALID_DTS) {
             ps->first_dts = dts;
         }
