@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsSectionDemux.h"
-#include "tsTextFormatter.h"
 #include "tsxmlRunningDocument.h"
 #include "tsxmlJSONConverter.h"
 #include "tsjsonRunningDocument.h"

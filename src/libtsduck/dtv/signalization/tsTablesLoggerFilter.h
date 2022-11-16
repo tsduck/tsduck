@@ -35,6 +35,7 @@
 #pragma once
 #include "tsTablesLoggerFilterInterface.h"
 #include "tsBinaryTable.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     //!

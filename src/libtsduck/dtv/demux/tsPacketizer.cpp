@@ -28,8 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPacketizer.h"
-#include "tsNullReport.h"
 #include "tsTSPacket.h"
+#include "tsSection.h"
 #include "tsNames.h"
 
 

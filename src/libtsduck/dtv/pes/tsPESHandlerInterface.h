@@ -33,16 +33,17 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPESPacket.h"
-#include "tsMPEG2AudioAttributes.h"
-#include "tsMPEG2VideoAttributes.h"
-#include "tsAVCAttributes.h"
-#include "tsHEVCAttributes.h"
-#include "tsAC3Attributes.h"
+#include "tsPlatform.h"
 
 namespace ts {
 
     class PESDemux;
+    class PESPacket;
+    class MPEG2AudioAttributes;
+    class MPEG2VideoAttributes;
+    class AVCAttributes;
+    class HEVCAttributes;
+    class AC3Attributes;
 
     //!
     //! Abstract interface to be notified of PES packets using a PESDemux.

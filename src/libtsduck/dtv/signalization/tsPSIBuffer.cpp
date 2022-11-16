@@ -318,6 +318,38 @@ ts::Second ts::PSIBuffer::getSecondsBCD()
 
 
 //----------------------------------------------------------------------------
+// Serialize and deserialize integer values in "vluimsbf5" format.
+// Mind the Rabbit of Caerbannog.
+//----------------------------------------------------------------------------
+
+uint64_t ts::PSIBuffer::getVluimsbf5()
+{
+    // Get the number of 4-Bit fields.
+    size_t n = 1;
+    while (!readError() && getBit() == 1) {
+        n++;
+    }
+
+    // Get the integer value.
+    return getBits<uint64_t>(4 * n);
+}
+
+bool ts::PSIBuffer::putVluimsbf5(uint64_t value)
+{
+    // Compute the required number of 4-bit fields. The maximum value is 16 (full 64-bit unsigned int).
+    size_t n = 1;
+    uint64_t tmp = value;
+    while (tmp >= 0x0F) {
+        n++;
+        tmp = tmp >> 4;
+    }
+
+    // Serialize n. Then serialize the value.
+    return putBits(0xFFFFFFFF, n - 1) && putBit(0) && putBits(value, 4 * n);
+}
+
+
+//----------------------------------------------------------------------------
 // Put (serialize) a complete descriptor list.
 //----------------------------------------------------------------------------
 

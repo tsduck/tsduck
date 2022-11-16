@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractSignalization.h"
 #include "tsTablesPtr.h"
+#include "tsSection.h"
 #include "tsDescriptorList.h"
 
 namespace ts {

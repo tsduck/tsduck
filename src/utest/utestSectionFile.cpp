@@ -38,7 +38,7 @@
 #include "tsTDT.h"
 #include "tsCAIdentifierDescriptor.h"
 #include "tsFileUtils.h"
-#include "tsBinaryTable.h"
+#include "tsxmlElement.h"
 #include "tsDuckContext.h"
 #include "tsCerrReport.h"
 #include "tsunit.h"

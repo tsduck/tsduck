@@ -31,7 +31,6 @@
 #include "tsTablesDisplay.h"
 #include "tsDuckContext.h"
 #include "tsTS.h"
-#include "tsNames.h"
 #include "tsxmlElement.h"
 
 #define MY_XML_NAME u"splice_schedule"

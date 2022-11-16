@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsBinaryTable.h"
-#include "tsReportWithPrefix.h"
 #include "tsAbstractTable.h"
 #include "tsPSIRepository.h"
 #include "tsDuckContext.h"
