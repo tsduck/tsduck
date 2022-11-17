@@ -37,6 +37,7 @@
 #include "tsTablesPtr.h"
 #include "tsTS.h"
 #include "tsxml.h"
+#include "tsSection.h"
 
 namespace ts {
 
