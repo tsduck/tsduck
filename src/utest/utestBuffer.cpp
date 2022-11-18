@@ -2091,6 +2091,16 @@ void BufferTest::testGetVluimsbf5()
     b.reset(bin2, sizeof(bin2));
     TSUNIT_EQUAL(0x0123, b.getVluimsbf5());
     TSUNIT_EQUAL(15, b.currentReadBitOffset());
+
+    static const uint8_t bin3[] = {0xEF, 0xFF, 0xF0};
+    b.reset(bin3, sizeof(bin3));
+    TSUNIT_EQUAL(0xFFFF, b.getVluimsbf5());
+    TSUNIT_EQUAL(20, b.currentReadBitOffset());
+
+    static const uint8_t bin4[] = {0xF0, 0xD5, 0xE6, 0x80};
+    b.reset(bin4, sizeof(bin4));
+    TSUNIT_EQUAL(0x1ABCD, b.getVluimsbf5());
+    TSUNIT_EQUAL(25, b.currentReadBitOffset());
 }
 
 void BufferTest::testPutVluimsbf5()
@@ -2116,4 +2126,22 @@ void BufferTest::testPutVluimsbf5()
     TSUNIT_EQUAL(15, b.currentWriteBitOffset());
     mem.resize(2);
     TSUNIT_EQUAL((tsunit::Bytes{0xC2, 0x46}), mem);
+
+    mem.resize(32);
+    b.reset(mem.data(), mem.size());
+    TSUNIT_ASSERT(b.putVluimsbf5(0xFFFF));
+    // 1111.1111.1111.1111
+    // --> 1110-.1111.1111.1111.1111
+    TSUNIT_EQUAL(20, b.currentWriteBitOffset());
+    mem.resize(3);
+    TSUNIT_EQUAL((tsunit::Bytes{0xEF, 0xFF, 0xF0}), mem);
+
+    mem.resize(32);
+    b.reset(mem.data(), mem.size());
+    TSUNIT_ASSERT(b.putVluimsbf5(0x1ABCD));
+    // 0001.1010.1011.1100.1101
+    // --> 1111.0-000.1101.0101.1110.0110.1-000
+    TSUNIT_EQUAL(25, b.currentWriteBitOffset());
+    mem.resize(4);
+    TSUNIT_EQUAL((tsunit::Bytes{0xF0, 0xD5, 0xE6, 0x80}), mem);
 }

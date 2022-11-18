@@ -530,12 +530,12 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
 
         grid.setLayout({grid.bothTruncateLeft(24, u'.'), grid.bothTruncateLeft(24, u'.'), grid.bothTruncateLeft(21, u'.')});
         grid.putLayout({{pc.scrambled ? u"Inv.scramb.:" : u"", pc.scrambled ? UString::Decimal(pc.inv_ts_sc_cnt) : u""},
-                        {u"PCR:", UString::Decimal(pc.pcr_cnt)},
+                        {pc.ts_pcr_bitrate > 0 ? u"TSrate:" : u"", pc.ts_pcr_bitrate > 0 ? UString::Format(u"%'d b/s", {pc.ts_pcr_bitrate}) : u""},
                         {pc.carry_pes ? u"Packets:" : u"Unit start:", UString::Decimal(pc.carry_pes ? pc.pl_start_cnt : pc.unit_start_cnt)}});
 
         if (pc.ts_pcr_bitrate > 0 || pc.carry_pes) {
             grid.putLayout({{u""},
-                            {pc.ts_pcr_bitrate > 0 ? u"TSrate:" : u"", pc.ts_pcr_bitrate > 0 ? UString::Format(u"%'d b/s", {pc.ts_pcr_bitrate}) : u""},
+                            {u""},
                             {pc.carry_pes ? u"Inv.Start:" : u"", pc.carry_pes ? UString::Decimal(pc.inv_pes_start) : u""}});
         }
 
@@ -547,12 +547,18 @@ void ts::TSAnalyzerReport::reportPIDs(Grid& grid, const UString& title)
             grid.setLayout({grid.left(24), grid.left(24), grid.left(21)});
             grid.putLayout({{u"Clock values range:"}});
             grid.setLayout({grid.bothTruncateLeft(24, u'.'), grid.bothTruncateLeft(24, u'.'), grid.bothTruncateLeft(21, u'.')});
-            grid.putLayout({{has_pcr ? u"PCR:" : u"", has_pcr ? UString::Decimal(pc.first_pcr) : u""},
-                            {has_pts ? u"PTS:" : u"", has_pts ? UString::Decimal(pc.first_pts) : u""},
-                            {has_dts ? u"DTS:" : u"", has_dts ? UString::Decimal(pc.first_dts) : u""}});
-            grid.putLayout({{has_pcr ? u"to:" : u"", has_pcr ? UString::Decimal(pc.last_pcr) : u""},
-                            {has_pts ? u"to:" : u"", has_pts ? UString::Decimal(pc.last_pts) : u""},
-                            {has_dts ? u"to:" : u"", has_dts ? UString::Decimal(pc.last_dts) : u""}});
+            grid.putLayout({{has_pcr ? u"PCR:" : u"", has_pcr ? UString::Decimal(pc.pcr_cnt) : u""},
+                            {has_pts ? u"PTS:" : u"", has_pts ? UString::Decimal(pc.pts_cnt) : u""},
+                            {has_dts ? u"DTS:" : u"", has_dts ? UString::Decimal(pc.dts_cnt) : u""}});
+            grid.putLayout({{has_pcr ? u"from" : u"", has_pcr ? UString::Decimal(pc.first_pcr) : u""},
+                            {has_pts ? u"from" : u"", has_pts ? UString::Decimal(pc.first_pts) : u""},
+                            {has_dts ? u"from" : u"", has_dts ? UString::Decimal(pc.first_dts) : u""}});
+            grid.putLayout({{has_pcr ? u"to" : u"", has_pcr ? UString::Decimal(pc.last_pcr) : u""},
+                            {has_pts ? u"to" : u"", has_pts ? UString::Decimal(pc.last_pts) : u""},
+                            {has_dts ? u"to" : u"", has_dts ? UString::Decimal(pc.last_dts) : u""}});
+            grid.putLayout({{has_pcr ? u"Leaps:" : u"", has_pcr ? UString::Decimal(pc.pcr_leap_cnt) : u""},
+                            {has_pts ? u"Leaps:" : u"", has_pts ? UString::Decimal(pc.pts_leap_cnt) : u""},
+                            {has_dts ? u"Leaps:" : u"", has_dts ? UString::Decimal(pc.dts_leap_cnt) : u""}});
         }
     }
 
@@ -1009,6 +1015,11 @@ void ts::TSAnalyzerReport::reportNormalized(TSAnalyzerOptions& opt, std::ostream
             << "invalidscrambling=" << pc.inv_ts_sc_cnt << ":"
             << "af=" << pc.ts_af_cnt << ":"
             << "pcr=" << pc.pcr_cnt << ":"
+            << "pts=" << pc.pts_cnt << ":"
+            << "dts=" << pc.dts_cnt << ":"
+            << "pcrleap=" << pc.pcr_leap_cnt << ":"
+            << "ptsleap=" << pc.pts_leap_cnt << ":"
+            << "dtsleap=" << pc.dts_leap_cnt << ":"
             << "discontinuities=" << pc.unexp_discont << ":"
             << "duplicated=" << pc.duplicated << ":";
         if (pc.carry_pes) {
@@ -1253,6 +1264,11 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.query(u"packets", true).add(u"invalid-scrambling", pc.inv_ts_sc_cnt);
         jv.query(u"packets", true).add(u"af", pc.ts_af_cnt);
         jv.query(u"packets", true).add(u"pcr", pc.pcr_cnt);
+        jv.query(u"packets", true).add(u"pts", pc.pts_cnt);
+        jv.query(u"packets", true).add(u"dts", pc.dts_cnt);
+        jv.query(u"packets", true).add(u"pcr-leap", pc.pcr_leap_cnt);
+        jv.query(u"packets", true).add(u"pts-leap", pc.pts_leap_cnt);
+        jv.query(u"packets", true).add(u"dts-leap", pc.dts_leap_cnt);
         jv.query(u"packets", true).add(u"discontinuities", pc.unexp_discont);
         jv.query(u"packets", true).add(u"duplicated", pc.duplicated);
         if (pc.carry_pes) {
