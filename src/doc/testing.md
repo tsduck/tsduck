@@ -1,5 +1,4 @@
 # Testing TSDuck   {#testing}
-[TOC]
 
 # Testing overview {#testoverview}
 

@@ -33,8 +33,10 @@ Satellite frequencies in Japan (Microsoft Excel).
 - gadugi.ttf gadugib.ttf
 Gadugi true-type font, used in documents.
 
-- Doxyfile doxy-defaults.conf doxy-header.html doxy-footer.html doxy-style.css
+- Doxyfile doxygen-awesome.css doxygen-awesome-sidebar-only.css
 Configuration files, used to generate TSDuck programmer's guide (Doxygen).
+The CSS files are extracted from "Doxygen Awesome", an open-source project
+using the MIT license at https://jothepro.github.io/doxygen-awesome-css/
 
 - build-doxygen.sh build-doxygen.ps1
 Shell script (Linux, macOS), PowerShell script (Windows) to generate TSDuck

@@ -1,5 +1,4 @@
 # Using the TSDuck library   {#usinglibrary}
-[TOC]
 
 # Pre-requisites {#libreq}
 

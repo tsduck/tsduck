@@ -1,7 +1,5 @@
 /** @page libtutorial TSDuck library tutorial
 
-@tableofcontents
-
 The TSDuck library contains general-purpose C++ classes and utilities to handle
 MPEG transport streams.
 

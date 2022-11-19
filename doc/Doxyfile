@@ -28,25 +28,22 @@
 #-----------------------------------------------------------------------------
 # 
 #  Doxygen configuration file for TSDuck.
-#  For detailed explanations on each tag, see doxy-defaults.conf.
 #  We document only public members, this is user documentation for libtsduck.
-# 
+#
 #-----------------------------------------------------------------------------
-
-@INCLUDE = doxy-defaults.conf
 
 # Project description:
 
 PROJECT_NAME   = "TSDuck"
-PROJECT_NUMBER = "Version $(TS_FULL_VERSION)"
-PROJECT_BRIEF  = "TSDuck - The MPEG Transport Stream Toolkit"
-PROJECT_LOGO   = ../images/tsduck-32.png
+PROJECT_NUMBER = "v$(TS_FULL_VERSION)"
+PROJECT_BRIEF  = "MPEG Transport Stream Toolkit"
+PROJECT_LOGO   = ../images/tsduck-48.png
 
 # Input and output files:
 
 INPUT            = ../src/doc ../src/libtsduck
 FILE_PATTERNS    = *.h *.dox *.md *.java *.py
-EXCLUDE_PATTERNS = *Template.h tsduck.h */private/*
+EXCLUDE_PATTERNS = *Template.h */private/*
 RECURSIVE        = YES
 IMAGE_PATH       = ../images
 OUTPUT_DIRECTORY = ../bin/doxy
@@ -55,6 +52,7 @@ INCLUDE_PATH     = $(DOXY_INCLUDE_PATH)
 # Creating subdirs is useful to create a more balanced usage of the file system.
 # The problem is that it is hard to predict stable direct links to useful pages
 # such as "building TSDuck". So, this option is now disabled.
+
 CREATE_SUBDIRS = NO
 
 # Error reporting:
@@ -82,15 +80,12 @@ PREDEFINED            += DOXYGEN
 
 GENERATE_LATEX         = NO
 GENERATE_HTML          = YES
-HTML_HEADER            = doxy-header.html
-HTML_FOOTER            = doxy-footer.html
-HTML_EXTRA_STYLESHEET  = doxy-style.css
-HTML_COLORSTYLE_HUE    = 150
-HTML_COLORSTYLE_SAT    = 100
-HTML_COLORSTYLE_GAMMA  = 125
-VERBATIM_HEADERS       = NO
-DISABLE_INDEX          = YES
 GENERATE_TREEVIEW      = YES
+TREEVIEW_WIDTH         = 300 # Must match value in doxygen-custom.css
+DISABLE_INDEX          = NO
+FULL_SIDEBAR           = NO
+HTML_EXTRA_STYLESHEET  = doxygen-awesome.css doxygen-awesome-sidebar-only.css doxygen-custom.css
+VERBATIM_HEADERS       = NO
 MARKDOWN_SUPPORT       = YES
 TOC_INCLUDE_HEADINGS   = 3
 ENUM_VALUES_PER_LINE   = 1
