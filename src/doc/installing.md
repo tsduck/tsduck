@@ -1,5 +1,4 @@
 # Installing TSDuck   {#installing}
-[TOC]
 
 TSDuck can be installed on Linux, macOS and Windows.
 

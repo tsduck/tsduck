@@ -1,0 +1,31 @@
+/**
+
+@page maintenance Building and installing TSDuck
+Building, installing and maintaining the TSDuck project:
+- @subpage building
+- @subpage installing
+- @subpage testing
+- @subpage contributing
+
+@page appdev Application development
+For application developers:
+- @subpage libtutorial
+- @subpage usinglibrary
+- @subpage devplugin
+- @subpage extensions
+- @subpage jpbindings
+- @subpage sigxref
+
+@page coderef Programming reference
+TSDuck library API reference:
+- <a href="classes.html">C++ classes in alphabetical order</a>
+- <a href="modules.html">C++ classes by category</a>
+- <a href="files.html">Header files</a>
+
+@page hwsupport Device support
+Some notes on the support of specific hardware devices:
+- @subpage dektec
+- @subpage hides
+- @subpage vatek
+
+*/

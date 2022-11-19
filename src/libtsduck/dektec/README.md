@@ -1,4 +1,4 @@
-## Dektec devices interface for TSDuck
+## Dektec devices interface  {#dektec}
 
 Interfacing Dektec devices is visible through the `dektec` input plugin, the
 `dektec` output plugin and the `tsdektec` command. The input/output plugins

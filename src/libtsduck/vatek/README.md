@@ -1,4 +1,4 @@
-## VATek devices interface for TSDuck
+## VATek devices interface  {#vatek}
 
 Interfacing modulator devices based on VATek chips is visible through the
 `vatek` output plugin and the `tsvatek` command. The output plugin can

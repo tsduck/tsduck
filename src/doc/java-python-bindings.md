@@ -1,5 +1,4 @@
 # Java and Python bindings  {#jpbindings}
-[TOC]
 
 # Overview  {#jpoverview}
 
