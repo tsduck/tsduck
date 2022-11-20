@@ -1,5 +1,4 @@
-# Contributing to TSDuck development   {#contributing}
-[TOC]
+# Contributing to TSDuck   {#contributing}
 
 TSDuck development is managed using Git.
 The [reference repository](https://github.com/tsduck/tsduck) is on GitHub.

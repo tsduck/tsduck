@@ -1,5 +1,4 @@
 # Building TSDuck   {#building}
-[TOC]
 
 TSDuck can be built on Linux, macOS and Windows.
 

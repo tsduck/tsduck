@@ -1,4 +1,4 @@
-## HiDes devices interface for TSDuck
+## HiDes devices interface  {#hides}
 
 Interfacing HiDes modulator devices is visible through the `hides` output plugin
 and the `tshides` command.

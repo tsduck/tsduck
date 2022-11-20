@@ -1,5 +1,4 @@
 # Developing TSDuck extensions   {#extensions}
-[TOC]
 
 Applications or TSP plugins can be developed on their own.
 But it is also possible to develop fully integrated _extensions_ to TSDuck.

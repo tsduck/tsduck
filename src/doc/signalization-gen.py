@@ -41,6 +41,16 @@ src_dir = os.path.dirname(doc_dir)
 dtv_dir = src_dir + os.sep + 'libtsduck' + os.sep + 'dtv' + os.sep
 out_file  = doc_dir + os.sep + 'signalization.md'
 
+file_header = """
+# Tables and descriptors reference   {#sigxref}
+
+All signalization tables and descriptors which are supported by TSDuck are
+documented in the TSDuck user's guide, appendix D "PSI/SI XML Reference Model".
+
+The tables below summarize all available structures and the reference of
+the standard which specifies them.
+"""
+
 # Format all structures (tables or descriptors) inside a directory tree.
 def list_all_structures(output, dirname, title, label):
     print("", file=output)
@@ -83,13 +93,6 @@ def list_all_structures(output, dirname, title, label):
 
 # Main code.
 with open(out_file, 'w') as output:
-    print("""# Tables and descriptors cross-reference   {#sigxref}
-[TOC]
-
-All signalization tables and descriptors which are supported by TSDuck are
-documented in the TSDuck user's guide, appendix D "PSI/SI XML Reference Model".
-
-The tables below summarize all available structures and the reference of
-the standard which specifies them.""", file=output)
+    print(file_header, file=output)
     list_all_structures(output, dtv_dir + "tables", "Tables", "sigxtables")
     list_all_structures(output, dtv_dir + "descriptors", "Descriptors", "sigxdescs")
