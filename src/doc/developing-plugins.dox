@@ -1,7 +1,5 @@
 /** @page devplugin Developing TSP plugins
 
-@tableofcontents
-
 # Plugin development workflow {#pdevworkflow}
 
 When some new kind of transport stream processing is needed, several solutions are possible:
