@@ -35,22 +35,104 @@ bool tsVatekOutputPluginIsEmpty = true; // Avoid warning about empty module.
 
 #include "tsVatekOutputPlugin.h"
 #include "tsPluginRepository.h"
+
 #include "tsBeforeStandardHeaders.h"
+#include <vatek_sdk_usbstream.h>
+#include <core/base/output_modulator.h>
 #include <cross/cross_os_api.h>
 #include "tsAfterStandardHeaders.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"vatek", ts::VatekOutputPlugin);
 
-const ts::VatekOutputPlugin::tsmod_param_config ts::VatekOutputPlugin::m_modtables[] =
+
+//----------------------------------------------------------------------------
+// Class internals.
+//----------------------------------------------------------------------------
+
+class ts::VatekOutputPlugin::Guts
 {
-    {modulator_dvb_t,  &VatekOutputPlugin::modparam_config_dvb_t,},
-    {modulator_j83a,   &VatekOutputPlugin::modparam_config_j83a,},
-    {modulator_atsc,   &VatekOutputPlugin::modparam_config_atsc,},
-    {modulator_j83b,   &VatekOutputPlugin::modparam_config_j83b,},
-    {modulator_dtmb,   &VatekOutputPlugin::modparam_config_dtmb,},
-    {modulator_isdb_t, &VatekOutputPlugin::modparam_config_isdb_t,},
-    {modulator_j83c,   &VatekOutputPlugin::modparam_config_j83c,},
-    {modulator_dvb_t2, &VatekOutputPlugin::modparam_config_dvb_t2,},
+    TS_NOBUILD_NOCOPY(Guts);
+public:
+    // Constructor
+    Guts(VatekOutputPlugin* plugin);
+
+    enum tsvatek_bandwidth {
+        tsvatek_bw_1_7 = 0,
+        tsvatek_bw_5   = 5,
+        tsvatek_bw_6   = 6,
+        tsvatek_bw_7   = 7,
+        tsvatek_bw_8   = 8,
+        tsvatek_bw_10  = 10,
+    };
+
+    // Point to parent plugin.
+    VatekOutputPlugin* const plugin;
+    TSP* const tsp;
+
+    // Plugin private working data.
+    hvatek_devices   m_hdevices;
+    hvatek_chip      m_hchip;
+    hvatek_usbstream m_husbstream;
+    usbstream_param  m_param;
+    int32_t          m_index;
+    Pusbstream_slice m_slicebuf;
+
+    // Same as in parent plugin.
+    bool start();
+    bool stop();
+    bool send(const TSPacket*, const TSPacketMetadata*, size_t);
+
+    // Configuration by modulation type.
+    void debugParams();
+    vatek_result configParam();
+    vatek_result modparam_config_dvb_t(Pmodulator_param pmod);
+    vatek_result modparam_config_j83a(Pmodulator_param pmod);
+    vatek_result modparam_config_atsc(Pmodulator_param pmod);
+    vatek_result modparam_config_j83b(Pmodulator_param pmod);
+    vatek_result modparam_config_dtmb(Pmodulator_param pmod);
+    vatek_result modparam_config_isdb_t(Pmodulator_param pmod);
+    vatek_result modparam_config_j83c(Pmodulator_param pmod);
+    vatek_result modparam_config_dvb_t2(Pmodulator_param pmod);
+
+    // Table of configuration methods per modulation.
+    typedef vatek_result (VatekOutputPlugin::Guts::*fpmodparam_config)(Pmodulator_param pmod);
+    struct tsmod_param_config {
+        modulator_type    type;
+        fpmodparam_config config;
+    };
+    static const tsmod_param_config m_modtables[];
+};
+
+ts::VatekOutputPlugin::Guts::Guts(VatekOutputPlugin* vop) :
+    plugin(vop),
+    tsp(vop->tsp),
+    m_hdevices(nullptr),
+    m_hchip(nullptr),
+    m_husbstream(nullptr),
+    m_param(),
+    m_index(-1),
+    m_slicebuf(nullptr)
+{
+    memset(&m_param, 0, sizeof(usbstream_param));
+    m_param.r2param.freqkhz = 473000;
+    m_param.mode = ustream_mode_async;
+    m_param.remux = ustream_remux_pcr;
+    m_param.pcradjust = pcr_disable;
+    m_param.async.bitrate = 0;
+    m_param.async.mode = uasync_mode_cbr;
+    m_param.async.prepare_ms = 0;
+}
+
+const ts::VatekOutputPlugin::Guts::tsmod_param_config ts::VatekOutputPlugin::Guts::m_modtables[] =
+{
+    {modulator_dvb_t,  &VatekOutputPlugin::Guts::modparam_config_dvb_t},
+    {modulator_j83a,   &VatekOutputPlugin::Guts::modparam_config_j83a},
+    {modulator_atsc,   &VatekOutputPlugin::Guts::modparam_config_atsc},
+    {modulator_j83b,   &VatekOutputPlugin::Guts::modparam_config_j83b},
+    {modulator_dtmb,   &VatekOutputPlugin::Guts::modparam_config_dtmb},
+    {modulator_isdb_t, &VatekOutputPlugin::Guts::modparam_config_isdb_t},
+    {modulator_j83c,   &VatekOutputPlugin::Guts::modparam_config_j83c},
+    {modulator_dvb_t2, &VatekOutputPlugin::Guts::modparam_config_dvb_t2},
 };
 
 
@@ -63,19 +145,17 @@ bool ts::VatekOutputPlugin::isRealTime()
     return true;
 }
 
+
 //----------------------------------------------------------------------------
 // Output plugin constructor
 //----------------------------------------------------------------------------
 
 ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send packets to a VATEK modulator device", u"[options]"),
-    m_hdevices(nullptr),
-    m_hchip(nullptr),
-    m_husbstream(nullptr),
-    m_param(),
-    m_index(-1),
-    m_slicebuf(nullptr)
+    _guts(new Guts(this))
 {
+    CheckNonNull(_guts);
+
     option(u"device", 'd', UNSIGNED);
     help(u"device",
          u"Device index, from 0 to N-1 (with N being the number of Vatek devices in the system). "
@@ -89,12 +169,12 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"The default is 473,000,000 Hz.");
 
     option(u"bandwidth", 0, Enumeration({
-         {u"1.7", tsvatek_bw_1_7},
-         {u"5",   tsvatek_bw_5},
-         {u"6",   tsvatek_bw_6},
-         {u"7",   tsvatek_bw_7},
-         {u"8",   tsvatek_bw_8},
-         {u"10",  tsvatek_bw_10},
+         {u"1.7", Guts::tsvatek_bw_1_7},
+         {u"5",   Guts::tsvatek_bw_5},
+         {u"6",   Guts::tsvatek_bw_6},
+         {u"7",   Guts::tsvatek_bw_7},
+         {u"8",   Guts::tsvatek_bw_8},
+         {u"10",  Guts::tsvatek_bw_10},
     }));
     help(u"bandwidth",
          u"DVB-T, DVB-T2, DMB-T (DTMB): indicate bandwidth in MHz. "
@@ -350,16 +430,6 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"adjust",  pcr_adjust},
     }));
     help(u"pcradjust", u"Adjust the buffer transmission speed according to different application.");
-
-    memset(&m_param, 0, sizeof(usbstream_param));
-    m_param.r2param.freqkhz = 473000;
-    m_param.mode = ustream_mode_async;
-    m_param.remux = ustream_remux_pcr;
-    m_param.pcradjust = pcr_disable;
-
-    m_param.async.bitrate = 0;
-    m_param.async.mode = uasync_mode_cbr;
-    m_param.async.prepare_ms = 0;
 }
 
 
@@ -369,7 +439,11 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
 
 ts::VatekOutputPlugin::~VatekOutputPlugin()
 {
-    VatekOutputPlugin::stop();
+    if (_guts != nullptr) {
+        VatekOutputPlugin::stop();
+        delete _guts;
+        _guts = nullptr;
+    }
 }
 
 
@@ -378,6 +452,11 @@ ts::VatekOutputPlugin::~VatekOutputPlugin()
 //----------------------------------------------------------------------------
 
 bool ts::VatekOutputPlugin::start()
+{
+    return _guts->start();
+}
+
+bool ts::VatekOutputPlugin::Guts::start()
 {
     vatek_result nres = vatek_badstatus;
     if (m_hdevices) {
@@ -425,11 +504,17 @@ bool ts::VatekOutputPlugin::start()
     return is_vatek_success(nres);
 }
 
+
 //----------------------------------------------------------------------------
 // Output stop method
 //----------------------------------------------------------------------------
 
 bool ts::VatekOutputPlugin::stop()
+{
+    return _guts->stop();
+}
+
+bool ts::VatekOutputPlugin::Guts::stop()
 {
     if (m_husbstream) {
         usbstream_status status = vatek_usbstream_get_status(m_husbstream, nullptr);
@@ -455,11 +540,17 @@ bool ts::VatekOutputPlugin::stop()
     return true;
 }
 
+
 //----------------------------------------------------------------------------
 // Output method
 //----------------------------------------------------------------------------
 
 bool ts::VatekOutputPlugin::send(const TSPacket* pkts, const TSPacketMetadata* meta, size_t packet_count)
+{
+    return _guts->send(pkts, meta, packet_count);
+}
+
+bool ts::VatekOutputPlugin::Guts::send(const TSPacket* pkts, const TSPacketMetadata* meta, size_t packet_count)
 {
     vatek_result nres = vatek_badstatus;
     usbstream_status status = vatek_usbstream_get_status(m_husbstream, nullptr);
@@ -509,14 +600,15 @@ bool ts::VatekOutputPlugin::send(const TSPacket* pkts, const TSPacketMetadata* m
     }
 }
 
+
 //----------------------------------------------------------------------------
 // Get output bitrate
 //----------------------------------------------------------------------------
 
 ts::BitRate ts::VatekOutputPlugin::getBitrate()
 {
-    if (m_husbstream) {
-        const uint32_t bitrate = modulator_param_get_bitrate(&m_param.modulator);
+    if (_guts->m_husbstream) {
+        const uint32_t bitrate = modulator_param_get_bitrate(&_guts->m_param.modulator);
         tsp->debug(u"BitRate : [%d]", {bitrate});
         return BitRate(bitrate);
     }
@@ -536,12 +628,12 @@ ts::BitRateConfidence ts::VatekOutputPlugin::getBitrateConfidence()
 // Get modulation parameters from command line.
 //----------------------------------------------------------------------------
 
-vatek_result ts::VatekOutputPlugin::configParam()
+vatek_result ts::VatekOutputPlugin::Guts::configParam()
 {
 #define MOD_NUMS (sizeof(m_modtables)/sizeof(tsmod_param_config))
 
     vatek_result nres = vatek_badparam;
-    modulator_type type = modulator_type(intValue(u"modulation", modulator_dvb_t));
+    modulator_type type = modulator_type(plugin->intValue(u"modulation", modulator_dvb_t));
 
     for (size_t i = 0; i < MOD_NUMS; i++) {
         if (m_modtables[i].type == type) {
@@ -552,21 +644,21 @@ vatek_result ts::VatekOutputPlugin::configParam()
 
     if (is_vatek_success(nres)) {
         // Command line parameter is in Hz, Vatek parameter is in kHz.
-        m_param.r2param.freqkhz = uint32_t(intValue<uint64_t>(u"frequency", uint64_t(m_param.r2param.freqkhz) * 1000) / 1000);
-        getIntValue(m_index, u"device", 0);
-        getIntValue(m_param.remux, u"remux", m_param.remux);
-        getIntValue(m_param.pcradjust, u"pcradjust", m_param.pcradjust);
+        m_param.r2param.freqkhz = uint32_t(plugin->intValue<uint64_t>(u"frequency", uint64_t(m_param.r2param.freqkhz) * 1000) / 1000);
+        plugin->getIntValue(m_index, u"device", 0);
+        plugin->getIntValue(m_param.remux, u"remux", m_param.remux);
+        plugin->getIntValue(m_param.pcradjust, u"pcradjust", m_param.pcradjust);
         debugParams();
     }
 
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_dvb_t(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_dvb_t(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_dvb_t, pmod);
     if (is_vatek_success(nres)) {
-        uint32_t val = intValue<uint32_t>(u"bandwidth", 8);
+        uint32_t val = plugin->intValue<uint32_t>(u"bandwidth", 8);
         if (val == 0 || val == 10) {
             nres = vatek_badparam;
             tsp->error(u"dvb-t not support bandwidth : %d", { val } );
@@ -574,10 +666,10 @@ vatek_result ts::VatekOutputPlugin::modparam_config_dvb_t(Pmodulator_param pmod)
         else {
             Pdvb_t_param pdvb = &pmod->mod.dvb_t;
             pmod->bandwidth_symbolrate = val;
-            getIntValue(pdvb->constellation, u"constellation", pdvb->constellation);
-            getIntValue(pdvb->fft, u"transmission-mode", pdvb->fft);
-            getIntValue(pdvb->coderate, u"convolutional-rate", pdvb->coderate);
-            getIntValue(pdvb->guardinterval, u"guard-interval", pdvb->guardinterval);
+            plugin->getIntValue(pdvb->constellation, u"constellation", pdvb->constellation);
+            plugin->getIntValue(pdvb->fft, u"transmission-mode", pdvb->fft);
+            plugin->getIntValue(pdvb->coderate, u"convolutional-rate", pdvb->coderate);
+            plugin->getIntValue(pdvb->guardinterval, u"guard-interval", pdvb->guardinterval);
             nres = modulator_param_get_bitrate(pmod) == 0 ? vatek_badparam : vatek_success;
             if (!is_vatek_success(nres)) {
                 tsp->error(u"dvb-t param config fail : [%d]", {nres});
@@ -587,11 +679,11 @@ vatek_result ts::VatekOutputPlugin::modparam_config_dvb_t(Pmodulator_param pmod)
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_j83a(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_j83a(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_j83a, pmod);
     if (is_vatek_success(nres)) {
-        uint32_t val = intValue<uint32_t>(u"symbol-rate", 5120000) / 1000;
+        uint32_t val = plugin->intValue<uint32_t>(u"symbol-rate", 5120000) / 1000;
         nres = vatek_badparam;
         if (val < 5000 || val > 7000) {
             tsp->error(u"j83a symbol-rate must between 5000 and 7000 ksym/s : [%d]", { val });
@@ -599,7 +691,7 @@ vatek_result ts::VatekOutputPlugin::modparam_config_j83a(Pmodulator_param pmod)
         else {
             Pj83a_param pj83a = &pmod->mod.j83a;
             pmod->bandwidth_symbolrate = val;
-            getIntValue(pj83a->constellation, u"j83-qam", j83a_qam128);
+            plugin->getIntValue(pj83a->constellation, u"j83-qam", j83a_qam128);
             nres = modulator_param_get_bitrate(pmod) == 0 ? vatek_badparam : vatek_success;
             if (!is_vatek_success(nres)) {
                 tsp->error(u"j83a param config fail : [%d]", {nres});
@@ -609,12 +701,12 @@ vatek_result ts::VatekOutputPlugin::modparam_config_j83a(Pmodulator_param pmod)
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_j83c(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_j83c(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_j83c, pmod);
     if (is_vatek_success(nres)) {
         Pj83c_param pj83c = &pmod->mod.j83c;
-        getIntValue(pj83c->constellation, u"j83-qam", j83a_qam256);
+        plugin->getIntValue(pj83c->constellation, u"j83-qam", j83a_qam256);
         if (pj83c->constellation == j83a_qam64) {
             pj83c->constellation = j83c_qam64;
         }
@@ -629,18 +721,18 @@ vatek_result ts::VatekOutputPlugin::modparam_config_j83c(Pmodulator_param pmod)
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_atsc(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_atsc(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_atsc, pmod);
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_j83b(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_j83b(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_j83b, pmod);
     if (is_vatek_success(nres)) {
         Pj83b_param pj83b = &pmod->mod.j83b;
-        getIntValue(pj83b->constellation, u"j83-qam", j83a_qam256);
+        plugin->getIntValue(pj83b->constellation, u"j83-qam", j83a_qam256);
         if (pj83b->constellation == j83a_qam64) {
             pj83b->constellation = j83b_qam64;
         }
@@ -655,11 +747,11 @@ vatek_result ts::VatekOutputPlugin::modparam_config_j83b(Pmodulator_param pmod)
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_dtmb(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_dtmb(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_dtmb, pmod);
     if (is_vatek_success(nres)) {
-        uint32_t val = intValue<uint32_t>(u"bandwidth", 8);
+        uint32_t val = plugin->intValue<uint32_t>(u"bandwidth", 8);
         nres = vatek_badparam;
         if (val == 0 || val == 10) {
             tsp->error(u"dtmb does not support bandwidth : %d", { val });
@@ -667,11 +759,11 @@ vatek_result ts::VatekOutputPlugin::modparam_config_dtmb(Pmodulator_param pmod)
         else {
             Pdtmb_param pdtmb = &pmod->mod.dtmb;
             pmod->bandwidth_symbolrate = val;
-            getIntValue(pdtmb->constellation, u"dmb-constellation", pdtmb->constellation);
-            getIntValue(pdtmb->coderate, u"dmb-fec", pdtmb->coderate);
-            getIntValue(pdtmb->framesync, u"dmb-header", pdtmb->framesync);
-            getIntValue(pdtmb->timeinterleaved, u"dmb-interleaver", pdtmb->timeinterleaved);
-            getIntValue(pdtmb->carriermode, u"dmb-carrier", pdtmb->carriermode);
+            plugin->getIntValue(pdtmb->constellation, u"dmb-constellation", pdtmb->constellation);
+            plugin->getIntValue(pdtmb->coderate, u"dmb-fec", pdtmb->coderate);
+            plugin->getIntValue(pdtmb->framesync, u"dmb-header", pdtmb->framesync);
+            plugin->getIntValue(pdtmb->timeinterleaved, u"dmb-interleaver", pdtmb->timeinterleaved);
+            plugin->getIntValue(pdtmb->carriermode, u"dmb-carrier", pdtmb->carriermode);
 
             if ((pdtmb->constellation == dtmb_qam4_nr || pdtmb->constellation == dtmb_qam32) && pdtmb->coderate != dtmb_code_rate_0_8) {
                 tsp->error(u"dtmb qam4-nr and qam32 only support dmb-fec = 0.8.");
@@ -687,11 +779,11 @@ vatek_result ts::VatekOutputPlugin::modparam_config_dtmb(Pmodulator_param pmod)
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_isdb_t(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_isdb_t(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_isdb_t, pmod);
     if (is_vatek_success(nres)) {
-        uint32_t val = intValue<uint32_t>(u"bandwidth", 6);
+        uint32_t val = plugin->intValue<uint32_t>(u"bandwidth", 6);
         nres = vatek_badparam;
         if (val == 0 || val == 10) {
             tsp->error(u"isdb-t does not support bandwidth : %d", { val });
@@ -699,7 +791,7 @@ vatek_result ts::VatekOutputPlugin::modparam_config_isdb_t(Pmodulator_param pmod
         else {
             Pisdb_t_param pisdbt = &pmod->mod.isdb_t;
             pmod->bandwidth_symbolrate = val;
-            getIntValue(pisdbt->constellation, u"constellation", dvb_t_qam64);
+            plugin->getIntValue(pisdbt->constellation, u"constellation", dvb_t_qam64);
             if (pisdbt->constellation == dvb_t_qpsk) {
                 pisdbt->constellation = isdb_t_qpsk;
             }
@@ -709,9 +801,9 @@ vatek_result ts::VatekOutputPlugin::modparam_config_isdb_t(Pmodulator_param pmod
             else {
                 pisdbt->constellation = isdb_t_qam64;
             }
-            getIntValue(pisdbt->fft, u"transmission-mode", pisdbt->fft);
-            getIntValue(pisdbt->coderate, u"convolutional-rate", pisdbt->coderate);
-            getIntValue(pisdbt->guardinterval, u"guard-interval", pisdbt->guardinterval);
+            plugin->getIntValue(pisdbt->fft, u"transmission-mode", pisdbt->fft);
+            plugin->getIntValue(pisdbt->coderate, u"convolutional-rate", pisdbt->coderate);
+            plugin->getIntValue(pisdbt->guardinterval, u"guard-interval", pisdbt->guardinterval);
 
             if (pisdbt->fft == fft_8k) {
                 pisdbt->timeinterleaved = isdb_t_interleaved_mode3;
@@ -731,36 +823,36 @@ vatek_result ts::VatekOutputPlugin::modparam_config_isdb_t(Pmodulator_param pmod
     return nres;
 }
 
-vatek_result ts::VatekOutputPlugin::modparam_config_dvb_t2(Pmodulator_param pmod)
+vatek_result ts::VatekOutputPlugin::Guts::modparam_config_dvb_t2(Pmodulator_param pmod)
 {
     vatek_result nres = modulator_param_reset(modulator_dvb_t2, pmod);
     if (is_vatek_success(nres))  {
-        uint32_t val = intValue<uint32_t>(u"bandwidth", 8);
+        uint32_t val = plugin->intValue<uint32_t>(u"bandwidth", 8);
         Pdvb_t2_param pt2 = &pmod->mod.dvb_t2;
         pmod->bandwidth_symbolrate = val;
-        getIntValue(pt2->version, u"t2-version", pt2->version);
-        getIntValue(pt2->l1_constellation, u"t2-l1-modulation", pt2->l1_constellation);
-        getIntValue(pt2->coderate, u"plp0-code-rate", pt2->coderate);
-        getIntValue(pt2->fectype, u"plp0-fec-type", pt2->fectype);
-        getIntValue(pt2->plp_constellation, u"plp0-modulation", pt2->plp_constellation);
-        getIntValue(pt2->fft, u"fft-mode", pt2->fft);
-        getIntValue(pt2->guardinterval, u"t2-guard-interval", pt2->guardinterval);
-        getIntValue(pt2->pilotpattern, u"pilot-pattern", pt2->pilotpattern);
-        getIntValue(pt2->network_id, u"t2-network-id", pt2->network_id);
-        getIntValue(pt2->system_id, u"t2-system-id", pt2->system_id);
-        getIntValue(pt2->issy, u"plp0-issy", pt2->issy);
+        plugin->getIntValue(pt2->version, u"t2-version", pt2->version);
+        plugin->getIntValue(pt2->l1_constellation, u"t2-l1-modulation", pt2->l1_constellation);
+        plugin->getIntValue(pt2->coderate, u"plp0-code-rate", pt2->coderate);
+        plugin->getIntValue(pt2->fectype, u"plp0-fec-type", pt2->fectype);
+        plugin->getIntValue(pt2->plp_constellation, u"plp0-modulation", pt2->plp_constellation);
+        plugin->getIntValue(pt2->fft, u"fft-mode", pt2->fft);
+        plugin->getIntValue(pt2->guardinterval, u"t2-guard-interval", pt2->guardinterval);
+        plugin->getIntValue(pt2->pilotpattern, u"pilot-pattern", pt2->pilotpattern);
+        plugin->getIntValue(pt2->network_id, u"t2-network-id", pt2->network_id);
+        plugin->getIntValue(pt2->system_id, u"t2-system-id", pt2->system_id);
+        plugin->getIntValue(pt2->issy, u"plp0-issy", pt2->issy);
 
         pt2->t2_flags = 0;
-        if (present(u"bandwidth-extension")) {
+        if (plugin->present(u"bandwidth-extension")) {
             pt2->t2_flags |= T2EN_EXTEND_CARRIER_MODE;
         }
-        if (present(u"plp0-rotation")) {
+        if (plugin->present(u"plp0-rotation")) {
             pt2->t2_flags |= T2EN_CONSTELLATION_ROTATION;
         }
-        if (present(u"plp0-null-packet-deletion")) {
+        if (plugin->present(u"plp0-null-packet-deletion")) {
             pt2->t2_flags |= T2EN_DELETE_NULL_PACKET;
         }
-        if (present(u"plp0-high-efficiency")) {
+        if (plugin->present(u"plp0-high-efficiency")) {
             pt2->t2_flags |= T2EN_INPUT_TS_HEM;
         }
         pt2->fecblock_nums = 0;
@@ -779,10 +871,10 @@ vatek_result ts::VatekOutputPlugin::modparam_config_dvb_t2(Pmodulator_param pmod
 // Display modulation parameters in debug mode.
 //----------------------------------------------------------------------------
 
-void ts::VatekOutputPlugin::debugParams()
+void ts::VatekOutputPlugin::Guts::debugParams()
 {
-    if (debug()) {
-        #define PR(format,name) debug(u"" #name " = " format, {m_param.name})
+    if (tsp->debug()) {
+        #define PR(format,name) tsp->debug(u"" #name " = " format, {m_param.name})
         PR("%d", mode);
         PR("%d", remux);
         PR("%d", pcradjust);
