@@ -43,7 +43,6 @@ bool tsDektecOutputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsHFBand.h"
 #include "tsDVBT2ParamsEvaluator.h"
 #include "tsModulation.h"
-#include "tsIPv4SocketAddress.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 
