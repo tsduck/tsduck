@@ -128,6 +128,18 @@ jobs:
             cat "$f"
         done
         exit $status
+    - name: Build sample applications
+      run: |
+        # Fake installation in a temporary directory.
+        export PREFIX=$(pwd)/bin/systest
+        make install SYSPREFIX=$PREFIX
+        # Build the test applications using that installation.
+        export PATH=$PREFIX/bin:$PATH:
+        export LD_LIBRARY_PATH=$PREFIX/lib:$LD_LIBRARY_PATH:
+        export LD_LIBRARY_PATH2=$LD_LIBRARY_PATH
+        export PYTHONPATH=$PREFIX/share/tsduck/python:$PYTHONPATH:
+        export CLASSPATH=$PREFIX/share/tsduck/java/tsduck.jar:$CLASSPATH:
+        make -C sample
 
   build_windows:
     strategy:
