@@ -542,7 +542,7 @@ bool ts::IsDirectory(const UString& path)
 
 
 //----------------------------------------------------------------------------
-// Delete a file. Return an error code.
+// Delete a file.
 //----------------------------------------------------------------------------
 
 bool ts::DeleteFile(const UString& path, Report& report)
@@ -570,7 +570,7 @@ bool ts::DeleteFile(const UString& path, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Truncate a file to the specified size. Return an error code.
+// Truncate a file to the specified size.
 //----------------------------------------------------------------------------
 
 bool ts::TruncateFile(const UString& path, uint64_t size, Report& report)
@@ -606,8 +606,7 @@ bool ts::TruncateFile(const UString& path, uint64_t size, Report& report)
 
 
 //----------------------------------------------------------------------------
-// Rename / move a file. Return an error code.
-// Not guaranteed to work across volumes or file systems.
+// Rename / move a file.
 //----------------------------------------------------------------------------
 
 bool ts::RenameFile(const UString& old_path, const UString& new_path, Report& report)

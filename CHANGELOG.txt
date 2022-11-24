@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.33-3034
+VERSION 3.33-3063
 
 [NEW] New commands and plugins:
 
@@ -12,6 +12,7 @@ VERSION 3.33-3034
 
   * New options in existing commands and plugins:
     - Option --set-label on plugin 'svresync".
+    - Options --live-extra-segments and --slice-only in output plugin "hls".
 
 [BUG] Bug fixes:
 

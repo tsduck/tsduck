@@ -79,6 +79,7 @@ namespace ts {
             bool               _sliceOnly;             // Don't add PAT and PMT to the segments.
             hls::PlayListType  _playlistType;          // Type of playlist.
             size_t             _liveDepth;             // Number of simultaneous segments in live streams.
+            size_t             _liveExtraDepth;        // Number of additional segments to keep in live streams.
             Second             _targetDuration;        // Segment target duration in seconds.
             Second             _maxExtraDuration;      // Segment target max extra duration in seconds when intra image is not found.
             PacketCounter      _fixedSegmentSize;      // Optional fixed segment size in packets.
