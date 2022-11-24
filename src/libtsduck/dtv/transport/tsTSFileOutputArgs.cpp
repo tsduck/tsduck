@@ -27,50 +27,35 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsFileInputPlugin.h"
-#include "tsPluginRepository.h"
-
-TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
+#include "tsTSFileOutputArgs.h"
 
 
 //----------------------------------------------------------------------------
-// Constructor
+// Default constructor.
 //----------------------------------------------------------------------------
 
-ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Read packets from one or more files", u"[options] [file-name ...]"),
-    _file()
+ts::TSFileOutputArgs::TSFileOutputArgs()
 {
-    _file.defineArgs(*this);
+    //@@@
 }
 
 
 //----------------------------------------------------------------------------
-// Redirect all methods to _file.
+// Add command line option definitions in an Args.
 //----------------------------------------------------------------------------
 
-bool ts::FileInputPlugin::getOptions()
+void ts::TSFileOutputArgs::defineArgs(Args& args)
 {
-    return _file.loadArgs(duck, *this);
+    //@@@
 }
 
-bool ts::FileInputPlugin::start()
-{
-    return _file.open(*tsp);
-}
 
-bool ts::FileInputPlugin::stop()
-{
-    return _file.close(*tsp);
-}
+//----------------------------------------------------------------------------
+// Load arguments from command line.
+//----------------------------------------------------------------------------
 
-bool ts::FileInputPlugin::abortInput()
+bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    _file.abort();
+    //@@@
     return true;
-}
-
-size_t ts::FileInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
-{
-    return _file.read(buffer, pkt_data, max_packets, *tsp);
 }

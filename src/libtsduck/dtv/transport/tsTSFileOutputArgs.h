@@ -26,51 +26,45 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-
-#include "tsFileInputPlugin.h"
-#include "tsPluginRepository.h"
-
-TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
-
-
-//----------------------------------------------------------------------------
-// Constructor
+//!
+//!  @file
+//!  Transport stream file output with command-line arguments.
+//!
 //----------------------------------------------------------------------------
 
-ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Read packets from one or more files", u"[options] [file-name ...]"),
-    _file()
-{
-    _file.defineArgs(*this);
-}
+#pragma once
+#include "tsTSFile.h"
+#include "tsTSPacket.h"
+#include "tsTSPacketMetadata.h"
+#include "tsDuckContext.h"
+#include "tsArgs.h"
 
+namespace ts {
+    //!
+    //! Transport stream file output with command-line arguments.
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL TSFileOutputArgs
+    {
+    public:
+        //!
+        //! Default constructor.
+        //!
+        TSFileOutputArgs();
 
-//----------------------------------------------------------------------------
-// Redirect all methods to _file.
-//----------------------------------------------------------------------------
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
 
-bool ts::FileInputPlugin::getOptions()
-{
-    return _file.loadArgs(duck, *this);
-}
-
-bool ts::FileInputPlugin::start()
-{
-    return _file.open(*tsp);
-}
-
-bool ts::FileInputPlugin::stop()
-{
-    return _file.close(*tsp);
-}
-
-bool ts::FileInputPlugin::abortInput()
-{
-    _file.abort();
-    return true;
-}
-
-size_t ts::FileInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
-{
-    return _file.read(buffer, pkt_data, max_packets, *tsp);
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
+    };
 }
