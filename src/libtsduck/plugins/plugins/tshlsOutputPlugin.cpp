@@ -53,6 +53,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _intraClose(false),
     _useBitrateTag(false),
     _alignFirstSegment(false),
+    _sliceOnly(false),
     _playlistType(hls::PlayListType::UNKNOWN),
     _liveDepth(0),
     _targetDuration(0),
@@ -157,6 +158,13 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"the URI of the segment files in the playlist are always relative to the playlist location. "
          u"By default, no playlist file is created (media segments only).");
 
+    option(u"slice-only");
+    help(u"slice-only",
+         u"Disable in the segmenter the inclusion of the PAT and PMT tables at start of a segment. "
+         u"Note that this generates a non-standard output, but it is useful with CBR streams. "
+         u"And the HLS input of the toolkit can handle these segments. "
+         u"When using with --fixed-segment-size is similar to execute split with the output.");
+
     option(u"start-media-sequence", 's', POSITIVE);
     help(u"start-media-sequence",
          u"Initial media sequence number in #EXT-X-MEDIA-SEQUENCE directive in the playlist. "
@@ -185,6 +193,7 @@ bool ts::hls::OutputPlugin::getOptions()
     _intraClose = present(u"intra-close");
     _useBitrateTag = !present(u"no-bitrate");
     _alignFirstSegment = present(u"align-first-segment");
+    _sliceOnly = present(u"slice-only");
     getIntValue(_liveDepth, u"live");
     getIntValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
     getIntValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
@@ -211,6 +220,11 @@ bool ts::hls::OutputPlugin::getOptions()
         return false;
     }
 
+    if (_sliceOnly && _alignFirstSegment) {
+        tsp->error(u"options --slice-only and --align-first-segment are incompatible");
+        return false;
+    }
+
     return true;
 }
 
@@ -225,11 +239,13 @@ bool ts::hls::OutputPlugin::start()
     _nameGenerator.initCounter(_segmentTemplate);
 
     // Initialize the demux to get the PAT and PMT.
-    _demux.reset();
-    _demux.setPIDFilter(NoPID);
-    _demux.addPID(PID_PAT);
-    _patPackets.clear();
-    _pmtPackets.clear();
+    if (!_sliceOnly) {
+        _demux.reset();
+        _demux.setPIDFilter(NoPID);
+        _demux.addPID(PID_PAT);
+        _patPackets.clear();
+        _pmtPackets.clear();
+    }
     _pmtPID = PID_NULL;
     _videoPID = PID_NULL;
     _videoStreamType = ST_NULL;
@@ -237,10 +253,12 @@ bool ts::hls::OutputPlugin::start()
     _previousBitrate = 0;
 
     // Fix continuity counters in PAT PID. Will add the PMT PID when found.
-    _ccFixer.reset();
-    _ccFixer.setGenerator(true);
-    _ccFixer.setPIDFilter(NoPID);
-    _ccFixer.addPID(PID_PAT);
+    if (!_sliceOnly) {
+        _ccFixer.reset();
+        _ccFixer.setGenerator(true);
+        _ccFixer.setPIDFilter(NoPID);
+        _ccFixer.addPID(PID_PAT);
+    }
 
     // Initialize the segment and playlist files.
     _liveSegmentFiles.clear();
@@ -296,7 +314,11 @@ bool ts::hls::OutputPlugin::createNextSegment()
     _segClosePending = false;
 
     // Add a copy of the PAT and PMT at the beginning of each segment.
-    return writePackets(_patPackets.data(), _patPackets.size()) && writePackets(_pmtPackets.data(), _pmtPackets.size());
+    if (!_sliceOnly) {
+        return writePackets(_patPackets.data(), _patPackets.size()) && writePackets(_pmtPackets.data(), _pmtPackets.size());
+    }
+
+    return true;
 }
 
 
@@ -407,6 +429,10 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
 void ts::hls::OutputPlugin::handleTable(SectionDemux& demux, const BinaryTable& table)
 {
+    if (_sliceOnly) {
+        return;
+    }
+
     // We need to collect the PAT and the (first) PMT.
     TSPacketVector* packets = nullptr;
 
@@ -471,17 +497,19 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
         // Address of the next packet to write.
         const TSPacket* p = pkt + i;
 
-        // If the packet comes from the PAT or PMT, get a copy and fix continuity counter.
-        const PID pid = pkt[i].getPID();
-        if (pid == PID_PAT) {
-            tmp = *p;
-            _ccFixer.feedPacket(tmp);
-            p = &tmp;
-        }
-        else if (_pmtPID != PID_NULL && pid == _pmtPID) {
-            tmp = *p;
-            _ccFixer.feedPacket(tmp);
-            p = &tmp;
+        if (!_sliceOnly) {
+            // If the packet comes from the PAT or PMT, get a copy and fix continuity counter.
+            const PID pid = pkt[i].getPID();
+            if (pid == PID_PAT) {
+                tmp = *p;
+                _ccFixer.feedPacket(tmp);
+                p = &tmp;
+            }
+            else if (_pmtPID != PID_NULL && pid == _pmtPID) {
+                tmp = *p;
+                _ccFixer.feedPacket(tmp);
+                p = &tmp;
+            }
         }
 
         // Write the packet in the segment file.
@@ -506,7 +534,9 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
     while (ok && pkt < lastPkt) {
 
         // Pass all packets into the demux.
-        _demux.feedPacket(*pkt);
+        if (!_sliceOnly) {
+            _demux.feedPacket(*pkt);
+        }
 
         // Analyze PCR's from all packets.
         _pcrAnalyzer.feedPacket(*pkt);
