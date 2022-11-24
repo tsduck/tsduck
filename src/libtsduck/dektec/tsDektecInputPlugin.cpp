@@ -38,7 +38,6 @@ bool tsDektecInputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsDektecUtils.h"
 #include "tsDektecArgsUtils.h"
 #include "tsDektecDevice.h"
-#include "tsDektecVPD.h"
 #include "tsModulation.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
