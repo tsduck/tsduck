@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsEnumeration.h"
 #include "tsTime.h"
 
 namespace ts {

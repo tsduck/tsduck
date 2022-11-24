@@ -30,6 +30,7 @@
 #include "tsForkPipe.h"
 #include "tsNullReport.h"
 #include "tsMemory.h"
+#include "tsSysUtils.h"
 #include "tsIntegerUtils.h"
 
 // Index of pipe file descriptors on UNIX.

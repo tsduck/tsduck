@@ -34,7 +34,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsTime.h"
 
 namespace ts {

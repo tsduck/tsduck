@@ -36,7 +36,6 @@
 #include "tsAbstractOutputStream.h"
 #include "tsAbstractReadStreamInterface.h"
 #include "tsAbstractWriteStreamInterface.h"
-#include "tsSysUtils.h"
 #include "tsReport.h"
 
 namespace ts {
