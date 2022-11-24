@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tshlsMediaElement.h"
-#include "tsTS.h"
 
 namespace ts {
     namespace hls {

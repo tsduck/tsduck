@@ -84,6 +84,7 @@ namespace ts {
             Second             _maxExtraDuration;      // Segment target max extra duration in seconds when intra image is not found.
             PacketCounter      _fixedSegmentSize;      // Optional fixed segment size in packets.
             size_t             _initialMediaSeq;       // Initial media sequence value.
+            UStringVector      _customTags;            // Additional custom tags.
             TSPacketMetadata::LabelSet _closeLabels;   // Close segment on packets with any of these labels.
 
             // Working data.
