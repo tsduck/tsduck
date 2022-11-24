@@ -76,6 +76,7 @@ namespace ts {
             bool               _intraClose;            // Try to start segments on intra images.
             bool               _useBitrateTag;         // Specify EXT-X-BITRATE tags for each segment in the playlist.
             bool               _alignFirstSegment;     // Align first segment to the first PAT and PMT.
+            bool               _sliceOnly;             // Don't add PAT and PMT to the segments.
             hls::PlayListType  _playlistType;          // Type of playlist.
             size_t             _liveDepth;             // Number of simultaneous segments in live streams.
             Second             _targetDuration;        // Segment target duration in seconds.
