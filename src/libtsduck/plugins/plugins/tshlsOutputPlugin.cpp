@@ -62,6 +62,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _maxExtraDuration(0),
     _fixedSegmentSize(0),
     _initialMediaSeq(0),
+    _customTags(),
     _closeLabels(),
     _nameGenerator(),
     _demux(duck, this),
@@ -98,6 +99,12 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"By default, the first output segment starts with the first packets in the TS. "
          u"Using this option, all packets before all starting conditions are dropped. "
          u"Note that subsequent output segments always start with a copy of the last PAT and PMT.");
+
+    option(u"custom-tag", 'c', STRING, 0, UNLIMITED_COUNT);
+    help(u"custom-tag", u"'string'",
+         u"Specify a custom tag to add in the playlist files. "
+         u"The specified string shall start with '#'. If omitted, the leading '#' is automatically added. "
+         u"Several --custom-tag can be specified. Each tag is added as an independent tag line.");
 
     option(u"duration", 'd', POSITIVE);
     help(u"duration",
@@ -207,6 +214,7 @@ bool ts::hls::OutputPlugin::getOptions()
     _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
     getIntValue(_initialMediaSeq, u"start-media-sequence", 0);
     getIntValues(_closeLabels, u"label-close");
+    getValues(_customTags, u"custom-tag");
 
     if (present(u"event")) {
         _playlistType = hls::PlayListType::EVENT;
@@ -385,6 +393,17 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         // With live playlists, remove obsolete segments from the playlist.
         while (_liveDepth > 0 && _playlist.segmentCount() > _liveDepth) {
             _playlist.popFirstSegment();
+        }
+
+        // Add custom tags.
+        _playlist.clearCustomTags();
+        for (const auto& tag : _customTags) {
+            _playlist.addCustomTag(tag);
+        }
+
+        // Use #EXT-X-INDEPENDENT-SEGMENTS if all segments are really independent.
+        if (!_sliceOnly) {
+            _playlist.addCustomTag(u"EXT-X-INDEPENDENT-SEGMENTS");
         }
 
         // Write the playlist file.

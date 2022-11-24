@@ -54,7 +54,8 @@ ts::hls::PlayList::PlayList() :
     _playlists(),
     _altPlaylists(),
     _loadedContent(),
-    _autoSaveDir()
+    _autoSaveDir(),
+    _extraTags()
 {
 }
 
@@ -81,6 +82,7 @@ void ts::hls::PlayList::clear()
     _playlists.clear();
     _altPlaylists.clear();
     _loadedContent.clear();
+    _extraTags.clear();
     // Preserve _autoSaveDir
 }
 
@@ -99,6 +101,7 @@ void ts::hls::PlayList::reset(ts::hls::PlayListType type, const ts::UString &fil
     _fileBase = DirectoryName(_original) + PathSeparator;
     _isURL = false;
     _url.clear();
+    _extraTags.clear();
 }
 
 
@@ -1078,6 +1081,11 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
     // Start building the content.
     UString text;
     text.format(u"#%s\n#%s:%d\n", {TagNames.name(EXTM3U), TagNames.name(VERSION), _version});
+
+    // Insert application-specific tags before standard tags.
+    for (const auto& tag : _extraTags) {
+        text.format(u"%s%s\n", {tag.startWith(u"#") ? u"" : u"#", tag});
+    }
 
     if (isMaster()) {
         // Loop on all alternative rendition playlists.
