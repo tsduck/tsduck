@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.33-3064
+VERSION 3.33-3068
 
 [NEW] New commands and plugins:
 
@@ -11,6 +11,9 @@ VERSION 3.33-3064
 [IMP] Improvements on existing commands and plugins:
 
   * New options in existing commands and plugins:
+    - The packet processing plugin "file" now supports all options of the
+      output plugin "file".
+    - Option --max-files in output and packet processing plugin "file".
     - Option --set-label on plugin 'svresync".
     - Options --custom-tag, --live-extra-segments, --slice-only in output
       plugin "hls".
