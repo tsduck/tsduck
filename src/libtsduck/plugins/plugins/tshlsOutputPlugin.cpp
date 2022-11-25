@@ -381,7 +381,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         if (_previousBitrate > 0) {
             // Compute duration based on segment bitrate (or previous one).
             seg.bitrate = _useBitrateTag ? _previousBitrate : 0;
-            seg.duration = PacketInterval(seg.bitrate, segPackets);
+            seg.duration = PacketInterval(_previousBitrate, segPackets);
         }
         else {
             // Completely unknown bitrate, we build a fake one based on the target duration.
