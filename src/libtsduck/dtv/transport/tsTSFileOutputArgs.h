@@ -36,7 +36,9 @@
 #include "tsTSFile.h"
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
+#include "tsFileNameGenerator.h"
 #include "tsDuckContext.h"
+#include "tsAbortInterface.h"
 #include "tsArgs.h"
 
 namespace ts {
@@ -46,11 +48,13 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileOutputArgs
     {
+        TS_NOBUILD_NOCOPY(TSFileOutputArgs);
     public:
         //!
         //! Default constructor.
+        //! @param [in] allow_stdout If true, the file name is optional and standard output is used by default.
         //!
-        TSFileOutputArgs();
+        TSFileOutputArgs(bool allow_stdout);
 
         //!
         //! Add command line option definitions in an Args.
@@ -66,5 +70,63 @@ namespace ts {
         //! @return True on success, false on error in argument line.
         //!
         bool loadArgs(DuckContext& duck, Args& args);
+
+        //!
+        //! Open the output file.
+        //! All parameters where loaded from the command line by loadArgs().
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] abort An optional abort interface to detect abort requests.
+        //! @return True on success, false on error.
+        //!
+        bool open(Report& report, AbortInterface* abort = nullptr);
+
+        //!
+        //! Close the output file.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        bool close(Report& report);
+
+        //!
+        //! Write packets.
+        //! @param [in] buffer Address of packets to write.
+        //! @param [in] pkt_data Array of metadata for packets.
+        //! A packet and its metadata have the same index in their respective arrays.
+        //! @param [in] packet_count Number of packets to send from @a buffer.
+        //! @param [in,out] report Where to report errors.
+        //! @param [in] abort An optional abort interface to detect abort requests.
+        //! @return True on success, false on error.
+        //!
+        bool write(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count, Report& report, AbortInterface* abort = nullptr);
+
+    private:
+        // Command line options:
+        const bool        _allow_stdout;
+        UString           _name;
+        TSFile::OpenFlags _flags;
+        TSPacketFormat    _file_format;
+        bool              _reopen;
+        MilliSecond       _retry_interval;
+        size_t            _retry_max;
+        size_t            _start_stuffing;
+        size_t            _stop_stuffing;
+        uint64_t          _max_size;
+        Second            _max_duration;
+        size_t            _max_files;
+        bool              _multiple_files;
+
+        // Working data:
+        TSFile            _file;
+        FileNameGenerator _name_gen;
+        uint64_t          _current_size;
+        Time              _next_open_time;
+        UStringList       _current_files;
+
+        // Open the file, retry on error if necessary.
+        // Use max number of retries. Updated with remaining number of retries.
+        bool openAndRetry(bool initial_wait, size_t& retry_allowed, Report& report, AbortInterface* abort);
+
+        // Close the current file, cleanup oldest files when necessary.
+        bool closeAndCleanup(Report& report);
     };
 }

@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSFileInputArgs
     {
+        TS_NOCOPY(TSFileInputArgs);
     public:
         //!
         //! Default constructor.

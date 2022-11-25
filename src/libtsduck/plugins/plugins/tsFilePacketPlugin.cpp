@@ -39,60 +39,24 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"file", ts::FilePacketPlugin);
 
 ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
-    _name(),
-    _flags(TSFile::NONE),
-    _file_format(TSPacketFormat::TS),
-    _start_stuffing(0),
-    _stop_stuffing(0),
-    _file()
+    _file(false) // stdout not allowed
 {
-    DefineTSPacketFormatOutputOption(*this);
-
-    option(u"", 0, FILENAME, 1, 1);
-    help(u"", u"Name of the created output file.");
-
-    option(u"add-start-stuffing", 0, UNSIGNED);
-    help(u"add-start-stuffing", u"count",
-         u"Specify that <count> null TS packets must be automatically inserted "
-         u"at the start of the output file, before what comes from the previous plugins.");
-
-    option(u"add-stop-stuffing", 0, UNSIGNED);
-    help(u"add-stop-stuffing", u"count",
-         u"Specify that <count> null TS packets must be automatically appended "
-         u"at the end of the output file, after what comes from the previous plugins.");
-
-    option(u"append", 'a');
-    help(u"append", u"If the file already exists, append to the end of the file. By default, existing files are overwritten.");
-
-    option(u"keep", 'k');
-    help(u"keep", u"Keep existing file (abort if the specified file already exists). By default, existing files are overwritten.");
+    _file.defineArgs(*this);
 }
 
 
 //----------------------------------------------------------------------------
-// Packet processor plugin methods
+// Redirect all methods to _file.
 //----------------------------------------------------------------------------
 
 bool ts::FilePacketPlugin::getOptions()
 {
-    getValue(_name);
-    getIntValue(_start_stuffing, u"add-start-stuffing", 0);
-    getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
-    _file_format = LoadTSPacketFormatOutputOption(*this);
-    _flags = TSFile::WRITE | TSFile::SHARED;
-    if (present(u"append")) {
-        _flags |= TSFile::APPEND;
-    }
-    if (present(u"keep")) {
-        _flags |= TSFile::KEEP;
-    }
-    return true;
+    return _file.loadArgs(duck, *this);
 }
 
 bool ts::FilePacketPlugin::start()
 {
-    _file.setStuffing(_start_stuffing, _stop_stuffing);
-    return _file.open(_name, _flags, *tsp, _file_format);
+    return _file.open(*tsp, tsp);
 }
 
 bool ts::FilePacketPlugin::stop()
@@ -102,5 +66,5 @@ bool ts::FilePacketPlugin::stop()
 
 ts::ProcessorPlugin::Status ts::FilePacketPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    return _file.writePackets(&pkt, &pkt_data, 1, *tsp) ? TSP_OK : TSP_END;
+    return _file.write(&pkt, &pkt_data, 1, *tsp, tsp) ? TSP_OK : TSP_END;
 }
