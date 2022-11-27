@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsUString.h"
 
 namespace ts {

@@ -35,8 +35,6 @@
 #pragma once
 #include "tsPlatform.h"
 #include "tsCerrReport.h"
-#include "tsSafePtr.h"
-#include "tsMutex.h"
 
 namespace ts {
     //!

@@ -33,7 +33,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tshls.h"
 #include "tsURL.h"
 #include "tsStringifyInterface.h"
 

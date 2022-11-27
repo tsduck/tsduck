@@ -37,6 +37,7 @@
 #include "tsGitHubRelease.h"
 #include "tsWebRequest.h"
 #include "tsFileUtils.h"
+#include "tsSysUtils.h"
 #include "tsSysInfo.h"
 #include "tsForkPipe.h"
 #include "tsDuckExtensionRepository.h"

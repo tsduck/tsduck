@@ -40,6 +40,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 #define DEFAULT_OUT_DURATION      10  // Default segment target duration for output streams.
 #define DEFAULT_OUT_LIVE_DURATION  5  // Default segment target duration for output live streams.
 #define DEFAULT_EXTRA_DURATION     2  // Default segment extra duration when intra image is not found.
+#define DEFAULT_LIVE_EXTRA_DEPTH   1  // Default additional segments to keep in live streams.
 
 
 //----------------------------------------------------------------------------
@@ -53,12 +54,15 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     _intraClose(false),
     _useBitrateTag(false),
     _alignFirstSegment(false),
+    _sliceOnly(false),
     _playlistType(hls::PlayListType::UNKNOWN),
     _liveDepth(0),
+    _liveExtraDepth(0),
     _targetDuration(0),
     _maxExtraDuration(0),
     _fixedSegmentSize(0),
     _initialMediaSeq(0),
+    _customTags(),
     _closeLabels(),
     _nameGenerator(),
     _demux(duck, this),
@@ -95,6 +99,12 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"By default, the first output segment starts with the first packets in the TS. "
          u"Using this option, all packets before all starting conditions are dropped. "
          u"Note that subsequent output segments always start with a copy of the last PAT and PMT.");
+
+    option(u"custom-tag", 'c', STRING, 0, UNLIMITED_COUNT);
+    help(u"custom-tag", u"'string'",
+         u"Specify a custom tag to add in the playlist files. "
+         u"The specified string shall start with '#'. If omitted, the leading '#' is automatically added. "
+         u"Several --custom-tag can be specified. Each tag is added as an independent tag line.");
 
     option(u"duration", 'd', POSITIVE);
     help(u"duration",
@@ -137,6 +147,12 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"are automatically deleted. By default, the output stream is considered as VoD "
          u"and all created media segments are preserved.");
 
+    option(u"live-extra-segments", 0, UNSIGNED);
+    help(u"live-extra-segments",
+         u"In a live stream, specify the number of unreferenced segments to keep on disk before deleting them. "
+         u"The extra segments were recently referenced in the playlist and can be downloaded by clients after their removal from the playlist. "
+         u"The default is " TS_STRINGIFY(DEFAULT_LIVE_EXTRA_DEPTH) u" segments.");
+
     option(u"max-extra-duration", 'm', POSITIVE);
     help(u"max-extra-duration",
          u"With --intra-close, specify the maximum additional duration in seconds after which "
@@ -156,6 +172,11 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"The playlist and the segment files can be written to distinct directories but, in all cases, "
          u"the URI of the segment files in the playlist are always relative to the playlist location. "
          u"By default, no playlist file is created (media segments only).");
+
+    option(u"slice-only");
+    help(u"slice-only",
+         u"Disable the insertion of the PAT and PMT at start of each segment. "
+         u"Note that this generates a non-standard HLS output.");
 
     option(u"start-media-sequence", 's', POSITIVE);
     help(u"start-media-sequence",
@@ -185,12 +206,15 @@ bool ts::hls::OutputPlugin::getOptions()
     _intraClose = present(u"intra-close");
     _useBitrateTag = !present(u"no-bitrate");
     _alignFirstSegment = present(u"align-first-segment");
+    _sliceOnly = present(u"slice-only");
     getIntValue(_liveDepth, u"live");
+    getIntValue(_liveExtraDepth, u"live-extra-segments", DEFAULT_LIVE_EXTRA_DEPTH);
     getIntValue(_targetDuration, u"duration", _liveDepth == 0 ? DEFAULT_OUT_DURATION : DEFAULT_OUT_LIVE_DURATION);
     getIntValue(_maxExtraDuration, u"max-extra-duration", DEFAULT_EXTRA_DURATION);
     _fixedSegmentSize = intValue<PacketCounter>(u"fixed-segment-size") / PKT_SIZE;
     getIntValue(_initialMediaSeq, u"start-media-sequence", 0);
     getIntValues(_closeLabels, u"label-close");
+    getValues(_customTags, u"custom-tag");
 
     if (present(u"event")) {
         _playlistType = hls::PlayListType::EVENT;
@@ -208,6 +232,11 @@ bool ts::hls::OutputPlugin::getOptions()
 
     if (_fixedSegmentSize > 0 && _closeLabels.any()) {
         tsp->error(u"options --fixed-segment-size and --label-close are incompatible");
+        return false;
+    }
+
+    if (_sliceOnly && _alignFirstSegment) {
+        tsp->error(u"options --slice-only and --align-first-segment are incompatible");
         return false;
     }
 
@@ -264,7 +293,7 @@ bool ts::hls::OutputPlugin::start()
 
 bool ts::hls::OutputPlugin::stop()
 {
-    // Simply close the current segmetn (and generate the corresponding playlist).
+    // Simply close the current segment (and generate the corresponding playlist).
     return closeCurrentSegment(true);
 }
 
@@ -296,7 +325,11 @@ bool ts::hls::OutputPlugin::createNextSegment()
     _segClosePending = false;
 
     // Add a copy of the PAT and PMT at the beginning of each segment.
-    return writePackets(_patPackets.data(), _patPackets.size()) && writePackets(_pmtPackets.data(), _pmtPackets.size());
+    if (!_sliceOnly) {
+        return writePackets(_patPackets.data(), _patPackets.size()) && writePackets(_pmtPackets.data(), _pmtPackets.size());
+    }
+
+    return true;
 }
 
 
@@ -348,7 +381,7 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         if (_previousBitrate > 0) {
             // Compute duration based on segment bitrate (or previous one).
             seg.bitrate = _useBitrateTag ? _previousBitrate : 0;
-            seg.duration = PacketInterval(seg.bitrate, segPackets);
+            seg.duration = PacketInterval(_previousBitrate, segPackets);
         }
         else {
             // Completely unknown bitrate, we build a fake one based on the target duration.
@@ -360,6 +393,17 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         // With live playlists, remove obsolete segments from the playlist.
         while (_liveDepth > 0 && _playlist.segmentCount() > _liveDepth) {
             _playlist.popFirstSegment();
+        }
+
+        // Add custom tags.
+        _playlist.clearCustomTags();
+        for (const auto& tag : _customTags) {
+            _playlist.addCustomTag(tag);
+        }
+
+        // Use #EXT-X-INDEPENDENT-SEGMENTS if all segments are really independent.
+        if (!_sliceOnly) {
+            _playlist.addCustomTag(u"EXT-X-INDEPENDENT-SEGMENTS");
         }
 
         // Write the playlist file.
@@ -375,8 +419,11 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
         //   is already open (the file actually disappears when the file is closed).
     }
 
+    // Keep a list of segments we fail to delete (maybe because they are locked by the Web server).
+    UStringList failedDelete;
+
     // On live streams, purge obsolete segment files.
-    while (_liveDepth > 0 && _liveSegmentFiles.size() > _liveDepth) {
+    while (_liveDepth > 0 && _liveSegmentFiles.size() > _liveDepth + _liveExtraDepth) {
 
         // Remove name of the file to delete from the list of active segment.
         const UString name(_liveSegmentFiles.front());
@@ -384,17 +431,15 @@ bool ts::hls::OutputPlugin::closeCurrentSegment(bool endOfStream)
 
         // Delete the segment file.
         tsp->verbose(u"deleting obsolete segment file %s", {name});
-        DeleteFile(name, *tsp);
+        if (!DeleteFile(name, *tsp) && FileExists(name)) {
+            // Failed to delete, keep it to retry later.
+            failedDelete.push_back(name);
+        }
+    }
 
-        // WARNING: several improvements are possible here.
-        // - It could be better to delay the purge of obsolete segments. Clients may have loaded
-        //   the previous playlist just before we modified it and could try to download the
-        //   obsolete segment.
-        // - On Windows, if we try to delete the file while a client is downloading it, the
-        //   segment file is locked by the HTTP server and the deletion will fail. We should
-        //   keep a list of failed deletions to retry these deletions later. On Unix systems,
-        //   we should not have the problem since the deletion succeeds even if the file
-        //   is already open (the file actually disappears when the file is closed).
+    // Re-insert segments we failed to delete at head of list so that we will retry to delete them next time.
+    if (!failedDelete.empty()) {
+        _liveSegmentFiles.insert(_liveSegmentFiles.begin(), failedDelete.begin(), failedDelete.end());
     }
 
     return true;
@@ -472,16 +517,18 @@ bool ts::hls::OutputPlugin::writePackets(const TSPacket* pkt, size_t packetCount
         const TSPacket* p = pkt + i;
 
         // If the packet comes from the PAT or PMT, get a copy and fix continuity counter.
-        const PID pid = pkt[i].getPID();
-        if (pid == PID_PAT) {
-            tmp = *p;
-            _ccFixer.feedPacket(tmp);
-            p = &tmp;
-        }
-        else if (_pmtPID != PID_NULL && pid == _pmtPID) {
-            tmp = *p;
-            _ccFixer.feedPacket(tmp);
-            p = &tmp;
+        if (!_sliceOnly) {
+            const PID pid = pkt[i].getPID();
+            if (pid == PID_PAT) {
+                tmp = *p;
+                _ccFixer.feedPacket(tmp);
+                p = &tmp;
+            }
+            else if (_pmtPID != PID_NULL && pid == _pmtPID) {
+                tmp = *p;
+                _ccFixer.feedPacket(tmp);
+                p = &tmp;
+            }
         }
 
         // Write the packet in the segment file.
@@ -506,7 +553,9 @@ bool ts::hls::OutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pk
     while (ok && pkt < lastPkt) {
 
         // Pass all packets into the demux.
-        _demux.feedPacket(*pkt);
+        if (!_sliceOnly) {
+            _demux.feedPacket(*pkt);
+        }
 
         // Analyze PCR's from all packets.
         _pcrAnalyzer.feedPacket(*pkt);

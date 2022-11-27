@@ -34,7 +34,6 @@
 
 #pragma once
 #include "tsAbstractNumber.h"
-#include "tsIntegerUtils.h"
 
 namespace ts {
     //!

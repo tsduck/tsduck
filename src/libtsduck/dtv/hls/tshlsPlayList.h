@@ -204,6 +204,19 @@ namespace ts {
             bool setTypeMedia(Report& report = CERR);
 
             //!
+            //! Add a custom tag in the playlist.
+            //! @param [in] tag A custom tag line to add in the playlist. If @a does not start
+            //! with a @c '#', it will be automatically added.
+            //!
+            void addCustomTag(const UString& tag) { _extraTags.push_back(tag); }
+
+            //!
+            //! Clear all application-specific custom tags.
+            //! @see addCustomTag()
+            //!
+            void clearCustomTags() { _extraTags.clear(); }
+
+            //!
             //! Check if the playlist can be updated (and must be reloaded later).
             //! @return True if the playlist can be updated (and must be reloaded later).
             //!
@@ -458,6 +471,7 @@ namespace ts {
             AltPlayListQueue   _altPlaylists;    // List of alternative rendition media playlists (master playlist).
             UStringList        _loadedContent;   // Loaded text content (can be different from current content).
             UString            _autoSaveDir;     // If not empty, automatically save loaded playlist to this directory.
+            UStringList        _extraTags;       // Additional tags which were manually added by the application.
 
             // Empty data to return.
             static const MediaSegment EmptySegment;

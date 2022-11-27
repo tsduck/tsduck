@@ -33,9 +33,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tshls.h"
-#include "tsFixedPoint.h"
-#include "tsFraction.h"
+#include "tsUString.h"
 
 namespace ts {
     namespace hls {
