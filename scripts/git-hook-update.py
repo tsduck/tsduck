@@ -45,7 +45,7 @@ import tsbuild, sys, os, stat
 
 root_dir = tsbuild.repo_root()
 githooks_dir = root_dir + '/.git/hooks'
-githooks_list = ('pre-commit', 'post-merge')
+githooks_list = ('pre-commit', 'pre-merge-commit', 'post-merge')
 
 # Give up if not in a Git repo.
 if not os.path.isdir(githooks_dir):

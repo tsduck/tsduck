@@ -29,6 +29,7 @@
 
 #pragma once
 #include "tsUString.h"
+#include "tsIntegerUtils.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>

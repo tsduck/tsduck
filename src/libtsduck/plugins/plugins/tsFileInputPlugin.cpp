@@ -29,7 +29,6 @@
 
 #include "tsFileInputPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsAlgorithm.h"
 
 TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
 
@@ -40,312 +39,38 @@ TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
 
 ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
     InputPlugin(tsp_, u"Read packets from one or more files", u"[options] [file-name ...]"),
-    _aborted(true),
-    _interleave(false),
-    _first_terminate(false),
-    _interleave_chunk(0),
-    _interleave_remain(0),
-    _current_filename(0),
-    _current_file(0),
-    _repeat_count(1),
-    _start_offset(0),
-    _base_label(0),
-    _file_format(TSPacketFormat::AUTODETECT),
-    _filenames(),
-    _start_stuffing(),
-    _stop_stuffing(),
-    _eof(),
-    _files()
+    _file()
 {
-    DefineTSPacketFormatInputOption(*this);
-
-    option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
-    help(u"",
-         u"Names of the input files. If no file is specified, the standard input is used. "
-         u"When several files are specified, use '-' as file name to specify the standard input. "
-         u"The files are read in sequence, unless --interleave is specified.");
-
-    option(u"add-start-stuffing", 0, UNSIGNED, 0, UNLIMITED_COUNT);
-    help(u"add-start-stuffing", u"count",
-         u"Specify that <count> null TS packets must be automatically inserted "
-         u"at the start of the input file, before the first actual packet in the file. "
-         u"If several input files are specified, several options --add-start-stuffing are allowed. "
-         u"If there are less options than input files, the last value is used for subsequent files.");
-
-    option(u"add-stop-stuffing", 0, UNSIGNED, 0, UNLIMITED_COUNT);
-    help(u"add-stop-stuffing", u"count",
-         u"Specify that <count> null TS packets must be automatically appended "
-         u"at the end of the input file, after the last actual packet in the file. "
-         u"If several input files are specified, several options --add-stop-stuffing are allowed. "
-         u"If there are less options than input files, the last value is used for subsequent files.");
-
-    option(u"byte-offset", 'b', UNSIGNED);
-    help(u"byte-offset",
-         u"Start reading each file at the specified byte offset (default: 0). "
-         u"This option is allowed only if all input files are regular files.");
-
-    option(u"first-terminate", 'f');
-    help(u"first-terminate",
-         u"With --interleave, terminate when any file reaches the end of file. "
-         u"By default, continue reading until the last file reaches the end of file "
-         u"(other files are replaced with null packets after their end of file).");
-
-    option(u"infinite", 'i');
-    help(u"infinite",
-         u"Repeat the playout of the file infinitely (default: only once). "
-         u"This option is allowed only if the input file is a regular file.");
-
-    option(u"interleave", 0, INTEGER, 0, 1, 1, UNLIMITED_VALUE, true);
-    help(u"interleave",
-         u"Interleave files instead of reading them one by one. "
-         u"All files are simultaneously opened. "
-         u"The optional value is a chunk size N, a packet count (default is 1). "
-         u"N packets are read from the first file, then N from the second file, etc. "
-         u"and then loop back to N packets again from the first file, etc.");
-
-    option(u"label-base", 'l', INTEGER, 0, 1, 0, TSPacketMetadata::LABEL_MAX);
-    help(u"label-base",
-         u"Set a label on each input packet. "
-         u"Packets from the first file are tagged with the specified base label, "
-         u"packets from the second file with base label plus one, and so on. "
-         u"For a given file, if the computed label is above the maximum (" +
-         UString::Decimal(TSPacketMetadata::LABEL_MAX) + u"), its packets are not labelled.");
-
-    option(u"packet-offset", 'p', UNSIGNED);
-    help(u"packet-offset",
-         u"Start reading each file at the specified TS packet (default: 0). "
-         u"This option is allowed only if all input files are regular files.");
-
-    option(u"repeat", 'r', POSITIVE);
-    help(u"repeat",
-         u"Repeat the playout of each file the specified number of times (default: only once). "
-         u"This option is allowed only if all input files are regular files.");
+    _file.defineArgs(*this);
 }
 
 
 //----------------------------------------------------------------------------
-// Input command line options method
+// Redirect all methods to _file.
 //----------------------------------------------------------------------------
 
 bool ts::FileInputPlugin::getOptions()
 {
-    // Get command line options.
-    getValues(_filenames);
-    _repeat_count = present(u"infinite") ? 0 : intValue<size_t>(u"repeat", 1);
-    _start_offset = intValue<uint64_t>(u"byte-offset", intValue<uint64_t>(u"packet-offset", 0) * PKT_SIZE);
-    _interleave = present(u"interleave");
-    _first_terminate = present(u"first-terminate");
-    getIntValue(_interleave_chunk, u"interleave", 1);
-    getIntValue(_base_label, u"label-base", TSPacketMetadata::LABEL_MAX + 1);
-    getIntValues(_start_stuffing, u"add-start-stuffing");
-    getIntValues(_stop_stuffing, u"add-stop-stuffing");
-    _file_format = LoadTSPacketFormatInputOption(*this);
-
-    // If there is no file, then this is the standard input, an empty file name.
-    if (_filenames.empty()) {
-        _filenames.resize(1);
-    }
-
-    // If any file name is '-', this is the standard input, an empty file name.
-    for (auto& it : _filenames) {
-        if (it == u"-") {
-            it.clear();
-        }
-    }
-
-    // Check option consistency.
-    if (_filenames.size() > 1 && _repeat_count == 0 && !_interleave) {
-        tsp->error(u"specifying --infinite is meaningless with more than one file");
-        return false;
-    }
-
-    // Make sure start and stop stuffing vectors have the same size as the file vector.
-    // If the vectors must be enlarged, repeat the last value in the array.
-    _start_stuffing.resize(_filenames.size(), _start_stuffing.empty() ? 0 : _start_stuffing.back());
-    _stop_stuffing.resize(_filenames.size(), _stop_stuffing.empty() ? 0 : _stop_stuffing.back());
-
-    return true;
+    return _file.loadArgs(duck, *this);
 }
-
-
-//----------------------------------------------------------------------------
-// Open one input file.
-//----------------------------------------------------------------------------
-
-bool ts::FileInputPlugin::openFile(size_t name_index, size_t file_index)
-{
-    assert(name_index < _filenames.size());
-    assert(file_index < _files.size());
-    const UString& name(_filenames[name_index]);
-
-    // Report file name when there are more than one file.
-    // No need to report this with --interleave since all files are open at startup.
-    if (!_interleave && _filenames.size() > 1) {
-        tsp->verbose(u"reading file %s", {name.empty() ? u"'stdin'" : name});
-    }
-
-    // Preset artificial stuffing.
-    _files[file_index].setStuffing(_start_stuffing[name_index], _stop_stuffing[name_index]);
-
-    // Actually open the file.
-    return _files[file_index].openRead(name, _repeat_count, _start_offset, *tsp, _file_format);
-}
-
-
-//----------------------------------------------------------------------------
-// Close all files which are currently open.
-//----------------------------------------------------------------------------
-
-bool ts::FileInputPlugin::closeAllFiles()
-{
-    bool ok = true;
-    for (auto& it : _files) {
-        if (it.isOpen()) {
-            ok = it.close(*tsp) && ok;
-        }
-    }
-    return ok;
-}
-
-
-//----------------------------------------------------------------------------
-// Input start method
-//----------------------------------------------------------------------------
 
 bool ts::FileInputPlugin::start()
 {
-    // Check that getOptions() was called().
-    if (_filenames.empty()) {
-        return false;
-    }
-
-    // With --interleave, all files are simultaneously open.
-    // Without it, only one file is open at a time.
-    _files.resize(_interleave ? _filenames.size() : 1);
-
-    // Open files.
-    bool ok = true;
-    for (size_t n = 0; ok && n < _files.size(); ++n) {
-        ok = openFile(n, n);
-    }
-
-    // If one open failed, close all files which were already open.
-    if (!ok) {
-        closeAllFiles();
-    }
-
-    // Start with first file.
-    _current_filename = _current_file = 0;
-    _interleave_remain = _interleave_chunk;
-    _aborted = false;
-    _eof.clear();
-
-    return ok;
+    return _file.open(*tsp);
 }
-
-
-//----------------------------------------------------------------------------
-// Input stop method
-//----------------------------------------------------------------------------
 
 bool ts::FileInputPlugin::stop()
 {
-    return closeAllFiles();
+    return _file.close(*tsp);
 }
-
-
-//----------------------------------------------------------------------------
-// Input abort method
-//----------------------------------------------------------------------------
 
 bool ts::FileInputPlugin::abortInput()
 {
-    // Set volatile boolean first.
-    _aborted = true;
-
-    // Abort current operations on all files.
-    for (auto& it : _files) {
-        it.abort();
-    }
-
+    _file.abort();
     return true;
 }
 
-
-//----------------------------------------------------------------------------
-// Input method
-//----------------------------------------------------------------------------
-
 size_t ts::FileInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, size_t max_packets)
 {
-    size_t read_count = 0;
-
-    // Loop until got max number of packets or all files have reached end-of-file.
-    while (!_aborted && read_count < max_packets && _eof.size() < _filenames.size()) {
-
-        assert(_current_filename < _filenames.size());
-        assert(_current_file < _files.size());
-
-        // How many packets to read from current file.
-        size_t count = max_packets - read_count;
-        if (_interleave && _interleave_remain < count) {
-            count = _interleave_remain;
-        }
-
-        // Check if current file was already at end of file.
-        const bool already_eof = Contains(_eof, _current_filename);
-
-        // Read some packets from current file.
-        if (_interleave && already_eof) {
-            // Current file has reached end of file with --interleave. Return null packets.
-            for (size_t n = 0; n < count; ++n) {
-                buffer[read_count + n] = NullPacket;
-            }
-        }
-        else {
-            // Read packets from the file.
-            count = _files[_current_file].readPackets(buffer + read_count, pkt_data + read_count, count, *tsp);
-        }
-
-        // Mark all read packets with a label.
-        const size_t label = _base_label + _current_filename;
-        if (label <= TSPacketMetadata::LABEL_MAX) {
-            for (size_t n = 0; n < count; ++n) {
-                pkt_data[read_count + n].setLabel(label);
-            }
-        }
-
-        // Count packets.
-        read_count += count;
-        _interleave_remain -= std::min(_interleave_remain, count);
-
-        // Process end of file.
-        if (!already_eof && count == 0) {
-            // Close current file.
-            _files[_current_file].close(*tsp);
-            _eof.insert(_current_filename);
-
-            // With --interleave --first-terminate, exit at first end of file.
-            if (_interleave && _first_terminate) {
-                tsp->debug(u"end of file %s, terminating", {_filenames[_current_filename]});
-                _aborted = true;
-                break;
-            }
-
-            // Without --interleave, open the next file if there is one.
-            if (!_interleave && (++_current_filename >= _filenames.size() || !openFile(_current_filename, _current_file))) {
-                // No more input file or error opening the next one.
-                _aborted = true;
-                break;
-            }
-        }
-
-        // With --interleave, move to next file when current chunk is complete.
-        if (_interleave && _interleave_remain == 0) {
-            _current_file = _current_filename = (_current_file + 1) % _files.size();
-            _interleave_remain = _interleave_chunk;
-        }
-    }
-
-    return read_count;
+    return _file.read(buffer, pkt_data, max_packets, *tsp);
 }

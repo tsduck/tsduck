@@ -62,7 +62,7 @@ export PATH=$PATH:/usr/local/bin
 # Filter by hook.
 case "$HOOK" in
 
-    pre-commit|post-merge)
+    pre-commit|pre-merge-commit|post-merge)
 
         # Get commit number in source file.
         [[ -e "$SRCFILE" ]] || error "$SRCFILE not found"
@@ -79,7 +79,7 @@ case "$HOOK" in
             COMMIT=$(git rev-list --count $MASTER)
             [[ "$SRCCOMMIT" -gt "$COMMIT" ]] && COMMIT=$SRCCOMMIT
             # With pre-commit, we must have at least this max + 1.
-            [[ "$HOOK" == "pre-commit" ]] && COMMIT=$(($COMMIT + 1))
+            [[ "$HOOK" == "pre-commit" || "$HOOK" == "pre-merge-commit" ]] && COMMIT=$(($COMMIT + 1))
         fi
 
         # Update the commit count in source file if not up to date.
@@ -87,8 +87,8 @@ case "$HOOK" in
             sed -i -e "/^$PREFIX/s/.*/$PREFIX $COMMIT/" "$SRCFILE"
             git add "$SRCFILE"
             info "Updated commit count to $COMMIT"
-            # In post-merge, we commit the change.
-            [[ "$HOOK" == "post-merge" ]] && TS_GIT_COMMIT=$COMMIT git commit -m "Updated commit count to $COMMIT after merge"
+            # In post-merge, we commit the change. Increment number since we create a commit.
+            [[ "$HOOK" == "post-merge" ]] && TS_GIT_COMMIT=$(($COMMIT + 1)) git commit -m "Updated commit count to $COMMIT after merge"
         fi
         exit 0
         ;;
