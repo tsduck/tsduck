@@ -410,7 +410,7 @@ Export-ModuleMember -Function Find-MSBuild
 function Find-Java
 {
     $jh = $env:JAVA_HOME
-    if (-not -not $jh -and (Test-Path $jh\bin\java.exe) -and (Test-Path $jh\bin\javac.exe) -and (Test-Path $jh\bin\jar.exe)) {
+    if (-not -not $jh -and (Test-Path "$jh\bin\java.exe") -and (Test-Path "$jh\bin\javac.exe") -and (Test-Path "$jh\bin\jar.exe")) {
         return "$jh\bin"
     }
     else {
