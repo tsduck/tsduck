@@ -167,7 +167,12 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    pkglist="git git-lfs g++ cmake dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev libusb-1.0-0-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev libsrt-dev"
+    pkglist="git git-lfs g++ cmake dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev libusb-1.0-0-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev"
+    if [[ "$MAJOR" -ge 21 ]]; then
+        pkglist="$pkglist libsrt-openssl-dev"
+    elif [[ "$MAJOR" -ge 20 ]]; then
+        pkglist="$pkglist libsrt-dev"
+    fi
     sudo apt update
     sudo apt install -y $PKGOPTS $pkglist
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
