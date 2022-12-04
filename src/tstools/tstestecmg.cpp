@@ -167,12 +167,12 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
          u"A level can be a numerical debug level or a name.");
 
     option(u"max-ecm", 0, Args::UNSIGNED);
-    help(u"max-ecm", u"count"
+    help(u"max-ecm", u"count",
          u"Stop the test after generating the specified number of ECM's. "
          u"By default, the test endlessly runs.");
 
     option(u"max-seconds", 0, Args::UNSIGNED);
-    help(u"max-seconds", u"seconds"
+    help(u"max-seconds", u"seconds",
          u"Stop the test after the specified number of seconds. "
          u"By default, the test endlessly runs.");
 
@@ -183,7 +183,7 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
 
     option(u"statistics-interval", 0, Args::UNSIGNED);
     help(u"statistics-interval", u"seconds",
-         u"Specify the interval in seconds between two statistics line display. "
+         u"Specify the interval in seconds between the display of two statistics lines. "
          u"When set to zero, disable periodic statistics, only display final statistics. "
          u"The default is 10 seconds.");
 
