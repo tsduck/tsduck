@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- Automatically generated file, see build-project-files.py -->
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-common-begin.props"/>
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\tstools\tstestecmg.cpp"/>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{92BCB421-1E29-7830-A378-A626E3B9D551}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>tstestecmg</RootNamespace>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="msvc-target-exe.props"/>
+    <Import Project="msvc-use-tsduckdll.props"/>
+    <Import Project="msvc-common-end.props"/>
+  </ImportGroup>
+</Project>
