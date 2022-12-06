@@ -51,16 +51,14 @@
 # 
 #-----------------------------------------------------------------------------
 
-import os, binascii
+import tsbuild, os, binascii
 import xml.etree.ElementTree as xmlet
 
 # Get the project directories.
-script = os.path.realpath(__file__)
-script_dir = os.path.dirname(script)
-root_dir = os.path.dirname(script_dir)
-src_dir = root_dir + os.sep + 'src'
-qt_dir = script_dir + os.sep + 'qtcreator'
-ms_dir = script_dir + os.sep + 'msvc'
+script_name = os.path.basename(__file__)
+src_dir = tsbuild.repo_root() + os.sep + 'src'
+qt_dir = tsbuild.scripts_dir() + os.sep + 'qtcreator'
+ms_dir = tsbuild.scripts_dir() + os.sep + 'msvc'
 
 # Get the list of .cpp files in a directory, without .cpp extension.
 def get_cpp(dirname):
@@ -77,7 +75,7 @@ tools = get_cpp(src_dir + os.sep + 'tstools')
 plugins = get_cpp(src_dir + os.sep + 'tsplugins')
 
 # "Other" MSBuild projects (ie. not tools, not plugins).
-others = ['utests-tsduckdll', 'utests-tsducklib', 'tsduckdll', 'tsducklib', 'tsp_static', 'tsprofiling', 'tsmux', 'setpath']
+others = ['config', 'utests-tsduckdll', 'utests-tsducklib', 'tsduckdll', 'tsducklib', 'tsp_static', 'tsprofiling', 'tsmux', 'setpath']
 
 # MSBuild / Visual Studio solution description.
 cxx_project_guid = '8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942'
@@ -88,6 +86,8 @@ ms_deps = {
     'tsp': {'deps': list(plugins)},
     'tsswitch': {'deps': ['tsplugin_dvb', 'tsplugin_hides']},
     # all "others" must be listed below, at least for tsduckdll vs. tsducklib.
+    'tsduckdll': {'deps': ['config']},
+    'tsducklib': {'deps': ['config']},
     'utests-tsduckdll': {'deps': ['tsduckdll', 'tsplugin_merge']},
     'utests-tsducklib': {'deps': ['tsducklib']},
     'tsp_static': {'deps': ['tsducklib']},
@@ -115,7 +115,7 @@ def build_qt_files(names, config):
     for name in names:
         os.makedirs(qt_dir + os.sep + name, 0o755, True)
         with open(qt_dir + os.sep + name + os.sep + name + '.pro', 'w') as f:
-            f.write('# Automatically generated file, see %s\n' % os.path.basename(script))
+            f.write('# Automatically generated file, see %s\n' % script_name)
             f.write('CONFIG += %s\n' % config)
             f.write('TARGET = %s\n' % name)
             f.write('include(../tsduck.pri)\n')
@@ -158,7 +158,7 @@ def build_ms_files(names, srcdir, props):
         with open(ms_file(name), 'w', newline = '\r\n') as f:
             f.write('<?xml version="1.0" encoding="utf-8"?>\n')
             f.write('<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">\n')
-            f.write('  <!-- Automatically generated file, see %s -->\n' % os.path.basename(script))
+            f.write('  <!-- Automatically generated file, see %s -->\n' % script_name)
             f.write('  <ImportGroup Label="PropertySheets">\n')
             f.write('    <Import Project="msvc-common-begin.props"/>\n')
             f.write('  </ImportGroup>\n')
