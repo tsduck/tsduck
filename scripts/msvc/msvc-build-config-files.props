@@ -3,15 +3,18 @@
 
   <!-- A target to copy .xml and .names into destination -->
 
-  <Target Name="BuildConfigFiles">
+  <PropertyGroup>
+    <LibConfigDir>$(TSDuckRootDir)src\libtsduck\config\</LibConfigDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <LibConfigFiles Include="$(LibConfigDir)*.xml;$(LibConfigDir)*.names" Exclude="$(LibConfigDir)*.skeleton.*"/>
+  </ItemGroup>
+
+  <Target Name="BuildConfigFiles" Inputs="@(LibConfigFiles)" Outputs="@(LibConfigFiles->'$(OutDir)%(Filename)%(Extension)')">
     <Message Text="Copying .xml and .names files in $(OutDir)" Importance="high"/>
-    <ItemGroup>
-      <LibConfigXML   Include="$(TSDuckRootDir)src\libtsduck\config\*.xml"
-                      Exclude="$(TSDuckRootDir)src\libtsduck\config\*.skeleton.xml"/>
-      <LibConfigNames Include="$(TSDuckRootDir)src\libtsduck\config\*.names"
-                      Exclude="$(TSDuckRootDir)src\libtsduck\config\*.skeleton.names"/>
-    </ItemGroup>
-    <Copy SourceFiles="@(LibConfigXML);@(LibConfigNames)" DestinationFolder="$(OutDir)" />
+    <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
+    <Copy SourceFiles="@(LibConfigFiles)" DestinationFolder="$(OutDir)"/>
   </Target>
 
 </Project>
