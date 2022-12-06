@@ -7,15 +7,15 @@
     <DektecInput>$(DtapiIncludePath)\DTAPI.h</DektecInput>
     <DektecDep>$(DektecInput)</DektecDep>
   </PropertyGroup>
+
   <PropertyGroup Condition="'$(DtapiIncludePath)'==''">
     <DektecInput>NUL:</DektecInput>
     <DektecDep></DektecDep>
   </PropertyGroup>
 
-  <Target Name="BuildDektecNames"
-          Inputs="$(DektecDep);$(TSDuckRootDir)scripts\build-dektec-names.py"
-          Outputs="$(OutDir)tsduck.dektec.names">
+  <Target Name="BuildDektecNames" Inputs="$(DektecDep)" Outputs="$(OutDir)tsduck.dektec.names">
     <Message Text="Building $(OutDir)tsduck.dektec.names" Importance="high"/>
+    <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
     <Exec ConsoleToMSBuild='true'
           Command='python "$(TSDuckRootDir)scripts\build-dektec-names.py" "$(DektecInput)" "$(OutDir)tsduck.dektec.names"'>
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>
