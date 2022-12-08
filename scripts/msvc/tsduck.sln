@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29020.237
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "config", "config.vcxproj", "{C932660E-56D0-40FD-9A90-0123456789AB}"
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utests-tsduckdll", "utests-tsduckdll.vcxproj", "{A5E2A70F-CA57-460C-9BE0-473BD61DF467}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
@@ -15,8 +17,14 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "utests-tsducklib", "utests-
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsduckdll", "tsduckdll.vcxproj", "{1AD31049-26B0-4922-89CF-778040DFC51E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C932660E-56D0-40FD-9A90-0123456789AB} = {C932660E-56D0-40FD-9A90-0123456789AB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsducklib", "tsducklib.vcxproj", "{25A6CE1B-83F7-4859-A1EA-B7A8EAFFD2C6}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C932660E-56D0-40FD-9A90-0123456789AB} = {C932660E-56D0-40FD-9A90-0123456789AB}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsp_static", "tsp_static.vcxproj", "{0305170C-F14D-4812-8B14-1468D6607794}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -678,6 +686,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsterinfo", "tsterinfo.vcxp
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tstestecmg", "tstestecmg.vcxproj", "{92BCB421-1E29-7830-A378-A626E3B9D551}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
+	EndProjectSection
+EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "tsvatek", "tsvatek.vcxproj", "{FA9D7A23-6270-E42C-FCFF-BD2BE195CCE0}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1AD31049-26B0-4922-89CF-778040DFC51E} = {1AD31049-26B0-4922-89CF-778040DFC51E}
@@ -701,6 +714,14 @@ Global
 		Release|x64 = Release|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Debug|Win32.Build.0 = Debug|Win32
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Debug|x64.ActiveCfg = Debug|x64
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Debug|x64.Build.0 = Debug|x64
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Release|Win32.ActiveCfg = Release|Win32
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Release|Win32.Build.0 = Release|Win32
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Release|x64.ActiveCfg = Release|x64
+		{C932660E-56D0-40FD-9A90-0123456789AB}.Release|x64.Build.0 = Release|x64
 		{A5E2A70F-CA57-460C-9BE0-473BD61DF467}.Debug|Win32.ActiveCfg = Debug|Win32
 		{A5E2A70F-CA57-460C-9BE0-473BD61DF467}.Debug|Win32.Build.0 = Debug|Win32
 		{A5E2A70F-CA57-460C-9BE0-473BD61DF467}.Debug|x64.ActiveCfg = Debug|x64
@@ -1565,6 +1586,14 @@ Global
 		{F434DD1B-A2CF-421D-9EB5-C6081C00E60A}.Release|Win32.Build.0 = Release|Win32
 		{F434DD1B-A2CF-421D-9EB5-C6081C00E60A}.Release|x64.ActiveCfg = Release|x64
 		{F434DD1B-A2CF-421D-9EB5-C6081C00E60A}.Release|x64.Build.0 = Release|x64
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Debug|Win32.ActiveCfg = Debug|Win32
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Debug|Win32.Build.0 = Debug|Win32
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Debug|x64.ActiveCfg = Debug|x64
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Debug|x64.Build.0 = Debug|x64
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Release|Win32.ActiveCfg = Release|Win32
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Release|Win32.Build.0 = Release|Win32
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Release|x64.ActiveCfg = Release|x64
+		{92BCB421-1E29-7830-A378-A626E3B9D551}.Release|x64.Build.0 = Release|x64
 		{FA9D7A23-6270-E42C-FCFF-BD2BE195CCE0}.Debug|Win32.ActiveCfg = Debug|Win32
 		{FA9D7A23-6270-E42C-FCFF-BD2BE195CCE0}.Debug|Win32.Build.0 = Debug|Win32
 		{FA9D7A23-6270-E42C-FCFF-BD2BE195CCE0}.Debug|x64.ActiveCfg = Debug|x64

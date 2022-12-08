@@ -5,7 +5,7 @@
 
   <Target Name="BuildTSDuckHeader" Inputs="@(LibPublicHeaders)" Outputs="$(BinRootDir)include\tsduck.h">
     <Message Text="Building $(BinRootDir)include\tsduck.h" Importance="high"/>
-    <MakeDir Directories="$(BinRootDir)include" Condition="!Exists('$(BinRootDir)include')"  />
+    <MakeDir Directories="$(BinRootDir)include" Condition="!Exists('$(BinRootDir)include')"/>
     <Exec ConsoleToMSBuild='true'
           Command='python "$(TSDuckRootDir)scripts\build-tsduck-header.py" "$(BinRootDir)include\tsduck.h"'>
       <Output TaskParameter="ConsoleOutput" PropertyName="OutputOfExec"/>

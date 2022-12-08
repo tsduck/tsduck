@@ -647,6 +647,8 @@
     #define TS_FALLTHROUGH [[clang::fallthrough]];
 #elif defined(__GNUC__) && (__GNUC__ >= 7)
     #define TS_FALLTHROUGH __attribute__((fallthrough));
+#elif defined(_MSC_FULL_VER) && (_MSC_FULL_VER >= 193431933) && defined(_MSVC_LANG) && (_MSVC_LANG >= 201703)
+    #define TS_FALLTHROUGH [[fallthrough]];
 #else
     #define TS_FALLTHROUGH /* fall through */
 #endif
