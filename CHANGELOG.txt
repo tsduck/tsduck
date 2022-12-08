@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.33-3068
+VERSION 3.33-3079
 
 [NEW] New commands and plugins:
 
   * Added command "tscrc32" to manually compute CRC32 as used in MPEG sections.
+  * Added command "tstestecmg" to create an artificial load on an ECMG.
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -17,6 +18,7 @@ VERSION 3.33-3068
     - Option --set-label on plugin 'svresync".
     - Options --custom-tag, --live-extra-segments, --slice-only in output
       plugin "hls".
+    - Options --log-message-count, --synchronous-log, --timed-log to "tsecmg".
 
 [BUG] Bug fixes:
 

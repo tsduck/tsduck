@@ -48,7 +48,7 @@
     </When>
   </Choose>
 
-  <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);$(DtvXmlFiles)" Outputs="$(TablesModelXml)">
+  <Target Name="BuildTablesModel" Inputs="$(TablesSkeletonXml);@(DtvXmlFiles)" Outputs="$(TablesModelXml)">
 	<Message Text="Building $(TablesModelXml)" Importance="high"/>
     <PropertyGroup>
       <!-- Reduce the length of the list of files, will use the removed prefix as working directory -->
@@ -57,6 +57,7 @@
       <DtvXmlFilesBase>$(DtvXmlFilesSpace.Replace('$(DtvRoot)',''))</DtvXmlFilesBase>
     </PropertyGroup>
     <Error Condition="'$(TsXmlExe)' == ''" Text="No tsxml.exe found, rebuild the project first"/>
+    <MakeDir Directories="$(OutDir)" Condition="!Exists('$(OutDir)')"/>
     <Exec WorkingDirectory="$(DtvRoot)"
           Command='"$(TsXmlExe)" --merge "$(TablesSkeletonXml)" $(DtvXmlFilesBase) --sort _tables --sort _descriptors --uncomment -o "$(TablesModelXml)"'/>
   </Target>

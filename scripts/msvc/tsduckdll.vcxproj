@@ -45,15 +45,4 @@
     <Import Project="msvc-common-end.props"/>
   </ImportGroup>
 
-  <Target Name='BeforeBuildLibrary' BeforeTargets='PrepareForBuild'>
-    <CallTarget Targets='BuildTSDuckHeader'/>
-  </Target>
-
-  <Target Name='AfterBuildLibrary' AfterTargets='Build'>
-    <CallTarget Targets='BuildConfigFiles'/>
-    <CallTarget Targets='BuildDtvNames'/>
-    <CallTarget Targets='BuildDektecNames'/>
-    <CallTarget Targets='BuildTSDuckJar'/>
-  </Target>
-
 </Project>

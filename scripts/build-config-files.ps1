@@ -58,7 +58,8 @@ if (-not $MSBuid) {
 # Build configuration files for all configurations.
 foreach ($configuration in @("Release", "Debug")) {
     foreach ($platform in @("x64", "Win32")) {
-        & $MSBuild ${PSScriptRoot}\msvc\config.vcxproj /nologo /property:Configuration=$configuration /property:Platform=$platform /target:Default
+        Write-Output "======== Building for $configuration-$platform ..."
+        & $MSBuild ${PSScriptRoot}\msvc\config.vcxproj /nologo /property:Configuration=$configuration /property:Platform=$platform /target:BuildAllConfig
     }
 }
 

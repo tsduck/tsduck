@@ -3,7 +3,29 @@
 
   <!-- Project file to build the configuration files only -->
 
-  <Target Name='Default'>
+  <ImportGroup>
+    <Import Project='msvc-common-begin.props'/>
+  </ImportGroup>
+
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{C932660E-56D0-40FD-9A90-0123456789AB}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>config</RootNamespace>
+  </PropertyGroup>
+
+  <!-- Build initial config files, as used in global solution file, before all other projects -->
+
+  <Target Name='BuildInitialConfig' BeforeTargets='PrepareForBuild'>
+    <CallTarget Targets='BuildConfigFiles'/>
+    <CallTarget Targets='BuildDtvNames'/>
+    <CallTarget Targets='BuildDektecNames'/>
+    <CallTarget Targets='BuildTSDuckHeader'/>
+    <CallTarget Targets='BuildTSDuckJar'/>
+  </Target>
+
+  <!-- Build all config files, as called in build-config-files.ps1 -->
+
+  <Target Name='BuildAllConfig'>
     <CallTarget Targets='BuildConfigFiles'/>
     <CallTarget Targets='BuildDtvNames'/>
     <CallTarget Targets='BuildDektecNames'/>
@@ -12,14 +34,14 @@
   </Target>
 
   <ImportGroup>
-    <Import Project="msvc-common-begin.props"/>
-    <Import Project="msvc-common-base.props" />
-    <Import Project="msvc-use-dtapi.props"/>
-    <Import Project="msvc-build-config-files.props"/>
-    <Import Project="msvc-build-dtv-names.props"/>
-    <Import Project="msvc-build-dektec-names.props"/>
-    <Import Project="msvc-build-tsduck-header.props"/>
-    <Import Project="msvc-build-tables-model.props"/>
+    <Import Project='msvc-common-base.props' />
+    <Import Project='msvc-use-dtapi.props'/>
+    <Import Project='msvc-build-config-files.props'/>
+    <Import Project='msvc-build-dtv-names.props'/>
+    <Import Project='msvc-build-dektec-names.props'/>
+    <Import Project='msvc-build-tsduck-header.props'/>
+    <Import Project='msvc-build-tsduck-jar.props'/>
+    <Import Project="msvc-common-end.props"/>
   </ImportGroup>
 
 </Project>

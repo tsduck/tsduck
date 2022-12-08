@@ -65,7 +65,7 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-//  Command line options
+// Command line options
 //----------------------------------------------------------------------------
 
 namespace {
@@ -76,12 +76,13 @@ namespace {
         ECMGOptions(int argc, char *argv[]);
 
         ts::DuckContext            duck;           // TSDuck execution context.
-        int                        log_protocol;   // Log level for ECMG <=> SCS protocol.
-        int                        log_data;       // Log level for CW/ECM data messages.
+        ts::AsyncReportArgs        logArgs;        // Options for asynchronous log.
+        int                        logProtocol;    // Log level for ECMG <=> SCS protocol.
+        int                        logData;        // Log level for CW/ECM data messages.
         bool                       once;           // Accept only one client.
         bool                       reusePort;      // Socket option.
         ts::MilliSecond            ecmCompTime;    // ECM computation time.
-        ts::IPv4SocketAddress          serverAddress;  // TCP server local address.
+        ts::IPv4SocketAddress      serverAddress;  // TCP server local address.
         ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
         ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
     };
@@ -90,8 +91,9 @@ namespace {
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]"),
     duck(this),
-    log_protocol(ts::Severity::Debug),
-    log_data(ts::Severity::Debug),
+    logArgs(),
+    logProtocol(ts::Severity::Debug),
+    logData(ts::Severity::Debug),
     once(false),
     reusePort(false),
     ecmCompTime(0),
@@ -99,6 +101,8 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     channelStatus(),
     streamStatus()
 {
+    logArgs.defineArgs(*this);
+
     option(u"ac-delay-start", 0, INT16);
     help(u"ac-delay-start",
          u"This option sets the DVB SimulCrypt option 'AC_delay_start', in "
@@ -188,12 +192,13 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
 
     analyze(argc, argv);
 
+    logArgs.loadArgs(duck, *this);
     serverAddress.setPort(intValue<uint16_t>(u"port", DEFAULT_SERVER_PORT));
     once = present(u"once");
     reusePort = !present(u"no-reuse-port");
     ecmCompTime = intValue<ts::MilliSecond>(u"comp-time", 0);
-    log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
-    log_data = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
+    logProtocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
+    logData = present(u"log-data") ? intValue<int>(u"log-data", ts::Severity::Info) : logProtocol;
     const ts::tlv::VERSION protocolVersion = intValue<ts::tlv::VERSION>(u"ecmg-scs-version", 2);
 
     channelStatus.section_TSpkt_flag = !present(u"section-mode");
@@ -263,14 +268,14 @@ private:
 
 // Constructor.
 ECMGSharedData::ECMGSharedData(const ECMGOptions& opt) :
-    _report(opt.maxSeverity()),
-    _logger(opt.log_protocol, &_report),
+    _report(opt.maxSeverity(), opt.logArgs),
+    _logger(opt.logProtocol, &_report),
     _mutex(),
     _channels()
 {
     // The CW/ECM data messages have a distinct log level.
-    _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.log_data);
-    _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.log_data);
+    _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.logData);
+    _logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.logData);
 }
 
 // Declare a new ECM_channel_id. Return false if already active.
@@ -335,12 +340,6 @@ private:
 
     // Send an error related to the msg.
     bool sendErrorResponse(const ts::tlv::Message* msg, uint16_t errorStatus);
-
-    // Format a timestamp.
-    static ts::UString TimeStamp()
-    {
-        return ts::Time::CurrentLocalTime().format(ts::Time::DATETIME);
-    }
 };
 
 
@@ -378,7 +377,7 @@ ECMGClientHandler::~ECMGClientHandler()
 void ECMGClientHandler::main()
 {
     _peer = _conn->peerName();
-    _shared->report().verbose(u"%s: %s: session started", {_peer, TimeStamp()});
+    _shared->report().verbose(u"%s: session started", {_peer});
 
     // Normally, an ECMG should handle incoming and outgoing messages independently.
     // However, here we have a minimal implementation. We never send any request to
@@ -434,7 +433,7 @@ void ECMGClientHandler::main()
         _channel.clear();
     }
 
-    _shared->report().verbose(u"%s: %s: session completed", {_peer, TimeStamp()});
+    _shared->report().verbose(u"%s: session completed", {_peer});
 }
 
 
@@ -713,6 +712,12 @@ int MainCode(int argc, char *argv[])
     }
     shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d",
                             {opt.serverAddress, ts::ecmgscs::Protocol::Instance()->version()});
+
+    // On UNIX systems, ignore SIGPIPE. This signal is raised when trying to write to a disconnected
+    // socket. This may happen when a client disconnects after sending stream_close_request without
+    // waiting for stream_close_response. In that case, we (the ECMG) may send the response after
+    // the client disconnects, creating a SIGPIPE signal.
+    ts::IgnorePipeSignal();
 
     // Manage incoming client connections.
     for (;;) {

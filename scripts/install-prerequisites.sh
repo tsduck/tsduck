@@ -112,10 +112,15 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     brew update || true
     brew $PKGOPTS install $pkglist || true
     # Make sure python3 is the default in Homebrew.
-    (cd $(brew --prefix)/bin; ln -sf python3 python)
+    BREW=$(brew --prefix)
+    (cd $BREW/bin; ln -sf python3 python)
     # Register the openjdk jvm.
-    [[ -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]] || \
-        sudo ln -sfn /usr/local/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+    if [[ ! -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]]; then
+        JDK=$BREW/opt/openjdk/libexec/openjdk.jdk
+        if [[ -n $(find $JDK -name javac -perm +444 2>/dev/null) ]]; then
+            sudo ln -sfn $BREW/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+        fi
+    fi
 
 #-----------------------------------------------------------------------------
 # FreeBSD

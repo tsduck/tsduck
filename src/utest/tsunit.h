@@ -63,6 +63,7 @@
 #pragma warning(disable:5032)  // bug in winioctl.h : detected #pragma warning(push) with no corresponding #pragma warning(pop)
 #pragma warning(disable:5039)  // pointer or reference to potentially throwing function passed to extern C function under -EHc. Undefined behavior may occur if this function throws an exception.
 #pragma warning(disable:5045)  // Compiler will insert Spectre mitigation for memory load if / Qspectre switch specified
+#pragma warning(disable:5262)  // implicit fall - through occurs here; are you missing a break statement ? Use [[fallthrough]] when a break statement is intentionally omitted between cases
 #endif
 
 #if defined(__llvm__)
