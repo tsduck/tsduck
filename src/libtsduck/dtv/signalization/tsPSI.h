@@ -670,7 +670,7 @@ namespace ts {
 
         // Valid in DVB context after PDS_AOM private_data_specifier
 
-        DID_AV1_VIDEO           = 0xD2, //!< PLACEHOLDER for AV1 video descriptor
+        DID_AV1_VIDEO           = 0x80, //!< DID  for AV1 video descriptor, as defined in https://aomediacodec.github.io/av1-mpeg2-ts/
 
         // Valid in ATSC / SCTE context:
 

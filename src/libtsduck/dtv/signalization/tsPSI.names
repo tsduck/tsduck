@@ -663,7 +663,7 @@ Bits = 8
 0x0000233A_89 = UK DTT Guidance
 # With PDS for AOM.
 # Descriptors are defined by the Alliance for Open Media.
-0x414F4D53_D2 = AV1 Video
+0x414F4D53_80 = AV1 Video
 # ATSC descriptors, using the fake PDS for ATSC.
 0x41545343_80 = ATSC Stuffing
 0x41545343_81 = ATSC AC-3 Audio
