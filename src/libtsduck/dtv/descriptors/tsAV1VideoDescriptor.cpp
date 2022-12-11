@@ -170,7 +170,7 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         bool _initial_presentation_delay_present = buf.getBool();
         if (_initial_presentation_delay_present) {
             uint8_t ipd = buf.getBits<uint8_t>(4);
-            disp << margin << UString::Format(u"Initial presentation delay %d (1 + 0x%X)", {ipd+1, ipd}) << std::endl;
+            disp << margin << UString::Format(u"Initial presentation delay %d (minus1=%d)", {ipd+1, ipd}) << std::endl;
         }
         else {
             buf.skipReservedBits(4, 0);
@@ -215,7 +215,6 @@ void ts::AV1VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::AV1VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
-    int csp = 0;
     bool ok =
         element->getIntAttribute(version, u"version", true, 1, 1, 1) &&
         element->getIntAttribute(seq_profile, u"seq_profile", true, 0, 0x00, 0x7) &&
@@ -226,11 +225,8 @@ bool ts::AV1VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getBoolAttribute(monochrome, u"monochrome", true) &&
         element->getBoolAttribute(chroma_subsampling_x, u"chroma_subsampling_x", true) &&
         element->getBoolAttribute(chroma_subsampling_y, u"chroma_subsampling_y", true) &&
-        element->getEnumAttribute(csp, ChromaSamplePosition, u"chroma_sample_position", true, 0) &&
+        element->getEnumAttribute(chroma_sample_position, ChromaSamplePosition, u"chroma_sample_position", true, 0) &&
         element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", true, 3, 0, 3) &&
         element->getOptionalIntAttribute(initial_presentation_delay_minus_one, u"initial_presentation_delay_minus_one", 0, 0xF);
-    if (ok) {
-        chroma_sample_position = uint8_t(csp);
-    }
     return ok;
 }
