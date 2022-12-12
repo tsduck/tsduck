@@ -48,16 +48,16 @@ namespace ts {
     public:
         // Public members:
         uint8_t             version;                                //!< 7 bits. version of the descriptor - must be 1
-        uint8_t             seq_profile;                            //!< 3 bits. same as value in Sequence Header OBU in the AV1 video stream.
-        uint8_t             seq_level_idx_0;                        //!< 3 bits. same as value in Sequence Header OBU in the AV1 video stream.
-        uint8_t             seq_tier_0;                             //!< 1 bit.
-        bool                high_bitdepth;                          //!< 1 bit.
-        bool                twelve_bit;                             //!< 1 bit.
-        bool                monochrome;                             //!< 1 bit.
-        bool                chroma_subsampling_x;                   //!< 1 bit.
-        bool                chroma_subsampling_y;                   //!< 1 bit.
-        uint8_t             chroma_sample_position;                 //!< 2 bits.
-        uint8_t             HDR_WCG_idc;                            //!< 2 bits. indicates the presence or absence of HDR and WCG components in the PID
+        uint8_t             seq_profile;                            //!< 3 bits. Specifies the features that can be used in the coded video sequence.
+        uint8_t             seq_level_idx_0;                        //!< 3 bits. Specifies the level that the coded video sequence conforms to when operating point 0 is selected
+        uint8_t             seq_tier_0;                             //!< 1 bit. Specifies the tier that the coded video sequence conforms to when operating point 0 is selected
+        bool                high_bitdepth;                          //!< 1 bit. Together with twelve_bit and seq_profile, determine the bit depth.
+        bool                twelve_bit;                             //!< 1 bit. Together with high_bitdepth and seq_profile, determine the bit depth.
+        bool                monochrome;                             //!< 1 bit. When true indicates that the video does not contain U and V color planes. When false  indicates that the video contains Y, U, and V color planes.
+        bool                chroma_subsampling_x;                   //!< 1 bit. Specifies the chroma subsampling format.
+        bool                chroma_subsampling_y;                   //!< 1 bit. Specifies the chroma subsampling format.
+        uint8_t             chroma_sample_position;                 //!< 2 bits. Specifies the sample position for subsampled streams
+        uint8_t             HDR_WCG_idc;                            //!< 2 bits. Indicates the presence or absence of HDR and WCG components in the PID
         Variable<uint8_t>   initial_presentation_delay_minus_one;   //!< 4 bits. !!not used in MPEG2-TS!!
 
         //!
@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AV1VideoDescriptor(DuckContext& duck, const Descriptor& bin);
+        AV1VideoDescriptor(DuckContext&, const Descriptor&);
 
         // Inherited methods
         DeclareDisplayDescriptor();
@@ -78,6 +78,9 @@ namespace ts {
     private:
         // Enumerations for XML.
         static const Enumeration ChromaSamplePosition;
+
+        // provide a textual representation of the subsampling format
+        static UString SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome);
 
     protected:
         // Inherited methods

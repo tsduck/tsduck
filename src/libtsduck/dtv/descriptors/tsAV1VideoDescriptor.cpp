@@ -148,6 +148,29 @@ void ts::AV1VideoDescriptor::deserializePayload(PSIBuffer& buf)
 
 
 //----------------------------------------------------------------------------
+// Display subsamplig format from signalled attributes
+//----------------------------------------------------------------------------
+
+ts::UString ts::AV1VideoDescriptor::SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome) 
+{
+    UString res(u"invalid");
+    if (monochrome && subsampling_x && subsampling_y) {
+        res = u"Monochrome 4:0:0";
+    }
+    else if (!monochrome && subsampling_x && subsampling_y) {
+        res = u"YUV 4:2:0";
+    }
+    else if (!monochrome && subsampling_x && !subsampling_y) {
+        res = u"YUV 4:2:2";
+    }
+    else if (!monochrome && !subsampling_x && !subsampling_y) {
+        res = u"YUV 4:4:4";
+    }
+    return res;
+}
+
+
+//----------------------------------------------------------------------------
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
@@ -156,14 +179,16 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
     if (buf.canReadBytes(4)) {
         buf.skipReservedBits(1);
         disp << margin << "Version: " << int(buf.getBits<uint8_t>(7));
-        disp << ", profile:" << int(buf.getBits<uint8_t>(3));
+        disp << ", profile: " << int(buf.getBits<uint8_t>(3));
         disp << ", level: " << DataName(MY_XML_NAME, u"seq_level_idx", buf.getBits<uint8_t>(5), NamesFlags::VALUE | NamesFlags::DECIMAL);
         disp << ", tier: " << int(buf.getBit()) << std::endl;
-        disp << margin << "High Bitdepth: " << UString::YesNo(buf.getBit());
+        disp << margin << "High bitdepth: " << UString::YesNo(buf.getBit());
         disp << ", 12 bit: " << UString::YesNo(buf.getBit());
-        disp << ", monochrome: " << UString::YesNo(buf.getBit());
-        disp << ", chroma subsampling x=" << UString::YesNo(buf.getBit());
-        disp << " y=" << UString::YesNo(buf.getBit()) << std::endl;
+        bool monochrome = buf.getBit(); 
+        bool subsampling_x = buf.getBit();
+        bool subsampling_y = buf.getBit();
+        disp << ", monochrome: " << UString::YesNo(monochrome) << ", chroma subsampling x=" << UString::YesNo(subsampling_x) << " y=" << UString::YesNo(subsampling_y);
+        disp << ", --> " << SubsamplingFormat(subsampling_x, subsampling_y, monochrome) << std::endl;
         disp << margin << "Chroma sample position: " << DataName(MY_XML_NAME, u"chroma_sample_position", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL);
         disp << ", HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", buf.getBits<uint8_t>(2), NamesFlags::VALUE | NamesFlags::DECIMAL) << std::endl;
         buf.skipReservedBits(1, 0);
@@ -178,6 +203,7 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
     }
 }
 
+
 //----------------------------------------------------------------------------
 // Enumerations for XML.
 //----------------------------------------------------------------------------
@@ -187,6 +213,7 @@ const ts::Enumeration ts::AV1VideoDescriptor::ChromaSamplePosition({
     {u"vertical", 1},
     {u"colocated", 2},
 });
+
 
 //----------------------------------------------------------------------------
 // XML serialization
@@ -215,6 +242,7 @@ void ts::AV1VideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) con
 
 bool ts::AV1VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
+    int csp = 99;
     bool ok =
         element->getIntAttribute(version, u"version", true, 1, 1, 1) &&
         element->getIntAttribute(seq_profile, u"seq_profile", true, 0, 0x00, 0x7) &&
@@ -225,8 +253,9 @@ bool ts::AV1VideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* e
         element->getBoolAttribute(monochrome, u"monochrome", true) &&
         element->getBoolAttribute(chroma_subsampling_x, u"chroma_subsampling_x", true) &&
         element->getBoolAttribute(chroma_subsampling_y, u"chroma_subsampling_y", true) &&
-        element->getEnumAttribute(chroma_sample_position, ChromaSamplePosition, u"chroma_sample_position", true, 0) &&
+        element->getEnumAttribute(csp, ChromaSamplePosition, u"chroma_sample_position", true, 0) &&
         element->getIntAttribute(HDR_WCG_idc, u"HDR_WCG_idc", true, 3, 0, 3) &&
         element->getOptionalIntAttribute(initial_presentation_delay_minus_one, u"initial_presentation_delay_minus_one", 0, 0xF);
+    chroma_sample_position = uint8_t(csp);
     return ok;
 }
