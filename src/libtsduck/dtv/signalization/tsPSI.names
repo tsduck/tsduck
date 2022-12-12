@@ -858,6 +858,7 @@ Bits = 8
 0x33 = VVC/H.266 video or VVC temporal video sub-bitstream, Annex A of ITUT H.266|ISO/IEC 23090-3
 0x34 = VVC/H.266 temporal video subset, Annex A of ITUT H.266|ISO/IEC 23090-3
 0x35 = EVC, ISO/IEC 23094-1
+0x36 = LCEVC, ISO/IEC 23094-2
 0x7F = IPMP
 # ATSC values
 0x81 = ATSC AC-3 Audio

@@ -124,7 +124,8 @@ bool ts::StreamTypeIsHEVC(uint8_t st)
            st == ST_HEVC_SUBVIDEO_G  ||
            st == ST_HEVC_SUBVIDEO_TG ||
            st == ST_HEVC_SUBVIDEO_H  ||
-           st == ST_HEVC_SUBVIDEO_TH;
+           st == ST_HEVC_SUBVIDEO_TH ||
+           st == ST_HEVC_TILESET;
 }
 
 
