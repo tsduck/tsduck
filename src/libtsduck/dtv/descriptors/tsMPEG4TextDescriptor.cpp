@@ -212,7 +212,7 @@ void ts::MPEG4TextDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-ts::UString ts::MPEG4TextDescriptor::TimedText_TS26245(ByteBlock formatSpecificTextConfig) 
+ts::UString ts::MPEG4TextDescriptor::TimedText_TS26245(ByteBlock formatSpecificTextConfig)
 {
     // TODO - format the paramater according to 3GPP TS 26.245
     return UString::Dump(formatSpecificTextConfig, UString::SINGLE_LINE);

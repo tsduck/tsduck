@@ -134,7 +134,7 @@ void ts::TTMLSubtitlingDescriptor::deserializePayload(PSIBuffer& buf)
     bool essential_font_usage_flag = buf.getBool();
     bool qualifier_present_flag = buf.getBool();
     buf.skipBits(2);
-    uint8_t dvb_ttml_profile_count;  
+    uint8_t dvb_ttml_profile_count;
     buf.getBits(dvb_ttml_profile_count, 4);
     for (uint8_t i = 0; i < dvb_ttml_profile_count; i++) {
         dvb_ttml_profile.push_back(buf.getUInt8());
@@ -296,7 +296,7 @@ bool ts::TTMLSubtitlingDescriptor::analyzeXML(DuckContext& duck, const xml::Elem
 {
     xml::ElementVector children;
     uint8_t tmp;
-    bool ok = 
+    bool ok =
         element->getAttribute(language_code, u"ISO_639_language_code", true) &&
         element->getIntAttribute(subtitle_purpose, u"subtitle_purpose", true, 0x00, 0x00, 0x31) &&
         element->getIntAttribute(TTS_suitability, u"TTS_suitability", true, 0x00, 0x00, 0x02) &&

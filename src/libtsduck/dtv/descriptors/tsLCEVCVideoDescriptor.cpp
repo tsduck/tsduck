@@ -161,7 +161,7 @@ void ts::LCEVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer&
 //----------------------------------------------------------------------------
 
 void ts::LCEVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
-{ 
+{
     root->setIntAttribute(u"lcevc_stream_tag", lcevc_stream_tag, true);
     root->setIntAttribute(u"profile_idc", profile_idc, true);
     root->setIntAttribute(u"level_idc", level_idc, true);

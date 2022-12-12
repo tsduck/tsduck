@@ -51,11 +51,11 @@ $ make -j10 test
   [CXX] utestXML.cpp
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest
   [LD] /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
-TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest 
+TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest
 
 OK (619 tests, 28730 assertions)
 
-TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest_static 
+TSPLUGINS_PATH=/home/tsduck/bin/release-x86_64-vmubuntu LD_LIBRARY_PATH=/home/tsduck/bin/release-x86_64-vmubuntu /home/tsduck/bin/release-x86_64-vmubuntu/utest_static
 
 OK (616 tests, 28707 assertions)
 

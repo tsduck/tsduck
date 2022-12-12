@@ -100,7 +100,7 @@ make installer
 ~~~
 
 To install TSDuck on other types of Linux systems for which no package
-is available, 
+is available,
 ~~~
 make -j10
 sudo make install

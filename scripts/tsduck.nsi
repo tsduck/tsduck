@@ -303,7 +303,7 @@ Section "-Common" SectionCommon
 
     ; Create uninstaller
     WriteUninstaller "$INSTDIR\TSDuckUninstall.exe"
- 
+
     ; Declare uninstaller in "Add/Remove Software" control panel
     WriteRegStr HKLM "${UninstallKey}" "DisplayName" "TSDuck"
     WriteRegStr HKLM "${UninstallKey}" "Publisher" "Thierry Lelegard"
@@ -413,7 +413,7 @@ Section "Uninstall"
     ; Get installation folder from registry
     ReadRegStr $0 HKLM "${ProductKey}" "InstallDir"
 
-    ; Delete start menu entries  
+    ; Delete start menu entries
     RMDir /r "$SMPROGRAMS\TSDuck"
 
     ; Delete product registry entries

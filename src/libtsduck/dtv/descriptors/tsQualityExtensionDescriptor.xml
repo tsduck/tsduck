@@ -6,6 +6,6 @@
       <!-- between 1 and 255 metric codes to be provied (although only 7 are defined) -->
       <metric code="uint32, required"/>
     </quality_extension_descriptor>
-    
+
   </_descriptors>
 </tsduck>

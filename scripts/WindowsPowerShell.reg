@@ -1,7 +1,7 @@
 Windows Registry Editor Version 5.00
- 
+
 ;-----------------------------------------------------------------------------
-; 
+;
 ;  TSDuck - The MPEG Transport Stream Toolkit
 ;  Copyright (c) 2005-2022, Thierry Lelegard
 ;  All rights reserved.
@@ -26,11 +26,11 @@ Windows Registry Editor Version 5.00
 ;  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ;  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 ;  THE POSSIBILITY OF SUCH DAMAGE.
-; 
+;
 ;-----------------------------------------------------------------------------
-; 
+;
 ;  Windows registry entries to facilitate the usage of the Windows PowerShell.
-; 
+;
 ;-----------------------------------------------------------------------------
 
 ; A Windows PowerShell script file name has a ".ps1" extension.

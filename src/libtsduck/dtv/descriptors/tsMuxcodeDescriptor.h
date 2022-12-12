@@ -54,7 +54,7 @@ namespace ts {
             std::vector<uint8_t>    m4MuxChannel;       //!< list of 8 bit values
             std::vector<uint8_t>    numberOfBytes;      //!< list of 8 bit values
 
-            substructure_type();            //!< Constructor            
+            substructure_type();            //!< Constructor
         };
 
         //!
@@ -66,7 +66,7 @@ namespace ts {
             uint8_t                         version;       //!< 4 bits
             std::vector<substructure_type>  substructure;  //!< Mux code substructure
 
-            MuxCodeTableEntry_type();       //!< Constructor                    
+            MuxCodeTableEntry_type();       //!< Constructor
         };
 
         // Public members:

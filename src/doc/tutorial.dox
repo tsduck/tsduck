@@ -91,7 +91,7 @@ position, any endianness, either as a continuous stream or seeking at random bit
 The principles of the C++ class ts::Buffer were freely inspired by the Java
 class @c java.nio.ByteBuffer. There are differences between the two but the main
 principles are similar.
-    
+
 Its subclass ts::PSIBuffer provides primitives to serialize and deserialize
 MPEG and DVB structures such as list of descriptors, DVB, ARIB and ATSC strings
 or "Modified Julian Dates".

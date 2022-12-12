@@ -60,7 +60,7 @@ ts::EVCVideoDescriptor::EVCVideoDescriptor() :
     EVC_still_present(false),
     EVC_24hr_picture_present(false),
     HDR_WCG_idc(3),
-    video_properties_tag(0),    
+    video_properties_tag(0),
     temporal_id_min(),
     temporal_id_max()
 {
@@ -170,7 +170,7 @@ void ts::EVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         buf.skipReservedBits(1);
         const bool temporal = buf.getBool();
         disp << margin << "Still pictures: " << UString::TrueFalse(buf.getBool());
-        disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl; 
+        disp << ", 24-hour pictures: " << UString::TrueFalse(buf.getBool()) << std::endl;
         const uint16_t hdr_wcg_idc = buf.getBits<uint16_t>(2);
         disp << margin << "HDR WCG idc: " << DataName(MY_XML_NAME, u"hdr_wcg_idc", hdr_wcg_idc, NamesFlags::VALUE | NamesFlags::DECIMAL);
         buf.skipReservedBits(2);
@@ -191,7 +191,7 @@ void ts::EVCVideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
 //----------------------------------------------------------------------------
 
 void ts::EVCVideoDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
-{ 
+{
     root->setIntAttribute(u"profile_idc", profile_idc, true);
     root->setIntAttribute(u"level_idc", level_idc, true);
     root->setIntAttribute(u"toolset_idc_h", toolset_idc_h, true);

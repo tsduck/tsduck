@@ -143,7 +143,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::serializePayload(PSIBuffer& buf
     buf.putUInt24(satellite_id);
     buf.putBCD(frequency / 10000, 8);  // unit is 10 kHz
     buf.putBCD(symbol_rate / 100, 8); // unit is 100 sym/s
-    if (multiple_input_stream_flag) 
+    if (multiple_input_stream_flag)
         buf.putUInt8(input_stream_identifier);
     if (S2Xv2_mode == 1 || S2Xv2_mode == 2) {
         if (scrambling_sequence_index.set()) {
@@ -207,7 +207,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::deserializePayload(PSIBuffer& b
     symbol_rate = buf.getBCD<uint64_t>(8) * 100;  // unit is 100 sym/sec
     if (multiple_input_stream_flag) {
         input_stream_identifier = buf.getUInt8();
-    } 
+    }
     if (S2Xv2_mode == 1 || S2Xv2_mode == 2) {
         if (_scrambling_sequence_selector) {
             buf.skipBits(6);
@@ -296,7 +296,7 @@ void ts::S2Xv2SatelliteDeliverySystemDescriptor::DisplayDescriptor(TablesDisplay
         disp << UString::Format(u".%05d GHz", { buf.getBCD<uint32_t>(5) });
         disp << UString::Format(u", symbol rate: %d", {buf.getBCD<uint32_t>(4)});
         disp << UString::Format(u".%04d Msymbol/s", {buf.getBCD<uint32_t>(4)}) << std::endl;
- 
+
         disp << margin << "Multiple input stream: " << UString::YesNo(_multiple_input_stream_flag);
         if (_multiple_input_stream_flag) {
             disp << ", input stream id: " << int(buf.getUInt8());
@@ -454,7 +454,7 @@ bool ts::S2Xv2SatelliteDeliverySystemDescriptor::analyzeXML(DuckContext& duck, c
             if (ok && _superframes[0]->hasAttribute(u"beamhopping_time_plan_id")) {
                 ok &= _superframes[0]->getOptionalIntAttribute(beamhopping_time_plan_id, u"beamhopping_time_plan_id");
             }
-        }      
+        }
     }
     return ok;
 }

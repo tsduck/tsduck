@@ -151,7 +151,7 @@ void ts::AV1VideoDescriptor::deserializePayload(PSIBuffer& buf)
 // Display subsamplig format from signalled attributes
 //----------------------------------------------------------------------------
 
-ts::UString ts::AV1VideoDescriptor::SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome) 
+ts::UString ts::AV1VideoDescriptor::SubsamplingFormat(bool subsampling_x, bool subsampling_y, bool monochrome)
 {
     UString res(u"invalid");
     if (monochrome && subsampling_x && subsampling_y) {
@@ -184,7 +184,7 @@ void ts::AV1VideoDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& b
         disp << ", tier: " << int(buf.getBit()) << std::endl;
         disp << margin << "High bitdepth: " << UString::YesNo(buf.getBit());
         disp << ", 12 bit: " << UString::YesNo(buf.getBit());
-        bool monochrome = buf.getBit(); 
+        bool monochrome = buf.getBit();
         bool subsampling_x = buf.getBit();
         bool subsampling_y = buf.getBit();
         disp << ", monochrome: " << UString::YesNo(monochrome) << ", chroma subsampling x=" << UString::YesNo(subsampling_x) << " y=" << UString::YesNo(subsampling_y);

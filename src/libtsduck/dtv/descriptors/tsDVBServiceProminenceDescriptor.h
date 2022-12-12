@@ -48,9 +48,9 @@ namespace ts {
     class TSDUCKDLL DVBServiceProminenceDescriptor : public AbstractDescriptor
     {
     public:
-        //! 
+        //!
         //! Definition of a service prominence region.
-        //! 
+        //!
         class SOGI_region_type {
         public:
             Variable<UString>  country_code;           //!< ETSI EN 300 468, clause 6.4.18.
@@ -61,10 +61,10 @@ namespace ts {
             SOGI_region_type();   //!< Constructor.
         };
 
-        //! 
+        //!
         //! Definition of a service of general interest indication
         //! prominence values (flag & priority) and applicable regions.
-        //! 
+        //!
         class SOGI_type {
         public:
             bool                          SOGI_flag;      //!< ETSI EN 300 468, clause 6.4.18.

@@ -106,7 +106,7 @@ namespace ts {
         DeclareDisplayDescriptor();
 
     private:
-        static UString TimedText_TS26245(ByteBlock formatSpecificTextConfig); 
+        static UString TimedText_TS26245(ByteBlock formatSpecificTextConfig);
 
     protected:
         // Inherited methods

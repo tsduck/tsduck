@@ -27,11 +27,11 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  This script generates the file signalization.md, in the same directory.
 #  The output is a markdown file listing all supported signalization, tables
 #  and descriptors, in TSDuck, from the source files.
-# 
+#
 #-----------------------------------------------------------------------------
 
 import sys, os, re, glob

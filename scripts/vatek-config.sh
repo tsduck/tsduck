@@ -131,7 +131,7 @@ get-lib()
         [[ -e "$brew/lib/libvatek_core$suffix" ]] && echo "$brew/lib/libvatek_core$suffix"
     elif [[ $SYSTEM == Linux && -e "$VATEK_INSTALL/lib/libvatek_core.a" ]]; then
         echo "$VATEK_INSTALL/lib/libvatek_core.a"
-    fi    
+    fi
 }
 
 # Get compilation flags for Vatek library.

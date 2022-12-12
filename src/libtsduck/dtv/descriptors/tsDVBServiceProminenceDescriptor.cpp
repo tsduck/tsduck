@@ -133,7 +133,7 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(1);                          // reserved_future_use
         buf.putBits(_sogi.SOGI_priority, 12);   // SOGI_priority
         if (_sogi.service_id.set()) {
-            buf.putUInt16(_sogi.service_id.value());    // service_id 
+            buf.putUInt16(_sogi.service_id.value());    // service_id
         }
         if (!_sogi.regions.empty()) {
             uint8_t target_region_loop_length = 0;
@@ -185,7 +185,7 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::DVBServiceProminenceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    uint8_t SOGI_list_length = buf.getUInt8(); 
+    uint8_t SOGI_list_length = buf.getUInt8();
     while (SOGI_list_length > 0) {
         SOGI_type s;
         s.SOGI_flag = buf.getBool();
@@ -199,7 +199,7 @@ void ts::DVBServiceProminenceDescriptor::deserializePayload(PSIBuffer& buf)
             SOGI_list_length -= 2;
         }
         if (target_region_flag) {
-            uint8_t target_region_loop_length = buf.getUInt8(); 
+            uint8_t target_region_loop_length = buf.getUInt8();
             SOGI_list_length--;
             while (target_region_loop_length > 0) {
                 SOGI_region_type r;
@@ -380,7 +380,7 @@ void ts::DVBServiceProminenceDescriptor::buildXML(DuckContext& duck, xml::Elemen
 bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml::Element* element)
 {
     xml::ElementVector sogis;
-    bool ok = 
+    bool ok =
         element->getChildren(sogis, u"sogi") &&
         element->getHexaTextChild(private_data, u"private_data", false);
 

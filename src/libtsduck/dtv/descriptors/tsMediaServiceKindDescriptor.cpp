@@ -69,7 +69,7 @@ ts::MediaServiceKindDescriptor::media_service_kind_type::media_service_kind_type
     ID_length_code(),
     ID_type(),
     ID_len(0),
-    media_ID_field(), 
+    media_ID_field(),
     language_media_service_type_pairs()
 {
 }
@@ -173,7 +173,7 @@ void ts::MediaServiceKindDescriptor::deserializePayload(PSIBuffer& buf)
                 case 0: newLanguagePair.lang_len = buf.getUInt8(); break;
                 case 1: newLanguagePair.lang_len = 2; break;
                 case 2: newLanguagePair.lang_len = 3; break;
-                case 3: newLanguagePair.lang_len = 0; break; // 3 is reserved 
+                case 3: newLanguagePair.lang_len = 0; break; // 3 is reserved
                 default: break;
             }
             newLanguagePair.language_code = buf.getUTF8(newLanguagePair.lang_len);
@@ -234,7 +234,7 @@ void ts::MediaServiceKindDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIB
             for (uint8_t k=0; ok && k<_lang_purpose_cnt; k++) {
                 purposes.push_back(DataName(MY_XML_NAME, u"purpose", buf.getUInt8(), NamesFlags::VALUE));
             }
-            if (!purposes.empty()) {         
+            if (!purposes.empty()) {
                 disp.displayVector(UString::Format(u"  Purpose%s:", { (purposes.size() > 1) ? "s" : "" }), purposes, margin, true, 2);
             }
         }
@@ -262,7 +262,7 @@ const ts::Enumeration ts::MediaServiceKindDescriptor::MediaType({
 //----------------------------------------------------------------------------
 
 void ts::MediaServiceKindDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
-{ 
+{
     for (auto msk : media_service_kinds) {
         ts::xml::Element* element = root->addElement(u"media_service_kind");
         element->setEnumAttribute(MediaDescriptionFlag, u"media_description", msk.media_description_flag);

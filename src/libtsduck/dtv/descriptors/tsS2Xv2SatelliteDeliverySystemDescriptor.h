@@ -86,7 +86,7 @@ namespace ts {
 
         // Inherited methods
         DeclareDisplayDescriptor();
-    
+
     protected:
         // Inherited methods
         virtual DID extendedTag() const override;

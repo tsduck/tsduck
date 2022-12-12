@@ -26,7 +26,7 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  Windows PowerShell common utilities.
 #
 #  List of exported functions:

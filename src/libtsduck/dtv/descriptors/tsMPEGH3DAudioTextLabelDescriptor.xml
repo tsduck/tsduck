@@ -7,20 +7,20 @@
         numReservedBytes="uint16, optional">
 
       <DescriptionLanguage descriptionLanguage="char3, required">
-        <GroupDescription 
+        <GroupDescription
           mae_descriptionGroupID="uint7, required"
           groupDescription="string, required"/>
-        
-        <SwitchGroupDescription 
+
+        <SwitchGroupDescription
           mae_descriptionSwitchGroupID="uint5, required"
           switchGroupDescription="string, required"/>
-        
-        <GroupPresetDescription 
+
+        <GroupPresetDescription
           mae_descriptionGroupPresetID="uint5, required"
           groupPresetDescription="string, required"/>
-   
+
       </DescriptionLanguage>
-      
+
     </MPEGH_3D_audio_text_label_descriptor>
 
   </_descriptors>

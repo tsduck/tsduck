@@ -3,7 +3,7 @@
   <_descriptors>
 
     <Media_service_kind_descriptor>
-      
+
       <media_service_kind
         media_description="self|associate, required"
         media_type="unknown|video|audio|text/data, required"
@@ -20,11 +20,11 @@
 
           <media_service_type
             purpose="uint8, required"/>
-          
+
         </language_media_pair>
-                 
-      </Media_service_kind> 
-      
+
+      </Media_service_kind>
+
     </Media_service_kind_descriptor>
 
   </_descriptors>

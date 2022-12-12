@@ -5,7 +5,7 @@
     <cpcm_delivery_signalling_descriptor cpcm_version="uint8, required">
       <cpcm_v1_delivery_signalling
         copy_control="uint3, required"
-        do_not_cpcm_scramble="bool, required" 
+        do_not_cpcm_scramble="bool, required"
         viewable="bool, required"
         move_local="bool, required"
         move_and_copy_propagation_information="uint2, required"

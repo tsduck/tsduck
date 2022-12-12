@@ -27,10 +27,10 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  Build the file tsduck.dektec.names, containing Dektec-specific names.
 #  Syntax: build-dektec-names.py in-file out-file
-# 
+#
 #-----------------------------------------------------------------------------
 
 import tsbuild, sys, os, re
@@ -41,7 +41,7 @@ if len(sys.argv) != 3:
 
 input_file = sys.argv[1]
 output_file = sys.argv[2]
-    
+
 with open(output_file, 'w') as output:
     tsbuild.write_source_header('#', 'Registered names for Dektec devices', file=output)
     print('[DtCaps]', file=output)

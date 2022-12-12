@@ -13,5 +13,5 @@
       <AdditionalDependencies>tsduck.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
-  
+
 </Project>

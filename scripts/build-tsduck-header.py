@@ -27,11 +27,11 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  Rebuilt tsduck.h, the global header for the TSDuck library. This script is
 #  useful when source files are added to or removed from src/libtsduck.
 #  Syntax: build-tsduck-header.py [out-file]
-# 
+#
 #-----------------------------------------------------------------------------
 
 import tsbuild, sys, os, fnmatch

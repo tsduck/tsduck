@@ -38,7 +38,7 @@
 namespace ts {
     //!
     //! Representation of an MPEG-defined HEVC_hierarchy_extension_descriptor.
-    //! 
+    //!
     //! Note that this descriptor only conveys the names of the metrics that are present. Actual
     //! timed mettic infomration is provided in the Quality_Access_Unt() - ISO/IEC 13818-1 clause 2.20
     //!

@@ -41,7 +41,7 @@ __ts_cmds=(tsanalyze tsbitrate tscharset tscmp tscrc32 tsdate tsdektec tsdump ts
 # Syntax: __ts_compgen_fd {-f|-d} current-value
 __ts_compgen_fd()
 {
-    # Path expansion. 
+    # Path expansion.
     local saved="$IFS"
     IFS=$'\n'
     COMPREPLY=($(compgen $1 -- "$2"))
