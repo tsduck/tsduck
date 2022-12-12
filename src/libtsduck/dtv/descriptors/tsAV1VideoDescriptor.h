@@ -70,7 +70,7 @@ namespace ts {
         //! @param [in,out] duck TSDuck execution context.
         //! @param [in] bin A binary descriptor to deserialize.
         //!
-        AV1VideoDescriptor(DuckContext&, const Descriptor&);
+        AV1VideoDescriptor(DuckContext& duck, const Descriptor& bin);
 
         // Inherited methods
         DeclareDisplayDescriptor();
