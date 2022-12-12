@@ -51,7 +51,7 @@ namespace ts {
     public:
         //!
         //! A pattern within a subregion that is a array of offet values to be applied
-        //! 
+        //!
         class pattern_type {
         public:
             std::vector<int8_t>    SubstreamOffset;            //!< offset to be added
@@ -61,7 +61,7 @@ namespace ts {
 
         //!
         //! The dfferent subregions defined by the descriptor. All Patterns must have the same number of values (offsets)
-        //! 
+        //!
         class subregion_layout_type {
         public:
             Variable<uint8_t>           PreambleSubstreamID;    //!< 7 bits. Indicates the SubstreamID of the ES to be prepended to the ES to which this descriptor applies

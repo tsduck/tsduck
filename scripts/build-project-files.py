@@ -27,7 +27,7 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  This script builds the project files for "Qt Creator" and "Visual Studio"
 #  (also used by MSBuild) for all TSDuck commands and plugins.
 #
@@ -48,7 +48,7 @@
 #  is added, Visual Studio must be restarted after deleting the directory
 #  msvc\.vs (this is only a file cache, it does not invalidate the previously
 #  compiled object files).
-# 
+#
 #-----------------------------------------------------------------------------
 
 import tsbuild, os, binascii

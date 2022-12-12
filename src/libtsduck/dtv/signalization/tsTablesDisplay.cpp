@@ -942,7 +942,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<uint8_t>
 
 
 //----------------------------------------------------------------------------
-// Display the signed 8-bit values in a structured manner with specified 
+// Display the signed 8-bit values in a structured manner with specified
 // number of items on each line
 //----------------------------------------------------------------------------
 
@@ -1000,7 +1000,7 @@ void ts::TablesDisplay::displayVector(const UString& title, std::vector<bool> va
 }
 
 //----------------------------------------------------------------------------
-// Display string values in a tabular manner with the values being left 
+// Display string values in a tabular manner with the values being left
 // aligned and with the specified number of items on each line
 //----------------------------------------------------------------------------
 

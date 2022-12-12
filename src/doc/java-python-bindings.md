@@ -65,7 +65,7 @@ languages which can be classified according to two sets of criteria:
     instance must be explicitly _terminated_. An asynchronous report class is
     required when using heavily multi-threaded classes such as `TSProcessor`
     or `InputSwitcher`.
- 
+
 - Native vs. abstract:
   - Native classes are the C++ classes which are used in all the TSDuck command line
     tools. They are typically used to report to standard output, standard error,

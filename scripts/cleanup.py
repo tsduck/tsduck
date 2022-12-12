@@ -27,11 +27,11 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  Clean up the current directory tree, back to a clean state of source files.
 #  The directory tree is traversed, the .gitignore files are read and all
 #  files and directories which should be ignored by git are deleted.
-# 
+#
 #-----------------------------------------------------------------------------
 
 import sys, os, shutil, fnmatch
@@ -54,7 +54,7 @@ def match_any(name, patterns):
 # Handler for rmtree() error
 def rmtree_error(func, file_path, excinfo):
     print('**** error removing %s' % file_path)
-    
+
 # Cleanup a directory tree.
 def cleanup_directory(root, keep, remove, norecurse):
     # Load .gitignore file if there is one.

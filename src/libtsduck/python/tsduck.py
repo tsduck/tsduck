@@ -104,7 +104,7 @@ class _InByteBuffer:
             if len(self._data) > 0:
                 self._data.extend(b'\xFF\xFF')
             self._data.extend(strings.encode("utf-16"))
-        
+
     # "uint8_t* buffer" parameter for the C++ function.
     def data_ptr(self):
         carray_type = ctypes.c_uint8 * len(self._data)
@@ -219,16 +219,16 @@ def version():
 # C++ object of the corresponding C++ class, when should the C++ object be deleted?
 # This is a problem which has been discussed many times on the Internet and the answer
 # is disappointing: there is no good solution.
-# 
+#
 #  1. A naive approach would be to override __del__(self) and perform the C++ deallocation here.
 #     It is well known that __del__() creates more issues than it solves. Specifically, we cannot
 #     guarantee the order of finalization of objects, which could lead to crashes when C++ objects
-#     reference each other is a predetermined order. 
+#     reference each other is a predetermined order.
 #
 #  2. Never delete C++ objects and let them accumulate. This can be acceptable if a
 #     guaranteed maximum number of C++ objects are allocated during the life of the
 #     application and the corresponding memory usage is acceptable.
-# 
+#
 #  3. Expose a public method in all Python classes which deletes, frees, deallocates, you name it,
 #     the encapsulated C++ object. It is then the responsibility of the application to call
 #     this method on time. This is counter-intuitive to both Python and C++ programmers but
@@ -236,7 +236,7 @@ def version():
 #
 # In the Python TSDuck bindings, all classes which encapsulate a C++ object derive from the
 # base class NativeObject which provides the delete() method to explicitly delete the C++
-# object. In practice, users have the choice between solutions 2 or 3.  
+# object. In practice, users have the choice between solutions 2 or 3.
 #
 class NativeObject:
 
@@ -406,7 +406,7 @@ class NullReport(Report):
 # @ingroup python
 #
 class StdErrReport(Report):
-    
+
     ##
     # Constructor.
     #
@@ -707,7 +707,7 @@ class DuckContext(NativeObject):
 # @ingroup python
 #
 class PluginEventContext:
-    
+
     ##
     # Constructor.
     #
@@ -978,7 +978,7 @@ class SectionFile(NativeObject):
         cfunc.restype = None
         tspySectionFileSetCRCValidationcfunc.argtypes = [ctypes.c_void_p, ctypes.c_int]
         cfunc(self._native_object, mode)
-        
+
     ##
     # Load a binary section file from a memory buffer.
     # The loaded sections are added to the content of this object.
@@ -1118,16 +1118,16 @@ class SectionFile(NativeObject):
 
     ##
     # Reorganize all EIT sections according to ETSI TS 101 211.
-    # 
+    #
     # Only one EITp/f subtable is kept per service. It is split in two sections if two
     # events (present and following) are specified. All EIT schedule are kept. But they
     # are completely reorganized. All events are extracted and spread over new EIT
     # sections according to ETSI TS 101 211 rules.
-    # 
+    #
     # The "last midnight" according to which EIT segments are assigned is derived from
     # parameters @a year, @a month and @a day. If any of them is out or range, the start
     # time of the oldest event in the section file is used as "reference date".
-    # 
+    #
     # @param year Year of the reference time for EIT schedule.
     # This is the "last midnight" according to which EIT segments are assigned.
     # @param month Month (1..12) of the reference time for EIT schedule.

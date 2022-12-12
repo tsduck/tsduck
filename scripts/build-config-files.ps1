@@ -31,7 +31,7 @@
  .SYNOPSIS
 
   Build the .names and .xml configuration files for TSDuck.
-  
+
   This script calls MSBuild with the corresponding targets. It is useful to
   quickly rebuild the configuration files when a .names or .xml file was
   modified but, since these files are MSBuild targets, they are automatically

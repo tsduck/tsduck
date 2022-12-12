@@ -551,7 +551,7 @@ namespace ts {
         //! @param [in] pcr A 42-bit PCR value.
         //!
         static void PutPCR(uint8_t* b, const uint64_t& pcr);
-        
+
         //!
         //! Check if packet has splicing point countdown
         //! @return True if packet has a splicing point countdown.

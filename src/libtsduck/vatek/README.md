@@ -29,7 +29,7 @@ The installation of the VATek core library depends on the operating system:
   TSDuck uses the static library version of the VATek library.
   The VATek API is consequently included in the TSDuck shared library.
 
-- On macOS, the VATek library is available from Homebrew. 
+- On macOS, the VATek library is available from Homebrew.
   TSDuck uses the dynamic library version of the VATek library.
   Unlike Windows and Linux, the VATek library is consequently not included
   in the binary package for TSDuck.

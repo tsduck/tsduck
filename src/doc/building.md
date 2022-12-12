@@ -206,7 +206,7 @@ All builds will coexist using distinct names under the `bin` subdirectory.
 For _bash_ users who wish to include the binary directory in the `PATH`, simply
 "source" the script `scripts/setenv.sh`. Example:
 ~~~~
-$ . scripts/setenv.sh 
+$ . scripts/setenv.sh
 $ which tsp
 /Users/devel/tsduck/bin/release-x86_64-mymac/tsp
 ~~~~

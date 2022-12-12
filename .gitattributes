@@ -22,6 +22,8 @@
 *.props text eol=crlf linguist-language=VisualStudio
 *.vcxproj text eol=crlf linguist-language=VisualStudio
 *.vcxproj.filters text eol=crlf linguist-language=VisualStudio
+*.reg text eol=crlf linguist-language=WindowsRegistry
+*.rc text eol=crlf linguist-language=WindowsResource
 
 # Text files that will always have LF line endings on checkout.
 *.html text eol=lf linguist-language=HTML

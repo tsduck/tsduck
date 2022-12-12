@@ -109,7 +109,7 @@ void ts::LCEVCLinkageDescriptor::deserializePayload(PSIBuffer& buf)
 //----------------------------------------------------------------------------
 
 void ts::LCEVCLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
-{    
+{
     if (buf.canReadBytes(1)) {
         size_t num_lcevc_stream_tags = buf.getUInt8();
         std::vector<uint8_t> lcevc_stream_tag;
@@ -126,7 +126,7 @@ void ts::LCEVCLinkageDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffe
 //----------------------------------------------------------------------------
 
 void ts::LCEVCLinkageDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
-{ 
+{
     root->addHexaTextChild(u"lcevc_stream_tag", lcevc_stream_tags, true);
 }
 

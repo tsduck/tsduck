@@ -27,10 +27,10 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  Build the file tsduck.dtv.names, containing names for Digital TV.
-#  Syntax: build-dtv-names-names.py out-file in-file-or-dir ... 
-# 
+#  Syntax: build-dtv-names-names.py out-file in-file-or-dir ...
+#
 #-----------------------------------------------------------------------------
 
 import tsbuild, sys, os, fnmatch

@@ -27,9 +27,9 @@
 #  THE POSSIBILITY OF SUCH DAMAGE.
 #
 #-----------------------------------------------------------------------------
-# 
+#
 #  This script extracts the TSDuck version from the source files.
-# 
+#
 #-----------------------------------------------------------------------------
 
 import tsbuild, sys

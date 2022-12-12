@@ -37,27 +37,27 @@ bool tsDVBT2ParamsEvaluatorIsEmpty = true; // Avoid warning about empty module.
 
 namespace {
     template <typename V, typename... T>
-    constexpr auto array_of(T&&... t) -> std::array < V, sizeof...(T) > 
+    constexpr auto array_of(T&&... t) -> std::array < V, sizeof...(T) >
     {
         return {{ std::forward<T>(t)... }};
     }
 
     // m_FftMode
-    const auto pref_fft_mode = array_of<int>(DTAPI_DVBT2_FFT_1K, DTAPI_DVBT2_FFT_2K, DTAPI_DVBT2_FFT_4K, 
+    const auto pref_fft_mode = array_of<int>(DTAPI_DVBT2_FFT_1K, DTAPI_DVBT2_FFT_2K, DTAPI_DVBT2_FFT_4K,
                                              DTAPI_DVBT2_FFT_8K, DTAPI_DVBT2_FFT_16K, DTAPI_DVBT2_FFT_32K);
     // m_GuardInterval
-    const auto pref_guard_interval = array_of<int>(DTAPI_DVBT2_GI_1_128, DTAPI_DVBT2_GI_1_32, 
+    const auto pref_guard_interval = array_of<int>(DTAPI_DVBT2_GI_1_128, DTAPI_DVBT2_GI_1_32,
                                                    DTAPI_DVBT2_GI_1_16, DTAPI_DVBT2_GI_19_256,
-                                                   DTAPI_DVBT2_GI_1_8, DTAPI_DVBT2_GI_19_128, 
+                                                   DTAPI_DVBT2_GI_1_8, DTAPI_DVBT2_GI_19_128,
                                                    DTAPI_DVBT2_GI_1_4);
     // m_L1Modulation
-    const auto pref_l1_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16, 
+    const auto pref_l1_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16,
                                                   DTAPI_DVBT2_QAM64, DTAPI_DVBT2_QAM256);
     // m_Plps[0].m_CodeRate
-    const auto pref_code_rate = array_of<int>(DTAPI_DVBT2_COD_1_2, DTAPI_DVBT2_COD_3_5, DTAPI_DVBT2_COD_2_3, 
+    const auto pref_code_rate = array_of<int>(DTAPI_DVBT2_COD_1_2, DTAPI_DVBT2_COD_3_5, DTAPI_DVBT2_COD_2_3,
                                               DTAPI_DVBT2_COD_3_4, DTAPI_DVBT2_COD_4_5, DTAPI_DVBT2_COD_5_6);
     // m_Plps[0].m_Modulation
-    const auto pref_plp0_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16, 
+    const auto pref_plp0_modulation = array_of<int>(DTAPI_DVBT2_BPSK, DTAPI_DVBT2_QPSK, DTAPI_DVBT2_QAM16,
                                                     DTAPI_DVBT2_QAM64, DTAPI_DVBT2_QAM256);
 }
 
@@ -72,7 +72,7 @@ void ts::EvaluateDvbT2ParsForBitrate(Dtapi::DtDvbT2Pars& pars, const ts::BitRate
     ts::BitRate best_bitrate = 0;
     //initialize to some high value
     auto best_bitrate_diff = bitrate;
-    
+
     // Build a list of all possible modulation parameters for this bitrate.
     for (auto fft_mode : pref_fft_mode) {
         Dtapi::DtDvbT2Pars params = pars;
