@@ -59,6 +59,7 @@ namespace ts {
         UString           _output_name;
         NanoSecond        _output_interval;
         bool              _multiple_output;
+        bool              _cumulative;
         TSAnalyzerOptions _analyzer_options;
 
         // Working data:
@@ -87,6 +88,7 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     _output_name(),
     _output_interval(0),
     _multiple_output(false),
+    _cumulative(false),
     _analyzer_options(),
     _output_stream(),
     _output(nullptr),
@@ -101,6 +103,12 @@ ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
     duck.defineArgsForTimeReference(*this);
     duck.defineArgsForPDS(*this);
     _analyzer_options.defineArgs(*this);
+
+    option(u"cumulative", 'c');
+    help(u"cumulative",
+         u"With --interval, accumulate analysis data of all intervals. "
+         u"With this option, each new report is an analysis from the beginning of the stream. "
+         u"By default, the analyzed data are reset after each report.");
 
     option(u"interval", 'i', POSITIVE);
     help(u"interval", u"seconds",
@@ -134,6 +142,7 @@ bool ts::AnalyzePlugin::getOptions()
     _output_name = value(u"output-file");
     _output_interval = NanoSecPerSec * intValue<Second>(u"interval", 0);
     _multiple_output = present(u"multiple-files");
+    _cumulative = present(u"cumulative");
     return true;
 }
 
@@ -249,7 +258,9 @@ ts::ProcessorPlugin::Status ts::AnalyzePlugin::processPacket(TSPacket& pkt, TSPa
             return TSP_END;
         }
         // Reset analysis context.
-        _analyzer.reset();
+        if (!_cumulative) {
+            _analyzer.reset();
+        }
         // Compute next report time.
         _next_report += _output_interval;
     }
