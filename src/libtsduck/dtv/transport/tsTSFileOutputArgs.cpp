@@ -181,12 +181,16 @@ bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
 
 bool ts::TSFileOutputArgs::open(Report& report, AbortInterface* abort)
 {
+    if (_file.isOpen()) {
+        return false; // already open
+    }
     if (_max_size > 0) {
         _name_gen.initCounter(_name);
     }
     else if (_max_duration > 0) {
         _name_gen.initDateTime(_name);
     }
+    _next_open_time = Time::CurrentUTC();
     _current_files.clear();
     _file.setStuffing(_start_stuffing, _stop_stuffing);
     size_t retry_allowed = _retry_max == 0 ? std::numeric_limits<size_t>::max() : _retry_max;
@@ -239,7 +243,7 @@ bool ts::TSFileOutputArgs::openAndRetry(bool initial_wait, size_t& retry_allowed
         if (success || !_reopen || (abort != nullptr && abort->aborting())) {
             _current_size = 0;
             if (_max_duration > 0) {
-                _next_open_time = Time::CurrentUTC() + _max_duration * MilliSecPerSec;
+                _next_open_time += _max_duration * MilliSecPerSec;
             }
             return success;
         }
