@@ -210,17 +210,39 @@ function Get-URL-In-HTML([string]$Url, [string]$Pattern, [string]$FallbackURL = 
     }
 }
 
-# Get an URL matching a pattern in a GitHub project release.
-function Get-URL-In-GitHub([string]$Repo, [string]$Pattern)
+# Get the JSON description of the 20 latest releases of a repo in GitHub.
+function Get-Releases-In-GitHub([string]$Repo)
 {
-    $Url = (Invoke-RestMethod "https://api.github.com/repos/$Repo/releases?per_page=20" |
+    # If the environment variable GITHUB_TOKEN is not empty, use it to authenticate.
+    if (-not $env:GITHUB_TOKEN) {
+        $Headers = @{}
+    }
+    else {
+        $Cred = [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$($env:GITHUB_TOKEN)"))
+        $Headers = @{Authorization="Basic $Cred"}
+    }
+
+    $Response = (Invoke-WebRequest -Headers $Headers "https://api.github.com/repos/$Repo/releases?per_page=20")
+
+    $Remain = $Response.Headers['X-RateLimit-Remaining']
+    if (-not -not $Remain -and [int]$Remain -lt 10) {
+        Write-Output "Warning: GitHub API rate limit remaining is $Remain"
+    }
+
+    return (ConvertFrom-Json $Response.Content)
+}
+
+# Get an URL matching a pattern in a GitHub project release.
+function Get-URL-In-GitHub([string]$Repo, $Patterns)
+{
+    $Url = (Get-Releases-In-GitHub $Repo |
             ForEach-Object { $_.assets } |
             ForEach-Object { $_.browser_download_url } |
-            Select-String $Pattern |
+            Select-String $Patterns |
             Select-Object -First 1)
 
     if (-not $Url) {
-        Exit-Script "No package matching '$Pattern' in GitHub repo $Repo"
+        Exit-Script "No package matching '$Patterns' in GitHub repo $Repo"
     }
     else {
         return [string]$Url

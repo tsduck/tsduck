@@ -45,15 +45,8 @@ Write-Output "==== libsrt download and installation procedure"
 . "$PSScriptRoot\install-common.ps1"
 
 # Get the URL of the latest installer.
-$URL = (Invoke-RestMethod "https://api.github.com/repos/Haivision/srt/releases?per_page=20" |
-        ForEach-Object { $_.assets } |
-        ForEach-Object { $_.browser_download_url } |
-        Select-String @("/libsrt-.*\.exe$", "/libsrt-.*-win-installer\.zip$") |
-        Select-Object -First 1)
+$URL = (Get-URL-In-GitHub "Haivision/srt" @("/libsrt-.*\.exe$", "/libsrt-.*-win-installer\.zip$"))
 
-if (-not $URL) {
-    Exit-Script "Could not find a libsrt installer on GitHub"
-}
 if (-not ($URL -match "\.zip$") -and -not ($URL -match "\.exe$")) {
     Exit-Script "Unexpected URL, not .exe, not .zip: $URL"
 }
