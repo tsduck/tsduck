@@ -222,7 +222,7 @@ function Get-Releases-In-GitHub([string]$Repo)
         $Headers = @{Authorization="Basic $Cred"}
     }
 
-    $Response = (Invoke-WebRequest -Headers $Headers "https://api.github.com/repos/$Repo/releases?per_page=20")
+    $Response = (Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Headers $Headers -Uri "https://api.github.com/repos/$Repo/releases?per_page=20")
 
     $Remain = $Response.Headers['X-RateLimit-Remaining']
     if (-not -not $Remain -and [int]$Remain -lt 10) {
