@@ -109,6 +109,47 @@ function Recurse-Admin([string]$CmdArgs = "")
     Start-Process -Wait -Verb runas -FilePath PowerShell.exe -ArgumentList @("-ExecutionPolicy", "RemoteSigned", "-Command", $cmd)
 }
 
+# Convert "something" into an integer. Depending on the version of PowerShell,
+# the integer data in a Web response can be in a string or in an array of strings.
+function To-Int($Data, $Default = $null)
+{
+    $Previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    try {
+        if ($Data -eq $null) {
+            return $Default
+        }
+        if ($Data.GetType().IsPrimitive) {
+            return [int]$Data
+        }
+        if ($Data.GetType().IsArray) {
+            foreach ($elem in $Data) {
+                $i = To-Int $elem $null
+                if ($i -ne $null) {
+                    return $i
+                }
+            }
+            return $Default
+        }
+        if ($Data.GetType().UnderlyingSystemType.Name -like "Hashtable") {
+            foreach ($elem in $Data.Values) {
+                $i = To-Int $elem $null
+                if ($i -ne $null) {
+                    return $i
+                }
+            }
+            return $Default
+        }
+        return [int]$Data.ToString()
+    }
+    catch {
+        return $Default
+    }
+    finally {
+        $ErrorActionPreference = $Previous
+    }
+}
+
 # Install a Windows Capability.
 function Install-Windows-Capability([string]$Name)
 {
@@ -223,9 +264,8 @@ function Get-Releases-In-GitHub([string]$Repo)
     }
 
     $Response = (Invoke-WebRequest -UseBasicParsing -UserAgent $UserAgent -Headers $Headers -Uri "https://api.github.com/repos/$Repo/releases?per_page=20")
-
-    $Remain = $Response.Headers['X-RateLimit-Remaining']
-    if (-not -not $Remain -and [int]$Remain -lt 10) {
+    $Remain = (To-Int $Response.Headers['X-RateLimit-Remaining'] 99999)
+    if ($Remain -lt 10) {
         Write-Output "Warning: GitHub API rate limit remaining is $Remain"
     }
 
