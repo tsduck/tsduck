@@ -52,8 +52,8 @@ Write-Output "==== Java (AdoptOpenJDK) download and installation procedure"
 
 . "$PSScriptRoot\install-common.ps1"
 
-# REST API for the latest releases of AdoptOpenJDK.
-$API = "https://api.adoptopenjdk.net/v3"
+# REST API for the latest releases of Eclipse Temurin.
+$API = "https://api.adoptium.net/v3"
 
 # Get JDK or JRE.
 if ($JRE) {
