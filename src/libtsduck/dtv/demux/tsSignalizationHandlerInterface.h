@@ -59,6 +59,7 @@ namespace ts {
     class TVCT;
     class RRT;
     class STT;
+    class SAT;
 
     //!
     //! General-purpose signalization handler interface.
@@ -173,6 +174,12 @@ namespace ts {
         //! @param [in] tid The table id into which the time was found.
         //!
         virtual void handleUTC(const Time& utc, TID tid);
+        //!
+        //! This hook is invoked when a new DVB Satellite Access Table (SAT) is available.
+        //! @param [in] table A reference to the new SAT.
+        //! @param [in] pid The PID on which the table was found.
+        //!
+        virtual void handleSAT(const SAT& table, PID pid);
         //!
         //! This hook is invoked when a service in the transport stream has changed.
         //! The change can be minor, such as name or LCN.

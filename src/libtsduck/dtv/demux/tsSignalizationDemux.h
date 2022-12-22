@@ -484,6 +484,7 @@ namespace ts {
         void handleNIT(const NIT&, PID);
         void handleSDT(const SDT&, PID);
         void handleMGT(const MGT&, PID);
+        void handleSAT(const SAT&, PID);
 
         // Template common version for CVCT and TVCT.
         template <class XVCT, typename std::enable_if<std::is_base_of<VCT, XVCT>::value, int>::type = 0>

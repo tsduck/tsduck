@@ -770,6 +770,21 @@ namespace ts {
         template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
         bool putBits(INT value, size_t bits);
 
+
+        //!
+        //! Serialize the number of reserved '1' bits
+        //! @param [in] bits Number of reserved '1' bits to write.
+        //! @return True on success, false on error (read only or no more space to write).
+        //! 
+        inline bool putReserved(size_t bits) { return putBits<int>(1, bits); }
+
+        //!
+        //! Serialize the number of reserved '0' bits
+        //! @param [in] bits Number of reserved '0' bits to write.
+        //! @return True on success, false on error (read only or no more space to write).
+        //! 
+        inline bool putReservedZero(size_t bits) { return putBits<int>(0, bits); }
+
         //!
         //! Get bulk bytes from the buffer.
         //! The bit aligment is ignored, reading starts at the current read byte pointer,

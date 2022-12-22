@@ -1,0 +1,22 @@
+[SAT.satellite_table_id]
+Bits = 6
+0x00 = Satellite Position V2
+0x01 = Cell Fragment
+0x02 = Time Association
+0x03 = Beamhopping Time Plan
+
+[SAT.west_east_indicator]
+Bits = 1
+0 = west
+1 = east
+
+[SAT.UTC_mode]
+Bits = 4
+0 = without leap second signalling
+1 = with leap second signalling
+
+[SAT.time_plan_mode]
+Bits = 2
+0 = one transmission each cycle
+1 = multiple transmission each cycle
+2 = only grid size is siganlled, not illuminance
