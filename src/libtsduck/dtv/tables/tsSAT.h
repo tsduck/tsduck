@@ -198,8 +198,9 @@ namespace ts {
                 uint16_t    number;
                 bool        on;
 
-                slot();
-                slot(uint16_t _number, bool _on) { number = _number; on = _on; }
+                slot() : number(0), on(false) {}
+                slot(uint16_t number_, bool on_) : number(number_), on(on_) {}
+                slot(const slot& other) : number(other.number), on(other.on) {}
                 bool operator==(const slot& rhs) const { return this->number == rhs.number; }
             };
 
