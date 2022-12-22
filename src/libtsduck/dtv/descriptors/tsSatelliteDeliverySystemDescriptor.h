@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractDeliverySystemDescriptor.h"
 #include "tsDeliverySystem.h"
+#include "tsSAT.h"
 
 namespace ts {
     //!
@@ -122,6 +123,7 @@ namespace ts {
     private:
         friend class S2XSatelliteDeliverySystemDescriptor;
         friend class S2Xv2SatelliteDeliverySystemDescriptor;
+        friend class SAT;
         static DeliverySystem ResolveDeliverySystem(const DuckContext&, DeliverySystem);
 
         // Enumerations for XML.

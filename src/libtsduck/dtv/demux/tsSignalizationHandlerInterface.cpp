@@ -48,4 +48,5 @@ void ts::SignalizationHandlerInterface::handleTVCT(const TVCT&, PID) {}
 void ts::SignalizationHandlerInterface::handleRRT(const RRT&, PID) {}
 void ts::SignalizationHandlerInterface::handleSTT(const STT&, PID) {}
 void ts::SignalizationHandlerInterface::handleUTC(const Time&, TID) {}
+void ts::SignalizationHandlerInterface::handleSAT(const SAT&, PID) {}
 void ts::SignalizationHandlerInterface::handleService(uint16_t, const Service&, const PMT&, bool) {}

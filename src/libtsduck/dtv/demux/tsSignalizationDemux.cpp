@@ -47,6 +47,7 @@
 #include "tsTVCT.h"
 #include "tsRRT.h"
 #include "tsSTT.h"
+#include "tsSAT.h"
 
 
 //----------------------------------------------------------------------------
@@ -389,6 +390,10 @@ bool ts::SignalizationDemux::addFilteredTableId(TID tid)
             _demux.addPID(PID_PSIP);
             break;
         }
+        case TID_SAT: {
+            _demux.addPID(PID_SAT);
+            break;
+        }
         default: {
             // Unsupported table id.
             return false;
@@ -493,6 +498,10 @@ bool ts::SignalizationDemux::removeFilteredTableId(TID tid)
             if (!isFilteredTableId(TID_MGT) && !isFilteredTableId(TID_CVCT) && !isFilteredTableId(TID_TVCT) && !isFilteredTableId(TID_RRT) && !isFilteredTableId(TID_STT)) {
                 _demux.removePID(PID_PSIP);
             }
+            break;
+        }
+        case TID_SAT: {
+            _demux.removePID(PID_SAT);
             break;
         }
         default: {
@@ -781,6 +790,13 @@ void ts::SignalizationDemux::handleTable(SectionDemux&, const BinaryTable& table
             const RRT rrt(_duck, table);
             if (rrt.isValid() && pid == PID_PSIP && _handler != nullptr && isFilteredTableId(tid)) {
                 _handler->handleRRT(rrt, pid);
+            }
+            break;
+        }
+        case TID_SAT: {
+            const SAT sat(_duck, table);
+            if (sat.isValid() && pid == PID_SAT) {
+                handleSAT(sat, pid);
             }
             break;
         }
@@ -1097,6 +1113,20 @@ void ts::SignalizationDemux::handleVCT(const XVCT& vct, PID pid, void (Signaliza
     if (_handler != nullptr && isFilteredTableId(vct.tableId())) {
         (_handler->*handle)(vct, pid);
         _handler->handleVCT(vct, pid);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Process a SAT.
+//----------------------------------------------------------------------------
+
+void ts::SignalizationDemux::handleSAT(const SAT& sat, PID pid)
+{
+
+    // Notify the SAT to the application.
+    if (_handler != nullptr && isFilteredTableId(TID_SAT)) {
+        _handler->handleSAT(sat, pid);
     }
 }
 
