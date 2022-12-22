@@ -813,12 +813,6 @@ uint8_t ts::SAT::beam_hopping_time_plan_info_type::time_plan_mode(void) const
 }
 
 
-ts::SAT::beam_hopping_time_plan_info_type::slot::slot() :
-    number(0),
-    on(false)
-{
-}
-
 void ts::SAT::beam_hopping_time_plan_info_type::serialize(BinaryTable& table, PSIBuffer& buf) const
 {
     buf.putUInt32(beamhopping_time_plan_id);
