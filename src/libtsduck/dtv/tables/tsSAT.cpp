@@ -89,7 +89,7 @@ void ts::SAT::clearContent()
 //! The number of bits needed after the slot map for byte alignment
 //! @return The number of bits needed for byte aligment
 //! 
-uint8_t padding_size_K(size_t map_size) 
+static uint8_t padding_size_K(size_t map_size) 
 { 
     return 7 - (( map_size - 1) % 8); 
 }
@@ -101,7 +101,7 @@ uint8_t padding_size_K(size_t map_size)
 
 uint16_t ts::SAT::tableIdExtension() const
 {
-    return ((satellite_table_id & 0x3f) << 10) | (table_count & 0x3FF);
+    return uint16_t((satellite_table_id & 0x3f) << 10) | uint16_t(table_count & 0x3FF);
 }
 
 //----------------------------------------------------------------------------
@@ -504,17 +504,17 @@ void ts::SAT::cell_fragment_info_type::serialize(BinaryTable& table, PSIBuffer& 
         buf.putReservedZero(4);
     }
     buf.putBits(delivery_system_ids.size(), 10);
-    for (const auto it : delivery_system_ids) {
+    for (auto it : delivery_system_ids) {
         buf.putUInt32(it);
     }
     buf.putReservedZero(6);
     buf.putBits(new_delivery_system_ids.size(), 10);
-    for (const auto it : new_delivery_system_ids) {
+    for (auto it : new_delivery_system_ids) {
         it.serialize(table, buf);
     }
     buf.putReservedZero(6);
     buf.putBits(obsolescent_delivery_system_ids.size(), 10);
-    for (const auto it : obsolescent_delivery_system_ids) {
+    for (auto it : obsolescent_delivery_system_ids) {
         it.serialize(table, buf);
     }
 }
@@ -1065,7 +1065,7 @@ ts::UString ts::SAT::degrees18(uint32_t twosCompNum)
 {
     using SomeType = uint64_t;
     constexpr SomeType sign_bits = ~SomeType{} << 18;
-    int regularNum = twosCompNum & 1 << 17 ? twosCompNum | sign_bits : twosCompNum;
+    long long int regularNum = twosCompNum & 1 << 17 ? twosCompNum | sign_bits : twosCompNum;
 
     return  UString::Format(u"%f", { Double(regularNum) / Double(1000) });
 }
@@ -1074,7 +1074,7 @@ ts::UString ts::SAT::degrees19(uint32_t twosCompNum)
 {
     using SomeType = uint64_t;
     constexpr SomeType sign_bits = ~SomeType{} << 19;
-    int regularNum = twosCompNum & 1 << 18 ? twosCompNum | sign_bits : twosCompNum;
+    long long int regularNum = twosCompNum & 1 << 18 ? twosCompNum | sign_bits : twosCompNum;
 
     return  UString::Format(u"%f", { Double(regularNum) / Double(1000) });
 }
@@ -1094,7 +1094,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
     // Display satellite access information
     const uint16_t tid_ext = section.tableIdExtension();
     const uint16_t _satellite_table_id = (tid_ext & 0x3F00) >> 10;
-    const uint16_t _table_count = tid_ext & 0x03FF;
+    //const uint16_t _table_count = tid_ext & 0x03FF;
 
     uint16_t loop;
     switch (_satellite_table_id) {
@@ -1120,7 +1120,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
                     uint8_t _epoch_year = buf.getUInt8();
                     uint16_t _day_of_the_year = buf.getUInt16();
                     ieee_float32_t _day_fraction = buf.getFloat32();
-                    disp << ", " << UString::Format(u"Year: %d, day: %d, frac: %f ", { _epoch_year, _day_of_the_year, _day_fraction }) << std::endl;
+                    disp << ", Year: " << int(_epoch_year) << ", day: " << _day_of_the_year << ", frac: " << _day_fraction << std::endl;
                     disp << margin << "Mean motion first derivative: " << buf.getFloat32();
                     disp << ", mean motion second derivative: " << buf.getFloat32() << std::endl;
                     disp << margin << "Drag term: " << buf.getFloat32();
@@ -1195,7 +1195,7 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
             while (buf.canReadBytes(19)) {
                 disp << margin << UString::Format(u"[%d] Beamhopping Time Plan id: %08x", { loop++, buf.getUInt32() });
                 buf.skipReservedBits(4, 0);
-                uint16_t _beamhopping_time_plan_length = buf.getBits<uint16_t>(12);
+                buf.skipBits(12); // beamhopping_time_plan_length
                 buf.skipReservedBits(6, 0);
                 uint8_t _time_plan_mode = buf.getBits<uint8_t>(2);
                 disp << ", mode: " << DataName(MY_XML_NAME, u"time_plan_mode", _time_plan_mode, NamesFlags::VALUE|NamesFlags::DECIMAL) << std::endl;
@@ -1209,9 +1209,9 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
                     buf.skipBits(1);
                     uint16_t _bit_map_size = buf.getBits<int16_t>(15);
                     buf.skipBits(1);
-                    uint16_t _current_slot = buf.getBits<int16_t>(15);
-                    std::vector<bool>_slot_transmissions;
+                    disp << margin << "  Current slot: " << buf.getBits<int16_t>(15) << std::endl;
 
+                    std::vector<bool>_slot_transmissions;
                     for (uint16_t j = 1; j <= _bit_map_size; j++) {
                         _slot_transmissions.push_back(buf.getBool());
                     }
