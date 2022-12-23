@@ -60,6 +60,8 @@ namespace ts {
 
                 geostationary_position_type();
                 geostationary_position_type(const geostationary_position_type& other);
+                geostationary_position_type& operator=(const geostationary_position_type& other);
+
                 void serialize(BinaryTable&, PSIBuffer&) const;
                 void deserialize(PSIBuffer&, const Section&);
             };
@@ -81,6 +83,8 @@ namespace ts {
                 
                 earth_orbiting_satallite_type();
                 earth_orbiting_satallite_type(const earth_orbiting_satallite_type& other);
+                earth_orbiting_satallite_type& operator=(const earth_orbiting_satallite_type& other);
+
                 void serialize(BinaryTable&, PSIBuffer&) const;
                 void deserialize(PSIBuffer&, const Section&);
             };
@@ -224,6 +228,8 @@ namespace ts {
 
             beam_hopping_time_plan_info_type();
             beam_hopping_time_plan_info_type(const beam_hopping_time_plan_info_type& other);
+
+            beam_hopping_time_plan_info_type& operator=(const beam_hopping_time_plan_info_type& other);
         
             //!
             //! Determines the size of this iteration of a beam hopping time plan to allow quick jumping to the next iteration.
@@ -270,6 +276,13 @@ namespace ts {
         //! @param [in] other Other instance to copy.
         //!
         SAT(const SAT& other);
+
+         //!
+        //! Assignment operator.
+        //! @param [in] other Other instance to copy.
+        //! @return A reference to this object.
+        //!
+        SAT& operator=(const SAT& other);
 
         // Inherited methods.
         virtual uint16_t tableIdExtension() const override;

@@ -84,6 +84,18 @@ void ts::SAT::clearContent()
     beam_hopping_time_plan_info.clear();
 }
 
+ts::SAT& ts::SAT::operator=(const SAT& other)
+{
+    if (&other != this) {
+        // Assign super class but leave uint16_t& network_id unchanged.
+        AbstractLongTable::operator=(other);
+        satellite_position_v2_info = other.satellite_position_v2_info;
+        cell_fragment_info = other.cell_fragment_info;
+        time_association_fragment_info = other.time_association_fragment_info;
+        beam_hopping_time_plan_info = other.beam_hopping_time_plan_info;
+    }
+    return *this;
+}
 
 //!
 //! The number of bits needed after the slot map for byte alignment
@@ -128,6 +140,15 @@ ts::SAT::satellite_position_v2_info_type::geostationary_position_type::geostatio
     orbital_position(other.orbital_position),
     west_east_flag(other.west_east_flag)
 {
+}
+
+ts::SAT::satellite_position_v2_info_type::geostationary_position_type& ts::SAT::satellite_position_v2_info_type::geostationary_position_type::operator=(const geostationary_position_type& other)
+{
+    if (&other != this) {
+        orbital_position = other.orbital_position;
+        west_east_flag = other.west_east_flag;
+    }
+    return *this;
 }
 
 void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::serialize(BinaryTable& table, PSIBuffer& buf) const
@@ -178,6 +199,25 @@ ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::earth_o
     mean_anomaly(other.mean_anomaly),
     mean_motion(other.mean_motion)
 {
+}
+
+ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type& ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::operator=(const earth_orbiting_satallite_type& other)
+{
+    if (&other != this) {
+        epoch_year = other.epoch_year;
+        day_of_the_year = other.day_of_the_year;
+        day_fraction = other.day_fraction;
+        mean_motion_first_derivative = other.mean_motion_first_derivative;
+        mean_motion_second_derivative = other.mean_motion_second_derivative;
+        drag_term = other.drag_term;
+        inclination = other.inclination;
+        right_ascension_of_the_ascending_node = other.right_ascension_of_the_ascending_node;
+        eccentricity = other.eccentricity;
+        argument_of_perigree = other.argument_of_perigree;
+        mean_anomaly = other.mean_anomaly;
+        mean_motion = other.mean_motion;
+    }
+    return *this;
 }
 
 void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::serialize(BinaryTable& table, PSIBuffer& buf) const
@@ -764,6 +804,37 @@ ts::SAT::beam_hopping_time_plan_info_type::beam_hopping_time_plan_info_type(cons
 {
 }
 
+ts::SAT::beam_hopping_time_plan_info_type& ts::SAT::beam_hopping_time_plan_info_type::operator=(const beam_hopping_time_plan_info_type& other)
+{
+    if (&other != this) {
+        beamhopping_time_plan_id = other.beamhopping_time_plan_id;
+        time_of_application = other.time_of_application;
+        cycle_duration = other.cycle_duration;
+        if (other.dwell_duration.set()) {
+            dwell_duration = other.dwell_duration;
+        }
+        if (other.on_time.set()) {
+            on_time = other.on_time;
+        }
+        if (other.current_slot.set()) {
+            current_slot = other.current_slot;
+        }
+        slot_duration_on = other.slot_duration_on;
+        if (other.grid_size.set()) {
+            grid_size = other.grid_size;
+        }
+        if (other.current_slot.set()) {
+            revisit_duration = other.revisit_duration;
+        }
+        if (other.sleep_time.set()) {
+            sleep_time = other.sleep_time;
+        }
+        if (other.sleep_duration.set()) {
+            sleep_duration = other.sleep_duration;
+        }
+    }
+    return *this;
+}
 
 uint16_t ts::SAT::beam_hopping_time_plan_info_type::plan_length(void) const
 {
