@@ -75,16 +75,6 @@ ts::SAT::SAT(const SAT& other) :
     table_count = other.table_count;
 }
 
-
-ts::SAT& ts::SAT::operator=(const SAT& other)
-{
-    if (&other != this) {
-        AbstractLongTable::operator=(other);
-    }
-    return *this;
-}
-
-
 void ts::SAT::clearContent()
 {
    // satellite_table_id = 0;

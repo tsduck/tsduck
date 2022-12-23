@@ -253,7 +253,8 @@ namespace ts {
         //! Default constructor.
         //! @param [in] vers Table version number.
         //! @param [in] cur True if table is current, false if table is next.
-        //! @param [in] id satellite_table_id (upper 6 bits) and table_count (lower 10 bits).
+        //! @param [in] satellite_table_id_ The table type 
+        //! @param [in] table_count_ depends on table type, see ETSI EN 300 468 clause 5.2.11.1 
         //!
         SAT(uint8_t vers = 0, bool cur = true, uint16_t satellite_table_id_ = 0, uint16_t table_count_ = 0);
 
@@ -269,13 +270,6 @@ namespace ts {
         //! @param [in] other Other instance to copy.
         //!
         SAT(const SAT& other);
-
-         //!
-        //! Assignment operator.
-        //! @param [in] other Other instance to copy.
-        //! @return A reference to this object.
-        //!
-        SAT& operator=(const SAT& other);
 
         // Inherited methods.
         virtual uint16_t tableIdExtension() const override;
