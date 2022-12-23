@@ -65,14 +65,14 @@ ts::SAT::SAT(DuckContext& duck, const BinaryTable& table) :
 }
 
 ts::SAT::SAT(const SAT& other) :
-    AbstractLongTable(other)
+    AbstractLongTable(other),
+    satellite_position_v2_info(other.satellite_position_v2_info),
+    cell_fragment_info(other.cell_fragment_info),
+    time_association_fragment_info(other.time_association_fragment_info),
+    beam_hopping_time_plan_info(other.beam_hopping_time_plan_info),
+    satellite_table_id(other.satellite_table_id),
+    table_count(other.table_count)
 {
-    satellite_position_v2_info = other.satellite_position_v2_info;
-    cell_fragment_info = other.cell_fragment_info;
-    time_association_fragment_info = other.time_association_fragment_info;
-    beam_hopping_time_plan_info = other.beam_hopping_time_plan_info;
-    satellite_table_id = other.satellite_table_id;
-    table_count = other.table_count;
 }
 
 void ts::SAT::clearContent()
@@ -804,38 +804,6 @@ ts::SAT::beam_hopping_time_plan_info_type::beam_hopping_time_plan_info_type(cons
 {
 }
 
-ts::SAT::beam_hopping_time_plan_info_type& ts::SAT::beam_hopping_time_plan_info_type::operator=(const beam_hopping_time_plan_info_type& other)
-{
-    if (&other != this) {
-        beamhopping_time_plan_id = other.beamhopping_time_plan_id;
-        time_of_application = other.time_of_application;
-        cycle_duration = other.cycle_duration;
-        if (other.dwell_duration.set()) {
-            dwell_duration = other.dwell_duration;
-        }
-        if (other.on_time.set()) {
-            on_time = other.on_time;
-        }
-        if (other.current_slot.set()) {
-            current_slot = other.current_slot;
-        }
-        slot_duration_on = other.slot_duration_on;
-        if (other.grid_size.set()) {
-            grid_size = other.grid_size;
-        }
-        if (other.current_slot.set()) {
-            revisit_duration = other.revisit_duration;
-        }
-        if (other.sleep_time.set()) {
-            sleep_time = other.sleep_time;
-        }
-        if (other.sleep_duration.set()) {
-            sleep_duration = other.sleep_duration;
-        }
-    }
-    return *this;
-}
-
 uint16_t ts::SAT::beam_hopping_time_plan_info_type::plan_length(void) const
 {
     uint16_t plan_length = 7 + time_of_application.serialized_length() + cycle_duration.serialized_length();
@@ -958,9 +926,9 @@ void ts::SAT::beam_hopping_time_plan_info_type::toXML(xml::Element* root)
         xml::Element* e = root->addElement(u"time_plan_mode_1");
         e->setOptionalIntAttribute(u"current_slot", current_slot);
         for (auto it : slot_duration_on) {
-            xml::Element* slot = e->addElement(u"slot");
-            slot->setIntAttribute(u"id", it.number);
-            slot->setBoolAttribute(u"transmission_on", it.on);
+            xml::Element* newSlot = e->addElement(u"slot");
+            newSlot->setIntAttribute(u"id", it.number);
+            newSlot->setBoolAttribute(u"transmission_on", it.on);
         }
     }
     else if (time_plan_mode() == HOP_GRID) {

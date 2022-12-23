@@ -228,9 +228,7 @@ namespace ts {
 
             beam_hopping_time_plan_info_type();
             beam_hopping_time_plan_info_type(const beam_hopping_time_plan_info_type& other);
-
-            beam_hopping_time_plan_info_type& operator=(const beam_hopping_time_plan_info_type& other);
-        
+       
             //!
             //! Determines the size of this iteration of a beam hopping time plan to allow quick jumping to the next iteration.
             //! @return The size, in bytes (12 bits), of this iteration in the loop, starting with the beamhopping_time_plan_id and ending at the end of the loop.
