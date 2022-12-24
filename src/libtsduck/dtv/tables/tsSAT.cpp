@@ -83,7 +83,7 @@ void ts::SAT::clearContent()
     time_association_fragment_info.clear();
     beam_hopping_time_plan_info.clear();
 }
-
+/*
 ts::SAT& ts::SAT::operator=(const SAT& other)
 {
     if (&other != this) {
@@ -96,7 +96,7 @@ ts::SAT& ts::SAT::operator=(const SAT& other)
     }
     return *this;
 }
-
+*/
 //!
 //! The number of bits needed after the slot map for byte alignment
 //! @return The number of bits needed for byte aligment
