@@ -55,8 +55,8 @@ namespace ts {
         public:
             class geostationary_position_type {
             public:
-                uint16_t  orbital_position;   //!< Orbital position, unit is 0.1 degree.
-                int       west_east_flag;     //!< True (1) for East, false (0) for West.
+                uint16_t  orbital_position;                                 //!< Orbital position, unit is 0.1 degree.
+                int       west_east_flag;                                   //!< True (1) for East, false (0) for West.
 
                 geostationary_position_type();
                 geostationary_position_type(const geostationary_position_type& other);
@@ -68,35 +68,47 @@ namespace ts {
 
             class earth_orbiting_satallite_type {
             public:
-                uint8_t           epoch_year;         //!< 8 bits. last 2 digits of the epoch year
-                uint16_t          day_of_the_year;    //!< 16 bits. epoch day of the year
-                ieee_float32_t    day_fraction;       //!< epoch day fraction.
-                ieee_float32_t    mean_motion_first_derivative;
-                ieee_float32_t    mean_motion_second_derivative;
-                ieee_float32_t    drag_term;
-                ieee_float32_t    inclination;
-                ieee_float32_t    right_ascension_of_the_ascending_node;
-                ieee_float32_t    eccentricity;
-                ieee_float32_t    argument_of_perigree;
-                ieee_float32_t    mean_anomaly;
-                ieee_float32_t    mean_motion;
+                uint8_t           epoch_year;                               //!< 8 bits. lLast 2 digits of the epoch year.
+                uint16_t          day_of_the_year;                          //!< 16 bits. Epoch day of the year.
+                ieee_float32_t    day_fraction;                             //!< Epoch day fraction.
+                ieee_float32_t    mean_motion_first_derivative;             //!< Mean motion derivative divided by 2 in revolutions per day-squared.
+                ieee_float32_t    mean_motion_second_derivative;            //!< The mean motion second derivative divided by 6 in revolutions per day-cubed.
+                ieee_float32_t    drag_term;                                //!< Drag term (or radiation pressure coefficient or BSTAR) in 1/EarthRadii.
+                ieee_float32_t    inclination;                              //!< Angle between the equator and the orbit plane in degrees.
+                ieee_float32_t    right_ascension_of_the_ascending_node;    //!< Right ascension of the ascension node in degrees.
+                ieee_float32_t    eccentricity;                             //!< Shape of the orbit (0=circular, Less than 1=elliptical). The value provided is the mean eccentricity.
+                ieee_float32_t    argument_of_perigree;                     //!< Argument of perigee in degrees.
+                ieee_float32_t    mean_anomaly;                             //!< Mean anomaly in degrees.
+                ieee_float32_t    mean_motion;                              //!< Mean number of orbits per day the object completes in revolutions/day.
                 
+                //! Default constructor.
                 earth_orbiting_satallite_type();
+
+                //! Copy constructor.
                 earth_orbiting_satallite_type(const earth_orbiting_satallite_type& other);
+
+                //! Assignment operator.
                 earth_orbiting_satallite_type& operator=(const earth_orbiting_satallite_type& other);
 
-                void serialize(BinaryTable&, PSIBuffer&) const;
-                void deserialize(PSIBuffer&, const Section&);
+                //!
+                //! This method serializes the attributes of an earth orbiting satellite.
+                //! 
+                void serialize(BinaryTable& table, PSIBuffer& buf) const;
+
+                //!
+                //! This method deserializes the attributes of an earth orbiting satellite.
+                //! 
+                void deserialize(PSIBuffer& buf, const Section& section);
             };
 
-            uint32_t        satellite_id;           //!< 24 bits
-            uint8_t         position_system;        //!< 1 bit
+            uint32_t        satellite_id;           //!< 24 bits, A label to identify the satellite that is detailed here.
+            uint8_t         position_system;        //!< 1 bit. The positioning system that is used  for this satellite. The value ‘0’ can be used for a satellite in geostationary orbit and the value ‘1’ can be used for any earth-orbiting satellite.
 
             //!<for position_system==POS_GEOSTATIONARY
-            Variable<geostationary_position_type>   geostationaryPosition;
+            Variable<geostationary_position_type>   geostationaryPosition;  //!< attributes of a geostationary satellite.
 
             //!< for positon_system==POS_EARTH_ORBITING
-            Variable<earth_orbiting_satallite_type>  earthOrbiting;
+            Variable<earth_orbiting_satallite_type>  earthOrbiting;         //!< attributes of an earth orbiting satellite
 
             satellite_position_v2_info_type();
             satellite_position_v2_info_type(const satellite_position_v2_info_type& other);
@@ -280,7 +292,7 @@ namespace ts {
         //! @param [in] other Other instance to copy.
         //! @return A reference to this object.
         //!
-        SAT& operator=(const SAT& other);
+     //   SAT& operator=(const SAT& other);
 
         // Inherited methods.
         virtual uint16_t tableIdExtension() const override;
