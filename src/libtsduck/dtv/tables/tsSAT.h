@@ -72,12 +72,12 @@ namespace ts {
 
                 //! Copy constructor.
                 //! @param [in] other Other instance to copy.
-                //! @return a new object whose values are copied from the source.
                 //! 
                 geostationary_position_type(const geostationary_position_type& other);
 
                 //! Assignment operator.
                 //! @param [in] other Other instance to copy.
+                //! @return a new object whose values are copied from the source.
                 //! 
                 geostationary_position_type& operator=(const geostationary_position_type& other);
 
