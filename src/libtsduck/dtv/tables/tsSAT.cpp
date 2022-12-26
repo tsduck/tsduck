@@ -83,20 +83,9 @@ void ts::SAT::clearContent()
     time_association_fragment_info.clear();
     beam_hopping_time_plan_info.clear();
 }
-/*
-ts::SAT& ts::SAT::operator=(const SAT& other)
-{
-    if (&other != this) {
-        // Assign super class but leave uint16_t& network_id unchanged.
-        AbstractLongTable::operator=(other);
-        satellite_position_v2_info = other.satellite_position_v2_info;
-        cell_fragment_info = other.cell_fragment_info;
-        time_association_fragment_info = other.time_association_fragment_info;
-        beam_hopping_time_plan_info = other.beam_hopping_time_plan_info;
-    }
-    return *this;
-}
-*/
+
+
+
 //!
 //! The number of bits needed after the slot map for byte alignment
 //! @return The number of bits needed for byte aligment
@@ -164,6 +153,36 @@ void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::dese
     west_east_flag = buf.getBit();
     buf.skipBits(7);
 }
+
+void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::toXML(xml::Element* root)
+{
+    root->setAttribute(u"orbital_position", UString::Format(u"%d.%d", { orbital_position / 10, orbital_position % 10 }));
+    root->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", west_east_flag);
+}
+
+bool ts::SAT::satellite_position_v2_info_type::geostationary_position_type::fromXML(const xml::Element* element)
+{
+    UString orbit;
+    bool ok = element->getAttribute(orbit, u"orbital_position", true) &&
+        element->getEnumAttribute(west_east_flag, SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", true);
+
+    if (ok) {
+        // Expected orbital position is "XX.X" as in "19.2".
+        UStringVector fields;
+        uint16_t p1 = 0;
+        uint16_t p2 = 0;
+        orbit.split(fields, u'.');
+        ok = fields.size() == 2 && fields[0].toInteger(p1) && fields[1].toInteger(p2) && p2 < 10;
+        if (ok) {
+            orbital_position = (p1 * 10) + p2;
+        }
+        else {
+            element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", { orbit, element->name(), element->lineNumber() });
+        }
+    }
+    return ok;
+}
+
 
 //----------------------------------------------------------------------------
 // Earth orbiting satellite
@@ -252,9 +271,41 @@ void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::de
     mean_motion = buf.getFloat32();
 }
 
+void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::toXML(xml::Element* root)
+{
+    root->setIntAttribute(u"epoch_year", epoch_year);
+    root->setIntAttribute(u"day_of_the_year", day_of_the_year);
+    root->setFloatAttribute(u"day_fraction", day_fraction);
+    root->setFloatAttribute(u"mean_motion_first_derivative", mean_motion_first_derivative);
+    root->setFloatAttribute(u"mean_motion_second_derivative", mean_motion_second_derivative);
+    root->setFloatAttribute(u"drag_term", drag_term);
+    root->setFloatAttribute(u"inclination", inclination);
+    root->setFloatAttribute(u"right_ascension_of_the_ascending_node", right_ascension_of_the_ascending_node);
+    root->setFloatAttribute(u"eccentricity", eccentricity);
+    root->setFloatAttribute(u"argument_of_perigree", argument_of_perigree);
+    root->setFloatAttribute(u"mean_anomaly", mean_anomaly);
+    root->setFloatAttribute(u"mean_motion", mean_motion);
+}
+
+bool ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::fromXML(const xml::Element* element)
+{
+    return element->getIntAttribute(epoch_year, u"epoch_year", true) &&
+        element->getIntAttribute(day_of_the_year, u"day_of_the_year", true) &&
+        element->getFloatAttribute(day_fraction, u"day_fraction", true) &&
+        element->getFloatAttribute(mean_motion_first_derivative, u"mean_motion_first_derivative", true) &&
+        element->getFloatAttribute(mean_motion_second_derivative, u"mean_motion_second_derivative", true) &&
+        element->getFloatAttribute(drag_term, u"drag_term", true) &&
+        element->getFloatAttribute(inclination, u"inclination", true) &&
+        element->getFloatAttribute(right_ascension_of_the_ascending_node, u"right_ascension_of_the_ascending_node", true) &&
+        element->getFloatAttribute(eccentricity, u"eccentricity", true) &&
+        element->getFloatAttribute(argument_of_perigree, u"argument_of_perigree", true) &&
+        element->getFloatAttribute(mean_anomaly, u"mean_anomaly", true) &&
+        element->getFloatAttribute(mean_motion, u"mean_motion", true);
+}
+
 
 //----------------------------------------------------------------------------
-// Satellite position
+// Satellite position v2
 //----------------------------------------------------------------------------
 
 ts::SAT::satellite_position_v2_info_type::satellite_position_v2_info_type() :
@@ -307,26 +358,10 @@ void ts::SAT::satellite_position_v2_info_type::toXML(xml::Element* root)
 {
     root->setIntAttribute(u"satellite_id", satellite_id, true);
     if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.set()) {
-        xml::Element* satPos = root->addElement(u"geostationary");
-        geostationary_position_type pos = geostationaryPosition.value();
-        satPos->setAttribute(u"orbital_position", UString::Format(u"%d.%d",
-            { pos.orbital_position / 10, pos.orbital_position % 10 }));
-        satPos->setEnumAttribute(SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", pos.west_east_flag);
+        geostationaryPosition.value().toXML(root->addElement(u"geostationary"));
     }
     else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.set()) {
-        xml::Element* orbiting = root->addElement(u"earth_orbiting");
-        orbiting->setIntAttribute(u"epoch_year", earthOrbiting.value().epoch_year);
-        orbiting->setIntAttribute(u"day_of_the_year", earthOrbiting.value().day_of_the_year);
-        orbiting->setFloatAttribute(u"day_fraction", earthOrbiting.value().day_fraction);
-        orbiting->setFloatAttribute(u"mean_motion_first_derivative", earthOrbiting.value().mean_motion_first_derivative);
-        orbiting->setFloatAttribute(u"mean_motion_second_derivative", earthOrbiting.value().mean_motion_second_derivative);
-        orbiting->setFloatAttribute(u"drag_term", earthOrbiting.value().drag_term);
-        orbiting->setFloatAttribute(u"inclination", earthOrbiting.value().inclination);
-        orbiting->setFloatAttribute(u"right_ascension_of_the_ascending_node", earthOrbiting.value().right_ascension_of_the_ascending_node);
-        orbiting->setFloatAttribute(u"eccentricity", earthOrbiting.value().eccentricity);
-        orbiting->setFloatAttribute(u"argument_of_perigree", earthOrbiting.value().argument_of_perigree);
-        orbiting->setFloatAttribute(u"mean_anomaly", earthOrbiting.value().mean_anomaly);
-        orbiting->setFloatAttribute(u"mean_motion", earthOrbiting.value().mean_motion);
+        earthOrbiting.value().toXML(root->addElement(u"earth_orbiting"));
     }
 }
 
@@ -350,42 +385,18 @@ bool ts::SAT::satellite_position_v2_info_type::fromXML(const xml::Element* eleme
             if (!geos.empty()) {
                 position_system = POSITION_SYSTEM_GEOSTATIONARY;
                 satellite_position_v2_info_type::geostationary_position_type newGeos;
-                UString orbit;
-                ok = geos[0]->getAttribute(orbit, u"orbital_position", true) &&
-                    geos[0]->getEnumAttribute(newGeos.west_east_flag, SatelliteDeliverySystemDescriptor::DirectionNames, u"west_east_flag", true);
-
+                ok = newGeos.fromXML(geos[0]);
                 if (ok) {
-                    // Expected orbital position is "XX.X" as in "19.2".
-                    UStringVector fields;
-                    uint16_t p1 = 0;
-                    uint16_t p2 = 0;
-                    orbit.split(fields, u'.');
-                    ok = fields.size() == 2 && fields[0].toInteger(p1) && fields[1].toInteger(p2) && p2 < 10;
-                    if (ok) {
-                        newGeos.orbital_position = (p1 * 10) + p2;
-                    }
-                    else {
-                        element->report().error(u"Invalid value '%s' for attribute 'orbital_position' in <%s> at line %d, use 'nn.n'", { orbit, element->name(), element->lineNumber() });
-                    }
+                    geostationaryPosition = newGeos;
                 }
-                geostationaryPosition = newGeos;
             }
             if (!eos.empty()) {
                 position_system = POSITION_SYSTEM_EARTH_ORBITING;
                 satellite_position_v2_info_type::earth_orbiting_satallite_type newEos;
-                ok = eos[0]->getIntAttribute(newEos.epoch_year, u"epoch_year", true) &&
-                    eos[0]->getIntAttribute(newEos.day_of_the_year, u"day_of_the_year", true) &&
-                    eos[0]->getFloatAttribute(newEos.day_fraction, u"day_fraction", true) &&
-                    eos[0]->getFloatAttribute(newEos.mean_motion_first_derivative, u"mean_motion_first_derivative", true) &&
-                    eos[0]->getFloatAttribute(newEos.mean_motion_second_derivative, u"mean_motion_second_derivative", true) &&
-                    eos[0]->getFloatAttribute(newEos.drag_term, u"drag_term", true) &&
-                    eos[0]->getFloatAttribute(newEos.inclination, u"inclination", true) &&
-                    eos[0]->getFloatAttribute(newEos.right_ascension_of_the_ascending_node, u"right_ascension_of_the_ascending_node", true) &&
-                    eos[0]->getFloatAttribute(newEos.eccentricity, u"eccentricity", true) &&
-                    eos[0]->getFloatAttribute(newEos.argument_of_perigree, u"argument_of_perigree", true) &&
-                    eos[0]->getFloatAttribute(newEos.mean_anomaly, u"mean_anomaly", true) &&
-                    eos[0]->getFloatAttribute(newEos.mean_motion, u"mean_motion", true);
-                earthOrbiting = newEos;
+                ok = newEos.fromXML(eos[0]);
+                if (ok) {
+                    earthOrbiting = newEos;
+                }
             }
         }
     }
@@ -469,6 +480,18 @@ void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::deserialize(
     time_of_application.deserialize(buf, section);
 }
 
+void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::toXML(xml::Element* root) 
+{
+    root->setIntAttribute(u"id", new_delivery_system_id, true);
+    time_of_application.toXML(root, u"time_of_application");
+}
+
+bool ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::fromXML(const xml::Element* root)
+{
+    return root->getIntAttribute(new_delivery_system_id, u"id", true) &&
+        time_of_application.fromXML(root, u"time_of_application");
+}
+
 //----------------------------------------------------------------------------
 // Obsolescent Delivery System
 //----------------------------------------------------------------------------
@@ -496,6 +519,19 @@ void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::dese
     obsolescent_delivery_system_id = buf.getUInt32();
     time_of_obsolescence.deserialize(buf, section);
 }
+
+void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::toXML(xml::Element* root)
+{
+    root->setIntAttribute(u"id", obsolescent_delivery_system_id, true);
+    time_of_obsolescence.toXML(root, u"time_of_obsolescence");
+}
+
+bool ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::fromXML(const xml::Element* root)
+{
+    return root->getIntAttribute(obsolescent_delivery_system_id, u"id", true) &&
+        time_of_obsolescence.fromXML(root, u"time_of_obsolescence");
+}
+
 
 //----------------------------------------------------------------------------
 // Cell Fragment
@@ -613,14 +649,10 @@ void ts::SAT::cell_fragment_info_type::toXML(xml::Element* root)
         deliverySystem->setIntAttribute(u"id", it, true);
     }
     for (auto it : new_delivery_system_ids) {
-        xml::Element* newDeliverySystem = root->addElement(u"new_delivery_system");
-        newDeliverySystem->setIntAttribute(u"id", it.new_delivery_system_id, true);
-        it.time_of_application.toXML(newDeliverySystem, u"time_of_application");
+        it.toXML(root->addElement(u"new_delivery_system"));
     }
     for (auto it : obsolescent_delivery_system_ids) {
-        xml::Element* obsolescentDeliverySystem = root->addElement(u"obsolescent_delivery_system");
-        obsolescentDeliverySystem->setIntAttribute(u"id", it.obsolescent_delivery_system_id, true);
-        it.time_of_obsolescence.toXML(obsolescentDeliverySystem, u"time_of_obsolescence");
+        it.toXML(root->addElement(u"obsolescent_delivery_system"));
     }
 }
 
@@ -649,16 +681,14 @@ bool ts::SAT::cell_fragment_info_type::fromXML(const xml::Element* element)
         }
         for (size_t j = 0; ok && j < new_delivery_systems.size(); j++) {
             cell_fragment_info_type::new_delivery_system_id_type newDS;
-            ok = new_delivery_systems[j]->getIntAttribute(newDS.new_delivery_system_id, u"id", true) &&
-                newDS.time_of_application.fromXML(new_delivery_systems[j], u"time_of_application");
+            ok = newDS.fromXML(new_delivery_systems[j]);
             if (ok) {
                 new_delivery_system_ids.push_back(newDS);
             }
         }
         for (size_t j = 0; ok && j < obsolescent_delivery_systems.size(); j++) {
             cell_fragment_info_type::obsolescent_delivery_system_id_type obsDS;
-            ok = obsolescent_delivery_systems[j]->getIntAttribute(obsDS.obsolescent_delivery_system_id, u"id", true) &&
-                obsDS.time_of_obsolescence.fromXML(obsolescent_delivery_systems[j], u"time_of_obsolescence");
+            ok = obsDS.fromXML(obsolescent_delivery_systems[j]);
             if (ok) {
                 obsolescent_delivery_system_ids.push_back(obsDS);
             }
@@ -771,6 +801,34 @@ bool ts::SAT::time_association_info_type::fromXML(const xml::Element* element)
 
 
 //----------------------------------------------------------------------------
+// Beam Hopping Illumination 
+//----------------------------------------------------------------------------
+
+void ts::SAT::beam_hopping_time_plan_info_type::slot::serialize(BinaryTable& table, PSIBuffer& buf) const
+{
+    buf.putBit(on);
+}
+
+void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(PSIBuffer& buf, const Section& section, uint16_t slot_no)
+{
+    number = slot_no;
+    on = buf.getBit();
+}
+
+void ts::SAT::beam_hopping_time_plan_info_type::slot::toXML(xml::Element* root)
+{
+    root->setIntAttribute(u"id", number);
+    root->setBoolAttribute(u"transmission_on", on);
+}
+
+bool ts::SAT::beam_hopping_time_plan_info_type::slot::fromXML(const xml::Element* element)
+{
+    return element->getIntAttribute(number, u"id", true, 1, 1, 0x7FFF)&&
+        element->getBoolAttribute(on, u"transmission_on", true, false);
+}
+
+
+//----------------------------------------------------------------------------
 // Beam Hopping Time Plan
 //----------------------------------------------------------------------------
 
@@ -781,7 +839,7 @@ ts::SAT::beam_hopping_time_plan_info_type::beam_hopping_time_plan_info_type() :
     dwell_duration(),
     on_time(),
     current_slot(),
-    slot_duration_on(),
+    slot_transmission_on(),
     grid_size(),
     revisit_duration(),
     sleep_time(),
@@ -796,7 +854,7 @@ ts::SAT::beam_hopping_time_plan_info_type::beam_hopping_time_plan_info_type(cons
     dwell_duration(other.dwell_duration),
     on_time(other.on_time),
     current_slot(other.current_slot),
-    slot_duration_on(other.slot_duration_on),
+    slot_transmission_on(other.slot_transmission_on),
     grid_size(other.grid_size),
     revisit_duration(other.revisit_duration),
     sleep_time(other.sleep_time),
@@ -813,7 +871,7 @@ uint16_t ts::SAT::beam_hopping_time_plan_info_type::plan_length(void) const
         break;
     case HOP_MULTI_TRANSMISSION:
         plan_length += 4
-            + ((uint16_t(slot_duration_on.size()) + padding_size_K(slot_duration_on.size())) / 8);
+            + ((uint16_t(slot_transmission_on.size()) + padding_size_K(slot_transmission_on.size())) / 8);
         break;
     case HOP_GRID:
         plan_length += grid_size.value().serialized_length() + revisit_duration.value().serialized_length()
@@ -832,7 +890,7 @@ uint8_t ts::SAT::beam_hopping_time_plan_info_type::time_plan_mode(void) const
     if (dwell_duration.set() && on_time.set()) {
         return HOP_1_TRANSMISSION;
     }
-    if (current_slot.set() && !slot_duration_on.empty()) {
+    if (current_slot.set() && !slot_transmission_on.empty()) {
         return HOP_MULTI_TRANSMISSION;
     }
     if (grid_size.set() && revisit_duration.set() && sleep_time.set() && sleep_duration.set()) {
@@ -858,13 +916,13 @@ void ts::SAT::beam_hopping_time_plan_info_type::serialize(BinaryTable& table, PS
     }
     else if (_time_plan_mode == HOP_MULTI_TRANSMISSION) {
         buf.putReservedZero(1);
-        buf.putBits(slot_duration_on.size(), 15);
+        buf.putBits(slot_transmission_on.size(), 15);
         buf.putReservedZero(1);
         buf.putBits(current_slot.value(), 15);
-        for (auto it : slot_duration_on) {
-            buf.putBit(it.on);
+        for (auto it : slot_transmission_on) {
+            it.serialize(table, buf);
         }
-        buf.putReservedZero(padding_size_K(slot_duration_on.size()));
+        buf.putReservedZero(padding_size_K(slot_transmission_on.size()));
     }
     else if (_time_plan_mode == HOP_GRID) {
         grid_size.value().serialize(table, buf);
@@ -897,8 +955,9 @@ void ts::SAT::beam_hopping_time_plan_info_type::deserialize(PSIBuffer& buf, cons
         buf.skipBits(1);
         buf.getBits(current_slot, 15);
         for (uint16_t i = 1; i <= bit_map_size; i++) {
-            slot newSlot(i, buf.getBool());
-            slot_duration_on.push_back(newSlot);
+            slot newSlot;
+            newSlot.deserialize(buf, section, i);
+            slot_transmission_on.push_back(newSlot);
         }
         buf.skipBits(padding_size_K(bit_map_size));
     }
@@ -925,10 +984,8 @@ void ts::SAT::beam_hopping_time_plan_info_type::toXML(xml::Element* root)
     else if (time_plan_mode() == HOP_MULTI_TRANSMISSION) {
         xml::Element* e = root->addElement(u"time_plan_mode_1");
         e->setOptionalIntAttribute(u"current_slot", current_slot);
-        for (auto it : slot_duration_on) {
-            xml::Element* newSlot = e->addElement(u"slot");
-            newSlot->setIntAttribute(u"id", it.number);
-            newSlot->setBoolAttribute(u"transmission_on", it.on);
+        for (auto it : slot_transmission_on) {
+            it.toXML(e->addElement(u"slot"));
         }
     }
     else if (time_plan_mode() == HOP_GRID) {
@@ -947,7 +1004,7 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
         time_of_application.fromXML(element, u"time_of_application") &&
         cycle_duration.fromXML(element, u"cycle_duration");
 
-    if (element->findFirstChild(u"time_plan_mode_0", true)) {
+    if (ok && element->findFirstChild(u"time_plan_mode_0", true)) {
         time_plan_mode = 0;
         NCR_type newNCR;
         const xml::Element* plan = element->findFirstChild(u"time_plan_mode_0", true);
@@ -961,7 +1018,7 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
             on_time = newNCR;
         }
     }
-    else if (element->findFirstChild(u"time_plan_mode_1", true)) {
+    else if (ok && element->findFirstChild(u"time_plan_mode_1", true)) {
         time_plan_mode = 1;
         const xml::Element* plan = element->findFirstChild(u"time_plan_mode_1", true);
         ok = plan->getOptionalIntAttribute(current_slot, u"current_slot", 0, 0x7FFF);
@@ -970,11 +1027,10 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
         uint16_t highest_slot_number = 0;
         for (size_t j = 0; ok && j < slots.size(); j++) {
             beam_hopping_time_plan_info_type::slot newSlot;
-            ok = slots[j]->getIntAttribute(newSlot.number, u"id", true, 1, 1, 0x7FFF) &&
-                slots[j]->getBoolAttribute(newSlot.on, u"transmission_on", true, false);
+            ok = newSlot.fromXML(slots[j]);
             if (ok) {
-                const auto found = std::find(begin(slot_duration_on), end(slot_duration_on), newSlot);
-                if (found != end(slot_duration_on)) {
+                const auto found = std::find(begin(slot_transmission_on), end(slot_transmission_on), newSlot);
+                if (found != end(slot_transmission_on)) {
                     slots[j]->report().error(u"slot id=%d already specified in <%s>, line %d", { newSlot.number, plan->name(), slots[j]->lineNumber() });
                     ok = false;
                 }
@@ -983,15 +1039,15 @@ bool ts::SAT::beam_hopping_time_plan_info_type::fromXML(const xml::Element* elem
                 if (newSlot.number > highest_slot_number) {
                     highest_slot_number = newSlot.number;
                 }
-                slot_duration_on.push_back(newSlot);
+                slot_transmission_on.push_back(newSlot);
             }
         }
-        if (ok && (highest_slot_number != slot_duration_on.size())) {
+        if (ok && (highest_slot_number != slot_transmission_on.size())) {
             plan->report().error(u"not all <slot> elements specified in <%s>, line %d", { plan->name(), plan->lineNumber() });
             ok = false;
         }
     }
-    else if (element->findFirstChild(u"time_plan_mode_2", true)) {
+    else if (ok && element->findFirstChild(u"time_plan_mode_2", true)) {
         time_plan_mode = 2;
         NCR_type newNCR;
         const xml::Element* plan = element->findFirstChild(u"time_plan_mode_2", true);
