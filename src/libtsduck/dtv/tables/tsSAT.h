@@ -75,6 +75,13 @@ namespace ts {
                 //! 
                 geostationary_position_type(const geostationary_position_type& other);
 
+                //! Read-in constructor.
+                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+                //! 
+                geostationary_position_type(PSIBuffer& buf) { deserialize(buf); }
+
                 //! Assignment operator.
                 //! @param [in] other Other instance to copy.
                 //! @return a new object whose values are copied from the source.
@@ -83,33 +90,30 @@ namespace ts {
 
                 //!
                 //! This method populates this object from XML attributes and sub-element
-                //! @param [in] element  The element whose attribites and sub-elements are parsed to construct this object
+                //! @param [in] element  The element whose attributes and sub-elements are parsed to construct this object
                 //! @return  true if the requisite attributes and sub-elements are available and correct
                 //!
                 bool fromXML(const xml::Element* element);
 
                 //!
                 //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] root The element whose attribites and sub-elements are added to to represent values in this object
+                //! @param [in,out] root The element whose attributes and sub-elements are added to to represent values in this object
                 //!
                 void toXML(xml::Element* root);
 
                 //!
                 //! This method serializes the attributes of a geostationary satellite.
-                //! @param [in,out] table The binary table into which this object shall be serialized.
                 //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
                 //!
-                void serialize(BinaryTable& table, PSIBuffer& buf) const;
+                void serialize(PSIBuffer& buf) const;
 
                 //!
                 //! This method deserializes (populates) the attributes of a geostationary satellite.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! @param [in] section A reference to the section. Can be used to access values in the section header
-                //! (typically for long sections).
                 //! 
-                void deserialize(PSIBuffer& buf, const Section& section);
+                void deserialize(PSIBuffer& buf);
             };
 
             //!
@@ -140,6 +144,13 @@ namespace ts {
                 //! 
                 earth_orbiting_satallite_type(const earth_orbiting_satallite_type& other);
 
+                //! Read-in constructor.
+                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+                //! 
+                earth_orbiting_satallite_type(PSIBuffer& buf) { deserialize(buf); }
+
                 //! Assignment operator.
                 //! @param [in] other Other instance to copy.
                 //! @return a new object whose values are copied from the source.
@@ -148,33 +159,30 @@ namespace ts {
 
                 //!
                 //! This method populates this object from XML attributes and sub-element
-                //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
                 //! @return  true if the requisite attributes and sub-elements are available and correct
                 //! 
                 bool fromXML(const xml::Element* root);
 
                 //!
                 //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object
+                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
                 //!
                 void toXML(xml::Element* element);
 
                 //!
                 //! This method serializes the attributes of an earth orbiting satellite.
-                //! @param [in,out] table The binary table into which this object shall be serialized. 
                 //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
                 //!
-                void serialize(BinaryTable& table, PSIBuffer& buf) const;
+                void serialize(PSIBuffer& buf) const;
 
                 //!
                 //! This method deserializes (populates) the attributes of an earth orbiting satellite.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! @param [in] section A reference to the section. Can be used to access values in the section header
-                //! (typically for long sections).
                 //!  
-                void deserialize(PSIBuffer& buf, const Section& section);
+                void deserialize(PSIBuffer& buf);
             };
 
             uint32_t        satellite_id;           //!< 24 bits, A label to identify the satellite that is detailed here.
@@ -197,35 +205,39 @@ namespace ts {
             //! 
             satellite_position_v2_info_type(const satellite_position_v2_info_type& other);
 
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //! 
+            satellite_position_v2_info_type(PSIBuffer& buf) { deserialize(buf); }
+
             //!
             //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
             //! @return  true if the requisite attributes and sub-elements are available and correct
             //!
             bool fromXML(const xml::Element* root);
 
             //!
             //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object
+            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
             //!
             void toXML(xml::Element* element);
 
             //!
             //! This method serializes the attributes of a satellite position, either geostationary or earth orbiting.
-            //! @param [in,out] table The binary table into which this object shall be serialized. 
             //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
             //!
-            void serialize(BinaryTable& table, PSIBuffer& buf) const;
+            void serialize(PSIBuffer& buf) const;
 
             //!
             //! This method deserializes (populates) the attributes of a satellite position, either geostationary or earth orbiting.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! @param [in] section A reference to the section. Can be used to access values in the section header
-            //! (typically for long sections).
             //!  
-            void deserialize(PSIBuffer& buf, const Section& section);
+            void deserialize(PSIBuffer& buf);
         };
 
         //!
@@ -251,7 +263,7 @@ namespace ts {
 
             //!
             //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
             //! @param [in] prefix  The prefix to apply to element or attribute names associated with this clock reference.
             //! @return  true if the requisite attributes and sub-elements are available and correct
             //!
@@ -259,27 +271,24 @@ namespace ts {
 
             //!
             //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object
+            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
             //! @param [in] prefix  The prefix to apply to element or attribute names associated with this clock reference.
             //!
             void toXML(xml::Element* element , const UString prefix);
 
             //!
             //! This method serializes the attributes of a network clock reference.
-            //! @param [in,out] table The binary table into which this object shall be serialized. 
             //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
             //!
-            void serialize(BinaryTable& table, PSIBuffer& buf) const;
+            void serialize(PSIBuffer& buf) const;
 
             //!
             //! This method deserializes (populates) the attributes of a Network Clock Reference.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! @param [in] section A reference to the section. Can be used to access values in the section header
-            //! (typically for long sections).
             //! 
-            void deserialize(PSIBuffer& buf, const Section& section);
+            void deserialize(PSIBuffer& buf);
 
             //! 
             //! The length (in bytes) of a network clock reference when serialized.
@@ -315,33 +324,37 @@ namespace ts {
                 //! 
                 new_delivery_system_id_type(const new_delivery_system_id_type& other);
 
+                //! Read-in constructor.
+                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+                //! 
+                new_delivery_system_id_type(PSIBuffer& buf) { deserialize(buf); }
+
                 //!
                 //! This method serializes the attributes of new satellite delivery system.
-                //! @param [in,out] table The binary table into which this object shall be serialized. 
                 //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
                 //!
-                void serialize(BinaryTable& table, PSIBuffer& buf) const;
+                void serialize(PSIBuffer& buf) const;
 
                 //!
                 //! This method deserializes (populates) the attributes of a new delivery system.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! @param [in] section A reference to the section. Can be used to access values in the section header
-                //! (typically for long sections).
                 //! 
-                void deserialize(PSIBuffer& buf, const Section& section);
+                void deserialize(PSIBuffer& buf);
 
                 //!
                 //! This method populates this object from XML attributes and sub-element.
-                //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object.
+                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object.
                 //! @return  true if the requisite attributes and sub-elements are available and correct
                 //!
                 bool fromXML(const xml::Element* root);
 
                 //!
                 //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element.
-                //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object.
+                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object.
                 //!
                 void toXML(xml::Element* element);
             };
@@ -364,33 +377,37 @@ namespace ts {
                 //! 
                 obsolescent_delivery_system_id_type(const obsolescent_delivery_system_id_type& other);
 
+                //! Read-in constructor.
+                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+                //! 
+                obsolescent_delivery_system_id_type(PSIBuffer& buf) { deserialize(buf); }
+
                 //!
                 //! This method serializes the attributes of an obsolescent satellite delivery system.
-                //! @param [in,out] table The binary table into which this object shall be serialized. 
                 //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
                 //!
-                void serialize(BinaryTable& table, PSIBuffer& buf) const;
+                void serialize(PSIBuffer& buf) const;
 
                 //!
                 //! This method deserializes (populates) the attributes of an obsolescent delivery system.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! @param [in] section A reference to the section. Can be used to access values in the section header
-                //! (typically for long sections).
                 //! 
-                void deserialize(PSIBuffer& buf, const Section& section);
+                void deserialize(PSIBuffer& buf);
 
                 //!
                 //! This method populates this object from XML attributes and sub-element
-                //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
                 //! @return  true if the requisite attributes and sub-elements are available and correct
                 //!
                 bool fromXML(const xml::Element* root);
 
                 //!
                 //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object
+                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
                 //!
                 void toXML(xml::Element* element);
             };
@@ -424,35 +441,39 @@ namespace ts {
             //! @param [in] other Other instance to copy.
             cell_fragment_info_type(const cell_fragment_info_type& other);
 
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //! 
+            cell_fragment_info_type(PSIBuffer& buf) { deserialize(buf); }
+
             //!
             //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
             //! @return  true if the requisite attributes and sub-elements are available and correct
             //!
             bool fromXML(const xml::Element* root);
 
             //!
             //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object
+            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
             //!
             void toXML(xml::Element* element);
 
             //!
             //! This method serializes the attributes of a cell fragment.
-            //! @param [in,out] table The binary table into which this object shall be serialized. 
             //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
             //! 
-            void serialize(BinaryTable& table, PSIBuffer& buf) const;
+            void serialize(PSIBuffer& buf) const;
 
             //!
             //! This method deserializes (populates) the attributes of a cell fragment.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! @param [in] section A reference to the section. Can be used to access values in the section header
-            //! (typically for long sections).
             //! 
-            void deserialize(PSIBuffer& buf, const Section& section);
+            void deserialize(PSIBuffer& buf);
         };
 
         //! Representation of a time assocition between NCR and UTC
@@ -499,39 +520,43 @@ namespace ts {
             //! 
             time_association_info_type(const time_association_info_type& other);
 
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //! 
+            time_association_info_type(PSIBuffer& buf) { deserialize(buf); }
+
             //! Clear values.
             //! 
             void clear();
 
             //!
             //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
             //! @return  true if the requisite attributes and sub-elements are available and correct
             //!
             bool fromXML(const xml::Element* root);
 
             //!
             //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object
+            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
             //!
             void toXML(xml::Element* element);
 
             //!
             //! This method serializes the attributes of a time association.
-            //! @param [in,out] table The binary table into which this object shall be serialized. 
             //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
             //!
-            void serialize(BinaryTable& table, PSIBuffer& buf) const;
+            void serialize(PSIBuffer& buf) const;
 
             //!
             //! This method deserializes (populates) the attributes of a time association.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! @param [in] section A reference to the section. Can be used to access values in the section header
-            //! (typically for long sections).
             //! 
-            void deserialize(PSIBuffer& buf, const Section& section);
+            void deserialize(PSIBuffer& buf);
         };
 
         //! Representation of a beam hopping time plan, identified by the beamhopping_time_plan_id with information relating to the 
@@ -564,6 +589,14 @@ namespace ts {
                 //! 
                 slot(const slot& other) : number(other.number), on(other.on) {}
 
+                //! Read-in constructor.
+                //! @param [in] number_ Slot number.
+                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+                //! 
+                slot(uint16_t number_, PSIBuffer& buf) { deserialize(number_, buf); }
+
                 //! Equivelance operator.
                 //! @param [in] rhs  other oblect to compare to.
                 //! @return  true if an illumination status has already been signalled for the slot number
@@ -572,34 +605,31 @@ namespace ts {
  
                 //!
                 //! This method populates this object from XML attributes and sub-element
-                //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
                 //! @return  true if the requisite attributes and sub-elements are available and correct
                 //!
                 bool fromXML(const xml::Element* root);
 
                 //!
                 //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] element  The element whose attribites and sub-elements are added to to represent values in this object
+                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
                 //!
                 void toXML(xml::Element* element);
 
                 //!
                 //! This method serializes a slot illumination.
-                //! @param [in,out] table The binary table into which this object shall be serialized. 
                 //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
                 //! 
-                void serialize(BinaryTable& table, PSIBuffer& buf) const;
+                void serialize(PSIBuffer& buf) const;
 
                 //!
                 //! This method deserializes (populates) the attributes of an illumination time slot.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! @param [in] section A reference to the section. Can be used to access values in the section header
-                //! (typically for long sections).
                 //! @param [in] number the time slot for which illimination is being specofoed.
                 //! 
-                void deserialize(PSIBuffer& buf, const Section& section, uint16_t number);
+                void deserialize(uint16_t number, PSIBuffer& buf);
             };
 
             uint32_t                beamhopping_time_plan_id;       //!< Label to identify the beamhopping time plan that is detailed in this loop.
@@ -630,7 +660,14 @@ namespace ts {
             //! @param [in] other Other instance to copy.
             //! 
             beam_hopping_time_plan_info_type(const beam_hopping_time_plan_info_type& other);
-       
+ 
+            //! Read-in constructor.
+            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //! 
+            beam_hopping_time_plan_info_type(PSIBuffer& buf) { deserialize(buf); }
+
             //!
             //! Determines the size of this iteration of a beam hopping time plan to allow quick jumping to the next iteration.
             //! @return The size, in bytes (12 bits), of this iteration in the loop, starting with the beamhopping_time_plan_id and ending at the end of the loop.
@@ -645,33 +682,30 @@ namespace ts {
 
             //!
             //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attribites and sub-elements are parsed to construct this object
+            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
             //! @return  true if the requisite attributes and sub-elements are available and correct
             //!
             bool fromXML(const xml::Element* root);
 
             //!
             //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element that attribites and sub-elements are added to to represent values in this object
+            //! @param [in,out] element  The element that attributes and sub-elements are added to to represent values in this object
             //!
             void toXML(xml::Element* element);
 
             //!
             //! This method serializes a beam hopping time plan.
-            //! @param [in,out] table The binary table into which this object shall be serialized. T
             //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
             //! 
-            void serialize(BinaryTable& table, PSIBuffer& buf) const;
+            void serialize(PSIBuffer& buf) const;
 
             //!
             //! This method deserializes a beam hopping time plan.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! @param [in] section A reference to the section. Can be used to access values in the section header
-            //! (typically for long sections).
             //! 
-            void deserialize(PSIBuffer& buf, const Section& section);
+            void deserialize(PSIBuffer& buf);
         };
 
 

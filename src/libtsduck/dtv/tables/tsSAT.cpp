@@ -140,14 +140,14 @@ ts::SAT::satellite_position_v2_info_type::geostationary_position_type& ts::SAT::
     return *this;
 }
 
-void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::serialize(PSIBuffer& buf) const
 {
     buf.putBCD(orbital_position, 4);
     buf.putBits(west_east_flag, 1);
     buf.putReservedZero(7);
 }
 
-void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::deserialize(PSIBuffer& buf)
 {
     buf.getBCD(orbital_position, 4);
     west_east_flag = buf.getBit();
@@ -239,7 +239,7 @@ ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type& ts::SAT
     return *this;
 }
 
-void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt8(epoch_year);
     buf.putUInt16(day_of_the_year);
@@ -255,7 +255,7 @@ void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::se
     buf.putFloat32(mean_motion);
 }
 
-void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::deserialize(PSIBuffer& buf)
 {
     epoch_year = buf.getUInt8();
     day_of_the_year = buf.getUInt16();
@@ -324,32 +324,30 @@ ts::SAT::satellite_position_v2_info_type::satellite_position_v2_info_type(const 
 {
 }
 
-void ts::SAT::satellite_position_v2_info_type::serialize(BinaryTable& table, PSIBuffer& buf) const 
+void ts::SAT::satellite_position_v2_info_type::serialize(PSIBuffer& buf) const 
 {
     buf.putBits(satellite_id, 24);
     buf.putReservedZero(7);
     buf.putBits(position_system, 1);
     if ((position_system == POSITION_SYSTEM_GEOSTATIONARY) && geostationaryPosition.set()) {
-        geostationaryPosition.value().serialize(table, buf);
+        geostationaryPosition.value().serialize(buf);
     }
     else if ((position_system == POSITION_SYSTEM_EARTH_ORBITING) && earthOrbiting.set()) {
-        earthOrbiting.value().serialize(table, buf);
+        earthOrbiting.value().serialize(buf);
     }
 }
 
-void ts::SAT::satellite_position_v2_info_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::satellite_position_v2_info_type::deserialize(PSIBuffer& buf)
 {
     buf.getBits(satellite_id, 24);
     buf.skipBits(7);
     buf.getBits(position_system, 1);
     if (position_system == POSITION_SYSTEM_GEOSTATIONARY) {
-        geostationary_position_type gPos;
-        gPos.deserialize(buf, section);
+        geostationary_position_type gPos(buf);
         geostationaryPosition = gPos;
     }
     if (position_system == POSITION_SYSTEM_EARTH_ORBITING) {
-        earth_orbiting_satallite_type eos;
-        eos.deserialize(buf, section);
+        earth_orbiting_satallite_type eos(buf);
         earthOrbiting = eos;
     }
 }
@@ -426,14 +424,14 @@ void ts::SAT::NCR_type::clear()
     ext = 0;
 }
 
-void ts::SAT::NCR_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::NCR_type::serialize(PSIBuffer& buf) const
 {
     buf.putBits(base, 33);
     buf.putReservedZero(6);
     buf.putBits(ext, 9);
 }
 
-void ts::SAT::NCR_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::NCR_type::deserialize(PSIBuffer& buf)
 {
     buf.getBits(base, 33);
     buf.skipBits(6);
@@ -468,16 +466,16 @@ ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::new_delivery_syst
 {
 }
 
-void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(new_delivery_system_id);
-    time_of_application.serialize(table, buf);
+    time_of_application.serialize(buf);
 }
 
-void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::deserialize(PSIBuffer& buf)
 {
     new_delivery_system_id = buf.getUInt32();
-    time_of_application.deserialize(buf, section);
+    time_of_application.deserialize(buf);
 }
 
 void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::toXML(xml::Element* root) 
@@ -508,16 +506,16 @@ ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::obsolesce
 {
 }
 
-void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(obsolescent_delivery_system_id);
-    time_of_obsolescence.serialize(table, buf);
+    time_of_obsolescence.serialize(buf);
 }
 
-void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::deserialize(PSIBuffer& buf)
 {
     obsolescent_delivery_system_id = buf.getUInt32();
-    time_of_obsolescence.deserialize(buf, section);
+    time_of_obsolescence.deserialize(buf);
 }
 
 void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::toXML(xml::Element* root)
@@ -563,7 +561,7 @@ ts::SAT::cell_fragment_info_type::cell_fragment_info_type(const cell_fragment_in
 {
 }
 
-void ts::SAT::cell_fragment_info_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(cell_fragment_id);
     buf.putBit(first_occurence);
@@ -586,16 +584,16 @@ void ts::SAT::cell_fragment_info_type::serialize(BinaryTable& table, PSIBuffer& 
     buf.putReservedZero(6);
     buf.putBits(new_delivery_system_ids.size(), 10);
     for (auto it : new_delivery_system_ids) {
-        it.serialize(table, buf);
+        it.serialize(buf);
     }
     buf.putReservedZero(6);
     buf.putBits(obsolescent_delivery_system_ids.size(), 10);
     for (auto it : obsolescent_delivery_system_ids) {
-        it.serialize(table, buf);
+        it.serialize(buf);
     }
 }
 
-void ts::SAT::cell_fragment_info_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::cell_fragment_info_type::deserialize(PSIBuffer& buf)
 {
     cell_fragment_id = buf.getUInt32();
     first_occurence = buf.getBit();
@@ -621,16 +619,14 @@ void ts::SAT::cell_fragment_info_type::deserialize(PSIBuffer& buf, const Section
     uint16_t new_delivery_system_id_loop_count;
     buf.getBits(new_delivery_system_id_loop_count, 10);
     for (uint16_t i = 0; i < new_delivery_system_id_loop_count; i++) {
-        new_delivery_system_id_type newDS;
-        newDS.deserialize(buf, section);
+        new_delivery_system_id_type newDS(buf);
         new_delivery_system_ids.push_back(newDS);
     }
     buf.skipBits(6);
     uint16_t obsolescent_delivery_system_id_loop_count;
     buf.getBits(obsolescent_delivery_system_id_loop_count, 10);
     for (uint16_t i = 0; i < obsolescent_delivery_system_id_loop_count; i++) {
-        obsolescent_delivery_system_id_type obsDS;
-        obsDS.deserialize(buf, section);
+        obsolescent_delivery_system_id_type obsDS(buf);
         obsolescent_delivery_system_ids.push_back(obsDS);
     }
 }
@@ -736,7 +732,7 @@ void ts::SAT::time_association_info_type::clear()
     past_leap59 = past_leap61 = false;
 }
 
-void ts::SAT::time_association_info_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::time_association_info_type::serialize(PSIBuffer& buf) const
 {
     buf.putBits(association_type, 4);
     if (association_type == 1) {
@@ -748,12 +744,12 @@ void ts::SAT::time_association_info_type::serialize(BinaryTable& table, PSIBuffe
     else {
         buf.putReservedZero(4);
     }
-    ncr.serialize(table, buf);
+    ncr.serialize(buf);
     buf.putUInt64(association_timestamp_seconds);
     buf.putUInt32(association_timestamp_nanoseconds);
 }
 
-void ts::SAT::time_association_info_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::time_association_info_type::deserialize(PSIBuffer& buf)
 {
     buf.getBits(association_type, 4);
     if (association_type == 1) {
@@ -765,7 +761,7 @@ void ts::SAT::time_association_info_type::deserialize(PSIBuffer& buf, const Sect
     else {
         buf.skipBits(4);
     }
-    ncr.deserialize(buf, section);
+    ncr.deserialize(buf);
     association_timestamp_seconds = buf.getUInt64();
     association_timestamp_nanoseconds = buf.getUInt32();
 }
@@ -804,12 +800,12 @@ bool ts::SAT::time_association_info_type::fromXML(const xml::Element* element)
 // Beam Hopping Illumination 
 //----------------------------------------------------------------------------
 
-void ts::SAT::beam_hopping_time_plan_info_type::slot::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::beam_hopping_time_plan_info_type::slot::serialize(PSIBuffer& buf) const
 {
     buf.putBit(on);
 }
 
-void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(PSIBuffer& buf, const Section& section, uint16_t slot_no)
+void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(uint16_t slot_no, PSIBuffer& buf)
 {
     number = slot_no;
     on = buf.getBit();
@@ -900,7 +896,7 @@ uint8_t ts::SAT::beam_hopping_time_plan_info_type::time_plan_mode(void) const
 }
 
 
-void ts::SAT::beam_hopping_time_plan_info_type::serialize(BinaryTable& table, PSIBuffer& buf) const
+void ts::SAT::beam_hopping_time_plan_info_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(beamhopping_time_plan_id);
     buf.putReservedZero(4);
@@ -908,11 +904,11 @@ void ts::SAT::beam_hopping_time_plan_info_type::serialize(BinaryTable& table, PS
     buf.putReservedZero(6);
     uint8_t _time_plan_mode = time_plan_mode();
     buf.putBits(_time_plan_mode, 2);
-    time_of_application.serialize(table, buf);
-    cycle_duration.serialize(table, buf);
+    time_of_application.serialize(buf);
+    cycle_duration.serialize(buf);
     if (_time_plan_mode == HOP_1_TRANSMISSION) {
-        dwell_duration.value().serialize(table, buf);
-        on_time.value().serialize(table, buf);
+        dwell_duration.value().serialize(buf);
+        on_time.value().serialize(buf);
     }
     else if (_time_plan_mode == HOP_MULTI_TRANSMISSION) {
         buf.putReservedZero(1);
@@ -920,19 +916,19 @@ void ts::SAT::beam_hopping_time_plan_info_type::serialize(BinaryTable& table, PS
         buf.putReservedZero(1);
         buf.putBits(current_slot.value(), 15);
         for (auto it : slot_transmission_on) {
-            it.serialize(table, buf);
+            it.serialize(buf);
         }
         buf.putReservedZero(padding_size_K(slot_transmission_on.size()));
     }
     else if (_time_plan_mode == HOP_GRID) {
-        grid_size.value().serialize(table, buf);
-        revisit_duration.value().serialize(table, buf);
-        sleep_time.value().serialize(table, buf);
-        sleep_duration.value().serialize(table, buf);
+        grid_size.value().serialize(buf);
+        revisit_duration.value().serialize(buf);
+        sleep_time.value().serialize(buf);
+        sleep_duration.value().serialize(buf);
     }
 }
 
-void ts::SAT::beam_hopping_time_plan_info_type::deserialize(PSIBuffer& buf, const Section& section)
+void ts::SAT::beam_hopping_time_plan_info_type::deserialize(PSIBuffer& buf)
 {
     beamhopping_time_plan_id = buf.getUInt32();
     buf.skipBits(4);
@@ -941,12 +937,12 @@ void ts::SAT::beam_hopping_time_plan_info_type::deserialize(PSIBuffer& buf, cons
     buf.skipBits(6);
     uint8_t time_plan_mode;
     buf.getBits(time_plan_mode, 2);
-    time_of_application.deserialize(buf, section);
-    cycle_duration.deserialize(buf, section);
+    time_of_application.deserialize(buf);
+    cycle_duration.deserialize(buf);
     if (time_plan_mode == HOP_1_TRANSMISSION) {
         NCR_type t;
-        t.deserialize(buf, section); dwell_duration = t;
-        t.deserialize(buf, section); on_time = t;
+        t.deserialize(buf); dwell_duration = t;
+        t.deserialize(buf); on_time = t;
     }
     else if (time_plan_mode == HOP_MULTI_TRANSMISSION) {
         buf.skipBits(1);
@@ -955,18 +951,17 @@ void ts::SAT::beam_hopping_time_plan_info_type::deserialize(PSIBuffer& buf, cons
         buf.skipBits(1);
         buf.getBits(current_slot, 15);
         for (uint16_t i = 1; i <= bit_map_size; i++) {
-            slot newSlot;
-            newSlot.deserialize(buf, section, i);
+            slot newSlot(1, buf);
             slot_transmission_on.push_back(newSlot);
         }
         buf.skipBits(padding_size_K(bit_map_size));
     }
     else if (time_plan_mode == HOP_GRID) {
         NCR_type t;
-        t.deserialize(buf, section); grid_size = t;
-        t.deserialize(buf, section); revisit_duration = t;
-        t.deserialize(buf, section); sleep_time = t;
-        t.deserialize(buf, section); sleep_duration = t;
+        t.deserialize(buf); grid_size = t;
+        t.deserialize(buf); revisit_duration = t;
+        t.deserialize(buf); sleep_time = t;
+        t.deserialize(buf); sleep_duration = t;
     }
 }
 
@@ -1086,20 +1081,20 @@ void ts::SAT::serializePayload(BinaryTable& table, PSIBuffer& buf) const
     switch (satellite_table_id) {
         case SATELLITE_POSITION_V2_INFO:
             for (auto it : satellite_position_v2_info) {
-                it.serialize(table, buf);
+                it.serialize(buf);
             }
             break;
         case CELL_FRAGMENT_INFO:
             for (auto it : cell_fragment_info) {
-                it.serialize(table, buf);
+                it.serialize(buf);
             }
             break;
         case TIME_ASSOCIATION_INFO:
-            time_association_fragment_info.serialize(table, buf);
+            time_association_fragment_info.serialize(buf);
             break;
         case BEAMHOPPING_TIME_PLAN_INFO:
             for (auto it : beam_hopping_time_plan_info) {
-                it.serialize(table, buf);
+                it.serialize(buf);
             }
             break;
         default:
@@ -1122,27 +1117,24 @@ void ts::SAT::deserializePayload(PSIBuffer& buf, const Section& section)
     switch (satellite_table_id) {
         case SATELLITE_POSITION_V2_INFO:
             while (buf.canReadBytes(4)) {
-                satellite_position_v2_info_type v2inf;
-                v2inf.deserialize(buf, section);
+                satellite_position_v2_info_type v2inf(buf);
                 satellite_position_v2_info.push_back(v2inf);
             }
             break;
         case CELL_FRAGMENT_INFO:
             while (buf.canReadBytes(4)) {
-                cell_fragment_info_type cell;
-                cell.deserialize(buf, section);
+                cell_fragment_info_type cell(buf);
                 cell_fragment_info.push_back(cell);
             }
             break;
         case TIME_ASSOCIATION_INFO:
             if (buf.canReadBytes(19)) {
-                time_association_fragment_info.deserialize(buf, section);
+                time_association_fragment_info.deserialize(buf);
             }
             break;
         case BEAMHOPPING_TIME_PLAN_INFO:
             while (buf.canReadBytes(19)) {
-                beam_hopping_time_plan_info_type beam;
-                beam.deserialize(buf, section);
+                beam_hopping_time_plan_info_type beam(buf);
                 beam_hopping_time_plan_info.push_back(beam);
             }
             break;
