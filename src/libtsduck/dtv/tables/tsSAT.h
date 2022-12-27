@@ -80,7 +80,7 @@ namespace ts {
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
-                geostationary_position_type(PSIBuffer& buf) { deserialize(buf); }
+                geostationary_position_type(PSIBuffer& buf) : geostationary_position_type() { deserialize(buf); }
 
                 //! Assignment operator.
                 //! @param [in] other Other instance to copy.
@@ -149,7 +149,7 @@ namespace ts {
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
-                earth_orbiting_satallite_type(PSIBuffer& buf) { deserialize(buf); }
+                earth_orbiting_satallite_type(PSIBuffer& buf) : earth_orbiting_satallite_type() { deserialize(buf); }
 
                 //! Assignment operator.
                 //! @param [in] other Other instance to copy.
@@ -210,7 +210,7 @@ namespace ts {
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
             //! 
-            satellite_position_v2_info_type(PSIBuffer& buf) { deserialize(buf); }
+            satellite_position_v2_info_type(PSIBuffer& buf) : satellite_position_v2_info_type() { deserialize(buf); }
 
             //!
             //! This method populates this object from XML attributes and sub-element
@@ -329,7 +329,7 @@ namespace ts {
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
-                new_delivery_system_id_type(PSIBuffer& buf) { deserialize(buf); }
+                new_delivery_system_id_type(PSIBuffer& buf) : new_delivery_system_id_type() { deserialize(buf); }
 
                 //!
                 //! This method serializes the attributes of new satellite delivery system.
@@ -382,7 +382,7 @@ namespace ts {
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
-                obsolescent_delivery_system_id_type(PSIBuffer& buf) { deserialize(buf); }
+                obsolescent_delivery_system_id_type(PSIBuffer& buf) : obsolescent_delivery_system_id_type() { deserialize(buf); }
 
                 //!
                 //! This method serializes the attributes of an obsolescent satellite delivery system.
@@ -446,7 +446,7 @@ namespace ts {
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
             //! 
-            cell_fragment_info_type(PSIBuffer& buf) { deserialize(buf); }
+            cell_fragment_info_type(PSIBuffer& buf) : cell_fragment_info_type() { deserialize(buf); }
 
             //!
             //! This method populates this object from XML attributes and sub-element
@@ -525,7 +525,7 @@ namespace ts {
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
             //! 
-            time_association_info_type(PSIBuffer& buf) { deserialize(buf); }
+            time_association_info_type(PSIBuffer& buf) : time_association_info_type() { deserialize(buf); }
 
             //! Clear values.
             //! 
@@ -595,7 +595,7 @@ namespace ts {
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
-                slot(uint16_t number_, PSIBuffer& buf) { deserialize(number_, buf); }
+                slot(uint16_t number_, PSIBuffer& buf) : slot() { deserialize(number_, buf); }
 
                 //! Equivelance operator.
                 //! @param [in] rhs  other oblect to compare to.
@@ -666,7 +666,7 @@ namespace ts {
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
             //! 
-            beam_hopping_time_plan_info_type(PSIBuffer& buf) { deserialize(buf); }
+            beam_hopping_time_plan_info_type(PSIBuffer& buf) : beam_hopping_time_plan_info_type() { deserialize(buf); }
 
             //!
             //! Determines the size of this iteration of a beam hopping time plan to allow quick jumping to the next iteration.
