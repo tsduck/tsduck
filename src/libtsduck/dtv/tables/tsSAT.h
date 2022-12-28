@@ -595,7 +595,7 @@ namespace ts {
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
-                slot(uint16_t slot_num, PSIBuffer& buf);
+                slot(uint16_t slot_num, PSIBuffer& buf) : slot() { deserialize(slot_num, buf); }
 
                 //! Equivelance operator.
                 //! @param [in] rhs  other oblect to compare to.
