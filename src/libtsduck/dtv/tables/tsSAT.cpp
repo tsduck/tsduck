@@ -805,9 +805,9 @@ void ts::SAT::beam_hopping_time_plan_info_type::slot::serialize(PSIBuffer& buf) 
     buf.putBit(on);
 }
 
-void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(uint16_t slot_no, PSIBuffer& buf)
+void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(uint16_t slot_num, PSIBuffer& buf)
 {
-    number = slot_no;
+    number = slot_num;
     on = buf.getBit();
 }
 
@@ -951,7 +951,7 @@ void ts::SAT::beam_hopping_time_plan_info_type::deserialize(PSIBuffer& buf)
         buf.skipBits(1);
         buf.getBits(current_slot, 15);
         for (uint16_t i = 1; i <= bit_map_size; i++) {
-            slot newSlot(1, buf);
+            slot newSlot(i, buf);
             slot_transmission_on.push_back(newSlot);
         }
         buf.skipBits(padding_size_K(bit_map_size));
