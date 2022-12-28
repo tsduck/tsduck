@@ -579,10 +579,10 @@ namespace ts {
                 slot() : number(0), on(false) {}
 
                 //! Constructor.
-                //! @param [in] number_ Slot number.
+                //! @param [in] slot_num Slot number.
                 //! @param [in] on_ slot illumination state.
                 //! 
-                slot(uint16_t number_, bool on_) : number(number_), on(on_) {}
+                slot(uint16_t slot_num, bool on_) : number(slot_num), on(on_) {}
 
                 //! Copy constructor
                 //! @param [in] other Other instance to copy.
@@ -590,12 +590,12 @@ namespace ts {
                 slot(const slot& other) : number(other.number), on(other.on) {}
 
                 //! Read-in constructor.
-                //! @param [in] number_ Slot number.
+                //! @param [in] slot_num Slot number.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
-                slot(uint16_t number_, PSIBuffer& buf) : slot() { deserialize(number_, buf); }
+                slot(uint16_t slot_num, PSIBuffer& buf);
 
                 //! Equivelance operator.
                 //! @param [in] rhs  other oblect to compare to.
@@ -624,12 +624,12 @@ namespace ts {
 
                 //!
                 //! This method deserializes (populates) the attributes of an illumination time slot.
+                //! @param [in] slot_num the time slot for which illimination is being specified.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! @param [in] number the time slot for which illimination is being specofoed.
                 //! 
-                void deserialize(uint16_t number, PSIBuffer& buf);
+                void deserialize(uint16_t slot_num, PSIBuffer& buf);
             };
 
             uint32_t                beamhopping_time_plan_id;       //!< Label to identify the beamhopping time plan that is detailed in this loop.
