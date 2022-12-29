@@ -35,7 +35,6 @@
 #pragma once
 #include "tsAbstractDeliverySystemDescriptor.h"
 #include "tsDeliverySystem.h"
-#include "tsSAT.h"
 
 namespace ts {
     //!

@@ -101,10 +101,10 @@ ts::SAT::SAT_base::~SAT_base()
 //!
 //! The number of bits needed after the slot map for byte alignment
 //! @return The number of bits needed for byte aligment
-//! 
-static uint8_t padding_size_K(size_t map_size) 
-{ 
-    return 7 - (( map_size - 1) % 8); 
+//!
+static uint8_t padding_size_K(size_t map_size)
+{
+    return 7 - (( map_size - 1) % 8);
 }
 
 
@@ -336,7 +336,7 @@ ts::SAT::satellite_position_v2_info_type::satellite_position_v2_info_type(const 
 {
 }
 
-void ts::SAT::satellite_position_v2_info_type::serialize(PSIBuffer& buf) const 
+void ts::SAT::satellite_position_v2_info_type::serialize(PSIBuffer& buf) const
 {
     buf.putBits(satellite_id, 24);
     buf.putReservedZero(7);
@@ -504,7 +504,7 @@ void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::deserialize(
     time_of_application.deserialize(buf);
 }
 
-void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::toXML(xml::Element* root) 
+void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::toXML(xml::Element* root)
 {
     root->setIntAttribute(u"id", new_delivery_system_id, true);
     time_of_application.toXML(root, u"time_of_application");
@@ -823,7 +823,7 @@ bool ts::SAT::time_association_info_type::fromXML(const xml::Element* element)
 
 
 //----------------------------------------------------------------------------
-// Beam Hopping Illumination 
+// Beam Hopping Illumination
 //----------------------------------------------------------------------------
 
 void ts::SAT::beam_hopping_time_plan_info_type::slot::serialize(PSIBuffer& buf) const
@@ -1226,10 +1226,10 @@ void ts::SAT::DisplaySection(TablesDisplay& disp, const ts::Section& section, PS
                     uint16_t _orbital_position = buf.getUInt16();
                     bool _west_east_flag = buf.getBool();
                     buf.skipReservedBits(7, 0);
-                    disp << ", position: " << 
-                        UString::Format(u"%d%d%d.%d ", { 
-                                (_orbital_position & 0xF000) >> 12, 
-                                (_orbital_position & 0x0F00) >> 8, 
+                    disp << ", position: " <<
+                        UString::Format(u"%d%d%d.%d ", {
+                                (_orbital_position & 0xF000) >> 12,
+                                (_orbital_position & 0x0F00) >> 8,
                                 (_orbital_position & 0x00F0) >> 4,
                                 (_orbital_position & 0x000F)}) <<
                         DataName(MY_XML_NAME, u"west_east_indicator", _west_east_flag, NamesFlags::NAME) << std::endl;
