@@ -438,17 +438,31 @@ void ts::SAT::NCR_type::deserialize(PSIBuffer& buf)
     buf.getBits(ext, 9);
 }
 
-void ts::SAT::NCR_type::toXML(xml::Element* root, const UString prefix) {
-    root->setIntAttribute(UString::Format(u"%s_base", { prefix }), base);
-    root->setIntAttribute(UString::Format(u"%s_ext", { prefix }), ext);
-}
-
-bool ts::SAT::NCR_type::fromXML(const xml::Element* element, const UString prefix)
+void ts::SAT::NCR_type::toXML(xml::Element* parent, const UString element_name)
 {
-    return element->getIntAttribute(base, UString::Format(u"%s_base", { prefix }), true, 0, 0, 0x1FFFFFFFF) &&
-        element->getIntAttribute(ext, UString::Format(u"%s_ext", { prefix }), true, 0, 0, 0x1FF);
+    toXML(parent->addElement(element_name));
 }
 
+void ts::SAT::NCR_type::toXML(xml::Element* root)
+{
+    root->setIntAttribute(u"base", base);
+    root->setIntAttribute(u"ext", ext);
+}
+
+
+bool ts::SAT::NCR_type::fromXML(const xml::Element* parent, const UString element_name)
+{
+    xml::ElementVector children;
+    bool ok = parent->getChildren(children, element_name, 1, 1);
+
+    return ok && fromXML(children[0]);
+}
+
+bool ts::SAT::NCR_type::fromXML(const xml::Element* element)
+{
+    return element->getIntAttribute(base, u"base", true, 0, 0, 0x1FFFFFFFF) &&
+        element->getIntAttribute(ext, u"ext", true, 0, 0, 0x1FF);
+}
 
 //----------------------------------------------------------------------------
 // New Delivery System
@@ -808,6 +822,11 @@ void ts::SAT::beam_hopping_time_plan_info_type::slot::serialize(PSIBuffer& buf) 
 void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(uint16_t slot_num, PSIBuffer& buf)
 {
     number = slot_num;
+    deserialize(buf);
+}
+
+void ts::SAT::beam_hopping_time_plan_info_type::slot::deserialize(PSIBuffer& buf)
+{
     on = buf.getBit();
 }
 
