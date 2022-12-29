@@ -52,16 +52,52 @@ namespace ts {
     {
     public:
         //!
+        //! Base capabilities to be defined/extended by Satellite Access Table processing functions
+        //!
+        class SAT_base {
+        public:
+            //!
+            //! This method populates this object from XML attributes and sub-element
+            //! @param [in] element  The element whose attributes and sub-elements are parsed to construct this object
+            //! @return  true if the requisite attributes and sub-elements are available and correct
+            //!
+            virtual bool fromXML(const xml::Element* element) = 0;
+
+            //!
+            //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
+            //! @param [in,out] root The element whose attributes and sub-elements are added to to represent values in this object
+            //!
+            virtual void toXML(xml::Element* root) = 0;
+
+            //!
+            //! This method serializes the attributes of a geostationary satellite.
+            //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
+            //!
+            virtual void serialize(PSIBuffer& buf) const = 0;
+
+            //!
+            //! This method deserializes (populates) the attributes of a geostationary satellite.
+            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
+            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
+            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
+            //! 
+            virtual void deserialize(PSIBuffer& buf) = 0;
+
+            virtual ~SAT_base() {};
+        };
+
+
+        //!
         //! Representation of a satellite position
         //! @see ETSI EN 300 648, 5.2.11.2
         //! 
-        class satellite_position_v2_info_type {
+        class satellite_position_v2_info_type : SAT_base {
         public:
             //!
             //! Representation of a geostationary satellite position
             //! @see ETSI EN 300 648, 5.2.11.2
             //!
-            class geostationary_position_type {
+            class geostationary_position_type : SAT_base {
             public:
                 uint16_t  orbital_position;                                 //!< Orbital position, unit is 0.1 degree.
                 int       west_east_flag;                                   //!< True (1) for East, false (0) for West.
@@ -88,39 +124,18 @@ namespace ts {
                 //! 
                 geostationary_position_type& operator=(const geostationary_position_type& other);
 
-                //!
-                //! This method populates this object from XML attributes and sub-element
-                //! @param [in] element  The element whose attributes and sub-elements are parsed to construct this object
-                //! @return  true if the requisite attributes and sub-elements are available and correct
-                //!
-                bool fromXML(const xml::Element* element);
-
-                //!
-                //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] root The element whose attributes and sub-elements are added to to represent values in this object
-                //!
-                void toXML(xml::Element* root);
-
-                //!
-                //! This method serializes the attributes of a geostationary satellite.
-                //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-                //!
-                void serialize(PSIBuffer& buf) const;
-
-                //!
-                //! This method deserializes (populates) the attributes of a geostationary satellite.
-                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! 
-                void deserialize(PSIBuffer& buf);
+                // Inherited methods
+                virtual bool fromXML(const xml::Element* element) override;
+                virtual void toXML(xml::Element* root) override;
+                virtual void serialize(PSIBuffer& buf) const override;
+                virtual void deserialize(PSIBuffer& buf) override;
             };
 
             //!
             //! Representation of an earth orbiting satellite position
             //! @see ETSI EN 300 648, 5.2.11.2
             //!
-            class earth_orbiting_satallite_type {
+            class earth_orbiting_satallite_type : SAT_base {
             public:
                 uint8_t           epoch_year;                               //!< 8 bits. lLast 2 digits of the epoch year.
                 uint16_t          day_of_the_year;                          //!< 16 bits. Epoch day of the year.
@@ -157,32 +172,11 @@ namespace ts {
                 //! 
                 earth_orbiting_satallite_type& operator=(const earth_orbiting_satallite_type& other);
 
-                //!
-                //! This method populates this object from XML attributes and sub-element
-                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-                //! @return  true if the requisite attributes and sub-elements are available and correct
-                //! 
-                bool fromXML(const xml::Element* root);
-
-                //!
-                //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
-                //!
-                void toXML(xml::Element* element);
-
-                //!
-                //! This method serializes the attributes of an earth orbiting satellite.
-                //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-                //!
-                void serialize(PSIBuffer& buf) const;
-
-                //!
-                //! This method deserializes (populates) the attributes of an earth orbiting satellite.
-                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //!  
-                void deserialize(PSIBuffer& buf);
+                // Inherited methods
+                virtual bool fromXML(const xml::Element* element) override;
+                virtual void toXML(xml::Element* root) override;
+                virtual void serialize(PSIBuffer& buf) const override;
+                virtual void deserialize(PSIBuffer& buf) override;
             };
 
             uint32_t        satellite_id;           //!< 24 bits, A label to identify the satellite that is detailed here.
@@ -212,38 +206,17 @@ namespace ts {
             //! 
             satellite_position_v2_info_type(PSIBuffer& buf) : satellite_position_v2_info_type() { deserialize(buf); }
 
-            //!
-            //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-            //! @return  true if the requisite attributes and sub-elements are available and correct
-            //!
-            bool fromXML(const xml::Element* root);
-
-            //!
-            //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
-            //!
-            void toXML(xml::Element* element);
-
-            //!
-            //! This method serializes the attributes of a satellite position, either geostationary or earth orbiting.
-            //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-            //!
-            void serialize(PSIBuffer& buf) const;
-
-            //!
-            //! This method deserializes (populates) the attributes of a satellite position, either geostationary or earth orbiting.
-            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //!  
-            void deserialize(PSIBuffer& buf);
+            // Inherited methods
+            virtual bool fromXML(const xml::Element* element) override;
+            virtual void toXML(xml::Element* root) override;
+            virtual void serialize(PSIBuffer& buf) const override;
+            virtual void deserialize(PSIBuffer& buf) override;
         };
 
         //!
         //! Network Clock Reference
         //! 
-        class NCR_type {
+        class NCR_type : SAT_base {
         public:
             uint64_t        base;       //!< 33 bits. NCR time div 300, as specified in ETSI EN 301 790  and ISO/IEC 13818-1. 
             uint16_t        ext;        //!< 9 bits. NCR time mod 300, as specified in ETSI EN 301 790 and ISO/IEC 13818-1. 
@@ -261,40 +234,32 @@ namespace ts {
             //! 
             void clear();
 
-            //!
-            //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-            //! @param [in] prefix  The prefix to apply to element or attribute names associated with this clock reference.
-            //! @return  true if the requisite attributes and sub-elements are available and correct
-            //!
-            bool fromXML(const xml::Element* root, const UString prefix);
-
-            //!
-            //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
-            //! @param [in] prefix  The prefix to apply to element or attribute names associated with this clock reference.
-            //!
-            void toXML(xml::Element* element , const UString prefix);
-
-            //!
-            //! This method serializes the attributes of a network clock reference.
-            //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-            //!
-            void serialize(PSIBuffer& buf) const;
-
-            //!
-            //! This method deserializes (populates) the attributes of a Network Clock Reference.
-            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! 
-            void deserialize(PSIBuffer& buf);
-
             //! 
             //! The length (in bytes) of a network clock reference when serialized.
             //! @returns the length in bytes of a serialized network clock reference.
             //! 
             static uint16_t serialized_length() { return 6; }
+
+            //!
+            //! This method populates this object from XML attributes and sub-element
+            //! @param [in] parent  The element whose attributes and sub-elements are parsed to construct this object
+            //! @param [in] element_name  The name of the new element that contaiuning the attributes associated with this clock reference.
+            //! @return  true if the requisite attributes and sub-elements are available and correct
+            //!
+            bool fromXML(const xml::Element* parent, const UString element_name);
+
+            //!
+            //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
+            //! @param [in,out] parent  The element whose attributes and sub-elements are added to to represent values in this object
+            //! @param [in] element_name  The name of the element that will contain the serialized values as attributes..
+            //!
+            void toXML(xml::Element* parent, const UString element_name);
+
+            // Inherited methods
+            virtual bool fromXML(const xml::Element* element) override;
+            virtual void toXML(xml::Element* root) override;
+            virtual void serialize(PSIBuffer& buf) const override;
+            virtual void deserialize(PSIBuffer& buf) override;
         };
 
         //!
@@ -303,14 +268,14 @@ namespace ts {
         //! that is associated with none, one or multiple delivery systems
         //! @see ETSI EN 300 648, 5.2.11.3
         //!
-        class cell_fragment_info_type {
+        class cell_fragment_info_type : SAT_base {
         public:
 
             //! Representation of a new delivery system
             //! A new delivery system that is soon serving this cell fragment.
             //! @see ETSI EN 300 648, 5.2.11.3
             //!
-            class new_delivery_system_id_type {
+            class new_delivery_system_id_type : SAT_base {
             public:
                 uint32_t    new_delivery_system_id;     //!< The identifier of a new delivery system that is soon serving this cell fragment.
                 NCR_type    time_of_application;        //!< The network clock reference of the time when the specified delivery system will be serving the cell fragment. 
@@ -331,39 +296,18 @@ namespace ts {
                 //! 
                 new_delivery_system_id_type(PSIBuffer& buf) : new_delivery_system_id_type() { deserialize(buf); }
 
-                //!
-                //! This method serializes the attributes of new satellite delivery system.
-                //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-                //!
-                void serialize(PSIBuffer& buf) const;
-
-                //!
-                //! This method deserializes (populates) the attributes of a new delivery system.
-                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! 
-                void deserialize(PSIBuffer& buf);
-
-                //!
-                //! This method populates this object from XML attributes and sub-element.
-                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object.
-                //! @return  true if the requisite attributes and sub-elements are available and correct
-                //!
-                bool fromXML(const xml::Element* root);
-
-                //!
-                //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element.
-                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object.
-                //!
-                void toXML(xml::Element* element);
+                // Inherited methods
+                virtual bool fromXML(const xml::Element* element) override;
+                virtual void toXML(xml::Element* root) override;
+                virtual void serialize(PSIBuffer& buf) const override;
+                virtual void deserialize(PSIBuffer& buf) override;
             };
 
             //! Representation of am obsolescent delivery system
             //! A  delivery system that will soon stop serving this cell fragment.
             //! @see ETSI EN 300 648, 5.2.11.3
             //!           
-            class obsolescent_delivery_system_id_type {
+            class obsolescent_delivery_system_id_type : SAT_base {
             public:
                 uint32_t    obsolescent_delivery_system_id;     //!< The delivery system id of a delivery system that is soon no longer serving this cell fragment.
                 NCR_type    time_of_obsolescence;               //!< The network clock reference of the time when the specified delivery system will no longer be serving the cell fragment.
@@ -384,32 +328,11 @@ namespace ts {
                 //! 
                 obsolescent_delivery_system_id_type(PSIBuffer& buf) : obsolescent_delivery_system_id_type() { deserialize(buf); }
 
-                //!
-                //! This method serializes the attributes of an obsolescent satellite delivery system.
-                //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-                //!
-                void serialize(PSIBuffer& buf) const;
-
-                //!
-                //! This method deserializes (populates) the attributes of an obsolescent delivery system.
-                //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-                //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-                //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-                //! 
-                void deserialize(PSIBuffer& buf);
-
-                //!
-                //! This method populates this object from XML attributes and sub-element
-                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-                //! @return  true if the requisite attributes and sub-elements are available and correct
-                //!
-                bool fromXML(const xml::Element* root);
-
-                //!
-                //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
-                //!
-                void toXML(xml::Element* element);
+                // Inherited methods
+                virtual bool fromXML(const xml::Element* element) override;
+                virtual void toXML(xml::Element* root) override;
+                virtual void serialize(PSIBuffer& buf) const override;
+                virtual void deserialize(PSIBuffer& buf) override;
             };
 
             uint32_t                cell_fragment_id;           /**< The identifier of this cell fragment. It can occur multiple times in consecutive 
@@ -448,38 +371,17 @@ namespace ts {
             //! 
             cell_fragment_info_type(PSIBuffer& buf) : cell_fragment_info_type() { deserialize(buf); }
 
-            //!
-            //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-            //! @return  true if the requisite attributes and sub-elements are available and correct
-            //!
-            bool fromXML(const xml::Element* root);
-
-            //!
-            //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
-            //!
-            void toXML(xml::Element* element);
-
-            //!
-            //! This method serializes the attributes of a cell fragment.
-            //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-            //! 
-            void serialize(PSIBuffer& buf) const;
-
-            //!
-            //! This method deserializes (populates) the attributes of a cell fragment.
-            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! 
-            void deserialize(PSIBuffer& buf);
+            // Inherited methods
+            virtual bool fromXML(const xml::Element* element) override;
+            virtual void toXML(xml::Element* root) override;
+            virtual void serialize(PSIBuffer& buf) const override;
+            virtual void deserialize(PSIBuffer& buf) override;
         };
 
         //! Representation of a time assocition between NCR and UTC
         //! @see ETSI EN 300 648, 5.2.11.4
         //!
-        class time_association_info_type {
+        class time_association_info_type : SAT_base {
         public:
             uint8_t     association_type;                   //!< 4 bits. Indicates how the association_timestamp is to be interpreted (valid: 0 or 1).
 
@@ -531,45 +433,24 @@ namespace ts {
             //! 
             void clear();
 
-            //!
-            //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-            //! @return  true if the requisite attributes and sub-elements are available and correct
-            //!
-            bool fromXML(const xml::Element* root);
-
-            //!
-            //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
-            //!
-            void toXML(xml::Element* element);
-
-            //!
-            //! This method serializes the attributes of a time association.
-            //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-            //!
-            void serialize(PSIBuffer& buf) const;
-
-            //!
-            //! This method deserializes (populates) the attributes of a time association.
-            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! 
-            void deserialize(PSIBuffer& buf);
+            // Inherited methods
+            virtual bool fromXML(const xml::Element* element) override;
+            virtual void toXML(xml::Element* root) override;
+            virtual void serialize(PSIBuffer& buf) const override;
+            virtual void deserialize(PSIBuffer& buf) override;
         };
 
         //! Representation of a beam hopping time plan, identified by the beamhopping_time_plan_id with information relating to the 
         //! period(s) in time that the beam will illuminate the cell each beamhopping cycle.
         //! @see ETSI EN 300 648, 5.2.11.3
         //!
-        class beam_hopping_time_plan_info_type {
+        class beam_hopping_time_plan_info_type : SAT_base {
         public:
 
             //!
             //! Indicates if there is a transmission in the respective timeslot.
             //! 
-            class slot {
+            class slot : SAT_base {
             public:
                 uint16_t    number;                     //!< The beam number.
                 bool        on;                         //!< Illuminatiom state of the beam.
@@ -602,25 +483,6 @@ namespace ts {
                 //! @return  true if an illumination status has already been signalled for the slot number
                 //! 
                 bool operator==(const slot& rhs) const { return this->number == rhs.number; }
- 
-                //!
-                //! This method populates this object from XML attributes and sub-element
-                //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-                //! @return  true if the requisite attributes and sub-elements are available and correct
-                //!
-                bool fromXML(const xml::Element* root);
-
-                //!
-                //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-                //! @param [in,out] element  The element whose attributes and sub-elements are added to to represent values in this object
-                //!
-                void toXML(xml::Element* element);
-
-                //!
-                //! This method serializes a slot illumination.
-                //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-                //! 
-                void serialize(PSIBuffer& buf) const;
 
                 //!
                 //! This method deserializes (populates) the attributes of an illumination time slot.
@@ -630,6 +492,12 @@ namespace ts {
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //! 
                 void deserialize(uint16_t slot_num, PSIBuffer& buf);
+
+                // Inherited methods
+                virtual bool fromXML(const xml::Element* element) override;
+                virtual void toXML(xml::Element* root) override;
+                virtual void serialize(PSIBuffer& buf) const override;
+                virtual void deserialize(PSIBuffer& buf) override;
             };
 
             uint32_t                beamhopping_time_plan_id;       //!< Label to identify the beamhopping time plan that is detailed in this loop.
@@ -680,32 +548,11 @@ namespace ts {
             //! 
             uint8_t time_plan_mode(void) const;
 
-            //!
-            //! This method populates this object from XML attributes and sub-element
-            //! @param [in] root  The element whose attributes and sub-elements are parsed to construct this object
-            //! @return  true if the requisite attributes and sub-elements are available and correct
-            //!
-            bool fromXML(const xml::Element* root);
-
-            //!
-            //! This method converts this object to XML by populating necessary attributes and sub-elements into the provided element
-            //! @param [in,out] element  The element that attributes and sub-elements are added to to represent values in this object
-            //!
-            void toXML(xml::Element* element);
-
-            //!
-            //! This method serializes a beam hopping time plan.
-            //! @param [in,out] buf A PSIBuffer with the appropriate size for the section payload. 
-            //! 
-            void serialize(PSIBuffer& buf) const;
-
-            //!
-            //! This method deserializes a beam hopping time plan.
-            //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
-            //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
-            //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
-            //! 
-            void deserialize(PSIBuffer& buf);
+            // Inherited methods
+            virtual bool fromXML(const xml::Element* element) override;
+            virtual void toXML(xml::Element* root) override;
+            virtual void serialize(PSIBuffer& buf) const override;
+            virtual void deserialize(PSIBuffer& buf) override;
         };
 
 
