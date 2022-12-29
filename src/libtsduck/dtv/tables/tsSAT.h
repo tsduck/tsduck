@@ -83,7 +83,7 @@ namespace ts {
             //! 
             virtual void deserialize(PSIBuffer& buf) = 0;
 
-            virtual ~SAT_base() {};
+            virtual ~SAT_base() {}
         };
 
 
