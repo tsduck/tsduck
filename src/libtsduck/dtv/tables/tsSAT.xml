@@ -11,26 +11,25 @@
       <!-- satellite_table_id=0 -> satellite_position_v2_info -->
       <satellite_position_v2_info>
         <!-- 1 or more satellite_position required -->
-        <satellite_position
-          satellite_id="uint24, required">
+        <satellite_position satellite_id="uint24, required">
           <!-- position_system==0 -> geostationary -->
           <geostationary
-            orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
-            west_east_flag="east|west, required"/>
+              orbital_position="SatelliteOrbitalPosition, eg. 19.2, required"
+              west_east_flag="east|west, required"/>
           <!-- position_system==1 -> earth_orbiting -->
           <earth_orbiting
-            epoch_year="uint8, required"
-            day_of_the_year="uint16, required"
-            day_fraction="float, required"
-            mean_motion_first_derivative="float, required"
-            mean_motion_second_derivative="float, required"
-            drag_term="float32, required"
-            inclination="float32, required"
-            right_ascension_of_the_ascending_node="float32, required"
-            eccentricity="float32, required"
-            argument_of_perigree="float32, required"
-            mean_anomaly="float32, required"
-            mean_motion="float32, required"/>
+              epoch_year="uint8, required"
+              day_of_the_year="uint16, required"
+              day_fraction="float, required"
+              mean_motion_first_derivative="float, required"
+              mean_motion_second_derivative="float, required"
+              drag_term="float32, required"
+              inclination="float32, required"
+              right_ascension_of_the_ascending_node="float32, required"
+              eccentricity="float32, required"
+              argument_of_perigree="float32, required"
+              mean_anomaly="float32, required"
+              mean_motion="float32, required"/>
         </satellite_position>
       </satellite_position_v2_info>
 
@@ -38,104 +37,97 @@
       <cell_fragment_info>
         <!-- 1 or more cell_fragment required -->
         <cell_fragment
-          cell_fragment_id="uint32, required"
-          first_occurence="bool, required"
-          last_occurence="bool, required"
-          center_latitude="int18, optional"
-          center_longitude="int19, optional"
-          max_distance="uint24, optional">
+            cell_fragment_id="uint32, required"
+            first_occurence="bool, required"
+            last_occurence="bool, required"
+            center_latitude="int18, optional"
+            center_longitude="int19, optional"
+            max_distance="uint24, optional">
           <!--
-            center_latitude, center_longitude (tcimsbf) - two's complement integer, most significanr (sign) bit first
-            center_latitude, center_longitude, max_distance only required when first_occurrence=true
+              center_latitude, center_longitude (tcimsbf) - two's complement integer, most significanr (sign) bit first
+              center_latitude, center_longitude, max_distance only required when first_occurrence=true
           -->
 
           <!-- 0 or more delivery_system required -->
-          <delivery_system 
-            id="uint32, required"/>
+          <delivery_system id="uint32, required"/>
 
           <!-- 0 or more new_delivery_system required -->
-          <new_delivery_system
-            id="uint32, required">
-            <time_of_application 
-              base="uint33, required"
-              ext="uint9, required"/>
+          <new_delivery_system id="uint32, required">
+            <time_of_application
+                base="uint33, required"
+                ext="uint9, required"/>
           </new_delivery_system>
-            
 
           <!-- 0 or more obsolescent_delivery_system required -->
-          <obsolescent_delivery_system
-            id="uint32, required">
+          <obsolescent_delivery_system id="uint32, required">
             <time_of_obsolescence
-              base="uint33, required"
-              ext="uint9, required"/>
-
+                base="uint33, required"
+                ext="uint9, required"/>
           </obsolescent_delivery_system>
-          
-        </cell_fragment>       
-      </cell_fragment_info>/>
+
+        </cell_fragment>
+      </cell_fragment_info>
 
       <!-- satellite_table_id=2 -> time_association_info -->
       <time_association_info
-        association_type="uint4, required"
-        leap59="bool, optional"
-        leap61="bool, optional"
-        past_leap59="bool, optional"
-        past_leap61="bool, optional"
-        association_timestamp_seconds="uint64, required"
-        association_timestamp_nanoseconds="uint32, required">
+          association_type="uint4, required"
+          leap59="bool, optional"
+          leap61="bool, optional"
+          past_leap59="bool, optional"
+          past_leap61="bool, optional"
+          association_timestamp_seconds="uint64, required"
+          association_timestamp_nanoseconds="uint32, required">
         <!--
-          association_type==0:  UTC without leab second signalling
-          association_type==1:  UTC with leab second signalling
-          leap59, leap61, pastleap59, pastleap61 only required when association_type==1
+            association_type==0:  UTC without leab second signalling
+            association_type==1:  UTC with leab second signalling
+            leap59, leap61, pastleap59, pastleap61 only required when association_type==1
         -->
-        <ncr
-          base="uint33, required"
-          ext="uint9, required"/>
+        <ncr base="uint33, required"
+             ext="uint9, required"/>
       </time_association_info>
 
       <!-- satellite_table_id=3 -> beamhopping_timeplan_info -->
       <beamhopping_timeplan_info>
-        <beamhopping_timeplan
-          id="uint32, required">
+        <beamhopping_timeplan id="uint32, required">
 
           <time_of_application
-            base="uint33, required"
-            ext="uint9, required"/>
+              base="uint33, required"
+              ext="uint9, required"/>
           <cycle_duration
-            base="uint33, required"
-            ext="uint9, required"/>
+              base="uint33, required"
+              ext="uint9, required"/>
 
           <time_plan_mode_0>
             <dwell_duration
-              base="uint33, required"
-              ext="uint9, required"/>
+                base="uint33, required"
+                ext="uint9, required"/>
             <on_time
-              base="uint33, required"
-              ext="uint9, required"/>
+                base="uint33, required"
+                ext="uint9, required"/>
           </time_plan_mode_0>
-          
-          <time_plan_mode_1
-            current_slot="uint15, required">
+
+          <time_plan_mode_1 current_slot="uint15, required">
             <slot id="uint15, required" transmission_on="bool, required"/>
           </time_plan_mode_1>
 
           <time_plan_mode_2>
             <grid_size
-              base="uint33, required"
-              ext="uint9, required"/>
+                base="uint33, required"
+                ext="uint9, required"/>
             <revisit_duration
-              base="uint33, required"
-              ext="uint9, required"/>
+                base="uint33, required"
+                ext="uint9, required"/>
             <sleep_time
-              base="uint33, required"
-              ext="uint9, required"/>
+                base="uint33, required"
+                ext="uint9, required"/>
             <sleep_duration
-              base="uint33, required"
-              ext="uint9, required"/>
+                base="uint33, required"
+                ext="uint9, required"/>
           </time_plan_mode_2>
 
-        </beamhopping_timeplan>       
+        </beamhopping_timeplan>
       </beamhopping_timeplan_info>
+
     </SAT>
 
   </_tables>
