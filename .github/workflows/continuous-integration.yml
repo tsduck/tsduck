@@ -95,6 +95,7 @@ jobs:
       CXXFLAGS_STANDARD: -std=c++${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       REFERENCE_REPO: tsduck/tsduck
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -164,9 +165,7 @@ jobs:
       STDCPP: stdcpp${{ matrix.std }}
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       REFERENCE_REPO: tsduck/tsduck
-      # The repo secret "GUEST_TOKEN" is a GitHub token without any privilege, just avoiding
-      # rate limits when using the GitHub API when downloading some prerequisites from GitHub.
-      GITHUB_TOKEN: ${{ secrets.GUEST_TOKEN }}
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -225,6 +224,8 @@ jobs:
     name: Doxygen documentation
     # ubuntu-latest is currently ubuntu-20.04, try to grab a more recent version of doxygen.
     runs-on: ubuntu-22.04
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
