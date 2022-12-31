@@ -56,8 +56,9 @@ TSDuck can be built on Windows, Linux, FreeBSD and macOS systems. See the
 ### Download
 
 Pre-built [binary packages](https://github.com/tsduck/tsduck/releases) are available
-for Windows and Linux (Fedora, RedHat, CentOS, AlmaLinux, Ubuntu, Debian, Raspbian). On macOS,
-[use the Homebrew packager](https://tsduck.io/doxy/installing.html#macinstall).
+for Windows and the very latest versions of some Linux distros
+(Fedora, RedHat, CentOS, AlmaLinux, Ubuntu, Debian, Raspbian).
+On macOS, [use the Homebrew packager](https://tsduck.io/doxy/installing.html#macinstall).
 
 The latest developments can be tested using [nightly builds](https://tsduck.io/download/prerelease/).
 
@@ -76,5 +77,5 @@ using [![Donate](https://tsduck.io/images/donate-paypal.svg)](https://tsduck.io/
 TSDuck is distributed under the terms of the Simplified BSD License.
 See the file `LICENSE.txt` for details.
 
-*Copyright (c) 2005-2022, Thierry Lelegard*<br/>
+*Copyright (c) 2005-2023, Thierry Lelegard*<br/>
 *All rights reserved*
