@@ -44,7 +44,7 @@ bool ts::RISTInputPlugin::isRealTime()
 
 
 //----------------------------------------------------------------------------
-// Stubs in the absence of libsrt.
+// Stubs in the absence of librist.
 //----------------------------------------------------------------------------
 
 #if defined(TS_NO_RIST)
