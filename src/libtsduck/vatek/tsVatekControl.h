@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2022, Vision Advance Technology Inc. (VATek)
+// Copyright (c) 2022-2023, Vision Advance Technology Inc. (VATek)
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without

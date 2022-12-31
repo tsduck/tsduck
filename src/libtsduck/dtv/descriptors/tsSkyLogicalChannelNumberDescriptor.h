@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2019-2022, Anthony Delannoy
+// Copyright (c) 2019-2023, Anthony Delannoy
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without

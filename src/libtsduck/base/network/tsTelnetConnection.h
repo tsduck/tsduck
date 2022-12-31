@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Thierry Lelegard, Frederic Peignot
+// Copyright (c) 2005-2023, Thierry Lelegard, Frederic Peignot
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without

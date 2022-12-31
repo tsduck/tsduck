@@ -1,7 +1,7 @@
 //----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
-// Copyright (c) 2005-2022, Maciej Czyzkowski
+// Copyright (c) 2005-2023, Maciej Czyzkowski
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
