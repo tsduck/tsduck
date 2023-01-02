@@ -36,7 +36,8 @@
 
 import tsbuild, sys, os, fnmatch
 
-headers = {'': [], 'private': [], 'unix': [], 'linux': [], 'mac': [], 'freebsd': [], 'windows': []}
+headers = {'': [], 'private': [], 'unix': [], 'linux': [], 'mac': [], 'freebsd': [], 'openbsd': [], 'windows': []}
+unixen  = ['linux', 'mac', 'freebsd', 'openbsd']
 exclude = ['tsduck.h', 'tsBeforeStandardHeaders.h', 'tsAfterStandardHeaders.h']
 
 # Recursively collect header files.
@@ -58,8 +59,10 @@ def generate_header(out):
     # Collect header files.
     rootdir = tsbuild.repo_root()
     collect_headers(rootdir + '/src/libtsduck')
-    headers['linux'].extend(headers['unix'])
-    headers['mac'].extend(headers['unix'])
+    # Extend Unix-like systems with common Unix definitions.
+    for osname in unixen:
+        headers[osname].extend(headers['unix'])
+    # Remove non-public or unused definitions.
     del headers['private']
     del headers['unix']
 

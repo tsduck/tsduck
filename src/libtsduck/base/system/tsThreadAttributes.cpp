@@ -102,8 +102,8 @@ int ts::ThreadAttributes::GetPriority(const int& staticPriority)
 int ts::ThreadAttributes::PthreadSchedulingPolicy()
 {
     // Get the scheduling policy of the current process.
-#if defined(TS_MAC)
-    // On MacOS, there is no sched_getscheduler, use hard-coded SCHED_OTHER.
+#if defined(TS_MAC) || defined(TS_OPENBSD)
+    // On macOS and OpenBSD, there is no sched_getscheduler, use hard-coded SCHED_OTHER.
     // This is far from ideal, can we do better?
     return SCHED_OTHER;
 #else

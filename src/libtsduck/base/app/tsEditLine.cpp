@@ -33,11 +33,18 @@
 
 // Disable libedit on Windows.
 #if defined(TS_WINDOWS) && !defined(TS_NO_EDITLINE)
-#define TS_NO_EDITLINE 1
+    #define TS_NO_EDITLINE 1
 #endif
 
 #if !defined(TS_NO_EDITLINE)
-#include <editline/readline.h>
+    #include "tsBeforeStandardHeaders.h"
+    #if defined(TS_OPENBSD)
+        #include <readline/readline.h>
+        #include <readline/history.h>
+    #else
+        #include <editline/readline.h>
+    #endif
+    #include "tsAfterStandardHeaders.h"
 #endif
 
 ts::UString ts::EditLine::_default_prompt(u"> ");

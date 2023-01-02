@@ -92,9 +92,9 @@ void ts::Monotonic::getSystemTime()
     ::GetSystemTimeAsFileTime(&result.ft);
     _value = result.i;
 
-#elif defined(TS_MAC)
+#elif defined(TS_MAC) || defined(TS_OPENBSD)
 
-    // On MacOS, there is no clock_nanosleep. We use a relative nanosleep.
+    // On OpenBSD and macOS, there is no clock_nanosleep. We use a relative nanosleep.
     // And nanosleep is always based on CLOCK_REALTIME.
     _value = Time::UnixClockNanoSeconds(CLOCK_REALTIME);
 
@@ -129,9 +129,9 @@ void ts::Monotonic::wait()
         throw MonotonicError(::GetLastError());
     }
 
-#elif defined(TS_MAC)
+#elif defined(TS_MAC) || defined(TS_OPENBSD)
 
-    // MacOS implementation.
+    // OpenBSD and macOS implementation.
     // No support for clock_nanosleep. Use a relative nanosleep which is less precise.
 
     for (;;) {

@@ -716,6 +716,7 @@ void SysUtilsTest::testSysInfo()
             << "    isDebian = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isDebian()) << std::endl
             << "    isMacOS = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isMacOS()) << std::endl
             << "    isFreeBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isFreeBSD()) << std::endl
+            << "    isOpenBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isOpenBSD()) << std::endl
             << "    isWindows = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isWindows()) << std::endl
             << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel32()) << std::endl
             << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel64()) << std::endl
@@ -731,21 +732,31 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
 #elif defined(TS_LINUX)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
 #elif defined(TS_MAC)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isMacOS());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
 #elif defined(TS_FREEBSD)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isFreeBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
+#elif defined(TS_OPENBSD)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
+    TSUNIT_ASSERT(ts::SysInfo::Instance()->isOpenBSD());
 #endif
 
     // We can't predict the memory page size, except that it must be a multiple of 256.

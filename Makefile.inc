@@ -159,9 +159,10 @@ SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
 #   instead of /usr. By default, ignore the Homebrew environment on Linux and
 #   build using system libraries.
 # - LOCAL_ARCH : local processor exact architecture ("x86_64", "armv7l", etc)
-# - LOCAL_OS : operating system (linux, darwin, freebsd)
+# - LOCAL_OS : operating system (linux, darwin, freebsd, openbsd)
 # - MAIN_ARCH : target processor architecture family ("x86_64", "arm", etc)
 # - MACOS : non-empty on macOS systems
+# - OPENBSD : non-empty on OpenBSD systems
 # - SO_SUFFIX : shared libraries suffix (".so", ".dylib")
 # - SYSPREFIX : installation prefix; if not already set on input, it is defined
 #   as /usr on Linux and HomeBrew root on macOS.
@@ -188,6 +189,7 @@ endif
 LINUX = $(if $(findstring linux,$(LOCAL_OS)),true)
 MACOS = $(if $(findstring darwin,$(LOCAL_OS)),true)
 FREEBSD = $(if $(findstring freebsd,$(LOCAL_OS)),true)
+OPENBSD = $(if $(findstring openbsd,$(LOCAL_OS)),true)
 
 ifneq ($(M32),)
     # 32-bit cross-comppilation.
@@ -213,6 +215,10 @@ ifeq ($(CPU_COUNT),)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
         export CORE_COUNT := $(shell sysctl -n kern.smp.cores 2>/dev/null)
         export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
+    else ifneq ($(OPENBSD),)
+        export CPU_COUNT  := $(shell sysctl -n hw.ncpu 2>/dev/null)
+        export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
+        export CORE_COUNT := $(CPU_COUNT)
     else
         export CPU_COUNT  := $(shell nproc 2>/dev/null)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
@@ -223,9 +229,9 @@ endif
 
 # On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
 # On Linux, when Homebrew is forced, use it as alternative development root.
-# On FreeBSD, the packages are installed in /usr/local.
+# On FreeBSD and OpenBSD, the packages are installed in /usr/local.
 
-ifneq ($(MACOS)$(LINUXBREW)$(FREEBSD),)
+ifneq ($(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD),)
     $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)))
     ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
 else
@@ -235,14 +241,14 @@ endif
 # Locate system directories.
 
 USELIB64  := $(if $(findstring linux-x86_64,$(LOCAL_OS)-$(MAIN_ARCH)),$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true)))
-SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD),$(ALTDEVROOT),/usr)
+SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD),$(ALTDEVROOT),/usr)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
 # Locate bash completions facility.
-BASHCOMP_DIR ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD),$(ALTDEVROOT)/etc/bash_completion.d,$(SYSPREFIX)/share/bash-completion/completions)
-BASHCOMP_AUTO = $(if $(MACOS)$(LINUXBREW)$(FREEBSD),,true)
+BASHCOMP_DIR ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD),$(ALTDEVROOT)/etc/bash_completion.d,$(SYSPREFIX)/share/bash-completion/completions)
+BASHCOMP_AUTO = $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD),,true)
 
 #-----------------------------------------------------------------------------
 # Output directories for final binaries and objects.
@@ -393,8 +399,9 @@ ifeq ($(GCC_VERSION_DONE),)
 endif
 
 # Forced usage of LLVM (clang).
+# FreeBSD and OpenBSD have switched to clang by default.
 
-ifneq ($(LLVM),)
+ifneq ($(LLVM)$(FREEBSD)$(OPENBSD),)
     export USE_GCC :=
     export USE_LLVM := true
     CXX = clang++
@@ -485,7 +492,7 @@ LDFLAGS_PTHREAD = $(if $(MACOS),,-pthread)
 
 # External libraries
 
-LDLIBS += -lstdc++ -lpthread $(if $(MACOS),,-lrt) -lm
+LDLIBS += -lstdc++ -lpthread $(if $(MACOS)$(OPENBSD),,-lrt) -lm
 
 # Global compilation flags.
 # Additional flags can be passed on the "make" command line using xxFLAGS_EXTRA.
@@ -500,17 +507,22 @@ ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 # $(SOFLAGS) specifies options when creating shared objects (.so or .dylib files).
 
 ifneq ($(LINUX),)
-    # Link flags on Linux
+    # Build flags on Linux
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(FREEBSD),)
-    # Link flags on FreeBSD
+    # Build flags on FreeBSD
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/freebsd
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
+else ifneq ($(OPENBSD),)
+    # Build flags on OpenBSD
+    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/openbsd
+    LDFLAGS += -Wl,-z,origin,-rpath,'$$ORIGIN',-z,noexecstack
+    SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(MACOS),)
-    # Link flags on macOS
+    # Build flags on macOS
     CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
     LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
@@ -544,7 +556,7 @@ static:
 
 ifeq ($(STATIC),)
     # Dynamic (default) link
-    LDLIBS := -ldl $(LDLIBS)
+    LDLIBS := $(if $(OPENBSD),,-ldl) $(LDLIBS)
 else ifneq ($(MACOS),)
     $(error static linking is not supported on macOS)
 else
@@ -589,14 +601,14 @@ ifeq ($(NOCURL),)
     NOCURL := $(if $(call F_SEARCH,curl-config),,true)
 endif
 
-ifneq ($(MACOS)$(FREEBSD),)
-    # Dektec and HiDes devices are not supported on macOS or FreeBSD (no driver).
+ifneq ($(MACOS)$(FREEBSD)$(OPENBSD),)
+    # Dektec and HiDes devices are not supported on macOS, FreeBSD, OpenBSD (no driver).
     NODTAPI = true
     NOHIDES = true
 endif
 
-ifneq ($(FREEBSD),)
-    # Vatek library has not yet been validated on FreeBSD.
+ifneq ($(FREEBSD)$(OPENBSD),)
+    # Vatek library has not yet been validated on FreeBSD, OpenBSD.
     NOVATEK = true
 endif
 
@@ -642,8 +654,8 @@ ifneq ($(NOPCSC),)
 else ifneq ($(MACOS),)
     # On macOS, use PCSC.framework
     LDLIBS_PCSC = -framework PCSC
-else ifneq ($(LINUXBREW)$(FREEBSD),)
-    # PCSC on Linuxbrew or FreeBSD
+else ifneq ($(LINUXBREW)$(FREEBSD)$(OPENBSD),)
+    # PCSC on Linuxbrew, FreeBSD, OpenBSD.
     CXXFLAGS_INCLUDES += -I$(ALTDEVROOT)/include/PCSC
     LDLIBS_PCSC = -lpcsclite
 else
@@ -669,7 +681,7 @@ endif
 # when linking applications against the TSDuck static library.
 
 LIBTSDUCK_CXXFLAGS_INCLUDES +=
-LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(LINUX),-latomic)
+LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(OPENBSD),-lkvm) $(if $(LINUX),-latomic)
 
 ifneq ($(NODTAPI),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
@@ -720,7 +732,7 @@ endif
 # List of libtsduck directories containing private and public headers.
 
 ifeq ($(PUBLIC_INCLUDES),)
-    export OTHER_OS   := $(filter-out $(subst darwin,mac,$(LOCAL_OS)),linux mac freebsd windows)
+    export OTHER_OS   := $(filter-out $(subst darwin,mac,$(LOCAL_OS)),linux mac freebsd openbsd windows)
     export ALL_INCLUDES := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
     export PRIVATE_INCLUDES := $(filter %/private,$(ALL_INCLUDES))
     export PUBLIC_INCLUDES := $(filter-out %/private,$(ALL_INCLUDES))

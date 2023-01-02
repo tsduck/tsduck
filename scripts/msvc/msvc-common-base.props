@@ -17,6 +17,7 @@
                        Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
                                 $(TSDuckRootDir)src\libtsduck\**\linux\**;
                                 $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
+                                $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\mac\**;
                                 $(TSDuckRootDir)src\libtsduck\**\private\**;
                                 $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
@@ -25,6 +26,7 @@
                        Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
                                 $(TSDuckRootDir)src\libtsduck\**\linux\**;
                                 $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
+                                $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\mac\**;
                                 $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
     <LibPublicDirs     Include="@(LibPublicHeaders->'%(RootDir)%(Directory)'->Distinct())"/>

@@ -127,10 +127,12 @@ cmd_so() {
 libs_common() {
     local pcsc=
     local rt=
+    local dl=
     [[ $SYSTEM == Darwin ]] && pcsc="-framework PCSC"
     [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-lpcsclite"
     [[ $SYSTEM == Linux ]] && rt="-lrt"
-    echo "$pcsc -lpthread $rt -ldl -lm -lstdc++"
+    [[ $SYSTEM == OpenBSD ]] || dl="-ldl"
+    echo "$pcsc -lpthread $rt $dl -lm -lstdc++"
 }
 
 cmd_libs() {
@@ -148,6 +150,7 @@ cmd_staticlibs() {
     local other=
     [[ $SYSTEM == Linux ]] && other="$other -latomic"
     [[ $SYSTEM == FreeBSD ]] && other="$other -lprocstat"
+    [[ $SYSTEM == OpenBSD ]] && other="$other -lkvm"
     echo "$(cmd_lib)/libtsduck.a $srt $rist $(curl-config --static-libs 2>/dev/null) -ledit $other $(libs_common)"
 }
 

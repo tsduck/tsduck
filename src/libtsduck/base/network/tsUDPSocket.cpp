@@ -49,8 +49,10 @@ ts::UDPSocket::UDPSocket(bool auto_open, Report& report) :
     Socket(),
     _local_address(),
     _default_destination(),
-    _mcast(),
-    _ssmcast()
+#if !defined(TS_NO_SSM)
+    _ssmcast(),
+#endif
+    _mcast()
 {
     if (auto_open) {
         // Returned value ignored on purpose, the socket is marked as closed in the object on error.
@@ -313,6 +315,10 @@ bool ts::UDPSocket::addMembership(const IPv4Address& multicast, const IPv4Addres
     // Now join the group.
     if (source.hasAddress()) {
         // Source-specific multicast (SSM).
+#if defined(TS_NO_SSM)
+        report.error(u"source-specific multicast (SSM) is not supported on this operating system");
+        return false;
+#else
         SSMReq req(multicast, local, source);
         if (::setsockopt(getSocket(), IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, SysSockOptPointer(&req.data), sizeof(req.data)) != 0) {
             report.error(u"error adding SSM membership to %s from local address %s: %s", {groupString, local, SysSocketErrorCodeMessage()});
@@ -322,6 +328,7 @@ bool ts::UDPSocket::addMembership(const IPv4Address& multicast, const IPv4Addres
             _ssmcast.insert(req);
             return true;
         }
+#endif
     }
     else {
         // Standard multicast.
@@ -392,8 +399,10 @@ bool ts::UDPSocket::dropMembership(Report& report)
             ok = false;
         }
     }
+    _mcast.clear();
 
     // Drop all source-specific multicast groups.
+#if !defined(TS_NO_SSM)
     for (const auto& it : _ssmcast) {
         report.verbose(u"leaving multicast group %s@%s from local address %s",
                        {IPv4Address(it.data.imr_sourceaddr), IPv4Address(it.data.imr_multiaddr), IPv4Address(it.data.imr_interface)});
@@ -402,9 +411,8 @@ bool ts::UDPSocket::dropMembership(Report& report)
             ok = false;
         }
     }
-
-    _mcast.clear();
     _ssmcast.clear();
+#endif
 
     return ok;
 }
@@ -606,9 +614,11 @@ ts::SysSocketErrorCode ts::UDPSocket::receiveOne(void* data,
         return LastSysSocketErrorCode();
     }
 
-    // Because of invalid definition of CMSG_NXTHDR in musl libc (Alpine Linux)
     TS_PUSH_WARNING()
-    TS_GCC_NOWARNING(zero-as-null-pointer-constant)
+    TS_GCC_NOWARNING(zero-as-null-pointer-constant) // invalid definition of CMSG_NXTHDR in musl libc (Alpine Linux)
+#if defined(TS_OPENBSD)
+    TS_LLVM_NOWARNING(cast-align) // invalid definition of CMSG_NXTHDR on OpenBSD
+#endif
 
     // Browse returned ancillary data.
     for (::cmsghdr* cmsg = CMSG_FIRSTHDR(&hdr); cmsg != nullptr; cmsg = CMSG_NXTHDR(&hdr, cmsg)) {

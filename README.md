@@ -50,7 +50,7 @@ Python or Java applications.
 
 ### Building
 
-TSDuck can be built on Windows, Linux, FreeBSD and macOS systems. See the
+TSDuck can be built on Windows, Linux, FreeBSD, OpenBSD and macOS systems. See the
 [building guide](https://tsduck.io/doxy/building.html) for details.
 
 ### Download

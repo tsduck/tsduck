@@ -54,6 +54,7 @@
 #  - Gentoo
 #  - Linux Mint
 #  - FreeBSD
+#  - OpenBSD
 #
 #-----------------------------------------------------------------------------
 
@@ -132,6 +133,19 @@ elif [[ "$SYSTEM" == "FreeBSD" ]]; then
 
     pkglist="git git-lfs curl zip doxygen graphviz bash gsed gnugrep gmake gtar unix2dos coreutils srt librist libedit pcsc-lite python openjdk11"
     sudo pkg install -y $PKGOPTS $pkglist
+
+#-----------------------------------------------------------------------------
+# OpenBSD
+#
+# Update command: sudo pkg_add -u
+#-----------------------------------------------------------------------------
+
+elif [[ "$SYSTEM" == "OpenBSD" ]]; then
+
+    disamb_pkg() { pkg_info -Q $1 | grep "^$1-[0-9]" | grep -v -e -static | sort | tail -1 | sed -e 's/ .*//'; }
+    pkglist="git git-lfs curl zip doxygen graphviz bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils pcsc-lite $(disamb_pkg python) $(disamb_pkg jdk)"
+    sudo pkg_add -I $PKGOPTS $pkglist
+    sudo ln -sf python3 /usr/local/bin/python
 
 #-----------------------------------------------------------------------------
 # Ubuntu
