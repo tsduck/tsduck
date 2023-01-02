@@ -175,7 +175,8 @@ ts::SysInfo::SysInfo() :
     }
 
     // Get kernel version.
-    const UString osrelease(SysCtrlString({CTL_KERN, KERN_OSRELEASE}));
+    UString osrelease(SysCtrlString({CTL_KERN, KERN_OSRELEASE}));
+    osrelease.trim();
     if (!osrelease.empty()) {
         if (!_systemVersion.empty()) {
             _systemVersion += u", ";
@@ -194,9 +195,23 @@ ts::SysInfo::SysInfo() :
 #endif
     }
 
-    _systemVersion = SysCtrlString({CTL_KERN, KERN_VERSION});
-    if (_systemVersion.empty()) {
-        _systemVersion = SysCtrlString({CTL_KERN, KERN_OSRELEASE});
+    UString osrelease(SysCtrlString({CTL_KERN, KERN_OSRELEASE}));
+    osrelease.trim();
+    if (osrelease.empty()) {
+        _systemVersion = SysCtrlString({CTL_KERN, KERN_VERSION});
+        _systemVersion.trim();
+        // BSD systems tend to have long multi-line descriptions, keep only the first line.
+        const size_t eol = _systemVersion.find(u'\n');
+        if (eol != NPOS) {
+            _systemVersion.resize(eol);
+            _systemVersion.trim(true, true, true);
+        }
+    }
+    else if (_systemName.empty()) {
+        _systemVersion = osrelease;
+    }
+    else {
+        _systemVersion = _systemName + u" " + osrelease;
     }
 
 #elif defined(TS_WINDOWS)
