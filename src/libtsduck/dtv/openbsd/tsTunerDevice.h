@@ -28,33 +28,19 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  @ingroup net
-//!  Include the multiple and messy system headers for IP networking.
+//!  Digital TV tuner physical device.
+//!  One version of this class exists for each operating system.
+//   ==> OpenBSD version => tuners are not implemented on OpenBSD
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsTunerBase.h"
 
-#if defined(TS_WINDOWS)
-    #include "tsBeforeStandardHeaders.h"
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <mswsock.h>
-    #include "tsAfterStandardHeaders.h"
-    #if defined(TS_MSC)
-        #pragma comment(lib, "ws2_32.lib")
-    #endif
-#else
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <net/if.h>
-    #include <netinet/in.h>
-    #include <netinet/tcp.h>
-    #include <netdb.h>
-    #if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD)
-        #include <ifaddrs.h>
-    #endif
-    #include "tsAfterStandardHeaders.h"
-#endif
+namespace ts {
+    //!
+    //! Digital TV tuner physical device.
+    //! One version of this class exists for each operating system.
+    //!
+    typedef TunerBase TunerDevice;
+}

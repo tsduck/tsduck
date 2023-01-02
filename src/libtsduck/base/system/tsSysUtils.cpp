@@ -68,6 +68,17 @@
     #include <dlfcn.h>
     #include "tsAfterStandardHeaders.h"
     extern char **environ; // not defined in public headers
+#elif defined(TS_OPENBSD)
+    #include "tsSysCtl.h"
+    #include "tsFileUtils.h"
+    #include "tsBeforeStandardHeaders.h"
+    #include <sys/user.h>
+    #include <sys/resource.h>
+    #include <kvm.h>
+    #include <signal.h>
+    #include <dlfcn.h>
+    #include "tsAfterStandardHeaders.h"
+    extern char **environ; // not defined in public headers
 #endif
 
 // Required link libraries under Windows.
@@ -118,6 +129,38 @@ ts::UString ts::ExecutableFile()
     // FreeBSD implementation.
     // We use the sysctl() MIB and the OID for the current executable is:
     return SysCtrlString({CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1}); // -1 means current process
+
+#elif defined(TS_OPENBSD)
+
+    // OpenBSD implementation.
+    // OpenBSD is the only OS without supported interface to get the current executable path,
+    // giving invalid so-called "security reasons" for that. So, we try to guess it from the
+    // original argv[0]. This is much less secure than having a supported interface. This is
+    // why their "security reasons" are particularly stupid IMHO.
+
+    ByteBlock argv_data(SysCtrlBytes({CTL_KERN, KERN_PROC_ARGS, ::getpid(), KERN_PROC_ARGV}));
+    if (argv_data.size() < sizeof(char*)) {
+        return UString();
+    }
+    char** argv = reinterpret_cast<char**>(argv_data.data());
+    char* exe = argv[0];
+    if (exe == nullptr) {
+        return UString();
+    }
+    if (::strchr(exe, '/') != nullptr) {
+        // A path is provided, resolve it.
+        UString path;
+        char* path8 = ::realpath(exe, nullptr);
+        if (path8 != nullptr) {
+            path.assignFromUTF8(path8);
+            ::free(path8);
+        }
+        return path;
+    }
+    else {
+        // A simple command name is provided, find it in the PATH.
+        return SearchExecutableFile(UString::FromUTF8(exe));
+    }
 
 #else
 #error "ts::ExecutableFile not implemented on this system"
@@ -406,7 +449,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 #elif defined(TS_MAC)
 
     // MacOS implementation.
-    // First, get the virtual memory size using task_info (mach kernel).
+    // Get the virtual memory size using task_info (mach kernel).
     ::mach_task_basic_info_data_t taskinfo;
     TS_ZERO(taskinfo);
     ::mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
@@ -416,40 +459,52 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     }
     metrics.vmem_size = taskinfo.virtual_size;
 
-    // Then get CPU time using getrusage.
-    ::rusage usage;
-    const int status2 = ::getrusage(RUSAGE_SELF, &usage);
-    if (status2 < 0) {
-        throw ts::Exception(u"getrusage error");
-    }
-
-    // Add system time and user time, in milliseconds.
-    metrics.cpu_time =
-        MilliSecond(usage.ru_stime.tv_sec) * MilliSecPerSec +
-        MilliSecond(usage.ru_stime.tv_usec) / MicroSecPerMilliSec +
-        MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
-        MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
-
 #elif defined(TS_FREEBSD)
 
     // FreeBSD implementation.
-    // First, get the virtual memory size using procstat_getprocs() on current process.
+    // Get the virtual memory size using procstat_getprocs() on current process.
     ::procstat* pstat = ::procstat_open_sysctl();
-    if (pstat == NULL) {
+    if (pstat == nullptr) {
         throw ts::Exception(u"procstat_open_sysctl error");
     }
 
     unsigned int kproc_count = 0;
     ::kinfo_proc* kproc = ::procstat_getprocs(pstat, KERN_PROC_PID, ::getpid(), &kproc_count);
-    if (kproc == NULL || kproc_count == 0) {
+    if (kproc == nullptr || kproc_count == 0) {
         throw ts::Exception(u"procstat_getprocs error");
     }
     metrics.vmem_size = kproc->ki_size;
 
-    procstat_freeprocs(pstat, kproc);
-    procstat_close(pstat);
+    ::procstat_freeprocs(pstat, kproc);
+    ::procstat_close(pstat);
 
-    // Then get CPU time using getrusage.
+#elif defined(TS_OPENBSD)
+
+    // OpenBSD implementation.
+    ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, "kvm_open");
+    if (kvm == nullptr) {
+        throw ts::Exception(u"kvm_open error");
+    }
+
+    int count = 0;
+    ::kinfo_proc* kinfo = ::kvm_getprocs(kvm, KERN_PROC_PID, ::getpid(), sizeof(::kinfo_proc), &count);
+    if (kinfo == nullptr || count == 0) {
+        throw ts::Exception(u"kvm_getprocs error");
+    }
+
+    // The virtual memory size is text size + data size + stack size.
+    const long pagesize = ::sysconf(_SC_PAGESIZE);
+    metrics.vmem_size = kinfo->p_vm_tsize * pagesize + kinfo->p_vm_dsize * pagesize + kinfo->p_vm_ssize * pagesize;
+
+    ::kvm_close(kvm);
+
+#else
+    #error "ts::GetProcessMetrics not implemented on this system"
+#endif
+
+#if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD)
+
+    // On BSD systems, get CPU time using getrusage().
     ::rusage usage;
     const int status2 = ::getrusage(RUSAGE_SELF, &usage);
     if (status2 < 0) {
@@ -463,8 +518,6 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
         MilliSecond(usage.ru_utime.tv_sec) * MilliSecPerSec +
         MilliSecond(usage.ru_utime.tv_usec) / MicroSecPerMilliSec;
 
-#else
-#error "ts::GetProcessMetrics not implemented on this system"
 #endif
 }
 

@@ -542,6 +542,23 @@ bool ts::IsDirectory(const UString& path)
 
 
 //----------------------------------------------------------------------------
+// Check if a file exists and is executable.
+//----------------------------------------------------------------------------
+
+bool ts::IsExecutable(const UString& path)
+{
+#if defined(TS_WINDOWS)
+    // On Windows, all files are executable. Just check if this is a file.
+    const ::DWORD attr = ::GetFileAttributesW(path.wc_str());
+    return attr != INVALID_FILE_ATTRIBUTES && (attr & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_DEVICE)) == 0;
+#else
+    struct stat st;
+    return ::stat(path.toUTF8().c_str(), &st) == 0 && (st.st_mode & S_IXUSR) != 0;
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Delete a file.
 //----------------------------------------------------------------------------
 
@@ -623,6 +640,44 @@ bool ts::RenameFile(const UString& old_path, const UString& new_path, Report& re
     const SysErrorCode err = LastSysErrorCode();
     report.error(u"error renaming %s: %s", {old_path, SysErrorCodeMessage(err)});
     return false;
+}
+
+
+//----------------------------------------------------------------------------
+// Search an executable file.
+//----------------------------------------------------------------------------
+
+ts::UString ts::SearchExecutableFile(const UString& fileName, const UString& pathName)
+{
+    // Don't search if empty.
+    if (fileName.empty()) {
+        return UString();
+    }
+
+    // Adjust file name with the executable suffix.
+    UString name(fileName);
+    if (!name.endWith(TS_EXECUTABLE_SUFFIX, FileSystemCaseSensitivity)) {
+        name.append(TS_EXECUTABLE_SUFFIX);
+    }
+
+    // If there is a path separator, there is a directory specified, don't search.
+    if (LastPathSeparator(fileName) != NPOS) {
+        // If the file does not exist or is not executable, not suitable.
+        return (FileExists(name) && IsExecutable(name)) ? name : UString();
+    }
+
+    // Search in the path.
+    UStringList dirs;
+    GetEnvironmentPath(dirs, pathName);
+    for (const auto& dir : dirs) {
+        const UString full(dir + PathSeparator + name);
+        if (FileExists(full) && IsExecutable(full)) {
+            return full;
+        }
+    }
+
+    // Not found.
+    return UString();
 }
 
 

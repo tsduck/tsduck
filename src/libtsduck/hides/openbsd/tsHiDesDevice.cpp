@@ -26,35 +26,10 @@
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
 //----------------------------------------------------------------------------
-//!
-//!  @file
-//!  @ingroup net
-//!  Include the multiple and messy system headers for IP networking.
-//!
+//
+//  An encapsulation of a HiDes modulator device - OpenBSD implementation.
+//
 //----------------------------------------------------------------------------
 
-#pragma once
-#include "tsPlatform.h"
-
-#if defined(TS_WINDOWS)
-    #include "tsBeforeStandardHeaders.h"
-    #include <winsock2.h>
-    #include <ws2tcpip.h>
-    #include <mswsock.h>
-    #include "tsAfterStandardHeaders.h"
-    #if defined(TS_MSC)
-        #pragma comment(lib, "ws2_32.lib")
-    #endif
-#else
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/types.h>
-    #include <sys/socket.h>
-    #include <net/if.h>
-    #include <netinet/in.h>
-    #include <netinet/tcp.h>
-    #include <netdb.h>
-    #if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD)
-        #include <ifaddrs.h>
-    #endif
-    #include "tsAfterStandardHeaders.h"
-#endif
+// OpenBSD support is currently not implemented and all methods return errors.
+#include "tsHiDesDeviceStub.h"

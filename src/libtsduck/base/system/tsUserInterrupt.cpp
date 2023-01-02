@@ -48,7 +48,7 @@ TS_STATIC_INSTANCE(ts::Mutex, (), ActivationMutex)
 #endif
 
 // On BSD, sigaction(2) uses the flag named SA_RESETHAND instead of SA_ONESHOT.
-#if (defined(TS_MAC) || defined(TS_FREEBSD)) && !defined(SA_ONESHOT)
+#if (defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD)) && !defined(SA_ONESHOT)
     #define SA_ONESHOT SA_RESETHAND
 #endif
 

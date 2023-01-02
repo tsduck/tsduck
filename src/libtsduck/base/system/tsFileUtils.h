@@ -308,6 +308,13 @@ namespace ts {
     TSDUCKDLL bool IsDirectory(const UString& path);
 
     //!
+    //! Check if a file exists and is executable.
+    //! @param [in] path A file path.
+    //! @return True if a file exists with that name and is executable, false otherwise.
+    //!
+    TSDUCKDLL bool IsExecutable(const UString& path);
+
+    //!
     //! Delete a file or directory.
     //!
     //! If the specified path is a directory, it must be empty.
@@ -416,6 +423,14 @@ namespace ts {
         container.clear();
         return SearchWildcardAndAppend(container, root, pattern, max_levels);
     }
+
+    //!
+    //! Search an executable file.
+    //! @param [in] fileName Name of the file to search.
+    //! @param [in] pathName Name of the seach path environment variable.
+    //! @return The path to an existing file or an empty string if not found.
+    //!
+    TSDUCKDLL UString SearchExecutableFile(const UString& fileName, const UString& pathName = TS_COMMAND_PATH);
 
     //!
     //! Search a configuration file.

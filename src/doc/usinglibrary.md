@@ -12,7 +12,7 @@ you must install the TSDuck development environment first.
 - On macOS systems, the development environment is always installed with TSDuck using Homebrew.
 - If you build TSDuck from sources, use `make install install-devel`.
 
-# Building applications on Linux, macOS and FreeBSD  {#liblinux}
+# Building applications on Linux, macOS, FreeBSD and OpenBSD  {#liblinux}
 
 The command `tsconfig` generates the appropriate build options for the
 current operating system. See the TSDuck user's guide for more details.

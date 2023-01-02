@@ -65,7 +65,7 @@ cmd_home() {
         javac=$(find -L /Library/Java/JavaVirtualMachines/openjdk.jdk -name javac -perm +444 2>/dev/null | tail -1)
         [[ -z "$javac" ]] && javac=$(find -L /Library/Java/JavaVirtualMachines -name javac -perm +444 2>/dev/null | tail -1)
         [[ -n "$javac" ]] && dirname $(dirname "$javac")
-    elif [[ $system == FreeBSD  ]]; then
+    elif [[ $system == FreeBSD || $system == OpenBSD ]]; then
         # One or more version under /usr/local, use the last one.
         local jhome=
         for dir in /usr/local/*jdk*; do

@@ -40,6 +40,13 @@
 #include "tsReport.h"
 #include "tsMemory.h"
 
+#if defined(DOXYGEN) || defined(TS_OPENBSD)
+    //!
+    //! Defined when the operating system does not support UDP/IP source-specific multicast (SSM).
+    //!
+    #define TS_NO_SSM 1
+#endif
+
 namespace ts {
     //!
     //! UDP Socket.
@@ -366,8 +373,10 @@ namespace ts {
                 interface_.copy(data.imr_interface);
             }
         };
+        typedef std::set<MReq> MReqSet;
 
         // Encapsulate an ip_mreq_source
+#if !defined(TS_NO_SSM)
         struct SSMReq : public POCS<::ip_mreq_source>
         {
             typedef POCS<::ip_mreq_source> SuperClass;
@@ -379,16 +388,16 @@ namespace ts {
                 source_.copy(data.imr_sourceaddr);
             }
         };
-
-        // Set of established multicast groups.
-        typedef std::set<MReq> MReqSet;
         typedef std::set<SSMReq> SSMReqSet;
+#endif
 
         // Private members
         IPv4SocketAddress _local_address;
         IPv4SocketAddress _default_destination;
-        MReqSet           _mcast;    // Current set of multicast memberships
+#if !defined(TS_NO_SSM)
         SSMReqSet         _ssmcast;  // Current set of source-specific multicast memberships
+#endif
+        MReqSet           _mcast;    // Current set of multicast memberships
 
         // Perform one receive operation. Hide the system mud.
         SysSocketErrorCode receiveOne(void* data, size_t max_size, size_t& ret_size, IPv4SocketAddress& sender, IPv4SocketAddress& destination, Report& report, MicroSecond* timestamp);

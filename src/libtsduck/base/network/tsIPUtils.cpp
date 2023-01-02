@@ -77,7 +77,7 @@ bool ts::GetLocalIPAddresses(IPv4AddressMaskVector& list, Report& report)
     bool status = true;
     list.clear();
 
-#if defined(TS_MAC) || defined(TS_FREEBSD)
+#if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD)
 
     // Get the list of local addresses. The memory is allocated by getifaddrs().
     ::ifaddrs* start = nullptr;

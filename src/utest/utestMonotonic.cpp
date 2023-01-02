@@ -149,6 +149,7 @@ void MonotonicTest::testWait()
 
     const ts::Time end(ts::Time::CurrentLocalTime());
 
+    debug() << "MonotonicTest::testWait: end - start = " << (end - start) << " ms" << std::endl;
     TSUNIT_ASSERT(end >= start + 100 - _msPrecision);
     TSUNIT_ASSUME(end < start + 150);
 }
