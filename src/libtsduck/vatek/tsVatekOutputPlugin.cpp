@@ -151,16 +151,16 @@ bool ts::VatekOutputPlugin::isRealTime()
 //----------------------------------------------------------------------------
 
 ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send packets to a VATEK modulator device", u"[options]"),
+    OutputPlugin(tsp_, u"Send packets to a VATek modulator device", u"[options]"),
     _guts(new Guts(this))
 {
     CheckNonNull(_guts);
 
     option(u"device", 'd', UNSIGNED);
     help(u"device",
-         u"Device index, from 0 to N-1 (with N being the number of Vatek devices in the system). "
+         u"Device index, from 0 to N-1 (with N being the number of VATek devices in the system). "
          u"Use the command \"tsvatek -a\" to have a complete list of devices in the system. "
-         u"By default, use the first Vatek device.");
+         u"By default, use the first VATek device.");
 
     option(u"frequency", 'f', UNSIGNED);
     help(u"frequency",

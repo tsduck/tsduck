@@ -55,6 +55,7 @@
 #  - Linux Mint
 #  - FreeBSD
 #  - OpenBSD
+#  - NetBSD
 #
 #-----------------------------------------------------------------------------
 
@@ -92,8 +93,7 @@ MINOR=$(lsb_release -r 2>/dev/null | sed -e '/\./!d' -e 's/.*:[\t ]*//' -e 's/.*
 VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 
 #-----------------------------------------------------------------------------
-# macOS (with HomeBrew as open source packager)
-#
+# == macOS == (with HomeBrew as open source packager)
 # Update command: brew update; brew upgrade
 #-----------------------------------------------------------------------------
 
@@ -124,8 +124,7 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     fi
 
 #-----------------------------------------------------------------------------
-# FreeBSD
-#
+# == FreeBSD ==
 # Update command: sudo pkg update; sudo pkg upgrade
 #-----------------------------------------------------------------------------
 
@@ -135,8 +134,7 @@ elif [[ "$SYSTEM" == "FreeBSD" ]]; then
     sudo pkg install -y $PKGOPTS $pkglist
 
 #-----------------------------------------------------------------------------
-# OpenBSD
-#
+# == OpenBSD ==
 # Update command: sudo pkg_add -u
 #-----------------------------------------------------------------------------
 
@@ -148,8 +146,20 @@ elif [[ "$SYSTEM" == "OpenBSD" ]]; then
     sudo ln -sf python3 /usr/local/bin/python
 
 #-----------------------------------------------------------------------------
-# Ubuntu
-#
+# == NetBSD ==
+# Update command: sudo pkgin update; sudo pkgin upgrade
+# List package content: pkgin pkg-content <package-name>
+#-----------------------------------------------------------------------------
+
+elif [[ "$SYSTEM" == "NetBSD" ]]; then
+
+    pkglist="git git-lfs curl mozilla-rootcerts zip doxygen graphviz bash gsed grep gmake gtar dos2unix coreutils editline pcsc-lite python310 py310-expat openjdk17"
+    sudo pkgin -y install $PKGOPTS $pkglist
+    sudo /usr/pkg/sbin/mozilla-rootcerts install
+    (cd /usr/pkg/bin; sudo ln -sf $(ls python* | grep '^python[0-9\.]*$' | gsort --version-sort | tail -1) python)
+
+#-----------------------------------------------------------------------------
+# == Ubuntu ==
 # Update command: sudo apt update; sudo apt upgrade
 # Find package providing file: dpkg -S /path/to/file
 #-----------------------------------------------------------------------------
@@ -178,8 +188,7 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
-# Linux Mint
-#
+# == Linux Mint ==
 # Update command: sudo apt update; sudo apt upgrade
 # Find package providing file: dpkg -S /path/to/file
 #-----------------------------------------------------------------------------
@@ -197,8 +206,7 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
-# Debian or Raspbian (Raspberry Pi)
-#
+# == Debian, Raspbian (Raspberry Pi) ==
 # Update command: sudo apt update; sudo apt upgrade
 # Find package providing file: dpkg -S /path/to/file
 #-----------------------------------------------------------------------------
@@ -225,8 +233,7 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
-# Fedora
-#
+# == Fedora ==
 # Update command: sudo dnf update
 # Find package providing file: rpm -qf /path/to/file
 #-----------------------------------------------------------------------------
@@ -251,8 +258,7 @@ elif [[ -f /etc/fedora-release ]]; then
     sudo alternatives --set python /usr/bin/python3
 
 #-----------------------------------------------------------------------------
-# Red Hat, CentOS, Alma Linux, Rocky Linux, etc.
-#
+# == Red Hat, CentOS, Alma Linux, Rocky Linux ==
 # Update command: sudo dnf update
 # Find package providing file: rpm -qf /path/to/file
 #-----------------------------------------------------------------------------
@@ -298,8 +304,7 @@ elif [[ -f /etc/redhat-release ]]; then
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
-# openSUSE
-#
+# == openSUSE ==
 # Update command: sudo zypper update -y -l
 # Find package providing file: zypper search --provides /path/to/file
 # Search package: zypper search partial-package-name
@@ -312,8 +317,7 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
-# Arch Linux
-#
+# == Arch Linux ==
 # Update command: sudo pacman -Syu
 # Find package providing file: pacman -Qo /path/to/file
 # Search package: pacman -Ss partial-package-name
@@ -325,8 +329,7 @@ elif [[ -f /etc/arch-release ]]; then
     sudo pacman -Sy --noconfirm $PKGOPTS $pkglist
 
 #-----------------------------------------------------------------------------
-# Alpine Linux
-#
+# == Alpine Linux ==
 # Update command: sudo apk update; sudo apk upgrade
 # Find package providing file: apk info --who-owns /path/to/file
 # Interactive package search: https://pkgs.alpinelinux.org/packages
@@ -345,8 +348,7 @@ elif [[ -f /etc/alpine-release ]]; then
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
-# Gentoo Linux
-#
+# == Gentoo Linux ==
 # Update command: sudo emerge --sync
 # or (??): sudo emerge -auvND --with-bdeps=y world
 # or (??): sudo emerge --update --deep --changed-use @world

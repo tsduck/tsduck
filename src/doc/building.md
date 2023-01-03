@@ -1,15 +1,15 @@
 # Building TSDuck   {#building}
 
-TSDuck can be built on Linux, macOS, FreeBSD, OpenBSD and Windows.
+TSDuck can be built on Linux, macOS, FreeBSD, OpenBSD, NetBSD and Windows.
 
 Support for Dektec devices, DVB tuners and HiDes modulators is implemented only
-on Windows and Linux. FreeBSD, OpenBSD and macOS can only support files and networking
-for TS input and output.
+on Windows and Linux. FreeBSD, OpenBSD, NetBSD and macOS can only support files
+and networking for TS input and output.
 
 Some protocols such as SRT and RIST require external libraries which may
 not be available on all platforms or all versions of a specific distro.
 
-# Unix systems (Linux, macOS, FreeBSD, OpenBSD) {#unixbuild}
+# Unix systems (Linux, macOS, FreeBSD, OpenBSD, NetBSD) {#unixbuild}
 
 ## Pre-requisites {#requnix}
 
@@ -25,6 +25,7 @@ Currently, the script supports the following operating systems:
 - macOS
 - FreeBSD
 - OpenBSD
+- NetBSD
 - Ubuntu
 - Debian
 - Raspbian (Debian for Raspberry Pi)
@@ -55,14 +56,14 @@ cannot use Dektec devices. Similarly, Intel-based distros using a non-standard l
 Vatek API : On Linux, the command `make` at the top level will automatically download the
 Linux version of the Vatek API from the GitHub. There is currectly no Linux package for
 the Vatek API in the standard distros. On Windows and macOS, binary packages are available
-and are installed by the `install-prerequisites` scripts. Using Vatek devices on FreeBSD and
-OpenBSD is currently not supported but should work if necessary (accessing Vatek devices is
-performed through `libusb` and not a specific kernel driver).
+and are installed by the `install-prerequisites` scripts. Using Vatek devices on FreeBSD,
+OpenBSD and NetBSD is currently not supported but should work if necessary (accessing Vatek
+devices is performed through `libusb` and not a specific kernel driver).
 
-FreeBSD, OpenBSD : The standard BSD `make` command uses an old syntax. The makefiles in the
+FreeBSD, OpenBSD, NetBSD : The standard BSD `make` command uses an old syntax. The makefiles in the
 TSDuck project use a GNU Make syntax and are not compatible with the BSD `make` command.
-As part of prerequisites for FreeBSD and OpenBSD, GNU Make is installed under the name `gmake`.
-In all build commands in this page, when `make` is mentioned, use `gmake` on FreeBSD and OpenBSD.
+As part of prerequisites for FreeBSD, OpenBSD and NetBSD, GNU Make is installed under the name `gmake`.
+In all build commands in this page, when `make` is mentioned, use `gmake` on FreeBSD, OpenBSD and NetBSD.
 
 ## Building the TSDuck binaries alone {#buildunix}
 
@@ -132,7 +133,7 @@ Execute the command `make installer` at top level to build all packages.
 
 Depending on the platform, the packages can be `.deb` or `.rpm` files.
 There is currently no support to build an installation package on other
-Linux distros, FreeBSD or OpenBSD.
+Linux distros, FreeBSD, OpenBSD, NetBSD.
 
 There is no need to build the TSDuck binaries before building the installers.
 Building the binaries, when necessary, is part of the installer build.

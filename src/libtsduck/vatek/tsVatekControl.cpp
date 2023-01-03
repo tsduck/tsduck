@@ -43,17 +43,17 @@
 //----------------------------------------------------------------------------
 
 ts::VatekControl::VatekControl(int argc, char *argv[]) :
-    Args(u"Control Vatek devices", u"[options] [device]"),
+    Args(u"Control VATek devices", u"[options] [device]"),
     _duck(this),
     _dev_index(-1)
 {
     option(u"", 0, UNSIGNED, 0, 1);
     help(u"",
-         u"Device index, from 0 to N-1 (with N being the number of Vatek devices in the system). "
+         u"Device index, from 0 to N-1 (with N being the number of VATek devices in the system). "
          u"The default is 0. Use option --all to have a complete list of devices in the system.");
 
     option(u"all", 'a');
-    help(u"all", u"List all Vatek devices available on the system.");
+    help(u"all", u"List all VATek devices available on the system.");
 
     analyze(argc, argv);
 
@@ -79,7 +79,7 @@ int ts::VatekControl::execute()
 {
 #if defined(TS_NO_VATEK)
 
-    error(u"This version of TSDuck was compiled without Vatek support");
+    error(u"This version of TSDuck was compiled without VATek support");
     return EXIT_FAILURE;
 
 #else
@@ -89,11 +89,11 @@ int ts::VatekControl::execute()
     const int32_t device_count = int32_t(status);
 
     if (!is_vatek_success(status)) {
-        error(u"enumeration VATEK device fail, status: %d", {status});
+        error(u"enumeration VATek device fail, status: %d", {status});
         return EXIT_FAILURE;
     }
     else if (device_count < 1) {
-        info(u"No VATEK device found");
+        info(u"No VATek device found");
         return EXIT_SUCCESS;
     }
     else if (_dev_index >= device_count) {
@@ -113,7 +113,7 @@ int ts::VatekControl::execute()
         hvatek_chip hchip = nullptr;
         status = vatek_device_open(hdevices, _dev_index, &hchip);
         if (!is_vatek_success(status)) {
-            error(u"open VATEK device fail, status: %d", {status});
+            error(u"open VATek device fail, status: %d", {status});
             return EXIT_FAILURE;
         }
         std::cout << "Device " << _dev_index << ": " << vatek_device_get_name(hchip) << std::endl << std::flush;
