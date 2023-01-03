@@ -1,4 +1,4 @@
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
@@ -25,22 +25,19 @@
 // ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
 // THE POSSIBILITY OF SUCH DAMAGE.
 //
-//----------------------------------------------------------------------------
-//!
-//!  @file
-//!  Digital TV tuner physical device.
-//!  One version of this class exists for each operating system.
-//   ==> FreeBSD version => tuners are not implemented on FreeBSD
-//!
-//----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
 
-#pragma once
-#include "tsTunerBase.h"
+#include "tsTunerDevice.h"
+#include "tsReport.h"
 
-namespace ts {
-    //!
-    //! Digital TV tuner physical device.
-    //! One version of this class exists for each operating system.
-    //!
-    typedef TunerBase TunerDevice;
+
+//-----------------------------------------------------------------------------
+// BSD implementation of services from ts::TunerBase.
+// FreeBSD, OpenBSD, NetBSD, DragonFlyBSD.
+//-----------------------------------------------------------------------------
+
+bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners)
+{
+    duck.report().error(u"Digital tuners are not implemented on BSD systems");
+    return false;
 }

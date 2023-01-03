@@ -234,6 +234,10 @@
     //!
     #define TS_LINUX
     //!
+    //! Defined when compiled for a BSD target platform (FreeBSD, OpenBSD, NetBSD, DragonFlyBSD).
+    //!
+    #define TS_BSD
+    //!
     //! Defined when compiled for a FreeBSD target platform.
     //!
     #define TS_FREEBSD
@@ -245,6 +249,10 @@
     //! Defined when compiled for a NetBSD target platform.
     //!
     #define TS_NETBSD
+    //!
+    //! Defined when compiled for a DragonFlyBSD target platform.
+    //!
+    #define TS_DRAGONFLYBSD
     //!
     //! Defined when compiled for a macOS target platform.
     //!
@@ -273,6 +281,10 @@
 #elif defined(__FreeBSD__) || defined(TS_FREEBSD)
     #if !defined(TS_FREEBSD)
         #define TS_FREEBSD 1
+    #endif
+#elif defined(__DragonFly__) || defined(TS_DRAGONFLYBSD)
+    #if !defined(TS_DRAGONFLYBSD)
+        #define TS_DRAGONFLYBSD 1
     #endif
 #elif defined(__OpenBSD__) || defined(TS_OPENBSD)
     #if !defined(TS_OPENBSD)
@@ -311,7 +323,10 @@
     #define TS_ANDROID 1
 #endif
 
-#if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_NETBSD) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
+#if !defined(TS_BSD) && (defined(TS_FREEBSD) || defined(TS_DRAGONFLYBSD) || defined(TS_OPENBSD) || defined(TS_NETBSD))
+    #define TS_BSD 1
+#endif
+#if !defined(TS_UNIX) && (defined(__unix) || defined(__unix__) || defined(TS_LINUX) || defined(TS_BSD) || defined(TS_MAC) || defined(TS_AIX) || defined(TS_CYGWIN) || defined(TS_SOLARIS))
     #define TS_UNIX 1
 #endif
 
@@ -473,8 +488,8 @@
 // Should really use "#warning" instead of "#error" but #warning is a
 // GCC extension while #error is standard.
 
-#if !defined(TS_LINUX) && !defined(TS_WINDOWS) && !defined(TS_MAC) && !defined(TS_FREEBSD) && !defined(TS_OPENBSD) && !defined(TS_NETBSD)
-    #error "TSDuck has been tested on Linux, macOS, FreeBSD, OpenBSD, NetBSD and Windows only, review this code"
+#if !defined(TS_LINUX) && !defined(TS_WINDOWS) && !defined(TS_MAC) && !defined(TS_FREEBSD) && !defined(TS_DRAGONFLYBSD) && !defined(TS_OPENBSD) && !defined(TS_NETBSD)
+    #error "TSDuck has been tested on Linux, macOS, FreeBSD, OpenBSD, NetBSD, DragonFlyBSD and Windows only, review this code"
 #endif
 
 #if !defined(TS_GCC) && !defined(TS_LLVM) && !defined(TS_MSC)

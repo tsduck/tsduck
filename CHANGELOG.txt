@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.33-3130
+VERSION 3.33-3131
 
 [NEW] New commands and plugins:
 
@@ -11,7 +11,7 @@ VERSION 3.33-3130
 
 [IMP] Improvements on existing commands and plugins:
 
-  * Ported TSDuck to FreeBSD, OpenBSD, NetBSD.
+  * Ported TSDuck to FreeBSD, OpenBSD, NetBSD, DragonFlyBSD.
   * New options in existing commands and plugins:
     - The packet processing plugin "file" now supports all options of the
       output plugin "file".

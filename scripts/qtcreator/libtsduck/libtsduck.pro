@@ -2,7 +2,7 @@ CONFIG += plugin
 include(../tsduck.pri)
 TEMPLATE = lib
 TARGET = libtsduck
-INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name freebsd ! -name netbsd ! -name openbsd ! -name $$NOSYSDIR ! -name __pycache__")
+INCLUDEPATH += $$system("find $$SRCROOT/libtsduck -type d ! -name windows ! -name bsd ! -name freebsd ! -name netbsd ! -name openbsd ! -name dragonflybsd ! -name $$NOSYSDIR ! -name __pycache__")
 
 linux|mac {
     QMAKE_CXXFLAGS += $$system("curl-config --cflags")
@@ -23,5 +23,5 @@ QMAKE_CXXFLAGS += $$system("$$PROJROOT/scripts/java-config.sh --cflags")
 QMAKE_CXXFLAGS += $$system("$$PROJROOT/scripts/vatek-config.sh --cflags")
 
 DISTFILES += $$TS_CONFIG_FILES
-HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/freebsd/\\* ! -path \\*/netbsd/\\* ! -path \\*/openbsd/\\* ! -path \\*/$$NOSYSDIR/\\*")
-SOURCES   += $$system("find $$SRCROOT/libtsduck -name \\*.cpp ! -path \\*/windows/\\* ! -path \\*/freebsd/\\* ! -path \\*/netbsd/\\* ! -path \\*/openbsd/\\* ! -path \\*/$$NOSYSDIR/\\* ! -name tsduck.cpp")
+HEADERS   += $$system("find $$SRCROOT/libtsduck -name \\*.h ! -path \\*/windows/\\* ! -path \\*/bsd/\\* ! -path \\*/freebsd/\\* ! -path \\*/netbsd/\\* ! -path \\*/openbsd/\\* ! -path \\*/dragonflybsd/\\* ! -path \\*/$$NOSYSDIR/\\*")
+SOURCES   += $$system("find $$SRCROOT/libtsduck -name \\*.cpp ! -path \\*/windows/\\* ! -path \\*/bsd/\\* ! -path \\*/freebsd/\\* ! -path \\*/netbsd/\\* ! -path \\*/openbsd/\\* ! -path \\*/dragonflybsd/\\* ! -path \\*/$$NOSYSDIR/\\* ! -name tsduck.cpp")

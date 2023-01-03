@@ -63,6 +63,11 @@ ts::SysInfo::SysInfo() :
 #else
     _isMacOS(false),
 #endif
+#if defined(TS_BSD)
+    _isBSD(true),
+#else
+    _isBSD(false),
+#endif
 #if defined(TS_FREEBSD)
     _isFreeBSD(true),
 #else
@@ -77,6 +82,11 @@ ts::SysInfo::SysInfo() :
     _isOpenBSD(true),
 #else
     _isOpenBSD(false),
+#endif
+#if defined(TS_DRAGONFLYBSD)
+    _isDragonFlyBSD(true),
+#else
+    _isDragonFlyBSD(false),
 #endif
 #if defined(TS_WINDOWS)
     _isWindows(true),
@@ -189,7 +199,7 @@ ts::SysInfo::SysInfo() :
         _systemVersion += u"Darwin " + osrelease;
     }
 
-#elif defined(TS_FREEBSD) || defined(TS_NETBSD) || defined(TS_OPENBSD)
+#elif defined(TS_BSD)
 
     _systemName = SysCtrlString({CTL_KERN, KERN_OSTYPE});
     if (_systemName.empty()) {
@@ -199,6 +209,8 @@ ts::SysInfo::SysInfo() :
         _systemName = u"OpenBSD";
 #elif defined(TS_NETBSD)
         _systemName = u"NetBSD";
+#elif defined(TS_DRAGONFLYBSD)
+        _systemName = u"DragonFlyBSD";
 #endif
     }
 

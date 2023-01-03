@@ -40,7 +40,7 @@
 #include "tsReport.h"
 #include "tsMemory.h"
 
-#if defined(DOXYGEN) || defined(TS_OPENBSD) || defined(TS_NETBSD)
+#if defined(DOXYGEN) || defined(TS_OPENBSD) || defined(TS_NETBSD) || defined(TS_DRAGONFLYBSD)
     //!
     //! Defined when the operating system does not support UDP/IP source-specific multicast (SSM).
     //!

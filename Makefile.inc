@@ -145,9 +145,11 @@ SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
 # - BASHCOMP_DIR : directory for bash completion scripts
 # - BASHCOMP_AUTO : if non-empty, automatic bash completions based on command
 #   name, create links for each command if necessary
+# - BSD : non-empty on all BSD systems
 # - CORE_COUNT : number of physical CPU cores in the machine
 # - CPU_COUNT : number of logical CPU's in the machine; with hyperthreaded
 #   CPU cores, CPU_COUNT is typically twice CORE_COUNT
+# - DRAGONFLYBSD : non-empty on DragonFlyBSD systems
 # - ETCDIR : system configuration directory; /etc if $(SYSPREFIX) is /usr
 #   and $(SYSPREFIX)/etc otherwise
 # - FREEBSD : non-empty on FreeBSD systems
@@ -159,7 +161,7 @@ SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
 #   instead of /usr. By default, ignore the Homebrew environment on Linux and
 #   build using system libraries.
 # - LOCAL_ARCH : local processor exact architecture ("x86_64", "armv7l", etc)
-# - LOCAL_OS : operating system (linux, darwin, freebsd, openbsd, netbsd)
+# - LOCAL_OS : operating system (linux, darwin, freebsd, openbsd, netbsd, dragonfly)
 # - MAIN_ARCH : target processor architecture family ("x86_64", "arm", etc)
 # - MACOS : non-empty on macOS systems
 # - NETBSD : non-empty on NetBSD systems
@@ -187,11 +189,13 @@ ifeq ($(LOCAL_OS),)
     export HOSTNAME   := $(firstword $(subst ., ,$(shell hostname 2>/dev/null)))
 endif
 
-LINUX   = $(if $(findstring linux,$(LOCAL_OS)),true)
-MACOS   = $(if $(findstring darwin,$(LOCAL_OS)),true)
-FREEBSD = $(if $(findstring freebsd,$(LOCAL_OS)),true)
-NETBSD  = $(if $(findstring netbsd,$(LOCAL_OS)),true)
-OPENBSD = $(if $(findstring openbsd,$(LOCAL_OS)),true)
+LINUX        = $(if $(findstring linux,$(LOCAL_OS)),true)
+MACOS        = $(if $(findstring darwin,$(LOCAL_OS)),true)
+FREEBSD      = $(if $(findstring freebsd,$(LOCAL_OS)),true)
+NETBSD       = $(if $(findstring netbsd,$(LOCAL_OS)),true)
+OPENBSD      = $(if $(findstring openbsd,$(LOCAL_OS)),true)
+DRAGONFLYBSD = $(if $(findstring dragonfly,$(LOCAL_OS)),true)
+BSD          = $(if $(FREEBSD)$(NETBSD)$(OPENBSD)$(DRAGONFLYBSD),true)
 
 ifneq ($(M32),)
     # 32-bit cross-comppilation.
@@ -217,7 +221,7 @@ ifeq ($(CPU_COUNT),)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
         export CORE_COUNT := $(shell sysctl -n kern.smp.cores 2>/dev/null)
         export CORE_COUNT := $(if $(CORE_COUNT),$(CORE_COUNT),$(CPU_COUNT))
-    else ifneq ($(OPENBSD)$(NETBSD),)
+    else ifneq ($(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),)
         export CPU_COUNT  := $(shell sysctl -n hw.ncpu 2>/dev/null)
         export CPU_COUNT  := $(if $(CPU_COUNT),$(CPU_COUNT),1)
         export CORE_COUNT := $(CPU_COUNT)
@@ -231,10 +235,10 @@ endif
 
 # On macOS, Homebrew development packages are installed in /usr/local (Intel) or /opt/homebrew (Arm).
 # On Linux, when Homebrew is forced, use it as alternative development root.
-# On FreeBSD and OpenBSD, the packages are installed in /usr/local.
+# On FreeBSD, OpenBSD, DragonFlyBSD, the packages are installed in /usr/local.
 # On NetBSD, the packages are installed in /usr/pkg.
 
-ifneq ($(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD),)
+ifneq ($(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD)$(DRAGONFLYBSD),)
     $(if $(LINUXBREW),$(if $(HOMEBREW_PREFIX),,$(error LINUXBREW is defined but not HOMEBREW_PREFIX)))
     ALTDEVROOT := $(if $(HOMEBREW_PREFIX),$(HOMEBREW_PREFIX),$(if $(wildcard /opt/homebrew/bin),/opt/homebrew,/usr/local))
 else ifneq ($(NETBSD),)
@@ -246,14 +250,14 @@ endif
 # Locate system directories.
 
 USELIB64  := $(if $(findstring linux-x86_64,$(LOCAL_OS)-$(MAIN_ARCH)),$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true)))
-SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD)$(NETBSD),$(ALTDEVROOT),/usr)
+SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),$(ALTDEVROOT),/usr)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)
 UDEVDIR   ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc/udev/rules.d,/lib/udev/rules.d)
 
 # Locate bash completions facility.
-BASHCOMP_DIR ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD),$(ALTDEVROOT)/etc/bash_completion.d,$(SYSPREFIX)/share/bash-completion/completions)
-BASHCOMP_AUTO = $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD)$(NETBSD),,true)
+BASHCOMP_DIR ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD)$(DRAGONFLYBSD),$(ALTDEVROOT)/etc/bash_completion.d,$(SYSPREFIX)/share/bash-completion/completions)
+BASHCOMP_AUTO = $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),,true)
 
 #-----------------------------------------------------------------------------
 # Output directories for final binaries and objects.
@@ -513,27 +517,26 @@ ARFLAGS  = rc$(if $(MACOS),,U) $(ARFLAGS_EXTRA)
 
 ifneq ($(LINUX),)
     # Build flags on Linux
-    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/linux
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(FREEBSD),)
     # Build flags on FreeBSD
-    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/freebsd
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(OPENBSD),)
     # Build flags on OpenBSD
-    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/openbsd
     LDFLAGS += -Wl,-z,origin,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(NETBSD),)
     # Build flags on NetBSD
-    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/netbsd
     LDFLAGS += -Wl,-rpath,'$$ORIGIN',-rpath,$(ALTDEVROOT)/lib,-z,noexecstack
+    SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
+else ifneq ($(DRAGONFLYBSD),)
+    # Build flags on DragonFlyBSD
+    LDFLAGS += -Wl,-z,origin,-rpath,'$$ORIGIN',-z,noexecstack
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(MACOS),)
     # Build flags on macOS
-    CXXFLAGS_INCLUDES += -I$(LIBTSDUCKDIR)/mac
     LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
@@ -611,14 +614,14 @@ ifeq ($(NOCURL),)
     NOCURL := $(if $(call F_SEARCH,curl-config),,true)
 endif
 
-ifneq ($(MACOS)$(FREEBSD)$(OPENBSD)$(NETBSD),)
-    # Dektec and HiDes devices are not supported on macOS, FreeBSD, OpenBSD, NetBSD (no driver).
+ifneq ($(MACOS)$(BSD),)
+    # Dektec and HiDes devices are not supported on macOS and BSD systems (no driver).
     NODTAPI = true
     NOHIDES = true
 endif
 
-ifneq ($(FREEBSD)$(OPENBSD)$(NETBSD),)
-    # Vatek library has not yet been validated on FreeBSD, OpenBSD, NetBSD.
+ifneq ($(BSD),)
+    # Vatek library has not yet been validated on BSD systems (only depends on libusb).
     NOVATEK = true
 endif
 
@@ -664,8 +667,8 @@ ifneq ($(NOPCSC),)
 else ifneq ($(MACOS),)
     # On macOS, use PCSC.framework
     LDLIBS_PCSC = -framework PCSC
-else ifneq ($(LINUXBREW)$(FREEBSD)$(OPENBSD)$(NETBSD),)
-    # PCSC on Linuxbrew, FreeBSD, OpenBSD, NetBSD.
+else ifneq ($(LINUXBREW)$(BSD),)
+    # PCSC on Linuxbrew and all BSD systems.
     CXXFLAGS_INCLUDES += -I$(ALTDEVROOT)/include/PCSC
     LDLIBS_PCSC = -lpcsclite
 else
@@ -691,7 +694,7 @@ endif
 # when linking applications against the TSDuck static library.
 
 LIBTSDUCK_CXXFLAGS_INCLUDES +=
-LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(OPENBSD)$(NETBSD),-lkvm) $(if $(LINUX),-latomic)
+LIBTSDUCK_LDLIBS += $(LDLIBS_PCSC) $(if $(FREEBSD),-lprocstat) $(if $(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),-lkvm) $(if $(LINUX),-latomic)
 
 ifneq ($(NODTAPI),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_DTAPI=1
@@ -742,7 +745,7 @@ endif
 # List of libtsduck directories containing private and public headers.
 
 ifeq ($(PUBLIC_INCLUDES),)
-    export OTHER_OS   := $(filter-out $(subst darwin,mac,$(LOCAL_OS)),linux mac freebsd netbsd openbsd windows)
+    export OTHER_OS := $(filter-out $(subst darwin,mac,$(subst dragonfly,dragonflybsd,$(LOCAL_OS))),linux mac freebsd netbsd openbsd dragonflybsd windows)
     export ALL_INCLUDES := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
     export PRIVATE_INCLUDES := $(filter %/private,$(ALL_INCLUDES))
     export PUBLIC_INCLUDES := $(filter-out %/private,$(ALL_INCLUDES))
@@ -837,7 +840,7 @@ unixify:
 	  mv -f $$f.tmp $$f; \
 	done
 	for f in $$(find . -name \*.c -o -name \*.cpp -o -name \*.h -o -name Makefile\* -o -name \*.sh -o -name \*.dox -o -name \*.md -o -name \*.xml -o -name \*.txt); do \
-	  dos2unix $(if $(FREEBSD),,-q) $$f; \
+	  dos2unix $(if $(FREEBSD)$(DRAGONFLYBSD),,-q) $$f; \
 	  $(SED) -i -e 's/  *$$//' $$f; \
 	done
 

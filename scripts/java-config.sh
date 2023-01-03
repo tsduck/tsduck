@@ -65,7 +65,7 @@ cmd_home() {
         javac=$(find -L /Library/Java/JavaVirtualMachines/openjdk.jdk -name javac -perm +444 2>/dev/null | tail -1)
         [[ -z "$javac" ]] && javac=$(find -L /Library/Java/JavaVirtualMachines -name javac -perm +444 2>/dev/null | tail -1)
         [[ -n "$javac" ]] && dirname $(dirname "$javac")
-    elif [[ $system == FreeBSD || $system == OpenBSD ]]; then
+    elif [[ $system == FreeBSD || $system == DragonFly || $system == OpenBSD ]]; then
         # One or more version under /usr/local, use the last one.
         local jhome=
         for dir in /usr/local/*jdk*; do
@@ -118,7 +118,7 @@ cmd_cflags() {
     home=$(cmd_home)
     if [[ -n "$home" && -d "$home/include" ]]; then
         # JNI headers exist
-        echo "-I$home/include$(dirname $(ls $home/include/*/jni_md.h 2>/dev/null) | sed -e 's/^/ -I/')"
+        echo "-I$home/include$(dirname $(ls $home/include/*/jni_md.h 2>/dev/null) | sed -e 's/^/ -I/' | tr '\n' ' ')"
     else
         # Disable JNI code
         echo "-DTS_NO_JAVA=1"

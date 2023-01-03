@@ -366,7 +366,7 @@ void ts::Thread::mainWrapper()
         ::prctl(PR_SET_NAME, name.toUTF8().c_str());
 #elif defined(TS_MAC)
         ::pthread_setname_np(name.toUTF8().c_str());
-#elif defined(TS_FREEBSD)
+#elif defined(TS_FREEBSD) || defined(TS_DRAGONFLYBSD)
         ::pthread_setname_np(_pthread, name.toUTF8().c_str());
 #elif defined(TS_WINDOWS)
         ::SetThreadDescription(::GetCurrentThread(), name.wc_str());

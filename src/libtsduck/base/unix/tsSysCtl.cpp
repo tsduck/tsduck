@@ -37,7 +37,7 @@
 
 ts::UString ts::SysCtrlString(std::initializer_list<int> oid)
 {
-#if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_NETBSD) || defined(TS_OPENBSD)
+#if defined(TS_MAC) || defined(TS_BSD)
 
     std::vector<int> vecoid(oid.begin(), oid.end());
 
@@ -75,7 +75,7 @@ ts::UString ts::SysCtrlString(std::initializer_list<int> oid)
 
 ts::ByteBlock ts::SysCtrlBytes(std::initializer_list<int> oid)
 {
-#if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_NETBSD) || defined(TS_OPENBSD)
+#if defined(TS_MAC) || defined(TS_BSD)
 
     std::vector<int> vecoid(oid.begin(), oid.end());
 

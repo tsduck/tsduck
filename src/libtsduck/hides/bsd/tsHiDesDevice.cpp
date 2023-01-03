@@ -27,9 +27,10 @@
 //
 //----------------------------------------------------------------------------
 //
-//  An encapsulation of a HiDes modulator device - OpenBSD implementation.
+//  An encapsulation of a HiDes modulator device - BSD implementation.
+//  FreeBSD, OpenBSD, NetBSD, DragonFlyBSD.
 //
 //----------------------------------------------------------------------------
 
-// OpenBSD support is currently not implemented and all methods return errors.
+// BSD support is currently not implemented and all methods return errors.
 #include "tsHiDesDeviceStub.h"

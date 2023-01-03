@@ -16,20 +16,24 @@
     <LibPublicHeaders  Include="$(TSDuckRootDir)src\libtsduck\**\*.h"
                        Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
                                 $(TSDuckRootDir)src\libtsduck\**\linux\**;
+                                $(TSDuckRootDir)src\libtsduck\**\mac\**;
+                                $(TSDuckRootDir)src\libtsduck\**\bsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\mac\**;
+                                $(TSDuckRootDir)src\libtsduck\**\dragonflybsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\private\**;
                                 $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
     <LibPrivateHeaders Include="$(TSDuckRootDir)src\libtsduck\**\private\**\*.h"/>
     <LibSources        Include="$(TSDuckRootDir)src\libtsduck\**\*.cpp"
                        Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
                                 $(TSDuckRootDir)src\libtsduck\**\linux\**;
+                                $(TSDuckRootDir)src\libtsduck\**\mac\**;
+                                $(TSDuckRootDir)src\libtsduck\**\bsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
-                                $(TSDuckRootDir)src\libtsduck\**\mac\**;
+                                $(TSDuckRootDir)src\libtsduck\**\dragonflybsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>
     <LibPublicDirs     Include="@(LibPublicHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
     <LibPrivateDirs    Include="@(LibPrivateHeaders->'%(RootDir)%(Directory)'->Distinct())"/>
