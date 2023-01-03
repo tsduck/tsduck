@@ -72,6 +72,13 @@ cmd_home() {
             [[ -e $dir/bin/javac && -e $dir/include/jni.h ]] && jhome=$dir
         done
         [[ -n $jhome ]] && echo $jhome
+    elif [[ $system == NetBSD ]]; then
+        # One or more version under /usr/pkg/java, use the last one.
+        local jhome=
+        for dir in /usr/pkg/java/*jdk*; do
+            [[ -e $dir/bin/javac && -e $dir/include/jni.h ]] && jhome=$dir
+        done
+        [[ -n $jhome ]] && echo $jhome
     elif [[ -f /etc/gentoo-release ]]; then
         # Gentoo Linux does not use symbolic links into jdk for java and javac
         jdk=$(ls -d /etc/java-config*/current-system-vm 2>/dev/null | tail -1)

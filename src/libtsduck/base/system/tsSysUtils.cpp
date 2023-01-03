@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSysUtils.h"
+#include "tsFileUtils.h"
 #include "tsStaticInstance.h"
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
@@ -42,7 +43,6 @@
     #include <psapi.h>
     #include "tsAfterStandardHeaders.h"
 #elif defined(TS_LINUX)
-    #include "tsFileUtils.h"
     #include "tsBeforeStandardHeaders.h"
     #include <dlfcn.h>
     #include "tsAfterStandardHeaders.h"
@@ -70,9 +70,17 @@
     extern char **environ; // not defined in public headers
 #elif defined(TS_OPENBSD)
     #include "tsSysCtl.h"
-    #include "tsFileUtils.h"
     #include "tsBeforeStandardHeaders.h"
     #include <sys/user.h>
+    #include <sys/resource.h>
+    #include <kvm.h>
+    #include <signal.h>
+    #include <dlfcn.h>
+    #include "tsAfterStandardHeaders.h"
+    extern char **environ; // not defined in public headers
+#elif defined(TS_NETBSD)
+    #include "tsSysCtl.h"
+    #include "tsBeforeStandardHeaders.h"
     #include <sys/resource.h>
     #include <kvm.h>
     #include <signal.h>
@@ -96,18 +104,20 @@ TS_STATIC_INSTANCE(ts::Mutex, (), EnvironmentMutex)
 
 ts::UString ts::ExecutableFile()
 {
+    UString path;
+
 #if defined(TS_WINDOWS)
 
     // Window implementation.
     std::array<::WCHAR, 2048> name;
     ::DWORD length = ::GetModuleFileNameW(nullptr, name.data(), ::DWORD(name.size()));
-    return UString(name, length);
+    path = UString(name, length);
 
 #elif defined(TS_LINUX)
 
     // Linux implementation.
     // /proc/self/exe is a symbolic link to the executable.
-    return ResolveSymbolicLinks(u"/proc/self/exe");
+    path = ResolveSymbolicLinks(u"/proc/self/exe");
 
 #elif defined(TS_MAC)
 
@@ -121,14 +131,20 @@ ts::UString ts::ExecutableFile()
     }
     else {
         assert(length <= int(sizeof(name)));
-        return UString::FromUTF8(name, length);
+        path.assignFromUTF8(name, length);
     }
 
 #elif defined(TS_FREEBSD)
 
     // FreeBSD implementation.
     // We use the sysctl() MIB and the OID for the current executable is:
-    return SysCtrlString({CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1}); // -1 means current process
+    path = SysCtrlString({CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1}); // -1 means current process
+
+#elif defined(TS_NETBSD)
+
+    // NetBSD implementation.
+    // We use the sysctl() MIB and the OID for the current executable is:
+    path = SysCtrlString({CTL_KERN, KERN_PROC_ARGS, -1, KERN_PROC_PATHNAME}); // -1 means current process
 
 #elif defined(TS_OPENBSD)
 
@@ -149,22 +165,22 @@ ts::UString ts::ExecutableFile()
     }
     if (::strchr(exe, '/') != nullptr) {
         // A path is provided, resolve it.
-        UString path;
         char* path8 = ::realpath(exe, nullptr);
         if (path8 != nullptr) {
             path.assignFromUTF8(path8);
             ::free(path8);
         }
-        return path;
     }
     else {
         // A simple command name is provided, find it in the PATH.
-        return SearchExecutableFile(UString::FromUTF8(exe));
+        path = SearchExecutableFile(UString::FromUTF8(exe));
     }
 
 #else
 #error "ts::ExecutableFile not implemented on this system"
 #endif
+
+    return path.empty() ? path : AbsoluteFilePath(path);
 }
 
 
@@ -442,7 +458,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     metrics.vmem_size = ps.vsize;
 
     // Evaluate CPU time
-    unsigned long jps = sysconf(_SC_CLK_TCK);   // jiffies per second
+    unsigned long jps = ::sysconf(_SC_CLK_TCK);   // jiffies per second
     unsigned long jiffies = ps.utime + ps.stime; // CPU time in jiffies
     metrics.cpu_time = (MilliSecond(jiffies) * 1000) / jps;
 
@@ -498,11 +514,31 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
     ::kvm_close(kvm);
 
+#elif defined(TS_NETBSD)
+
+    // NetBSD implementation. Similar to OpenBSD but use struct kinfo_proc2 and kvm_getproc2().
+    ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, "kvm_open");
+    if (kvm == nullptr) {
+        throw ts::Exception(u"kvm_open error");
+    }
+
+    int count = 0;
+    ::kinfo_proc2* kinfo = ::kvm_getproc2(kvm, KERN_PROC_PID, ::getpid(), sizeof(::kinfo_proc2), &count);
+    if (kinfo == nullptr || count == 0) {
+        throw ts::Exception(u"kvm_getprocs error");
+    }
+
+    // The virtual memory size is text size + data size + stack size.
+    const long pagesize = ::sysconf(_SC_PAGESIZE);
+    metrics.vmem_size = kinfo->p_vm_tsize * pagesize + kinfo->p_vm_dsize * pagesize + kinfo->p_vm_ssize * pagesize;
+
+    ::kvm_close(kvm);
+
 #else
     #error "ts::GetProcessMetrics not implemented on this system"
 #endif
 
-#if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD)
+#if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_NETBSD)
 
     // On BSD systems, get CPU time using getrusage().
     ::rusage usage;

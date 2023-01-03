@@ -48,8 +48,8 @@
 #include "tsDTVProperties.h"
 #endif
 
-// Tuners are not supported in macOS, FreeBSD, OpenBSD and errors are always returned.
-#if !defined(TS_MAC) && !defined(TS_FREEBSD) && !defined(TS_OPENBSD)
+// Tuners are not supported in macOS, FreeBSD, NetBSD, OpenBSD and errors are always returned.
+#if !defined(TS_MAC) && !defined(TS_FREEBSD) && !defined(TS_NETBSD) && !defined(TS_OPENBSD)
 
 //----------------------------------------------------------------------------
 // The test fixture

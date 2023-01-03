@@ -80,7 +80,7 @@ const ts::Time ts::Time::GPSEpoch(1980, 1, 6, 0, 0);
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Time::Time (int year, int month, int day, int hour, int minute, int second, int millisecond) :
+ts::Time::Time(int year, int month, int day, int hour, int minute, int second, int millisecond) :
     _value(ToInt64(year, month, day, hour, minute, second, millisecond))
 {
 }
@@ -90,7 +90,7 @@ ts::Time::Time (int year, int month, int day, int hour, int minute, int second, 
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::Time::Time (const ts::Time::Fields& f) :
+ts::Time::Time(const ts::Time::Fields& f) :
     _value(ToInt64(f.year, f.month, f.day, f.hour, f.minute, f.second, f.millisecond))
 {
 }
@@ -100,14 +100,14 @@ ts::Time::Time (const ts::Time::Fields& f) :
 // Fields constructor
 //----------------------------------------------------------------------------
 
-ts::Time::Fields::Fields (int year_, int month_, int day_, int hour_, int minute_, int second_, int millisecond_) :
-    year (year_),
-    month (month_),
-    day (day_),
-    hour (hour_),
-    minute (minute_),
-    second (second_),
-    millisecond (millisecond_)
+ts::Time::Fields::Fields(int year_, int month_, int day_, int hour_, int minute_, int second_, int millisecond_) :
+    year(year_),
+    month(month_),
+    day(day_),
+    hour(hour_),
+    minute(minute_),
+    second(second_),
+    millisecond(millisecond_)
 {
 }
 
@@ -116,7 +116,7 @@ ts::Time::Fields::Fields (int year_, int month_, int day_, int hour_, int minute
 // Fields comparison
 //----------------------------------------------------------------------------
 
-bool ts::Time::Fields::operator== (const Fields& f) const
+bool ts::Time::Fields::operator==(const Fields& f) const
 {
     return year == f.year && month == f.month && day == f.day &&
            hour == f.hour && minute == f.minute && second == f.second &&
@@ -574,6 +574,31 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
 
     return ftime.i;
 
+#elif defined(TS_NETBSD)
+
+    // On NetBSD, mktime() fails in the daylight saving time switch periods.
+    // We use the system-specific mktime_z() which uses UTC (or any specified TZ).
+    // Convert using mktime.
+    ::tm stime;
+    TS_ZERO(stime);
+    stime.tm_year = year - 1900;
+    stime.tm_mon = month - 1; // 0..11
+    stime.tm_mday = day;
+    stime.tm_hour = hour;
+    stime.tm_min = minute;
+    stime.tm_sec = second;
+    stime.tm_isdst = -1;
+
+    // Using nullptr as time zone means UTC.
+    int64_t seconds = ::mktime_z(nullptr, &stime);
+
+    if (seconds == time_t(-1)) {
+        throw TimeError(UString::Format(u"mktime_z error (%d, %d, %d, %d, %d, %d, %d)", {year, month, day, hour, minute, second, millisecond}));
+    }
+
+    // Convert to 64-bit time value
+    return (seconds * 1000 + int64_t(millisecond)) * TICKS_PER_MS;
+
 #else
 
     // Convert using mktime.
@@ -590,7 +615,7 @@ int64_t ts::Time::ToInt64(int year, int month, int day, int hour, int minute, in
     int64_t seconds = ::mktime(&stime);
 
     if (seconds == time_t(-1)) {
-        throw TimeError(u"mktime error");
+        throw TimeError(UString::Format(u"mktime error (%d, %d, %d, %d, %d, %d, %d)", {year, month, day, hour, minute, second, millisecond}));
     }
 
     // Add the GMT offset since mktime() uses stime as a local time

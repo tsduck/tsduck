@@ -1,6 +1,6 @@
 # Installing TSDuck   {#installing}
 
-TSDuck can be installed on Linux, macOS, FreeBSD, OpenBSD and Windows.
+TSDuck can be installed on Linux, macOS, FreeBSD, OpenBSD, NetBSD and Windows.
 
 # Windows {#wininstall}
 
@@ -108,9 +108,9 @@ sudo make install
 
 More details on how to build TSDuck are [available here](building.html).
 
-# FreeBSD, OpenBSD {#bsdinstall}
+# FreeBSD, OpenBSD, NetBSD {#bsdinstall}
 
-There is currently no installer for FreeBSD and OpenBSD. You need to build and install as follow:
+There is currently no installer for FreeBSD, OpenBSD, NetBSD. You need to build and install as follow:
 ~~~
 gmake -j10
 sudo gmake install

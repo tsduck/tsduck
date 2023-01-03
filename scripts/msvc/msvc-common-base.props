@@ -17,6 +17,7 @@
                        Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
                                 $(TSDuckRootDir)src\libtsduck\**\linux\**;
                                 $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
+                                $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\mac\**;
                                 $(TSDuckRootDir)src\libtsduck\**\private\**;
@@ -26,6 +27,7 @@
                        Exclude="$(TSDuckRootDir)src\libtsduck\**\unix\**;
                                 $(TSDuckRootDir)src\libtsduck\**\linux\**;
                                 $(TSDuckRootDir)src\libtsduck\**\freebsd\**;
+                                $(TSDuckRootDir)src\libtsduck\**\netbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\openbsd\**;
                                 $(TSDuckRootDir)src\libtsduck\**\mac\**;
                                 $(TSDuckRootDir)src\libtsduck\**\__pycache__\**"/>

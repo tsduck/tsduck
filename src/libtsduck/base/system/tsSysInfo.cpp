@@ -68,6 +68,11 @@ ts::SysInfo::SysInfo() :
 #else
     _isFreeBSD(false),
 #endif
+#if defined(TS_NETBSD)
+    _isNetBSD(true),
+#else
+    _isNetBSD(false),
+#endif
 #if defined(TS_OPENBSD)
     _isOpenBSD(true),
 #else
@@ -184,7 +189,7 @@ ts::SysInfo::SysInfo() :
         _systemVersion += u"Darwin " + osrelease;
     }
 
-#elif defined(TS_FREEBSD) || defined(TS_OPENBSD)
+#elif defined(TS_FREEBSD) || defined(TS_NETBSD) || defined(TS_OPENBSD)
 
     _systemName = SysCtrlString({CTL_KERN, KERN_OSTYPE});
     if (_systemName.empty()) {
@@ -192,6 +197,8 @@ ts::SysInfo::SysInfo() :
         _systemName = u"FreeBSD";
 #elif defined(TS_OPENBSD)
         _systemName = u"OpenBSD";
+#elif defined(TS_NETBSD)
+        _systemName = u"NetBSD";
 #endif
     }
 

@@ -88,6 +88,11 @@ namespace ts {
         //!
         bool isFreeBSD() const { return _isFreeBSD; }
         //!
+        //! Check if the running operating system is NetBSD.
+        //! @return True if the running operating system is NetBSD.
+        //!
+        bool isNetBSD() const { return _isNetBSD; }
+        //!
         //! Check if the running operating system is OpenBSD.
         //! @return True if the running operating system is OpenBSD.
         //!
@@ -152,6 +157,7 @@ namespace ts {
         bool    _isRaspbian;
         bool    _isMacOS;
         bool    _isFreeBSD;
+        bool    _isNetBSD;
         bool    _isOpenBSD;
         bool    _isWindows;
         bool    _isIntel32;
