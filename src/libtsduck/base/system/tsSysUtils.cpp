@@ -57,18 +57,7 @@
     #include <dlfcn.h>
     #include "tsAfterStandardHeaders.h"
     extern char **environ; // not defined in public headers
-#elif defined(TS_FREEBSD)
-    #include "tsSysCtl.h"
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/user.h>
-    #include <sys/resource.h>
-    #include <libprocstat.h>
-    #include <kvm.h>
-    #include <signal.h>
-    #include <dlfcn.h>
-    #include "tsAfterStandardHeaders.h"
-    extern char **environ; // not defined in public headers
-#elif defined(TS_OPENBSD)
+#elif defined(TS_BSD)
     #include "tsSysCtl.h"
     #include "tsBeforeStandardHeaders.h"
     #include <sys/user.h>
@@ -76,15 +65,11 @@
     #include <kvm.h>
     #include <signal.h>
     #include <dlfcn.h>
-    #include "tsAfterStandardHeaders.h"
-    extern char **environ; // not defined in public headers
-#elif defined(TS_NETBSD)
-    #include "tsSysCtl.h"
-    #include "tsBeforeStandardHeaders.h"
-    #include <sys/resource.h>
-    #include <kvm.h>
-    #include <signal.h>
-    #include <dlfcn.h>
+    #if defined(TS_FREEBSD)
+        #include <libprocstat.h>
+    #elif defined(TS_DRAGONFLYBSD)
+        #include <sys/kinfo.h>
+    #endif
     #include "tsAfterStandardHeaders.h"
     extern char **environ; // not defined in public headers
 #endif
@@ -134,9 +119,9 @@ ts::UString ts::ExecutableFile()
         path.assignFromUTF8(name, length);
     }
 
-#elif defined(TS_FREEBSD)
+#elif defined(TS_FREEBSD) || defined(TS_DRAGONFLYBSD)
 
-    // FreeBSD implementation.
+    // FreeBSD and DragonFlyBSD implementation.
     // We use the sysctl() MIB and the OID for the current executable is:
     path = SysCtrlString({CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1}); // -1 means current process
 
@@ -471,7 +456,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     ::mach_msg_type_number_t count = MACH_TASK_BASIC_INFO_COUNT;
     const ::kern_return_t status1 = ::task_info(::mach_task_self(), MACH_TASK_BASIC_INFO, ::task_info_t(&taskinfo), &count);
     if (status1 != KERN_SUCCESS) {
-        throw ts::Exception(u"task_info error");
+        throw ts::Exception(u"task_info error", errno);
     }
     metrics.vmem_size = taskinfo.virtual_size;
 
@@ -481,13 +466,13 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     // Get the virtual memory size using procstat_getprocs() on current process.
     ::procstat* pstat = ::procstat_open_sysctl();
     if (pstat == nullptr) {
-        throw ts::Exception(u"procstat_open_sysctl error");
+        throw ts::Exception(u"procstat_open_sysctl error", errno);
     }
 
     unsigned int kproc_count = 0;
     ::kinfo_proc* kproc = ::procstat_getprocs(pstat, KERN_PROC_PID, ::getpid(), &kproc_count);
     if (kproc == nullptr || kproc_count == 0) {
-        throw ts::Exception(u"procstat_getprocs error");
+        throw ts::Exception(u"procstat_getprocs error", errno);
     }
     metrics.vmem_size = kproc->ki_size;
 
@@ -499,13 +484,13 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     // OpenBSD implementation.
     ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, "kvm_open");
     if (kvm == nullptr) {
-        throw ts::Exception(u"kvm_open error");
+        throw ts::Exception(u"kvm_open error", errno);
     }
 
     int count = 0;
     ::kinfo_proc* kinfo = ::kvm_getprocs(kvm, KERN_PROC_PID, ::getpid(), sizeof(::kinfo_proc), &count);
     if (kinfo == nullptr || count == 0) {
-        throw ts::Exception(u"kvm_getprocs error");
+        throw ts::Exception(u"kvm_getprocs error", errno);
     }
 
     // The virtual memory size is text size + data size + stack size.
@@ -514,18 +499,38 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
     ::kvm_close(kvm);
 
+#elif defined(TS_DRAGONFLYBSD)
+
+    // DragonFlyBSD implementation. Similar to OpenBSD but some symbols have different names
+    // and kvm_getprocs() has no way to describe the current size of struct kinfo_proc.
+    ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, O_RDONLY, "kvm_open");
+    if (kvm == nullptr) {
+        throw ts::Exception(u"kvm_open error", errno);
+    }
+
+    int count = 0;
+    ::kinfo_proc* kinfo = ::kvm_getprocs(kvm, KERN_PROC_PID, ::getpid(), &count);
+    if (kinfo == nullptr || count == 0) {
+        throw ts::Exception(u"kvm_getprocs error", errno);
+    }
+
+    // The virtual memory size is directly in kp_vm_map_size, in bytes.
+    metrics.vmem_size = kinfo->kp_vm_map_size;
+
+    ::kvm_close(kvm);
+
 #elif defined(TS_NETBSD)
 
     // NetBSD implementation. Similar to OpenBSD but use struct kinfo_proc2 and kvm_getproc2().
     ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, "kvm_open");
     if (kvm == nullptr) {
-        throw ts::Exception(u"kvm_open error");
+        throw ts::Exception(u"kvm_open error", errno);
     }
 
     int count = 0;
     ::kinfo_proc2* kinfo = ::kvm_getproc2(kvm, KERN_PROC_PID, ::getpid(), sizeof(::kinfo_proc2), &count);
     if (kinfo == nullptr || count == 0) {
-        throw ts::Exception(u"kvm_getprocs error");
+        throw ts::Exception(u"kvm_getprocs error", errno);
     }
 
     // The virtual memory size is text size + data size + stack size.
@@ -538,13 +543,13 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     #error "ts::GetProcessMetrics not implemented on this system"
 #endif
 
-#if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_OPENBSD) || defined(TS_NETBSD)
+#if defined(TS_MAC) || defined(TS_BSD)
 
     // On BSD systems, get CPU time using getrusage().
     ::rusage usage;
     const int status2 = ::getrusage(RUSAGE_SELF, &usage);
     if (status2 < 0) {
-        throw ts::Exception(u"getrusage error");
+        throw ts::Exception(u"getrusage error", errno);
     }
 
     // Add system time and user time, in milliseconds.

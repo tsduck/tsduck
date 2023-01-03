@@ -81,7 +81,7 @@ void ResidentBufferTest::testResidentBuffer()
     ts::ResidentBuffer<uint8_t> buf(buf_size);
 
     debug() << "ResidentBufferTest: isLocked() = " << buf.isLocked()
-                 << ", requested size = " << buf_size << ", count() = " << buf.count() << std::endl;
+            << ", requested size = " << buf_size << ", count() = " << buf.count() << std::endl;
 
     TSUNIT_ASSERT(buf.isLocked());
     TSUNIT_ASSERT(buf.count() >= buf_size);

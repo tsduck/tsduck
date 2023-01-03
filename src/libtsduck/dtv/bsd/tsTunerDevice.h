@@ -30,7 +30,8 @@
 //!  @file
 //!  Digital TV tuner physical device.
 //!  One version of this class exists for each operating system.
-//   ==> NetBSD version => tuners are not implemented on NetBSD
+//   ==> BSD version
+//   ==> tuners are not implemented on FreeBSD, OpenBSD, NetBSD, DragonFlyBSD.
 //!
 //----------------------------------------------------------------------------
 

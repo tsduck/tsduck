@@ -44,7 +44,6 @@ namespace ts {
     class TSDUCKDLL SysInfo
     {
         TS_DECLARE_SINGLETON(SysInfo);
-
     public:
         //!
         //! Check if the running operating system is Linux.
@@ -83,6 +82,11 @@ namespace ts {
         //!
         bool isMacOS() const { return _isMacOS; }
         //!
+        //! Check if the running operating system is a BSD system (FreeBSD, NetBSD, OpenBSD, DragonFlyBSD).
+        //! @return True if the running operating system is FreeBSD.
+        //!
+        bool isBSD() const { return _isBSD; }
+        //!
         //! Check if the running operating system is FreeBSD.
         //! @return True if the running operating system is FreeBSD.
         //!
@@ -97,6 +101,11 @@ namespace ts {
         //! @return True if the running operating system is OpenBSD.
         //!
         bool isOpenBSD() const { return _isOpenBSD; }
+        //!
+        //! Check if the running operating system is DragonFlyBSD.
+        //! @return True if the running operating system is DragonFlyBSD.
+        //!
+        bool isDragonFlyBSD() const { return _isDragonFlyBSD; }
         //!
         //! Check if the running operating system is Windows.
         //! @return True if the running operating system is Windows.
@@ -156,9 +165,11 @@ namespace ts {
         bool    _isDebian;
         bool    _isRaspbian;
         bool    _isMacOS;
+        bool    _isBSD;
         bool    _isFreeBSD;
         bool    _isNetBSD;
         bool    _isOpenBSD;
+        bool    _isDragonFlyBSD;
         bool    _isWindows;
         bool    _isIntel32;
         bool    _isIntel64;

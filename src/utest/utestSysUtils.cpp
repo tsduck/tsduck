@@ -715,9 +715,11 @@ void SysUtilsTest::testSysInfo()
             << "    isUbuntu = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isUbuntu()) << std::endl
             << "    isDebian = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isDebian()) << std::endl
             << "    isMacOS = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isMacOS()) << std::endl
+            << "    isBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isBSD()) << std::endl
             << "    isFreeBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isFreeBSD()) << std::endl
             << "    isNetBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isNetBSD()) << std::endl
             << "    isOpenBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isOpenBSD()) << std::endl
+            << "    isDragonFlyBSD = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isDragonFlyBSD()) << std::endl
             << "    isWindows = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isWindows()) << std::endl
             << "    isIntel32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel32()) << std::endl
             << "    isIntel64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isIntel64()) << std::endl
@@ -732,44 +734,64 @@ void SysUtilsTest::testSysInfo()
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
-    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isNetBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isDragonFlyBSD());
 #elif defined(TS_LINUX)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isNetBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isDragonFlyBSD());
 #elif defined(TS_MAC)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isNetBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isDragonFlyBSD());
 #elif defined(TS_FREEBSD)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(ts::SysInfo::Instance()->isBSD());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isFreeBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isNetBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isDragonFlyBSD());
 #elif defined(TS_NETBSD)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(ts::SysInfo::Instance()->isBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isNetBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isDragonFlyBSD());
 #elif defined(TS_OPENBSD)
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(ts::SysInfo::Instance()->isBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
     TSUNIT_ASSERT(!ts::SysInfo::Instance()->isNetBSD());
     TSUNIT_ASSERT(ts::SysInfo::Instance()->isOpenBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isDragonFlyBSD());
+#elif defined(TS_DRAGONFLYBSD)
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isWindows());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isLinux());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isMacOS());
+    TSUNIT_ASSERT(ts::SysInfo::Instance()->isBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isFreeBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isNetBSD());
+    TSUNIT_ASSERT(!ts::SysInfo::Instance()->isOpenBSD());
+    TSUNIT_ASSERT(ts::SysInfo::Instance()->isDragonFlyBSD());
 #endif
 
     // We can't predict the memory page size, except that it must be a multiple of 256.

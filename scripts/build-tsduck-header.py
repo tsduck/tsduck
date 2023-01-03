@@ -36,8 +36,21 @@
 
 import tsbuild, sys, os, fnmatch
 
-headers = {'': [], 'private': [], 'unix': [], 'linux': [], 'mac': [], 'freebsd': [], 'netbsd': [], 'openbsd': [], 'windows': []}
-unixen  = ['linux', 'mac', 'freebsd', 'netbsd', 'openbsd']
+headers = {
+    '': [],
+    'private': [],
+    'unix': [],
+    'linux': [],
+    'mac': [],
+    'bsd': [],
+    'freebsd': [],
+    'netbsd': [],
+    'openbsd': [],
+    'dragonflybsd': [],
+    'windows': []
+}
+unixen  = ['linux', 'mac', 'freebsd', 'netbsd', 'openbsd', 'dragonflybsd']
+bsds    = ['freebsd', 'netbsd', 'openbsd', 'dragonflybsd']
 exclude = ['tsduck.h', 'tsBeforeStandardHeaders.h', 'tsAfterStandardHeaders.h']
 
 # Recursively collect header files.
@@ -62,9 +75,12 @@ def generate_header(out):
     # Extend Unix-like systems with common Unix definitions.
     for osname in unixen:
         headers[osname].extend(headers['unix'])
+    for osname in bsds:
+        headers[osname].extend(headers['bsd'])
     # Remove non-public or unused definitions.
     del headers['private']
     del headers['unix']
+    del headers['bsd']
 
     # Insert common source file header.
     tsbuild.write_source_header('//', 'TSDuck global header (include all headers)', file=out)

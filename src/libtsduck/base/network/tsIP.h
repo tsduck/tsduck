@@ -53,7 +53,7 @@
     #include <netinet/in.h>
     #include <netinet/tcp.h>
     #include <netdb.h>
-    #if defined(TS_MAC) || defined(TS_FREEBSD) || defined(TS_NETBSD) || defined(TS_OPENBSD)
+    #if defined(TS_MAC) || defined(TS_BSD)
         #include <ifaddrs.h>
     #endif
     #include "tsAfterStandardHeaders.h"

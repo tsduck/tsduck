@@ -56,6 +56,7 @@
 #  - FreeBSD
 #  - OpenBSD
 #  - NetBSD
+#  - DragonFlyBSD
 #
 #-----------------------------------------------------------------------------
 
@@ -129,6 +130,16 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
 #-----------------------------------------------------------------------------
 
 elif [[ "$SYSTEM" == "FreeBSD" ]]; then
+
+    pkglist="git git-lfs curl zip doxygen graphviz bash gsed gnugrep gmake gtar unix2dos coreutils srt librist libedit pcsc-lite python openjdk11"
+    sudo pkg install -y $PKGOPTS $pkglist
+
+#-----------------------------------------------------------------------------
+# == DragonFly BSD ==
+# Update command: sudo pkg update; sudo pkg upgrade
+#-----------------------------------------------------------------------------
+
+elif [[ "$SYSTEM" == "DragonFly" ]]; then
 
     pkglist="git git-lfs curl zip doxygen graphviz bash gsed gnugrep gmake gtar unix2dos coreutils srt librist libedit pcsc-lite python openjdk11"
     sudo pkg install -y $PKGOPTS $pkglist
