@@ -200,12 +200,12 @@ if opt_update:
         if repo.dry_run:
             if title != release.title:
                 repo.warning('title should be changed to: %s' % title)
-            if body.get_text() != release.body:
+            if body != release.body:
                 repo.warning('body text should be updated')
         else:
             # Actually perform the update.
             repo.info('Updating release title and body text')
-            release.update_release(title, body.get_text())
+            release.update_release(title, body)
 
 if opt_create:
     # Get the version from tsVersion.h in the repo.
@@ -241,7 +241,7 @@ if opt_create:
         if repo.dry_run:
             # In case of dry run, we cannot do anything else.
             exit(0)
-        release = repo.repo.create_git_release(tag_name, title, '', draft = True)
+        release = repo.repo.create_git_release(tag_name, title, '')
 
     # Upload assets which are not yet uploaded.
     assets = [a for a in release.get_assets()]
@@ -257,4 +257,4 @@ if opt_create:
 
     # Finally publish the release.
     if not repo.dry_run:
-        release.update_release(title, build_body_text(release), draft=False)
+        release.update_release(title, build_body_text(release))
