@@ -350,7 +350,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     // Windows implementation
 
     // Get a handle to the current process
-    ::HANDLE proc(::GetCurrentProcess());
+    const ::HANDLE proc = ::GetCurrentProcess();
 
     // Get process CPU time
     ::FILETIME creation_time, exit_time, kernel_time, user_time;
@@ -370,8 +370,8 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
     // Linux implementation.
 
-    //  Definition of data available from /proc/<pid>/stat
-    //  See man page for proc(5) for more details.
+    // Definition of data available from /proc/<pid>/stat
+    // See man page for proc(5) for more details.
     struct ProcessStatus {
         int           pid;         // The process id.
         char          state;       // One char from "RSDZTW"
@@ -419,8 +419,8 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     }
 
     ProcessStatus ps;
-    int expected = 37;
-    int count = fscanf(fp,
+    const int expected = 37;
+    const int count = fscanf(fp,
         "%d %*s %c %d %d %d %d %d %lu %lu %lu %lu %lu %lu %lu "
         "%ld %ld %ld %ld %*d %ld %lu %lu %ld %lu %lu %lu %lu "
         "%lu %lu %lu %lu %lu %lu %lu %lu %lu %d %d",
@@ -449,7 +449,8 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
 #elif defined(TS_MAC)
 
-    // MacOS implementation.
+    // macOS implementation.
+
     // Get the virtual memory size using task_info (mach kernel).
     ::mach_task_basic_info_data_t taskinfo;
     TS_ZERO(taskinfo);
@@ -463,6 +464,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 #elif defined(TS_FREEBSD)
 
     // FreeBSD implementation.
+
     // Get the virtual memory size using procstat_getprocs() on current process.
     ::procstat* pstat = ::procstat_open_sysctl();
     if (pstat == nullptr) {
@@ -482,6 +484,8 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 #elif defined(TS_OPENBSD)
 
     // OpenBSD implementation.
+
+    // Use the kvm library to get the process virtual size.
     ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, "kvm_open");
     if (kvm == nullptr) {
         throw ts::Exception(u"kvm_open error", errno);
@@ -494,6 +498,7 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
     }
 
     // The virtual memory size is text size + data size + stack size.
+    // Cannot use p_vm_map_size, it is always zero.
     const long pagesize = ::sysconf(_SC_PAGESIZE);
     metrics.vmem_size = kinfo->p_vm_tsize * pagesize + kinfo->p_vm_dsize * pagesize + kinfo->p_vm_ssize * pagesize;
 
@@ -501,9 +506,12 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
 #elif defined(TS_DRAGONFLYBSD)
 
-    // DragonFlyBSD implementation. Similar to OpenBSD but some symbols have different names
-    // and kvm_getprocs() has no way to describe the current size of struct kinfo_proc.
-    ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, O_RDONLY, "kvm_open");
+    // DragonFlyBSD implementation.
+
+    // Similar to OpenBSD but some symbols have different names and kvm_getprocs() has no way
+    // to describe the current size of struct kinfo_proc. Moreover, /dev/null must be passed as
+    // execfile and corefile. Otherwise, a permission denied error is returned on /dev/mem.
+    ::kvm_t* kvm = ::kvm_open("/dev/null", "/dev/null", nullptr, O_RDONLY, "kvm_open");
     if (kvm == nullptr) {
         throw ts::Exception(u"kvm_open error", errno);
     }
@@ -521,7 +529,9 @@ void ts::GetProcessMetrics(ProcessMetrics& metrics)
 
 #elif defined(TS_NETBSD)
 
-    // NetBSD implementation. Similar to OpenBSD but use struct kinfo_proc2 and kvm_getproc2().
+    // NetBSD implementation.
+
+    // Similar to OpenBSD but use struct kinfo_proc2 and kvm_getproc2().
     ::kvm_t* kvm = ::kvm_open(nullptr, nullptr, nullptr, KVM_NO_FILES, "kvm_open");
     if (kvm == nullptr) {
         throw ts::Exception(u"kvm_open error", errno);

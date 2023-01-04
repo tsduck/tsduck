@@ -49,7 +49,15 @@ namespace ts {
         //!
         //! Constructor, based on required amount of elements.
         //! Abort application if memory allocation fails.
-        //! Do not abort if memory locking fails.
+        //!
+        //! Do not abort if memory locking fails. Some operating systems may place
+        //! limitations on the amount of memory to lock. On DragonFlyBSD, the mlock()
+        //! system call is reserved to the superuser and memory locking always fails
+        //! with normal users. Consequently, failing to lock a memory buffer in
+        //! physical memory is not a real error which prevents the application from
+        //! working. At worst, there could be performance implications in case of
+        //! page faults.
+        //!
         //! @param [in] elem_count Number of @a T elements.
         //!
         ResidentBuffer(size_t elem_count);
