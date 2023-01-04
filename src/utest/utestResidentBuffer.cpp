@@ -82,7 +82,19 @@ void ResidentBufferTest::testResidentBuffer()
 
     debug() << "ResidentBufferTest: isLocked() = " << buf.isLocked()
             << ", requested size = " << buf_size << ", count() = " << buf.count() << std::endl;
+    if (!buf.isLocked()) {
+        debug() << "ResidentBufferTest: lockErrorCode() = " << buf.lockErrorCode()
+                << ", " << ts::SysErrorCodeMessage(buf.lockErrorCode())  << std::endl;
+    }
 
+    // On DragonFlyBSD, the mlock() system call is reserved to the superuser and locking never succeeds with normal users.
+#if defined(TS_DRAGONFLYBSD)
+    if (::geteuid() == 0) {
+        TSUNIT_ASSERT(buf.isLocked());
+    }
+#else
     TSUNIT_ASSERT(buf.isLocked());
+#endif   
+
     TSUNIT_ASSERT(buf.count() >= buf_size);
 }

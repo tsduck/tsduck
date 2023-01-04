@@ -280,12 +280,14 @@ namespace {
     class TestThreadMutexTimeout: public utest::TSUnitThread
     {
     private:
+        bool _ready;
         ts::Mutex& _mutex;
         ts::Mutex& _mutexSig;
         ts::Condition& _condSig;
     public:
         TestThreadMutexTimeout(ts::Mutex& mutex, ts::Mutex& mutexSig, ts::Condition& condSig) :
             utest::TSUnitThread(),
+            _ready(false),
             _mutex(mutex),
             _mutexSig(mutexSig),
             _condSig(condSig)
@@ -304,11 +306,16 @@ namespace {
             {
                 ts::GuardCondition lock2(_mutexSig, _condSig);
                 TSUNIT_ASSERT(lock2.isLocked());
+                _ready = true;
                 lock2.signal();
             }
             // And sleep 100 ms.
             ts::SleepThread(100);
             // The test mutex is implicitely released.
+        }
+        bool ready()
+        {
+            return _ready;
         }
     };
 }
@@ -325,7 +332,9 @@ void ThreadTest::testMutexTimeout()
         ts::GuardCondition lock(mutexSig, condSig);
         TSUNIT_ASSERT(lock.isLocked());
         TSUNIT_ASSERT(thread.start());
-        TSUNIT_ASSERT(lock.waitCondition());
+        while (!thread.ready()) {
+            TSUNIT_ASSERT(lock.waitCondition());
+        }
     }
 
     // Now, the thread holds the mutex for 100 ms.
@@ -333,13 +342,16 @@ void ThreadTest::testMutexTimeout()
     const ts::Time dueTime1(start + 50 - _msPrecision);
     const ts::Time dueTime2(start + 100 - _msPrecision);
 
+    TSUNIT_ASSUME(!mutex.acquire(50));
+    const ts::Time end(ts::Time::CurrentUTC());
+    debug() << "ThreadTest::testMutexTimeout: actual wait time: " << (end - start) << " ms" << std::endl;
+
     // Use assumptions instead of assertions for time-dependent checks.
     // Timing can be very weird on virtual machines which are used for unitary tests.
-    TSUNIT_ASSUME(!mutex.acquire(50));
-    TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime1);
-    TSUNIT_ASSUME(ts::Time::CurrentUTC() < dueTime2);
+    TSUNIT_ASSERT(end >= dueTime1);
+    TSUNIT_ASSUME(end < dueTime2);
     TSUNIT_ASSERT(mutex.acquire(1000));
-    TSUNIT_ASSERT(ts::Time::CurrentUTC() >= dueTime2);
+    TSUNIT_ASSERT(end >= dueTime2);
     TSUNIT_ASSERT(mutex.release());
 
     debug() << "ThreadTest::testMutexTimeout: type name: \"" << thread.getTypeName() << "\"" << std::endl;
