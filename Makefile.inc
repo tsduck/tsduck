@@ -162,6 +162,7 @@ SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
 #   build using system libraries.
 # - LOCAL_ARCH : local processor exact architecture ("x86_64", "armv7l", etc)
 # - LOCAL_OS : operating system (linux, darwin, freebsd, openbsd, netbsd, dragonfly)
+# - LOCAL_OSDIR : system-specific directory (linux, mac, freebsd, openbsd, netbsd, dragonflybsd)
 # - MAIN_ARCH : target processor architecture family ("x86_64", "arm", etc)
 # - MACOS : non-empty on macOS systems
 # - NETBSD : non-empty on NetBSD systems
@@ -184,9 +185,10 @@ export LANG = en_US.UTF-8
 # Operating system, architecture, host name.
 
 ifeq ($(LOCAL_OS),)
-    export LOCAL_OS   := $(shell uname -s | tr A-Z a-z)
-    export LOCAL_ARCH := $(shell uname -m)
-    export HOSTNAME   := $(firstword $(subst ., ,$(shell hostname 2>/dev/null)))
+    export LOCAL_OS    := $(shell uname -s | tr A-Z a-z)
+    export LOCAL_OSDIR := $(subst darwin,mac,$(subst dragonfly,dragonflybsd,$(LOCAL_OS)))
+    export LOCAL_ARCH  := $(shell uname -m)
+    export HOSTNAME    := $(firstword $(subst ., ,$(shell hostname 2>/dev/null)))
 endif
 
 LINUX        = $(if $(findstring linux,$(LOCAL_OS)),true)
@@ -745,7 +747,10 @@ endif
 # List of libtsduck directories containing private and public headers.
 
 ifeq ($(PUBLIC_INCLUDES),)
-    export OTHER_OS := $(filter-out $(subst darwin,mac,$(subst dragonfly,dragonflybsd,$(LOCAL_OS))),linux mac freebsd netbsd openbsd dragonflybsd windows)
+    export OTHER_OS := $(filter-out $(LOCAL_OSDIR),linux mac freebsd netbsd openbsd dragonflybsd windows)
+    ifeq ($(BSD),)
+        export OTHER_OS := $(OTHER_OS) bsd
+    endif
     export ALL_INCLUDES := $(filter-out $(addprefix %/,$(OTHER_OS)),$(patsubst %/,%,$(sort $(dir $(wildcard $(LIBTSDUCKDIR)/*.h $(LIBTSDUCKDIR)/*/*.h $(LIBTSDUCKDIR)/*/*/*.h)))))
     export PRIVATE_INCLUDES := $(filter %/private,$(ALL_INCLUDES))
     export PUBLIC_INCLUDES := $(filter-out %/private,$(ALL_INCLUDES))
