@@ -94,7 +94,7 @@ void ResidentBufferTest::testResidentBuffer()
     }
 #else
     TSUNIT_ASSERT(buf.isLocked());
-#endif   
+#endif
 
     TSUNIT_ASSERT(buf.count() >= buf_size);
 }
