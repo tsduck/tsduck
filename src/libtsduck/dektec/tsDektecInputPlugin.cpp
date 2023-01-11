@@ -949,7 +949,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
     // Receive packets.
     if (_guts->timeout_ms < 0) {
         // Receive without timeout (wait forever if no input signal).
-        status = _guts->chan.Read(reinterpret_cast<char*>(buffer), int(size));
+        status = _guts->chan.Read(reinterpret_cast<char*>(buffer), int(size), -1);
     }
     else {
         // Receive with timeout (can be null, ie. non-blocking).
