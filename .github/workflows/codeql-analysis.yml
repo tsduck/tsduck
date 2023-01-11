@@ -36,9 +36,9 @@ name: CodeQL security analysis
 # Trigger the workflow on push or pull request, for master branch only.
 on:
   push:
-    branches: ['master', 'main']
+    branches: [master, main]
   pull_request:
-    branches: ['master', 'main']
+    branches: [master, main]
   workflow_dispatch:
 
 jobs:
@@ -54,7 +54,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        language: [ 'cpp', 'java', 'python' ]
+        language: [cpp, java, python]
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout repository
