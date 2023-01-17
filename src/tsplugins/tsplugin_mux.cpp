@@ -73,10 +73,10 @@ namespace ts {
         uint64_t      _inserted_packet_count; // counts inserted packets
         uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
         uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
-        TSPacketFormat             _file_format;  // Input file format
-        TSPacketMetadata::LabelSet _setLabels;    // Labels to set on output packets.
-        TSPacketMetadata::LabelSet _resetLabels;  // Labels to reset on output packets.
-        ContinuityAnalyzer         _cc_fixer;     // To fix continuity counters in mux'ed PID's
+        TSPacketFormat     _file_format;      // Input file format
+        TSPacketLabelSet   _setLabels;        // Labels to set on output packets.
+        TSPacketLabelSet   _resetLabels;      // Labels to reset on output packets.
+        ContinuityAnalyzer _cc_fixer;         // To fix continuity counters in mux'ed PID's
     };
 }
 
@@ -200,12 +200,12 @@ ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
          u"when packet insertion is complete, the transmission continues and the "
          u"stuffing is no longer modified.");
 
-    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label", u"label1[-label2]",
          u"Set the specified labels on the muxed packets. "
          u"Several --set-label options may be specified.");
 
-    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"reset-label", u"label1[-label2]",
          u"Clear the specified labels on the muxed packets. "
          u"Several --reset-label options may be specified.");

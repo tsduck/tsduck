@@ -158,7 +158,7 @@ namespace ts {
         //! The value of the option is fetched each time this method is called.
         //! @return A set of label from --only-label options.
         //!
-        TSPacketMetadata::LabelSet getOnlyLabelOption() const;
+        TSPacketLabelSet getOnlyLabelOption() const;
 
         // Implementation of inherited interface.
         virtual PluginType type() const override;

@@ -38,7 +38,7 @@ ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, cons
     Plugin(tsp_, description, syntax)
 {
     // The option --label is defined in all packet processing plugins.
-    option(u"only-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"only-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"only-label", u"label1[-label2]",
          u"Invoke this plugin only for packets with any of the specified labels. "
          u"Other packets are transparently passed to the next plugin, without going through this one. "
@@ -51,9 +51,9 @@ ts::ProcessorPlugin::ProcessorPlugin(TSP* tsp_, const UString& description, cons
 // Get the content of the --only-label options (packet processing plugins).
 //----------------------------------------------------------------------------
 
-ts::TSPacketMetadata::LabelSet ts::ProcessorPlugin::getOnlyLabelOption() const
+ts::TSPacketLabelSet ts::ProcessorPlugin::getOnlyLabelOption() const
 {
-    TSPacketMetadata::LabelSet labels;
+    TSPacketLabelSet labels;
     getIntValues(labels, u"only-label");
     return labels;
 }

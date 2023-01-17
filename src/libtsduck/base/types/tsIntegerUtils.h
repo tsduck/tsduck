@@ -668,7 +668,7 @@ namespace ts {
     //!
     template <typename INT, const size_t POW>
     struct static_power10 {
-        #if defined (DOXYGEN)
+        #if defined(DOXYGEN)
         static constexpr INT value;   //!< Value of 10 power POW.
         #endif
     };
@@ -696,6 +696,34 @@ namespace ts {
     template <typename INT> struct static_power10<INT, 18> { static constexpr INT value = TS_UCONST64(1000000000000000000); };
     template <typename INT> struct static_power10<INT, 19> { static constexpr INT value = TS_UCONST64(10000000000000000000); };
     //! @endcond
+
+    //!
+    //! Define the smaller unsigned integer type with at least a given number of bits.
+    //! @tparam BITS Minimum number of bits. Must be in the range 0 to 64.
+    //!
+    template <const size_t BITS>
+    struct smaller_unsigned {
+        //!
+        //! The smaller unsigned integer type with at list @a BITS bits.
+        //!
+        typedef typename std::conditional<
+            BITS <= 8,
+            uint8_t,
+            typename std::conditional<
+                BITS <= 16,
+                uint16_t,
+                typename std::conditional<
+                    BITS <= 32,
+                    uint32_t,
+                    typename std::conditional<
+                        BITS <= 64,
+                        uint64_t,
+                        void
+                    >::type
+                >::type
+            >::type
+        >::type type;
+    };
 }
 
 #include "tsIntegerUtilsTemplate.h"

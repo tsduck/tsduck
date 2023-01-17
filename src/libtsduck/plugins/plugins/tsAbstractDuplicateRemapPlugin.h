@@ -58,12 +58,12 @@ namespace ts {
         virtual bool getOptions() override;
 
     protected:
-        typedef std::map<PID, PID> PIDMap;        //!< A map from PID to PID.
-        bool                       _unchecked;    //!< Ignore conflicting input/output PID's.
-        PIDSet                     _newPIDs;      //!< Set of output (duplicated or remapped) PID values.
-        PIDMap                     _pidMap;       //!< Key = input pid, value = output PID.
-        TSPacketMetadata::LabelSet _setLabels;    //!< Labels to set on output packets.
-        TSPacketMetadata::LabelSet _resetLabels;  //!< Labels to reset on output packets.
+        typedef std::map<PID, PID> PIDMap;  //!< A map from PID to PID.
+        bool             _unchecked;        //!< Ignore conflicting input/output PID's.
+        PIDSet           _newPIDs;          //!< Set of output (duplicated or remapped) PID values.
+        PIDMap           _pidMap;           //!< Key = input pid, value = output PID.
+        TSPacketLabelSet _setLabels;        //!< Labels to set on output packets.
+        TSPacketLabelSet _resetLabels;      //!< Labels to reset on output packets.
 
     private:
         const bool _remap;

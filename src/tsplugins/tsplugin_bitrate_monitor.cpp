@@ -90,22 +90,22 @@ namespace ts {
         UString _alarm_command;     // Alarm command name.
         UString _alarm_prefix;      // Prefix for alarm messages.
         UString _alarm_target;      // "target" parameter to the alarm command.
-        TSPacketMetadata::LabelSet _labels_below;     // Set these labels on all packets when bitrate is below normal.
-        TSPacketMetadata::LabelSet _labels_normal;    // Set these labels on all packets when bitrate is normal.
-        TSPacketMetadata::LabelSet _labels_above;     // Set these labels on all packets when bitrate is above normal.
-        TSPacketMetadata::LabelSet _labels_go_below;  // Set these labels on one packet when bitrate goes below normal.
-        TSPacketMetadata::LabelSet _labels_go_normal; // Set these labels on one packet when bitrate goes back to normal.
-        TSPacketMetadata::LabelSet _labels_go_above;  // Set these labels on one packet when bitrate goes above normal.
+        TSPacketLabelSet _labels_below;     // Set these labels on all packets when bitrate is below normal.
+        TSPacketLabelSet _labels_normal;    // Set these labels on all packets when bitrate is normal.
+        TSPacketLabelSet _labels_above;     // Set these labels on all packets when bitrate is above normal.
+        TSPacketLabelSet _labels_go_below;  // Set these labels on one packet when bitrate goes below normal.
+        TSPacketLabelSet _labels_go_normal; // Set these labels on one packet when bitrate goes back to normal.
+        TSPacketLabelSet _labels_go_above;  // Set these labels on one packet when bitrate goes above normal.
 
         // Working data.
-        Second      _bitrate_countdown;           // Countdown to report bitrate.
-        Second      _command_countdown;           // Countdown to run alarm command.
-        RangeStatus _last_bitrate_status;         // Status of the last bitrate, regarding allowed range.
-        time_t      _last_second;                 // Last second number.
-        bool        _startup;                     // Measurement in progress.
-        size_t      _periods_index;               // Index for packet number array.
-        std::vector<Period>        _periods;      // Number of packets received during last time window, second per second.
-        TSPacketMetadata::LabelSet _labels_next;  // Set these labels on next packet.
+        Second      _bitrate_countdown;     // Countdown to report bitrate.
+        Second      _command_countdown;     // Countdown to run alarm command.
+        RangeStatus _last_bitrate_status;   // Status of the last bitrate, regarding allowed range.
+        time_t      _last_second;           // Last second number.
+        bool        _startup;               // Measurement in progress.
+        size_t      _periods_index;         // Index for packet number array.
+        std::vector<Period> _periods;       // Number of packets received during last time window, second per second.
+        TSPacketLabelSet    _labels_next;   // Set these labels on next packet.
 
         // Compute bitrate. Report any alarm.
         void computeBitrate();
@@ -205,32 +205,32 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
          u"Run the --alarm-command at the specific intervals in seconds, even if the bitrate is in range. "
          u"With this option, the alarm command is run on state change and at periodic intervals.");
 
-    option(u"set-label-below", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label-below", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label-below", u"label1[-label2]",
          u"Set the specified labels on all packets while the bitrate is below normal. "
          u"Several --set-label-below options may be specified.");
 
-    option(u"set-label-go-below", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label-go-below", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label-go-below", u"label1[-label2]",
          u"Set the specified labels on one packet when the bitrate goes below normal. "
          u"Several --set-label-go-below options may be specified.");
 
-    option(u"set-label-above", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label-above", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label-above", u"label1[-label2]",
          u"Set the specified labels on all packets while the bitrate is above normal. "
          u"Several --set-label-above options may be specified.");
 
-    option(u"set-label-go-above", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label-go-above", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label-go-above", u"label1[-label2]",
          u"Set the specified labels on one packet when the bitrate goes above normal. "
          u"Several --set-label-go-above options may be specified.");
 
-    option(u"set-label-normal", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label-normal", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label-normal", u"label1[-label2]",
          u"Set the specified labels on all packets while the bitrate is normal (within range). "
          u"Several --set-label-normal options may be specified.");
 
-    option(u"set-label-go-normal", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label-go-normal", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label-go-normal", u"label1[-label2]",
          u"Set the specified labels on one packet when the bitrate goes back to normal (within range). "
          u"Several --set-label-go-normal options may be specified.");

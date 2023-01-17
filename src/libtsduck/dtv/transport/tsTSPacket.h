@@ -70,7 +70,7 @@ namespace ts {
         //!
         //! Equality operator.
         //! @param [in] p Other packet to compare.
-        //! @return True is this object is equal to @a p.
+        //! @return True if this object is equal to @a p.
         //!
         bool operator==(const TSPacket& p) const
         {
@@ -81,7 +81,7 @@ namespace ts {
         //!
         //! Unequality operator.
         //! @param [in] p Other packet to compare.
-        //! @return True is this object is different from @a p.
+        //! @return True if this object is different from @a p.
         //!
         bool operator!=(const TSPacket& p) const
         {

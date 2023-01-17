@@ -90,8 +90,8 @@ ts::PCRCopyPlugin::PCRCopyPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Copy and synchronize PCR's from one PID to another", u"[options]"),
     _ref_pid_arg(PID_NULL),
     _target_pid_arg(PID_NULL),
-    _ref_label(TSPacketMetadata::LABEL_COUNT),
-    _target_label(TSPacketMetadata::LABEL_COUNT),
+    _ref_label(TSPacketLabelSet::MAX + 1),
+    _target_label(TSPacketLabelSet::MAX + 1),
     _every(0),
     _max_shift(0),
     _pusi(true),
@@ -157,8 +157,8 @@ bool ts::PCRCopyPlugin::getOptions()
     _pusi = !present(u"no-pusi");
     getIntValue(_ref_pid_arg, u"reference-pid", PID_NULL);
     getIntValue(_target_pid_arg, u"target-pid", PID_NULL);
-    getIntValue(_ref_label, u"reference-label", TSPacketMetadata::LABEL_COUNT);
-    getIntValue(_target_label, u"target-label", TSPacketMetadata::LABEL_COUNT);
+    getIntValue(_ref_label, u"reference-label", TSPacketLabelSet::MAX + 1);
+    getIntValue(_target_label, u"target-label", TSPacketLabelSet::MAX + 1);
     getIntValue(_every, u"every");
     getIntValue(_max_shift, u"max-shift", 16 * PKT_MAX_PAYLOAD_SIZE);
 

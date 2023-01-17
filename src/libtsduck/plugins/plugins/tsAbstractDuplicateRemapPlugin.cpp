@@ -72,12 +72,12 @@ ts::AbstractDuplicateRemapPlugin::AbstractDuplicateRemapPlugin(bool remap, TSP* 
          u"Note that this option should be used with care since the "
          u"resulting stream can be illegal or inconsistent.");
 
-    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label", u"label1[-label2]",
          u"Set the specified labels on the " + _verbed + u" packets. "
          u"Several --set-label options may be specified.");
 
-    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"reset-label", u"label1[-label2]",
          u"Clear the specified labels on the " + _verbed + u" packets. "
          u"Several --reset-label options may be specified.");

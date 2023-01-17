@@ -108,13 +108,13 @@ void ts::TSFileInputArgs::defineArgs(Args& args)
               u"N packets are read from the first file, then N from the second file, etc. "
               u"and then loop back to N packets again from the first file, etc.");
 
-    args.option(u"label-base", 'l', Args::INTEGER, 0, 1, 0, TSPacketMetadata::LABEL_MAX);
+    args.option(u"label-base", 'l', Args::INTEGER, 0, 1, 0, TSPacketLabelSet::MAX);
     args.help(u"label-base",
               u"Set a label on each input packet. "
               u"Packets from the first file are tagged with the specified base label, "
               u"packets from the second file with base label plus one, and so on. "
               u"For a given file, if the computed label is above the maximum (" +
-              UString::Decimal(TSPacketMetadata::LABEL_MAX) + u"), its packets are not labelled.");
+              UString::Decimal(TSPacketLabelSet::MAX) + u"), its packets are not labelled.");
 
     args.option(u"packet-offset", 'p', Args::UNSIGNED);
     args.help(u"packet-offset",
@@ -140,7 +140,7 @@ bool ts::TSFileInputArgs::loadArgs(DuckContext& duck, Args& args)
     _interleave = args.present(u"interleave");
     _first_terminate = args.present(u"first-terminate");
     args.getIntValue(_interleave_chunk, u"interleave", 1);
-    args.getIntValue(_base_label, u"label-base", TSPacketMetadata::LABEL_MAX + 1);
+    args.getIntValue(_base_label, u"label-base", TSPacketLabelSet::MAX + 1);
     args.getIntValues(_start_stuffing, u"add-start-stuffing");
     args.getIntValues(_stop_stuffing, u"add-stop-stuffing");
     _file_format = LoadTSPacketFormatInputOption(args);
@@ -311,7 +311,7 @@ size_t ts::TSFileInputArgs::read(TSPacket* buffer, TSPacketMetadata* pkt_data, s
 
         // Mark all read packets with a label.
         const size_t label = _base_label + _current_filename;
-        if (label <= TSPacketMetadata::LABEL_MAX) {
+        if (label <= TSPacketLabelSet::MAX) {
             for (size_t n = 0; n < count; ++n) {
                 pkt_data[read_count + n].setLabel(label);
             }

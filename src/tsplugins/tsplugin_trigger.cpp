@@ -57,18 +57,18 @@ namespace ts {
 
     private:
         // Command line options:
-        PacketCounter              _minInterPacket; // Minimum interval in packets between two actions.
-        MilliSecond                _minInterTime;   // Minimum interval in milliseconds between two actions.
-        UString                    _execute;        // Command to execute on trigger.
-        UString                    _udpDestination; // UDP/IP destination address:port.
-        UString                    _udpLocal;       // Name of outgoing local address (empty if unspecified).
-        ByteBlock                  _udpMessage;     // What to send as UDP message.
-        int                        _udpTTL;         // Time-to-live socket option.
-        bool                       _onStart;        // Trigger action on start.
-        bool                       _onStop;         // Trigger action on stop.
-        bool                       _allPackets;     // Trigger on all packets in the stream.
-        bool                       _allLabels;      // Need all labels to be set.
-        TSPacketMetadata::LabelSet _labels;         // Trigger on packets with these labels.
+        PacketCounter    _minInterPacket; // Minimum interval in packets between two actions.
+        MilliSecond      _minInterTime;   // Minimum interval in milliseconds between two actions.
+        UString          _execute;        // Command to execute on trigger.
+        UString          _udpDestination; // UDP/IP destination address:port.
+        UString          _udpLocal;       // Name of outgoing local address (empty if unspecified).
+        ByteBlock        _udpMessage;     // What to send as UDP message.
+        int              _udpTTL;         // Time-to-live socket option.
+        bool             _onStart;        // Trigger action on start.
+        bool             _onStop;         // Trigger action on stop.
+        bool             _allPackets;     // Trigger on all packets in the stream.
+        bool             _allLabels;      // Need all labels to be set.
+        TSPacketLabelSet _labels;         // Trigger on packets with these labels.
 
         // Working data:
         PacketCounter _lastPacket;    // Last action packet.
@@ -114,7 +114,7 @@ ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
     help(u"execute", u"'command'",
          u"Run the specified command when the current packet triggers the actions.");
 
-    option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"label", u"label1[-label2]",
          u"Trigger the actions on packets with any of the specified labels. "
          u"Labels should have typically be set by a previous plugin in the chain. "

@@ -67,24 +67,24 @@ namespace ts {
 
     private:
         // Command line options.
-        UString        _command;             // Command which generates the main stream.
-        TSPacketFormat _format;              // Packet format on the pipe
-        size_t         _max_queue;           // Maximum number of queued packets.
-        size_t         _accel_threshold;     // Queue threshold after which insertion is accelerated.
-        bool           _no_wait;             // Do not wait for command completion.
-        bool           _merge_psi;           // Merge PSI/SI information.
-        bool           _pcr_restamp;         // Restamp PCR from the merged stream.
-        bool           _incremental_pcr;     // Use incremental method to restamp PCR's.
-        bool           _merge_smoothing;     // Smoothen packet insertion.
-        bool           _ignore_conflicts;    // Ignore PID conflicts.
-        bool           _pcr_reset_backwards; // Reset PCR restamping when DTS/PTD move backwards the PCR.
-        bool           _terminate;           // Terminate processing after last merged packet.
-        bool           _restart;             // Restart command after termination.
-        MilliSecond    _restart_interval;    // Interval before restarting the merge command.
-        BitRate        _user_bitrate;        // User-specified bitrate of the merged stream.
-        PIDSet         _allowed_pids;        // List of PID's to merge (other PID's from the merged stream are dropped).
-        TSPacketMetadata::LabelSet _set_labels;    // Labels to set on output packets.
-        TSPacketMetadata::LabelSet _reset_labels;  // Labels to reset on output packets.
+        UString          _command;             // Command which generates the main stream.
+        TSPacketFormat   _format;              // Packet format on the pipe
+        size_t           _max_queue;           // Maximum number of queued packets.
+        size_t           _accel_threshold;     // Queue threshold after which insertion is accelerated.
+        bool             _no_wait;             // Do not wait for command completion.
+        bool             _merge_psi;           // Merge PSI/SI information.
+        bool             _pcr_restamp;         // Restamp PCR from the merged stream.
+        bool             _incremental_pcr;     // Use incremental method to restamp PCR's.
+        bool             _merge_smoothing;     // Smoothen packet insertion.
+        bool             _ignore_conflicts;    // Ignore PID conflicts.
+        bool             _pcr_reset_backwards; // Reset PCR restamping when DTS/PTD move backwards the PCR.
+        bool             _terminate;           // Terminate processing after last merged packet.
+        bool             _restart;             // Restart command after termination.
+        MilliSecond      _restart_interval;    // Interval before restarting the merge command.
+        BitRate          _user_bitrate;        // User-specified bitrate of the merged stream.
+        PIDSet           _allowed_pids;        // List of PID's to merge (other PID's from the merged stream are dropped).
+        TSPacketLabelSet _set_labels;          // Labels to set on output packets.
+        TSPacketLabelSet _reset_labels;        // Labels to reset on output packets.
 
         // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
         typedef SafePtr<TSForkPipe> TSForkPipePtr;
@@ -282,13 +282,13 @@ ts::MergePlugin::MergePlugin(TSP* tsp_) :
          u"Pass all PID's without logical transformation. "
          u"Equivalent to --no-psi-merge --ignore-conflicts --pass 0x00-0x1F.");
 
-    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label", u"label1[-label2]",
          u"Set the specified labels on the merged packets. "
          u"Apply to original packets from the merged stream only, not to updated PSI. "
          u"Several --set-label options may be specified.");
 
-    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"reset-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"reset-label", u"label1[-label2]",
          u"Clear the specified labels on the merged packets. "
          u"Apply to original packets from the merged stream only, not to updated PSI. "

@@ -36,17 +36,29 @@
 #include "tsTS.h"
 #include "tsByteBlock.h"
 #include "tsTimeSource.h"
+#include "tsCompactBitSet.h"
 #include "tsResidentBuffer.h"
 
 namespace ts {
-    //
-    // The TSPacketMetadata class is used in large arrays.
-    // We want to make sure we don't loose space:
-    // - No vtable (ie. no virtual method).
-    // - The order of private fields is carefully set to avoid padding.
-    // - Pragma pack to 1-byte alignment.
-    //
-    #pragma pack(push, 1)
+    //!
+    //! A set of labels used as metadata for a TS packet.
+    //!
+    //! Each packet in a tsp processing chain has a set of "labels".
+    //! A label is a integer value from 0 to 31. Various plugins may
+    //! set or reset labels on packets. Any plugin can be conditioned
+    //! to work on packets having specific labels only.
+    //!
+    //! When TS packets are passed between processes, using a pipe for
+    //! instance, the labels can passed as well as other metadata using
+    //! "--format duck".
+    //!
+    //! The type TSPacketLabelSet is crafted to use 32 bits exactly.
+    //! It was previously implemented as std::bitset<32> but this
+    //! type may use up to 64 bits, depending on the platform.
+    //!
+    //! @ingroup mpeg
+    //!
+    typedef CompactBitSet<32> TSPacketLabelSet;
 
     //!
     //! Metadata of an MPEG-2 transport packet for tsp plugins.
@@ -57,33 +69,6 @@ namespace ts {
     class TSDUCKDLL TSPacketMetadata final
     {
     public:
-        //!
-        //! Maximum numbers of labels per TS packet.
-        //! A plugin can set label numbers, from 0 to 31, to any packet.
-        //! Other plugins, downward in the processing chain, can check the labels of the packet.
-        //!
-        static constexpr size_t LABEL_COUNT = 32;
-
-        //!
-        //! Maximum value for labels.
-        //!
-        static constexpr size_t LABEL_MAX = LABEL_COUNT - 1;
-
-        //!
-        //! A set of labels for TS packets.
-        //!
-        typedef std::bitset<LABEL_COUNT> LabelSet;
-
-        //!
-        //! A set of labels where all labels are cleared (no label).
-        //!
-        static const LabelSet NoLabel;
-
-        //!
-        //! A set of labels where all labels are set.
-        //!
-        static const LabelSet AllLabels;
-
         //!
         //! Constructor.
         //!
@@ -153,7 +138,7 @@ namespace ts {
         //! @param [in] label The label to check.
         //! @return True if the TS packet has @a label set.
         //!
-        bool hasLabel(size_t label) const;
+        bool hasLabel(size_t label) const { return _labels.test(label); }
 
         //!
         //! Check if the TS packet has any label set.
@@ -166,14 +151,14 @@ namespace ts {
         //! @param [in] mask The mask of labels to check.
         //! @return True if the TS packet has any label from @a mask.
         //!
-        bool hasAnyLabel(const LabelSet& mask) const;
+        bool hasAnyLabel(const TSPacketLabelSet& mask) const { return (_labels & mask).any(); }
 
         //!
         //! Check if the TS packet has all labels set from a set of labels.
         //! @param [in] mask The mask of labels to check.
         //! @return True if the TS packet has all labels from @a mask.
         //!
-        bool hasAllLabels(const LabelSet& mask) const;
+        bool hasAllLabels(const TSPacketLabelSet& mask) const { return (_labels & mask) == mask; }
 
         //!
         //! Set a specific label for the TS packet.
@@ -185,7 +170,7 @@ namespace ts {
         //! Set a specific set of labels for the TS packet.
         //! @param [in] mask The mask of labels to set.
         //!
-        void setLabels(const LabelSet& mask);
+        void setLabels(const TSPacketLabelSet& mask) { _labels |= mask; }
 
         //!
         //! Clear a specific label for the TS packet.
@@ -197,7 +182,7 @@ namespace ts {
         //! Clear a specific set of labels for the TS packet.
         //! @param [in] mask The mask of labels to clear.
         //!
-        void clearLabels(const LabelSet& mask);
+        void clearLabels(const TSPacketLabelSet& mask) { _labels &= ~mask; }
 
         //!
         //! Clear all labels for the TS packet.
@@ -326,18 +311,27 @@ namespace ts {
         //!
         bool deserialize(const void* data, size_t size);
 
-    private:
-        uint64_t   _input_time;       // 64 bits: Input timestamp in PCR units, INVALID_PCR if unknown.
-        LabelSet   _labels;           // 32 bits: Bit mask of labels.
-        TimeSource _time_source;      // 8 bits: Source for time stamps.
-        bool       _flush;            // Flush the packet buffer asap.
-        bool       _bitrate_changed;  // Call getBitrate() callback as soon as possible.
-        bool       _input_stuffing;   // Packet was artificially inserted as input stuffing.
-        bool       _nullified;        // Packet was explicitly turned into a null packet by a plugin.
-    };
+        //!
+        //! Display the structure layout of the data structure (for debug only).
+        //! @param [in,out] out Output stream, where to display.
+        //! @param [in] prefix Optional prefix on each line.
+        //!
+        static void DisplayLayout(std::ostream& out, const char* prefix = "");
 
-    // Restore default packing after TSPacketMetadata.
-    #pragma pack(pop)
+    private:
+        uint64_t         _input_time;           // 64 bits: Input timestamp in PCR units, INVALID_PCR if unknown.
+        TSPacketLabelSet _labels;               // 32 bits: Bit mask of labels.
+        TimeSource       _time_source;          // 8 bits: Source for time stamps.
+        bool             _flush : 1;            // Flush the packet buffer asap.
+        bool             _bitrate_changed : 1;  // Call getBitrate() callback as soon as possible.
+        bool             _input_stuffing : 1;   // Packet was artificially inserted as input stuffing.
+        bool             _nullified : 1;        // Packet was explicitly turned into a null packet by a plugin.
+        TS_PUSH_WARNING()
+        TS_LLVM_NOWARNING(unused-private-field)
+        unsigned int     _pad1 : 4;             // Padding to next byte.
+        unsigned int     _pad2 : 16;            // Padding to next multiple of 4 bytes.
+        TS_POP_WARNING()
+    };
 
     //!
     //! Vector of packet metadata.
