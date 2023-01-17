@@ -64,12 +64,12 @@ namespace ts {
         typedef MessageQueue<UString, Mutex> CommandQueue;
 
         // Plugin private fields.
-        volatile bool _terminate;      // Force termination flag for thread.
-        size_t        _max_queued;     // Max number of queued commands.
-        IPv4AddressSet  _allowedRemote;  // Set of allowed remotes.
-        UDPReceiver   _sock;           // Incoming socket with associated command line options
-        CommandQueue  _command_queue;  // Queue of commands between the UDP server and the plugin thread.
-        TSPacketMetadata::LabelSet _set_labels;  // Labels to set on all packets.
+        volatile bool    _terminate;      // Force termination flag for thread.
+        size_t           _max_queued;     // Max number of queued commands.
+        IPv4AddressSet   _allowedRemote;  // Set of allowed remotes.
+        UDPReceiver      _sock;           // Incoming socket with associated command line options
+        CommandQueue     _command_queue;  // Queue of commands between the UDP server and the plugin thread.
+        TSPacketLabelSet _set_labels;     // Labels to set on all packets.
 
         // Invoked in the context of the server thread.
         virtual void main() override;
@@ -199,15 +199,15 @@ ts::ProcessorPlugin::Status ts::CutoffPlugin::processPacket(TSPacket& pkt, TSPac
                 // Terminate tsp.
                 return TSP_END;
             }
-            else if (is_int && argv[0] == u"pulse-label" && iparam <= TSPacketMetadata::LABEL_MAX) {
+            else if (is_int && argv[0] == u"pulse-label" && iparam <= TSPacketLabelSet::MAX) {
                 // Set label on one single packet.
                 pkt_data.setLabel(iparam);
             }
-            else if (is_int && argv[0] == u"start-label" && iparam <= TSPacketMetadata::LABEL_MAX) {
+            else if (is_int && argv[0] == u"start-label" && iparam <= TSPacketLabelSet::MAX) {
                 // Set this label on all packets.
                 _set_labels.set(iparam);
             }
-            else if (is_int && argv[0] == u"stop-label" && iparam <= TSPacketMetadata::LABEL_MAX) {
+            else if (is_int && argv[0] == u"stop-label" && iparam <= TSPacketLabelSet::MAX) {
                 // Stop setting this label on all packets.
                 _set_labels.reset(iparam);
             }

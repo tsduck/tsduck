@@ -163,11 +163,33 @@ void ts::Args::getIntValues(std::set<INT>& values, const UChar* name) const
 
 
 //----------------------------------------------------------------------------
-// Get all occurences of an option as a bitmask of values.
+// Get all occurences of an option as a bitset of values.
 //----------------------------------------------------------------------------
 
 template <std::size_t N>
 void ts::Args::getIntValues(std::bitset<N>& values, const UChar* name, bool defValue) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.value_count > 0) {
+        values.reset();
+        for (const auto& it : opt.values) {
+            for (int64_t v = it.int_base; v < it.int_base + int64_t(it.int_count); ++v) {
+                if (v >= 0 && size_t(v) < values.size()) {
+                    values.set(size_t(v));
+                }
+            }
+        }
+    }
+    else if (defValue) {
+        values.set();
+    }
+    else {
+        values.reset();
+    }
+}
+
+template <std::size_t N>
+void ts::Args::getIntValues(CompactBitSet<N>& values, const UChar* name, bool defValue) const
 {
     const IOption& opt(getIOption(name));
     if (opt.value_count > 0) {

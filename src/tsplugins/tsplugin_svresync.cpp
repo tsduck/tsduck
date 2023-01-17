@@ -54,10 +54,10 @@ namespace ts {
 
     private:
         // Command line options:
-        UString _target_service;                 // Target service to resync.
-        UString _ref_service;                    // Reference service.
-        PID     _ref_pid;                        // Reference PID.
-        TSPacketMetadata::LabelSet _set_labels;  // Labels to set on modified packets
+        UString          _target_service;  // Target service to resync.
+        UString          _ref_service;     // Reference service.
+        PID              _ref_pid;         // Reference PID.
+        TSPacketLabelSet _set_labels;      // Labels to set on modified packets
 
         // Working data:
         PID                _cur_ref_pid;         // Current reference PID.
@@ -128,7 +128,7 @@ ts::SVResyncPlugin::SVResyncPlugin (TSP* tsp_) :
          u"The name is not case sensitive and blanks are ignored. "
          u"Exactly one of --service-reference and --pid-reference must be specified.");
 
-    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"set-label", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"set-label", u"label1[-label2]",
          u"Set the specified labels on the modified PID's. "
          u"On each PID, the label is first set on the first modified packet, and then on all packets of the PID. "

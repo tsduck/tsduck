@@ -57,6 +57,7 @@ public:
     void testBoundedCast();
     void testGCD();
     void testOverflow();
+    void testSmallerUnsigned();
 
     TSUNIT_TEST_BEGIN(IntegerUtilsTest);
     TSUNIT_TEST(testMakeSigned);
@@ -71,6 +72,7 @@ public:
     TSUNIT_TEST(testBoundedCast);
     TSUNIT_TEST(testGCD);
     TSUNIT_TEST(testOverflow);
+    TSUNIT_TEST(testSmallerUnsigned);
     TSUNIT_TEST_END();
 };
 
@@ -328,4 +330,33 @@ void IntegerUtilsTest::testOverflow()
     TSUNIT_ASSERT(res < 0);
     TSUNIT_ASSERT(ts::mul_overflow(a, b, res));
     TSUNIT_ASSERT(ts::mul_overflow(a, b));
+}
+
+void IntegerUtilsTest::testSmallerUnsigned()
+{
+    TSUNIT_EQUAL(1, sizeof(ts::smaller_unsigned<1>::type));
+    TSUNIT_ASSERT((std::is_same<uint8_t, ts::smaller_unsigned<1>::type>::value));
+
+    TSUNIT_EQUAL(1, sizeof(ts::smaller_unsigned<8>::type));
+    TSUNIT_ASSERT((std::is_same<uint8_t, ts::smaller_unsigned<8>::type>::value));
+
+    TSUNIT_EQUAL(2, sizeof(ts::smaller_unsigned<9>::type));
+    TSUNIT_ASSERT((std::is_same<uint16_t, ts::smaller_unsigned<9>::type>::value));
+
+    TSUNIT_EQUAL(2, sizeof(ts::smaller_unsigned<16>::type));
+    TSUNIT_ASSERT((std::is_same<uint16_t, ts::smaller_unsigned<16>::type>::value));
+
+    TSUNIT_EQUAL(4, sizeof(ts::smaller_unsigned<17>::type));
+    TSUNIT_ASSERT((std::is_same<uint32_t, ts::smaller_unsigned<17>::type>::value));
+
+    TSUNIT_EQUAL(4, sizeof(ts::smaller_unsigned<32>::type));
+    TSUNIT_ASSERT((std::is_same<uint32_t, ts::smaller_unsigned<32>::type>::value));
+
+    TSUNIT_EQUAL(8, sizeof(ts::smaller_unsigned<33>::type));
+    TSUNIT_ASSERT((std::is_same<uint64_t, ts::smaller_unsigned<33>::type>::value));
+
+    TSUNIT_EQUAL(8, sizeof(ts::smaller_unsigned<64>::type));
+    TSUNIT_ASSERT((std::is_same<uint64_t, ts::smaller_unsigned<64>::type>::value));
+
+    TSUNIT_ASSERT(std::is_void<ts::smaller_unsigned<65>::type>::value);
 }

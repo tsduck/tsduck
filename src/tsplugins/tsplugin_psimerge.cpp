@@ -68,8 +68,8 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"psimerge", ts::PSIMergePlugin);
 ts::PSIMergePlugin::PSIMergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge PSI/SI from mixed streams", u"[options]"),
     _psi_merger(duck, PSIMerger::NONE),
-    _main_label(TSPacketMetadata::LABEL_MAX + 1),
-    _merge_label(TSPacketMetadata::LABEL_MAX + 1)
+    _main_label(TSPacketLabelSet::MAX + 1),
+    _merge_label(TSPacketLabelSet::MAX + 1)
 {
     setIntro(u"This plugin assumes that the PSI/SI for two independent streams "
              u"are multiplexed in the same transport streams but the packets from "
@@ -99,17 +99,17 @@ ts::PSIMergePlugin::PSIMergePlugin(TSP* tsp_) :
          u"Use the TDT/TOT time reference from the 'merge' stream. "
          u"By default, use the TDT/TOT time reference from the 'main' stream.");
 
-    option(u"main-label", 0, INTEGER, 0, 1, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"main-label", 0, INTEGER, 0, 1, 0, TSPacketLabelSet::MAX);
     help(u"main-label",
         u"Specify the label which is set on packets from the 'main' stream. "
-        u"The maximum label value is " + UString::Decimal(TSPacketMetadata::LABEL_MAX) + u". "
+        u"The maximum label value is " + UString::Decimal(TSPacketLabelSet::MAX) + u". "
         u"By default, the main stream is made of packets without label. "
         u"At least one of --main-label and --merge-label must be specified.");
 
-    option(u"merge-label", 0, INTEGER, 0, 1, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"merge-label", 0, INTEGER, 0, 1, 0, TSPacketLabelSet::MAX);
     help(u"merge-label",
         u"Specify the label which is set on packets from the 'merge' stream. "
-        u"The maximum label value is " + UString::Decimal(TSPacketMetadata::LABEL_MAX) + u". "
+        u"The maximum label value is " + UString::Decimal(TSPacketLabelSet::MAX) + u". "
         u"By default, the merge stream is made of packets without label. "
         u"At least one of --main-label and --merge-label must be specified.");
 }
@@ -122,8 +122,8 @@ ts::PSIMergePlugin::PSIMergePlugin(TSP* tsp_) :
 bool ts::PSIMergePlugin::getOptions()
 {
     // Identification of main and merge streams.
-    _main_label = intValue<size_t>(u"main-label", TSPacketMetadata::LABEL_MAX + 1);
-    _merge_label = intValue<size_t>(u"merge-label", TSPacketMetadata::LABEL_MAX + 1);
+    _main_label = intValue<size_t>(u"main-label", TSPacketLabelSet::MAX + 1);
+    _merge_label = intValue<size_t>(u"merge-label", TSPacketLabelSet::MAX + 1);
     if (_main_label == _merge_label) {
         tsp->error(u"at least one of --main-label and --merge-label must be specified and the labels must be different");
         return false;
@@ -178,11 +178,11 @@ bool ts::PSIMergePlugin::start()
 
 ts::ProcessorPlugin::Status ts::PSIMergePlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    if ((_main_label > TSPacketMetadata::LABEL_MAX && !pkt_data.hasAnyLabel()) || pkt_data.hasLabel(_main_label)) {
+    if ((_main_label > TSPacketLabelSet::MAX && !pkt_data.hasAnyLabel()) || pkt_data.hasLabel(_main_label)) {
         // This is a packet from the main stream.
         return _psi_merger.feedMainPacket(pkt) ? TSP_OK : TSP_END;
     }
-    else if ((_merge_label > TSPacketMetadata::LABEL_MAX && !pkt_data.hasAnyLabel()) || pkt_data.hasLabel(_merge_label)) {
+    else if ((_merge_label > TSPacketLabelSet::MAX && !pkt_data.hasAnyLabel()) || pkt_data.hasLabel(_merge_label)) {
         // This is a packet from the merge stream.
         return _psi_merger.feedMergedPacket(pkt) ? TSP_OK : TSP_END;
     }

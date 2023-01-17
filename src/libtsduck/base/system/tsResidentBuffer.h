@@ -104,13 +104,13 @@ namespace ts {
         }
 
     private:
-        char*     _allocated_base;   // First allocated address
-        char*     _locked_base;      // First locked address (mlock, page boundary)
-        T*        _base;             // Same as _locked_base with type T*
-        size_t    _allocated_size;   // Allocated size (ts_malloc)
-        size_t    _locked_size;      // Locked size (mlock, multiple of page size)
-        size_t    _elem_count;       // Element count in locked region
-        bool      _is_locked;        // False if mlock failed.
+        char*        _allocated_base;   // First allocated address
+        char*        _locked_base;      // First locked address (mlock, page boundary)
+        T*           _base;             // Same as _locked_base with type T*
+        size_t       _allocated_size;   // Allocated size (ts_malloc)
+        size_t       _locked_size;      // Locked size (mlock, multiple of page size)
+        size_t       _elem_count;       // Element count in locked region
+        bool         _is_locked;        // False if mlock failed.
         SysErrorCode _error_code;       // Lock error code
     };
 }

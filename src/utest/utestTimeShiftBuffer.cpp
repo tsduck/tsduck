@@ -106,7 +106,7 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
         pkt.init(i, i, i);
         mdata.reset();
         mdata.setLabel(in_label);
-        in_label = (in_label + 1) % ts::TSPacketMetadata::LABEL_COUNT;
+        in_label = (in_label + 1) % ts::TSPacketLabelSet::SIZE;
 
         TSUNIT_EQUAL(184, pkt.getPayloadSize());
         TSUNIT_EQUAL(i, pkt.getPID());
@@ -128,7 +128,7 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
         pkt.init(i, i, i);
         mdata.reset();
         mdata.setLabel(in_label);
-        in_label = (in_label + 1) % ts::TSPacketMetadata::LABEL_COUNT;
+        in_label = (in_label + 1) % ts::TSPacketLabelSet::SIZE;
 
         TSUNIT_EQUAL(184, pkt.getPayloadSize());
         TSUNIT_EQUAL(i, pkt.getPID());
@@ -144,7 +144,7 @@ void TimeShiftBufferTest::testCommon(uint8_t total, uint8_t memory)
         TSUNIT_ASSERT(!mdata.getInputStuffing());
         TSUNIT_ASSERT(mdata.hasAnyLabel());
         TSUNIT_ASSERT(mdata.hasLabel(out_label));
-        out_label = (out_label + 1) % ts::TSPacketMetadata::LABEL_COUNT;
+        out_label = (out_label + 1) % ts::TSPacketLabelSet::SIZE;
         TSUNIT_ASSERT(!mdata.hasLabel(out_label));
     }
 

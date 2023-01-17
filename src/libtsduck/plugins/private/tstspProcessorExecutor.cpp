@@ -109,7 +109,7 @@ void ts::tsp::ProcessorExecutor::main()
 
 void ts::tsp::ProcessorExecutor::processIndividualPackets()
 {
-    TSPacketMetadata::LabelSet only_labels(_processor->getOnlyLabelOption());
+    TSPacketLabelSet only_labels(_processor->getOnlyLabelOption());
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;
@@ -268,7 +268,7 @@ void ts::tsp::ProcessorExecutor::processPacketWindows(size_t window_size)
 {
     debug(u"packet processing window size: %'d packets", {window_size});
 
-    TSPacketMetadata::LabelSet only_labels(_processor->getOnlyLabelOption());
+    TSPacketLabelSet only_labels(_processor->getOnlyLabelOption());
     PacketCounter passed_packets = 0;
     PacketCounter dropped_packets = 0;
     PacketCounter nullified_packets = 0;

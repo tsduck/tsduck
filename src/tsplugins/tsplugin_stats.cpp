@@ -74,7 +74,7 @@ namespace ts {
         UString    _output_name;       // Output file name.
         NanoSecond _output_interval;   // Recreate output at this time interval.
         PIDSet     _pids;              // List of PID's to track.
-        TSPacketMetadata::LabelSet _labels;  // List of labels to track.
+        TSPacketLabelSet _labels;      // List of labels to track.
 
         // Working data.
         std::ofstream     _output_stream;  // Output file stream.
@@ -148,7 +148,7 @@ ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
          u"After outputting a file, the statistics are reset, "
          u"ie. each output file contains a fully independent analysis.");
 
-    option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"label", 'l', INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"label", u"label1[-label2]",
          u"Analyze packets with the specified label or range of labels. "
          u"Several -l or --label options may be specified. "

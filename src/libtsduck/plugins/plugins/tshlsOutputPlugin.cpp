@@ -131,7 +131,7 @@ ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
          u"fully supported, if the start of an intra-image cannot be found in the start of the PES packet "
          u"which is contained in a TS packet or if the TS packet is encrypted.");
 
-    option(u"label-close", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketMetadata::LABEL_MAX);
+    option(u"label-close", 0, INTEGER, 0, UNLIMITED_COUNT, 0, TSPacketLabelSet::MAX);
     help(u"label-close", u"label1[-label2]",
          u"Close the current segment as soon as possible after a packet with any of the specified labels. "
          u"Labels should have typically been set by a previous plugin in the chain. "

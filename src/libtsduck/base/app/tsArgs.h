@@ -40,6 +40,7 @@
 #include "tsVariable.h"
 #include "tsSafePtr.h"
 #include "tsAbstractNumber.h"
+#include "tsCompactBitSet.h"
 
 namespace ts {
     //!
@@ -869,7 +870,7 @@ namespace ts {
         void getIntValues(std::set<INT>& values, const UChar* name = nullptr) const;
 
         //!
-        //! Get all occurences of an option as a bitmask of values.
+        //! Get all occurences of an option as a bitset of values.
         //!
         //! @param [out] values A bitset receiving all values of the option or parameter.
         //! For each value of the option, the corresponding bit is set. Values which are
@@ -882,6 +883,21 @@ namespace ts {
         //!
         template <std::size_t N>
         void getIntValues(std::bitset<N>& values, const UChar* name = nullptr, bool defValue = false) const;
+
+        //!
+        //! Get all occurences of an option as a compact bitset of values.
+        //!
+        //! @param [out] values A compact bitset receiving all values of the option or parameter.
+        //! For each value of the option, the corresponding bit is set. Values which are
+        //! out of range are ignored.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command, a fatal error is reported.
+        //! @param [in] defValue The boolean to set in all values if the option or parameter
+        //! is not present in the command line.
+        //!
+        template <std::size_t N>
+        void getIntValues(CompactBitSet<N>& values, const UChar* name = nullptr, bool defValue = false) const;
 
         //!
         //! Get an OR'ed of all values of an integer option in the last analyzed command line.
