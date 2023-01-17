@@ -56,13 +56,15 @@ namespace ts {
     //! @tparam BITS Number of bits. Must be in the range 0 to 64.
     //!
     template <const size_t BITS>
-    class TSDUCKDLL CompactBitSet final
+    class CompactBitSet final
     {
     public:
         // Overflow in position is explicitly ignored.
         TS_PUSH_WARNING()
         TS_GCC_NOWARNING(shift-count-overflow)
         TS_GCC_NOWARNING(shift-negative-value)
+        TS_MSC_NOWARNING(4310) // cast truncates constant value
+        TS_MSC_NOWARNING(4293) // '<<' : shift count negative or too big, undefined behavior
 
         //!
         //! Number of bits in this set.
@@ -253,7 +255,6 @@ namespace ts {
     };
 }
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 template <const size_t BITS>
 constexpr size_t ts::CompactBitSet<BITS>::SIZE;
 
@@ -262,5 +263,4 @@ constexpr size_t ts::CompactBitSet<BITS>::MAX;
 
 template <const size_t BITS>
 constexpr typename ts::CompactBitSet<BITS>::int_t ts::CompactBitSet<BITS>::ALL;
-#endif
 
