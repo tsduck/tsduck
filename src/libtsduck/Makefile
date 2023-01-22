@@ -141,7 +141,7 @@ $(SHARED_LIBTSDUCK): $(OBJS) $(DTAPI_OBJECT)
 	@echo '  [DTAPI] $(if $(DTAPI_OBJECT),using $(DTAPI_OBJECT),no DTAPI available)'; \
 	echo '  [LD] $@'; \
 	cd $(OBJDIR); \
-	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	$(CXX) $(SOFLAGS) $(LDFLAGS) $(notdir $(OBJS)) $(DTAPI_OBJECT) $(LIBTSDUCK_LDLIBS) $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 # The static library is build differently. There are four specific categories:
 # tables, descriptors, charsets and plugins. These classes use self-registration
