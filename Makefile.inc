@@ -554,7 +554,7 @@ $(BINDIR)/%: $(OBJDIR)/%.o
 	$(CXX) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -o $@
 $(BINDIR)/%$(SO_SUFFIX): $(OBJDIR)/%.o
 	@echo '  [LD] $@'; \
-	$(CXX) $(CXXFLAGS) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
+	$(CXX) $(SOFLAGS) $(LDFLAGS) $^ $(LDLIBS_EXTRA) $(LDLIBS) -shared -o $@
 
 #-----------------------------------------------------------------------------
 # Static linking.
