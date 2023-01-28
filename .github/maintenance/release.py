@@ -53,9 +53,10 @@ pattern_version = r'\d+\.\d+-\d+'
 
 # A class which describes one installer package.
 class installer:
-    def __init__(self, pattern, dev, name):
+    def __init__(self, pattern, dev, required, name):
         self.pattern = pattern
         self.dev = dev
+        self.required = required
         self.name = name
         self.file = None
     def glob_pattern(self, version=None):
@@ -70,20 +71,28 @@ class installer:
 
 # Description of expected installers.
 installers = [
-    installer('TSDuck-Win32-{VERSION}.exe',                  False, 'Windows 32 bits'),
-    installer('TSDuck-Win64-{VERSION}.exe',                  False, 'Windows 64 bits'),
-    installer('TSDuck-Win32-{VERSION}-Portable.zip',         False, 'Windows 32 bits (portable)'),
-    installer('TSDuck-Win64-{VERSION}-Portable.zip',         False, 'Windows 64 bits (portable)'),
-    installer('tsduck-{VERSION}.el{OS}.x86_64.rpm',          False, 'RedHat, AlmaLinux 64 bits'),
-    installer('tsduck-{VERSION}.fc{OS}.x86_64.rpm',          False, 'Fedora 64 bits'),
-    installer('tsduck_{VERSION}.debian{OS}_amd64.deb',       False, 'Debian 64 bits'),
-    installer('tsduck_{VERSION}.ubuntu{OS}_amd64.deb',       False, 'Ubuntu 64 bits'),
-    installer('tsduck_{VERSION}.raspbian{OS}_armhf.deb',     False, 'Raspbian 32 bits (Raspberry Pi)'),
-    installer('tsduck-devel-{VERSION}.el{OS}.x86_64.rpm',    True,  'RedHat, AlmaLinux 64 bits'),
-    installer('tsduck-devel-{VERSION}.fc{OS}.x86_64.rpm',    True,  'Fedora 64 bits'),
-    installer('tsduck-dev_{VERSION}.debian{OS}_amd64.deb',   True,  'Debian 64 bits'),
-    installer('tsduck-dev_{VERSION}.ubuntu{OS}_amd64.deb',   True,  'Ubuntu 64 bits'),
-    installer('tsduck-dev_{VERSION}.raspbian{OS}_armhf.deb', True,  'Raspbian 32 bits (Raspberry Pi)')
+    installer('TSDuck-Win32-{VERSION}.exe',                  False, True,  'Windows 32 bits'),
+    installer('TSDuck-Win64-{VERSION}.exe',                  False, True,  'Windows 64 bits'),
+    installer('TSDuck-Win32-{VERSION}-Portable.zip',         False, True,  'Windows 32 bits (portable)'),
+    installer('TSDuck-Win64-{VERSION}-Portable.zip',         False, True,  'Windows 64 bits (portable)'),
+    installer('tsduck-{VERSION}.el{OS}.x86_64.rpm',          False, True,  'RedHat, AlmaLinux 64 bits'),
+    installer('tsduck-{VERSION}.el{OS}.arm64.rpm',           False, False, 'RedHat, AlmaLinux 64 bits (Arm)'),
+    installer('tsduck-{VERSION}.fc{OS}.x86_64.rpm',          False, True,  'Fedora 64 bits'),
+    installer('tsduck-{VERSION}.fc{OS}.arm64.rpm',           False, False, 'Fedora 64 bits (Arm)'),
+    installer('tsduck_{VERSION}.debian{OS}_amd64.deb',       False, True,  'Debian 64 bits'),
+    installer('tsduck_{VERSION}.debian{OS}_arm64.deb',       False, False, 'Debian 64 bits (Arm)'),
+    installer('tsduck_{VERSION}.ubuntu{OS}_amd64.deb',       False, True,  'Ubuntu 64 bits'),
+    installer('tsduck_{VERSION}.ubuntu{OS}_arm64.deb',       False, False, 'Ubuntu 64 bits (Arm)'),
+    installer('tsduck_{VERSION}.raspbian{OS}_armhf.deb',     False, True,  'Raspbian 32 bits (Raspberry Pi)'),
+    installer('tsduck-devel-{VERSION}.el{OS}.x86_64.rpm',    True,  True,  'RedHat, AlmaLinux 64 bits'),
+    installer('tsduck-devel-{VERSION}.el{OS}.arm64.rpm' ,    True,  False, 'RedHat, AlmaLinux 64 bits (Arm)'),
+    installer('tsduck-devel-{VERSION}.fc{OS}.x86_64.rpm',    True,  True,  'Fedora 64 bits'),
+    installer('tsduck-devel-{VERSION}.fc{OS}.arm64.rpm',     True,  False, 'Fedora 64 bits (Arm)'),
+    installer('tsduck-dev_{VERSION}.debian{OS}_amd64.deb',   True,  True,  'Debian 64 bits'),
+    installer('tsduck-dev_{VERSION}.debian{OS}_arm64.deb',   True,  False, 'Debian 64 bits (Arm)'),
+    installer('tsduck-dev_{VERSION}.ubuntu{OS}_amd64.deb',   True,  True,  'Ubuntu 64 bits'),
+    installer('tsduck-dev_{VERSION}.ubuntu{OS}_arm64.deb',   True,  False, 'Ubuntu 64 bits (Arm)'),
+    installer('tsduck-dev_{VERSION}.raspbian{OS}_armhf.deb', True,  True,  'Raspbian 32 bits (Raspberry Pi)')
 ]
 
 # Get latest release and verify the format of its tag.
@@ -123,14 +132,16 @@ def search_installers(version):
         # Find files matching the pattern in the directory.
         pattern = installers[i].glob_pattern(version)
         files = [f for f in glob.glob(pkgdir + '/' + pattern)]
-        if len(files) == 0:
-            repo.error('no package matching %s' % pattern)
-            success = False
+        if len(files) == 1:
+            installers[i].file = files[0]
         elif len(files) > 1:
             repo.error('more than one package matching %s' % pattern)
             success = False
+        elif installers[i].required:
+            repo.error('no package matching %s' % pattern)
+            success = False
         else:
-            installers[i].file = files[0]
+            repo.verbose('optional package for "%s" not found, ignored' % installers[i].name)
     return success
 
 # A class to build the body of the release body text.
