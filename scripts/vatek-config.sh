@@ -52,10 +52,14 @@ VATEK_BUILD="$VATEK_ROOT/build"
 VATEK_INSTALL="$VATEK_ROOT/install"
 SYSTEM=$(uname -s)
 
-# GitHub authentication option for curl.
-github-auth()
+# GitHub authentication for curl.
+curl-auth()
 {
-    [[ -n "$GITHUB_TOKEN" ]] && echo "--header 'authorization: Bearer $GITHUB_TOKEN'"
+    if [[ -n "$GITHUB_TOKEN" ]]; then
+        curl -sL --header "authorization: Bearer $GITHUB_TOKEN" "$@"
+    else
+        curl -sL "$@"
+    fi
 }
 
 # Check if Vatek is supported on the current system.
@@ -75,7 +79,7 @@ vatek-support()
 get-src-url()
 {
     # Use the GitHub REST API to get the source tarball of the latest release of the Vatek API.
-    curl -sL $(github-auth) https://api.github.com/repos/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest |
+    curl-auth https://api.github.com/repos/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest |
         grep '"tarball_url"' |
         sed 's/.*"tarball_url"[ :"]*\([^"]*\)".*/\1/' |
         head -1
@@ -86,7 +90,7 @@ get-bin-url()
 {
     # Use the GitHub REST API to get the URL if an asset named VATek-Linux-x86_64.*\.tgz in the latest release of the Vatek API.
     if [[ $SYSTEM == Linux ]]; then
-        curl -sL $(github-auth) https://api.github.com/repos/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest |
+        curl-auth https://api.github.com/repos/VisionAdvanceTechnologyInc/vatek_sdk_2/releases/latest |
             grep '"browser_download_url" *:.*/VATek-Linux-x86_64.*\.tgz"' |
             sed 's/.*"browser_download_url"[ :"]*\([^"]*\)".*/\1/' |
             head -1
