@@ -102,7 +102,6 @@ The following `make` variables can be defined:
 - `NOEDITLINE` : No interactive line editing, remove dependency to libedit.
 - `NOSRT`      : No SRT support (Secure Reliable Transport), remove dependency to `libsrt`.
 - `NORIST`     : No RIST support (Reliable Internet Stream Transport), remove dependency to `librist`.
-- `NOTELETEXT` : No Teletext support, remove teletext handling code.
 - `ASSERTIONS` : Keep assertions in production mode (slower code).
 
 The following command, for instance, builds TSDuck without dependency
@@ -267,7 +266,9 @@ execute the PowerShell script `scripts\cleanup.ps1`.
 ## Building the installers {#instwindows}
 
 Execute the PowerShell script `scripts\build-installer.ps1`.
-Two installers are built, for 32-bit and 64-bit systems respectively.
+By default, only the 64-bit installer is built.
+To build the two installers, for 32-bit and 64-bit systems, run the build
+script from a PowerShell window and add the option `-Win32`.
 
 There is no need to build the TSDuck binaries before building the installers.
 Building the binaries, is part of the installer build.

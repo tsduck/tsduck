@@ -54,10 +54,6 @@
 
   Do not build static library and corresponding tests. "setpath" is not built.
 
- .PARAMETER NoTeletext
-
-  Build without Teletext support. The plugin "teletext" is not provided.
-
  .PARAMETER Parallel
 
   Specify the number of compilation processes to run in parallel. By default,
@@ -93,7 +89,6 @@ param(
     [switch]$Win32 = $false,
     [switch]$Win64 = $false,
     [switch]$NoStatic = $false,
-    [switch]$NoTeletext = $false,
     [switch]$NoPause = $false
 )
 
@@ -155,25 +150,22 @@ if ($GitPull) {
 # A function to invoke MSBuild.
 function Call-MSBuild ([string] $configuration, [string] $platform, [string] $target = "")
 {
-    if ($NoTeletext) {
-        $OptTeletext = "/property:NoTeletext=true"
-    }
-    else {
-        $OptTeletext = ""
-    }
     if ($Parallel -gt 0) {
         $OptCPU = "/maxcpucount:$Parallel"
     }
     else {
         $OptCPU = "/maxcpucount"
     }
-    if (($MSBuildVersion -eq 161000) -and (-not -not $target)) {
-        # There is some kind of bug in MSBuild 16.10.0. Rebuilding with /target=projname fails.
-        # Adding :Rebuild to each project name works. Supposed to be fixed in 16.10.1.
-        Write-Output "Bug in MSBuild version $MSBuildVersionString ($MSBuildVersion), forcing rebuild"
-        $target = ($target -replace ';',':Rebuild;') + ':Rebuild'
+    if (-not -not $target) {
+        if ($MSBuildVersion -eq 161000) {
+            # There is some kind of bug in MSBuild 16.10.0. Rebuilding with /target:projname fails.
+            # Adding :Rebuild to each project name works. Supposed to be fixed in 16.10.1.
+            Write-Output "Bug in MSBuild version $MSBuildVersionString ($MSBuildVersion), forcing rebuild"
+            $target = ($target -replace ';',':Rebuild;') + ':Rebuild'
+        }
+        $target="/target:$target"
     }
-    & $MSBuild $SolutionFileName /nologo $OptCPU /property:Configuration=$configuration /property:Platform=$platform $OptTeletext $target
+    & $MSBuild $SolutionFileName /nologo $OptCPU /property:Configuration=$configuration /property:Platform=$platform $target
     if ($LastExitCode -ne 0) {
         Exit-Script -NoPause:$NoPause "Error building $platform $configuration"
     }
@@ -188,28 +180,19 @@ $commands = ($AllTargets | Select-String -NotMatch @("tsduck*", "tsplugin_*", "t
 # Rebuild TSDuck.
 if ($Installer) {
     # We build everything except test programs for the "Release" configuration.
-    # Then, we need the DLL for all configurations (development environment).
+    # Then, we need the DLL for "Debug" configurations (development environment).
     $targets = "tsduckdll;tsducklib;$commands;$plugins;setpath"
-
-    if ($Win32 -and $Win64) {
-        Call-MSBuild Release x64   /target:$targets
-        Call-MSBuild Release Win32 /target:$targets
+    Call-MSBuild Release x64 $targets
+    Call-MSBuild Debug x64 tsduckdll
+    if ($Win32) {
+        Call-MSBuild Release Win32 $targets
+        Call-MSBuild Debug Win32 tsduckdll
     }
-    elseif ($Win32) {
-        Call-MSBuild Release x64   /target:tsduckdll
-        Call-MSBuild Release Win32 /target:$targets
-    }
-    elseif ($Win64) {
-        Call-MSBuild Release x64   /target:$targets
-        Call-MSBuild Release Win32 /target:tsduckdll
-    }
-    Call-MSBuild Debug x64   /target:tsduckdll
-    Call-MSBuild Debug Win32 /target:tsduckdll
 }
 else {
     # Not for an installer, build everything.
     if ($NoStatic) {
-        $targets = "/target:tsduckdll;$commands;$plugins;utests-tsduckdll"
+        $targets = "tsduckdll;$commands;$plugins;utests-tsduckdll"
     }
     else {
         $targets = ""

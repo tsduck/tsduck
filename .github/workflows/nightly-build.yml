@@ -86,10 +86,6 @@ jobs:
       if: env.REBUILD == 'true'
       run: bin/Release-x64/tsversion.exe --version=all
 
-    - name: Check built version (32-bit)
-      if: env.REBUILD == 'true'
-      run: bin/Release-Win32/tsversion.exe --version=all
-
     - name: Test installation (64-bit)
       if: env.REBUILD == 'true'
       run: |
@@ -148,22 +144,6 @@ jobs:
       with:
         name: portable-64
         path: installers/TSDuck-Win64-${{ env.VERSION }}-Portable.zip
-        retention-days: 5
-
-    - name: Upload 32-bit installer
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
-      with:
-        name: installer-32
-        path: installers/TSDuck-Win32-${{ env.VERSION }}.exe
-        retention-days: 5
-
-    - name: Upload 32-bit portable
-      if: env.REBUILD == 'true'
-      uses: actions/upload-artifact@master
-      with:
-        name: portable-32
-        path: installers/TSDuck-Win32-${{ env.VERSION }}-Portable.zip
         retention-days: 5
 
   linux:

@@ -38,7 +38,6 @@
 #include "tsTeletextDemux.h"
 #include "tsServiceDiscovery.h"
 #include "tsSubRipGenerator.h"
-#if !defined(TS_NO_TELETEXT)
 
 namespace ts {
     //!
@@ -77,5 +76,3 @@ namespace ts {
         virtual void handleTeletextMessage(TeletextDemux&, const TeletextFrame&) override;
     };
 }
-
-#endif // TS_NO_TELETEXT

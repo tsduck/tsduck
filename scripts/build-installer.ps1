@@ -37,8 +37,9 @@
   Build the binary installers for Windows. The release version of the project
   is automatically rebuilt before building the installer.
 
-  By default, installers are built for 32-bit and 64-bit systems, full
-  executable binary installers, standalone binaries (without admin rights).
+  By default, installers are built for 64-bit systems only, full executable
+  binary installer and portable archive (for install without admin rights).
+  The development environments are provided for 64-bit applications only.
 
  .PARAMETER GitPull
 
@@ -66,19 +67,11 @@
 
   Do not build the portable packages.
 
- .PARAMETER NoTeletext
-
-  Build without Teletext support. The plugin "teletext" is not provided.
-
  .PARAMETER Win32
 
-  Generate the 32-bit installer. If neither -Win32 nor -Win64 is specified,
-  both versions are built by default.
-
- .PARAMETER Win64
-
-  Generate the 64-bit installer. If neither -Win32 nor -Win64 is specified,
-  both versions are built by default.
+  Generate the 32-bit installers in addition to the 64-bit installers.
+  Also build development environments for 32-bit and 64-bit applications
+  in the two installers.
 #>
 [CmdletBinding()]
 param(
@@ -88,9 +81,7 @@ param(
     [switch]$NoInstaller = $false,
     [switch]$NoLowPriority = $false,
     [switch]$NoPortable = $false,
-    [switch]$NoTeletext = $false,
-    [switch]$Win32 = $false,
-    [switch]$Win64 = $false
+    [switch]$Win32 = $false
 )
 
 # PowerShell execution policy.
@@ -109,12 +100,6 @@ $BinInclude = "${BinRoot}\include"
 $JarFile    = "${BinRoot}\java\tsduck.jar"
 $InstallerDir = "${RootDir}\installers"
 
-# Apply defaults.
-if (-not $Win32 -and -not $Win64) {
-    $Win32 = $true
-    $Win64 = $true
-}
-
 # Collect files for the installers.
 if (-not $NoInstaller) {
     # Locate NSIS, the Nullsoft Scriptable Installation System.
@@ -127,17 +112,22 @@ if (-not $NoInstaller) {
 # MSVC redistributable installer.
 if (-not $NoInstaller -or -not $NoPortable) {
     Write-Output "Searching MSVC Redistributable Libraries Installers..."
-    $VCRedist32 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*86.exe" -ErrorAction Ignore |
-                  ForEach-Object { (Get-Command $_).FileVersionInfo } |
-                  Sort-Object -Unique -Property FileVersion  |
-                  ForEach-Object { $_.FileName} | Select-Object -Last 1
     # Use "*x64" instead of "*64" since some VS installations may include an arm64 version.
     $VCRedist64 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*x64.exe" -ErrorAction Ignore |
                   ForEach-Object { (Get-Command $_).FileVersionInfo } |
                   Sort-Object -Unique -Property FileVersion  |
                   ForEach-Object { $_.FileName} | Select-Object -Last 1
-    if (-not $VCRedist32 -or -not $VCRedist64) {
-        Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries Installers not found"
+    if (-not $VCRedist64) {
+        Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries 64-bit  Installer not found"
+    }
+    if ($Win32) {
+        $VCRedist32 = Get-ChildItem -Recurse -Path "C:\Program Files*\Microsoft Visual Studio" -Include "vc*redist*86.exe" -ErrorAction Ignore |
+                      ForEach-Object { (Get-Command $_).FileVersionInfo } |
+                      Sort-Object -Unique -Property FileVersion  |
+                      ForEach-Object { $_.FileName} | Select-Object -Last 1
+        if (-not $VCRedist32) {
+            Exit-Script -NoPause:$NoPause "MSVC Redistributable Libraries 32-bit Installer not found"
+        }
     }
 }
 
@@ -150,7 +140,7 @@ if (-not $NoLowPriority) {
 if (-not $NoBuild) {
     Write-Output "Compiling..."
     Push-Location
-    & "$PSScriptRoot\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64:$Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority -NoTeletext:$NoTeletext
+    & "$PSScriptRoot\build.ps1" -Installer -NoPause -Win32:$Win32 -Win64 -GitPull:$GitPull -NoLowPriority:$NoLowPriority
     $Code = $LastExitCode
     Pop-Location
     if ($Code -ne 0) {
@@ -163,7 +153,7 @@ $Version = (python "${PSScriptRoot}\get-version-from-sources.py")
 $VersionInfo = (python "${PSScriptRoot}\get-version-from-sources.py" --windows)
 
 # A function to build a binary installer.
-function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [string]$HeadersDir)
+function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$OtherDevArch, [string]$VCRedist, [string]$HeadersDir)
 {
     Write-Output "Building installer for $Arch..."
 
@@ -185,7 +175,7 @@ function Build-Binary([string]$BinSuffix, [string]$Arch, [string]$VCRedist, [str
     }
 
     # Build the binary installer.
-    & $NSIS /V2 $NsisOptJar /D$Arch /DBinDir=$BinDir `
+    & $NSIS /V2 $NsisOptJar /D$Arch /DBinDir=$BinDir /DDev$Arch /DDev$OtherDevArch `
         /DVCRedist=$VCRedist /DVCRedistName=$VCRedistName /DHeadersDir=$HeadersDir `
         /DVersion=$Version /DVersionInfo=$VersionInfo $NsisScript
 }
@@ -195,17 +185,8 @@ if (-not $NoInstaller) {
 
     # Create a temporary directory for header files (development options).
     $TempDir = New-TempDirectory
-    $Exclude = @("*\unix\*", "*\linux\*", "*\mac\*", "*\private\*")
-    if ($NoTeletext) {
-        $Exclude += "*\tsTeletextDemux.h"
-        $Exclude += "*\tsTeletextPlugin.h"
-        Get-Content "${BinInclude}\tsduck.h" | `
-            Where-Object { ($_ -notmatch 'tsTeletextDemux.h') -and ($_ -notmatch 'tsTeletextPlugin.h') } | `
-            Out-File -Encoding ascii "${TempDir}\tsduck.h"
-    }
-    else {
-        Copy-Item "${BinInclude}\tsduck.h" "${TempDir}\tsduck.h"
-    }
+    $Exclude = @("*\unix\*", "*\linux\*", "*\mac\*", "*\bsd\*", "*\private\*")
+    Copy-Item "${BinInclude}\tsduck.h" "${TempDir}\tsduck.h"
     Get-ChildItem "${SrcDir}\libtsduck" -Recurse -Include "*.h" | `
         Where-Object {
             $fname = $_.FullName
@@ -218,10 +199,11 @@ if (-not $NoInstaller) {
     Push-Location $TempDir
     try {
         if ($Win32) {
-            Build-Binary "Win32" "Win32" $VCRedist32 $TempDir
+            Build-Binary "x64" "Win64" "Win32" $VCRedist64 $TempDir
+            Build-Binary "Win32" "Win32" "Win64" $VCRedist32 $TempDir
         }
-        if ($Win64) {
-            Build-Binary "x64" "Win64" $VCRedist64 $TempDir
+        else {
+            Build-Binary "x64" "Win64" "" $VCRedist64 $TempDir
         }
     }
     finally {
@@ -290,7 +272,7 @@ function Build-Portable([string]$BinSuffix, [string]$InstallerSuffix, [string]$V
 if (-not $NoPortable -and $Win32) {
     Build-Portable "Win32" "Win32" $VCRedist32
 }
-if (-not $NoPortable -and $Win64) {
+if (-not $NoPortable) {
     Build-Portable "x64" "Win64" $VCRedist64
 }
 

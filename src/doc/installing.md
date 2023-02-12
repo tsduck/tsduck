@@ -5,7 +5,7 @@ TSDuck can be installed on Windows, Linux, macOS and BSD systems (FreeBSD, OpenB
 # Windows {#wininstall}
 
 [Executable binary installers for the latest TSDuck version](https://tsduck.io/download/tsduck)
-are available for 64-bit and 32-bit Windows on Intel systems.
+are available for 64-bit Windows on Intel systems.
 
 All tools, plugins and development environments are in the same installer.
 Running the installer provides several options:
