@@ -30,7 +30,6 @@
 // Parts of this module are inspired from Telxcc, a free open-source Teletext
 // extractor from Petr Kutalek (https://github.com/petrkutalek/telxcc).
 // Copyright: (c) 2011-2014 Forers, s. r. o.: telxcc
-// If you do not want this code included, define TS_NO_TELETEXT.
 //
 //----------------------------------------------------------------------------
 //
@@ -49,7 +48,6 @@
 #include "tsTeletextDemux.h"
 #include "tsTeletextFrame.h"
 #include "tsMemory.h"
-#if !defined(TS_NO_TELETEXT)
 
 
 //-----------------------------------------------------------------------------
@@ -663,5 +661,3 @@ int ts::TeletextDemux::frameCount(int page, PID pid) const
     }
     return 0;
 }
-
-#endif // TS_NO_TELETEXT

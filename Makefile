@@ -40,7 +40,6 @@
 #  - NOSRT      : No SRT support, remove dependency to libsrt.
 #  - NORIST     : No RIST support, remove dependency to librist.
 #  - NOEDITLINE : No interactive line editing, remove dependency to libedit.
-#  - NOTELETEXT : No Teletext support, remove teletext handling code.
 #  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
 #
 #  Options to define the representation of bitrates:
@@ -168,9 +167,8 @@ tarball:
 	rm -rf $(TMPROOT)
 	mkdir -p $(TMPROOT)/$(TARNAME)
 	$(TAR) -cpf - sample/sample-*/japanese-tables.bin \
-	    $(patsubst %,--exclude '%',.git $(if $(NOTELETEXT),tsTeletextDemux.* tsTeletextPlugin.*) $(shell cat .gitignore)) \
+	    $(patsubst %,--exclude '%',.git $(shell cat .gitignore)) \
 	    . | $(TAR) -C $(TMPROOT)/$(TARNAME) -xpf -
-	$(if $(NOTELETEXT),$(SED) -i -e '/TeletextDemux/d' -e '/TeletextPlugin/d' $(TMPROOT)/$(TARNAME)/src/libtsduck/tsduck.h)
 	$(MAKE) -C $(TMPROOT)/$(TARNAME) distclean
 	$(TAR) -C $(TMPROOT) -czf $(TARFILE) -p --owner=0 --group=0 $(TARNAME)
 	rm -rf $(TMPROOT)

@@ -35,6 +35,8 @@
 ;  - VersionInfo : Product version info in Windows format.
 ;  - BinDir : Directory of built binaries (.exe and .dll).
 ;  - Win64 : If defined, generate a 64-bit installer (default: 32-bit).
+;  - DevWin64 : If defined, add development libraries for Win64.
+;  - DevWin32 : If defined, add development libraries for Win32.
 ;  - HeadersDir : Directory containing all header files (development options).
 ;  - VCRedist : Full path of the MSVC redistributable installer.
 ;  - VCRedistName : Base name of the MSVC redistributable installer.
@@ -242,25 +244,30 @@ Section /o "C++ Development" SectionDevelopment
 
     ; TSDuck libraries.
     CreateDirectory "$INSTDIR\lib"
+
+!ifdef DevWin32
     CreateDirectory "$INSTDIR\lib\Release-Win32"
     SetOutPath "$INSTDIR\lib\Release-Win32"
     File "${BinRoot}\Release-Win32\tsduck.lib"
     File "${BinRoot}\Release-Win32\tsduck.dll"
 
+    CreateDirectory "$INSTDIR\lib\Debug-Win32"
+    SetOutPath "$INSTDIR\lib\Debug-Win32"
+    File "${BinRoot}\Debug-Win32\tsduck.lib"
+    File "${BinRoot}\Debug-Win32\tsduck.dll"
+!endif
+
+!ifdef DevWin64
     CreateDirectory "$INSTDIR\lib\Release-Win64"
     SetOutPath "$INSTDIR\lib\Release-Win64"
     File "${BinRoot}\Release-x64\tsduck.lib"
     File "${BinRoot}\Release-x64\tsduck.dll"
 
-    CreateDirectory "$INSTDIR\lib\Debug-Win32"
-    SetOutPath "$INSTDIR\lib\Debug-Win32"
-    File "${BinRoot}\Debug-Win32\tsduck.lib"
-    File "${BinRoot}\Debug-Win32\tsduck.dll"
-
     CreateDirectory "$INSTDIR\lib\Debug-Win64"
     SetOutPath "$INSTDIR\lib\Debug-Win64"
     File "${BinRoot}\Debug-x64\tsduck.lib"
     File "${BinRoot}\Debug-x64\tsduck.dll"
+!endif
 
     ; Visual Studio property files.
     SetOutPath "$INSTDIR"

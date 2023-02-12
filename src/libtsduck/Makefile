@@ -207,7 +207,4 @@ install-devel: $(STATIC_LIBTSDUCK) $(TSDUCK_H)
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(addsuffix /*.h,$(PUBLIC_INCLUDES)) $(TSDUCK_H) $(SYSROOT)$(SYSPREFIX)/include/tsduck
-	$(if $(NOTELETEXT),rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsTeletextDemux.h)
-	$(if $(NOTELETEXT),rm -f $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsTeletextPlugin.h)
-	$(if $(NOTELETEXT),$(SED) -i -e '/TeletextDemux/d' -e '/TeletextPlugin/d' $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsduck.h)
 	+@$(call F_RECURSE,config python java)

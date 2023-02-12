@@ -68,7 +68,7 @@ operating system and upgrades TSDuck.
 
 ### Project resources
 
-TSDuck is developed by one single developer on spare time and on personal expenses.
+TSDuck is maintained by one single developer on spare time and on personal expenses.
 You may consider [contributing](https://tsduck.io/donate/) to the hardware and Web hosting costs
 using [![Donate](https://tsduck.io/images/donate-paypal.svg)](https://tsduck.io/donate/)
 

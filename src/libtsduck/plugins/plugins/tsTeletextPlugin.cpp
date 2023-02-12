@@ -31,7 +31,6 @@
 #include "tsTeletextFrame.h"
 #include "tsTeletextDescriptor.h"
 #include "tsPluginRepository.h"
-#if !defined(TS_NO_TELETEXT)
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"teletext", ts::TeletextPlugin);
 
@@ -260,5 +259,3 @@ ts::ProcessorPlugin::Status ts::TeletextPlugin::processPacket(TSPacket& pkt, TSP
     // Do not change packet but abort on error.
     return _service.nonExistentService() || _abort ? TSP_END : TSP_OK;
 }
-
-#endif // TS_NO_TELETEXT
