@@ -119,6 +119,12 @@ namespace ts {
         std::ostream& operator<<(std::ostream& (*manip)(std::ostream&)) { return _duck.out() << manip; }
 
         //!
+        //! Log a line, either on redirected output or on report if output was not redirected.
+        //! @param [in] line The line to log.
+        //!
+        virtual void logLine(const UString& line);
+
+        //!
         //! Display a table on the output stream.
         //! The content of the table is interpreted according to the table id.
         //! @param [in] table The table to display.
