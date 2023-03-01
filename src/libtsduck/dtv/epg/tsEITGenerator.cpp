@@ -265,6 +265,7 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
 
     // Current time according to the transport stream. Can be "Epoch" (undefined).
     const Time now(getCurrentTime());
+    const Time ref_midnight(now.thisDay());
 
     // Loop on all event descriptions.
     while (size >= EIT::EIT_EVENT_FIXED_SIZE) {
@@ -280,6 +281,12 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
         // Discard events in the past.
         if (now != Time::Epoch && ev->end_time <= now) {
             _duck.report().log(2, u"discard obsolete event id 0x%X (%<d), %s, ending %s", {ev->event_id, service_id, ev->end_time});
+            continue;
+        }
+
+        // Discard events too far in the future.
+        if (now != Time::Epoch && ev->start_time >= ref_midnight + EIT::TOTAL_DAYS * MilliSecPerDay) {
+            _duck.report().log(2, u"discard event id 0x%X (%<d), %s, starting %s, too far in the future", {ev->event_id, service_id, ev->start_time});
             continue;
         }
 
@@ -861,6 +868,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             const ServiceIdTriplet& service_id(srv_iter.first);
             EService& srv(srv_iter.second);
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
+            _duck.report().debug(u"regenerating events for service 0x%X (%<d)", {service_id});
 
             // Check if EIT schedule are needed for the service.
             const bool need_eits = (actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) == (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) ||
@@ -1021,6 +1029,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                 for (auto seg_iter = srv.segments.rbegin(); seg_iter != srv.segments.rend(); ++seg_iter) {
                     ESegment& seg(**seg_iter);
                     assert(!seg.sections.empty());
+                    assert(segment_number > 0);
 
                     const TID table_id = EIT::SegmentToTableId(actual, --segment_number);
                     uint8_t section_number = EIT::SegmentToSection(segment_number);
@@ -1050,6 +1059,7 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                             sec.section->setLastSectionNumber(last_section_number, false);
                             sec.section->setUInt8(4, segment_last_section_number, false);
                             sec.section->setUInt8(5, last_table_id, true);
+                            assert(sec.section->sectionNumber() <= sec.section->lastSectionNumber());
                         }
                         section_number++;
                     }
@@ -1104,13 +1114,18 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
             ++seg_iter;
         }
 
-        // Remove obsolete events in the first segments (containing "now").
+        // Remove obsolete events in the first segment (containing "now").
         if (seg_iter != srv.segments.end()) {
             ESegment& seg(**seg_iter);
             while (!seg.events.empty() && seg.events.front()->end_time <= now) {
                 seg.events.pop_front();
                 _regenerate = srv.regenerate = seg.regenerate = true;
             }
+        }
+
+        // Discard events too far in the future.
+        while (!srv.segments.empty() && srv.segments.back()->start_time >= last_midnight + EIT::TOTAL_DAYS * MilliSecPerDay) {
+            srv.segments.pop_back();
         }
 
         // Renew EIT p/f of the service when necessary.
