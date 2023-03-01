@@ -126,6 +126,12 @@ namespace ts {
         void setOutput(std::ostream* output, bool override = true);
 
         //!
+        //! Check if output was redirected.
+        //! @return True if the current output is neither the initial one nor the standard output.
+        //!
+        bool redirectedOutput() const { return _out != &std::cout && _out != _initial_out; }
+
+        //!
         //! Flush the text output.
         //!
         void flush();

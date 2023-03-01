@@ -2,6 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.34-3145
+
+[IMP] Improvements on existing commands and plugins:
+
+  * Using "-P tables --log", without "--output", the logged lines are reported
+    through the general logger of "tsp" instead of being output to stdout.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.33-3131
 
 [NEW] New commands and plugins:

@@ -389,6 +389,23 @@ void ts::TablesDisplay::displaySectionData(const Section& section, const UString
 
 
 //----------------------------------------------------------------------------
+// Log a line, either on redirected output or on report if output was not redirected.
+//----------------------------------------------------------------------------
+
+void ts::TablesDisplay::logLine(const UString& line)
+{
+    if (_duck.redirectedOutput()) {
+        // The output has been redirected, use it.
+        _duck.out() << line << std::endl;
+    }
+    else {
+        // Use the report object for logging.
+        _duck.report().info(line);
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Display the payload of a section on the output stream as a one-line "log" message.
 //----------------------------------------------------------------------------
 
@@ -404,7 +421,7 @@ void ts::TablesDisplay::logSectionData(const Section& section, const UString& he
     }
 
     // Output exactly one line.
-    _duck.out() << header << handler(section, max_bytes) << std::endl;
+    logLine(header + handler(section, max_bytes));
 }
 
 

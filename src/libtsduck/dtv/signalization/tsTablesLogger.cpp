@@ -1153,15 +1153,17 @@ void ts::TablesLogger::logInvalid(const DemuxedData& data, const UString& reason
     // Number of bytes to log:
     const size_t size = _log_size == 0 ? data.size() : std::min(_log_size, data.size());
 
-    _display << logHeader(data) << ", invalid section";
+    UString line(logHeader(data));
+    line += u", invalid section";
     if (!reason.empty()) {
-        _display << " (" << reason << ")";
+        line.format(u" (%s)", {reason});
     }
-    _display << ": " << UString::Dump(data.content(), size, UString::SINGLE_LINE);
+    line += u": ";
+    line.appendDump(data.content(), size, UString::SINGLE_LINE);
     if (data.size() > size) {
-        _display << " ...";
+        line += u" ...";
     }
-    _display << std::endl;
+    _display.logLine(line);
 }
 
 

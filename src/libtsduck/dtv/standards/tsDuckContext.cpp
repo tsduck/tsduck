@@ -332,7 +332,7 @@ void ts::DuckContext::flush()
 
 void ts::DuckContext::setOutput(std::ostream* stream, bool override)
 {
-    // Do not override output is not standard output (or explicit override).
+    // Do not override output if not standard output (or explicit override).
     if (override || _out == &std::cout) {
         if (_out == &_outFile) {
             _outFile.close();
@@ -343,7 +343,7 @@ void ts::DuckContext::setOutput(std::ostream* stream, bool override)
 
 bool ts::DuckContext::setOutput(const UString& fileName, bool override)
 {
-    // Do not override output is not standard output (or explicit override).
+    // Do not override output if not standard output (or explicit override).
     if (override || _out == &std::cout) {
         // Close previous file, if any.
         if (_out == &_outFile) {
