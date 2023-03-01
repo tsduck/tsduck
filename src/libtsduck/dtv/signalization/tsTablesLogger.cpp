@@ -40,6 +40,7 @@
 #include "tsxmlElement.h"
 #include "tsjsonArray.h"
 #include "tsjsonObject.h"
+#include "tsMJD.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
@@ -1139,10 +1140,19 @@ ts::UString ts::TablesLogger::logHeader(const DemuxedData& data)
 
 void ts::TablesLogger::logSection(const Section& sect)
 {
+    const TID tid = sect.tableId();
     UString header(logHeader(sect));
-    header.format(u", TID 0x%X", {sect.tableId()});
+    header.format(u", TID 0x%X", {tid});
     if (sect.isLongSection()) {
         header.format(u", TIDext 0x%X, V%d, Sec %d/%d", {sect.tableIdExtension(), sect.version(), sect.sectionNumber(), sect.lastSectionNumber()});
+    }
+    else if (bool(_duck.standards() & Standards::DVB) && (tid == TID_TDT || tid == TID_TOT) && sect.payloadSize() >= MJD_SIZE) {
+        // Get UTC time from DVB TDT or TOT. The time reference is UTC as defined by DVB, but can be non-standard.
+        Time utc;
+        if (DecodeMJD(sect.payload(), MJD_SIZE, utc)) {
+            utc -= _duck.timeReferenceOffset();
+            header.format(u", %s", {utc.format(Time::DATETIME)});
+        }
     }
     header.append(u": ");
     _display.logSectionData(sect, header, _log_size, _cas_mapper.casId(sect.sourcePID()));
