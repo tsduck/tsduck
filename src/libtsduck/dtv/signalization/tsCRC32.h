@@ -139,7 +139,7 @@ namespace ts {
     //! @param [in] c2 A CRC32 instance to compare.
     //! @return True if the two CRC32 are identical, false otherwise.
     //!
-    TSDUCKDLL inline bool operator== (uint32_t c1, const CRC32& c2)
+    TSDUCKDLL inline bool operator==(uint32_t c1, const CRC32& c2)
     {
         return c2 == c1;  // this one is a member function
     }
@@ -152,7 +152,7 @@ namespace ts {
     //! @param [in] c2 A CRC32 instance to compare.
     //! @return True if the two CRC32 are different, false otherwise.
     //!
-    TSDUCKDLL inline bool operator!= (uint32_t c1, const CRC32& c2)
+    TSDUCKDLL inline bool operator!=(uint32_t c1, const CRC32& c2)
     {
         return c2 != c1;  // this one is a member function
     }
