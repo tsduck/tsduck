@@ -36,7 +36,7 @@
 //     x**22 + x**23 + x**26 + x**32.
 
 namespace {
-    const uint32_t fcstab_32 [256] = {
+    const uint32_t fcstab_32[256] = {
         0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9,
         0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,
         0x2608EDB8, 0x22C9F00F, 0x2F8AD6D6, 0x2B4BCB61,
@@ -106,11 +106,11 @@ namespace {
 
 // Continue the computation of a data area, following a previous CRC32
 
-void ts::CRC32::add (const void* data, size_t size)
+void ts::CRC32::add(const void* data, size_t size)
 {
-    const uint8_t* cp = static_cast <const uint8_t*> (data);
+    const uint8_t* cp = static_cast<const uint8_t*>(data);
 
     while (size-- > 0) {
-        _fcs = (_fcs << 8) ^ fcstab_32 [((_fcs >> 24) ^ (*cp++)) & 0xFF];
+        _fcs = (_fcs << 8) ^ fcstab_32[((_fcs >> 24) ^ (*cp++)) & 0xFF];
     }
 }
