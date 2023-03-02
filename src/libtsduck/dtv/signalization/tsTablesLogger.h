@@ -219,7 +219,8 @@ namespace ts {
         bool                     _packet_index;      // Display packet index with each table.
         bool                     _logger;            // Table logger.
         size_t                   _log_size;          // Size of table to log.
-        bool                     _no_duplicate;      // Exclude duplicated short sections on a PID.
+        bool                     _no_duplicate;      // Exclude consecutive duplicated short sections on a PID.
+        bool                     _no_deep_duplicate; // Exclude duplicated sections on a PID, even non-consecutive.
         bool                     _pack_all_sections; // Pack all sections as if they were one table.
         bool                     _pack_and_flush;    // Pack and flush incomplete tables before exiting.
         bool                     _fill_eit;          // Add missing empty sections to incomplete EIT's before exiting.
@@ -248,6 +249,7 @@ namespace ts {
         UDPSocket                _sock;              // Output socket.
         std::map<PID,ByteBlock>  _short_sections;    // Tracking duplicate short sections by PID with a section hash.
         std::map<PID,ByteBlock>  _last_sections;     // Tracking duplicate sections by PID with a section hash (with --all-sections).
+        std::map<PID,std::set<ByteBlock>> _deep_hashes; // Tracking of deep duplicate sections.
         std::set<uint64_t>       _sections_once;     // Tracking sets of PID/TID/TDIext/secnum/version with --all-once.
         TablesLoggerFilterVector _section_filters;   // All registered section filters.
 
@@ -278,6 +280,7 @@ namespace ts {
 
         // Detect and track duplicate section by PID.
         bool isDuplicate(PID pid, const Section& section, std::map<PID,ByteBlock> TablesLogger::* tracker);
+        bool isDeepDuplicate(PID pid, const Section& section);
     };
 
     //!

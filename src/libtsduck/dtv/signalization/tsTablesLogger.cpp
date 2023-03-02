@@ -90,6 +90,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _logger(false),
     _log_size(DEFAULT_LOG_SIZE),
     _no_duplicate(false),
+    _no_deep_duplicate(false),
     _pack_all_sections(false),
     _pack_and_flush(false),
     _fill_eit(false),
@@ -116,6 +117,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _sock(false, _report),
     _short_sections(),
     _last_sections(),
+    _deep_hashes(),
     _sections_once(),
     _section_filters()
 {
@@ -248,6 +250,13 @@ void ts::TablesLogger::defineArgs(Args& args)
               u"each file is created with the name 'base_pXXXX_tXX.ext' for short sections and "
               u"'base_pXXXX_tXX_eXXXX_vXX_sXX.ext' for long sections, where the XX specify the hexadecimal "
               u"values of the PID, TID (table id), TIDext (table id extension), version and section index.");
+
+    args.option(u"no-deep-duplicate");
+    args.help(u"no-deep-duplicate",
+              u"Do not report identical sections in the same PID, even when non-consecutive. "
+              u"A hash of each section is kept for each PID and later identical sections are not reported.\n"
+              u"Warning: This option accumulates memory for hash values of all sections since the beginning. "
+              u"Do not use that option for commands running too long or the process may crash with insufficient memory.");
 
     args.option(u"no-duplicate");
     args.help(u"no-duplicate",
@@ -394,6 +403,7 @@ bool ts::TablesLogger::loadArgs(DuckContext& duck, Args& args)
     _logger = args.present(u"log");
     args.getIntValue(_log_size, u"log-size", DEFAULT_LOG_SIZE);
     _no_duplicate = args.present(u"no-duplicate");
+    _no_deep_duplicate = args.present(u"no-deep-duplicate");
     _udp_raw = args.present(u"no-encapsulation");
     _use_current = !args.present(u"exclude-current");
     _use_next = args.present(u"include-next");
@@ -442,6 +452,7 @@ bool ts::TablesLogger::open()
     _json_doc.close();
     _short_sections.clear();
     _last_sections.clear();
+    _deep_hashes.clear();
     _sections_once.clear();
 
     if (_bin_file.is_open()) {
@@ -597,6 +608,27 @@ bool ts::TablesLogger::isDuplicate(PID pid, const Section& section, std::map<PID
 
 
 //----------------------------------------------------------------------------
+// Detect and track deep duplicate sections by PID.
+//----------------------------------------------------------------------------
+
+bool ts::TablesLogger::isDeepDuplicate(PID pid, const Section& section)
+{
+    // Get a SHA-1 for the section.
+    const ByteBlock hash(section.hash());
+    auto& set(_deep_hashes[pid]);
+    if (set.find(hash) == set.end()) {
+        // Section not yet found on that PID, keep the hash for next time.
+        set.insert(hash);
+        return false;
+    }
+    else {
+        // Section already found.
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // This hook is invoked when a complete table is available.
 //----------------------------------------------------------------------------
 
@@ -621,9 +653,15 @@ void ts::TablesLogger::handleTable(SectionDemux& demux, const BinaryTable& table
     }
 
     // Ignore duplicate tables with a short section.
-    if (_no_duplicate && table.isShortSection() && isDuplicate(pid, *table.sectionAt(0), &TablesLogger::_short_sections)) {
-        // Same section as previously, ignore it.
-        return;
+    if (table.isShortSection()) {
+        if (_no_duplicate && isDuplicate(pid, *table.sectionAt(0), &TablesLogger::_short_sections)) {
+            // Same section as previously, ignore it.
+            return;
+        }
+        if (_no_deep_duplicate && isDeepDuplicate(pid, *table.sectionAt(0))) {
+            // Section alread seen on that PID, ignore it.
+            return;
+        }
     }
 
     // Filtering done, now save table in various formats.
@@ -783,6 +821,10 @@ void ts::TablesLogger::handleSection(SectionDemux& demux, const Section& sect)
     // Ignore duplicate sections.
     if (_no_duplicate && isDuplicate(pid, sect, &TablesLogger::_last_sections)) {
         // Same section (same hash) as previously, ignore it.
+        return;
+    }
+    if (_no_deep_duplicate && isDeepDuplicate(pid, sect)) {
+        // Section alread seen on that PID, ignore it.
         return;
     }
 
