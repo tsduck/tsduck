@@ -56,14 +56,15 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext   duck;              // TSDuck execution context.
-        ts::TablesDisplay display;           // Options about displaying tables
-        ts::PagerArgs     pager;             // Output paging options.
-        ts::UDPReceiver   udp;               // Options about receiving UDP tables
-        ts::UStringVector infiles;           // Input file names
-        size_t            max_tables;        // Max number of tables to dump.
-        size_t            max_invalid_udp;   // Max number of invalid UDP messages before giving up.
-        bool              no_encapsulation;  // Raw sections in UDP messages.
+        ts::DuckContext       duck;              // TSDuck execution context.
+        ts::TablesDisplay     display;           // Options about displaying tables
+        ts::PagerArgs         pager;             // Output paging options.
+        ts::UDPReceiver       udp;               // Options about receiving UDP tables
+        ts::UStringVector     infiles;           // Input file names
+        ts::CRC32::Validation crc_validation;    // Validation of CRC32 in input sections
+        size_t                max_tables;        // Max number of tables to dump.
+        size_t                max_invalid_udp;   // Max number of invalid UDP messages before giving up.
+        bool                  no_encapsulation;  // Raw sections in UDP messages.
     };
 }
 
@@ -74,6 +75,7 @@ Options::Options(int argc, char *argv[]) :
     pager(true, true),
     udp(*this),
     infiles(),
+    crc_validation(ts::CRC32::CHECK),
     max_tables(0),
     max_invalid_udp(16),
     no_encapsulation(false)
@@ -93,6 +95,11 @@ Options::Options(int argc, char *argv[]) :
          u"file and without --ip-udp, the binary tables are read from the standard input.\n\n"
          u"With --ip-udp, no file shall be specified. Binary sections and tables are "
          u"received over UDP/IP as sent by the utility 'tstables' or the plugin 'tables'.");
+
+    option(u"ignore-crc32");
+    help(u"ignore-crc32",
+         u"Do not check CRC32 of input sections. "
+         u"This can be used to analyze sections with incorrect CRC32 but otherwise correct.");
 
     option(u"max-tables", 'x', UNSIGNED);
     help(u"max-tables",
@@ -114,6 +121,7 @@ Options::Options(int argc, char *argv[]) :
     getValues(infiles, u"");
     max_tables = intValue<size_t>(u"max-tables", std::numeric_limits<size_t>::max());
     no_encapsulation = present(u"no-encapsulation");
+    crc_validation = present(u"ignore-crc32") ? ts::CRC32::IGNORE : ts::CRC32::CHECK;
 
     if (!infiles.empty() && udp.receiverSpecified()) {
         error(u"specify input files or --ip-udp, but not both");
@@ -214,6 +222,7 @@ namespace {
         // Load all sections
         bool ok = false;
         ts::SectionFile file(opt.duck);
+        file.setCRCValidation(opt.crc_validation);
 
         if (file_name.empty()) {
             // no input file specified, use standard input

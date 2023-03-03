@@ -127,7 +127,7 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size) :
 
 
 //----------------------------------------------------------------------------
-// ESection: Constructor of the structure for  a section, ready to inject.
+// ESection: Constructor of the structure for a section, ready to inject.
 //----------------------------------------------------------------------------
 
 ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& srv, TID tid, uint8_t section_number, uint8_t last_section_number) :
@@ -145,7 +145,7 @@ ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& 
     PutUInt8(data, tid);
     PutUInt16(data + 1, 0xF000 | uint16_t(section_data->size() - 3));
     PutUInt16(data + 3, srv.service_id);       // table id extension
-    PutUInt8(data + 5, 0xC1 | uint8_t(gen->nextVersion(tid, srv.service_id, section_number) << 1));
+    PutUInt8(data + 5, 0xC1);                  // version = 0 for now, updated below
     PutUInt8(data + 6, section_number);
     PutUInt8(data + 7, last_section_number);
 
@@ -157,6 +157,7 @@ ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& 
 
     // Build a section from the binary data.
     section = new Section(section_data, PID_NULL, CRC32::IGNORE);
+    updateVersion(gen, false);
     CheckNonNull(section.pointer());
 }
 
@@ -197,9 +198,41 @@ void ts::EITGenerator::ESection::toggleActual(bool actual)
 
 void ts::EITGenerator::ESection::updateVersion(EITGenerator* gen, bool recompute_crc)
 {
-    if (!section.isNull()) {
+    // Does nothing when option SYNC_VERSIONS is set (versions are separately updated later).
+    if (!section.isNull() && !(gen->_options & EITOptions::SYNC_VERSIONS)) {
+        assert(section->payloadSize() >= EIT::EIT_PAYLOAD_FIXED_SIZE);
         startModifying();
-        section->setVersion(gen->nextVersion(section->tableId(), section->tableIdExtension(), section->sectionNumber()), recompute_crc);
+        // ServiceIdTriplet: svid, tsid, onetid
+        const ServiceIdTriplet sid(section->tableIdExtension(), GetUInt16(section->payload()), GetUInt16(section->payload() + 2));
+        const uint8_t version = gen->nextVersion(sid, section->tableId(), section->sectionNumber());
+        section->setVersion(version, recompute_crc);
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Compute the next version for a table. If option SYNC_VERSIONS is set, the section number is ignored.
+//----------------------------------------------------------------------------
+
+uint8_t ts::EITGenerator::nextVersion(const ServiceIdTriplet& service_id, TID table_id, uint8_t section_number)
+{
+    // Build a unique section identifier on 64 bits.
+    const uint64_t index =
+        (uint64_t(table_id) << 56) |
+        (uint64_t(service_id.original_network_id) << 40) |
+        (uint64_t(service_id.transport_stream_id) << 24) |
+        (uint64_t(service_id.service_id) << 8) |
+        (bool(_options & EITOptions::SYNC_VERSIONS) ? 0 : section_number);
+
+    // Locate previous version for this section and compute new version.
+    const auto iter = _versions.find(index);
+    if (iter == _versions.end()) {
+        // Section did not exist, use 0 as first version.
+        return _versions[index] = 0;
+    }
+    else {
+        // Update version.
+        return iter->second = (iter->second + 1) & SVERSION_MASK;
     }
 }
 
@@ -226,26 +259,6 @@ ts::EITGenerator::EService::EService() :
     pf(),
     segments()
 {
-}
-
-
-//----------------------------------------------------------------------------
-// Get next version of a section.
-//----------------------------------------------------------------------------
-
-uint8_t ts::EITGenerator::nextVersion(TID tid, uint16_t service_id, uint8_t section_number)
-{
-    // Build a unique section identifier on 32 bits.
-    const uint32_t index = (uint32_t(tid) << 24) | (uint32_t(service_id) << 8) | section_number;
-    const auto it = _versions.find(index);
-    if (it == _versions.end()) {
-        // Section did not exist, use 0 as first version.
-        return _versions[index] = 0;
-    }
-    else {
-        // Update version.
-        return it->second = (it->second + 1) & SVERSION_MASK;
-    }
 }
 
 
@@ -280,13 +293,13 @@ bool ts::EITGenerator::loadEvents(const ServiceIdTriplet& service_id, const uint
 
         // Discard events in the past.
         if (now != Time::Epoch && ev->end_time <= now) {
-            _duck.report().log(2, u"discard obsolete event id 0x%X (%<d), %s, ending %s", {ev->event_id, service_id, ev->end_time});
+            _duck.report().verbose(u"discard obsolete event id 0x%X (%<d), %s, ending %s", {ev->event_id, service_id, ev->end_time});
             continue;
         }
 
         // Discard events too far in the future.
         if (now != Time::Epoch && ev->start_time >= ref_midnight + EIT::TOTAL_DAYS * MilliSecPerDay) {
-            _duck.report().log(2, u"discard event id 0x%X (%<d), %s, starting %s, too far in the future", {ev->event_id, service_id, ev->start_time});
+            _duck.report().verbose(u"discard event id 0x%X (%<d), %s, starting %s, too far in the future", {ev->event_id, service_id, ev->start_time});
             continue;
         }
 
@@ -784,8 +797,15 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
 
         // Rebuild the two sections when necessary.
         const TID tid = actual ? TID_EIT_PF_ACT : TID_EIT_PF_OTH;
-        regeneratePresentFollowingSection(service_id, srv.pf[0], tid, 0, events[0], now);
-        regeneratePresentFollowingSection(service_id, srv.pf[1], tid, 1, events[1], now);
+        const bool modp = regeneratePresentFollowingSection(service_id, srv.pf[0], tid, 0, events[0], now);
+        const bool modf = regeneratePresentFollowingSection(service_id, srv.pf[1], tid, 1, events[1], now);
+
+        // With SYNC_VERIONS, if any section is modified, update both versions.
+        if ((modp || modf) && bool(_options & EITOptions::SYNC_VERSIONS)) {
+            const uint8_t version = nextVersion(service_id, tid, 0);
+            srv.pf[0]->section->setVersion(version, true);
+            srv.pf[1]->section->setVersion(version, true);
+        }
     }
 }
 
@@ -794,7 +814,7 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
 // Regenerate, if necessary, one EIT present or following.
 //----------------------------------------------------------------------------
 
-void ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet& service_id,
+bool ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet& service_id,
                                                          ESectionPtr& sec,
                                                          TID tid,
                                                          bool section_number,
@@ -805,17 +825,18 @@ void ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
         // The section did not exist, create it.
         sec = new ESection(this, service_id, tid, section_number, 1);
         CheckNonNull(sec.pointer());
-        // The initial state of the section is: no event, no CRC.
-        if (event.isNull()) {
-            // No event to set in the section just recompute the CRC.
-            sec->section->recomputeCRC();
+        // The initial state of the section is: no event, no CRC.        
+        if (!event.isNull()) {
+            // Append the event in the payload.
+            sec->section->appendPayload(event->event_data, false);
         }
-        else {
-            // Append the event in the payload and recompute the CRC.
-            sec->section->appendPayload(event->event_data, true);
+        if (!(_options & EITOptions::SYNC_VERSIONS)) {
+            sec->section->recomputeCRC();
         }
         // Place the section in the inject queue.
         enqueueInjectSection(sec, inject_time, true);
+        // Section was modified.
+        return true;
     }
     else if (event.isNull()) {
         // The section already exists. It must be already in an injection queue.
@@ -825,6 +846,8 @@ void ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
             sec->section->setTableId(tid, false);
             sec->section->truncatePayload(EIT::EIT_PAYLOAD_FIXED_SIZE, false);
             sec->updateVersion(this, true);
+            // Section was modified.
+            return true;
         }
     }
     else if (sec->section->payloadSize() != EIT::EIT_PAYLOAD_FIXED_SIZE + event->event_data.size() ||
@@ -837,13 +860,20 @@ void ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
         sec->section->truncatePayload(EIT::EIT_PAYLOAD_FIXED_SIZE, false);
         sec->section->appendPayload(event->event_data, false);
         sec->updateVersion(this, true);
+        // Section was modified.
+        return true;
     }
     else if (sec->section->tableId() != tid) {
         // The same event is already in the section but the table id changed (because the TS id changed).
         sec->startModifying();
         sec->section->setTableId(tid, false);
         sec->updateVersion(this, true);
+        // Section was modified.
+        return true;
     }
+
+    // Section not modified.
+    return false;
 }
 
 
@@ -861,6 +891,9 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
     // Reference time for EIT schedule.
     const Time last_midnight(now.thisDay());
 
+    // Check if all sections of a sub-table must have the same version number.
+    const bool sync_versions = bool(_options & EITOptions::SYNC_VERSIONS);
+
     // Loop on all services, regenerating those which are marked for regeneration.
     for (auto& srv_iter : _services) {
         if (srv_iter.second.regenerate) {
@@ -869,6 +902,9 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             EService& srv(srv_iter.second);
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
             _duck.report().debug(u"regenerating events for service 0x%X (%<d)", {service_id});
+
+            // Set of subtables to globally update their version (SYNC_VERSIONS only).
+            std::set<TID> sync_tids;
 
             // Check if EIT schedule are needed for the service.
             const bool need_eits = (actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) == (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) ||
@@ -984,7 +1020,14 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                         }
 
                         // Section complete.
-                        sec->section->recomputeCRC();
+                        if (sync_versions) {
+                            // Will adjust version for all sections of this sub-table.
+                            sync_tids.insert(table_id);
+                        }
+                        else {
+                            // Sections are independently versioned, this one is complete.
+                            sec->section->recomputeCRC();
+                        }
                         enqueueInjectSection(sec, getCurrentTime(), true);
 
                         // Move to next section (if it exists).
@@ -1054,14 +1097,43 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
                         {
                             if (sec.section->sectionNumber() != section_number) {
                                 sec.section->setSectionNumber(section_number, false);
-                                sec.updateVersion(this, false);
+                                sec.updateVersion(this, true);
                             }
                             sec.section->setLastSectionNumber(last_section_number, false);
                             sec.section->setUInt8(4, segment_last_section_number, false);
-                            sec.section->setUInt8(5, last_table_id, true);
+                            sec.section->setUInt8(5, last_table_id, !sync_versions);
+                            if (sync_versions) {
+                                sync_tids.insert(table_id);
+                            }
                             assert(sec.section->sectionNumber() <= sec.section->lastSectionNumber());
                         }
                         section_number++;
+                    }
+                }
+            }
+
+            // Regenerate synchronous new versions for all sections of updated subtables (only with SYNC_VERSIONS).
+            if (!sync_tids.empty()) {
+                // Each sub-table uses 32 segments (SEGMENTS_PER_TABLE). We loop over segments in this service,
+                // 32 per 32. When a table needs to be updated, synchronously update all versions.
+                segment_number = 0;
+                auto seg_iter = srv.segments.begin();
+                while (seg_iter != srv.segments.end()) {
+                    const TID table_id = EIT::SegmentToTableId(actual, segment_number);
+                    const uint8_t version = nextVersion(service_id, table_id, 0);
+                    const bool update = sync_tids.find(table_id) != sync_tids.end();
+                    // Loop on all segments of that sub-table.
+                    for (size_t seg_count = 0; seg_count < EIT::SEGMENTS_PER_TABLE && seg_iter != srv.segments.end(); seg_count++) {
+                        // Update all sections in that segment, if necessary.
+                        if (update) {
+                            for (auto& sec : (*seg_iter)->sections) {
+                                (*sec).startModifying();
+                                (*sec).section->setVersion(version, true);
+                            }
+                        }
+                        // Next segment.
+                        ++segment_number;
+                        ++seg_iter;
                     }
                 }
             }
@@ -1114,12 +1186,15 @@ void ts::EITGenerator::updateForNewTime(const Time& now)
             ++seg_iter;
         }
 
-        // Remove obsolete events in the first segment (containing "now").
+        // Remove obsolete events in the segment containing "now".
         if (seg_iter != srv.segments.end()) {
             ESegment& seg(**seg_iter);
             while (!seg.events.empty() && seg.events.front()->end_time <= now) {
                 seg.events.pop_front();
-                _regenerate = srv.regenerate = seg.regenerate = true;
+                // Regenerate the segment, unless we use the lazy update mode.
+                if (!(_options & EITOptions::LAZY_SCHED_UPDATE)) {
+                    _regenerate = srv.regenerate = seg.regenerate = true;
+                }
             }
         }
 

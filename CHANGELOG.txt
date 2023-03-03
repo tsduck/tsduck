@@ -2,12 +2,23 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.34-3145
+VERSION 3.34-3150
 
 [IMP] Improvements on existing commands and plugins:
 
   * Using "-P tables --log", without "--output", the logged lines are reported
     through the general logger of "tsp" instead of being output to stdout.
+  * New options in existing commands and plugins:
+    - Option --no-deep-duplicate in "tstables" and plugin "tables".
+    - Option --ignore-crc32 in "tstabdump".
+    - Options --lazy-schedule-update, --synchronous-versions in plugin
+      "eitinject".
+
+[BUG] Bug fixes:
+
+  * In plugin "eitinject", when a event was 64 days or more in the future,
+    invalid EIT schedule sections were generated. Now, these events are
+    discarded (an EPG can be only 64 days deep).
 
 -------------------------------------------------------------------------------
 
