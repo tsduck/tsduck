@@ -394,7 +394,7 @@ namespace ts {
             // Toogle the actual/other status for the section.
             void toggleActual(bool actual);
 
-            // Increment version of section.
+            // Increment version of section. Does nothing when option SYNC_VERSIONS is set (versions are separately updated later).
             void updateVersion(EITGenerator* gen, bool recompute_crc);
         };
 
@@ -480,25 +480,25 @@ namespace ts {
         EServiceMap          _services;          // Map of services -> segments -> events and sections.
         ESectionListArray    _injects;           // Arrays of sections for injection.
         size_t               _obsolete_count;    // Number of obsolete sections in the injection lists.
-        std::map<uint32_t,uint8_t> _versions;    // Last version of sections.
+        std::map<uint64_t,uint8_t> _versions;    // Last version of sections.
 
         // Set a bitrate field and update EIT inter-packet.
         void setBitRateField(BitRate EITGenerator::* field, const BitRate& bitrate);
-
-        // Get next version of a section.
-        uint8_t nextVersion(TID tid, uint16_t service_id, uint8_t section_number);
 
         // Update the EIT database according to the current time.
         // Obsolete events, sections and segments are discarded.
         // Segments which must be regenerated are marked as such (will be actually regenerated later, when used).
         void updateForNewTime(const Time& now);
 
-        // Regenerate, if necessary, EIT p/f in a service.
+        // Regenerate, if necessary, EIT p/f in a service. Return true if section is modified.
         void regeneratePresentFollowing(const ServiceIdTriplet& service_id, EService& srv, const Time& now);
-        void regeneratePresentFollowingSection(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event, const Time&inject_time);
+        bool regeneratePresentFollowingSection(const ServiceIdTriplet& service_id, ESectionPtr& sec, TID tid, bool section_number, const EventPtr& event, const Time&inject_time);
 
         // Regenerate all EIT schedule, create missing segments and sections.
         void regenerateSchedule(const Time& now);
+
+        // Compute the next version for a table. If option SYNC_VERSIONS is set, the section number is ignored.
+        uint8_t nextVersion(const ServiceIdTriplet& service_id, TID table_id, uint8_t section_number);
 
         // Mark a section as obsolete, garbage collect obsolete sections if too many were not
         // naturally discarded from the injection lists. Also apply to entire segments.

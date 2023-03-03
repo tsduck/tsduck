@@ -227,6 +227,13 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"A typical use case is the generatation of EIT p/f from EIT schedule. "
          u"By default, events are loaded from EIT files only.");
 
+    option(u"lazy-schedule-update");
+    help(u"lazy-schedule-update",
+         u"When an event completes, do not remove it from the current EIT schedule segment. "
+         u"Obsolete events are removed from the EPG only when their 3-hour segment is completed. "
+         u"With this option, EIT schedule update is less frequent and the load on the plugin and "
+         u"the receiver is lower.");
+
     option(u"min-stable-delay", 0, UNSIGNED);
     help(u"min-stable-delay", u"milliseconds",
          u"An input file size needs to be stable during that duration, in milliseconds, for "
@@ -277,6 +284,12 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"or use the predefined name \"system\" for getting current time from the system clock. "
          u"By default, the current time is resynchronized on all TDT and TOT. "
          u"EIT injection starts when the time reference and actual transport stream id are known.");
+
+    option(u"synchronous-versions");
+    help(u"synchronous-versions",
+         u"Keep version numbers synchronous on all sections of an EIT subtable. "
+         u"By default, since EIT's are sparse sections and not full tables, the version "
+         u"number of an EIT section is updated only when the section is modified.");
 
     option(u"ts-id", 0, UINT16);
     help(u"ts-id",
@@ -343,6 +356,12 @@ bool ts::EITInjectPlugin::getOptions()
     }
     if (present(u"stuffing")) {
         _eit_options |= EITOptions::PACKET_STUFFING;
+    }
+    if (present(u"lazy-schedule-update")) {
+        _eit_options |= EITOptions::LAZY_SCHED_UPDATE;
+    }
+    if (present(u"synchronous-versions")) {
+        _eit_options |= EITOptions::SYNC_VERSIONS;
     }
 
     // EIT repetition cycles. First, use a generic profile, then customize individual values.
