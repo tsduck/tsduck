@@ -14,5 +14,6 @@ Fei Wong
 Maciej Czyzkowski
 Richie Chang
 Paul Higgs
+Amos Cheung
 
 If you wish to contribute, please see https://tsduck.io/doxy/contributing.html
