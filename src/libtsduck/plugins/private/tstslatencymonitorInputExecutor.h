@@ -55,7 +55,7 @@ namespace ts {
             //! @param [in,out] monitor Monitor instance
             //! @param [in,out] log Log report.
             //!
-            InputExecutor(const LantencyMonitorArgs &opt,
+            InputExecutor(const LatencyMonitorArgs &opt,
                           size_t index,
                           Core &monitor,
                           Report &log);
