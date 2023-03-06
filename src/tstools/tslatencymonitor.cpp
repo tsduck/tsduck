@@ -60,7 +60,7 @@ namespace {
 
         ts::DuckContext         duck;                 // TSDuck context
         ts::AsyncReportArgs     log_args;             // Asynchronous logger arguments.
-        ts::LantencyMonitorArgs latency_monitor_args; // TS processing arguments.
+        ts::LatencyMonitorArgs  latency_monitor_args; // TS processing arguments.
     };
 }
 

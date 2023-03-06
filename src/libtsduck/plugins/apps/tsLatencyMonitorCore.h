@@ -60,7 +60,7 @@ namespace ts {
             //! Consequently, it must be thread-safe. For performance reasons, it should
             //! be asynchronous (see for instance class AsyncReport).
             //!
-            Core(const LantencyMonitorArgs& args, Report& report);
+            Core(const LatencyMonitorArgs& args, Report& report);
 
             //!
             //! Start the PCR comparator session.
@@ -93,7 +93,7 @@ namespace ts {
             typedef std::vector<InputData> InputDataVector;
 
             Report&                    _report;
-            LantencyMonitorArgs        _args;
+            LatencyMonitorArgs         _args;
             InputDataVector            _inputs;
             Mutex                      _mutex;            // Global mutex, protect access to all subsequent fields.
             double                     _max_latency;      // Maximum latency between two inputs

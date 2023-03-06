@@ -30,13 +30,11 @@
 #include "tsLatencyMonitorArgs.h"
 #include "tsArgsWithPlugins.h"
 
-using namespace ts;
-
 //----------------------------------------------------------------------------
 // Constructors.
 //----------------------------------------------------------------------------
 
-LantencyMonitorArgs::LantencyMonitorArgs() :
+ts::LatencyMonitorArgs::LatencyMonitorArgs() :
     appName(),
     inputs(),
     outputName(),
@@ -50,7 +48,7 @@ LantencyMonitorArgs::LantencyMonitorArgs() :
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
-void LantencyMonitorArgs::defineArgs(Args& args)
+void ts::LatencyMonitorArgs::defineArgs(Args& args)
 {
     args.option(u"output-file", 'o', Args::FILENAME);
     args.help(u"output-file", u"filename",
@@ -72,7 +70,7 @@ void LantencyMonitorArgs::defineArgs(Args& args)
 // Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool LantencyMonitorArgs::loadArgs(Args& args)
+bool ts::LatencyMonitorArgs::loadArgs(Args& args)
 {
     appName = args.appName();
     outputName = args.value(u"output-file");

@@ -43,7 +43,7 @@ namespace ts {
     //! Transport stream latency monitor command-line options
     //! @ingroup plugin
     //!
-    class TSDUCKDLL LantencyMonitorArgs
+    class TSDUCKDLL LatencyMonitorArgs
     {
     public:
         UString             appName;           //!< Application name, for help messages.
@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        LantencyMonitorArgs();
+        LatencyMonitorArgs();
 
         //!
         //! Add command line option definitions in an Args.
