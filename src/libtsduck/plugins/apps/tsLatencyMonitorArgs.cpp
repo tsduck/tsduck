@@ -57,12 +57,12 @@ void ts::LatencyMonitorArgs::defineArgs(Args& args)
 
     args.option(u"buffer-time", 'b', Args::POSITIVE);
     args.help(u"buffer-time",
-              u"Specify the buffer time of timing data list in seconds."
+              u"Specify the buffer time of timing data list in seconds. "
               u"By default, the buffer time is 1 seconds.");
 
     args.option(u"output-interval", 0, Args::POSITIVE);
     args.help(u"output-interval",
-              u"Specify the time interval between each output in seconds."
+              u"Specify the time interval between each output in seconds. "
               u"The default is 1 second.");
 }
 
