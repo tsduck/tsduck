@@ -34,19 +34,21 @@
 
 #pragma once
 #include "tsPluginThread.h"
-#include "tsLatencyMonitorCore.h"
 #include "tsLatencyMonitorArgs.h"
 #include "tsInputPlugin.h"
 
 namespace ts {
+
+    class LatencyMonitor;
+
     namespace tslatencymonitor {
         //!
         //! Execution context of a tslatencymonitor input plugin.
         //! @ingroup plugin
         //!
-        class InputExecutor : public PluginThread {
+        class InputExecutor : public PluginThread
+        {
             TS_NOBUILD_NOCOPY(InputExecutor);
-
         public:
             //!
             //! Constructor.
@@ -55,10 +57,10 @@ namespace ts {
             //! @param [in,out] monitor Monitor instance
             //! @param [in,out] log Log report.
             //!
-            InputExecutor(const LatencyMonitorArgs &opt,
+            InputExecutor(const LatencyMonitorArgs& opt,
                           size_t index,
-                          Core &monitor,
-                          Report &log);
+                          LatencyMonitor& monitor,
+                          Report& log);
 
             //!
             //! Virtual destructor.
@@ -71,7 +73,7 @@ namespace ts {
             bool useJointTermination() const override;
             bool thisJointTerminated() const override;
             size_t pluginCount() const override;
-            void signalPluginEvent(uint32_t event_code, Object *plugin_data = nullptr) const override;
+            void signalPluginEvent(uint32_t event_code, Object* plugin_data = nullptr) const override;
             size_t pluginIndex() const override;
 
             //!
@@ -80,12 +82,12 @@ namespace ts {
             void terminateInput();
 
         private:
-            Core&                    _monitor;     // Monitor core instance
-            InputPlugin*             _input;       // Plugin API.
-            const size_t             _pluginIndex; // Index of this input plugin.
-            const size_t             _pluginCount; // Count of total plugin
-            TSPacketVector           _buffer;      // Packet buffer.
-            TSPacketMetadataVector   _metadata;    // Packet metadata.
+            LatencyMonitor&        _monitor;     // Monitor core instance
+            InputPlugin*           _input;       // Plugin API.
+            const size_t           _pluginIndex; // Index of this input plugin.
+            const size_t           _pluginCount; // Count of total plugin
+            TSPacketVector         _buffer;      // Packet buffer.
+            TSPacketMetadataVector _metadata;    // Packet metadata.
 
             static constexpr size_t BUFFERED_PACKETS = 512; // Input size buffer in packets.
 

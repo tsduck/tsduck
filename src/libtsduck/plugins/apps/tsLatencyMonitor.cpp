@@ -27,14 +27,15 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsLatencyMonitorCore.h"
+#include "tsLatencyMonitor.h"
 #include "tstslatencymonitorInputExecutor.h"
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructor.
 //----------------------------------------------------------------------------
 
-ts::tslatencymonitor::Core::Core(const LatencyMonitorArgs& args, Report& report) :
+ts::LatencyMonitor::LatencyMonitor(const LatencyMonitorArgs& args, Report& report) :
     _report(report),
     _args(args),
     _inputs(),
@@ -73,7 +74,7 @@ ts::tslatencymonitor::Core::Core(const LatencyMonitorArgs& args, Report& report)
 // Start the PCR comparator session.
 //----------------------------------------------------------------------------
 
-bool ts::tslatencymonitor::Core::start()
+bool ts::LatencyMonitor::start()
 {
     // Get all input plugin options.
     for (size_t i = 0; i < _inputs.size(); ++i) {
@@ -117,7 +118,8 @@ bool ts::tslatencymonitor::Core::start()
 //----------------------------------------------------------------------------
 // Pass incoming TS packets for processing (called by input plugins).
 //----------------------------------------------------------------------------
-void ts::tslatencymonitor::Core::processPacket(const TSPacketVector& pkt, const TSPacketMetadataVector& metadata, size_t count, size_t pluginIndex)
+
+void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacketMetadataVector& metadata, size_t count, size_t pluginIndex)
 {
     GuardMutex lock(_mutex);
     InputData::TimingDataList& timingDataList = _inputs[pluginIndex].timingDataList;
@@ -148,7 +150,8 @@ void ts::tslatencymonitor::Core::processPacket(const TSPacketVector& pkt, const 
 //----------------------------------------------------------------------------
 // Generate csv header
 //----------------------------------------------------------------------------
-void ts::tslatencymonitor::Core::csvHeader()
+
+void ts::LatencyMonitor::csvHeader()
 {
     *_output_file << "PCR1" << TS_DEFAULT_CSV_SEPARATOR
                   << "PCR2" << TS_DEFAULT_CSV_SEPARATOR
@@ -161,7 +164,8 @@ void ts::tslatencymonitor::Core::csvHeader()
 //----------------------------------------------------------------------------
 // Calculate delta of two PCRs
 //----------------------------------------------------------------------------
-void ts::tslatencymonitor::Core::calculatePCRDelta(InputDataVector& inputs)
+
+void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
 {
     // Check if both timing data lists not empty
     if (inputs[0].timingDataList.empty() && inputs[1].timingDataList.empty()) {
@@ -172,7 +176,7 @@ void ts::tslatencymonitor::Core::calculatePCRDelta(InputDataVector& inputs)
     InputData::TimingDataList& timingDataList2 = inputs[1].timingDataList;
 
     InputData::TimingData timingData1 = timingDataList1.front();
-    InputData::TimingData timingData2 = timingDataList2.front(); 
+    InputData::TimingData timingData2 = timingDataList2.front();
 
     bool retry = false;
     do {
@@ -183,7 +187,7 @@ void ts::tslatencymonitor::Core::calculatePCRDelta(InputDataVector& inputs)
             // If not retrying, use the list with the smaller PCR as the reference list and the list with the larger PCR as the shifted list
             refTimingDataList = (timingData1.pcr > timingData2.pcr) ? &timingDataList2 : &timingDataList1;
             shiftTimingDataList = (timingData1.pcr > timingData2.pcr) ? &timingDataList1 : &timingDataList2;
-        } 
+        }
         else {
             // If retrying, use the list with the larger PCR as the reference list and the list with the smaller PCR as the shifted list (loop point handling)
             refTimingDataList = (timingData1.pcr > timingData2.pcr) ? &timingDataList1 : &timingDataList2;
