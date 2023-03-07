@@ -31,7 +31,7 @@
 //
 //  Implementation notes:
 //
-//  The class tsLatencyMonitorCore implements the core function of tslatencymonitor. 
+//  The class tsLatencyMonitorCore implements the core function of tslatencymonitor.
 //  It is used by all other classes to get their instructions and report their status.
 //
 //  Each instance of the class InputExecutor implements a thread running one
@@ -41,7 +41,7 @@
 
 #include "tsMain.h"
 #include "tsArgsWithPlugins.h"
-#include "tsLatencyMonitorCore.h"
+#include "tsLatencyMonitor.h"
 #include "tsAsyncReport.h"
 
 TS_MAIN(MainCode);
@@ -65,7 +65,7 @@ namespace {
 }
 
 Options::Options(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(2, 2, 0, 0, 0, 0, u"Monitor latency between two TS input sources", u"[Options]"),
+    ts::ArgsWithPlugins(2, 2, 0, 0, 0, 0, u"Monitor latency between two TS input sources", u"[options]"),
     duck(this),
     log_args(),
     latency_monitor_args()
@@ -98,7 +98,7 @@ int MainCode(int argc, char *argv[])
     ts::AsyncReport report(opt.maxSeverity(), opt.log_args);
 
     // The TS input processing is performed into this object.
-    ts::tslatencymonitor::Core core(opt.latency_monitor_args, report);
+    ts::LatencyMonitor core(opt.latency_monitor_args, report);
 
     return core.start() ? EXIT_SUCCESS : EXIT_FAILURE;
 }

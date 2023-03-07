@@ -28,19 +28,21 @@
 //----------------------------------------------------------------------------
 
 #include "tstslatencymonitorInputExecutor.h"
+#include "tsLatencyMonitor.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::tslatencymonitor::InputExecutor::BUFFERED_PACKETS;
 #endif
+
 
 //----------------------------------------------------------------------------
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
 ts::tslatencymonitor::InputExecutor::InputExecutor(const LatencyMonitorArgs& opt,
-                                    size_t index,
-                                    Core& monitor,
-                                    Report& log) :
+                                                   size_t index,
+                                                   LatencyMonitor& monitor,
+                                                   Report& log) :
 
     // Input threads have a high priority to be always ready to load incoming packets in the buffer.
     PluginThread(&log, opt.appName, PluginType::INPUT, opt.inputs[index], ThreadAttributes().setPriority(ThreadAttributes::GetHighPriority())),
