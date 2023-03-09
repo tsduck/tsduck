@@ -343,17 +343,23 @@ OBJDIR = $(BINDIR)/objs-$(notdir $(CURDIR))
 
 GCC ?= gcc
 
-# Define compilation flags for 32-bit cross-compilation.
-# Target architecture is skipped on ARM because of numerous variants.
+# Compilation target options.
+
+CXXFLAGS_M32 :=
+LDFLAGS_M32  :=
 
 ifneq ($(M32),)
+    # Define compilation flags for 32-bit cross-compilation.
     override CXXFLAGS_TARGET := -march=i686
     override CXXFLAGS_M32 := -m32
     override LDFLAGS_M32  := -m32
+else ifeq ($(LOCAL_ARCH)-$(LOCAL_OS),linux-arm64)
+    # On Linux Arm64, allow the usage of specialized CRC32 instructions by the compiler.
+    # The code will explicitly check at run time if they are supported before using them.
+    # On macOS, this support is implicit.
+    CXXFLAGS_TARGET := -march=armv8-a+crc
 else
     CXXFLAGS_TARGET :=
-    CXXFLAGS_M32 :=
-    LDFLAGS_M32  :=
 endif
 
 # Cross-compilation support.
