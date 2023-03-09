@@ -47,6 +47,14 @@
 
 namespace ts {
     //!
+    //! Get a Unix sysctl(2) boolean value by name.
+    //! This function now works on BSD systems only (macOS, FreeBSD, OpenBSD, DragonFlyBSD).
+    //! Linux no longer supports sysctl(2), replaced by the /proc/sys filesystem.
+    //! @param [in] name Name of the data to return.
+    //! @return The bool value. False if not found.
+    //!
+    TSDUCKDLL bool SysCtrlBool(const std::string& name);
+    //!
     //! Get a Unix sysctl(2) string value.
     //! This function now works on BSD systems only (macOS, FreeBSD, OpenBSD, DragonFlyBSD).
     //! Linux no longer supports sysctl(2), replaced by the /proc/sys filesystem.

@@ -31,6 +31,10 @@
 #include "tsSysUtils.h"
 #include "tsMemory.h"
 
+#if defined(TS_LINUX)
+    #include <sys/auxv.h>
+#endif
+
 #if defined(TS_MAC)
     #include "tsMacPList.h"
 #endif
@@ -112,6 +116,12 @@ ts::SysInfo::SysInfo() :
     _isArm64(true),
 #else
     _isArm64(false),
+#endif
+    _crcOnProcessor(false),
+#if defined(__ARM_FEATURE_CRC32)
+    _crcOnCompiler(true),
+#else
+    _crcOnCompiler(false),
 #endif
     _systemVersion(),
     _systemName(),
@@ -306,5 +316,14 @@ ts::SysInfo::SysInfo() :
         _memoryPageSize = size_t(pageSize);
     }
 
+#endif
+
+    //
+    // Get support for CRC32 instructions.
+    //
+#if defined(TS_ARM64) && defined(TS_LINUX) && defined(HWCAP_CRC32)
+    _crcOnProcessor = (::getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
+#elif defined(TS_ARM64) && defined(TS_MAC)
+    _crcOnProcessor = SysCtrlBool("hw.optional.armv8_crc32");
 #endif
 }

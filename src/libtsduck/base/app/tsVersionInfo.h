@@ -92,6 +92,7 @@ namespace ts {
             SRT,      //!< Version of SRT library which is used.
             RIST,     //!< Version of RIST library which is used.
             VATEK,    //!< Version of embedded VATek library.
+            CRC32,    //!< Support for CRC32 instructions.
             ALL,      //!< Multi-line output with full details.
         };
 

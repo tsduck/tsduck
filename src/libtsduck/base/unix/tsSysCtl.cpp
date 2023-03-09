@@ -32,6 +32,22 @@
 
 
 //----------------------------------------------------------------------------
+// Get a Unix sysctl(2) boolean value by name.
+//----------------------------------------------------------------------------
+
+bool ts::SysCtrlBool(const std::string& name)
+{
+#if defined(TS_MAC)
+    int val = 0;
+    size_t len = sizeof(val);
+    return ::sysctlbyname(name.c_str(), &val, &len, nullptr, 0) == 0 && val != 0;
+#else
+    return false,
+#endif
+}
+
+
+//----------------------------------------------------------------------------
 // Get a Unix sysctl(2) string value.
 //----------------------------------------------------------------------------
 

@@ -68,6 +68,7 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
     {u"srt",      int(ts::VersionInfo::Format::SRT)},
     {u"rist",     int(ts::VersionInfo::Format::RIST)},
     {u"vatek",    int(ts::VersionInfo::Format::VATEK)},
+    {u"crc32",    int(ts::VersionInfo::Format::CRC32)},
     {u"all",      int(ts::VersionInfo::Format::ALL)},
 });
 
@@ -313,11 +314,16 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The version of the RIST library.
             return GetRISTLibraryVersion();
         }
+        case Format::CRC32: {
+            // Support for CRC32 instructions.
+            return UString::Format(u"CPU: %s, compiled code: %s", {SysInfo::Instance()->crcOnProcessor(), SysInfo::Instance()->crcOnCompiler()});
+        }
         case Format::ALL: {
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +
                 u"Built " + GetVersion(Format::DATE) + LINE_FEED +
                 u"Using " + GetVersion(Format::COMPILER) + LINE_FEED +
                 u"System: " + GetVersion(Format::SYSTEM) + LINE_FEED +
+                u"CRC32 instructions: " + GetVersion(Format::CRC32) + LINE_FEED +
                 u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
                 u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
                 u"VATek: " + GetVersion(Format::VATEK) + LINE_FEED +
