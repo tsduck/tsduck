@@ -42,7 +42,7 @@ bool ts::SysCtrlBool(const std::string& name)
     size_t len = sizeof(val);
     return ::sysctlbyname(name.c_str(), &val, &len, nullptr, 0) == 0 && val != 0;
 #else
-    return false,
+    return false;
 #endif
 }
 
