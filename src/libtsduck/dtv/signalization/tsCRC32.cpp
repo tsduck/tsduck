@@ -28,15 +28,75 @@
 //----------------------------------------------------------------------------
 
 #include "tsCRC32.h"
+#include "tsSysInfo.h"
+
+// Check if we can use accelerated CRC32 instructions.
+// - On Arm64 with CRC32 instructions accepted by the assembler.
+// - TS_NO_CRC32_INSTRUCTIONS not defined (define it to disable these instructions).
+// - Also check at runtime if the CPU supports these instructions.
+
+#if defined(__ARM_FEATURE_CRC32) && !defined(TS_NO_CRC32_INSTRUCTIONS) && !defined(TS_CRC32_INSTRUCTIONS)
+    #define TS_CRC32_INSTRUCTIONS 1
+#elif defined(TS_NO_CRC32_INSTRUCTIONS) && defined(TS_CRC32_INSTRUCTIONS)
+    #undef TS_CRC32_INSTRUCTIONS
+#endif
+
+#if defined(TS_CRC32_INSTRUCTIONS)
+namespace {
+    volatile bool _crc_checked = false;
+    volatile bool _crc_supported = false;
+}
+#endif
 
 
+//----------------------------------------------------------------------------
+// Default constructor.
+//----------------------------------------------------------------------------
+
+ts::CRC32::CRC32() :
+    _fcs(0xFFFFFFFF)
+{
+    // When CRC32 instructions are compiled, check once if supported at runtime.
+    // This logic does not require explicit synchronization.
+#if defined(TS_CRC32_INSTRUCTIONS)
+    if (!_crc_checked) {
+        _crc_supported = SysInfo::Instance()->crcOnProcessor();
+        _crc_checked = true;
+    }
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Get the value of the CRC32 as computed so far.
+//----------------------------------------------------------------------------
+
+uint32_t ts::CRC32::value() const
+{
+#if defined(TS_CRC32_INSTRUCTIONS)
+    if (_crc_supported) {
+        // With the Arm64 CRC32 instructions, we need to reverse the 32 bits in the result.
+        uint32_t x;
+        asm("rbit %w0, %w1" : "=r" (x) : "r" (_fcs));
+        return x;
+    }
+#endif
+
+    // In the portable implementation, directly return the result.
+    return _fcs;
+}
+
+
+//----------------------------------------------------------------------------
+// Static table for the portable implementation (no CRC32 instructions).
 // The FCS-32 generator polynomial:
 //     x**0 + x**1 + x**2 + x**4 + x**5 +
 //     x**7 + x**8 + x**10 + x**11 + x**12 + x**16 +
 //     x**22 + x**23 + x**26 + x**32.
+//----------------------------------------------------------------------------
 
 namespace {
-    const uint32_t fcstab_32[256] = {
+    const uint32_t _fcstab_32[256] = {
         0x00000000, 0x04C11DB7, 0x09823B6E, 0x0D4326D9,
         0x130476DC, 0x17C56B6B, 0x1A864DB2, 0x1E475005,
         0x2608EDB8, 0x22C9F00F, 0x2F8AD6D6, 0x2B4BCB61,
@@ -104,13 +164,95 @@ namespace {
     };
 }
 
-// Continue the computation of a data area, following a previous CRC32
+
+//----------------------------------------------------------------------------
+// Basic operations for the Arm64 CRC32 instructions.
+//----------------------------------------------------------------------------
+
+#if defined(TS_CRC32_INSTRUCTIONS)
+namespace {
+
+    // Arm Architecture Reference Manual, about the CRC32 instructions: "To align
+    // with common usage, the bit order of the values is reversed as part of the
+    // operation". However, the CRC32 computation for MPEG2-TS does not reverse
+    // the bits. Consequently, we have to reverse the bits again on input and
+    // output. We do this using 2 Arm64 instructions (would be dreadful in C++).
+
+    // Reverse all bits inside each individual byte of a 64-bit value.
+    // Then, add the 64-bit result in the CRC32 computation.
+    inline __attribute__((always_inline)) void crcAdd64(uint32_t& fcs, uint64_t x)
+    {
+        asm("rbit   %1, %1\n"
+            "rev    %1, %1\n"
+            "crc32x %w0, %w0, %1"
+            : "+r" (fcs) : "r" (x));
+    }
+
+    // Same thing on one byte only.
+    inline __attribute__((always_inline)) void crcAdd8(uint32_t& fcs, uint8_t x)
+    {
+        asm("rbit   %1, %1\n"
+            "rev    %1, %1\n"
+            "crc32b %w0, %w0, %w1"
+            : "+r" (fcs) : "r" (uint64_t(x)));
+    }
+}
+#endif
+
+
+//----------------------------------------------------------------------------
+// Continue the computation of a data area, following a previous CRC32.
+//----------------------------------------------------------------------------
 
 void ts::CRC32::add(const void* data, size_t size)
 {
-    const uint8_t* cp = static_cast<const uint8_t*>(data);
+#if defined(TS_CRC32_INSTRUCTIONS)
+    if (_crc_supported) {
+        // Add 8-bit values until an address aligned on 8 bytes.
+        const uint8_t* cp8 = reinterpret_cast<const uint8_t*>(data);
+        while (size != 0 && (uint64_t(cp8) & 0x03) != 0) {
+            crcAdd8(_fcs, *cp8++);
+            --size;
+        }
 
+        // Add 64-bit values until an address aligned on 64 bytes.
+        const uint64_t* cp64 = reinterpret_cast<const uint64_t*>(cp8);
+        while (size >= 8 && (uint64_t(cp64) & 0x07) != 0) {
+            crcAdd64(_fcs, *cp64++);
+            size -= 8;
+        }
+
+        // Add 8 * 64-bit values until less than 64 bytes (manual loop unroll).
+        while (size >= 64) {
+            crcAdd64(_fcs, *cp64++);
+            crcAdd64(_fcs, *cp64++);
+            crcAdd64(_fcs, *cp64++);
+            crcAdd64(_fcs, *cp64++);
+            crcAdd64(_fcs, *cp64++);
+            crcAdd64(_fcs, *cp64++);
+            crcAdd64(_fcs, *cp64++);
+            crcAdd64(_fcs, *cp64++);
+            size -= 64;
+        }
+
+        // Add 64-bit values until less than 8 bytes.
+        while (size >= 8) {
+            crcAdd64(_fcs, *cp64++);
+            size -= 8;
+        }
+
+        // Add remaining bytes.
+        cp8 = reinterpret_cast<const uint8_t*>(cp64);
+        while (size--) {
+            crcAdd8(_fcs, *cp8++);
+        }
+        return;
+    }
+#endif
+
+    // Portable implementation, using the pre-computed table.
+    const uint8_t* cp = reinterpret_cast<const uint8_t*>(data);
     while (size-- > 0) {
-        _fcs = (_fcs << 8) ^ fcstab_32[((_fcs >> 24) ^ (*cp++)) & 0xFF];
+        _fcs = (_fcs << 8) ^ _fcstab_32[((_fcs >> 24) ^ (*cp++)) & 0xFF];
     }
 }
