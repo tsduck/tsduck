@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        CRC32() : _fcs(0xFFFFFFFF) {}
+        CRC32();
 
         //!
         //! Constructor, compute the CRC32 of a data area.
@@ -56,7 +56,7 @@ namespace ts {
         //! @param [in] size Size in bytes of area to analyze.
         //!
         CRC32(const void* data, size_t size) :
-            _fcs(0xFFFFFFFF)
+            CRC32()
         {
             add(data, size);
         }
@@ -72,14 +72,14 @@ namespace ts {
         //! Get the value of the CRC32 as computed so far.
         //! @return The value of the CRC32 as computed so far.
         //!
-        uint32_t value() const { return _fcs; }
+        uint32_t value() const;
 
         //!
         //! Convert to a 32-bit integer.
         //! Same as value() method.
         //! @return The value of the CRC32 as computed so far.
         //!
-        operator uint32_t() const {return _fcs;}
+        operator uint32_t() const { return value(); }
 
         //!
         //! Comparison operator with another CRC32 instance.
@@ -95,22 +95,6 @@ namespace ts {
         //! @return True if the two CRC32 are different, false otherwise.
         //!
         bool operator!=(const CRC32& c) const { return _fcs != c._fcs; }
-#endif
-
-        //!
-        //! Comparison operator with a 32-bit integer.
-        //! @param [in] c A CRC32 value to compare.
-        //! @return True if the two CRC32 are identical, false otherwise.
-        //!
-        bool operator==(uint32_t c) const { return _fcs == c; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator with a 32-bit integer.
-        //! @param [in] c A CRC32 value to compare.
-        //! @return True if the two CRC32 are different, false otherwise.
-        //!
-        bool operator!=(uint32_t c) const { return _fcs != c; }
 #endif
 
         //!
@@ -131,30 +115,4 @@ namespace ts {
     private:
         uint32_t _fcs;
     };
-
-    //!
-    //! Comparison operator between a CRC32 instance and a 32-bit integer.
-    //! The reversed form of operators is a member function.
-    //! @param [in] c1 A CRC32 value to compare.
-    //! @param [in] c2 A CRC32 instance to compare.
-    //! @return True if the two CRC32 are identical, false otherwise.
-    //!
-    TSDUCKDLL inline bool operator==(uint32_t c1, const CRC32& c2)
-    {
-        return c2 == c1;  // this one is a member function
-    }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-    //!
-    //! Comparison operator between a CRC32 instance and a 32-bit integer.
-    //! The reversed form of operators is a member function.
-    //! @param [in] c1 A CRC32 value to compare.
-    //! @param [in] c2 A CRC32 instance to compare.
-    //! @return True if the two CRC32 are different, false otherwise.
-    //!
-    TSDUCKDLL inline bool operator!=(uint32_t c1, const CRC32& c2)
-    {
-        return c2 != c1;  // this one is a member function
-    }
-#endif
 }
