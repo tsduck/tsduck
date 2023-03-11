@@ -103,6 +103,12 @@ namespace ts {
         void reset() { _fcs = 0xFFFFFFFF; }
 
         //!
+        //! Check if CRC32 uses accelerated instructions or uses a portable but slower implementation.
+        //! @return Ttue if CRC32 uses accelerated instructions.
+        //!
+        static bool IsAccelerated();
+
+        //!
         //! What to do with a CRC32.
         //! Used when building MPEG sections.
         //!
