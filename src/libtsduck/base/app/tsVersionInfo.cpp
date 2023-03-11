@@ -316,7 +316,14 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         }
         case Format::CRC32: {
             // Support for CRC32 instructions.
-            return UString::Format(u"CPU: %s, compiled code: %s", {SysInfo::Instance()->crcOnProcessor(), SysInfo::Instance()->crcOnCompiler()});
+            return UString::Format(u"CPU: %s, compiled code: %s",
+                                   {UString::YesNo(SysInfo::Instance()->crcInstructions()),
+                                    #if defined(TS_ARM_CRC32_INSTRUCTIONS)
+                                        u"yes"
+                                    #else
+                                        u"no"
+                                    #endif
+                                   });
         }
         case Format::ALL: {
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +

@@ -134,16 +134,8 @@ namespace ts {
         //!
         //! Check if the CPU supports accelerated instructions for CRC32 computation.
         //! @return True if the CPU supports CRC32 instructions.
-        //! @see crcOnCompiler()
         //!
-        bool crcOnProcessor() const { return _crcOnProcessor; }
-        //!
-        //! Check if the code was compiled with supports for accelerated CRC32 instructions.
-        //! This instructions are used only when the CPU supports them.
-        //! @return True if the code was compiled with supports for accelerated CRC32 instructions.
-        //! @see crcOnProcessor()
-        //!
-        bool crcOnCompiler() const { return _crcOnCompiler; }
+        bool crcInstructions() const { return _crcInstructions; }
         //!
         //! Get the operating system version.
         //! @return The operating system version.
@@ -188,8 +180,7 @@ namespace ts {
         bool    _isIntel64;
         bool    _isArm32;
         bool    _isArm64;
-        bool    _crcOnProcessor;
-        bool    _crcOnCompiler;
+        bool    _crcInstructions;
         UString _systemVersion;
         UString _systemName;
         UString _hostName;

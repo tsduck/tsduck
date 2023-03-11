@@ -130,7 +130,7 @@ namespace ts {
             // Simply prevent the compiler from rescheduling instructions (not a true "memory barrier" however).
             __asm__ __volatile__ ("" : : :  "memory");
 
-        #elif defined(TS_GCC) && defined(TS_ARM)
+        #elif defined(TS_GCC) && defined(TS_ARM32)
 
             // For later reference, not sure this is valid.
             unsigned dest = 0;
