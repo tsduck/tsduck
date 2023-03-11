@@ -49,9 +49,10 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::UStringVector infiles;    // Input file names.
-        ts::ByteBlock     indata;     // Raw input data.
-        bool              show_name;  // Show file name on input.
+        ts::UStringVector infiles;     // Input file names.
+        ts::ByteBlock     indata;      // Raw input data.
+        bool              show_name;   // Show file name on input.
+        bool              accelerated; // Check if the computation of CRC32 is accelerated.
     };
 }
 
@@ -59,10 +60,14 @@ Options::Options(int argc, char *argv[]) :
     Args(u"Compute MPEG-style CRC32 values", u"[options] [filename ...]"),
     infiles(),
     indata(),
-    show_name(false)
+    show_name(false),
+    accelerated(false)
 {
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"", u"Any number of binary input files (standard input if omitted).");
+
+    option(u"accelerated", 'a');
+    help(u"accelerated", u"Check if the computation of CRC32 is accelerated using specialized instructions.");
 
     option(u"data", 'd', HEXADATA);
     help(u"data", u"Raw input data instead of input files. Use hexadecimal digits.");
@@ -72,6 +77,7 @@ Options::Options(int argc, char *argv[]) :
     getValues(infiles);
     getHexaValue(indata, u"data");
     show_name = verbose() || infiles.size() + !indata.empty() > 1;
+    accelerated = present(u"accelerated");
 
     exitOnError();
 }
@@ -133,6 +139,17 @@ int MainCode(int argc, char *argv[])
     // Decode command line.
     Options opt(argc, argv);
 
+    // Check the presence of CRC32 acceleration.
+    if (opt.accelerated) {
+        const bool yes = ts::CRC32::IsAccelerated();
+        if (opt.verbose()) {
+            std::cout << "CRC32 computation is " << (yes ? "" : "not ") << "accelerated" << std::endl;
+        }
+        else {
+            std::cout << ts::UString::YesNo(yes) << std::endl;
+        }
+    }
+
     // Process explicit input data.
     if (!opt.indata.empty()) {
         const ts::CRC32 crc(opt.indata.data(), opt.indata.size());
@@ -140,7 +157,7 @@ int MainCode(int argc, char *argv[])
     }
 
     // Process input files.
-    if (opt.infiles.empty() && opt.indata.empty()) {
+    if (opt.infiles.empty() && opt.indata.empty() && !opt.accelerated) {
         // Process standard input.
         ProcessFile(opt, ts::UString());
     }

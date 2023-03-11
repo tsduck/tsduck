@@ -46,13 +46,28 @@ namespace {
 ts::CRC32::CRC32() :
     _fcs(0xFFFFFFFF)
 {
+#if defined(TS_ARM_CRC32_INSTRUCTIONS)
     // When CRC32 instructions are compiled, check once if supported at runtime.
     // This logic does not require explicit synchronization.
-#if defined(TS_ARM_CRC32_INSTRUCTIONS)
     if (!_crc_checked) {
         _crc_supported = SysInfo::Instance()->crcInstructions();
         _crc_checked = true;
     }
+#endif
+}
+
+
+//----------------------------------------------------------------------------
+// Check if CRC32 uses accelerated instructions.
+//----------------------------------------------------------------------------
+
+bool ts::CRC32::IsAccelerated()
+{
+#if defined(TS_ARM_CRC32_INSTRUCTIONS)
+    CRC32 dummy; // force support check
+    return _crc_supported;
+#else
+    return false;
 #endif
 }
 
