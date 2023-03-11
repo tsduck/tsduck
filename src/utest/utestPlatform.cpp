@@ -62,7 +62,11 @@ public:
     void testROL64c();
     void testROR64();
     void testROR64c();
+    void testSignExtend24();
+    void testSignExtend40();
+    void testSignExtend48();
     void testByteSwap16();
+    void testByteSwap24();
     void testByteSwap32();
     void testByteSwap64();
     void testCondByteSwap16BE();
@@ -136,7 +140,11 @@ public:
     TSUNIT_TEST(testROL64c);
     TSUNIT_TEST(testROR64);
     TSUNIT_TEST(testROR64c);
+    TSUNIT_TEST(testSignExtend24);
+    TSUNIT_TEST(testSignExtend40);
+    TSUNIT_TEST(testSignExtend48);
     TSUNIT_TEST(testByteSwap16);
+    TSUNIT_TEST(testByteSwap24);
     TSUNIT_TEST(testByteSwap32);
     TSUNIT_TEST(testByteSwap64);
     TSUNIT_TEST(testCondByteSwap16BE);
@@ -402,6 +410,8 @@ void PlatformTest::testROL()
     TSUNIT_EQUAL(0x34567812, ts::ROL(0x12345678, 8));
     TSUNIT_EQUAL(0x23456781, ts::ROL(0x12345678, 4));
     TSUNIT_EQUAL(0x67812345, ts::ROL(0x12345678, -12));
+    TSUNIT_EQUAL(0x468ACF02, ts::ROL(0x12345678, 5));
+    TSUNIT_EQUAL(0x048D159E, ts::ROL(0x12345678, 30));
 }
 
 void PlatformTest::testROLc()
@@ -409,6 +419,8 @@ void PlatformTest::testROLc()
     TSUNIT_EQUAL(0x34567812, ts::ROLc(0x12345678, 8));
     TSUNIT_EQUAL(0x23456781, ts::ROLc(0x12345678, 4));
     TSUNIT_EQUAL(0x45678123, ts::ROLc(0x12345678, 12));
+    TSUNIT_EQUAL(0x468ACF02, ts::ROLc(0x12345678, 5));
+    TSUNIT_EQUAL(0x048D159E, ts::ROLc(0x12345678, 30));
 }
 
 void PlatformTest::testROR()
@@ -480,9 +492,33 @@ namespace {
     };
 }
 
+void PlatformTest::testSignExtend24()
+{
+    TSUNIT_EQUAL(0x00723456, ts::SignExtend24(0xAA723456));
+    TSUNIT_EQUAL(0xFF923456, ts::SignExtend24(0xAA923456));
+}
+
+void PlatformTest::testSignExtend40()
+{
+    TSUNIT_EQUAL(TS_CONST64(0x000000723456789A), ts::SignExtend40(TS_CONST64(0xAAAAAA723456789A)));
+    TSUNIT_EQUAL(TS_CONST64(0xFFFFFFA23456789A), ts::SignExtend40(TS_CONST64(0xAAAAAAA23456789A)));
+}
+
+void PlatformTest::testSignExtend48()
+{
+    TSUNIT_EQUAL(TS_CONST64(0x0000723456789ABC), ts::SignExtend48(TS_CONST64(0xAAAA723456789ABC)));
+    TSUNIT_EQUAL(TS_CONST64(0xFFFFA23456789ABC), ts::SignExtend48(TS_CONST64(0xAAAAA23456789ABC)));
+}
+
 void PlatformTest::testByteSwap16()
 {
     TSUNIT_EQUAL(0x3412, ts::ByteSwap16(0x1234));
+}
+
+void PlatformTest::testByteSwap24()
+{
+    TSUNIT_EQUAL(0x563412, ts::ByteSwap24(0x123456));
+    TSUNIT_EQUAL(0xEFCDAB, ts::ByteSwap24(0xABCDEF));
 }
 
 void PlatformTest::testByteSwap32()
