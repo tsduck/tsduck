@@ -30,19 +30,9 @@
 #include "tsCRC32.h"
 #include "tsSysInfo.h"
 
-// Check if we can use accelerated CRC32 instructions.
-// - On Arm64 with CRC32 instructions accepted by the assembler.
-// - TS_NO_CRC32_INSTRUCTIONS not defined (define it to disable these instructions).
-// - Also check at runtime if the CPU supports these instructions.
-
-#if defined(__ARM_FEATURE_CRC32) && !defined(TS_NO_CRC32_INSTRUCTIONS) && !defined(TS_CRC32_INSTRUCTIONS)
-    #define TS_CRC32_INSTRUCTIONS 1
-#elif defined(TS_NO_CRC32_INSTRUCTIONS) && defined(TS_CRC32_INSTRUCTIONS)
-    #undef TS_CRC32_INSTRUCTIONS
-#endif
-
-#if defined(TS_CRC32_INSTRUCTIONS)
+#if defined(TS_ARM_CRC32_INSTRUCTIONS)
 namespace {
+    // Runtime check once if Arm-64 CRC32 instructions are supported on this CPU.
     volatile bool _crc_checked = false;
     volatile bool _crc_supported = false;
 }
@@ -58,9 +48,9 @@ ts::CRC32::CRC32() :
 {
     // When CRC32 instructions are compiled, check once if supported at runtime.
     // This logic does not require explicit synchronization.
-#if defined(TS_CRC32_INSTRUCTIONS)
+#if defined(TS_ARM_CRC32_INSTRUCTIONS)
     if (!_crc_checked) {
-        _crc_supported = SysInfo::Instance()->crcOnProcessor();
+        _crc_supported = SysInfo::Instance()->crcInstructions();
         _crc_checked = true;
     }
 #endif
@@ -73,7 +63,7 @@ ts::CRC32::CRC32() :
 
 uint32_t ts::CRC32::value() const
 {
-#if defined(TS_CRC32_INSTRUCTIONS)
+#if defined(TS_ARM_CRC32_INSTRUCTIONS)
     if (_crc_supported) {
         // With the Arm64 CRC32 instructions, we need to reverse the 32 bits in the result.
         uint32_t x;
@@ -169,7 +159,7 @@ namespace {
 // Basic operations for the Arm64 CRC32 instructions.
 //----------------------------------------------------------------------------
 
-#if defined(TS_CRC32_INSTRUCTIONS)
+#if defined(TS_ARM_CRC32_INSTRUCTIONS)
 namespace {
 
     // Arm Architecture Reference Manual, about the CRC32 instructions: "To align
@@ -206,7 +196,7 @@ namespace {
 
 void ts::CRC32::add(const void* data, size_t size)
 {
-#if defined(TS_CRC32_INSTRUCTIONS)
+#if defined(TS_ARM_CRC32_INSTRUCTIONS)
     if (_crc_supported) {
         // Add 8-bit values until an address aligned on 8 bytes.
         const uint8_t* cp8 = reinterpret_cast<const uint8_t*>(data);

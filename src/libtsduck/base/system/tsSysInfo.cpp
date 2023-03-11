@@ -107,7 +107,7 @@ ts::SysInfo::SysInfo() :
 #else
     _isIntel64(false),
 #endif
-#if defined(TS_ARM)
+#if defined(TS_ARM32)
     _isArm32(true),
 #else
     _isArm32(false),
@@ -117,12 +117,7 @@ ts::SysInfo::SysInfo() :
 #else
     _isArm64(false),
 #endif
-    _crcOnProcessor(false),
-#if defined(__ARM_FEATURE_CRC32)
-    _crcOnCompiler(true),
-#else
-    _crcOnCompiler(false),
-#endif
+    _crcInstructions(false),
     _systemVersion(),
     _systemName(),
     _hostName(),
@@ -132,7 +127,7 @@ ts::SysInfo::SysInfo() :
     _cpuName(u"Intel x86-64"),
 #elif defined(TS_ARM64)
     _cpuName(u"Arm-64"),
-#elif defined(TS_ARM)
+#elif defined(TS_ARM32)
     _cpuName(u"Arm-32"),
 #elif defined(TS_MIPS)
     _cpuName(u"MIPS"),
@@ -322,8 +317,8 @@ ts::SysInfo::SysInfo() :
     // Get support for CRC32 instructions.
     //
 #if defined(TS_ARM64) && defined(TS_LINUX) && defined(HWCAP_CRC32)
-    _crcOnProcessor = (::getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
+    _crcInstructions = (::getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
 #elif defined(TS_ARM64) && defined(TS_MAC)
-    _crcOnProcessor = SysCtrlBool("hw.optional.armv8_crc32");
+    _crcInstructions = SysCtrlBool("hw.optional.armv8_crc32");
 #endif
 }

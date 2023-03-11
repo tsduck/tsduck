@@ -366,11 +366,11 @@
     //!
     #define TS_X86_64
     //!
-    //! Defined when the target processor architecture is ARM.
+    //! Defined when the target processor architecture is 32-bit ARM.
     //!
-    #define TS_ARM
+    #define TS_ARM32
     //!
-    //! Defined when the target processor architecture is ARM64.
+    //! Defined when the target processor architecture is 64-bit ARM.
     //!
     #define TS_ARM64
     //!
@@ -423,19 +423,19 @@
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 64
     #endif
-#elif defined(__arm__)
-    #if !defined(TS_ARM)
-        #define TS_ARM 1
-    #endif
-    #if !defined(TS_ADDRESS_BITS)
-        #define TS_ADDRESS_BITS 32
-    #endif
 #elif defined(__aarch64__) || defined(__arm64__)
     #if !defined(TS_ARM64)
         #define TS_ARM64 1
     #endif
     #if !defined(TS_ADDRESS_BITS)
         #define TS_ADDRESS_BITS 64
+    #endif
+#elif defined(__arm__)
+    #if !defined(TS_ARM32)
+        #define TS_ARM32 1
+    #endif
+    #if !defined(TS_ADDRESS_BITS)
+        #define TS_ADDRESS_BITS 32
     #endif
 #elif defined(__stxp70__) || defined(__STxP70__)
     #if !defined(TS_STXP70)
@@ -504,7 +504,7 @@
     #define TS_BIG_ENDIAN 1
 #endif
 
-#if defined(TS_ARM) || defined(TS_ARM64) || defined(TS_MIPS)
+#if defined(TS_ARM32) || defined(TS_ARM64) || defined(TS_MIPS)
     #if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         #define TS_LITTLE_ENDIAN 1
     #elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
@@ -533,6 +533,26 @@
 //!
 #if (defined(DOXYGEN) || defined(__ARM_ARCH_5TEJ__)) && !defined(TS_STRICT_MEMORY_ALIGN)
     #define TS_STRICT_MEMORY_ALIGN 1
+#endif
+
+//!
+//! Define TS_NO_ARM_CRC32_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 CRC32 instructions.
+//!
+#if defined(DOXYGEN)
+    #define TS_NO_ARM_CRC32_INSTRUCTIONS 1
+#endif
+
+//!
+//! TS_ARM_CRC32_INSTRUCTIONS is defined when Arm-64 CRC32 instructions can be used in asm() directives.
+//! Important: Having the instructions compiled in the code does not mean that the CPU we are running on
+//! supports them. The code shall check at run-time if CRC32 instructions are supported or not. If they
+//! are not, another portable code path shall be used.
+//! @see ts::SysInfo::crcInstructions()
+//!
+#if defined(DOXYGEN) || (defined(__ARM_FEATURE_CRC32) && !defined(TS_NO_ARM_CRC32_INSTRUCTIONS) && !defined(TS_ARM_CRC32_INSTRUCTIONS))
+    #define TS_ARM_CRC32_INSTRUCTIONS 1
+#elif defined(TS_NO_CRC32_INSTRUCTIONS) && defined(TS_ARM_CRC32_INSTRUCTIONS)
+    #undef TS_ARM_CRC32_INSTRUCTIONS
 #endif
 
 
@@ -770,7 +790,7 @@
 // Disable some warnings, application-wide, for various compilers.
 //
 TS_GCC_NOWARNING(unused-parameter)                // Unused parameters are frequent with overrides.
-#if defined(TS_ARM)
+#if defined(TS_ARM32)
     TS_GCC_NOWARNING(psabi)
 #endif
 
