@@ -329,7 +329,7 @@ namespace ts {
     #if defined(DEBUG) || defined(TS_LLVM)
         return ROR64(word, i);
     #else
-        asm("ror %w0, %w0, %1" : "+r" (word) : "I" (uint64_t(i)));
+        asm("ror %0, %0, %1" : "+r" (word) : "I" (uint64_t(i)));
         return word;
     #endif
     }
