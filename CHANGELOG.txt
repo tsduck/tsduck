@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.34-3164
+VERSION 3.34-3170
 
 [NEW] New commands and plugins:
 
@@ -11,8 +11,8 @@ VERSION 3.34-3164
 
 [IMP] Improvements on existing commands and plugins:
 
-  * On Arm64 platforms, Linux and macOS, huge performance boost on CRC32
-    computation (20 times faster) for all MPEG sections.
+  * On Arm64 platforms, Linux and macOS, improved performances on data
+    serialization, CRC32 for all MPEG sections, SHA-1.
   * Using "-P tables --log", without "--output", the logged lines are reported
     through the general logger of "tsp" instead of being output to stdout.
   * New options in existing commands and plugins:
