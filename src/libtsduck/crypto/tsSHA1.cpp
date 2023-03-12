@@ -63,7 +63,7 @@ void ts::SHA1::compress(const uint8_t* buf)
 
     // Copy the state into 512-bits into W[0..15]
     for (i = 0; i < 16; i++) {
-        W[i] = GetUInt32 (buf + 4*i);
+        W[i] = GetUInt32(buf + 4*i);
     }
 
     // Copy state
@@ -85,7 +85,8 @@ void ts::SHA1::compress(const uint8_t* buf)
     #define FF2(a,b,c,d,e,i) e = (ROLc(a, 5) + F2(b,c,d) + e + W[i] + 0x8f1bbcdcUL); b = ROLc(b, 30)
     #define FF3(a,b,c,d,e,i) e = (ROLc(a, 5) + F3(b,c,d) + e + W[i] + 0xca62c1d6UL); b = ROLc(b, 30)
 
-    for (i = 0; i < 20; ) {
+    i = 0;
+    while (i < 20) {
         FF0(a,b,c,d,e,i++);
         FF0(e,a,b,c,d,i++);
         FF0(d,e,a,b,c,i++);
@@ -94,7 +95,7 @@ void ts::SHA1::compress(const uint8_t* buf)
     }
 
     // Round two
-    for (; i < 40; )  {
+    while (i < 40) {
         FF1(a,b,c,d,e,i++);
         FF1(e,a,b,c,d,i++);
         FF1(d,e,a,b,c,i++);
@@ -103,7 +104,7 @@ void ts::SHA1::compress(const uint8_t* buf)
     }
 
     // Round three
-    for (; i < 60; )  {
+    while (i < 60) {
         FF2(a,b,c,d,e,i++);
         FF2(e,a,b,c,d,i++);
         FF2(d,e,a,b,c,i++);
@@ -112,7 +113,7 @@ void ts::SHA1::compress(const uint8_t* buf)
     }
 
     // Round four
-    for (; i < 80; )  {
+    while (i < 80) {
         FF3(a,b,c,d,e,i++);
         FF3(e,a,b,c,d,i++);
         FF3(d,e,a,b,c,i++);
@@ -161,7 +162,7 @@ bool ts::SHA1::add(const void* data, size_t size)
             in += n;
             size -= n;
             if (_curlen == BLOCK_SIZE) {
-                compress (_buf);
+                compress(_buf);
                 _length += 8 * BLOCK_SIZE;
                 _curlen = 0;
             }
@@ -177,43 +178,41 @@ bool ts::SHA1::add(const void* data, size_t size)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SHA1::getHash (void* hash, size_t bufsize, size_t* retsize)
+bool ts::SHA1::getHash(void* hash, size_t bufsize, size_t* retsize)
 {
     if (_curlen >= sizeof(_buf) || bufsize < HASH_SIZE) {
         return false;
     }
 
-    /* increase the length of the message */
+    // Increase the length of the message
     _length += _curlen * 8;
 
-    /* append the '1' bit */
+    // Append the '1' bit
     _buf[_curlen++] = 0x80;
 
-    /* if the length is currently above 56 bytes we append zeros
-     * then compress.  Then we can fall back to padding zeros and length
-     * encoding like normal.
-     */
+    // If the length is currently above 56 bytes we append zeros then compress.
+    // Then we can fall back to padding zeros and length encoding like normal.
     if (_curlen > 56) {
         while (_curlen < 64) {
             _buf[_curlen++] = 0;
         }
-        compress (_buf);
+        compress(_buf);
         _curlen = 0;
     }
 
-    /* pad upto 56 bytes of zeroes */
+    // Pad upto 56 bytes of zeroes
     while (_curlen < 56) {
         _buf[_curlen++] = 0;
     }
 
-    /* store length */
-    PutUInt64 (_buf + 56, _length);
-    compress (_buf);
+    // Store length
+    PutUInt64(_buf + 56, _length);
+    compress(_buf);
 
-    /* copy output */
-    uint8_t* out = reinterpret_cast<uint8_t*> (hash);
+    // Copy output
+    uint8_t* out = reinterpret_cast<uint8_t*>(hash);
     for (size_t i = 0; i < 5; i++) {
-        PutUInt32 (out + 4*i, _state[i]);
+        PutUInt32(out + 4*i, _state[i]);
     }
 
     if (retsize != nullptr) {

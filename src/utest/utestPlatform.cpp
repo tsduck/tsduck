@@ -412,6 +412,7 @@ void PlatformTest::testROL()
     TSUNIT_EQUAL(0x67812345, ts::ROL(0x12345678, -12));
     TSUNIT_EQUAL(0x468ACF02, ts::ROL(0x12345678, 5));
     TSUNIT_EQUAL(0x048D159E, ts::ROL(0x12345678, 30));
+    TSUNIT_EQUAL(0x2468ACF0, ts::ROL(0x12345678, 1));
 }
 
 void PlatformTest::testROLc()
