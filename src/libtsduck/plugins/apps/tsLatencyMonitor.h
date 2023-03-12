@@ -82,30 +82,29 @@ namespace ts {
         void processPacket(const TSPacketVector& pkt, const TSPacketMetadataVector& metadata, size_t count, size_t pluginIndex);
 
     private:
+        struct TimingData
+        {
+            uint64_t pcr;
+            uint64_t timestamp;
+        };
+        typedef std::list<TimingData> TimingDataList;
+
         struct InputData
         {
-            struct TimingData
-            {
-                uint64_t pcr;
-                uint64_t timestamp;
-            };
-
-            typedef std::list<TimingData> TimingDataList;
 
             std::shared_ptr<tslatencymonitor::InputExecutor> inputExecutor;
             TimingDataList timingDataList;
         };
-
         typedef std::vector<InputData> InputDataVector;
 
-        Report&                    _report;
-        LatencyMonitorArgs         _args;
-        InputDataVector            _inputs;
-        Mutex                      _mutex;            // Global mutex, protect access to all subsequent fields.
-        double                     _max_latency;      // Maximum latency between two inputs
-        Time                       _last_output_time; // Timestamp to record last output time
-        std::ofstream              _output_stream;    // Output stream file
-        std::ostream*              _output_file;      // Reference to actual output stream file
+        Report&            _report;
+        LatencyMonitorArgs _args;
+        InputDataVector    _inputs;
+        Mutex              _mutex;            // Global mutex, protect access to all subsequent fields.
+        double             _max_latency;      // Maximum latency between two inputs
+        Time               _last_output_time; // Timestamp to record last output time
+        std::ofstream      _output_stream;    // Output stream file
+        std::ostream*      _output_file;      // Reference to actual output stream file
 
         // Generate csv header
         void csvHeader();
