@@ -75,7 +75,7 @@ void ts::SHA1::compress(const uint8_t* buf)
 
     // Expand it
     for (i = 16; i < 80; i++) {
-        W[i] = ROL(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
+        W[i] = ROLc(W[i-3] ^ W[i-8] ^ W[i-14] ^ W[i-16], 1);
     }
 
     // Compress

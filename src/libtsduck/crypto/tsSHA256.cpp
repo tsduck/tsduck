@@ -19,7 +19,7 @@
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))
 #define Maj(x,y,z) (((x | y) & z) | (x & y))
-#define S(x, n)    (RORc ((x),(n)))
+#define S(x, n)    (RORc((x),(n)))
 #define R(x, n)    (((x) & 0xFFFFFFFF) >> (n))
 #define Sigma0(x)  (S(x, 2) ^ S(x, 13) ^ S(x, 22))
 #define Sigma1(x)  (S(x, 6) ^ S(x, 11) ^ S(x, 25))
@@ -64,26 +64,26 @@ bool ts::SHA256::init()
 // Compress part of message
 //----------------------------------------------------------------------------
 
-void ts::SHA256::compress (const uint8_t* buf)
+void ts::SHA256::compress(const uint8_t* buf)
 {
     uint32_t S[8], W[64], t0, t1;
 
-    /* copy state into S */
+    // Copy state into S
     for (size_t i = 0; i < 8; i++) {
         S[i] = _state[i];
     }
 
-    /* copy the state into 512-bits into W[0..15] */
+    // Copy the state into 512-bits into W[0..15]
     for (size_t i = 0; i < 16; i++) {
-        W[i] = GetUInt32 (buf + 4*i);
+        W[i] = GetUInt32(buf + 4*i);
     }
 
-    /* fill W[16..63] */
+    // Fill W[16..63]
     for (size_t i = 16; i < 64; i++) {
         W[i] = Gamma1(W[i - 2]) + W[i - 7] + Gamma0(W[i - 15]) + W[i - 16];
     }
 
-    /* Compress */
+    // Compress
 #define RND(a,b,c,d,e,f,g,h,i,ki)                 \
     t0 = h + Sigma1(e) + Ch(e, f, g) + ki + W[i]; \
     t1 = Sigma0(a) + Maj(a, b, c);                \
@@ -157,7 +157,7 @@ void ts::SHA256::compress (const uint8_t* buf)
 
 #undef RND
 
-    /* feedback */
+    // Feedback
     for (size_t i = 0; i < 8; i++) {
         _state[i] = _state[i] + S[i];
     }
@@ -169,9 +169,9 @@ void ts::SHA256::compress (const uint8_t* buf)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SHA256::add (const void* data, size_t size)
+bool ts::SHA256::add(const void* data, size_t size)
 {
-    const uint8_t* in = reinterpret_cast<const uint8_t*> (data);
+    const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
     size_t n;
 
     if (_curlen >= sizeof(_buf)) {
@@ -179,19 +179,19 @@ bool ts::SHA256::add (const void* data, size_t size)
     }
     while (size > 0) {
         if (_curlen == 0 && size >= BLOCK_SIZE) {
-            compress (in);
+            compress(in);
             _length += BLOCK_SIZE * 8;
             in += BLOCK_SIZE;
             size -= BLOCK_SIZE;
         }
         else {
-            n = std::min (size, (BLOCK_SIZE - _curlen));
+            n = std::min(size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
             size -= n;
             if (_curlen == BLOCK_SIZE) {
-                compress (_buf);
+                compress(_buf);
                 _length += 8 * BLOCK_SIZE;
                 _curlen = 0;
             }
@@ -207,22 +207,20 @@ bool ts::SHA256::add (const void* data, size_t size)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SHA256::getHash (void* hash, size_t bufsize, size_t* retsize)
+bool ts::SHA256::getHash(void* hash, size_t bufsize, size_t* retsize)
 {
     if (_curlen >= sizeof(_buf) || bufsize < HASH_SIZE) {
         return false;
     }
 
-    /* increase the length of the message */
+    // Increase the length of the message
     _length += _curlen * 8;
 
-    /* append the '1' bit */
+    // Append the '1' bit
     _buf[_curlen++] = 0x80;
 
-    /* if the length is currently above 56 bytes we append zeros
-     * then compress.  Then we can fall back to padding zeros and length
-     * encoding like normal.
-     */
+    // If the length is currently above 56 bytes we append zeros then compress.
+    // Then we can fall back to padding zeros and length encoding like normal.
     if (_curlen > 56) {
         while (_curlen < 64) {
             _buf[_curlen++] = 0;
@@ -231,19 +229,19 @@ bool ts::SHA256::getHash (void* hash, size_t bufsize, size_t* retsize)
         _curlen = 0;
     }
 
-    /* pad upto 56 bytes of zeroes */
+    // Pad upto 56 bytes of zeroes
     while (_curlen < 56) {
         _buf[_curlen++] = 0;
     }
 
-    /* store length */
-    PutUInt64 (_buf + 56, _length);
-    compress (_buf);
+    // Store length
+    PutUInt64(_buf + 56, _length);
+    compress(_buf);
 
-    /* copy output */
+    // Copy output
     uint8_t* out = reinterpret_cast<uint8_t*> (hash);
     for (size_t i = 0; i < 8; i++) {
-        PutUInt32 (out + 4*i, _state[i]);
+        PutUInt32(out + 4*i, _state[i]);
     }
 
     if (retsize != nullptr) {

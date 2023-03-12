@@ -19,7 +19,7 @@
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))
 #define Maj(x,y,z) (((x | y) & z) | (x & y))
-#define S(x, n)    (ROR64c(x, n))
+#define S(x, n)    (ROR64c((x), (n)))
 #define R(x, n)    (((x) & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >> uint64_t(n))
 #define Sigma0(x)  (S(x, 28) ^ S(x, 34) ^ S(x, 39))
 #define Sigma1(x)  (S(x, 14) ^ S(x, 18) ^ S(x, 41))
@@ -118,22 +118,22 @@ void ts::SHA512::compress(const uint8_t* buf)
 {
     uint64_t S[8], W[80], t0, t1;
 
-    /* copy state into S */
+    // Copy state into S
     for (size_t i = 0; i < 8; i++) {
         S[i] = _state[i];
     }
 
-    /* copy the state into 1024-bits into W[0..15] */
+    // Copy the state into 1024-bits into W[0..15]
     for (size_t i = 0; i < 16; i++) {
         W[i] = GetUInt64(buf + 8*i);
     }
 
-    /* fill W[16..79] */
+    // Fill W[16..79]
     for (size_t i = 16; i < 80; i++) {
         W[i] = Gamma1(W[i - 2]) + W[i - 7] + Gamma0(W[i - 15]) + W[i - 16];
     }
 
-    /* Compress */
+    // Compress
 #define RND(a,b,c,d,e,f,g,h,i)                       \
     t0 = h + Sigma1(e) + Ch(e, f, g) + K[i] + W[i];  \
     t1 = Sigma0(a) + Maj(a, b, c);                   \
@@ -153,7 +153,7 @@ void ts::SHA512::compress(const uint8_t* buf)
 
 #undef RND
 
-    /* feedback */
+    // Feedback
     for (size_t i = 0; i < 8; i++) {
         _state[i] = _state[i] + S[i];
     }
@@ -203,46 +203,42 @@ bool ts::SHA512::add(const void* data, size_t size)
 // Return true on success, false on error.
 //----------------------------------------------------------------------------
 
-bool ts::SHA512::getHash (void* hash, size_t bufsize, size_t* retsize)
+bool ts::SHA512::getHash(void* hash, size_t bufsize, size_t* retsize)
 {
     if (_curlen >= sizeof(_buf) || bufsize < HASH_SIZE) {
         return false;
     }
 
-    /* increase the length of the message */
+    // Increase the length of the message
     _length += _curlen * 8;
 
-    /* append the '1' bit */
+    // Append the '1' bit
     _buf[_curlen++] = 0x80;
 
-    /* if the length is currently above 112 bytes we append zeros
-     * then compress.  Then we can fall back to padding zeros and length
-     * encoding like normal.
-     */
+    // If the length is currently above 112 bytes we append zeros then compress.
+    // Then we can fall back to padding zeros and length encoding like normal.
     if (_curlen > 112) {
         while (_curlen < 128) {
             _buf[_curlen++] = 0;
         }
-        compress (_buf);
+        compress(_buf);
         _curlen = 0;
     }
 
-    /* pad upto 120 bytes of zeroes
-     * note: that from 112 to 120 is the 64 MSB of the length.  We assume that you won't hash
-     * > 2^64 bits of data... :-)
-     */
+    // Pad upto 120 bytes of zeroes
+    // Note: that from 112 to 120 is the 64 MSB of the length.  We assume that you won't hash > 2^64 bits of data... :-)
     while (_curlen < 120) {
         _buf[_curlen++] = 0;
     }
 
-    /* store length */
-    PutUInt64 (_buf + 120, _length);
-    compress (_buf);
+    // Store length
+    PutUInt64(_buf + 120, _length);
+    compress(_buf);
 
-    /* copy output */
-    uint8_t* out = reinterpret_cast<uint8_t*> (hash);
+    // Copy output
+    uint8_t* out = reinterpret_cast<uint8_t*>(hash);
     for (size_t i = 0; i < 8; i++) {
-        PutUInt64 (out + 8*i, _state[i]);
+        PutUInt64(out + 8*i, _state[i]);
     }
 
     if (retsize != nullptr) {
