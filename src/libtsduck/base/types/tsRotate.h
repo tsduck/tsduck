@@ -119,7 +119,7 @@ namespace ts {
 
     TSDUCKDLL inline uint32_t ROL(uint32_t word, int i)
     {
-        asm("sub %w1, %w1, #32 \n neg %w1, %w1 \n ror %w0, %w0, %w1" : "+r" (word) : "r" (i));
+        asm("mov w8, #32 \n sub w8, w8, %w1 \n ror %w0, %w0, w8" : "+r" (word) : "r" (i) : "w8", "cc");
         return word;
     }
 
