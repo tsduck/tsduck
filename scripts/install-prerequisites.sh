@@ -100,7 +100,7 @@ VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
-    pkglist="git git-lfs gnu-sed grep dos2unix coreutils srt librist libvatek python3 openjdk"
+    pkglist="git git-lfs gnu-sed grep dos2unix coreutils doxygen graphviz srt librist libvatek python3 openjdk"
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install

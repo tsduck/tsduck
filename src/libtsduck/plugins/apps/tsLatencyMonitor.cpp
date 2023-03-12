@@ -122,7 +122,7 @@ bool ts::LatencyMonitor::start()
 void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacketMetadataVector& metadata, size_t count, size_t pluginIndex)
 {
     GuardMutex lock(_mutex);
-    InputData::TimingDataList& timingDataList = _inputs[pluginIndex].timingDataList;
+    TimingDataList& timingDataList = _inputs[pluginIndex].timingDataList;
 
     for (size_t i = 0; i < count; i++) {
         uint64_t pcr = pkt[i].getPCR();
@@ -133,7 +133,7 @@ void ts::LatencyMonitor::processPacket(const TSPacketVector& pkt, const TSPacket
             while (!timingDataList.empty() && (timestamp - timingDataList.back().timestamp) / SYSTEM_CLOCK_FREQ  >= _args.bufferTime) {
                 timingDataList.pop_back();
             }
-            timingDataList.push_front(InputData::TimingData{pcr, timestamp});
+            timingDataList.push_front(TimingData{pcr, timestamp});
         }
     }
 
@@ -172,16 +172,16 @@ void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
         return;
     }
 
-    InputData::TimingDataList& timingDataList1 = inputs[0].timingDataList;
-    InputData::TimingDataList& timingDataList2 = inputs[1].timingDataList;
+    TimingDataList& timingDataList1 = inputs[0].timingDataList;
+    TimingDataList& timingDataList2 = inputs[1].timingDataList;
 
-    InputData::TimingData timingData1 = timingDataList1.front();
-    InputData::TimingData timingData2 = timingDataList2.front();
+    TimingData timingData1 = timingDataList1.front();
+    TimingData timingData2 = timingDataList2.front();
 
     bool retry = false;
     do {
-        InputData::TimingDataList* refTimingDataList;
-        InputData::TimingDataList* shiftTimingDataList;
+        TimingDataList* refTimingDataList = nullptr;
+        TimingDataList* shiftTimingDataList = nullptr;
 
         if (!retry) {
             // If not retrying, use the list with the smaller PCR as the reference list and the list with the larger PCR as the shifted list
@@ -196,8 +196,8 @@ void ts::LatencyMonitor::calculatePCRDelta(InputDataVector& inputs)
 
         // Find the matching PCR in the shifted list
         for (auto data = shiftTimingDataList->begin(); data != shiftTimingDataList->end(); ++data) {
-            InputData::TimingData refTimingData = refTimingDataList->front();
-            InputData::TimingData shiftTimingData = *data;
+            TimingData refTimingData = refTimingDataList->front();
+            TimingData shiftTimingData = *data;
 
             if (refTimingData.pcr == shiftTimingData.pcr) {
                 // Calculate the PCR delta if the PCR matches
