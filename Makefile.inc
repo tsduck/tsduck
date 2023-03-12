@@ -353,14 +353,11 @@ ifneq ($(M32),)
     override CXXFLAGS_TARGET := -march=i686
     override CXXFLAGS_M32 := -m32
     override LDFLAGS_M32  := -m32
-else ifeq ($(LOCAL_OS)-$(LOCAL_ARCH),linux-arm64)
-    # On Linux Arm64, allow the usage of specialized CRC32 instructions by the compiler.
+else ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
+    # On Linux Arm64, allow the usage of specialized instructions by the compiler.
     # The code will explicitly check at run time if they are supported before using them.
     # On macOS, this support is implicit.
-    CXXFLAGS_TARGET := -march=armv8-a+crc
-else ifeq ($(LOCAL_OS)-$(LOCAL_ARCH),linux-aarch64)
-    # Same, variant in architecture name.
-    CXXFLAGS_TARGET := -march=armv8-a+crc
+    CXXFLAGS_TARGET := -march=armv8-a+crc+crypto
 else
     CXXFLAGS_TARGET :=
 endif

@@ -137,6 +137,11 @@ namespace ts {
         //!
         bool crcInstructions() const { return _crcInstructions; }
         //!
+        //! Check if the CPU supports accelerated instructions for SHA-1.
+        //! @return True if the CPU supports SHA-1 instructions.
+        //!
+        bool sha1Instructions() const { return _sha1Instructions; }
+        //!
         //! Get the operating system version.
         //! @return The operating system version.
         //!
@@ -181,6 +186,7 @@ namespace ts {
         bool    _isArm32;
         bool    _isArm64;
         bool    _crcInstructions;
+        bool    _sha1Instructions;
         UString _systemVersion;
         UString _systemName;
         UString _hostName;

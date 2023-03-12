@@ -55,21 +55,21 @@ const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({
-    {u"short",    int(ts::VersionInfo::Format::SHORT)},
-    {u"long",     int(ts::VersionInfo::Format::LONG)},
-    {u"integer",  int(ts::VersionInfo::Format::INTEGER)},
-    {u"date",     int(ts::VersionInfo::Format::DATE)},
-    {u"compiler", int(ts::VersionInfo::Format::COMPILER)},
-    {u"system",   int(ts::VersionInfo::Format::SYSTEM)},
-    {u"bitrate",  int(ts::VersionInfo::Format::BITRATE)},
-    {u"nsis",     int(ts::VersionInfo::Format::NSIS)},
-    {u"dektec",   int(ts::VersionInfo::Format::DEKTEC)},
-    {u"http",     int(ts::VersionInfo::Format::HTTP)},
-    {u"srt",      int(ts::VersionInfo::Format::SRT)},
-    {u"rist",     int(ts::VersionInfo::Format::RIST)},
-    {u"vatek",    int(ts::VersionInfo::Format::VATEK)},
-    {u"crc32",    int(ts::VersionInfo::Format::CRC32)},
-    {u"all",      int(ts::VersionInfo::Format::ALL)},
+    {u"short",        int(ts::VersionInfo::Format::SHORT)},
+    {u"long",         int(ts::VersionInfo::Format::LONG)},
+    {u"integer",      int(ts::VersionInfo::Format::INTEGER)},
+    {u"date",         int(ts::VersionInfo::Format::DATE)},
+    {u"compiler",     int(ts::VersionInfo::Format::COMPILER)},
+    {u"system",       int(ts::VersionInfo::Format::SYSTEM)},
+    {u"acceleration", int(ts::VersionInfo::Format::ACCELERATION)},
+    {u"bitrate",      int(ts::VersionInfo::Format::BITRATE)},
+    {u"nsis",         int(ts::VersionInfo::Format::NSIS)},
+    {u"dektec",       int(ts::VersionInfo::Format::DEKTEC)},
+    {u"http",         int(ts::VersionInfo::Format::HTTP)},
+    {u"srt",          int(ts::VersionInfo::Format::SRT)},
+    {u"rist",         int(ts::VersionInfo::Format::RIST)},
+    {u"vatek",        int(ts::VersionInfo::Format::VATEK)},
+    {u"all",          int(ts::VersionInfo::Format::ALL)},
 });
 
 
@@ -314,23 +314,19 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
             // The version of the RIST library.
             return GetRISTLibraryVersion();
         }
-        case Format::CRC32: {
-            // Support for CRC32 instructions.
-            return UString::Format(u"CPU: %s, compiled code: %s",
-                                   {UString::YesNo(SysInfo::Instance()->crcInstructions()),
-                                    #if defined(TS_ARM_CRC32_INSTRUCTIONS)
-                                        u"yes"
-                                    #else
-                                        u"no"
-                                    #endif
-                                   });
+        case Format::ACCELERATION: {
+            // Support for accelerated instructions.
+            return UString::Format(u"CRC32: %s, SHA-1: %s", {
+                UString::YesNo(SysInfo::Instance()->crcInstructions()),
+                UString::YesNo(SysInfo::Instance()->sha1Instructions())
+            });
         }
         case Format::ALL: {
             return GetVersion(Format::LONG, applicationName) + LINE_FEED +
                 u"Built " + GetVersion(Format::DATE) + LINE_FEED +
                 u"Using " + GetVersion(Format::COMPILER) + LINE_FEED +
                 u"System: " + GetVersion(Format::SYSTEM) + LINE_FEED +
-                u"CRC32 instructions: " + GetVersion(Format::CRC32) + LINE_FEED +
+                u"Acceleration: " + GetVersion(Format::ACCELERATION) + LINE_FEED +
                 u"Bitrate: " + GetVersion(Format::BITRATE) + LINE_FEED +
                 u"Dektec: " + GetVersion(Format::DEKTEC) + LINE_FEED +
                 u"VATek: " + GetVersion(Format::VATEK) + LINE_FEED +

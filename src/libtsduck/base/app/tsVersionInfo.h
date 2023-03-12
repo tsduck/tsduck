@@ -79,21 +79,21 @@ namespace ts {
         //! Types of version formatting, for predefined option -\-version.
         //!
         enum class Format {
-            SHORT,    //!< Short format X.Y-R.
-            LONG,     //!< Full explanatory format.
-            INTEGER,  //!< Integer format XXYYRRRRR.
-            DATE,     //!< Build date.
-            COMPILER, //!< Version of the compiler which was used to build the code.
-            SYSTEM,   //!< Type of system and platform.
-            BITRATE,  //!< Representation of bitrate values.
-            NSIS,     //!< Output NSIS @c !define directives.
-            DEKTEC,   //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
-            HTTP,     //!< Version of HTTP library which is used.
-            SRT,      //!< Version of SRT library which is used.
-            RIST,     //!< Version of RIST library which is used.
-            VATEK,    //!< Version of embedded VATek library.
-            CRC32,    //!< Support for CRC32 instructions.
-            ALL,      //!< Multi-line output with full details.
+            SHORT,        //!< Short format X.Y-R.
+            LONG,         //!< Full explanatory format.
+            INTEGER,      //!< Integer format XXYYRRRRR.
+            DATE,         //!< Build date.
+            COMPILER,     //!< Version of the compiler which was used to build the code.
+            SYSTEM,       //!< Type of system and platform.
+            ACCELERATION, //!< Support for accelerated instructions.
+            BITRATE,      //!< Representation of bitrate values.
+            NSIS,         //!< Output NSIS @c !define directives.
+            DEKTEC,       //!< Version of embedded Dektec DTAPI and detected Dektec drivers.
+            HTTP,         //!< Version of HTTP library which is used.
+            SRT,          //!< Version of SRT library which is used.
+            RIST,         //!< Version of RIST library which is used.
+            VATEK,        //!< Version of embedded VATek library.
+            ALL,          //!< Multi-line output with full details.
         };
 
         //!

@@ -118,6 +118,7 @@ ts::SysInfo::SysInfo() :
     _isArm64(false),
 #endif
     _crcInstructions(false),
+    _sha1Instructions(false),
     _systemVersion(),
     _systemName(),
     _hostName(),
@@ -314,11 +315,17 @@ ts::SysInfo::SysInfo() :
 #endif
 
     //
-    // Get support for CRC32 instructions.
+    // Get support for specialized instructions.
     //
-#if defined(TS_ARM64) && defined(TS_LINUX) && defined(HWCAP_CRC32)
+#if defined(TS_ARM_CRC32_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_CRC32)
     _crcInstructions = (::getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
-#elif defined(TS_ARM64) && defined(TS_MAC)
+#elif defined(TS_ARM_CRC32_INSTRUCTIONS) && defined(TS_MAC)
     _crcInstructions = SysCtrlBool("hw.optional.armv8_crc32");
+#endif
+
+#if defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_SHA1)
+    _sha1Instructions = (::getauxval(AT_HWCAP) & HWCAP_SHA1) != 0;
+#elif defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_MAC)
+    _sha1Instructions = SysCtrlBool("hw.optional.arm.FEAT_SHA1");
 #endif
 }
