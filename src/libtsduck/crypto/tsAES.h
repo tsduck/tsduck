@@ -45,6 +45,7 @@ namespace ts {
         TS_NOCOPY(AES);
     public:
         AES();                                        //!< Constructor.
+        virtual ~AES() override;                      //!< Destructor.
         static constexpr size_t BLOCK_SIZE = 16;      //!< AES block size in bytes.
         static constexpr size_t MIN_KEY_SIZE = 16;    //!< AES minimum key size in bytes.
         static constexpr size_t MAX_KEY_SIZE = 32;    //!< AES maximum key size in bytes.
@@ -69,8 +70,11 @@ namespace ts {
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
 
     private:
-        int      _Nr;     //!< Number of rounds
-        uint32_t _eK[60]; //!< Scheduled encryption keys
-        uint32_t _dK[60]; //!< Scheduled decryption keys
+        class Acceleration;
+        Acceleration* _accel;    // Private data for hardware acceleration.
+        size_t        _kbits;    // Key size in bits.
+        int           _nrounds;  // Number of rounds
+        uint32_t      _eK[60];   // Scheduled encryption keys
+        uint32_t      _dK[60];   // Scheduled decryption keys
     };
 }

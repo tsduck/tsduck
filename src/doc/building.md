@@ -103,6 +103,7 @@ The following `make` variables can be defined:
 - `NOSRT`      : No SRT support (Secure Reliable Transport), remove dependency to `libsrt`.
 - `NORIST`     : No RIST support (Reliable Internet Stream Transport), remove dependency to `librist`.
 - `ASSERTIONS` : Keep assertions in production mode (slower code).
+- `NOHWACCEL`  : Disable hardware acceleration such as crypto instructions.
 
 The following command, for instance, builds TSDuck without dependency
 to `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
