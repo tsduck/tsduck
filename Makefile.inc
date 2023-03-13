@@ -742,6 +742,10 @@ else
     LIBTSDUCK_LDLIBS += -lrist
 endif
 
+ifneq ($(NOHWACCEL),)
+    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_ARM_CRC32_INSTRUCTIONS -DTS_NO_ARM_AES_INSTRUCTIONS -DTS_NO_ARM_SHA1_INSTRUCTIONS
+endif
+
 #-----------------------------------------------------------------------------
 # List of source directories, tools, plugins, etc
 #-----------------------------------------------------------------------------

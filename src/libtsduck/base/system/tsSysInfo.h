@@ -137,6 +137,11 @@ namespace ts {
         //!
         bool crcInstructions() const { return _crcInstructions; }
         //!
+        //! Check if the CPU supports accelerated instructions for AES.
+        //! @return True if the CPU supports AES instructions.
+        //!
+        bool aesInstructions() const { return _aesInstructions; }
+        //!
         //! Check if the CPU supports accelerated instructions for SHA-1.
         //! @return True if the CPU supports SHA-1 instructions.
         //!
@@ -186,6 +191,7 @@ namespace ts {
         bool    _isArm32;
         bool    _isArm64;
         bool    _crcInstructions;
+        bool    _aesInstructions;
         bool    _sha1Instructions;
         UString _systemVersion;
         UString _systemName;

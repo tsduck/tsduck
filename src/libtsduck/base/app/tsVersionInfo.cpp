@@ -316,8 +316,9 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         }
         case Format::ACCELERATION: {
             // Support for accelerated instructions.
-            return UString::Format(u"CRC32: %s, SHA-1: %s", {
+            return UString::Format(u"CRC32: %s, AES: %s, SHA-1: %s", {
                 UString::YesNo(SysInfo::Instance()->crcInstructions()),
+                UString::YesNo(SysInfo::Instance()->aesInstructions()),
                 UString::YesNo(SysInfo::Instance()->sha1Instructions())
             });
         }

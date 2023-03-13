@@ -118,6 +118,7 @@ ts::SysInfo::SysInfo() :
     _isArm64(false),
 #endif
     _crcInstructions(false),
+    _aesInstructions(false),
     _sha1Instructions(false),
     _systemVersion(),
     _systemName(),
@@ -321,6 +322,12 @@ ts::SysInfo::SysInfo() :
     _crcInstructions = (::getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
 #elif defined(TS_ARM_CRC32_INSTRUCTIONS) && defined(TS_MAC)
     _crcInstructions = SysCtrlBool("hw.optional.armv8_crc32");
+#endif
+
+#if defined(TS_ARM_AES_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_AES)
+    _aesInstructions = (::getauxval(AT_HWCAP) & HWCAP_AES) != 0;
+#elif defined(TS_ARM_AES_INSTRUCTIONS) && defined(TS_MAC)
+    _aesInstructions = SysCtrlBool("hw.optional.arm.FEAT_AES");
 #endif
 
 #if defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_SHA1)
