@@ -51,6 +51,7 @@
 #include "tsTSPacket.h"
 #include "tsSystemRandomGenerator.h"
 #include "tsunit.h"
+#include "utestTSUnitBenchmark.h"
 
 #include "crypto/tv_aes.h"
 #include "crypto/tv_aes_chain.h"
@@ -121,7 +122,8 @@ public:
     TSUNIT_TEST_END();
 
 private:
-    void testCipher(ts::BlockCipher& algo,
+    void testCipher(utest::TSUnitBenchmark& bench,
+                    ts::BlockCipher& algo,
                     size_t tv_index,
                     size_t tv_count,
                     const void* key,
@@ -131,7 +133,8 @@ private:
                     const void* cipher,
                     size_t cipher_size);
 
-    void testChaining(ts::CipherChaining& algo,
+    void testChaining(utest::TSUnitBenchmark& bench,
+                      ts::CipherChaining& algo,
                       size_t tv_index,
                       size_t tv_count,
                       const void* key,
@@ -145,7 +148,8 @@ private:
 
     void testChainingSizes(ts::CipherChaining& algo, int sizes, ...);
 
-    void testHash(ts::Hash& algo,
+    void testHash(utest::TSUnitBenchmark& bench,
+                  ts::Hash& algo,
                   size_t tv_index,
                   size_t tv_count,
                   const char* message,
@@ -175,7 +179,8 @@ void CryptoTest::afterTest()
 // Unitary tests.
 //----------------------------------------------------------------------------
 
-void CryptoTest::testCipher(ts::BlockCipher& algo,
+void CryptoTest::testCipher(utest::TSUnitBenchmark& bench,
+                            ts::BlockCipher& algo,
                             size_t tv_index,
                             size_t tv_count,
                             const void* key,
@@ -187,11 +192,17 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
 {
     const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", {algo.name(), tv_index + 1, tv_count}));
     std::vector<uint8_t> tmp(std::max(plain_size, cipher_size));
-    size_t retsize;
+    size_t retsize = 0;
 
     TSUNIT_ASSERT(algo.setKey(key, key_size));
 
-    TSUNIT_ASSERT(algo.encrypt(plain, plain_size, &tmp[0], tmp.size(), &retsize));
+    bool encrypt_ok = true;
+    bench.start();
+    for (size_t iter = 0; iter < bench.iterations; ++iter) {
+        encrypt_ok = algo.encrypt(plain, plain_size, &tmp[0], tmp.size(), &retsize) && encrypt_ok;
+    }
+    bench.stop();
+    TSUNIT_ASSERT(encrypt_ok);
     TSUNIT_EQUAL(cipher_size, retsize);
 
     if (::memcmp(cipher, &tmp[0], cipher_size) != 0) {
@@ -202,7 +213,13 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
         TSUNIT_FAIL("CryptoTest: " + name.toUTF8() + ": encryption failed");
     }
 
-    TSUNIT_ASSERT(algo.decrypt(cipher, cipher_size, &tmp[0], tmp.size(), &retsize));
+    bool decrypt_ok = true;
+    bench.start();
+    for (size_t iter = 0; iter < bench.iterations; ++iter) {
+        decrypt_ok = algo.decrypt(cipher, cipher_size, &tmp[0], tmp.size(), &retsize) && decrypt_ok;
+    }
+    bench.stop();
+    TSUNIT_ASSERT(decrypt_ok);
     TSUNIT_EQUAL(plain_size, retsize);
 
     if (::memcmp(plain, &tmp[0], plain_size) != 0) {
@@ -240,7 +257,8 @@ void CryptoTest::testCipher(ts::BlockCipher& algo,
     }
 }
 
-void CryptoTest::testChaining(ts::CipherChaining& algo,
+void CryptoTest::testChaining(utest::TSUnitBenchmark& bench,
+                              ts::CipherChaining& algo,
                               size_t tv_index,
                               size_t tv_count,
                               const void* key,
@@ -253,7 +271,7 @@ void CryptoTest::testChaining(ts::CipherChaining& algo,
                               size_t cipher_size)
 {
     TSUNIT_ASSERT(algo.setIV(iv, iv_size));
-    testCipher(algo, tv_index, tv_count, key, key_size, plain, plain_size, cipher, cipher_size);
+    testCipher(bench, algo, tv_index, tv_count, key, key_size, plain, plain_size, cipher, cipher_size);
 }
 
 void CryptoTest::testChainingSizes(ts::CipherChaining& algo, int sizes, ...)
@@ -299,7 +317,8 @@ void CryptoTest::testChainingSizes(ts::CipherChaining& algo, int sizes, ...)
     va_end(ap);
 }
 
-void CryptoTest::testHash(ts::Hash& algo,
+void CryptoTest::testHash(utest::TSUnitBenchmark& bench,
+                          ts::Hash& algo,
                           size_t tv_index,
                           size_t tv_count,
                           const char* message,
@@ -308,10 +327,11 @@ void CryptoTest::testHash(ts::Hash& algo,
 {
     const ts::UString name(ts::UString::Format(u"%s test vector %d/%d", {algo.name(), tv_index + 1, tv_count}));
     std::vector<uint8_t> tmp(2 * hash_size);
-    size_t retsize;
+    size_t retsize = 0;
+    const size_t message_length = ::strlen(message);
 
     TSUNIT_ASSERT(algo.init());
-    TSUNIT_ASSERT(algo.add(message, ::strlen(message)));
+    TSUNIT_ASSERT(algo.add(message, message_length));
     TSUNIT_ASSERT(algo.getHash(&tmp[0], tmp.size(), &retsize));
     TSUNIT_EQUAL(hash_size, retsize);
 
@@ -321,6 +341,16 @@ void CryptoTest::testHash(ts::Hash& algo,
             << "  Expected hash: " << ts::UString::Dump(hash, hash_size, ts::UString::SINGLE_LINE) << std::endl
             << "  Returned hash: " << ts::UString::Dump(&tmp[0], retsize, ts::UString::SINGLE_LINE) << std::endl;
         TSUNIT_FAIL("CryptoTest: " + name.toUTF8() + " failed");
+    }
+    else if (bench.iterations > 1) {
+        TSUNIT_ASSERT(algo.init());
+        bool ok = true;
+        bench.start();
+        for (size_t iter = 0; iter < bench.iterations; ++iter) {
+            ok = algo.add(message, message_length) && ok;
+        }
+        bench.stop();
+        TSUNIT_ASSERT(ok);
     }
 }
 
@@ -341,51 +371,71 @@ void CryptoTest::testAES()
     TSUNIT_ASSERT(aes.maxRounds() == 14);
     TSUNIT_ASSERT(aes.defaultRounds() == 10);
 
+    utest::TSUnitBenchmark bench(u"TSUNIT_AES_ITERATIONS");
+
     const size_t tv_count = sizeof(tv_aes) / sizeof(TV_AES);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES* tv = tv_aes + tvi;
-        testCipher(aes, tvi, tv_count, tv->key, tv->key_size, tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
+        testCipher(bench, aes, tvi, tv_count, tv->key, tv->key_size, tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
     }
+
+    bench.report(u"CryptoTest::testAES");
 }
 
 void CryptoTest::testAES_ECB()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_AES_ECB_ITERATIONS");
+
     ts::ECB<ts::AES> ecb_aes;
     const size_t tv_count = sizeof(tv_ecb_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_ecb_aes + tvi;
-        testChaining(ecb_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        testChaining(bench, ecb_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
+
+    bench.report(u"CryptoTest::testAES_ECB");
 }
 
 void CryptoTest::testAES_CBC()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_AES_CBC_ITERATIONS");
+
     ts::CBC<ts::AES> cbc_aes;
     const size_t tv_count = sizeof(tv_cbc_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_cbc_aes + tvi;
-        testChaining(cbc_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        testChaining(bench, cbc_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
+
+    bench.report(u"CryptoTest::testAES_CBC");
 }
 
 void CryptoTest::testAES_CTR()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_AES_CTR_ITERATIONS");
+
     ts::CTR<ts::AES> ctr_aes;
     const size_t tv_count = sizeof(tv_ctr_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_ctr_aes + tvi;
-        testChaining(ctr_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        testChaining(bench, ctr_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
+
+    bench.report(u"CryptoTest::testAES_CTR");
 }
 
 void CryptoTest::testAES_CTS1()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_AES_CTS1_ITERATIONS");
+
     ts::CTS1<ts::AES> cts1_aes;
     const size_t tv_count = sizeof(tv_cts_aes) / sizeof(TV_AES_CHAIN);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_AES_CHAIN* tv = tv_cts_aes + tvi;
-        testChaining(cts1_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        testChaining(bench, cts1_aes, tvi, tv_count, tv->key, tv->key_size, tv->iv, tv->iv_size, tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
+
+    bench.report(u"CryptoTest::testAES_CTS1");
 }
 
 void CryptoTest::testAES_CTS2()
@@ -426,11 +476,15 @@ void CryptoTest::testDES()
     TSUNIT_ASSERT(des.maxRounds() == 16);
     TSUNIT_ASSERT(des.defaultRounds() == 16);
 
+    utest::TSUnitBenchmark bench(u"TSUNIT_DES_ITERATIONS");
+
     const size_t tv_count = sizeof(tv_des) / sizeof(TV_DES);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_DES* tv = tv_des + tvi;
-        testCipher(des, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
+        testCipher(bench, des, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
     }
+
+    bench.report(u"CryptoTest::testDES");
 }
 
 void CryptoTest::testTDES()
@@ -448,16 +502,19 @@ void CryptoTest::testTDES()
     TSUNIT_ASSERT(tdes.maxRounds() == 16);
     TSUNIT_ASSERT(tdes.defaultRounds() == 16);
 
+    utest::TSUnitBenchmark bench(u"TSUNIT_TDES_ITERATIONS");
+
     const size_t tv_count = sizeof(tv_tdes) / sizeof(TV_TDES);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_TDES* tv = tv_tdes + tvi;
-        testCipher(tdes, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
+        testCipher(bench, tdes, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, sizeof(tv->plain), tv->cipher, sizeof(tv->cipher));
     }
+
+    bench.report(u"CryptoTest::testTDES");
 }
 
 void CryptoTest::testTDES_CBC()
 {
-
     ts::CBC<ts::TDES> cbc_tdes;
 
     TSUNIT_ASSERT(cbc_tdes.blockSize()  == 8);
@@ -471,25 +528,35 @@ void CryptoTest::testTDES_CBC()
     TSUNIT_ASSERT(cbc_tdes.maxRounds() == 16);
     TSUNIT_ASSERT(cbc_tdes.defaultRounds() == 16);
 
+    utest::TSUnitBenchmark bench(u"TSUNIT_TDES_CBC_ITERATIONS");
+
     const size_t tv_count = sizeof(tv_tdes_cbc) / sizeof(TV_TDES_CBC);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_TDES_CBC* tv = tv_tdes_cbc + tvi;
-        testChaining(cbc_tdes, tvi, tv_count, tv->key, sizeof(tv->key), tv->iv, sizeof(tv->iv), tv->plain, tv->size, tv->cipher, tv->size);
+        testChaining(bench, cbc_tdes, tvi, tv_count, tv->key, sizeof(tv->key), tv->iv, sizeof(tv->iv), tv->plain, tv->size, tv->cipher, tv->size);
     }
+
+    bench.report(u"CryptoTest::testTDES_CBC");
 }
 
 void CryptoTest::testDVBCSA2()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_DVBCSA2_ITERATIONS");
+
     ts::DVBCSA2 csa;
     const size_t tv_count = sizeof(tv_dvb_csa2) / sizeof(tv_dvb_csa2[0]);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_DVB_CSA2* tv = tv_dvb_csa2 + tvi;
-        testCipher(csa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
+        testCipher(bench, csa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
     }
+
+    bench.report(u"CryptoTest::testDVBCSA2");
 }
 
 void CryptoTest::testDVBCISSA()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_DVBCISSA_ITERATIONS");
+
     ts::DVBCISSA cissa;
     const size_t tv_count = sizeof(tv_dvb_cissa) / sizeof(tv_dvb_cissa[0]);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
@@ -500,40 +567,54 @@ void CryptoTest::testDVBCISSA()
         TSUNIT_EQUAL(hsize, tv->cipher.getHeaderSize());
         TSUNIT_EQUAL(psize, tv->cipher.getPayloadSize());
         TSUNIT_EQUAL(16, cissa.blockSize());
-        testCipher(cissa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain.b + hsize, size, tv->cipher.b + hsize, size);
+        testCipher(bench, cissa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain.b + hsize, size, tv->cipher.b + hsize, size);
     }
+
+    bench.report(u"CryptoTest::testDVBCISSA");
 }
 
 void CryptoTest::testIDSA()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_IDSA_ITERATIONS");
+
     ts::IDSA idsa;
     const size_t tv_count = sizeof(tv_atis_idsa) / sizeof(tv_atis_idsa[0]);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_ATIS_IDSA* tv = tv_atis_idsa + tvi;
-        testCipher(idsa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
+        testCipher(bench, idsa, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->size, tv->cipher, tv->size);
     }
+
+    bench.report(u"CryptoTest::testIDSA");
 }
 
 void CryptoTest::testSCTE52_2003()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_SCTE52_2003_ITERATIONS");
+
     ts::SCTE52_2003 scte;
     const size_t tv_count = sizeof(tv_scte52_2003) / sizeof(tv_scte52_2003[0]);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_SCTE52_2003* tv = tv_scte52_2003 + tvi;
-        testChaining(scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->iv, sizeof(tv->iv), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        testChaining(bench, scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->iv, sizeof(tv->iv), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
+
+    bench.report(u"CryptoTest::testSCTE52_2003");
 }
 
 void CryptoTest::testSCTE52_2008()
 {
+    utest::TSUnitBenchmark bench(u"TSUNIT_SCTE52_2008_ITERATIONS");
+
     ts::SCTE52_2008 scte;
     const size_t tv_count = sizeof(tv_scte52_2008) / sizeof(tv_scte52_2008[0]);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_SCTE52_2008* tv = tv_scte52_2008 + tvi;
         TSUNIT_ASSERT(scte.setIV(tv->iv, sizeof(tv->iv)));
         TSUNIT_ASSERT(scte.setShortIV(tv->short_iv, sizeof(tv->short_iv)));
-        testCipher(scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
+        testCipher(bench, scte, tvi, tv_count, tv->key, sizeof(tv->key), tv->plain, tv->plain_size, tv->cipher, tv->cipher_size);
     }
+
+    bench.report(u"CryptoTest::testSCTE52_2008");
 }
 
 void CryptoTest::testSHA1()
@@ -541,11 +622,16 @@ void CryptoTest::testSHA1()
     ts::SHA1 sha1;
     TSUNIT_ASSERT(sha1.hashSize() == 20);
     TSUNIT_ASSERT(sha1.blockSize() == 64);
+
+    utest::TSUnitBenchmark bench(u"TSUNIT_SHA1_ITERATIONS");
+
     const size_t tv_count = sizeof(tv_sha1) / sizeof(TV_SHA1);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_SHA1* tv = tv_sha1 + tvi;
-        testHash(sha1, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
+        testHash(bench, sha1, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
     }
+
+    bench.report(u"CryptoTest::testSHA1");
 }
 
 void CryptoTest::testSHA256()
@@ -553,11 +639,16 @@ void CryptoTest::testSHA256()
     ts::SHA256 sha256;
     TSUNIT_ASSERT(sha256.hashSize() == 32);
     TSUNIT_ASSERT(sha256.blockSize() == 64);
+
+    utest::TSUnitBenchmark bench(u"TSUNIT_SHA256_ITERATIONS");
+
     const size_t tv_count = sizeof(tv_sha256) / sizeof(TV_SHA256);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_SHA256* tv = tv_sha256 + tvi;
-        testHash(sha256, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
+        testHash(bench, sha256, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
     }
+
+    bench.report(u"CryptoTest::testSHA256");
 }
 
 void CryptoTest::testSHA512()
@@ -565,9 +656,14 @@ void CryptoTest::testSHA512()
     ts::SHA512 sha512;
     TSUNIT_ASSERT(sha512.hashSize() == 64);
     TSUNIT_ASSERT(sha512.blockSize() == 128);
+
+    utest::TSUnitBenchmark bench(u"TSUNIT_SHA512_ITERATIONS");
+
     const size_t tv_count = sizeof(tv_sha512) / sizeof(TV_SHA512);
     for (size_t tvi = 0; tvi < tv_count; ++tvi) {
         const TV_SHA512* tv = tv_sha512 + tvi;
-        testHash(sha512, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
+        testHash(bench, sha512, tvi, tv_count, tv->message, tv->hash, sizeof(tv->hash));
     }
+
+    bench.report(u"CryptoTest::testSHA512");
 }

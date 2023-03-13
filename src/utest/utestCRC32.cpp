@@ -33,6 +33,7 @@
 
 #include "tsCRC32.h"
 #include "tsunit.h"
+#include "utestTSUnitBenchmark.h"
 
 
 //----------------------------------------------------------------------------
@@ -177,10 +178,19 @@ namespace {
 
 void CRC32Test::testCRC()
 {
+    // Support for benchmarking.
+    utest::TSUnitBenchmark bench(u"TSUNIT_CRC32_ITERATIONS");
+
     for (const auto* data = all_data; data->data_size != 0; ++data) {
 
         // Test in one chunk.
-        ts::CRC32 c(data->data, data->data_size);
+        ts::CRC32 c;
+        bench.start();
+        for (size_t iter = 0; iter < bench.iterations; ++iter) {
+            c.reset();
+            c.add(data->data, data->data_size);
+        }
+        bench.stop();
         TSUNIT_EQUAL(data->crc, c.value());
 
         // Test in 3 chunks.
@@ -191,4 +201,6 @@ void CRC32Test::testCRC()
         c.add(data->data + 2 * chunk_size, data->data_size - 2 * chunk_size);
         TSUNIT_EQUAL(data->crc, c.value());
     }
+
+    bench.report(u"CRC32Test::testCRC");
 }

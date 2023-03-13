@@ -28,20 +28,55 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Benchmark support for TSUnit.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 34
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 3173
+#include "tsUString.h"
+
+namespace utest {
+    //!
+    //! TSUnit support for benchmarking individual tests.
+    //!
+    class TSUnitBenchmark
+    {
+        TS_NOCOPY(TSUnitBenchmark);
+    public:
+        //!
+        //! Constructor.
+        //! @param [in] env_name Environment name containing the number of iterations.
+        //!
+        TSUnitBenchmark(const ts::UString& env_name = ts::UString());
+
+        //!
+        //! Number of iterations.
+        //! Default is 1 if environment name not specified or not defined.
+        //!
+        const size_t iterations;
+
+        //!
+        //! Start accumulating CPU time.
+        //!
+        void start();
+
+        //!
+        //! Stop accumulating CPU time.
+        //!
+        void stop();
+
+        //!
+        //! Report acuumulated CPU time on utest debug output.
+        //! @param [in] test_name Test name.
+        //!
+        void report(const ts::UString& test_name);
+
+    private:
+        bool            _started;
+        ts::MilliSecond _start;        // Process CPU time on start().
+        ts::MilliSecond _accumulated;  // Accumulated CPU times.
+        size_t          _sequences;    // Number of sequences
+
+        static size_t GetIterations(const ts::UString& env_name);
+    };
+}
