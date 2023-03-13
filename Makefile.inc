@@ -357,7 +357,7 @@ else ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
     # On Linux Arm64, allow the usage of specialized instructions by the compiler.
     # The code will explicitly check at run time if they are supported before using them.
     # On macOS, this support is implicit.
-    CXXFLAGS_TARGET := -march=armv8-a+crc+crypto
+    CXXFLAGS_TARGET := -march=armv8-a+crc+crypto+sha2+sha3
 else
     CXXFLAGS_TARGET :=
 endif
@@ -693,6 +693,14 @@ ifneq ($(ASSERTIONS),)
     CXXFLAGS_INCLUDES += -DTS_KEEP_ASSERTIONS=1
 endif
 
+ifneq ($(NOHWACCEL),)
+    CXXFLAGS_INCLUDES += -DTS_NO_ARM_CRC32_INSTRUCTIONS
+    CXXFLAGS_INCLUDES += -DTS_NO_ARM_AES_INSTRUCTIONS
+    CXXFLAGS_INCLUDES += -DTS_NO_ARM_SHA1_INSTRUCTIONS
+    CXXFLAGS_INCLUDES += -DTS_NO_ARM_SHA256_INSTRUCTIONS
+    CXXFLAGS_INCLUDES += -DTS_NO_ARM_SHA512_INSTRUCTIONS
+endif
+
 # These variables are used when building the TSDuck library, not in the
 # applications. Note, however, that LIBTSDUCK_LDLIBS is still necessary
 # when linking applications against the TSDuck static library.
@@ -740,10 +748,6 @@ ifneq ($(NORIST),)
     LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_RIST=1
 else
     LIBTSDUCK_LDLIBS += -lrist
-endif
-
-ifneq ($(NOHWACCEL),)
-    LIBTSDUCK_CXXFLAGS_INCLUDES += -DTS_NO_ARM_CRC32_INSTRUCTIONS -DTS_NO_ARM_AES_INSTRUCTIONS -DTS_NO_ARM_SHA1_INSTRUCTIONS
 endif
 
 #-----------------------------------------------------------------------------

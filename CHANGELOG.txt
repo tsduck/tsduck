@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.34-3170
+VERSION 3.34-3174
 
 [NEW] New commands and plugins:
 
@@ -12,8 +12,8 @@ VERSION 3.34-3170
 [IMP] Improvements on existing commands and plugins:
 
   * On Arm64 platforms, Linux and macOS, improved performances on data
-    serialization, CRC32 for all MPEG sections, AES, SHA-1 (when the
-    corresponding accelerated instructions are available).
+    serialization, CRC32 for all MPEG sections, AES, SHA-1, SHA-256
+    (when the corresponding accelerated instructions are available).
   * Using "-P tables --log", without "--output", the logged lines are reported
     through the general logger of "tsp" instead of being output to stdout.
   * New options in existing commands and plugins:

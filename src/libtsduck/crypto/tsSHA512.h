@@ -59,10 +59,12 @@ namespace ts {
         SHA512();
 
     private:
+        uint64_t _length;                // Total message size in bits (already hashed, ie. excluding _buf)
+        size_t   _curlen;                // Used bytes in _buf
+        uint64_t _state[HASH_SIZE / 8];  // Current hash value (512 bits)
+        uint8_t  _buf[BLOCK_SIZE];       // Current block to hash (1024 bits)
+
+        // Compress one 512-bit block, accumulate hash in _state.
         void compress(const uint8_t* buf);
-        uint64_t _length;
-        uint64_t _state[8];
-        size_t   _curlen;
-        uint8_t  _buf[BLOCK_SIZE];
     };
 }

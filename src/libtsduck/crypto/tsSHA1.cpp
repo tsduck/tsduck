@@ -11,6 +11,8 @@
 //    << LibTomCrypt is public domain. The library is free for >>
 //    << all purposes without any express guarantee it works.  >>
 //
+//  Arm64 acceleration based on public domain code from Arm.
+//
 //----------------------------------------------------------------------------
 
 #include "tsSHA1.h"
@@ -62,18 +64,17 @@ ts::SHA1::SHA1() :
 
 //----------------------------------------------------------------------------
 // Reinitialize the computation of the hash.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA1::init()
 {
+    _curlen = 0;
+    _length = 0;
     _state[0] = 0x67452301UL;
     _state[1] = 0xEFCDAB89UL;
     _state[2] = 0x98BADCFEUL;
     _state[3] = 0x10325476UL;
     _state[4] = 0xC3D2E1F0UL;
-    _curlen = 0;
-    _length = 0;
     return true;
 }
 
@@ -336,7 +337,6 @@ void ts::SHA1::compress(const uint8_t* buf)
 
 //----------------------------------------------------------------------------
 // Add some part of the message to hash. Can be called several times.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA1::add(const void* data, size_t size)
@@ -375,8 +375,6 @@ bool ts::SHA1::add(const void* data, size_t size)
 
 //----------------------------------------------------------------------------
 // Get the resulting hash value.
-// If retsize is non-zero, return the actual hash size.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA1::getHash(void* hash, size_t bufsize, size_t* retsize)
