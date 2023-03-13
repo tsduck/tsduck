@@ -595,6 +595,46 @@
     #undef TS_ARM_SHA1_INSTRUCTIONS
 #endif
 
+//!
+//! Define TS_NO_ARM_SHA256_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 SHA-256 instructions.
+//!
+#if defined(DOXYGEN)
+    #define TS_NO_ARM_SHA256_INSTRUCTIONS
+#endif
+
+//!
+//! TS_ARM_SHA256_INSTRUCTIONS is defined when Arm-64 SHA-256 instructions can be used in asm() directives.
+//! Important: Having the instructions compiled in the code does not mean that the CPU we are running on
+//! supports them. The code shall check at run-time if SHA-256 instructions are supported or not. If they
+//! are not, another portable code path shall be used.
+//! @see ts::SysInfo::sha256Instructions()
+//!
+#if defined(DOXYGEN) || (defined(__ARM_FEATURE_SHA2) && !defined(TS_NO_ARM_SHA256_INSTRUCTIONS) && !defined(TS_ARM_SHA256_INSTRUCTIONS))
+    #define TS_ARM_SHA256_INSTRUCTIONS 1
+#elif defined(TS_NO_ARM_SHA256_INSTRUCTIONS) && defined(TS_ARM_SHA256_INSTRUCTIONS)
+    #undef TS_ARM_SHA256_INSTRUCTIONS
+#endif
+
+//!
+//! Define TS_NO_ARM_SHA512_INSTRUCTIONS from the command line if you want to disable the usage of Arm64 SHA-512 instructions.
+//!
+#if defined(DOXYGEN)
+    #define TS_NO_ARM_SHA512_INSTRUCTIONS
+#endif
+
+//!
+//! TS_ARM_SHA512_INSTRUCTIONS is defined when Arm-64 SHA-512 instructions can be used in asm() directives.
+//! Important: Having the instructions compiled in the code does not mean that the CPU we are running on
+//! supports them. The code shall check at run-time if SHA-512 instructions are supported or not. If they
+//! are not, another portable code path shall be used.
+//! @see ts::SysInfo::sha512Instructions()
+//!
+#if defined(DOXYGEN) || (defined(__ARM_FEATURE_SHA512) && !defined(TS_NO_ARM_SHA512_INSTRUCTIONS) && !defined(TS_ARM_SHA512_INSTRUCTIONS))
+    #define TS_ARM_SHA512_INSTRUCTIONS 1
+#elif defined(TS_NO_ARM_SHA512_INSTRUCTIONS) && defined(TS_ARM_SHA512_INSTRUCTIONS)
+    #undef TS_ARM_SHA512_INSTRUCTIONS
+#endif
+
 
 //----------------------------------------------------------------------------
 // Static linking.

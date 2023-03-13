@@ -11,11 +11,23 @@
 //    << LibTomCrypt is public domain. The library is free for >>
 //    << all purposes without any express guarantee it works.  >>
 //
+//  Arm64 acceleration based on public domain code from Arm.
+//
 //----------------------------------------------------------------------------
 
 #include "tsSHA256.h"
 #include "tsMemory.h"
 #include "tsRotate.h"
+#include "tsSysInfo.h"
+
+#if defined(TS_ARM_SHA256_INSTRUCTIONS)
+#include <arm_neon.h>
+namespace {
+    // Runtime check once if Arm-64 SHA-256 instructions are supported on this CPU.
+    volatile bool _sha256_checked = false;
+    volatile bool _sha256_supported = false;
+}
+#endif
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))
 #define Maj(x,y,z) (((x | y) & z) | (x & y))
@@ -28,6 +40,34 @@
 
 
 //----------------------------------------------------------------------------
+// The K array
+//----------------------------------------------------------------------------
+
+#if defined(TS_ARM_SHA256_INSTRUCTIONS)
+namespace {
+    const uint32_t K[64] = {
+        0x428A2F98, 0x71374491, 0xB5C0FBCF, 0xE9B5DBA5,
+        0x3956C25B, 0x59F111F1, 0x923F82A4, 0xAB1C5ED5,
+        0xD807AA98, 0x12835B01, 0x243185BE, 0x550C7DC3,
+        0x72BE5D74, 0x80DEB1FE, 0x9BDC06A7, 0xC19BF174,
+        0xE49B69C1, 0xEFBE4786, 0x0FC19DC6, 0x240CA1CC,
+        0x2DE92C6F, 0x4A7484AA, 0x5CB0A9DC, 0x76F988DA,
+        0x983E5152, 0xA831C66D, 0xB00327C8, 0xBF597FC7,
+        0xC6E00BF3, 0xD5A79147, 0x06CA6351, 0x14292967,
+        0x27B70A85, 0x2E1B2138, 0x4D2C6DFC, 0x53380D13,
+        0x650A7354, 0x766A0ABB, 0x81C2C92E, 0x92722C85,
+        0xA2BFE8A1, 0xA81A664B, 0xC24B8B70, 0xC76C51A3,
+        0xD192E819, 0xD6990624, 0xF40E3585, 0x106AA070,
+        0x19A4C116, 0x1E376C08, 0x2748774C, 0x34B0BCB5,
+        0x391C0CB3, 0x4ED8AA4A, 0x5B9CCA4F, 0x682E6FF3,
+        0x748F82EE, 0x78A5636F, 0x84C87814, 0x8CC70208,
+        0x90BEFFFA, 0xA4506CEB, 0xBEF9A3F7, 0xC67178F2,
+    };
+}
+#endif
+
+
+//----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
@@ -35,13 +75,22 @@ ts::SHA256::SHA256() :
     _length(0),
     _curlen(0)
 {
-    init();
+#if defined(TS_ARM_SHA256_INSTRUCTIONS)
+    // When SHA-256 instructions are compiled, check once if supported at runtime.
+    // This logic does not require explicit synchronization.
+    if (!_sha256_checked) {
+        _sha256_supported = SysInfo::Instance()->sha256Instructions();
+        _sha256_checked = true;
+    }
+#endif
+
+    // Initialize internal state.
+    SHA256::init();
 }
 
 
 //----------------------------------------------------------------------------
 // Reinitialize the computation of the hash.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA256::init()
@@ -66,7 +115,155 @@ bool ts::SHA256::init()
 
 void ts::SHA256::compress(const uint8_t* buf)
 {
-    uint32_t S[8], W[64], t0, t1;
+#if defined(TS_ARM_SHA256_INSTRUCTIONS)
+    // The acceleration, when available, is located inside the compress() method.
+    // Based on public domain code from Arm.
+    if (_sha256_supported) {
+
+        // Load initial values
+        uint32x4_t state0 = vld1q_u32(&_state[0]);
+        uint32x4_t state1 = vld1q_u32(&_state[4]);
+
+        // Save current state
+        const uint32x4_t previous_state0 = state0;
+        const uint32x4_t previous_state1 = state1;
+
+        const uint32_t* buf32 = reinterpret_cast<const uint32_t*>(buf);
+        uint32x4_t msg0 = vld1q_u32(buf32 + 0);
+        uint32x4_t msg1 = vld1q_u32(buf32 + 4);
+        uint32x4_t msg2 = vld1q_u32(buf32 + 8);
+        uint32x4_t msg3 = vld1q_u32(buf32 + 12);
+
+        msg0 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg0)));
+        msg1 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg1)));
+        msg2 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg2)));
+        msg3 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg3)));
+
+        uint32x4_t msg_k, tmp_state;
+
+        // Rounds 0-3
+        msg_k = vaddq_u32(msg0, vld1q_u32(&K[4*0]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg0 = vsha256su1q_u32(vsha256su0q_u32(msg0, msg1), msg2, msg3);
+
+        // Rounds 4-7
+        msg_k = vaddq_u32(msg1, vld1q_u32(&K[4*1]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg1 = vsha256su1q_u32(vsha256su0q_u32(msg1, msg2), msg3, msg0);
+
+        // Rounds 8-11
+        msg_k = vaddq_u32(msg2, vld1q_u32(&K[4*2]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg2 = vsha256su1q_u32(vsha256su0q_u32(msg2, msg3), msg0, msg1);
+
+        // Rounds 12-15
+        msg_k = vaddq_u32(msg3, vld1q_u32(&K[4*3]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg3 = vsha256su1q_u32(vsha256su0q_u32(msg3, msg0), msg1, msg2);
+
+        // Rounds 16-19
+        msg_k = vaddq_u32(msg0, vld1q_u32(&K[4*4]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg0 = vsha256su1q_u32(vsha256su0q_u32(msg0, msg1), msg2, msg3);
+
+        // Rounds 20-23
+        msg_k = vaddq_u32(msg1, vld1q_u32(&K[4*5]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg1 = vsha256su1q_u32(vsha256su0q_u32(msg1, msg2), msg3, msg0);
+
+        // Rounds 24-27
+        msg_k = vaddq_u32(msg2, vld1q_u32(&K[4*6]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg2 = vsha256su1q_u32(vsha256su0q_u32(msg2, msg3), msg0, msg1);
+
+        // Rounds 28-31
+        msg_k = vaddq_u32(msg3, vld1q_u32(&K[4*7]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg3 = vsha256su1q_u32(vsha256su0q_u32(msg3, msg0), msg1, msg2);
+
+        // Rounds 32-35
+        msg_k = vaddq_u32(msg0, vld1q_u32(&K[4*8]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg0 = vsha256su1q_u32(vsha256su0q_u32(msg0, msg1), msg2, msg3);
+
+        // Rounds 36-39
+        msg_k = vaddq_u32(msg1, vld1q_u32(&K[4*9]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg1 = vsha256su1q_u32(vsha256su0q_u32(msg1, msg2), msg3, msg0);
+
+        // Rounds 40-43
+        msg_k = vaddq_u32(msg2, vld1q_u32(&K[4*10]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg2 = vsha256su1q_u32(vsha256su0q_u32(msg2, msg3), msg0, msg1);
+
+        // Rounds 44-47
+        msg_k = vaddq_u32(msg3, vld1q_u32(&K[4*11]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+        msg3 = vsha256su1q_u32(vsha256su0q_u32(msg3, msg0), msg1, msg2);
+
+        // Rounds 48-51
+        msg_k = vaddq_u32(msg0, vld1q_u32(&K[4*12]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+
+        // Rounds 52-55
+        msg_k = vaddq_u32(msg1, vld1q_u32(&K[4*13]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+
+        // Rounds 56-59
+        msg_k = vaddq_u32(msg2, vld1q_u32(&K[4*14]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+
+        // Rounds 60-63
+        msg_k = vaddq_u32(msg3, vld1q_u32(&K[4*15]));
+        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        state1 = vsha256h2q_u32(state1, state0, msg_k);
+        state0 = tmp_state;
+
+        // Add back to state
+        state0 = vaddq_u32(state0, previous_state0);
+        state1 = vaddq_u32(state1, previous_state1);
+
+        // Save state
+        vst1q_u32(&_state[0], state0);
+        vst1q_u32(&_state[4], state1);
+
+        // End of specialized implementation.
+        return;
+    }
+#endif
+
+    // Portable implementation.
+    uint32_t S[8], W[64];
 
     // Copy state into S
     for (size_t i = 0; i < 8; i++) {
@@ -84,76 +281,77 @@ void ts::SHA256::compress(const uint8_t* buf)
     }
 
     // Compress
+    uint32_t t0, t1;
 #define RND(a,b,c,d,e,f,g,h,i,ki)                 \
     t0 = h + Sigma1(e) + Ch(e, f, g) + ki + W[i]; \
     t1 = Sigma0(a) + Maj(a, b, c);                \
     d += t0;                                      \
     h  = t0 + t1
 
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],0,0x428a2f98);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],1,0x71374491);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],2,0xb5c0fbcf);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],3,0xe9b5dba5);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],4,0x3956c25b);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],5,0x59f111f1);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],6,0x923f82a4);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],7,0xab1c5ed5);
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],8,0xd807aa98);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],9,0x12835b01);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],10,0x243185be);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],11,0x550c7dc3);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],12,0x72be5d74);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],13,0x80deb1fe);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],14,0x9bdc06a7);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],15,0xc19bf174);
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],16,0xe49b69c1);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],17,0xefbe4786);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],18,0x0fc19dc6);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],19,0x240ca1cc);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],20,0x2de92c6f);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],21,0x4a7484aa);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],22,0x5cb0a9dc);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],23,0x76f988da);
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],24,0x983e5152);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],25,0xa831c66d);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],26,0xb00327c8);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],27,0xbf597fc7);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],28,0xc6e00bf3);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],29,0xd5a79147);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],30,0x06ca6351);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],31,0x14292967);
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],32,0x27b70a85);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],33,0x2e1b2138);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],34,0x4d2c6dfc);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],35,0x53380d13);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],36,0x650a7354);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],37,0x766a0abb);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],38,0x81c2c92e);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],39,0x92722c85);
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],40,0xa2bfe8a1);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],41,0xa81a664b);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],42,0xc24b8b70);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],43,0xc76c51a3);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],44,0xd192e819);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],45,0xd6990624);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],46,0xf40e3585);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],47,0x106aa070);
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],48,0x19a4c116);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],49,0x1e376c08);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],50,0x2748774c);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],51,0x34b0bcb5);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],52,0x391c0cb3);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],53,0x4ed8aa4a);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],54,0x5b9cca4f);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],55,0x682e6ff3);
-    RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],56,0x748f82ee);
-    RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],57,0x78a5636f);
-    RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],58,0x84c87814);
-    RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],59,0x8cc70208);
-    RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],60,0x90befffa);
-    RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],61,0xa4506ceb);
-    RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],62,0xbef9a3f7);
-    RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],63,0xc67178f2);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7],  0, 0x428A2F98);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6],  1, 0x71374491);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5],  2, 0xB5C0FBCF);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4],  3, 0xE9B5DBA5);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3],  4, 0x3956C25B);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2],  5, 0x59F111F1);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1],  6, 0x923F82A4);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0],  7, 0xAB1C5ED5);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7],  8, 0xD807AA98);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6],  9, 0x12835B01);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], 10, 0x243185BE);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], 11, 0x550C7DC3);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], 12, 0x72BE5D74);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], 13, 0x80DEB1FE);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], 14, 0x9BDC06A7);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], 15, 0xC19BF174);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], 16, 0xE49B69C1);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6], 17, 0xEFBE4786);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], 18, 0x0FC19DC6);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], 19, 0x240CA1CC);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], 20, 0x2DE92C6F);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], 21, 0x4A7484AA);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], 22, 0x5CB0A9DC);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], 23, 0x76F988DA);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], 24, 0x983E5152);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6], 25, 0xA831C66D);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], 26, 0xB00327C8);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], 27, 0xBF597FC7);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], 28, 0xC6E00BF3);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], 29, 0xD5A79147);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], 30, 0x06CA6351);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], 31, 0x14292967);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], 32, 0x27B70A85);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6], 33, 0x2E1B2138);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], 34, 0x4D2C6DFC);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], 35, 0x53380D13);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], 36, 0x650A7354);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], 37, 0x766A0ABB);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], 38, 0x81C2C92E);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], 39, 0x92722C85);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], 40, 0xA2BFE8A1);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6], 41, 0xA81A664B);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], 42, 0xC24B8B70);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], 43, 0xC76C51A3);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], 44, 0xD192E819);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], 45, 0xD6990624);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], 46, 0xF40E3585);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], 47, 0x106AA070);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], 48, 0x19A4C116);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6], 49, 0x1E376C08);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], 50, 0x2748774C);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], 51, 0x34B0BCB5);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], 52, 0x391C0CB3);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], 53, 0x4ED8AA4A);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], 54, 0x5B9CCA4F);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], 55, 0x682E6FF3);
+    RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], 56, 0x748F82EE);
+    RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6], 57, 0x78A5636F);
+    RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], 58, 0x84C87814);
+    RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], 59, 0x8CC70208);
+    RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], 60, 0x90BEFFFA);
+    RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], 61, 0xA4506CEB);
+    RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], 62, 0xBEF9A3F7);
+    RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], 63, 0xC67178F2);
 
 #undef RND
 
@@ -166,17 +364,16 @@ void ts::SHA256::compress(const uint8_t* buf)
 
 //----------------------------------------------------------------------------
 // Add some part of the message to hash. Can be called several times.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA256::add(const void* data, size_t size)
 {
-    const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
-    size_t n;
-
+    // Filter invalid internal state.
     if (_curlen >= sizeof(_buf)) {
         return false;
     }
+
+    const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
     while (size > 0) {
         if (_curlen == 0 && size >= BLOCK_SIZE) {
             compress(in);
@@ -185,7 +382,7 @@ bool ts::SHA256::add(const void* data, size_t size)
             size -= BLOCK_SIZE;
         }
         else {
-            n = std::min(size, (BLOCK_SIZE - _curlen));
+            size_t n = std::min(size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
@@ -203,12 +400,11 @@ bool ts::SHA256::add(const void* data, size_t size)
 
 //----------------------------------------------------------------------------
 // Get the resulting hash value.
-// If retsize is non-zero, return the actual hash size.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA256::getHash(void* hash, size_t bufsize, size_t* retsize)
 {
+    // Filter invalid internal state or invalid input.
     if (_curlen >= sizeof(_buf) || bufsize < HASH_SIZE) {
         return false;
     }
@@ -219,22 +415,16 @@ bool ts::SHA256::getHash(void* hash, size_t bufsize, size_t* retsize)
     // Append the '1' bit
     _buf[_curlen++] = 0x80;
 
-    // If the length is currently above 56 bytes we append zeros then compress.
-    // Then we can fall back to padding zeros and length encoding like normal.
+    // Pad with zeroes and append 64-bit message length in bits.
+    // If the length is currently above 56 bytes (no room for message length), append zeroes then compress.
     if (_curlen > 56) {
-        while (_curlen < 64) {
-            _buf[_curlen++] = 0;
-        }
-        compress (_buf);
+        Zero(_buf + _curlen, 64 - _curlen);
+        compress(_buf);
         _curlen = 0;
     }
 
-    // Pad upto 56 bytes of zeroes
-    while (_curlen < 56) {
-        _buf[_curlen++] = 0;
-    }
-
-    // Store length
+    // Pad up to 56 bytes with zeroes and append 64-bit message length in bits.
+    Zero(_buf + _curlen, 56 - _curlen);
     PutUInt64(_buf + 56, _length);
     compress(_buf);
 

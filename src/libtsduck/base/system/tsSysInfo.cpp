@@ -120,6 +120,8 @@ ts::SysInfo::SysInfo() :
     _crcInstructions(false),
     _aesInstructions(false),
     _sha1Instructions(false),
+    _sha256Instructions(false),
+    _sha512Instructions(false),
     _systemVersion(),
     _systemName(),
     _hostName(),
@@ -334,5 +336,17 @@ ts::SysInfo::SysInfo() :
     _sha1Instructions = (::getauxval(AT_HWCAP) & HWCAP_SHA1) != 0;
 #elif defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_MAC)
     _sha1Instructions = SysCtrlBool("hw.optional.arm.FEAT_SHA1");
+#endif
+
+#if defined(TS_ARM_SHA256_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_SHA2)
+    _sha256Instructions = (::getauxval(AT_HWCAP) & HWCAP_SHA2) != 0;
+#elif defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_MAC)
+    _sha256Instructions = SysCtrlBool("hw.optional.arm.FEAT_SHA256");
+#endif
+
+#if defined(TS_ARM_SHA512_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_SHA512)
+    _sha512Instructions = (::getauxval(AT_HWCAP) & HWCAP_SHA512) != 0;
+#elif defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_MAC)
+    _sha512Instructions = SysCtrlBool("hw.optional.arm.FEAT_SHA512");
 #endif
 }

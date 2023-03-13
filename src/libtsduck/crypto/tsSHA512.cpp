@@ -11,11 +11,23 @@
 //    << LibTomCrypt is public domain. The library is free for >>
 //    << all purposes without any express guarantee it works.  >>
 //
+//  Arm64 acceleration based on public domain code from Arm.
+//
 //----------------------------------------------------------------------------
 
 #include "tsSHA512.h"
 #include "tsMemory.h"
 #include "tsRotate.h"
+#include "tsSysInfo.h"
+
+#if defined(TS_ARM_SHA512_INSTRUCTIONS)
+#include <arm_neon.h>
+namespace {
+    // Runtime check once if Arm-64 SHA-512 instructions are supported on this CPU.
+    volatile bool _sha512_checked = false;
+    volatile bool _sha512_supported = false;
+}
+#endif
 
 #define Ch(x,y,z)  (z ^ (x & (y ^ z)))
 #define Maj(x,y,z) (((x | y) & z) | (x & y))
@@ -33,46 +45,46 @@
 
 namespace {
     const uint64_t K[80] = {
-        TS_UCONST64(0x428a2f98d728ae22), TS_UCONST64(0x7137449123ef65cd),
-        TS_UCONST64(0xb5c0fbcfec4d3b2f), TS_UCONST64(0xe9b5dba58189dbbc),
-        TS_UCONST64(0x3956c25bf348b538), TS_UCONST64(0x59f111f1b605d019),
-        TS_UCONST64(0x923f82a4af194f9b), TS_UCONST64(0xab1c5ed5da6d8118),
-        TS_UCONST64(0xd807aa98a3030242), TS_UCONST64(0x12835b0145706fbe),
-        TS_UCONST64(0x243185be4ee4b28c), TS_UCONST64(0x550c7dc3d5ffb4e2),
-        TS_UCONST64(0x72be5d74f27b896f), TS_UCONST64(0x80deb1fe3b1696b1),
-        TS_UCONST64(0x9bdc06a725c71235), TS_UCONST64(0xc19bf174cf692694),
-        TS_UCONST64(0xe49b69c19ef14ad2), TS_UCONST64(0xefbe4786384f25e3),
-        TS_UCONST64(0x0fc19dc68b8cd5b5), TS_UCONST64(0x240ca1cc77ac9c65),
-        TS_UCONST64(0x2de92c6f592b0275), TS_UCONST64(0x4a7484aa6ea6e483),
-        TS_UCONST64(0x5cb0a9dcbd41fbd4), TS_UCONST64(0x76f988da831153b5),
-        TS_UCONST64(0x983e5152ee66dfab), TS_UCONST64(0xa831c66d2db43210),
-        TS_UCONST64(0xb00327c898fb213f), TS_UCONST64(0xbf597fc7beef0ee4),
-        TS_UCONST64(0xc6e00bf33da88fc2), TS_UCONST64(0xd5a79147930aa725),
-        TS_UCONST64(0x06ca6351e003826f), TS_UCONST64(0x142929670a0e6e70),
-        TS_UCONST64(0x27b70a8546d22ffc), TS_UCONST64(0x2e1b21385c26c926),
-        TS_UCONST64(0x4d2c6dfc5ac42aed), TS_UCONST64(0x53380d139d95b3df),
-        TS_UCONST64(0x650a73548baf63de), TS_UCONST64(0x766a0abb3c77b2a8),
-        TS_UCONST64(0x81c2c92e47edaee6), TS_UCONST64(0x92722c851482353b),
-        TS_UCONST64(0xa2bfe8a14cf10364), TS_UCONST64(0xa81a664bbc423001),
-        TS_UCONST64(0xc24b8b70d0f89791), TS_UCONST64(0xc76c51a30654be30),
-        TS_UCONST64(0xd192e819d6ef5218), TS_UCONST64(0xd69906245565a910),
-        TS_UCONST64(0xf40e35855771202a), TS_UCONST64(0x106aa07032bbd1b8),
-        TS_UCONST64(0x19a4c116b8d2d0c8), TS_UCONST64(0x1e376c085141ab53),
-        TS_UCONST64(0x2748774cdf8eeb99), TS_UCONST64(0x34b0bcb5e19b48a8),
-        TS_UCONST64(0x391c0cb3c5c95a63), TS_UCONST64(0x4ed8aa4ae3418acb),
-        TS_UCONST64(0x5b9cca4f7763e373), TS_UCONST64(0x682e6ff3d6b2b8a3),
-        TS_UCONST64(0x748f82ee5defb2fc), TS_UCONST64(0x78a5636f43172f60),
-        TS_UCONST64(0x84c87814a1f0ab72), TS_UCONST64(0x8cc702081a6439ec),
-        TS_UCONST64(0x90befffa23631e28), TS_UCONST64(0xa4506cebde82bde9),
-        TS_UCONST64(0xbef9a3f7b2c67915), TS_UCONST64(0xc67178f2e372532b),
-        TS_UCONST64(0xca273eceea26619c), TS_UCONST64(0xd186b8c721c0c207),
-        TS_UCONST64(0xeada7dd6cde0eb1e), TS_UCONST64(0xf57d4f7fee6ed178),
-        TS_UCONST64(0x06f067aa72176fba), TS_UCONST64(0x0a637dc5a2c898a6),
-        TS_UCONST64(0x113f9804bef90dae), TS_UCONST64(0x1b710b35131c471b),
-        TS_UCONST64(0x28db77f523047d84), TS_UCONST64(0x32caab7b40c72493),
-        TS_UCONST64(0x3c9ebe0a15c9bebc), TS_UCONST64(0x431d67c49c100d4c),
-        TS_UCONST64(0x4cc5d4becb3e42b6), TS_UCONST64(0x597f299cfc657e2a),
-        TS_UCONST64(0x5fcb6fab3ad6faec), TS_UCONST64(0x6c44198c4a475817)
+        TS_UCONST64(0x428A2F98D728AE22), TS_UCONST64(0x7137449123EF65CD),
+        TS_UCONST64(0xB5C0FBCFEC4D3B2F), TS_UCONST64(0xE9B5DBA58189DBBC),
+        TS_UCONST64(0x3956C25BF348B538), TS_UCONST64(0x59F111F1B605D019),
+        TS_UCONST64(0x923F82A4AF194F9B), TS_UCONST64(0xAB1C5ED5DA6D8118),
+        TS_UCONST64(0xD807AA98A3030242), TS_UCONST64(0x12835B0145706FBE),
+        TS_UCONST64(0x243185BE4EE4B28C), TS_UCONST64(0x550C7DC3D5FFB4E2),
+        TS_UCONST64(0x72BE5D74F27B896F), TS_UCONST64(0x80DEB1FE3B1696B1),
+        TS_UCONST64(0x9BDC06A725C71235), TS_UCONST64(0xC19BF174CF692694),
+        TS_UCONST64(0xE49B69C19EF14AD2), TS_UCONST64(0xEFBE4786384F25E3),
+        TS_UCONST64(0x0FC19DC68B8CD5B5), TS_UCONST64(0x240CA1CC77AC9C65),
+        TS_UCONST64(0x2DE92C6F592B0275), TS_UCONST64(0x4A7484AA6EA6E483),
+        TS_UCONST64(0x5CB0A9DCBD41FBD4), TS_UCONST64(0x76F988DA831153B5),
+        TS_UCONST64(0x983E5152EE66DFAB), TS_UCONST64(0xA831C66D2DB43210),
+        TS_UCONST64(0xB00327C898FB213F), TS_UCONST64(0xBF597FC7BEEF0EE4),
+        TS_UCONST64(0xC6E00BF33DA88FC2), TS_UCONST64(0xD5A79147930AA725),
+        TS_UCONST64(0x06CA6351E003826F), TS_UCONST64(0x142929670A0E6E70),
+        TS_UCONST64(0x27B70A8546D22FFC), TS_UCONST64(0x2E1B21385C26C926),
+        TS_UCONST64(0x4D2C6DFC5AC42AED), TS_UCONST64(0x53380D139D95B3DF),
+        TS_UCONST64(0x650A73548BAF63DE), TS_UCONST64(0x766A0ABB3C77B2A8),
+        TS_UCONST64(0x81C2C92E47EDAEE6), TS_UCONST64(0x92722C851482353B),
+        TS_UCONST64(0xA2BFE8A14CF10364), TS_UCONST64(0xA81A664BBC423001),
+        TS_UCONST64(0xC24B8B70D0F89791), TS_UCONST64(0xC76C51A30654BE30),
+        TS_UCONST64(0xD192E819D6EF5218), TS_UCONST64(0xD69906245565A910),
+        TS_UCONST64(0xF40E35855771202A), TS_UCONST64(0x106AA07032BBD1B8),
+        TS_UCONST64(0x19A4C116B8D2D0C8), TS_UCONST64(0x1E376C085141AB53),
+        TS_UCONST64(0x2748774CDF8EEB99), TS_UCONST64(0x34B0BCB5E19B48A8),
+        TS_UCONST64(0x391C0CB3C5C95A63), TS_UCONST64(0x4ED8AA4AE3418ACB),
+        TS_UCONST64(0x5B9CCA4F7763E373), TS_UCONST64(0x682E6FF3D6B2B8A3),
+        TS_UCONST64(0x748F82EE5DEFB2FC), TS_UCONST64(0x78A5636F43172F60),
+        TS_UCONST64(0x84C87814A1F0AB72), TS_UCONST64(0x8CC702081A6439EC),
+        TS_UCONST64(0x90BEFFFA23631E28), TS_UCONST64(0xA4506CEBDE82BDE9),
+        TS_UCONST64(0xBEF9A3F7B2C67915), TS_UCONST64(0xC67178F2E372532B),
+        TS_UCONST64(0xCA273ECEEA26619C), TS_UCONST64(0xD186B8C721C0C207),
+        TS_UCONST64(0xEADA7DD6CDE0EB1E), TS_UCONST64(0xF57D4F7FEE6ED178),
+        TS_UCONST64(0x06F067AA72176FBA), TS_UCONST64(0x0A637DC5A2C898A6),
+        TS_UCONST64(0x113F9804BEF90DAE), TS_UCONST64(0x1B710B35131C471B),
+        TS_UCONST64(0x28DB77F523047D84), TS_UCONST64(0x32CAAB7B40C72493),
+        TS_UCONST64(0x3C9EBE0A15C9BEBC), TS_UCONST64(0x431D67C49C100D4C),
+        TS_UCONST64(0x4CC5D4BECB3E42B6), TS_UCONST64(0x597F299CFC657E2A),
+        TS_UCONST64(0x5FCB6FAB3AD6FAEC), TS_UCONST64(0x6C44198C4A475817)
     };
 }
 
@@ -85,13 +97,22 @@ ts::SHA512::SHA512() :
     _length(0),
     _curlen(0)
 {
-    init();
+#if defined(TS_ARM_SHA512_INSTRUCTIONS)
+    // When SHA-512 instructions are compiled, check once if supported at runtime.
+    // This logic does not require explicit synchronization.
+    if (!_sha512_checked) {
+        _sha512_supported = SysInfo::Instance()->sha512Instructions();
+        _sha512_checked = true;
+    }
+#endif
+
+    // Initialize internal state.
+    SHA512::init();
 }
 
 
 //----------------------------------------------------------------------------
 // Reinitialize the computation of the hash.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA512::init()
@@ -116,7 +137,15 @@ bool ts::SHA512::init()
 
 void ts::SHA512::compress(const uint8_t* buf)
 {
-    uint64_t S[8], W[80], t0, t1;
+#if defined(TS_ARM_SHA512_INSTRUCTIONS)
+    // The acceleration, when available, is located inside the compress() method.
+    if (_sha512_supported) {
+        // Not yet implemented...
+    }
+#endif
+
+    // Portable implementation.
+    uint64_t S[8], W[80];
 
     // Copy state into S
     for (size_t i = 0; i < 8; i++) {
@@ -134,6 +163,7 @@ void ts::SHA512::compress(const uint8_t* buf)
     }
 
     // Compress
+    uint64_t t0, t1;
 #define RND(a,b,c,d,e,f,g,h,i)                       \
     t0 = h + Sigma1(e) + Ch(e, f, g) + K[i] + W[i];  \
     t1 = Sigma0(a) + Maj(a, b, c);                   \
@@ -141,14 +171,14 @@ void ts::SHA512::compress(const uint8_t* buf)
     h  = t0 + t1
 
     for (size_t i = 0; i < 80; i += 8) {
-        RND(S[0],S[1],S[2],S[3],S[4],S[5],S[6],S[7],i+0);
-        RND(S[7],S[0],S[1],S[2],S[3],S[4],S[5],S[6],i+1);
-        RND(S[6],S[7],S[0],S[1],S[2],S[3],S[4],S[5],i+2);
-        RND(S[5],S[6],S[7],S[0],S[1],S[2],S[3],S[4],i+3);
-        RND(S[4],S[5],S[6],S[7],S[0],S[1],S[2],S[3],i+4);
-        RND(S[3],S[4],S[5],S[6],S[7],S[0],S[1],S[2],i+5);
-        RND(S[2],S[3],S[4],S[5],S[6],S[7],S[0],S[1],i+6);
-        RND(S[1],S[2],S[3],S[4],S[5],S[6],S[7],S[0],i+7);
+        RND(S[0], S[1], S[2], S[3], S[4], S[5], S[6], S[7], i+0);
+        RND(S[7], S[0], S[1], S[2], S[3], S[4], S[5], S[6], i+1);
+        RND(S[6], S[7], S[0], S[1], S[2], S[3], S[4], S[5], i+2);
+        RND(S[5], S[6], S[7], S[0], S[1], S[2], S[3], S[4], i+3);
+        RND(S[4], S[5], S[6], S[7], S[0], S[1], S[2], S[3], i+4);
+        RND(S[3], S[4], S[5], S[6], S[7], S[0], S[1], S[2], i+5);
+        RND(S[2], S[3], S[4], S[5], S[6], S[7], S[0], S[1], i+6);
+        RND(S[1], S[2], S[3], S[4], S[5], S[6], S[7], S[0], i+7);
      }
 
 #undef RND
@@ -162,17 +192,16 @@ void ts::SHA512::compress(const uint8_t* buf)
 
 //----------------------------------------------------------------------------
 // Add some part of the message to hash. Can be called several times.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA512::add(const void* data, size_t size)
 {
-    const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
-    size_t n;
-
+    // Filter invalid internal state.
     if (_curlen >= sizeof(_buf)) {
         return false;
     }
+
+    const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
     while (size > 0) {
         if (_curlen == 0 && size >= BLOCK_SIZE) {
             compress(in);
@@ -181,7 +210,7 @@ bool ts::SHA512::add(const void* data, size_t size)
             size -= BLOCK_SIZE;
         }
         else {
-            n = std::min(size, (BLOCK_SIZE - _curlen));
+            size_t n = std::min(size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);
             _curlen += n;
             in += n;
@@ -199,12 +228,11 @@ bool ts::SHA512::add(const void* data, size_t size)
 
 //----------------------------------------------------------------------------
 // Get the resulting hash value.
-// If retsize is non-zero, return the actual hash size.
-// Return true on success, false on error.
 //----------------------------------------------------------------------------
 
 bool ts::SHA512::getHash(void* hash, size_t bufsize, size_t* retsize)
 {
+    // Filter invalid internal state or invalid input.
     if (_curlen >= sizeof(_buf) || bufsize < HASH_SIZE) {
         return false;
     }
@@ -215,23 +243,17 @@ bool ts::SHA512::getHash(void* hash, size_t bufsize, size_t* retsize)
     // Append the '1' bit
     _buf[_curlen++] = 0x80;
 
-    // If the length is currently above 112 bytes we append zeros then compress.
-    // Then we can fall back to padding zeros and length encoding like normal.
+    // Pad with zeroes and append 128-bit message length in bits.
+    // If the length is currently above 112 bytes (no room for message length), append zeroes then compress.
     if (_curlen > 112) {
-        while (_curlen < 128) {
-            _buf[_curlen++] = 0;
-        }
+        Zero(_buf + _curlen, 128 - _curlen);
         compress(_buf);
         _curlen = 0;
     }
 
-    // Pad upto 120 bytes of zeroes
-    // Note: that from 112 to 120 is the 64 MSB of the length.  We assume that you won't hash > 2^64 bits of data... :-)
-    while (_curlen < 120) {
-        _buf[_curlen++] = 0;
-    }
-
-    // Store length
+    // Pad up to 120 bytes with zeroes and append 64-bit message length in bits.
+    // Note: zeroes from 112 to 120 are the 64 MSB of the length. We assume that you won't hash > 2^64 bits of data.
+    Zero(_buf + _curlen, 120 - _curlen);
     PutUInt64(_buf + 120, _length);
     compress(_buf);
 

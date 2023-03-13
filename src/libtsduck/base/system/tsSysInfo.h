@@ -147,6 +147,16 @@ namespace ts {
         //!
         bool sha1Instructions() const { return _sha1Instructions; }
         //!
+        //! Check if the CPU supports accelerated instructions for SHA-256.
+        //! @return True if the CPU supports SHA-256 instructions.
+        //!
+        bool sha256Instructions() const { return _sha256Instructions; }
+        //!
+        //! Check if the CPU supports accelerated instructions for SHA-512.
+        //! @return True if the CPU supports SHA-512 instructions.
+        //!
+        bool sha512Instructions() const { return _sha512Instructions; }
+        //!
         //! Get the operating system version.
         //! @return The operating system version.
         //!
@@ -193,6 +203,8 @@ namespace ts {
         bool    _crcInstructions;
         bool    _aesInstructions;
         bool    _sha1Instructions;
+        bool    _sha256Instructions;
+        bool    _sha512Instructions;
         UString _systemVersion;
         UString _systemName;
         UString _hostName;
