@@ -734,7 +734,7 @@ namespace {
         0x79b492a7UL, 0x70b999a9UL, 0x6bae84bbUL, 0x62a38fb5UL, 0x5d80be9fUL, 0x548db591UL, 0x4f9aa883UL, 0x4697a38dUL
     };
 
-        // For 128-bit blocks, Rijndael never uses more than 10 rcon values
+    // For 128-bit blocks, Rijndael never uses more than 10 rcon values
     static const uint32_t rcon[] = {
         0x01000000UL, 0x02000000UL, 0x04000000UL, 0x08000000UL,
         0x10000000UL, 0x20000000UL, 0x40000000UL, 0x80000000UL,
