@@ -44,8 +44,8 @@ namespace ts {
     {
         TS_NOCOPY(SHA512);
     public:
-        static const size_t HASH_SIZE  =  64;  //!< SHA-512 hash size in bytes.
-        static const size_t BLOCK_SIZE = 128;  //!< SHA-512 block size in bytes.
+        static const size_t HASH_SIZE  =  64;  //!< SHA-512 hash size in bytes (512 bits).
+        static const size_t BLOCK_SIZE = 128;  //!< SHA-512 block size in bytes (1024 bits).
 
         // Implementation of Hash interface:
         virtual UString name() const override;
@@ -61,8 +61,8 @@ namespace ts {
     private:
         uint64_t _length;                // Total message size in bits (already hashed, ie. excluding _buf)
         size_t   _curlen;                // Used bytes in _buf
-        uint64_t _state[HASH_SIZE / 8];  // Current hash value (512 bits)
-        uint8_t  _buf[BLOCK_SIZE];       // Current block to hash (1024 bits)
+        uint64_t _state[HASH_SIZE / 8];  // Current hash value (512 bits, 64 bytes, 8 uint64)
+        uint8_t  _buf[BLOCK_SIZE];       // Current block to hash (1024 bits, 128 bytes)
 
         // Compress one 512-bit block, accumulate hash in _state.
         void compress(const uint8_t* buf);
