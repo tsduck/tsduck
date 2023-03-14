@@ -63,6 +63,24 @@ ts::SHA1::SHA1() :
 
 
 //----------------------------------------------------------------------------
+// Implementation of Hash interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::SHA1::name() const
+{
+    return u"SHA-1";
+}
+size_t ts::SHA1::hashSize() const
+{
+    return HASH_SIZE;
+}
+size_t ts::SHA1::blockSize() const
+{
+    return BLOCK_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
 // Reinitialize the computation of the hash.
 //----------------------------------------------------------------------------
 
@@ -100,10 +118,13 @@ void ts::SHA1::compress(const uint8_t* buf)
         uint32x4_t msg2 = vld1q_u32(buf32 + 8);
         uint32x4_t msg3 = vld1q_u32(buf32 + 12);
 
+        // Swap bytes if little endian Arm64.
+#if defined(TS_LITTLE_ENDIAN)
         msg0 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg0)));
         msg1 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg1)));
         msg2 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg2)));
         msg3 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg3)));
+#endif
 
         uint32x4_t tmp = vaddq_u32(msg0, C0);
         uint32x4_t tmp1 = vaddq_u32(msg1, C0);
@@ -415,22 +436,4 @@ bool ts::SHA1::getHash(void* hash, size_t bufsize, size_t* retsize)
         *retsize = HASH_SIZE;
     }
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Implementation of Hash interface:
-//----------------------------------------------------------------------------
-
-ts::UString ts::SHA1::name() const
-{
-    return u"SHA-1";
-}
-size_t ts::SHA1::hashSize() const
-{
-    return HASH_SIZE;
-}
-size_t ts::SHA1::blockSize() const
-{
-    return BLOCK_SIZE;
 }

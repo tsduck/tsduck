@@ -90,6 +90,24 @@ ts::SHA256::SHA256() :
 
 
 //----------------------------------------------------------------------------
+// Implementation of Hash interface:
+//----------------------------------------------------------------------------
+
+ts::UString ts::SHA256::name() const
+{
+    return u"SHA-256";
+}
+size_t ts::SHA256::hashSize() const
+{
+    return HASH_SIZE;
+}
+size_t ts::SHA256::blockSize() const
+{
+    return BLOCK_SIZE;
+}
+
+
+//----------------------------------------------------------------------------
 // Reinitialize the computation of the hash.
 //----------------------------------------------------------------------------
 
@@ -120,30 +138,32 @@ void ts::SHA256::compress(const uint8_t* buf)
     // Based on public domain code from Arm.
     if (_sha256_supported) {
 
-        // Load initial values
+        // Load initial values.
         uint32x4_t state0 = vld1q_u32(&_state[0]);
         uint32x4_t state1 = vld1q_u32(&_state[4]);
 
-        // Save current state
+        // Save current state.
         const uint32x4_t previous_state0 = state0;
         const uint32x4_t previous_state1 = state1;
 
+        // Load input block.
         const uint32_t* buf32 = reinterpret_cast<const uint32_t*>(buf);
         uint32x4_t msg0 = vld1q_u32(buf32 + 0);
         uint32x4_t msg1 = vld1q_u32(buf32 + 4);
         uint32x4_t msg2 = vld1q_u32(buf32 + 8);
         uint32x4_t msg3 = vld1q_u32(buf32 + 12);
 
+        // Swap bytes if little endian Arm64.
+#if defined(TS_LITTLE_ENDIAN)
         msg0 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg0)));
         msg1 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg1)));
         msg2 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg2)));
         msg3 = vreinterpretq_u32_u8(vrev32q_u8(vreinterpretq_u8_u32(msg3)));
-
-        uint32x4_t msg_k, tmp_state;
+#endif
 
         // Rounds 0-3
-        msg_k = vaddq_u32(msg0, vld1q_u32(&K[4*0]));
-        tmp_state = vsha256hq_u32(state0, state1, msg_k);
+        uint32x4_t msg_k = vaddq_u32(msg0, vld1q_u32(&K[4*0]));
+        uint32x4_t tmp_state = vsha256hq_u32(state0, state1, msg_k);
         state1 = vsha256h2q_u32(state1, state0, msg_k);
         state0 = tmp_state;
         msg0 = vsha256su1q_u32(vsha256su0q_u32(msg0, msg1), msg2, msg3);
@@ -376,12 +396,14 @@ bool ts::SHA256::add(const void* data, size_t size)
     const uint8_t* in = reinterpret_cast<const uint8_t*>(data);
     while (size > 0) {
         if (_curlen == 0 && size >= BLOCK_SIZE) {
+            // Compress one 512-bit block directly from user's buffer.
             compress(in);
             _length += BLOCK_SIZE * 8;
             in += BLOCK_SIZE;
             size -= BLOCK_SIZE;
         }
         else {
+            // Partial block, Accumulate input data in internal buffer.
             size_t n = std::min(size, (BLOCK_SIZE - _curlen));
             ::memcpy(_buf + _curlen, in, n);
             _curlen += n;
@@ -438,22 +460,4 @@ bool ts::SHA256::getHash(void* hash, size_t bufsize, size_t* retsize)
         *retsize = HASH_SIZE;
     }
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Implementation of Hash interface:
-//----------------------------------------------------------------------------
-
-ts::UString ts::SHA256::name() const
-{
-    return u"SHA-256";
-}
-size_t ts::SHA256::hashSize() const
-{
-    return HASH_SIZE;
-}
-size_t ts::SHA256::blockSize() const
-{
-    return BLOCK_SIZE;
 }
