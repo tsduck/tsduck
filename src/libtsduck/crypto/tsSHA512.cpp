@@ -173,14 +173,14 @@ void ts::SHA512::compress(const uint8_t* buf)
 
         // Load input block.
         const uint8_t* buf8 = reinterpret_cast<const uint8_t*>(buf);
-        uint64x2_t s0 = vld1q_u8(buf8 + 16 * 0);
-        uint64x2_t s1 = vld1q_u8(buf8 + 16 * 1);
-        uint64x2_t s2 = vld1q_u8(buf8 + 16 * 2);
-        uint64x2_t s3 = vld1q_u8(buf8 + 16 * 3);
-        uint64x2_t s4 = vld1q_u8(buf8 + 16 * 4);
-        uint64x2_t s5 = vld1q_u8(buf8 + 16 * 5);
-        uint64x2_t s6 = vld1q_u8(buf8 + 16 * 6);
-        uint64x2_t s7 = vld1q_u8(buf8 + 16 * 7);
+        uint64x2_t s0 = uint64x2_t(vld1q_u8(buf8 + 16 * 0));
+        uint64x2_t s1 = uint64x2_t(vld1q_u8(buf8 + 16 * 1));
+        uint64x2_t s2 = uint64x2_t(vld1q_u8(buf8 + 16 * 2));
+        uint64x2_t s3 = uint64x2_t(vld1q_u8(buf8 + 16 * 3));
+        uint64x2_t s4 = uint64x2_t(vld1q_u8(buf8 + 16 * 4));
+        uint64x2_t s5 = uint64x2_t(vld1q_u8(buf8 + 16 * 5));
+        uint64x2_t s6 = uint64x2_t(vld1q_u8(buf8 + 16 * 6));
+        uint64x2_t s7 = uint64x2_t(vld1q_u8(buf8 + 16 * 7));
 
         // Swap bytes if little endian Arm64.
 #if defined(TS_LITTLE_ENDIAN)
