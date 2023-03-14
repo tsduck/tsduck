@@ -357,7 +357,7 @@ else ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
     # On Linux Arm64, allow the usage of specialized instructions by the compiler.
     # The code will explicitly check at run time if they are supported before using them.
     # On macOS, this support is implicit.
-    CXXFLAGS_TARGET := -march=armv8-a+crc+crypto+sha2+sha3
+    CXXFLAGS_TARGET := -march=armv8.2-a+crc+crypto+sha2+sha3
 else
     CXXFLAGS_TARGET :=
 endif
