@@ -80,6 +80,13 @@ namespace ts {
         void clear();
 
         //!
+        //! Check if there is some patch to apply.
+        //! When false, no patch file was specified or loaded.
+        //! @return True if there is some patch to apply.
+        //!
+        bool hasPatchFiles() const { return !_patches.empty(); }
+
+        //!
         //! Add a file name in the list of patch files.
         //! The file is not yet loaded.
         //! @param [in] filename Name of an XML patch file.
@@ -121,6 +128,18 @@ namespace ts {
         //! @return True on success, false if the binary table or the patched XML is invalid.
         //!
         bool applyPatches(BinaryTable& table) const;
+
+        //!
+        //! Apply the XML patch files to a binary section.
+        //! This is a special processing since XML files are supposed to represent complete tables.
+        //! The section is considered as section 0/0 of a complete table. The patch is applied on
+        //! that table and the first section of the patched table is returned. Specific parts of
+        //! the section are preserved, such as section number or last section number.
+        //! @param [in,out] section Safe pointer to the section to patch.
+        //! The pointer is modified, pointing to a new section content.
+        //! @return True on success, false if the binary section or the patched XML is invalid.
+        //!
+        bool applyPatches(SectionPtr& section) const;
 
     private:
         typedef ts::SafePtr<ts::xml::PatchDocument> PatchDocumentPtr;

@@ -32,6 +32,7 @@
 #include "tsxmlElement.h"
 #include "tsFatal.h"
 #include "tsArgs.h"
+#include "tsEIT.h"
 #include "tsDuckContext.h"
 
 
@@ -171,7 +172,7 @@ bool ts::TablePatchXML::applyPatches(BinaryTable& table) const
     xml::Element* xtable = root == nullptr ? nullptr : root->firstChildElement();
     xml::Element* xnext = xtable == nullptr ? nullptr : xtable->nextSiblingElement();
 
-    // Check that the XML transformation let exactly one table.
+    // Check that the XML transformation created exactly one table.
     if (xtable == nullptr) {
         _duck.report().error(u"XML patching left no table in the document");
         return false;
@@ -187,5 +188,55 @@ bool ts::TablePatchXML::applyPatches(BinaryTable& table) const
     }
 
     // Successful completion.
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Apply the XML patch files to a binary section.
+//----------------------------------------------------------------------------
+
+bool ts::TablePatchXML::applyPatches(ts::SectionPtr& sp) const
+{
+    // If no patch is loaded, nothing to do.
+    if (_patches.empty()) {
+        return true;
+    }
+    if (sp.isNull() || !sp->isValid()) {
+        return false;
+    }
+
+    // We save the original section numbers from that section. EIT also need some specific save/restore.
+    const bool is_long = sp->isLongSection();
+    const bool is_eit = EIT::IsEIT(sp->tableId());
+    const uint8_t section_number = sp->sectionNumber();
+    const uint8_t last_section_number = sp->lastSectionNumber();
+    const uint8_t eit_segment_last_section_number = is_eit && sp->payloadSize() >= 5 ? sp->payload()[4] : 0;
+
+    // Then, pretend that this section is alone in its table.
+    if (is_long) {
+        sp->setSectionNumber(0, false);
+        sp->setLastSectionNumber(0, true);
+    }
+    BinaryTable table;
+    table.addSection(sp);
+
+    // Apply the patches on the fake table.
+    if (!applyPatches(table) || !table.isValid() || table.sectionCount() == 0) {
+        return false;
+    }
+
+    // Collect the first section of the patched table.
+    sp = table.sectionAt(0);
+
+    // Restore previous section numbers.
+    if (is_long) {
+        if (is_eit && sp->payloadSize() >= 5) {
+            sp->setUInt8(4, eit_segment_last_section_number, false);
+        }
+        sp->setSectionNumber(section_number, false);
+        sp->setLastSectionNumber(last_section_number, true);
+    }
+
     return true;
 }

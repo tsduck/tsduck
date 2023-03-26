@@ -86,7 +86,7 @@ bool ts::xml::PatchDocument::patchElement(const Element* patch, Element* doc) co
     }
 
     // Now process all attribute modifications on the node attributes.
-    for (auto it : attr) {
+    for (const auto& it : attr) {
         if (it.first.startWith(X_ADD_PREFIX, CASE_INSENSITIVE)) {
             // Add or replace an attribute.
             UString name(it.first);
