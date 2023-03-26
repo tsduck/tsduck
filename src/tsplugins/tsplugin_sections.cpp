@@ -33,6 +33,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsPluginRepository.h"
+#include "tsTablePatchXML.h"
 #include "tsSectionDemux.h"
 #include "tsPacketizer.h"
 #include "tsAlgorithm.h"
@@ -74,6 +75,7 @@ namespace ts {
         std::set<uint16_t>     _exts;
         std::set<uint32_t>     _etids;
         std::set<uint8_t>      _versions;
+        std::set<uint8_t>      _section_numbers;
         std::vector<ByteBlock> _contents;
         std::vector<ByteBlock> _contents_masks;
 
@@ -81,6 +83,7 @@ namespace ts {
         std::list<SectionPtr> _sections;
         SectionDemux          _demux;
         Packetizer            _packetizer;
+        TablePatchXML         _patch_xml;
 
         // Compute a condition in the chain of _predicate.
         // - valid: the condition needs to be checked (eg. there are some tids to remove).
@@ -123,11 +126,13 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     _exts(),
     _etids(),
     _versions(),
+    _section_numbers(),
     _contents(),
     _contents_masks(),
     _sections(),
     _demux(duck, nullptr, this),
-    _packetizer(duck, PID_NULL, this)
+    _packetizer(duck, PID_NULL, this),
+    _patch_xml(duck)
 {
     option(u"and", 'a');
     help(u"and",
@@ -199,6 +204,11 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
          u"The first mask applies to the first content, the second mask to the second content, etc. "
          u"If there are less masks than contents, the last mask is implicitly repeated.");
 
+    option(u"section-number", 0, UINT8, 0, UNLIMITED_COUNT);
+    help(u"section-number", u"num1[-num2]",
+         u"Remove/keep all sections with the corresponding section number. "
+         u"Several options --section-number can be specified.");
+
     option(u"stuffing", 's');
     help(u"stuffing",
          u"Insert stuffing at end of each section, up to the next TS packet "
@@ -220,6 +230,18 @@ ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
     help(u"version", u"v1[-v2]",
          u"Remove/keep all sections with the corresponding versions. "
          u"Several options --version can be specified.");
+
+    // Slightly amend the semantics of --patch-xml here.
+    _patch_xml.defineArgs(*this);
+    help(u"patch-xml",
+         u"Specify an XML patch file which is applied to all sections on the fly. "
+         u"Here, the behavior of --patch-xml is slightly different, compared to other commands or plugins. "
+         u"While XML representation and patch normally apply to a complete table, they process one single section here. "
+         u"This means that the result of the patch must fit into one single section. "
+         u"Otherwise, only the first section of the result is kept (with the original section number of the input section). "
+         u"If the name starts with \"<?xml\", it is considered as \"inline XML content\". "
+         u"Several --patch-xml options can be specified. "
+         u"Patch files are sequentially applied on each section.");
 }
 
 
@@ -239,6 +261,7 @@ bool ts::SectionsPlugin::getOptions()
     getIntValues(_exts, u"tid-ext");
     getIntValues(_etids, u"etid");
     getIntValues(_versions, u"version");
+    getIntValues(_section_numbers, u"section-number");
 
     _contents.resize(count(u"section-content"));
     for (size_t i = 0; i < _contents.size(); ++i) {
@@ -261,7 +284,7 @@ bool ts::SectionsPlugin::getOptions()
     }
 
     // If there any section to remove/keep?
-    _selections_present = !_tids.empty() || !_exts.empty() || !_etids.empty() || !_versions.empty() || !_contents.empty();
+    _selections_present = !_tids.empty() || !_exts.empty() || !_etids.empty() || !_versions.empty() || !_section_numbers.empty() || !_contents.empty();
 
     if (present(u"and")) {
         // Global "AND" on all (!valid || condition)
@@ -276,7 +299,7 @@ bool ts::SectionsPlugin::getOptions()
         _cond_predicate = And;
     }
 
-    return true;
+    return _patch_xml.loadArgs(duck, *this);
 }
 
 
@@ -291,7 +314,7 @@ bool ts::SectionsPlugin::start()
     _packetizer.reset();
     _packetizer.setPID(_output_pid);
     _sections.clear();
-    return true;
+    return _patch_xml.loadPatchFiles();
 }
 
 
@@ -360,14 +383,22 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
         condition(is_long && !_exts.empty(), Contains(_exts, ext)),
         condition(is_long && !_etids.empty(), Contains(_etids, etid)),
         condition(is_long && !_versions.empty(), Contains(_versions, section.version())),
+        condition(is_long && !_section_numbers.empty(), Contains(_section_numbers, section.sectionNumber())),
         condition(!_contents.empty(), matchContent(section)),
     });
 
     if (!_selections_present || (_keep_selected && selected) || (!_keep_selected && !selected)) {
         // At this point, we need to keep the section.
+
         // Build a copy of it for insertion in the queue.
-        const SectionPtr sp(new Section(section, ShareMode::SHARE));
+        SectionPtr sp(new Section(section, ShareMode::SHARE));
         CheckNonNull(sp.pointer());
+
+        // Process XML patching.
+        if (!_patch_xml.applyPatches(sp)) {
+            // Patch error, drop that section. Errors are displayed in applyPatches().
+            return;
+        }
 
         // Now insert the section in the queue for the packetizer.
         _sections.push_back(sp);

@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.34-3174
+VERSION 3.34-3177
 
 [NEW] New commands and plugins:
 
@@ -20,6 +20,7 @@ VERSION 3.34-3174
     - Option --no-deep-duplicate in "tstables" and plugin "tables".
     - Option --accelerated in "tscrc32".
     - Option --ignore-crc32 in "tstabdump".
+    - Option --patch-xml and --section-number in plugin "sections".
     - Options --lazy-schedule-update, --synchronous-versions in plugin
       "eitinject".
 
