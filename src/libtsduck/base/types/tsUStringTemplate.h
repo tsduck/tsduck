@@ -690,6 +690,26 @@ ts::UString ts::UString::Decimal(INT value,
 
 
 //----------------------------------------------------------------------------
+// Format a string containing a list of decimal values.
+//----------------------------------------------------------------------------
+
+template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type*>
+ts::UString ts::UString::Decimal(const CONTAINER& values, const UString& separator, bool force_sign)
+{
+    UString result;
+    for (const typename CONTAINER::value_type& val : values) {
+        UString s;
+        DecimalHelper(s, val, u"", force_sign);
+        if (!result.empty()) {
+            result.append(separator);
+        }
+        result.append(s);
+    }
+    return result;
+}
+
+
+//----------------------------------------------------------------------------
 // Internal helpers for Decimal(), unsigned version.
 //----------------------------------------------------------------------------
 
