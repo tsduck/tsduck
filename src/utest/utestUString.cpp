@@ -89,6 +89,7 @@ public:
     void testAppendContainer();
     void testAssignContainer();
     void testDecimal();
+    void testDecimalList();
     void testHexa();
     void testHexaDump();
     void testArgMixIn();
@@ -144,6 +145,7 @@ public:
     TSUNIT_TEST(testAppendContainer);
     TSUNIT_TEST(testAssignContainer);
     TSUNIT_TEST(testDecimal);
+    TSUNIT_TEST(testDecimalList);
     TSUNIT_TEST(testHexa);
     TSUNIT_TEST(testHexaDump);
     TSUNIT_TEST(testArgMixIn);
@@ -1266,6 +1268,19 @@ void UStringTest::testDecimal()
     TSUNIT_EQUAL(u"-9223372036854775808", ts::UString::Decimal(std::numeric_limits<int64_t>::min(), 0, true, u""));
     TSUNIT_EQUAL(u"-9,223,372,036,854,775,808", ts::UString::Decimal(std::numeric_limits<int64_t>::min()));
     TSUNIT_EQUAL(u"9,223,372,036,854,775,807", ts::UString::Decimal(std::numeric_limits<int64_t>::max()));
+}
+
+void UStringTest::testDecimalList()
+{
+    TSUNIT_EQUAL(u"", ts::UString::Decimal(std::vector<int>{}));
+    TSUNIT_EQUAL(u"56", ts::UString::Decimal(std::vector<int>{56}));
+    TSUNIT_EQUAL(u"1, -2, 3, -1234", ts::UString::Decimal(std::vector<int>{1, -2, 3, -1234}));
+    TSUNIT_EQUAL(u"1/-2/3/-1234", ts::UString::Decimal(std::vector<int>{1, -2, 3, -1234}, u"/"));
+    TSUNIT_EQUAL(u"+1/-2/+3/-1234", ts::UString::Decimal(std::vector<int>{1, -2, 3, -1234}, u"/", true));
+
+    TSUNIT_EQUAL(u"", ts::UString::Decimal(std::list<int>{}));
+    TSUNIT_EQUAL(u"56", ts::UString::Decimal(std::list<int>{56}));
+    TSUNIT_EQUAL(u"1, -2, 3, -1234", ts::UString::Decimal(std::list<int>{1, -2, 3, -1234}));
 }
 
 void UStringTest::testHexa()

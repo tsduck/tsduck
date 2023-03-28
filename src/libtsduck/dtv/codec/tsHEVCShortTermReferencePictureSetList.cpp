@@ -51,23 +51,21 @@ ts::HEVCShortTermReferencePictureSetList::ShortTermReferencePictureSet::ShortTer
     delta_idx_minus1(0),
     delta_rps_sign(0),
     abs_delta_rps_minus1(0),
-    use_cur_delta(),
+    used_by_curr_pic_flag(),
+    use_delta_flag(),
     num_negative_pics(0),
     num_positive_pics(0),
-    negative_pics(),
-    positive_pics()
-{
-}
-
-ts::HEVCShortTermReferencePictureSetList::ShortTermReferencePictureSet::CurrDelta::CurrDelta() :
-    used_by_curr_pic_flag(0),
-    use_delta_flag(0)
-{
-}
-
-ts::HEVCShortTermReferencePictureSetList::ShortTermReferencePictureSet::DeltaPicture::DeltaPicture() :
-    delta_poc_minus1(0),
-    used_by_curr_pic_flag(0)
+    delta_poc_s0_minus1(),
+    used_by_curr_pic_s0_flag(),
+    delta_poc_s1_minus1(),
+    used_by_curr_pic_s1_flag(),
+    NumNegativePics(0),
+    NumPositivePics(0),
+    UsedByCurrPicS0(),
+    UsedByCurrPicS1(),
+    DeltaPocS0(),
+    DeltaPocS1(),
+    NumDeltaPocs(0)
 {
 }
 
@@ -99,22 +97,21 @@ void ts::HEVCShortTermReferencePictureSetList::ShortTermReferencePictureSet::cle
     delta_idx_minus1 = 0;
     delta_rps_sign = 0;
     abs_delta_rps_minus1 = 0;
-    use_cur_delta.clear();
+    used_by_curr_pic_flag.clear();
+    use_delta_flag.clear();
     num_negative_pics = 0;
     num_positive_pics = 0;
-    negative_pics.clear();
-    positive_pics.clear();
-}
-
-
-//----------------------------------------------------------------------------
-// Compute the NumDeltaPocs[RefRpsIdx] variable.
-//----------------------------------------------------------------------------
-
-uint32_t ts::HEVCShortTermReferencePictureSetList::NumDeltaPocs(uint32_t RefRpsIdx) const
-{
-    // See ITU-T Rec. H.265, 7.4.8 (7-71).
-    return RefRpsIdx < list.size() ? list[RefRpsIdx].num_negative_pics + list[RefRpsIdx].num_positive_pics : 0;
+    delta_poc_s0_minus1.clear();
+    used_by_curr_pic_s0_flag.clear();
+    delta_poc_s1_minus1.clear();
+    used_by_curr_pic_s1_flag.clear();
+    NumNegativePics = 0;
+    NumPositivePics = 0;
+    UsedByCurrPicS0.clear();
+    UsedByCurrPicS1.clear();
+    DeltaPocS0.clear();
+    DeltaPocS1.clear();
+    NumDeltaPocs = 0;
 }
 
 
@@ -148,40 +145,157 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
     if (stRpsIdx != 0) {
         st.valid = parser.u(st.inter_ref_pic_set_prediction_flag, 1);
     }
+    std::cout << std::endl << "@@@ ----------------" << std::endl
+              << UString::Format(u"@@@ stRpsIdx=%d, st.inter_ref_pic_set_prediction_flag=%d", {stRpsIdx, st.inter_ref_pic_set_prediction_flag}) << std::endl;
 
     if (st.valid && st.inter_ref_pic_set_prediction_flag) {
+        // This picture is predicted from a reference picture.
         if (stRpsIdx == num_short_term_ref_pic_sets()) {
             st.valid = parser.ue(st.delta_idx_minus1);
         }
-        st.valid = st.valid &&
-                   parser.u(st.delta_rps_sign, 1) &&
-                   parser.ue(st.abs_delta_rps_minus1);
 
-        // RefRpsIdx = stRpsIdx - (delta_idx_minus1 + 1)  (7-59)
-        const uint32_t RefRpsIdx = stRpsIdx > st.delta_idx_minus1 ? stRpsIdx - (st.delta_idx_minus1 + 1) : 0;
-        st.use_cur_delta.resize(NumDeltaPocs(RefRpsIdx) + 1);
-        for (uint32_t j = 0; st.valid && j < st.use_cur_delta.size(); j++) {
-            st.valid = parser.u(st.use_cur_delta[j].used_by_curr_pic_flag, 1);
-            if (st.valid && !st.use_cur_delta[j].used_by_curr_pic_flag) {
-                st.valid = parser.u(st.use_cur_delta[j].use_delta_flag, 1);
+        // See ITU-T Rec. H.265, 7.4.8 (7-59). RefRpsIdx is always valid since it is lower than stRpsIdx.
+        const uint32_t RefRpsIdx = stRpsIdx - std::min(stRpsIdx, st.delta_idx_minus1 + 1);
+        const ShortTermReferencePictureSet& ref(list[RefRpsIdx]);
+
+        // See ITU-T Rec. H.265, 7.4.8 (7-60).
+        st.valid = st.valid && parser.u(st.delta_rps_sign, 1) && parser.ue(st.abs_delta_rps_minus1);
+        const int32_t deltaRps = (st.delta_rps_sign ? -1 : 1) * (int32_t(st.abs_delta_rps_minus1) + 1);
+
+        std::cout << UString::Format(u"@@@ st.abs_delta_rps_minus1=%d, RefRpsIdx=%d, NumDeltaPocs(RefRpsIdx)=%d, deltaRps=%d",
+                                     {st.abs_delta_rps_minus1, RefRpsIdx, ref.NumDeltaPocs, deltaRps}) << std::endl; //@@@
+        st.used_by_curr_pic_flag.resize(ref.NumDeltaPocs + 1);
+        st.use_delta_flag.resize(ref.NumDeltaPocs + 1, 0);
+        for (uint32_t j = 0; st.valid && j <= ref.NumDeltaPocs; j++) {
+            st.valid = parser.u(st.used_by_curr_pic_flag[j], 1);
+            if (st.valid && !st.used_by_curr_pic_flag[j]) {
+                st.valid = parser.u(st.use_delta_flag[j], 1);
             }
         }
+
+        // See ITU-T Rec. H.265, 7.4.8 (7-61).
+        for (int32_t j = int32_t(ref.NumPositivePics) - 1; j >= 0; j--) {
+            if (j < int32_t(ref.DeltaPocS1.size()) &&
+                ref.NumNegativePics + j < st.use_delta_flag.size() &&
+                ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
+            {
+                const int32_t dPoc = ref.DeltaPocS1[j] + deltaRps;
+                if (dPoc < 0 &&
+                    ref.NumNegativePics + j < st.use_delta_flag.size() &&
+                    st.use_delta_flag[ref.NumNegativePics + j] &&
+                    ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
+                {
+                    st.DeltaPocS0.push_back(dPoc);
+                    st.UsedByCurrPicS0.push_back(st.used_by_curr_pic_flag[ref.NumNegativePics + j]);
+                }
+            }
+        }
+        if (deltaRps < 0 &&
+            ref.NumDeltaPocs < st.use_delta_flag.size() &&
+            st.use_delta_flag[ref.NumDeltaPocs] &&
+            ref.NumDeltaPocs < st.used_by_curr_pic_flag.size())
+        {
+            st.DeltaPocS0.push_back(deltaRps);
+            st.UsedByCurrPicS0.push_back(st.used_by_curr_pic_flag[ref.NumDeltaPocs]);
+        }
+        for (uint32_t j = 0; j < ref.NumNegativePics; j++) {
+            if (j < ref.DeltaPocS0.size()) {
+                const int32_t dPoc = ref.DeltaPocS0[j] + deltaRps;
+                if (dPoc < 0 && j < st.use_delta_flag.size() && st.use_delta_flag[j] && j < st.used_by_curr_pic_flag.size()) {
+                    st.DeltaPocS0.push_back(dPoc);
+                    st.UsedByCurrPicS0.push_back(st.used_by_curr_pic_flag[j]);
+                }
+            }
+        }
+        st.NumNegativePics = st.DeltaPocS0.size();
+        assert(st.NumNegativePics == st.UsedByCurrPicS0.size());
+
+        // See ITU-T Rec. H.265, 7.4.8 (7-62).
+        for (int32_t j = int32_t(ref.NumNegativePics) - 1; j >= 0; j--) {
+            if (j < int32_t(ref.DeltaPocS0.size()) &&
+                ref.NumNegativePics + j < st.use_delta_flag.size() &&
+                ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
+            {
+                const int32_t dPoc = ref.DeltaPocS0[j] + deltaRps;
+                if (dPoc > 0 &&
+                    j < int32_t(st.use_delta_flag.size()) &&
+                    st.use_delta_flag[j] &&
+                    j < int32_t(st.used_by_curr_pic_flag.size()))
+                {
+                    st.DeltaPocS1.push_back(dPoc);
+                    st.UsedByCurrPicS1.push_back(st.used_by_curr_pic_flag[j]);
+                }
+            }
+        }
+        if (deltaRps > 0 &&
+            ref.NumDeltaPocs < st.use_delta_flag.size() &&
+            st.use_delta_flag[ref.NumDeltaPocs] &&
+            ref.NumDeltaPocs < st.used_by_curr_pic_flag.size())
+        {
+            st.DeltaPocS1.push_back(deltaRps);
+            st.UsedByCurrPicS1.push_back(st.used_by_curr_pic_flag[ref.NumDeltaPocs]);
+        }
+        for (uint32_t j = 0; j < ref.NumPositivePics; j++) {
+            if (j < ref.DeltaPocS1.size()) {
+                const int32_t dPoc = ref.DeltaPocS1[j] + deltaRps;
+                if (dPoc > 0 &&
+                    ref.NumNegativePics + j < st.use_delta_flag.size() &&
+                    st.use_delta_flag[ref.NumNegativePics + j] &&
+                    ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
+                {
+                    st.DeltaPocS1.push_back(dPoc);
+                    st.UsedByCurrPicS1.push_back(st.used_by_curr_pic_flag[ref.NumNegativePics + j]);
+                }
+            }
+        }
+        st.NumPositivePics = st.DeltaPocS1.size();
+        assert(st.NumPositivePics == st.UsedByCurrPicS1.size());
     }
     else if (st.valid) {
-        st.valid = parser.ue(st.num_negative_pics) &&
-                   parser.ue(st.num_positive_pics);
-        st.negative_pics.resize(st.num_negative_pics);
-        for (uint32_t i = 0; st.valid && i < st.negative_pics.size(); i++) {
-            st.valid = parser.ue(st.negative_pics[i].delta_poc_minus1) &&
-                       parser.u(st.negative_pics[i].used_by_curr_pic_flag, 1);
+        // This picture is not predicted, there is no reference picture.
+        st.valid = parser.ue(st.num_negative_pics) && parser.ue(st.num_positive_pics);
+        st.delta_poc_s0_minus1.resize(st.num_negative_pics);
+        st.used_by_curr_pic_s0_flag.resize(st.num_negative_pics);
+        for (uint32_t i = 0; st.valid && i < st.num_negative_pics; i++) {
+            st.valid = parser.ue(st.delta_poc_s0_minus1[i]) && parser.u(st.used_by_curr_pic_s0_flag[i], 1);
         }
-        st.positive_pics.resize(st.num_positive_pics);
-        for (uint32_t i = 0; st.valid && i < st.positive_pics.size(); i++) {
-            st.valid = parser.ue(st.positive_pics[i].delta_poc_minus1) &&
-                       parser.u(st.positive_pics[i].used_by_curr_pic_flag, 1);
+        st.delta_poc_s1_minus1.resize(st.num_positive_pics);
+        st.used_by_curr_pic_s1_flag.resize(st.num_positive_pics);
+        for (uint32_t i = 0; st.valid && i < st.num_positive_pics; i++) {
+            st.valid = parser.ue(st.delta_poc_s1_minus1[i]) && parser.u(st.used_by_curr_pic_s1_flag[i], 1);
+        }
+        // See ITU-T Rec. H.265, 7.4.8 (7-63, 7-64).
+        st.NumNegativePics = st.num_negative_pics;
+        st.NumPositivePics = st.num_positive_pics;
+        // See ITU-T Rec. H.265, 7.4.8 (7-65, 7-66).
+        st.UsedByCurrPicS0 = st.used_by_curr_pic_s0_flag;
+        st.UsedByCurrPicS1 = st.used_by_curr_pic_s1_flag;
+        // See ITU-T Rec. H.265, 7.4.8 (7-67 to 7-70).
+        st.DeltaPocS0.resize(st.num_negative_pics);
+        if (st.num_negative_pics > 0) {
+            st.DeltaPocS0[0] = -int32_t(st.delta_poc_s0_minus1[0]) - 1;
+        }
+        for (uint32_t i = 1; i < st.num_negative_pics; ++i) {
+            st.DeltaPocS0[i] = st.DeltaPocS0[i-1] - int32_t(st.delta_poc_s0_minus1[i]) - 1;
+        }
+        st.DeltaPocS1.resize(st.num_positive_pics);
+        if (st.num_positive_pics > 0) {
+            st.DeltaPocS1[0] = st.delta_poc_s1_minus1[0] - 1;
+        }
+        for (uint32_t i = 1; i < st.num_positive_pics; ++i) {
+            st.DeltaPocS1[i] = st.DeltaPocS1[i-1] + st.delta_poc_s1_minus1[i] + 1;
         }
     }
 
+    // See ITU-T Rec. H.265, 7.4.8 (7-71).
+    st.NumDeltaPocs = st.NumNegativePics + st.NumPositivePics;
+
+    std::cout << UString::Format(u"@@@ st.NumDeltaPocs=%d, st.NumNegativePics=%d, st.NumPositivePics=%d",
+                                 {st.NumDeltaPocs, st.NumNegativePics, st.NumPositivePics}) << std::endl //@@@
+              << "@@@ st.UsedByCurrPicS0=(" << UString::Decimal(st.UsedByCurrPicS0) << ")" << std::endl
+              << "@@@ st.UsedByCurrPicS1=(" << UString::Decimal(st.UsedByCurrPicS1) << ")" << std::endl
+              << "@@@ st.DeltaPocS0=(" << UString::Decimal(st.DeltaPocS0) << ")" << std::endl
+              << "@@@ st.DeltaPocS1=(" << UString::Decimal(st.DeltaPocS1) << ")" << std::endl;
     return st.valid;
 }
 
@@ -197,8 +311,8 @@ std::ostream& ts::HEVCShortTermReferencePictureSetList::display(std::ostream& ou
             const ShortTermReferencePictureSet& st(list[stRpsIdx]);
             if (st.valid) {
 
-#define DISP(n) out << margin << "[" << stRpsIdx << "]." #n " = " << int64_t(st.n) << std::endl
-#define DISPsub(n1,i,n2) out << margin << "[" << stRpsIdx << "]." #n1 ".[" << i << "]." #n2 " = " << int64_t(st.n1[i].n2) << std::endl
+#define DISP(n)      out << margin << "[" << stRpsIdx << "]." #n " = " << int64_t(st.n) << std::endl
+#define DISPsub(n,i) out << margin << "[" << stRpsIdx << "]." #n "[" << i << "] = " << int64_t(st.n[i]) << std::endl
 
                 if (stRpsIdx != 0) {
                     DISP(inter_ref_pic_set_prediction_flag);
@@ -209,23 +323,23 @@ std::ostream& ts::HEVCShortTermReferencePictureSetList::display(std::ostream& ou
                     }
                     DISP(delta_rps_sign);
                     DISP(abs_delta_rps_minus1);
-                    for (uint32_t j = 0; st.valid && j < st.use_cur_delta.size(); j++) {
-                        DISPsub(use_cur_delta, j, used_by_curr_pic_flag);
-                        if (!st.use_cur_delta[j].used_by_curr_pic_flag) {
-                            DISPsub(use_cur_delta, j, use_delta_flag);
+                    for (uint32_t j = 0; st.valid && j < st.used_by_curr_pic_flag.size(); j++) {
+                        DISPsub(used_by_curr_pic_flag, j);
+                        if (!st.used_by_curr_pic_flag[j]) {
+                            DISPsub(use_delta_flag, j);
                         }
                     }
                 }
                 else if (st.valid) {
                     DISP(num_negative_pics);
                     DISP(num_positive_pics);
-                    for (uint32_t i = 0; st.valid && i < st.negative_pics.size(); i++) {
-                        DISPsub(negative_pics, i, delta_poc_minus1);
-                        DISPsub(negative_pics, i, used_by_curr_pic_flag);
+                    for (uint32_t i = 0; st.valid && i < st.num_negative_pics; i++) {
+                        DISPsub(delta_poc_s0_minus1, i);
+                        DISPsub(used_by_curr_pic_s0_flag, i);
                     }
-                    for (uint32_t i = 0; st.valid && i < st.positive_pics.size(); i++) {
-                        DISPsub(positive_pics, i, delta_poc_minus1);
-                        DISPsub(positive_pics, i, used_by_curr_pic_flag);
+                    for (uint32_t i = 0; st.valid && i < st.num_positive_pics; i++) {
+                        DISPsub(delta_poc_s1_minus1, i);
+                        DISPsub(used_by_curr_pic_s1_flag, i);
                     }
                 }
 #undef DISPsub

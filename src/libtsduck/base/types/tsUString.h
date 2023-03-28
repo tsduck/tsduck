@@ -1620,6 +1620,19 @@ namespace ts {
                                UChar pad = SPACE);
 
         //!
+        //! Format a string containing a list of decimal values.
+        //! @tparam CONTAINER A container class of any integer type as defined by the C++ Standard Template Library (STL).
+        //! @param [in] values The integer values to format.
+        //! @param [in] separator Separator string between values, a comma by default.
+        //! @param [in] force_sign If true, force a '+' sign for positive values.
+        //! @return The formatted string.
+        //!
+        template <class CONTAINER, typename std::enable_if<std::is_integral<typename CONTAINER::value_type>::value>::type* = nullptr>
+        static UString Decimal(const CONTAINER& values,
+                               const UString& separator = UString(u", "),
+                               bool force_sign = false);
+
+        //!
         //! Format a string containing an hexadecimal value.
         //! @tparam INT An integer type.
         //! @param [in] value The integer value to format.
