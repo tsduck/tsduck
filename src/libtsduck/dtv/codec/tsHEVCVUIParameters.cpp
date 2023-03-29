@@ -144,7 +144,7 @@ bool ts::HEVCVUIParameters::parse(AVCParser& parser, std::initializer_list<uint3
 {
     clear();
 
-    // The parameter @a sps_max_sub_layers_minus1 must be passed in the initializer list of the parse() methods.
+    // The parameter sps_max_sub_layers_minus1 must be passed in the initializer list of the parse() methods.
     valid = params.size() >= 1;
     const uint32_t sps_max_sub_layers_minus1 = valid ? *params.begin() : 0;
 
@@ -203,8 +203,10 @@ bool ts::HEVCVUIParameters::parse(AVCParser& parser, std::initializer_list<uint3
             valid = parser.ue(vui_num_ticks_poc_diff_one_minus1);
         }
         valid = valid && parser.u(vui_hrd_parameters_present_flag, 1);
+        HEVC_TRACE(u"----- valid=%d, vui_hrd_parameters_present_flag=%d", valid, vui_hrd_parameters_present_flag);
         if (valid && vui_hrd_parameters_present_flag == 1) {
-            hrd_parameters.parse(parser, {1, sps_max_sub_layers_minus1});
+            valid = hrd_parameters.parse(parser, {1, sps_max_sub_layers_minus1});
+            HEVC_TRACE(u"----- after hrd_parameters.parse(), valid=%d", valid);
         }
     }
 
