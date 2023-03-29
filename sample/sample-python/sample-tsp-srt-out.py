@@ -1,7 +1,12 @@
 #!/usr/bin/env python
+#
+# Python SRT output plugin sample
+# Copyright (c) 2023, Marwan Yassin
+# All rights reserved.
+#
 #----------------------------------------------------------------------------
 #
-# TSDuck sample Python application running a chain of plugins.
+# TSDuck sample Python usage of SRT output plugin
 #
 #----------------------------------------------------------------------------
 
@@ -21,17 +26,14 @@ tsp.bitrate = 1000000              # nominal bitrate is 1 Mb/s
 tsp.app_name = "srt-out"              # informational only, for log messages
 
 # Set plugin chain.
-# Input plugin initiated as a string then converted to list using split()
-http_input = 'http https://github.com/tsduck/tsduck-test/raw/master/input/test-001.ts'
-tsp.input = http_input.split()
+tsp.input = ['http', 'https://github.com/tsduck/tsduck-test/raw/master/input/test-001.ts']
 
 tsp.plugins = [
     ['count'],
 ]
 
-# Output plugin initiated as a string then converted to list using split()
-srt_out = 'srt --multiple --listener 127.0.0.1:4444 --transtype live'
-tsp.output = srt_out.split()
+# Output plugin
+tsp.output = ['srt', '--multiple', '--listener', '127.0.0.1:4444', '--transtype', 'live']
 
 # Run the TS processing and wait until completion.
 tsp.start()
