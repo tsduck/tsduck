@@ -201,6 +201,7 @@ bool ts::HEVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer
             profile_tier_level.parse(parser, {1, sps_max_sub_layers_minus1}) &&
             parser.ue(sps_seq_parameter_set_id) &&
             parser.ue(chroma_format_idc);
+    HEVC_TRACE(u"===== start of HEVCSequenceParameterSet::parseBody(), valid=%d", valid);
 
     if (valid && chroma_format_idc == 3) {
         valid = parser.u(separate_colour_plane_flag, 1);
@@ -266,6 +267,7 @@ bool ts::HEVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer
     for (uint32_t i = 0; valid && i < num_short_term_ref_pic_sets; i++) {
         valid = st_ref_pic_set.parse(parser, {i});
     }
+    HEVC_TRACE(u"----- st_ref_pic_set.list.size()=%d, valid=%d", st_ref_pic_set.list.size(), valid);
 
     valid = valid && parser.u(long_term_ref_pics_present_flag, 1);
     if (valid && long_term_ref_pics_present_flag) {
@@ -283,9 +285,11 @@ bool ts::HEVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer
             parser.u(strong_intra_smoothing_enabled_flag, 1) &&
             parser.u(vui_parameters_present_flag, 1);
 
+    HEVC_TRACE(u"----- before vui.parse(), valid=%d, vui_parameters_present_flag=%d", valid, vui_parameters_present_flag);
     if (valid && vui_parameters_present_flag) {
         valid = vui.parse(parser, {sps_max_sub_layers_minus1});
     }
+    HEVC_TRACE(u"----- after vui.parse(), valid=%d", valid);
 
     valid = valid && parser.u(sps_extension_present_flag, 1);
     if (valid && sps_extension_present_flag) {
@@ -296,6 +300,7 @@ bool ts::HEVCSequenceParameterSet::parseBody(AVCParser& parser, std::initializer
                 parser.u(sps_extension_4bits, 4);
     }
 
+    HEVC_TRACE(u"===== end of HEVCSequenceParameterSet::parseBody(), valid=%d", valid);
     return valid;
 }
 

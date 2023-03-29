@@ -29,6 +29,13 @@
 
 #include "tsHEVCShortTermReferencePictureSetList.h"
 
+// Investigation of issue #1191
+#if defined(TS_HEVC_TRACE)
+#define HEVC_TRACE(format,...) (std::cout << ts::UString::Format(u"[DBG]  " format, {__VA_ARGS__}) << std::endl)
+#else
+#define HEVC_TRACE(format,...) do {} while (false)
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructors.
@@ -145,8 +152,8 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
     if (stRpsIdx != 0) {
         st.valid = parser.u(st.inter_ref_pic_set_prediction_flag, 1);
     }
-    std::cout << std::endl << "@@@ ----------------" << std::endl
-              << UString::Format(u"@@@ stRpsIdx=%d, st.inter_ref_pic_set_prediction_flag=%d", {stRpsIdx, st.inter_ref_pic_set_prediction_flag}) << std::endl;
+    HEVC_TRACE(u"--------------------", 0);
+    HEVC_TRACE(u"stRpsIdx=%d, st.inter_ref_pic_set_prediction_flag=%d", stRpsIdx, st.inter_ref_pic_set_prediction_flag);
 
     if (st.valid && st.inter_ref_pic_set_prediction_flag) {
         // This picture is predicted from a reference picture.
@@ -162,8 +169,7 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
         st.valid = st.valid && parser.u(st.delta_rps_sign, 1) && parser.ue(st.abs_delta_rps_minus1);
         const int32_t deltaRps = (st.delta_rps_sign ? -1 : 1) * (int32_t(st.abs_delta_rps_minus1) + 1);
 
-        std::cout << UString::Format(u"@@@ st.abs_delta_rps_minus1=%d, RefRpsIdx=%d, NumDeltaPocs(RefRpsIdx)=%d, deltaRps=%d",
-                                     {st.abs_delta_rps_minus1, RefRpsIdx, ref.NumDeltaPocs, deltaRps}) << std::endl; //@@@
+        HEVC_TRACE(u"st.abs_delta_rps_minus1=%d, RefRpsIdx=%d, NumDeltaPocs(RefRpsIdx)=%d, deltaRps=%d", st.abs_delta_rps_minus1, RefRpsIdx, ref.NumDeltaPocs, deltaRps);
         st.used_by_curr_pic_flag.resize(ref.NumDeltaPocs + 1);
         st.use_delta_flag.resize(ref.NumDeltaPocs + 1, 0);
         for (uint32_t j = 0; st.valid && j <= ref.NumDeltaPocs; j++) {
@@ -171,7 +177,13 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
             if (st.valid && !st.used_by_curr_pic_flag[j]) {
                 st.valid = parser.u(st.use_delta_flag[j], 1);
             }
+            else {
+                // Inferred to be 1 if omitted (H.265, 7.4.8).
+                st.use_delta_flag[j] = 1;
+            }
         }
+        HEVC_TRACE(u"st.used_by_curr_pic_flag=(%s)", UString::Decimal(st.used_by_curr_pic_flag));
+        HEVC_TRACE(u"st.use_delta_flag=(%s)", UString::Decimal(st.use_delta_flag));
 
         // See ITU-T Rec. H.265, 7.4.8 (7-61).
         for (int32_t j = int32_t(ref.NumPositivePics) - 1; j >= 0; j--) {
@@ -180,6 +192,7 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
                 ref.NumNegativePics + j < st.used_by_curr_pic_flag.size())
             {
                 const int32_t dPoc = ref.DeltaPocS1[j] + deltaRps;
+                HEVC_TRACE(u"S0, dPoc=%d", dPoc);
                 if (dPoc < 0 &&
                     ref.NumNegativePics + j < st.use_delta_flag.size() &&
                     st.use_delta_flag[ref.NumNegativePics + j] &&
@@ -201,13 +214,14 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
         for (uint32_t j = 0; j < ref.NumNegativePics; j++) {
             if (j < ref.DeltaPocS0.size()) {
                 const int32_t dPoc = ref.DeltaPocS0[j] + deltaRps;
+                HEVC_TRACE(u"S1, dPoc=%d, st.use_delta_flag[j]=%d", dPoc, st.use_delta_flag[j]);
                 if (dPoc < 0 && j < st.use_delta_flag.size() && st.use_delta_flag[j] && j < st.used_by_curr_pic_flag.size()) {
                     st.DeltaPocS0.push_back(dPoc);
                     st.UsedByCurrPicS0.push_back(st.used_by_curr_pic_flag[j]);
                 }
             }
         }
-        st.NumNegativePics = st.DeltaPocS0.size();
+        st.NumNegativePics = uint32_t(st.DeltaPocS0.size());
         assert(st.NumNegativePics == st.UsedByCurrPicS0.size());
 
         // See ITU-T Rec. H.265, 7.4.8 (7-62).
@@ -248,7 +262,7 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
                 }
             }
         }
-        st.NumPositivePics = st.DeltaPocS1.size();
+        st.NumPositivePics = uint32_t(st.DeltaPocS1.size());
         assert(st.NumPositivePics == st.UsedByCurrPicS1.size());
     }
     else if (st.valid) {
@@ -290,12 +304,11 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
     // See ITU-T Rec. H.265, 7.4.8 (7-71).
     st.NumDeltaPocs = st.NumNegativePics + st.NumPositivePics;
 
-    std::cout << UString::Format(u"@@@ st.NumDeltaPocs=%d, st.NumNegativePics=%d, st.NumPositivePics=%d",
-                                 {st.NumDeltaPocs, st.NumNegativePics, st.NumPositivePics}) << std::endl //@@@
-              << "@@@ st.UsedByCurrPicS0=(" << UString::Decimal(st.UsedByCurrPicS0) << ")" << std::endl
-              << "@@@ st.UsedByCurrPicS1=(" << UString::Decimal(st.UsedByCurrPicS1) << ")" << std::endl
-              << "@@@ st.DeltaPocS0=(" << UString::Decimal(st.DeltaPocS0) << ")" << std::endl
-              << "@@@ st.DeltaPocS1=(" << UString::Decimal(st.DeltaPocS1) << ")" << std::endl;
+    HEVC_TRACE(u"st.NumDeltaPocs=%d, st.NumNegativePics=%d, st.NumPositivePics=%d", st.NumDeltaPocs, st.NumNegativePics, st.NumPositivePics);
+    HEVC_TRACE(u"st.UsedByCurrPicS0=(%s)", UString::Decimal(st.UsedByCurrPicS0));
+    HEVC_TRACE(u"st.UsedByCurrPicS1=(%s)", UString::Decimal(st.UsedByCurrPicS1));
+    HEVC_TRACE(u"st.DeltaPocS0=(%s)", UString::Decimal(st.DeltaPocS0));
+    HEVC_TRACE(u"st.DeltaPocS1=(%s)", UString::Decimal(st.DeltaPocS1));
     return st.valid;
 }
 

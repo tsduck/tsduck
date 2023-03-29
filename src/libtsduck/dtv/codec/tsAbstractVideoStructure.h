@@ -36,6 +36,13 @@
 #include "tsAbstractVideoData.h"
 #include "tsAVCParser.h"
 
+// Investigation of issue #1191
+#if defined(TS_HEVC_TRACE)
+#define HEVC_TRACE(format,...) (std::cout << ts::UString::Format(u"[DBG]  " format, {__VA_ARGS__}) << std::endl)
+#else
+#define HEVC_TRACE(format,...) do {} while (false)
+#endif
+
 namespace ts {
     //!
     //! Base class for sub-structures inside video access units.

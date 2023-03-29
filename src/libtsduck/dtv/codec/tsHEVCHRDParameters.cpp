@@ -121,6 +121,7 @@ bool ts::HEVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint3
         common_inf_present_flag = bool(*iparams++);
         sub_layers.resize(size_t(*iparams) + 1);
     }
+    HEVC_TRACE(u"----- HEVCHRDParameters::parse(), common_inf_present_flag=%d, sub_layers.size()=%d", common_inf_present_flag, sub_layers.size());
 
     if (valid && common_inf_present_flag) {
         valid = parser.u(nal_hrd_parameters_present_flag, 1) &&
@@ -144,6 +145,8 @@ bool ts::HEVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint3
                     parser.u(au_cpb_removal_delay_length_minus1, 5) &&
                     parser.u(dpb_output_delay_length_minus1, 5);
         }
+        HEVC_TRACE(u"valid=%d, bit_rate_scale=%d, cpb_size_scale=%d, initial_cpb_removal_delay_length_minus1=%d", valid, bit_rate_scale, cpb_size_scale, initial_cpb_removal_delay_length_minus1);
+        HEVC_TRACE(u"au_cpb_removal_delay_length_minus1=%d, dpb_output_delay_length_minus1=%d", au_cpb_removal_delay_length_minus1, dpb_output_delay_length_minus1);
     }
 
     for (size_t i = 0; valid && i < sub_layers.size(); i++) {
@@ -151,6 +154,10 @@ bool ts::HEVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint3
         valid = parser.u(sl.fixed_pic_rate_general_flag, 1);
         if (valid && sl.fixed_pic_rate_general_flag == 0) {
             valid = parser.u(sl.fixed_pic_rate_within_cvs_flag, 1);
+        }
+        else {
+            // When fixed_pic_rate_general_flag is 1, fixed_pic_rate_within_cvs_flag is inferred to be 1.
+            sl.fixed_pic_rate_within_cvs_flag = 1;
         }
         if (valid && sl.fixed_pic_rate_within_cvs_flag == 1) {
             valid = parser.ue(sl.elemental_duration_in_tc_minus1);
@@ -172,6 +179,7 @@ bool ts::HEVCHRDParameters::parse(AVCParser& parser, std::initializer_list<uint3
             sl.vcl_hrd_parameters.resize(sl.cpb_cnt_minus1 + 1);
             valid = parse_sub_layer_hrd_parameters(parser, sl.vcl_hrd_parameters);
         }
+        HEVC_TRACE(u"valid=%d, end of sub_layer[%d]", valid, i);
     }
 
     return valid;
