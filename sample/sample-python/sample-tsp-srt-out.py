@@ -1,12 +1,9 @@
 #!/usr/bin/env python
-#
-# Python SRT output plugin sample
-# Copyright (c) 2023, Marwan Yassin
-# All rights reserved.
-#
 #----------------------------------------------------------------------------
 #
 # TSDuck sample Python usage of SRT output plugin
+# Copyright (c) 2023, Marwan Yassin
+# All rights reserved.
 #
 #----------------------------------------------------------------------------
 
