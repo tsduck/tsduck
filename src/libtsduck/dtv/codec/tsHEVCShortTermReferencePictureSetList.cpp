@@ -145,8 +145,7 @@ bool ts::HEVCShortTermReferencePictureSetList::parse(AVCParser& parser, std::ini
     if (stRpsIdx != 0) {
         st.valid = parser.u(st.inter_ref_pic_set_prediction_flag, 1);
     }
-    HEVC_TRACE(u"--------------------", 0);
-    HEVC_TRACE(u"stRpsIdx=%d, st.inter_ref_pic_set_prediction_flag=%d", stRpsIdx, st.inter_ref_pic_set_prediction_flag);
+    HEVC_TRACE(u"----- HEVCShortTermReferencePictureSetList::parse(), stRpsIdx=%d, st.inter_ref_pic_set_prediction_flag=%d", stRpsIdx, st.inter_ref_pic_set_prediction_flag);
 
     if (st.valid && st.inter_ref_pic_set_prediction_flag) {
         // This picture is predicted from a reference picture.
