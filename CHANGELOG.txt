@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.34-3177
+VERSION 3.34-3188
 
 [NEW] New commands and plugins:
 
@@ -29,6 +29,8 @@ VERSION 3.34-3177
   * In plugin "eitinject", when a event was 64 days or more in the future,
     invalid EIT schedule sections were generated. Now, these events are
     discarded (an EPG can be only 64 days deep).
+  * Fixed issue #1191: Incorrect display of some HEVC sequence parameter
+    set analysis in plugin "pes".
 
 -------------------------------------------------------------------------------
 
