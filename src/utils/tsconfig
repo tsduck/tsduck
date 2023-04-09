@@ -104,13 +104,25 @@ cmd_python() {
     echo "$(cmd_prefix)/share/tsduck/python"
 }
 
+no_pcsc() {
+    grep -q TS_NO_PCSC "$(cmd_include)/tsPreConfiguration.h" 2>/dev/null
+}
+
+no_srt() {
+    grep -q TS_NO_SRT "$(cmd_include)/tsPreConfiguration.h" 2>/dev/null
+}
+
+no_rist() {
+    grep -q TS_NO_RIST "$(cmd_include)/tsPreConfiguration.h" 2>/dev/null
+}
+
 cmd_lib() {
     dirname $(ls $(cmd_prefix)/lib*/libtsduck$(cmd_so) 2>/dev/null | head -1) 2>/dev/null
 }
 
 cmd_cflags() {
     local pcsc=
-    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-I/usr/include/PCSC"
+    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-I/usr/include/PCSC"
     echo "-I$(cmd_include) $pcsc --std=c++11"
 }
 
@@ -128,8 +140,8 @@ libs_common() {
     local pcsc=
     local rt=
     local dl=
-    [[ $SYSTEM == Darwin ]] && pcsc="-framework PCSC"
-    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && pcsc="-lpcsclite"
+    [[ $SYSTEM == Darwin ]] && ! $(no_pcsc) && pcsc="-framework PCSC"
+    [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-lpcsclite"
     [[ $SYSTEM == Linux ]] && rt="-lrt"
     [[ $SYSTEM == OpenBSD ]] || dl="-ldl"
     echo "$pcsc -lpthread $rt $dl -lm -lstdc++"
@@ -145,9 +157,11 @@ cmd_libs() {
 }
 
 cmd_staticlibs() {
-    local srt=$(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a /opt/homebrew/lib/libsrt.a 2>/dev/null | head -1)
-    local rist=$(ls /usr/lib/librist.a /usr/local/lib/librist.a /opt/homebrew/lib/librist.a 2>/dev/null | head -1)
+    local srt=
+    local rist=
     local other=
+    $(no_srt) || srt=$(ls /usr/lib/libsrt.a /usr/local/lib/libsrt.a /opt/homebrew/lib/libsrt.a 2>/dev/null | head -1)
+    $(no_rist) || rist=$(ls /usr/lib/librist.a /usr/local/lib/librist.a /opt/homebrew/lib/librist.a 2>/dev/null | head -1)
     [[ $SYSTEM == Linux ]] && other="$other -latomic"
     [[ $SYSTEM == FreeBSD ]] && other="$other -lprocstat"
     [[ $SYSTEM == OpenBSD || $SYSTEM == NetBSD ]] && other="$other -lkvm"
