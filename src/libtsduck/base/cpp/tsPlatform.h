@@ -68,6 +68,10 @@
 
 #pragma once
 
+// Include an "empty" header file.
+// Updated with preconfigured constants in custom installations.
+#include "tsPreConfiguration.h"
+
 
 //----------------------------------------------------------------------------
 // Unified compiler naming: TS_GCC, TS_MSC (Microsoft C)
