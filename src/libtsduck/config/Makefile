@@ -106,6 +106,6 @@ install-devel:
 	    $(if $(MACOS)$(BSD),-e 's| *-latomic *| |g') \
 	    $(if $(FREEBSD),,-e 's| *-lprocstat *| |g') \
 	    $(if $(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),,-e 's| *-lkvm *| |g') \
-	    -e 's|:[ ,]*|: |g' -e 's|,[ ,]*|, |g' -e 's|[ ,]*$$||' -e '/: *$$/d' \
+	    -e 's|:[ ,][ ,]*|: |g' -e 's|,[ ,][ ,]*|, |g' -e 's|[ ,]*$$||' -e '/: *$$/d' \
 	    tsduck.pc >$(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
 	chmod 644 $(SYSROOT)$(SYSPREFIX)/share/pkgconfig/tsduck.pc
