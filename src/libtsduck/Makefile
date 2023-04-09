@@ -202,9 +202,20 @@ install-tools: $(SHARED_LIBTSDUCK)
 	install -m 644 $(SHARED_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	+@$(call F_RECURSE,config python java)
 
+PRECONFIG = $(SYSROOT)$(SYSPREFIX)/include/tsduck/tsPreConfiguration.h
+
 install-devel: $(STATIC_LIBTSDUCK) $(TSDUCK_H)
 	rm -rf $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -d -m 755 $(SYSROOT)$(USRLIBDIR) $(SYSROOT)$(SYSPREFIX)/include/tsduck
 	install -m 644 $(STATIC_LIBTSDUCK) $(SYSROOT)$(USRLIBDIR)
 	install -m 644 $(addsuffix /*.h,$(PUBLIC_INCLUDES)) $(TSDUCK_H) $(SYSROOT)$(SYSPREFIX)/include/tsduck
+	$(if $(NOPCSC), echo '#define TS_NO_PCSC 1' >>$(PRECONFIG))
+	$(if $(NOGITHUB), echo '#define TS_NO_GITHUB 1' >>$(PRECONFIG))
+	$(if $(NODTAPI), echo '#define TS_NO_DTAPI 1' >>$(PRECONFIG))
+	$(if $(NOHIDES), echo '#define TS_NO_HIDES 1' >>$(PRECONFIG))
+	$(if $(NOVATEK), echo '#define TS_NO_VATEK 1' >>$(PRECONFIG))
+	$(if $(NOEDITLINE), echo '#define TS_NO_EDITLINE 1' >>$(PRECONFIG))
+	$(if $(NOCURL), echo '#define TS_NO_CURL 1' >>$(PRECONFIG))
+	$(if $(NOSRT), echo '#define TS_NO_SRT 1' >>$(PRECONFIG))
+	$(if $(NORIST), echo '#define TS_NO_RIST 1' >>$(PRECONFIG))
 	+@$(call F_RECURSE,config python java)
