@@ -378,14 +378,14 @@ namespace {
       private:
         typedef ts::SingleDataStatistics<ts::MilliSecond> ResponseStat;
 
-        const CmdOptions&    _opt;
-        ts::Report&          _report;
-        std::atomic_uint32_t _request_count;
-        volatile bool        _terminate;
-        ts::Mutex            _mutex;     // Exclusive access to subsequent fields.
-        ts::Condition        _condition;
-        ResponseStat         _instant_response;
-        ResponseStat         _global_response;
+        const CmdOptions& _opt;
+        ts::Report&       _report;
+        std::atomic<std::uint32_t> _request_count; // same as std::atomic_uint32_t, missing in old GCC
+        volatile bool     _terminate;
+        ts::Mutex         _mutex;     // Exclusive access to subsequent fields.
+        ts::Condition     _condition;
+        ResponseStat      _instant_response;
+        ResponseStat      _global_response;
 
         // Report statistics. Must be called with mutex held.
         void reportStatistics(const ResponseStat& stat);
@@ -511,10 +511,10 @@ namespace {
         const uint16_t       _first_ecm_id;
         const uint16_t       _first_stream_id;
         const uint16_t       _end_stream_id;
-        std::atomic_uint8_t  _cw_per_msg;  // as returned by ECMG
-        ts::Mutex            _mutex;       // protect subsequent fields
-        ts::Condition        _completed;   // signalled by reception thread when all streams are closed.
-        std::vector<Stream>  _streams;
+        std::atomic<std::uint8_t> _cw_per_msg;  // as returned by ECMG, same as std::atomic_uint8_t, missing in old GCC
+        ts::Mutex                 _mutex;       // protect subsequent fields
+        ts::Condition             _completed;   // signalled by reception thread when all streams are closed.
+        std::vector<Stream>       _streams;
 
         // Check the validity of a received message.
         bool checkChannelMessage(const ts::tlv::ChannelMessage* mp, const ts::UChar* message_name);
