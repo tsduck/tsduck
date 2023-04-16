@@ -33,8 +33,8 @@ package io.tsduck;
  * An abstract Report class which can be derived by applications to get asynchronous log messages.
  * @ingroup java
  *
- * This class is functionally similar to {@link AsyncReport} except that the message handling can
- * be implemented in Java. This class is suitable for use with {@link TSProcessor}.
+ * This class is functionally similar to {@link ts::AsyncReport} except that the message handling can
+ * be implemented in Java. This class is suitable for use with {@link io.tsduck.TSProcessor}.
  */
 public abstract class AbstractAsyncReport extends Report {
 
