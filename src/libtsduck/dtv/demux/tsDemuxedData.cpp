@@ -198,6 +198,13 @@ const uint8_t* ts::DemuxedData::content() const
 
 size_t ts::DemuxedData::size() const
 {
+    // Virtual method, typically overridden by subclasses.
+    return _data.isNull() ? 0 : _data->size();
+}
+
+size_t ts::DemuxedData::rawDataSize() const
+{
+    //Non-virtual method, always the same result.
     return _data.isNull() ? 0 : _data->size();
 }
 

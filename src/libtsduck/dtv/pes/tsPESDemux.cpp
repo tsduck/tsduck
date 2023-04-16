@@ -224,7 +224,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     }
 
     // If at a unit start and the context exists, process previous PES packet in context
-    if (pc_exists && pkt.getPUSI() && pci->second.sync) {
+    if (pc_exists && pkt.getPUSI() && pci->second.sync && !pci->second.ts.isNull() && !pci->second.ts->empty()) {
         // Process packet, invoke all handlers
         processPESPacket(pid, pci->second);
         // Recheck PID context in case it was reset by a handler
@@ -317,15 +317,15 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
     // Check if the complete PES packet is now present (without waiting for the next PUSI).
     if (pc.ts->size() >= 6 && pc.sync) {
-        // There is enought to get the PES packet length.
+        // There is enough to get the PES packet length.
         const size_t len = GetUInt16(pc.ts->data() + 4);
         // If the size is zero, the PES packet is "unbounded", meaning it ends at the next PUSI.
         // But if the PES packet size is specified, check if we have the complete PES packet.
         if (len != 0 && pc.ts->size() >= 6 + len) {
             // We have the complete PES packet.
             processPESPacket(pid, pc);
-            // Reset PES buffer.
-            pc.ts->clear();
+            // Consider that we lose sync in case there are additional TS pickets on that PID before next PUSI.
+            pc.syncLost();
         }
     }
 }
@@ -377,6 +377,7 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
     // Build a PES packet object around the TS buffer
     PESPacket pes(pc.ts, pid);
     if (!pes.isValid()) {
+        handleInvalidPESPacket(pid, pc);
         return;
     }
 
@@ -427,6 +428,35 @@ void ts::PESDemux::handlePESPacket(const PESPacket& pes)
     if (_pes_handler != nullptr) {
         _pes_handler->handlePESPacket(*this, pes);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Process an invalid PES packet
+//----------------------------------------------------------------------------
+
+void ts::PESDemux::handleInvalidPESPacket(PID pid, PIDContext& pc)
+{
+    // Nothing to do without a handler.
+    if (_pes_handler == nullptr) {
+        return;
+    }
+
+    // Prepare a raw demuxed data.
+    DemuxedData data(pc.ts, pid);
+    data.setFirstTSPacketIndex(pc.first_pkt);
+    data.setLastTSPacketIndex(pc.last_pkt);
+
+    // Call the user's handler.
+    beforeCallingHandler(pid);
+    try {
+        _pes_handler->handleInvalidPESPacket(*this, data);
+    }
+    catch (...) {
+        afterCallingHandler(false);
+        throw;
+    }
+    afterCallingHandler(true);
 }
 
 
