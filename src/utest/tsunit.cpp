@@ -149,7 +149,14 @@ std::string tsunit::convertFromUTF16(const std::u16string& u16)
         return u8;
     #else
         // Normal C++ implementation.
+        #if defined(__llvm__) || defined(__clang__)
+           #pragma clang diagnostic push
+           #pragma clang diagnostic ignored "-Wdeprecated-declarations"
+        #endif
         return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.to_bytes(u16);
+        #if defined(__llvm__) || defined(__clang__)
+            #pragma clang diagnostic pop
+        #endif
     #endif
 }
 
