@@ -36,12 +36,14 @@
 #include "tsAbstractVideoData.h"
 #include "tsAVCParser.h"
 
-// Investigation of HEVC stream decoding issues.
-// Use "make CXXFLAGS_EXTRA=-DTS_HEVC_TRACE=1" to enable traces in HEVC structure decoding.
-#if defined(TS_HEVC_TRACE)
-#define HEVC_TRACE(format,...) (std::cout << ts::UString::Format(u"[DBG]  " format, {__VA_ARGS__}) << std::endl)
-#else
-#define HEVC_TRACE(format,...) do {} while (false)
+#if !defined(DOXYGEN)
+    // Investigation of HEVC stream parsing issues.
+    // Use "make CXXFLAGS_EXTRA=-DTS_HEVC_TRACE=1" to enable traces in HEVC structure decoding.
+    #if defined(TS_HEVC_TRACE)
+        #define HEVC_TRACE(format,...) (std::cout << ts::UString::Format(u"[DBG]  " format, {__VA_ARGS__}) << std::endl)
+    #else
+        #define HEVC_TRACE(format,...) do {} while (false)
+    #endif
 #endif
 
 namespace ts {

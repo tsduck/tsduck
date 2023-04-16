@@ -38,8 +38,8 @@ package io.tsduck;
  *
  * This class is not thread-safe. It shall be entirely used in the same Java thread.
  * This report shall be passed to TSDuck features which synchronously execute in the
- * caller thread only. Specifically, this class is not suitable for use with {@link TSProcessor}
- * (use {@link AbstractAsyncReport } instead).
+ * caller thread only. Specifically, this class is not suitable for use with
+ * {@link io.tsduck.TSProcessor} (use {@link io.tsduck.AbstractAsyncReport} instead).
  */
 public abstract class AbstractSyncReport extends Report {
 

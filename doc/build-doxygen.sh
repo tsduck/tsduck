@@ -50,11 +50,17 @@ export DOXY_INCLUDE_PATH=$(find "$SRCDIR" -type d | tr '\n' ' ')
 # Generate a summary file of all signalization.
 "$ROOTDIR/src/doc/signalization-gen.py"
 
-# Run doxygen.
+# Doxygen version, used to filter various doxygen bugs.
+DOXVERSION=$(doxygen --version)
+
+# Run doxygen. Filter known false errors (bugs) based on doxygen version.
 cd "$DOCDIR"
-if [[ $(doxygen --version) == *1.8.17* ]]; then
-    # Doxygen version 1.8.17 has a bug which reports thousands of false errors.
-    doxygen 2>&1 | grep -v 'warning: return type of member .* is not documented$'
+if [[ $DOXVERSION == *1.8.17* ]]; then
+    doxygen 2>&1 | grep -v 'warning: return type of member .* is not documented'
+elif [[ $DOXVERSION == *1.9.6* ]]; then
+    doxygen 2>&1 | grep -v \
+        -e 'python/tsduck.py:[0-9]*: warning: Member _.* is not documented' \
+        -e 'tsTunerDevice.h:[0-9]*: warning: Detected potential recursive class relation between class ts::TunerDevice and base class ts::TunerBase'
 else
     doxygen
 fi
