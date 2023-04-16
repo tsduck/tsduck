@@ -194,8 +194,8 @@ namespace ts {
             // Default constructor:
             PIDContext();
 
-            // Called when packet synchronization is lost on the pid
-            void syncLost() {sync = false; ts->clear();}
+            // Called when packet synchronization is lost on the PID.
+            void syncLost() { sync = false; ts->clear(); }
         };
 
         // Map of PID contexts, indexed by PID.
@@ -221,6 +221,9 @@ namespace ts {
 
         // Process a complete PES packet
         void processPESPacket(PID, PIDContext&);
+
+        // Process an invalid PES packet
+        void handleInvalidPESPacket(PID, PIDContext&);
 
         // Process all video/audio analysis on the PES packet.
         void handlePESContent(PIDContext&, const PESPacket&);

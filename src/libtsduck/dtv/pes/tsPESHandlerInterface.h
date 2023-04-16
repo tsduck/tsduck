@@ -33,12 +33,14 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
+#include "tsByteBlock.h"
+#include "tsTS.h"
 
 namespace ts {
 
     class PESDemux;
     class PESPacket;
+    class DemuxedData;
     class MPEG2AudioAttributes;
     class MPEG2VideoAttributes;
     class AVCAttributes;
@@ -59,6 +61,13 @@ namespace ts {
         //! @param [in] packet The demultiplexed PES packet.
         //!
         virtual void handlePESPacket(PESDemux& demux, const PESPacket& packet);
+
+        //!
+        //! This hook is invoked when an invalid PES packet is encountered.
+        //! @param [in,out] demux A reference to the PES demux.
+        //! @param [in] data Raw elementary stream data between two PUSI, not recognized as a valid PES packet.
+        //!
+        virtual void handleInvalidPESPacket(PESDemux& demux, const DemuxedData& data);
 
         //!
         //! This hook is invoked when a video start code is encountered.

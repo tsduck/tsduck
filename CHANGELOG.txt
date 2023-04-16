@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.34-3188
+VERSION 3.34-3194
 
 [NEW] New commands and plugins:
 
@@ -16,6 +16,8 @@ VERSION 3.34-3188
     (when the corresponding accelerated instructions are available).
   * Using "-P tables --log", without "--output", the logged lines are reported
     through the general logger of "tsp" instead of being output to stdout.
+  * The plugin "pes", with option --trace-packets, detects and reports invalid
+    PES packets (e.g. truncated).
   * New options in existing commands and plugins:
     - Option --no-deep-duplicate in "tstables" and plugin "tables".
     - Option --accelerated in "tscrc32".

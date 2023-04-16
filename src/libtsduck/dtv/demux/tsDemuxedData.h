@@ -210,10 +210,17 @@ namespace ts {
         virtual const uint8_t* content() const;
 
         //!
-        //! Size of the binary content of the data.
-        //! @return Size of the binary content of the data.
+        //! Size of the logical binary content of the data.
+        //! For subclasses of DemuxedData, this is the logical size of the data structure inside the DemuxedData blob.
+        //! @return Size of the logical binary content of the data.
         //!
         virtual size_t size() const;
+
+        //!
+        //! Size of the complete binary raw data containing the logical structure.
+        //! @return Size of the complete binary raw data.
+        //!
+        size_t rawDataSize() const;
 
         //!
         //! Check if the start of the data matches a given pattern.

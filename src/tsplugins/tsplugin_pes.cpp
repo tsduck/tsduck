@@ -108,7 +108,7 @@ namespace ts {
         bool openOutput(const UString&, std::ofstream*, std::ostream**, bool binary);
 
         // A string containing the PID and optional TS packet indexes.
-        UString prefix(const PESPacket&) const;
+        UString prefix(const DemuxedData&) const;
 
         // Do we need to display this acces unit type?
         bool useAccesUnitType(uint8_t) const;
@@ -121,6 +121,7 @@ namespace ts {
 
         // Implementation of PESHandlerInterface.
         virtual void handlePESPacket(PESDemux&, const PESPacket&) override;
+        virtual void handleInvalidPESPacket(PESDemux&, const DemuxedData&) override;
         virtual void handleIntraImage(PESDemux&, const PESPacket&, size_t) override;
         virtual void handleVideoStartCode(PESDemux&, const PESPacket&, uint8_t, size_t, size_t) override;
         virtual void handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket&, const MPEG2VideoAttributes&) override;
@@ -529,7 +530,7 @@ bool ts::PESPlugin::lastDump(std::ostream& out)
 // A string containing the PID and optional TS packet indexes.
 //----------------------------------------------------------------------------
 
-ts::UString ts::PESPlugin::prefix(const PESPacket& pkt) const
+ts::UString ts::PESPlugin::prefix(const DemuxedData& pkt) const
 {
     UString line;
     line.format(u"PID 0x%X", {pkt.sourcePID()});
@@ -537,6 +538,40 @@ ts::UString ts::PESPlugin::prefix(const PESPacket& pkt) const
         line.format(u", TS packets %'d-%'d", {pkt.firstTSPacketIndex(), pkt.lastTSPacketIndex()});
     }
     return line;
+}
+
+
+//----------------------------------------------------------------------------
+// Invoked by the demux when an invalid PES packet is encountered.
+//----------------------------------------------------------------------------
+
+void ts::PESPlugin::handleInvalidPESPacket(PESDemux&, const DemuxedData& data)
+{
+    // Report invalid packets with --trace-packets
+    if (_trace_packets) {
+        *_out << UString::Format(u"* %s, invalid PES packet, data size: %d bytes", {prefix(data), data.size()});
+        const size_t hsize = PESPacket::HeaderSize(data.content(), data.size());
+        if (hsize == 0) {
+            *_out << ", no PES header found";
+        }
+        else if (data.size() < hsize) {
+            *_out << UString::Format(u", expected header size: %d bytes", {hsize});
+        }
+        else {
+            // The embedded PES payload size is either zero (unbounded) or indicates the packet length _after_ that field (ie. after offset 6).
+            const size_t psize = 6 + size_t(GetUInt16(data.content() + 4));
+            if (psize != 6) {
+                *_out << UString::Format(u", PES packet size: %d bytes", {psize});
+                if (psize < hsize) {
+                    *_out << UString::Format(u", expected header size: %d bytes", {hsize});
+                }
+                if (data.size() < psize) {
+                    *_out << UString::Format(u", truncated, missing %d bytes", {psize - data.size()});
+                }
+            }
+        }
+        *_out << std::endl;
+    }
 }
 
 
@@ -558,7 +593,7 @@ void ts::PESPlugin::handlePESPacket(PESDemux&, const PESPacket& pkt)
               << UString::Format(u", size: %d bytes (header: %d, payload: %d)", {pkt.size(), pkt.headerSize(), pkt.payloadSize()});
         const size_t spurious = pkt.spuriousDataSize();
         if (spurious > 0) {
-            *_out << UString::Format(u", %d spurious trailing bytes", {spurious});
+            *_out << UString::Format(u", raw data: %d bytes, %d spurious trailing bytes", {pkt.rawDataSize(), spurious});
         }
         *_out << std::endl;
         if (lastDump(*_out)) {

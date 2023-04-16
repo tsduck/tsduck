@@ -311,6 +311,13 @@ namespace ts {
         size_t findIntraImage() const;
 
         //!
+        //! Get the header size of the start of a PES packet.
+        //! @param [in] data Address of data to check, typically the start of a PES packet.
+        //! @param [in] size Data size in bytes.
+        //! @return The PES header size in bytes, if one is found, or 0 on error.
+        static size_t HeaderSize(const uint8_t* data, size_t size);
+
+        //!
         //! Check if a truncated PES packet may contain MPEG-2 or MPEG-1 video.
         //! @param [in] data Address of data to check, typically the start of a PES packet.
         //! @param [in] size Data size in bytes.
@@ -397,9 +404,6 @@ namespace ts {
 
         // Validate binary content.
         void validate();
-
-        // Get the header size of the start of a PES packet. Return 0 on error.
-        static size_t HeaderSize(const uint8_t* data, size_t size);
 
         //! Check if a truncated PES packet may contain AVC, HEVC or VVC.
         static bool IsXVC(bool (*StreamTypeCheck)(uint8_t), const uint8_t* data, size_t size, uint8_t stream_type);
