@@ -396,15 +396,17 @@ void ts::tsp::InputExecutor::passInputPackets(size_t pkt_count, bool input_end)
             pkt_count = 0;
         }
         // Wait the specified number of milliseconds or forever if zero.
+        debug(u"final wait after end of input: %'d ms", {_options.final_wait});
         if (_options.final_wait > 0) {
             SleepThread(_options.final_wait);
         }
         else {
-            // Repeatedly use long waits (one day) to avoid system limitations.
+            // Wait forever. Repeatedly use long waits (one day) to avoid system limitations.
             for (;;) {
                 SleepThread(MilliSecPerDay);
             }
         }
+        debug(u"end of final wait");
     }
 
     // Do not progate abort to previous processor since the "previous" one is the output one.
