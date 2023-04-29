@@ -65,6 +65,8 @@ $(BINDIR)/%: %
 
 $(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(BINDIR)/tsxml
 	@echo '  [GEN] $(notdir $@)'; \
+	LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" \
+	$(if $(MACOS),DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)") \
 	$(BINDIR)/tsxml --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
 
 $(NAMES_DEST): $(NAMES_SRC)
