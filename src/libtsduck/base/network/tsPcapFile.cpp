@@ -269,7 +269,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
         }
         else if (tag == PCAPNG_IF_TSRESOL && len == 1) {
             if ((data[0] & 0x80) == 0) {
-                ifd.time_units = Power10<SubSecond>(data[0]);
+                ifd.time_units = Power10(data[0]);
             }
             else {
                 ifd.time_units = TS_UCONST64(1) << (data[0] & 0x7F);
