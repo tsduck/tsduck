@@ -81,8 +81,7 @@ size_t ts::MaxHexaWidth(size_t typeSize, size_t digitSeparatorSize)
 // Get a power of 10 using a fast lookup table.
 //----------------------------------------------------------------------------
 
-template<>
-uint64_t ts::Power10<uint64_t>(size_t pow)
+uint64_t ts::Power10(size_t pow)
 {
     // Assume that not integer type is larger than 64 bits => 10^19 is the largest unsigned value.
     static constexpr size_t MAX_POW10 = 19;

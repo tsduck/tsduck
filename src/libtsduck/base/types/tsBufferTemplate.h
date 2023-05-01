@@ -280,7 +280,7 @@ bool ts::Buffer::putBCD(INT value, size_t bcd_count)
     if (bcd_count > 0) {
         typedef typename std::make_unsigned<INT>::type UNSINT;
         UNSINT uvalue = static_cast<UNSINT>(value);
-        UNSINT factor = Power10<UNSINT>(bcd_count);
+        UNSINT factor = static_cast<UNSINT>(Power10(bcd_count));
         while (bcd_count-- > 0) {
             uvalue %= factor;
             factor /= 10;
