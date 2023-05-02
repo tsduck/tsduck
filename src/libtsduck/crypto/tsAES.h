@@ -76,5 +76,16 @@ namespace ts {
         int           _nrounds;  // Number of rounds
         uint32_t      _eK[60];   // Scheduled encryption keys
         uint32_t      _dK[60];   // Scheduled decryption keys
+
+        // Runtime check once if accelerated AES instructions are supported on this CPU.
+        static volatile bool _accel_checked;
+        static volatile bool _accel_supported;
+
+        // Accelerated versions, compiled in a separated module.
+        static Acceleration* newAccel();
+        static void deleteAccel(Acceleration*);
+        void setKeyAccel();
+        void encryptAccel(const uint8_t* pt, uint8_t* ct);
+        void decryptAccel(const uint8_t* ct, uint8_t* pt);
     };
 }

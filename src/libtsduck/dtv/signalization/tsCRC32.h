@@ -103,12 +103,6 @@ namespace ts {
         void reset() { _fcs = 0xFFFFFFFF; }
 
         //!
-        //! Check if CRC32 uses accelerated instructions or uses a portable but slower implementation.
-        //! @return Ttue if CRC32 uses accelerated instructions.
-        //!
-        static bool IsAccelerated();
-
-        //!
         //! What to do with a CRC32.
         //! Used when building MPEG sections.
         //!
@@ -120,5 +114,13 @@ namespace ts {
 
     private:
         uint32_t _fcs;
+
+        // Runtime check once if accelerated CRC32 instructions are supported on this CPU.
+        static volatile bool _accel_checked;
+        static volatile bool _accel_supported;
+
+        // Accelerated versions, compiled in a separated module.
+        uint32_t valueAccel() const;
+        void addAccel(const void* data, size_t size);
     };
 }

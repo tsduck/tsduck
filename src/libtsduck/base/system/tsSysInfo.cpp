@@ -46,6 +46,13 @@
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::SysInfo);
 
+// Some "hidden" booleans which are defined when the accelerated modules are compiled with accelerated instructions.
+extern const bool tsCRC32IsAccelerated;
+extern const bool tsAESIsAccelerated;
+extern const bool tsSHA1IsAccelerated;
+extern const bool tsSHA256IsAccelerated;
+extern const bool tsSHA512IsAccelerated;
+
 
 //----------------------------------------------------------------------------
 // Constructor.
@@ -319,34 +326,43 @@ ts::SysInfo::SysInfo() :
 
     //
     // Get support for specialized instructions.
+    // Can be globally disabled using environment variables.
     //
-#if defined(TS_ARM_CRC32_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_CRC32)
-    _crcInstructions = (::getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
-#elif defined(TS_ARM_CRC32_INSTRUCTIONS) && defined(TS_MAC)
-    _crcInstructions = SysCtrlBool("hw.optional.armv8_crc32");
-#endif
-
-#if defined(TS_ARM_AES_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_AES)
-    _aesInstructions = (::getauxval(AT_HWCAP) & HWCAP_AES) != 0;
-#elif defined(TS_ARM_AES_INSTRUCTIONS) && defined(TS_MAC)
-    _aesInstructions = SysCtrlBool("hw.optional.arm.FEAT_AES");
-#endif
-
-#if defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_SHA1)
-    _sha1Instructions = (::getauxval(AT_HWCAP) & HWCAP_SHA1) != 0;
-#elif defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_MAC)
-    _sha1Instructions = SysCtrlBool("hw.optional.arm.FEAT_SHA1");
-#endif
-
-#if defined(TS_ARM_SHA256_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_SHA2)
-    _sha256Instructions = (::getauxval(AT_HWCAP) & HWCAP_SHA2) != 0;
-#elif defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_MAC)
-    _sha256Instructions = SysCtrlBool("hw.optional.arm.FEAT_SHA256");
-#endif
-
-#if defined(TS_ARM_SHA512_INSTRUCTIONS) && defined(TS_LINUX) && defined(HWCAP_SHA512)
-    _sha512Instructions = (::getauxval(AT_HWCAP) & HWCAP_SHA512) != 0;
-#elif defined(TS_ARM_SHA1_INSTRUCTIONS) && defined(TS_MAC)
-    _sha512Instructions = SysCtrlBool("hw.optional.arm.FEAT_SHA512");
-#endif
+    if (GetEnvironment(u"TS_NO_HARDWARE_ACCELERATION").empty()) {
+        if (GetEnvironment(u"TS_NO_CRC32_INSTRUCTIONS").empty()) {
+            #if defined(TS_LINUX) && defined(HWCAP_CRC32)
+                _crcInstructions = tsCRC32IsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_CRC32) != 0;
+            #elif defined(TS_MAC)
+                _crcInstructions = tsCRC32IsAccelerated && SysCtrlBool("hw.optional.armv8_crc32");
+            #endif
+        }
+        if (GetEnvironment(u"TS_NO_AES_INSTRUCTIONS").empty()) {
+            #if defined(TS_LINUX) && defined(HWCAP_AES)
+                _aesInstructions = tsAESIsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_AES) != 0;
+            #elif defined(TS_MAC)
+                _aesInstructions = tsAESIsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_AES");
+            #endif
+        }
+        if (GetEnvironment(u"TS_NO_SHA1_INSTRUCTIONS").empty()) {
+            #if defined(TS_LINUX) && defined(HWCAP_SHA1)
+                _sha1Instructions = tsSHA1IsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_SHA1) != 0;
+            #elif defined(TS_MAC)
+                _sha1Instructions = tsSHA1IsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_SHA1");
+            #endif
+        }
+        if (GetEnvironment(u"TS_NO_SHA256_INSTRUCTIONS").empty()) {
+            #if defined(TS_LINUX) && defined(HWCAP_SHA2)
+                _sha256Instructions = tsSHA256IsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_SHA2) != 0;
+            #elif defined(TS_MAC)
+                _sha256Instructions = tsSHA256IsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_SHA256");
+            #endif
+        }
+        if (GetEnvironment(u"TS_NO_SHA512_INSTRUCTIONS").empty()) {
+            #if defined(TS_LINUX) && defined(HWCAP_SHA512)
+                _sha512Instructions = tsSHA512IsAccelerated && (::getauxval(AT_HWCAP) & HWCAP_SHA512) != 0;
+            #elif defined(TS_MAC)
+                _sha512Instructions = tsSHA512IsAccelerated && SysCtrlBool("hw.optional.arm.FEAT_SHA512");
+            #endif
+        }
+    }
 }

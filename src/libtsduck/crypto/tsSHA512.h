@@ -64,7 +64,17 @@ namespace ts {
         uint64_t _state[HASH_SIZE / 8];  // Current hash value (512 bits, 64 bytes, 8 uint64)
         uint8_t  _buf[BLOCK_SIZE];       // Current block to hash (1024 bits, 128 bytes)
 
+        // The K array
+        static const uint64_t K[80];
+
         // Compress one 512-bit block, accumulate hash in _state.
         void compress(const uint8_t* buf);
+
+        // Runtime check once if accelerated SHA-512 instructions are supported on this CPU.
+        static volatile bool _accel_checked;
+        static volatile bool _accel_supported;
+
+        // Accelerated versions, compiled in a separated module.
+        void compressAccel(const uint8_t* buf);
     };
 }

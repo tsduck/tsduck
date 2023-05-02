@@ -30,13 +30,9 @@
 #include "tsCRC32.h"
 #include "tsSysInfo.h"
 
-#if defined(TS_ARM_CRC32_INSTRUCTIONS)
-namespace {
-    // Runtime check once if Arm-64 CRC32 instructions are supported on this CPU.
-    volatile bool _crc_checked = false;
-    volatile bool _crc_supported = false;
-}
-#endif
+// Runtime check once if accelerated CRC32 instructions are supported on this CPU.
+volatile bool ts::CRC32::_accel_checked = false;
+volatile bool ts::CRC32::_accel_supported = false;
 
 
 //----------------------------------------------------------------------------
@@ -46,29 +42,12 @@ namespace {
 ts::CRC32::CRC32() :
     _fcs(0xFFFFFFFF)
 {
-#if defined(TS_ARM_CRC32_INSTRUCTIONS)
-    // When CRC32 instructions are compiled, check once if supported at runtime.
+    // Check once if CRC32 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.
-    if (!_crc_checked) {
-        _crc_supported = SysInfo::Instance()->crcInstructions();
-        _crc_checked = true;
+    if (!_accel_checked) {
+        _accel_supported = SysInfo::Instance()->crcInstructions();
+        _accel_checked = true;
     }
-#endif
-}
-
-
-//----------------------------------------------------------------------------
-// Check if CRC32 uses accelerated instructions.
-//----------------------------------------------------------------------------
-
-bool ts::CRC32::IsAccelerated()
-{
-#if defined(TS_ARM_CRC32_INSTRUCTIONS)
-    CRC32 dummy; // force support check
-    return _crc_supported;
-#else
-    return false;
-#endif
 }
 
 
@@ -78,17 +57,7 @@ bool ts::CRC32::IsAccelerated()
 
 uint32_t ts::CRC32::value() const
 {
-#if defined(TS_ARM_CRC32_INSTRUCTIONS)
-    if (_crc_supported) {
-        // With the Arm64 CRC32 instructions, we need to reverse the 32 bits in the result.
-        uint32_t x;
-        asm("rbit %w0, %w1" : "=r" (x) : "r" (_fcs));
-        return x;
-    }
-#endif
-
-    // In the portable implementation, directly return the result.
-    return _fcs;
+    return _accel_supported ? valueAccel() : _fcs;
 }
 
 
@@ -171,93 +140,19 @@ namespace {
 
 
 //----------------------------------------------------------------------------
-// Basic operations for the Arm64 CRC32 instructions.
-//----------------------------------------------------------------------------
-
-#if defined(TS_ARM_CRC32_INSTRUCTIONS)
-namespace {
-
-    // Arm Architecture Reference Manual, about the CRC32 instructions: "To align
-    // with common usage, the bit order of the values is reversed as part of the
-    // operation". However, the CRC32 computation for MPEG2-TS does not reverse
-    // the bits. Consequently, we have to reverse the bits again on input and
-    // output. We do this using 2 Arm64 instructions (would be dreadful in C++).
-
-    // Reverse all bits inside each individual byte of a 64-bit value.
-    // Then, add the 64-bit result in the CRC32 computation.
-    inline __attribute__((always_inline)) void crcAdd64(uint32_t& fcs, uint64_t x)
-    {
-        asm("rbit   %1, %1\n"
-            "rev    %1, %1\n"
-            "crc32x %w0, %w0, %1"
-            : "+r" (fcs) : "r" (x));
-    }
-
-    // Same thing on one byte only.
-    inline __attribute__((always_inline)) void crcAdd8(uint32_t& fcs, uint8_t x)
-    {
-        asm("rbit   %1, %1\n"
-            "rev    %1, %1\n"
-            "crc32b %w0, %w0, %w1"
-            : "+r" (fcs) : "r" (uint64_t(x)));
-    }
-}
-#endif
-
-
-//----------------------------------------------------------------------------
 // Continue the computation of a data area, following a previous CRC32.
 //----------------------------------------------------------------------------
 
 void ts::CRC32::add(const void* data, size_t size)
 {
-#if defined(TS_ARM_CRC32_INSTRUCTIONS)
-    if (_crc_supported) {
-        // Add 8-bit values until an address aligned on 8 bytes.
-        const uint8_t* cp8 = reinterpret_cast<const uint8_t*>(data);
-        while (size != 0 && (uint64_t(cp8) & 0x03) != 0) {
-            crcAdd8(_fcs, *cp8++);
-            --size;
-        }
-
-        // Add 64-bit values until an address aligned on 64 bytes.
-        const uint64_t* cp64 = reinterpret_cast<const uint64_t*>(cp8);
-        while (size >= 8 && (uint64_t(cp64) & 0x07) != 0) {
-            crcAdd64(_fcs, *cp64++);
-            size -= 8;
-        }
-
-        // Add 8 * 64-bit values until less than 64 bytes (manual loop unroll).
-        while (size >= 64) {
-            crcAdd64(_fcs, *cp64++);
-            crcAdd64(_fcs, *cp64++);
-            crcAdd64(_fcs, *cp64++);
-            crcAdd64(_fcs, *cp64++);
-            crcAdd64(_fcs, *cp64++);
-            crcAdd64(_fcs, *cp64++);
-            crcAdd64(_fcs, *cp64++);
-            crcAdd64(_fcs, *cp64++);
-            size -= 64;
-        }
-
-        // Add 64-bit values until less than 8 bytes.
-        while (size >= 8) {
-            crcAdd64(_fcs, *cp64++);
-            size -= 8;
-        }
-
-        // Add remaining bytes.
-        cp8 = reinterpret_cast<const uint8_t*>(cp64);
-        while (size--) {
-            crcAdd8(_fcs, *cp8++);
-        }
-        return;
+    if (_accel_supported) {
+        addAccel(data, size);
     }
-#endif
-
-    // Portable implementation, using the pre-computed table.
-    const uint8_t* cp = reinterpret_cast<const uint8_t*>(data);
-    while (size-- > 0) {
-        _fcs = (_fcs << 8) ^ _fcstab_32[((_fcs >> 24) ^ (*cp++)) & 0xFF];
+    else {
+        // Portable implementation, using the pre-computed table.
+        const uint8_t* cp = reinterpret_cast<const uint8_t*>(data);
+        while (size-- > 0) {
+            _fcs = (_fcs << 8) ^ _fcstab_32[((_fcs >> 24) ^ (*cp++)) & 0xFF];
+        }
     }
 }
