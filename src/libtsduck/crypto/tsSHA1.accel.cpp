@@ -17,6 +17,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSHA1.h"
+#include "tsCryptoAcceleration.h"
 
 // Check if Arm-64 SHA-1 instructions can be used in asm() directives and intrinsics.
 #if defined(__ARM_FEATURE_CRYPTO) && !defined(TS_NO_ARM_SHA1_INSTRUCTIONS)
