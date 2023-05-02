@@ -66,5 +66,13 @@ namespace ts {
 
         // Compress one 512-bit block, accumulate hash in _state.
         void compress(const uint8_t* buf);
+
+        // Runtime check once if accelerated SHA-1 instructions are supported on this CPU.
+        static volatile bool _accel_checked;
+        static volatile bool _accel_supported;
+
+        // Accelerated versions, compiled in a separated module.
+        static void initAccel();
+        void compressAccel(const uint8_t* buf);
     };
 }

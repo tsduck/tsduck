@@ -345,21 +345,16 @@ GCC ?= gcc
 
 # Compilation target options.
 
-CXXFLAGS_M32 :=
-LDFLAGS_M32  :=
+CXXFLAGS_M32 =
+LDFLAGS_M32 =
 
 ifneq ($(M32),)
     # Define compilation flags for 32-bit cross-compilation.
-    override CXXFLAGS_TARGET := -march=i686
-    override CXXFLAGS_M32 := -m32
-    override LDFLAGS_M32  := -m32
-else ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
-    # On Linux Arm64, allow the usage of specialized instructions by the compiler.
-    # The code will explicitly check at run time if they are supported before using them.
-    # On macOS, this support is implicit.
-    CXXFLAGS_TARGET := -march=armv8.2-a+crc+crypto+sha2+sha3
+    override CXXFLAGS_TARGET = -march=i686
+    override CXXFLAGS_M32 = -m32
+    override LDFLAGS_M32 = -m32
 else
-    CXXFLAGS_TARGET :=
+    CXXFLAGS_TARGET =
 endif
 
 # Cross-compilation support.

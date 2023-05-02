@@ -34,6 +34,7 @@
 #include "tsMain.h"
 #include "tsArgs.h"
 #include "tsCRC32.h"
+#include "tsSysInfo.h"
 #include "tsSysUtils.h"
 TS_MAIN(MainCode);
 
@@ -141,7 +142,7 @@ int MainCode(int argc, char *argv[])
 
     // Check the presence of CRC32 acceleration.
     if (opt.accelerated) {
-        const bool yes = ts::CRC32::IsAccelerated();
+        const bool yes = ts::SysInfo::Instance()->crcInstructions();
         if (opt.verbose()) {
             std::cout << "CRC32 computation is " << (yes ? "" : "not ") << "accelerated" << std::endl;
         }

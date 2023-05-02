@@ -2,6 +2,16 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
+VERSION 3.35-3198
+
+[BUG] Bug fixes:
+
+  * Fixed issues #1203 and #1205: On Arm64 Linux system with CPU below Armv8.2
+    (typical example: Raspberry Pi 4), all executables crashed with "illegal
+    instruction" error.
+
+-------------------------------------------------------------------------------
+
 VERSION 3.34-3194
 
 [NEW] New commands and plugins:

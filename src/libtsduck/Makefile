@@ -122,6 +122,18 @@ $(OBJDIR)/tsSHA256.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 $(OBJDIR)/tsSHA512.o:  CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 $(OBJDIR)/tsDVBCSA2.o: CXXFLAGS_OPTIMIZE = $(CXXFLAGS_FULLSPEED)
 
+ifeq ($(LOCAL_OS)-$(subst aarch64,arm64,$(LOCAL_ARCH)),linux-arm64)
+    # On Linux Arm64, allow the usage of specialized instructions by the compiler.
+    # The code will explicitly check at run time if they are supported before using them.
+    # We must limit this to specialized modules which are never called when these
+    # instructions are not supported.
+    $(OBJDIR)/tsCRC32.accel.o:  CXXFLAGS_TARGET = -march=armv8-a+crc
+    $(OBJDIR)/tsAES.accel.o:    CXXFLAGS_TARGET = -march=armv8-a+crypto
+    $(OBJDIR)/tsSHA1.accel.o:   CXXFLAGS_TARGET = -march=armv8-a+crypto
+    $(OBJDIR)/tsSHA256.accel.o: CXXFLAGS_TARGET = -march=armv8-a+crypto+sha2
+    $(OBJDIR)/tsSHA512.accel.o: CXXFLAGS_TARGET = -march=armv8.2-a+crypto+sha2+sha3
+endif
+
 # Add libtsduck internal headers when compiling libtsduck.
 
 CXXFLAGS_INCLUDES += $(addprefix -I,$(PRIVATE_INCLUDES))

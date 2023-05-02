@@ -11,8 +11,6 @@
 //    << LibTomCrypt is public domain. The library is free for >>
 //    << all purposes without any express guarantee it works.  >>
 //
-//  Arm64 acceleration based on public domain code from Arm.
-//
 //----------------------------------------------------------------------------
 
 #include "tsAES.h"
@@ -20,20 +18,9 @@
 #include "tsRotate.h"
 #include "tsSysInfo.h"
 
-#if defined(TS_ARM_AES_INSTRUCTIONS)
-#include <arm_neon.h>
-namespace {
-    // Runtime check once if Arm-64 AES instructions are supported on this CPU.
-    volatile bool _aes_checked = false;
-    volatile bool _aes_supported = false;
-}
-class ts::AES::Acceleration
-{
-public:
-    uint8x16_t eK[15];  // Scheduled encryption keys in SIMD register format.
-    uint8x16_t dK[15];  // Scheduled decryption keys in SIMD register format.
-};
-#endif
+// Runtime check once if accelerated AES instructions are supported on this CPU.
+volatile bool ts::AES::_accel_checked = false;
+volatile bool ts::AES::_accel_supported = false;
 
 
 //----------------------------------------------------------------------------
@@ -47,27 +34,23 @@ ts::AES::AES() :
     _eK(),
     _dK()
 {
-#if defined(TS_ARM_AES_INSTRUCTIONS)
-    // When AES instructions are compiled, check once if supported at runtime.
+    // Check once if AES acceleration is supported at runtime.
     // This logic does not require explicit synchronization.
-    if (!_aes_checked) {
-        _aes_supported = SysInfo::Instance()->aesInstructions();
-        _aes_checked = true;
+    if (!_accel_checked) {
+        _accel_supported = SysInfo::Instance()->aesInstructions();
+        _accel_checked = true;
     }
-    if (_aes_supported) {
-        _accel = new Acceleration;
+    if (_accel_supported) {
+        _accel = newAccel();
     }
-#endif
 }
 
 ts::AES::~AES()
 {
-#if defined(TS_ARM_AES_INSTRUCTIONS)
     if (_accel != nullptr) {
-        delete _accel;
+        deleteAccel(_accel);
         _accel = nullptr;
     }
-#endif
 }
 
 
@@ -891,29 +874,10 @@ bool ts::AES::setKeyImpl(const void* key_data, size_t key_length, size_t rounds)
     *rk++ = *rrk++;
     *rk   = *rrk;
 
-#if defined(TS_ARM_AES_INSTRUCTIONS)
-    // Preparation of scheduled keys for AES instructions.
-    if (_aes_supported) {
-
-        // AES instructions on little endian need the subkeys to be byte reversed
-        #if defined(TS_LITTLE_ENDIAN)
-            int max = (_nrounds + 1) * 4;
-            for (i = 0; i < max; ++i) {
-                _eK[i] = ByteSwap32(_eK[i]);
-                _dK[i] = ByteSwap32(_dK[i]);
-            }
-        #endif
-
-        // Load scheduled keys in suitable format for Arm64 SIMD registers.
-        const uint8_t* ek = reinterpret_cast<const uint8_t*>(_eK);
-        const uint8_t* dk = reinterpret_cast<const uint8_t*>(_dK);
-        Acceleration& accel(*_accel);
-        for (i = 0; i <= _nrounds; ++i) {
-            accel.eK[i] = vld1q_u8(ek + 16 * i);
-            accel.dK[i] = vld1q_u8(dk + 16 * i);
-        }
+    // Adjustment of scheduled keys for AES instructions.
+    if (_accel_supported) {
+        setKeyAccel();
     }
-#endif
 
     return true;
 }
@@ -935,80 +899,47 @@ bool ts::AES::encryptImpl(const void* plain, size_t plain_length, void* cipher, 
     const uint8_t* pt = reinterpret_cast<const uint8_t*>(plain);
     uint8_t* ct = reinterpret_cast<uint8_t*>(cipher);
 
-#if defined(TS_ARM_AES_INSTRUCTIONS)
-    if (_aes_supported) {
-        // Arm64 accelerated implementation using AES instructions.
-        const Acceleration& accel(*_accel);
-        uint8x16_t blk = vld1q_u8(pt);
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[0]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[1]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[2]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[3]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[4]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[5]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[6]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[7]));
-        blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[8]));
-        if (_kbits == 128) {
-            // End of processing for 128-bit keys.
-            blk = veorq_u8(vaeseq_u8(blk, accel.eK[9]), accel.eK[10]);
-        }
-        else {
-            blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[9]));
-            blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[10]));
-            if (_kbits == 192) {
-                // End of processing for 192-bit keys.
-                blk = veorq_u8(vaeseq_u8(blk, accel.eK[11]), accel.eK[12]);
-            }
-            else {
-                blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[11]));
-                blk = vaesmcq_u8(vaeseq_u8(blk, accel.eK[12]));
-                // End of processing for 256-bit keys.
-                blk = veorq_u8(vaeseq_u8(blk, accel.eK[13]), accel.eK[14]);
-            }
-        }
-        vst1q_u8(ct, blk);
-        return true;
+    if (_accel_supported) {
+        encryptAccel(pt, ct);
     }
-#endif
+    else {
+        uint32_t s0, s1, s2, s3, t0, t1, t2, t3;
+        int Nr = _nrounds;
+        uint32_t* rk = _eK;
 
-    uint32_t s0, s1, s2, s3, t0, t1, t2, t3;
-    int Nr = _nrounds;
-    uint32_t* rk = _eK;
+        // Map byte array block to cipher state and add initial round key:
+        s0 = GetUInt32(pt     ); s0 ^= rk[0];
+        s1 = GetUInt32(pt +  4); s1 ^= rk[1];
+        s2 = GetUInt32(pt +  8); s2 ^= rk[2];
+        s3 = GetUInt32(pt + 12); s3 ^= rk[3];
 
-    // Map byte array block to cipher state and add initial round key:
-    s0 = GetUInt32(pt     ); s0 ^= rk[0];
-    s1 = GetUInt32(pt +  4); s1 ^= rk[1];
-    s2 = GetUInt32(pt +  8); s2 ^= rk[2];
-    s3 = GetUInt32(pt + 12); s3 ^= rk[3];
-
-    // Nr - 1 full rounds:
-    int r = Nr >> 1;
-    for (;;) {
-        t0 = Te0(BYTE(s0, 3)) ^ Te1(BYTE(s1, 2)) ^ Te2(BYTE(s2, 1)) ^ Te3(BYTE(s3, 0)) ^ rk[4];
-        t1 = Te0(BYTE(s1, 3)) ^ Te1(BYTE(s2, 2)) ^ Te2(BYTE(s3, 1)) ^ Te3(BYTE(s0, 0)) ^ rk[5];
-        t2 = Te0(BYTE(s2, 3)) ^ Te1(BYTE(s3, 2)) ^ Te2(BYTE(s0, 1)) ^ Te3(BYTE(s1, 0)) ^ rk[6];
-        t3 = Te0(BYTE(s3, 3)) ^ Te1(BYTE(s0, 2)) ^ Te2(BYTE(s1, 1)) ^ Te3(BYTE(s2, 0)) ^ rk[7];
-        rk += 8;
-        if (--r == 0) {
-            break;
+        // Nr - 1 full rounds:
+        int r = Nr >> 1;
+        for (;;) {
+            t0 = Te0(BYTE(s0, 3)) ^ Te1(BYTE(s1, 2)) ^ Te2(BYTE(s2, 1)) ^ Te3(BYTE(s3, 0)) ^ rk[4];
+            t1 = Te0(BYTE(s1, 3)) ^ Te1(BYTE(s2, 2)) ^ Te2(BYTE(s3, 1)) ^ Te3(BYTE(s0, 0)) ^ rk[5];
+            t2 = Te0(BYTE(s2, 3)) ^ Te1(BYTE(s3, 2)) ^ Te2(BYTE(s0, 1)) ^ Te3(BYTE(s1, 0)) ^ rk[6];
+            t3 = Te0(BYTE(s3, 3)) ^ Te1(BYTE(s0, 2)) ^ Te2(BYTE(s1, 1)) ^ Te3(BYTE(s2, 0)) ^ rk[7];
+            rk += 8;
+            if (--r == 0) {
+                break;
+            }
+            s0 = Te0(BYTE(t0, 3)) ^ Te1(BYTE(t1, 2)) ^ Te2(BYTE(t2, 1)) ^ Te3(BYTE(t3, 0)) ^ rk[0];
+            s1 = Te0(BYTE(t1, 3)) ^ Te1(BYTE(t2, 2)) ^ Te2(BYTE(t3, 1)) ^ Te3(BYTE(t0, 0)) ^ rk[1];
+            s2 = Te0(BYTE(t2, 3)) ^ Te1(BYTE(t3, 2)) ^ Te2(BYTE(t0, 1)) ^ Te3(BYTE(t1, 0)) ^ rk[2];
+            s3 = Te0(BYTE(t3, 3)) ^ Te1(BYTE(t0, 2)) ^ Te2(BYTE(t1, 1)) ^ Te3(BYTE(t2, 0)) ^ rk[3];
         }
-        s0 = Te0(BYTE(t0, 3)) ^ Te1(BYTE(t1, 2)) ^ Te2(BYTE(t2, 1)) ^ Te3(BYTE(t3, 0)) ^ rk[0];
-        s1 = Te0(BYTE(t1, 3)) ^ Te1(BYTE(t2, 2)) ^ Te2(BYTE(t3, 1)) ^ Te3(BYTE(t0, 0)) ^ rk[1];
-        s2 = Te0(BYTE(t2, 3)) ^ Te1(BYTE(t3, 2)) ^ Te2(BYTE(t0, 1)) ^ Te3(BYTE(t1, 0)) ^ rk[2];
-        s3 = Te0(BYTE(t3, 3)) ^ Te1(BYTE(t0, 2)) ^ Te2(BYTE(t1, 1)) ^ Te3(BYTE(t2, 0)) ^ rk[3];
+
+        // Apply last round and map cipher state to byte array block:
+        s0 = (Te4_3[BYTE(t0, 3)]) ^ (Te4_2[BYTE(t1, 2)]) ^ (Te4_1[BYTE(t2, 1)]) ^ (Te4_0[BYTE(t3, 0)]) ^ rk[0];
+        PutUInt32(ct, s0);
+        s1 = (Te4_3[BYTE(t1, 3)]) ^ (Te4_2[BYTE(t2, 2)]) ^ (Te4_1[BYTE(t3, 1)]) ^ (Te4_0[BYTE(t0, 0)]) ^ rk[1];
+        PutUInt32(ct+4, s1);
+        s2 = (Te4_3[BYTE(t2, 3)]) ^ (Te4_2[BYTE(t3, 2)]) ^ (Te4_1[BYTE(t0, 1)]) ^ (Te4_0[BYTE(t1, 0)]) ^ rk[2];
+        PutUInt32(ct+8, s2);
+        s3 = (Te4_3[BYTE(t3, 3)]) ^ (Te4_2[BYTE(t0, 2)]) ^ (Te4_1[BYTE(t1, 1)]) ^ (Te4_0[BYTE(t2, 0)]) ^ rk[3];
+        PutUInt32(ct+12, s3);
     }
-
-    // Apply last round and map cipher state to byte array block:
-    s0 = (Te4_3[BYTE(t0, 3)]) ^ (Te4_2[BYTE(t1, 2)]) ^ (Te4_1[BYTE(t2, 1)]) ^ (Te4_0[BYTE(t3, 0)]) ^ rk[0];
-    PutUInt32(ct, s0);
-    s1 = (Te4_3[BYTE(t1, 3)]) ^ (Te4_2[BYTE(t2, 2)]) ^ (Te4_1[BYTE(t3, 1)]) ^ (Te4_0[BYTE(t0, 0)]) ^ rk[1];
-    PutUInt32(ct+4, s1);
-    s2 = (Te4_3[BYTE(t2, 3)]) ^ (Te4_2[BYTE(t3, 2)]) ^ (Te4_1[BYTE(t0, 1)]) ^ (Te4_0[BYTE(t1, 0)]) ^ rk[2];
-    PutUInt32(ct+8, s2);
-    s3 = (Te4_3[BYTE(t3, 3)]) ^ (Te4_2[BYTE(t0, 2)]) ^ (Te4_1[BYTE(t1, 1)]) ^ (Te4_0[BYTE(t2, 0)]) ^ rk[3];
-    PutUInt32(ct+12, s3);
-
     return true;
 }
 
@@ -1029,78 +960,46 @@ bool ts::AES::decryptImpl(const void* cipher, size_t cipher_length, void* plain,
     const uint8_t* ct = reinterpret_cast<const uint8_t*>(cipher);
     uint8_t* pt = reinterpret_cast<uint8_t*>(plain);
 
-#if defined(TS_ARM_AES_INSTRUCTIONS)
-    if (_aes_supported) {
-        // Arm64 accelerated implementation using AES instructions.
-        const Acceleration& accel(*_accel);
-        uint8x16_t blk = vld1q_u8(ct);
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[0]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[1]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[2]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[3]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[4]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[5]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[6]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[7]));
-        blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[8]));
-        if (_kbits == 128) {
-            // End of processing for 128-bit keys.
-            blk = veorq_u8(vaesdq_u8(blk, accel.dK[9]), accel.dK[10]);
-        }
-        else {
-            blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[9]));
-            blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[10]));
-            if (_kbits == 192) {
-                // End of processing for 192-bit keys.
-                blk = veorq_u8(vaesdq_u8(blk, accel.dK[11]), accel.dK[12]);
-            }
-            else {
-                blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[11]));
-                blk = vaesimcq_u8(vaesdq_u8(blk, accel.dK[12]));
-                // End of processing for 256-bit keys.
-                blk = veorq_u8(vaesdq_u8(blk, accel.dK[13]), accel.dK[14]);
-            }
-        }
-        vst1q_u8(pt, blk);
-        return true;
+    if (_accel_supported) {
+        decryptAccel(ct, pt);
     }
-#endif
+    else {
+        uint32_t s0, s1, s2, s3, t0, t1, t2, t3;
+        int Nr = _nrounds;
+        uint32_t* rk = _dK;
 
-    uint32_t s0, s1, s2, s3, t0, t1, t2, t3;
-    int Nr = _nrounds;
-    uint32_t* rk = _dK;
+        // Map byte array block to cipher state and add initial round key:
+        s0 = GetUInt32(ct     ); s0 ^= rk[0];
+        s1 = GetUInt32(ct +  4); s1 ^= rk[1];
+        s2 = GetUInt32(ct +  8); s2 ^= rk[2];
+        s3 = GetUInt32(ct + 12); s3 ^= rk[3];
 
-    // Map byte array block to cipher state and add initial round key:
-    s0 = GetUInt32(ct     ); s0 ^= rk[0];
-    s1 = GetUInt32(ct +  4); s1 ^= rk[1];
-    s2 = GetUInt32(ct +  8); s2 ^= rk[2];
-    s3 = GetUInt32(ct + 12); s3 ^= rk[3];
-
-    // Nr - 1 full rounds:
-    int r = Nr >> 1;
-    for (;;) {
-        t0 = Td0(BYTE(s0, 3)) ^ Td1(BYTE(s3, 2)) ^ Td2(BYTE(s2, 1)) ^ Td3(BYTE(s1, 0)) ^ rk[4];
-        t1 = Td0(BYTE(s1, 3)) ^ Td1(BYTE(s0, 2)) ^ Td2(BYTE(s3, 1)) ^ Td3(BYTE(s2, 0)) ^ rk[5];
-        t2 = Td0(BYTE(s2, 3)) ^ Td1(BYTE(s1, 2)) ^ Td2(BYTE(s0, 1)) ^ Td3(BYTE(s3, 0)) ^ rk[6];
-        t3 = Td0(BYTE(s3, 3)) ^ Td1(BYTE(s2, 2)) ^ Td2(BYTE(s1, 1)) ^ Td3(BYTE(s0, 0)) ^ rk[7];
-        rk += 8;
-        if (--r == 0) {
-            break;
+        // Nr - 1 full rounds:
+        int r = Nr >> 1;
+        for (;;) {
+            t0 = Td0(BYTE(s0, 3)) ^ Td1(BYTE(s3, 2)) ^ Td2(BYTE(s2, 1)) ^ Td3(BYTE(s1, 0)) ^ rk[4];
+            t1 = Td0(BYTE(s1, 3)) ^ Td1(BYTE(s0, 2)) ^ Td2(BYTE(s3, 1)) ^ Td3(BYTE(s2, 0)) ^ rk[5];
+            t2 = Td0(BYTE(s2, 3)) ^ Td1(BYTE(s1, 2)) ^ Td2(BYTE(s0, 1)) ^ Td3(BYTE(s3, 0)) ^ rk[6];
+            t3 = Td0(BYTE(s3, 3)) ^ Td1(BYTE(s2, 2)) ^ Td2(BYTE(s1, 1)) ^ Td3(BYTE(s0, 0)) ^ rk[7];
+            rk += 8;
+            if (--r == 0) {
+                break;
+            }
+            s0 = Td0(BYTE(t0, 3)) ^ Td1(BYTE(t3, 2)) ^ Td2(BYTE(t2, 1)) ^ Td3(BYTE(t1, 0)) ^ rk[0];
+            s1 = Td0(BYTE(t1, 3)) ^ Td1(BYTE(t0, 2)) ^ Td2(BYTE(t3, 1)) ^ Td3(BYTE(t2, 0)) ^ rk[1];
+            s2 = Td0(BYTE(t2, 3)) ^ Td1(BYTE(t1, 2)) ^ Td2(BYTE(t0, 1)) ^ Td3(BYTE(t3, 0)) ^ rk[2];
+            s3 = Td0(BYTE(t3, 3)) ^ Td1(BYTE(t2, 2)) ^ Td2(BYTE(t1, 1)) ^ Td3(BYTE(t0, 0)) ^ rk[3];
         }
-        s0 = Td0(BYTE(t0, 3)) ^ Td1(BYTE(t3, 2)) ^ Td2(BYTE(t2, 1)) ^ Td3(BYTE(t1, 0)) ^ rk[0];
-        s1 = Td0(BYTE(t1, 3)) ^ Td1(BYTE(t0, 2)) ^ Td2(BYTE(t3, 1)) ^ Td3(BYTE(t2, 0)) ^ rk[1];
-        s2 = Td0(BYTE(t2, 3)) ^ Td1(BYTE(t1, 2)) ^ Td2(BYTE(t0, 1)) ^ Td3(BYTE(t3, 0)) ^ rk[2];
-        s3 = Td0(BYTE(t3, 3)) ^ Td1(BYTE(t2, 2)) ^ Td2(BYTE(t1, 1)) ^ Td3(BYTE(t0, 0)) ^ rk[3];
-    }
 
-    // Apply last round and map cipher state to byte array block:
-    s0 = (Td4[BYTE(t0, 3)] & 0xff000000) ^ (Td4[BYTE(t3, 2)] & 0x00ff0000) ^ (Td4[BYTE(t2, 1)] & 0x0000ff00) ^ (Td4[BYTE(t1, 0)] & 0x000000ff) ^ rk[0];
-    PutUInt32(pt, s0);
-    s1 = (Td4[BYTE(t1, 3)] & 0xff000000) ^ (Td4[BYTE(t0, 2)] & 0x00ff0000) ^ (Td4[BYTE(t3, 1)] & 0x0000ff00) ^ (Td4[BYTE(t2, 0)] & 0x000000ff) ^ rk[1];
-    PutUInt32(pt+4, s1);
-    s2 = (Td4[BYTE(t2, 3)] & 0xff000000) ^ (Td4[BYTE(t1, 2)] & 0x00ff0000) ^ (Td4[BYTE(t0, 1)] & 0x0000ff00) ^ (Td4[BYTE(t3, 0)] & 0x000000ff) ^ rk[2];
-    PutUInt32(pt+8, s2);
-    s3 = (Td4[BYTE(t3, 3)] & 0xff000000) ^ (Td4[BYTE(t2, 2)] & 0x00ff0000) ^ (Td4[BYTE(t1, 1)] & 0x0000ff00) ^ (Td4[BYTE(t0, 0)] & 0x000000ff) ^ rk[3];
-    PutUInt32(pt+12, s3);
+        // Apply last round and map cipher state to byte array block:
+        s0 = (Td4[BYTE(t0, 3)] & 0xff000000) ^ (Td4[BYTE(t3, 2)] & 0x00ff0000) ^ (Td4[BYTE(t2, 1)] & 0x0000ff00) ^ (Td4[BYTE(t1, 0)] & 0x000000ff) ^ rk[0];
+        PutUInt32(pt, s0);
+        s1 = (Td4[BYTE(t1, 3)] & 0xff000000) ^ (Td4[BYTE(t0, 2)] & 0x00ff0000) ^ (Td4[BYTE(t3, 1)] & 0x0000ff00) ^ (Td4[BYTE(t2, 0)] & 0x000000ff) ^ rk[1];
+        PutUInt32(pt+4, s1);
+        s2 = (Td4[BYTE(t2, 3)] & 0xff000000) ^ (Td4[BYTE(t1, 2)] & 0x00ff0000) ^ (Td4[BYTE(t0, 1)] & 0x0000ff00) ^ (Td4[BYTE(t3, 0)] & 0x000000ff) ^ rk[2];
+        PutUInt32(pt+8, s2);
+        s3 = (Td4[BYTE(t3, 3)] & 0xff000000) ^ (Td4[BYTE(t2, 2)] & 0x00ff0000) ^ (Td4[BYTE(t1, 1)] & 0x0000ff00) ^ (Td4[BYTE(t0, 0)] & 0x000000ff) ^ rk[3];
+        PutUInt32(pt+12, s3);
+    }
     return true;
 }
