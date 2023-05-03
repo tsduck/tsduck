@@ -684,51 +684,51 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
         stm << "TITLE: " << title << std::endl;
     }
     if (_ts_id_valid) {
-        stm << UString::Format(u"INFO: Transport Stream Identifier: %d (0x%X)", {_ts_id, _ts_id}) << std::endl;
+        stm << UString::Format(u"INFO: Transport Stream Identifier: %d (0x%<X)", {_ts_id}) << std::endl;
     }
 
     // Report global errors
     if (_invalid_sync > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: TS packets with invalid sync byte: %d", {_ts_id, _ts_id, _invalid_sync}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: TS packets with invalid sync byte: %d", {_ts_id, _invalid_sync}) << std::endl;
     }
     if (_transport_errors > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: TS packets with transport error indicator: %d", {_ts_id, _ts_id, _transport_errors}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: TS packets with transport error indicator: %d", {_ts_id, _transport_errors}) << std::endl;
     }
     if (_suspect_ignored > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: suspect TS packets, ignored: %d", {_ts_id, _ts_id, _suspect_ignored}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: suspect TS packets, ignored: %d", {_ts_id, _suspect_ignored}) << std::endl;
     }
     if (_unref_pid_cnt > 0) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: Unreferenced PID's: %d", {_ts_id, _ts_id, _unref_pid_cnt}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: Unreferenced PID's: %d", {_ts_id, _unref_pid_cnt}) << std::endl;
     }
 
     // Report missing standard DVB tables
     if (!_tid_present[TID_PAT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: No PAT", {_ts_id, _ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No PAT", {_ts_id}) << std::endl;
     }
     if (_scrambled_pid_cnt > 0 && !_tid_present[TID_CAT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: No CAT (%d scrambled PID's)", {_ts_id, _ts_id, _scrambled_pid_cnt}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No CAT (%d scrambled PID's)", {_ts_id, _scrambled_pid_cnt}) << std::endl;
     }
     if (!_tid_present[TID_SDT_ACT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: No SDT Actual", {_ts_id, _ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No SDT Actual", {_ts_id}) << std::endl;
     }
     if (!_tid_present[TID_BAT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: No BAT", {_ts_id, _ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No BAT", {_ts_id}) << std::endl;
     }
     if (!_tid_present[TID_TDT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: No TDT", {_ts_id, _ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No TDT", {_ts_id}) << std::endl;
     }
     if (!_tid_present[TID_TOT]) {
         error_count++;
-        stm << UString::Format(u"TS:%d:0x%X: No TOT", {_ts_id, _ts_id}) << std::endl;
+        stm << UString::Format(u"TS:%d:0x%<X: No TOT", {_ts_id}) << std::endl;
     }
 
     // Report error per PID
@@ -736,33 +736,41 @@ void ts::TSAnalyzerReport::reportErrors(std::ostream& stm, const UString& title)
         const PIDContext& pc(*pid_it.second);
         if (pc.exp_discont > 0) {
             error_count++;
-            stm << UString::Format(u"PID:%d:0x%X: Discontinuities (expected): %d", {pc.pid, pc.pid, pc.exp_discont}) << std::endl;
+            stm << UString::Format(u"PID:%d:0x%<X: Discontinuities (expected): %d", {pc.pid, pc.exp_discont}) << std::endl;
         }
         if (pc.unexp_discont > 0) {
             error_count++;
-            stm << UString::Format(u"PID:%d:0x%X: Discontinuities (unexpected): %d", {pc.pid, pc.pid, pc.unexp_discont}) << std::endl;
+            stm << UString::Format(u"PID:%d:0x%<X: Discontinuities (unexpected): %d", {pc.pid, pc.unexp_discont}) << std::endl;
         }
         if (pc.duplicated > 0) {
             error_count++;
-            stm << UString::Format(u"PID:%d:0x%X: Duplicated TS packets: %d", {pc.pid, pc.pid, pc.duplicated}) << std::endl;
+            stm << UString::Format(u"PID:%d:0x%<X: Duplicated TS packets: %d", {pc.pid, pc.duplicated}) << std::endl;
         }
         if (pc.inv_ts_sc_cnt > 0) {
             error_count++;
-            stm << UString::Format(u"PID:%d:0x%X: Invalid scrambling control values: %d", {pc.pid, pc.pid, pc.inv_ts_sc_cnt}) << std::endl;
+            stm << UString::Format(u"PID:%d:0x%<X: Invalid scrambling control values: %d", {pc.pid, pc.inv_ts_sc_cnt}) << std::endl;
         }
         if (pc.carry_pes && pc.inv_pes_start > 0) {
             error_count++;
-            stm << UString::Format(u"PID:%d:0x%X: Invalid PES header start codes: %d", {pc.pid, pc.pid, pc.inv_pes_start}) << std::endl;
+            stm << UString::Format(u"PID:%d:0x%<X: Invalid PES header start codes: %d", {pc.pid, pc.inv_pes_start}) << std::endl;
+        }
+        if (pc.carry_pes && pc.inv_pes > 0) {
+            error_count++;
+            stm << UString::Format(u"PID:%d:0x%<X: Invalid PES packets: %d", {pc.pid, pc.inv_pes}) << std::endl;
+        }
+        if (pc.carry_section && pc.inv_sections > 0) {
+            error_count++;
+            stm << UString::Format(u"PID:%d:0x%<X: Invalid sections: %d", {pc.pid, pc.inv_sections}) << std::endl;
         }
         if (pc.is_pmt_pid && pc.pmt_cnt == 0) {
             assert(!pc.services.empty());
             int service_id(*(pc.services.begin()));
             error_count++;
-            stm << UString::Format(u"PID:%d:0x%X: No PMT (PMT PID of service %d, 0x%X)", {pc.pid, pc.pid, service_id, service_id}) << std::endl;
+            stm << UString::Format(u"PID:%d:0x%<X: No PMT (PMT PID of service %d, 0x%<X)", {pc.pid, service_id}) << std::endl;
         }
         if (pc.is_pcr_pid && pc.pcr_cnt == 0) {
             error_count++;
-            stm << UString::Format(u"PID:%d:0x%X: No PCR, PCR PID of service%s", {pc.pid, pc.pid, pc.services.size() > 1 ? u"s" : u""});
+            stm << UString::Format(u"PID:%d:0x%<X: No PCR, PCR PID of service%s", {pc.pid, pc.services.size() > 1 ? u"s" : u""});
             bool first = true;
             for (auto& srv : pc.services) {
                 stm << (first ? "" : ",") << UString::Format(u" %d (0x%<X)", {srv});

@@ -58,6 +58,7 @@ namespace ts {
     class TSDUCKDLL TSAnalyzer:
         private TableHandlerInterface,
         private SectionHandlerInterface,
+        private InvalidSectionHandlerInterface,
         private PESHandlerInterface,
         private T2MIHandlerInterface
     {
@@ -334,6 +335,8 @@ namespace ts {
             uint64_t      duplicated;      //!< Number of duplicated packets.
             uint64_t      ts_sc_cnt;       //!< Number of scrambled packets.
             uint64_t      inv_ts_sc_cnt;   //!< Number of invalid scrambling control in TS headers.
+            uint64_t      inv_sections;    //!< Number of invalid sections.
+            uint64_t      inv_pes;         //!< Number of invalid PES packets.
             uint64_t      inv_pes_start;   //!< Number of invalid PES start code.
             uint64_t      t2mi_cnt;        //!< Number of T2-MI packets.
             uint64_t      first_pcr;       //!< First PCR value in the PID, if any.
@@ -524,12 +527,16 @@ namespace ts {
         // Implementation of SectionHandlerInterface
         virtual void handleSection(SectionDemux&, const Section&) override;
 
+        // Implementation of InvalidSectionHandlerInterface
+        virtual void handleInvalidSection(SectionDemux&, const DemuxedData&) override;
+
         // Implementation of PESHandlerInterface
         virtual void handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket&, const MPEG2AudioAttributes&) override;
         virtual void handleNewMPEG2VideoAttributes(PESDemux&, const PESPacket&, const MPEG2VideoAttributes&) override;
         virtual void handleNewAVCAttributes(PESDemux&, const PESPacket&, const AVCAttributes&) override;
         virtual void handleNewHEVCAttributes(PESDemux&, const PESPacket&, const HEVCAttributes&) override;
         virtual void handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) override;
+        virtual void handleInvalidPESPacket(PESDemux&, const DemuxedData&) override;
 
         // Implementation of T2MIHandlerInterface
         virtual void handleT2MINewPID(T2MIDemux& demux, const PMT& pmt, PID pid, const T2MIDescriptor& desc) override;

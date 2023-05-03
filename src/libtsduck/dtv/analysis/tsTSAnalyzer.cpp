@@ -272,6 +272,8 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     duplicated(0),
     ts_sc_cnt(0),
     inv_ts_sc_cnt(0),
+    inv_sections(0),
+    inv_pes(0),
     inv_pes_start(0),
     t2mi_cnt(0),
     first_pcr(INVALID_PCR),
@@ -479,6 +481,17 @@ void ts::TSAnalyzer::PIDContext::addService(uint16_t service_id)
         // Service id not found, add it
         services.insert(service_id);
     }
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked when an invalid section is received.
+// Implementation of InvalidSectionHandlerInterface
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::handleInvalidSection(SectionDemux&, const DemuxedData& data)
+{
+    getPID(data.sourcePID())->inv_sections++;
 }
 
 
@@ -1335,6 +1348,17 @@ void ts::TSAnalyzer::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket& p
         // We do not know the stream type yet, the first PES packet came before the PMT.
         pc->audio2 = attr;
     }
+}
+
+
+//----------------------------------------------------------------------------
+// This hook is invoked when an invalid PES packet is received.
+// (Implementation of PESHandlerInterface).
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::handleInvalidPESPacket(PESDemux&, const DemuxedData& data)
+{
+    getPID(data.sourcePID())->inv_pes++;
 }
 
 
