@@ -33,8 +33,11 @@ extern const bool tsSHA512IsAccelerated =
 #if defined(TS_ARM_SHA512_INSTRUCTIONS)
     true;
 #else
-false;
+    false;
 #endif
+
+// Don't complain about assert(false) when acceleration is not implemented.
+TS_LLVM_NOWARNING(missing-noreturn)
 
 
 //----------------------------------------------------------------------------

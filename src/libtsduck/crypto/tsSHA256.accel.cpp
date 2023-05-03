@@ -36,6 +36,9 @@ extern const bool tsSHA256IsAccelerated =
     false;
 #endif
 
+// Don't complain about assert(false) when acceleration is not implemented.
+TS_LLVM_NOWARNING(missing-noreturn)
+
 
 //----------------------------------------------------------------------------
 // Compress part of message

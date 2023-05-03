@@ -51,6 +51,9 @@ extern const bool tsCRC32IsAccelerated =
     false;
 #endif
 
+// Don't complain about assert(false) when acceleration is not implemented.
+TS_LLVM_NOWARNING(missing-noreturn)
+
 
 //----------------------------------------------------------------------------
 // Get the value of the CRC32 as computed so far.
