@@ -30,6 +30,7 @@
 #include "tsSysInfo.h"
 #include "tsSysUtils.h"
 #include "tsMemory.h"
+#include "tsCryptoAcceleration.h"
 
 #if defined(TS_LINUX)
     #include <sys/auxv.h>
@@ -45,13 +46,6 @@
 
 // Define singleton instance
 TS_DEFINE_SINGLETON(ts::SysInfo);
-
-// Some "hidden" booleans which are defined when the accelerated modules are compiled with accelerated instructions.
-extern const bool tsCRC32IsAccelerated;
-extern const bool tsAESIsAccelerated;
-extern const bool tsSHA1IsAccelerated;
-extern const bool tsSHA256IsAccelerated;
-extern const bool tsSHA512IsAccelerated;
 
 
 //----------------------------------------------------------------------------
