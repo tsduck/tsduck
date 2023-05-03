@@ -42,6 +42,9 @@ extern const bool tsSHA1IsAccelerated =
     false;
 #endif
 
+// Don't complain about assert(false) when acceleration is not implemented.
+TS_LLVM_NOWARNING(missing-noreturn)
+
 
 //----------------------------------------------------------------------------
 // Static initialization.

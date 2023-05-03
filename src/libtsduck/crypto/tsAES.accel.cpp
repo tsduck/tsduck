@@ -43,6 +43,9 @@ extern const bool tsAESIsAccelerated =
     false;
 #endif
 
+// Don't complain about assert(false) when acceleration is not implemented.
+TS_LLVM_NOWARNING(missing-noreturn)
+
 
 //----------------------------------------------------------------------------
 // Support for constructor and destructor.
