@@ -54,42 +54,62 @@ EOF
     exit
 }
 
+# Check if a directory is a possible Java home for a JDK.
+is_java_home() {
+    [[ -n "$1" && -x "$1/bin/javac" && -e "$1/include/jni.h" ]]
+}
+
+# Check if a directory is a possible Java home for a JDK. Also print it.
+print_java_home() {
+    is_java_home "$1" && (cd "$1"; pwd)
+}
+
 # Locate Java home
 cmd_home() {
+    # Try explicit value
+    print_java_home "$JAVA_HOME" && return
+    # Need to search. Each OS has a distinct configuration.
     local system=$(uname -s)
-    if [[ -n "$JAVA_HOME" && -x "$JAVA_HOME/bin/java" ]]; then
-        # Explicit value
-        echo "$JAVA_HOME"
-    elif [[ $system == Darwin ]]; then
-        # macOS
-        javac=$(find -L /Library/Java/JavaVirtualMachines/openjdk.jdk -name javac -perm +444 2>/dev/null | tail -1)
-        [[ -z "$javac" ]] && javac=$(find -L /Library/Java/JavaVirtualMachines -name javac -perm +444 2>/dev/null | tail -1)
-        [[ -n "$javac" ]] && dirname $(dirname "$javac")
+    local jhome=
+    local dir=
+    local cmd=
+    if [[ $system == Darwin ]]; then # macOS
+        # Try fast method first, using a list of precise locations.
+        for dir in \
+            /Library/Java/JavaVirtualMachines/openjdk.jdk/Contents/Home \
+            /opt/homebrew/opt/openjdk/libexec/openjdk.jdk/Contents/Home \
+            /usr/local/opt/openjdk/libexec/openjdk.jdk/Contents/Home
+        do
+            print_java_home "$dir" && return
+        done
+        # Fallback to slower method, searching into directory trees.
+        for dir in /Library/Java/JavaVirtualMachines/openjdk.jdk /Library/Java/JavaVirtualMachines; do
+            cmd=$(find -L "$dir" -name javac -perm +444 2>/dev/null | tail -1)
+            [[ -n "$cmd" ]] && print_java_home $(dirname "$cmd")/.. && return
+        done
     elif [[ $system == FreeBSD || $system == DragonFly || $system == OpenBSD ]]; then
         # One or more version under /usr/local, use the last one.
-        local jhome=
         for dir in /usr/local/*jdk*; do
-            [[ -e $dir/bin/javac && -e $dir/include/jni.h ]] && jhome=$dir
+            is_java_home "$dir" && jhome="$dir"
         done
-        [[ -n $jhome ]] && echo $jhome
+        [[ -n "$jhome" ]] && echo "$jhome"
     elif [[ $system == NetBSD ]]; then
         # One or more version under /usr/pkg/java, use the last one.
-        local jhome=
         for dir in /usr/pkg/java/*jdk*; do
-            [[ -e $dir/bin/javac && -e $dir/include/jni.h ]] && jhome=$dir
+            is_java_home "$dir" && jhome="$dir"
         done
-        [[ -n $jhome ]] && echo $jhome
+        [[ -n "$jhome" ]] && echo "$jhome"
     elif [[ -f /etc/gentoo-release ]]; then
         # Gentoo Linux does not use symbolic links into jdk for java and javac
-        jdk=$(ls -d /etc/java-config*/current-system-vm 2>/dev/null | tail -1)
-        [[ -n "$jdk" ]] && jdk=$(readlink -e -s "$jdk")
-        [[ -n "$jdk" && -x "$jdk/bin/java" ]] && echo "$jdk"
+        dir=$(ls -d /etc/java-config*/current-system-vm 2>/dev/null | tail -1)
+        [[ -n "$dir" ]] && dir=$(readlink -e -s "$dir")
+        print_java_home "$dir"
     else
-        # Linux
+        # Linux, general case.
         cmd=$(which javac 2>/dev/null)
         [[ -z "$cmd" ]] && cmd=$(which java 2>/dev/null)
         [[ -n "$cmd" && -L "$cmd" ]] && cmd=$(readlink -e -s "$cmd")
-        [[ -n "$cmd" && -x "$cmd" ]] && dirname $(dirname "$cmd")
+        [[ -n "$cmd" ]] && print_java_home $(dirname "$cmd")/..
     fi
 }
 
