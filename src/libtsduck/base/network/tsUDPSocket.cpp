@@ -235,6 +235,21 @@ bool ts::UDPSocket::setTOS(int tos, Report& report)
 
 
 //----------------------------------------------------------------------------
+// Set the multicast loop option.
+//----------------------------------------------------------------------------
+
+bool ts::UDPSocket::setMulticastLoop(bool on, Report& report)
+{
+    SysSocketMulticastLoopType mloop = SysSocketMulticastLoopType(on);
+    if (::setsockopt(getSocket(), IPPROTO_IP, IP_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) != 0) {
+        report.error(u"socket option multicast loop: " + SysSocketErrorCodeMessage());
+        return false;
+    }
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
 // Enable or disable the generation of receive timestamps.
 //----------------------------------------------------------------------------
 

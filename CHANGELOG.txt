@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3207
+VERSION 3.35-3208
+
+[IMP] Improvements on existing commands and plugins:
+
+  * New options in existing commands and plugins:
+    - Option --disable-multicast-loop in output plugin "ip".
 
 [BUG] Bug fixes:
 
