@@ -2,13 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3198
+VERSION 3.35-3207
 
 [BUG] Bug fixes:
 
   * Fixed issues #1203 and #1205: On Arm64 Linux system with CPU below Armv8.2
     (typical example: Raspberry Pi 4), all executables crashed with "illegal
     instruction" error.
+  * Fixed issue #1219: On Windows, tuning to a DVB-S tuner without specifying
+    the modulation (QPKS by default), crashed "tsp" and "tsscan".
 
 -------------------------------------------------------------------------------
 
