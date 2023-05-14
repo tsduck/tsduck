@@ -195,6 +195,18 @@ namespace ts {
         bool setTOS(int tos, Report& report = CERR);
 
         //!
+        //! Set the multicast loop option.
+        //!
+        //! By default, the multicast packets are looped back on local interfaces.
+        //! Use this to disable multicast loopback.
+        //!
+        //! @param [in] on It true, multicast loopback is on. When false, it is off.
+        //! @param [in,out] report Where to report error.
+        //! @return True on success, false on error.
+        //!
+        bool setMulticastLoop(bool on, Report& report = CERR);
+
+        //!
         //! Enable or disable the generation of receive timestamps.
         //!
         //! When enabled, each received UDP packets comes with a time stamp (see receive()).

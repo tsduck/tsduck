@@ -226,6 +226,24 @@ namespace ts {
 #endif
 
     //!
+    //! Integer data type for the multicast loop socket option.
+    //! Example:
+    //! @code
+    //! SysSocketMulticastLoopType mloop = 1;
+    //! if (setsockopt(sock, IPPROTO_IP, IP_MULTICAST_LOOP, SysSockOptPointer(&mloop), sizeof(mloop)) != 0) {
+    //!     ... error processing ...
+    //! }
+    //! @endcode
+    //!
+#if defined(DOXYGEN)
+    typedef platform_specific SysSocketMulticastLoopType;
+#elif defined(TS_WINDOWS)
+    typedef ::DWORD SysSocketMulticastLoopType;
+#elif defined(TS_UNIX)
+    typedef unsigned char SysSocketMulticastLoopType;
+#endif
+
+    //!
     //! Integer data type for the IP_PKTINFO socket option.
     //! Example:
     //! @code

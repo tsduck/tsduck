@@ -45,6 +45,7 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     _local_port(IPv4SocketAddress::AnyPort),
     _ttl(0),
     _tos(-1),
+    _loopback(true),
     _force_mc_local(false),
     _sock(false, *tsp_)
 {
@@ -54,6 +55,11 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
          u"The 'address' specifies an IP address which can be either unicast or "
          u"multicast. It can be also a host name that translates to an IP address. "
          u"The 'port' specifies the destination UDP port.");
+
+    option(u"disable-multicast-loop", 'd');
+    help(u"disable-multicast-loop",
+         u"Disable multicast loopback. By default, outgoing multicast packets are looped back on local interfaces, "
+         u"if an application added membership on the same multicast group. This option disables this.");
 
     option(u"force-local-multicast-outgoing", 'f');
     help(u"force-local-multicast-outgoing",
@@ -121,6 +127,7 @@ bool ts::IPOutputPlugin::getOptions()
     getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
     getIntValue(_ttl, u"ttl", 0);
     getIntValue(_tos, u"tos", -1);
+    _loopback = !present(u"disable-multicast-loop");
     _force_mc_local = present(u"force-local-multicast-outgoing");
     setRS204Format(present(u"rs204"));
 
@@ -146,7 +153,8 @@ bool ts::IPOutputPlugin::start()
         !_sock.setDefaultDestination(_destination, *tsp) ||
         (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr, *tsp)) ||
         (_tos >= 0 && !_sock.setTOS(_tos, *tsp)) ||
-        (_ttl > 0 && !_sock.setTTL(_ttl, *tsp)))
+        (_ttl > 0 && !_sock.setTTL(_ttl, *tsp)) ||
+        !_sock.setMulticastLoop(_loopback, *tsp))
     {
         _sock.close(*tsp);
         return false;
