@@ -270,11 +270,9 @@ void ts::ModulationArgs::setDefaultValues()
             pls_mode.setDefault(DEFAULT_PLS_MODE);
             TS_FALLTHROUGH
         case DS_DVB_S_TURBO:
-            // DVB-S2 and DVB-S/Turbo common options.
-            modulation.setDefault(DEFAULT_MODULATION_DVBS);
-            TS_FALLTHROUGH
         case DS_DVB_S:
             // DVB-S2, DVB-S/Turbo and DVB-S common options.
+            modulation.setDefault(DEFAULT_MODULATION_DVBS);
             frequency.setDefault(0);
             inversion.setDefault(DEFAULT_INVERSION);
             polarity.setDefault(DEFAULT_POLARITY);
