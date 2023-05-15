@@ -16,6 +16,7 @@ All scripts accept the following common options:
 ### PyGitHub
 
 - Install: `pip install PyGithub`
+- On Ubuntu: `sudo apt install python3-github`
 - Documentation: https://pygithub.readthedocs.io/
 - Minimum required version: 1.57
 
