@@ -825,7 +825,7 @@ bool ts::EITGenerator::regeneratePresentFollowingSection(const ServiceIdTriplet&
         // The section did not exist, create it.
         sec = new ESection(this, service_id, tid, section_number, 1);
         CheckNonNull(sec.pointer());
-        // The initial state of the section is: no event, no CRC.        
+        // The initial state of the section is: no event, no CRC.
         if (!event.isNull()) {
             // Append the event in the payload.
             sec->section->appendPayload(event->event_data, false);

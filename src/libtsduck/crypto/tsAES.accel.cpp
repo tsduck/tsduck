@@ -36,7 +36,7 @@ public:
 #endif
 
 // "Hidden" exported bool to inform the SysInfo class that we have compiled accelerated instructions.
-extern const bool tsAESIsAccelerated = 
+extern const bool tsAESIsAccelerated =
 #if defined(TS_ARM_AES_INSTRUCTIONS)
     true;
 #else
@@ -101,7 +101,7 @@ void ts::AES::setKeyAccel()
     // Shall not be called.
     assert(false);
 #endif
-}    
+}
 
 
 //----------------------------------------------------------------------------

@@ -126,7 +126,7 @@ Parameters:
 EOF
     exit 1
 }
-     
+
 #-----------------------------------------------------------------------------
 # Basic functions
 #-----------------------------------------------------------------------------
@@ -263,7 +263,7 @@ tstables "$INFILE" --pid $PMT_PID --max 1 --bin "$TMPFILE.pmt.bin" || cleanup 1
 # Debug messages.
 verbose "input file: $INFILE"
 verbose "output file: $OUTFILE"
-verbose "TS bitrate: $(printf %\'d $TS_BITRATE) b/s" 
+verbose "TS bitrate: $(printf %\'d $TS_BITRATE) b/s"
 verbose "adding $(printf %\'d $INIT_PACKETS) initial suffing packets"
 verbose "PMT PID: $(printf '0x%04X (%d)' $PMT_PID $PMT_PID)"
 verbose "ECM PID: $(printf '0x%04X (%d)' $ECM_PID $ECM_PID)"
