@@ -44,7 +44,7 @@
 #endif
 
 // "Hidden" exported bool to inform the SysInfo class that we have compiled accelerated instructions.
-extern const bool tsCRC32IsAccelerated = 
+extern const bool tsCRC32IsAccelerated =
 #if defined(TS_ARM_CRC32_INSTRUCTIONS)
     true;
 #else

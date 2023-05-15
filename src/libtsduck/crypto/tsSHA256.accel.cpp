@@ -29,7 +29,7 @@
 #endif
 
 // "Hidden" exported bool to inform the SysInfo class that we have compiled accelerated instructions.
-extern const bool tsSHA256IsAccelerated = 
+extern const bool tsSHA256IsAccelerated =
 #if defined(TS_ARM_SHA256_INSTRUCTIONS)
     true;
 #else
