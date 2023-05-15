@@ -151,6 +151,7 @@ namespace ts {
         bool              _reuse_port;         // Reuse port socket option.
         bool              _default_interface;  // Use default local interface.
         bool              _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
+        bool              _mc_loopback;        // Multicast loopback option
         bool              _recv_timestamps;    // Get receive timestamps.
         size_t            _recv_bufsize;       // Socket receive buffer size.
         MilliSecond       _recv_timeout;       // Receive timeout.

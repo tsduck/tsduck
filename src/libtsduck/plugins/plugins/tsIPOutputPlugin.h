@@ -67,7 +67,7 @@ namespace ts {
         uint16_t          _local_port;      // Local UDP source port.
         int               _ttl;             // Time to live option.
         int               _tos;             // Type of service option.
-        bool              _loopback;        // Multicast loopback option
+        bool              _mc_loopback;     // Multicast loopback option
         bool              _force_mc_local;  // Force multicast outgoing local interface
         UDPSocket         _sock;            // Outgoing socket
     };
