@@ -45,7 +45,7 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     _local_port(IPv4SocketAddress::AnyPort),
     _ttl(0),
     _tos(-1),
-    _loopback(true),
+    _mc_loopback(true),
     _force_mc_local(false),
     _sock(false, *tsp_)
 {
@@ -59,7 +59,9 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     option(u"disable-multicast-loop", 'd');
     help(u"disable-multicast-loop",
          u"Disable multicast loopback. By default, outgoing multicast packets are looped back on local interfaces, "
-         u"if an application added membership on the same multicast group. This option disables this.");
+         u"if an application added membership on the same multicast group. This option disables this.\n"
+         u"Warning: On output sockets, this option is effective only on Unix systems (Linux, macOS, BSD). "
+         u"On Windows systems, this option applies only to input sockets.");
 
     option(u"force-local-multicast-outgoing", 'f');
     help(u"force-local-multicast-outgoing",
@@ -127,7 +129,7 @@ bool ts::IPOutputPlugin::getOptions()
     getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
     getIntValue(_ttl, u"ttl", 0);
     getIntValue(_tos, u"tos", -1);
-    _loopback = !present(u"disable-multicast-loop");
+    _mc_loopback = !present(u"disable-multicast-loop");
     _force_mc_local = present(u"force-local-multicast-outgoing");
     setRS204Format(present(u"rs204"));
 
@@ -151,10 +153,10 @@ bool ts::IPOutputPlugin::start()
     if ((_local_port != IPv4SocketAddress::AnyPort && !_sock.reusePort(true, *tsp)) ||
         !_sock.bind(local, *tsp) ||
         !_sock.setDefaultDestination(_destination, *tsp) ||
+        !_sock.setMulticastLoop(_mc_loopback, *tsp) ||
         (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr, *tsp)) ||
         (_tos >= 0 && !_sock.setTOS(_tos, *tsp)) ||
-        (_ttl > 0 && !_sock.setTTL(_ttl, *tsp)) ||
-        !_sock.setMulticastLoop(_loopback, *tsp))
+        (_ttl > 0 && !_sock.setTTL(_ttl, *tsp)))
     {
         _sock.close(*tsp);
         return false;

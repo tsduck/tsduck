@@ -47,6 +47,7 @@ ts::UDPReceiver::UDPReceiver(ts::Report& report) :
     _reuse_port(false),
     _default_interface(false),
     _use_first_source(false),
+    _mc_loopback(true),
     _recv_timestamps(true), // currently hardcoded, is there a reason to disable it?
     _recv_bufsize(0),
     _recv_timeout(-1),
@@ -93,6 +94,13 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
     args.help(u"default-interface",
               u"Let the system find the appropriate local interface on which to listen. "
               u"By default, listen on all local interfaces.");
+
+    args.option(u"disable-multicast-loop");
+    args.help(u"disable-multicast-loop",
+              u"Disable multicast loopback. By default, incoming multicast packets are looped back on local interfaces, "
+              u"if an application sends packets to the same group from the same system. This option disables this.\n"
+              u"Warning: On input sockets, this option is effective only on Windows systems. "
+              u"On Unix systems (Linux, macOS, BSD), this option applies only to output sockets.");
 
     args.option(u"first-source", with_short_options ? 'f' : 0);
     args.help(u"first-source",
@@ -176,6 +184,7 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
     _default_interface = args.present(u"default-interface");
     _use_ssm = args.present(u"ssm");
     _use_first_source = args.present(u"first-source");
+    _mc_loopback = !args.present(u"disable-multicast-loop");
     args.getIntValue(_recv_bufsize, u"buffer-size", 0);
     args.getIntValue(_recv_timeout, u"receive-timeout", _recv_timeout); // preserve previous value
 
@@ -343,6 +352,7 @@ bool ts::UDPReceiver::open(ts::Report& report)
         UDPSocket::open(report) &&
         reusePort(_reuse_port, report) &&
         setReceiveTimestamps(_recv_timestamps, report) &&
+        setMulticastLoop(_mc_loopback, report) &&
         (_recv_bufsize <= 0 || setReceiveBufferSize(_recv_bufsize, report)) &&
         (_recv_timeout < 0 || setReceiveTimeout(_recv_timeout, report)) &&
         bind(local_addr, report);
