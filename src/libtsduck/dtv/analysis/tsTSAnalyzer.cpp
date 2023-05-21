@@ -31,6 +31,7 @@
 #include "tsT2MIPacket.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
+#include "tsNetworkNameDescriptor.h"
 #include "tsAACDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
 #include "tsSubtitlingDescriptor.h"
@@ -590,6 +591,13 @@ void ts::TSAnalyzer::handleTable(SectionDemux&, const BinaryTable& table)
             }
             break;
         }
+        case TID_NIT_ACT: {
+            const NIT nit(_duck, table);
+            if (nit.isValid()) {
+                analyzeNIT(pid, nit);
+            }
+            break;
+        }
         case TID_SDT_ACT: {
             const SDT sdt(_duck, table);
             if (sdt.isValid()) {
@@ -738,6 +746,28 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
         ps->description = names::StreamType(stream.stream_type);
         analyzeDescriptors(stream.descs, svp.pointer(), ps.pointer());
     }
+}
+
+
+//----------------------------------------------------------------------------
+// Analyze a NIT
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::analyzeNIT(PID pid, const NIT& nit)
+{
+    PIDContextPtr ps(getPID(pid));
+
+    // Document unreferenced NIT PID's.
+    if (ps->description.empty()) {
+        ps->description = u"NIT";
+    }
+
+    // Search network name. If not present, desc.name is empty.
+    NetworkNameDescriptor desc;
+    nit.descs.search(_duck, DID_NETWORK_NAME, desc);
+
+    // Format network description as attribute of PID.
+    AppendUnique(ps->attributes, UString::Format(u"Network: 0x%X (%<d) %s", {nit.network_id, desc.name}).toTrimmed());
 }
 
 

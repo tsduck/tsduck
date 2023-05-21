@@ -40,6 +40,7 @@
 #include "tsPAT.h"
 #include "tsCAT.h"
 #include "tsPMT.h"
+#include "tsNIT.h"
 #include "tsSDT.h"
 #include "tsTDT.h"
 #include "tsTOT.h"
@@ -503,6 +504,7 @@ namespace ts {
         void analyzePAT(const PAT&);
         void analyzeCAT(const CAT&);
         void analyzePMT(PID pid, const PMT&);
+        void analyzeNIT(PID pid, const NIT&);
         void analyzeSDT(const SDT&);
         void analyzeTDT(const TDT&);
         void analyzeTOT(const TOT&);

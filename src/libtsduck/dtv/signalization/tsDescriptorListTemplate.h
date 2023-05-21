@@ -39,11 +39,11 @@
 //----------------------------------------------------------------------------
 
 template <class DESC, typename std::enable_if<std::is_base_of<ts::AbstractDescriptor, DESC>::value>::type*>
-size_t ts::DescriptorList::search(DID tag, DESC& desc, size_t start_index, PDS pds) const
+size_t ts::DescriptorList::search(DuckContext& duck, DID tag, DESC& desc, size_t start_index, PDS pds) const
 {
     // Repeatedly search for a descriptor until one is successfully deserialized
     for (size_t index = search(tag, start_index, pds); index < _list.size(); index = search(tag, index + 1, pds)) {
-        desc.deserialize(*(_list[index].desc));
+        desc.deserialize(duck, *(_list[index].desc));
         if (desc.isValid()) {
             return index;
         }
