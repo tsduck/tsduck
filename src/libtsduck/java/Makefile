@@ -76,7 +76,7 @@ $(JARFILE): $(JCLASSES) $(MANIFEST)
 $(MANIFEST): Manifest.txt ../tsVersion.h
 	@echo '  [GEN] $@'; \
 	mkdir -p $(dir $@); \
-	$(SED) -e 's|{{VERSION}}|$(shell $(SCRIPTSDIR)/get-version-from-sources.py)|' Manifest.txt >$@
+	$(SED) -e 's|{{VERSION}}|$(shell $(GET_VERSION))|' Manifest.txt >$@
 
 install-tools: $(JARFILE)
 	install -d -m 755 $(SYSROOT)$(SYSPREFIX)/share/tsduck/java

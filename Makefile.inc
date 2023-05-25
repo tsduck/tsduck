@@ -121,15 +121,26 @@ F_SEARCH = $(firstword $(wildcard $(addsuffix /$(1),$(subst :, ,$(F_SEARCH_PATH)
 F_COMMAND = $(eval _tmp := $(call F_SEARCH,$(1)))$(if $(_tmp),$(_tmp),$(2))
 
 # Find GNU alternatives to sed, grep. fgrep, chmod.
-# Also use command python3 when available, fallback as python alone.
 
 ifeq ($(SED),)
-    export TAR    := $(call F_COMMAND,gtar,tar)
-    export SED    := $(call F_COMMAND,gsed,sed)
-    export GREP   := $(call F_COMMAND,ggrep,grep)
-    export FGREP  := $(call F_COMMAND,gfgrep,fgrep)
-    export CHMOD  := $(call F_COMMAND,gchmod,chmod)
+    export TAR   := $(call F_COMMAND,gtar,tar)
+    export SED   := $(call F_COMMAND,gsed,sed)
+    export GREP  := $(call F_COMMAND,ggrep,grep)
+    export FGREP := $(call F_COMMAND,gfgrep,fgrep)
+    export CHMOD := $(call F_COMMAND,gchmod,chmod)
+endif
+
+# Use command python3 when available, fallback as python alone.
+# But Python 3 is required for build scripts.
+
+ifeq ($(PYTHON),)
     export PYTHON := $(call F_COMMAND,python3,python)
+    ifeq ($(notdir $(PYTHON)),python)
+        PYVERSION := $(filter-out Python python,$(shell $(PYTHON) --version 2>&1))
+        ifneq ($(firstword $(subst ., ,$(PYVERSION))),3)
+            $(error Python 3 required, current version: $(PYVERSION))
+        endif
+    endif
 endif
 
 # Command prefix for commands requiring superuser rights.
@@ -137,6 +148,10 @@ endif
 # user or temporary directory. Only use it for "rpm" or "dpkg" commands.
 
 SUDO = $(if $(subst 0,,$(shell id -u)),sudo)
+
+# Shell command to get TSDuck version.
+
+GET_VERSION = $(PYTHON) $(SCRIPTSDIR)/get-version-from-sources.py
 
 #-----------------------------------------------------------------------------
 # Identify the system environment.
