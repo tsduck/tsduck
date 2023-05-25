@@ -33,8 +33,9 @@
 #
 #  Supported options:
 #
-#  --m32 : install libraries for 32-bit cross-compilation (when supported)
+#  -n       : dry run, display list of packages, do not install them
 #  --static : install static libraries for static build (when supported)
+#  NOxxx=1  : deselect some dependencies, see below
 #  Additional options are passed to the package manager (dnf, apt, brew, etc.)
 #
 #  Supported operating systems:
@@ -58,6 +59,22 @@
 #  - NetBSD
 #  - DragonFlyBSD
 #
+#  The following options are the same symbols which can be used with make.
+#  They disable a TSDuck feature and remove some dependencies. If specified
+#  when calling this script, the corresponding prerequisites are not installed.
+#  Some other make symbols such as "NOTEST" or "NODEKTEC" are silently ignored
+#  when they have no impact on the list of installed packages. Just like with
+#  make, this symbols may also be defined as environment variables.
+#
+#  - NOVATEK    : No Vatek-based device support.
+#  - NOCURL     : No HTTP support, remove dependency to libcurl.
+#  - NOPCSC     : No smartcard support, remove dependency to pcsc-lite.
+#  - NOSRT      : No SRT support, remove dependency to libsrt.
+#  - NORIST     : No RIST support, remove dependency to librist.
+#  - NOEDITLINE : No interactive line editing, remove dependency to libedit.
+#  - NOJAVA     : No support for Java applications.
+#  - NODOXYGEN  : No production of doxygen docs, do not install doxygen.
+#
 #-----------------------------------------------------------------------------
 
 SCRIPT=$(basename $0 .sh)
@@ -65,28 +82,25 @@ SCRIPTDIR=$(cd $(dirname $0); pwd)
 error() { echo >&2 "$SCRIPT: $*"; exit 1; }
 
 # Default options.
-STATIC=false
-M32=false
-PKGOPTS=
+DRYRUN=false
+STATIC=
+PKGOPTS=()
+PKGLIST=()
 
 # Decode command line options.
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --m32)
-            M32=true
-            ;;
-        --static)
-            STATIC=true
-            ;;
-        *)
-            PKGOPTS="$PKGOPTS $1"
-            ;;
+        -n)       DRYRUN=true ;;
+        --static) STATIC=true ;;
+        NO*=*)    eval ${1/=*/}=true ;;
+        *)        PKGOPTS+=("$1") ;;
     esac
     shift
 done
 
-[[ -n "$PKGOPTS" ]] && echo "====> using packager options: $PKGOPTS"
+[[ "${#PKGOPTS[@]}" -gt 0 ]] && echo "====> using packager options: ${PKGOPTS[*]}"
 
+# System description. Versions are empty if lsb_release is not present.
 SYSTEM=$(uname -s)
 DISTRO=$(lsb_release -i 2>/dev/null | sed -e 's/.*:[\t ]*//')
 MAJOR=$(lsb_release -r 2>/dev/null | sed -e 's/.*:[\t ]*//' -e 's/\..*//')
@@ -100,7 +114,16 @@ VERSION=$(( ${MAJOR:-0} * 100 + ${MINOR:-0} ))
 
 if [[ "$SYSTEM" == "Darwin" ]]; then
 
-    pkglist="git git-lfs gnu-sed grep dos2unix coreutils doxygen graphviz srt librist libvatek python3 openjdk"
+    PKGLIST+=(git git-lfs gnu-sed grep dos2unix coreutils python3)
+    [[ -z $NORIST    ]] && PKGLIST+=(librist)
+    [[ -z $NOSRT     ]] && PKGLIST+=(srt)
+    [[ -z $NOVATEK   ]] && PKGLIST+=(libvatek)
+    [[ -z $NOJAVA    ]] && PKGLIST+=(openjdk)
+    [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
     if [[ -z $(which clang 2>/dev/null) ]]; then
         # Build tools not installed
         xcode-select --install
@@ -112,7 +135,7 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     # Sometimes, brew exits with an error status even though the installation completes.
     # Mute this and enforce a good status to avoid GitHub Actions CI failure.
     brew update || true
-    brew $PKGOPTS install $pkglist || true
+    brew "${PKGOPTS[@]}" install "${PKGLIST[@]}" || true
     # Make sure python3 is the default in Homebrew.
     BREW=$(brew --prefix)
     (cd $BREW/bin; ln -sf python3 python)
@@ -120,7 +143,7 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
     if [[ ! -e /Library/Java/JavaVirtualMachines/openjdk.jdk ]]; then
         JDK=$BREW/opt/openjdk/libexec/openjdk.jdk
         if [[ -n $(find $JDK -name javac -perm +444 2>/dev/null) ]]; then
-            sudo ln -sfn $BREW/opt/openjdk/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk.jdk
+            sudo ln -sfn $JDK /Library/Java/JavaVirtualMachines/openjdk.jdk
         fi
     fi
 
@@ -131,8 +154,18 @@ if [[ "$SYSTEM" == "Darwin" ]]; then
 
 elif [[ "$SYSTEM" == "FreeBSD" ]]; then
 
-    pkglist="git git-lfs curl zip doxygen graphviz bash gsed gnugrep gmake gtar unix2dos coreutils srt librist libedit pcsc-lite python openjdk11"
-    sudo pkg install -y $PKGOPTS $pkglist
+    PKGLIST+=(git git-lfs curl zip bash gsed gnugrep gmake gtar unix2dos coreutils python)
+    [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
+    [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
+    [[ -z $NORIST     ]] && PKGLIST+=(librist)
+    [[ -z $NOSRT      ]] && PKGLIST+=(srt)
+    [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk11)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo pkg install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == DragonFly BSD ==
@@ -141,8 +174,18 @@ elif [[ "$SYSTEM" == "FreeBSD" ]]; then
 
 elif [[ "$SYSTEM" == "DragonFly" ]]; then
 
-    pkglist="git git-lfs curl zip doxygen graphviz bash gsed gnugrep gmake gtar unix2dos coreutils srt librist libedit pcsc-lite python openjdk11"
-    sudo pkg install -y $PKGOPTS $pkglist
+    PKGLIST+=(git git-lfs curl zip bash gsed gnugrep gmake gtar unix2dos coreutils python)
+    [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
+    [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
+    [[ -z $NORIST     ]] && PKGLIST+=(librist)
+    [[ -z $NOSRT      ]] && PKGLIST+=(srt)
+    [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk11)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo pkg install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == OpenBSD ==
@@ -152,8 +195,16 @@ elif [[ "$SYSTEM" == "DragonFly" ]]; then
 elif [[ "$SYSTEM" == "OpenBSD" ]]; then
 
     disamb_pkg() { pkg_info -Q $1 | grep "^$1-[0-9]" | grep -v -e -static | sort | tail -1 | sed -e 's/ .*//'; }
-    pkglist="git git-lfs curl zip doxygen graphviz bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils pcsc-lite $(disamb_pkg python) $(disamb_pkg jdk)"
-    sudo pkg_add -I $PKGOPTS $pkglist
+
+    PKGLIST+=(git git-lfs curl zip bash gsed ggrep gmake $(disamb_pkg gtar) dos2unix coreutils $(disamb_pkg python))
+    [[ -z $NOPCSC    ]] && PKGLIST+=(pcsc-lite)
+    [[ -z $NOJAVA    ]] && PKGLIST+=($(disamb_pkg jdk))
+    [[ -z $NODOXYGEN ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo pkg_add -I "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo ln -sf python3 /usr/local/bin/python
 
 #-----------------------------------------------------------------------------
@@ -164,8 +215,16 @@ elif [[ "$SYSTEM" == "OpenBSD" ]]; then
 
 elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
-    pkglist="git git-lfs curl mozilla-rootcerts zip doxygen graphviz bash gsed grep gmake gtar dos2unix coreutils editline pcsc-lite python310 py310-expat openjdk17"
-    sudo pkgin -y install $PKGOPTS $pkglist
+    PKGLIST+=(git git-lfs curl mozilla-rootcerts zip bash gsed grep gmake gtar dos2unix coreutils python310 py310-expat)
+    [[ -z $NOEDITLINE ]] && PKGLIST+=(editline)
+    [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-lite)
+    [[ -z $NOJAVA     ]] && PKGLIST+=(openjdk17)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo pkgin -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo /usr/pkg/sbin/mozilla-rootcerts install
     (cd /usr/pkg/bin; sudo ln -sf $(ls python* | grep '^python[0-9\.]*$' | gsort --version-sort | tail -1) python)
 
@@ -177,25 +236,23 @@ elif [[ "$SYSTEM" == "NetBSD" ]]; then
 
 elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
-    pkglist="git git-lfs g++ cmake dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev libusb-1.0-0-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
-    if [[ "$MAJOR" -le 17 ]]; then
-        pkglist="$pkglist libcurl3 libcurl3-dev"
-    else
-        pkglist="$pkglist libcurl4 libcurl4-openssl-dev"
-    fi
-    if $M32; then
-        pkglist="$pkglist gcc-multilib"
-    fi
-    if [[ "$VERSION" -ge 2010 ]]; then
-        pkglist="$pkglist libsrt-openssl-dev"
-    elif [[ "$VERSION" -ge 1904 ]]; then
-        pkglist="$pkglist libsrt-dev"
-    fi
-    if [[ "$VERSION" -ge 2210 ]]; then
-        pkglist="$pkglist librist-dev"
-    fi
+    PKGLIST+=(git git-lfs g++ cmake dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    [[ -z $NOEDITLINE                                      ]] && PKGLIST+=(libedit-dev)
+    [[ -z $NOPCSC                                          ]] && PKGLIST+=(pcscd libpcsclite-dev)
+    [[ -z $NOCURL && $MAJOR -le 17                         ]] && PKGLIST+=(libcurl3 libcurl3-dev)
+    [[ -z $NOCURL && $MAJOR -gt 17                         ]] && PKGLIST+=(libcurl4 libcurl4-openssl-dev)
+    [[ -z $NORIST && $VERSION -ge 2210                     ]] && PKGLIST+=(librist-dev)
+    [[ -z $NOSRT && $VERSION -ge 1904 && $VERSION -lt 2010 ]] && PKGLIST+=(libsrt-dev)
+    [[ -z $NOSRT && $VERSION -ge 2010                      ]] && PKGLIST+=(libsrt-openssl-dev)
+    [[ -z $NOVATEK                                         ]] && PKGLIST+=(libusb-1.0-0-dev)
+    [[ -z $NOJAVA                                          ]] && PKGLIST+=(default-jdk)
+    [[ -z $NODOXYGEN                                       ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
     sudo apt update
-    sudo apt install -y $PKGOPTS $pkglist
+    sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
@@ -206,14 +263,21 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
 
 elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
-    pkglist="git git-lfs g++ cmake dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev libusb-1.0-0-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk libcurl4 libcurl4-openssl-dev"
-    if [[ "$MAJOR" -ge 21 ]]; then
-        pkglist="$pkglist libsrt-openssl-dev"
-    elif [[ "$MAJOR" -ge 20 ]]; then
-        pkglist="$pkglist libsrt-dev"
-    fi
+    PKGLIST+=(git git-lfs g++ cmake dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    [[ -z $NOEDITLINE                              ]] && PKGLIST+=(libedit-dev)
+    [[ -z $NOPCSC                                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
+    [[ -z $NOSRT && $MAJOR -ge 20 && $MAJOR -lt 21 ]] && PKGLIST+=(libsrt-dev)
+    [[ -z $NOSRT && $MAJOR -ge 21                  ]] && PKGLIST+=(libsrt-openssl-dev)
+    [[ -z $NOCURL                                  ]] && PKGLIST+=(libcurl4 libcurl4-openssl-dev)
+    [[ -z $NOVATEK                                 ]] && PKGLIST+=(libusb-1.0-0-dev)
+    [[ -z $NOJAVA                                  ]] && PKGLIST+=(default-jdk)
+    [[ -z $NODOXYGEN                               ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
     sudo apt update
-    sudo apt install -y $PKGOPTS $pkglist
+    sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
@@ -224,23 +288,22 @@ elif [[ "$DISTRO" == "Linuxmint" ]]; then
 
 elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 
-    pkglist="git git-lfs g++ cmake dos2unix curl tar zip doxygen graphviz linux-libc-dev libedit-dev libusb-1.0-0-dev pcscd libpcsclite-dev dpkg-dev python3 default-jdk"
-    if $M32; then
-        pkglist="$pkglist gcc-multilib"
-    fi
-    if [[ "$MAJOR" -le 9 ]]; then
-        pkglist="$pkglist libcurl3 libcurl3-dev"
-    else
-        pkglist="$pkglist libcurl4 libcurl4-openssl-dev"
-    fi
-    if [[ "$MAJOR" -ge 11 ]]; then
-        pkglist="$pkglist libsrt-openssl-dev"
-    fi
-    if [[ "$MAJOR" -ge 12 ]]; then
-        pkglist="$pkglist librist-dev"
-    fi
+    PKGLIST+=(git git-lfs g++ cmake dos2unix curl tar zip linux-libc-dev dpkg-dev python3)
+    [[ -z $NOEDITLINE              ]] && PKGLIST+=(libedit-dev)
+    [[ -z $NOPCSC                  ]] && PKGLIST+=(pcscd libpcsclite-dev)
+    [[ -z $NOCURL && $MAJOR -le 9  ]] && PKGLIST+=(libcurl3 libcurl3-dev)
+    [[ -z $NOCURL && $MAJOR -gt 9  ]] && PKGLIST+=(libcurl4 libcurl4-openssl-dev)
+    [[ -z $NOSRT && $MAJOR -ge 11  ]] && PKGLIST+=(libsrt-openssl-dev)
+    [[ -z $NORIST && $MAJOR -ge 12 ]] && PKGLIST+=(librist-dev)
+    [[ -z $NOVATEK                 ]] && PKGLIST+=(libusb-1.0-0-dev)
+    [[ -z $NOJAVA                  ]] && PKGLIST+=(default-jdk)
+    [[ -z $NODOXYGEN               ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
     sudo apt update
-    sudo apt install -y $PKGOPTS $pkglist
+    sudo apt install -y "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
@@ -252,20 +315,21 @@ elif [[ "$DISTRO" = "Debian" || "$DISTRO" = "Raspbian" ]]; then
 elif [[ -f /etc/fedora-release ]]; then
 
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
-    pkglist="git git-lfs gcc-c++ cmake dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel libusb1-devel pcsc-tools pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3 java-latest-openjdk-devel"
-    if $STATIC; then
-        pkglist="$pkglist glibc-static libstdc++-static"
-    fi
-    if $M32; then
-        pkglist="$pkglist glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-devel.i686"
-    fi
-    if [[ $FC -ge 31 ]]; then
-        pkglist="$pkglist srt-devel"
-        if $M32; then
-            pkglist="$pkglist srt-devel.i686"
-        fi
-    fi
-    sudo dnf -y install $PKGOPTS $pkglist
+
+    PKGLIST+=(git git-lfs gcc-c++ cmake dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
+    [[ -z $NOEDITLINE          ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOPCSC              ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
+    [[ -z $NOSRT && $FC -ge 31 ]] && PKGLIST+=(srt-devel)
+    [[ -z $NOCURL              ]] && PKGLIST+=(libcurl libcurl-devel)
+    [[ -z $NOVATEK             ]] && PKGLIST+=(libusb1-devel)
+    [[ -z $NOJAVA              ]] && PKGLIST+=(java-latest-openjdk-devel)
+    [[ -z $NODOXYGEN           ]] && PKGLIST+=(doxygen graphviz)
+    [[ -n $STATIC              ]] && PKGLIST+=(glibc-static libstdc++-static)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo alternatives --set python /usr/bin/python3
 
 #-----------------------------------------------------------------------------
@@ -278,39 +342,37 @@ elif [[ -f /etc/redhat-release ]]; then
 
     EL=$(grep " release " /etc/redhat-release 2>/dev/null | sed -e 's/$/.99/' -e 's/^.* release \([0-9]*\.[0-9]*\).*$/\1/')
     EL=$(( ${EL/.*/} * 100 + ${EL/*./} ))
-    pkglist="git git-lfs gcc-c++ cmake dos2unix curl tar zip doxygen graphviz kernel-headers libedit-devel libusbx-devel pcsc-lite pcsc-lite-devel libcurl libcurl-devel libatomic rpmdevtools python3"
-    if $STATIC; then
-        pkglist="$pkglist glibc-static libstdc++-static"
-    fi
-    if $M32; then
-        pkglist="$pkglist glibc-devel.i686 libstdc++-devel.i686 pcsc-lite-devel.i686 libcurl-devel.i686"
-    fi
-    if [[ $EL -ge 802 ]]; then
-        pkglist="$pkglist srt-devel"
-        if $M32; then
-            pkglist="$pkglist srt-devel.i686"
-        fi
-    fi
+
+    PKGLIST+=(git git-lfs gcc-c++ cmake dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
+    [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
+    [[ -z $NOSRT &&  $EL -ge 802 ]] && PKGLIST+=(srt-devel)
+    [[ -z $NOCURL                ]] && PKGLIST+=(libcurl libcurl-devel)
+    [[ -z $NOVATEK               ]] && PKGLIST+=(libusbx-devel)
+    [[ -z $NOJAVA && $EL -lt 900 ]] && PKGLIST+=(java-latest-openjdk-devel)
+    [[ -z $NOJAVA && $EL -ge 900 ]] && PKGLIST+=(java-17-openjdk-devel)
+    [[ -z $NODOXYGEN             ]] && PKGLIST+=(doxygen graphviz)
+    [[ -n $STATIC                ]] && PKGLIST+=(glibc-static libstdc++-static)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
     if [[ $EL -lt 800 ]]; then
-        pkglist="$pkglist java-latest-openjdk-devel"
-        sudo yum -y install $PKGOPTS epel-release
-        sudo yum -y install $PKGOPTS $pkglist
+        sudo yum -y install "${PKGOPTS[@]}" epel-release
+        sudo yum -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     elif [[ $EL -lt 803 ]]; then
-        pkglist="$pkglist java-latest-openjdk-devel"
         sudo dnf -y config-manager --set-enabled PowerTools
-        sudo dnf -y install $PKGOPTS epel-release
-        sudo dnf -y install $PKGOPTS $pkglist
+        sudo dnf -y install "${PKGOPTS[@]}" epel-release
+        sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     elif [[ $EL -lt 900 ]]; then
-        pkglist="$pkglist java-latest-openjdk-devel"
         sudo dnf -y config-manager --set-enabled powertools
-        sudo dnf -y install $PKGOPTS epel-release
-        sudo dnf -y install $PKGOPTS $pkglist
+        sudo dnf -y install "${PKGOPTS[@]}" epel-release
+        sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     else
-        pkglist="$pkglist java-17-openjdk-devel"
         sudo dnf -y config-manager --set-enabled plus
         sudo dnf -y config-manager --set-enabled crb
-        sudo dnf -y install $PKGOPTS epel-release
-        sudo dnf -y install $PKGOPTS $pkglist
+        sudo dnf -y install "${PKGOPTS[@]}" epel-release
+        sudo dnf -y install "${PKGOPTS[@]}" "${PKGLIST[@]}"
     fi
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
@@ -323,8 +385,19 @@ elif [[ -f /etc/redhat-release ]]; then
 
 elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
-    pkglist="git git-lfs make gcc-c++ cmake dos2unix curl tar zip doxygen graphviz linux-glibc-devel libedit-devel libusb-1_0-devel pcsc-tools pcsc-lite-devel curl libcurl-devel srt-devel rpmdevtools python3 java-11-openjdk-devel"
-    sudo zypper install -y -l $PKGOPTS $pkglist
+    PKGLIST+=(git git-lfs make gcc-c++ cmake dos2unix curl tar zip linux-glibc-devel rpmdevtools python3)
+    [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
+    [[ -z $NOSRT      ]] && PKGLIST+=(srt-devel)
+    [[ -z $NOCURL     ]] && PKGLIST+=(libcurl-devel)
+    [[ -z $NOVATEK    ]] && PKGLIST+=(libusb-1_0-devel)
+    [[ -z $NOJAVA     ]] && PKGLIST+=(java-11-openjdk-devel)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo zypper install -y -l "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
@@ -336,8 +409,18 @@ elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
 elif [[ -f /etc/arch-release ]]; then
 
-    pkglist="git git-lfs make gcc cmake dos2unix core/which inetutils net-tools curl tar zip doxygen graphviz linux-api-headers libedit libusb pcsclite srt python jdk-openjdk"
-    sudo pacman -Sy --noconfirm $PKGOPTS $pkglist
+    PKGLIST+=(git git-lfs make gcc cmake dos2unix core/which inetutils net-tools curl tar zip linux-api-headers python)
+    [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit)
+    [[ -z $NOPCSC     ]] && PKGLIST+=(pcsclite)
+    [[ -z $NOSRT      ]] && PKGLIST+=(srt)
+    [[ -z $NOVATEK    ]] && PKGLIST+=(libusb)
+    [[ -z $NOJAVA     ]] && PKGLIST+=(jdk-openjdk)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo pacman -Sy --noconfirm "${PKGOPTS[@]}" "${PKGLIST[@]}"
 
 #-----------------------------------------------------------------------------
 # == Alpine Linux ==
@@ -350,12 +433,22 @@ elif [[ -f /etc/alpine-release ]]; then
 
     AL=$(sed /etc/alpine-release -e '/^[0-9][0-9]*\.[0-9]/!d' -e 's/^\([0-9][0-9]*\.[0-9][0-9]*\).*/\1/' | head -1)
     AL=$(( ${AL/.*/} * 100 + ${AL/*./} ))
-    pkglist="bash coreutils diffutils procps util-linux linux-headers git git-lfs make cmake g++ dos2unix curl tar zip dpkg doxygen graphviz libedit-dev libusb-dev pcsc-lite-dev curl-dev libsrt-dev python3 openjdk11 dpkg"
-    if [[ $AL -ge 316 ]]; then
-        pkglist="$pkglist librist-dev"
-    fi
+
+    PKGLIST+=(bash coreutils diffutils procps util-linux linux-headers git git-lfs make cmake g++ dos2unix curl tar zip dpkg python3)
+    [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-dev)
+    [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite-dev)
+    [[ -z $NORIST && $AL -ge 316 ]] && PKGLIST+=(librist-dev)
+    [[ -z $NOSRT                 ]] && PKGLIST+=(libsrt-dev)
+    [[ -z $NOCURL                ]] && PKGLIST+=(curl-dev)
+    [[ -z $NOVATEK               ]] && PKGLIST+=(libusb-dev)
+    [[ -z $NOJAVA                ]] && PKGLIST+=(openjdk11)
+    [[ -z $NODOXYGEN             ]] && PKGLIST+=(doxygen graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
     sudo sed -i '/http.*\/alpine\/v/s/^#//' /etc/apk/repositories
-    sudo apk add $PKGOPTS $pkglist
+    sudo apk add "${PKGOPTS[@]}" "${PKGLIST[@]}"
     sudo update-alternatives --install /usr/bin/python python /usr/bin/python3 2
 
 #-----------------------------------------------------------------------------
@@ -368,7 +461,17 @@ elif [[ -f /etc/alpine-release ]]; then
 
 elif [[ -f /etc/gentoo-release ]]; then
 
-    pkglist="sys-devel/gcc dev-vcs/git dev-vcs/git-lfs dev-util/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip app-doc/doxygen media-gfx/graphviz sys-kernel/linux-headers dev-libs/libedit dev-libs/libusb sys-apps/pcsc-lite net-libs/srt dev-lang/python dev-java/openjdk"
-    sudo emerge -n $PKGOPTS $pkglist
+    PKGLIST+=(sys-devel/gcc dev-vcs/git dev-vcs/git-lfs dev-util/cmake app-text/dos2unix net-misc/curl app-arch/tar app-arch/zip app-arch/unzip sys-kernel/linux-headers dev-lang/python)
+    [[ -z $NOEDITLINE ]] && PKGLIST+=(dev-libs/libedit)
+    [[ -z $NOPCSC     ]] && PKGLIST+=(sys-apps/pcsc-lite)
+    [[ -z $NOSRT      ]] && PKGLIST+=(net-libs/srt)
+    [[ -z $NOVATEK    ]] && PKGLIST+=(dev-libs/libusb)
+    [[ -z $NOJAVA     ]] && PKGLIST+=(dev-java/openjdk)
+    [[ -z $NODOXYGEN  ]] && PKGLIST+=(app-doc/doxygen media-gfx/graphviz)
+
+    echo "Packages: ${PKGLIST[*]}"
+    $DRYRUN && exit 0
+
+    sudo emerge -n "${PKGOPTS[@]}" "${PKGLIST[@]}"
 
 fi
