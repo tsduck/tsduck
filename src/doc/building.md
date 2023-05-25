@@ -21,6 +21,11 @@ It downloads and installs the requested packages which are necessary
 to build TSDuck. The list of packages and how to install them depend
 on the operating system distribution and version.
 
+If you intend to use exclusion options in the `make` command line (for instance
+`NOSRT=1 NORIST=1`), specify them to `scripts/install-prerequisites.sh` too.
+This will prevent the installation of unused libraries. Additional
+supported exclusion options are `NOJAVA=1 NODOXYGEN=1`.
+
 Currently, the script supports the following operating systems:
 - macOS
 - FreeBSD
@@ -102,8 +107,8 @@ The following `make` variables can be defined:
 - `NOEDITLINE` : No interactive line editing, remove dependency to libedit.
 - `NOSRT`      : No SRT support (Secure Reliable Transport), remove dependency to `libsrt`.
 - `NORIST`     : No RIST support (Reliable Internet Stream Transport), remove dependency to `librist`.
-- `ASSERTIONS` : Keep assertions in production mode (slower code).
 - `NOHWACCEL`  : Disable hardware acceleration such as crypto instructions.
+- `ASSERTIONS` : Keep assertions in production mode (slower code).
 
 The following command, for instance, builds TSDuck without dependency
 to `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
