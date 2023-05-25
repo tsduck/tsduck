@@ -157,8 +157,8 @@ install install-tools install-devel:
 
 # Build the source tarball for distribution.
 
-VERSION = $(shell $(SCRIPTSDIR)/get-version-from-sources.py)
-DISTRO  = $(shell $(SCRIPTSDIR)/get-version-from-sources.py --distro)
+VERSION = $(shell $(GET_VERSION))
+DISTRO  = $(shell $(GET_VERSION) --distro)
 TARNAME = tsduck-$(VERSION)
 TARFILE = $(INSTALLERDIR)/$(TARNAME).tgz
 TMPROOT = $(INSTALLERDIR)/tmp
@@ -202,8 +202,8 @@ rpm: tarball $(RPMBUILDROOT)
 	  VATEK_SRC_ORIGIN="$(shell $(SCRIPTSDIR)/vatek-config.sh --src-tarball)" \
 	  VATEK_BIN_ORIGIN="$(shell $(SCRIPTSDIR)/vatek-config.sh --bin-tarball)" \
 	  $(RPMBUILD) $(RPMBUILDFLAGS) \
-	      -D 'version $(shell $(SCRIPTSDIR)/get-version-from-sources.py --main)' \
-	      -D 'commit $(shell $(SCRIPTSDIR)/get-version-from-sources.py --commit)' \
+	      -D 'version $(shell $(GET_VERSION) --main)' \
+	      -D 'commit $(shell $(GET_VERSION) --commit)' \
 	      -D 'distro $(DISTRO)' \
 	      -D '_smp_mflags $(MAKEFLAGS_SMP)' \
 	      $(if $(NOSRT),-D 'nosrt 1') \
