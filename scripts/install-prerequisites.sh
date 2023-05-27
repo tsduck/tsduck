@@ -317,14 +317,15 @@ elif [[ -f /etc/fedora-release ]]; then
     FC=$(grep " release " /etc/fedora-release 2>/dev/null | sed -e 's/^.* release \([0-9\.]*\) .*$/\1/')
 
     PKGLIST+=(git git-lfs gcc-c++ cmake dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
-    [[ -z $NOEDITLINE          ]] && PKGLIST+=(libedit-devel)
-    [[ -z $NOPCSC              ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
-    [[ -z $NOSRT && $FC -ge 31 ]] && PKGLIST+=(srt-devel)
-    [[ -z $NOCURL              ]] && PKGLIST+=(libcurl libcurl-devel)
-    [[ -z $NOVATEK             ]] && PKGLIST+=(libusb1-devel)
-    [[ -z $NOJAVA              ]] && PKGLIST+=(java-latest-openjdk-devel)
-    [[ -z $NODOXYGEN           ]] && PKGLIST+=(doxygen graphviz)
-    [[ -n $STATIC              ]] && PKGLIST+=(glibc-static libstdc++-static)
+    [[ -z $NOEDITLINE           ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOPCSC               ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
+    [[ -z $NORIST && $FC -ge 36 ]] && PKGLIST+=(librist-devel)
+    [[ -z $NOSRT && $FC -ge 31  ]] && PKGLIST+=(srt-devel)
+    [[ -z $NOCURL               ]] && PKGLIST+=(libcurl libcurl-devel)
+    [[ -z $NOVATEK              ]] && PKGLIST+=(libusb1-devel)
+    [[ -z $NOJAVA               ]] && PKGLIST+=(java-latest-openjdk-devel)
+    [[ -z $NODOXYGEN            ]] && PKGLIST+=(doxygen graphviz)
+    [[ -n $STATIC               ]] && PKGLIST+=(glibc-static libstdc++-static)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
@@ -346,7 +347,8 @@ elif [[ -f /etc/redhat-release ]]; then
     PKGLIST+=(git git-lfs gcc-c++ cmake dos2unix curl tar zip kernel-headers libatomic rpmdevtools python3)
     [[ -z $NOEDITLINE            ]] && PKGLIST+=(libedit-devel)
     [[ -z $NOPCSC                ]] && PKGLIST+=(pcsc-lite pcsc-lite-devel)
-    [[ -z $NOSRT &&  $EL -ge 802 ]] && PKGLIST+=(srt-devel)
+    [[ -z $NORIST && $EL -ge 902 ]] && PKGLIST+=(librist-devel)
+    [[ -z $NOSRT && $EL -ge 802  ]] && PKGLIST+=(srt-devel)
     [[ -z $NOCURL                ]] && PKGLIST+=(libcurl libcurl-devel)
     [[ -z $NOVATEK               ]] && PKGLIST+=(libusbx-devel)
     [[ -z $NOJAVA && $EL -lt 900 ]] && PKGLIST+=(java-latest-openjdk-devel)
