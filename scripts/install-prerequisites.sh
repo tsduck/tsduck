@@ -387,14 +387,18 @@ elif [[ -f /etc/redhat-release ]]; then
 
 elif [[ -f /etc/os-release ]] && grep -q -i '^ID.*suse' /etc/os-release; then
 
+    VERSION=$(grep '^VERSION=' /etc/os-release | head -1 | sed -e 's/.*="//' -e 's/".*//')
+    VERSION=$(( ${VERSION/.*/} * 100 + ${VERSION/*./} ))
+
     PKGLIST+=(git git-lfs make gcc-c++ cmake dos2unix curl tar zip linux-glibc-devel rpmdevtools python3)
-    [[ -z $NOEDITLINE ]] && PKGLIST+=(libedit-devel)
-    [[ -z $NOPCSC     ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
-    [[ -z $NOSRT      ]] && PKGLIST+=(srt-devel)
-    [[ -z $NOCURL     ]] && PKGLIST+=(libcurl-devel)
-    [[ -z $NOVATEK    ]] && PKGLIST+=(libusb-1_0-devel)
-    [[ -z $NOJAVA     ]] && PKGLIST+=(java-11-openjdk-devel)
-    [[ -z $NODOXYGEN  ]] && PKGLIST+=(doxygen graphviz)
+    [[ -z $NOEDITLINE                  ]] && PKGLIST+=(libedit-devel)
+    [[ -z $NOPCSC                      ]] && PKGLIST+=(pcsc-tools pcsc-lite-devel)
+    [[ -z $NORIST && $VERSION -ge 1505 ]] && PKGLIST+=(librist-devel)
+    [[ -z $NOSRT                       ]] && PKGLIST+=(srt-devel)
+    [[ -z $NOCURL                      ]] && PKGLIST+=(libcurl-devel)
+    [[ -z $NOVATEK                     ]] && PKGLIST+=(libusb-1_0-devel)
+    [[ -z $NOJAVA                      ]] && PKGLIST+=(java-11-openjdk-devel)
+    [[ -z $NODOXYGEN                   ]] && PKGLIST+=(doxygen graphviz)
 
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
