@@ -298,8 +298,11 @@ namespace {
         }
 
         // Sort the content of the specified tags.
-        for (const auto& name : opt.sorted_tags) {
-            doc.rootElement()->sort(name);
+        ts::xml::Element* root = doc.rootElement();
+        if (root != nullptr) {
+            for (const auto& name : opt.sorted_tags) {
+                root->sort(name);
+            }
         }
     }
 }

@@ -172,11 +172,13 @@ bool ts::TablePatchXML::applyPatches(BinaryTable& table) const
     xml::Element* xtable = root == nullptr ? nullptr : root->firstChildElement();
     xml::Element* xnext = xtable == nullptr ? nullptr : xtable->nextSiblingElement();
 
-    // Check that the XML transformation created exactly one table.
+    // If the table was deleted, invalidate the table parameter and return true.
     if (xtable == nullptr) {
-        _duck.report().error(u"XML patching left no table in the document");
-        return false;
+        table.clear();
+        return true;
     }
+
+    // Check that the XML transformation created exactly one table.
     if (xnext != nullptr) {
         _duck.report().warning(u"XML patching left more than one table in the document, first is <%s>, second if <%s>", {xtable->name(), xnext->name()});
     }
@@ -222,7 +224,16 @@ bool ts::TablePatchXML::applyPatches(ts::SectionPtr& sp) const
     table.addSection(sp);
 
     // Apply the patches on the fake table.
-    if (!applyPatches(table) || !table.isValid() || table.sectionCount() == 0) {
+    if (!applyPatches(table)) {
+        return false;
+    }
+
+    // Check if the section was deleted. This is not an error, return true.
+    if (!table.isValid()) {
+        sp.clear();
+        return true;
+    }
+    if (table.sectionCount() == 0) {
         return false;
     }
 

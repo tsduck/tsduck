@@ -126,6 +126,8 @@ namespace ts {
         //! Apply the XML patch files to a binary table.
         //! @param [in,out] table The binary table to patch.
         //! @return True on success, false if the binary table or the patched XML is invalid.
+        //! If the patch file deletes the table, then the returned value if true and the
+        //! @a table is marked as invalid.
         //!
         bool applyPatches(BinaryTable& table) const;
 
@@ -138,6 +140,7 @@ namespace ts {
         //! @param [in,out] section Safe pointer to the section to patch.
         //! The pointer is modified, pointing to a new section content.
         //! @return True on success, false if the binary section or the patched XML is invalid.
+        //! If the patch file deletes the table, then the returned value if true and @a section is null.
         //!
         bool applyPatches(SectionPtr& section) const;
 

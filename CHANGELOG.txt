@@ -2,10 +2,15 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3209
+VERSION 3.35-3217
 
 [IMP] Improvements on existing commands and plugins:
 
+  * Improvements in syntax of XML patch files:
+    - Match elements with an attribute value being different from something.
+      Example: <PAT transport_stream_id="!1">
+    - Delete a higher-level parent on a structure match.
+      Example: <PMT> <component stream_type="0x06" x-node="delete(PMT)"/>
   * New options in existing commands and plugins:
     - Unix: Option --disable-multicast-loop in output plugin "ip".
     - Windows: Option --disable-multicast-loop in "tstabdump", input plugin

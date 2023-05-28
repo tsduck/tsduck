@@ -169,12 +169,28 @@ void ts::AbstractTablePlugin::handleTable(SectionDemux& demux, const BinaryTable
         return;
     }
 
+    // Save table characteritics.
+    const bool is_short = intable.isShortSection();
+    const TID tid = intable.tableId();
+    const uint16_t etid = intable.tableIdExtension();
+
     // Build a modifiable version of the table.
     BinaryTable table(intable, ShareMode::SHARE);
 
     // Process XML patching.
     if (!_patch_xml.applyPatches(table)) {
         return; // error displayed in applyPatches()
+    }
+
+    // If the patch file deleted the table, remove it from the packetizer.
+    if (!table.isValid()) {
+        if (is_short) {
+            _pzer.removeSections(tid);
+        }
+        else {
+            _pzer.removeSections(tid, etid);
+        }
+        return;
     }
 
     // Call subclass to process the table.

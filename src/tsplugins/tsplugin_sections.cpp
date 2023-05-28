@@ -400,8 +400,10 @@ void ts::SectionsPlugin::handleSection(SectionDemux& demux, const Section& secti
             return;
         }
 
-        // Now insert the section in the queue for the packetizer.
-        _sections.push_back(sp);
+        // Now insert the section in the queue for the packetizer (if not deleted by the patch file).
+        if (!sp.isNull()) {
+            _sections.push_back(sp);
+        }
     }
 }
 

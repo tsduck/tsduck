@@ -69,7 +69,7 @@ namespace ts {
         private:
             // Patch an XML tree of elements.
             // Return true when processing of the doc node may continue, false if it has been deleted.
-            bool patchElement(const Element* patch, Element* doc) const;
+            bool patchElement(const Element* patch, Element* doc, UStringList& parents, UString& parent_to_delete) const;
 
             // Cleanup a cloned XML tree from all "x-" attributes.
             void cleanupAttributes(Element* e) const;
