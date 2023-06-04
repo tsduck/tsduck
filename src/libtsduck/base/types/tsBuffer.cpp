@@ -966,7 +966,7 @@ ts::UString ts::Buffer::ReservedBitsErrorString(std::vector<size_t>& errors, siz
 
 bool ts::Buffer::putReserved(size_t bits)
 {
-    while (bits >= 32 && putUInt32(~0)) {
+    while (bits >= 32 && putUInt32(~0u)) {
         bits -= 32;
     }
     return putBits<int>(~0, bits);
