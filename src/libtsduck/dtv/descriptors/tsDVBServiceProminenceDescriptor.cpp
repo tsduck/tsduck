@@ -100,63 +100,22 @@ ts::DID ts::DVBServiceProminenceDescriptor::extendedTag() const
 
 void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
 {
-    uint8_t SOGI_list_length = 0;
-    for (auto _sogi : SOGI_list) {
-        SOGI_list_length += 2;      // SOGI_flag, target_region_flag, service_flag, reserved(1), SOGI_priority(12)
-        if (_sogi.service_id.set()) {
-            SOGI_list_length += 2;  // service_id(16)
-        }
-        if (!_sogi.regions.empty()) {
-            SOGI_list_length += 1;  // terget_region_loop_length(8)
-        }
-        for (auto _region : _sogi.regions) {
-            SOGI_list_length += 1;  // reserved_future_use(5), country_code_flag, region_depth(2)
-            if (_region.country_code.set()) {
-                SOGI_list_length += 3;  // country_code(24)
-            }
-            if (_region.primary_region_code.set()) {
-                SOGI_list_length += 1;  // primary_region_code(8)
-            }
-            if (_region.secondary_region_code.set()) {
-                SOGI_list_length += 1;  // secondary_region_code(8)
-            }
-            if (_region.tertiary_region_code.set()) {
-                SOGI_list_length += 2;  // tertiary_region_code(16)
-            }
-        }
-    }
-    buf.putUInt8(SOGI_list_length);
-    for (auto _sogi : SOGI_list) {
+    buf.pushWriteSequenceWithLeadingLength(8);  // will write SOGI_list_length here
+    for (const auto& _sogi : SOGI_list) {
         buf.putBit(_sogi.SOGI_flag);            // SOGI_flag
         buf.putBit(!_sogi.regions.empty());     // target_region_flag
         buf.putBit(_sogi.service_id.set());     // service_flag
-        buf.putBit(1);                          // reserved_future_use
+        buf.putReserved(1);                     // reserved_future_use
         buf.putBits(_sogi.SOGI_priority, 12);   // SOGI_priority
         if (_sogi.service_id.set()) {
             buf.putUInt16(_sogi.service_id.value());    // service_id
         }
         if (!_sogi.regions.empty()) {
-            uint8_t target_region_loop_length = 0;
-            for (auto _region : _sogi.regions) {
-                target_region_loop_length += 1;     // reserved_future_use(5), country_code_flag, region_depth(2)
-                if (_region.country_code.set()) {
-                    target_region_loop_length += 3;  // country_code(24)
-                }
-                if (_region.primary_region_code.set()) {
-                    target_region_loop_length += 1;  // primary_region_code(8)
-                    if (_region.secondary_region_code.set()) {
-                        target_region_loop_length += 1;  // secondary_region_code(8)
-                        if (_region.tertiary_region_code.set()) {
-                            target_region_loop_length += 2;  // tertiary_region_code(16)
-                        }
-                    }
-                }
-            }
-            buf.putUInt8(target_region_loop_length);
-            for (auto _region : _sogi.regions) {
-                buf.putBits(0xFF, 5);
+            buf.pushWriteSequenceWithLeadingLength(8);  // will write target_region_loop_length here
+            for (const auto& _region : _sogi.regions) {
+                buf.putReserved(5);
                 buf.putBit(_region.country_code.set());
-                uint8_t region_depth = _region.primary_region_code.set() + _region.secondary_region_code.set() + _region.tertiary_region_code.set();
+                const uint8_t region_depth = _region.primary_region_code.set() + _region.secondary_region_code.set() + _region.tertiary_region_code.set();
                 buf.putBits(region_depth, 2);
                 if (_region.country_code.set()) {
                     buf.putLanguageCode(_region.country_code.value());
@@ -171,11 +130,11 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
                     }
                 }
             }
+            buf.popState(); // update target_region_loop_length
         }
     }
-    if (!private_data.empty()) {
-        buf.putBytes(private_data);
-    }
+    buf.popState(); // update SOGI_list_length
+    buf.putBytes(private_data);
 }
 
 
@@ -185,51 +144,43 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
 
 void ts::DVBServiceProminenceDescriptor::deserializePayload(PSIBuffer& buf)
 {
-    uint8_t SOGI_list_length = buf.getUInt8();
-    while (SOGI_list_length > 0) {
+    buf.pushReadSizeFromLength(8); // start read sequence
+    while (buf.canRead()) {
         SOGI_type s;
         s.SOGI_flag = buf.getBool();
-        bool target_region_flag = buf.getBool();
-        bool service_flag = buf.getBool();
-        buf.skipBits(1);
+        const bool target_region_flag = buf.getBool();
+        const bool service_flag = buf.getBool();
+        buf.skipReservedBits(1);
         buf.getBits(s.SOGI_priority, 12);
-        SOGI_list_length -= 2;
         if (service_flag) {
             s.service_id = buf.getUInt16();
-            SOGI_list_length -= 2;
         }
         if (target_region_flag) {
-            uint8_t target_region_loop_length = buf.getUInt8();
-            SOGI_list_length--;
-            while (target_region_loop_length > 0) {
+            buf.pushReadSizeFromLength(8); // start read sequence
+            while (buf.canRead()) {
                 SOGI_region_type r;
-                buf.skipBits(5);
-                bool country_code_flag = buf.getBool();
-                uint8_t region_depth = buf.getBits<uint8_t>(2);
-                target_region_loop_length--; SOGI_list_length--;
+                buf.skipReservedBits(5);
+                const bool country_code_flag = buf.getBool();
+                const uint8_t region_depth = buf.getBits<uint8_t>(2);
                 if (country_code_flag) {
                     r.country_code = buf.getLanguageCode();
-                    target_region_loop_length -= 3; SOGI_list_length -= 3;
                 }
                 if (region_depth >= 1) {
                     r.primary_region_code = buf.getUInt8();
-                    target_region_loop_length--; SOGI_list_length--;
-
                     if (region_depth >= 2) {
                         r.secondary_region_code = buf.getUInt8();
-                        target_region_loop_length--; SOGI_list_length--;
-
                         if (region_depth == 3) {
                             r.tertiary_region_code = buf.getUInt16();
-                            target_region_loop_length -= 2; SOGI_list_length -=2;
                         }
                     }
                 }
                 s.regions.push_back(r);
             }
+            buf.popState(); // end read sequence
         }
         SOGI_list.push_back(s);
     }
+    buf.popState(); // end read sequence
     private_data = buf.getBytes();
 }
 
@@ -291,54 +242,67 @@ void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp,
 void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
-        uint8_t SOGI_list_length = buf.getUInt8();
-        while (SOGI_list_length > 0) {
-            SOGI_type s;
-            s.SOGI_flag = buf.getBool();
-            bool target_region_flag = buf.getBool();
-            bool service_flag = buf.getBool();
+        buf.pushReadSizeFromLength(8); // start read sequence
+        while (buf.canReadBytes(2)) {
+            disp << margin << "SOGI flag: " << UString::TrueFalse(buf.getBool());
+            const bool target_region_flag = buf.getBool();
+            const bool service_flag = buf.getBool();
             buf.skipReservedBits(1);
-            buf.getBits(s.SOGI_priority, 12);
-            SOGI_list_length -= 2;
-            if (service_flag) {
-                s.service_id = buf.getUInt16();
-                SOGI_list_length -= 2;
+            disp << ", priority: " << buf.getBits<uint16_t>(12);
+            if (service_flag && buf.canReadBytes(2)) {
+                disp << ", service id: " << buf.getUInt16();
             }
+            disp << std::endl;
             if (target_region_flag) {
-                uint8_t target_region_loop_length = buf.getUInt8();
-                SOGI_list_length--;
-                while (target_region_loop_length > 0) {
-                    SOGI_region_type r;
+                buf.pushReadSizeFromLength(8); // start read sequence
+                while (buf.canReadBytes(1)) {
                     buf.skipReservedBits(5);
-                    bool country_code_flag = buf.getBool();
-                    uint8_t region_depth = buf.getBits<uint8_t>(2);
-                    target_region_loop_length--; SOGI_list_length--;
-                    if (country_code_flag) {
-                        r.country_code = buf.getLanguageCode();
-                        target_region_loop_length -= 3; SOGI_list_length -= 3;
+                    const bool country_code_flag = buf.getBool();
+                    const uint8_t region_depth = buf.getBits<uint8_t>(2);
+                    bool drawn = false;
+                    if (country_code_flag && buf.canReadBits(3)) {
+                        disp << margin << "Country: " << buf.getLanguageCode();
+                        drawn = true;
                     }
-                    if (region_depth >= 1) {
-                        r.primary_region_code = buf.getUInt8();
-                        target_region_loop_length--; SOGI_list_length--;
-
-                        if (region_depth >= 2) {
-                            r.secondary_region_code = buf.getUInt8();
-                            target_region_loop_length--; SOGI_list_length--;
-
-                            if (region_depth == 3) {
-                                r.tertiary_region_code = buf.getUInt16();
-                                target_region_loop_length -= 2; SOGI_list_length -= 2;
+                    if (region_depth >= 1 && buf.canReadBytes(1)) {
+                        if (!drawn) {
+                            disp << margin << "P";
+                            drawn = true;
+                        }
+                        else {
+                            disp << ", p";
+                        }
+                        disp << "rimary region: " << int(buf.getUInt8());
+                        if (region_depth >= 2 && buf.canReadBytes(1)) {
+                            if (!drawn) {
+                                disp << margin << "S";
+                                drawn = true;
+                            }
+                            else {
+                                disp << ", s";
+                            }
+                            disp << "econdary region: " << int(buf.getUInt8());
+                            if (region_depth >= 3 && buf.canReadBytes(2)) {
+                                if (!drawn) {
+                                    disp << margin << "T";
+                                    drawn = true;
+                                }
+                                else {
+                                    disp << ", t";
+                                }
+                                disp << "ertiary region: " << buf.getUInt16();
                             }
                         }
                     }
-                    s.regions.push_back(r);
+                    if (drawn) {
+                        disp << std::endl;
+                    }
                 }
+                buf.popState(); // end read sequence
             }
-            s.display(disp, margin);
         }
-        ByteBlock private_data = buf.getBytes();
-        if (!private_data.empty())
-            disp << margin << "private_data: " << UString::Dump(private_data, UString::SINGLE_LINE) << std::endl;
+        buf.popState(); // end read sequence
+        disp.displayPrivateData(u"private data", buf, NPOS, margin);
     }
 }
 
@@ -349,15 +313,16 @@ void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, 
 
 void ts::DVBServiceProminenceDescriptor::buildXML(DuckContext& duck, xml::Element* root) const
 {
-    for (auto _sogi : SOGI_list) {
+    for (const auto& _sogi : SOGI_list) {
         ts::xml::Element* s = root->addElement(u"sogi");
         s->setBoolAttribute(u"SOGI_flag", _sogi.SOGI_flag);
         s->setIntAttribute(u"SOGI_priority", _sogi.SOGI_priority);
         s->setOptionalIntAttribute(u"service_id", _sogi.service_id);
-        for (auto _region : _sogi.regions) {
+        for (const auto& _region : _sogi.regions) {
             ts::xml::Element* r = s->addElement(u"target_region");
-            if (_region.country_code.set())
+            if (_region.country_code.set()) {
                 r->setAttribute(u"country_code", _region.country_code.value());
+            }
             if (_region.primary_region_code.set()) {
                 r->setIntAttribute(u"primary_region_code", _region.primary_region_code.value());
                 if (_region.secondary_region_code.set()) {
@@ -387,19 +352,21 @@ bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml
     for (auto sogi : sogis) {
         SOGI_type s;
         xml::ElementVector regions;
-        ok &= sogi->getBoolAttribute(s.SOGI_flag, u"SOGI_flag", true) &&
-            sogi->getIntAttribute(s.SOGI_priority, u"SOGI_priority", true, 0, 0, 0xFFF) &&
-            sogi->getOptionalIntAttribute(s.service_id, u"service_id", 0, 0xFFFF) &&
-            sogi->getChildren(regions, u"target_region");
+        ok = ok &&
+             sogi->getBoolAttribute(s.SOGI_flag, u"SOGI_flag", true) &&
+             sogi->getIntAttribute(s.SOGI_priority, u"SOGI_priority", true, 0, 0, 0xFFF) &&
+             sogi->getOptionalIntAttribute(s.service_id, u"service_id", 0, 0xFFFF) &&
+             sogi->getChildren(regions, u"target_region");
 
         for (auto rgn : regions) {
             SOGI_region_type r;
-            ok &= rgn->getOptionalAttribute(r.country_code, u"country_code", 3, 3);
-            ok &= rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF);
+            ok = ok &&
+                 rgn->getOptionalAttribute(r.country_code, u"country_code", 3, 3) &&
+                 rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF);
             if (ok && r.primary_region_code.set()) {
-                ok &= rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF);
+                ok = rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF);
                 if (ok && r.secondary_region_code.set()) {
-                    ok &= rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
+                    ok = rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
                 }
             }
             if (!(r.country_code.set() || r.primary_region_code.set())) {
