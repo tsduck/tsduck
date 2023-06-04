@@ -961,6 +961,19 @@ ts::UString ts::Buffer::ReservedBitsErrorString(std::vector<size_t>& errors, siz
 
 
 //----------------------------------------------------------------------------
+// Serialize the number of reserved '1' bits
+//----------------------------------------------------------------------------
+
+bool ts::Buffer::putReserved(size_t bits)
+{
+    while (bits >= 32 && putUInt32(~0)) {
+        bits -= 32;
+    }
+    return putBits<int>(~0, bits);
+}
+
+
+//----------------------------------------------------------------------------
 // Request some read size in bytes. Return actually possible read size.
 //----------------------------------------------------------------------------
 

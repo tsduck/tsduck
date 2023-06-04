@@ -776,14 +776,14 @@ namespace ts {
         //! @param [in] bits Number of reserved '1' bits to write.
         //! @return True on success, false on error (read only or no more space to write).
         //!
-        inline bool putReserved(size_t bits) { return putBits<int>(1, bits); }
+        bool putReserved(size_t bits);
 
         //!
         //! Serialize the number of reserved '0' bits
         //! @param [in] bits Number of reserved '0' bits to write.
         //! @return True on success, false on error (read only or no more space to write).
         //!
-        inline bool putReservedZero(size_t bits) { return putBits<int>(0, bits); }
+        bool putReservedZero(size_t bits) { return putBits<int>(0, bits); }
 
         //!
         //! Get bulk bytes from the buffer.
