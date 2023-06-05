@@ -53,12 +53,11 @@ namespace ts {
         //!
         class SOGI_region_type {
         public:
+            SOGI_region_type();                        //!< Constructor.
             Variable<UString>  country_code;           //!< ETSI EN 300 468, clause 6.4.18.
             Variable<uint8_t>  primary_region_code;    //!< ETSI EN 300 468, clause 6.4.18.
             Variable<uint8_t>  secondary_region_code;  //!< ETSI EN 300 468, clause 6.4.18.
             Variable<uint16_t> tertiary_region_code;   //!< ETSI EN 300 468, clause 6.4.18.
-
-            SOGI_region_type();   //!< Constructor.
         };
 
         //!
@@ -67,19 +66,11 @@ namespace ts {
         //!
         class SOGI_type {
         public:
+            SOGI_type();                                  //!< Constructor.
             bool                          SOGI_flag;      //!< ETSI EN 300 468, clause 6.4.18.
             uint16_t                      SOGI_priority;  //!< ETSI EN 300 468, clause 6.4.18.
             Variable<uint16_t>            service_id;     //!< ETSI EN 300 468, clause 6.4.18.
             std::vector<SOGI_region_type> regions;        //!< ETSI EN 300 468, clause 6.4.18.
-
-            SOGI_type();          //!< Constructor.
-
-            //!
-            //! Display this object.
-            //! @param [in,out] display Display engine.
-            //! @param [in] margin Left margin content.
-            //!
-            void display(TablesDisplay& display, const UString& margin);
         };
 
         // Public members:

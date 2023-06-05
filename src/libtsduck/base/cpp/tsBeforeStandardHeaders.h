@@ -90,7 +90,7 @@
 // The normal warning reporting is restored after inclusion.
 // See the restoration section in tsAfterStandardHeaders.h.
 TS_PUSH_WARNING()
-TS_MSC_NOWARNING(4193 4244 4263 4264 4668 4774 5026 5027 5031 5032 5054 5204 5262)
+TS_MSC_NOWARNING(4193 4244 4263 4264 4668 4774 5026 5027 5031 5032 5054 5204 5262 5266)
 TS_GCC_NOWARNING(pedantic)
 TS_LLVM_NOWARNING(reserved-id-macro)
 TS_LLVM_NOWARNING(zero-length-array)

@@ -11,7 +11,7 @@
             country_code="string, optional"
             primary_region_code="uint8, optional"
             secondary_region_code="uint8, optional"
-            tertiary_region_code="uint8, optional"/>
+            tertiary_region_code="uint16, optional"/>
       </sogi>
       <private_data>
         Hexadecimal Content
