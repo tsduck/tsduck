@@ -189,56 +189,6 @@ void ts::DVBServiceProminenceDescriptor::deserializePayload(PSIBuffer& buf)
 // Static method to display a descriptor.
 //----------------------------------------------------------------------------
 
-void ts::DVBServiceProminenceDescriptor::SOGI_type::display(TablesDisplay& disp, const UString& margin)
-{
-    disp << margin << "SOGI flag: " << UString::TrueFalse(SOGI_flag) << ", priority: " << SOGI_priority;
-    if (service_id.set())
-        disp << ", service id: " << service_id.value();
-    disp << std::endl;
-    for (auto r : regions) {
-        bool drawn = false;
-        if (r.country_code.set()) {
-            disp << margin << "Country: " << r.country_code.value();
-            drawn = true;
-        }
-        if (r.primary_region_code.set()) {
-            if (!drawn) {
-                disp << margin << "P";
-                drawn = true;
-            }
-            else {
-                disp << ", p";
-            }
-            disp << "rimary region: " << int(r.primary_region_code.value());
-
-            if (r.secondary_region_code.set()) {
-                if (!drawn) {
-                    disp << margin << "S";
-                    drawn = true;
-                }
-                else {
-                    disp << ", s";
-                }
-                disp << "econdary region: " << int(r.secondary_region_code.value());
-
-                if (r.tertiary_region_code.set()) {
-                    if (!drawn) {
-                        disp << margin << "T";
-                        drawn = true;
-                    }
-                    else {
-                        disp << ", t";
-                    }
-                    disp << "ertiary region: " << int(r.tertiary_region_code.value());
-                }
-            }
-        }
-        if (drawn) {
-            disp << std::endl;
-        }
-    }
-}
-
 void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, const UString& margin, DID did, TID tid, PDS pds)
 {
     if (buf.canReadBytes(1)) {
@@ -260,7 +210,7 @@ void ts::DVBServiceProminenceDescriptor::DisplayDescriptor(TablesDisplay& disp, 
                     const bool country_code_flag = buf.getBool();
                     const uint8_t region_depth = buf.getBits<uint8_t>(2);
                     bool drawn = false;
-                    if (country_code_flag && buf.canReadBits(3)) {
+                    if (country_code_flag && buf.canReadBytes(3)) {
                         disp << margin << "Country: " << buf.getLanguageCode();
                         drawn = true;
                     }
@@ -323,15 +273,9 @@ void ts::DVBServiceProminenceDescriptor::buildXML(DuckContext& duck, xml::Elemen
             if (_region.country_code.set()) {
                 r->setAttribute(u"country_code", _region.country_code.value());
             }
-            if (_region.primary_region_code.set()) {
-                r->setIntAttribute(u"primary_region_code", _region.primary_region_code.value());
-                if (_region.secondary_region_code.set()) {
-                    r->setIntAttribute(u"secondary_region_code", _region.secondary_region_code.value());
-                    if (_region.tertiary_region_code.set()) {
-                        r->setIntAttribute(u"tertiary_region_code", _region.tertiary_region_code.value());
-                    }
-                }
-            }
+            r->setOptionalIntAttribute(u"primary_region_code", _region.primary_region_code);
+            r->setOptionalIntAttribute(u"secondary_region_code", _region.secondary_region_code);
+            r->setOptionalIntAttribute(u"tertiary_region_code", _region.tertiary_region_code);
         }
     }
     root->addHexaTextChild(u"private_data", private_data, true);
@@ -362,15 +306,11 @@ bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml
             SOGI_region_type r;
             ok = ok &&
                  rgn->getOptionalAttribute(r.country_code, u"country_code", 3, 3) &&
-                 rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF);
-            if (ok && r.primary_region_code.set()) {
-                ok = rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF);
-                if (ok && r.secondary_region_code.set()) {
-                    ok = rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
-                }
-            }
-            if (!(r.country_code.set() || r.primary_region_code.set())) {
-                rgn->report().error(u"@country_code and/or @primary_region_code must be present in a <%s>, line %d", { rgn->name(), rgn->lineNumber() });
+                 rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF) &&
+                 rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF) &&
+                 rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
+            if (ok && !(r.country_code.set() || r.primary_region_code.set())) {
+                rgn->report().error(u"@country_code and/or @primary_region_code must be present in a <%s>, line %d", {rgn->name(), rgn->lineNumber()});
                 ok = false;
             }
             s.regions.push_back(r);
