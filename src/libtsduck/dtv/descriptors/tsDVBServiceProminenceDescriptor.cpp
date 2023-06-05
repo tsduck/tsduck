@@ -115,7 +115,10 @@ void ts::DVBServiceProminenceDescriptor::serializePayload(PSIBuffer& buf) const
             for (const auto& _region : _sogi.regions) {
                 buf.putReserved(5);
                 buf.putBit(_region.country_code.set());
-                const uint8_t region_depth = _region.primary_region_code.set() + _region.secondary_region_code.set() + _region.tertiary_region_code.set();
+                const uint8_t region_depth =
+                    _region.primary_region_code.set() +
+                    (_region.primary_region_code.set() && _region.secondary_region_code.set()) +
+                    (_region.primary_region_code.set() && _region.secondary_region_code.set() && _region.tertiary_region_code.set());
                 buf.putBits(region_depth, 2);
                 if (_region.country_code.set()) {
                     buf.putLanguageCode(_region.country_code.value());
@@ -309,8 +312,16 @@ bool ts::DVBServiceProminenceDescriptor::analyzeXML(DuckContext& duck, const xml
                  rgn->getOptionalIntAttribute(r.primary_region_code, u"primary_region_code", 0, 0xFF) &&
                  rgn->getOptionalIntAttribute(r.secondary_region_code, u"secondary_region_code", 0, 0xFF) &&
                  rgn->getOptionalIntAttribute(r.tertiary_region_code, u"tertiary_region_code", 0, 0xFFFF);
-            if (ok && !(r.country_code.set() || r.primary_region_code.set())) {
-                rgn->report().error(u"@country_code and/or @primary_region_code must be present in a <%s>, line %d", {rgn->name(), rgn->lineNumber()});
+            if (ok && !r.country_code.set() && !r.primary_region_code.set()) {
+                rgn->report().error(u"country_code and/or primary_region_code must be present in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
+                ok = false;
+            }
+            if (ok && !r.primary_region_code.set() && r.secondary_region_code.set()) {
+                rgn->report().error(u"secondary_region_code cannot be used without primary_region_code in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
+                ok = false;
+            }
+            if (ok && !r.secondary_region_code.set() && r.tertiary_region_code.set()) {
+                rgn->report().error(u"tertiary_region_code cannot be used without secondary_region_code in <%s>, line %d", {rgn->name(), rgn->lineNumber()});
                 ok = false;
             }
             s.regions.push_back(r);
