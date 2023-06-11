@@ -225,14 +225,7 @@ install-rpm:
 # DEB package building (Debian, Ubuntu, Linux Mint, Raspbian, etc.)
 # Make deb-dev depend on deb-tools to force serialization in case of -j.
 
-DEB_ARCH    = $(if $(wildcard /etc/*debian*),$(shell dpkg-architecture -qDEB_BUILD_ARCH))
-F_GETDPKG   = $(shell dpkg -S 2>/dev/null $(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9) | sed -e 's/:.*//' | sort -u)
-F_GETSO     = $(shell ldd $(SHARED_LIBTSDUCK) \
-                          $(addprefix $(BINDIR)/,$(TSTOOLS)) \
-                          $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS))) | \
-                grep -i $(addprefix -e,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)) | \
-                sed -e 's/[[:space:]]*=>.*//' -e 's/^[[:space:]]*//' | sort -u)
-F_GETSODPKG = $(call F_GETDPKG,$(call F_GETSO,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)))
+DEB_ARCH = $(if $(wildcard /etc/*debian*),$(shell dpkg-architecture -qDEB_BUILD_ARCH))
 
 .PHONY: deb deb-tools deb-dev
 deb: deb-tools deb-dev
@@ -243,6 +236,35 @@ deb-tools:
 	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true install-tools SYSROOT=$(TMPROOT)
 	install -d -m 755 $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
 	install -m 644 CHANGELOG.txt LICENSE.txt OTHERS.txt doc/tsduck.pdf $(TMPROOT)$(SYSPREFIX)/share/doc/tsduck
+	$(MAKE) NOTEST=true deb-tools-control
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)
+
+deb-dev: deb-tools
+	rm -rf $(TMPROOT)
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true
+	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true install-devel SYSROOT=$(TMPROOT)
+	$(MAKE) NOTEST=true deb-dev-control
+	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
+	rm -rf $(TMPROOT)
+
+install-deb:
+	$(SUDO) dpkg -i $(INSTALLERDIR)/tsduck_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb $(INSTALLERDIR)/tsduck-dev_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb
+
+# Build the DEBIAN/control files using the exact library dependencies.
+# Warning: Because the command lines contain macros which analyze the
+# previously built binaries, these targets ùust be called in a separate
+# make subcommand, after the binaries are built.
+
+F_GETDPKG   = $(shell dpkg -S 2>/dev/null $(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9) | sed -e 's/:.*//' | sort -u)
+F_GETSO     = $(shell ldd $(SHARED_LIBTSDUCK) \
+                          $(addprefix $(BINDIR)/,$(TSTOOLS)) \
+                          $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS))) | \
+                grep -i $(addprefix -e,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)) | \
+                sed -e 's/[[:space:]]*=>.*//' -e 's/^[[:space:]]*//' | sort -u)
+F_GETSODPKG = $(call F_GETDPKG,$(call F_GETSO,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)))
+
+deb-tools-control:
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
@@ -252,15 +274,9 @@ deb-tools:
 	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb,/ $(call F_GETSODPKG,libusb),/') \
 	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc,/ $(call F_GETSODPKG,libpcsc),/') \
 	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl,/ $(call F_GETSODPKG,libcurl),/') \
-	    -e 's/ libstdc++$$/ $(call F_GETSODPKG,libstdc++)/' \
 	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
-	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
-	rm -rf $(TMPROOT)
 
-deb-dev: deb-tools
-	rm -rf $(TMPROOT)
-	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true
-	$(MAKE) $(MAKEFLAGS_SMP) NOTEST=true install-devel SYSROOT=$(TMPROOT)
+deb-dev-control:
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
@@ -270,13 +286,7 @@ deb-dev: deb-tools
 	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb-dev,/ $(call F_GETDPKG,libusb.h),/') \
 	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h),/') \
 	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl-dev,/ $(call F_GETDPKG,curl/curl.h),/') \
-	    -e 's/ libstdc++$$/ $(call F_GETSODPKG,libstdc++)/' \
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
-	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
-	rm -rf $(TMPROOT)
-
-install-deb:
-	$(SUDO) dpkg -i $(INSTALLERDIR)/tsduck_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb $(INSTALLERDIR)/tsduck-dev_$(VERSION)$(DISTRO)_$(DEB_ARCH).deb
 
 # Install Git hooks.
 

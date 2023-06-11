@@ -12,7 +12,7 @@ Depends: libc6,
  libusb,
  libpcsc,
  libcurl,
- libstdc++
+ libstdc++6
 Conflicts: tsduck-dev (<= 2.28.2441)
 Description: MPEG Transport Stream Toolkit
  TSDuck, the MPEG Transport Stream Toolkit, provides some simple utilities to

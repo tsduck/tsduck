@@ -12,7 +12,7 @@ Depends: tsduck,
  libusb-dev,
  libpcsc-dev,
  libcurl-dev,
- libstdc++
+ libstdc++6
 Description: MPEG Transport Stream Toolkit Development
  The MPEG Transport Stream Toolkit provides some simple utilities to process
  MPEG Transport Streams (TS). This package provides the development environment
