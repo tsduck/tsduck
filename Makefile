@@ -225,7 +225,14 @@ install-rpm:
 # DEB package building (Debian, Ubuntu, Linux Mint, Raspbian, etc.)
 # Make deb-dev depend on deb-tools to force serialization in case of -j.
 
-DEB_ARCH = $(if $(wildcard /etc/*debian*),$(shell dpkg-architecture -qDEB_BUILD_ARCH))
+DEB_ARCH    = $(if $(wildcard /etc/*debian*),$(shell dpkg-architecture -qDEB_BUILD_ARCH))
+F_GETDPKG   = $(shell dpkg -S 2>/dev/null $(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9) | sed -e 's/:.*//' | sort -u)
+F_GETSO     = $(shell ldd $(SHARED_LIBTSDUCK) \
+                          $(addprefix $(BINDIR)/,$(TSTOOLS)) \
+                          $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS))) | \
+                grep -i $(addprefix -e,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)) | \
+                sed -e 's/[[:space:]]*=>.*//' -e 's/^[[:space:]]*//' | sort -u)
+F_GETSODPKG = $(call F_GETDPKG,$(call F_GETSO,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)))
 
 .PHONY: deb deb-tools deb-dev
 deb: deb-tools deb-dev
@@ -239,12 +246,13 @@ deb-tools:
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
-	    $(if $(NOSRT),-e '/libsrt/d') \
-	    $(if $(NORIST),-e '/librist/d') \
-	    $(if $(NOPCSC),-e '/libpcsc/d') \
-	    $(if $(NOCURL),-e '/libcurl/d') \
-	    $(if $(NOEDITLINE),-e '/libedit/d') \
-	    $(if $(NOVATEK),-e '/libusb/d') \
+	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt,/ $(call F_GETSODPKG,libsrt),/') \
+	    $(if $(NORIST),-e '/librist/d',-e 's/ librist,/ $(call F_GETSODPKG,librist),/') \
+	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit,/ $(call F_GETSODPKG,libedit),/') \
+	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb,/ $(call F_GETSODPKG,libusb),/') \
+	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc,/ $(call F_GETSODPKG,libpcsc),/') \
+	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl,/ $(call F_GETSODPKG,libcurl),/') \
+	    -e 's/ libstdc++$$/ $(call F_GETSODPKG,libstdc++)/' \
 	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
@@ -256,12 +264,13 @@ deb-dev: deb-tools
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
-	    $(if $(NOSRT),-e '/libsrt/d') \
-	    $(if $(NORIST),-e '/librist/d') \
-	    $(if $(NOPCSC),-e '/libpcsc/d') \
-	    $(if $(NOCURL),-e '/libcurl/d') \
-	    $(if $(NOEDITLINE),-e '/libedit/d') \
-	    $(if $(NOVATEK),-e '/libusb/d') \
+	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt-dev,/ $(call F_GETDPKG,srt/srt.h),/') \
+	    $(if $(NORIST),-e '/librist/d',-e 's/ librist-dev,/ $(call F_GETDPKG,librist/librist.h),/') \
+	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit-dev,/ $(call F_GETDPKG,editline/readline.h),/') \
+	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb-dev,/ $(call F_GETDPKG,libusb.h),/') \
+	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h),/') \
+	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl-dev,/ $(call F_GETDPKG,curl/curl.h),/') \
+	    -e 's/ libstdc++$$/ $(call F_GETSODPKG,libstdc++)/' \
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
 	dpkg-deb --build --root-owner-group $(TMPROOT) $(INSTALLERDIR)
 	rm -rf $(TMPROOT)
