@@ -253,39 +253,42 @@ install-deb:
 
 # Build the DEBIAN/control files using the exact library dependencies.
 # Warning: Because the command lines contain macros which analyze the
-# previously built binaries, these targets ùust be called in a separate
+# previously built binaries, these targets must be called in a separate
 # make subcommand, after the binaries are built.
+# Explicitly exclude packages which notoriously provide alternate versions
+# of standard library (e.g. wolfram).
 
-F_GETDPKG   = $(shell dpkg -S 2>/dev/null $(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9) | sed -e 's/:.*//' | sort -u)
+F_GETDPKG   = $(addsuffix $(COMMA),$(shell dpkg -S 2>/dev/null $(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9) | \
+                                           grep -v -i -e wolfram | sed -e 's/:.*//' | sort -u))
 F_GETSO     = $(shell ldd $(SHARED_LIBTSDUCK) \
                           $(addprefix $(BINDIR)/,$(TSTOOLS)) \
                           $(addprefix $(BINDIR)/,$(addsuffix $(SO_SUFFIX),$(TSPLUGINS))) | \
-                grep -i $(addprefix -e,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)) | \
-                sed -e 's/[[:space:]]*=>.*//' -e 's/^[[:space:]]*//' | sort -u)
+                      grep -i $(addprefix -e ,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)) | \
+                      sed -e 's/[[:space:]]*=>.*//' -e 's/^[[:space:]]*//' | sort -u)
 F_GETSODPKG = $(call F_GETDPKG,$(call F_GETSO,$(1) $(2) $(3) $(4) $(5) $(6) $(7) $(8) $(9)))
 
 deb-tools-control:
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(DEB_ARCH)/g' \
-	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt,/ $(call F_GETSODPKG,libsrt),/') \
-	    $(if $(NORIST),-e '/librist/d',-e 's/ librist,/ $(call F_GETSODPKG,librist),/') \
-	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit,/ $(call F_GETSODPKG,libedit),/') \
-	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb,/ $(call F_GETSODPKG,libusb),/') \
-	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc,/ $(call F_GETSODPKG,libpcsc),/') \
-	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl,/ $(call F_GETSODPKG,libcurl),/') \
+	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt,/ $(call F_GETSODPKG,libsrt)/') \
+	    $(if $(NORIST),-e '/librist/d',-e 's/ librist,/ $(call F_GETSODPKG,librist)/') \
+	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit,/ $(call F_GETSODPKG,libedit)/') \
+	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb,/ $(call F_GETSODPKG,libusb)/') \
+	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc,/ $(call F_GETSODPKG,libpcsc)/') \
+	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl,/ $(call F_GETSODPKG,libcurl)/') \
 	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
 
 deb-dev-control:
 	mkdir $(TMPROOT)/DEBIAN
 	sed -e 's/{{VERSION}}/$(VERSION)$(DISTRO)/g' \
 	    -e 's/{{ARCH}}/$(shell dpkg-architecture -qDEB_BUILD_ARCH)/g' \
-	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt-dev,/ $(call F_GETDPKG,srt/srt.h),/') \
-	    $(if $(NORIST),-e '/librist/d',-e 's/ librist-dev,/ $(call F_GETDPKG,librist/librist.h),/') \
-	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit-dev,/ $(call F_GETDPKG,editline/readline.h),/') \
-	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb-dev,/ $(call F_GETDPKG,libusb.h),/') \
-	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h),/') \
-	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl-dev,/ $(call F_GETDPKG,curl/curl.h),/') \
+	    $(if $(NOSRT),-e '/libsrt/d',-e 's/ libsrt-dev,/ $(call F_GETDPKG,srt/srt.h)/') \
+	    $(if $(NORIST),-e '/librist/d',-e 's/ librist-dev,/ $(call F_GETDPKG,librist/librist.h)/') \
+	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit-dev,/ $(call F_GETDPKG,editline/readline.h)/') \
+	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb-dev,/ $(call F_GETDPKG,libusb.h)/') \
+	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h)/') \
+	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl-dev,/ $(call F_GETDPKG,curl/curl.h)/') \
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
 
 # Install Git hooks.
