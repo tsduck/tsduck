@@ -75,6 +75,9 @@ namespace ts {
         // Start error: log error, detach channel & device, return false.
         bool startError(const UString&, unsigned int); // Dtapi::DTAPI_RESULT
 
+        // Get the demodulation options as an XML string (debug mode only).
+        UString demodParsToXml();
+
         // Configure the LNB. Return true on success.
         bool configureLNB();
     };
