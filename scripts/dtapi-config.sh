@@ -158,15 +158,19 @@ get-object()
     local OBJFILE=
     local OBJVERS=0
     local DTAPIDIR=$(get-dtapi)
+    local DIRNAME=
     if [[ -n "$DTAPIDIR" ]]; then
         for obj in $(find "$DTAPIDIR/Lib" -path "*/GCC*/$OBJNAME"); do
-            DIRVERS=$(basename $(dirname "$obj"))
-            DIRVERS=${DIRVERS#GCC}
+            DIRNAME=$(basename $(dirname "$obj"))
+            DIRVERS=${DIRNAME#GCC}
             DIRVERS=${DIRVERS%%_*}
             DIRVERS=$(int-version $DIRVERS)
             if [[ ($DIRVERS -le $GCCVERS) && ($DIRVERS -gt $OBJVERS) ]]; then
                 OBJFILE="$obj"
                 OBJVERS=$DIRVERS
+                # If directory ends in _ABI0 and the same file exists with _ABI1, use _ABI1.
+                # This implements the default C++11 ABI after GCC 5.1.
+                [[ $DIRNAME == *_ABI0 && -f "${obj/_ABI0/_ABI1}" ]] && OBJFILE="${obj/_ABI0/_ABI1}"
             fi
         done
     fi

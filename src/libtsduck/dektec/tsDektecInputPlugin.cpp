@@ -576,6 +576,7 @@ bool ts::DektecInputPlugin::getOptions()
         }
 
         // Check consistency of demodulation parameters.
+        tsp->debug(u"Dektec demodulation parameters: %s", {demodParsToXml()});
         status = _guts->demod_pars.CheckValidity();
         if (status != DTAPI_OK) {
             tsp->error(u"invalid Dektec demodulation parameters: %s", {DektecStrError(status)});
@@ -584,6 +585,28 @@ bool ts::DektecInputPlugin::getOptions()
     }
 
     return success;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the demodulation options as an XML string (debug mode only).
+//----------------------------------------------------------------------------
+
+ts::UString ts::DektecInputPlugin::demodParsToXml()
+{
+    UString uxml;
+    if (tsp->debug()) {
+        std::wstring wxml;
+        Dtapi::DTAPI_RESULT status = _guts->demod_pars.ToXml(wxml);
+        if (status != DTAPI_OK && wxml.empty()) {
+            uxml = u"invalid demod pars: " + DektecStrError(status);
+        }
+        else {
+            uxml.assignFromWChar(wxml);
+        }
+        uxml.trim();
+    }
+    return uxml;
 }
 
 
@@ -697,7 +720,7 @@ bool ts::DektecInputPlugin::start()
         }
 
         // Tune to the frequency and demodulation parameters.
-        tsp->debug(u"tuning to frequency %'d", {_guts->demod_freq});
+        tsp->debug(u"tuning to frequency %'d Hz, demod: %s", {_guts->demod_freq, demodParsToXml()});
         status = _guts->chan.Tune(int64_t(_guts->demod_freq), &_guts->demod_pars);
         if (status != DTAPI_OK) {
             return startError(u"error tuning Dektec demodulator", status);
