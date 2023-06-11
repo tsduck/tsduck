@@ -6,14 +6,13 @@ Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
 Depends: libc6,
- libsrt | libsrt1 | libsrt1-openssl | libsrt1.4-openssl | libsrt1.5-openssl,
- librist | librist1 | librist4,
- libedit2,
- libusb-1.0-0 | libusb-1.0,
- libpcsclite1,
- libcurl3 | libcurl4,
- libstdc++6,
- libgcc1
+ libsrt,
+ librist,
+ libedit,
+ libusb,
+ libpcsc,
+ libcurl,
+ libstdc++
 Conflicts: tsduck-dev (<= 2.28.2441)
 Description: MPEG Transport Stream Toolkit
  TSDuck, the MPEG Transport Stream Toolkit, provides some simple utilities to

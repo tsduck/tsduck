@@ -6,20 +6,13 @@ Architecture: {{ARCH}}
 Section: free/video
 Priority: optional
 Depends: tsduck,
- libsrt | libsrt1 | libsrt1-openssl | libsrt1.4-openssl | libsrt1.5-openssl,
- libsrt-dev | libsrt-openssl-dev,
- librist | librist1 | librist4,
+ libsrt-dev,
  librist-dev,
- libedit2,
  libedit-dev,
- libusb-1.0-0-dev | libusb-1.0-dev,
- libpcsclite1,
- libpcsclite-dev,
- libcurl3 | libcurl4,
- libcurl3-dev | libcurl4-dev | libcurl4-openssl-dev | libcurl4-nss-dev | libcurl4-gnutls-dev,
- libc6,
- libstdc++6,
- libgcc1
+ libusb-dev,
+ libpcsc-dev,
+ libcurl-dev,
+ libstdc++
 Description: MPEG Transport Stream Toolkit Development
  The MPEG Transport Stream Toolkit provides some simple utilities to process
  MPEG Transport Streams (TS). This package provides the development environment
