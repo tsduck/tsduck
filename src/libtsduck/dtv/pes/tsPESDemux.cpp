@@ -261,18 +261,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
             pc.pcr = pkt.getPCR(); // can be invalid
 
             // Check if the complete PES packet is now present (without waiting for the next PUSI).
-            if (pl_size >= 6) {
-                // There is enough to get the PES packet length.
-                const size_t len = GetUInt16(pc.ts->data() + 4);
-                // If the size is zero, the PES packet is "unbounded", meaning it ends at the next PUSI.
-                // But if the PES packet size is specified, check if we have the complete PES packet.
-                if (len != 0 && pc.ts->size() >= 6 + len) {
-                    // We have the complete PES packet.
-                    processPESPacket(pid, pc);
-                    // Consider that we lose sync in case there are additional TS pickets on that PID before next PUSI.
-                    pc.syncLost();
-                }
-            }
+            processPESPacketIfComplete(pid, pc);
         }
         else if (pc_exists) {
             // This PID does not contain PES packet, reset context
@@ -330,18 +319,7 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
     }
 
     // Check if the complete PES packet is now present (without waiting for the next PUSI).
-    if (pc.ts->size() >= 6 && pc.sync) {
-        // There is enough to get the PES packet length.
-        const size_t len = GetUInt16(pc.ts->data() + 4);
-        // If the size is zero, the PES packet is "unbounded", meaning it ends at the next PUSI.
-        // But if the PES packet size is specified, check if we have the complete PES packet.
-        if (len != 0 && pc.ts->size() >= 6 + len) {
-            // We have the complete PES packet.
-            processPESPacket(pid, pc);
-            // Consider that we lose sync in case there are additional TS pickets on that PID before next PUSI.
-            pc.syncLost();
-        }
-    }
+    processPESPacketIfComplete(pid, pc);
 }
 
 
@@ -377,6 +355,27 @@ void ts::PESDemux::handleTable(SectionDemux& demux, const BinaryTable& table)
         default: {
             // Nothing to do.
             break;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// If a PID context contains a complete PES packet, process it.
+//----------------------------------------------------------------------------
+
+void ts::PESDemux::processPESPacketIfComplete(PID pid, PIDContext& pc)
+{
+    if (pc.ts->size() >= 6 && pc.sync) {
+        // There is enough to get the PES packet length.
+        const size_t len = GetUInt16(pc.ts->data() + 4);
+        // If the size is zero, the PES packet is "unbounded", meaning it ends at the next PUSI.
+        // But if the PES packet size is specified, check if we have the complete PES packet.
+        if (len != 0 && pc.ts->size() >= 6 + len) {
+            // We have the complete PES packet.
+            processPESPacket(pid, pc);
+            // Consider that we lose sync in case there are additional TS packets on that PID before next PUSI.
+            pc.syncLost();
         }
     }
 }

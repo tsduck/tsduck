@@ -219,6 +219,9 @@ namespace ts {
         // Feed the demux with a TS packet (PID already filtered).
         void processPacket(const TSPacket&);
 
+        // If a PID context contains a complete PES packet with specified length, process it.
+        void processPESPacketIfComplete(PID, PIDContext&);
+
         // Process a complete PES packet
         void processPESPacket(PID, PIDContext&);
 
