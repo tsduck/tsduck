@@ -131,7 +131,9 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"and the bidirectional stream sending in version 1.2.0is not supported.");
 
     args.option(u"linger", 0, Args::INTEGER, 0, 1, 0, std::numeric_limits<int32_t>::max());
-    args.help(u"linger", u"Linger time on close, recommended value: 0");
+    args.help(u"linger",
+              u"Linger time on close. Define how long, in seconds, to enable queued "
+              u"data to be sent after end of stream. Default: no linger.");
 
     args.option(u"lossmaxttl", 0, Args::INTEGER, 0, 1, 0, std::numeric_limits<int32_t>::max());
     args.help(u"lossmaxttl",
@@ -446,7 +448,7 @@ public:
      bool        nakreport;
      int         conn_timeout;
      int         ffs;
-     int         linger;
+     ::linger    linger_opt;
      int         lossmaxttl;
      int         mss;
      int         ohead_bw;
@@ -501,7 +503,7 @@ ts::SRTSocket::Guts::Guts(SRTSocket* parent) :
     nakreport(false),
     conn_timeout(-1),
     ffs(-1),
-    linger(-1),
+    linger_opt{0, 0},
     lossmaxttl(-1),
     mss(-1),
     ohead_bw(-1),
@@ -826,7 +828,8 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(_guts->kmrefreshrate, u"kmrefreshrate", -1);
     args.getIntValue(_guts->kmpreannounce, u"kmpreannounce", -1);
     args.getIntValue(_guts->latency, u"latency", -1);
-    args.getIntValue(_guts->linger, u"linger", -1);
+    _guts->linger_opt.l_onoff = args.present(u"linger");
+    args.getIntValue(_guts->linger_opt.l_linger, u"linger");
     args.getIntValue(_guts->lossmaxttl, u"lossmaxttl", -1);
     args.getIntValue(_guts->max_bw, u"max-bw", -1);
     args.getIntValue(_guts->min_version, u"min-version", -1);
@@ -898,7 +901,7 @@ bool ts::SRTSocket::Guts::setSockOptPre(Report& report)
         (kmrefreshrate >= 0 && !setSockOpt(SRTO_KMREFRESHRATE, "SRTO_KMREFRESHRATE", &kmrefreshrate, sizeof(kmrefreshrate), report)) ||
         (kmpreannounce > 0 && !setSockOpt(SRTO_KMPREANNOUNCE, "SRTO_KMPREANNOUNCE", &kmpreannounce, sizeof(kmpreannounce), report)) ||
         (latency > 0 && !setSockOpt(SRTO_LATENCY, "SRTO_LATENCY", &latency, sizeof(latency), report)) ||
-        (linger >= 0 && !setSockOpt(SRTO_LINGER, "SRTO_LINGER", &linger, sizeof(linger), report)) ||
+        (linger_opt.l_onoff && !setSockOpt(SRTO_LINGER, "SRTO_LINGER", &linger_opt, sizeof(linger_opt), report)) ||
         (lossmaxttl >= 0 && !setSockOpt(SRTO_LOSSMAXTTL, "SRTO_LOSSMAXTTL", &lossmaxttl, sizeof(lossmaxttl), report)) ||
         (max_bw >= 0 && !setSockOpt(SRTO_MAXBW, "SRTO_MAXBW", &max_bw, sizeof(max_bw), report)) ||
         (min_version > 0 && !setSockOpt(SRTO_MINVERSION, "SRTO_MINVERSION", &min_version, sizeof(min_version), report)) ||

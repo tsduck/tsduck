@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3219
+VERSION 3.35-3231
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -25,6 +25,7 @@ VERSION 3.35-3219
     the modulation (QPKS by default), crashed "tsp" and "tsscan".
   * Fixed issue #1227: When garbage input was interpreted as a DVB service
     prominence descriptor, an infinite loop could occur.
+  * Fixed issue #1234: Option --linger did not work with plugins "srt".
 
 -------------------------------------------------------------------------------
 
