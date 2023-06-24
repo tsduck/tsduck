@@ -148,11 +148,16 @@ bool ts::DVBInputPlugin::start()
     tsp->verbose(u"using %s (%s)", {_tuner.deviceName(), _tuner.deliverySystems().toString()});
 
     // Tune to the specified frequency.
-    if (!_tuner.tune(_tuner_args)) {
+    if (!_tuner_args.hasModulationArgs()) {
+        tsp->verbose(u"no modulation parameter specified, using current transponder in tuner");
+    }
+    else if (_tuner.tune(_tuner_args)) {
+        tsp->verbose(u"tuned to transponder %s", {_tuner_args.toPluginOptions()});
+    }
+    else {
         stop();
         return false;
     }
-    tsp->verbose(u"tuned to transponder %s", {_tuner_args.toPluginOptions()});
 
     // Compute theoretical TS bitrate from tuning parameters.
     const BitRate bitrate = _tuner_args.theoreticalBitrate();
