@@ -148,14 +148,6 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
     DefineDektecIOStandardArgs(*this);
     DefineDektecIPArgs(*this, true); // true = receive
 
-    option(u"atsc3-bandwidth", 0, Enumeration({
-        {u"6-MHz",  DTAPI_ATSC3_6MHZ},
-        {u"7-MHz",  DTAPI_ATSC3_7MHZ},
-        {u"8-MHz",  DTAPI_ATSC3_8MHZ},
-    }));
-    help(u"atsc3-bandwidth",
-         u"ATSC demodulators: indicate the ATSC 3.0 bandwidth. The default is 8-MHz.");
-
     option(u"c2-bandwidth", 0, Enumeration({
         {u"6-MHz",  DTAPI_DVBC2_6MHZ},
         {u"8-MHz",  DTAPI_DVBC2_8MHZ},
@@ -290,7 +282,6 @@ ts::DektecInputPlugin::DektecInputPlugin(TSP* tsp_) :
 
     option(u"modulation", 'm', Enumeration({
         {u"ATSC-VSB",      DTAPI_MOD_ATSC},
-        {u"ATSC-3.0",      DTAPI_MOD_ATSC3},
         {u"DAB",           DTAPI_MOD_DAB},
         {u"DVB-C2",        DTAPI_MOD_DVBC2},
         {u"DVB-S",         DTAPI_MOD_DVBS_QPSK},
@@ -461,15 +452,6 @@ bool ts::DektecInputPlugin::getOptions()
                 mod_ok = atsc != nullptr;
                 if (mod_ok) {
                     atsc->m_Constellation = intValue<int>(u"vsb", DTAPI_MOD_ATSC_VSB8);
-                }
-                break;
-            }
-            case DTAPI_MOD_ATSC3: {
-                Dtapi::DtDemodParsAtsc3* atsc3 = _guts->demod_pars.Atsc3();
-                mod_ok = atsc3 != nullptr;
-                if (mod_ok) {
-                    atsc3->m_Bandwidth = intValue<int>(u"atsc3-bandwidth", DTAPI_ATSC3_8MHZ);
-                    atsc3->m_AlpLenIncludesAhSi = false;
                 }
                 break;
             }

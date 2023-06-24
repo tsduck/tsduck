@@ -200,28 +200,6 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
          u"Channel index on the output Dektec device. By default, use the "
          u"first output channel on the device.");
 
-    option(u"cmmb-area-id", 0, INTEGER, 0, 1, 0, 127);
-    help(u"cmmb-area-id",
-         u"CMMB modulators: indicate the area id. The valid range is 0 to 127. "
-         u"The default is zero.");
-
-    option(u"cmmb-bandwidth", 0, Enumeration({
-        {u"2", DTAPI_CMMB_BW_2MHZ},
-        {u"8", DTAPI_CMMB_BW_8MHZ},
-    }));
-    help(u"cmmb-bandwidth",
-         u"CMMB modulators: indicate bandwidth in MHz. The default is 8 MHz.");
-
-    option(u"cmmb-pid", 0, PIDVAL);
-    help(u"cmmb-pid",
-         u"CMMB modulators: indicate the PID of the CMMB stream in the transport "
-         u"stream. This is a required parameter for CMMB modulation.");
-
-    option(u"cmmb-transmitter-id", 0, INTEGER, 0, 1, 0, 127);
-    help(u"cmmb-transmitter-id",
-         u"CMMB modulators: indicate the transmitter id. The valid range is 0 to "
-         u"127. The default is zero.");
-
     option(u"constellation", 0, Enumeration({
         {u"QPSK",   DTAPI_MOD_DVBT_QPSK},
         {u"16-QAM", DTAPI_MOD_DVBT_QAM16},
@@ -479,7 +457,6 @@ ts::DektecOutputPlugin::DektecOutputPlugin(TSP* tsp_) :
         {u"ISDB-T",        DTAPI_MOD_ISDBT},
         {u"DMB-T",         DTAPI_MOD_DMBTH},
         {u"ADTB-T",        DTAPI_MOD_ADTBT},
-        {u"CMMB",          DTAPI_MOD_CMMB},
     }));
     help(u"modulation",
          u"For modulators, indicate the modulation type. "
@@ -1595,23 +1572,6 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
             const int frame_num = present(u"dmb-frame-numbering") ? DTAPI_MOD_DTMB_USE_FRM_NO : DTAPI_MOD_DTMB_NO_FRM_NO;
             tsp->debug(u"SetModControl(%d, %d, %d, %d)", {modulation_type, bw | constel | fec | header | interleaver | pilots | frame_num, 0, 0});
             status = _guts->chan.SetModControl(modulation_type, bw | constel | fec | header | interleaver | pilots | frame_num, 0, 0);
-            break;
-        }
-
-        case DTAPI_MOD_CMMB: {
-            if (_guts->cur_bitrate <= 0) {
-                return startError(u"unknown bitrate, required with CMMB modulation, use --bitrate option", DTAPI_OK);
-            }
-            if (!present(u"cmmb-pid")) {
-                return startError(u"option --cmmb-pid is required with CMMB modulation", DTAPI_OK);
-            }
-            Dtapi::DtCmmbPars pars;
-            pars.m_Bandwidth = intValue<int>(u"cmmb-bandwidth", DTAPI_CMMB_BW_8MHZ);
-            pars.m_TsRate = int(_guts->cur_bitrate.toInt());
-            pars.m_TsPid = intValue<int>(u"cmmb-pid", 0);
-            pars.m_AreaId = intValue<int>(u"cmmb-area-id", 0);
-            pars.m_TxId = intValue<int>(u"cmmb-transmitter-id", 0);
-            status = _guts->chan.SetModControl(pars);
             break;
         }
 

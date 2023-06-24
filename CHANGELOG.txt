@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3231
+VERSION 3.35-3233
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -26,6 +26,10 @@ VERSION 3.35-3231
   * Fixed issue #1227: When garbage input was interpreted as a DVB service
     prominence descriptor, an infinite loop could occur.
   * Fixed issue #1234: Option --linger did not work with plugins "srt".
+  * In "dektec" input and output plugins, several options and modes were
+    defined but did not support MPEG-TS format. Trying to use them resulted
+	in various errors from the Dektec library. All these options were removed
+	(tracked in issue #550).
 
 -------------------------------------------------------------------------------
 
