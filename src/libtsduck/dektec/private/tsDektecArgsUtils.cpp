@@ -57,6 +57,17 @@ namespace {
 void ts::DefineDektecIOStandardArgs(Args& args)
 {
     args.option(u"io-standard", 0, Enumeration({
+        {u"ASI",                  IoConfigParams(DTAPI_IOCONFIG_ASI)},                                 // DVB-ASI transport stream
+        {u"SPI",                  IoConfigParams(DTAPI_IOCONFIG_SPI)},                                 // DVB-SPI transport stream
+        {u"IF-AD-converter",      IoConfigParams(DTAPI_IOCONFIG_IFADC)},                               // IF A/D converter
+        {u"IP",                   IoConfigParams(DTAPI_IOCONFIG_IP)},                                  // Transport stream over IP
+        {u"dektec-streaming",     IoConfigParams(DTAPI_IOCONFIG_DEKTECST)},                            // DekTec Streaming-data Interface
+        {u"demodulator",          IoConfigParams(DTAPI_IOCONFIG_DEMOD)},                               // Demodulation
+        {u"modulator",            IoConfigParams(DTAPI_IOCONFIG_MOD)},                                 // Modulator output
+        /*
+         * The following modes used to be defined, but they do not support MPEG-TS format.
+         * As a consequence, they are now disabled.
+         *
         {u"12G-SDI-2160p/50",     IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P50)},      // 12G-SDI, 2160p/50 lvl A
         {u"12G-SDI-2160p/50B",    IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P50B)},     // 12G-SDI, 2160p/50 lvl B
         {u"12G-SDI-2160p/59.94",  IoConfigParams(DTAPI_IOCONFIG_12GSDI, DTAPI_IOCONFIG_2160P59_94)},   // 12G-SDI, 2160p/59.94 lvl A
@@ -74,10 +85,7 @@ void ts::DefineDektecIOStandardArgs(Args& args)
         {u"6G-SDI-2160p/25",      IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P25)},       // 6G-SDI, 2160p/25
         {u"6G-SDI-2160p/29.97",   IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P29_97)},    // 6G-SDI, 2160p/29.97
         {u"6G-SDI-2160p/30",      IoConfigParams(DTAPI_IOCONFIG_6GSDI, DTAPI_IOCONFIG_2160P30)},       // 6G-SDI, 2160p/30
-        {u"ASI",                  IoConfigParams(DTAPI_IOCONFIG_ASI)},                                 // DVB-ASI transport stream
         {u"encoder",              IoConfigParams(DTAPI_IOCONFIG_AVENC)},                               // Audio/video encoder
-        {u"dektec-streaming",     IoConfigParams(DTAPI_IOCONFIG_DEKTECST)},                            // DekTec Streaming-data Interface
-        {u"demodulator",          IoConfigParams(DTAPI_IOCONFIG_DEMOD)},                               // Demodulation
         {u"GPS-clock",            IoConfigParams(DTAPI_IOCONFIG_GPSTIME)},                             // 1 PPS and 10 MHz GPS-clock input
         {u"HDMI",                 IoConfigParams(DTAPI_IOCONFIG_HDMI)},                                // HDMI
         {u"HD-SDI-1080i/50",      IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_1080I50)},       // HD-SDI, 1080i/50
@@ -101,17 +109,16 @@ void ts::DefineDektecIOStandardArgs(Args& args)
         {u"HD-SDI-720p/50",       IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P50)},        // HD-SDI, 720p/50
         {u"HD-SDI-720p/59.94",    IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P59_94)},     // HD-SDI, 720p/59.94
         {u"HD-SDI-720p/60",       IoConfigParams(DTAPI_IOCONFIG_HDSDI, DTAPI_IOCONFIG_720P60)},        // HD-SDI, 720p/60
-        {u"IF-AD-converter",      IoConfigParams(DTAPI_IOCONFIG_IFADC)},                               // IF A/D converter
-        {u"IP",                   IoConfigParams(DTAPI_IOCONFIG_IP)},                                  // Transport stream over IP
-        {u"modulator",            IoConfigParams(DTAPI_IOCONFIG_MOD)},                                 // Modulator output
         {u"phase-noise",          IoConfigParams(DTAPI_IOCONFIG_PHASENOISE)},                          // Phase noise injection
         {u"RS422",                IoConfigParams(DTAPI_IOCONFIG_RS422)},                               // RS422 port
         {u"SDI-receiver",         IoConfigParams(DTAPI_IOCONFIG_SDIRX)},                               // SDI receiver
         {u"SDI-525i/59.94",       IoConfigParams(DTAPI_IOCONFIG_SDI, DTAPI_IOCONFIG_525I59_94)},       // SDI, 525i/59.94
         {u"SDI-625i/50",          IoConfigParams(DTAPI_IOCONFIG_SDI, DTAPI_IOCONFIG_625I50)},          // SDI, 625i/50
-        {u"SPI",                  IoConfigParams(DTAPI_IOCONFIG_SPI)},                                 // DVB-SPI transport stream
         {u"SPI-SDI-525i/59.94",   IoConfigParams(DTAPI_IOCONFIG_SPISDI, DTAPI_IOCONFIG_SPI525I59_94)}, // SD-SDI on a parallel port, 525i/59.94
         {u"SPI-SDI-625i/50",      IoConfigParams(DTAPI_IOCONFIG_SPISDI, DTAPI_IOCONFIG_SPI625I50)},    // SD-SDI on a parallel port, 625i/50
+         *
+         * End of disabled modes.
+         */
     }));
     args.help(u"io-standard",
               u"I/O standard to use on the device port. "
