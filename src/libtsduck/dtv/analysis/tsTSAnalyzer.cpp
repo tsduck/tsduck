@@ -31,6 +31,7 @@
 #include "tsT2MIPacket.h"
 #include "tsTVCT.h"
 #include "tsCVCT.h"
+#include "tsServiceDescriptor.h"
 #include "tsNetworkNameDescriptor.h"
 #include "tsAACDescriptor.h"
 #include "tsISO639LanguageDescriptor.h"
@@ -397,6 +398,27 @@ ts::UString ts::TSAnalyzer::ServiceContext::getName() const
 
 
 //----------------------------------------------------------------------------
+// Update a service context with information from a descriptor list.
+//----------------------------------------------------------------------------
+
+void ts::TSAnalyzer::ServiceContext::update(DuckContext& duck, const DescriptorList& descs)
+{
+    // Look for a service_descriptor and get service characteristics.
+    ServiceDescriptor srv_desc;
+    if (descs.search(duck, DID_SERVICE, srv_desc) < descs.size()) {
+        service_type = srv_desc.service_type;
+        // Replace names only if they are not empty.
+        if (!srv_desc.provider_name.empty()) {
+            provider = srv_desc.provider_name;
+        }
+        if (!srv_desc.service_name.empty()) {
+            name = srv_desc.service_name;
+        }
+    }
+}
+
+
+//----------------------------------------------------------------------------
 // Return an ETID context. Allocate a new entry if ETID not found.
 //----------------------------------------------------------------------------
 
@@ -722,6 +744,9 @@ void ts::TSAnalyzer::analyzePMT(PID pid, const PMT& pmt)
     // Process "program info" list of descriptors.
     analyzeDescriptors(pmt.descs, svp.pointer());
 
+    // Some broadcasters incorrectly place the service_descriptor in the PMT instead of the SDT.
+    svp->update(_duck, pmt.descs);
+
     // Process all "elementary stream info"
     for (auto& it : pmt.streams) {
         const PID es_pid = it.first;
@@ -779,22 +804,9 @@ void ts::TSAnalyzer::analyzeSDT(const SDT& sdt)
 {
     // Register characteristics of all services
     for (auto& it : sdt.services) {
-
         ServiceContextPtr svp(getService(it.first)); // it->first = map key = service id
-        const SDT::ServiceEntry& entry(it.second);
-
         svp->orig_netw_id = sdt.onetw_id;
-        svp->service_type = entry.serviceType(_duck);
-
-        // Replace names only if they are not empty.
-        const UString provider(entry.providerName(_duck));
-        const UString name(entry.serviceName(_duck));
-        if (!provider.empty()) {
-            svp->provider = provider;
-        }
-        if (!name.empty()) {
-            svp->name = name;
-        }
+        svp->update(_duck, it.second.descs);
     }
 }
 

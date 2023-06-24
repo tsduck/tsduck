@@ -212,6 +212,13 @@ namespace ts {
             //! @return A displayable provider name.
             //!
             UString getProvider() const;
+
+            //!
+            //! Update service information from a descriptor list.
+            //! @param [in,out] duck TSDuck execution context.
+            //! @param [in] descs Descriptor list from SDT or PMT.
+            //!
+            void update(DuckContext& duck, const DescriptorList& descs);
         };
 
         //!
