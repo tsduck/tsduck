@@ -2,10 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3235
+VERSION 3.35-3236
 
 [NEW] New commands and plugins:
 
+  * Added plugin "dump" to dump TS packets (similar to command "tsdump").
   * Added experimental plugin "feed" to extract an encapsulated transport
     stream from a feed.
 
@@ -17,6 +18,7 @@ VERSION 3.35-3235
     - Delete a higher-level parent on a structure match.
       Example: <PMT> <component stream_type="0x06" x-node="delete(PMT)"/>
   * New options in existing commands and plugins:
+    - Option --adaptation-field in "tsdump".
     - Unix: Option --disable-multicast-loop in output plugin "ip".
     - Windows: Option --disable-multicast-loop in "tstabdump", input plugin
       "ip", plugins "cutoff" and "mpeinject".
@@ -33,8 +35,8 @@ VERSION 3.35-3235
   * Fixed issue #1234: Option --linger did not work with plugins "srt".
   * In "dektec" input and output plugins, several options and modes were
     defined but did not support MPEG-TS format. Trying to use them resulted
-	in various errors from the Dektec library. All these options were removed
-	(tracked in issue #550).
+    in various errors from the Dektec library. All these options were removed
+    (tracked in issue #550).
 
 -------------------------------------------------------------------------------
 

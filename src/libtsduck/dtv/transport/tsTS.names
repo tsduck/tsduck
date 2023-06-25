@@ -5,3 +5,17 @@ Bits = 2
 1 = DVB-reserved (1)
 2 = even
 3 = odd
+
+[ts.af_descriptor_tag]
+# In  header
+Bits = 8
+0x04 = Timeline descriptor
+0x05 = Location descriptor
+0x06 = BaseURL descriptor
+0x07 = Cets_byte_range_descriptor
+0x08 = AF_MPEG-H_3dAudio_extStreamID_descriptor
+0x09 = AF_MPEG-H_3dAudio_multi-stream_descriptor
+0x0A = AF_MPEG-H_3dAudio_command_descriptor
+0x0B = Boundary Descriptor
+0x0C = Labeling Descriptor
+0x0D = HEVC_tile_substream_ af_descriptor

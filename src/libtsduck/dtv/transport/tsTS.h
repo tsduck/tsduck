@@ -556,4 +556,22 @@ namespace ts {
     //! @return The corresponding number of milliseconds or -1 on invalid value.
     //!
     TSDUCKDLL MilliSecond PTSToMilliSecond(uint64_t pts);
+
+    //---------------------------------------------------------------------
+    //! Adaptation field descriptor tags.
+    //! @see ISO 13818-1 / ITU-T Rec. H.262.0, section U.3
+    //---------------------------------------------------------------------
+
+    enum : uint8_t {
+        AFDID_TIMELINE        = 0x04,  //!< Timeline descriptor
+        AFDID_LOCATION        = 0x05,  //!< Location descriptor
+        AFDID_BASEURL         = 0x06,  //!< BaseURL descriptor
+        AFDID_CETS_BRANGE     = 0x07,  //!< Cets_byte_range_descriptor
+        AFDID_3DA_EXTSTREAM   = 0x08,  //!< AF_MPEG-H_3dAudio_extStreamID_descriptor
+        AFDID_3DA_MULTISTREAM = 0x09,  //!< AF_MPEG-H_3dAudio_multi-stream_descriptor
+        AFDID_3DA_COMMAND     = 0x0A,  //!< AF_MPEG-H_3dAudio_command_descriptor
+        AFDID_BOUNDARY        = 0x0B,  //!< Boundary Descriptor
+        AFDID_LABELING        = 0x0C,  //!< Labeling Descriptor
+        AFDID_HEVC_TILE       = 0x0D,  //!< HEVC_tile_substream_af_descriptor
+    };
 }
