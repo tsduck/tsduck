@@ -28,20 +28,50 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Command line arguments for transport stream packets dump.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 35
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 3236
+#include "tsTS.h"
+
+namespace ts {
+
+    class Args;
+    class DuckContext;
+
+    //!
+    //! Command line arguments for transport stream packets dump.
+    //! @ingroup cmd
+    //!
+    class TSDUCKDLL TSDumpArgs
+    {
+        TS_NOCOPY(TSDumpArgs);
+    public:
+        // Public fields
+        uint32_t dump_flags;  //!< Dump options for Hexa and Packet::dump
+        bool     log;         //!< Option -\-log
+        size_t   log_size;    //!< Size to display with -\-log
+        PIDSet   pids;        //!< PID values to dump
+
+        //!
+        //! Default constructor.
+        //!
+        TSDumpArgs();
+
+        //!
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
+        //!
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
+    };
+}

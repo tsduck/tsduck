@@ -31,6 +31,8 @@
 #include "tsPES.h"
 #include "tsNamesFile.h"
 #include "tsByteBlock.h"
+#include "tsBuffer.h"
+#include "tsNamesFile.h"
 
 
 //----------------------------------------------------------------------------
@@ -1003,7 +1005,7 @@ std::istream& ts::TSPacket::read(std::istream& strm, bool check_sync, Report& re
     }
     else if (!strm.eof()) {
         // Not an EOF, actual I/O error
-        report.error(u"I/O error while reading TS packet" + AfterPackets (position));
+        report.error(u"I/O error while reading TS packet%s", {AfterPackets(position)});
     }
     else if (insize > 0) {
         // EOF, got partial packet.
@@ -1031,6 +1033,27 @@ std::ostream& ts::TSPacket::write(std::ostream& strm, Report& report) const
 }
 
 //----------------------------------------------------------------------------
+// Formatting helpers
+//----------------------------------------------------------------------------
+
+namespace {
+    ts::UString timeStampsString(uint64_t pcr, uint64_t opcr)
+    {
+        ts::UString str;
+        if (pcr != ts::INVALID_PCR) {
+            str.format(u"PCR: 0x%011X", {pcr});
+            if (opcr != ts::INVALID_PCR) {
+                str.append(u", ");
+            }
+        }
+        if (opcr != ts::INVALID_PCR) {
+            str.format(u"OPCR: 0x%011X", {opcr});
+        }
+        return str;
+    }
+}
+
+//----------------------------------------------------------------------------
 // This method displays the content of a transport packet.
 //----------------------------------------------------------------------------
 
@@ -1041,27 +1064,23 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
     // The 16 MSB contains flags specific to ts_dump_packet.
     // The 16 LSB contains flags for ts_hexa_dump.
     // Supply default dump option:
-
     if ((flags & 0xFFFF0000) == 0) {
         flags |= DUMP_RAW;
     }
 
     // Filter invalid packets
-
     if (!hasValidSync()) {
         strm << margin << "**** INVALID PACKET ****" << std::endl;
         flags = (flags & 0x0000FFFF) | DUMP_RAW;
     }
 
     // Display full packet or payload only.
-
     const size_t header_size = getHeaderSize();
     const size_t payload_size = getPayloadSize();
     const uint8_t* const display_data = (flags & DUMP_PAYLOAD) ? b + header_size : b;
     const size_t display_size = std::min((flags & DUMP_PAYLOAD) ? payload_size : PKT_SIZE, max_size);
 
     // Handle single line mode.
-
     if (flags & UString::SINGLE_LINE) {
         strm << margin;
         if (flags & DUMP_TS_HEADER) {
@@ -1079,39 +1098,109 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
     const uint64_t pts = getPTS();
 
     // Display TS header
-
     if (flags & DUMP_TS_HEADER) {
         strm << margin << "---- TS Header ----" << std::endl
              << margin << UString::Format(u"PID: %d (0x%X), header size: %d, sync: 0x%X", {getPID(), getPID(), header_size, b[0]}) << std::endl
              << margin << "Error: " << getTEI() << ", unit start: " << getPUSI() << ", priority: " << getPriority() << std::endl
-             << margin << "Scrambling: " << int (getScrambling()) << ", continuity counter: " << int (getCC()) << std::endl
-             << margin << "Adaptation field: " << UString::YesNo (hasAF()) << " (" << getAFSize() << " bytes)"
-             << ", payload: " << UString::YesNo (hasPayload()) << " (" << getPayloadSize() << " bytes)" << std::endl;
-        if (hasAF()) {
+             << margin << "Scrambling: " << int(getScrambling()) << ", continuity counter: " << int(getCC()) << std::endl
+             << margin << "Adaptation field: " << UString::YesNo(hasAF()) << " (" << getAFSize() << " bytes)"
+             << ", payload: " << UString::YesNo(hasPayload()) << " (" << getPayloadSize() << " bytes)" << std::endl;
+
+        // Without explicit adaptation field analysis, just display the most important info from AF.
+        if (hasAF() && !(flags & DUMP_AF)) {
             strm << margin << "Discontinuity: " << getDiscontinuityIndicator()
                  << ", random access: " << getRandomAccessIndicator()
                  << ", ES priority: " << getESPI() << std::endl;
+            if (hasSpliceCountdown()) {
+                strm << margin << "Splice countdown: " << int(getSpliceCountdown()) << std::endl;
+            }
+            if (pcr != INVALID_PCR || opcr != INVALID_PCR) {
+                strm << margin << timeStampsString(pcr, opcr) << std::endl;
+            }
         }
-        if (hasSpliceCountdown()) {
-            strm << margin << "Splice countdown: " << int(getSpliceCountdown()) << std::endl;
+    }
+
+    // Display adaptation field.
+    size_t afsize = getAFSize();
+    if (hasAF() && (flags & DUMP_AF) && afsize > 1) {
+        strm << margin << "---- Adaptation field (" << afsize << " bytes) ----" << std::endl;
+        if (4 + afsize > PKT_SIZE) {
+            strm << margin << "*** invalid adaptation field size" << std::endl;
+            afsize = PKT_SIZE - 4;
         }
+        // Deserialization buffer over AF payload (skip initial length field).
+        Buffer buf(b + 5, afsize - 1);
+        strm << margin << "Discontinuity: " << int(buf.getBit());
+        strm << ", random access: " << int(buf.getBit());
+        strm << ", ES priority: " << int(buf.getBit()) << std::endl;
+        const bool PCR_flag = buf.getBool();
+        const bool OPCR_flag = buf.getBool();
+        const bool splicing_point_flag = buf.getBool();
+        const bool transport_private_data_flag = buf.getBool();
+        const bool adaptation_field_extension_flag = buf.getBool();
         if (pcr != INVALID_PCR || opcr != INVALID_PCR) {
-            strm << margin;
-            if (pcr != INVALID_PCR) {
-                strm << UString::Format(u"PCR: 0x%011X", {pcr});
-                if (opcr != INVALID_PCR) {
-                    strm << ", ";
+            strm << margin << timeStampsString(pcr, opcr) << std::endl;
+        }
+        if (PCR_flag) {
+            buf.skipBits(48);
+        }
+        if (OPCR_flag) {
+            buf.skipBits(48);
+        }
+        if (splicing_point_flag && buf.canReadBits(8)) {
+            strm << margin << "Splice countdown: " << int(buf.getUInt8()) << std::endl;
+        }
+        if (transport_private_data_flag && buf.canReadBits(8)) {
+            buf.pushReadSizeFromLength(8);
+            strm << margin << "Private data (" << buf.remainingReadBytes() << " bytes): " << std::endl;
+            if (buf.canRead()) {
+                strm << UString::Dump(buf.getBytes(), UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, margin.size() + 2, 16);
+            }
+            buf.popState();
+        }
+        if (adaptation_field_extension_flag && buf.canReadBits(8)) {
+            buf.pushReadSizeFromLength(8);
+            const bool ltw_flag = buf.getBool();
+            const bool piecewise_rate_flag = buf.getBool();
+            const bool seamless_splice_flag = buf.getBool();
+            const bool af_descriptor_not_present_flag = buf.getBool();
+            buf.skipBits(4);
+            if (ltw_flag && buf.canReadBits(16)) {
+                strm << margin << "LTW valid: " << int(buf.getBit());
+                strm << ", offset: " << UString::Decimal(buf.getBits<uint16_t>(15)) << std::endl;
+            }
+            if (piecewise_rate_flag && buf.canReadBits(24)) {
+                buf.skipBits(2);
+                strm << margin << "Piecewise rate: " << UString::Decimal(buf.getBits<uint16_t>(22)) << std::endl;
+            }
+            if (seamless_splice_flag && buf.canReadBits(40)) {
+                strm << margin << "Splice type: " << buf.getBits<int>(4) << std::endl;
+                uint64_t dts_next_au = buf.getBits<uint64_t>(3) << 30;
+                buf.skipBits(1);
+                dts_next_au |= buf.getBits<uint64_t>(15) << 15;
+                buf.skipBits(1);
+                dts_next_au |= buf.getBits<uint64_t>(15);
+                buf.skipBits(1);
+                strm << UString::Format(u"DTS next AU: 0x%09X", {dts_next_au}) << std::endl;
+            }
+            if (!af_descriptor_not_present_flag) {
+                strm << margin << "AF descriptors (" << buf.remainingReadBytes() << " bytes): " << std::endl;
+                while (buf.canReadBytes(2)) {
+                    strm << margin << "- Tag: " << NameFromDTV(u"ts.af_descriptor_tag", buf.getUInt8(), NamesFlags::FIRST) << std::endl;
+                    const size_t len = buf.getUInt8();
+                    strm << margin << "  Length: " << len << " bytes" << std::endl
+                         << UString::Dump(buf.getBytes(len), UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, margin.size() + 2, 16);
                 }
             }
-            if (opcr != INVALID_PCR) {
-                strm << UString::Format(u"OPCR: 0x%011X", {opcr});
-            }
-            strm << std::endl;
+            buf.popState();
+        }
+        if (buf.canRead()) {
+            strm << margin << "Stuffing (" << buf.remainingReadBytes() << " bytes): " << std::endl
+                 << UString::Dump(buf.getBytes(), UString::HEXA | UString::ASCII | UString::OFFSET | UString::BPL, margin.size() + 2, 16);
         }
     }
 
     // Display PES header
-
     if (startPES() && (flags & DUMP_PES_HEADER)) {
         uint8_t sid = b[header_size + 3];
         uint16_t length = GetUInt16(b + header_size + 4);
@@ -1156,7 +1245,6 @@ std::ostream& ts::TSPacket::display(std::ostream& strm, uint32_t flags, size_t i
     }
 
     // Display full packet or payload in hexa
-
     if (flags & (DUMP_RAW | DUMP_PAYLOAD)) {
         if (flags & DUMP_RAW) {
             strm << margin << "---- Full TS Packet Content ----" << std::endl;

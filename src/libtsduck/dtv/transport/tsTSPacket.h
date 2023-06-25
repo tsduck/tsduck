@@ -801,7 +801,8 @@ namespace ts {
             DUMP_RAW        = 0x00010000,  //!< Complete packet in hexadecimal (default)
             DUMP_TS_HEADER  = 0x00020000,  //!< Decode/format TS header
             DUMP_PES_HEADER = 0x00040000,  //!< Decode/format PES header
-            DUMP_PAYLOAD    = 0x00080000   //!< Payload in hexadecimal
+            DUMP_PAYLOAD    = 0x00080000,  //!< Payload in hexadecimal
+            DUMP_AF         = 0x00100000,  //!< Decode/format adaptation field
         };
 
         //!
