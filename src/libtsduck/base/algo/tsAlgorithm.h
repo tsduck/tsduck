@@ -181,7 +181,17 @@ namespace ts {
     //! @return The list of all keys in @a container.
     //!
     template <class MAP>
-    std::list<typename MAP::key_type> MapKeys(const MAP& container);
+    std::list<typename MAP::key_type> MapKeysList(const MAP& container);
+
+    //!
+    //! Get the set of all keys in a map.
+    //!
+    //! @tparam MAP A map container class as defined by the C++ Standard Template Library (STL).
+    //! @param [in] container A container of objects.
+    //! @return The set of all keys in @a container.
+    //!
+    template <class MAP>
+    std::set<typename MAP::key_type> MapKeysSet(const MAP& container);
 
     //!
     //! Get the list of all values in a map.
@@ -191,7 +201,7 @@ namespace ts {
     //! @return The list of all values in @a container.
     //!
     template <class MAP>
-    std::list<typename MAP::mapped_type> MapValues(const MAP& container);
+    std::list<typename MAP::mapped_type> MapValuesList(const MAP& container);
 
     //!
     //! Build a vector of integers containing all values in a range.

@@ -2,7 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3233
+VERSION 3.35-3235
+
+[NEW] New commands and plugins:
+
+  * Added experimental plugin "feed" to extract an encapsulated transport
+    stream from a feed.
 
 [IMP] Improvements on existing commands and plugins:
 

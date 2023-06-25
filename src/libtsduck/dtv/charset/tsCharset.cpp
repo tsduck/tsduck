@@ -84,7 +84,7 @@ const ts::Charset* ts::Charset::Repository::get(const UString& name) const
 
 ts::UStringList ts::Charset::Repository::getAllNames() const
 {
-    return MapKeys(_map);
+    return MapKeysList(_map);
 }
 
 void ts::Charset::Repository::add(const UString& name, const Charset* charset)

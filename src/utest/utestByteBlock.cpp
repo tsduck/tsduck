@@ -49,10 +49,12 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
+    void testFind();
     void testAppend();
     void testFile();
 
     TSUNIT_TEST_BEGIN(ByteBlockTest);
+    TSUNIT_TEST(testFind);
     TSUNIT_TEST(testAppend);
     TSUNIT_TEST(testFile);
     TSUNIT_TEST_END();
@@ -93,6 +95,16 @@ void ByteBlockTest::afterTest()
 //----------------------------------------------------------------------------
 // Unitary tests.
 //----------------------------------------------------------------------------
+
+void ByteBlockTest::testFind()
+{
+    ts::ByteBlock v;
+    TSUNIT_EQUAL(ts::NPOS, v.find(1));
+    v = {2, 4, 7, 9};
+    TSUNIT_EQUAL(ts::NPOS, v.find(1));
+    TSUNIT_EQUAL(0, v.find(2));
+    TSUNIT_EQUAL(3, v.find(9));
+}
 
 void ByteBlockTest::testAppend()
 {
