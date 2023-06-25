@@ -183,17 +183,17 @@ ts::PluginRepository::OutputPluginFactory ts::PluginRepository::getOutput(const 
 
 ts::UStringList ts::PluginRepository::inputNames() const
 {
-    return MapKeys(_inputPlugins);
+    return MapKeysList(_inputPlugins);
 }
 
 ts::UStringList ts::PluginRepository::processorNames() const
 {
-    return MapKeys(_processorPlugins);
+    return MapKeysList(_processorPlugins);
 }
 
 ts::UStringList ts::PluginRepository::outputNames() const
 {
-    return MapKeys(_outputPlugins);
+    return MapKeysList(_outputPlugins);
 }
 
 

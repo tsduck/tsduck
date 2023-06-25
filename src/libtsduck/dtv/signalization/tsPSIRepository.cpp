@@ -433,12 +433,12 @@ void ts::PSIRepository::getRegisteredDescriptorIds(std::vector<EDID>& ids) const
 
 void ts::PSIRepository::getRegisteredTableNames(UStringList& names) const
 {
-    names = MapKeys(_tableNames);
+    names = MapKeysList(_tableNames);
 }
 
 void ts::PSIRepository::getRegisteredDescriptorNames(UStringList& names) const
 {
-    names = MapKeys(_descriptorNames);
+    names = MapKeysList(_descriptorNames);
 }
 
 void ts::PSIRepository::getRegisteredTablesModels(UStringList& names) const

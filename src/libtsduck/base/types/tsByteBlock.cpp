@@ -85,6 +85,20 @@ ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
 }
 
 //----------------------------------------------------------------------------
+// Find the first occurence of a byte value in a byte block.
+//----------------------------------------------------------------------------
+
+ts::ByteBlock::size_type ts::ByteBlock::find(uint8_t value)
+{
+    for (size_type i = 0; i < size(); ++i) {
+        if ((*this)[i] == value) {
+            return i;
+        }
+    }
+    return NPOS;
+}
+
+//----------------------------------------------------------------------------
 // Replace the content of a byte block.
 //----------------------------------------------------------------------------
 

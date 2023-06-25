@@ -184,20 +184,30 @@ size_t ts::LargestSize(const CONTAINER& container)
 //----------------------------------------------------------------------------
 
 template <class MAP>
-std::list<typename MAP::key_type> ts::MapKeys(const MAP& container)
+std::list<typename MAP::key_type> ts::MapKeysList(const MAP& container)
 {
     std::list<typename MAP::key_type> keys;
-    for (auto& it : container) {
+    for (const auto& it : container) {
         keys.push_back(it.first);
     }
     return keys;
 }
 
 template <class MAP>
-std::list<typename MAP::mapped_type> ts::MapValues(const MAP& container)
+std::set<typename MAP::key_type> ts::MapKeysSet(const MAP& container)
+{
+    std::set<typename MAP::key_type> keys;
+    for (const auto& it : container) {
+        keys.insert(it.first);
+    }
+    return keys;
+}
+
+template <class MAP>
+std::list<typename MAP::mapped_type> ts::MapValuesList(const MAP& container)
 {
     std::list<typename MAP::mapped_type> values;
-    for (auto& it : container) {
+    for (const auto& it : container) {
         values.push_back(it.second);
     }
     return values;

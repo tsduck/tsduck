@@ -102,6 +102,13 @@ namespace ts {
         TSDUCKDLL ByteBlock(std::initializer_list<uint8_t> init);
 
         //!
+        //! Find the first occurence of a byte value in a byte block.
+        //! @param [in] value The byte value to search.
+        //! @return The index of the first occurence of @a value in the byte block or @a NPOS if not found.
+        //!
+        TSDUCKDLL size_type find(uint8_t value);
+
+        //!
         //! Replace the content of a byte block.
         //! @param [in] data Address of the new area to copy.
         //! @param [in] size Size of the area to copy.
