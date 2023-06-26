@@ -218,8 +218,10 @@
 
 // With GCC 5.1 and higher, force the usage of the new C++11 ABI.
 // This is normally the default, but may need to be forced on some GCC versions immedately after 5.1.
-#if defined(TS_GCC_VERSION) && TS_GCC_VERSION >= 50100 && defined(TS_CXX11) && !defined(_GLIBCXX_USE_CXX11_ABI)
-    #define _GLIBCXX_USE_CXX11_ABI 1
+#if defined(TS_GCC_VERSION) && !defined(DOXYGEN)
+    #if TS_GCC_VERSION >= 50100 && defined(TS_CXX11) && !defined(_GLIBCXX_USE_CXX11_ABI)
+        #define _GLIBCXX_USE_CXX11_ABI 1
+    #endif
 #endif
 
 
