@@ -181,6 +181,9 @@ bool ts::TunerBase::GetAllTuners(DuckContext& duck, TunerPtrVector& tuners)
             ok = false;
             tuners[index].clear();
             tuners.resize(index);
+        } else {
+            // Close all file descriptors, this it's possible to list multiple frontends in the same tuner/device.
+            tuners[index]->abort(true);
         }
     }
 
@@ -494,7 +497,7 @@ bool ts::TunerDevice::close(bool silent)
 
 void ts::TunerDevice::abort(bool silent)
 {
-    // Hord close of all file descriptors, hoping that pending I/O's will be canceled.
+    // Hard close of all file descriptors, hoping that pending I/O's will be canceled.
     // In the case of a current read operation on the dvr, it has been noticed that
     // closing the file descriptor make the read operation hang forever. We try to
     // mitigate this risk with a volatile boolean which is set around read() but
