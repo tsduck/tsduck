@@ -218,12 +218,12 @@ bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
         }
         else if (_relative) {
             // Decode relative time string (a number of seconds)
-            MilliSecond second = 0;
-            if (!timeString.toInteger(second)) {
+            MilliSecond milliSeconds = 0;
+            if (!timeString.toInteger(milliSeconds, UString(), 3)) {
                 tsp->error(u"invalid relative number of seconds: %s", {timeString});
                 return false;
             }
-            _events.push_back(TimeEvent(status, start_time + second * MilliSecPerSec));
+            _events.push_back(TimeEvent(status, start_time + milliSeconds));
         }
         else {
             // Decode an absolute time string
