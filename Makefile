@@ -275,7 +275,7 @@ deb-tools-control:
 	    $(if $(NORIST),-e '/librist/d',-e 's/ librist,/ $(call F_GETSODPKG,librist)/') \
 	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit,/ $(call F_GETSODPKG,libedit)/') \
 	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb,/ $(call F_GETSODPKG,libusb)/') \
-	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc,/ $(call F_GETSODPKG,libpcsc)/') \
+	    $(if $(NOPCSC),-e '/libpcsc/d',-e 's/ libpcsc,/ $(call F_GETSODPKG,libpcsc)/') \
 	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl,/ $(call F_GETSODPKG,libcurl)/') \
 	    $(SCRIPTSDIR)/tsduck.control >$(TMPROOT)/DEBIAN/control
 
@@ -287,7 +287,7 @@ deb-dev-control:
 	    $(if $(NORIST),-e '/librist/d',-e 's/ librist-dev,/ $(call F_GETDPKG,librist/librist.h)/') \
 	    $(if $(NOEDITLINE),-e '/libedit/d',-e 's/ libedit-dev,/ $(call F_GETDPKG,editline/readline.h)/') \
 	    $(if $(NOVATEK),-e '/libusb/d',-e 's/ libusb-dev,/ $(call F_GETDPKG,libusb.h)/') \
-	    $(if $(NOPCSC),-e '/libpcsc/d,-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h)/') \
+	    $(if $(NOPCSC),-e '/libpcsc/d',-e 's/ libpcsc-dev,/ $(call F_GETDPKG,PCSC/reader.h)/') \
 	    $(if $(NOCURL),-e '/libcurl/d',-e 's/ libcurl-dev,/ $(call F_GETDPKG,curl/curl.h)/') \
 	    $(SCRIPTSDIR)/tsduck-dev.control >$(TMPROOT)/DEBIAN/control
 
