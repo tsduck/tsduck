@@ -374,13 +374,22 @@ endif
 
 # Cross-compilation support.
 # If $(CROSS) is defined (any non-empty value), perform a cross-compilation build.
-# $(CROSS_TARGET) is the target name of the cross-compilation (e.g. arm-unknown-linux-gnueabi).
-# If undefined but $(CROSS) is defined, we locate the first GCC executable with path
-# $(CROSS_PREFIX)/TARGET/bin/TARGET-gcc.
+# Cross-build tools:
+#   $(CROSS_TARGET) is the target name of the cross-compilation (e.g. arm-unknown-linux-gnueabi).
+#   If $(CROSS_TARGET) is undefined but $(CROSS) is defined, we locate the first GCC executable
+#   with path $(CROSS_PREFIX)/TARGET/bin/TARGET-gcc.
+# Native installation of TSDuck:
+#   The last phase of the build uses tsxml, a TSDuck tool which is built in earlier phases.
+#   Using cross-compilation, this tsxml cannot run on the native system. A native installation
+#   of TSDuck is required. If not installed in the $PATH, a native TSDuck must have been compiled
+#   somewhere and NATIVEBINDIR must point to the BINDIR of the native build.
 
 ifeq ($(CROSS)$(CROSS_TARGET),)
     CXXFLAGS_CROSS =
     LDFLAGS_CROSS =
+    TSXML = LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" \
+        $(if $(MACOS),DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)") \
+        $(BINDIR)/tsxml
 else
     CROSS ?= true
     # Cross-compilation tools are in /usr/local by default.
@@ -398,9 +407,16 @@ else
     override CXXFLAGS_TARGET :=
     override GCC_VERSION_DONE :=
     # Redirect build tools.
-    CXX = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-g++
-    GCC = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-gcc
-    LD  = $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-ld
+    F_SEARCH_CROSS = $(firstword $(wildcard \
+        $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(CROSS_TARGET)-$(1) \
+        $(CROSS_PREFIX)/$(CROSS_TARGET)/bin/$(1) \
+        $(CROSS_PREFIX)/bin/$(CROSS_TARGET)-$(1)))
+    CXX := $(call F_SEARCH_CROSS,g++)
+    GCC := $(call F_SEARCH_CROSS,gcc)
+    LD  := $(call F_SEARCH_CROSS,ld)
+    $(if $(CXX),,$(error cross g++ not found for $(CROSS_TARGET)))
+    $(if $(GCC),,$(error cross gcc not found for $(CROSS_TARGET)))
+    $(if $(LD),,$(error cross ld not found for $(CROSS_TARGET)))
     # Add options. The layout can be different, so use them all.
     CXXFLAGS_CROSS = -I$(CROSS_PREFIX)/$(CROSS_TARGET)/include \
                      -I$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/include \
@@ -408,6 +424,15 @@ else
     LDFLAGS_CROSS  = -L$(CROSS_PREFIX)/$(CROSS_TARGET)/lib \
                      -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/lib \
                      -L$(CROSS_PREFIX)/$(CROSS_TARGET)/$(CROSS_TARGET)/libc/lib
+    TSXML ?= $(call F_SEARCH,tsxml)
+    ifeq ($(TSXML),)
+        ifneq ($(wildcard $(NATIVEBINDIR)/tsxml),)
+            TSXML = LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" \
+                $(if $(MACOS),DYLD_LIBRARY_PATH="$(NATIVEBINDIR):$(DYLD_LIBRARY_PATH)") \
+                $(NATIVEBINDIR)/tsxml
+        endif
+    endif
+    $(if $(TSXML),,$(error no native TSDuck found for cross-compilation, check NATIVEBINDIR))
 endif
 
 # Get current compiler version, usually in form x.y.z
