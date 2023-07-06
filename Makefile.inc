@@ -384,6 +384,13 @@ endif
 #   of TSDuck is required. If not installed in the $PATH, a native TSDuck must have been compiled
 #   somewhere and NATIVEBINDIR must point to the BINDIR of the native build.
 
+ifneq ($(NATIVEBINDIR),)
+    # NATIVEBINDIR is specified in input, transform it into an absolute path for recursion.
+    INNATIVEBINDIR := $(NATIVEBINDIR)
+    override NATIVEBINDIR := $(abspath $(INNATIVEBINDIR))
+    MAKEOVERRIDES := $(subst NATIVEBINDIR=$(INNATIVEBINDIR),NATIVEBINDIR=$(NATIVEBINDIR),$(MAKEOVERRIDES))
+endif
+
 ifeq ($(CROSS)$(CROSS_TARGET),)
     CXXFLAGS_CROSS =
     LDFLAGS_CROSS =
