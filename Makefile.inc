@@ -387,9 +387,10 @@ endif
 ifeq ($(CROSS)$(CROSS_TARGET),)
     CXXFLAGS_CROSS =
     LDFLAGS_CROSS =
-    TSXML = LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" \
-        $(if $(MACOS),DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)") \
-        $(BINDIR)/tsxml
+    NATIVEBINDIR ?= $(BINDIR)
+    TSXML = LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" \
+        $(if $(MACOS),DYLD_LIBRARY_PATH="$(NATIVEBINDIR):$(DYLD_LIBRARY_PATH)") \
+        $(NATIVEBINDIR)/tsxml
 else
     CROSS ?= true
     # Cross-compilation tools are in /usr/local by default.
