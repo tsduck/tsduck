@@ -63,11 +63,11 @@ $(BINDIR)/%: %
 
 # Generate the complete configuration files from separate files.
 
-$(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(BINDIR)/tsxml
-	@echo '  [GEN] $(notdir $@)'; \
-	LD_LIBRARY_PATH="$(BINDIR):$(LD_LIBRARY_PATH)" \
-	$(if $(MACOS),DYLD_LIBRARY_PATH="$(BINDIR):$(DYLD_LIBRARY_PATH)") \
-	$(BINDIR)/tsxml --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
+$(TABLES_DEST): $(TABLES_SRC) $(TABLES_SUBS) $(NATIVEBINDIR)/tsxml
+	@echo '  [GEN] $(NATIVEBINDIR) $(notdir $@)'; \
+	LD_LIBRARY_PATH="$(NATIVEBINDIR):$(LD_LIBRARY_PATH)" \
+	$(if $(MACOS),DYLD_LIBRARY_PATH="$(NATIVEBINDIR):$(DYLD_LIBRARY_PATH)") \
+	$(NATIVEBINDIR)/tsxml --merge $(TABLES_SRC) $(TABLES_SUBS) --sort _tables --sort _descriptors --uncomment -o $@
 
 $(NAMES_DEST): $(NAMES_SRC)
 	@echo '  [GEN] $(notdir $@)'; \

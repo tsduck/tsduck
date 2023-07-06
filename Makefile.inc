@@ -310,6 +310,15 @@ else
     BINDIR = $(ROOTDIR)/bin/release-$(MAIN_ARCH)$(if $(HOSTNAME),-$(HOSTNAME),)$(BINDIR_SUFFIX)
 endif
 
+ifneq ($(NATIVEBINDIR),)
+    # NATIVEBINDIR is specified in input, transform it into an absolute path for recursion.
+    INNATIVEBINDIR := $(NATIVEBINDIR)
+    override NATIVEBINDIR := $(abspath $(INNATIVEBINDIR))
+    MAKEOVERRIDES := $(subst NATIVEBINDIR=$(INNATIVEBINDIR),NATIVEBINDIR=$(NATIVEBINDIR),$(MAKEOVERRIDES))
+else
+    NATIVEBINDIR = $(BINDIR)
+endif
+
 OBJDIR = $(BINDIR)/objs-$(notdir $(CURDIR))
 
 #-----------------------------------------------------------------------------
