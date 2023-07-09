@@ -262,7 +262,10 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     _info_only = info_only;
 
     // Check if this system uses flat or directory DVB naming.
+    // Old flat naming: /dev/dvb0.frontend0
+    // New hierarchical naming: /dev/dvb/adapter0/frontend0
     const bool dvb_directory = IsDirectory(u"/dev/dvb");
+    const UChar dvb_name_separator = dvb_directory ? u'/' : u'.';
 
     // Analyze device name: /dev/dvb/adapterA[:F[:M[:V]]]
     // Alternate old flat format: /dev/dvbA[:F[:M[:V]]]
@@ -309,22 +312,30 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
         fields[0].substr(n + 1).toInteger(adapter_nb);
     }
 
-    // If not specified, use frontend index for demux
+    // If not specified, use frontend index for demux index.
+    // In some adapters, there are less demux than frontends, find the highest existing demux number.
     if (fcount < 3) {
         demux_nb = frontend_nb;
+        while (demux_nb > 0 && !FileExists(UString::Format(u"%s%cdemux%d", {fields[0], dvb_name_separator, demux_nb}))) {
+            demux_nb--;
+        }
     }
 
-    // If not specified, use frontend index for dvr
+    // If not specified, use frontend index for dvr index.
+    // In some adapters, there are less dvr than frontends, find the highest existing dvr number.
     if (fcount < 4) {
         dvr_nb = frontend_nb;
+        while (dvr_nb > 0 && !FileExists(UString::Format(u"%s%cdvr%d", {fields[0], dvb_name_separator, dvr_nb}))) {
+            dvr_nb--;
+        }
     }
 
     // Rebuild full TSDuck device name.
     _device_name = fields[0];
-    if (dvr_nb != 0) {
+    if (dvr_nb != frontend_nb) {
         _device_name += UString::Format(u":%d:%d:%d", {frontend_nb, demux_nb, dvr_nb});
     }
-    else if (demux_nb != 0) {
+    else if (demux_nb != frontend_nb) {
         _device_name += UString::Format(u":%d:%d", {frontend_nb, demux_nb});
     }
     else if (frontend_nb != 0) {
@@ -332,10 +343,9 @@ bool ts::TunerDevice::open(const UString& device_name, bool info_only)
     }
 
     // Rebuild device names for frontend, demux and dvr.
-    const UChar sep = dvb_directory ? u'/' : u'.';
-    _frontend_name.format(u"%s%cfrontend%d", {fields[0], sep, frontend_nb});
-    _demux_name.format(u"%s%cdemux%d", {fields[0], sep, demux_nb});
-    _dvr_name.format(u"%s%cdvr%d", {fields[0], sep, dvr_nb});
+    _frontend_name.format(u"%s%cfrontend%d", {fields[0], dvb_name_separator, frontend_nb});
+    _demux_name.format(u"%s%cdemux%d", {fields[0], dvb_name_separator, demux_nb});
+    _dvr_name.format(u"%s%cdvr%d", {fields[0], dvb_name_separator, dvr_nb});
 
     // Use the frontend device as "device path" for the tuner.
     _device_path = _frontend_name;
@@ -494,7 +504,7 @@ bool ts::TunerDevice::close(bool silent)
 
 void ts::TunerDevice::abort(bool silent)
 {
-    // Hord close of all file descriptors, hoping that pending I/O's will be canceled.
+    // Hard close of all file descriptors, hoping that pending I/O's will be canceled.
     // In the case of a current read operation on the dvr, it has been noticed that
     // closing the file descriptor make the read operation hang forever. We try to
     // mitigate this risk with a volatile boolean which is set around read() but
