@@ -27,23 +27,25 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsAbstractDatagramOutputPlugin.h"
+#include "tsTSDatagramOutput.h"
 #include "tsSystemRandomGenerator.h"
 #include "tsIPProtocols.h"
+#include "tsDuckContext.h"
+#include "tsArgs.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr size_t ts::AbstractDatagramOutputPlugin::DEFAULT_PACKET_BURST;
-constexpr size_t ts::AbstractDatagramOutputPlugin::MAX_PACKET_BURST;
+constexpr size_t ts::TSDatagramOutput::DEFAULT_PACKET_BURST;
+constexpr size_t ts::TSDatagramOutput::MAX_PACKET_BURST;
 #endif
 
 
 //----------------------------------------------------------------------------
-// Output constructor
+// Constructor.
 //----------------------------------------------------------------------------
 
-ts::AbstractDatagramOutputPlugin::AbstractDatagramOutputPlugin(TSP* tsp_, const UString& description, const UString& syntax, Options flags) :
-    OutputPlugin(tsp_, description, syntax),
+ts::TSDatagramOutput::TSDatagramOutput(Options flags, TSDatagramOutputHandlerInterface* output) :
     _flags(flags),
+    _output(output != nullptr ? output : this),
     _pkt_burst(DEFAULT_PACKET_BURST),
     _enforce_burst(false),
     _use_rtp(false),
@@ -54,6 +56,7 @@ ts::AbstractDatagramOutputPlugin::AbstractDatagramOutputPlugin(TSP* tsp_, const 
     _rtp_user_ssrc(0),
     _pcr_user_pid(PID_NULL),
     _rs204_format(false),
+    _is_open(false),
     _rtp_sequence(0),
     _rtp_ssrc(0),
     _pcr_pid(PID_NULL),
@@ -65,63 +68,73 @@ ts::AbstractDatagramOutputPlugin::AbstractDatagramOutputPlugin(TSP* tsp_, const 
     _out_count(0),
     _out_buffer()
 {
-    option(u"enforce-burst", 'e');
-    help(u"enforce-burst",
-         u"Enforce that the number of TS packets per UDP packet is exactly what is specified "
-         u"in option --packet-burst. By default, this is only a maximum value.");
+}
 
-    option(u"packet-burst", 'p', INTEGER, 0, 1, 1, MAX_PACKET_BURST);
-    help(u"packet-burst",
-         u"Specifies the maximum number of TS packets per UDP packet. "
-         u"The default is " + UString::Decimal(DEFAULT_PACKET_BURST) +
-         u", the maximum is " + UString::Decimal(MAX_PACKET_BURST) + u".");
 
+//----------------------------------------------------------------------------
+// Add command line option definitions in an Args.
+//----------------------------------------------------------------------------
+
+void ts::TSDatagramOutput::defineArgs(Args& args)
+{
+    args.option(u"enforce-burst", 'e');
+    args.help(u"enforce-burst",
+              u"Enforce that the number of TS packets per UDP packet is exactly what is specified "
+              u"in option --packet-burst. By default, this is only a maximum value.");
+
+    args.option(u"packet-burst", 'p', Args::INTEGER, 0, 1, 1, MAX_PACKET_BURST);
+    args.help(u"packet-burst",
+              u"Specifies the maximum number of TS packets per UDP packet. "
+              u"The default is " + UString::Decimal(DEFAULT_PACKET_BURST) +
+              u", the maximum is " + UString::Decimal(MAX_PACKET_BURST) + u".");
+
+    // The following options are defined only when RTP is allowed.
     if ((_flags & ALLOW_RTP) != 0) {
-        option(u"rtp", 'r');
-        help(u"rtp",
-             u"Use the Real-time Transport Protocol (RTP) in output UDP datagrams. "
-             u"By default, TS packets are sent in UDP datagrams without encapsulation.");
+        args.option(u"rtp", 'r');
+        args.help(u"rtp",
+                  u"Use the Real-time Transport Protocol (RTP) in output UDP datagrams. "
+                  u"By default, TS packets are sent in UDP datagrams without encapsulation.");
 
-        option(u"payload-type", 0, INTEGER, 0, 1, 0, 127);
-        help(u"payload-type",
-             u"With --rtp, specify the payload type. "
-             u"By default, use " + UString::Decimal(RTP_PT_MP2T) + u", the standard RTP type for MPEG2-TS.");
+        args.option(u"payload-type", 0, Args::INTEGER, 0, 1, 0, 127);
+        args.help(u"payload-type",
+                  u"With --rtp, specify the payload type. "
+                  u"By default, use " + UString::Decimal(RTP_PT_MP2T) + u", the standard RTP type for MPEG2-TS.");
 
-        option(u"pcr-pid", 0, PIDVAL);
-        help(u"pcr-pid",
-             u"With --rtp, specify the PID containing the PCR's which are used as reference for RTP timestamps. "
-             u"By default, use the first PID containing PCR's.");
+        args.option(u"pcr-pid", 0, Args::PIDVAL);
+        args.help(u"pcr-pid",
+                  u"With --rtp, specify the PID containing the PCR's which are used as reference for RTP timestamps. "
+                  u"By default, use the first PID containing PCR's.");
 
-        option(u"start-sequence-number", 0, UINT16);
-        help(u"start-sequence-number",
-             u"With --rtp, specify the initial sequence number. "
-             u"By default, use a random value. Do not modify unless there is a good reason to do so.");
+        args.option(u"start-sequence-number", 0, Args::UINT16);
+        args.help(u"start-sequence-number",
+                  u"With --rtp, specify the initial sequence number. "
+                  u"By default, use a random value. Do not modify unless there is a good reason to do so.");
 
-        option(u"ssrc-identifier", 0, UINT32);
-        help(u"ssrc-identifier",
-             u"With --rtp, specify the SSRC identifier. "
-             u"By default, use a random value. Do not modify unless there is a good reason to do so.");
+        args.option(u"ssrc-identifier", 0, Args::UINT32);
+        args.help(u"ssrc-identifier",
+                  u"With --rtp, specify the SSRC identifier. "
+                  u"By default, use a random value. Do not modify unless there is a good reason to do so.");
     }
 }
 
 
 //----------------------------------------------------------------------------
-// Get command line options.
+// Load arguments from command line.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDatagramOutputPlugin::getOptions()
+bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
 {
-    getIntValue(_pkt_burst, u"packet-burst", DEFAULT_PACKET_BURST);
-    _enforce_burst = present(u"enforce-burst");
+    args.getIntValue(_pkt_burst, u"packet-burst", DEFAULT_PACKET_BURST);
+    _enforce_burst = args.present(u"enforce-burst");
 
     if ((_flags & ALLOW_RTP) != 0) {
-        _use_rtp = present(u"rtp");
-        getIntValue(_rtp_pt, u"payload-type", RTP_PT_MP2T);
-        _rtp_fixed_sequence = present(u"start-sequence-number");
-        getIntValue(_rtp_start_sequence, u"start-sequence-number");
-        _rtp_fixed_ssrc = present(u"ssrc-identifier");
-        getIntValue(_rtp_user_ssrc, u"ssrc-identifier");
-        getIntValue(_pcr_user_pid, u"pcr-pid", PID_NULL);
+        _use_rtp = args.present(u"rtp");
+        args.getIntValue(_rtp_pt, u"payload-type", RTP_PT_MP2T);
+        _rtp_fixed_sequence = args.present(u"start-sequence-number");
+        args.getIntValue(_rtp_start_sequence, u"start-sequence-number");
+        _rtp_fixed_ssrc = args.present(u"ssrc-identifier");
+        args.getIntValue(_rtp_user_ssrc, u"ssrc-identifier");
+        args.getIntValue(_pcr_user_pid, u"pcr-pid", PID_NULL);
     }
 
     return true;
@@ -129,11 +142,16 @@ bool ts::AbstractDatagramOutputPlugin::getOptions()
 
 
 //----------------------------------------------------------------------------
-// Start method
+// Open and initialize the TS packet output.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDatagramOutputPlugin::start()
+bool ts::TSDatagramOutput::open(Report& report)
 {
+    if (_is_open) {
+        report.error(u"TSDatagramOutput is already open");
+        return false;
+    }
+
     // The output buffer is empty.
     if (_enforce_burst) {
         _out_buffer.resize(_pkt_burst);
@@ -148,14 +166,14 @@ bool ts::AbstractDatagramOutputPlugin::start()
             _rtp_sequence = _rtp_start_sequence;
         }
         else if (!prng.readInt(_rtp_sequence)) {
-            tsp->error(u"random number generation error");
+            report.error(u"random number generation error");
             return false;
         }
         if (_rtp_fixed_ssrc) {
             _rtp_ssrc = _rtp_user_ssrc;
         }
         else if (!prng.readInt(_rtp_ssrc)) {
-            tsp->error(u"random number generation error");
+            report.error(u"random number generation error");
             return false;
         }
     }
@@ -168,32 +186,41 @@ bool ts::AbstractDatagramOutputPlugin::start()
     _rtp_pcr_offset = 0;
     _pkt_count = 0;
 
+    _is_open = true;
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Output stop method
+// Close the TS packet output.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDatagramOutputPlugin::stop()
+bool ts::TSDatagramOutput::close(const BitRate& bitrate, Report& report)
 {
-    // Flush incomplete datagram, if any.
     bool success = true;
-    if (_out_count > 0) {
-        success = sendPackets(_out_buffer.data(), _out_count);
-        _out_count = 0;
+    if (_is_open) {
+        // Flush incomplete datagram, if any.
+        if (_out_count > 0) {
+            success = sendPackets(_out_buffer.data(), _out_count, bitrate, report);
+            _out_count = 0;
+        }
+        _is_open = false;
     }
     return success;
 }
 
 
 //----------------------------------------------------------------------------
-// Output method
+// Send TS packets.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDatagramOutputPlugin::send(const TSPacket* pkt, const TSPacketMetadata* pkt_data, size_t packet_count)
+bool ts::TSDatagramOutput::send(const TSPacket* pkt, size_t packet_count, const BitRate& bitrate, Report& report)
 {
+    if (!_is_open) {
+        report.error(u"TSDatagramOutput is not open");
+        return false;
+    }
+
     // Send TS packets in UDP messages, grouped according to burst size.
     // Minimum number of TS packets per UDP packet.
     assert(_pkt_burst > 0);
@@ -213,7 +240,7 @@ bool ts::AbstractDatagramOutputPlugin::send(const TSPacket* pkt, const TSPacketM
 
         // Send the output buffer when full.
         if (_out_count == _pkt_burst) {
-            if (!sendPackets(_out_buffer.data(), _out_count)) {
+            if (!sendPackets(_out_buffer.data(), _out_count, bitrate, report)) {
                 return false;
             }
             _out_count = 0;
@@ -223,7 +250,7 @@ bool ts::AbstractDatagramOutputPlugin::send(const TSPacket* pkt, const TSPacketM
     // Send subsequent packets from the global buffer.
     while (packet_count >= min_burst) {
         size_t count = std::min(packet_count, _pkt_burst);
-        if (!sendPackets(pkt, count)) {
+        if (!sendPackets(pkt, count, bitrate, report)) {
             return false;
         }
         pkt += count;
@@ -246,7 +273,7 @@ bool ts::AbstractDatagramOutputPlugin::send(const TSPacket* pkt, const TSPacketM
 // Send contiguous packets in one single datagram.
 //----------------------------------------------------------------------------
 
-bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t packet_count)
+bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count, const BitRate& bitrate, Report& report)
 {
     bool status = true;
 
@@ -268,9 +295,6 @@ bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t p
         buffer[1] = _rtp_pt & 0x7F;   // M = 0, payload type
         PutUInt16(&buffer[2], _rtp_sequence++);
         PutUInt32(&buffer[8], _rtp_ssrc);
-
-        // Get current bitrate to compute timestamps.
-        const BitRate bitrate = tsp->bitrate();
 
         // Look for a PCR in one of the packets to send.
         // If found, we adjust this PCR for the first packet in the datagram.
@@ -310,8 +334,8 @@ bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t p
                 // For this time only, we keep the extrapolated PCR.
                 // Compute the difference between PCR and RTP timestamps.
                 _rtp_pcr_offset = pcr - rtp_pcr;
-                tsp->verbose(u"RTP timestamps resynchronized with PCR PID 0x%X (%d)", {_pcr_pid, _pcr_pid});
-                tsp->debug(u"new PCR-RTP offset: %d", {_rtp_pcr_offset});
+                report.verbose(u"RTP timestamps resynchronized with PCR PID 0x%X (%d)", {_pcr_pid, _pcr_pid});
+                report.debug(u"new PCR-RTP offset: %d", {_rtp_pcr_offset});
             }
             else {
                 // PCR are normally increasing, drop extrapolated value, resynchronize with PCR.
@@ -319,7 +343,7 @@ bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t p
                 if (adjusted_rtp_pcr <= _last_rtp_pcr) {
                     // The adjustment would make the RTP timestamp go backward. We do not want that.
                     // We increase the RTP timestamp "more slowly", by 25% of the extrapolated value.
-                    tsp->debug(u"RTP adjustment from PCR would step backward by %d", {((_last_rtp_pcr - adjusted_rtp_pcr) * RTP_RATE_MP2T) / SYSTEM_CLOCK_FREQ});
+                    report.debug(u"RTP adjustment from PCR would step backward by %d", {((_last_rtp_pcr - adjusted_rtp_pcr) * RTP_RATE_MP2T) / SYSTEM_CLOCK_FREQ});
                     adjusted_rtp_pcr = _last_rtp_pcr + (rtp_pcr - _last_rtp_pcr) / 4;
                 }
                 rtp_pcr = adjusted_rtp_pcr;
@@ -351,7 +375,7 @@ bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t p
             ::memcpy(buf, pkt, packet_count * PKT_SIZE);
             buffer.resize(RTP_HEADER_SIZE + packet_count * PKT_SIZE);
         }
-        status = sendDatagram(buffer.data(), buffer.size());
+        status = _output->sendDatagram(buffer.data(), buffer.size(), report);
     }
     else if (_rs204_format) {
         // No RTP header, add TS trailer after each packet. Since the default initial value
@@ -362,15 +386,27 @@ bool ts::AbstractDatagramOutputPlugin::sendPackets(const TSPacket* pkt, size_t p
             ::memcpy(buf, pkt++, PKT_SIZE);
             buf += PKT_SIZE + RS_SIZE;
         }
-        status = sendDatagram(buffer.data(), buffer.size());
+        status = _output->sendDatagram(buffer.data(), buffer.size(), report);
     }
     else {
         // No RTP, send TS packets directly as datagram.
-        status = sendDatagram(pkt, packet_count * PKT_SIZE);
+        status = _output->sendDatagram(pkt, packet_count * PKT_SIZE, report);
     }
 
     // Count packets datagram per datagram.
     _pkt_count += packet_count;
 
     return status;
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of TSDatagramOutputHandlerInterface.
+// The object is its own handler in case of raw UDP output.
+//----------------------------------------------------------------------------
+
+bool ts::TSDatagramOutput::sendDatagram(const void* address, size_t size, Report& report)
+{
+
+    return true;
 }

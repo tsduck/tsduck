@@ -40,11 +40,13 @@ TS_REGISTER_OUTPUT_PLUGIN(u"srt", ts::SRTOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
-    AbstractDatagramOutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] [address:port]", NONE),
+    OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] [address:port]"),
     _multiple(false),
     _restart_delay(0),
+    _datagram(TSDatagramOutput::NONE, this),
     _sock()
 {
+    _datagram.defineArgs(*this);
     _sock.defineArgs(*this);
 
     option(u"multiple", 'm');
@@ -84,7 +86,7 @@ bool ts::SRTOutputPlugin::getOptions()
     getIntValue(_restart_delay, u"restart-delay", 0);
     return _sock.setAddresses(value(u""), value(u"rendezvous"), UString(), *tsp) &&
            _sock.loadArgs(duck, *this) &&
-           AbstractDatagramOutputPlugin::getOptions();
+           _datagram.loadArgs(duck, *this);
 }
 
 
@@ -94,8 +96,14 @@ bool ts::SRTOutputPlugin::getOptions()
 
 bool ts::SRTOutputPlugin::start()
 {
-    // Call superclass first, then initialize SRT socket.
-    return AbstractDatagramOutputPlugin::start() && _sock.open(*tsp);
+    bool success = _datagram.open(*tsp);
+    if (success) {
+        success = _sock.open(*tsp);
+        if (!success) {
+            _datagram.close(0, *tsp);
+        }
+    }
+    return success;
 }
 
 
@@ -105,23 +113,32 @@ bool ts::SRTOutputPlugin::start()
 
 bool ts::SRTOutputPlugin::stop()
 {
-    // Call superclass first, then close SRT socket.
-    AbstractDatagramOutputPlugin::stop();
+    _datagram.close(tsp->bitrate(), *tsp);
     _sock.close(*tsp);
     return true;
 }
 
 
 //----------------------------------------------------------------------------
-// Implementation of AbstractDatagramOutputPlugin: send one datagram.
+// Send packets method.
 //----------------------------------------------------------------------------
 
-bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size)
+bool ts::SRTOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
+{
+    return _datagram.send(packets, packet_count, tsp->bitrate(), *tsp);
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of TSDatagramOutputHandlerInterface: send one datagram.
+//----------------------------------------------------------------------------
+
+bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size, Report& report)
 {
     // Loop on restart with multiple sessions.
     for (;;) {
         // Send the datagram.
-        if (_sock.send(address, size, *tsp)) {
+        if (_sock.send(address, size, report)) {
             return true;
         }
         // Send error.
@@ -129,7 +146,7 @@ bool ts::SRTOutputPlugin::sendDatagram(const void* address, size_t size)
             // Actual error, not a clean disconnection from the receiver, do not retry, even with --multiple.
             return false;
         }
-        tsp->verbose(u"receiver disconnected%s", {_multiple ? u", waiting for another one" : u""});
+        report.verbose(u"receiver disconnected%s", {_multiple ? u", waiting for another one" : u""});
         if (!_multiple) {
             // No multiple sessions, terminate here.
             return false;

@@ -29,7 +29,6 @@
 
 #include "tsIPOutputPlugin.h"
 #include "tsPluginRepository.h"
-#include "tsSystemRandomGenerator.h"
 
 TS_REGISTER_OUTPUT_PLUGIN(u"ip", ts::IPOutputPlugin);
 
@@ -39,7 +38,8 @@ TS_REGISTER_OUTPUT_PLUGIN(u"ip", ts::IPOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
-    AbstractDatagramOutputPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast", u"[options] address:port", ALLOW_RTP),
+    OutputPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast", u"[options] address:port"),
+    _datagram(TSDatagramOutput::ALLOW_RTP, this),
     _destination(),
     _local_addr(),
     _local_port(IPv4SocketAddress::AnyPort),
@@ -49,6 +49,8 @@ ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
     _force_mc_local(false),
     _sock(false, *tsp_)
 {
+    _datagram.defineArgs(*this);
+
     option(u"", 0, STRING, 1, 1);
     help(u"",
          u"The parameter address:port describes the destination for UDP packets. "
@@ -119,9 +121,7 @@ bool ts::IPOutputPlugin::isRealTime()
 
 bool ts::IPOutputPlugin::getOptions()
 {
-    // Call superclass first.
-    bool success = AbstractDatagramOutputPlugin::getOptions();
-
+    bool success = _datagram.loadArgs(duck, *this);
     success = _destination.resolve(value(u""), *tsp) && success;
     const UString local(value(u"local-address"));
     _local_addr.clear();
@@ -131,8 +131,7 @@ bool ts::IPOutputPlugin::getOptions()
     getIntValue(_tos, u"tos", -1);
     _mc_loopback = !present(u"disable-multicast-loop");
     _force_mc_local = present(u"force-local-multicast-outgoing");
-    setRS204Format(present(u"rs204"));
-
+    //@@ setRS204Format(present(u"rs204"));
     return success;
 }
 
@@ -143,8 +142,12 @@ bool ts::IPOutputPlugin::getOptions()
 
 bool ts::IPOutputPlugin::start()
 {
-    // Call superclass first, then initialize UDP socket.
-    if (!AbstractDatagramOutputPlugin::start() || !_sock.open(*tsp)) {
+    if (!_datagram.open(*tsp)) {
+        return false;
+    }
+
+    if (!_sock.open(*tsp)) {
+        _datagram.close(0, *tsp);
         return false;
     }
 
@@ -159,6 +162,7 @@ bool ts::IPOutputPlugin::start()
         (_ttl > 0 && !_sock.setTTL(_ttl, *tsp)))
     {
         _sock.close(*tsp);
+        _datagram.close(0, *tsp);
         return false;
     }
     return true;
@@ -171,18 +175,26 @@ bool ts::IPOutputPlugin::start()
 
 bool ts::IPOutputPlugin::stop()
 {
-    // Call superclass first, then close UDP socket.
-    AbstractDatagramOutputPlugin::stop();
+    _datagram.close(tsp->bitrate(), *tsp);
     _sock.close(*tsp);
     return true;
 }
 
-
 //----------------------------------------------------------------------------
-// Implementation of AbstractDatagramOutputPlugin: send one datagram.
+// Send packets method.
 //----------------------------------------------------------------------------
 
-bool ts::IPOutputPlugin::sendDatagram(const void* address, size_t size)
+bool ts::IPOutputPlugin::send(const TSPacket* packets, const TSPacketMetadata* metadata, size_t packet_count)
 {
-    return _sock.send(address, size, *tsp);
+    return _datagram.send(packets, packet_count, tsp->bitrate(), *tsp);
+}
+
+
+//----------------------------------------------------------------------------
+// Implementation of TSDatagramOutputHandlerInterface: send one datagram.
+//----------------------------------------------------------------------------
+
+bool ts::IPOutputPlugin::sendDatagram(const void* address, size_t size, Report& report)
+{
+    return _sock.send(address, size, report);
 }

@@ -33,7 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDatagramOutputPlugin.h"
+#include "tsOutputPlugin.h"
+#include "tsTSDatagramOutput.h"
 #include "tsSRTSocket.h"
 
 namespace ts {
@@ -41,7 +42,7 @@ namespace ts {
     //! Secure Reliable Transport (SRT) output plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL SRTOutputPlugin: public AbstractDatagramOutputPlugin
+    class TSDUCKDLL SRTOutputPlugin: public OutputPlugin, private TSDatagramOutputHandlerInterface
     {
         TS_NOBUILD_NOCOPY(SRTOutputPlugin);
     public:
@@ -56,14 +57,15 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override;
-
-    protected:
-        // Implementation of AbstractDatagramOutputPlugin
-        virtual bool sendDatagram(const void* address, size_t size) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        bool        _multiple;       // Accept multiple (sequential) connections.
-        MilliSecond _restart_delay;  // If _multiple, wait before reconnecting.
-        SRTSocket   _sock;           // Outgoing SRT socket
+        bool             _multiple;       // Accept multiple (sequential) connections.
+        MilliSecond      _restart_delay;  // If _multiple, wait before reconnecting.
+        TSDatagramOutput _datagram;       // Buffering TS packets.
+        SRTSocket        _sock;           // Outgoing SRT socket.
+
+        // Implementation of TSDatagramOutputHandlerInterface.
+        virtual bool sendDatagram(const void* address, size_t size, Report& report) override;
     };
 }

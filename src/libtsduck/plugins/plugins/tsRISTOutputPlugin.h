@@ -33,14 +33,15 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDatagramOutputPlugin.h"
+#include "tsOutputPlugin.h"
+#include "tsTSDatagramOutputHandlerInterface.h"
 
 namespace ts {
     //!
     //! Reliable Internet Stream Transport (RIST) output plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL RISTOutputPlugin: public AbstractDatagramOutputPlugin
+    class TSDUCKDLL RISTOutputPlugin: public OutputPlugin, private TSDatagramOutputHandlerInterface
     {
         TS_NOBUILD_NOCOPY(RISTOutputPlugin);
     public:
@@ -57,19 +58,17 @@ namespace ts {
 
         // Implementation of plugin API
         virtual bool getOptions() override;
-        virtual bool isRealTime() override;
         virtual bool start() override;
         virtual bool stop() override;
-
-    protected:
-        // Implementation of AbstractDatagramOutputPlugin.
-        virtual bool sendDatagram(const void* address, size_t size) override;
+        virtual bool isRealTime() override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
         // The actual implementation is private to the body of the class.
         class Guts;
         Guts* _guts;
+
+        // Implementation of TSDatagramOutputHandlerInterface.
+        virtual bool sendDatagram(const void* address, size_t size, Report& report) override;
     };
 }
-
-

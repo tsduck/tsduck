@@ -33,7 +33,8 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsAbstractDatagramOutputPlugin.h"
+#include "tsOutputPlugin.h"
+#include "tsTSDatagramOutput.h"
 #include "tsUDPSocket.h"
 
 namespace ts {
@@ -41,7 +42,7 @@ namespace ts {
     //! IP output plugin for tsp.
     //! @ingroup plugin
     //!
-    class TSDUCKDLL IPOutputPlugin: public AbstractDatagramOutputPlugin
+    class TSDUCKDLL IPOutputPlugin: public OutputPlugin, private TSDatagramOutputHandlerInterface
     {
         TS_NOBUILD_NOCOPY(IPOutputPlugin);
     public:
@@ -56,12 +57,10 @@ namespace ts {
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override;
-
-    protected:
-        // Implementation of AbstractDatagramOutputPlugin
-        virtual bool sendDatagram(const void* address, size_t size) override;
+        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
+        TSDatagramOutput  _datagram;        // Buffering TS packets.
         IPv4SocketAddress _destination;     // Destination address/port.
         IPv4Address       _local_addr;      // Local address.
         uint16_t          _local_port;      // Local UDP source port.
@@ -70,5 +69,8 @@ namespace ts {
         bool              _mc_loopback;     // Multicast loopback option
         bool              _force_mc_local;  // Force multicast outgoing local interface
         UDPSocket         _sock;            // Outgoing socket
+
+        // Implementation of TSDatagramOutputHandlerInterface.
+        virtual bool sendDatagram(const void* address, size_t size, Report& report) override;
     };
 }
