@@ -48,7 +48,7 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
-//  Command line options
+// Command line options
 //----------------------------------------------------------------------------
 
 namespace {
@@ -82,6 +82,10 @@ namespace {
         ts::UString name;       // Use the specified version, not the latest one.
         ts::UString out_dir;    // Output directory for downloaded files.
 #endif
+
+        // Enumeration of support options.
+        // The values are 0 or 1, indicating support.
+        const ts::Enumeration support;
     };
 }
 
@@ -101,13 +105,51 @@ Options::Options(int argc, char *argv[]) :
     source(false),
     upgrade(false),
     name(),
-    out_dir()
+    out_dir(),
 #else
     Args(u"Display TSDuck version and extensions", u"[options]"),
     current(true),
     integer(false),
-    extensions(false)
+    extensions(false),
 #endif
+    support({
+        {u"all", -1}, // negative means list all
+#if defined(TS_NO_DTAPI)
+        {u"dektec", 0},
+#else
+        {u"dektec", 1},
+#endif
+#if defined(TS_NO_HIDES)
+        {u"hides", 0},
+#else
+        {u"hides", 1},
+#endif
+#if defined(TS_NO_NOCURL) && !defined(TS_WINDOWS)
+        {u"http", 0},
+#else
+        {u"http", 1},
+#endif
+#if defined(TS_NO_PCSC)
+        {u"pcsc", 0},
+#else
+        {u"pcsc", 1},
+#endif
+#if defined(TS_NO_RIST)
+        {u"rist", 0},
+#else
+        {u"rist", 1},
+#endif
+#if defined(TS_NO_SRT)
+        {u"srt", 0},
+#else
+        {u"srt", 1},
+#endif
+#if defined(TS_NO_VATEK)
+        {u"vatek", 0},
+#else
+        {u"vatek", 1},
+#endif
+    })
 {
     option(u"extensions", 'e');
     help(u"extensions", u"List all available TSDuck extensions.");
@@ -117,6 +159,11 @@ Options::Options(int argc, char *argv[]) :
          u"Display the current version of TSDuck in integer format, suitable for "
          u"comparison in a script. Example: " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) +
          u" for " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
+
+    option(u"support", 0, support);
+    help(u"support",
+         u"Check support for a specific feature. Using 'all' displays all features. "
+         u"Other options simply exit with a success or failure status, depending if the corresponding feature is implemented or not.");
 
     // The following options are used to detect, download and upgrade new versions of TSDuck.
     // They are disabled when TS_NO_GITHUB is defined. With this macro, TSDuck is unlinked
@@ -143,6 +190,7 @@ Options::Options(int argc, char *argv[]) :
          u"GitHub. By default, download the binary installers for the current "
          u"operating system and architecture. Specify --source to download the "
          u"source code.");
+
     option(u"force", 'f');
     help(u"force", u"Force downloads even if a file with same name and size already exists.");
 
@@ -182,6 +230,25 @@ Options::Options(int argc, char *argv[]) :
 
     extensions = present(u"extensions");
     integer = present(u"integer");
+
+    // Option --support is full handled inside the constructor.
+    // It exits the application with a specific status.
+    if (present(u"support")) {
+        const int feature = intValue<int>(u"support");
+        if (feature < 0) {
+            // Display all features.
+            ts::UStringList names;
+            support.getAllNames(names);
+            names.sort();
+            for (const auto& fname : names) {
+                const int value = support.value(fname);
+                if (value >= 0) {
+                    std::cout << fname << ": " << ts::UString::YesNo(value) << std::endl;
+                }
+            }
+        }
+        ::exit(feature ? EXIT_SUCCESS : EXIT_FAILURE);
+    }
 
 #if !defined(TS_NO_GITHUB)
 

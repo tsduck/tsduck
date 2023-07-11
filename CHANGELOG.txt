@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3247
+VERSION 3.35-3248
 
 [NEW] New commands and plugins:
 
@@ -20,6 +20,7 @@ VERSION 3.35-3247
       Example: <PMT> <component stream_type="0x06" x-node="delete(PMT)"/>
   * New options in existing commands and plugins:
     - Option --adaptation-field in "tsdump".
+    - Option --support in "tsversion".
     - Unix: Option --disable-multicast-loop in output plugin "ip".
     - Windows: Option --disable-multicast-loop in "tstabdump", input plugin
       "ip", plugins "cutoff" and "mpeinject".
