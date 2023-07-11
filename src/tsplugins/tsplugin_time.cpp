@@ -84,6 +84,9 @@ namespace ts {
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
+        // Get current time.
+        Time currentTime() const { return _use_utc ? Time::CurrentUTC() : Time::CurrentLocalTime(); }
+
         // Add time events in the list fro one option. Return false if a time string is invalid
         bool addEvents(const UChar* option, Status status);
     };
@@ -208,7 +211,7 @@ bool ts::TimePlugin::start()
 
 bool ts::TimePlugin::addEvents(const UChar* opt, Status status)
 {
-    const Time start_time(Time::CurrentLocalTime());
+    const Time start_time(currentTime());
 
     for (size_t index = 0; index < count(opt); ++index) {
         const UString timeString(value(opt, u"", index));
@@ -269,7 +272,7 @@ ts::ProcessorPlugin::Status ts::TimePlugin::processPacket(TSPacket& pkt, TSPacke
 
     // Get current system time (unless TDT is used as reference)
     if (!_use_tdt) {
-        _last_time = _use_utc ? Time::CurrentUTC() : Time::CurrentLocalTime();
+        _last_time = currentTime();
     }
 
     // Is it time to change the action?
