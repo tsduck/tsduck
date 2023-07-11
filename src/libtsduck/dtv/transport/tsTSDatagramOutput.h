@@ -28,28 +28,27 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Abstract base class for output plugins sending real-time datagrams.
+//!  Send TS packets over datagrams (UDP, SRT, RIST, etc.)
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsOutputPlugin.h"
+#include "tsTSDatagramOutputHandlerInterface.h"
+#include "tsTSPacket.h"
 
 namespace ts {
-    //!
-    //! Abstract base class for output plugins sending real-time datagrams.
-    //! @ingroup plugin
-    //!
-    class TSDUCKDLL AbstractDatagramOutputPlugin: public OutputPlugin
-    {
-        TS_NOBUILD_NOCOPY(AbstractDatagramOutputPlugin);
-    public:
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-        virtual bool start() override;
-        virtual bool stop() override;
-        virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
+    class Args;
+    class DuckContext;
+
+    //!
+    //! Send TS packets over datagrams (UDP, SRT, RIST, etc.)
+    //! @ingroup mpeg
+    //!
+    class TSDUCKDLL TSDatagramOutput: private TSDatagramOutputHandlerInterface
+    {
+        TS_NOBUILD_NOCOPY(TSDatagramOutput);
+    public:
         //!
         //! Default number of TS packets in a UDP datagram.
         //! This value is equivalent to 1316 bytes, the maximum number of TS packets which fit
@@ -64,9 +63,8 @@ namespace ts {
         //!
         static constexpr size_t MAX_PACKET_BURST = 128;
 
-    protected:
         //!
-        //! Options which alter the behavior of the output plugin.
+        //! Options which alter the behavior of the output datagrams.
         //! Can be used as bitmasks.
         //!
         enum Options {
@@ -75,32 +73,57 @@ namespace ts {
         };
 
         //!
-        //! Constructor for subclasses.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
-        //! @param [in] syntax A short one-line syntax summary, eg. "[options] filename ...".
+        //! Constructor.
         //! @param [in] flags List of options.
+        //! @param [in] output Output handler for datagrams. If null, raw UDP output is used.
         //!
-        AbstractDatagramOutputPlugin(TSP* tsp, const UString& description, const UString& syntax, Options flags);
+        TSDatagramOutput(Options flags, TSDatagramOutputHandlerInterface* output);
 
         //!
-        //! Enable or disable the 204-byte format with placeholder for 16-byte Reed-Solomon trailer.
-        //! @param [in] on RS204 mode to set.
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //!
-        void setRS204Format(bool on) { _rs204_format = on; }
+        void defineArgs(Args& args);
 
         //!
-        //! Send a datagram message.
-        //! Must be implemented by subclasses.
-        //! @param [in] address Address of datagram.
-        //! @param [in] size Size in bytes of datagram.
-        //! @return True on success, false on error.
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
         //!
-        virtual bool sendDatagram(const void* address, size_t size) = 0;
+        bool loadArgs(DuckContext& duck, Args& args);
+
+        //!
+        //! Open and initialize the TS packet output.
+        //! @param [in,out] report Where to report errors.
+        //!
+        bool open(Report& report);
+
+        //!
+        //! Close the TS packet output.
+        //! Flush pending packets, if any.
+        //! @param [in] bitrate Current of last bitrate to compute timestamps for buffered packets. Ignored if zero.
+        //! @param [in,out] report Where to report errors.
+        //!
+        bool close(const BitRate& bitrate, Report& report);
+
+        //!
+        //! Send TS packets.
+        //! Some of them can be buffered and sent later.
+        //! @param [in] packets Address of first packet.
+        //! @param [in] packet_count Number of packets to send.
+        //! @param [in] bitrate Current bitrate to compute timestamps. Ignored if zero.
+        //! @param [in,out] report Where to report errors.
+        //!
+        bool send(const TSPacket* packets, size_t packet_count, const BitRate& bitrate, Report& report);
 
     private:
         // Configuration and command line options.
-        const Options  _flags;              // Configuration flags.
+        Options                           const _flags;   // Configuration flags.
+        TSDatagramOutputHandlerInterface* const _output;  // Datagram output handler.
+
+        // Command line options.
         size_t         _pkt_burst;          // Number of TS packets per UDP message
         bool           _enforce_burst;      // Option --enforce-burst
         bool           _use_rtp;            // Use real-time transport protocol
@@ -113,6 +136,7 @@ namespace ts {
         bool           _rs204_format;       // Use 204-byte format with Reed Solomon placeholder.
 
         // Working data.
+        bool           _is_open;            // Currently in progress
         uint16_t       _rtp_sequence;       // RTP current sequence number
         uint32_t       _rtp_ssrc;           // RTP current SSRC id (constant during a session)
         PID            _pcr_pid;            // Current PCR PID.
@@ -124,7 +148,11 @@ namespace ts {
         size_t         _out_count;          // Number of packets in _out_buffer
         TSPacketVector _out_buffer;         // Buffered packets for output with --enforce-burst
 
-        // Send a buffer of TS packets.
-        bool sendPackets(const TSPacket* packet, size_t count);
+        // Implementation of TSDatagramOutputHandlerInterface.
+        // The object is its own handler in case of raw UDP output.
+        virtual bool sendDatagram(const void* address, size_t size, Report& report) override;
+
+        // Send contiguous packets in one single datagram.
+        bool sendPackets(const TSPacket* packet, size_t count, const BitRate& bitrate, Report& report);
     };
 }

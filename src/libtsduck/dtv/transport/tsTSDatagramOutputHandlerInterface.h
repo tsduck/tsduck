@@ -28,20 +28,38 @@
 //----------------------------------------------------------------------------
 //!
 //!  @file
-//!  Version identification of TSDuck.
+//!  Generic datagram handler interface.
 //!
 //----------------------------------------------------------------------------
 
 #pragma once
-//!
-//! TSDuck major version.
-//!
-#define TS_VERSION_MAJOR 3
-//!
-//! TSDuck minor version.
-//!
-#define TS_VERSION_MINOR 35
-//!
-//! TSDuck commit number (automatically updated by Git hooks).
-//!
-#define TS_COMMIT 3245
+#include "tsPlatform.h"
+
+namespace ts {
+
+    class Report;
+
+    //!
+    //! Generic datagram handler interface.
+    //! @ingroup mpeg
+    //!
+    //! This abstract interface must be implemented by classes which send datagrams of TS packets.
+    //!
+    class TSDUCKDLL TSDatagramOutputHandlerInterface
+    {
+    public:
+        //!
+        //! Send a datagram message.
+        //! Must be implemented by classes which are in charge of sending datagrams.
+        //! @param [in] address Address of datagram.
+        //! @param [in] size Size in bytes of datagram.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
+        //!
+        virtual bool sendDatagram(const void* address, size_t size, Report& report) = 0;
+        //!
+        //! Virtual destructor.
+        //!
+        virtual ~TSDatagramOutputHandlerInterface();
+    };
+}

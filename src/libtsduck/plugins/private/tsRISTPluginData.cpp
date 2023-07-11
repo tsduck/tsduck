@@ -29,7 +29,10 @@
 
 #include "tsRISTPluginData.h"
 
-#if !defined(TS_NO_RIST)
+#if defined(TS_NO_RIST)
+TS_LLVM_NOWARNING(missing-variable-declarations)
+bool tsRISTPluginDataIsEmpty = true; // Avoid warning about empty module.
+#else
 
 //----------------------------------------------------------------------------
 // Input/output common data constructor.

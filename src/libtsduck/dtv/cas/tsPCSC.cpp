@@ -32,7 +32,10 @@
 #include "tsFatal.h"
 #include "tsMemory.h"
 
-#if !defined(TS_NO_PCSC)
+#if defined(TS_NO_PCSC)
+TS_LLVM_NOWARNING(missing-variable-declarations)
+bool tsPCSCIsEmpty = true; // Avoid warning about empty module.
+#else
 
 // SCARD_ macros contains many "old style" casts.
 TS_LLVM_NOWARNING(old-style-cast)
