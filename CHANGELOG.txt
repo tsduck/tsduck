@@ -2,11 +2,12 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.35-3236
+VERSION 3.35-3247
 
 [NEW] New commands and plugins:
 
   * Added plugin "dump" to dump TS packets (similar to command "tsdump").
+  * Added packet processing "ip" (similar to output plugin "ip").
   * Added experimental plugin "feed" to extract an encapsulated transport
     stream from a feed.
 

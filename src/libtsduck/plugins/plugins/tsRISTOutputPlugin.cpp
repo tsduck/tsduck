@@ -80,7 +80,7 @@ public:
 
      // Constructor.
      Guts(RISTOutputPlugin* plugin) :
-         datagram(TSDatagramOutput::NONE, plugin),
+         datagram(TSDatagramOutputOptions::NONE, plugin),
          rist(*plugin->tsp),
          npd(false)
      {

@@ -35,6 +35,21 @@
 #pragma once
 #include "tsTSDatagramOutputHandlerInterface.h"
 #include "tsTSPacket.h"
+#include "tsUDPSocket.h"
+#include "tsEnumUtils.h"
+
+namespace ts {
+    //!
+    //! Options which alter the behavior of the output datagrams.
+    //! Can be used as bitmasks.
+    //!
+    enum class TSDatagramOutputOptions {
+        NONE         = 0x0000,  //!< No option.
+        ALLOW_RTP    = 0x0001,  //!< Allow RTP options to build an RTP datagram.
+        ALWAYS_BURST = 0x0002,  //!< Do not define option --enforce-burst, always enforce burst.
+    };
+}
+TS_ENABLE_BITMASK_OPERATORS(ts::TSDatagramOutputOptions);
 
 namespace ts {
 
@@ -64,20 +79,11 @@ namespace ts {
         static constexpr size_t MAX_PACKET_BURST = 128;
 
         //!
-        //! Options which alter the behavior of the output datagrams.
-        //! Can be used as bitmasks.
-        //!
-        enum Options {
-            NONE      = 0x0000,  //!< No option.
-            ALLOW_RTP = 0x0001,  //!< Allow RTP options to build an RTP datagram.
-        };
-
-        //!
         //! Constructor.
         //! @param [in] flags List of options.
         //! @param [in] output Output handler for datagrams. If null, raw UDP output is used.
         //!
-        TSDatagramOutput(Options flags, TSDatagramOutputHandlerInterface* output);
+        explicit TSDatagramOutput(TSDatagramOutputOptions flags, TSDatagramOutputHandlerInterface* output = nullptr);
 
         //!
         //! Add command line option definitions in an Args.
@@ -120,33 +126,44 @@ namespace ts {
 
     private:
         // Configuration and command line options.
-        Options                           const _flags;   // Configuration flags.
-        TSDatagramOutputHandlerInterface* const _output;  // Datagram output handler.
+        TSDatagramOutputOptions           const _flags;    // Configuration flags.
+        TSDatagramOutputHandlerInterface* const _output;   // Datagram output handler.
+        bool                              const _raw_udp;  // Use raw UDP socket.
 
-        // Command line options.
-        size_t         _pkt_burst;          // Number of TS packets per UDP message
-        bool           _enforce_burst;      // Option --enforce-burst
-        bool           _use_rtp;            // Use real-time transport protocol
-        uint8_t        _rtp_pt;             // RTP payload type.
-        bool           _rtp_fixed_sequence; // RTP sequence number starts with a fixed value
-        uint16_t       _rtp_start_sequence; // RTP starting sequence number
-        bool           _rtp_fixed_ssrc;     // RTP SSRC id has a fixed value
-        uint32_t       _rtp_user_ssrc;      // RTP user-specified SSRC id
-        PID            _pcr_user_pid;       // User-specified PCR PID.
-        bool           _rs204_format;       // Use 204-byte format with Reed Solomon placeholder.
+        // Common command line options.
+        size_t            _pkt_burst;          // Number of TS packets per UDP message
+        bool              _enforce_burst;      // Option --enforce-burst
+        bool              _use_rtp;            // Use real-time transport protocol
+        uint8_t           _rtp_pt;             // RTP payload type.
+        bool              _rtp_fixed_sequence; // RTP sequence number starts with a fixed value
+        uint16_t          _rtp_start_sequence; // RTP starting sequence number
+        bool              _rtp_fixed_ssrc;     // RTP SSRC id has a fixed value
+        uint32_t          _rtp_user_ssrc;      // RTP user-specified SSRC id
+        PID               _pcr_user_pid;       // User-specified PCR PID.
+        bool              _rs204_format;       // Use 204-byte format with Reed Solomon placeholder.
+
+        // Command line options for raw UDP.
+        IPv4SocketAddress _destination;        // Destination address/port.
+        IPv4Address       _local_addr;         // Local address.
+        uint16_t          _local_port;         // Local UDP source port.
+        int               _ttl;                // Time to live option.
+        int               _tos;                // Type of service option.
+        bool              _mc_loopback;        // Multicast loopback option
+        bool              _force_mc_local;     // Force multicast outgoing local interface
 
         // Working data.
-        bool           _is_open;            // Currently in progress
-        uint16_t       _rtp_sequence;       // RTP current sequence number
-        uint32_t       _rtp_ssrc;           // RTP current SSRC id (constant during a session)
-        PID            _pcr_pid;            // Current PCR PID.
-        uint64_t       _last_pcr;           // Last PCR value in PCR PID
-        uint64_t       _last_rtp_pcr;       // Last RTP timestamp in PCR units (in last datagram)
-        PacketCounter  _last_rtp_pcr_pkt;   // Packet index of last datagram
-        uint64_t       _rtp_pcr_offset;     // Value to substract from PCR to get RTP timestamp
-        PacketCounter  _pkt_count;          // Total packet counter for output packets
-        size_t         _out_count;          // Number of packets in _out_buffer
-        TSPacketVector _out_buffer;         // Buffered packets for output with --enforce-burst
+        bool              _is_open;            // Currently in progress
+        uint16_t          _rtp_sequence;       // RTP current sequence number
+        uint32_t          _rtp_ssrc;           // RTP current SSRC id (constant during a session)
+        PID               _pcr_pid;            // Current PCR PID.
+        uint64_t          _last_pcr;           // Last PCR value in PCR PID
+        uint64_t          _last_rtp_pcr;       // Last RTP timestamp in PCR units (in last datagram)
+        PacketCounter     _last_rtp_pcr_pkt;   // Packet index of last datagram
+        uint64_t          _rtp_pcr_offset;     // Value to substract from PCR to get RTP timestamp
+        PacketCounter     _pkt_count;          // Total packet counter for output packets
+        size_t            _out_count;          // Number of packets in _out_buffer
+        TSPacketVector    _out_buffer;         // Buffered packets for output with --enforce-burst
+        UDPSocket         _sock;               // Outgoing socket for raw UDP
 
         // Implementation of TSDatagramOutputHandlerInterface.
         // The object is its own handler in case of raw UDP output.
