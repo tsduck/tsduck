@@ -43,9 +43,10 @@ constexpr size_t ts::TSDatagramOutput::MAX_PACKET_BURST;
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::TSDatagramOutput::TSDatagramOutput(Options flags, TSDatagramOutputHandlerInterface* output) :
+ts::TSDatagramOutput::TSDatagramOutput(TSDatagramOutputOptions flags, TSDatagramOutputHandlerInterface* output) :
     _flags(flags),
     _output(output != nullptr ? output : this),
+    _raw_udp(output == nullptr),
     _pkt_burst(DEFAULT_PACKET_BURST),
     _enforce_burst(false),
     _use_rtp(false),
@@ -56,6 +57,13 @@ ts::TSDatagramOutput::TSDatagramOutput(Options flags, TSDatagramOutputHandlerInt
     _rtp_user_ssrc(0),
     _pcr_user_pid(PID_NULL),
     _rs204_format(false),
+    _destination(),
+    _local_addr(),
+    _local_port(IPv4SocketAddress::AnyPort),
+    _ttl(0),
+    _tos(-1),
+    _mc_loopback(true),
+    _force_mc_local(false),
     _is_open(false),
     _rtp_sequence(0),
     _rtp_ssrc(0),
@@ -66,7 +74,8 @@ ts::TSDatagramOutput::TSDatagramOutput(Options flags, TSDatagramOutputHandlerInt
     _rtp_pcr_offset(0),
     _pkt_count(0),
     _out_count(0),
-    _out_buffer()
+    _out_buffer(),
+    _sock()
 {
 }
 
@@ -77,19 +86,22 @@ ts::TSDatagramOutput::TSDatagramOutput(Options flags, TSDatagramOutputHandlerInt
 
 void ts::TSDatagramOutput::defineArgs(Args& args)
 {
-    args.option(u"enforce-burst", 'e');
-    args.help(u"enforce-burst",
-              u"Enforce that the number of TS packets per UDP packet is exactly what is specified "
-              u"in option --packet-burst. By default, this is only a maximum value.");
-
     args.option(u"packet-burst", 'p', Args::INTEGER, 0, 1, 1, MAX_PACKET_BURST);
     args.help(u"packet-burst",
               u"Specifies the maximum number of TS packets per UDP packet. "
               u"The default is " + UString::Decimal(DEFAULT_PACKET_BURST) +
               u", the maximum is " + UString::Decimal(MAX_PACKET_BURST) + u".");
 
+    // Enforcing burst can be hard-coded.
+    if (!(_flags & TSDatagramOutputOptions::ALWAYS_BURST)) {
+        args.option(u"enforce-burst", 'e');
+        args.help(u"enforce-burst",
+                  u"Enforce that the number of TS packets per UDP packet is exactly what is specified "
+                  u"in option --packet-burst. By default, this is only a maximum value.");
+    }
+
     // The following options are defined only when RTP is allowed.
-    if ((_flags & ALLOW_RTP) != 0) {
+    if ((_flags & TSDatagramOutputOptions::ALLOW_RTP) != TSDatagramOutputOptions::NONE) {
         args.option(u"rtp", 'r');
         args.help(u"rtp",
                   u"Use the Real-time Transport Protocol (RTP) in output UDP datagrams. "
@@ -115,6 +127,61 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
                   u"With --rtp, specify the SSRC identifier. "
                   u"By default, use a random value. Do not modify unless there is a good reason to do so.");
     }
+
+    // The following options are defined only when raw UDP is allowed.
+    if (_raw_udp) {
+        args.option(u"", 0, Args::STRING, 1, 1);
+        args.help(u"",
+                  u"The parameter address:port describes the destination for UDP packets. "
+                  u"The 'address' specifies an IP address which can be either unicast or "
+                  u"multicast. It can be also a host name that translates to an IP address. "
+                  u"The 'port' specifies the destination UDP port.");
+
+        args.option(u"disable-multicast-loop", 'd');
+        args.help(u"disable-multicast-loop",
+                  u"Disable multicast loopback. By default, outgoing multicast packets are looped back on local interfaces, "
+                  u"if an application added membership on the same multicast group. This option disables this.\n"
+                  u"Warning: On output sockets, this option is effective only on Unix systems (Linux, macOS, BSD). "
+                  u"On Windows systems, this option applies only to input sockets.");
+
+        args.option(u"force-local-multicast-outgoing", 'f');
+        args.help(u"force-local-multicast-outgoing",
+                  u"When the destination is a multicast address and --local-address is specified, "
+                  u"force multicast outgoing traffic on this local interface (socket option IP_MULTICAST_IF). "
+                  u"Use this option with care. Its usage depends on the operating system. "
+                  u"If no route is declared for this destination address, this option may be necessary "
+                  u"to force the multicast to the specified local interface. On the other hand, if a route is "
+                  u"declared, this option may transport multicast IP packets in unicast Ethernet frames "
+                  u"to the gateway, preventing multicast reception on the local network (seen on Linux).");
+
+        args.option(u"local-address", 'l', Args::STRING);
+        args.help(u"local-address",
+                  u"When the destination is a multicast address, specify the IP address "
+                  u"of the outgoing local interface. It can be also a host name that "
+                  u"translates to a local address.");
+
+        args.option(u"local-port", 0, Args::UINT16);
+        args.help(u"local-port",
+                  u"Specify the local UDP source port for outgoing packets. "
+                  u"By default, a random source port is used.");
+
+        args.option(u"rs204");
+        args.help(u"rs204",
+                  u"Use 204-byte format for TS packets in UDP datagrams. "
+                  u"Each TS packet is followed by a zeroed placeholder for a 16-byte Reed-Solomon trailer.");
+
+        args.option(u"tos", 's', Args::INTEGER, 0, 1, 1, 255);
+        args.help(u"tos",
+                  u"Specifies the TOS (Type-Of-Service) socket option. Setting this value "
+                  u"may depend on the user's privilege or operating system configuration.");
+
+        args.option(u"ttl", 't', Args::INTEGER, 0, 1, 1, 255);
+        args.help(u"ttl",
+                  u"Specifies the TTL (Time-To-Live) socket option. The actual option "
+                  u"is either \"Unicast TTL\" or \"Multicast TTL\", depending on the "
+                  u"destination address. Remember that the default Multicast TTL is 1 "
+                  u"on most systems.");
+    }
 }
 
 
@@ -124,10 +191,12 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
 
 bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
 {
-    args.getIntValue(_pkt_burst, u"packet-burst", DEFAULT_PACKET_BURST);
-    _enforce_burst = args.present(u"enforce-burst");
+    bool success = true;
 
-    if ((_flags & ALLOW_RTP) != 0) {
+    args.getIntValue(_pkt_burst, u"packet-burst", DEFAULT_PACKET_BURST);
+    _enforce_burst = (_flags & TSDatagramOutputOptions::ALWAYS_BURST) != TSDatagramOutputOptions::NONE || args.present(u"enforce-burst");
+
+    if ((_flags & TSDatagramOutputOptions::ALLOW_RTP) != TSDatagramOutputOptions::NONE) {
         _use_rtp = args.present(u"rtp");
         args.getIntValue(_rtp_pt, u"payload-type", RTP_PT_MP2T);
         _rtp_fixed_sequence = args.present(u"start-sequence-number");
@@ -137,7 +206,20 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
         args.getIntValue(_pcr_user_pid, u"pcr-pid", PID_NULL);
     }
 
-    return true;
+    if (_raw_udp) {
+        success = _destination.resolve(args.value(u""), args) && success;
+        const UString local(args.value(u"local-address"));
+        _local_addr.clear();
+        success = (local.empty() || _local_addr.resolve(local, args)) && success;
+        args.getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
+        args.getIntValue(_ttl, u"ttl", 0);
+        args.getIntValue(_tos, u"tos", -1);
+        _mc_loopback = !args.present(u"disable-multicast-loop");
+        _force_mc_local = args.present(u"force-local-multicast-outgoing");
+        _rs204_format = args.present(u"rs204");
+    }
+
+    return success;
 }
 
 
@@ -178,6 +260,25 @@ bool ts::TSDatagramOutput::open(Report& report)
         }
     }
 
+    // Initialize raw UDP socket
+    if (_raw_udp) {
+        if (!_sock.open(report)) {
+            return false;
+        }
+        const IPv4SocketAddress local(_local_addr, _local_port);
+        if ((_local_port != IPv4SocketAddress::AnyPort && !_sock.reusePort(true, report)) ||
+            !_sock.bind(local, report) ||
+            !_sock.setDefaultDestination(_destination, report) ||
+            !_sock.setMulticastLoop(_mc_loopback, report) ||
+            (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr, report)) ||
+            (_tos >= 0 && !_sock.setTOS(_tos, report)) ||
+            (_ttl > 0 && !_sock.setTTL(_ttl, report)))
+        {
+            _sock.close(report);
+            return false;
+        }
+    }
+
     // Other states.
     _pcr_pid = _pcr_user_pid;
     _last_pcr = INVALID_PCR;
@@ -203,6 +304,9 @@ bool ts::TSDatagramOutput::close(const BitRate& bitrate, Report& report)
         if (_out_count > 0) {
             success = sendPackets(_out_buffer.data(), _out_count, bitrate, report);
             _out_count = 0;
+        }
+        if (_raw_udp) {
+            _sock.close(report);
         }
         _is_open = false;
     }
@@ -407,6 +511,5 @@ bool ts::TSDatagramOutput::sendPackets(const TSPacket* pkt, size_t packet_count,
 
 bool ts::TSDatagramOutput::sendDatagram(const void* address, size_t size, Report& report)
 {
-
-    return true;
+    return _sock.send(address, size, report);
 }
