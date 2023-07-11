@@ -73,7 +73,7 @@ class ts::RISTInputPlugin::Guts
 {
      TS_NOBUILD_NOCOPY(Guts);
 public:
-     RISTPluginData data;
+     RISTPluginData rist;
      MilliSecond    timeout;       // receive timeout.
      ByteBlock      buffer;        // data in excess from last input.
      int            last_qsize;    // last queue size in data blocks.
@@ -81,7 +81,7 @@ public:
 
      // Constructor.
      Guts(Args* args, TSP* tsp) :
-         data(args, tsp),
+         rist(*tsp),
          timeout(0),
          buffer(),
          last_qsize(0),
@@ -100,6 +100,7 @@ ts::RISTInputPlugin::RISTInputPlugin(TSP* tsp_) :
     _guts(new Guts(this, tsp))
 {
     CheckNonNull(_guts);
+    _guts->rist.defineArgs(*this);
 }
 
 ts::RISTInputPlugin::~RISTInputPlugin()
@@ -117,7 +118,7 @@ ts::RISTInputPlugin::~RISTInputPlugin()
 
 bool ts::RISTInputPlugin::getOptions()
 {
-    return _guts->data.getOptions(this);
+    return _guts->rist.loadArgs(duck, *this);
 }
 
 
@@ -140,7 +141,7 @@ bool ts::RISTInputPlugin::setReceiveTimeout(MilliSecond timeout)
 
 bool ts::RISTInputPlugin::start()
 {
-    if (_guts->data.ctx != nullptr) {
+    if (_guts->rist.ctx != nullptr) {
         tsp->error(u"already started");
         return false;
     }
@@ -151,22 +152,22 @@ bool ts::RISTInputPlugin::start()
     _guts->qsize_warned = false;
 
     // Initialize the RIST context.
-    tsp->debug(u"calling rist_receiver_create, profile: %d", {_guts->data.profile});
-    if (::rist_receiver_create(&_guts->data.ctx, _guts->data.profile, &_guts->data.log) != 0) {
+    tsp->debug(u"calling rist_receiver_create, profile: %d", {_guts->rist.profile});
+    if (::rist_receiver_create(&_guts->rist.ctx, _guts->rist.profile, &_guts->rist.log) != 0) {
         tsp->error(u"error in rist_receiver_create");
         return false;
     }
 
     // Add all peers to the RIST context.
-    if (!_guts->data.addPeers()) {
+    if (!_guts->rist.addPeers()) {
         return false;
     }
 
     // Start reception.
     tsp->debug(u"calling rist_start");
-    if (::rist_start(_guts->data.ctx) != 0) {
+    if (::rist_start(_guts->rist.ctx) != 0) {
         tsp->error(u"error starting RIST reception");
-        _guts->data.cleanup();
+        _guts->rist.cleanup();
         return false;
     }
 
@@ -180,7 +181,7 @@ bool ts::RISTInputPlugin::start()
 
 bool ts::RISTInputPlugin::stop()
 {
-    _guts->data.cleanup();
+    _guts->rist.cleanup();
     return true;
 }
 
@@ -209,7 +210,7 @@ size_t ts::RISTInputPlugin::receive(TSPacket* pkt_buffer, TSPacketMetadata* pkt_
         // Here, we poll every few seconds when no timeout is specified and check for abort.
         for (;;) {
             // The returned value is: number of buffers remaining on queue +1 (0 if no buffer returned), -1 on error.
-            const int queue_size = ::rist_receiver_data_read2(_guts->data.ctx, &dblock, _guts->timeout == 0 ? 5000 : int(_guts->timeout));
+            const int queue_size = ::rist_receiver_data_read2(_guts->rist.ctx, &dblock, _guts->timeout == 0 ? 5000 : int(_guts->timeout));
             if (queue_size < 0) {
                 tsp->error(u"reception error");
                 return 0;
