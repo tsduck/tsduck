@@ -74,14 +74,14 @@ class ts::RISTOutputPlugin::Guts
 {
      TS_NOBUILD_NOCOPY(Guts);
 public:
-     TSDatagramOutput  datagram;
-     RISTPluginData    data;
-     bool              npd;  // null packet deletion
+     TSDatagramOutput datagram;
+     RISTPluginData   rist;
+     bool             npd;  // null packet deletion
 
      // Constructor.
      Guts(RISTOutputPlugin* plugin) :
          datagram(TSDatagramOutput::NONE, plugin),
-         data(plugin, plugin->tsp),
+         rist(*plugin->tsp),
          npd(false)
      {
      }
@@ -99,6 +99,7 @@ ts::RISTOutputPlugin::RISTOutputPlugin(TSP* tsp_) :
     CheckNonNull(_guts);
 
     _guts->datagram.defineArgs(*this);
+    _guts->rist.defineArgs(*this);
 
     option(u"null-packet-deletion", 'n');
     help(u"null-packet-deletion", u"Enable null packet deletion. The receiver needs to support this.");
@@ -120,7 +121,7 @@ ts::RISTOutputPlugin::~RISTOutputPlugin()
 bool ts::RISTOutputPlugin::getOptions()
 {
     _guts->npd = present(u"null-packet-deletion");
-    return _guts->datagram.loadArgs(duck, *this) && _guts->data.getOptions(this);
+    return _guts->datagram.loadArgs(duck, *this) && _guts->rist.loadArgs(duck, *this);
 }
 
 
@@ -130,7 +131,7 @@ bool ts::RISTOutputPlugin::getOptions()
 
 bool ts::RISTOutputPlugin::start()
 {
-    if (_guts->data.ctx != nullptr) {
+    if (_guts->rist.ctx != nullptr) {
         tsp->error(u"already started");
         return false;
     }
@@ -141,33 +142,33 @@ bool ts::RISTOutputPlugin::start()
     }
 
     // Initialize the RIST context.
-    tsp->debug(u"calling rist_sender_create, profile: %d", {_guts->data.profile});
-    if (::rist_sender_create(&_guts->data.ctx, _guts->data.profile, 0, &_guts->data.log) != 0) {
+    tsp->debug(u"calling rist_sender_create, profile: %d", {_guts->rist.profile});
+    if (::rist_sender_create(&_guts->rist.ctx, _guts->rist.profile, 0, &_guts->rist.log) != 0) {
         tsp->error(u"error in rist_sender_create");
         _guts->datagram.close(0, *tsp);
         return false;
     }
 
     // Add null packet deletion option if requested.
-    if (_guts->npd && ::rist_sender_npd_enable(_guts->data.ctx) < 0) {
+    if (_guts->npd && ::rist_sender_npd_enable(_guts->rist.ctx) < 0) {
         tsp->error(u"error setting null-packet deletion");
         _guts->datagram.close(0, *tsp);
-        _guts->data.cleanup();
+        _guts->rist.cleanup();
         return false;
     }
 
     // Add all peers to the RIST context.
-    if (!_guts->data.addPeers()) {
+    if (!_guts->rist.addPeers()) {
         _guts->datagram.close(0, *tsp);
         return false;
     }
 
     // Start transmission.
     tsp->debug(u"calling rist_start");
-    if (::rist_start(_guts->data.ctx) != 0) {
+    if (::rist_start(_guts->rist.ctx) != 0) {
         tsp->error(u"error starting RIST transmission");
         _guts->datagram.close(0, *tsp);
-        _guts->data.cleanup();
+        _guts->rist.cleanup();
         return false;
     }
 
@@ -182,7 +183,7 @@ bool ts::RISTOutputPlugin::start()
 bool ts::RISTOutputPlugin::stop()
 {
     _guts->datagram.close(tsp->bitrate(), *tsp);
-    _guts->data.cleanup();
+    _guts->rist.cleanup();
     return true;
 }
 
@@ -210,7 +211,7 @@ bool ts::RISTOutputPlugin::sendDatagram(const void* address, size_t size, Report
     dblock.payload_len = size;
 
     // Send the RIST message.
-    const int sent = ::rist_sender_data_write(_guts->data.ctx, &dblock);
+    const int sent = ::rist_sender_data_write(_guts->rist.ctx, &dblock);
     if (sent < 0) {
         report.error(u"error sending data to RIST");
         return false;

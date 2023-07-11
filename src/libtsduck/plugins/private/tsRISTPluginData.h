@@ -51,10 +51,9 @@ namespace ts {
         //!
         //! Constructor.
         //! Also define common command line arguments for RIST plugins.
-        //! @param [in,out] args Arguments to define.
-        //! @param [in,out] tsp TSP plugin handler.
+        //! @param [in,out] report Where to report errors.
         //!
-        RISTPluginData(Args* args, TSP* tsp);
+        RISTPluginData(Report& report);
 
         //!
         //! Destructor.
@@ -62,11 +61,19 @@ namespace ts {
         ~RISTPluginData() { cleanup(); }
 
         //!
-        //! Get command line options.
-        //! @param [in,out] args Arguments to load.
-        //! @return True on success, false on error.
+        //! Add command line option definitions in an Args.
+        //! @param [in,out] args Command line arguments to update.
         //!
-        bool getOptions(Args* args);
+        void defineArgs(Args& args);
+
+        //!
+        //! Load arguments from command line.
+        //! Args error indicator is set in case of incorrect arguments.
+        //! @param [in,out] duck TSDuck execution context.
+        //! @param [in,out] args Command line arguments.
+        //! @return True on success, false on error in argument line.
+        //!
+        bool loadArgs(DuckContext& duck, Args& args);
 
         //!
         //! Add all URL's as peers in the RIST context.
@@ -86,7 +93,7 @@ namespace ts {
 
     private:
         // Working data.
-        TSP*     _tsp;
+        Report&  _report;
         uint32_t _buffer_size;
         int      _encryption_type;
         UString  _secret;
@@ -98,7 +105,7 @@ namespace ts {
         std::vector<::rist_peer_config*> _peer_configs;
 
         // Analyze a list of options containing socket addresses.
-        bool getSocketValues(Args* args, IPv4SocketAddressVector& list, const UChar* option);
+        bool getSocketValues(Args& args, IPv4SocketAddressVector& list, const UChar* option);
 
         // Convert between RIST log level and TSDuck severity.
         static int RistLogToSeverity(::rist_log_level level);
