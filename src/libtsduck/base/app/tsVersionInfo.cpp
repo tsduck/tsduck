@@ -72,6 +72,45 @@ const ts::Enumeration ts::VersionInfo::FormatEnum({
     {u"all",          int(ts::VersionInfo::Format::ALL)},
 });
 
+// Enumeration of supported features.
+const ts::Enumeration ts::VersionInfo::SupportEnum({
+#if defined(TS_NO_DTAPI)
+        {u"dektec", 0},
+#else
+        {u"dektec", 1},
+#endif
+#if defined(TS_NO_HIDES)
+        {u"hides", 0},
+#else
+        {u"hides", 1},
+#endif
+#if defined(TS_NO_NOCURL) && !defined(TS_WINDOWS)
+        {u"http", 0},
+#else
+        {u"http", 1},
+#endif
+#if defined(TS_NO_PCSC)
+        {u"pcsc", 0},
+#else
+        {u"pcsc", 1},
+#endif
+#if defined(TS_NO_RIST)
+        {u"rist", 0},
+#else
+        {u"rist", 1},
+#endif
+#if defined(TS_NO_SRT)
+        {u"srt", 0},
+#else
+        {u"srt", 1},
+#endif
+#if defined(TS_NO_VATEK)
+        {u"vatek", 0},
+#else
+        {u"vatek", 1},
+#endif
+});
+
 
 //----------------------------------------------------------------------------
 // Constructor and destructor.

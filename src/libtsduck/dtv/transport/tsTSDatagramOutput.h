@@ -103,6 +103,7 @@ namespace ts {
         //!
         //! Open and initialize the TS packet output.
         //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
         //!
         bool open(Report& report);
 
@@ -111,6 +112,7 @@ namespace ts {
         //! Flush pending packets, if any.
         //! @param [in] bitrate Current of last bitrate to compute timestamps for buffered packets. Ignored if zero.
         //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
         //!
         bool close(const BitRate& bitrate, Report& report);
 
@@ -121,6 +123,7 @@ namespace ts {
         //! @param [in] packet_count Number of packets to send.
         //! @param [in] bitrate Current bitrate to compute timestamps. Ignored if zero.
         //! @param [in,out] report Where to report errors.
+        //! @return True on success, false on error.
         //!
         bool send(const TSPacket* packets, size_t packet_count, const BitRate& bitrate, Report& report);
 

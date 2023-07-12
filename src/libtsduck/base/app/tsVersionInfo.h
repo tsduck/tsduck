@@ -103,6 +103,13 @@ namespace ts {
         static const Enumeration FormatEnum;
 
         //!
+        //! Enumeration of supported features.
+        //! Typically used to implement the -\-support command line option.
+        //! For each name, the value is 1 if the feature is supported and 0 if it is not.
+        //!
+        static const Enumeration SupportEnum;
+
+        //!
         //! Get the TSDuck formatted version number.
         //! @param [in] format Type of output, short by default.
         //! @param [in] applicationName Name of the application to prepend to the long format.
