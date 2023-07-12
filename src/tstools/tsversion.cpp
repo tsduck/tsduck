@@ -85,7 +85,7 @@ namespace {
 
         // Enumeration of support options.
         // The values are 0 or 1, indicating support.
-        const ts::Enumeration support;
+        ts::Enumeration support;
     };
 }
 
@@ -112,44 +112,7 @@ Options::Options(int argc, char *argv[]) :
     integer(false),
     extensions(false),
 #endif
-    support({
-        {u"all", -1}, // negative means list all
-#if defined(TS_NO_DTAPI)
-        {u"dektec", 0},
-#else
-        {u"dektec", 1},
-#endif
-#if defined(TS_NO_HIDES)
-        {u"hides", 0},
-#else
-        {u"hides", 1},
-#endif
-#if defined(TS_NO_NOCURL) && !defined(TS_WINDOWS)
-        {u"http", 0},
-#else
-        {u"http", 1},
-#endif
-#if defined(TS_NO_PCSC)
-        {u"pcsc", 0},
-#else
-        {u"pcsc", 1},
-#endif
-#if defined(TS_NO_RIST)
-        {u"rist", 0},
-#else
-        {u"rist", 1},
-#endif
-#if defined(TS_NO_SRT)
-        {u"srt", 0},
-#else
-        {u"srt", 1},
-#endif
-#if defined(TS_NO_VATEK)
-        {u"vatek", 0},
-#else
-        {u"vatek", 1},
-#endif
-    })
+    support(ts::VersionInfo::SupportEnum)
 {
     option(u"extensions", 'e');
     help(u"extensions", u"List all available TSDuck extensions.");
@@ -160,6 +123,7 @@ Options::Options(int argc, char *argv[]) :
          u"comparison in a script. Example: " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) +
          u" for " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
 
+    support.add(u"all", -1); // negative means list all
     option(u"support", 0, support);
     help(u"support",
          u"Check support for a specific feature. Using 'all' displays all features. "
