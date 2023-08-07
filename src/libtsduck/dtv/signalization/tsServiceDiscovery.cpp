@@ -71,7 +71,8 @@ ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, const UString& desc, S
 void ts::ServiceDiscovery::set(const UString& desc)
 {
     // Clear and set superclass.
-    Service::set(desc);
+    // In discovery mode (this subclass), "-" means first service in the PAT, same as an empty string.
+    Service::set(desc == u"-" ? UString() : desc);
 
     // Start to intercept tables.
     if (hasName()) {
