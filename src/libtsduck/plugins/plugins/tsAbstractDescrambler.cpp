@@ -29,7 +29,6 @@
 
 #include "tsAbstractDescrambler.h"
 #include "tsGuardCondition.h"
-#include "tsNames.h"
 
 // Stack usage required by this module in the ECM deciphering thread.
 #define ECM_THREAD_STACK_OVERHEAD (16  * 1024)
@@ -68,10 +67,11 @@ ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_, const UString& descripti
     help(u"",
          u"Specifies the optional service to descramble. If no fixed control word is "
          u"specified, ECM's from the service are used to extract control words.\n\n"
-         u"If the argument is an integer value (either decimal or hexadecimal), it is "
-         u"interpreted as a service id. Otherwise, it is interpreted as a service name, "
-         u"as specified in the SDT. The name is not case sensitive and blanks are "
-         u"ignored. If the input TS does not contain an SDT, use service ids only.\n\n"
+         u"If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id. "
+         u"If it is an empty string or \"-\", the first service in the PAT is descrambled. "
+         u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
+         u"The name is not case sensitive and blanks are ignored. "
+         u"If the input TS does not contain an SDT, use service ids only.\n\n"
          u"If the argument is omitted, --pid options shall be specified to list explicit "
          u"PID's to descramble and fixed control words shall be specified as well.");
 

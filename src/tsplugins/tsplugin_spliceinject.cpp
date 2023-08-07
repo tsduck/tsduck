@@ -405,11 +405,12 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
     option(u"service", 's', STRING);
     help(u"service",
          u"Specifies the service for the insertion of the splice information tables. "
-         u"If the argument is an integer value (either decimal or hexadecimal), it is "
-         u"interpreted as a service id. Otherwise, it is interpreted as a service "
-         u"name, as specified in the SDT. The name is not case sensitive and blanks "
-         u"are ignored. If no service is specified, the options --pid and --pts-pid "
-         u"must be specified (--pcr-pid is optional).");
+         u"If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id. "
+         u"If it is an empty string or \"-\", the first service in the PAT is selected. "
+         u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
+         u"The name is not case sensitive and blanks are ignored. "
+         u"If the input TS does not contain an SDT, use service ids only. "
+         u"If no service is specified, the options --pid and --pts-pid must be specified (--pcr-pid is optional).");
 
     option(u"start-delay", 0, UNSIGNED);
     help(u"start-delay",

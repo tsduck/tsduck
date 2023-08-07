@@ -282,10 +282,11 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"If no fixed CW is specified, a random CW is generated for each crypto-period "
          u"and ECM's containing the current and next CW's are created and inserted in "
          u"the stream. ECM's can be created only when a service is specified.\n\n"
-         u"If the argument is an integer value (either decimal or hexadecimal), it is "
-         u"interpreted as a service id. Otherwise, it is interpreted as a service name, "
-         u"as specified in the SDT. The name is not case sensitive and blanks are "
-         u"ignored. If the input TS does not contain an SDT, use service ids only.");
+         u"If the argument is an integer value (either decimal or hexadecimal), it is interpreted as a service id. "
+         u"If it is an empty string or \"-\", the first service in the PAT is scrambled. "
+         u"Otherwise, it is interpreted as a service name, as specified in the SDT. "
+         u"The name is not case sensitive and blanks are ignored. "
+         u"If the input TS does not contain an SDT, use service ids only.");
 
     option<BitRate>(u"bitrate-ecm", 'b');
     help(u"bitrate-ecm",
@@ -529,7 +530,7 @@ void ts::ScramblerPlugin::handlePMT(const PMT& table, PID)
         }
     }
 
-    // Check that we have somethng to scramble.
+    // Check that we have something to scramble.
     if (_scrambled_pids.none()) {
         tsp->error(u"no PID to scramble in service");
         _abort = true;

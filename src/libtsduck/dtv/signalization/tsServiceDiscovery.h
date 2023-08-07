@@ -62,7 +62,7 @@ namespace ts {
         //! Constructor using a string description.
         //! @param [in,out] duck TSDuck execution context. The reference is kept inside the demux.
         //! @param [in] desc Service description string. If the string evaluates to an integer (decimal or hexa),
-        //! this is a service id, otherwise this is a service name. If the string is empty, use the first service from the PAT.
+        //! this is a service id, otherwise this is a service name. If the string is empty or "-", use the first service from the PAT.
         //! @param [in] pmtHandler Handler to call for each new PMT.
         //!
         explicit ServiceDiscovery(DuckContext& duck, const UString& desc, SignalizationHandlerInterface* pmtHandler = nullptr);
