@@ -43,7 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractVideoAccessUnit: public AbstractVideoData
     {
-        TS_RULE_OF_FIVE(AbstractVideoAccessUnit, = default);
+        TS_RULE_OF_FIVE(AbstractVideoAccessUnit, override = default);
     public:
         //!
         //! Unified name for superclass.

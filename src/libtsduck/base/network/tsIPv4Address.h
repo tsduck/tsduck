@@ -52,7 +52,7 @@ namespace ts {
     //!
     class TSDUCKDLL IPv4Address: public AbstractNetworkAddress
     {
-        TS_RULE_OF_FIVE(IPv4Address, );
+        TS_RULE_OF_FIVE(IPv4Address, override);
     private:
         uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
     public:
