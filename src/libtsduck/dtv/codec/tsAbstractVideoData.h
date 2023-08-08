@@ -50,7 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractVideoData: public DisplayInterface
     {
-        TS_RULE_OF_FIVE(AbstractVideoData, = default);
+        TS_RULE_OF_FIVE(AbstractVideoData, override = default);
     public:
         //!
         //! Constructor.

@@ -66,10 +66,6 @@ ts::Service::Service(const UString& desc) :
     set(desc);
 }
 
-ts::Service::~Service()
-{
-}
-
 
 //----------------------------------------------------------------------------
 // Reset using a string description.

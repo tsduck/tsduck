@@ -47,7 +47,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractNetworkAddress: public StringifyInterface
     {
-        TS_INTERFACE(AbstractNetworkAddress);
+        TS_RULE_OF_FIVE(AbstractNetworkAddress, override);
     public:
         //!
         //! The concept of port is used by TCP and UDP over IP networks.
@@ -58,6 +58,11 @@ namespace ts {
         //! Wildcard integer value for "any port" or "no port".
         //!
         static const Port AnyPort = 0;
+
+        //!
+        //! Default constructor.
+        //!
+        AbstractNetworkAddress() = default;
 
         //!
         //! Get the maximum binary size for an address of that class.

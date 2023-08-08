@@ -62,7 +62,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractDescriptor: public AbstractSignalization
     {
-        TS_RULE_OF_FIVE(AbstractDescriptor, );
+        TS_RULE_OF_FIVE(AbstractDescriptor, override);
     public:
         //!
         //! Get the descriptor tag.
