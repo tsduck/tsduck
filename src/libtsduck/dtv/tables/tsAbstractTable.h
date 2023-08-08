@@ -64,7 +64,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractTable: public AbstractSignalization
     {
-        TS_RULE_OF_FIVE(AbstractTable);
+        TS_RULE_OF_FIVE(AbstractTable, );
     public:
         //!
         //! Get the table_id.

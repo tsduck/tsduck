@@ -44,7 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractAudioVideoAttributes: public StringifyInterface
     {
-        TS_RULE_OF_FIVE(AbstractAudioVideoAttributes);
+        TS_RULE_OF_FIVE(AbstractAudioVideoAttributes, );
     public:
         //!
         //! Default constructor

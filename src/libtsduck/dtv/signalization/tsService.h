@@ -49,7 +49,7 @@ namespace ts {
     //!
     class TSDUCKDLL Service: public StringifyInterface
     {
-        TS_RULE_OF_FIVE(Service);
+        TS_RULE_OF_FIVE(Service, );
     public:
         //!
         //! Default constructor.
