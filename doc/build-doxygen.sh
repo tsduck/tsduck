@@ -30,13 +30,53 @@
 #
 #  Shell script to build the documentation using Doxygen.
 #
+#  If option --update-doxygen is specified and the installed version of
+#  doxygen is obsolete (meaning has bugs when processing TSDuck doc),
+#  a more recent version of doxygen is rebuilt first.
+#
 #-----------------------------------------------------------------------------
 
 # Get the project directories.
 ROOTDIR=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
-DOXYDIR="$ROOTDIR/bin/doxy"
+BINDIR="$ROOTDIR/bin"
+DOXYDIR="$BINDIR/doxy"
 DOCDIR="$ROOTDIR/doc"
 SRCDIR="$ROOTDIR/src/libtsduck"
+
+# Get doxygen version.
+get-doxygen-version() {
+    DOXY_VERSION=$(doxygen --version)
+    DOXY_VERSION=${DOXY_VERSION/ */}
+    DOXY_AVERSION=(${DOXY_VERSION//./ })
+    DOXY_IVERSION=$(( ${DOXY_AVERSION[0]} * 10000 + ${DOXY_AVERSION[1]} * 100 + ${DOXY_AVERSION[2]} ))
+}
+get-doxygen-version
+
+# Minimum doxygen version if update is required.
+MINDOXY_VERSION=1.9.4
+MINDOXY_NAME=(${MINDOXY_VERSION//./_})
+MINDOXY_AVERSION=(${MINDOXY_VERSION//./ })
+MINDOXY_IVERSION=$(( ${MINDOXY_AVERSION[0]} * 10000 + ${MINDOXY_AVERSION[1]} * 100 + ${MINDOXY_AVERSION[2]} ))
+
+# Update doxygen when necessary.
+if [[ "$1" == "--update-doxygen" && $DOXY_IVERSION -lt $MINDOXY_IVERSION ]]; then
+    echo "-- Obsolete Doxygen version $DOXY_VERSION installed"
+    DOXY_ROOTDIR="$BINDIR/doxygen"
+    DOXY_BUILDDIR="$DOXY_ROOTDIR/build"
+    DOXY_BINDIR="$DOXY_BUILDDIR/bin"
+    if [[ ! -x "$DOXY_BINDIR/doxygen" ]]; then
+        echo "-- Downloading and rebuilding version $MINDOXY_VERSION"
+        mkdir -p "$DOXY_BUILDDIR"
+        curl -sL https://github.com/doxygen/doxygen/archive/Release_$MINDOXY_NAME.tar.gz | tar xzf - -C "$DOXY_ROOTDIR"
+        pushd "$DOXY_BUILDDIR"
+        cmake -G "Unix Makefiles" ../doxygen-Release_$MINDOXY_NAME
+        make
+        popd
+    fi
+    export PATH="$DOXY_BINDIR:$PATH"
+    get-doxygen-version
+    echo "-- Now using Doxygen $DOXY_VERSION"
+fi
 
 # Make sure that the output directory is created (doxygen does not create parent directories).
 mkdir -p "$DOXYDIR"
@@ -50,14 +90,11 @@ export DOXY_INCLUDE_PATH=$(find "$SRCDIR" -type d | tr '\n' ' ')
 # Generate a summary file of all signalization.
 "$ROOTDIR/src/doc/signalization-gen.py"
 
-# Doxygen version, used to filter various doxygen bugs.
-DOXVERSION=$(doxygen --version)
-
 # Run doxygen. Filter known false errors (bugs) based on doxygen version.
 cd "$DOCDIR"
-if [[ $DOXVERSION == *1.8.17* ]]; then
+if [[ $DOXY_IVERSION -le 10817 ]]; then
     doxygen 2>&1 | grep -v 'warning: return type of member .* is not documented'
-elif [[ $DOXVERSION == *1.9.6* ]]; then
+elif [[ $DOXY_IVERSION -le 10907 ]]; then
     doxygen 2>&1 | grep -v \
         -e 'python/tsduck.py:[0-9]*: warning: Member _.* is not documented' \
         -e 'tsTunerDevice.h:[0-9]*: warning: Detected potential recursive class relation between class ts::TunerDevice and base class ts::TunerBase'
