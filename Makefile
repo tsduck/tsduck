@@ -129,7 +129,7 @@ m32:
 
 .PHONY: doxygen
 doxygen:
-	@doc/build-doxygen.sh
+	@doc/build-doxygen.sh $(DOXYFLAGS)
 
 # Cleanup utilities
 

@@ -229,7 +229,7 @@ jobs:
     - name: Install dependencies
       run: |
         scripts/install-prerequisites.sh
-        doxygen --version
+        echo "Doxygen version: $(doxygen --version)"
     - name: Build TSDuck documentation
       run: |
-        make doxygen
+        make doxygen DOXYFLAGS=--update-doxygen
