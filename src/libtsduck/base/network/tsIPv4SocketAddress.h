@@ -46,6 +46,9 @@ namespace ts {
     //!
     class TSDUCKDLL IPv4SocketAddress: public IPv4Address
     {
+        TS_RULE_OF_FIVE(IPv4SocketAddress, override);
+    private:
+        uint16_t _port;  // Port in host byte order
     public:
         //!
         //! Wildcard socket address, unspecified address and port.
@@ -134,11 +137,6 @@ namespace ts {
         {
             resolve(name, report);
         }
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~IPv4SocketAddress() override;
 
         // Inherited methods.
         virtual Port port() const override;
@@ -229,9 +227,6 @@ namespace ts {
         //! @return True if this instance is less than to @a other.
         //!
         bool operator<(const IPv4SocketAddress& other) const;
-
-    private:
-        uint16_t _port;  // Port in host byte order
     };
 
     //!

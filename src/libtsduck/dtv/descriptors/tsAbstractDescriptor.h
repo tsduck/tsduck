@@ -62,6 +62,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractDescriptor: public AbstractSignalization
     {
+        TS_RULE_OF_FIVE(AbstractDescriptor);
     public:
         //!
         //! Get the descriptor tag.
@@ -151,11 +152,6 @@ namespace ts {
         //! @return True in case of success, false if the descriptor is invalid.
         //!
         bool deserialize(DuckContext& duck, const DescriptorList& dlist, size_t index);
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractDescriptor() override;
 
     protected:
         //!

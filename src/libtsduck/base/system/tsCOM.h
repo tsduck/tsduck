@@ -50,6 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL COM
     {
+        TS_NOCOPY(COM);
     public:
         //!
         //! Constructor.

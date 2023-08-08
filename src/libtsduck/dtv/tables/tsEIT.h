@@ -151,6 +151,8 @@ namespace ts {
         //!
         class TSDUCKDLL Event : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Event);
+            TS_DEFAULT_ASSIGMENTS(Event);
         public:
             // Public members
             uint16_t event_id;           //!< Event id.
@@ -172,11 +174,6 @@ namespace ts {
             //! @return True if this object is less than @a other.
             //!
             bool operator<(const Event& other) const;
-
-        private:
-            // Inaccessible operations.
-            Event() = delete;
-            Event(const Event&) = delete;
         };
 
         //!

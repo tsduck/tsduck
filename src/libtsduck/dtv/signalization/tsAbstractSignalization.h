@@ -182,11 +182,26 @@ namespace ts {
         AbstractSignalization(const AbstractSignalization& other) = default;
 
         //!
+        //! Move constructor.
+        //! Use default implementation, just tell the compiler we understand
+        //! the consequences of copying a pointer member.
+        //! @param [in] other The other instance to copy.
+        //!
+        AbstractSignalization(AbstractSignalization&& other) = default;
+
+        //!
         //! Assignment operator.
         //! @param [in] other The other instance to copy.
         //! @return A reference to this object.
         //!
         AbstractSignalization& operator=(const AbstractSignalization& other);
+
+        //!
+        //! Assignment move operator.
+        //! @param [in] other The other instance to copy.
+        //! @return A reference to this object.
+        //!
+        AbstractSignalization& operator=(AbstractSignalization&& other);
 
         //!
         //! Helper method to clear the content of the table or descriptor.

@@ -54,6 +54,8 @@ namespace ts {
         //!
         class TSDUCKDLL Relation : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Relation);
+            TS_DEFAULT_ASSIGMENTS(Relation);
         public:
             //!
             //! Constructor.
@@ -65,11 +67,6 @@ namespace ts {
             uint8_t  collection_mode;   //!< 4 bits, collection mode.
             uint16_t parent_node_id;    //!< Parent node id.
             uint8_t  reference_number;  //!< Reference number
-
-        private:
-            // Inaccessible operations.
-            Relation() = delete;
-            Relation(const Relation&) = delete;
         };
 
         //!

@@ -1061,7 +1061,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 
 //!
-//! A macro to disable object copy in the definition of a class.
+//! A macro to disable object copy in the declaration of a class.
 //! The copy and move constructors and assignments are explicitly deleted.
 //! @param classname Name of the enclosing class.
 //!
@@ -1073,7 +1073,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
         classname& operator=(const classname&) = delete
 
 //!
-//! A macro to disable default constructor and object copy in the definition of a class.
+//! A macro to disable default constructor and object copy in the declaration of a class.
 //! The default, copy and move constructors and assignments are explicitly deleted.
 //! @param classname Name of the enclosing class.
 //!
@@ -1084,6 +1084,64 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
         classname(const classname&) = delete;       \
         classname& operator=(classname&&) = delete; \
         classname& operator=(const classname&) = delete
+
+//!
+//! A macro to disable default constructors in the declaration of a class.
+//! The default, copy and move constructors are explicitly deleted.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_NO_DEFAULT_CONSTRUCTORS(classname) \
+    private:                                  \
+        classname() = delete;                 \
+        classname(classname&&) = delete;      \
+        classname(const classname&) = delete
+
+//!
+//! A macro to declare the default assignment operators in the declaration of a class.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_DEFAULT_ASSIGMENTS(classname)                 \
+    public:                                              \
+        /** @cond nodoxygen */                           \
+        classname& operator=(classname&&) = default;     \
+        classname& operator=(const classname&) = default \
+        /** @endcond */
+
+//!
+//! A macro to declare the default copy and move constructors and assignment operators in the declaration of a class.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_DEFAULT_COPY_MOVE(classname)        \
+        TS_DEFAULT_ASSIGMENTS(classname);      \
+    public:                                    \
+        /** @cond nodoxygen */                 \
+        classname(classname&&) = default;      \
+        classname(const classname&) = default; \
+        /** @endcond */
+
+//!
+//! A macro to apply the C++ "rule of five" in the declaration of a class.
+//! An explicit virtual destructor is declared. The copy and move constructors and assignments are defaulted.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_RULE_OF_FIVE(classname, ...)  \
+        TS_DEFAULT_COPY_MOVE(classname); \
+    public:                              \
+        /** @cond nodoxygen */           \
+        virtual ~classname() __VA_ARGS__ \
+        /** @endcond */
+
+//!
+//! A macro to declare the basic operators in the declaration of an interface class.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_INTERFACE(classname, ...)     \
+        TS_DEFAULT_COPY_MOVE(classname); \
+    public:                              \
+        /** @cond nodoxygen */           \
+        classname() = default;           \
+        virtual ~classname() __VA_ARGS__ \
+        /** @endcond */
 
 
 //----------------------------------------------------------------------------

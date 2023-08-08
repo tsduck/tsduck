@@ -53,17 +53,14 @@ namespace ts {
         //!
         class TSDUCKDLL Description : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Description);
+            TS_DEFAULT_ASSIGMENTS(Description);
         public:
             //!
             //! Constructor.
             //! @param [in] table Parent table.
             //!
             Description(const AbstractTable* table);
-
-        private:
-            // Inaccessible operations.
-            Description() = delete;
-            Description(const Description&) = delete;
         };
 
         //!

@@ -70,6 +70,8 @@ namespace ts {
         //!
         class TSDUCKDLL ContentVersion : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(ContentVersion);
+            TS_DEFAULT_ASSIGMENTS(ContentVersion);
         public:
             //!
             //! Constructor.
@@ -81,11 +83,6 @@ namespace ts {
             uint16_t     content_minor_version;  //!< Content minor version.
             uint8_t      version_indicator;      //!< 2 bits, how to use the version.
             ScheduleList schedules;              //!< List of schedules.
-
-        private:
-            // Inaccessible operations.
-            ContentVersion() = delete;
-            ContentVersion(const ContentVersion&) = delete;
         };
 
         //!

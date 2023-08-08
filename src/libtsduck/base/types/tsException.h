@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL Exception : public std::exception
     {
+        TS_RULE_OF_FIVE(Exception, noexcept override);
     private:
         UString _what;
         mutable std::string _utf8;
@@ -58,11 +59,6 @@ namespace ts {
         //! @param [in] error System error code causing the exception.
         //!
         Exception(const UString& message, int error);
-
-        //!
-        //! Destructor.
-        //!
-        virtual ~Exception() noexcept override;
 
         //!
         //! Get the error message as a C-string.

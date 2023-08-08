@@ -62,6 +62,8 @@ namespace ts {
         //!
         class TSDUCKDLL Update : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Update);
+            TS_DEFAULT_ASSIGMENTS(Update);
         public:
             UpdateType         update_type;                    //!< Update type.
             uint8_t            genre_category_code;            //!< When update_type == new_genre_category.
@@ -78,11 +80,6 @@ namespace ts {
             //! @param [in] type Update type.
             //!
             explicit Update(const AbstractTable* table, UpdateType type = UpdateType(0));
-
-        private:
-            // Inaccessible operations.
-            Update() = delete;
-            Update(const Update&) = delete;
         };
 
         //!

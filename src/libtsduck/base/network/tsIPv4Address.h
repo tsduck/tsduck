@@ -52,6 +52,9 @@ namespace ts {
     //!
     class TSDUCKDLL IPv4Address: public AbstractNetworkAddress
     {
+        TS_RULE_OF_FIVE(IPv4Address);
+    private:
+        uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
     public:
         //!
         //! Size in bits of an IPv4 address.
@@ -120,11 +123,6 @@ namespace ts {
         //! @param [in] a A system "struct sockaddr_in" structure.
         //!
         IPv4Address(const ::sockaddr_in& a);
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~IPv4Address() override;
 
         //!
         //! Constructor from a string, host name or "a.b.c.d" integer format.
@@ -236,9 +234,6 @@ namespace ts {
         //! @return True if this instance is less than to @a other.
         //!
         bool operator<(const IPv4Address& other) const { return _addr < other._addr; }
-
-    private:
-        uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
     };
 
     //!

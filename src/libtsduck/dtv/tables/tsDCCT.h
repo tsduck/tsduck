@@ -61,6 +61,8 @@ namespace ts {
         //!
         class TSDUCKDLL Term : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Term);
+            TS_DEFAULT_ASSIGMENTS(Term);
         public:
             uint8_t  dcc_selection_type;  //!< DCC selection type.
             uint64_t dcc_selection_id;    //!< DCC selection id.
@@ -72,11 +74,6 @@ namespace ts {
             //! @param [in] id DCC selection id.
             //!
             explicit Term(const AbstractTable* table, uint8_t type = 0, uint64_t id = 0);
-
-        private:
-            // Inaccessible operations.
-            Term() = delete;
-            Term(const Term&) = delete;
         };
 
         //!
@@ -90,6 +87,8 @@ namespace ts {
         //!
         class TSDUCKDLL Test : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Test);
+            TS_DEFAULT_ASSIGMENTS(Test);
         public:
             DCCContext dcc_context;                    //!< DCC context.
             uint16_t   dcc_from_major_channel_number;  //!< From major channel number.
@@ -106,11 +105,6 @@ namespace ts {
             //! @param [in] ctx DCC context.
             //!
             explicit Test(const AbstractTable* table, DCCContext ctx = temporary_retune);
-
-        private:
-            // Inaccessible operations.
-            Test() = delete;
-            Test(const Test&) = delete;
         };
 
         //!

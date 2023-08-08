@@ -54,7 +54,9 @@ namespace ts {
         //!
         //! Base capabilities to be defined/extended by Satellite Access Table processing functions
         //!
-        class SAT_base {
+        class SAT_base
+        {
+            TS_INTERFACE(SAT_base);
         public:
             //!
             //! This method populates this object from XML attributes and sub-element
@@ -82,34 +84,29 @@ namespace ts {
             //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
             //!
             virtual void deserialize(PSIBuffer& buf) = 0;
-
-            virtual ~SAT_base();
         };
-
 
         //!
         //! Representation of a satellite position
         //! @see ETSI EN 300 648, 5.2.11.2
         //!
-        class satellite_position_v2_info_type : SAT_base {
+        class satellite_position_v2_info_type : public SAT_base
+        {
         public:
             //!
             //! Representation of a geostationary satellite position
             //! @see ETSI EN 300 648, 5.2.11.2
             //!
-            class geostationary_position_type : SAT_base {
+            class geostationary_position_type : SAT_base
+            {
+                TS_DEFAULT_COPY_MOVE(geostationary_position_type);
             public:
-                uint16_t  orbital_position;                                 //!< Orbital position, unit is 0.1 degree.
-                int       west_east_flag;                                   //!< True (1) for East, false (0) for West.
+                uint16_t  orbital_position;  //!< Orbital position, unit is 0.1 degree.
+                int       west_east_flag;    //!< True (1) for East, false (0) for West.
                 //!
                 //! Default constructor.
                 //!
                 geostationary_position_type();
-                //!
-                //! Copy constructor.
-                //! @param [in] other Other instance to copy.
-                //!
-                geostationary_position_type(const geostationary_position_type& other);
                 //!
                 //! Read-in constructor.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
@@ -117,12 +114,6 @@ namespace ts {
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //!
                 geostationary_position_type(PSIBuffer& buf) : geostationary_position_type() { deserialize(buf); }
-                //!
-                //! Assignment operator.
-                //! @param [in] other Other instance to copy.
-                //! @return a new object whose values are copied from the source.
-                //!
-                geostationary_position_type& operator=(const geostationary_position_type& other);
 
                 // Inherited methods
                 virtual bool fromXML(const xml::Element* element) override;
@@ -135,7 +126,9 @@ namespace ts {
             //! Representation of an earth orbiting satellite position
             //! @see ETSI EN 300 648, 5.2.11.2
             //!
-            class earth_orbiting_satallite_type : SAT_base {
+            class earth_orbiting_satallite_type : public SAT_base
+            {
+                TS_DEFAULT_COPY_MOVE(earth_orbiting_satallite_type);
             public:
                 uint8_t           epoch_year;                               //!< 8 bits. lLast 2 digits of the epoch year.
                 uint16_t          day_of_the_year;                          //!< 16 bits. Epoch day of the year.
@@ -156,23 +149,12 @@ namespace ts {
                 //!
                 earth_orbiting_satallite_type();
                 //!
-                //! Copy constructor.
-                //! @param [in] other Other instance to copy.
-                //!
-                earth_orbiting_satallite_type(const earth_orbiting_satallite_type& other);
-                //!
                 //! Read-in constructor.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
                 //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
                 //! the buffer or if the payload is not completely read, the deserialization is considered as invalid.
                 //!
                 earth_orbiting_satallite_type(PSIBuffer& buf) : earth_orbiting_satallite_type() { deserialize(buf); }
-                //!
-                //! Assignment operator.
-                //! @param [in] other Other instance to copy.
-                //! @return a new object whose values are copied from the source.
-                //!
-                earth_orbiting_satallite_type& operator=(const earth_orbiting_satallite_type& other);
 
                 // Inherited methods
                 virtual bool fromXML(const xml::Element* element) override;
@@ -197,11 +179,6 @@ namespace ts {
             //!
             satellite_position_v2_info_type();
             //!
-            //! Copy constructor
-            //! @param [in] other Other instance to copy.
-            //!
-            satellite_position_v2_info_type(const satellite_position_v2_info_type& other);
-            //!
             //! Read-in constructor.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
@@ -219,7 +196,9 @@ namespace ts {
         //!
         //! Network Clock Reference
         //!
-        class NCR_type : SAT_base {
+        class NCR_type : public SAT_base
+        {
+            TS_DEFAULT_COPY_MOVE(NCR_type);
         public:
             uint64_t        base;       //!< 33 bits. NCR time div 300, as specified in ETSI EN 301 790  and ISO/IEC 13818-1.
             uint16_t        ext;        //!< 9 bits. NCR time mod 300, as specified in ETSI EN 301 790 and ISO/IEC 13818-1.
@@ -228,11 +207,6 @@ namespace ts {
             //! Default constructor.
             //!
             NCR_type();
-            //!
-            //! Copy constructor
-            //! @param [in] other Other instance to copy.
-            //!
-            NCR_type(const NCR_type& other);
             //!
             //! Clear values.
             //!
@@ -269,14 +243,18 @@ namespace ts {
         //! that is associated with none, one or multiple delivery systems
         //! @see ETSI EN 300 648, 5.2.11.3
         //!
-        class cell_fragment_info_type : SAT_base {
+        class cell_fragment_info_type : public SAT_base
+        {
+            TS_DEFAULT_COPY_MOVE(cell_fragment_info_type);
         public:
             //!
             //! Representation of a new delivery system
             //! A new delivery system that is soon serving this cell fragment.
             //! @see ETSI EN 300 648, 5.2.11.3
             //!
-            class new_delivery_system_id_type : SAT_base {
+            class new_delivery_system_id_type : public SAT_base
+            {
+                TS_DEFAULT_COPY_MOVE(new_delivery_system_id_type);
             public:
                 uint32_t    new_delivery_system_id;     //!< The identifier of a new delivery system that is soon serving this cell fragment.
                 NCR_type    time_of_application;        //!< The network clock reference of the time when the specified delivery system will be serving the cell fragment.
@@ -285,11 +263,6 @@ namespace ts {
                 //! Default constructor.
                 //!
                 new_delivery_system_id_type();
-                //!
-                //! Copy contstructor.
-                //! @param [in] other Other instance to copy.
-                //!
-                new_delivery_system_id_type(const new_delivery_system_id_type& other);
                 //!
                 //! Read-in constructor.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
@@ -310,7 +283,9 @@ namespace ts {
             //! A delivery system that will soon stop serving this cell fragment.
             //! @see ETSI EN 300 648, 5.2.11.3
             //!
-            class obsolescent_delivery_system_id_type : SAT_base {
+            class obsolescent_delivery_system_id_type : public SAT_base
+            {
+                TS_DEFAULT_COPY_MOVE(obsolescent_delivery_system_id_type);
             public:
                 uint32_t    obsolescent_delivery_system_id;     //!< The delivery system id of a delivery system that is soon no longer serving this cell fragment.
                 NCR_type    time_of_obsolescence;               //!< The network clock reference of the time when the specified delivery system will no longer be serving the cell fragment.
@@ -319,11 +294,6 @@ namespace ts {
                 //! Default constructor.
                 //!
                 obsolescent_delivery_system_id_type();
-                //!
-                //! Copy constructor.
-                //! @param [in] other Other instance to copy.
-                //!
-                obsolescent_delivery_system_id_type(const obsolescent_delivery_system_id_type& other);
                 //!
                 //! Read-in constructor.
                 //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
@@ -365,11 +335,6 @@ namespace ts {
             //!
             cell_fragment_info_type();
             //!
-            //! Copy constructor.
-            //! @param [in] other Other instance to copy.
-            //!
-            cell_fragment_info_type(const cell_fragment_info_type& other);
-            //!
             //! Read-in constructor.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
@@ -388,7 +353,9 @@ namespace ts {
         //! Representation of a time assocition between NCR and UTC
         //! @see ETSI EN 300 648, 5.2.11.4
         //!
-        class time_association_info_type : SAT_base {
+        class time_association_info_type : public SAT_base
+        {
+            TS_DEFAULT_COPY_MOVE(time_association_info_type);
         public:
             uint8_t     association_type;                   //!< 4 bits. Indicates how the association_timestamp is to be interpreted (valid: 0 or 1).
 
@@ -425,11 +392,6 @@ namespace ts {
             //!
             time_association_info_type();
             //!
-            //! Copy constructor.
-            //! @param [in] other Other instance to copy.
-            //!
-            time_association_info_type(const time_association_info_type& other);
-            //!
             //! Read-in constructor.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from
             //! @a buf. The end of read is the end of the binary payload. If any kind of error is reported in
@@ -455,11 +417,14 @@ namespace ts {
         //!
         class beam_hopping_time_plan_info_type : public SAT_base
         {
+            TS_DEFAULT_COPY_MOVE(beam_hopping_time_plan_info_type);
         public:
             //!
             //! Indicates if there is a transmission in the respective timeslot.
             //!
-            class slot : SAT_base {
+            class slot : public SAT_base
+            {
+                TS_DEFAULT_COPY_MOVE(slot);
             public:
                 uint16_t    number;                     //!< The beam number.
                 bool        on;                         //!< Illuminatiom state of the beam.
@@ -474,11 +439,6 @@ namespace ts {
                 //! @param [in] on_ slot illumination state.
                 //!
                 slot(uint16_t slot_num, bool on_) : number(slot_num), on(on_) {}
-                //!
-                //! Copy constructor
-                //! @param [in] other Other instance to copy.
-                //!
-                slot(const slot& other) : number(other.number), on(other.on) {}
                 //!
                 //! Read-in constructor.
                 //! @param [in] slot_num Slot number.
@@ -533,11 +493,6 @@ namespace ts {
             //! Default constructor.
             //!
             beam_hopping_time_plan_info_type();
-            //!
-            //! Copy constructor.
-            //! @param [in] other Other instance to copy.
-            //!
-            beam_hopping_time_plan_info_type(const beam_hopping_time_plan_info_type& other);
             //!
             //! Read-in constructor.
             //! @param [in,out] buf Deserialization buffer. Read the descriptor payload from

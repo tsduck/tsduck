@@ -137,21 +137,6 @@ ts::SAT::satellite_position_v2_info_type::geostationary_position_type::geostatio
 {
 }
 
-ts::SAT::satellite_position_v2_info_type::geostationary_position_type::geostationary_position_type(const geostationary_position_type& other) :
-    orbital_position(other.orbital_position),
-    west_east_flag(other.west_east_flag)
-{
-}
-
-ts::SAT::satellite_position_v2_info_type::geostationary_position_type& ts::SAT::satellite_position_v2_info_type::geostationary_position_type::operator=(const geostationary_position_type& other)
-{
-    if (&other != this) {
-        orbital_position = other.orbital_position;
-        west_east_flag = other.west_east_flag;
-    }
-    return *this;
-}
-
 void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::serialize(PSIBuffer& buf) const
 {
     buf.putBCD(orbital_position, 4);
@@ -214,41 +199,6 @@ ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::earth_o
     mean_anomaly(0),
     mean_motion(0)
 {
-}
-
-ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::earth_orbiting_satallite_type(const earth_orbiting_satallite_type& other) :
-    epoch_year(other.epoch_year),
-    day_of_the_year(other.day_of_the_year),
-    day_fraction(other.day_fraction),
-    mean_motion_first_derivative(other.mean_motion_first_derivative),
-    mean_motion_second_derivative(other.mean_motion_second_derivative),
-    drag_term(other.drag_term),
-    inclination(other.inclination),
-    right_ascension_of_the_ascending_node(other.right_ascension_of_the_ascending_node),
-    eccentricity(other.eccentricity),
-    argument_of_perigree(other.argument_of_perigree),
-    mean_anomaly(other.mean_anomaly),
-    mean_motion(other.mean_motion)
-{
-}
-
-ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type& ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::operator=(const earth_orbiting_satallite_type& other)
-{
-    if (&other != this) {
-        epoch_year = other.epoch_year;
-        day_of_the_year = other.day_of_the_year;
-        day_fraction = other.day_fraction;
-        mean_motion_first_derivative = other.mean_motion_first_derivative;
-        mean_motion_second_derivative = other.mean_motion_second_derivative;
-        drag_term = other.drag_term;
-        inclination = other.inclination;
-        right_ascension_of_the_ascending_node = other.right_ascension_of_the_ascending_node;
-        eccentricity = other.eccentricity;
-        argument_of_perigree = other.argument_of_perigree;
-        mean_anomaly = other.mean_anomaly;
-        mean_motion = other.mean_motion;
-    }
-    return *this;
 }
 
 void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::serialize(PSIBuffer& buf) const
@@ -325,14 +275,6 @@ ts::SAT::satellite_position_v2_info_type::satellite_position_v2_info_type() :
     position_system(0),
     geostationaryPosition(),
     earthOrbiting()
-{
-}
-
-ts::SAT::satellite_position_v2_info_type::satellite_position_v2_info_type(const satellite_position_v2_info_type& other) :
-    satellite_id(other.satellite_id),
-    position_system(other.position_system),
-    geostationaryPosition(other.geostationaryPosition),
-    earthOrbiting(other.earthOrbiting)
 {
 }
 
@@ -424,12 +366,6 @@ ts::SAT::NCR_type::NCR_type() :
 {
 }
 
-ts::SAT::NCR_type::NCR_type(const NCR_type& other) :
-    base(other.base),
-    ext(other.ext)
-{
-}
-
 void ts::SAT::NCR_type::clear()
 {
     base = 0;
@@ -486,12 +422,6 @@ ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::new_delivery_syst
 {
 }
 
-ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::new_delivery_system_id_type(const new_delivery_system_id_type& other) :
-    new_delivery_system_id(other.new_delivery_system_id),
-    time_of_application(other.time_of_application)
-{
-}
-
 void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(new_delivery_system_id);
@@ -523,12 +453,6 @@ bool ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::fromXML(cons
 ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::obsolescent_delivery_system_id_type() :
     obsolescent_delivery_system_id(0),
     time_of_obsolescence()
-{
-}
-
-ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::obsolescent_delivery_system_id_type(const obsolescent_delivery_system_id_type& other) :
-    obsolescent_delivery_system_id(other.obsolescent_delivery_system_id),
-    time_of_obsolescence(other.time_of_obsolescence)
 {
 }
 
@@ -571,19 +495,6 @@ ts::SAT::cell_fragment_info_type::cell_fragment_info_type() :
     delivery_system_ids(),
     new_delivery_system_ids(),
     obsolescent_delivery_system_ids()
-{
-}
-
-ts::SAT::cell_fragment_info_type::cell_fragment_info_type(const cell_fragment_info_type& other) :
-    cell_fragment_id(other.cell_fragment_id),
-    first_occurence(other.first_occurence),
-    last_occurence(other.last_occurence),
-    center_latitude(other.center_latitude),
-    center_longitude(other.center_longitude),
-    max_distance(other.max_distance),
-    delivery_system_ids(other.delivery_system_ids),
-    new_delivery_system_ids(other.new_delivery_system_ids),
-    obsolescent_delivery_system_ids(other.obsolescent_delivery_system_ids)
 {
 }
 
@@ -736,18 +647,6 @@ ts::SAT::time_association_info_type::time_association_info_type() :
 {
 }
 
-ts::SAT::time_association_info_type::time_association_info_type(const time_association_info_type& other) :
-    association_type(other.association_type),
-    ncr(other.ncr),
-    association_timestamp_seconds(other.association_timestamp_seconds),
-    association_timestamp_nanoseconds(other.association_timestamp_nanoseconds),
-    leap59(other.leap59),
-    leap61(other.leap61),
-    past_leap59(other.past_leap59),
-    past_leap61(other.past_leap61)
-{
-}
-
 void ts::SAT::time_association_info_type::clear()
 {
     association_type = 0;
@@ -871,21 +770,6 @@ ts::SAT::beam_hopping_time_plan_info_type::beam_hopping_time_plan_info_type() :
     revisit_duration(),
     sleep_time(),
     sleep_duration()
-{
-}
-
-ts::SAT::beam_hopping_time_plan_info_type::beam_hopping_time_plan_info_type(const beam_hopping_time_plan_info_type& other) :
-    beamhopping_time_plan_id(other.beamhopping_time_plan_id),
-    time_of_application(other.time_of_application),
-    cycle_duration(other.cycle_duration),
-    dwell_duration(other.dwell_duration),
-    on_time(other.on_time),
-    current_slot(other.current_slot),
-    slot_transmission_on(other.slot_transmission_on),
-    grid_size(other.grid_size),
-    revisit_duration(other.revisit_duration),
-    sleep_time(other.sleep_time),
-    sleep_duration(other.sleep_duration)
 {
 }
 

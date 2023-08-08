@@ -58,12 +58,6 @@ ts::DirectShowFilterCategory::DirectShowFilterCategory(const ::GUID& category, R
 // Destructor.
 //-----------------------------------------------------------------------------
 
-ts::DirectShowFilterCategory::~DirectShowFilterCategory()
-{
-    // Enforce cleanup in the right order
-    clear();
-}
-
 void ts::DirectShowFilterCategory::clear()
 {
     _filters.clear();
@@ -75,12 +69,6 @@ void ts::DirectShowFilterCategory::clear()
 //-----------------------------------------------------------------------------
 // Filter destructor.
 //-----------------------------------------------------------------------------
-
-ts::DirectShowFilterCategory::Filter::~Filter()
-{
-    // Enforce cleanup in the right order
-    clear();
-}
 
 void ts::DirectShowFilterCategory::Filter::clear()
 {

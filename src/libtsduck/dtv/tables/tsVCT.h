@@ -54,6 +54,8 @@ namespace ts {
         //!
         class TSDUCKDLL Channel : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Channel);
+            TS_DEFAULT_ASSIGMENTS(Channel);
         public:
             UString  short_name;             //!< Channel short name (up to 7 characters).
             uint16_t major_channel_number;   //!< 10 bits, major channel number.
@@ -83,11 +85,6 @@ namespace ts {
             //! @param [in,out] service A service description to update.
             //!
             void updateService(Service& service) const;
-
-        private:
-            // Inaccessible operations.
-            Channel() = delete;
-            Channel(const Channel&) = delete;
         };
 
         //!

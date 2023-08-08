@@ -54,6 +54,8 @@ namespace ts {
         //!
         class TSDUCKDLL Event : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Event);
+            TS_DEFAULT_ASSIGMENTS(Event);
         public:
             //!
             //! Constructor.
@@ -62,11 +64,6 @@ namespace ts {
             Event(const AbstractTable* table);
 
             uint16_t local_event_id;  //!< Content version.
-
-        private:
-            // Inaccessible operations.
-            Event() = delete;
-            Event(const Event&) = delete;
         };
 
         //!

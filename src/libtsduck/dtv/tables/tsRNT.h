@@ -50,6 +50,8 @@ namespace ts {
         //!
         class TSDUCKDLL CRIDAuthority: public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(CRIDAuthority);
+            TS_DEFAULT_ASSIGMENTS(CRIDAuthority);
         public:
             UString name;    //!< CRID authority name.
             uint8_t policy;  //!< 2 bits, CRID authority policy.
@@ -66,11 +68,6 @@ namespace ts {
             //! @param [in] other Another instance to copy.
             //!
             CRIDAuthority(const AbstractTable* table, const CRIDAuthority& other);
-
-            //! @cond nodoxygen
-            CRIDAuthority& operator=(const CRIDAuthority& other) = default;
-            CRIDAuthority& operator=(CRIDAuthority&& other) = default;
-            //! @endcond nodoxygen
         };
 
         //!
@@ -84,6 +81,8 @@ namespace ts {
         //!
         class TSDUCKDLL ResolutionProvider: public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(ResolutionProvider);
+            TS_DEFAULT_ASSIGMENTS(ResolutionProvider);
         public:
             UString          name;              //!< Resolution provider name.
             CRIDAutorityList CRID_authorities;  //!< List of CRID autorities.
@@ -100,11 +99,6 @@ namespace ts {
             //! @param [in] other Another instance to copy.
             //!
             ResolutionProvider(const AbstractTable* table, const ResolutionProvider& other);
-
-            //! @cond nodoxygen
-            ResolutionProvider& operator=(const ResolutionProvider& other) = default;
-            ResolutionProvider& operator=(ResolutionProvider&& other) = default;
-            //! @endcond nodoxygen
         };
 
         //!

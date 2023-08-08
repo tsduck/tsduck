@@ -62,6 +62,19 @@ ts::AbstractSignalization& ts::AbstractSignalization::operator=(const AbstractSi
     return *this;
 }
 
+ts::AbstractSignalization& ts::AbstractSignalization::operator=(AbstractSignalization&& other)
+{
+    if (this != &other) {
+        // Don't copy the pointer to XML name or the list of standards, they are const values.
+        // In debug mode, check that we have the same XML name.
+        assert(_standards == other._standards);
+        assert((_xml_name == nullptr && other._xml_name == nullptr) ||
+               (_xml_name != nullptr && other._xml_name != nullptr && UString(_xml_name) == UString(other._xml_name)));
+        _is_valid = other._is_valid;
+    }
+    return *this;
+}
+
 ts::AbstractSignalization::~AbstractSignalization()
 {
 }

@@ -62,8 +62,8 @@ namespace ts {
     //!
     class TSDUCKDLL MutexInterface
     {
+        TS_INTERFACE(MutexInterface);
     public:
-
         //!
         //! Acquire the mutex with a timeout.
         //!
@@ -85,10 +85,5 @@ namespace ts {
         //! @return true on success and false on error.
         //!
         virtual bool release() = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~MutexInterface();
     };
 }

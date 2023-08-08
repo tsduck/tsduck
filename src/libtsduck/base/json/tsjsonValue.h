@@ -62,15 +62,12 @@ namespace ts {
         //!
         class TSDUCKDLL Value
         {
+            TS_RULE_OF_FIVE(Value, = default);
         public:
             //!
             //! Default constructor.
             //!
             Value() = default;
-            //!
-            //! Virtual destructor.
-            //!
-            virtual ~Value() = default;
             //!
             //! Get the JSON value type.
             //! @return The JSON value type.

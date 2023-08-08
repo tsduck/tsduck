@@ -42,16 +42,12 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractDefinedByStandards
     {
+        TS_INTERFACE(AbstractDefinedByStandards);
     public:
         //!
         //! Get the list of standards which define this object.
         //! @return A bit mask of standards.
         //!
         virtual Standards definingStandards() const = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractDefinedByStandards();
     };
 }

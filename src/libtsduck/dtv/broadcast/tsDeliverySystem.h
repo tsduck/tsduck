@@ -180,6 +180,7 @@ namespace ts {
     //!
     class TSDUCKDLL DeliverySystemSet : public std::set<DeliverySystem>, public StringifyInterface
     {
+        TS_DEFAULT_COPY_MOVE(DeliverySystemSet);
     public:
         //!
         //! Explicit reference to superclass.
@@ -214,14 +215,12 @@ namespace ts {
         // Implementation of StringifyInterface.
         virtual UString toString() const override;
 
-#if !defined(DOXYGEN)
+        //! @cond nodoxygen
         // Trampolines to superclass constructors.
         DeliverySystemSet() = default;
-        DeliverySystemSet(const SuperClass& other) : SuperClass(other) {}
-        DeliverySystemSet(const SuperClass&& other) : SuperClass(other) {}
         DeliverySystemSet(std::initializer_list<value_type> init) : SuperClass(init) {}
         template<class InputIt> DeliverySystemSet(InputIt first, InputIt last) : SuperClass(first, last) {}
-#endif
+        //! @endcond
 
     private:
         // List of delivery systems, from most preferred to least preferred.

@@ -34,10 +34,6 @@ ts::AbstractVideoData::AbstractVideoData() :
 {
 }
 
-ts::AbstractVideoData::~AbstractVideoData()
-{
-}
-
 void ts::AbstractVideoData::clear()
 {
     valid = false;

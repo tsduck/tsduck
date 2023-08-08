@@ -44,16 +44,12 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractAudioVideoAttributes: public StringifyInterface
     {
+        TS_RULE_OF_FIVE(AbstractAudioVideoAttributes);
     public:
         //!
         //! Default constructor
         //!
         AbstractAudioVideoAttributes();
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractAudioVideoAttributes() override;
 
         //!
         //! Check if the values in the object are valid.

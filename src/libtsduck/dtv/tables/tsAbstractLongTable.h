@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractLongTable: public AbstractTable
     {
+        TS_RULE_OF_FIVE(AbstractLongTable);
     public:
         // Common public members:
         uint8_t version;     //!< Table version number.
@@ -59,11 +60,6 @@ namespace ts {
 
         // Inherited methods
         virtual void clear() override final;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractLongTable() override;
 
     protected:
         //!

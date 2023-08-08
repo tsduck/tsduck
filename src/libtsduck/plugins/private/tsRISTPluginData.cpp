@@ -261,11 +261,15 @@ bool ts::RISTPluginData::addPeers()
 
         // Add user authentication if specified in URL.
         if (config->srp_username[0] != '\0' && config->srp_password[0] != '\0') {
+            // rist_enable_eap_srp is considered as deprecated, this will need to be updated.
+            TS_PUSH_WARNING()
+            TS_MSC_NOWARNING(4996)
             const int err = ::rist_enable_eap_srp(peer, config->srp_username, config->srp_password, nullptr, nullptr);
             if (err != 0) {
                 // Report warning but do not fail.
                 _report.warning(u"error %d while setting SRP authentication on %s", {err, _peer_urls[i]});
             }
+            TS_POP_WARNING()
         }
     }
     return true;

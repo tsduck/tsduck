@@ -62,7 +62,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        ~DirectShowFilterCategory();
+        ~DirectShowFilterCategory() { clear(); }
 
         //!
         //! Build an instance of all filters of the specified category.
@@ -118,13 +118,16 @@ namespace ts {
         // One device entry.
         class Filter
         {
+            TS_DEFAULT_COPY_MOVE(Filter);
         public:
-            ~Filter();      // Destructor.
-            void clear();   // Properly clear all fields.
-
             UString               name;     // Device name.
             ComPtr<::IMoniker>    moniker;  // Moniker to the device object instance.
             ComPtr<::IBaseFilter> filter;   // Pointer to its IBaseFilter interface.
+
+            void clear();                   // Properly clear all fields.
+
+            Filter() = default;             // Constructor.
+            ~Filter() { clear(); }          // Destructor.
         };
 
         Report&                  _report;

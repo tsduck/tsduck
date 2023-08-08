@@ -53,17 +53,14 @@ namespace ts {
         //!
         class TSDUCKDLL Broadcaster : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Broadcaster);
+            TS_DEFAULT_ASSIGMENTS(Broadcaster);
         public:
             //!
             //! Constructor.
             //! @param [in] table Parent table.
             //!
             Broadcaster(const AbstractTable* table);
-
-        private:
-            // Inaccessible operations.
-            Broadcaster() = delete;
-            Broadcaster(const Broadcaster&) = delete;
         };
 
         //!

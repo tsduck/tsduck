@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL DirectShowNetworkType
     {
+        TS_DEFAULT_COPY_MOVE(DirectShowNetworkType);
     public:
         //!
         //! Constructor.

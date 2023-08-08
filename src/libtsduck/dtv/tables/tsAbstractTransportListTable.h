@@ -58,6 +58,8 @@ namespace ts {
         //!
         class TSDUCKDLL Transport : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Transport);
+            TS_DEFAULT_ASSIGMENTS(Transport);
         public:
             // Public members
             int preferred_section;  //!< Preferred section index for serialization (-1 means no preference).
@@ -67,11 +69,6 @@ namespace ts {
             //! @param [in] table Parent table.
             //!
             explicit Transport(const AbstractTable* table);
-
-        private:
-            // Inaccessible operations.
-            Transport() = delete;
-            Transport(const Transport&) = delete;
         };
 
         //!
