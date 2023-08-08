@@ -64,6 +64,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractTable: public AbstractSignalization
     {
+        TS_RULE_OF_FIVE(AbstractTable);
     public:
         //!
         //! Get the table_id.
@@ -96,11 +97,6 @@ namespace ts {
         //! @return True in case of success, false if the table is invalid.
         //!
         bool deserialize(DuckContext& duck, const BinaryTable& bin);
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractTable() override;
 
         //!
         //! Base inner class for table entries with one or more descriptor lists.
@@ -153,6 +149,13 @@ namespace ts {
             EntryWithDescriptors(const AbstractTable* table, const EntryWithDescriptors& other);
 
             //!
+            //! Basic move-like constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in,out] other Another instance to move.
+            //!
+            EntryWithDescriptors(const AbstractTable* table, EntryWithDescriptors&& other);
+
+            //!
             //! Assignment operator.
             //! The parent table remains unchanged.
             //! @param [in] other Another instance to copy.
@@ -163,7 +166,7 @@ namespace ts {
             //!
             //! Move assignment operator.
             //! The parent table remains unchanged.
-            //! @param [in,out] other Another instance to copy.
+            //! @param [in,out] other Another instance to move.
             //! @return A reference to this object.
             //!
             EntryWithDescriptors& operator=(EntryWithDescriptors&& other) noexcept;
@@ -207,6 +210,13 @@ namespace ts {
             EntryWithDescriptorsMap(const AbstractTable* table, const EntryWithDescriptorsMap& other);
 
             //!
+            //! Basic move-like constructor.
+            //! @param [in] table Parent table. A descriptor list is always attached to a table.
+            //! @param [in,out] other Another instance to move.
+            //!
+            EntryWithDescriptorsMap(const AbstractTable* table, EntryWithDescriptorsMap&& other);
+
+            //!
             //! Assignment operator.
             //! The parent table remains unchanged.
             //! @param [in] other Another instance to copy.
@@ -217,7 +227,7 @@ namespace ts {
             //!
             //! Move assignment operator.
             //! The parent table remains unchanged.
-            //! @param [in,out] other Another instance to copy.
+            //! @param [in,out] other Another instance to move.
             //! @return A reference to this object.
             //!
             EntryWithDescriptorsMap& operator=(EntryWithDescriptorsMap&& other);

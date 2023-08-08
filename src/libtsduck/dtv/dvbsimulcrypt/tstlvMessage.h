@@ -72,6 +72,7 @@ namespace ts {
         //!
         class TSDUCKDLL Message
         {
+            TS_RULE_OF_FIVE(Message);
         public:
             //!
             //! Check if the message has a protocol version number.
@@ -115,11 +116,6 @@ namespace ts {
             //! @param [in,out] zer A TLV serializer.
             //!
             void serialize(Serializer& zer) const;
-
-            //!
-            //! Virtual destructor.
-            //!
-            virtual ~Message();
 
             //!
             //! Dump routine.

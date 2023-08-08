@@ -55,6 +55,21 @@ ts::AbstractTable::EntryWithDescriptorsMap<KEY,ENTRY,N>::EntryWithDescriptorsMap
     }
 }
 
+template<typename KEY, class ENTRY, typename std::enable_if<std::is_base_of<ts::AbstractTable::EntryBase, ENTRY>::value>::type* N>
+ts::AbstractTable::EntryWithDescriptorsMap<KEY, ENTRY, N>::EntryWithDescriptorsMap(const AbstractTable* table, EntryWithDescriptorsMap&& other) :
+    SuperClass(),
+    _table(table),
+    _auto_ordering(other._auto_ordering)
+{
+    // Clear and move each entry one by one to ensure that the copied entries actually point to the target table.
+    for (auto& it : other) {
+        (*this)[it.first] = std::move(it.second);
+    }
+    // The other instance is still a valid map with valid entries.
+    // But all entries have unspecified values.
+    // Just clear the other it to get a deterministic state.
+    other.clear();
+}
 
 //----------------------------------------------------------------------------
 // Template list of subclasses of EntryWithDescriptors - Assignment.

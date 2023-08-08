@@ -53,10 +53,6 @@ namespace ts {
     //!
     class TSDUCKDLL Object
     {
-    public:
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~Object();
+        TS_INTERFACE(Object);
     };
 }

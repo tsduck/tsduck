@@ -54,6 +54,8 @@ namespace ts {
         //!
         class TSDUCKDLL Application : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Application);
+            TS_DEFAULT_ASSIGMENTS(Application);
         public:
             uint8_t control_code;  //!< Control code of the application
 
@@ -62,11 +64,6 @@ namespace ts {
             //! @param [in] table Parent AIT.
             //!
             explicit Application(const AbstractTable* table);
-
-        private:
-            // Inaccessible operations.
-            Application() = delete;
-            Application(const Application&) = delete;
         };
 
         //!

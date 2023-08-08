@@ -54,6 +54,8 @@ namespace ts {
         //!
         class TSDUCKDLL TableType : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(TableType);
+            TS_DEFAULT_ASSIGMENTS(TableType);
         public:
             uint16_t table_type;                 //!< Referenced table type (this is not a table id).
             PID      table_type_PID;             //!< PID carrying this referenced table.
@@ -65,11 +67,6 @@ namespace ts {
             //! @param [in] table Parent MGT.
             //!
             explicit TableType(const AbstractTable* table);
-
-        private:
-            // Inaccessible operations.
-            TableType() = delete;
-            TableType(const TableType&) = delete;
         };
 
         //!

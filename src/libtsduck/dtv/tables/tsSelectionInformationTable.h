@@ -53,6 +53,8 @@ namespace ts {
         //!
         class TSDUCKDLL Service : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Service);
+            TS_DEFAULT_ASSIGMENTS(Service);
         public:
             uint8_t running_status;  //!< Running status of the event.
 
@@ -62,11 +64,6 @@ namespace ts {
             //! @param [in] status Running status.
             //!
             explicit Service(const AbstractTable* table, uint8_t status = 0);
-
-        private:
-            // Inaccessible operations.
-            Service() = delete;
-            Service(const Service&) = delete;
         };
 
         //!

@@ -49,6 +49,7 @@ namespace ts {
     //!
     class TSDUCKDLL Service: public StringifyInterface
     {
+        TS_RULE_OF_FIVE(Service);
     public:
         //!
         //! Default constructor.
@@ -68,11 +69,6 @@ namespace ts {
         //! this is a service id, otherwise this is a service name.
         //!
         Service(const UString& desc);
-
-        //!
-        //! Destructor.
-        //!
-        virtual ~Service() override;
 
         //!
         //! Reset using a string description.

@@ -55,6 +55,8 @@ namespace ts {
         //!
         class TSDUCKDLL ServiceEntry : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(ServiceEntry);
+            TS_DEFAULT_ASSIGMENTS(ServiceEntry);
         public:
             // Public members
             bool    EITs_present;    //!< There are EIT schedule on current TS.
@@ -163,10 +165,6 @@ namespace ts {
             //! @param [in] service_type If there is no service_descriptor, a new one is added with the specified @a service type.
             //!
             void setString(DuckContext& duck, UString ServiceDescriptor::* field, const UString& value, uint8_t service_type);
-
-            // Inaccessible operations.
-            ServiceEntry() = delete;
-            ServiceEntry(const ServiceEntry&) = delete;
         };
 
         //!

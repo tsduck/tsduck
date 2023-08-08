@@ -43,6 +43,7 @@ namespace ts {
         //!
         class TSDUCKDLL StreamMessage : public ChannelMessage
         {
+            TS_RULE_OF_FIVE(StreamMessage, override);
         public:
             // Protocol-documented fields:
             // uint16_t channel_id;
@@ -72,11 +73,6 @@ namespace ts {
             //! @param [in] tag_st_id Message tag for the stream id field.
             //!
             StreamMessage(const tlv::MessageFactory& fact, TAG tag_ch_id, TAG tag_st_id);
-
-            //!
-            //! Virtual destructor
-            //!
-            virtual ~StreamMessage() override;
         };
     }
 }

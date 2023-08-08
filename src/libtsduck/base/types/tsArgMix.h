@@ -503,12 +503,8 @@ namespace ts {
 
     private:
         // Instances are directly built in initializer lists and cannot be assigned.
-        // LLVM says "definition of implicit copy constructor is deprecated because it has a user-declared copy assignment operator"
-        TS_PUSH_WARNING()
-        TS_LLVM_NOWARNING(deprecated)
         ArgMixIn& operator=(ArgMixIn&&) = delete;
         ArgMixIn& operator=(const ArgMixIn&) = delete;
-        TS_POP_WARNING()
     };
 
     //!
@@ -540,7 +536,7 @@ namespace ts {
         //! Move constructor.
         //! @param [in,out] other Other instance to move.
         //!
-        ArgMixOut(ArgMixOut&& other) : ArgMix(other) {}
+        ArgMixOut(ArgMixOut&& other) noexcept : ArgMix(other) {}
         //!
         //! Constructor from the address of an integer or enum data.
         //! @param [in] ptr Address of an integer or enum data.

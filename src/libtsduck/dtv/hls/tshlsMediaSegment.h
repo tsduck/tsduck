@@ -44,16 +44,12 @@ namespace ts {
         //!
         class TSDUCKDLL MediaSegment : public MediaElement
         {
+            TS_RULE_OF_FIVE(MediaSegment, override);
         public:
             //!
             //! Constructor.
             //!
             MediaSegment();
-
-            //!
-            //! Destructor.
-            //!
-            virtual ~MediaSegment() override;
 
             // Public fields.
             UString     title;     //!< Optional segment title.

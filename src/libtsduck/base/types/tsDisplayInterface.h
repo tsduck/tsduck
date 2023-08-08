@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL DisplayInterface
     {
+        TS_INTERFACE(DisplayInterface);
     public:
         //!
         //! Display the content of this object to a stream.
@@ -52,11 +53,6 @@ namespace ts {
         //! @return A reference to @a stream.
         //!
         virtual std::ostream& display(std::ostream& stream = std::cout, const UString& margin = UString(), int level = Severity::Info) const = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~DisplayInterface();
     };
 }
 

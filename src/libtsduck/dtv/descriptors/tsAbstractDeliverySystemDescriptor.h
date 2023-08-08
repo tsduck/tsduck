@@ -44,6 +44,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractDeliverySystemDescriptor : public AbstractDescriptor
     {
+        TS_RULE_OF_FIVE(AbstractDeliverySystemDescriptor, override);
     public:
         //!
         //! Get the delivery system.
@@ -51,11 +52,6 @@ namespace ts {
         //! @return The delivery system.
         //!
         virtual DeliverySystem deliverySystem(const DuckContext& duck) const;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractDeliverySystemDescriptor() override;
 
         // Inherited methods.
         virtual DescriptorDuplication duplicationMode() const override;

@@ -52,6 +52,8 @@ namespace ts {
         //!
         class TSDUCKDLL Information : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Information);
+            TS_DEFAULT_ASSIGMENTS(Information);
         public:
             uint8_t information_type;           //!< 4 bits, information type
             uint8_t description_body_location;  //!< 2 bits, where to find the description.
@@ -63,11 +65,6 @@ namespace ts {
             //! @param [in] table Parent table.
             //!
             Information(const AbstractTable* table);
-
-        private:
-            // Inaccessible operations.
-            Information() = delete;
-            Information(const Information&) = delete;
         };
 
         //!

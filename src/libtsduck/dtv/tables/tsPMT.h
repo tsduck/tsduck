@@ -55,6 +55,8 @@ namespace ts {
         //!
         class TSDUCKDLL Stream : public EntryWithDescriptors
         {
+            TS_NO_DEFAULT_CONSTRUCTORS(Stream);
+            TS_DEFAULT_ASSIGMENTS(Stream);
         public:
             uint8_t stream_type;  //!< Stream type, one of ST_* (eg ts::ST_MPEG2_VIDEO).
 
@@ -114,11 +116,6 @@ namespace ts {
             //! @return True if a component tag was found.
             //!
             bool getComponentTag(uint8_t& tag) const;
-
-        private:
-            // Inaccessible operations.
-            Stream() = delete;
-            Stream(const Stream&) = delete;
         };
 
         //!

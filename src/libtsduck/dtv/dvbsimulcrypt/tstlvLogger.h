@@ -51,6 +51,7 @@ namespace ts {
         //!
         class TSDUCKDLL Logger
         {
+            TS_DEFAULT_COPY_MOVE(Logger);
         public:
             //!
             //! Default constructor.
@@ -127,13 +128,6 @@ namespace ts {
             //! @param [in] report Where to report the message. If null, use the default report.
             //!
             void log(const Message& msg, const UString& comment = UString(), Report* report = nullptr);
-
-            // Make sure the compiler knows that we understand the consequences of
-            // copying the Report* in the object: we point to the same external Report.
-            //! @cond nodoxygen
-            Logger(const Logger&) = default;
-            Logger& operator=(const Logger&) = default;
-            //! @endcond
 
         private:
             Report* volatile  _report;         // Default report.

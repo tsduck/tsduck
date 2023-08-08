@@ -113,6 +113,12 @@ ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTabl
 {
 }
 
+ts::AbstractTable::EntryWithDescriptors::EntryWithDescriptors(const AbstractTable* table, EntryWithDescriptors&& other) :
+    EntryBase(NPOS),
+    descs(table, other.descs)
+{
+}
+
 ts::AbstractTable::EntryWithDescriptors& ts::AbstractTable::EntryWithDescriptors::operator=(const EntryWithDescriptors& other)
 {
     if (&other != this) {

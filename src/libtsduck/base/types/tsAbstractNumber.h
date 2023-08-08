@@ -51,6 +51,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractNumber
     {
+        TS_INTERFACE(AbstractNumber);
     public:
         //!
         //! Convert the number to a string object.
@@ -116,11 +117,6 @@ namespace ts {
         //! @return A textual description of the values of that type.
         //!
         virtual UString description() const = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbstractNumber();
 
         //!
         //! Pointer to an invalid instance of AbstractNumber.
