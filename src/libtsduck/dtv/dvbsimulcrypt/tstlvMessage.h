@@ -72,7 +72,7 @@ namespace ts {
         //!
         class TSDUCKDLL Message
         {
-            TS_RULE_OF_FIVE(Message);
+            TS_RULE_OF_FIVE(Message, );
         public:
             //!
             //! Check if the message has a protocol version number.

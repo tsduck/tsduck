@@ -1111,36 +1111,37 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //! A macro to declare the default copy and move constructors and assignment operators in the declaration of a class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_DEFAULT_COPY_MOVE(classname)        \
-        TS_DEFAULT_ASSIGMENTS(classname);      \
-    public:                                    \
-        /** @cond nodoxygen */                 \
-        classname(classname&&) = default;      \
-        classname(const classname&) = default; \
+#define TS_DEFAULT_COPY_MOVE(classname)       \
+        TS_DEFAULT_ASSIGMENTS(classname);     \
+    public:                                   \
+        /** @cond nodoxygen */                \
+        classname(classname&&) = default;     \
+        classname(const classname&) = default \
         /** @endcond */
 
 //!
 //! A macro to apply the C++ "rule of five" in the declaration of a class.
 //! An explicit virtual destructor is declared. The copy and move constructors and assignments are defaulted.
 //! @param classname Name of the enclosing class.
+//! @param dtor_attributes Post attributes for the destructor.
 //!
-#define TS_RULE_OF_FIVE(classname, ...)  \
-        TS_DEFAULT_COPY_MOVE(classname); \
-    public:                              \
-        /** @cond nodoxygen */           \
-        virtual ~classname() __VA_ARGS__ \
+#define TS_RULE_OF_FIVE(classname, dtor_attributes) \
+        TS_DEFAULT_COPY_MOVE(classname);            \
+    public:                                         \
+        /** @cond nodoxygen */                      \
+        virtual ~classname() dtor_attributes        \
         /** @endcond */
 
 //!
 //! A macro to declare the basic operators in the declaration of an interface class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_INTERFACE(classname, ...)     \
+#define TS_INTERFACE(classname)          \
         TS_DEFAULT_COPY_MOVE(classname); \
     public:                              \
         /** @cond nodoxygen */           \
         classname() = default;           \
-        virtual ~classname() __VA_ARGS__ \
+        virtual ~classname()             \
         /** @endcond */
 
 
