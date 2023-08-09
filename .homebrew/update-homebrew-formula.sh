@@ -94,7 +94,7 @@ else
 
     # Check that the tag value looks good.
     [[ -n "$TAG" ]] || error "no tag found for latest tsduck release"
-    [[ $TAG = v* ]] || errro "suspect tag '$TAG', should be 'vX.Y-YYYYMMDD'"
+    [[ $TAG = v* ]] || error "suspect tag '$TAG', should be 'vX.Y-YYYYMMDD'"
 
     # Extract the version number from the tag.
     VERSION=${TAG/v/}
