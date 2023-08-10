@@ -525,10 +525,9 @@ namespace {
 
         // Get system info to determine which command to run.
         const ts::SysInfo& sys(*ts::SysInfo::Instance());
-        const ts::UString sysName(sys.systemName().empty() ? u"this system" : sys.systemName());
 
         if (files.empty() && !sys.isMacOS()) {
-            opt.error(u"no binary installer available for %s", {sysName});
+            opt.error(u"no binary installer available for your system");
             return false;
         }
 
@@ -554,7 +553,7 @@ namespace {
             return RunUpgradeCommand(opt, u"dpkg -i " + ts::UString::Join(files, u" "), true);
         }
         else {
-            opt.error(u"don't know how to upgrade on %s, rebuild from sources", {sysName});
+            opt.error(u"don't know how to upgrade on %s, rebuild from sources", {sys.systemName()});
             return false;
         }
     }

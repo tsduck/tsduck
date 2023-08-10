@@ -726,6 +726,7 @@ void SysUtilsTest::testSysInfo()
             << "    isArm32 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isArm32()) << std::endl
             << "    isArm64 = " << ts::UString::TrueFalse(ts::SysInfo::Instance()->isArm64()) << std::endl
             << "    systemVersion = \"" << ts::SysInfo::Instance()->systemVersion() << '"' << std::endl
+            << "    systemMajorVersion = " << ts::SysInfo::Instance()->systemMajorVersion() << std::endl
             << "    systemName = \"" << ts::SysInfo::Instance()->systemName() << '"' << std::endl
             << "    hostName = \"" << ts::SysInfo::Instance()->hostName() << '"' << std::endl
             << "    memoryPageSize = " << ts::SysInfo::Instance()->memoryPageSize() << std::endl;

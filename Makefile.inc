@@ -266,7 +266,7 @@ endif
 
 # Locate system directories.
 
-USELIB64  := $(if $(findstring linux-x86_64,$(LOCAL_OS)-$(MAIN_ARCH)),$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true)))
+USELIB64  := $(if $(findstring linux,$(LOCAL_OS)),$(if $(findstring 64,$(MAIN_ARCH)),$(if $(LINUXBREW),,$(if $(wildcard /usr/lib64/libc.so*),true))))
 SYSPREFIX ?= $(if $(MACOS)$(LINUXBREW)$(FREEBSD)$(OPENBSD)$(NETBSD)$(DRAGONFLYBSD),$(ALTDEVROOT),/usr)
 USRLIBDIR ?= $(if $(USELIB64),$(SYSPREFIX)/lib64,$(SYSPREFIX)/lib)
 ETCDIR    ?= $(if $(subst /usr,,$(SYSPREFIX)),$(SYSPREFIX)/etc,/etc)

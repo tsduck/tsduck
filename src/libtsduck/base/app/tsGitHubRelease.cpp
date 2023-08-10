@@ -393,6 +393,12 @@ bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
 {
     const SysInfo& sys(*SysInfo::Instance());
 
+    // System major version as a string (empty string if unknown).
+    UString smv;
+    if (sys.systemMajorVersion() >= 0) {
+        smv.format(u"%d", {sys.systemMajorVersion()});
+    }
+
     if (sys.isWindows() && sys.isIntel64()) {
         return fileName.contain(u"win64", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
     }
@@ -403,34 +409,40 @@ bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
         return fileName.endWith(u".dmg");
     }
     else if (sys.isFedora() && sys.isIntel64()) {
-        return fileName.contain(u".fc") && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
+        return fileName.contain(u".fc" + smv) && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
     }
     else if (sys.isFedora() && sys.isIntel32()) {
-        return fileName.contain(u".fc") && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
+        return fileName.contain(u".fc" + smv) && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
+    }
+    else if (sys.isFedora() && sys.isArm64()) {
+        return fileName.contain(u".fc" + smv) && (fileName.endWith(u".aarch64.rpm") || fileName.endWith(u".noarch.rpm"));
     }
     else if (sys.isRedHat() && sys.isIntel64()) {
-        return fileName.contain(u".el") && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
+        return fileName.contain(u".el" + smv) && (fileName.endWith(u".x86_64.rpm") || fileName.endWith(u".noarch.rpm"));
     }
     else if (sys.isRedHat() && sys.isIntel32()) {
-        return fileName.contain(u".el") && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
+        return fileName.contain(u".el" + smv) && (fileName.endWith(u".i386.rpm") || fileName.endWith(u".i686.rpm") || fileName.endWith(u".noarch.rpm"));
+    }
+    else if (sys.isRedHat() && sys.isArm64()) {
+        return fileName.contain(u".el" + smv) && (fileName.endWith(u".aarch64.rpm") || fileName.endWith(u".noarch.rpm"));
     }
     else if (sys.isUbuntu() && sys.isIntel64()) {
-        return fileName.contain(u".ubuntu") && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
+        return fileName.contain(u".ubuntu" + smv) && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
     }
     else if (sys.isUbuntu() && sys.isIntel32()) {
-        return fileName.contain(u".ubuntu") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
+        return fileName.contain(u".ubuntu" + smv) && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
     }
     else if (sys.isUbuntu() && sys.isArm64()) {
-        return fileName.contain(u".ubuntu") && (fileName.endWith(u"_arm64.deb") || fileName.endWith(u"_aarch64.deb") || fileName.endWith(u"_all.deb"));
+        return fileName.contain(u".ubuntu" + smv) && (fileName.endWith(u"_arm64.deb") || fileName.endWith(u"_aarch64.deb") || fileName.endWith(u"_all.deb"));
     }
     else if (sys.isDebian() && sys.isIntel64()) {
-        return fileName.contain(u".debian") && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
+        return fileName.contain(u".debian" + smv) && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
     }
     else if (sys.isDebian() && sys.isIntel32()) {
-        return fileName.contain(u".debian") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
+        return fileName.contain(u".debian" + smv) && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
     }
     else if (sys.isRaspbian() && sys.isArm32()) {
-        return fileName.contain(u".raspbian") && (fileName.endWith(u"_armhf.deb") || fileName.endWith(u"_all.deb"));
+        return fileName.contain(u".raspbian" + smv) && (fileName.endWith(u"_armhf.deb") || fileName.endWith(u"_all.deb"));
     }
     else {
         return false;  // unknown platform.
