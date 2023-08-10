@@ -399,7 +399,7 @@ bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
     else if (sys.isWindows() && sys.isIntel32()) {
         return fileName.contain(u"win32", ts::CASE_INSENSITIVE) && fileName.endWith(u".exe", ts::CASE_INSENSITIVE);
     }
-    else if (sys.isMacOS() && sys.isIntel64()) {
+    else if (sys.isMacOS()) {
         return fileName.endWith(u".dmg");
     }
     else if (sys.isFedora() && sys.isIntel64()) {
@@ -420,17 +420,17 @@ bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
     else if (sys.isUbuntu() && sys.isIntel32()) {
         return fileName.contain(u".ubuntu") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
     }
+    else if (sys.isUbuntu() && sys.isArm64()) {
+        return fileName.contain(u".ubuntu") && (fileName.endWith(u"_arm64.deb") || fileName.endWith(u"_aarch64.deb") || fileName.endWith(u"_all.deb"));
+    }
     else if (sys.isDebian() && sys.isIntel64()) {
         return fileName.contain(u".debian") && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
     }
     else if (sys.isDebian() && sys.isIntel32()) {
         return fileName.contain(u".debian") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
     }
-    else if (sys.isRaspbian() && sys.isIntel64()) {
-        return fileName.contain(u".raspbian") && (fileName.endWith(u"_amd64.deb") || fileName.endWith(u"_all.deb"));
-    }
-    else if (sys.isRaspbian() && sys.isIntel32()) {
-        return fileName.contain(u".raspbian") && (fileName.endWith(u"_i386.deb") || fileName.endWith(u"_i686.deb") || fileName.endWith(u"_all.deb"));
+    else if (sys.isRaspbian() && sys.isArm32()) {
+        return fileName.contain(u".raspbian") && (fileName.endWith(u"_armhf.deb") || fileName.endWith(u"_all.deb"));
     }
     else {
         return false;  // unknown platform.
