@@ -36,6 +36,9 @@
 #  By default, use the latest official release of TSDuck on GitHub.
 #  With --commit, use the latest commit in the TSDuck repository on GitHub.
 #
+#  This script is for local tests only. To create a new release of TSDuck
+#  in HomeBrew, use brew-bump-formula-pr.sh.
+#
 #-----------------------------------------------------------------------------
 
 SCRIPT=$(basename $0 .sh)
@@ -94,7 +97,7 @@ else
 
     # Check that the tag value looks good.
     [[ -n "$TAG" ]] || error "no tag found for latest tsduck release"
-    [[ $TAG = v* ]] || error "suspect tag '$TAG', should be 'vX.Y-YYYYMMDD'"
+    [[ $TAG = v* ]] || error "suspect tag '$TAG', should be 'vX.Y-NNNN'"
 
     # Extract the version number from the tag.
     VERSION=${TAG/v/}
