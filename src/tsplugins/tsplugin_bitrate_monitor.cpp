@@ -35,6 +35,7 @@
 #include "tsPluginRepository.h"
 #include "tsForkPipe.h"
 #include "tsTime.h"
+#include "tsMonotonic.h"
 
 
 //----------------------------------------------------------------------------
@@ -62,50 +63,51 @@ namespace ts {
         // Type indicating status of current bitrate, regarding allowed range.
         enum RangeStatus {LOWER, IN_RANGE, GREATER};
 
-        // Description of what is received during one second.
+        // Description of what is received during approximately one second.
         class Period
         {
         public:
+            NanoSecond    duration;  // Actual duration in nanoseconds.
             PacketCounter packets;   // Total number of packets.
             PacketCounter non_null;  // Total number of non-null packets.
 
             // Constructor.
-            Period() : packets(0), non_null(0) {}
+            Period() : duration(0), packets(0), non_null(0) {}
 
             // Clear content.
-            void clear() { packets = non_null = 0; }
+            void clear() { duration = 0; packets = non_null = 0; }
         };
 
         // Command line options.
-        bool    _full_ts;           // Monitor full TS.
-        PID     _first_pid;         // First monitored PID (for messages).
-        size_t  _pid_count;         // Number of PID's to monitor.
-        PIDSet  _pids;              // Monitored PID's.
-        UString _tag;               // Message tag.
-        BitRate _min_bitrate;       // Minimum allowed bitrate.
-        BitRate _max_bitrate;       // Maximum allowed bitrate.
-        Second  _periodic_bitrate;  // Report bitrate at regular intervals, even if in range.
-        Second  _periodic_command;  // Run alarm command at regular intervals, even if in range.
-        size_t  _window_size;       // Size (in seconds) of the time window, used to compute bitrate.
-        UString _alarm_command;     // Alarm command name.
-        UString _alarm_prefix;      // Prefix for alarm messages.
-        UString _alarm_target;      // "target" parameter to the alarm command.
-        TSPacketLabelSet _labels_below;     // Set these labels on all packets when bitrate is below normal.
-        TSPacketLabelSet _labels_normal;    // Set these labels on all packets when bitrate is normal.
-        TSPacketLabelSet _labels_above;     // Set these labels on all packets when bitrate is above normal.
-        TSPacketLabelSet _labels_go_below;  // Set these labels on one packet when bitrate goes below normal.
-        TSPacketLabelSet _labels_go_normal; // Set these labels on one packet when bitrate goes back to normal.
-        TSPacketLabelSet _labels_go_above;  // Set these labels on one packet when bitrate goes above normal.
+        bool             _full_ts;           // Monitor full TS.
+        PID              _first_pid;         // First monitored PID (for messages).
+        size_t           _pid_count;         // Number of PID's to monitor.
+        PIDSet           _pids;              // Monitored PID's.
+        UString          _tag;               // Message tag.
+        BitRate          _min_bitrate;       // Minimum allowed bitrate.
+        BitRate          _max_bitrate;       // Maximum allowed bitrate.
+        Second           _periodic_bitrate;  // Report bitrate at regular intervals, even if in range.
+        Second           _periodic_command;  // Run alarm command at regular intervals, even if in range.
+        size_t           _window_size;       // Size (in seconds) of the time window, used to compute bitrate.
+        UString          _alarm_command;     // Alarm command name.
+        UString          _alarm_prefix;      // Prefix for alarm messages.
+        UString          _alarm_target;      // "target" parameter to the alarm command.
+        TSPacketLabelSet _labels_below;      // Set these labels on all packets when bitrate is below normal.
+        TSPacketLabelSet _labels_normal;     // Set these labels on all packets when bitrate is normal.
+        TSPacketLabelSet _labels_above;      // Set these labels on all packets when bitrate is above normal.
+        TSPacketLabelSet _labels_go_below;   // Set these labels on one packet when bitrate goes below normal.
+        TSPacketLabelSet _labels_go_normal;  // Set these labels on one packet when bitrate goes back to normal.
+        TSPacketLabelSet _labels_go_above;   // Set these labels on one packet when bitrate goes above normal.
 
         // Working data.
-        Second      _bitrate_countdown;     // Countdown to report bitrate.
-        Second      _command_countdown;     // Countdown to run alarm command.
-        RangeStatus _last_bitrate_status;   // Status of the last bitrate, regarding allowed range.
-        time_t      _last_second;           // Last second number.
-        bool        _startup;               // Measurement in progress.
-        size_t      _periods_index;         // Index for packet number array.
-        std::vector<Period> _periods;       // Number of packets received during last time window, second per second.
-        TSPacketLabelSet    _labels_next;   // Set these labels on next packet.
+        Second              _bitrate_countdown;    // Countdown to report bitrate.
+        Second              _command_countdown;    // Countdown to run alarm command.
+        RangeStatus         _last_bitrate_status;  // Status of the last bitrate, regarding allowed range.
+        Monotonic           _last_second;          // System time at last measurement point.
+        bool                _startup;              // Measurement in progress.
+        size_t              _periods_index;        // Index for packet number array.
+        std::vector<Period> _periods;              // Number of packets received during last time window, second per second.
+        TSPacketLabelSet    _labels_next;          // Set these labels on next packet.
 
         // Compute bitrate. Report any alarm.
         void computeBitrate();
@@ -152,7 +154,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     _bitrate_countdown(0),
     _command_countdown(0),
     _last_bitrate_status(LOWER),
-    _last_second(0),
+    _last_second(),
     _startup(false),
     _periods_index(0),
     _periods(),
@@ -314,6 +316,9 @@ bool ts::BitrateMonitorPlugin::getOptions()
 
 bool ts::BitrateMonitorPlugin::start()
 {
+    // Try to get 2 milliseconds as timer precision (if possible).
+    Monotonic::SetPrecision(2 * NanoSecPerMilliSec);
+
     // Initialize array packets count.
     _periods.resize(_window_size);
     for (auto& p : _periods) {
@@ -325,7 +330,7 @@ bool ts::BitrateMonitorPlugin::start()
     _bitrate_countdown = _periodic_bitrate;
     _command_countdown = _periodic_command;
     _last_bitrate_status = IN_RANGE;
-    _last_second = ::time(nullptr);
+    _last_second.getSystemTime();
     _startup = true;
 
     // We must never wait for packets more than one second.
@@ -341,19 +346,28 @@ bool ts::BitrateMonitorPlugin::start()
 
 void ts::BitrateMonitorPlugin::computeBitrate()
 {
-    // Bitrate is computed with the following formula :
-    // (Sum of packets received during the last time window) * (packet size) / (time window)
+    // Compute total duration and packets.
+    NanoSecond duration = 0;
     PacketCounter total_pkt_count = 0;
     PacketCounter non_null_count = 0;
     for (auto& p : _periods) {
+        duration += p.duration;
         total_pkt_count += p.packets;
         non_null_count += p.non_null;
     }
-    const BitRate bitrate((BitRate(total_pkt_count) * PKT_SIZE_BITS) / _periods.size());
-    const BitRate net_bitrate((BitRate(non_null_count) * PKT_SIZE_BITS) / _periods.size());
+
+    // Nanoseconds is an unusually large precision which may lead to overflows.
+    // Using seconds is not precise enough. Use microseconds.
+    duration /= NanoSecPerMicroSec;
+    BitRate bitrate(0);
+    BitRate net_bitrate(0);
+    if (duration > 0) {
+        bitrate = (BitRate(total_pkt_count) * PKT_SIZE_BITS * MicroSecPerSec) / duration;
+        net_bitrate = (BitRate(non_null_count) * PKT_SIZE_BITS * MicroSecPerSec) / duration;
+    }
 
     // Check the bitrate value, regarding the allowed range.
-    RangeStatus new_bitrate_status;
+    RangeStatus new_bitrate_status = IN_RANGE;
     const UChar* alarm_status = nullptr;
     if (bitrate < _min_bitrate) {
         new_bitrate_status = LOWER;
@@ -436,13 +450,16 @@ void ts::BitrateMonitorPlugin::computeBitrate()
 
 void ts::BitrateMonitorPlugin::checkTime()
 {
-    const time_t now = ::time(nullptr);
-
-    // NOTE : the computation method used here is meaningful only if at least
-    // one packet is received per second (whatever its PID).
+    // Current system time.
+    Monotonic now(true);
+    const NanoSecond since_last_second = now - _last_second;
 
     // New second : compute the bitrate for the last time window
-    if (now > _last_second) {
+    if (since_last_second >= NanoSecPerSec) {
+
+        // Exact duration of the last period and restart a new period.
+        _periods[_periods_index].duration = since_last_second;
+        _last_second = now;
 
         // Bitrate computation is done only when the packet counter
         // array if fully filled (to avoid bad values at startup).
@@ -458,8 +475,6 @@ void ts::BitrateMonitorPlugin::checkTime()
         if (_startup) {
             _startup = _periods_index != 0;
         }
-
-        _last_second = now;
     }
 }
 
@@ -484,9 +499,6 @@ bool ts::BitrateMonitorPlugin::handlePacketTimeout()
 
 ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pkt, TSPacketMetadata& pkt_data)
 {
-    // Check time and bitrates.
-    checkTime();
-
     // If packet's PID matches, increment the number of packets received during the current second.
     if (_pids.test(pkt.getPID())) {
         _periods[_periods_index].packets++;
@@ -494,6 +506,9 @@ ts::ProcessorPlugin::Status ts::BitrateMonitorPlugin::processPacket(TSPacket& pk
             _periods[_periods_index].non_null++;
         }
     }
+
+    // Check time and bitrates.
+    checkTime();
 
     // Set labels according to trigger.
     pkt_data.setLabels(_labels_next);
