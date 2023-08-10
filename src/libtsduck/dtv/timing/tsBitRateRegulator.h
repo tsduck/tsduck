@@ -101,29 +101,43 @@ namespace ts {
         void regulate();
 
     private:
-        // Regulation state
-        enum State {INITIAL, REGULATED, UNREGULATED};
+        // We accumulate the amount of passed bits over the last few seconds to evaluate if we have
+        // to pass more or less packets. This is used to compensate for the fact that we pass entire
+        // packets only and not the exact number of bits per second. Since we have to reevaluate this
+        // periodically, we keep the last two periods to avoid restarting from nothing at the end of
+        // a period. We use signed values for bits to allow credit.
+        class Period
+        {
+        public:
+            Monotonic start;
+            int64_t   bits;
+            Period() : start(), bits(0) {}
+        };
 
         // Private members.
         Report*       _report;
         int           _log_level;
-        State         _state;           // Current regulation state
+        bool          _starting;        // Starting, no packet processed so far
+        bool          _regulated;       // Currently regulated at known bitrate
+        PacketCounter _opt_burst;       // Number of packets to burst at a time
         BitRate       _opt_bitrate;     // Bitrate option, zero means use input
         BitRate       _cur_bitrate;     // Current bitrate
-        PacketCounter _opt_burst;       // Number of packets to burst at a time
-        PacketCounter _burst_pkt_max;   // Total packets in current burst
-        PacketCounter _burst_pkt_cnt;   // Countdown of packets in current burst
-        NanoSecond    _burst_min;       // Minimum delay between two bursts (ns)
-        NanoSecond    _burst_duration;  // Delay between two bursts (nano-seconds)
+        NanoSecond    _burst_min;       // Minimum delay between two bursts
+        NanoSecond    _burst_duration;  // Delay between two bursts
         Monotonic     _burst_end;       // End of current burst
-        Monotonic     _bitrate_start;   // Time of last bitrate change
-        PacketCounter _bitrate_pkt_cnt; // Passed packets since last bitrate change
+        Period        _periods[2];      // Last two measurement periods, accumulating packets
+        NanoSecond    _period_duration; // Duration of a period of packet measurement
+        size_t        _cur_period;      // Current period index, 0 or 1
+
+        // Current and other period.
+        Period& currentPeriod() { return _periods[_cur_period & 1]; }
+        Period& otherPeriod() { return _periods[(_cur_period & 1) ^ 1]; }
 
         // Compute burst duration (_burst_duration and _burst_pkt_max), based on
         // required packets/burst (command line option) and current bitrate.
         void handleNewBitrate();
 
         // Process one packet in a regulated burst. Wait at end of burst.
-        void regulatePacket(bool& flush, bool smoothen);
+        void regulatePacket(bool& flush);
     };
 }

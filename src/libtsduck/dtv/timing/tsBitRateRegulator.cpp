@@ -38,17 +38,17 @@
 ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
     _report(report == nullptr ? NullReport::Instance() : report),
     _log_level(log_level),
-    _state(INITIAL),
+    _starting(false),
+    _regulated(false),
+    _opt_burst(0),
     _opt_bitrate(0),
     _cur_bitrate(0),
-    _opt_burst(0),
-    _burst_pkt_max(0),
-    _burst_pkt_cnt(0),
     _burst_min(0),
     _burst_duration(0),
     _burst_end(),
-    _bitrate_start(),
-    _bitrate_pkt_cnt(0)
+    _periods(),
+    _period_duration(NanoSecPerSec),
+    _cur_period(0)
 {
 }
 
@@ -70,23 +70,23 @@ void ts::BitRateRegulator::setReport(ts::Report *report, int log_level)
 
 void ts::BitRateRegulator::start()
 {
-    // Compute the minimum delay between two bursts, in nano-seconds.
-    // This is a limitation of the operating system. If we try to use
-    // wait on durations lower than the minimum, this will introduce
-    // latencies which mess up the regulation. We try to request 2
-    // milliseconds as time precision and we keep what the operating
-    // system gives.
-
-    _burst_min = Monotonic::SetPrecision(2000000); // 2 milliseconds in nanoseconds
-
+    // Compute the minimum delay between two bursts, in nano-seconds. This is a
+    // limitation of the operating system. If we try to use wait on durations
+    // lower than the minimum, this will introduce latencies which mess up the
+    // regulation. We try to request 2 milliseconds as time precision and we
+    // keep what the operating system gives.
+    _burst_min = Monotonic::SetPrecision(2 * NanoSecPerMilliSec);
     _report->log(_log_level, u"minimum packet burst duration is %'d nano-seconds", {_burst_min});
 
+    // Initial measurement period is one second. Will be enlarged for extra-low bitrates.
+    _period_duration = NanoSecPerSec;
+
     // Reset state
-    _state = INITIAL;
-    _cur_bitrate = 0;
-    _burst_pkt_max = 0;
-    _burst_pkt_cnt = 0;
+    _starting = true;
+    _regulated = false;
     _burst_duration = 0;
+    _cur_bitrate = 0;
+    _cur_period = 0;
 }
 
 
@@ -96,25 +96,29 @@ void ts::BitRateRegulator::start()
 
 void ts::BitRateRegulator::handleNewBitrate()
 {
-    // Assume that the packets/burst is the one specified on the command line.
-    _burst_pkt_max = _opt_burst == 0 ? 1 : _opt_burst;
+    assert(_cur_bitrate > 0);
+
+    // Compute the number of packets per burst. Use the packets/burst from the command line or 1 by default.
+    PacketCounter burst_pkt_max = _opt_burst == 0 ? 1 : _opt_burst;
 
     // Compute corresponding duration (in nano-seconds) between two bursts.
     assert(_cur_bitrate > 0);
-    _burst_duration = ((NanoSecPerSec * PKT_SIZE_BITS * _burst_pkt_max) / _cur_bitrate).toInt();
+    _burst_duration = ((NanoSecPerSec * PKT_SIZE_BITS * burst_pkt_max) / _cur_bitrate).toInt();
 
-    // If the result is too small for the time precision of the operating
-    // system, recompute a larger burst duration
+    // If the result is too small for the time precision of the operating system, recompute a larger burst duration.
     if (_burst_duration < _burst_min) {
         _burst_duration = _burst_min;
-        _burst_pkt_max = ((_burst_duration * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
+        burst_pkt_max = ((_burst_duration * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
     }
 
-    _report->debug(u"new regulation, burst: %'d nano-seconds, %'d packets", {_burst_duration, _burst_pkt_max});
+    // New end of burst sequence.
+    _burst_end.getSystemTime();
+    _burst_end += _burst_duration;
 
-    // Register start of bitrate sequence.
-    _bitrate_pkt_cnt = 0;
-    _bitrate_start.getSystemTime();
+    // Measurement period is one second by default but must be larger than 2 bursts.
+    _period_duration = std::max(NanoSecPerSec, 2 * _burst_duration);
+
+    _report->debug(u"new regulation, burst: %'d nano-seconds, %'d packets, measurement period: %'d nano-seconds", {_burst_duration, burst_pkt_max, _period_duration});
 }
 
 
@@ -122,35 +126,43 @@ void ts::BitRateRegulator::handleNewBitrate()
 // Process one packet in a regulated burst. Wait at end of burst.
 //----------------------------------------------------------------------------
 
-void ts::BitRateRegulator::regulatePacket(bool& flush, bool smoothen)
+void ts::BitRateRegulator::regulatePacket(bool& flush)
 {
-    // Check if end of current burst. Take care, _burst_pkt_cnt may be already zero.
-    if ((_burst_pkt_cnt == 0 || --_burst_pkt_cnt == 0) && smoothen && _bitrate_pkt_cnt > 0) {
-        // In the middle of a sequence with same bitrate, we try to smoothen the regulation.
-        // Because of rounding, we tend to pass slightly less packets than requested.
-        // See if we need to add some packets from time to time.
-        const Monotonic now(true);
-        // Number of packets we should have passed since beginning of sequence of this bitrate:
-        const PacketCounter expected = PacketDistance(_cur_bitrate, (now - _bitrate_start) / NanoSecPerMilliSec);
-        if (expected > _bitrate_pkt_cnt) {
-            // We should have passed more than we did, increase this burst size.
-            _burst_pkt_cnt = expected - _bitrate_pkt_cnt;
-        }
-    }
+    // Total measurement period.
+    Monotonic now(true);
+    NanoSecond duration = now - otherPeriod().start;
 
-    // Recheck end of burst, just in case we added some more packets to smoothen.
-    if (_burst_pkt_cnt == 0) {
+    // Allowed bits in the total measurement period.
+    int64_t max_bits = ((_cur_bitrate * duration) / NanoSecPerSec).toInt();
+
+    // While not enough bit credit for one packet, wait until end of current burst.
+    while (otherPeriod().bits + currentPeriod().bits + int64_t(PKT_SIZE_BITS) > max_bits) {
         // Wait until scheduled end of burst.
         _burst_end.wait();
-        // Restart a new burst, use monotonic time
-        _burst_pkt_cnt = _burst_pkt_max;
+        // Restart a new burst, use monotonic time.
         _burst_end += _burst_duration;
         // Flush current burst
         flush = true;
+        // Update measurement period and bit credit.
+        now.getSystemTime();
+        duration = now - otherPeriod().start;
+        max_bits = ((_cur_bitrate * duration) / NanoSecPerSec).toInt();
+    }
+
+    // Switch measurement period when necessary.
+    if (now - currentPeriod().start >= _period_duration) {
+        // The "other" period will disappear.
+        // Credit unused bits from the other period to the current period.
+        currentPeriod().bits -= ((_cur_bitrate * (currentPeriod().start - otherPeriod().start)) / NanoSecPerSec).toInt() - otherPeriod().bits;
+        // Current period becomes the other period.
+        _cur_period ^= 1;
+        // Reset the new current period.
+        currentPeriod().start = now;
+        currentPeriod().bits = 0;
     }
 
     // One more regulated packet at this bitrate.
-    _bitrate_pkt_cnt++;
+    currentPeriod().bits += PKT_SIZE_BITS;
 }
 
 
@@ -180,8 +192,8 @@ void ts::BitRateRegulator::regulate(const BitRate& current_bitrate, bool& flush,
     BitRate old_bitrate = _cur_bitrate;
     _cur_bitrate = _opt_bitrate != 0 ? _opt_bitrate : current_bitrate;
 
-    if (_cur_bitrate != old_bitrate || _state == INITIAL) {
-        // Initial state or new bitrate
+    // Report initial or changed regulation state.
+    if (_cur_bitrate != old_bitrate || _starting) {
         if (_cur_bitrate == 0) {
             _report->log(_log_level, u"unknown bitrate, cannot regulate.");
         }
@@ -189,90 +201,40 @@ void ts::BitRateRegulator::regulate(const BitRate& current_bitrate, bool& flush,
             _report->log(_log_level, u"regulated at bitrate %'d b/s", {_cur_bitrate.toInt()});
         }
     }
+    _starting = false;
 
-    // Process with state machine
-    switch (_state) {
-
-        case INITIAL: {
-            // Initial state, will become either regulated or unregulated
-            if (_cur_bitrate == 0) {
-                // No bitrate -> unregulated
-                _state = UNREGULATED;
-            }
-            else {
-                // Got a non-zero bitrate -> start regulation
-                _state = REGULATED;
-                // Compute initial burst duration: first, compute burst time
-                handleNewBitrate();
-                // Get initial clock
-                _burst_end.getSystemTime();
-                // Compute end time of next burst
-                _burst_end += _burst_duration;
-                // We are at the start of the burst, initialize countdown
-                _burst_pkt_cnt = _burst_pkt_max;
-                // Transmit first packet of burst
-                bitrate_changed = true;
-                regulatePacket(flush, false);
-            }
-            break;
+    // Perform regulation.
+    if (_regulated) {
+        // We previously had a bitrate and we regulated the flow.
+        if (_cur_bitrate == 0) {
+            // No more bitrate, become unregulated
+            _regulated = false;
         }
-
-        case UNREGULATED: {
-            // We had no bitrate, we did not regulate
-            if (_cur_bitrate > 0) {
-                // Finally got a bitrate.
-                // Transmit this packet without regulation and flush.
-                // Will regulate next time, starting with empty (flushed) buffer.
-                _state = INITIAL;
-                bitrate_changed = true;
-                flush = true;
-            }
-            break;
+        else if (_cur_bitrate == old_bitrate) {
+            // Still the same bitrate, continue to regulate.
+            regulatePacket(flush);
         }
-
-        case REGULATED: {
-            // We previously had a bitrate and we regulated the flow.
-            if (_cur_bitrate == 0) {
-                // No more bitrate, become unregulated
-                _state = UNREGULATED;
-            }
-            else if (_cur_bitrate == old_bitrate) {
-                // Still the same bitrate, continue to burst
-                regulatePacket(flush, true);
-            }
-            else {
-                // Got a new non-zero bitrate. Compute new burst.
-                // Revert to start time of current burst, based on previous burst duration.
-                _burst_end -= _burst_duration;
-                // Compute the estimated due elapsed time in current burst, based on
-                // previous burst duration and proportion of passed packets.
-                const NanoSecond elapsed = _burst_duration - (_burst_duration * _burst_pkt_max) / _burst_pkt_cnt;
-                // Compute new burst duration, based on new bitrate
-                handleNewBitrate();
-                // Adjust end time of current burst. We want to close the current burst
-                // as soon as possible to restart based on new bitrate.
-                if (elapsed >= _burst_min) {
-                    // We already passed more packets that required for minimum delay.
-                    // Close current burst now.
-                    _burst_end += elapsed;
-                    _burst_pkt_cnt = 0;
-                }
-                else {
-                    // We have to wait a bit more to respect the minimum delay.
-                    // Compute haw many packets we should pass for the remaining time,
-                    // based on the new bitrate.
-                    _burst_end += _burst_min;
-                    _burst_pkt_cnt = (((_burst_min - elapsed) * _cur_bitrate) / (NanoSecPerSec * PKT_SIZE_BITS)).toInt();
-                }
-                // Report that the bitrate has changed
-                bitrate_changed = true;
-                regulatePacket(flush, false);
-            }
-            break;
+        else {
+            // Got a new non-zero bitrate. Compute new burst.
+            // Compute new burst duration, based on new bitrate
+            handleNewBitrate();
+            bitrate_changed = true;
+            regulatePacket(flush);
         }
-
-        default: {
-            assert(false);
+    }
+    else {
+        // We had no bitrate, we did not regulate.
+        if (_cur_bitrate > 0) {
+            // Got a non-zero bitrate -> start regulation.
+            _regulated = true;
+            // Start measurement of packets.
+            otherPeriod().start.getSystemTime();
+            currentPeriod().start = otherPeriod().start;
+            otherPeriod().bits = currentPeriod().bits = 0;
+            // Setup burst duration.
+            handleNewBitrate();
+            bitrate_changed = true;
+            regulatePacket(flush);
         }
     }
 }
