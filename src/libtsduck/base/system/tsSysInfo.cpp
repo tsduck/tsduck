@@ -123,6 +123,7 @@ ts::SysInfo::SysInfo() :
     _sha1Instructions(false),
     _sha256Instructions(false),
     _sha512Instructions(false),
+    _systemMajorVersion(-1),
     _systemVersion(),
     _systemName(),
     _hostName(),
@@ -274,6 +275,14 @@ ts::SysInfo::SysInfo() :
     // System version defaults to system name.
     if (_systemVersion.empty()) {
         _systemVersion = _systemName;
+    }
+
+    // System major version defaults to the first integer field in the system version string.
+    if (_systemMajorVersion < 0) {
+        const size_t start = _systemVersion.find_first_of(u"0123456789");
+        if (start != NPOS) {
+            _systemVersion.substr(start).toInteger(_systemMajorVersion);
+        }
     }
 
     //

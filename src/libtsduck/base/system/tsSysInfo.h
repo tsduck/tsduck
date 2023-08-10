@@ -162,6 +162,12 @@ namespace ts {
         //!
         UString systemVersion() const { return _systemVersion; }
         //!
+        //! Get the operating system major version as an integer.
+        //! The exact meaning of this number is system dependent.
+        //! @return The operating system major version or -1 if unknown.
+        //!
+        int systemMajorVersion() const { return _systemMajorVersion; }
+        //!
         //! Get the operating system name.
         //! @return The operating system name.
         //!
@@ -205,6 +211,7 @@ namespace ts {
         bool    _sha1Instructions;
         bool    _sha256Instructions;
         bool    _sha512Instructions;
+        int     _systemMajorVersion;
         UString _systemVersion;
         UString _systemName;
         UString _hostName;
