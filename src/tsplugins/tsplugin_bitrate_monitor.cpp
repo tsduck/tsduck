@@ -36,6 +36,7 @@
 #include "tsForkPipe.h"
 #include "tsTime.h"
 #include "tsMonotonic.h"
+#include "tsSingleDataStatistics.h"
 
 
 //----------------------------------------------------------------------------
@@ -51,6 +52,7 @@ namespace ts {
         BitrateMonitorPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
+        virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
         virtual bool handlePacketTimeout() override;
 
@@ -80,6 +82,7 @@ namespace ts {
 
         // Command line options.
         bool             _full_ts;           // Monitor full TS.
+        bool             _summary;           // Display a final summary.
         PID              _first_pid;         // First monitored PID (for messages).
         size_t           _pid_count;         // Number of PID's to monitor.
         PIDSet           _pids;              // Monitored PID's.
@@ -108,6 +111,8 @@ namespace ts {
         size_t              _periods_index;        // Index for packet number array.
         std::vector<Period> _periods;              // Number of packets received during last time window, second per second.
         TSPacketLabelSet    _labels_next;          // Set these labels on next packet.
+        SingleDataStatistics<int64_t> _stats;      // Bitrate statistics.
+        SingleDataStatistics<int64_t> _net_stats;  // Non-null bitrate statistics.
 
         // Compute bitrate. Report any alarm.
         void computeBitrate();
@@ -133,6 +138,7 @@ constexpr size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
 ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Monitor bitrate for TS or a given set of PID's", u"[options]"),
     _full_ts(false),
+    _summary(false),
     _first_pid(PID_NULL),
     _pid_count(0),
     _pids(),
@@ -158,7 +164,9 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
     _startup(false),
     _periods_index(0),
     _periods(),
-    _labels_next()
+    _labels_next(),
+    _stats(),
+    _net_stats()
 {
     // The PID was previously passed as argument. We now use option --pid.
     // We still accept the argument for legacy, but not both.
@@ -199,8 +207,7 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
 
     option(u"periodic-bitrate", 'p', POSITIVE);
     help(u"periodic-bitrate",
-         u"Always report bitrate at the specific intervals in seconds, even if the "
-         u"bitrate is in range.");
+         u"Always report bitrate at the specific intervals in seconds, even if the bitrate is in range.");
 
     option(u"periodic-command", 0, POSITIVE);
     help(u"periodic-command",
@@ -237,6 +244,10 @@ ts::BitrateMonitorPlugin::BitrateMonitorPlugin(TSP* tsp_) :
          u"Set the specified labels on one packet when the bitrate goes back to normal (within range). "
          u"Several --set-label-go-normal options may be specified.");
 
+    option(u"summary", 's');
+    help(u"summary",
+         u"Display a final summary of bitrate statistics.");
+
     option(u"tag", 0, STRING);
     help(u"tag", u"'string'",
          u"Message tag to be displayed in alarms. "
@@ -258,6 +269,7 @@ bool ts::BitrateMonitorPlugin::getOptions()
     const UChar* const pid_opt_name = got_legacy_arg ? u"" : u"pid";
 
     _full_ts = !got_legacy_arg && !got_pid_option;
+    _summary = present(u"summary");
     _pid_count = _full_ts ? PID_MAX : count(pid_opt_name);
     getIntValue(_first_pid, pid_opt_name, PID_NULL);
     getIntValues(_pids, pid_opt_name, true);
@@ -332,10 +344,30 @@ bool ts::BitrateMonitorPlugin::start()
     _last_bitrate_status = IN_RANGE;
     _last_second.getSystemTime();
     _startup = true;
+    _stats.reset();
+    _net_stats.reset();
 
     // We must never wait for packets more than one second.
     tsp->setPacketTimeout(MilliSecPerSec);
 
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Stop method
+//----------------------------------------------------------------------------
+
+bool ts::BitrateMonitorPlugin::stop()
+{
+    if (_summary) {
+        if (_full_ts) {
+            tsp->info(u"%s average bitrate: %'d bits/s, average net bitrate: %'d bits/s", {_alarm_prefix, _stats.meanRound(), _net_stats.meanRound()});
+        }
+        else {
+            tsp->info(u"%s average bitrate: %'d bits/s", {_alarm_prefix, _stats.meanRound()});
+        }
+    }
     return true;
 }
 
@@ -364,6 +396,12 @@ void ts::BitrateMonitorPlugin::computeBitrate()
     if (duration > 0) {
         bitrate = (BitRate(total_pkt_count) * PKT_SIZE_BITS * MicroSecPerSec) / duration;
         net_bitrate = (BitRate(non_null_count) * PKT_SIZE_BITS * MicroSecPerSec) / duration;
+    }
+
+    // Accumulate statistics for the final report.
+    if (_summary) {
+        _stats.feed(bitrate.toInt64());
+        _net_stats.feed(net_bitrate.toInt64());
     }
 
     // Check the bitrate value, regarding the allowed range.

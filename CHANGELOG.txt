@@ -2,12 +2,14 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3263
+VERSION 3.36-3264
 
 [IMP] Improvements on existing commands and plugins:
 
   * Improved the precision of plugin "regulate" when based on bitrate.
   * Improved the measurement precision in plugin "bitrate_monitor".
+  * New options in existing commands and plugins:
+    - Option --summary in plugin "bitrate_monitor".
 
 -------------------------------------------------------------------------------
 
