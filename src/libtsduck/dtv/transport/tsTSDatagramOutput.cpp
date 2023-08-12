@@ -64,6 +64,7 @@ ts::TSDatagramOutput::TSDatagramOutput(TSDatagramOutputOptions flags, TSDatagram
     _tos(-1),
     _mc_loopback(true),
     _force_mc_local(false),
+    _send_bufsize(0),
     _is_open(false),
     _rtp_sequence(0),
     _rtp_ssrc(0),
@@ -136,6 +137,9 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
                   u"The 'address' specifies an IP address which can be either unicast or "
                   u"multicast. It can be also a host name that translates to an IP address. "
                   u"The 'port' specifies the destination UDP port.");
+
+        args.option(u"buffer-size", 'b', Args::UNSIGNED);
+        args.help(u"buffer-size", u"Specify the UDP socket send buffer size in bytes (socket option).");
 
         args.option(u"disable-multicast-loop", 'd');
         args.help(u"disable-multicast-loop",
@@ -214,6 +218,7 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
         args.getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
         args.getIntValue(_ttl, u"ttl", 0);
         args.getIntValue(_tos, u"tos", -1);
+        args.getIntValue(_send_bufsize, u"buffer-size", 0);
         _mc_loopback = !args.present(u"disable-multicast-loop");
         _force_mc_local = args.present(u"force-local-multicast-outgoing");
         _rs204_format = args.present(u"rs204");
@@ -271,6 +276,7 @@ bool ts::TSDatagramOutput::open(Report& report)
             !_sock.setDefaultDestination(_destination, report) ||
             !_sock.setMulticastLoop(_mc_loopback, report) ||
             (_force_mc_local && _destination.isMulticast() && _local_addr.hasAddress() && !_sock.setOutgoingMulticast(_local_addr, report)) ||
+            (_send_bufsize > 0 && !_sock.setSendBufferSize(_send_bufsize, report)) ||
             (_tos >= 0 && !_sock.setTOS(_tos, report)) ||
             (_ttl > 0 && !_sock.setTTL(_ttl, report)))
         {
