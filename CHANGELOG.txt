@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3264
+VERSION 3.36-3265
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -10,6 +10,8 @@ VERSION 3.36-3264
   * Improved the measurement precision in plugin "bitrate_monitor".
   * New options in existing commands and plugins:
     - Option --summary in plugin "bitrate_monitor".
+    - Option --buffer-size in output and packet processing plugins "ip"
+      (already existed in input plugin "ip" but was missing in the two others).
 
 -------------------------------------------------------------------------------
 

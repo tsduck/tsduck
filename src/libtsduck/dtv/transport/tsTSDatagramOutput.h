@@ -153,6 +153,7 @@ namespace ts {
         int               _tos;                // Type of service option.
         bool              _mc_loopback;        // Multicast loopback option
         bool              _force_mc_local;     // Force multicast outgoing local interface
+        size_t            _send_bufsize;       // Socket send buffer size.
 
         // Working data.
         bool              _is_open;            // Currently in progress

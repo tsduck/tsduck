@@ -76,7 +76,7 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
 
     args.option(u"json-buffer-size", 0, Args::UNSIGNED);
     args.help(u"json-buffer-size",
-              u"With --json-tcp or --json-udp, specify the network socket send buffer size.");
+              u"With --json-tcp or --json-udp, specify the network socket send buffer size in bytes.");
 
     args.option(u"json-line", 0, Args::STRING, 0, 1, 0, Args::UNLIMITED_VALUE, true);
     args.help(u"json-line", u"'prefix'",

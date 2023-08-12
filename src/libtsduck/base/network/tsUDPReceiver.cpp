@@ -88,7 +88,7 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
     args.help(destinationOptionName(), u"[address:]port", help);
 
     args.option(u"buffer-size", with_short_options ? 'b' : 0, Args::UNSIGNED);
-    args.help(u"buffer-size", u"Specify the UDP socket receive buffer size (socket option).");
+    args.help(u"buffer-size", u"Specify the UDP socket receive buffer size in bytes (socket option).");
 
     args.option(u"default-interface");
     args.help(u"default-interface",

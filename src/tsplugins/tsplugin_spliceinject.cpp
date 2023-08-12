@@ -313,7 +313,7 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
 
     option(u"buffer-size", 0, UNSIGNED);
     help(u"buffer-size",
-         u"Specifies the UDP socket receive buffer size (socket option).");
+         u"Specifies the UDP socket receive buffer size in bytes (socket option).");
 
     option(u"delete-files", 'd');
     help(u"delete-files",
