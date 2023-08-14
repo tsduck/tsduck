@@ -9,7 +9,7 @@ for TS input and output.
 Some protocols such as SRT and RIST require external libraries which may
 not be available on all platforms or all versions of a specific distro.
 
-# Unix systems (Linux, macOS, FreeBSD, OpenBSD, NetBSD, DragonFlyBSD) {#unixbuild}
+# Unix systems (Linux, macOS, BSD) {#unixbuild}
 
 ## Pre-requisites {#requnix}
 
@@ -111,7 +111,7 @@ The following `make` variables can be defined:
 - `ASSERTIONS` : Keep assertions in production mode (slower code).
 
 The following command, for instance, builds TSDuck without dependency
-to `pcsc-lite`, `libcurl` and Dektec `DTAPI`:
+to `pcsc-lite`, `libcurl` and Dektec DTAPI:
 ~~~
 make NOPCSC=1 NOCURL=1 NODEKTEC=1
 ~~~

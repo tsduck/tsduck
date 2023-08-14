@@ -1,11 +1,11 @@
 /**
-
 @page maintenance Building and installing TSDuck
 Building, installing and maintaining the TSDuck project:
 - @subpage building
 - @subpage installing
 - @subpage testing
 - @subpage contributing
+- @subpage automation
 
 @page appdev Application development
 For application developers:
@@ -27,5 +27,4 @@ Some notes on the support of specific hardware devices:
 - @subpage dektec
 - @subpage hides
 - @subpage vatek
-
 */
