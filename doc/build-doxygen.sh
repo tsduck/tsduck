@@ -36,6 +36,9 @@
 #
 #-----------------------------------------------------------------------------
 
+SCRIPT=$(basename $0 .sh)
+error() { echo >&2 "$SCRIPT: $*"; exit 1; }
+
 # Get the project directories.
 ROOTDIR=$(cd $(dirname ${BASH_SOURCE[0]})/..; pwd)
 BINDIR="$ROOTDIR/bin"
@@ -44,38 +47,52 @@ DOCDIR="$ROOTDIR/doc"
 SRCDIR="$ROOTDIR/src/libtsduck"
 
 # Get doxygen version.
-get-doxygen-version() {
-    DOXY_VERSION=$(doxygen --version)
-    DOXY_VERSION=${DOXY_VERSION/ */}
-    DOXY_AVERSION=(${DOXY_VERSION//./ })
-    DOXY_IVERSION=$(( ${DOXY_AVERSION[0]} * 10000 + ${DOXY_AVERSION[1]} * 100 + ${DOXY_AVERSION[2]} ))
-}
-get-doxygen-version
+get-doxy-version() { doxygen --version 2>/dev/null; }
+doxy-version-name() { local a=${1/ */}; echo ${a//./_}; }
+doxy-version-int() { local a=(${1//./ }); echo $(( ${a[0]} * 10000 + ${a[1]} * 100 + ${a[2]} )); }
 
-# Minimum doxygen version if update is required.
-MINDOXY_VERSION=1.9.4
-MINDOXY_NAME=(${MINDOXY_VERSION//./_})
-MINDOXY_AVERSION=(${MINDOXY_VERSION//./ })
-MINDOXY_IVERSION=$(( ${MINDOXY_AVERSION[0]} * 10000 + ${MINDOXY_AVERSION[1]} * 100 + ${MINDOXY_AVERSION[2]} ))
+DOXY_VERSION=$(get-doxy-version)
+[[ -z $DOXY_VERSION ]] && error "doxygen not installed"
 
-# Update doxygen when necessary.
-if [[ "$1" == "--update-doxygen" && $DOXY_IVERSION -lt $MINDOXY_IVERSION ]]; then
-    echo "-- Obsolete Doxygen version $DOXY_VERSION installed"
-    DOXY_ROOTDIR="$BINDIR/doxygen"
-    DOXY_BUILDDIR="$DOXY_ROOTDIR/build"
-    DOXY_BINDIR="$DOXY_BUILDDIR/bin"
-    if [[ ! -x "$DOXY_BINDIR/doxygen" ]]; then
-        echo "-- Downloading and rebuilding version $MINDOXY_VERSION"
-        mkdir -p "$DOXY_BUILDDIR"
-        curl -sL https://github.com/doxygen/doxygen/archive/Release_$MINDOXY_NAME.tar.gz | tar xzf - -C "$DOXY_ROOTDIR"
-        pushd "$DOXY_BUILDDIR"
-        cmake -G "Unix Makefiles" ../doxygen-Release_$MINDOXY_NAME
-        make
-        popd
+# Minimum, maximum and preferred doxygen versions if update is required.
+DOXY_MINVERSION=1.9.4
+DOXY_MAXVERSION=1.9.6  # can be empty
+DOXY_PREFVERSION=1.9.6
+
+if [[ $(doxy-version-int $DOXY_VERSION) -lt $(doxy-version-int $DOXY_MINVERSION) ||
+      ( -n $DOXY_MAXVERSION && $(doxy-version-int $DOXY_VERSION) -gt $(doxy-version-int $DOXY_MAXVERSION) ) ]]
+then
+    echo "-- Obsolete or buggy Doxygen version $DOXY_VERSION installed"
+    if [[ "$1" != "--update-doxygen" ]]; then
+        echo "-- Consider using --update-doxygen"
+    else
+        NEWDOXY_DIR="$BINDIR/doxygen"
+        if [[ ! -x "$NEWDOXY_DIR/build/bin/doxygen" ]]; then
+            echo "-- Downloading and rebuilding version $DOXY_PREFVERSION"
+            NAME=$(doxy-version-name $DOXY_PREFVERSION)
+            mkdir -p "$NEWDOXY_DIR"
+            curl -sL https://github.com/doxygen/doxygen/archive/Release_$NAME.tar.gz | tar xzf - -C "$NEWDOXY_DIR"
+            pushd "$NEWDOXY_DIR"
+            # On macOS, get the Homebrew-installed bison and flex
+            if [[ $(uname -s) == Darwin && -n $(which brew 2>/dev/null) ]]; then
+                for cmd in bison flex; do
+                    getbrew() { find /usr/local /opt/homebrew -type f -perm +111 -name $1 2>/dev/null | tail -1; }
+                    FILE=$(getbrew $cmd)
+                    if [[ -z $FILE ]]; then
+                        brew install $cmd
+                        FILE=$(getbrew $cmd)
+                    fi
+                    [[ -n $FILE ]] && export PATH=$(dirname $FILE):$PATH
+                done
+            fi
+            cmake -G "Unix Makefiles" -S doxygen-Release_$NAME -B build
+            make -C build
+            popd
+        fi
+        export PATH="$NEWDOXY_DIR/build/bin:$PATH"
+        DOXY_VERSION=$(get-doxy-version)
+        echo "-- Now using Doxygen $DOXY_VERSION"
     fi
-    export PATH="$DOXY_BINDIR:$PATH"
-    get-doxygen-version
-    echo "-- Now using Doxygen $DOXY_VERSION"
 fi
 
 # Make sure that the output directory is created (doxygen does not create parent directories).
@@ -92,9 +109,7 @@ export DOXY_INCLUDE_PATH=$(find "$SRCDIR" -type d | tr '\n' ' ')
 
 # Run doxygen. Filter known false errors (bugs) based on doxygen version.
 cd "$DOCDIR"
-if [[ $DOXY_IVERSION -le 10817 ]]; then
-    doxygen 2>&1 | grep -v 'warning: return type of member .* is not documented'
-elif [[ $DOXY_IVERSION -le 10907 ]]; then
+if [[ $(doxy-version-int $DOXY_VERSION) -le 10907 ]]; then
     doxygen 2>&1 | grep -v \
         -e 'python/tsduck.py:[0-9]*: warning: Member _.* is not documented' \
         -e 'tsTunerDevice.h:[0-9]*: warning: Detected potential recursive class relation between class ts::TunerDevice and base class ts::TunerBase'

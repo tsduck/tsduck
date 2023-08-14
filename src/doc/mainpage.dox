@@ -1,5 +1,4 @@
 /**
-
 @mainpage TSDuck Library for C++
 
 TSDuck is a toolkit which manipulates MPEG Transport Streams (TS).
@@ -38,5 +37,4 @@ For TSDuck maintainers:
 - @ref devplugin "A tutorial on developing TSP plugins"
 - @ref extensions "Developing TSDuck extensions"
 - @ref contributing "Contributing to TSDuck"
-
 */

@@ -5,7 +5,7 @@ https://github.com/jothepro/doxygen-awesome-css
 
 MIT License
 
-Copyright (c) 2021 - 2022 jothepro
+Copyright (c) 2021 - 2023 jothepro
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -160,7 +160,7 @@ html {
     --toc-background: var(--side-nav-background);
     --toc-foreground: var(--side-nav-foreground);
 
-    /* height of an item in any tree / collapsable table */
+    /* height of an item in any tree / collapsible table */
     --tree-item-height: 30px;
 
     --memname-font-size: var(--code-font-size);
@@ -776,6 +776,8 @@ html.dark-mode iframe#MSearchResults {
 #side-nav {
     padding: 0 !important;
     background: var(--side-nav-background);
+    min-width: 8px;
+    max-width: 50vw;
 }
 
 @media screen and (max-width: 767px) {
@@ -790,6 +792,7 @@ html.dark-mode iframe#MSearchResults {
 
 #nav-tree {
     background: transparent;
+    margin-right: 1px;
 }
 
 #nav-tree .label {
@@ -862,8 +865,9 @@ html.dark-mode iframe#MSearchResults {
 }
 
 .ui-resizable-e {
-    background: var(--separator-color);
-    width: 1px;
+    width: 4px;
+    background: transparent;
+    box-shadow: inset -1px 0 0 0 var(--separator-color);
 }
 
 /*
@@ -956,8 +960,9 @@ div.contents div.dyncontent {
     html:not(.light-mode) div.contents > table img,
     html:not(.light-mode) div.contents div.dyncontent iframe,
     html:not(.light-mode) div.contents center iframe,
-    html:not(.light-mode) div.contents table iframe {
-        filter: hue-rotate(180deg) invert();
+    html:not(.light-mode) div.contents table iframe,
+    html:not(.light-mode) div.contents .dotgraph iframe {
+        filter: brightness(89%) hue-rotate(180deg) invert();
     }
 }
 
@@ -966,8 +971,10 @@ html.dark-mode div.contents center img,
 html.dark-mode div.contents > table img,
 html.dark-mode div.contents div.dyncontent iframe,
 html.dark-mode div.contents center iframe,
-html.dark-mode div.contents table iframe {
-    filter: hue-rotate(180deg) invert();
+html.dark-mode div.contents table iframe,
+html.dark-mode div.contents .dotgraph iframe
+ {
+    filter: brightness(89%) hue-rotate(180deg) invert();
 }
 
 h2.groupheader {
@@ -1054,6 +1061,21 @@ h1.glow, h2.glow, h3.glow, h4.glow, h5.glow, h6.glow {
 
 .alphachar a {
     color: var(--page-foreground-color);
+}
+
+.dotgraph {
+    max-width: 100%;
+    overflow-x: scroll;
+}
+
+.dotgraph .caption {
+    position: sticky;
+    left: 0;
+}
+
+/* Wrap Graphviz graphs with the `interactive_dotgraph` class if `INTERACTIVE_SVG = YES` */
+.interactive_dotgraph .dotgraph iframe {
+    max-width: 100%;
 }
 
 /*
@@ -1603,6 +1625,10 @@ table.doxtable tbody {
     border-radius: var(--border-radius-small);
 }
 
+table.markdownTable, table.doxtable, table.fieldtable {
+    padding: 1px;
+}
+
 table.doxtable caption {
     display: block;
 }
@@ -1691,6 +1717,15 @@ table.markdownTable tr, table.doxtable tr {
 
 table.markdownTable tr:last-child, table.doxtable tr:last-child {
     border-bottom: none;
+}
+
+.full_width_table table:not(.memberdecls):not(.mlabels):not(.fieldtable):not(.memname) {
+    display: block;
+}
+
+.full_width_table table:not(.memberdecls):not(.mlabels):not(.fieldtable):not(.memname) tbody {
+    display: table;
+    width: 100%;
 }
 
 table.fieldtable th {
@@ -2195,7 +2230,9 @@ div.memproto::-webkit-scrollbar,
 .contents center::-webkit-scrollbar,
 .contents .center::-webkit-scrollbar,
 .contents table:not(.memberdecls):not(.mlabels):not(.fieldtable):not(.memname) tbody::-webkit-scrollbar,
-div.contents .toc::-webkit-scrollbar {
+div.contents .toc::-webkit-scrollbar,
+.contents .dotgraph::-webkit-scrollbar,
+.contents .tabs-overview-container::-webkit-scrollbar {
     background: transparent;
     width: calc(var(--webkit-scrollbar-size) + var(--webkit-scrollbar-padding) + var(--webkit-scrollbar-padding));
     height: calc(var(--webkit-scrollbar-size) + var(--webkit-scrollbar-padding) + var(--webkit-scrollbar-padding));
@@ -2208,7 +2245,9 @@ div.memproto::-webkit-scrollbar-thumb,
 .contents center::-webkit-scrollbar-thumb,
 .contents .center::-webkit-scrollbar-thumb,
 .contents table:not(.memberdecls):not(.mlabels):not(.fieldtable):not(.memname) tbody::-webkit-scrollbar-thumb,
-div.contents .toc::-webkit-scrollbar-thumb {
+div.contents .toc::-webkit-scrollbar-thumb,
+.contents .dotgraph::-webkit-scrollbar-thumb,
+.contents .tabs-overview-container::-webkit-scrollbar-thumb {
     background-color: transparent;
     border: var(--webkit-scrollbar-padding) solid transparent;
     border-radius: calc(var(--webkit-scrollbar-padding) + var(--webkit-scrollbar-padding));
@@ -2222,7 +2261,9 @@ div.memproto:hover::-webkit-scrollbar-thumb,
 .contents center:hover::-webkit-scrollbar-thumb,
 .contents .center:hover::-webkit-scrollbar-thumb,
 .contents table:not(.memberdecls):not(.mlabels):not(.fieldtable):not(.memname) tbody:hover::-webkit-scrollbar-thumb,
-div.contents .toc:hover::-webkit-scrollbar-thumb {
+div.contents .toc:hover::-webkit-scrollbar-thumb,
+.contents .dotgraph:hover::-webkit-scrollbar-thumb,
+.contents .tabs-overview-container:hover::-webkit-scrollbar-thumb {
     background-color: var(--webkit-scrollbar-color);
 }
 
@@ -2233,7 +2274,9 @@ div.memproto::-webkit-scrollbar-track,
 .contents center::-webkit-scrollbar-track,
 .contents .center::-webkit-scrollbar-track,
 .contents table:not(.memberdecls):not(.mlabels):not(.fieldtable):not(.memname) tbody::-webkit-scrollbar-track,
-div.contents .toc::-webkit-scrollbar-track {
+div.contents .toc::-webkit-scrollbar-track,
+.contents .dotgraph::-webkit-scrollbar-track,
+.contents .tabs-overview-container::-webkit-scrollbar-track {
     background: transparent;
 }
 
@@ -2270,7 +2313,9 @@ div.memproto,
 .contents center,
 .contents .center,
 .contents table:not(.memberdecls):not(.mlabels):not(.fieldtable):not(.memname) tbody,
-div.contents .toc {
+div.contents .toc,
+.contents .dotgraph,
+.contents .tabs-overview-container {
     scrollbar-width: thin;
 }
 
@@ -2402,4 +2447,84 @@ a.anchorlink:hover {
 
 h2:hover a.anchorlink, h1:hover a.anchorlink, h3:hover a.anchorlink, h4:hover a.anchorlink  {
     display: inline-block;
+}
+
+/*
+ Optional tab feature
+*/
+
+.tabbed {
+    margin: var(--spacing-medium) auto;
+}
+
+.tabbed ul {
+    padding-inline-start: 0px;
+    margin: 0;
+    padding: var(--spacing-small) 0;
+    border-bottom: 1px solid var(--separator-color);
+}
+
+.tabbed li {
+    display: none;
+}
+
+.tabbed li.selected {
+    display: block;
+}
+
+.tabs-overview-container {
+    overflow-x: auto;
+    display: block;
+    overflow-y: visible;
+}
+
+.tabs-overview {
+    border-bottom: 1px solid var(--separator-color);
+    display: flex;
+    flex-direction: row;
+}
+
+.tabs-overview button.tab-button {
+    color: var(--page-foreground-color);
+    margin: 0;
+    border: none;
+    background: transparent;
+    padding: var(--spacing-small) 0;
+    display: inline-block;
+    font-size: var(--page-font-size);
+    cursor: pointer;
+    box-shadow: 0 1px 0 0 var(--separator-color);
+    position: relative;
+}
+
+.tabs-overview button.tab-button .tab-title {
+    float: left;
+    white-space: nowrap;
+    padding: var(--spacing-small) var(--spacing-large);
+    border-radius: var(--border-radius-medium);
+}
+
+.tabs-overview button.tab-button:not(:last-child) .tab-title {
+    box-shadow: 8px 0 0 -7px var(--separator-color);
+}
+
+.tabs-overview button.tab-button:hover .tab-title {
+    background: var(--separator-color);
+    box-shadow: none;
+}
+
+.tabs-overview button.tab-button.active {
+    color: var(--primary-color);
+}
+
+.tabs-overview button.tab-button.active::after {
+    content: '';
+    display: block;
+    position: absolute;
+    left: 0px;
+    bottom: 0;
+    right: 0px;
+    height: 3px;
+    border-radius: var(--border-radius-small) var(--border-radius-small) 0 0;
+    background-color: var(--primary-color);
 }

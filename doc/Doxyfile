@@ -76,15 +76,21 @@ INLINE_INHERITED_MEMB  = YES
 MACRO_EXPANSION        = YES
 PREDEFINED            += DOXYGEN
 
+# Using style from https://github.com/jothepro/doxygen-awesome-css
+# Same MIT license as TSDuck
+# Additional customization in doxygen-custom.css
+
+TREEVIEW_WIDTH         = 300 # Must match value in doxygen-custom.css
+HTML_COLORSTYLE        = LIGHT # required with Doxygen >= 1.9.5 and awesome.css
+HTML_EXTRA_STYLESHEET  = doxygen-awesome.css doxygen-awesome-sidebar-only.css doxygen-custom.css
+
 # Generated documentation format:
 
 GENERATE_LATEX         = NO
 GENERATE_HTML          = YES
 GENERATE_TREEVIEW      = YES
-TREEVIEW_WIDTH         = 300 # Must match value in doxygen-custom.css
 DISABLE_INDEX          = NO
 FULL_SIDEBAR           = NO
-HTML_EXTRA_STYLESHEET  = doxygen-awesome.css doxygen-awesome-sidebar-only.css doxygen-custom.css
 VERBATIM_HEADERS       = NO
 MARKDOWN_SUPPORT       = YES
 TOC_INCLUDE_HEADINGS   = 3
