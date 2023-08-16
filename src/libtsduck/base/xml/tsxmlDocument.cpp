@@ -42,12 +42,14 @@
 
 ts::xml::Document::Document(Report& report) :
     Node(report, 1),
+    StringifyInterface(),
     _tweaks()
 {
 }
 
 ts::xml::Document::Document(const Document& other) :
     Node(other),
+    StringifyInterface(),
     _tweaks(other._tweaks)
 {
 }
