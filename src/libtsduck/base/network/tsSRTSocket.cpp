@@ -60,6 +60,16 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"The address is optional, the port is mandatory. "
               u"If --caller is also specified, the SRT socket works in rendezvous mode.");
 
+    args.option(u"backlog", 0, Args::POSITIVE);
+    args.help(u"backlog",
+              u"With --listener, specify the number of allowed waiting incoming clients. "
+              u"The default is one.");
+
+    args.option(u"no-reuse-port");
+    args.help(u"no-reuse-port",
+              u"With --listener, disable the reuse port socket option. "
+              u"Do not use unless completely necessary.");
+
     args.option(u"local-interface", 0, Args::STRING);
     args.help(u"local-interface", u"address",
               u"In caller mode, use the specified local IP interface for outgoing connections. "
@@ -272,10 +282,10 @@ void ts::SRTSocket::defineArgs(ts::Args& args)
               u"recommended to follow the SRT Access Control guidlines.");
 
     args.option(u"udp-rcvbuf", 0, Args::POSITIVE);
-    args.help(u"udp-rcvbuf", u"UDP Socket Receive Buffer Size.");
+    args.help(u"udp-rcvbuf", u"UDP socket receive buffer size in bytes.");
 
     args.option(u"udp-sndbuf", 0, Args::POSITIVE);
-    args.help(u"udp-sndbuf", u"UDP Socket Send Buffer Size.");
+    args.help(u"udp-sndbuf", u"UDP socket send buffer size in bytes.");
 }
 
 
@@ -334,6 +344,7 @@ TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replaci
 #endif
 
 #include <srt/srt.h>
+#include <srt/access_control.h>
 
 #if defined(ZERO__APPLE__)
 #undef __APPLE__
@@ -446,6 +457,8 @@ public:
      int         polling_time;
      bool        messageapi;
      bool        nakreport;
+     bool        reuse_port;
+     int         backlog;
      int         conn_timeout;
      int         ffs;
      ::linger    linger_opt;
@@ -477,6 +490,9 @@ public:
      UString     json_prefix;
      MilliSecond stats_interval;
      SRTStatMode stats_mode;
+private:
+     // Callback which is called on any incoming connection.
+     static int listenCallback(void* param, SRTSOCKET ns, int hsversion, const ::sockaddr* peeraddr, const char* streamid);
 };
 
 
@@ -489,8 +505,8 @@ ts::SRTSocket::Guts::Guts(SRTSocket* parent) :
     local_address(),
     remote_address(),
     mode(SRTSocketMode::DEFAULT),
-    sock(-1),      // do not use SYS_SOCKET_INVALID, an SRT socket is not a socket, it is always an int
-    listener(-1),  // idem
+    sock(SRT_INVALID_SOCK),
+    listener(SRT_INVALID_SOCK),
     total_sent_bytes(0),
     total_received_bytes(0),
     next_stats(),
@@ -501,6 +517,8 @@ ts::SRTSocket::Guts::Guts(SRTSocket* parent) :
     polling_time(-1),
     messageapi(false),
     nakreport(false),
+    reuse_port(false),
+    backlog(0),
     conn_timeout(-1),
     ffs(-1),
     linger_opt{0, 0},
@@ -586,7 +604,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
                          Report& report)
 {
     // Filter already open condition.
-    if (_guts->sock >= 0) {
+    if (_guts->sock != SRT_INVALID_SOCK) {
         report.error(u"internal error, SRT socket already open");
         return false;
     }
@@ -611,7 +629,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     report.debug(u"calling srt_socket()");
     _guts->sock = ::srt_socket(AF_INET, SOCK_DGRAM, 0);
 #endif
-    if (_guts->sock < 0) {
+    if (_guts->sock == SRT_INVALID_SOCK) {
         report.error(u"error creating SRT socket: %s", {::srt_getlasterror_str()});
         SRTInit::Instance()->stop();
         return false;
@@ -627,13 +645,13 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
             break;
         case SRTSocketMode::RENDEZVOUS:
             success = success &&
-                      _guts->srtBind(_guts->local_address, report) &&
-                      _guts->srtConnect(_guts->remote_address, report);
+                _guts->srtBind(_guts->local_address, report) &&
+                _guts->srtConnect(_guts->remote_address, report);
             break;
         case SRTSocketMode::CALLER:
             success = success &&
-                      (!_guts->local_address.hasAddress() || _guts->srtBind(_guts->local_address, report)) &&
-                      _guts->srtConnect(_guts->remote_address, report);
+                (!_guts->local_address.hasAddress() || _guts->srtBind(_guts->local_address, report)) &&
+                _guts->srtConnect(_guts->remote_address, report);
             break;
         case SRTSocketMode::DEFAULT:
         case SRTSocketMode::LEN:
@@ -676,16 +694,16 @@ bool ts::SRTSocket::close(Report& report)
     // clear the socket value first, then close.
     const ::SRTSOCKET sock = _guts->sock;
     const ::SRTSOCKET listener = _guts->listener;
-    _guts->listener = -1;
-    _guts->sock = -1;
+    _guts->listener = SRT_INVALID_SOCK;
+    _guts->sock = SRT_INVALID_SOCK;
 
-    if (sock >= 0) {
+    if (sock != SRT_INVALID_SOCK) {
         // Close the SRT data socket.
         report.debug(u"calling srt_close()");
         ::srt_close(sock);
 
         // Close the SRT listener socket if there is one.
-        if (listener >= 0) {
+        if (listener != SRT_INVALID_SOCK) {
             report.debug(u"calling srt_close() on listener socket");
             ::srt_close(listener);
         }
@@ -829,6 +847,8 @@ bool ts::SRTSocket::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(_guts->kmpreannounce, u"kmpreannounce", -1);
     args.getIntValue(_guts->latency, u"latency", -1);
     _guts->linger_opt.l_onoff = args.present(u"linger");
+    _guts->reuse_port = !args.present(u"no-reuse-port");
+    args.getIntValue(_guts->backlog, u"backlog", 1);
     args.getIntValue(_guts->linger_opt.l_linger, u"linger");
     args.getIntValue(_guts->lossmaxttl, u"lossmaxttl", -1);
     args.getIntValue(_guts->max_bw, u"max-bw", -1);
@@ -948,15 +968,20 @@ bool ts::SRTSocket::Guts::setSockOptPost(Report& report)
     return true;
 }
 
+
+//----------------------------------------------------------------------------
+// Connection operation.
+//----------------------------------------------------------------------------
+
 bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& report)
 {
     // The SRT socket will become the listener socket, check that there is none.
-    if (listener >= 0) {
+    if (listener != SRT_INVALID_SOCK) {
         report.error(u"internal error, SRT listener socket already set");
+        return false;
     }
 
-    bool reuse = true;
-    if (!setSockOpt(SRTO_REUSEADDR, "SRTO_REUSEADDR", &reuse, sizeof(reuse), report)) {
+    if (!setSockOpt(SRTO_REUSEADDR, "SRTO_REUSEADDR", &reuse_port, sizeof(reuse_port), report)) {
         return false;
     }
 
@@ -970,8 +995,16 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
 
     // Second parameter is the number of simultaneous connection accepted. For now we only accept one.
     report.debug(u"calling srt_listen()");
-    if (::srt_listen(sock, 1) < 0) {
+    if (::srt_listen(sock, backlog) < 0) {
         report.error(u"error during srt_listen(): %s", {::srt_getlasterror_str()});
+        return false;
+    }
+
+    // Install a listen callback which will reject all subsequent connections after the first one.
+    if (::srt_listen_callback(sock, listenCallback, this) < 0) {
+        report.error(u"error during srt_listen_callback(): %s", {::srt_getlasterror_str()});
+        ::srt_close(sock);
+        sock = SRT_INVALID_SOCK;
         return false;
     }
 
@@ -982,6 +1015,8 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     int data_sock = ::srt_accept(sock, &peer_addr, &peer_addr_len);
     if (data_sock < 0) {
         report.error(u"error during srt_accept(): %s", {::srt_getlasterror_str()});
+        ::srt_close(sock);
+        sock = SRT_INVALID_SOCK;
         return false;
     }
 
@@ -998,6 +1033,22 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     return true;
 }
 
+int ts::SRTSocket::Guts::listenCallback(void* param, SRTSOCKET sock, int hsversion, const ::sockaddr* peeraddr, const char* streamid)
+{
+    // Callback which is called on any incoming connection.
+    // The first parameter is a pointer to the Guts instance.
+    Guts* guts = reinterpret_cast<Guts*>(param);
+    if (guts == nullptr || (guts->listener != SRT_INVALID_SOCK && guts->sock != SRT_INVALID_SOCK)) {
+        // A connection is already established, revoke all others.
+        ::srt_setrejectreason(sock, SRT_REJX_OVERLOAD);
+        return -1;
+    }
+    else {
+        // Initial connection accepted.
+        return 0;
+    }
+}
+
 bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& report)
 {
     ::sockaddr sock_addr;
@@ -1008,13 +1059,23 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
         const int err = ::srt_getlasterror(&errno);
         std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
-            err_str.append(", reject reason: ");
-            err_str.append(::srt_rejectreason_str(::srt_getrejectreason(sock)));
+            const int reason = ::srt_getrejectreason(sock);
+            report.debug(u"srt_connect rejected, reason: %d", {reason});
+            if (reason == SRT_REJX_OVERLOAD) {
+                // Extended rejection reasons (REJX) have no meaningful error strings.
+                // Since this one is expected, treat it differently.
+                err_str.append(", server is overloaded, too many client connections already established");
+            }
+            else {
+                err_str.append(", reject reason: ");
+                err_str.append(::srt_rejectreason_str(reason));
+            }
         }
         report.error(u"error during srt_connect: %s", {err_str});
         return false;
     }
     else {
+        report.debug(u"srt_connect() successful");
         return true;
     }
 }
@@ -1047,7 +1108,7 @@ bool ts::SRTSocket::send(const void* data, size_t size, Report& report)
 bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report)
 {
     // If socket was disconnected or aborted, silently fail.
-    if (disconnected || sock < 0) {
+    if (disconnected || sock == SRT_INVALID_SOCK) {
         return false;
     }
 
@@ -1058,8 +1119,8 @@ bool ts::SRTSocket::Guts::send(const void* data, size_t size, const IPv4SocketAd
         if (err == SRT_ECONNLOST || err == SRT_EINVSOCK) {
             disconnected = true;
         }
-        else if (sock >= 0) {
-            // Do not display error if the socket was closed in the meantime (sock < 0).
+        else if (sock != SRT_INVALID_SOCK) {
+            // Display error only if the socket was not closed in the meantime.
             report.error(u"error during srt_send(): %s", {::srt_getlasterror_str()});
         }
         return false;
@@ -1086,7 +1147,7 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Micro
     timestamp = -1;
 
     // If socket was disconnected or aborted, silently fail.
-    if (_guts->disconnected || _guts->sock < 0) {
+    if (_guts->disconnected || _guts->sock == SRT_INVALID_SOCK) {
         return false;
     }
 
@@ -1101,8 +1162,8 @@ bool ts::SRTSocket::receive(void* data, size_t max_size, size_t& ret_size, Micro
         if (err == SRT_ECONNLOST || err == SRT_EINVSOCK) {
             _guts->disconnected = true;
         }
-        else if (_guts->sock >= 0) {
-            // Do not display error if the socket was closed in the meantime (sock < 0).
+        else if (_guts->sock != SRT_INVALID_SOCK) {
+            // Display error only if the socket was not closed in the meantime.
             report.error(u"error during srt_recv(): %s", {srt_getlasterror_str()});
         }
         return false;
@@ -1138,7 +1199,7 @@ size_t ts::SRTSocket::totalReceivedBytes() const
 bool ts::SRTSocket::reportStatistics(SRTStatMode mode, Report& report)
 {
     // If socket was closed, silently fail.
-    if (_guts->sock < 0) {
+    if (_guts->sock == SRT_INVALID_SOCK) {
         return false;
     }
 
