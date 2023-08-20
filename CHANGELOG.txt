@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3265
+VERSION 3.36-3268
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,6 +12,14 @@ VERSION 3.36-3265
     - Option --summary in plugin "bitrate_monitor".
     - Option --buffer-size in output and packet processing plugins "ip"
       (already existed in input plugin "ip" but was missing in the two others).
+
+[BUG] Bug fixes:
+
+  * In "srt" plugins, in --listener mode, after a first caller successfully
+    connects, any other attempt to connect is properly rejected. Previously,
+    due to an artefact in the SRT library, the second caller appeared to be
+    connected but the packets were dropped. The third and next callers were
+    properly rejected.
 
 -------------------------------------------------------------------------------
 
