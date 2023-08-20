@@ -344,7 +344,13 @@ TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replaci
 #endif
 
 #include <srt/srt.h>
+
+// On Windows, access_control.h as missing in the binary installer before 1.5.3.
+#if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
+#define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
+#else
 #include <srt/access_control.h>
+#endif
 
 #if defined(ZERO__APPLE__)
 #undef __APPLE__
