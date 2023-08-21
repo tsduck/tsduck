@@ -278,7 +278,7 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"8K",  t2_fft_8k},
         {u"16K", t2_fft_16k},
     }));
-    help(u"fft-mode", u"DVB-T2: indicate the FFT mode. The default is 32K.");
+    help(u"fft-mode", u"DVB-T2: indicate the FFT mode. The default is 8K.");
 
     option(u"pilots", 0);
     help(u"pilots", u"DVB-S2 and ADTB-T: enable pilots (default: no pilot).");
@@ -469,6 +469,7 @@ bool ts::VatekOutputPlugin::Guts::start()
             if (is_vatek_success(nres)) {
                 if (nres == vatek_success) {
                     nres = vatek_nodevice;
+                    tsp->error(u"no VATek device found");
                 }
                 else if (nres > vatek_success) {
                     nres = vatek_device_open(m_hdevices, m_index, &m_hchip);
