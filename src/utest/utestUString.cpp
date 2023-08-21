@@ -104,6 +104,7 @@ public:
     void testFromQuotedLine();
     void testIndent();
     void testToFloat();
+    void testSuperCompare();
 
     TSUNIT_TEST_BEGIN(UStringTest);
     TSUNIT_TEST(testIsSpace);
@@ -160,6 +161,7 @@ public:
     TSUNIT_TEST(testFromQuotedLine);
     TSUNIT_TEST(testIndent);
     TSUNIT_TEST(testToFloat);
+    TSUNIT_TEST(testSuperCompare);
     TSUNIT_TEST_END();
 
 private:
@@ -2216,4 +2218,19 @@ void UStringTest::testToFloat()
 
     TSUNIT_ASSERT(!ts::UString(u"1.2").toFloat(val, -1.0, 1.0));
     TSUNIT_EQUAL(1.2, val);
+}
+
+void UStringTest::testSuperCompare()
+{
+    TSUNIT_EQUAL(0, ts::UString::SuperCompare(nullptr, nullptr));
+    TSUNIT_EQUAL(1, ts::UString::SuperCompare(u"", nullptr));
+    TSUNIT_EQUAL(1, ts::UString::SuperCompare(u"abc", nullptr));
+    TSUNIT_EQUAL(-1, ts::UString::SuperCompare(nullptr, u""));
+    TSUNIT_EQUAL(-1, ts::UString::SuperCompare(nullptr, u"xyz"));
+    TSUNIT_EQUAL(-1, ts::UString::SuperCompare(u"a bc", u"abc"));
+    TSUNIT_EQUAL(0, ts::UString::SuperCompare(u"a bc", u"abc", ts::SCOMP_IGNORE_BLANKS));
+    TSUNIT_EQUAL(0, ts::UString::SuperCompare(u"  \t a   \n b \r c  ", u"a bc", ts::SCOMP_IGNORE_BLANKS));
+    TSUNIT_EQUAL(0, ts::UString::SuperCompare(u"a bC", u" aBc", ts::SCOMP_IGNORE_BLANKS | ts::SCOMP_CASE_INSENSITIVE));
+    TSUNIT_EQUAL(-1, ts::UString::SuperCompare(u"version 8.12.3", u"VERSION 8.4.21", ts::SCOMP_IGNORE_BLANKS | ts::SCOMP_CASE_INSENSITIVE));
+    TSUNIT_EQUAL(1, ts::UString::SuperCompare(u"version 8.12.3", u"VERSION 8.4.21", ts::SCOMP_IGNORE_BLANKS | ts::SCOMP_NUMERIC | ts::SCOMP_CASE_INSENSITIVE));
 }

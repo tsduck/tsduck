@@ -50,6 +50,17 @@ namespace ts {
     };
 
     //!
+    //! Options used on string comparisons.
+    //! Can be combined with or.
+    //!
+    enum StringComparison : uint32_t {
+        SCOMP_DEFAULT          = 0x0000,  //!< Default, strict comparison.
+        SCOMP_CASE_INSENSITIVE = 0x0001,  //!< Case insensitive comparison.
+        SCOMP_IGNORE_BLANKS    = 0x0002,  //!< Skip blank characters in comparison.
+        SCOMP_NUMERIC          = 0x0004,  //!< Sort numeric fields according to numeric values.
+    };
+
+    //!
     //! Vector of strings
     //!
     typedef std::vector<UString> UStringVector;
@@ -1338,11 +1349,43 @@ namespace ts {
         static UString Percentage(INT value, INT total);
 
         //!
+        //! Compare two strings using various comparison options.
+        //! @param [in] other Other string to compare.
+        //! @param [in] flags A bitmask of StringComparison values. By default, use a strict comparison.
+        //! @return -1, 0, or 1, if this string is respectively before, equal to, or after @a other according to @a flags.
+        //!
+        int superCompare(const UString& other, uint32_t flags = SCOMP_DEFAULT) const { return SuperCompare(c_str(), other.c_str(), flags); }
+
+        //!
+        //! Compare two strings using various comparison options.
+        //! @param [in] other Address of a nul-terminated UTF-16 string..
+        //! @param [in] flags A bitmask of StringComparison values. By default, use a strict comparison.
+        //! @return -1, 0, or 1, if this string is respectively before, equal to, or after @a other according to @a flags.
+        //!
+        int superCompare(const UChar* other, uint32_t flags = SCOMP_DEFAULT) const { return SuperCompare(c_str(), other, flags); }
+
+        //!
+        //! Compare two strings using various comparison options.
+        //! @param [in] s1 Address of a nul-terminated UTF-16 string..
+        //! @param [in] s2 Address of a nul-terminated UTF-16 string..
+        //! @param [in] flags A bitmask of StringComparison values. By default, use a strict comparison.
+        //! @return -1, 0, or 1, if @a s1 is respectively before, equal to, or after @a s2 according to @a flags.
+        //!
+        static int SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags = SCOMP_DEFAULT);
+
+        //!
         //! Check if two strings are identical, case-insensitive and ignoring blanks
         //! @param [in] other Other string to compare.
         //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
         //!
-        bool similar(const UString& other) const;
+        bool similar(const UString& other) const { return superCompare(other, SCOMP_CASE_INSENSITIVE | SCOMP_IGNORE_BLANKS) == 0; }
+
+        //!
+        //! Check if two strings are identical, case-insensitive and ignoring blanks
+        //! @param [in] other Other string to compare.
+        //! @return True if this string and @a other are "similar", ie. identical, case-insensitive and ignoring blanks.
+        //!
+        bool similar(const UChar* other) const { return superCompare(other, SCOMP_CASE_INSENSITIVE | SCOMP_IGNORE_BLANKS) == 0; }
 
         //!
         //! Check if two strings are identical, case-insensitive and ignoring blanks

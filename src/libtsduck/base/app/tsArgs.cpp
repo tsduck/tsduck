@@ -295,7 +295,14 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
 
 ts::UString ts::Args::IOption::optionNames(const UString& separator) const
 {
-    return enumeration.nameList(separator, u"\"", u"\"");
+    UStringList names;
+    enumeration.getAllNames(names);
+    names.sort([](const UString& s1, const UString& s2) { return s1.superCompare(s2, SCOMP_IGNORE_BLANKS | SCOMP_CASE_INSENSITIVE | SCOMP_NUMERIC) < 0; });
+    for (auto& n : names) {
+        n.insert(0, 1, u'"');
+        n.append(u'"');
+    }
+    return UString::Join(names, separator);
 }
 
 
