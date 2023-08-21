@@ -165,7 +165,7 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
     option(u"frequency", 'f', UNSIGNED);
     help(u"frequency",
          u"Indicate the frequency, in Hz, of the output carrier. "
-         u"The valid range is 50,000,000 Hz to 1,000,000,000 Hz."
+         u"The valid range is 50,000,000 Hz to 1,000,000,000 Hz. "
          u"The default is 473,000,000 Hz.");
 
     option(u"bandwidth", 0, Enumeration({
@@ -239,12 +239,12 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"3780", dtmb_carrier_3780},
     }));
     help(u"dmb-carrier",
-         u"DMB-T (DTMB): indicate the carrier mode. The default is 3780. ");
+         u"DMB-T (DTMB): indicate the carrier mode. The default is 3780.");
 
     option(u"dmb-frame-numbering");
     help(u"dmb-frame-numbering",
-         u"DMB-T/H, ADTB-T: indicate to use frame numbering. The default "
-         u"is to use no frame numbering.");
+         u"DMB-T/H, ADTB-T: indicate to use frame numbering. "
+         u"The default is to use no frame numbering.");
 
     option(u"dmb-header", 0, Enumeration({
         {u"PN420", dtmb_framesync_420},
@@ -260,8 +260,8 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
         {u"2", dtmb_interleaved_720},
     }));
     help(u"dmb-interleaver",
-         u"DMB-T (DTMB): indicate the interleaver mode. Must be one "
-         u"1 (B=54, M=240) or 2 (B=54, M=720). The default is 1.");
+         u"DMB-T (DTMB): indicate the interleaver mode. "
+         u"Must be 1 (B=54, M=240) or 2 (B=54, M=720). The default is 1.");
 
     option(u"guard-interval", 'g', Enumeration({
         {u"1/32", guard_interval_1_32},

@@ -1390,34 +1390,85 @@ ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool for
 
 
 //----------------------------------------------------------------------------
-// Check if two strings are identical, case-insensitive and ignoring blanks
+// Compare two strings using various comparison options.
 //----------------------------------------------------------------------------
 
-bool ts::UString::similar(const UString& other) const
+int ts::UString::SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags)
 {
-    const size_type alen = length();
-    const size_type blen = other.length();
-    size_type ai = 0;
-    size_type bi = 0;
+    // Eliminate trivial cases with null pointers.
+    if (s1 == nullptr || s2 == nullptr) {
+        return (s1 == nullptr && s2 == nullptr) ? 0 : (s1 == nullptr ? -1 : 1);
+    }
 
+    // Loop on characters in both strings.
     for (;;) {
-        // Skip spaces
-        while (ai < alen && IsSpace(at(ai))) {
-            ai++;
+        // Characteristics of current character in each strings.
+        uint32_t ccc1 = UCharacteristics(*s1);
+        uint32_t ccc2 = UCharacteristics(*s2);
+
+        // Skip spaces if required (null char is not a space).
+        if (flags & SCOMP_IGNORE_BLANKS) {
+            while (ccc1 & CCHAR_SPACE) {
+                ccc1 = UCharacteristics(*++s1);
+            }
+            while (ccc2 & CCHAR_SPACE) {
+                ccc2 = UCharacteristics(*++s2);
+            }
         }
-        while (bi < blen && IsSpace(other.at(bi))) {
-            bi++;
+
+        // Manage end of string.
+        if (*s1 == CHAR_NULL) {
+            return *s2 == CHAR_NULL ? 0 : -1;
         }
-        if (ai >= alen && bi >= blen) {
-            return true;
+        if (*s2 == CHAR_NULL) {
+            return 1;
         }
-        if (ai >= alen || bi >= blen || ToLower(at(ai)) != ToLower(other.at(bi))) {
-            return false;
+
+        if ((flags & SCOMP_CASE_INSENSITIVE) && (ccc1 & CCHAR_LETTER) && (ccc2 & CCHAR_LETTER)) {
+            // Manage case insensitive comparison.
+            const UChar c1 = ToLower(*s1++);
+            const UChar c2 = ToLower(*s2++);
+            if (c1 != c2) {
+                return c1 < c2 ? -1 : 1;
+            }
         }
-        ai++;
-        bi++;
+        else if ((flags & SCOMP_NUMERIC) && (ccc1 & CCHAR_DIGIT) && (ccc2 & CCHAR_DIGIT)) {
+            // Manage numeric fields.
+            uint64_t i1 = 0;
+            uint64_t i2 = 0;
+            while (ccc1 & CCHAR_DIGIT) {
+                i1 = (10 * i1) + (*s1 - DIGIT_ZERO);
+                ccc1 = UCharacteristics(*++s1);
+            }
+            while (ccc2 & CCHAR_DIGIT) {
+                i2 = (10 * i2) + (*s2 - DIGIT_ZERO);
+                ccc2 = UCharacteristics(*++s2);
+            }
+            if (i1 != i2) {
+                return i1 < i2 ? -1 : 1;
+            }
+        }
+        else {
+            // Character comparison, including surrogate pairs.
+            char32_t c1 = *s1++;
+            char32_t c2 = *s2++;
+            if (IsLeadingSurrogate(c1) && IsTrailingSurrogate(*s1)) {
+                c1 = FromSurrogatePair(c1, *s1++);
+            }
+            if (IsLeadingSurrogate(c2) && IsTrailingSurrogate(*s2)) {
+                c2 = FromSurrogatePair(c2, *s2++);
+            }
+            if (c1 != c2) {
+                return c1 < c2 ? -1 : 1;
+            }
+        }
     }
 }
+
+
+//----------------------------------------------------------------------------
+// Check if two strings are identical, case-insensitive and ignoring blanks
+//----------------------------------------------------------------------------
 
 bool ts::UString::similar(const void* addr, size_type size) const
 {
