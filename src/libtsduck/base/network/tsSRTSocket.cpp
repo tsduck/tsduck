@@ -981,7 +981,11 @@ bool ts::SRTSocket::Guts::setSockOptPost(Report& report)
 
 bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& report)
 {
-    // The SRT socket will become the listener socket, check that there is none.
+    // The SRT socket will become the listener socket. As long as an error is possible, keep the
+    // listener socket in "sock" field. On return false, this "sock" will ba closed by the caller.
+    // On success, the listener socket must be moved in "listener" field and the "sock" field
+    // will contain the client data socket.
+
     if (listener != SRT_INVALID_SOCK) {
         report.error(u"internal error, SRT listener socket already set");
         return false;
@@ -1009,8 +1013,6 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     // Install a listen callback which will reject all subsequent connections after the first one.
     if (::srt_listen_callback(sock, listenCallback, this) < 0) {
         report.error(u"error during srt_listen_callback(): %s", {::srt_getlasterror_str()});
-        ::srt_close(sock);
-        sock = SRT_INVALID_SOCK;
         return false;
     }
 
@@ -1018,11 +1020,9 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     ::sockaddr peer_addr;
     int peer_addr_len = sizeof(peer_addr);
     report.debug(u"calling srt_accept()");
-    int data_sock = ::srt_accept(sock, &peer_addr, &peer_addr_len);
-    if (data_sock < 0) {
+    const int data_sock = ::srt_accept(sock, &peer_addr, &peer_addr_len);
+    if (data_sock == SRT_INVALID_SOCK) {
         report.error(u"error during srt_accept(): %s", {::srt_getlasterror_str()});
-        ::srt_close(sock);
-        sock = SRT_INVALID_SOCK;
         return false;
     }
 
@@ -1031,7 +1031,7 @@ bool ts::SRTSocket::Guts::srtListen(const IPv4SocketAddress& addr, Report& repor
     sock = data_sock;
 
     // In listener mode, keep the address of the remote peer.
-    IPv4SocketAddress p_addr(peer_addr);
+    const IPv4SocketAddress p_addr(peer_addr);
     report.debug(u"connected to %s", {p_addr});
     if (mode == SRTSocketMode::LISTENER) {
         remote_address = p_addr;
