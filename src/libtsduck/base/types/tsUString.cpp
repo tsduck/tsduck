@@ -1452,11 +1452,11 @@ int ts::UString::SuperCompare(const UChar* s1, const UChar* s2, uint32_t flags)
             // Character comparison, including surrogate pairs.
             char32_t c1 = *s1++;
             char32_t c2 = *s2++;
-            if (IsLeadingSurrogate(c1) && IsTrailingSurrogate(*s1)) {
-                c1 = FromSurrogatePair(c1, *s1++);
+            if (IsLeadingSurrogate(UChar(c1)) && IsTrailingSurrogate(*s1)) {
+                c1 = FromSurrogatePair(UChar(c1), *s1++);
             }
-            if (IsLeadingSurrogate(c2) && IsTrailingSurrogate(*s2)) {
-                c2 = FromSurrogatePair(c2, *s2++);
+            if (IsLeadingSurrogate(UChar(c2)) && IsTrailingSurrogate(*s2)) {
+                c2 = FromSurrogatePair(UChar(c2), *s2++);
             }
             if (c1 != c2) {
                 return c1 < c2 ? -1 : 1;
