@@ -130,7 +130,7 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(SpliceCommand);
         public:
-            SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec);
+            SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec, uint64_t known_pts);
 
             SpliceInformationTable sit;       // The analyzed Splice Information Table.
             SectionPtr             section;   // The binary SIT section.
@@ -778,8 +778,87 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
         if (addr[0] == TID_SCTE35_SIT) {
             // First byte is the table id of a splice information table.
             type = FType::BINARY;
-        }
-        else if (addr[0] == '<') {
+        } else if (addr[0] == '*') {
+            // Start of splicemonitor
+            type = FType::BINARY;
+
+            addr += 2; // Skip initial "* "
+            size -= 2;
+
+            const uint8_t *end_line = addr + 1;
+            while (*end_line != '\n') {
+                end_line++;
+            }
+
+            uint64_t result = 0;
+            for (const uint8_t *i = addr; i < end_line; ++i) {
+                result = (result * 10) + (*i - '0');
+            }
+            size -= end_line - addr;
+            addr = end_line + 1;
+            size -= 2;
+            tsp->debug(u"loaded splicemonitor pts: %d", {result});
+
+            std::ostringstream os;
+
+            for (size_t i = 0; i < size; i += 3) {
+                unsigned int byteValue;
+                std::stringstream ss;
+                ss << std::hex << addr[i] << addr[i + 1];
+                ss >> byteValue;
+
+                if (byteValue > 0xFF) {
+                    throw std::runtime_error("Invalid byte value");
+                }
+
+                uint8_t byte = static_cast<uint8_t>(byteValue);
+                os.write(reinterpret_cast<char *>(&byte), sizeof(byte));
+            }
+
+            std::istringstream strm = std::istringstream(os.str(), std::ios::binary);
+            tsp->debug(u"parsing section:\n%s",
+                       {UString::Dump(strm.str().c_str(), strm.str().length(), UString::HEXA | UString::ASCII, 4)});
+
+            // Analyze the message as a binary, XML or JSON section file.
+            SectionFile secFile(duck);
+            if (!secFile.load(strm, type)) {
+                // Error loading sections, error message already reported.
+                return;
+            }
+
+            // Loop on all sections in the file or message.
+            // Each section is expected to be a splice information section.
+            for (auto it = secFile.sections().begin(); it != secFile.sections().end(); ++it) {
+                SectionPtr sec(*it);
+                if (!sec.isNull()) {
+                    if (sec->tableId() != TID_SCTE35_SIT) {
+                        tsp->error(u"unexpected section, %s, ignored",
+                                   {names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE)});
+                    } else {
+                        CommandPtr cmd(new SpliceCommand(this, sec, result));
+                        if (cmd.isNull() || !cmd->sit.isValid() || cmd->last_pts == INVALID_PTS) {
+                            tsp->error(u"received invalid splice information "
+                                       u"section, ignored");
+                        } else {
+                            tsp->verbose(u"enqueuing %s", {*cmd});
+                            if (!_queue.enqueue(cmd, 0)) {
+                                tsp->warning(u"queue overflow, dropped one section");
+                            }
+                        }
+                    }
+                }
+            }
+
+            // If --wait-first-batch was specified, signal when the first batch
+            // of commands is queued.
+            if (_wait_first_batch && !_wfb_received) {
+                GuardCondition lock(_wfb_mutex, _wfb_condition);
+                _wfb_received = true;
+                lock.signal();
+            }
+            return;
+
+        } else if (addr[0] == '<') {
             // Typically the start of an XML definition.
             type = FType::XML;
         }
@@ -836,7 +915,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
                 tsp->error(u"unexpected section, %s, ignored", {names::TID(duck, sec->tableId(), CASID_NULL, NamesFlags::VALUE)});
             }
             else {
-                CommandPtr cmd(new SpliceCommand(this, sec));
+                CommandPtr cmd(new SpliceCommand(this, sec, _last_pts));
                 if (cmd.isNull() || !cmd->sit.isValid()) {
                     tsp->error(u"received invalid splice information section, ignored");
                 }
@@ -863,7 +942,7 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
 // Splice command object constructor
 //----------------------------------------------------------------------------
 
-ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec) :
+ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin *plugin, const SectionPtr &sec, const uint64_t known_pts) :
     sit(),
     section(sec),
     next_pts(INVALID_PTS),   // inject immediately
@@ -884,18 +963,19 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
         sit.deserialize(_plugin->duck, table);
     }
 
-    // The initial values for the member fields are set for one immediate injection.
-    // This must be changed for non-immediate splice_insert() and time_signal() commands.
-    if (sit.isValid() &&
-        ((sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.set()) ||
-         (sit.splice_command_type == SPLICE_INSERT && !sit.splice_insert.canceled && !sit.splice_insert.immediate)))
-    {
+    // The initial values for the member fields are set for one immediate
+    // injection. This must be changed for non-immediate splice_insert() and
+    // time_signal() commands.
+    if (sit.isValid() && ((sit.splice_command_type == SPLICE_TIME_SIGNAL && sit.time_signal.set()) ||
+                          (sit.splice_command_type == SPLICE_INSERT))) {
         // Compute the splice event PTS value. This will be the last time for
         // the splice command injection since the event is obsolete afterward.
         if (sit.splice_command_type == SPLICE_INSERT) {
             if (sit.splice_insert.program_splice) {
                 // Common PTS value, program-wide.
-                if (sit.splice_insert.program_pts.set()) {
+                if (sit.splice_insert.immediate) {
+                    last_pts = known_pts;
+                } else if (sit.splice_insert.program_pts.set()) {
                     last_pts = sit.splice_insert.program_pts.value();
                 }
             }
@@ -917,7 +997,9 @@ ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin,
         // Otherwise, compute initial PTS and injection count.
         if (last_pts != INVALID_PTS) {
             last_pts = (last_pts + sit.pts_adjustment) & PTS_DTS_MASK;
-            count = _plugin->_inject_count;
+            if (sit.splice_command_type != SPLICE_INSERT || !sit.splice_insert.immediate) {
+                count = _plugin->_inject_count;
+            }
             // Preceding delay for injection in PTS units.
             const uint64_t preceding = (_plugin->_start_delay * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec;
             // Compute the first PTS time for injection.

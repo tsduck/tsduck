@@ -103,6 +103,7 @@ namespace ts {
         MilliSecond _max_preroll;       // Maximum pre-roll time in milliseconds.
         json::OutputArgs _json_args;    // JSON output.
         std::bitset<256> _log_cmds;     // List of splice commands to display.
+        bool             _log_pts;
 
         // Working data:
         TablesDisplay               _display;          // Display engine for splice information tables.
@@ -113,6 +114,7 @@ namespace ts {
         SignalizationDemux          _sig_demux;        // Signalization demux to get PMT's.
         xml::JSONConverter          _x2j_conv;         // XML-to-JSON converter.
         json::RunningDocument       _json_doc;         // JSON document, built on-the-fly.
+        uint64_t                    _last_pts;         // The last known PTS of all packet
 
         // Associate all audio/video PID's in a PMT to a splice PID.
         void setSplicePID(const PMT&, PID);
@@ -153,6 +155,7 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _max_preroll(0),
     _json_args(),
     _log_cmds(),
+    _log_pts(),
     _display(duck),
     _displayed_table(false),
     _splice_contexts(),
@@ -160,9 +163,11 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     _section_demux(duck, this),
     _sig_demux(duck, this),
     _x2j_conv(*tsp),
-    _json_doc(*tsp)
+    _json_doc(*tsp),
+    _last_pts(0)
 {
     _json_args.defineArgs(*this, true, u"Build a JSON report into the specified file. Using '-' means standard output.");
+    _display.defineArgs(*this);
 
     option(u"alarm-command", 0, STRING);
     help(u"alarm-command", u"'command'",
@@ -238,6 +243,10 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     help(u"time-pid",
          u"Specify one video or audio PID containing PTS time stamps to link with SCTE-35 sections to monitor. "
          u"By default, the PMT's are used to link between PTS PID's and SCTE-35 PID's.");
+
+    option(u"log-pts", 0);
+    help(u"log-pts",
+         u"Instead of table data, only log the PTS of the last packet before the splice");
 }
 
 
@@ -274,6 +283,7 @@ ts::SpliceMonitorPlugin::SpliceEvent::SpliceEvent() :
 bool ts::SpliceMonitorPlugin::getOptions()
 {
     _json_args.loadArgs(duck, *this);
+    _display.loadArgs(duck, *this);
     _packet_index = present(u"packet-index");
     _no_adjustment = present(u"no-adjustment");
     getIntValue(_splice_pid, u"splice-pid", PID_NULL);
@@ -285,6 +295,7 @@ bool ts::SpliceMonitorPlugin::getOptions()
     getIntValue(_min_repetition, u"min-repetition");
     getIntValue(_max_repetition, u"max-repetition");
     getIntValues(_log_cmds, u"select-commands");
+    _log_pts = present(u"log-pts");
     if (present(u"all-commands")) {
         _log_cmds.set(); // Display all splice commands
     }
@@ -329,9 +340,7 @@ bool ts::SpliceMonitorPlugin::start()
         json::ValuePtr root;
         return _json_doc.open(root, _output_file, std::cout);
     }
-    else {
-        return duck.setOutput(_output_file);
-    }
+    return true;
 }
 
 
@@ -403,18 +412,22 @@ void ts::SpliceMonitorPlugin::setSplicePID(const PMT& pmt, PID splice_pid)
 ts::UString ts::SpliceMonitorPlugin::message(PID splice_pid, uint32_t event_id, const UChar* format, std::initializer_list<ArgMixIn> args)
 {
     UString line;
-    if (_packet_index) {
-        line.format(u"packet %'d, ", {tsp->pluginPackets()});
-    }
-    if (splice_pid != PID_NULL) {
-        SpliceContext& ctx(_splice_contexts[splice_pid]);
-        line.format(u"splice PID 0x%X (%<d), ", {splice_pid});
-        if (event_id != SpliceInsert::INVALID_EVENT_ID) {
-            const SpliceEvent& evt(ctx.splice_events[event_id]);
-            line.format(u"event 0x%X (%<d) %d, ", {evt.event_id, evt.event_out ? u"out" : u"in"});
+    if (_log_pts) {
+        line.format(u"%d", {_last_pts});
+    } else {
+        if (_packet_index) {
+            line.format(u"packet %'d, ", {tsp->pluginPackets()});
         }
+        if (splice_pid != PID_NULL) {
+            SpliceContext& ctx(_splice_contexts[splice_pid]);
+            line.format(u"splice PID 0x%X (%<d), ", {splice_pid});
+            if (event_id != SpliceInsert::INVALID_EVENT_ID) {
+                const SpliceEvent& evt(ctx.splice_events[event_id]);
+                line.format(u"event 0x%X (%<d) %d, ", {evt.event_id, evt.event_out ? u"out" : u"in"});
+            }
+        }
+        line.format(format, args);
     }
-    line.format(format, args);
     return line;
 }
 
@@ -429,10 +442,6 @@ void ts::SpliceMonitorPlugin::display(const UString& line)
         tsp->info(line);
     }
     else {
-        if (_displayed_table) {
-            _displayed_table = false;
-            _display << std::endl;
-        }
         _display << "* " << line << std::endl;
     }
 }
@@ -471,6 +480,12 @@ void ts::SpliceMonitorPlugin::processEvent(PID splice_pid, uint32_t event_id, ui
     SpliceContext& ctx(_splice_contexts[splice_pid]);
     auto evt = ctx.splice_events.find(event_id);
     bool known_event = evt != ctx.splice_events.end();
+
+    if (!_json_args.useFile()) {
+        UString file_name = UString();
+        file_name.format(u"%s_%d.bin", {_output_file, event_id});
+        duck.setOutput(file_name);
+    }
 
     // Time to event in ms. Negative if event is in the past.
     Variable<MilliSecond> time_to_event;
@@ -603,10 +618,6 @@ void ts::SpliceMonitorPlugin::handleTable(SectionDemux& demux, const BinaryTable
             _json_args.report(_x2j_conv.convertToJSON(doc, true)->query(u"#nodes[0]"), _json_doc, *tsp);
         }
         else {
-            // Human-readable display of the SCTE-35 table.
-            if (_displayed_table) {
-                _display << std::endl;
-            }
             _display.displayTable(table);
             _displayed_table = true;
         }
@@ -634,6 +645,7 @@ ts::ProcessorPlugin::Status ts::SpliceMonitorPlugin::processPacket(TSPacket& pkt
         SpliceContext& ctx(_splice_contexts[spid]);
         ctx.last_pts = pkt.getPTS();
         ctx.last_pts_packet = tsp->pluginPackets();
+        _last_pts = pkt.getPTS();
 
         for (auto it = ctx.splice_events.begin(); it != ctx.splice_events.end(); ) {
             SpliceEvent& evt(it->second);
