@@ -290,7 +290,7 @@ bool ts::ZapPlugin::getOptions()
 
     // Check option conflicts.
     if (_no_subtitles && (!_subtitles_langs.empty() || !_subtitles_pids.empty())) {
-        tsp->error(u"option --no-subtitles is incompatile with --subtitles and --subtitles-pid");
+        tsp->error(u"option --no-subtitles is incompatible with --subtitles and --subtitles-pid");
         return false;
     }
 
@@ -689,7 +689,7 @@ void ts::ZapPlugin::handleVCT(VCT& vct)
 // This method processes a Program Map Table (PMT).
 //----------------------------------------------------------------------------
 
-void ts::ZapPlugin::handlePMT(PMT& pmt, PID pid)
+void ts::ZapPlugin::handlePMT(PMT& pmt, PID pmt_pid)
 {
     // Filter out any unexpected PMT.
     ServiceContextPtr ctx;
@@ -705,8 +705,8 @@ void ts::ZapPlugin::handlePMT(PMT& pmt, PID pid)
     }
 
     // If the PMT PID changed, update it and start a new PAT.
-    if (ctx->pmt_pid != pid) {
-        ctx->pmt_pid = pid;
+    if (ctx->pmt_pid != pmt_pid) {
+        ctx->pmt_pid = pmt_pid;
         sendNewPAT();
     }
 
@@ -732,10 +732,10 @@ void ts::ZapPlugin::handlePMT(PMT& pmt, PID pid)
 
         // Process audio and subtitles tracks.
         if (stream.isAudio(duck)) {
-            keep = keepComponent(pid, stream.descs, _audio_langs, _audio_pids);
+            keep = keepComponent(cpid, stream.descs, _audio_langs, _audio_pids);
         }
         else if (stream.isSubtitles(duck)) {
-            keep = !_no_subtitles && keepComponent(pid, stream.descs, _subtitles_langs, _subtitles_pids);
+            keep = !_no_subtitles && keepComponent(cpid, stream.descs, _subtitles_langs, _subtitles_pids);
         }
 
         // Keep or remove the component.
