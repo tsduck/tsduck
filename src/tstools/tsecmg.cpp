@@ -640,6 +640,8 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
             else {
                 ecm.cw_odd = it->CW;
             }
+            // In debug mode, display if CW has reduced entropy.
+            _shared->report().debug(u"incoming CW entropy: %s", {it->CW.size() == ts::DVBCSA2::KEY_SIZE && ts::DVBCSA2::IsReducedCW(it->CW.data()) ? u"reduced" : u"not reduced"});
         }
 
         // Add optional access criteria in ECM.

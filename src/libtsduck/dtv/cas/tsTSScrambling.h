@@ -164,6 +164,12 @@ namespace ts {
         void setEntropyMode(DVBCSA2::EntropyMode mode);
 
         //!
+        //! Get the entropy mode of DVB-CSA2.
+        //! @return DVB-CSA2 entropy mode. Always return FULL_CW if the current scrambling is not DVB-CSA.
+        //!
+        DVBCSA2::EntropyMode entropyMode() const;
+
+        //!
         //! Start the scrambling session.
         //! Reinitialize list of CW's, open files, etc.
         //! @return True on success, false on error.
