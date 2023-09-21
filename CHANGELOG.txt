@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3274
+VERSION 3.36-3276
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -22,6 +22,8 @@ VERSION 3.36-3274
     properly rejected.
   * Fixed issue #1293: In plugin "zap", the options --subtitles-pid and
     --audio-pid were broken and no longer selected the specified PID's.
+  * In "fork" packet processing plugin, in option --buffered-packets, the
+    value zero (no buffering at all) was not allowed.
 
 -------------------------------------------------------------------------------
 

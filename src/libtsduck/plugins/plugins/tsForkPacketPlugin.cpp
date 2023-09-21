@@ -53,7 +53,7 @@ ts::ForkPacketPlugin::ForkPacketPlugin(TSP* tsp_) :
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Specifies the command line to execute in the created process.");
 
-    option(u"buffered-packets", 'b', POSITIVE);
+    option(u"buffered-packets", 'b', UNSIGNED); // zero allowed
     help(u"buffered-packets",
          u"Specifies the number of TS packets to buffer before sending them through "
          u"the pipe to the forked process. When set to zero, the packets are not "
