@@ -163,6 +163,12 @@ void ts::TSScrambling::setEntropyMode(DVBCSA2::EntropyMode mode)
     _dvbcsa[1].setEntropyMode(mode);
 }
 
+ts::DVBCSA2::EntropyMode ts::TSScrambling::entropyMode() const
+{
+    return (_scrambling_type == SCRAMBLING_DVB_CSA1 || _scrambling_type == SCRAMBLING_DVB_CSA2) ?
+            _dvbcsa[0].entropyMode() : DVBCSA2::FULL_CW;
+}
+
 
 //----------------------------------------------------------------------------
 // Define command line options in an Args.

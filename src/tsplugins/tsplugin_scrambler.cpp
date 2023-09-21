@@ -144,6 +144,9 @@ namespace ts {
             ByteBlock        _cw_current;
             ByteBlock        _cw_next;
 
+            // Generate a new random CW.
+            void generateCW(ByteBlock& cw);
+
             // Generate the ECM for a crypto-period.
             // With --synchronous, the ECM is directly generated. Otherwise,
             // the ECM will be set later, notified through private handleECM.
@@ -165,6 +168,7 @@ namespace ts {
         bool              _update_pmt;          // Update PMT.
         bool              _need_cp;             // Need to manage crypto-periods (ie. not one single fixed CW).
         bool              _need_ecm;            // Need to manage ECM insertion (ie. not fixed CW's).
+        bool              _pre_reduce_cw;       // Reduce the control word before sending to the ECMG.
         MilliSecond       _delay_start;         // Delay between CP start and ECM start (can be negative)
         ByteBlock         _ca_desc_private;     // Private data to insert in CA_descriptor
         BitRate           _ecm_bitrate;         // ECM PID's bitrate
@@ -241,6 +245,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     _update_pmt(false),
     _need_cp(false),
     _need_ecm(false),
+    _pre_reduce_cw(false),
     _delay_start(0),
     _ca_desc_private(),
     _ecm_bitrate(0),
@@ -333,6 +338,15 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
          u"is a risk to later discover that this PID is already used. In that case, "
          u"specify --pid-ecm with a notoriously unused PID value.");
 
+    option(u"pre-reduce-cw");
+    help(u"pre-reduce-cw",
+         u"With DVB-CSA2, when entropy reduction is on (the default), make sure that "
+         u"control words are reduced from the beginning, including when transmitted to an ECMG. "
+         u"By default, entropy reduction is applied just before encryption only, "
+         u"and the ECMG receives a full random CW, without entropy reduction. "
+         u"The default behavior is suitable to test if the CAS correctly handles entropy "
+         u"reduction without implicitly reduced control words.");
+
     option(u"private-data", 0, HEXADATA);
     help(u"private-data",
          u"Specifies the private data to insert in the CA_descriptor in the PMT. "
@@ -372,6 +386,7 @@ bool ts::ScramblerPlugin::getOptions()
     _scramble_video = !present(u"no-video");
     _scramble_subtitles = present(u"subtitles");
     _ignore_scrambled = present(u"ignore-scrambled");
+    _pre_reduce_cw = present(u"pre-reduce-cw");
     getIntValue(_partial_scrambling, u"partial-scrambling", 1);
     getIntValue(_ecm_pid, u"pid-ecm", PID_NULL);
     getValue(_ecm_bitrate, u"bitrate-ecm", DEFAULT_ECM_BITRATE);
@@ -909,8 +924,8 @@ void ts::ScramblerPlugin::CryptoPeriod::initCycle(ScramblerPlugin* scrambler, ui
     _cp_number = cp_number;
 
     if (_plugin->_need_ecm) {
-        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_current, _plugin->_scrambling.cwSize());
-        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next,_plugin->_scrambling.cwSize());
+        generateCW(_cw_current);
+        generateCW(_cw_next);
         generateECM();
     }
 }
@@ -927,8 +942,22 @@ void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 
     if (_plugin->_need_ecm) {
         _cw_current = previous._cw_next;
-        BetterSystemRandomGenerator::Instance()->readByteBlock(_cw_next, _plugin->_scrambling.cwSize());
+        generateCW(_cw_next);
         generateECM();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Generate a new random CW.
+//----------------------------------------------------------------------------
+
+void ts::ScramblerPlugin::CryptoPeriod::generateCW(ByteBlock& cw)
+{
+    BetterSystemRandomGenerator::Instance()->readByteBlock(cw, _plugin->_scrambling.cwSize());
+    if (_plugin->_pre_reduce_cw && _plugin->_scrambling.entropyMode() == DVBCSA2::REDUCE_ENTROPY) {
+        assert(cw.size() == DVBCSA2::KEY_SIZE);
+        DVBCSA2::ReduceCW(cw.data());
     }
 }
 
