@@ -893,6 +893,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <cstdarg>
 #include <cstdio>
 #include <cstdint>
+#include <cinttypes>
 #include <cstring>
 #include <cctype>
 #include <cstddef>

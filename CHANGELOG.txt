@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3276
+VERSION 3.36-3279
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -12,6 +12,7 @@ VERSION 3.36-3276
     - Option --summary in plugin "bitrate_monitor".
     - Option --buffer-size in output and packet processing plugins "ip"
       (already existed in input plugin "ip" but was missing in the two others).
+    - Option --random in plugin "pcredit".
 
 [BUG] Bug fixes:
 

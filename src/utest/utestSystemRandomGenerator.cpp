@@ -49,14 +49,17 @@ public:
 
     void testSystemRandomGenerator();
     void testBetterSystemRandomGenerator();
+    void testRange();
 
     TSUNIT_TEST_BEGIN(SystemRandomGeneratorTest);
     TSUNIT_TEST(testSystemRandomGenerator);
     TSUNIT_TEST(testBetterSystemRandomGenerator);
+    TSUNIT_TEST(testRange);
     TSUNIT_TEST_END();
 
 private:
     void testRandom(ts::RandomGenerator& prng);
+    void testRandomRange(ts::RandomGenerator& prng, int64_t min, int64_t max);
 };
 
 TSUNIT_REGISTER(SystemRandomGeneratorTest);
@@ -112,8 +115,7 @@ void SystemRandomGeneratorTest::testRandom(ts::RandomGenerator& prng)
     const size_t zero1 = std::count(data1.begin(), data1.end(), 0);
     const size_t zero2 = std::count(data2.begin(), data2.end(), 0);
 
-    debug() << prng.name() << ": zeroes over " << data1.size() << " bytes: "
-        << zero1 << ", " << zero2 << std::endl;
+    debug() << prng.name() << ": zeroes over " << data1.size() << " bytes: " << zero1 << ", " << zero2 << std::endl;
 
     TSUNIT_ASSERT(zero1 < data1.size() / 10);
     TSUNIT_ASSERT(zero2 < data2.size() / 10);
@@ -134,4 +136,32 @@ void SystemRandomGeneratorTest::testSystemRandomGenerator()
 void SystemRandomGeneratorTest::testBetterSystemRandomGenerator()
 {
     testRandom(*ts::BetterSystemRandomGenerator::Instance());
+}
+
+void SystemRandomGeneratorTest::testRandomRange(ts::RandomGenerator& prng, int64_t min, int64_t max)
+{
+    TSUNIT_ASSERT(prng.ready());
+    int64_t val = 0;
+
+    for (int i = 0; i < 100; i++) {
+        TSUNIT_ASSERT(prng.readInt(val, min, max));
+        if (val < min || val > max) {
+            debug() << "SystemRandomGeneratorTest: min: " << min << ", max: " << max << ", value: " << val << std::endl;
+        }
+        TSUNIT_ASSERT(val >= min);
+        TSUNIT_ASSERT(val <= max);
+    }
+}
+
+void SystemRandomGeneratorTest::testRange()
+{
+    ts::SystemRandomGenerator gen;
+    testRandomRange(gen, 1000, 1200);
+    testRandomRange(gen, -1100, -1000);
+    testRandomRange(gen, TS_CONST64(-0x7FFFFFFFFFFFFF00), TS_CONST64(0x7FFFFFFFFFFFFF00));
+    testRandomRange(gen, 747, 747);
+    testRandomRange(gen, -380, -380);
+
+    int val = 0;
+    TSUNIT_ASSERT(!gen.readInt(val, 5, 1));
 }
