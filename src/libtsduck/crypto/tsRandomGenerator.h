@@ -114,9 +114,9 @@ bool ts::RandomGenerator::readInt(INT& value, INT min, INT max)
     }
     const bool ok = read(&value, sizeof(value));
     if (ok && (value < min || value > max)) {
-        typedef typename std::make_unsigned<INT>::type UINT;
-        const UINT top = UINT(max - min + 1);
-        value = INT(UINT(value) % top) + min;
+        typedef typename std::make_unsigned<INT>::type UINT_T;
+        const UINT_T top = UINT_T(max - min + 1);
+        value = INT(UINT_T(value) % top) + min;
     }
     return ok;
 }
