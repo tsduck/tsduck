@@ -55,9 +55,9 @@ DOXY_VERSION=$(get-doxy-version)
 [[ -z $DOXY_VERSION ]] && error "doxygen not installed"
 
 # Minimum, maximum and preferred doxygen versions if update is required.
-DOXY_MINVERSION=1.9.4
-DOXY_MAXVERSION=1.9.6  # can be empty
-DOXY_PREFVERSION=1.9.6
+DOXY_MINVERSION=1.9.8
+DOXY_MAXVERSION=  # can be empty
+DOXY_PREFVERSION=1.9.8
 
 if [[ $(doxy-version-int $DOXY_VERSION) -lt $(doxy-version-int $DOXY_MINVERSION) ||
       ( -n $DOXY_MAXVERSION && $(doxy-version-int $DOXY_VERSION) -gt $(doxy-version-int $DOXY_MAXVERSION) ) ]]
@@ -107,15 +107,9 @@ export DOXY_INCLUDE_PATH=$(find "$SRCDIR" -type d | tr '\n' ' ')
 # Generate a summary file of all signalization.
 "$ROOTDIR/src/doc/signalization-gen.py"
 
-# Run doxygen. Filter known false errors (bugs) based on doxygen version.
+# Run doxygen.
 cd "$DOCDIR"
-if [[ $(doxy-version-int $DOXY_VERSION) -le 10907 ]]; then
-    doxygen 2>&1 | grep -v \
-        -e 'python/tsduck.py:[0-9]*: warning: Member _.* is not documented' \
-        -e 'tsTunerDevice.h:[0-9]*: warning: Detected potential recursive class relation between class ts::TunerDevice and base class ts::TunerBase'
-else
-    doxygen
-fi
+doxygen
 
 # Delete empty subdirectories (many of them created for nothing in case of hierachical output).
 find "$DOXYDIR" -type d -empty -delete
