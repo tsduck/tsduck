@@ -80,7 +80,7 @@ namespace ts {
         //! The default initial report level is Info.
         //! @param [in] max_severity Initial maximum severity of reported messages.
         //!
-        Report(int max_severity = Severity::Info);
+        Report(int max_severity = Severity::Info) : _max_severity(max_severity) {}
 
         //!
         //! Destructor.
@@ -321,7 +321,7 @@ namespace ts {
         //!
         //! Debug level is accessible to subclasses
         //!
-        volatile int _max_severity;
+        volatile int _max_severity {Severity::Info};
 
         //!
         //! Actual message reporting method.
@@ -336,6 +336,6 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg) = 0;
 
     private:
-        volatile bool _got_errors;
+        volatile bool _got_errors {false};
     };
 }

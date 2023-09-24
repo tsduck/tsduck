@@ -37,27 +37,7 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PcapStream::PcapStream() :
-    PcapFilter(),
-    _client(),
-    _server(),
-    _streams()
-{
-}
-
-ts::PcapStream::DataBlock::DataBlock() :
-    data(),
-    index(0),
-    sequence(0),
-    start(false),
-    end(false),
-    timestamp(-1)
-{
-}
-
 ts::PcapStream::DataBlock::DataBlock(const IPv4Packet& pkt, MicroSecond tstamp) :
-    data(),
-    index(0),
     sequence(pkt.tcpSequenceNumber()),
     start(pkt.tcpSYN()),
     end(pkt.tcpFIN() || pkt.tcpRST()),

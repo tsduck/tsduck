@@ -200,8 +200,8 @@ namespace ts {
         typedef std::map <UString, ConfigSection> SectionMap;
 
         // Private members:
-        mutable UString _filename;
-        SectionMap      _sections;
+        mutable UString _filename {};
+        SectionMap      _sections {};
 
         // Used to return a constant reference.
         static const ConfigSection _empty;

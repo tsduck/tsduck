@@ -62,14 +62,14 @@ namespace ts {
         //! @param [in] on New state of the switch. When @a on is true, all messages are
         //! passed to the delegate. When @a on is off, all messages are dropped.
         //!
-        void setSwitch(bool on);
+        void setSwitch(bool on) { _on = on; }
 
     protected:
         // Report implementation.
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        volatile bool _on;
+        volatile bool _on {false};
         Report&       _delegate;
     };
 }

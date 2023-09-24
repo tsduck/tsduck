@@ -64,7 +64,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        GitHubRelease();
+        GitHubRelease() = default;
 
         //!
         //! Constructor with download of the version information from GitHub.
@@ -97,12 +97,12 @@ namespace ts {
         //!
         struct TSDUCKDLL Asset
         {
-            Asset();                 //!< Default constructor.
-            UString name;            //!< File name (without URL or directory).
-            int64_t size;            //!< File size in bytes.
-            UString mimeType;        //!< MIME type of the file content.
-            UString url;             //!< URL to download the file.
-            int     downloadCount;   //!< Download count.
+            Asset() = default;          //!< Default constructor.
+            UString name {};            //!< File name (without URL or directory).
+            int64_t size {0};           //!< File size in bytes.
+            UString mimeType {};        //!< MIME type of the file content.
+            UString url {};             //!< URL to download the file.
+            int     downloadCount {0};  //!< Download count.
         };
 
         //!
@@ -198,10 +198,10 @@ namespace ts {
         static bool GetAllVersions(GitHubReleaseVector& versions, const UString& owner, const UString& repository, Report& report = CERR);
 
     private:
-        bool    _isValid;
-        UString _owner;
-        UString _repository;
-        json::ValuePtr _root;
+        bool           _isValid {false};
+        UString        _owner {};
+        UString        _repository {};
+        json::ValuePtr _root {};
 
         // Basic validation of the root JSON.
         bool validate(Report& report);

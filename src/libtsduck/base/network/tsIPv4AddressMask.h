@@ -44,8 +44,8 @@ namespace ts {
     class TSDUCKDLL IPv4AddressMask: public StringifyInterface
     {
     public:
-        IPv4Address address;  //!< IPv4 address.
-        IPv4Address mask;     //!< Network mask.
+        IPv4Address address {};  //!< IPv4 address.
+        IPv4Address mask {};     //!< Network mask.
 
         //!
         //! Default constructor.

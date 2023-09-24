@@ -34,7 +34,6 @@
 
 #include "tsWebRequest.h"
 #include "tsFatal.h"
-#include "tsIntegerUtils.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 #include "tsSingletonManager.h"
@@ -79,28 +78,7 @@ constexpr size_t ts::WebRequest::DEFAULT_CHUNK_SIZE;
 //----------------------------------------------------------------------------
 
 ts::WebRequest::WebRequest(Report& report) :
-    _report(report),
-    _userAgent(DEFAULT_USER_AGENT),
-    _autoRedirect(true),
-    _originalURL(),
-    _finalURL(),
-    _connectionTimeout(0),
-    _receiveTimeout(0),
-    _proxyHost(),
-    _proxyPort(0),
-    _proxyUser(),
-    _proxyPassword(),
-    _cookiesFileName(),
-    _useCookies(false),
-    _deleteCookiesFile(false),
-    _requestHeaders(),
-    _responseHeaders(),
-    _httpStatus(0),
-    _contentSize(0),
-    _headerContentSize(0),
-    _isOpen(false),
-    _interrupted(false),
-    _guts(nullptr)
+    _report(report)
 {
     allocateGuts();
     CheckNonNull(_guts);

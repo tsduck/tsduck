@@ -61,7 +61,7 @@ namespace ts {
             virtual void clear() override;
 
         private:
-            UString _value;
+            UString _value {};
         };
     }
 }

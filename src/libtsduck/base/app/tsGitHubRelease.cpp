@@ -52,19 +52,6 @@
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
-//----------------------------------------------------------------------------
-
-ts::GitHubRelease::GitHubRelease() :
-    _isValid(false),
-    _owner(),
-    _repository(),
-    _root()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Constructor with download of the version information from GitHub.
 //----------------------------------------------------------------------------
 
@@ -216,18 +203,9 @@ bool ts::GitHubRelease::GetAllVersions(GitHubReleaseVector& versions, const UStr
 
 //----------------------------------------------------------------------------
 // Description of an "asset" of the release (typically a binary installer).
+// Build an asset description from a JSON object.
 //----------------------------------------------------------------------------
 
-ts::GitHubRelease::Asset::Asset() :
-    name(),
-    size(0),
-    mimeType(),
-    url(),
-    downloadCount(0)
-{
-}
-
-// Build an asset description from a JSON object.
 void ts::GitHubRelease::BuildAsset(Asset& asset, const json::Value& value)
 {
     if (!value.isNull()) {

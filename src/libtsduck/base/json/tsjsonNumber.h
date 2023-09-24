@@ -62,7 +62,7 @@ namespace ts {
             virtual void clear() override;
 
         private:
-            int64_t _value;
+            int64_t _value {0};
         };
     }
 }

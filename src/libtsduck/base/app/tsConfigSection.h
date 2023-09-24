@@ -52,7 +52,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        ConfigSection();
+        ConfigSection() = default;
 
         //!
         //! Reset content of the section
@@ -250,7 +250,7 @@ namespace ts {
         typedef std::map<UString, UStringVector> EntryMap;
 
         // Private members:
-        EntryMap _entries;
+        EntryMap _entries {};
     };
 }
 

@@ -33,34 +33,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::PcapFilter::PcapFilter() :
-    PcapFile(),
-    _protocols(),
-    _source(),
-    _destination(),
-    _bidirectional_filter(false),
-    _wildcard_filter(true),
-    _display_addresses_severity(Severity::Debug),
-    _first_packet(0),
-    _last_packet(std::numeric_limits<size_t>::max()),
-    _first_time_offset(0),
-    _last_time_offset(std::numeric_limits<ts::MicroSecond>::max()),
-    _first_time(0),
-    _last_time(std::numeric_limits<ts::MicroSecond>::max()),
-    _opt_first_packet(0),
-    _opt_last_packet(std::numeric_limits<size_t>::max()),
-    _opt_first_time_offset(0),
-    _opt_last_time_offset(std::numeric_limits<ts::MicroSecond>::max()),
-    _opt_first_time(0),
-    _opt_last_time(std::numeric_limits<ts::MicroSecond>::max())
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line filtering options.
 //----------------------------------------------------------------------------
 

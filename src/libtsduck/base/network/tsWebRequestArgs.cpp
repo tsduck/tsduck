@@ -32,24 +32,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::WebRequestArgs::WebRequestArgs() :
-    connectionTimeout(0),
-    receiveTimeout(0),
-    proxyPort(0),
-    proxyHost(),
-    proxyUser(),
-    proxyPassword(),
-    userAgent(),
-    useCookies(true),
-    cookiesFile()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 

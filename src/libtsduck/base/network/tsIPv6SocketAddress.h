@@ -49,6 +49,8 @@ namespace ts {
     //!
     class TSDUCKDLL IPv6SocketAddress: public IPv6Address
     {
+    private:
+        uint16_t _port {AnyPort};  // Port in host byte order
     public:
         //!
         //! Wildcard socket address, unspecified address and port.
@@ -58,11 +60,7 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        IPv6SocketAddress() :
-            IPv6Address(),
-            _port(AnyPort)
-        {
-        }
+        IPv6SocketAddress() = default;
 
         //!
         //! Constructor from an IPv6 address and optional port
@@ -247,9 +245,6 @@ namespace ts {
         //! @return True if this instance is less than to @a other.
         //!
         bool operator<(const IPv6SocketAddress& other) const;
-
-    private:
-        uint16_t _port;  // Port in host byte order
     };
 
     //!

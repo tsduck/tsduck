@@ -31,6 +31,7 @@
 #include "tsIPUtils.h"
 #include "tsGuardMutex.h"
 #include "tsMemory.h"
+#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------

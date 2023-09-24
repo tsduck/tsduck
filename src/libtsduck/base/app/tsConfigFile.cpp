@@ -44,9 +44,7 @@ ts::ConfigFile::ConfigFile(const UString& filename, Report& report, const UStrin
 {
 }
 
-ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, Report& report, const UString env_disable) :
-    _filename(),
-    _sections()
+ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, Report& report, const UString env_disable)
 {
     // Only if not disabled by environment variable.
     if (env_disable.empty() || GetEnvironment(env_disable).empty()) {
@@ -62,9 +60,7 @@ ts::ConfigFile::ConfigFile(const UString& filename1, const UString& filename2, R
     }
 }
 
-ts::ConfigFile::ConfigFile(std::istream& strm) :
-    _filename(),
-    _sections()
+ts::ConfigFile::ConfigFile(std::istream& strm)
 {
     merge(strm);
 }

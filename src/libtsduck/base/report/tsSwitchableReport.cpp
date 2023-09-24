@@ -28,13 +28,9 @@
 //----------------------------------------------------------------------------
 
 #include "tsSwitchableReport.h"
-#include "tsMemory.h"
 
 
-//----------------------------------------------------------------------------
 // Constructor
-//----------------------------------------------------------------------------
-
 ts::SwitchableReport::SwitchableReport(Report& delegate, bool on) :
     Report(std::numeric_limits<int>::max()), // actual logging will be limited in delegate
     _on(on),
@@ -42,23 +38,7 @@ ts::SwitchableReport::SwitchableReport(Report& delegate, bool on) :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Set the switch state of this object.
-//----------------------------------------------------------------------------
-
-void ts::SwitchableReport::setSwitch(bool on)
-{
-    // Volatile boolean.
-    _on = on;
-    MemoryBarrier();
-}
-
-
-//----------------------------------------------------------------------------
 // Message logging method.
-//----------------------------------------------------------------------------
-
 void ts::SwitchableReport::writeLog(int severity, const UString &msg)
 {
     if (_on) {

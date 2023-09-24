@@ -118,8 +118,7 @@ const ts::Enumeration ts::VersionInfo::SupportEnum({
 
 ts::VersionInfo::VersionInfo(Report& report) :
     _report(report),
-    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : _report),
-    _started(false)
+    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : _report)
 {
 }
 

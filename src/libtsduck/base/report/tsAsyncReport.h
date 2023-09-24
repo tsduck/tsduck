@@ -139,17 +139,17 @@ namespace ts {
         {
             LogMessage(bool t, int s, const UString& m) : terminate(t), severity(s), message(m) {}
 
-            bool    terminate;  // ask the logging thread to terminate
-            int     severity;
-            UString message;
+            bool    terminate {false};  // ask the logging thread to terminate
+            int     severity {Severity::Info};
+            UString message {};
         };
         typedef SafePtr <LogMessage, NullMutex> LogMessagePtr;
         typedef MessageQueue <LogMessage, NullMutex> LogMessageQueue;
 
         // Private members:
-        LogMessageQueue _log_queue;
-        volatile bool   _time_stamp;
-        volatile bool   _synchronous;
-        volatile bool   _terminated;
+        LogMessageQueue _log_queue {};
+        volatile bool   _time_stamp {false};
+        volatile bool   _synchronous {false};
+        volatile bool   _terminated {false};
     };
 }

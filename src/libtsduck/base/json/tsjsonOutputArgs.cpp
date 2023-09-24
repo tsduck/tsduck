@@ -38,23 +38,6 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::json::OutputArgs::OutputArgs() :
-    _json_opt(false),
-    _json_line(false),
-    _json_tcp(false),
-    _json_tcp_keep(false),
-    _json_udp(false),
-    _line_prefix(),
-    _tcp_destination(),
-    _udp_destination(),
-    _udp_local(),
-    _udp_ttl(0),
-    _sock_buffer_size(0),
-    _udp_sock(),
-    _tcp_sock()
-{
-}
-
 ts::json::OutputArgs::~OutputArgs()
 {
     if (_tcp_sock.isOpen()) {

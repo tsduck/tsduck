@@ -44,9 +44,7 @@ namespace ts {
         class TSDUCKDLL Null : public Value
         {
         public:
-            //!
             //! Default constructor.
-            //!
             Null() = default;
 
             // Implementation of ts::json::Value.

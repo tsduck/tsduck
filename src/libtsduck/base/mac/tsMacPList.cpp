@@ -28,7 +28,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsMacPList.h"
-#include "tsCerrReport.h"
 #include "tsxmlDocument.h"
 #include "tsxmlElement.h"
 

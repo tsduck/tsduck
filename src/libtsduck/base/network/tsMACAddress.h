@@ -64,19 +64,13 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        MACAddress() :
-            _addr(0)
-        {
-        }
+        MACAddress() = default;
 
         //!
         //! Constructor from an integer address.
         //! @param [in] addr The MAC address as a 48-bit integer.
         //!
-        MACAddress(uint64_t addr) :
-            _addr(addr & MASK)
-        {
-        }
+        MACAddress(uint64_t addr) : _addr(addr & MASK) {}
 
         //!
         //! Constructor from 6 bytes.
@@ -110,8 +104,7 @@ namespace ts {
         //! @param [in] name A string in "a:b:c:d:e:f" format.
         //! @param [in] report Where to report errors.
         //!
-        MACAddress(const UString& name, Report& report) :
-            _addr(0)
+        MACAddress(const UString& name, Report& report)
         {
             MACAddress::resolve(name, report);
         }
@@ -176,7 +169,7 @@ namespace ts {
         bool operator<(const MACAddress& other) const { return _addr < other._addr; }
 
     private:
-        uint64_t _addr;  // A MAC address is a 48-bit word
+        uint64_t _addr {0};  // A MAC address is a 48-bit word
 
         // Description of a MAC multicast address for IPv4.
         static constexpr uint64_t MULTICAST_MASK   = TS_UCONST64(0xFFFFFF800000);

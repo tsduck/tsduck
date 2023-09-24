@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! @param [in] max_severity Maximum debug level to display. None by default.
         //!
-        ReportBuffer(int max_severity = Severity::Info);
+        ReportBuffer(int max_severity = Severity::Info) : Report(max_severity) {}
 
         //!
         //! Reset the content of the internal buffer.
@@ -87,8 +87,8 @@ namespace ts {
         virtual void writeLog(int severity, const UString& message) override;
 
     private:
-        mutable MUTEX _mutex;
-        UString       _buffer;
+        mutable MUTEX _mutex {};
+        UString       _buffer {};
     };
 }
 
@@ -108,15 +108,6 @@ inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTE
 //----------------------------------------------------------------------------
 // Template definitions.
 //----------------------------------------------------------------------------
-
-// Constructor.
-template <class MUTEX>
-ts::ReportBuffer<MUTEX>::ReportBuffer(int max_severity) :
-    Report(max_severity),
-    _mutex(),
-    _buffer()
-{
-}
 
 // Reset the content of the internal buffer.
 template <class MUTEX>

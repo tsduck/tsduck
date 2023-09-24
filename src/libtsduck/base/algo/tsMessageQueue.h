@@ -212,11 +212,11 @@ namespace ts {
 
     private:
         // Private members.
-        mutable Mutex     _mutex;        //!< Protect access to all private members
-        mutable Condition _enqueued;     //!< Signaled when some message is inserted
-        mutable Condition _dequeued;     //!< Signaled when some message is removed
-        size_t            _maxMessages;  //!< Max number of messages in the queue
-        MessageList       _queue;        //!< Actual message queue.
+        mutable Mutex     _mutex {};         //!< Protect access to all private members
+        mutable Condition _enqueued {};      //!< Signaled when some message is inserted
+        mutable Condition _dequeued {};      //!< Signaled when some message is removed
+        size_t            _maxMessages {0};  //!< Max number of messages in the queue
+        MessageList       _queue {};         //!< Actual message queue.
 
         // Enqueue a safe pointer in the list and signal the condition.
         // Must be executed under the protection of the lock.
@@ -234,11 +234,7 @@ namespace ts {
 
 template <typename MSG, class MUTEX>
 ts::MessageQueue<MSG, MUTEX>::MessageQueue(size_t maxMessages) :
-    _mutex(),
-    _enqueued(),
-    _dequeued(),
-    _maxMessages(maxMessages),
-    _queue()
+    _maxMessages(maxMessages)
 {
 }
 

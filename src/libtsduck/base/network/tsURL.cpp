@@ -35,29 +35,17 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::URL::URL() :
-    _scheme(),
-    _username(),
-    _password(),
-    _host(),
-    _port(0),
-    _path(),
-    _query(),
-    _fragment()
-{
-}
-
-ts::URL::URL(const UString& path) : URL()
+ts::URL::URL(const UString& path)
 {
     setURL(path);
 }
 
-ts::URL::URL(const UString& path, const UString& base) : URL()
+ts::URL::URL(const UString& path, const UString& base)
 {
     setURL(path, base);
 }
 
-ts::URL::URL(const UString& path, const URL& base) : URL()
+ts::URL::URL(const UString& path, const URL& base)
 {
     setURL(path, base);
 }

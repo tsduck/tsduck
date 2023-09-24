@@ -28,10 +28,8 @@
 //----------------------------------------------------------------------------
 
 #include "tsPcapFile.h"
-#include "tsPcap.h"
 #include "tsIPv4Packet.h"
 #include "tsByteBlock.h"
-#include "tsNullReport.h"
 #include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 
@@ -40,37 +38,9 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::PcapFile::PcapFile() :
-    _error(false),
-    _in(nullptr),
-    _file(),
-    _name(),
-    _be(false),
-    _ng(false),
-    _major(0),
-    _minor(0),
-    _file_size(0),
-    _packet_count(0),
-    _ipv4_packet_count(0),
-    _packets_size(0),
-    _ipv4_packets_size(0),
-    _first_timestamp(-1),
-    _last_timestamp(-1),
-    _if()
-{
-}
-
 ts::PcapFile::~PcapFile()
 {
     close();
-}
-
-ts::PcapFile::InterfaceDesc::InterfaceDesc() :
-    link_type(LINKTYPE_UNKNOWN),
-    fcs_size(0),
-    time_units(0),
-    time_offset(0)
-{
 }
 
 

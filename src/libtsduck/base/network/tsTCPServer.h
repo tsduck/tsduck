@@ -73,10 +73,7 @@ namespace ts {
         //!
         //! Constructor
         //!
-        TCPServer():
-            TCPSocket()
-        {
-        }
+        TCPServer() = default;
 
         //!
         //! Start the server.

@@ -34,7 +34,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMemory.h"
+#include "tsPlatform.h"
 
 //!
 //! @hideinitializer
@@ -152,9 +152,7 @@
     {                                                                     \
         if (_instance == nullptr) {                                       \
             /* No thread synchronization here. */                         \
-            StaticInstanceClass* volatile tmp = new StaticInstanceClass;  \
-            ts::MemoryBarrier();                                          \
-            _instance = tmp;                                              \
+            _instance = new StaticInstanceClass;                          \
         }                                                                 \
         return _instance->_object;                                        \
     }                                                                     \

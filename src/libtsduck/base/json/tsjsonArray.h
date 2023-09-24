@@ -44,10 +44,8 @@ namespace ts {
         class TSDUCKDLL Array: public Value
         {
         public:
-            //!
-            //! Constructor.
-            //!
-            Array() : _value() {}
+            //! Default constructor.
+            Array() = default;
 
             // Implementation of ts::json::Value.
             virtual Type type() const override;
@@ -66,7 +64,7 @@ namespace ts {
             virtual Value& query(const UString& path, bool create = false, Type type = Type::Object) override;
 
         private:
-            std::vector<ValuePtr> _value;
+            std::vector<ValuePtr> _value {};
 
             // Split and validate a query path.
             static bool splitPath(const UString& path, size_t& index, UString& next);

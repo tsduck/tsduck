@@ -72,7 +72,7 @@ namespace ts {
         void erase(const UString& name);
 
     private:
-        Mutex _mutex;
-        std::map<UString, ObjectPtr> _repository;
+        Mutex _mutex {};
+        std::map<UString, ObjectPtr> _repository {};
     };
 }

@@ -34,18 +34,7 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::IPv4Packet::IPv4Packet() :
-    _valid(false),
-    _proto_type(0),
-    _ip_header_size(0),
-    _proto_header_size(0),
-    _source_port(0),
-    _destination_port(0),
-    _data()
-{
-}
-
-ts::IPv4Packet::IPv4Packet(const void* data, size_t size) : IPv4Packet()
+ts::IPv4Packet::IPv4Packet(const void* data, size_t size)
 {
     reset(data, size);
 }

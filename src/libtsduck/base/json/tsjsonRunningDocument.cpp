@@ -35,14 +35,6 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::json::RunningDocument::RunningDocument(Report& report) :
-    _text(report),
-    _open_array(false),
-    _empty_array(true),
-    _obj_count(0)
-{
-}
-
 ts::json::RunningDocument::~RunningDocument()
 {
     close();

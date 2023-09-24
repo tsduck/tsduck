@@ -52,7 +52,7 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] report Where to report error.
         //!
-        explicit UDPReceiver(Report& report = CERR);
+        explicit UDPReceiver(Report& report = CERR) : UDPSocket(false, report) {}
 
         //!
         //! Add command line option definitions in an Args.
@@ -141,23 +141,23 @@ namespace ts {
                              MicroSecond* timestamp = nullptr) override;
 
     private:
-        bool              _dest_is_parameter;  // Destination address is a command line parameter, not an option.
-        bool              _receiver_specified; // An address is specified.
-        bool              _use_ssm;            // Use source-specific multicast.
-        size_t            _receiver_index;     // The number of the selected receiver on the command line.
-        size_t            _receiver_count;     // The number of receivers on the command line.
-        IPv4SocketAddress _dest_addr;          // Expected destination of packets.
-        IPv4Address       _local_address;      // Local address on which to listen.
-        bool              _reuse_port;         // Reuse port socket option.
-        bool              _default_interface;  // Use default local interface.
-        bool              _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
-        bool              _mc_loopback;        // Multicast loopback option
-        bool              _recv_timestamps;    // Get receive timestamps.
-        size_t            _recv_bufsize;       // Socket receive buffer size.
-        MilliSecond       _recv_timeout;       // Receive timeout.
-        IPv4SocketAddress _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).
-        IPv4SocketAddress _first_source;       // Socket address of first received packet.
-        IPv4SocketAddressSet _sources;         // Set of all detected packet sources.
+        bool              _dest_is_parameter {true};   // Destination address is a command line parameter, not an option.
+        bool              _receiver_specified {false}; // An address is specified.
+        bool              _use_ssm {false};            // Use source-specific multicast.
+        size_t            _receiver_index {0};         // The number of the selected receiver on the command line.
+        size_t            _receiver_count {0};         // The number of receivers on the command line.
+        IPv4SocketAddress _dest_addr {};               // Expected destination of packets.
+        IPv4Address       _local_address {};           // Local address on which to listen.
+        bool              _reuse_port {false};         // Reuse port socket option.
+        bool              _default_interface {false};  // Use default local interface.
+        bool              _use_first_source {false};   // Use socket address of first received packet to filter subsequent packets.
+        bool              _mc_loopback {true};         // Multicast loopback option
+        bool              _recv_timestamps {true};     // Get receive timestamps, currently hardcoded, is there a reason to disable it?
+        size_t            _recv_bufsize {0};           // Socket receive buffer size.
+        MilliSecond       _recv_timeout {-1};          // Receive timeout.
+        IPv4SocketAddress _use_source {};              // Filter on this socket address of sender (can be a simple filter of an SSM source).
+        IPv4SocketAddress _first_source {};            // Socket address of first received packet.
+        IPv4SocketAddressSet _sources {};              // Set of all detected packet sources.
 
         // Get the command line argument for the destination parameter.
         const UChar* destinationOptionName() const { return _dest_is_parameter ? u"" : u"ip-udp"; }
