@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tstlvProtocol.h"
+#include "tsMemory.h"
 
 namespace ts {
     namespace tlv {
@@ -371,4 +372,84 @@ namespace ts {
     }
 }
 
-#include "tstlvMessageFactoryTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Internal method: Check the size of a parameter.
+template <typename T>
+void ts::tlv::MessageFactory::checkParamSize(TAG tag, const ParameterMultimap::const_iterator& it) const
+{
+    const size_t expected = dataSize<T>();
+    if (it->second.length != expected) {
+        throw DeserializationInternalError(UString::Format(u"Bad size for parameter 0x%X in message, expected %d bytes, found %d", {tag, expected, it->second.length}));
+    }
+}
+
+// Get first occurence of an integer parameter:
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+INT ts::tlv::MessageFactory::get(TAG tag) const
+{
+    const auto it = _params.find(tag);
+    if (it == _params.end()) {
+        throw DeserializationInternalError(UString::Format(u"No parameter 0x%X in message", {tag}));
+    }
+    else {
+        checkParamSize<INT>(tag, it);
+        return GetInt<INT>(it->second.addr);
+    }
+}
+
+// Get all occurences of an integer parameter.
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::tlv::MessageFactory::get(TAG tag, std::vector<INT>& param) const
+{
+    // Reinitialize result vector
+    param.clear();
+    param.reserve(_params.count(tag));
+    // Fill vector with parameter values
+    const auto last = _params.upper_bound (tag);
+    for (auto it = _params.lower_bound(tag); it != last; ++it) {
+        checkParamSize<INT>(tag, it);
+        param.push_back(GetInt<INT>(it->second.addr));
+    }
+}
+
+// Get a compound TLV parameter using a derived class of Message.
+template <class MSG>
+void ts::tlv::MessageFactory::getCompound(TAG tag, MSG& param) const
+{
+    MessagePtr gen;
+    getCompound (tag, gen);
+    MSG* msg = dynamic_cast<MSG*> (gen.pointer());
+    if (msg == 0) {
+        throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for parameter 0x%X", {tag}));
+    }
+    param = *msg;
+}
+
+// Get all occurences of a compound TLV parameter using a derived class of Message.
+template <class MSG>
+void ts::tlv::MessageFactory::getCompound(TAG tag, std::vector<MSG>& param) const
+{
+    // Reinitialize result vector
+    param.clear();
+    // Fill vector with parameter values
+    auto it = _params.lower_bound(tag);
+    const auto last = _params.upper_bound(tag);
+    for (int i = 0; it != last; ++it, ++i) {
+        if (it->second.compound.isNull()) {
+            throw DeserializationInternalError(UString::Format(u"Occurence %d of parameter 0x%X not a compound TLV", {i, tag}));
+        }
+        else {
+            MessagePtr gen;
+            it->second.compound->factory(gen);
+            MSG* msg = dynamic_cast<MSG*> (gen.pointer());
+            if (msg == 0) {
+                throw DeserializationInternalError(UString::Format(u"Wrong compound TLV type for occurence %d of parameter 0x%X", {i, tag}));
+            }
+            param.push_back(*msg);
+        }
+    }
+}

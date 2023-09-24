@@ -219,4 +219,47 @@ namespace ts {
     typedef CASDate<2000> SafeAccessDate;
 }
 
-#include "tsCASDateTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+template <int YEARBASE> constexpr uint16_t ts::CASDate<YEARBASE>::INVALID_DATE;
+template <int YEARBASE> constexpr int ts::CASDate<YEARBASE>::MIN_YEAR;
+template <int YEARBASE> constexpr int ts::CASDate<YEARBASE>::MAX_YEAR;
+#endif
+
+// Compute the 16-bit value.
+template <int YEARBASE>
+uint16_t ts::CASDate<YEARBASE>::toUInt16(int year, int month, int day) const
+{
+    if (year >= MIN_YEAR && year <= MAX_YEAR && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return uint16_t((year - YEARBASE) << 9) | uint16_t(month << 5) | uint16_t(day);
+    }
+    else {
+        return INVALID_DATE;
+    }
+}
+
+// Constructor from Time
+template <int YEARBASE>
+ts::CASDate<YEARBASE>::CASDate(const Time& t) : _value(0)
+{
+    const Time::Fields f(t);
+    _value = toUInt16(f.year, f.month, f.day);
+}
+
+// Convert to a string object.
+template <int YEARBASE>
+ts::UString ts::CASDate<YEARBASE>::toString() const
+{
+    return isValid() ? UString::Format(u"%04d-%02d-%02d", {year(), month(), day()}) : u"?";
+}
+
+// Convert to a Time object.
+template <int YEARBASE>
+ts::CASDate<YEARBASE>::operator ts::Time() const
+{
+    return isValid() ? Time(year(), month(), day(), 0, 0) : Time::Epoch;
+}

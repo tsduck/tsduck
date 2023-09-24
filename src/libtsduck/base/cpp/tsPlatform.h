@@ -875,6 +875,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <map>
 #include <set>
 #include <bitset>
+#include <type_traits>
 #include <algorithm>
 #include <iterator>
 #include <limits>
@@ -902,8 +903,11 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <fcntl.h>
 #if defined(TS_WINDOWS)
     #include <windows.h>
-#else
+#endif
+#if defined(TS_UNIX)
     #include <unistd.h>
+    #include <glob.h>
+    #include <sys/mman.h>
 #endif
 #include "tsAfterStandardHeaders.h"
 

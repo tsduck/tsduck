@@ -35,7 +35,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsNullMutex.h"
-#include <fstream>
+#include "tsGuardMutex.h"
 
 namespace ts {
     //!
@@ -92,4 +92,56 @@ namespace ts {
     };
 }
 
-#include "tsReportFileTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Constructor using a named file.
+template <class MUTEX>
+ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, int max_severity) :
+    Report(max_severity),
+    _mutex(),
+    _file_name(file_name.toUTF8()),
+    _named_file(_file_name.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out),
+    _file(_named_file)
+{
+    // Process error when creating the file
+    if (!_named_file) {
+        std::cerr << "Fatal error creating log file " << file_name << std::endl;
+    }
+}
+
+// Constructor using an open file stream.
+template <class MUTEX>
+ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, int max_severity) :
+    Report(max_severity),
+    _mutex(),
+    _file_name(),
+    _named_file(),
+    _file(stream)
+{
+}
+
+// Destructor
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
+template <class MUTEX>
+ts::ReportFile<MUTEX>::~ReportFile()
+{
+    GuardMutex lock(_mutex);
+
+    // Close the file if it was explicitly open by constructor
+    if (_named_file.is_open()) {
+        _named_file.close();
+    }
+}
+TS_POP_WARNING()
+
+// Message processing handler, must be implemented in actual classes.
+template <class MUTEX>
+void ts::ReportFile<MUTEX>::writeLog(int severity, const UString& message)
+{
+    GuardMutex lock(_mutex);
+    _file << Severity::Header(severity) << message << std::endl;
+}

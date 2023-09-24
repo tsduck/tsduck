@@ -544,4 +544,133 @@ namespace ts {
     };
 }
 
-#include "tsSafePtrTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Destructor.
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
+template <typename T, class MUTEX>
+ts::SafePtr<T,MUTEX>::~SafePtr()
+{
+    if (_shared != nullptr && _shared->detach()) {
+        _shared = nullptr;
+    }
+}
+TS_POP_WARNING()
+
+// Assignment between safe pointers.
+template <typename T, class MUTEX>
+ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(const SafePtr<T,MUTEX>& sp)
+{
+    if (_shared != sp._shared) {
+        _shared->detach();
+        _shared = sp._shared->attach();
+    }
+    return *this;
+}
+
+// Assignment between safe pointers.
+template <typename T, class MUTEX>
+ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(SafePtr<T,MUTEX>&& sp) noexcept
+{
+    if (_shared != sp._shared) {
+        if (_shared != nullptr) {
+            _shared->detach();
+        }
+        _shared = sp._shared;
+        sp._shared = nullptr;
+    }
+    return *this;
+}
+
+// Assignment from a standard pointer T*.
+template <typename T, class MUTEX>
+ts::SafePtr<T,MUTEX>& ts::SafePtr<T,MUTEX>::operator=(T* p)
+{
+    _shared->detach();
+    _shared = new SafePtrShared(p);
+    return *this;
+}
+
+// Destructor. Deallocate actual object (if any).
+template <typename T, class MUTEX>
+ts::SafePtr<T,MUTEX>::SafePtrShared::~SafePtrShared()
+{
+    if (_ptr != nullptr) {
+        delete _ptr;
+        _ptr = nullptr;
+    }
+}
+
+// Sets the pointer value to 0 and returns its old value. Do not deallocate the object.
+template <typename T, class MUTEX>
+T* ts::SafePtr<T,MUTEX>::SafePtrShared::release()
+{
+    GuardMutex lock(_mutex);
+    T* previous = _ptr;
+    _ptr = nullptr;
+    return previous;
+}
+
+// Deallocate previous pointer and sets the pointer to specified value.
+template <typename T, class MUTEX>
+void ts::SafePtr<T,MUTEX>::SafePtrShared::reset(T* p)
+{
+    GuardMutex lock(_mutex);
+    if (_ptr != nullptr) {
+        delete _ptr;
+    }
+    _ptr = p;
+}
+
+// Get the pointer value.
+template <typename T, class MUTEX>
+T* ts::SafePtr<T,MUTEX>::SafePtrShared::pointer()
+{
+    GuardMutex lock(_mutex);
+    return _ptr;
+}
+
+// Get the reference count value.
+template <typename T, class MUTEX>
+int ts::SafePtr<T,MUTEX>::SafePtrShared::count()
+{
+    GuardMutex lock(_mutex);
+    return _ref_count;
+}
+
+// Check for null pointer on SafePtr object
+template <typename T, class MUTEX>
+bool ts::SafePtr<T,MUTEX>::SafePtrShared::isNull()
+{
+    GuardMutex lock(_mutex);
+    return _ptr == nullptr;
+}
+
+// Increment reference count and return this.
+template <typename T, class MUTEX>
+typename ts::SafePtr<T,MUTEX>::SafePtrShared* ts::SafePtr<T,MUTEX>::SafePtrShared::attach()
+{
+    GuardMutex lock(_mutex);
+    _ref_count++;
+    return this;
+}
+
+// Decrement reference count and deallocate this if needed.
+template <typename T, class MUTEX>
+bool ts::SafePtr<T,MUTEX>::SafePtrShared::detach()
+{
+    int refcount;
+    {
+        GuardMutex lock(_mutex);
+        refcount = --_ref_count;
+    }
+    if (refcount == 0) {
+        delete this;
+        return true;
+    }
+    return false;
+}

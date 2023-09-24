@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsReport.h"
+#include "tsGuardMutex.h"
 #include "tsNullMutex.h"
 
 namespace ts {
@@ -103,4 +104,52 @@ inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTE
     return strm << log.getMessages();
 }
 
-#include "tsReportBufferTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Constructor.
+template <class MUTEX>
+ts::ReportBuffer<MUTEX>::ReportBuffer(int max_severity) :
+    Report(max_severity),
+    _mutex(),
+    _buffer()
+{
+}
+
+// Reset the content of the internal buffer.
+template <class MUTEX>
+void ts::ReportBuffer<MUTEX>::resetMessages()
+{
+    GuardMutex lock(_mutex);
+    _buffer.clear();
+}
+
+// Check if the content of the internal buffer is empty.
+template <class MUTEX>
+bool ts::ReportBuffer<MUTEX>::emptyMessages() const
+{
+    GuardMutex lock(_mutex);
+    return _buffer.empty();
+}
+
+// Get the content of the internal buffer.
+template <class MUTEX>
+ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
+{
+    GuardMutex lock(_mutex);
+    return _buffer;
+}
+
+// Message processing handler, add the message in the buffer.
+template <class MUTEX>
+void ts::ReportBuffer<MUTEX>::writeLog(int severity, const UString& message)
+{
+    GuardMutex lock(_mutex);
+    if (!_buffer.empty()) {
+        _buffer.append(u'\n');
+    }
+    _buffer.append(Severity::Header(severity));
+    _buffer.append(message);
+}

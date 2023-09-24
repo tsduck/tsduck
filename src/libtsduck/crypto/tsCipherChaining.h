@@ -148,4 +148,27 @@ namespace ts {
     };
 }
 
-#include "tsCipherChainingTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template <class CIPHER>
+ts::CipherChainingTemplate<CIPHER>::CipherChainingTemplate(size_t iv_min_blocks, size_t iv_max_blocks, size_t work_blocks) :
+    CipherChaining(new CIPHER, iv_min_blocks, iv_max_blocks, work_blocks)
+{
+}
+
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
+
+template <class CIPHER>
+ts::CipherChainingTemplate<CIPHER>::~CipherChainingTemplate()
+{
+    if (algo != nullptr) {
+        delete algo;
+        algo = nullptr;
+    }
+}
+
+TS_POP_WARNING()

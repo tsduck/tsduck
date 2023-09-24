@@ -158,4 +158,98 @@ namespace ts {
     };
 }
 
-#include "tsSingleDataStatisticsTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::SingleDataStatistics() :
+    _count(0),
+    _min(0),
+    _max(0),
+    _var_k(0),
+    _var_ex(0),
+    _var_ex2(0)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Reset the statistics collection.
+//----------------------------------------------------------------------------
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::reset()
+{
+    _count = 0;
+    _min = 0;
+    _max = 0;
+    _var_k = 0;
+    _var_ex = 0;
+    _var_ex2 = 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Accumulate one more data sample.
+//----------------------------------------------------------------------------
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::feed(NUMBER value)
+{
+    if (_count == 0) {
+        _min = _max = value;
+        _var_k = SIGNED(value);
+        _var_ex = _var_ex2 = 0;
+    }
+    else {
+        _min = std::min(value, _min);
+        _max = std::max(value, _max);
+    }
+    const SIGNED diff = SIGNED(value) - _var_k;
+    _var_ex += diff;
+    _var_ex2 += diff * diff;
+    _count++;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the mean and variance.
+//----------------------------------------------------------------------------
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::mean() const
+{
+    return _count == 0 ? 0.0 : FLOAT(_var_k) + FLOAT(_var_ex) / FLOAT(_count);
+}
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::variance() const
+{
+    // See reference [1] in file header.
+    return _count < 2 ? 0.0 : (FLOAT(_var_ex2) - FLOAT(_var_ex * _var_ex) / FLOAT(_count)) / FLOAT(_count - 1);
+}
+
+
+//----------------------------------------------------------------------------
+// Get the mean and variance as strings.
+//----------------------------------------------------------------------------
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::meanString(size_t width, size_t precision) const
+{
+    return UString::Format(u"%*.*f", {width, precision, mean()});
+}
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::varianceString(size_t width, size_t precision) const
+{
+    return UString::Format(u"%*.*f", {width, precision, variance()});
+}
+
+template <typename NUMBER, typename DEFAULT_FLOAT>
+ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::standardDeviationString(size_t width, size_t precision) const
+{
+    return UString::Format(u"%*.*f", {width, precision, standardDeviation()});
+}

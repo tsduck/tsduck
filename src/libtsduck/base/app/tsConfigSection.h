@@ -265,4 +265,44 @@ TSDUCKDLL inline std::ostream& operator<<(std::ostream& strm, const ts::ConfigSe
     return config.save(strm);
 }
 
-#include "tsConfigSectionTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Get a value in an entry.
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+INT ts::ConfigSection::value(const UString& entry, size_t index, const INT& defvalue) const
+{
+    INT result = static_cast<INT>(0);
+    if (this->value(entry, index).toInteger(result, UString::DEFAULT_THOUSANDS_SEPARATOR)) {
+        return result;
+    }
+    else {
+        return defvalue;
+    }
+}
+
+// Set the value of an entry as a vector of integers
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::ConfigSection::set(const UString& entry, const std::vector<INT>& val)
+{
+    this->deleteEntry(entry);
+    this->append(entry, val);
+}
+
+// Append an integer value in an antry
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::ConfigSection::append(const UString& entry, const INT& val)
+{
+    this->append(entry, UString::Decimal(val, 0, true, UString()));
+}
+
+// Append a vector of integer values in an antry
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+void ts::ConfigSection::append(const UString& entry, const std::vector<INT>& val)
+{
+    for (size_t i = 0; i < val.size(); ++i) {
+        this->append(entry, val[i]);
+    }
+}

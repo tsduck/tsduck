@@ -35,6 +35,7 @@
 #pragma once
 #include "tsAbstractNumber.h"
 #include "tsIntegerUtils.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
@@ -301,4 +302,74 @@ inline bool operator>(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 < x1; 
 
 //! @endcond
 
-#include "tsFixedPointTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+constexpr size_t ts::FixedPoint<INT_T,PREC,N>::PRECISION;
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+constexpr INT_T ts::FixedPoint<INT_T,PREC,N>::FACTOR;
+#endif
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+const ts::FixedPoint<INT_T,PREC,N> ts::FixedPoint<INT_T,PREC,N>::MIN(std::numeric_limits<INT_T>::min(), true);
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+const ts::FixedPoint<INT_T,PREC,N> ts::FixedPoint<INT_T,PREC,N>::MAX(std::numeric_limits<INT_T>::max(), true);
+
+// Virtual numeric conversions.
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+int64_t ts::FixedPoint<INT_T,PREC,N>::toInt64() const
+{
+    return bounded_cast<int64_t>(_value / FACTOR);
+}
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+double ts::FixedPoint<INT_T,PREC,N>::toDouble() const
+{
+    return double(_value) / FACTOR;
+}
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+bool ts::FixedPoint<INT_T,PREC,N>::inRange(int64_t min, int64_t max) const
+{
+    const int64_t r = bounded_cast<int64_t>(_value / FACTOR);
+    return r >= min && r <= max;
+}
+
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+ts::UString ts::FixedPoint<INT_T,PREC,N>::description() const
+{
+    return UString::Format(u"%d-bit fixed-point value with up to %d decimals", {8 * sizeof(int_t), PRECISION});
+}
+
+// Convert the number to a string object.
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+ts::UString ts::FixedPoint<INT_T,PREC,N>::toString(size_t min_width,
+                                                   bool right_justified,
+                                                   UChar separator,
+                                                   bool force_sign,
+                                                   size_t decimals,
+                                                   bool force_decimals,
+                                                   UChar decimal_dot,
+                                                   UChar pad) const
+{
+    UString str(UString::Decimal(_value / FACTOR, 0, true, UString()));
+    str.append(u'.');
+    str.append(UString::Decimal(std::abs(_value % FACTOR), PRECISION, true, UString(), false, u'0'));
+    Format(str, min_width, right_justified, separator, force_sign && !is_negative(_value), decimals == NPOS ? PRECISION : decimals, force_decimals, decimal_dot, pad);
+    return str;
+}
+
+// Parse a string and interpret it as a number.
+template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
+bool ts::FixedPoint<INT_T,PREC,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
+{
+    UString s(str);
+    Deformat(s, separator, decimal_dot);
+    return s.toInteger(_value, UString(1, separator), PRECISION, UString(1, decimal_dot));
+}

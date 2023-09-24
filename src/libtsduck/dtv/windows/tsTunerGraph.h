@@ -38,6 +38,7 @@
 #include "tsModulationArgs.h"
 #include "tsSinkFilter.h"
 #include "tsVariable.h"
+#include "tsNullReport.h"
 
 namespace ts {
     //!
@@ -324,4 +325,127 @@ namespace ts {
     };
 }
 
-#include "tsTunerGraphTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Locate all known interfaces in a pin or node of the tuner filter.
+template <class COMCLASS>
+void ts::TunerGraph::findTunerSubinterfaces(ComPtr<COMCLASS>& obj)
+{
+    findTunerSubinterface(obj, IID_IBDA_DigitalDemodulator,  _demods);
+    findTunerSubinterface(obj, IID_IBDA_DigitalDemodulator2, _demods2);
+    findTunerSubinterface(obj, IID_IBDA_SignalStatistics,    _sigstats);
+    findTunerSubinterface(obj, IID_IKsPropertySet,           _tunprops);
+}
+
+// Locate one interface in a pin or node of the tuner filter.
+template <class COMCLASS, class IFACE>
+void ts::TunerGraph::findTunerSubinterface(ComPtr<COMCLASS>& obj, const IID& interface_id, std::vector<ComPtr<IFACE>>& ivector)
+{
+    ComPtr<IFACE> iobj;
+    iobj.queryInterface(obj.pointer(), interface_id, NULLREP);
+    if (!iobj.isNull()) {
+        ivector.push_back(iobj);
+    }
+}
+
+// Repeatedly called when searching for a propery.
+template <typename T>
+void ts::TunerGraph::SelectProperty(bool& terminated, bool& found, T& retvalue, T val, PropSearch searchtype)
+{
+    switch (searchtype) {
+        case psFIRST:
+            retvalue = val;
+            terminated = true;
+            break;
+        case psLAST:
+            retvalue = val;
+            break;
+        case psHIGHEST:
+            if (!found || val > retvalue) {
+                retvalue = val;
+            }
+            break;
+        case psLOWEST:
+            if (!found || val < retvalue) {
+                retvalue = val;
+            }
+            break;
+    }
+    found = true;
+}
+
+// Search all IKsPropertySet in the tuner until the specified data is found.
+template <typename VALTYPE>
+bool ts::TunerGraph::searchTunerProperty(VALTYPE& retvalue, PropSearch searchtype, const ::GUID& propset, int propid)
+{
+    bool found = false;
+    bool terminated = false;
+
+    // Loop on all property set interfaces in the tuner filter.
+    for (size_t i = 0; !terminated && i < _tunprops.size(); ++i) {
+        VALTYPE val = VALTYPE(0);
+        ::DWORD retsize = sizeof(val);
+        if (SUCCEEDED(_tunprops[i]->Get(propset, propid, NULL, 0, &val, retsize, &retsize))) {
+            SelectProperty(terminated, found, retvalue, val, searchtype);
+        }
+    }
+    return found;
+}
+
+// Search a property, until found, in "ivector" and then _tunprops.
+template <typename VALTYPE, typename IVALTYPE, class FILTER>
+bool ts::TunerGraph::searchPropertyImpl(VALTYPE& retvalue,
+                                        PropSearch searchtype,
+                                        const std::vector<ComPtr<FILTER>>& ivector,
+                                        ::HRESULT (__stdcall FILTER::*getmethod)(IVALTYPE*),
+                                        const ::GUID& propset,
+                                        int propid)
+{
+    bool found = false;
+    bool terminated = false;
+
+    // First step, lookup all interfaces of a given type.
+    for (size_t i = 0; !terminated && i < ivector.size(); ++i) {
+        IVALTYPE val;
+        FILTER* filter = ivector[i].pointer();
+        if (SUCCEEDED((filter->*getmethod)(&val))) {
+            SelectProperty<VALTYPE>(terminated, found, retvalue, val, searchtype);
+        }
+    }
+
+    // Second step, lookup tuner properties.
+    for (size_t i = 0; !terminated && i < _tunprops.size(); ++i) {
+        VALTYPE val;
+        ::DWORD retsize = sizeof(val);
+        if (SUCCEEDED(_tunprops[i]->Get(propset, propid, NULL, 0, &val, retsize, &retsize))) {
+            SelectProperty<VALTYPE>(terminated, found, retvalue, val, searchtype);
+        }
+    }
+
+    return found;
+}
+
+// Same one with additional handling of unknown return value.
+template <typename VALTYPE, typename ARGTYPE, typename IVALTYPE, class FILTER>
+bool ts::TunerGraph::searchVarPropertyImpl(VALTYPE unset,
+                                           Variable<ARGTYPE>& parameter,
+                                           PropSearch searchtype,
+                                           bool reset_unknown,
+                                           const std::vector<ComPtr<FILTER>>& ivector,
+                                           ::HRESULT (__stdcall FILTER::*getmethod)(IVALTYPE*),
+                                           const ::GUID& propset,
+                                           int propid)
+{
+    VALTYPE retvalue = unset;
+    bool found = searchPropertyImpl(retvalue, searchtype, ivector, getmethod, propset, propid);
+    if (found && retvalue != unset) {
+        parameter = ARGTYPE(retvalue);
+    }
+    else if (reset_unknown) {
+        parameter.clear();
+    }
+    return found;
+}
