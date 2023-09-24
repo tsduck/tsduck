@@ -80,9 +80,9 @@ namespace ts {
     {
     private:
 #if defined(TS_COM_INSTRUMENTATION)
-        mutable bool _traceCreator;  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
+        mutable bool _traceCreator {false};  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
 #endif
-        COMCLASS* _ptr;  // Encapsulated pointer to COM object.
+        COMCLASS* _ptr {nullptr};  // Encapsulated pointer to COM object.
 
     public:
         //!
@@ -312,31 +312,18 @@ namespace ts {
 
 
 //-----------------------------------------------------------------------------
-// Default constructor.
+// Constructors and destructor.
 //-----------------------------------------------------------------------------
 
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(COMCLASS* p, ::HRESULT hr) :
-
-#if defined(TS_COM_INSTRUMENTATION)
-    _traceCreator(false),
-#endif
     _ptr(SUCCEEDED(hr) ? p : nullptr)
 {
     TRACE_CONSTRUCT();
 }
 
-
-//-----------------------------------------------------------------------------
-// Copy constructor.
-//-----------------------------------------------------------------------------
-
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(const ComPtr<COMCLASS>& p) :
-
-#if defined(TS_COM_INSTRUMENTATION)
-    _traceCreator(false),
-#endif
     _ptr(p.pointer())
 {
     if (_ptr != nullptr) {
@@ -345,59 +332,25 @@ ts::ComPtr<COMCLASS>::ComPtr(const ComPtr<COMCLASS>& p) :
     }
 }
 
-
-//-----------------------------------------------------------------------------
-// Move constructor.
-//-----------------------------------------------------------------------------
-
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::ComPtr(ComPtr<COMCLASS>&& p) :
-
-#if defined(TS_COM_INSTRUMENTATION)
-    _traceCreator(false),
-#endif
     _ptr(p.pointer())
 {
     p._ptr = nullptr;
     TRACE_CONSTRUCT();
 }
 
-
-//-----------------------------------------------------------------------------
-// Constructor using CoCreateInstance().
-//-----------------------------------------------------------------------------
-
 template <class COMCLASS>
-ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, Report& report) :
-
-#if defined(TS_COM_INSTRUMENTATION)
-    _traceCreator(false),
-#endif
-    _ptr(nullptr)
+ts::ComPtr<COMCLASS>::ComPtr(const ::IID& class_id, const ::IID& interface_id, Report& report)
 {
     createInstance(class_id, interface_id, report);
 }
 
-
-//-----------------------------------------------------------------------------
-// Constructor using IUnknown::QueryInterface().
-//-----------------------------------------------------------------------------
-
 template <class COMCLASS>
-ts::ComPtr<COMCLASS>::ComPtr(::IUnknown* obj, const IID& interface_id, Report& report) :
-
-#if defined(TS_COM_INSTRUMENTATION)
-    _traceCreator(false),
-#endif
-    _ptr(nullptr)
+ts::ComPtr<COMCLASS>::ComPtr(::IUnknown* obj, const IID& interface_id, Report& report)
 {
     queryInterface(obj, interface_id, report);
 }
-
-
-//-----------------------------------------------------------------------------
-// Destructor.
-//-----------------------------------------------------------------------------
 
 template <class COMCLASS>
 ts::ComPtr<COMCLASS>::~ComPtr()
