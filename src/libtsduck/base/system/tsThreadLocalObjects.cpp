@@ -37,15 +37,10 @@ TS_DEFINE_SINGLETON(ts::ThreadLocalObjects);
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::ThreadLocalObjects::ThreadLocalObjects() :
-#if defined(TS_WINDOWS)
-    _tls_index(::TlsAlloc())
-#else
-    _key(0)
-#endif
+ts::ThreadLocalObjects::ThreadLocalObjects()
 {
 #if defined(TS_WINDOWS)
-    if (_tls_index == TLS_OUT_OF_INDEXES) {
+    if ((_tls_index = ::TlsAlloc()) == TLS_OUT_OF_INDEXES) {
         const char err[] = "ThreadLocalObjects: TlsAlloc fatal error";
         FatalError(err, sizeof(err)-1);
     }
@@ -55,11 +50,6 @@ ts::ThreadLocalObjects::ThreadLocalObjects() :
         FatalError(err, sizeof(err)-1);
     }
 #endif
-}
-
-ts::ThreadLocalObjects::ThreadLocalRepository::ThreadLocalRepository() :
-    objects()
-{
 }
 
 

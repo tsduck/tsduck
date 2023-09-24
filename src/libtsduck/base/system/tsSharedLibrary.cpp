@@ -43,15 +43,7 @@
 
 ts::SharedLibrary::SharedLibrary(const UString& filename, SharedLibraryFlags flags, Report& report) :
     _report(report),
-    _filename(),
-    _error(),
-    _is_loaded(false),
-    _flags(flags),
-#if defined(TS_WINDOWS)
-    _module(0)
-#else
-    _dl(nullptr)
-#endif
+    _flags(flags)
 {
     if (!filename.empty()) {
         load(filename);

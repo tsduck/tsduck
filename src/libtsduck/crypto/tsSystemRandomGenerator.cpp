@@ -34,16 +34,12 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::SystemRandomGenerator::SystemRandomGenerator() :
-#if defined(TS_WINDOWS)
-    _prov(0)
-#else
-    _fd(-1)
-#endif
+ts::SystemRandomGenerator::SystemRandomGenerator()
 {
 #if defined(TS_WINDOWS)
     if (!::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET) &&
-        !::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET | CRYPT_NEWKEYSET)) {
+        !::CryptAcquireContext(&_prov, NULL, MS_DEF_PROV, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET | CRYPT_NEWKEYSET))
+    {
         _prov = 0;
     }
 #else

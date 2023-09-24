@@ -56,23 +56,12 @@ ts::Thread::Thread() :
 }
 
 ts::Thread::Thread(const ThreadAttributes& attributes) :
-    _attributes(attributes),
-    _mutex(),
-    _typename(),
-    _started(false),
-    _waiting(false),
-#if defined(TS_WINDOWS)
-    _handle(INVALID_HANDLE_VALUE),
-    _thread_id(0)
-#else
-#if defined(GPROF)
-    // When using gprof, get the initial profiling timer.
-    _itimer(),
-    _itimer_valid(::getitimer(ITIMER_PROF, &_itimer) == 0),
-#endif
-    _pthread()
-#endif
+    _attributes(attributes)
 {
+#if !defined(TS_WINDOWS) &&  defined(GPROF)
+    // When using gprof, get the initial profiling timer.
+    _itimer_valid = ::getitimer(ITIMER_PROF, &_itimer) == 0;
+#endif
 }
 
 ts::Thread::~Thread()

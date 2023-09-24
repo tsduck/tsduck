@@ -84,9 +84,7 @@ const uint64_t ts::SHA512::K[80] = {
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SHA512::SHA512() :
-    _length(0),
-    _curlen(0)
+ts::SHA512::SHA512()
 {
     // Check once if SHA-512 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.

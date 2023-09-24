@@ -96,8 +96,8 @@ namespace ts {
         bool write(const UString& text, Report& report);
 
     private:
-        bool       _hasTerminal;
-        OutputMode _outputMode;
-        UString    _pagerCommand;
+        bool       _hasTerminal {false};
+        OutputMode _outputMode {KEEP_BOTH};
+        UString    _pagerCommand {};
     };
 }

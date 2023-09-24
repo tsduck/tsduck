@@ -114,11 +114,11 @@ namespace ts {
 
     private:
         // Private members
-        bool _created;
+        bool _created = false;
 #if defined(TS_WINDOWS)
-        ::HANDLE _handle;
+        ::HANDLE _handle = INVALID_HANDLE_VALUE;
 #else
-        ::pthread_mutex_t _mutex;
+        ::pthread_mutex_t _mutex = PTHREAD_MUTEX_INITIALIZER;
         friend class Condition;
 
         //!

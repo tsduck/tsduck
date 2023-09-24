@@ -70,7 +70,7 @@ namespace ts {
 
     private:
         std::ostream&   _stream;
-        std::streambuf* _previous;
-        std::ofstream   _file;
+        std::streambuf* _previous {nullptr};
+        std::ofstream   _file {};
     };
 }

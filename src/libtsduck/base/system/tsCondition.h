@@ -38,7 +38,6 @@
 #include "tsMutex.h"
 
 namespace ts {
-
     //!
     //! Implementation of the @e synchronization @e condition design pattern.
     //! @ingroup thread
@@ -127,11 +126,11 @@ namespace ts {
         }
 
     private:
-        bool _created;
+        bool _created = false;
 #if defined(TS_WINDOWS)
-        ::HANDLE _handle; // Event handle
+        ::HANDLE _handle = INVALID_HANDLE_VALUE; // Event handle
 #else
-        ::pthread_cond_t _cond;
+        ::pthread_cond_t _cond = PTHREAD_COND_INITIALIZER;
 #endif
     };
 }

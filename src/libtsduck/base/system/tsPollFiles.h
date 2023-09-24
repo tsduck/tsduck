@@ -114,13 +114,13 @@ namespace ts {
         bool pollOnce();
 
     private:
-        UString            _files_wildcard;
         Report&            _report;
-        MilliSecond        _poll_interval;
-        MilliSecond        _min_stable_delay;
-        PollFilesListener* _listener;
-        PolledFileList     _polled_files;   // Updated at each poll, sorted by file name
-        PolledFileList     _notified_files; // Modifications to notify
+        UString            _files_wildcard {};
+        MilliSecond        _poll_interval {DEFAULT_POLL_INTERVAL};
+        MilliSecond        _min_stable_delay {DEFAULT_MIN_STABLE_DELAY};
+        PollFilesListener* _listener {nullptr};
+        PolledFileList     _polled_files {};   // Updated at each poll, sorted by file name
+        PolledFileList     _notified_files {}; // Modifications to notify
 
         // Mark a file as deleted, move from polled to notified files.
         void deleteFile(PolledFileList::iterator&);

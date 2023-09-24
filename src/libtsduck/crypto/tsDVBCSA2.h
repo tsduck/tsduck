@@ -146,10 +146,10 @@ namespace ts {
         };
 
         // DVB-CSA scrambling data
-        bool         _init;
-        EntropyMode  _mode;
-        uint8_t      _key[KEY_SIZE];
-        BlockCipher  _block;
-        StreamCipher _stream;
+        bool         _init {false};
+        EntropyMode  _mode {REDUCE_ENTROPY};
+        uint8_t      _key[KEY_SIZE] {};
+        BlockCipher  _block {};
+        StreamCipher _stream {};
     };
 }

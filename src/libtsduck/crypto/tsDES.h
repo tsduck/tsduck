@@ -44,7 +44,7 @@ namespace ts {
     {
         TS_NOCOPY(DES);
     public:
-        DES();                                   //!< Constructor.
+        DES() = default;                         //!< Constructor.
         static constexpr size_t BLOCK_SIZE = 8;  //!< DES block size in bytes.
         static constexpr size_t KEY_SIZE = 8;    //!< DES key size in bytes.
         static constexpr size_t ROUNDS = 16;     //!< DES number of rounds.
@@ -66,8 +66,8 @@ namespace ts {
         virtual bool decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length) override;
 
     private:
-        uint32_t _ek[32];  // Encryption keys
-        uint32_t _dk[32];  // Decryption keys
+        uint32_t _ek[32] {};  // Encryption keys
+        uint32_t _dk[32] {};  // Decryption keys
 
         // Computation static methods, shared with TDES
         friend class TDES;

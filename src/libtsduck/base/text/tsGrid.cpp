@@ -35,21 +35,7 @@
 //----------------------------------------------------------------------------
 
 ts::Grid::Grid(std::ostream& output) :
-    _out(output),
-    _lineWidth(0),
-    _marginWidth(0),
-    _contentWidth(0),
-    _lineCount(0),
-    _tableOpen(false),
-    _border(u'|'),
-    _tableTop(),
-    _tableBottom(),
-    _sectionLine(),
-    _subSectionLine(),
-    _leftMargin(),
-    _rightMargin(),
-    _requestedLayout(),
-    _layout()
+    _out(output)
 {
     setLineWidth(DEFAULT_LINE_WIDTH, DEFAULT_MARGIN_WIDTH);
 }

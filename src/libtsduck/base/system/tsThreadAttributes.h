@@ -262,10 +262,10 @@ namespace ts {
         }
 
     private:
-        size_t  _stackSize;
-        bool    _deleteWhenTerminated;
-        int     _priority;
-        UString _name;
+        size_t  _stackSize {0};
+        bool    _deleteWhenTerminated {false};
+        int     _priority {0};
+        UString _name {};
 
         //
         // These fields describe the operating system priority range.

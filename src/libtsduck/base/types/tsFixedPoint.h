@@ -55,7 +55,7 @@ namespace ts {
     class FixedPoint: public AbstractNumber
     {
     private:
-        INT_T _value;
+        INT_T _value = 0;
 
     public:
         //!
@@ -86,7 +86,7 @@ namespace ts {
         //!
         //! Default constructor, implicitly initialized to zero.
         //!
-        FixedPoint() : _value(0) {}
+        FixedPoint() = default;
 
         //!
         //! Constructor.

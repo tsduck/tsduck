@@ -36,8 +36,7 @@
 
 ts::GuardCondition::GuardCondition(Mutex& mutex, Condition& condition, MilliSecond timeout) :
     _mutex(mutex),
-    _condition(condition),
-    _is_locked(false)
+    _condition(condition)
 {
     _is_locked = mutex.acquire(timeout);
 

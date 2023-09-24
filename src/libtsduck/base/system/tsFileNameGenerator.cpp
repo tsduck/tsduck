@@ -32,22 +32,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor / destructor
-//----------------------------------------------------------------------------
-
-ts::FileNameGenerator::FileNameGenerator() :
-    _name_prefix(),
-    _name_suffix(),
-    _counter_mode(true),
-    _counter_value(0),
-    _counter_width(6),
-    _time_fields(Time::DATETIME),
-    _last_time()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Get the number of trailing digits in a string.
 //----------------------------------------------------------------------------
 

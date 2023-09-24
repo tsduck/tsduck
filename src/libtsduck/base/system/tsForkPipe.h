@@ -195,22 +195,22 @@ namespace ts {
         virtual bool writeStreamBuffer(const void* addr, size_t size) override;
 
     private:
-        InputMode     _in_mode;       // Input mode for the created process.
-        OutputMode    _out_mode;      // Output mode for the created process.
-        volatile bool _is_open;       // Open and running.
-        WaitMode      _wait_mode;     // How to wait for child process termination in close().
-        bool          _in_pipe;       // The process uses an input pipe.
-        bool          _out_pipe;      // The process uses an output pipe.
-        bool          _use_pipe;      // The process uses a pipe, somehow.
-        bool          _ignore_abort;  // Ignore early termination of child process.
-        volatile bool _broken_pipe;   // Pipe is broken, do not attempt to write.
-        volatile bool _eof;           // Got end of file on input pipe.
+        InputMode     _in_mode {STDIN_PIPE};     // Input mode for the created process.
+        OutputMode    _out_mode {KEEP_BOTH};     // Output mode for the created process.
+        volatile bool _is_open {false};          // Open and running.
+        WaitMode      _wait_mode {ASYNCHRONOUS}; // How to wait for child process termination in close().
+        bool          _in_pipe {false};          // The process uses an input pipe.
+        bool          _out_pipe {false};         // The process uses an output pipe.
+        bool          _use_pipe {false};         // The process uses a pipe, somehow.
+        bool          _ignore_abort {false};     // Ignore early termination of child process.
+        volatile bool _broken_pipe {false};      // Pipe is broken, do not attempt to write.
+        volatile bool _eof {false};              // Got end of file on input pipe.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle;        // Pipe output handle.
-        ::HANDLE      _process;       // Handle to child process.
+        ::HANDLE      _handle {INVALID_HANDLE_VALUE};  // Pipe output handle.
+        ::HANDLE      _process {INVALID_HANDLE_VALUE}; // Handle to child process.
 #else
-        ::pid_t       _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
-        int           _fd;            // Pipe output file descriptor.
+        ::pid_t       _fpid {0};                 // Forked process id (UNIX PID, not MPEG PID!)
+        int           _fd {-1};                  // Pipe output file descriptor.
 #endif
     };
 }

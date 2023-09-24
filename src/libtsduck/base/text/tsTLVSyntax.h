@@ -86,28 +86,19 @@ namespace ts {
         //!
         //! Update the TLV syntax to automatically locate the TLV area.
         //!
-        void setAutoLocation()
-        {
-            _start = _size = -1;
-        }
+        void setAutoLocation() { _start = _size = -1; }
 
         //!
         //! Get the size in bytes of the Tag field.
         //! @return The size in bytes of the Tag field.
         //!
-        size_t getTagSize() const
-        {
-            return _tagSize;
-        }
+        size_t getTagSize() const { return _tagSize; }
 
         //!
         //! Get the size in bytes of the Length field.
         //! @return The size in bytes of the Length field.
         //!
-        size_t getLengthSize() const
-        {
-            return _lengthSize;
-        }
+        size_t getLengthSize() const { return _lengthSize; }
 
         //!
         //! Set the values of a TLVSyntax object from a string representation.
@@ -148,17 +139,14 @@ namespace ts {
         //! @param [in] other Other instance to compare.
         //! @return True if this object logically preceeds @a other.
         //!
-        bool operator<(const TLVSyntax& other) const
-        {
-            return _start < other._start;
-        }
+        bool operator<(const TLVSyntax& other) const { return _start < other._start; }
 
     private:
-        int    _start;
-        int    _size;
-        size_t _tagSize;
-        size_t _lengthSize;
-        bool   _msb;
+        int    _start {0};
+        int    _size {0};
+        size_t _tagSize {1};
+        size_t _lengthSize {1};
+        bool   _msb {true};
 
         // Compute the size of the longest TLV area starting at tlvStart.
         size_t longestTLV(const uint8_t* data, size_t dataSize, size_t tlvStart) const;

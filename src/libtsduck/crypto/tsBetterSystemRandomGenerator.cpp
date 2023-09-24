@@ -29,7 +29,6 @@
 
 #include "tsBetterSystemRandomGenerator.h"
 #include "tsSingletonManager.h"
-#include "tsNullReport.h"
 #include "tsFileUtils.h"
 #include "tsGuardMutex.h"
 
@@ -49,15 +48,8 @@ namespace {
 //----------------------------------------------------------------------------
 
 ts::BetterSystemRandomGenerator::BetterSystemRandomGenerator() :
-    SystemRandomGenerator(),
-    _report(nullptr),
-    _mutex(),
-    _ready(true),
     _state_file(UserHomeDirectory() + PathSeparator + u".tsseed"),
-    _aes(),
-    _sha(),
     _index(AES::BLOCK_SIZE), // at end of block, will need update
-    _state(),
     _pool(AES::BLOCK_SIZE)
 {
     // Read the previous content of the seed file.

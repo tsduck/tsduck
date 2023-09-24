@@ -1451,14 +1451,14 @@ namespace ts {
 
         // Read/write state in the buffer.
         struct State {
-            Reason reason;     // Reason for the creation of this state.
-            bool   read_only;  // The buffer is in read-only mode.
-            size_t end;        // Size of usable area in buffer.
-            size_t rbyte;      // Next byte to read, offset from beginning of buffer.
-            size_t wbyte;      // Next byte to write, offset from beginning of buffer.
-            size_t rbit;       // Next bit to read at offset rbyte (0 = MSB in big endian, LSB in little endian).
-            size_t wbit;       // Next bit to write at offset wbyte (0 = MSB in big endian, LSB in little endian).
-            size_t len_bits;   // Size in bits of the length field (when reason is WRITE_LEN_SEQ).
+            Reason reason {Reason::FULL}; // Reason for the creation of this state.
+            bool   read_only;             // The buffer is in read-only mode.
+            size_t end;                   // Size of usable area in buffer.
+            size_t rbyte {0};             // Next byte to read, offset from beginning of buffer.
+            size_t wbyte {0};             // Next byte to write, offset from beginning of buffer.
+            size_t rbit {0};              // Next bit to read at offset rbyte (0 = MSB in big endian, LSB in little endian).
+            size_t wbit {0};              // Next bit to write at offset wbyte (0 = MSB in big endian, LSB in little endian).
+            size_t len_bits {0};          // Size in bits of the length field (when reason is WRITE_LEN_SEQ).
 
             // Constructor.
             State(bool rdonly = true, size_t size = 0);
@@ -1467,17 +1467,17 @@ namespace ts {
             void clear();
         };
 
-        uint8_t*            _buffer;        // Base address of memory buffer.
-        size_t              _buffer_size;   // Size of addressable area in _buffer.
-        bool                _allocated;     // If true, _buffer was internally allocated and must be freed later.
-        bool                _big_endian;    // Read/write integers in big endian mode (false means little endian).
-        bool                _read_error;    // Read error encountered (passed end of stream for instance).
-        bool                _write_error;   // Write error encountered (passed end of stream for instance).
-        bool                _user_error;    // User-generated error.
-        State               _state;         // Read/write indexes.
-        std::vector<State>  _saved_states;  // Stack of saved states.
-        uint8_t             _realigned[8];  // 64-bit intermediate buffer to read realigned integer.
-        std::vector<size_t> _reserved_bits_errors;  // Errors in reserved bits (byte offset || bit offset (3 bits) || expected bit (1 bit)).
+        uint8_t*            _buffer;              // Base address of memory buffer.
+        size_t              _buffer_size;         // Size of addressable area in _buffer.
+        bool                _allocated;           // If true, _buffer was internally allocated and must be freed later.
+        bool                _big_endian {true};   // Read/write integers in big endian mode (false means little endian).
+        bool                _read_error {false};  // Read error encountered (passed end of stream for instance).
+        bool                _write_error {false}; // Write error encountered (passed end of stream for instance).
+        bool                _user_error {false};  // User-generated error.
+        State               _state;               // Read/write indexes.
+        std::vector<State>  _saved_states {};     // Stack of saved states.
+        uint8_t             _realigned[8] {};     // 64-bit intermediate buffer to read realigned integer.
+        std::vector<size_t> _reserved_bits_errors {};  // Errors in reserved bits (byte offset || bit offset (3 bits) || expected bit (1 bit)).
     };
 
     //! @cond nodoxygen

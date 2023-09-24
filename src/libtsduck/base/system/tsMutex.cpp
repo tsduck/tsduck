@@ -52,13 +52,7 @@ TS_LLVM_NOWARNING(thread-safety-negative)
 TS_PUSH_WARNING()
 TS_GCC_NOWARNING(zero-as-null-pointer-constant)
 
-ts::Mutex::Mutex() :
-    _created(false),
-#if defined(TS_WINDOWS)
-    _handle(INVALID_HANDLE_VALUE)
-#else
-    _mutex(PTHREAD_MUTEX_INITIALIZER)
-#endif
+ts::Mutex::Mutex()
 {
     TS_POP_WARNING()
 

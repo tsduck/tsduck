@@ -91,8 +91,8 @@ namespace ts {
         class ThreadLocalRepository
         {
         public:
-            ThreadLocalRepository();
-            std::map<UString, ObjectPtr> objects;
+            ThreadLocalRepository() = default;
+            std::map<UString, ObjectPtr> objects {};
         };
 
         // Get or create the ThreadLocalRepository of the current thread. Never null.
@@ -100,9 +100,9 @@ namespace ts {
 
         // The thread local storage index/key pointing to the ThreadLocalRepository instance of the thread.
 #if defined(TS_WINDOWS)
-        ::DWORD _tls_index;
+        ::DWORD _tls_index {TLS_OUT_OF_INDEXES};
 #else
-        pthread_key_t _key;
+        pthread_key_t _key {0};
         static void DeleteThreadLocalRepository(void*);
 #endif
     };

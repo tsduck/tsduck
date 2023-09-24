@@ -36,13 +36,11 @@
 //----------------------------------------------------------------------------
 
 ts::ConsoleState::ConsoleState(Report& report)
-#if defined(TS_WINDOWS)
-  : _input_cp(::GetConsoleCP()),
-    _output_cp(::GetConsoleOutputCP())
-#endif
 {
 #if defined(TS_WINDOWS)
-    report.debug(u"previous code pages: input: %d, output: %d", {::GetConsoleCP(), ::GetConsoleOutputCP()});
+    _input_cp = ::GetConsoleCP();
+    _output_cp = ::GetConsoleOutputCP();
+    report.debug(u"previous code pages: input: %d, output: %d", {_input_cp, _output_cp});
 
     // Set Windows console input and output to UTF-8.
     if (::SetConsoleCP(CP_UTF8) == 0) {

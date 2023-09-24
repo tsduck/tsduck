@@ -55,78 +55,40 @@ TS_DEFINE_SINGLETON(ts::SysInfo);
 ts::SysInfo::SysInfo() :
 #if defined(TS_LINUX)
     _isLinux(true),
-#else
-    _isLinux(false),
 #endif
-    _isFedora(false),
-    _isRedHat(false),
-    _isUbuntu(false),
-    _isDebian(false),
-    _isRaspbian(false),
 #if defined(TS_MAC)
     _isMacOS(true),
-#else
-    _isMacOS(false),
 #endif
 #if defined(TS_BSD)
     _isBSD(true),
-#else
-    _isBSD(false),
 #endif
 #if defined(TS_FREEBSD)
     _isFreeBSD(true),
-#else
-    _isFreeBSD(false),
 #endif
 #if defined(TS_NETBSD)
     _isNetBSD(true),
-#else
-    _isNetBSD(false),
 #endif
 #if defined(TS_OPENBSD)
     _isOpenBSD(true),
-#else
-    _isOpenBSD(false),
 #endif
 #if defined(TS_DRAGONFLYBSD)
     _isDragonFlyBSD(true),
-#else
-    _isDragonFlyBSD(false),
 #endif
 #if defined(TS_WINDOWS)
     _isWindows(true),
-#else
-    _isWindows(false),
 #endif
 #if defined(TS_I386)
     _isIntel32(true),
-#else
-    _isIntel32(false),
 #endif
 #if defined(TS_X86_64)
     _isIntel64(true),
-#else
-    _isIntel64(false),
 #endif
 #if defined(TS_ARM32)
     _isArm32(true),
-#else
-    _isArm32(false),
 #endif
 #if defined(TS_ARM64)
     _isArm64(true),
-#else
-    _isArm64(false),
 #endif
-    _crcInstructions(false),
-    _aesInstructions(false),
-    _sha1Instructions(false),
-    _sha256Instructions(false),
-    _sha512Instructions(false),
-    _systemMajorVersion(-1),
-    _systemVersion(),
-    _systemName(),
-    _hostName(),
 #if defined(TS_I386)
     _cpuName(u"Intel x86"),
 #elif defined(TS_X86_64)

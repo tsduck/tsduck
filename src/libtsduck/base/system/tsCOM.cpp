@@ -46,8 +46,7 @@
 #endif
 
 // Constructor, initialize COM.
-ts::COM::COM(Report& report) :
-    _is_init(false)
+ts::COM::COM(Report& report)
 {
 #if defined(TS_WINDOWS)
     _is_init = ComSuccess(::CoInitializeEx(NULL, ::COINIT_MULTITHREADED), u"COM initialization", report);

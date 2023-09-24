@@ -37,17 +37,7 @@
 ts::TextFormatter::TextFormatter(Report& report) :
     AbstractOutputStream(),
     _report(report),
-    _outFile(),
-    _outString(),
-    _out(&_outFile), // _out is never null, points by default to a closed file (discard output)
-    _margin(0),
-    _indent(2),
-    _eolMode(EndOfLineMode::NATIVE),
-    _formatting(true),
-    _curMargin(_margin),
-    _tabSize(8),
-    _column(0),
-    _afterSpace(false)
+    _out(&_outFile)  // _out is never null, points by default to a closed file (discard output)
 {
 }
 

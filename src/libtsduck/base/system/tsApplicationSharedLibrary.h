@@ -106,6 +106,6 @@ namespace ts {
         static void GetPluginList(UStringVector& files, const UString& prefix, const UString& library_path = UString());
 
     private:
-        UString _prefix;
+        UString _prefix {};
     };
 }

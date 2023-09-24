@@ -95,14 +95,14 @@ namespace ts {
         size_t count() const { return _elem_count; }
 
     private:
-        char*        _allocated_base;   // First allocated address
-        char*        _locked_base;      // First locked address (mlock, page boundary)
-        T*           _base;             // Same as _locked_base with type T*
-        size_t       _allocated_size;   // Allocated size (ts_malloc)
-        size_t       _locked_size;      // Locked size (mlock, multiple of page size)
-        size_t       _elem_count;       // Element count in locked region
-        bool         _is_locked;        // False if mlock failed.
-        SysErrorCode _error_code;       // Lock error code
+        char*        _allocated_base {nullptr};  // First allocated address
+        char*        _locked_base {nullptr};     // First locked address (mlock, page boundary)
+        T*           _base {nullptr};            // Same as _locked_base with type T*
+        size_t       _allocated_size {0};        // Allocated size (ts_malloc)
+        size_t       _locked_size {0};           // Locked size (mlock, multiple of page size)
+        size_t       _elem_count {0};            // Element count in locked region
+        bool         _is_locked {false};         // False if mlock failed.
+        SysErrorCode _error_code {SYS_SUCCESS};  // Lock error code
     };
 }
 
@@ -114,20 +114,12 @@ namespace ts {
 // Constructor, based on required amount of T elements.
 template <typename T>
 ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
-    _allocated_base(nullptr),
-    _locked_base(nullptr),
-    _base(nullptr),
-    _allocated_size(0),
-    _locked_size(0),
-    _elem_count(elem_count),
-    _is_locked(false),
-    _error_code(SYS_SUCCESS)
+    _elem_count(elem_count)
 {
     const size_t requested_size = elem_count * sizeof(T);
     const size_t page_size = SysInfo::Instance()->memoryPageSize();
 
     // Allocate enough space to include memory pages around the requested size
-
     _allocated_size = requested_size + 2 * page_size;
     _allocated_base = new char[_allocated_size];
 
@@ -135,15 +127,12 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     // Its size is the next multiple of page size after requested_size:
     // Be sure to use size_t (unsigned) instead of ptrdiff_t (signed)
     // to perform arithmetics on pointers because we use modulo operations.
-
     assert(sizeof(size_t) == sizeof(char_ptr));
     _locked_base = char_ptr(round_up(size_t(_allocated_base), page_size));
     _locked_size = round_up(requested_size, page_size);
-
     _base = new (_locked_base) T[elem_count];
 
     // Integrity checks
-
     assert(_allocated_base <= _locked_base);
     assert(_locked_base < _allocated_base + page_size);
     assert(_locked_base + _locked_size <= _allocated_base + _allocated_size);

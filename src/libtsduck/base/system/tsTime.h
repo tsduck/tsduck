@@ -70,7 +70,7 @@ namespace ts {
         //! Default constructor.
         //! The initial value is the Epoch.
         //!
-        Time() : _value(0) {}
+        Time() = default;
 
         //!
         //! Constructor from broken-down date fields.
@@ -765,7 +765,7 @@ namespace ts {
 
     private:
         // A time is a 64-bit value. The resolution depends on the operating system.
-        int64_t _value;
+        int64_t _value {0};
 
         // Private constructor from a 64-bit value
         Time(const int64_t& value) : _value(value) {}

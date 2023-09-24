@@ -71,14 +71,8 @@ bool ts::Buffer::isValid() const
 //----------------------------------------------------------------------------
 
 ts::Buffer::State::State(bool rdonly, size_t size) :
-    reason(Reason::FULL),
     read_only(rdonly),
-    end(size),
-    rbyte(0),
-    wbyte(0),
-    rbit(0),
-    wbit(0),
-    len_bits(0)
+    end(size)
 {
 }
 
@@ -97,14 +91,7 @@ ts::Buffer::Buffer(size_t size) :
     _buffer(nullptr), // adjusted later
     _buffer_size(std::max(MINIMUM_SIZE, size)),
     _allocated(true),
-    _big_endian(true),
-    _read_error(false),
-    _write_error(false),
-    _user_error(false),
-    _state(false, size),
-    _saved_states(),
-    _realigned(),
-    _reserved_bits_errors()
+    _state(false, size)
 {
     _buffer = new uint8_t[_buffer_size];
     CheckNonNull(_buffer);
@@ -155,14 +142,7 @@ ts::Buffer::Buffer(void* data, size_t size, bool read_only) :
     _buffer(reinterpret_cast<uint8_t*>(data)),
     _buffer_size(size),
     _allocated(false),
-    _big_endian(true),
-    _read_error(false),
-    _write_error(false),
-    _user_error(false),
-    _state(read_only, size),
-    _saved_states(),
-    _realigned(),
-    _reserved_bits_errors()
+    _state(read_only, size)
 {
     if (_state.read_only) {
         _state.wbyte = _state.end;
@@ -209,14 +189,7 @@ ts::Buffer::Buffer(const void* data, size_t size) :
     _buffer(reinterpret_cast<uint8_t*>(const_cast<void*>(data))),
     _buffer_size(size),
     _allocated(false),
-    _big_endian(true),
-    _read_error(false),
-    _write_error(false),
-    _user_error(false),
-    _state(true, size),
-    _saved_states(),
-    _realigned(),
-    _reserved_bits_errors()
+    _state(true, size)
 {
     _state.wbyte = _buffer_size;
 }

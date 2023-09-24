@@ -60,8 +60,8 @@ namespace ts {
     {
     private:
         // Numerator and denominator. Always reduced. Only _num can be negative.
-        INT_T _num {0};
-        INT_T _den {1};
+        INT_T _num = 0;
+        INT_T _den = 1;
 
         // Fast private unchecked constructor. The parameters must be valid.
         // The dummy parameter is here to disambiguate with the public constructor.

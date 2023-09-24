@@ -165,7 +165,7 @@ namespace ts {
             virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
         private:
-            Tweaks _tweaks;  // Global XML tweaks for the document.
+            Tweaks _tweaks {};  // Global XML tweaks for the document.
         };
     }
 }

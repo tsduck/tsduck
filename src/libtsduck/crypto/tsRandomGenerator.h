@@ -85,14 +85,14 @@ namespace ts {
 
         //!
         //! Get a random integer value inside a defined range.
-        //! @tparam INT An integer type for the result.
+        //! @tparam INT_T An integer type for the result.
         //! @param [out] value The return integer value.
         //! @param [in] min Minimum value to return.
         //! @param [in] max Maximum value to return.
         //! @return True on success, false on error.
         //!
-        template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-        bool readInt(INT& value, INT min = std::numeric_limits<INT>::min(), INT max = std::numeric_limits<INT>::max());
+        template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value>::type* = nullptr>
+        bool readInt(INT_T& value, INT_T min = std::numeric_limits<INT_T>::min(), INT_T max = std::numeric_limits<INT_T>::max());
 
         //!
         //! Virtual destructor
@@ -106,17 +106,17 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
-bool ts::RandomGenerator::readInt(INT& value, INT min, INT max)
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value>::type*>
+bool ts::RandomGenerator::readInt(INT_T& value, INT_T min, INT_T max)
 {
     if (min > max) {
         return false;
     }
     const bool ok = read(&value, sizeof(value));
     if (ok && (value < min || value > max)) {
-        typedef typename std::make_unsigned<INT>::type UINT_T;
+        typedef typename std::make_unsigned<INT_T>::type UINT_T;
         const UINT_T top = UINT_T(max - min + 1);
-        value = INT(UINT_T(value) % top) + min;
+        value = INT_T(UINT_T(value) % top) + min;
     }
     return ok;
 }

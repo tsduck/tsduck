@@ -77,7 +77,7 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        Enumeration();
+        Enumeration() = default;
 
         //!
         //! Constructor from a variable list of string/int pairs.
@@ -111,20 +111,14 @@ namespace ts {
         //!
         //! @return The number of entries in the enumeration.
         //!
-        size_t size() const
-        {
-            return _map.size();
-        }
+        size_t size() const { return _map.size(); }
 
         //!
         //! Check if the enumeration is empty.
         //!
         //! @return True if the enumeration is empty.
         //!
-        bool empty() const
-        {
-            return _map.empty();
-        }
+        bool empty() const { return _map.empty(); }
 
         //!
         //! Add a new enumeration value.
@@ -132,10 +126,7 @@ namespace ts {
         //! @param [in] name A string for a symbol.
         //! @param [in] value The corresponding integer value.
         //!
-        void add(const UString& name, int value)
-        {
-            _map.insert(std::make_pair(value, name));
-        }
+        void add(const UString& name, int value) { _map.insert(std::make_pair(value, name)); }
 
         //!
         //! Get the value from a name.
@@ -175,17 +166,7 @@ namespace ts {
         //! @a name can be interpreted as an integer value.
         //!
         template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* = nullptr>
-        bool getValue(ENUM& e, const UString& name, bool caseSensitive = true, bool abbreviated = true) const
-        {
-            const int i = value(name, caseSensitive, abbreviated);
-            if (i == UNKNOWN) {
-                return false;
-            }
-            else {
-                e = static_cast<ENUM>(i);
-                return true;
-            }
-        }
+        bool getValue(ENUM& e, const UString& name, bool caseSensitive = true, bool abbreviated = true) const;
 
         //!
         //! Get the error message about a name failing to match a value.
@@ -260,18 +241,7 @@ namespace ts {
         //! @a container. Each value is formatted according to name().
         //!
         template <class ITERATOR>
-        UString names(ITERATOR begin, ITERATOR end, const UString& separator = u", ") const
-        {
-            UString res;
-            while (begin != end) {
-                if (!res.empty()) {
-                    res.append(separator);
-                }
-                res.append(name(*begin));
-                ++begin;
-            }
-            return res;
-        }
+        UString names(ITERATOR begin, ITERATOR end, const UString& separator = u", ") const;
 
         //!
         //! Get all possible names in a string container.
@@ -280,13 +250,7 @@ namespace ts {
         //! @param [out] names A container of strings.
         //!
         template <class CONTAINER>
-        void getAllNames(CONTAINER& names) const
-        {
-            names.clear();
-            for (const auto& it : _map) {
-                names.push_back(it.second);
-            }
-        }
+        void getAllNames(CONTAINER& names) const;
 
         //!
         //! Return a comma-separated list of all possible names.
@@ -323,29 +287,66 @@ namespace ts {
         //!
         //! @return An iterator pointing to the first element of this object.
         //!
-        const_iterator begin() const
-        {
-            return _map.begin();
-        }
+        const_iterator begin() const { return _map.begin(); }
 
         //!
         //! Return an iterator pointing after the last element of this object.
         //!
         //! @return An iterator pointing after the last element of this object.
         //!
-        const_iterator end() const
-        {
-            return _map.end();
-        }
+        const_iterator end() const { return _map.end(); }
 
     private:
         // Map int to name. Multiple names are allowed for the same integer value.
-        typedef std::multimap<int,UString> EnumMap;
-        EnumMap _map;
+        std::multimap<int,UString> _map {};
 
         // Get the name from a value.
         UString intToName(int value, bool hexa = false, size_t hexDigitCount = 0) const;
     };
+}
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Get the enumeration value from a name.
+template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*>
+bool ts::Enumeration::getValue(ENUM& e, const UString& name, bool caseSensitive, bool abbreviated) const
+{
+    const int i = value(name, caseSensitive, abbreviated);
+    if (i == UNKNOWN) {
+        return false;
+    }
+    else {
+        e = static_cast<ENUM>(i);
+        return true;
+    }
+}
+
+// Return a comma-separated list of all names for a list of integer values.
+template <class ITERATOR>
+ts::UString ts::Enumeration::names(ITERATOR begin, ITERATOR end, const UString& separator) const
+{
+    UString res;
+    while (begin != end) {
+        if (!res.empty()) {
+                res.append(separator);
+        }
+        res.append(name(*begin));
+        ++begin;
+    }
+    return res;
+}
+
+// Get all possible names in a string container.
+template <class CONTAINER>
+void ts::Enumeration::getAllNames(CONTAINER& names) const
+{
+    names.clear();
+    for (const auto& it : _map) {
+        names.push_back(it.second);
+    }
 }
 
 TS_POP_WARNING()

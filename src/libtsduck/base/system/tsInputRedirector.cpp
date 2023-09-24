@@ -35,13 +35,8 @@
 // Constructor:
 //----------------------------------------------------------------------------
 
-ts::InputRedirector::InputRedirector(const UString& name,
-                                     Args& args,
-                                     std::istream& stream,
-                                     std::ios::openmode mode) :
-    _stream(stream),
-    _previous(nullptr),
-    _file()
+ts::InputRedirector::InputRedirector(const UString& name, Args& args, std::istream& stream, std::ios::openmode mode) :
+    _stream(stream)
 {
     // The nme "-" means standard output.
     if (!name.empty() && name != u"-") {
