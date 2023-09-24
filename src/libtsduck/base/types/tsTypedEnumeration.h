@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        TypedEnumeration();
+        TypedEnumeration() : Enumeration() {}
 
         //!
         //! Constructor from a variable list of string/int pairs.
@@ -136,4 +136,16 @@ namespace ts {
     };
 }
 
-#include "tsTypedEnumerationTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template<typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type* N>
+ts::TypedEnumeration<ENUM,N>::TypedEnumeration(const std::initializer_list<TypedNameValue> values) :
+    Enumeration()
+{
+    for (const auto& it : values) {
+        add(it.name, it.value);
+    }
+}

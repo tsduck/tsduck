@@ -252,4 +252,60 @@ inline bool operator>(INT1 x1, const ts::Integer<INT2>& x2) { return x2 < x1; }
 
 //! @endcond
 
-#include "tsIntegerTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+const ts::Integer<INT_T,N> ts::Integer<INT_T,N>::MIN(std::numeric_limits<INT_T>::min());
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+const ts::Integer<INT_T,N> ts::Integer<INT_T,N>::MAX(std::numeric_limits<INT_T>::max());
+
+// Virtual numeric conversions.
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+int64_t ts::Integer<INT_T,N>::toInt64() const
+{
+    return bounded_cast<int64_t>(_value);
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+double ts::Integer<INT_T,N>::toDouble() const
+{
+    return double(_value);
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+bool ts::Integer<INT_T,N>::inRange(int64_t min, int64_t max) const
+{
+    const int64_t r = bounded_cast<int64_t>(_value);
+    return r >= min && r <= max;
+}
+
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+ts::UString ts::Integer<INT_T,N>::description() const
+{
+    return UString::Format(u"%d-bit %s integer value", {8 * sizeof(int_t), SignedDescription<int_t>()});
+}
+
+// Convert the number to a string object.
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+ts::UString ts::Integer<INT_T,N>::toString(size_t min_width,
+                                            bool right_justified,
+                                            UChar separator,
+                                            bool force_sign,
+                                            size_t decimals,
+                                            bool force_decimals,
+                                            UChar decimal_dot,
+                                            UChar pad) const
+{
+    return UString::Decimal(_value, min_width, right_justified, separator == CHAR_NULL ? UString() : UString(1, separator), force_sign, pad);
+}
+
+// Parse a string and interpret it as a number.
+template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
+bool ts::Integer<INT_T,N>::fromString(const UString& str, UChar separator, UChar decimal_dot)
+{
+    return str.toInteger(_value, separator == CHAR_NULL ? UString() : UString(1, separator));
+}

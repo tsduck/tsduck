@@ -72,4 +72,133 @@ namespace ts {
     };
 }
 
-#include "tsCTS4Template.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+size_t ts::CTS4<CIPHER>::minMessageSize() const
+{
+    return this->block_size + 1;
+}
+
+template<class CIPHER>
+bool ts::CTS4<CIPHER>::residueAllowed() const
+{
+    return true;
+}
+
+template<class CIPHER>
+ts::UString ts::CTS4<CIPHER>::name() const
+{
+    return this->algo == nullptr ? UString() : this->algo->name() + u"-CTS4";
+}
+
+
+//----------------------------------------------------------------------------
+// Encryption in CTS4 mode.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+bool ts::CTS4<CIPHER>::encryptImpl(const void* plain, size_t plain_length, void* cipher, size_t cipher_maxsize, size_t* cipher_length)
+{
+    if (this->algo == nullptr ||
+        this->work.size() < this->block_size ||
+        plain_length < this->block_size ||
+        cipher_maxsize < plain_length)
+    {
+        return false;
+    }
+    if (cipher_length != nullptr) {
+        *cipher_length = plain_length;
+    }
+
+    const uint8_t* pt = reinterpret_cast<const uint8_t*> (plain);
+    uint8_t* ct = reinterpret_cast<uint8_t*> (cipher);
+
+    // Process in ECB mode, except the last 2 blocks
+
+    while (plain_length > 2 * this->block_size) {
+        if (!this->algo->encrypt(pt, this->block_size, ct, this->block_size)) {
+            return false;
+        }
+        ct += this->block_size;
+        pt += this->block_size;
+        plain_length -= this->block_size;
+    }
+
+    // Process final two blocks.
+
+    assert(plain_length > this->block_size);
+    const size_t residue_size = plain_length - this->block_size;
+
+    // Flawfinder: ignore: memcpy()
+    ::memcpy(this->work.data(), pt + residue_size, this->block_size - residue_size);
+    // Flawfinder: ignore: memcpy()
+    ::memcpy(this->work.data() + this->block_size - residue_size, pt + this->block_size, residue_size);
+
+    if (!this->algo->encrypt(this->work.data(), this->block_size, ct + residue_size, this->block_size)) {
+        return false;
+    }
+
+    // Flawfinder: ignore: memcpy()
+    ::memcpy(this->work.data(), pt, residue_size);
+    // Flawfinder: ignore: memcpy()
+    ::memcpy(this->work.data() + residue_size, ct + residue_size, this->block_size - residue_size);
+
+    if (!this->algo->encrypt(this->work.data(), this->block_size, ct, this->block_size)) {
+        return false;
+    }
+
+    return true;
+}
+
+
+//----------------------------------------------------------------------------
+// Decryption in CTS4 mode.
+//----------------------------------------------------------------------------
+
+template<class CIPHER>
+bool ts::CTS4<CIPHER>::decryptImpl(const void* cipher, size_t cipher_length, void* plain, size_t plain_maxsize, size_t* plain_length)
+{
+    if (this->algo == nullptr ||
+        this->work.size() < this->block_size ||
+        cipher_length < this->block_size ||
+        plain_maxsize < cipher_length)
+    {
+        return false;
+    }
+    if (plain_length != nullptr) {
+        *plain_length = cipher_length;
+    }
+
+    const uint8_t* ct = reinterpret_cast<const uint8_t*> (cipher);
+    uint8_t* pt = reinterpret_cast<uint8_t*> (plain);
+
+    // Process in ECB mode, except the last block
+
+    while (cipher_length > this->block_size) {
+        if (!this->algo->decrypt(ct, this->block_size, pt, this->block_size)) {
+            return false;
+        }
+        ct += this->block_size;
+        pt += this->block_size;
+        cipher_length -= this->block_size;
+    }
+
+    // Process final block
+
+    assert(cipher_length <= this->block_size);
+
+    // Flawfinder: ignore: memcpy()
+    ::memcpy(this->work.data(), pt - this->block_size + cipher_length, this->block_size - cipher_length);
+    // Flawfinder: ignore: memcpy()
+    ::memcpy(this->work.data() + this->block_size - cipher_length, ct, cipher_length);
+
+    if (!this->algo->decrypt(this->work.data(), this->block_size, pt - this->block_size + cipher_length, this->block_size)) {
+        return false;
+    }
+
+    return true;
+}

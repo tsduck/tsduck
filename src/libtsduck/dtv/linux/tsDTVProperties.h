@@ -215,4 +215,32 @@ namespace ts {
     };
 }
 
-#include "tsDTVPropertiesTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::DTVProperties::getValuesByCommand(std::set<INT>& values, uint32_t cmd) const
+{
+    values.clear();
+    for (size_t i = 0; i < size_t(_prop_head.num); i++) {
+        if (_prop_buffer[i].cmd == cmd) {
+            getValuesByIndex(values, i);
+            break;
+        }
+    }
+}
+
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value || std::is_enum<INT>::value>::type*>
+void ts::DTVProperties::getValuesByIndex(std::set<INT>& values, size_t index) const
+{
+    values.clear();
+    if (index < size_t(_prop_head.num)) {
+        assert(sizeof(_prop_buffer[index].u.buffer.data[0]) == 1);
+        const size_t count = std::min<size_t>(sizeof(_prop_buffer[index].u.buffer.data), _prop_buffer[index].u.buffer.len);
+        for (size_t i = 0; i < count; ++i) {
+            values.insert(INT(_prop_buffer[index].u.buffer.data[i]));
+        }
+    }
+}

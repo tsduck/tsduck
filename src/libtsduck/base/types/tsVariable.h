@@ -34,6 +34,7 @@
 
 #pragma once
 #include "tsPlatform.h"
+#include "tsException.h"
 
 namespace ts {
     //!
@@ -215,4 +216,175 @@ namespace ts {
     };
 }
 
-#include "tsVariableTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template <typename T>
+ts::Variable<T>::Variable(const Variable<T>& other) :
+    _access(nullptr)
+{
+    if (other._access != nullptr) {
+        _access = new(_data) T(*(other._access));
+    }
+}
+
+template <typename T>
+ts::Variable<T>::Variable(Variable<T>&& other) :
+    _access(nullptr)
+{
+    if (other._access != nullptr) {
+        _access = new(_data) T(std::move(*(other._access)));
+        other.clear();
+    }
+}
+
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
+template <typename T>
+ts::Variable<T>::~Variable()
+{
+    clear();
+}
+TS_POP_WARNING()
+
+template <typename T>
+ts::Variable<T>& ts::Variable<T>::operator=(const Variable<T>& other)
+{
+    if (&other != this) {
+        clear();
+        if (other._access != nullptr) {
+            _access = new(_data) T(*(other._access));
+        }
+    }
+    return *this;
+}
+
+template <typename T>
+ts::Variable<T>& ts::Variable<T>::operator=(Variable<T>&& other)
+{
+    if (&other != this) {
+        clear();
+        if (other._access != nullptr) {
+            _access = new(_data) T(std::move(*(other._access)));
+            other.clear();
+        }
+    }
+    return *this;
+}
+
+template <typename T>
+ts::Variable<T>& ts::Variable<T>::operator=(const T& obj)
+{
+    clear();
+    _access = new(_data) T(obj);
+    return *this;
+}
+
+template <typename T>
+bool ts::Variable<T>::setDefault(const T& def)
+{
+    if (_access != nullptr) {
+        // Variable is already set.
+        return false;
+    }
+    else {
+        _access = new(_data) T(def);
+        return true;
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Clear the value.
+//----------------------------------------------------------------------------
+
+template <typename T>
+void ts::Variable<T>::clear()
+{
+    if (_access != nullptr) {
+        // Safe when the destructor throws an exception
+        T* tmp = _access;
+        _access = nullptr;
+        tmp->~T();
+    }
+}
+
+
+//----------------------------------------------------------------------------
+// Access the value inside the variable.
+//----------------------------------------------------------------------------
+
+template <typename T>
+const T& ts::Variable<T>::value() const
+{
+    if (_access != nullptr) {
+        return *_access;
+    }
+    else {
+        throw UninitializedVariable(u"uninitialized variable");
+    }
+}
+
+template <typename T>
+T& ts::Variable<T>::value()
+{
+    if (_access != nullptr) {
+        return *_access;
+    }
+    else {
+        throw UninitializedVariable(u"uninitialized variable");
+    }
+}
+
+template <typename T>
+T ts::Variable<T>::value(const T& def) const
+{
+    return _access != nullptr ? *_access : def;
+}
+
+
+//----------------------------------------------------------------------------
+// Comparison operators.
+//----------------------------------------------------------------------------
+
+template <typename T>
+bool ts::Variable<T>::identical(const Variable<T>& other) const
+{
+    return (_access == nullptr && other._access == nullptr ) ||
+           (_access != nullptr && other._access != nullptr && *_access == *other._access);
+}
+
+
+template <typename T>
+bool ts::Variable<T>::operator==(const Variable<T>& other) const
+{
+    return _access != nullptr && other._access != nullptr && *_access == *other._access;
+}
+
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
+template <typename T>
+bool ts::Variable<T>::operator!=(const Variable<T>& other) const
+{
+    // Note than we do not require that T provides operator!=.
+    // We just require operator==. So we use !(.. == ..).
+    return _access == nullptr || other._access == nullptr || !(*_access == *other._access);
+}
+#endif
+
+template <typename T>
+bool ts::Variable<T>::operator==(const T& obj) const
+{
+    return _access != nullptr && *_access == obj;
+}
+
+#if defined(TS_NEED_UNEQUAL_OPERATOR)
+template <typename T>
+bool ts::Variable<T>::operator!=(const T& obj) const
+{
+    // Note than we do not require that T provides operator!=.
+    // We just require operator==. So we use !(.. == ..).
+    return _access == nullptr || !(*_access == obj);
+}
+#endif

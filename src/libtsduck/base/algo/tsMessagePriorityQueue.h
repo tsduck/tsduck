@@ -85,4 +85,42 @@ namespace ts {
     };
 }
 
-#include "tsMessagePriorityQueueTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX, class COMPARE>
+ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::MessagePriorityQueue(size_t maxMessages) :
+    SuperClass(maxMessages)
+{
+}
+
+
+//----------------------------------------------------------------------------
+// Placement in the message queue (virtual protected methods).
+//----------------------------------------------------------------------------
+
+template <typename MSG, class MUTEX, class COMPARE>
+typename ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::SuperClass::MessageList::iterator
+ts::MessagePriorityQueue<MSG, MUTEX, COMPARE>::enqueuePlacement(const typename SuperClass::MessagePtr& msg, typename SuperClass::MessageList& list)
+{
+    auto loc = list.end();
+
+    // Null pointers are stored at end (anywhere else would be probably fine).
+    if (msg.isNull()) {
+        return loc;
+    }
+
+    // Loop until the previous element is lower that msg.
+    while (loc != list.begin()) {
+        const auto cur = loc;
+        --loc;
+        if (!loc->isNull() && !COMPARE()(*msg, **loc)) {
+            return cur;
+        }
+    }
+
+    // Reached begin of list, all elements are greater than msg.
+    return loc;
+}
