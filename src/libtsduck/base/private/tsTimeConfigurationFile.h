@@ -60,18 +60,18 @@ namespace ts {
         class LeapSecond
         {
         public:
-            Time   after;  // Insert leap seconds right after the second in this time.
-            Second count;  // Number of leap second to add (could be negative if necessary).
+            Time   after {};   // Insert leap seconds right after the second in this time.
+            Second count {0};  // Number of leap second to add (could be negative if necessary).
 
             // Constructor.
-            LeapSecond() : after(), count(0) {}
+            LeapSecond() = default;
 
             // Comparison for sorting.
             bool operator<(const LeapSecond& other) const { return this->after < other.after; }
         };
 
         // TimeConfigurationFile private fields.
-        Second                  initial_seconds;  // Initial leap seconds before first leap second.
-        std::vector<LeapSecond> leap_seconds;     // Sorted list of defined leap seconds.
+        Second                  initial_seconds {0};  // Initial leap seconds before first leap second.
+        std::vector<LeapSecond> leap_seconds {0};     // Sorted list of defined leap seconds.
     };
 }

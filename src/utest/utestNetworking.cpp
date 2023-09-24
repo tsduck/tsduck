@@ -41,7 +41,7 @@
 #include "tsTCPServer.h"
 #include "tsUDPSocket.h"
 #include "tsThread.h"
-#include "tsSysUtils.h"
+#include "tsNullReport.h"
 #include "tsIPUtils.h"
 #include "tsCerrReport.h"
 #include "utestTSUnitThread.h"

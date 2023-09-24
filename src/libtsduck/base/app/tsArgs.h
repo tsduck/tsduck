@@ -1109,12 +1109,9 @@ namespace ts {
         class TSDUCKDLL ArgValue
         {
         public:
-            Variable<UString> string;     // Orginal string value from command line (unset if option is present without value).
-            int64_t           int_base;   // First (or only) integer value.
-            size_t            int_count;  // Number of consecutive integer values.
-
-            // Constructor.
-            ArgValue();
+            Variable<UString> string {};      // Orginal string value from command line (unset if option is present without value).
+            int64_t           int_base {0};   // First (or only) integer value.
+            size_t            int_count {0};  // Number of consecutive integer values.
         };
 
         // List of values
@@ -1134,21 +1131,21 @@ namespace ts {
         class TSDUCKDLL IOption
         {
         public:
-            UString        name;        // Long name (u"verbose" for --verbose)
-            UChar          short_name;  // Short option name (u'v' for -v), 0 if unused
-            ArgType        type;        // Argument type
-            size_t         min_occur;   // Minimum occurence
-            size_t         max_occur;   // Maximum occurence
-            int64_t        min_value;   // Minimum value (for integer args)
-            int64_t        max_value;   // Maximum value (for integer args)
-            size_t         decimals;    // Number of meaningful decimal digits
-            uint32_t       flags;       // Option flags
-            Enumeration    enumeration; // Enumeration values (if not empty)
-            UString        syntax;      // Syntax of value (informational, "address:port" for instance)
-            UString        help;        // Help description
-            ArgValueVector values;      // Set of values after analysis
-            size_t         value_count; // Number of values, can be > values.size() in case of ranges of integers
-            AbstractNumberPtr anumber;  // Dummy instance of AbstractNumber to validate the value, to deallocate
+            UString        name {};         // Long name (u"verbose" for --verbose)
+            UChar          short_name {0};  // Short option name (u'v' for -v), 0 if unused
+            ArgType        type {NONE};     // Argument type
+            size_t         min_occur {0};   // Minimum occurence
+            size_t         max_occur {0};   // Maximum occurence
+            int64_t        min_value {0};   // Minimum value (for integer args)
+            int64_t        max_value {0};   // Maximum value (for integer args)
+            size_t         decimals {0};    // Number of meaningful decimal digits
+            uint32_t       flags {0};       // Option flags
+            Enumeration    enumeration {};  // Enumeration values (if not empty)
+            UString        syntax {};       // Syntax of value (informational, "address:port" for instance)
+            UString        help {};         // Help description
+            ArgValueVector values {};       // Set of values after analysis
+            size_t         value_count {0}; // Number of values, can be > values.size() in case of ranges of integers
+            AbstractNumberPtr anumber {};   // Dummy instance of AbstractNumber to validate the value, to deallocate
 
             // Constructor:
             IOption(const UChar* name,
@@ -1198,18 +1195,18 @@ namespace ts {
         typedef std::map<UString,IOption> IOptionMap;
 
         // Private fields
-        Report*       _subreport;
-        int           _saved_severity;
-        IOptionMap    _iopts;
-        UString       _description;
-        UString       _shell;
-        UString       _syntax;
-        UString       _intro;
-        UString       _tail;
-        UString       _app_name;
-        UStringVector _args;
-        bool          _is_valid;
-        int           _flags;
+        Report*       _subreport {nullptr};
+        int           _saved_severity {Severity::Info};
+        IOptionMap    _iopts {};
+        UString       _description {};
+        UString       _shell {};
+        UString       _syntax {};
+        UString       _intro {};
+        UString       _tail {};
+        UString       _app_name {};
+        UStringVector _args {};
+        bool          _is_valid {false};
+        int           _flags {0};
 
         // List of characters which are allowed thousands separators and decimal points in integer values
         static const UChar* const THOUSANDS_SEPARATORS;

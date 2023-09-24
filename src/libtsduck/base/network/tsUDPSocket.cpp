@@ -32,12 +32,12 @@
 
 // Network timestampting feature in Linux.
 #if defined(TS_LINUX)
-#include <linux/net_tstamp.h>
+    #include <linux/net_tstamp.h>
 #endif
 
 // Furiously idiotic Windows feature, see comment in receiveOne()
 #if defined(TS_WINDOWS)
-volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = 0;
+    volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = 0;
 #endif
 
 
@@ -45,19 +45,10 @@ volatile ::LPFN_WSARECVMSG ts::UDPSocket::_wsaRevcMsg = 0;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::UDPSocket::UDPSocket(bool auto_open, Report& report) :
-    Socket(),
-    _local_address(),
-    _default_destination(),
-#if !defined(TS_NO_SSM)
-    _ssmcast(),
-#endif
-    _mcast()
+ts::UDPSocket::UDPSocket(bool auto_open, Report& report)
 {
     if (auto_open) {
-        // Returned value ignored on purpose, the socket is marked as closed in the object on error.
-        // coverity[CHECKED_RETURN]
-        open(report);
+        UDPSocket::open(report);
     }
 }
 

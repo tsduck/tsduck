@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsTelnetConnection.h"
+#include "tsNullReport.h"
 
 // A telnet end-of-line sequence.
 const std::string ts::TelnetConnection::EOL("\r\n");
@@ -38,8 +39,6 @@ const std::string ts::TelnetConnection::EOL("\r\n");
 //----------------------------------------------------------------------------
 
 ts::TelnetConnection::TelnetConnection(const std::string& prompt) :
-    TCPConnection(),
-    _buffer(),
     _prompt(prompt)
 {
     // Maximum size we may read per line.

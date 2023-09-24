@@ -57,18 +57,6 @@ const ts::Enumeration ts::Args::HelpFormatEnum({
 
 
 //----------------------------------------------------------------------------
-// Constructors for ArgValue
-//----------------------------------------------------------------------------
-
-ts::Args::ArgValue::ArgValue() :
-    string(),
-    int_base(0),
-    int_count(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Constructors for IOption
 //----------------------------------------------------------------------------
 
@@ -92,11 +80,6 @@ ts::Args::IOption::IOption(const UChar* name_,
     max_value(max_value_),
     decimals(decimals_),
     flags(flags_),
-    enumeration(),
-    syntax(),
-    help(),
-    values(),
-    value_count(0),
     anumber(anumber_)
 {
     // Provide default max_occur
@@ -210,14 +193,8 @@ ts::Args::IOption::IOption(const UChar*       name_,
     max_occur(max_occur_),
     min_value(std::numeric_limits<int>::min()),
     max_value(std::numeric_limits<int>::max()),
-    decimals(0),
     flags(flags_),
-    enumeration(enumeration_),
-    syntax(),
-    help(),
-    values(),
-    value_count(0),
-    anumber()
+    enumeration(enumeration_)
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -430,17 +407,9 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
 
 ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     Report(),
-    _subreport(nullptr),
     _saved_severity(maxSeverity()),
-    _iopts(),
     _description(description),
-    _shell(),
     _syntax(syntax),
-    _intro(),
-    _tail(),
-    _app_name(),
-    _args(),
-    _is_valid(false),
     _flags(flags)
 {
     adjustPredefinedOptions();

@@ -58,19 +58,13 @@ namespace ts {
         //! Get the current prefix to display.
         //! @return The current prefix to display.
         //!
-        UString prefix() const
-        {
-            return _prefix;
-        }
+        UString prefix() const { return _prefix; }
 
         //!
         //! Set the prefix to display.
         //! @param [in] prefix The prefix to prepend to all messages.
         //!
-        void setPrefix(const UString& prefix)
-        {
-            _prefix = prefix;
-        }
+        void setPrefix(const UString& prefix) { _prefix = prefix; }
 
         // Inherited methods.
         virtual void setMaxSeverity(int level) override;
@@ -80,7 +74,7 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        Report& _report;  //!< The actual object which is used to report
-        UString _prefix;  //!< The prefix to prepend to all messages
+        Report& _report;
+        UString _prefix {};
     };
 }

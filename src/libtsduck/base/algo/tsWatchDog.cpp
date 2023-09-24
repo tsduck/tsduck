@@ -38,13 +38,8 @@
 ts::WatchDog::WatchDog(ts::WatchDogHandlerInterface* handler, ts::MilliSecond timeout, int id, ts::Report& log) :
     _log(log),
     _watchDogId(id),
-    _terminate(false),
-    _mutex(),
-    _condition(),
     _handler(handler),
-    _timeout(timeout == 0 ? Infinite : timeout),
-    _active(false),
-    _started(false)
+    _timeout(timeout == 0 ? Infinite : timeout)
 {
 }
 

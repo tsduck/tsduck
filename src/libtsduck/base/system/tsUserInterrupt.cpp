@@ -164,8 +164,6 @@ ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool 
 #if defined(TS_UNIX)
     // stack size: 16 kB, maximum priority
     Thread(ThreadAttributes().setStackSize(16 * 1024).setPriority(ThreadAttributes::GetMaximumPriority())),
-    _terminate(0),
-    _got_sigint(0),
 #if defined(TS_MAC)
     _sem_name(UString::Format(u"tsduck-%d-%d", {getpid(), ptrdiff_t(this)}).toUTF8()),
     _sem_address(SEM_FAILED),
@@ -174,9 +172,7 @@ ts::UserInterrupt::UserInterrupt(InterruptHandler* handler, bool one_shot, bool 
 #endif
 #endif
     _handler(handler),
-    _one_shot(one_shot),
-    _active(false),
-    _interrupted(false)
+    _one_shot(one_shot)
 {
     if (auto_activate) {
         activate();

@@ -224,10 +224,10 @@ namespace ts {
         class ConfigEntry
         {
         public:
-            Value   last;   // Last value in the range.
-            UString name;   // Associated name.
+            Value   last {0};  // Last value in the range.
+            UString name {};   // Associated name.
 
-            ConfigEntry(Value l = 0, const UString& n = UString());
+            ConfigEntry(Value l = 0, const UString& n = UString()) : last(l), name(n) {}
         };
 
         // Map of configuration entries, indexed by first value of the range.
@@ -239,11 +239,11 @@ namespace ts {
         {
             TS_NOCOPY(ConfigSection);
         public:
-            size_t          bits;      // Number of significant bits in values of the type.
-            ConfigEntryMap  entries;   // All entries, indexed by names.
-            UString         inherit;   // Redirect to this section if value not found.
+            size_t          bits {0};     // Number of significant bits in values of the type.
+            ConfigEntryMap  entries {};   // All entries, indexed by names.
+            UString         inherit {};   // Redirect to this section if value not found.
 
-            ConfigSection();
+            ConfigSection() = default;
             ~ConfigSection();
 
             // Check if a range is free, ie no value is defined in the range.

@@ -30,19 +30,12 @@
 #include "tsTCPSocket.h"
 #include "tsIPUtils.h"
 #include "tsGuardMutex.h"
-#include "tsMemory.h"
-#include "tsException.h"
+#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.
 //----------------------------------------------------------------------------
-
-ts::TCPSocket::TCPSocket() :
-    Socket(),
-    _mutex()
-{
-}
 
 ts::TCPSocket::~TCPSocket()
 {

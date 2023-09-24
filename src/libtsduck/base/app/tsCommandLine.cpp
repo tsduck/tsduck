@@ -36,11 +36,6 @@
 
 ts::CommandLine::CommandLine(Report& report) :
     _report(report),
-    _shell(),
-    _process_redirections(false),
-    _cmd_id_alloc(0),
-    _cmd_enum(),
-    _commands(),
     _predefined(*this)
 {
 }

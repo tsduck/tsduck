@@ -59,7 +59,7 @@ namespace ts {
             //! Constructor.
             //! @param [in,out] report Where to report errors.
             //!
-            explicit RunningDocument(Report& report = NULLREP);
+            explicit RunningDocument(Report& report = NULLREP) : _text(report) {}
 
             //!
             //! Destructor.
@@ -95,10 +95,10 @@ namespace ts {
             void close();
 
         private:
-            TextFormatter _text;         // The text formatter.
-            bool          _open_array;   // The array is open.
-            bool          _empty_array;  // The open array is currently empty.
-            size_t        _obj_count;    // Number of parent objects.
+            TextFormatter _text {};             // The text formatter.
+            bool          _open_array {false};  // The array is open.
+            bool          _empty_array {false}; // The open array is currently empty.
+            size_t        _obj_count {0};       // Number of parent objects.
 
             // Look for a JSON array in a tree. Return true if one is found, false otherwise.
             // Build a path of objects, one per level. The last one is the array.

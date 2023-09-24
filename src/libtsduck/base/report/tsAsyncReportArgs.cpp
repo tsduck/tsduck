@@ -36,18 +36,6 @@ const size_t ts::AsyncReportArgs::MAX_LOG_MESSAGES;
 
 
 //----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::AsyncReportArgs::AsyncReportArgs() :
-    sync_log(false),
-    timed_log(false),
-    log_msg_count(MAX_LOG_MESSAGES)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 

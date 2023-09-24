@@ -400,26 +400,8 @@ ts::NamesFile::~NamesFile()
 
 
 //----------------------------------------------------------------------------
-// Configuration entry.
-//----------------------------------------------------------------------------
-
-ts::NamesFile::ConfigEntry::ConfigEntry(Value l, const UString& n) :
-    last(l),
-    name(n)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Configuration section.
 //----------------------------------------------------------------------------
-
-ts::NamesFile::ConfigSection::ConfigSection() :
-    bits(0),
-    entries(),
-    inherit()
-{
-}
 
 ts::NamesFile::ConfigSection::~ConfigSection()
 {

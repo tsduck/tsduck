@@ -39,8 +39,7 @@ ts::AsyncReport::AsyncReport(int max_severity, const AsyncReportArgs& args) :
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority())),
     _log_queue(args.log_msg_count),
     _time_stamp(args.timed_log),
-    _synchronous(args.sync_log),
-    _terminated(false)
+    _synchronous(args.sync_log)
 {
     // Start the logging thread
     start();

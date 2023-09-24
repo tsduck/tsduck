@@ -35,7 +35,6 @@
 #pragma once
 #include "tsTCPConnection.h"
 #include "tsUString.h"
-#include "tsMutex.h"
 
 namespace ts {
     //!
@@ -170,8 +169,8 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        std::string _buffer;
-        std::string _prompt;
+        std::string _buffer {};
+        std::string _prompt {};
 
         // Receive all characters until a delimitor has been received.
         bool waitForChunk(const std::string& eol, std::string& data, const AbortInterface*, Report&);

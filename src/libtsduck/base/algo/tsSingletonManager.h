@@ -59,10 +59,10 @@ namespace ts {
         //!
         //! A global mutex used in the creation of singletons.
         //!
-        Mutex mutex;
+        Mutex mutex {};
     private:
         static SingletonManager* volatile _instance;
-        SingletonManager() : mutex() {}
+        SingletonManager() = default;
     };
 }
 

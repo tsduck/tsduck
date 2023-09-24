@@ -36,8 +36,7 @@
 
 ts::AbstractOutputStream::AbstractOutputStream(size_t bufferSize) :
     std::basic_ostream<char>(this),
-    std::basic_streambuf<char>(),
-    _buffer()
+    std::basic_streambuf<char>()
 {
     _buffer.resize(bufferSize);
     resetBuffer();

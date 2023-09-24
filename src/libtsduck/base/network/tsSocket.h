@@ -49,7 +49,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        Socket();
+        Socket() = default;
 
         //!
         //! Destructor.
@@ -149,6 +149,6 @@ namespace ts {
         virtual void declareOpened(SysSocketType sock, Report& report);
 
     private:
-        volatile SysSocketType _sock;
+        volatile SysSocketType _sock {SYS_SOCKET_INVALID};
     };
 }

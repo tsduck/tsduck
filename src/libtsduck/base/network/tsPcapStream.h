@@ -70,7 +70,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        PcapStream();
+        PcapStream() = default;
 
         //!
         //! Get the address of the client peer.
@@ -150,15 +150,15 @@ namespace ts {
         class DataBlock
         {
         public:
-            DataBlock();
+            DataBlock() = default;
             DataBlock(const IPv4Packet& pkt, MicroSecond tstamp);
 
-            ByteBlock   data;       // TCP payload
-            size_t      index;      // index of next byte to read in data
-            uint32_t    sequence;   // TCP sequence number at start of data
-            bool        start;      // start of TCP stream.
-            bool        end;        // end of TCP stream.
-            MicroSecond timestamp;  // capture time stamp.
+            ByteBlock   data {};         // TCP payload
+            size_t      index {0};       // index of next byte to read in data
+            uint32_t    sequence {0};    // TCP sequence number at start of data
+            bool        start {false};   // start of TCP stream.
+            bool        end {false};     // end of TCP stream.
+            MicroSecond timestamp {-1};  // capture time stamp.
         };
         typedef SafePtr<DataBlock> DataBlockPtr;
         typedef std::list<DataBlockPtr> DataBlockQueue;
@@ -168,10 +168,10 @@ namespace ts {
         {
         public:
             // Constructor.
-            Stream() : packets() {}
+            Stream() = default;
 
             // Future packets to process.
-            DataBlockQueue packets;
+            DataBlockQueue packets {};
 
             // Check if data are immediately available.
             bool dataAvailable() const;
@@ -186,9 +186,9 @@ namespace ts {
         static constexpr size_t IDST = 1;
 
         // PcapStream private fields.
-        IPv4SocketAddress     _client;
-        IPv4SocketAddress     _server;
-        std::array<Stream, 2> _streams;
+        IPv4SocketAddress     _client {};
+        IPv4SocketAddress     _server {};
+        std::array<Stream, 2> _streams {};
 
         // Read IP packets and fill the two streams until one packet is read from the specified peer.
         // Index must be either ISRC, IDST or NPOS (any direction). Updated with actual index.

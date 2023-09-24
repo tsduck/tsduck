@@ -37,9 +37,7 @@ TS_DEFINE_SINGLETON(ts::ObjectRepository);
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::ObjectRepository::ObjectRepository() :
-    _mutex(),
-    _repository()
+ts::ObjectRepository::ObjectRepository()
 {
 }
 

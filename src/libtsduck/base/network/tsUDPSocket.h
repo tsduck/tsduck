@@ -404,12 +404,12 @@ namespace ts {
 #endif
 
         // Private members
-        IPv4SocketAddress _local_address;
-        IPv4SocketAddress _default_destination;
+        IPv4SocketAddress _local_address {};
+        IPv4SocketAddress _default_destination {};
 #if !defined(TS_NO_SSM)
-        SSMReqSet         _ssmcast;  // Current set of source-specific multicast memberships
+        SSMReqSet         _ssmcast {};  // Current set of source-specific multicast memberships
 #endif
-        MReqSet           _mcast;    // Current set of multicast memberships
+        MReqSet           _mcast {};    // Current set of multicast memberships
 
         // Perform one receive operation. Hide the system mud.
         SysSocketErrorCode receiveOne(void* data, size_t max_size, size_t& ret_size, IPv4SocketAddress& sender, IPv4SocketAddress& destination, Report& report, MicroSecond* timestamp);

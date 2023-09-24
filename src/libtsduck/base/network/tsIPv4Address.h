@@ -54,7 +54,7 @@ namespace ts {
     {
         TS_RULE_OF_FIVE(IPv4Address, override);
     private:
-        uint32_t _addr;  // An IPv4 address is a 32-bit word in host byte order
+        uint32_t _addr {0};  // An IPv4 address is a 32-bit word in host byte order
     public:
         //!
         //! Size in bits of an IPv4 address.
@@ -80,19 +80,13 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        IPv4Address() :
-            _addr(0)
-        {
-        }
+        IPv4Address() = default;
 
         //!
         //! Constructor from an integer address.
         //! @param [in] addr The IP v4 address as an integer in host byte order.
         //!
-        IPv4Address(uint32_t addr) :
-            _addr(addr)
-        {
-        }
+        IPv4Address(uint32_t addr) : _addr(addr) {}
 
         //!
         //! Constructor from 4 bytes (classical IPv4 notation).
@@ -107,10 +101,7 @@ namespace ts {
         //! Constructor from a system "struct in_addr" structure (socket API).
         //! @param [in] a A system "struct in_addr" structure.
         //!
-        IPv4Address(const ::in_addr& a) :
-            _addr(ntohl(a.s_addr))
-        {
-        }
+        IPv4Address(const ::in_addr& a) : _addr(ntohl(a.s_addr)) {}
 
         //!
         //! Constructor from a system "struct sockaddr" structure (socket API).

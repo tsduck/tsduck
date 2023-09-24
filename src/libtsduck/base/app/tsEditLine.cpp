@@ -59,11 +59,8 @@ size_t      ts::EditLine::_default_history_size(100);
 
 ts::EditLine::EditLine(const UString& prompt, const UString& next_prompt, const UString& history_file, size_t history_size) :
     _is_a_tty(StdInIsTerminal()),
-    _end_of_file(false),
-    _update_history(false),
     _prompt(prompt),
     _next_prompt(next_prompt),
-    _previous_line(),
     _history_file(history_file),
     _history_size(history_size)
 {

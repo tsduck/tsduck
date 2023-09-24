@@ -36,6 +36,7 @@
 
 #pragma once
 #include "tsTCPSocket.h"
+#include "tsAbortInterface.h"
 
 namespace ts {
     //!
@@ -90,11 +91,7 @@ namespace ts {
         //!
         //! Constructor
         //!
-        TCPConnection():
-            TCPSocket(),
-            _is_connected(false)
-        {
-        }
+        TCPConnection() = default;
 
         //!
         //! Connect to a remote address and port.
@@ -227,7 +224,7 @@ namespace ts {
         virtual void handleClosed(Report& report = CERR) override;
 
     private:
-        bool _is_connected;
+        bool _is_connected {false};
 
         // Declare that the socket has just become connected / disconnected.
         void declareConnected(Report& report = CERR);

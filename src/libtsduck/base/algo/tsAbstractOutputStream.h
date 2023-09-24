@@ -90,7 +90,7 @@ namespace ts {
         virtual bool writeStreamBuffer(const void* addr, size_t size) = 0;
 
     private:
-        std::string _buffer;  // Internal buffer for std::streambuf
+        std::string _buffer {};  // Internal buffer for std::streambuf
 
         // Inherited from std::basic_streambuf<char>.
         // This is called when buffer becomes full.

@@ -132,14 +132,14 @@ namespace ts {
         bool readLine(UString& line, bool skip_empty = true, bool trim = true, bool continuing = true);
 
     private:
-        bool    _is_a_tty;
-        bool    _end_of_file;
-        bool    _update_history;
-        UString _prompt;
-        UString _next_prompt;
-        UString _previous_line;
-        UString _history_file;
-        size_t  _history_size;
+        bool    _is_a_tty {false};
+        bool    _end_of_file {false};
+        bool    _update_history {false};
+        UString _prompt {};
+        UString _next_prompt {};
+        UString _previous_line {};
+        UString _history_file {};
+        size_t  _history_size {0};
 
         static UString _default_prompt;
         static UString _default_next_prompt;

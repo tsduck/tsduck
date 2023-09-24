@@ -40,9 +40,7 @@ TS_DEFINE_SINGLETON(ts::TimeConfigurationFile);
 // Constructor, load the configuration file.
 //-----------------------------------------------------------------------------
 
-ts::TimeConfigurationFile::TimeConfigurationFile() :
-    initial_seconds(0),
-    leap_seconds()
+ts::TimeConfigurationFile::TimeConfigurationFile()
 {
     // Load the configuration XML file and model. Search them in TSDuck directory if the default file is used.
     xml::Document doc(CERR);

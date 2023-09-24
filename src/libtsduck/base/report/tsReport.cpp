@@ -44,12 +44,6 @@ constexpr int ts::Severity::Debug;
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::Report::Report(int max_severity) :
-    _max_severity(max_severity),
-    _got_errors(false)
-{
-}
-
 ts::Report::~Report()
 {
 }

@@ -56,7 +56,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        PcapFilter();
+        PcapFilter() = default;
 
         //!
         //! Filter packets starting at the specified number.
@@ -243,24 +243,24 @@ namespace ts {
         virtual bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report) override;
 
     private:
-        std::set<uint8_t> _protocols;
-        IPv4SocketAddress _source;
-        IPv4SocketAddress _destination;
-        bool              _bidirectional_filter;
-        bool              _wildcard_filter;
-        int               _display_addresses_severity;
-        size_t            _first_packet;
-        size_t            _last_packet;
-        MicroSecond       _first_time_offset;
-        MicroSecond       _last_time_offset;
-        MicroSecond       _first_time;
-        MicroSecond       _last_time;
-        size_t            _opt_first_packet;
-        size_t            _opt_last_packet;
-        MicroSecond       _opt_first_time_offset;
-        MicroSecond       _opt_last_time_offset;
-        MicroSecond       _opt_first_time;
-        MicroSecond       _opt_last_time;
+        std::set<uint8_t> _protocols {};
+        IPv4SocketAddress _source {};
+        IPv4SocketAddress _destination {};
+        bool              _bidirectional_filter {false};
+        bool              _wildcard_filter {true};
+        int               _display_addresses_severity {Severity::Debug};
+        size_t            _first_packet {0};
+        size_t            _last_packet {std::numeric_limits<size_t>::max()};
+        MicroSecond       _first_time_offset {0};
+        MicroSecond       _last_time_offset {std::numeric_limits<ts::MicroSecond>::max()};
+        MicroSecond       _first_time {0};
+        MicroSecond       _last_time {std::numeric_limits<ts::MicroSecond>::max()};
+        size_t            _opt_first_packet {0};
+        size_t            _opt_last_packet {std::numeric_limits<size_t>::max()};
+        MicroSecond       _opt_first_time_offset {0};
+        MicroSecond       _opt_last_time_offset {std::numeric_limits<ts::MicroSecond>::max()};
+        MicroSecond       _opt_first_time {0};
+        MicroSecond       _opt_last_time {std::numeric_limits<ts::MicroSecond>::max()};
 
         // Get a date option and return it as micro-seconds since Unix epoch.
         ts::MicroSecond getDate(Args& args, const ts::UChar* arg_name, ts::MicroSecond def_value);

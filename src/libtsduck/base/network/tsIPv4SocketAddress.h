@@ -48,7 +48,7 @@ namespace ts {
     {
         TS_RULE_OF_FIVE(IPv4SocketAddress, override);
     private:
-        uint16_t _port;  // Port in host byte order
+        uint16_t _port {AnyPort};  // Port in host byte order
     public:
         //!
         //! Wildcard socket address, unspecified address and port.
@@ -58,11 +58,7 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        IPv4SocketAddress() :
-            IPv4Address(),
-            _port(AnyPort)
-        {
-        }
+        IPv4SocketAddress() = default;
 
         //!
         //! Constructor from an IP address and optional port

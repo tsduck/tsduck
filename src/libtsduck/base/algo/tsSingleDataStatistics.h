@@ -60,11 +60,6 @@ namespace ts {
         typedef typename std::conditional<std::is_floating_point<NUMBER>::value, NUMBER, DEFAULT_FLOAT>::type FLOAT;
 
         //!
-        //! Constructor.
-        //!
-        SingleDataStatistics();
-
-        //!
         //! Reset the statistics collection.
         //!
         void reset();
@@ -149,12 +144,12 @@ namespace ts {
         //  References:
         //  [1] https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
         //
-        size_t _count;    // Total number of samples.
-        NUMBER _min;      // Minimum value.
-        NUMBER _max;      // Maximum value.
-        SIGNED _var_k;    // Variance: K constant (see [1])
-        SIGNED _var_ex;   // Variance: Ex accumulation (see [1])
-        SIGNED _var_ex2;  // Variance: Ex2 accumulation (see [1])
+        size_t _count {0};    // Total number of samples.
+        NUMBER _min {0};      // Minimum value.
+        NUMBER _max {0};      // Maximum value.
+        SIGNED _var_k {0};    // Variance: K constant (see [1])
+        SIGNED _var_ex {0};   // Variance: Ex accumulation (see [1])
+        SIGNED _var_ex2 {0};  // Variance: Ex2 accumulation (see [1])
     };
 }
 
@@ -163,22 +158,7 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-template <typename NUMBER, typename DEFAULT_FLOAT>
-ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::SingleDataStatistics() :
-    _count(0),
-    _min(0),
-    _max(0),
-    _var_k(0),
-    _var_ex(0),
-    _var_ex2(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Reset the statistics collection.
-//----------------------------------------------------------------------------
-
 template <typename NUMBER, typename DEFAULT_FLOAT>
 void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::reset()
 {
@@ -191,10 +171,7 @@ void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::reset()
 }
 
 
-//----------------------------------------------------------------------------
 // Accumulate one more data sample.
-//----------------------------------------------------------------------------
-
 template <typename NUMBER, typename DEFAULT_FLOAT>
 void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::feed(NUMBER value)
 {
@@ -214,16 +191,14 @@ void ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::feed(NUMBER value)
 }
 
 
-//----------------------------------------------------------------------------
-// Get the mean and variance.
-//----------------------------------------------------------------------------
-
+// Get the mean.
 template <typename NUMBER, typename DEFAULT_FLOAT>
 typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::mean() const
 {
     return _count == 0 ? 0.0 : FLOAT(_var_k) + FLOAT(_var_ex) / FLOAT(_count);
 }
 
+// Get the variance.
 template <typename NUMBER, typename DEFAULT_FLOAT>
 typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::FLOAT ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::variance() const
 {
@@ -231,23 +206,21 @@ typename ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::FLOAT ts::SingleDataSt
     return _count < 2 ? 0.0 : (FLOAT(_var_ex2) - FLOAT(_var_ex * _var_ex) / FLOAT(_count)) / FLOAT(_count - 1);
 }
 
-
-//----------------------------------------------------------------------------
-// Get the mean and variance as strings.
-//----------------------------------------------------------------------------
-
+// Get the mean as strings.
 template <typename NUMBER, typename DEFAULT_FLOAT>
 ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::meanString(size_t width, size_t precision) const
 {
     return UString::Format(u"%*.*f", {width, precision, mean()});
 }
 
+// Get the variance as string.
 template <typename NUMBER, typename DEFAULT_FLOAT>
 ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::varianceString(size_t width, size_t precision) const
 {
     return UString::Format(u"%*.*f", {width, precision, variance()});
 }
 
+// Get the standard deviation as string.
 template <typename NUMBER, typename DEFAULT_FLOAT>
 ts::UString ts::SingleDataStatistics<NUMBER, DEFAULT_FLOAT>::standardDeviationString(size_t width, size_t precision) const
 {

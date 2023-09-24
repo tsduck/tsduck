@@ -35,9 +35,7 @@
 #pragma once
 #include "tsSocket.h"
 #include "tsIPv4SocketAddress.h"
-#include "tsAbortInterface.h"
-#include "tsReport.h"
-#include "tsNullReport.h"
+#include "tsCerrReport.h"
 #include "tsSafePtr.h"
 #include "tsNullMutex.h"
 #include "tsMutex.h"
@@ -64,7 +62,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        TCPSocket();
+        TCPSocket() = default;
 
         //!
         //! Destructor.
@@ -144,7 +142,7 @@ namespace ts {
         virtual bool close(Report& report = CERR) override;
 
     protected:
-        Mutex _mutex; //!< Mutex protecting this object.
+        Mutex _mutex {}; //!< Mutex protecting this object.
 
         //!
         //! This virtual method can be overriden by subclasses to be notified of open.

@@ -46,7 +46,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        URL();
+        URL() = default;
 
         //!
         //! Constructor from a string.
@@ -183,14 +183,14 @@ namespace ts {
         static bool IsURL(const UString& path) { return SchemeLength(path) != 0; }
 
     private:
-        UString  _scheme;
-        UString  _username;
-        UString  _password;
-        UString  _host;
-        uint16_t _port;
-        UString  _path;
-        UString  _query;
-        UString  _fragment;
+        UString  _scheme {};
+        UString  _username {};
+        UString  _password {};
+        UString  _host {};
+        uint16_t _port {0};
+        UString  _path {};
+        UString  _query {};
+        UString  _fragment {};
 
         // Parse a URL, leave unspecified fields unmodified.
         void parse(const UString& path);

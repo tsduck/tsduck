@@ -45,7 +45,6 @@ public:
     virtual void beforeTest() override;
     virtual void afterTest() override;
 
-    void testMemoryBarrier();
     void testGetUInt8();
     void testGetUInt16BE();
     void testGetUInt16LE();
@@ -98,7 +97,6 @@ public:
     void testPutIntVarLE();
 
     TSUNIT_TEST_BEGIN(MemoryTest);
-    TSUNIT_TEST(testMemoryBarrier);
     TSUNIT_TEST(testGetUInt8);
     TSUNIT_TEST(testGetUInt16BE);
     TSUNIT_TEST(testGetUInt16LE);
@@ -194,17 +192,6 @@ namespace {
         0xE0, 0xE1, 0xE2, 0xE3, 0xE4, 0xE5, 0xE6, 0xE7, 0xE8, 0xE9, 0xEA, 0xEB, 0xEC, 0xED, 0xEE, 0xEF,
         0xF0, 0xF1, 0xF2, 0xF3, 0xF4, 0xF5, 0xF6, 0xF7, 0xF8, 0xF9, 0xFA, 0xFB, 0xFC, 0xFD, 0xFE, 0xFF,
     };
-}
-
-void MemoryTest::testMemoryBarrier()
-{
-    // There is no easy way to exhibit the proper malfunctioning of a memory barrier.
-    // Here, we basically test that it compiles and does not mess up too much.
-
-    int i = 1;
-    ts::MemoryBarrier();
-    i = 2;
-    TSUNIT_EQUAL(2, i);
 }
 
 void MemoryTest::testGetUInt8()

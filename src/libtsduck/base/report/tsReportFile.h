@@ -85,10 +85,10 @@ namespace ts {
         virtual void writeLog(int severity, const UString& message) override;
 
     private:
-        mutable MUTEX _mutex;       // Synchronization.
-        std::string   _file_name;   // File name in UTF-8.
-        std::ofstream _named_file;  // Explicitly created file.
-        std::ostream& _file;        // Reference to actual file stream.
+        mutable MUTEX _mutex {};       // Synchronization.
+        std::string   _file_name {};   // File name in UTF-8.
+        std::ofstream _named_file {};  // Explicitly created file.
+        std::ostream& _file;           // Reference to actual file stream.
     };
 }
 
@@ -101,7 +101,6 @@ namespace ts {
 template <class MUTEX>
 ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, int max_severity) :
     Report(max_severity),
-    _mutex(),
     _file_name(file_name.toUTF8()),
     _named_file(_file_name.c_str(), append ? (std::ios::out | std::ios::app) : std::ios::out),
     _file(_named_file)
@@ -116,9 +115,6 @@ ts::ReportFile<MUTEX>::ReportFile(const UString& file_name, bool append, int max
 template <class MUTEX>
 ts::ReportFile<MUTEX>::ReportFile(std::ostream& stream, int max_severity) :
     Report(max_severity),
-    _mutex(),
-    _file_name(),
-    _named_file(),
     _file(stream)
 {
 }

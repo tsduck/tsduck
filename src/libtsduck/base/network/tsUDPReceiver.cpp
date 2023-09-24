@@ -32,33 +32,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::UDPReceiver::UDPReceiver(ts::Report& report) :
-    UDPSocket(false, report),
-    _dest_is_parameter(true),
-    _receiver_specified(false),
-    _use_ssm(false),
-    _receiver_index(0),
-    _receiver_count(0),
-    _dest_addr(),
-    _local_address(),
-    _reuse_port(false),
-    _default_interface(false),
-    _use_first_source(false),
-    _mc_loopback(true),
-    _recv_timestamps(true), // currently hardcoded, is there a reason to disable it?
-    _recv_bufsize(0),
-    _recv_timeout(-1),
-    _use_source(),
-    _first_source(),
-    _sources()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 

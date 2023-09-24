@@ -362,27 +362,27 @@ namespace ts {
         class SystemGuts;
 
         Report&       _report;
-        UString       _userAgent;
-        bool          _autoRedirect;
-        UString       _originalURL;
-        UString       _finalURL;
-        MilliSecond   _connectionTimeout;
-        MilliSecond   _receiveTimeout;
-        UString       _proxyHost;
-        uint16_t      _proxyPort;
-        UString       _proxyUser;
-        UString       _proxyPassword;
-        UString       _cookiesFileName;
-        bool          _useCookies;
-        bool          _deleteCookiesFile;  // delete the cookies file on close
-        HeadersMap    _requestHeaders;     // all request headers (to send)
-        HeadersMap    _responseHeaders;    // all response headers (received)
-        int           _httpStatus;         // 200, 404, etc.
-        size_t        _contentSize;        // actually downloaded size
-        size_t        _headerContentSize;  // content size, as announced in response header
-        volatile bool _isOpen;             // The transfer is open/started.
-        volatile bool _interrupted;        // interrupted by application-defined handler
-        SystemGuts*   _guts;               // system-specific data
+        UString       _userAgent {DEFAULT_USER_AGENT};
+        bool          _autoRedirect {true};
+        UString       _originalURL {};
+        UString       _finalURL {};
+        MilliSecond   _connectionTimeout {0};
+        MilliSecond   _receiveTimeout {0};
+        UString       _proxyHost {};
+        uint16_t      _proxyPort {0};
+        UString       _proxyUser {};
+        UString       _proxyPassword {};
+        UString       _cookiesFileName {};
+        bool          _useCookies {false};
+        bool          _deleteCookiesFile {false}; // delete the cookies file on close
+        HeadersMap    _requestHeaders {};         // all request headers (to send)
+        HeadersMap    _responseHeaders {};        // all response headers (received)
+        int           _httpStatus {0};            // 200, 404, etc.
+        size_t        _contentSize {0};           // actually downloaded size
+        size_t        _headerContentSize {0};     // content size, as announced in response header
+        volatile bool _isOpen {false};            // the transfer is open/started.
+        volatile bool _interrupted {false};       // interrupted by application-defined handler
+        SystemGuts*   _guts {nullptr};            // system-specific data
 
         static UString  _defaultProxyHost;
         static uint16_t _defaultProxyPort;

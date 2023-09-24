@@ -434,7 +434,7 @@ private:
      SRTSocket* _parent;
 public:
      // Default constructor.
-     Guts(SRTSocket* parent);
+     Guts(SRTSocket* parent) : _parent(parent) {}
 
      bool send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report);
      bool setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report);
@@ -446,118 +446,60 @@ public:
      bool reportStats(Report& report);
 
      // Socket working data.
-     IPv4SocketAddress    local_address;
-     IPv4SocketAddress    remote_address;
-     SRTSocketMode        mode;
-     volatile ::SRTSOCKET sock;       // SRT socket for data transmission
-     volatile ::SRTSOCKET listener;   // Listener SRT socket when srt_listen() is used.
-     size_t               total_sent_bytes;
-     size_t               total_received_bytes;
-     Time                 next_stats;
+     IPv4SocketAddress    local_address {};
+     IPv4SocketAddress    remote_address {};
+     SRTSocketMode        mode {SRTSocketMode::DEFAULT};
+     volatile ::SRTSOCKET sock {SRT_INVALID_SOCK};       // SRT socket for data transmission
+     volatile ::SRTSOCKET listener {SRT_INVALID_SOCK};   // Listener SRT socket when srt_listen() is used.
+     size_t               total_sent_bytes {0};
+     size_t               total_received_bytes {0};
+     Time                 next_stats {};
 
      // Socket options.
-     ::SRT_TRANSTYPE transtype;
-     std::string packet_filter;
-     std::string passphrase;
-     std::string streamid;
-     int         polling_time;
-     bool        messageapi;
-     bool        nakreport;
-     bool        reuse_port;
-     int         backlog;
-     int         conn_timeout;
-     int         ffs;
-     ::linger    linger_opt;
-     int         lossmaxttl;
-     int         mss;
-     int         ohead_bw;
-     int         payload_size;
-     int         rcvbuf;
-     int         sndbuf;
-     bool        enforce_encryption;
-     int32_t     kmrefreshrate;
-     int32_t     kmpreannounce;
-     int         udp_rcvbuf;
-     int         udp_sndbuf;
-     int64_t     input_bw;
-     int64_t     max_bw;
-     int32_t     iptos;
-     int32_t     ipttl;
-     int32_t     latency;
-     int32_t     min_version;
-     int32_t     pbkeylen;
-     int32_t     peer_idle_timeout;
-     int32_t     peer_latency;
-     int32_t     rcv_latency;
-     bool        tlpktdrop;
-     bool        disconnected;
-     bool        final_stats;
-     bool        json_line;
-     UString     json_prefix;
-     MilliSecond stats_interval;
-     SRTStatMode stats_mode;
+     ::SRT_TRANSTYPE transtype {SRTT_INVALID};
+     std::string packet_filter {};
+     std::string passphrase {};
+     std::string streamid {};
+     int         polling_time {-1};
+     bool        messageapi {false};
+     bool        nakreport {false};
+     bool        reuse_port {false};
+     int         backlog {0};
+     int         conn_timeout {-1};
+     int         ffs {-1};
+     ::linger    linger_opt {0, 0};
+     int         lossmaxttl {-1};
+     int         mss {-1};
+     int         ohead_bw {-1};
+     int         payload_size {-1};
+     int         rcvbuf {-1};
+     int         sndbuf {-1};
+     bool        enforce_encryption {false};
+     int32_t     kmrefreshrate {-1};
+     int32_t     kmpreannounce {-1};
+     int         udp_rcvbuf {-1};
+     int         udp_sndbuf {-1};
+     int64_t     input_bw {-1};
+     int64_t     max_bw {-1};
+     int32_t     iptos {-1};
+     int32_t     ipttl {-1};
+     int32_t     latency {-1};
+     int32_t     min_version {-1};
+     int32_t     pbkeylen {-1};
+     int32_t     peer_idle_timeout {-1};
+     int32_t     peer_latency {-1};
+     int32_t     rcv_latency {-1};
+     bool        tlpktdrop {false};
+     bool        disconnected {false};
+     bool        final_stats {false};
+     bool        json_line {false};
+     UString     json_prefix {};
+     MilliSecond stats_interval {0};
+     SRTStatMode stats_mode {SRTStatMode::ALL};
 private:
      // Callback which is called on any incoming connection.
      static int listenCallback(void* param, SRTSOCKET ns, int hsversion, const ::sockaddr* peeraddr, const char* streamid);
 };
-
-
-//----------------------------------------------------------------------------
-// Guts constructor.
-//----------------------------------------------------------------------------
-
-ts::SRTSocket::Guts::Guts(SRTSocket* parent) :
-    _parent(parent),
-    local_address(),
-    remote_address(),
-    mode(SRTSocketMode::DEFAULT),
-    sock(SRT_INVALID_SOCK),
-    listener(SRT_INVALID_SOCK),
-    total_sent_bytes(0),
-    total_received_bytes(0),
-    next_stats(),
-    transtype(SRTT_INVALID),
-    packet_filter(),
-    passphrase(),
-    streamid(),
-    polling_time(-1),
-    messageapi(false),
-    nakreport(false),
-    reuse_port(false),
-    backlog(0),
-    conn_timeout(-1),
-    ffs(-1),
-    linger_opt{0, 0},
-    lossmaxttl(-1),
-    mss(-1),
-    ohead_bw(-1),
-    payload_size(-1),
-    rcvbuf(-1),
-    sndbuf(-1),
-    enforce_encryption(false),
-    kmrefreshrate(-1),
-    kmpreannounce(-1),
-    udp_rcvbuf(-1),
-    udp_sndbuf(-1),
-    input_bw(-1),
-    max_bw(-1),
-    iptos(-1),
-    ipttl(-1),
-    latency(-1),
-    min_version(-1),
-    pbkeylen(-1),
-    peer_idle_timeout(-1),
-    peer_latency(-1),
-    rcv_latency(-1),
-    tlpktdrop(false),
-    disconnected(false),
-    final_stats(false),
-    json_line(false),
-    json_prefix(),
-    stats_interval(0),
-    stats_mode(SRTStatMode::ALL)
-{
-}
 
 
 //----------------------------------------------------------------------------

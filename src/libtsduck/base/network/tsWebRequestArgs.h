@@ -50,18 +50,18 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        WebRequestArgs();
+        WebRequestArgs() = default;
 
         // Public fields, by options.
-        MilliSecond   connectionTimeout;    //!< -\-connection-timeout
-        MilliSecond   receiveTimeout;       //!< -\-receive-timeout
-        uint16_t      proxyPort;            //!< -\-proxy-port
-        UString       proxyHost;            //!< -\-proxy-host
-        UString       proxyUser;            //!< -\-proxy-user
-        UString       proxyPassword;        //!< -\-proxy-password
-        UString       userAgent;            //!< -\-user-agent
-        bool          useCookies;           //!< Use cookies, no command line options, true by default
-        UString       cookiesFile;          //!< Cookies files (Linux only), no command line options
+        MilliSecond   connectionTimeout {0}; //!< -\-connection-timeout
+        MilliSecond   receiveTimeout {0};    //!< -\-receive-timeout
+        uint16_t      proxyPort {0};         //!< -\-proxy-port
+        UString       proxyHost {};          //!< -\-proxy-host
+        UString       proxyUser {};          //!< -\-proxy-user
+        UString       proxyPassword {};      //!< -\-proxy-password
+        UString       userAgent {};          //!< -\-user-agent
+        bool          useCookies {true};     //!< Use cookies, no command line options, true by default
+        UString       cookiesFile {};        //!< Cookies files (Linux only), no command line options
 
         //!
         //! Add command line option definitions in an Args.

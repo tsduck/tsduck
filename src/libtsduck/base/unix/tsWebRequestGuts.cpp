@@ -174,16 +174,16 @@ public:
     UString multiMessage(const UString& title, ::CURLMcode code) { return message(title, code, ::curl_multi_strerror); }
 
 private:
-    WebRequest&   _request;                 // Reference to parent WebRequest.
+    WebRequest&   _request;                    // Reference to parent WebRequest.
 #if defined(TS_CURL_WAKEUP)
-    Mutex         _mutex;                   // Exclusive access to _curlm/_curl init/clear sequences.
+    Mutex         _mutex {};                   // Exclusive access to _curlm/_curl init/clear sequences.
 #endif
-    ::CURLM*      _curlm;                   // "curl_multi" handler.
-    ::CURL*       _curl;                    // "curl_easy" handler.
-    ::curl_slist* _headers;                 // Request headers.
-    UString       _certFile;                // Latest CA certificates file.
-    ByteBlock     _data;                    // Received data, filled by writeCallback(), emptied by receive().
-    char          _error[CURL_ERROR_SIZE];  // Error message buffer for libcurl.
+    ::CURLM*      _curlm {nullptr};            // "curl_multi" handler.
+    ::CURL*       _curl {nullptr};             // "curl_easy" handler.
+    ::curl_slist* _headers {nullptr};          // Request headers.
+    UString       _certFile {};                // Latest CA certificates file.
+    ByteBlock     _data {};                    // Received data, filled by writeCallback(), emptied by receive().
+    char          _error[CURL_ERROR_SIZE] {0}; // Error message buffer for libcurl.
 
     // Handle an error while receiving data. Always return false.
     bool downloadError(const UString& message, bool* certError);
@@ -201,15 +201,7 @@ private:
 
 ts::WebRequest::SystemGuts::SystemGuts(WebRequest& request) :
     _request(request),
-#if defined(TS_CURL_WAKEUP)
-    _mutex(),
-#endif
-    _curlm(nullptr),
-    _curl(nullptr),
-    _headers(nullptr),
-    _certFile(UserHomeDirectory() + u"/.tscacert.pem"),
-    _data(),
-    _error{0}
+    _certFile(UserHomeDirectory() + u"/.tscacert.pem")
 {
 }
 
