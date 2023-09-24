@@ -60,7 +60,8 @@ namespace ts {
     {
     private:
         // Numerator and denominator. Always reduced. Only _num can be negative.
-        INT_T _num, _den;
+        INT_T _num {0};
+        INT_T _den {1};
 
         // Fast private unchecked constructor. The parameters must be valid.
         // The dummy parameter is here to disambiguate with the public constructor.
@@ -88,7 +89,7 @@ namespace ts {
         //!
         //! Default constructor, implicitly initialized to zero.
         //!
-        Fraction() : _num(0), _den(1) {}
+        Fraction() = default;
 
         //!
         //! Constructor from an integer value.
@@ -362,15 +363,14 @@ void ts::Fraction<INT_T,N>::reduce()
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 template <typename INT1, typename std::enable_if<std::is_integral<INT1>::value, int>::type M>
 ts::Fraction<INT_T,N>::Fraction(INT1 numerator) :
-    _num(int_t(numerator)), _den(1)
+    _num(int_t(numerator))
 {
     debug_throw_bound_check<int_t>(numerator);
 }
 
 template <typename INT_T, typename std::enable_if<std::is_integral<INT_T>::value, int>::type N>
 template <typename INT1, typename INT2, typename std::enable_if<std::is_integral<INT1>::value && std::is_integral<INT2>::value, int>::type M>
-ts::Fraction<INT_T,N>::Fraction(INT1 numerator, INT2 denominator) :
-    _num(0), _den(1)
+ts::Fraction<INT_T,N>::Fraction(INT1 numerator, INT2 denominator)
 {
     debug_throw_div_zero(denominator);
     if (numerator != 0) {
