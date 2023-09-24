@@ -111,15 +111,15 @@ namespace ts {
     private:
         // Private members
         Report&            _report;
-        UString            _filename;
-        UString            _error;
-        bool               _is_loaded;
-        SharedLibraryFlags _flags;
+        UString            _filename {};
+        UString            _error {};
+        bool               _is_loaded {false};
+        SharedLibraryFlags _flags {SharedLibraryFlags::NONE};
 
 #if defined(TS_WINDOWS)
-        ::HMODULE _module;
+        ::HMODULE _module {0};
 #else
-        void* _dl; // dlopen/dlclose handle
+        void* _dl {nullptr}; // dlopen/dlclose handle
 #endif
     };
 }

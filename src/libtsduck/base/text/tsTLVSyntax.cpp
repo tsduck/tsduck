@@ -37,10 +37,6 @@
 //----------------------------------------------------------------------------
 
 ts::TLVSyntax::TLVSyntax(int start, int size, size_t tagSize, size_t lengthSize, bool msb, Report& report) :
-    _start(0),
-    _size(0),
-    _tagSize(1),
-    _lengthSize(1),
     _msb(msb)
 {
     set(start, size, tagSize, lengthSize, msb, report);

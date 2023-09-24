@@ -35,18 +35,6 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::BlockCipher::BlockCipher() :
-    _key_set(false),
-    _cipher_id(0),
-    _key_encrypt_count(0),
-    _key_decrypt_count(0),
-    _key_encrypt_max(UNLIMITED),
-    _key_decrypt_max(UNLIMITED),
-    _current_key(),
-    _alert(nullptr)
-{
-}
-
 ts::BlockCipher::~BlockCipher()
 {
 }

@@ -37,13 +37,7 @@ const int ts::Enumeration::UNKNOWN = std::numeric_limits<int>::max();
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::Enumeration::Enumeration() :
-    _map()
-{
-}
-
-ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values) :
-    _map()
+ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values)
 {
     for (const auto& it : values) {
         _map.insert(std::make_pair(it.value, it.name));

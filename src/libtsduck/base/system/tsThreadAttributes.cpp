@@ -150,11 +150,7 @@ int ts::ThreadAttributes::Win32Priority(int priority)
 // Default constructor (all attributes have their default values)
 //----------------------------------------------------------------------------
 
-ts::ThreadAttributes::ThreadAttributes() :
-    _stackSize(0),
-    _deleteWhenTerminated(false),
-    _priority(0),
-    _name()
+ts::ThreadAttributes::ThreadAttributes()
 {
     if (!_priorityInitialized) {
         InitializePriorities();

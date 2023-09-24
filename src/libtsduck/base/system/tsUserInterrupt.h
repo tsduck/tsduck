@@ -44,7 +44,6 @@
 #endif
 
 namespace ts {
-
     //!
     //! An instance of this class handles the Ctrl+C user interrupt.
     //! @ingroup system
@@ -123,12 +122,11 @@ namespace ts {
         volatile ::sig_atomic_t _terminate {0};
         volatile ::sig_atomic_t _got_sigint {0};
 #if defined(TS_MAC)
-        std::string             _sem_name;
-        ::sem_t*                _sem_address;
+        std::string             _sem_name {};
+        ::sem_t*                _sem_address {SEM_FAILED};
 #else
-        ::sem_t                 _sem_instance;
+        ::sem_t                 _sem_instance {};
 #endif
-
 #endif
 
         InterruptHandler* _handler {nullptr};

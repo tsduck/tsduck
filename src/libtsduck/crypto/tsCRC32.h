@@ -113,7 +113,7 @@ namespace ts {
         };
 
     private:
-        uint32_t _fcs;
+        uint32_t _fcs = 0xFFFFFFFF;
 
         // Runtime check once if accelerated CRC32 instructions are supported on this CPU.
         static volatile bool _accel_checked;

@@ -56,11 +56,7 @@ bool ts::DVBCSA2::IsReducedCW(const uint8_t *cw)
 // Default Constructor.
 //----------------------------------------------------------------------------
 
-ts::DVBCSA2::DVBCSA2(EntropyMode mode) :
-    _init(false),
-    _mode(mode),
-    _block(),
-    _stream()
+ts::DVBCSA2::DVBCSA2(EntropyMode mode) : _mode(mode)
 {
 }
 

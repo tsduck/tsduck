@@ -173,11 +173,11 @@ namespace ts {
 
     private:
         // Monotonic clock value in system ticks
-        int64_t _value;
+        int64_t _value {0};
 
 #if defined(TS_WINDOWS)
         // Timer handle
-        ::HANDLE _handle;
+        ::HANDLE _handle {INVALID_HANDLE_VALUE};
 
         // On Win32, a FILETIME is a 64-bit value representing the number
         // of 100-nanosecond intervals since January 1, 1601.

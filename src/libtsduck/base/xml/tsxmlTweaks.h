@@ -52,7 +52,7 @@ namespace ts {
             //!
             //! Default constructor.
             //!
-            Tweaks();
+            Tweaks() = default;
 
             //!
             //! Add command line option definitions in an Args.
@@ -74,7 +74,7 @@ namespace ts {
             //! If false, use single quote.
             //! The default is true.
             //!
-            bool attributeValueDoubleQuote;
+            bool attributeValueDoubleQuote = true;
 
             //!
             //! The type of quote to use for attribute values.
@@ -100,7 +100,7 @@ namespace ts {
             //!
             //! The default is true.
             //!
-            bool strictAttributeFormatting;
+            bool strictAttributeFormatting = true;
 
             //!
             //! How to escape characters in text nodes.
@@ -111,42 +111,42 @@ namespace ts {
             //!
             //! The default is false.
             //!
-            bool strictTextNodeFormatting;
+            bool strictTextNodeFormatting = false;
 
             //!
             //! In the XML-to-JSON conversion, keep the root of the XML document as a JSON object.
             //!
             //! The default is false.
             //!
-            bool x2jIncludeRoot;
+            bool x2jIncludeRoot = false;
 
             //!
             //! In the XML-to-JSON conversion without model, enforce the creation of a JSON number when possible.
             //!
             //! The default is false.
             //!
-            bool x2jEnforceInteger;
+            bool x2jEnforceInteger = false;
 
             //!
             //! In the XML-to-JSON conversion without model, enforce the creation of a JSON boolean when possible.
             //!
             //! The default is false.
             //!
-            bool x2jEnforceBoolean;
+            bool x2jEnforceBoolean = false;
 
             //!
             //! In the XML-to-JSON conversion without model, trim all text nodes.
             //!
             //! The default is false.
             //!
-            bool x2jTrimText;
+            bool x2jTrimText = false;
 
             //!
             //! In the XML-to-JSON conversion without model, collapse spaces in all text nodes.
             //!
             //! The default is false.
             //!
-            bool x2jCollapseText;     //!< Option -\-x2j-collapse-text
+            bool x2jCollapseText = false;
         };
     }
 }

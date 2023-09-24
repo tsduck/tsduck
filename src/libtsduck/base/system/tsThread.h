@@ -219,11 +219,11 @@ namespace ts {
         void setTypeName(const UString& name = UString());
 
     private:
-        ThreadAttributes _attributes;
-        mutable Mutex    _mutex;
-        UString          _typename;
-        volatile bool    _started;
-        volatile bool    _waiting;
+        ThreadAttributes _attributes {};
+        mutable Mutex    _mutex {};
+        UString          _typename {};
+        volatile bool    _started {false};
+        volatile bool    _waiting {false};
 
         // Internal version of isCurrentThread(), bypass checks
         bool isCurrentThreadUnchecked() const;
@@ -232,17 +232,17 @@ namespace ts {
         void mainWrapper();
 
 #if defined(TS_WINDOWS)
-        ::HANDLE _handle;
-        ::DWORD _thread_id;
+        ::HANDLE _handle {INVALID_HANDLE_VALUE};
+        ::DWORD  _thread_id {0};
         // Actual starting point of thread. Parameter is "this".
         static ::DWORD WINAPI ThreadProc(::LPVOID parameter);
 #else
     #if defined(GPROF)
         // When using gprof, we need to pass the ITIMER_PROF value to the thread.
-        ::itimerval _itimer;
-        bool        _itimer_valid;
+        ::itimerval _itimer {};
+        bool        _itimer_valid {false};
     #endif
-        pthread_t   _pthread;
+        pthread_t   _pthread {nullptr};
         // Actual starting point of thread. Parameter is "this".
         static void* ThreadProc(void* parameter);
 #endif

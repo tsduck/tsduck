@@ -43,11 +43,7 @@
 //----------------------------------------------------------------------------
 
 ts::xml::Node::Node(Report& report, size_t line) :
-    RingNode(),
     _report(report),
-    _value(),
-    _parent(nullptr),
-    _firstChild(nullptr),
     _inputLineNum(line)
 {
 }
@@ -60,7 +56,6 @@ ts::xml::Node::Node(Node* parent, const UString& value, bool last) :
 }
 
 ts::xml::Node::Node(const Node& other) :
-    RingNode(),
     _report(other._report),
     _value(other._value),
     _parent(nullptr),

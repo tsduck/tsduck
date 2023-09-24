@@ -38,7 +38,6 @@
 #include "tsException.h"
 
 namespace ts {
-
     //!
     //! Automatic guard class for synchronization condition (ts::Condition).
     //! @ingroup thread
@@ -152,6 +151,6 @@ namespace ts {
     private:
         Mutex&     _mutex;
         Condition& _condition;
-        bool       _is_locked;
+        bool       _is_locked {false};
     };
 }

@@ -38,15 +38,13 @@
 
 ts::xml::Element::Element(Report& report, size_t line, CaseSensitivity attributeCase) :
     Node(report, line),
-    _attributeCase(attributeCase),
-    _attributes()
+    _attributeCase(attributeCase)
 {
 }
 
 ts::xml::Element::Element(Node* parent, const UString& name, CaseSensitivity attributeCase, bool last) :
     Node(parent, name, last), // the "value" of an element node is its name.
-    _attributeCase(attributeCase),
-    _attributes()
+    _attributeCase(attributeCase)
 {
 }
 

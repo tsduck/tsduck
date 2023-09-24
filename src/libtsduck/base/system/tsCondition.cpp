@@ -43,13 +43,7 @@ TS_LLVM_NOWARNING(thread-safety-analysis)
 TS_PUSH_WARNING()
 TS_GCC_NOWARNING(zero-as-null-pointer-constant) // NetBSD
 
-ts::Condition::Condition() :
-    _created(false),
-#if defined(TS_WINDOWS)
-    _handle(INVALID_HANDLE_VALUE)
-#else
-    _cond(PTHREAD_COND_INITIALIZER)
-#endif
+ts::Condition::Condition()
 {
 #if defined(TS_WINDOWS)
 

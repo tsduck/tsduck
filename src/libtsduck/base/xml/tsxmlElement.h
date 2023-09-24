@@ -879,8 +879,8 @@ namespace ts {
             virtual bool parseNode(TextParser& parser, const Node* parent) override;
 
         private:
-            CaseSensitivity _attributeCase;  //!< For attribute names.
-            AttributeMap    _attributes;     //!< Map of attributes.
+            CaseSensitivity _attributeCase {CASE_INSENSITIVE}; // For attribute names.
+            AttributeMap _attributes {};
 
             // Compute the key in the attribute map.
             UString attributeKey(const UString& attributeName) const;

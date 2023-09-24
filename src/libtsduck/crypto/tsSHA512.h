@@ -59,10 +59,10 @@ namespace ts {
         SHA512();
 
     private:
-        uint64_t _length;                // Total message size in bits (already hashed, ie. excluding _buf)
-        size_t   _curlen;                // Used bytes in _buf
-        uint64_t _state[HASH_SIZE / 8];  // Current hash value (512 bits, 64 bytes, 8 uint64)
-        uint8_t  _buf[BLOCK_SIZE];       // Current block to hash (1024 bits, 128 bytes)
+        uint64_t _length {0};               // Total message size in bits (already hashed, ie. excluding _buf)
+        size_t   _curlen {0};               // Used bytes in _buf
+        uint64_t _state[HASH_SIZE / 8] {};  // Current hash value (512 bits, 64 bytes, 8 uint64)
+        uint8_t  _buf[BLOCK_SIZE] {};       // Current block to hash (1024 bits, 128 bytes)
 
         // The K array
         static const uint64_t K[80];

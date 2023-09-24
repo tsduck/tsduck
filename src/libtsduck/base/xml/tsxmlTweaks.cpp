@@ -32,23 +32,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors.
-//----------------------------------------------------------------------------
-
-ts::xml::Tweaks::Tweaks() :
-    attributeValueDoubleQuote(true),
-    strictAttributeFormatting(true),
-    strictTextNodeFormatting(false),
-    x2jIncludeRoot(false),
-    x2jEnforceInteger(false),
-    x2jEnforceBoolean(false),
-    x2jTrimText(false),
-    x2jCollapseText(false)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 

@@ -47,11 +47,7 @@
 ts::SystemMonitor::SystemMonitor(Report& report, const UString& config) :
     Thread(ThreadAttributes().setPriority(ThreadAttributes::GetMinimumPriority()).setStackSize(MONITOR_STACK_SIZE)),
     _report(report),
-    _config_file(config),
-    _periods(),
-    _mutex(),
-    _wake_up(),
-    _terminate(false)
+    _config_file(config)
 {
 }
 
@@ -59,21 +55,6 @@ ts::SystemMonitor::~SystemMonitor()
 {
     stop();
     waitForTermination();
-}
-
-ts::SystemMonitor::Config::Config() :
-    log_messages(false),
-    stable_memory(false),
-    max_cpu(0),
-    alarm_command()
-{
-}
-
-ts::SystemMonitor::Period::Period() :
-    Config(),
-    duration(0),
-    interval(0)
-{
 }
 
 

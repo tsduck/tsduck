@@ -36,8 +36,7 @@
 //----------------------------------------------------------------------------
 
 ts::GuardMutex::GuardMutex(MutexInterface& mutex, MilliSecond timeout) :
-    _mutex(mutex),
-    _is_locked(false)
+    _mutex(mutex)
 {
     _is_locked = mutex.acquire(timeout);
 

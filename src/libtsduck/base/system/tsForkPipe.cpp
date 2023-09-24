@@ -52,25 +52,7 @@
 // Constructor / destructor
 //----------------------------------------------------------------------------
 
-ts::ForkPipe::ForkPipe() :
-    AbstractOutputStream(),
-    _in_mode(STDIN_PIPE),
-    _out_mode(KEEP_BOTH),
-    _is_open(false),
-    _wait_mode(ASYNCHRONOUS),
-    _in_pipe(false),
-    _out_pipe(false),
-    _use_pipe(false),
-    _ignore_abort(false),
-    _broken_pipe(false),
-    _eof(false),
-#if defined(TS_WINDOWS)
-    _handle(INVALID_HANDLE_VALUE),
-    _process(INVALID_HANDLE_VALUE)
-#else
-    _fpid(0),
-    _fd(-1)
-#endif
+ts::ForkPipe::ForkPipe()
 {
     // We will handle broken-pipe errors, don't kill us for that.
     IgnorePipeSignal();

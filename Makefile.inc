@@ -588,7 +588,7 @@ else ifneq ($(DRAGONFLYBSD),)
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(MACOS),)
     # Build flags on macOS
-    LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
+    LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib -Xlinker -no_warn_duplicate_libraries
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 

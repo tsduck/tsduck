@@ -36,8 +36,7 @@
 
 ts::xml::RunningDocument::RunningDocument(Report& report) :
     Document(report),
-    _text(report),
-    _open_root(false)
+    _text(report)
 {
 }
 

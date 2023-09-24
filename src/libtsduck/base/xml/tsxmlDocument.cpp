@@ -42,8 +42,7 @@
 
 ts::xml::Document::Document(Report& report) :
     Node(report, 1),
-    StringifyInterface(),
-    _tweaks()
+    StringifyInterface()
 {
 }
 

@@ -93,30 +93,30 @@ namespace ts {
         class Config
         {
         public:
-            Config();               // Constructor.
-            bool    log_messages;   // Log monitoring messages.
-            bool    stable_memory;  // If true, raise an alarm when the virtual memory increases.
-            int     max_cpu;        // Maximum allowed CPU percentage.
-            UString alarm_command;  // Shell command to run on alarm.
+            Config() = default;
+            bool    log_messages {false};   // Log monitoring messages.
+            bool    stable_memory {false};  // If true, raise an alarm when the virtual memory increases.
+            int     max_cpu {0};            // Maximum allowed CPU percentage.
+            UString alarm_command {};       // Shell command to run on alarm.
         };
 
         // Description of a monitoring period.
         class Period: public Config
         {
         public:
-            Period();               // Constructor.
-            MilliSecond duration;   // Period duration in milliseconds.
-            MilliSecond interval;   // Monitoring interval in that period.
+            Period() = default;
+            MilliSecond duration {0};   // Period duration in milliseconds.
+            MilliSecond interval {0};   // Monitoring interval in that period.
         };
         typedef std::list<Period> PeriodList;
 
         // Private members
         Report&    _report;
-        UString    _config_file;  // XML configuration file name.
-        PeriodList _periods;      // List of monitoring periods.
-        Mutex      _mutex;
-        Condition  _wake_up;      // Accessed under mutex.
-        bool       _terminate;    // Accessed under mutex.
+        UString    _config_file {};     // XML configuration file name.
+        PeriodList _periods {};         // List of monitoring periods.
+        Mutex      _mutex {};
+        Condition  _wake_up {};         // Accessed under mutex.
+        bool       _terminate {false};  // Accessed under mutex.
 
         // Inherited from Thread
         virtual void main() override;

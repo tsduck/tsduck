@@ -65,7 +65,7 @@ namespace ts {
         //! Constructor.
         //! The initial state is counter mode with empty file template.
         //!
-        FileNameGenerator();
+        FileNameGenerator() = default;
 
         //!
         //! Reinitialize the file name generator in counter mode.
@@ -103,13 +103,13 @@ namespace ts {
         UString newFileName(const Time& time);
 
     private:
-        UString _name_prefix;    // Full name prefix.
-        UString _name_suffix;    // Full name suffix.
-        bool    _counter_mode;   // Use counter mode (ie. not date and time).
-        size_t  _counter_value;  // Next counter value in file names.
-        size_t  _counter_width;  // Counter width in file name.
-        int     _time_fields;    // The time fields to use.
-        UString _last_time;      // The last returned time fields. Use _counter_value to avoid identical file names.
+        UString _name_prefix {};               // Full name prefix.
+        UString _name_suffix {};               // Full name suffix.
+        bool    _counter_mode {true};          // Use counter mode (ie. not date and time).
+        size_t  _counter_value {0};            // Next counter value in file names.
+        size_t  _counter_width {6};            // Counter width in file name.
+        int     _time_fields {Time::DATETIME}; // The time fields to use.
+        UString _last_time {};                 // The last returned time fields. Use _counter_value to avoid identical file names.
 
         // Fix name prefix, make sure it ends with '-' or any punctuation.
         void fixNamePrefix();

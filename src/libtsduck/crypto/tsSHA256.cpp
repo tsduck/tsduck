@@ -60,9 +60,7 @@ const uint32_t ts::SHA256::K[64] = {
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SHA256::SHA256() :
-    _length(0),
-    _curlen(0)
+ts::SHA256::SHA256()
 {
     // Check once if SHA-256 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.

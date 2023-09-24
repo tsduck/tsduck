@@ -51,7 +51,7 @@ namespace ts {
     class FloatingPoint: public AbstractNumber
     {
     private:
-        FLOAT_T _value;
+        FLOAT_T _value = 0.0;
 
     public:
         //!
@@ -92,7 +92,7 @@ namespace ts {
         //!
         //! Default constructor, implicitly initialized to zero.
         //!
-        FloatingPoint() : _value(0.0) {}
+        FloatingPoint() = default;
 
         //!
         //! Constructor from an integer or floating-point value.

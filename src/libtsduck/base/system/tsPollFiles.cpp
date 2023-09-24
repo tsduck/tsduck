@@ -41,13 +41,11 @@ ts::PollFiles::PollFiles(const UString& wildcard,
                          MilliSecond poll_interval,
                          MilliSecond min_stable_delay,
                          Report& report) :
-    _files_wildcard(wildcard),
     _report(report),
+    _files_wildcard(wildcard),
     _poll_interval(poll_interval),
     _min_stable_delay(min_stable_delay),
-    _listener(listener),
-    _polled_files(),
-    _notified_files()
+    _listener(listener)
 {
 }
 

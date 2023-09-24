@@ -70,9 +70,9 @@ namespace ts {
 
     private:
 #if defined(TS_WINDOWS)
-        ::HCRYPTPROV _prov;
+        ::HCRYPTPROV _prov = 0;
 #else
-        int _fd;
+        int _fd = -1;
 #endif
     };
 }

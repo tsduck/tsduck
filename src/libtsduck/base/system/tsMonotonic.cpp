@@ -46,11 +46,7 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::Monotonic::Monotonic(bool systemTime) :
-    _value(0)
-#if defined(TS_WINDOWS)
-    , _handle(INVALID_HANDLE_VALUE)
-#endif
+ts::Monotonic::Monotonic(bool systemTime)
 {
 #if defined(TS_WINDOWS)
     if ((_handle = ::CreateWaitableTimer(NULL, false, NULL)) == NULL) {

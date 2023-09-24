@@ -251,7 +251,7 @@ namespace ts {
         TS_POP_WARNING()
 
     private:
-        int_t _value;
+        int_t _value = 0;
     };
 }
 
@@ -263,4 +263,3 @@ constexpr size_t ts::CompactBitSet<BITS>::MAX;
 
 template <const size_t BITS>
 constexpr typename ts::CompactBitSet<BITS>::int_t ts::CompactBitSet<BITS>::ALL;
-

@@ -39,8 +39,7 @@ volatile bool ts::CRC32::_accel_supported = false;
 // Default constructor.
 //----------------------------------------------------------------------------
 
-ts::CRC32::CRC32() :
-    _fcs(0xFFFFFFFF)
+ts::CRC32::CRC32()
 {
     // Check once if CRC32 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.

@@ -92,8 +92,8 @@ namespace ts {
             void close();
 
         private:
-            TextFormatter _text;       // The text formatter.
-            bool          _open_root;  // Document root has been printed and is left open.
+            TextFormatter _text;      // The text formatter.
+            bool _open_root = false;  // Document root has been printed and is left open.
         };
     }
 }

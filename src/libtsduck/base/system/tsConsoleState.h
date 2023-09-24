@@ -82,8 +82,8 @@ namespace ts {
 
     private:
 #if defined(TS_WINDOWS)
-        const ::UINT _input_cp;
-        const ::UINT _output_cp;
+        const ::UINT _input_cp = 0;
+        const ::UINT _output_cp = 0;
 #endif
     };
 }

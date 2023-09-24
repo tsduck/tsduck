@@ -39,11 +39,7 @@ const ts::UChar* const ts::OutputPager::DEFAULT_PAGER = u"PAGER";
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly) :
-    ForkPipe(),
-    _hasTerminal(false),
-    _outputMode(KEEP_BOTH),
-    _pagerCommand()
+ts::OutputPager::OutputPager(const UString& envName, bool stdoutOnly)
 {
     // Check if we have a terminal.
     const bool outTerm = StdOutIsTerminal();
