@@ -63,7 +63,6 @@ namespace ts {
         // Private members:
         const int         _signal_min;
         const int         _signal_max;
-        const size_t      _signal_count;
         Mutex             _mutex;
         std::vector<bool> _signals;
     };

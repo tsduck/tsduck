@@ -39,7 +39,6 @@
 #include "tsSignalState.h"
 #include "tsModulationArgs.h"
 #include "tsAbortInterface.h"
-#include "tsSafePtr.h"
 #include "tsReport.h"
 #include "tsDTVProperties.h"
 
@@ -89,29 +88,29 @@ namespace ts {
         virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin = UString(), bool extended = false) override;
 
     private:
-        bool                _is_open;
-        bool                _info_only;
-        UString             _device_name;      // Used to open the tuner
-        UString             _device_info;      // Device-specific, can be empty
-        UString             _device_path;      // System-specific device path.
-        MilliSecond         _signal_timeout;
-        bool                _signal_timeout_silent;
-        MilliSecond         _receive_timeout;
-        DeliverySystemSet   _delivery_systems;
-        volatile bool       _reading_dvr;      // Read operation in progree on dvr.
-        volatile bool       _aborted;          // Tuner operation was aborted
-        UString             _frontend_name;    // Frontend device name
-        UString             _demux_name;       // Demux device name
-        UString             _dvr_name;         // DVR device name
-        int                 _frontend_fd;      // Frontend device file descriptor
-        int                 _demux_fd;         // Demux device file descriptor
-        int                 _dvr_fd;           // DVR device file descriptor
-        unsigned long       _demux_bufsize;    // Demux device buffer size
-        ::dvb_frontend_info _fe_info;          // Front-end characteristics
-        MilliSecond         _signal_poll;
-        int                 _rt_signal;        // Receive timeout signal number
-        ::timer_t           _rt_timer;         // Receive timeout timer
-        bool                _rt_timer_valid;   // Receive timeout timer was created
+        bool                _is_open {false};
+        bool                _info_only {false};
+        UString             _device_name {};          // Used to open the tuner
+        UString             _device_info {};          // Device-specific, can be empty
+        UString             _device_path {};          // System-specific device path.
+        MilliSecond         _signal_timeout {DEFAULT_SIGNAL_TIMEOUT};
+        bool                _signal_timeout_silent {false};
+        MilliSecond         _receive_timeout {0};
+        DeliverySystemSet   _delivery_systems {};
+        volatile bool       _reading_dvr {false};     // Read operation in progree on dvr.
+        volatile bool       _aborted {false};         // Tuner operation was aborted
+        UString             _frontend_name {};        // Frontend device name
+        UString             _demux_name {};           // Demux device name
+        UString             _dvr_name {};             // DVR device name
+        int                 _frontend_fd {-1};        // Frontend device file descriptor
+        int                 _demux_fd {-1};           // Demux device file descriptor
+        int                 _dvr_fd {-1};             // DVR device file descriptor
+        unsigned long       _demux_bufsize {DEFAULT_DEMUX_BUFFER_SIZE};
+        ::dvb_frontend_info _fe_info {};              // Front-end characteristics
+        MilliSecond         _signal_poll {DEFAULT_SIGNAL_POLL};
+        int                 _rt_signal {-1};          // Receive timeout signal number
+        ::timer_t           _rt_timer {nullptr};      // Receive timeout timer
+        bool                _rt_timer_valid {false};  // Receive timeout timer was created
 
         // Clear tuner, return true on success, false on error
         bool dtvClear();

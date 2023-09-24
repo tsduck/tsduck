@@ -32,23 +32,6 @@
 
 
 //-----------------------------------------------------------------------------
-// Constructor
-//-----------------------------------------------------------------------------
-
-ts::TunerDeviceInfo::TunerDeviceInfo() :
-    adapter_number(0),
-    frontend_number(0),
-    vendor_id(0),
-    product_id(0),
-    manufacturer(),
-    product(),
-    version(),
-    serial()
-{
-}
-
-
-//-----------------------------------------------------------------------------
 // Constructor which loads tuner information from adapter and frontend numbers.
 //-----------------------------------------------------------------------------
 

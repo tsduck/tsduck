@@ -65,30 +65,7 @@
 //-----------------------------------------------------------------------------
 
 ts::TunerDevice::TunerDevice(DuckContext& duck) :
-    TunerBase(duck),
-    _is_open(false),
-    _info_only(false),
-    _device_name(),
-    _device_info(),
-    _device_path(),
-    _signal_timeout(DEFAULT_SIGNAL_TIMEOUT),
-    _signal_timeout_silent(false),
-    _receive_timeout(0),
-    _delivery_systems(),
-    _reading_dvr(false),
-    _aborted(false),
-    _frontend_name(),
-    _demux_name(),
-    _dvr_name(),
-    _frontend_fd(-1),
-    _demux_fd(-1),
-    _dvr_fd(-1),
-    _demux_bufsize(DEFAULT_DEMUX_BUFFER_SIZE),
-    _fe_info(),
-    _signal_poll(DEFAULT_SIGNAL_POLL),
-    _rt_signal(-1),
-    _rt_timer(nullptr),
-    _rt_timer_valid(false)
+    TunerBase(duck)
 {
 }
 
