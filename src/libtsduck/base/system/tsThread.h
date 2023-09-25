@@ -234,7 +234,7 @@ namespace ts {
 
         #if defined(TS_WINDOWS)
             ::HANDLE _handle {INVALID_HANDLE_VALUE};
-            ::DWORD  _thread_id {0};
+            ::DWORD _thread_id {0};
             // Actual starting point of thread. Parameter is "this".
             static ::DWORD WINAPI ThreadProc(::LPVOID parameter);
         #else
@@ -243,7 +243,11 @@ namespace ts {
                 ::itimerval _itimer {};
                 bool _itimer_valid {false};
             #endif
-            pthread_t _pthread {reinterpret_cast<pthread_t>(0)};
+            TS_PUSH_WARNING()
+            TS_GCC_NOWARNING(zero-as-null-pointer-constant)
+            TS_LLVM_NOWARNING(zero-as-null-pointer-constant)
+            pthread_t _pthread {0};
+            TS_POP_WARNING()
             // Actual starting point of thread. Parameter is "this".
             static void* ThreadProc(void* parameter);
         #endif
