@@ -48,14 +48,8 @@ TS_LLVM_NOWARNING(thread-safety-negative)
 // Constructor
 //----------------------------------------------------------------------------
 
-// The macro PTHREAD_MUTEX_INITIALIZER uses several zeroes as pointers.
-TS_PUSH_WARNING()
-TS_GCC_NOWARNING(zero-as-null-pointer-constant)
-
 ts::Mutex::Mutex()
 {
-    TS_POP_WARNING()
-
 #if defined(TS_WINDOWS)
 
     // Windows implementation.
