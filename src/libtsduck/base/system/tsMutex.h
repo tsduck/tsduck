@@ -118,7 +118,11 @@ namespace ts {
 #if defined(TS_WINDOWS)
         ::HANDLE _handle = INVALID_HANDLE_VALUE;
 #else
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(zero-as-null-pointer-constant)
         ::pthread_mutex_t _mutex = PTHREAD_MUTEX_INITIALIZER;
+        TS_POP_WARNING()
+
         friend class Condition;
 
         //!

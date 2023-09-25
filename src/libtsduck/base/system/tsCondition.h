@@ -130,7 +130,10 @@ namespace ts {
 #if defined(TS_WINDOWS)
         ::HANDLE _handle = INVALID_HANDLE_VALUE; // Event handle
 #else
+        TS_PUSH_WARNING()
+        TS_GCC_NOWARNING(zero-as-null-pointer-constant) // NetBSD
         ::pthread_cond_t _cond = PTHREAD_COND_INITIALIZER;
+        TS_POP_WARNING()
 #endif
     };
 }
