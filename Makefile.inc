@@ -454,6 +454,7 @@ ifeq ($(GCC_VERSION_DONE),)
     export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i -e gcc -e g++),true)
     export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i clang),true)
     export LLVM_12 := $(call F_GE,$(LLVM_MAJOR),12)
+    export LLVM_15 := $(call F_GE,$(LLVM_MAJOR),15)
     export GCC_5 := $(call F_GE,$(GCC_MAJOR),5)
     export GCC_6 := $(call F_GE,$(GCC_MAJOR),6)
 endif
@@ -588,7 +589,7 @@ else ifneq ($(DRAGONFLYBSD),)
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(MACOS),)
     # Build flags on macOS
-    LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib -Xlinker -no_warn_duplicate_libraries
+    LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib -Xlinker $(if $(LLVM_15),-no_warn_duplicate_libraries)
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 
