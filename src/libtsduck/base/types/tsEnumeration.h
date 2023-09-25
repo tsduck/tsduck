@@ -310,6 +310,8 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
+#if !defined(DOXYGEN)
+
 // Get the enumeration value from a name.
 template <typename ENUM, typename std::enable_if<std::is_enum<ENUM>::value>::type*>
 bool ts::Enumeration::getValue(ENUM& e, const UString& name, bool caseSensitive, bool abbreviated) const
@@ -348,5 +350,7 @@ void ts::Enumeration::getAllNames(CONTAINER& names) const
         names.push_back(it.second);
     }
 }
+
+#endif // DOXYGEN
 
 TS_POP_WARNING()
