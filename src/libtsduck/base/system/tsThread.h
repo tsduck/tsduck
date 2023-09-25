@@ -243,7 +243,7 @@ namespace ts {
                 ::itimerval _itimer {};
                 bool _itimer_valid {false};
             #endif
-            pthread_t _pthread {pthread_t(0)};
+            pthread_t _pthread {reinterpret_cast<pthread_t>(0)};
             // Actual starting point of thread. Parameter is "this".
             static void* ThreadProc(void* parameter);
         #endif
