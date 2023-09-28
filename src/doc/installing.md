@@ -21,7 +21,7 @@ The TSDuck installation command is simply:
 winget install tsduck
 ~~~
 
-## Download an installer  {#winget}
+## Download an installer  {#windownload}
 
 [Executable binary installers for the latest TSDuck version](https://tsduck.io/download/tsduck)
 are available for 64-bit Windows on Intel systems.
