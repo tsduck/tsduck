@@ -339,22 +339,29 @@ TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replaci
 // This is a known GCC bug since 2012, never fixed: #if is too early in lex analysis and #pragma are not yet parsed.
 // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
 #if defined(TS_GCC_ONLY) && !defined(__APPLE__)
-#define __APPLE__ 0
-#define ZERO__APPLE__ 1
+    #define __APPLE__ 0
+    #define ZERO__APPLE__ 1
 #endif
 
 #include <srt/srt.h>
 
-// On Windows, access_control.h as missing in the binary installer before 1.5.3.
-#if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
-#define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
+// The header access_control.h was introduced in version 1.4.2.
+// On Windows, access_control.h was missing in the binary installer before 1.5.3.
+#if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
+    typedef SRT_REJECT_REASON RejectReason;
 #else
-#include <srt/access_control.h>
+    #define HAS_SRT_ACCESS_CONTROL 1
+    typedef int RejectReason;
+    #if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
+        #define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
+    #else
+        #include <srt/access_control.h>
+    #endif
 #endif
 
 #if defined(ZERO__APPLE__)
-#undef __APPLE__
-#undef ZERO__APPLE__
+    #undef __APPLE__
+    #undef ZERO__APPLE__
 #endif
 
 TS_POP_WARNING()
@@ -988,7 +995,9 @@ int ts::SRTSocket::Guts::listenCallback(void* param, SRTSOCKET sock, int hsversi
     Guts* guts = reinterpret_cast<Guts*>(param);
     if (guts == nullptr || (guts->listener != SRT_INVALID_SOCK && guts->sock != SRT_INVALID_SOCK)) {
         // A connection is already established, revoke all others.
-        ::srt_setrejectreason(sock, SRT_REJX_OVERLOAD);
+        #if defined(HAS_SRT_ACCESS_CONTROL)
+            ::srt_setrejectreason(sock, SRT_REJX_OVERLOAD);
+        #endif
         return -1;
     }
     else {
@@ -1007,17 +1016,21 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
         const int err = ::srt_getlasterror(&errno);
         std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
-            const int reason = ::srt_getrejectreason(sock);
+            const RejectReason reason = ::srt_getrejectreason(sock);
             report.debug(u"srt_connect rejected, reason: %d", {reason});
+#if defined(HAS_SRT_ACCESS_CONTROL)
             if (reason == SRT_REJX_OVERLOAD) {
                 // Extended rejection reasons (REJX) have no meaningful error strings.
                 // Since this one is expected, treat it differently.
                 err_str.append(", server is overloaded, too many client connections already established");
             }
             else {
+#endif
                 err_str.append(", reject reason: ");
                 err_str.append(::srt_rejectreason_str(reason));
+#if defined(HAS_SRT_ACCESS_CONTROL)
             }
+#endif
         }
         report.error(u"error during srt_connect: %s", {err_str});
         return false;

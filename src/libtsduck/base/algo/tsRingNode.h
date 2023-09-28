@@ -144,7 +144,7 @@ namespace ts {
         size_t ringSize() const;
 
     private:
-        RingNode* _ring_previous {nullptr};
-        RingNode* _ring_next {nullptr};
+        RingNode* _ring_previous;
+        RingNode* _ring_next;
     };
 }

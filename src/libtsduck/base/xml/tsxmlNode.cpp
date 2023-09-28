@@ -56,6 +56,7 @@ ts::xml::Node::Node(Node* parent, const UString& value, bool last) :
 }
 
 ts::xml::Node::Node(const Node& other) :
+    RingNode(), // required on old gcc 8.5 and below (gcc bug)
     _report(other._report),
     _value(other._value),
     _parent(nullptr),
