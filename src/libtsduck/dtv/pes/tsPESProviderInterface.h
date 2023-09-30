@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL PESProviderInterface
     {
+        TS_INTERFACE(PESProviderInterface);
     public:
         //!
         //! This hook is invoked when a new PES packet is required.
@@ -54,10 +55,5 @@ namespace ts {
         //! If a null pointer is provided, no PES packet is available.
         //!
         virtual void providePESPacket(PacketCounter counter, PESPacketPtr& pes) = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~PESProviderInterface();
     };
 }

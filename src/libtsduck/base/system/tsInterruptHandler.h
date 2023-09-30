@@ -42,15 +42,11 @@ namespace ts {
     //!
     class TSDUCKDLL InterruptHandler
     {
+        TS_INTERFACE(InterruptHandler);
     public:
         //!
         //! This hook is invoked during the requested interrupt, in the context of a dedicated thread.
         //!
         virtual void handleInterrupt() = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~InterruptHandler();
     };
 }

@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL BlockCipherAlertInterface
     {
+        TS_INTERFACE(BlockCipherAlertInterface);
     public:
         //!
         //! Reason for the alert.
@@ -66,10 +67,5 @@ namespace ts {
         //! Some alerts are informational only and the return value is ignored.
         //!
         virtual bool handleBlockCipherAlert(BlockCipher& cipher, AlertReason reason) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~BlockCipherAlertInterface();
     };
 }

@@ -48,6 +48,7 @@ namespace ts {
     //!
     class TSDUCKDLL SectionHandlerInterface
     {
+        TS_INTERFACE(SectionHandlerInterface);
     public:
         //!
         //! This hook is invoked when a complete section is available.
@@ -55,10 +56,5 @@ namespace ts {
         //! @param [in] section The new section from the demux.
         //!
         virtual void handleSection(SectionDemux& demux, const Section& section) = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~SectionHandlerInterface();
     };
 }

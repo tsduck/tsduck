@@ -42,3 +42,4 @@ void ts::PESHandlerInterface::handleNewHEVCAttributes(PESDemux&, const PESPacket
 void ts::PESHandlerInterface::handleIntraImage(PESDemux&, const PESPacket&, size_t) {}
 void ts::PESHandlerInterface::handleNewMPEG2AudioAttributes(PESDemux&, const PESPacket&, const MPEG2AudioAttributes&) {}
 void ts::PESHandlerInterface::handleNewAC3Attributes(PESDemux&, const PESPacket&, const AC3Attributes&) {}
+ts::PESHandlerInterface::~PESHandlerInterface() {}

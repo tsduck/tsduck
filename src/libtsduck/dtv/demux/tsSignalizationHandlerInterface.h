@@ -69,6 +69,7 @@ namespace ts {
     //!
     class TSDUCKDLL SignalizationHandlerInterface
     {
+        TS_INTERFACE(SignalizationHandlerInterface);
     public:
         //!
         //! This hook is invoked when a new MPEG Program Association Table (PAT) is available.
@@ -190,9 +191,5 @@ namespace ts {
         //! @param [in] removed If true, the service is removed. Otherwise, it is new or changed.
         //!
         virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed);
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~SignalizationHandlerInterface() = default;
     };
 }

@@ -1105,23 +1105,24 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //! A macro to declare the default assignment operators in the declaration of a class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_DEFAULT_ASSIGMENTS(classname)                 \
-    public:                                              \
-        /** @cond nodoxygen */                           \
-        classname& operator=(classname&&) = default;     \
-        classname& operator=(const classname&) = default \
+#define TS_DEFAULT_ASSIGMENTS(classname)                  \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default  \
         /** @endcond */
 
 //!
 //! A macro to declare the default copy and move constructors and assignment operators in the declaration of a class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_DEFAULT_COPY_MOVE(classname)       \
-        TS_DEFAULT_ASSIGMENTS(classname);     \
-    public:                                   \
-        /** @cond nodoxygen */                \
-        classname(classname&&) = default;     \
-        classname(const classname&) = default \
+#define TS_DEFAULT_COPY_MOVE(classname)                   \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname(classname&&) = default;                 \
+        classname(const classname&) = default;            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default  \
         /** @endcond */
 
 //!
@@ -1130,23 +1131,29 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //! @param classname Name of the enclosing class.
 //! @param dtor_attributes Post attributes for the destructor.
 //!
-#define TS_RULE_OF_FIVE(classname, dtor_attributes) \
-        TS_DEFAULT_COPY_MOVE(classname);            \
-    public:                                         \
-        /** @cond nodoxygen */                      \
-        virtual ~classname() dtor_attributes        \
+#define TS_RULE_OF_FIVE(classname, dtor_attributes)       \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname(classname&&) = default;                 \
+        classname(const classname&) = default;            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default; \
+        virtual ~classname() dtor_attributes              \
         /** @endcond */
 
 //!
 //! A macro to declare the basic operators in the declaration of an interface class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_INTERFACE(classname)          \
-        TS_DEFAULT_COPY_MOVE(classname); \
-    public:                              \
-        /** @cond nodoxygen */           \
-        classname() = default;           \
-        virtual ~classname()             \
+#define TS_INTERFACE(classname)                           \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname() = default;                            \
+        classname(classname&&) = default;                 \
+        classname(const classname&) = default;            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default; \
+        virtual ~classname()                              \
         /** @endcond */
 
 

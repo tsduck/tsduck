@@ -43,6 +43,7 @@ namespace ts {
     //!
     class TSDUCKDLL ECMGClientHandlerInterface
     {
+        TS_INTERFACE(ECMGClientHandlerInterface);
     public:
         //!
         //! This hook is invoked when an ECM is available.
@@ -50,10 +51,5 @@ namespace ts {
         //! @param [in] response The response from the ECMG.
         //!
         virtual void handleECM(const ecmgscs::ECMResponse& response) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~ECMGClientHandlerInterface();
     };
 }

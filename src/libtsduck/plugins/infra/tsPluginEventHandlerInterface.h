@@ -52,16 +52,12 @@ namespace ts {
     //!
     class TSDUCKDLL PluginEventHandlerInterface
     {
+        TS_INTERFACE(PluginEventHandlerInterface);
     public:
         //!
         //! This handler is invoked when a plugin signals an event for which this object is registered.
         //! @param [in] context Context containing all information about the event.
         //!
         virtual void handlePluginEvent(const PluginEventContext& context) = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~PluginEventHandlerInterface();
     };
 }

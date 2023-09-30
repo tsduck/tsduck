@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractReadStreamInterface
     {
+        TS_INTERFACE(AbstractReadStreamInterface);
     public:
         //!
         //! Read partial data from the stream.
@@ -86,10 +87,5 @@ namespace ts {
         //! @return True on end of stream, false otherwise.
         //!
         virtual bool endOfStream() = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~AbstractReadStreamInterface();
     };
 }
