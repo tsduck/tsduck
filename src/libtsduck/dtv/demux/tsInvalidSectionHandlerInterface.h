@@ -48,6 +48,7 @@ namespace ts {
     //!
     class TSDUCKDLL InvalidSectionHandlerInterface
     {
+        TS_INTERFACE(InvalidSectionHandlerInterface);
     public:
         //!
         //! This hook is invoked when an invalid section is detected.
@@ -55,10 +56,5 @@ namespace ts {
         //! @param [in] data The invalid section from the demux.
         //!
         virtual void handleInvalidSection(SectionDemux& demux, const DemuxedData& data) = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~InvalidSectionHandlerInterface();
     };
 }

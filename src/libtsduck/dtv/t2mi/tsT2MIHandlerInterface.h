@@ -51,6 +51,7 @@ namespace ts {
     //!
     class TSDUCKDLL T2MIHandlerInterface
     {
+        TS_INTERFACE(T2MIHandlerInterface);
     public:
         //!
         //! This hook is invoked when a new PID carrying T2-MI is available.
@@ -75,10 +76,5 @@ namespace ts {
         //! @param [in] ts The extracted TS packet.
         //!
         virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~T2MIHandlerInterface();
     };
 }

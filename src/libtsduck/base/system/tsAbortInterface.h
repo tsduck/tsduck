@@ -45,16 +45,12 @@ namespace ts {
     //!
     class TSDUCKDLL AbortInterface
     {
+        TS_INTERFACE(AbortInterface);
     public:
         //!
         //! This abstract method checks if the application is aborting for some reason.
         //! @return True if the application is aborting.
         //!
         virtual bool aborting() const = 0;
-
-        //!
-        //! Virtual destructor
-        //!
-        virtual ~AbortInterface();
     };
 }

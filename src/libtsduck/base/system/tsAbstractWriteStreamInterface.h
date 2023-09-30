@@ -42,6 +42,7 @@ namespace ts {
     //!
     class TSDUCKDLL AbstractWriteStreamInterface
     {
+        TS_INTERFACE(AbstractWriteStreamInterface);
     public:
         //!
         //! Write data to the stream.
@@ -54,10 +55,5 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         virtual bool writeStream(const void* addr, size_t size, size_t& written_size, Report& report) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~AbstractWriteStreamInterface();
     };
 }

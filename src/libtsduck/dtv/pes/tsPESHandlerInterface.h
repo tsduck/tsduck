@@ -54,6 +54,7 @@ namespace ts {
     //!
     class TSDUCKDLL PESHandlerInterface
     {
+        TS_INTERFACE(PESHandlerInterface);
     public:
         //!
         //! This hook is invoked when a complete PES packet is available.
@@ -147,10 +148,5 @@ namespace ts {
         //! @param [in] attr Audio attributes.
         //!
         virtual void handleNewAC3Attributes(PESDemux& demux, const PESPacket& packet, const AC3Attributes& attr);
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~PESHandlerInterface() = default;
     };
 }

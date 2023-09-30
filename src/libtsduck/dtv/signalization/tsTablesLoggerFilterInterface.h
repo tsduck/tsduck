@@ -53,6 +53,7 @@ namespace ts {
     //!
     class TSDUCKDLL TablesLoggerFilterInterface
     {
+        TS_INTERFACE(TablesLoggerFilterInterface);
     public:
         //!
         //! Define section filtering command line options in an Args.
@@ -80,11 +81,6 @@ namespace ts {
         //! A section is actually displayed if all section filters returned true.
         //!
         virtual bool filterSection(DuckContext& duck, const Section& section, uint16_t cas, PIDSet& more_pids) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~TablesLoggerFilterInterface();
     };
 
     //!

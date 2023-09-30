@@ -49,6 +49,7 @@ namespace ts {
     //!
     class TSDUCKDLL TableHandlerInterface
     {
+        TS_INTERFACE(TableHandlerInterface);
     public:
         //!
         //! This hook is invoked when a complete table is available.
@@ -57,10 +58,5 @@ namespace ts {
         //! @param [in] table A reference to the demultiplexed table.
         //!
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~TableHandlerInterface();
     };
 }

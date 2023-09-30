@@ -50,6 +50,7 @@ namespace ts {
     //!
     class TSDUCKDLL MPEHandlerInterface
     {
+        TS_INTERFACE(MPEHandlerInterface);
     public:
         //!
         //! This hook is invoked when a new PID carrying MPE is available.
@@ -65,10 +66,5 @@ namespace ts {
         //! @param [in] mpe The MPE packet.
         //!
         virtual void handleMPEPacket(MPEDemux& demux, const MPEPacket& mpe) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~MPEHandlerInterface();
     };
 }

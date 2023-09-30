@@ -46,6 +46,7 @@ namespace ts {
     //!
     class TSDUCKDLL TeletextHandlerInterface
     {
+        TS_INTERFACE(TeletextHandlerInterface);
     public:
         //!
         //! This hook is invoked when a complete Teletext message is available.
@@ -53,10 +54,5 @@ namespace ts {
         //! @param [in] frame Teletext frame.
         //!
         virtual void handleTeletextMessage(TeletextDemux& demux, const TeletextFrame& frame) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~TeletextHandlerInterface();
     };
 }

@@ -47,6 +47,7 @@ namespace ts {
     //!
     class TSDUCKDLL TSDatagramOutputHandlerInterface
     {
+        TS_INTERFACE(TSDatagramOutputHandlerInterface);
     public:
         //!
         //! Send a datagram message.
@@ -57,9 +58,5 @@ namespace ts {
         //! @return True on success, false on error.
         //!
         virtual bool sendDatagram(const void* address, size_t size, Report& report) = 0;
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~TSDatagramOutputHandlerInterface();
     };
 }

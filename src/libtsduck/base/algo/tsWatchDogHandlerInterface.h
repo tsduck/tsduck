@@ -45,6 +45,7 @@ namespace ts {
     //!
     class TSDUCKDLL WatchDogHandlerInterface
     {
+        TS_INTERFACE(WatchDogHandlerInterface);
     public:
         //!
         //! Handle the expiration of a timeout.
@@ -52,10 +53,5 @@ namespace ts {
         //! @param [in,out] watchdog The watchdog which triggered the timeout.
         //!
         virtual void handleWatchDogTimeout(WatchDog& watchdog) = 0;
-
-        //!
-        //! Virtual destructor.
-        //!
-        virtual ~WatchDogHandlerInterface();
     };
 }
