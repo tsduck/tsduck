@@ -65,7 +65,7 @@ namespace ts {
             //!
             //! Constructor.
             //! @param [in] protocol The incoming messages are interpreted
-            //! according to this protocol.
+            //! according to this protocol. The reference is kept in this object.
             //! @param [in] auto_error_response When an invalid message is
             //! received, the corresponding error message is automatically
             //! sent back to the sender when @a auto_error_response is true.
@@ -73,7 +73,7 @@ namespace ts {
             //! automatically disconnected when the number of consecutive
             //! invalid messages has reached this value.
             //!
-            explicit Connection(const Protocol* protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
+            explicit Connection(const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
             //!
             //! Serialize and send a TLV message.
@@ -127,10 +127,7 @@ namespace ts {
             //! @param [in] on When an invalid message is received, the corresponding
             //! error message is automatically sent back to the sender when @a on is true.
             //!
-            void setAutoErrorResponse(bool on)
-            {
-                _auto_error_response = on;
-            }
+            void setAutoErrorResponse(bool on) { _auto_error_response = on; }
 
             //!
             //! Get invalid message threshold.
@@ -151,12 +148,12 @@ namespace ts {
             virtual void handleConnected(Report&) override;
 
         private:
-            const Protocol* _protocol;
-            bool            _auto_error_response;
-            size_t          _max_invalid_msg;
-            size_t          _invalid_msg_count;
-            MUTEX           _send_mutex;
-            MUTEX           _receive_mutex;
+            const Protocol& _protocol;
+            bool            _auto_error_response {false};
+            size_t          _max_invalid_msg {0};
+            size_t          _invalid_msg_count {0};
+            MUTEX           _send_mutex {};
+            MUTEX           _receive_mutex {};
         };
     }
 }
@@ -168,14 +165,11 @@ namespace ts {
 
 // Constructor.
 template <class MUTEX>
-ts::tlv::Connection<MUTEX>::Connection(const Protocol* protocol, bool auto_error_response, size_t max_invalid_msg) :
+ts::tlv::Connection<MUTEX>::Connection(const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg) :
     ts::TCPConnection(),
     _protocol(protocol),
     _auto_error_response(auto_error_response),
-    _max_invalid_msg(max_invalid_msg),
-    _invalid_msg_count(0),
-    _send_mutex(),
-    _receive_mutex()
+    _max_invalid_msg(max_invalid_msg)
 {
 }
 
@@ -226,7 +220,7 @@ bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* 
 template <class MUTEX>
 bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
 {
-    const bool has_version(_protocol->hasVersion());
+    const bool has_version(_protocol.hasVersion());
     const size_t header_size(has_version ? 5 : 4);
     const size_t length_offset(has_version ? 3 : 2);
 

@@ -38,27 +38,27 @@ const size_t ts::SimulCryptDate::SIZE;
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::SimulCryptDate::SimulCryptDate (const Time& t)
+ts::SimulCryptDate::SimulCryptDate(const Time& t)
 {
-    Time::Fields f (t);
-    setYear      (f.year);
-    setMonth     (f.month);
-    setDay       (f.day);
-    setHour      (f.hour);
-    setMinute    (f.minute);
-    setSecond    (f.second);
-    setHundredth (f.millisecond / 10);
+    Time::Fields f(t);
+    setYear(f.year);
+    setMonth(f.month);
+    setDay(f.day);
+    setHour(f.hour);
+    setMinute(f.minute);
+    setSecond(f.second);
+    setHundredth(f.millisecond / 10);
 }
 
-ts::SimulCryptDate::SimulCryptDate (int year, int month, int day, int hour, int minute, int second, int hundredth)
+ts::SimulCryptDate::SimulCryptDate(int year, int month, int day, int hour, int minute, int second, int hundredth)
 {
-    setYear      (year);
-    setMonth     (month);
-    setDay       (day);
-    setHour      (hour);
-    setMinute    (minute);
-    setSecond    (second);
-    setHundredth (hundredth);
+    setYear(year);
+    setMonth(month);
+    setDay(day);
+    setHour(hour);
+    setMinute(minute);
+    setSecond(second);
+    setHundredth(hundredth);
 }
 
 
@@ -66,11 +66,11 @@ ts::SimulCryptDate::SimulCryptDate (int year, int month, int day, int hour, int 
 // Get from DVB SimulCrypt TLV messages
 //----------------------------------------------------------------------------
 
-void ts::SimulCryptDate::get (const tlv::MessageFactory& mf, tlv::TAG tag)
+void ts::SimulCryptDate::get(const tlv::MessageFactory& mf, tlv::TAG tag)
 {
     // Get address and size of parameter. May raise exception if no such parameter
     tlv::MessageFactory::Parameter p;
-    mf.get (tag, p);
+    mf.get(tag, p);
 
     // Check parameter size. Raise exception on error.
     if (p.length != sizeof(_data)) {

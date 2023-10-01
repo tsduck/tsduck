@@ -55,36 +55,27 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck;     // TSDuck execution context.
-        ts::PagerArgs         pager;    // Output paging options.
-        ts::UString           input_file;
-        bool                  print_summary;
-        bool                  list_streams;
-        bool                  print_intervals;
-        bool                  dvb_simulcrypt;
-        bool                  extract_tcp;
-        std::set<uint8_t>     protocols;
-        ts::IPv4SocketAddress source_filter;
-        ts::IPv4SocketAddress dest_filter;
-        ts::MicroSecond       interval;
+        ts::DuckContext       duck;
+        ts::PagerArgs         pager {true, true};
+        ts::UString           input_file {};
+        bool                  print_summary {false};
+        bool                  list_streams {false};
+        bool                  print_intervals {false};
+        bool                  dvb_simulcrypt {false};
+        bool                  extract_tcp {false};
+        std::set<uint8_t>     protocols {};
+        ts::IPv4SocketAddress source_filter {};
+        ts::IPv4SocketAddress dest_filter {};
+        ts::MicroSecond       interval {-1};
+        ts::emmgmux::Protocol emmgmux {};
+        ts::ecmgscs::Protocol ecmgscs {};
     };
 }
 
 // Get command line options.
 Options::Options(int argc, char *argv[]) :
     ts::Args(u"Analyze pcap and pcap-ng files", u"[options] [input-file]"),
-    duck(this),
-    pager(true, true),
-    input_file(),
-    print_summary(false),
-    list_streams(false),
-    print_intervals(false),
-    dvb_simulcrypt(false),
-    extract_tcp(false),
-    protocols(),
-    source_filter(),
-    dest_filter(),
-    interval(-1)
+    duck(this)
 {
     ts::PcapFilter file;
     file.defineArgs(*this);
@@ -194,31 +185,21 @@ namespace {
     class StatBlock
     {
     public:
+        size_t          packet_count {0};      // number of IP packets in the data set
+        size_t          total_ip_size {0};     // total size in bytes of IP packets, headers included
+        size_t          total_data_size {0};   // total data size in bytes (TCP o UDP payload)
+        ts::MicroSecond first_timestamp {-1};  // negative if none found
+        ts::MicroSecond last_timestamp {-1};   // negative if none found
+
         // Constructor.
-        StatBlock();
+        StatBlock() = default;
 
         // Add statistics from one packet.
         void addPacket(const ts::IPv4Packet&, ts::MicroSecond);
 
         // Reset content, optionally set timestamps.
         void reset(ts::MicroSecond = -1);
-
-        size_t          packet_count;      // number of IP packets in the data set
-        size_t          total_ip_size;     // total size in bytes of IP packets, headers included
-        size_t          total_data_size;   // total data size in bytes (TCP o UDP payload)
-        ts::MicroSecond first_timestamp;   // negative if none found
-        ts::MicroSecond last_timestamp;    // negative if none found
     };
-}
-
-// Constructor.
-StatBlock::StatBlock() :
-    packet_count(0),
-    total_ip_size(0),
-    total_data_size(0),
-    first_timestamp(-1),
-    last_timestamp(-1)
-{
 }
 
 // Reset content, optionally set timestamps.
@@ -294,7 +275,7 @@ namespace {
         TS_NOBUILD_NOCOPY(DisplayInterval);
     public:
         // Constructor.
-        DisplayInterval(Options&);
+        DisplayInterval(Options& opt) : _opt(opt) {}
 
         // Process one IPv4 packet.
         void addPacket(std::ostream&, const ts::PcapFile&, const ts::IPv4Packet&, ts::MicroSecond);
@@ -304,18 +285,11 @@ namespace {
 
     private:
         Options&  _opt;
-        StatBlock _stats;
+        StatBlock _stats {};
 
         // Print current line and reset stats.
         void print(std::ostream&, const ts::PcapFile&);
     };
-}
-
-// Constructor.
-DisplayInterval::DisplayInterval(Options& opt) :
-    _opt(opt),
-    _stats()
-{
 }
 
 // Print current line and reset stats.
@@ -372,17 +346,17 @@ namespace {
         TS_NOBUILD_NOCOPY(FileAnalysis);
     public:
         // Constructor.
-        FileAnalysis(Options&);
+        FileAnalysis(Options& opt) : _opt(opt), _interval(opt) {}
 
         // Analyse the file, return true on success, false on error.
         bool analyze(std::ostream&);
 
     private:
         Options&        _opt;
-        ts::PcapFilter  _file;
-        DisplayInterval _interval;                   // Display stats by time intervals.
-        StatBlock       _global_stats;               // Global stats
-        std::map<StreamId,StatBlock> _streams_stats; // Stats per data stream.
+        ts::PcapFilter  _file {};
+        DisplayInterval _interval;                      // Display stats by time intervals.
+        StatBlock       _global_stats {};               // Global stats
+        std::map<StreamId,StatBlock> _streams_stats {}; // Stats per data stream.
 
         // Display summary of content.
         void displaySummary(std::ostream& out, const StatBlock& stats);
@@ -390,16 +364,6 @@ namespace {
         // Display list of streams.
         void listStreams(std::ostream& out, ts::MicroSecond duration);
     };
-}
-
-// Constructor.
-FileAnalysis::FileAnalysis(Options& opt) :
-    _opt(opt),
-    _file(),
-    _interval(opt),
-    _global_stats(),
-    _streams_stats()
-{
 }
 
 // Analyse the file, return true on success, false on error.
@@ -508,7 +472,7 @@ namespace {
         TS_NOBUILD_NOCOPY(SimulCryptDump);
     protected:
         // Constructor.
-        SimulCryptDump(Options&);
+        SimulCryptDump(Options& opt) : _opt(opt) {}
 
         // Dump a message.
         void dumpMessage(std::ostream&, const uint8_t*, size_t, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, ts::MicroSecond timestamp);
@@ -516,12 +480,6 @@ namespace {
         // Protected fields
         Options& _opt;
     };
-}
-
-// Constructor.
-SimulCryptDump::SimulCryptDump(Options& opt) :
-    _opt(opt)
-{
 }
 
 // Dump a message.
@@ -544,10 +502,10 @@ void SimulCryptDump::dumpMessage(std::ostream& out, const uint8_t* data, size_t 
     ts::tlv::Protocol* protocol = nullptr;
     if (valid) {
         if (ts::ecmgscs::IsValidCommand(msg_type)) {
-            protocol = ts::ecmgscs::Protocol::Instance();
+            protocol = &_opt.ecmgscs;
         }
         else if (ts::emmgmux::IsValidCommand(msg_type)) {
-            protocol = ts::emmgmux::Protocol::Instance();
+            protocol = &_opt.emmgmux;
         }
         else {
             valid = false;
@@ -565,7 +523,7 @@ void SimulCryptDump::dumpMessage(std::ostream& out, const uint8_t* data, size_t 
 
         // Interpret the UDP message as TLV message.
         ts::tlv::MessagePtr msg;
-        ts::tlv::MessageFactory mf(data, msg_size, protocol);
+        ts::tlv::MessageFactory mf(data, msg_size, *protocol);
         valid = false;
         if (mf.errorStatus() == ts::tlv::OK) {
             mf.factory(msg);
@@ -599,21 +557,14 @@ namespace {
         TS_NOBUILD_NOCOPY(UDPSimulCryptDump);
     public:
         // Constructor.
-        UDPSimulCryptDump(Options&);
+        UDPSimulCryptDump(Options& opt) : SimulCryptDump(opt) {}
 
         // Dump the file, return true on success, false on error.
         bool dump(std::ostream&);
 
     private:
-        ts::PcapFilter _file;
+        ts::PcapFilter _file {};
     };
-}
-
-// Constructor.
-UDPSimulCryptDump::UDPSimulCryptDump(Options& opt) :
-    SimulCryptDump(opt),
-    _file()
-{
 }
 
 // Dump the file, return true on success, false on error.
@@ -651,21 +602,14 @@ namespace {
         TS_NOBUILD_NOCOPY(TCPSimulCryptDump);
     public:
         // Constructor.
-        TCPSimulCryptDump(Options&);
+        TCPSimulCryptDump(Options& opt) : SimulCryptDump(opt) {}
 
         // Dump the file, return true on success, false on error.
         bool dump(std::ostream&);
 
     private:
-        ts::PcapStream _file;
+        ts::PcapStream _file {};
     };
-}
-
-// Constructor.
-TCPSimulCryptDump::TCPSimulCryptDump(Options& opt) :
-    SimulCryptDump(opt),
-    _file()
-{
 }
 
 // Dump the file, return true on success, false on error.
@@ -724,25 +668,18 @@ namespace {
         TS_NOBUILD_NOCOPY(TCPSessionDump);
     public:
         // Constructor.
-        TCPSessionDump(Options&);
+        TCPSessionDump(Options& opt) : _opt(opt) {}
 
         // Dump the session, return true on success, false on error.
         bool dump(std::ostream&);
 
     private:
-        Options&       _opt;
-        ts::PcapStream _file;
+        Options& _opt;
+        ts::PcapStream _file {};
 
         // Dump a message.
         void dumpMessage(std::ostream&, const ts::ByteBlock&, const ts::IPv4SocketAddress& src, const ts::IPv4SocketAddress& dst, ts::MicroSecond timestamp);
     };
-}
-
-// Constructor.
-TCPSessionDump::TCPSessionDump(Options& opt) :
-    _opt(opt),
-    _file()
-{
 }
 
 // Dump a message.

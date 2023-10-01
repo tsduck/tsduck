@@ -61,46 +61,30 @@ namespace {
         CmdOptions(int argc, char *argv[]);
 
         ts::DuckContext       duck;
-        ts::AsyncReportArgs   log_args;
-        ts::IPv4SocketAddress ecmg_address;
-        uint32_t              super_cas_id;
-        ts::ByteBlock         access_criteria;
-        ts::Second            cp_duration;
-        ts::Second            stat_interval;
-        ts::tlv::VERSION      dvbsim_version;
-        uint16_t              channel_count;
-        uint16_t              streams_per_channel;
-        uint16_t              first_ecm_channel_id;
-        uint16_t              first_ecm_stream_id;
-        uint16_t              first_ecm_id;
-        size_t                cw_size;
-        size_t                max_ecm;
-        ts::Second            max_seconds;
-        int                   log_protocol;
-        int                   log_data;
+        ts::AsyncReportArgs   log_args {};
+        ts::IPv4SocketAddress ecmg_address {};
+        ts::ecmgscs::Protocol ecmgscs {};
+        uint32_t              super_cas_id {0};
+        ts::ByteBlock         access_criteria {};
+        ts::Second            cp_duration {0};
+        ts::Second            stat_interval {0};
+        ts::tlv::VERSION      dvbsim_version {0};
+        uint16_t              channel_count {0};
+        uint16_t              streams_per_channel {0};
+        uint16_t              first_ecm_channel_id {0};
+        uint16_t              first_ecm_stream_id {0};
+        uint16_t              first_ecm_id {0};
+        size_t                cw_size {0};
+        size_t                max_ecm {0};
+        ts::Second            max_seconds {0};
+        int                   log_protocol {0};
+        int                   log_data {0};
     };
 }
 
 CmdOptions::CmdOptions(int argc, char *argv[]) :
     ts::Args(u"Test a DVB SimulCrypt compliant ECMG with an artificial load", u"[options] host:port"),
-    duck(this),
-    log_args(),
-    ecmg_address(),
-    super_cas_id(0),
-    access_criteria(),
-    cp_duration(0),
-    stat_interval(),
-    dvbsim_version(0),
-    channel_count(0),
-    streams_per_channel(0),
-    first_ecm_channel_id(0),
-    first_ecm_stream_id(0),
-    first_ecm_id(0),
-    cw_size(0),
-    max_ecm(0),
-    max_seconds(0),
-    log_protocol(0),
-    log_data(0)
+    duck(this)
 {
     log_args.defineArgs(*this);
 
@@ -225,7 +209,7 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
     }
 
     // Specify which ECMG <=> SCS version to use.
-    ts::ecmgscs::Protocol::Instance()->setVersion(dvbsim_version);
+    ecmgscs.setVersion(dvbsim_version);
 
     exitOnError();
 }
@@ -531,7 +515,7 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     _stat(stat),
     _events(events),
     _logger(_opt.log_protocol, &report),
-    _conn(ts::ecmgscs::Protocol::Instance(), true, 3),
+    _conn(_opt.ecmgscs, true, 3),
     _channel_id(_opt.first_ecm_channel_id + index),
     _first_ecm_id(_opt.first_ecm_id + index * _opt.streams_per_channel),
     _first_stream_id(_opt.first_ecm_stream_id),
@@ -555,7 +539,7 @@ ECMGConnection::ECMGConnection(const CmdOptions& opt, CmdStatistics& stat, Event
     }
 
     // Send a channel_setup message to ECMG
-    ts::ecmgscs::ChannelSetup channel_setup;
+    ts::ecmgscs::ChannelSetup channel_setup(_opt.ecmgscs);
     channel_setup.channel_id = _channel_id;
     channel_setup.Super_CAS_id = _opt.super_cas_id;
     if (!_conn.send(channel_setup, _logger)) {
@@ -615,7 +599,7 @@ void ECMGConnection::terminate()
         for (size_t i = 0; i < _streams.size(); ++i) {
             ts::GuardMutex lock(_mutex);
             if (_streams[i].ready) {
-                ts::ecmgscs::StreamCloseRequest msg;
+                ts::ecmgscs::StreamCloseRequest msg(_opt.ecmgscs);
                 msg.channel_id = _channel_id;
                 msg.stream_id = uint16_t(_first_stream_id + i);
                 _conn.send(msg, _logger);
@@ -643,7 +627,7 @@ void ECMGConnection::terminate()
         }
 
         // Send a final channel_close.
-        ts::ecmgscs::ChannelClose msg;
+        ts::ecmgscs::ChannelClose msg(_opt.ecmgscs);
         msg.channel_id = _channel_id;
         _conn.send(msg, _logger);
     }
@@ -671,7 +655,7 @@ bool ECMGConnection::sendStreamSetup(uint16_t stream_id)
         return false;
     }
     else {
-        ts::ecmgscs::StreamSetup msg;
+        ts::ecmgscs::StreamSetup msg(_opt.ecmgscs);
         msg.channel_id = _channel_id;
         msg.stream_id = stream_id;
         msg.ECM_id = uint16_t(_first_ecm_id + index);
@@ -691,7 +675,7 @@ bool ECMGConnection::sendRequest(uint16_t stream_id)
     }
     else {
         // Build the request message.
-        ts::ecmgscs::CWProvision msg;
+        ts::ecmgscs::CWProvision msg(_opt.ecmgscs);
         msg.channel_id = _channel_id;
         msg.stream_id = stream_id;
         msg.CP_number = _streams[index].cp_number++;
@@ -724,7 +708,7 @@ void ECMGConnection::main()
     bool ok = true;
     size_t next_stream_index = 0; // next stream to setup
 
-    ts::ecmgscs::ChannelStatus channel_status;
+    ts::ecmgscs::ChannelStatus channel_status(_opt.ecmgscs);
     channel_status.channel_id = _channel_id;
 
     while (ok && _conn.receive(msg, nullptr, _logger)) {
@@ -776,7 +760,7 @@ void ECMGConnection::main()
                 ts::ecmgscs::StreamTest* const mp = dynamic_cast<ts::ecmgscs::StreamTest*>(msg.pointer());
                 if (checkStreamMessage(mp, u"stream_test")) {
                     // Automatic reply to stream_test
-                    ts::ecmgscs::StreamStatus resp;
+                    ts::ecmgscs::StreamStatus resp(_opt.ecmgscs);
                     resp.channel_id = _channel_id;
                     resp.stream_id = mp->stream_id;
                     resp.ECM_id = _first_ecm_id + mp->stream_id - _first_stream_id;

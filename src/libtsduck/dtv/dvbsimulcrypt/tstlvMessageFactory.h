@@ -94,47 +94,38 @@ namespace ts {
             //! @param [in] size Size in bytes of the message.
             //! @param [in] protocol The message is validated according to this protocol.
             //!
-            MessageFactory(const void* addr, size_t size, const Protocol* protocol);
+            MessageFactory(const void* addr, size_t size, const Protocol& protocol);
 
             //!
             //! Constructor: Analyze a TLV message in memory.
             //! @param [in] bb Binary TLV message.
             //! @param [in] protocol The message is validated according to this protocol.
             //!
-            MessageFactory(const ByteBlock &bb, const Protocol* protocol);
+            MessageFactory(const ByteBlock &bb, const Protocol& protocol);
 
             //!
             //! Get the "error status" resulting from the analysis of the message.
             //! @return The error status. If not OK, there is no valid message.
             //!
-            tlv::Error errorStatus() const
-            {
-                return _error_status;
-            }
+            tlv::Error errorStatus() const { return _error_status; }
 
             //!
             //! Get the "error information" resulting from the analysis of the message.
             //! @return The error information.
             //!
-            uint16_t errorInformation() const
-            {
-                return _error_info;
-            }
+            uint16_t errorInformation() const { return _error_info; }
 
             //!
             //! Get the message tag.
             //! @return The message tag.
             //!
-            TAG commandTag() const {return _command_tag;}
+            TAG commandTag() const { return _command_tag; }
 
             //!
             //! Get the protocol version number.
             //! @return The protocol version number.
             //!
-            VERSION protocolVersion() const
-            {
-                return _protocol_version;
-            }
+            VERSION protocolVersion() const { return _protocol_version; }
 
             //!
             //! Return the fully rebuilt message.
@@ -170,13 +161,13 @@ namespace ts {
             //! Location of one parameter value inside the message block.
             //! Address and size point into the original message buffer, use with care!
             //!
-            struct Parameter
+            class Parameter
             {
-                // Public fields:
-                const void* tlv_addr;  //!< Address of parameter TLV structure.
-                size_t      tlv_size;  //!< Size of parameter TLV structure.
-                const void* addr;      //!< Address of parameter value.
-                LENGTH      length;    //!< Length of parameter value.
+            public:
+                const void* tlv_addr = nullptr;  //!< Address of parameter TLV structure.
+                size_t      tlv_size = 0;        //!< Size of parameter TLV structure.
+                const void* addr = nullptr;      //!< Address of parameter value.
+                LENGTH      length = 0;          //!< Length of parameter value.
 
                 //!
                 //! Constructor.
@@ -202,10 +193,7 @@ namespace ts {
             //! @param [in] tag Parameter tag to search.
             //! @return The actual number of occurences of a parameter.
             //!
-            size_t count(TAG tag) const
-            {
-                return _params.count(tag);
-            }
+            size_t count(TAG tag) const { return _params.count(tag); }
 
             //!
             //! Get the location of a parameter.
@@ -322,7 +310,7 @@ namespace ts {
             struct ExtParameter : public Parameter
             {
                 // Public fields:
-                MessageFactoryPtr compound; // for compound TLV parameter
+                MessageFactoryPtr compound {}; // for compound TLV parameter
 
                 // Constructor:
                 ExtParameter(const void*     tlv_addr_ = nullptr,
@@ -337,18 +325,18 @@ namespace ts {
             };
 
             // MessageFactory private members:
-            const uint8_t*  _msg_base;             // Addresse of raw TLV message
-            size_t          _msg_length;           // Size of raw TLV message
-            const Protocol* _protocol;             // Associated protocol definition
-            tlv::Error      _error_status;         // Error status or OK
-            uint16_t        _error_info;           // Associated error information
-            bool            _error_info_is_offset; // Error info is an offset in message
-            VERSION         _protocol_version;
-            TAG             _command_tag;
+            const uint8_t*  _msg_base {nullptr};           // Addresse of raw TLV message
+            size_t          _msg_length {0};               // Size of raw TLV message
+            const Protocol& _protocol;                     // Associated protocol definition
+            tlv::Error      _error_status {OK};            // Error status or OK
+            uint16_t        _error_info {0};               // Associated error information
+            bool            _error_info_is_offset {false}; // Error info is an offset in message
+            VERSION         _protocol_version = 0;
+            TAG             _command_tag = 0;
 
             // Location of actual parameters. Point into the message block.
             typedef std::multimap <TAG, ExtParameter> ParameterMultimap;
-            ParameterMultimap _params;
+            ParameterMultimap _params {};
 
             // Analyze the TLV message, called by constructors.
             void analyzeMessage();

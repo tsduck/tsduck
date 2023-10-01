@@ -44,10 +44,16 @@ namespace ts {
         class TSDUCKDLL StreamMessage : public ChannelMessage
         {
             TS_RULE_OF_FIVE(StreamMessage, override);
+        protected:
+            //!
+            //! Alias for the superclass of subclasses.
+            //!
+            using superclass = StreamMessage;
+
         public:
             // Protocol-documented fields:
             // uint16_t channel_id;
-            uint16_t stream_id;  //!< Stream id.
+            uint16_t stream_id = 0;  //!< Stream id.
 
             //!
             //! Constructor.

@@ -31,9 +31,6 @@
 #include "tstlvMessageFactory.h"
 #include "tsNamesFile.h"
 
-// Define protocol singleton instance
-TS_DEFINE_SINGLETON(ts::ecmgscs::Protocol);
-
 
 //----------------------------------------------------------------------------
 // Protocol name.
@@ -51,8 +48,7 @@ ts::UString ts::ecmgscs::Protocol::name() const
 // Protocol Constructor: Define the syntax of the protocol
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::Protocol::Protocol() :
-    tlv::Protocol(ts::ecmgscs::CURRENT_VERSION)
+ts::ecmgscs::Protocol::Protocol() : tlv::Protocol(ts::ecmgscs::CURRENT_VERSION)
 {
     // Define the syntax of all commands:
     // add(cmd_tag, param_tag, min_size, max_size, min_count, max_count)
@@ -191,7 +187,7 @@ ts::UString ts::ecmgscs::Errors::Name(uint16_t status)
 void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create a channel_error message
-    SafePtr<ChannelError> errmsg(new ChannelError);
+    SafePtr<ChannelError> errmsg(new ChannelError(version()));
 
     // Try to get an ECM_channel_id from the incoming message.
     try {
@@ -242,12 +238,6 @@ void ts::ecmgscs::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, 
 // channel_setup
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelSetup::ChannelSetup() :
-    ChannelMessage(ecmgscs::Protocol::Instance()->version(), Tags::channel_setup),
-    Super_CAS_id(0)
-{
-}
-
 ts::ecmgscs::ChannelSetup::ChannelSetup(const tlv::MessageFactory& fact) :
     ChannelMessage(fact, Tags::ECM_channel_id),
     Super_CAS_id(fact.get<uint32_t>(Tags::Super_CAS_id))
@@ -273,11 +263,6 @@ ts::UString ts::ecmgscs::ChannelSetup::dump(size_t indent) const
 // channel_test
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelTest::ChannelTest() :
-    ChannelMessage(ecmgscs::Protocol::Instance()->version(), Tags::channel_test)
-{
-}
-
 ts::ecmgscs::ChannelTest::ChannelTest(const tlv::MessageFactory& fact) :
     ChannelMessage(fact, Tags::ECM_channel_id)
 {
@@ -299,28 +284,6 @@ ts::UString ts::ecmgscs::ChannelTest::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // channel_status
 //----------------------------------------------------------------------------
-
-ts::ecmgscs::ChannelStatus::ChannelStatus() :
-    ChannelMessage(ecmgscs::Protocol::Instance()->version(), Tags::channel_status),
-    section_TSpkt_flag(false),
-    has_AC_delay_start(false),
-    AC_delay_start(0),
-    has_AC_delay_stop(false),
-    AC_delay_stop(0),
-    delay_start(0),
-    delay_stop(0),
-    has_transition_delay_start(false),
-    transition_delay_start(0),
-    has_transition_delay_stop(false),
-    transition_delay_stop(0),
-    ECM_rep_period(0),
-    max_streams(0),
-    min_CP_duration(0),
-    lead_CW(0),
-    CW_per_msg(0),
-    max_comp_time(0)
-{
-}
 
 ts::ecmgscs::ChannelStatus::ChannelStatus(const tlv::MessageFactory& fact) :
     ChannelMessage(fact, Tags::ECM_channel_id),
@@ -395,11 +358,6 @@ ts::UString ts::ecmgscs::ChannelStatus::dump(size_t indent) const
 // channel_close
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::ChannelClose::ChannelClose() :
-    ChannelMessage(ecmgscs::Protocol::Instance()->version(), Tags::channel_close)
-{
-}
-
 ts::ecmgscs::ChannelClose::ChannelClose(const tlv::MessageFactory& fact) :
     ChannelMessage(fact, Tags::ECM_channel_id)
 {
@@ -421,13 +379,6 @@ ts::UString ts::ecmgscs::ChannelClose::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // channel_error
 //----------------------------------------------------------------------------
-
-ts::ecmgscs::ChannelError::ChannelError() :
-    ChannelMessage(ecmgscs::Protocol::Instance()->version(), Tags::channel_error),
-    error_status(),
-    error_information()
-{
-}
 
 ts::ecmgscs::ChannelError::ChannelError(const tlv::MessageFactory& fact) :
     ChannelMessage(fact, Tags::ECM_channel_id),
@@ -459,13 +410,6 @@ ts::UString ts::ecmgscs::ChannelError::dump(size_t indent) const
 // stream_setup
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamSetup::StreamSetup() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::stream_setup),
-    ECM_id(0),
-    nominal_CP_duration(0)
-{
-}
-
 ts::ecmgscs::StreamSetup::StreamSetup(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id),
     ECM_id(fact.get<uint16_t>(Tags::ECM_id)),
@@ -496,11 +440,6 @@ ts::UString ts::ecmgscs::StreamSetup::dump(size_t indent) const
 // stream_test
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamTest::StreamTest() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::stream_test)
-{
-}
-
 ts::ecmgscs::StreamTest::StreamTest(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id)
 {
@@ -524,13 +463,6 @@ ts::UString ts::ecmgscs::StreamTest::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // stream_status
 //----------------------------------------------------------------------------
-
-ts::ecmgscs::StreamStatus::StreamStatus() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::stream_status),
-    ECM_id(0),
-    access_criteria_transfer_mode(false)
-{
-}
 
 ts::ecmgscs::StreamStatus::StreamStatus(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id),
@@ -562,11 +494,6 @@ ts::UString ts::ecmgscs::StreamStatus::dump(size_t indent) const
 // stream_close_request
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamCloseRequest::StreamCloseRequest() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::stream_close_request)
-{
-}
-
 ts::ecmgscs::StreamCloseRequest::StreamCloseRequest(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id)
 {
@@ -591,11 +518,6 @@ ts::UString ts::ecmgscs::StreamCloseRequest::dump(size_t indent) const
 // stream_close_response
 //----------------------------------------------------------------------------
 
-ts::ecmgscs::StreamCloseResponse::StreamCloseResponse() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::stream_close_response)
-{
-}
-
 ts::ecmgscs::StreamCloseResponse::StreamCloseResponse(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id)
 {
@@ -619,13 +541,6 @@ ts::UString ts::ecmgscs::StreamCloseResponse::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // stream_error
 //----------------------------------------------------------------------------
-
-ts::ecmgscs::StreamError::StreamError() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::stream_error),
-    error_status(),
-    error_information()
-{
-}
 
 ts::ecmgscs::StreamError::StreamError(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id),
@@ -658,19 +573,6 @@ ts::UString ts::ecmgscs::StreamError::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // CW_provision
 //----------------------------------------------------------------------------
-
-ts::ecmgscs::CWProvision::CWProvision() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::CW_provision),
-    CP_number(0),
-    has_CW_encryption(false),
-    CW_encryption(),
-    CP_CW_combination(),
-    has_CP_duration(false),
-    CP_duration(0),
-    has_access_criteria(false),
-    access_criteria()
-{
-}
 
 ts::ecmgscs::CWProvision::CWProvision(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id),
@@ -746,13 +648,6 @@ ts::UString ts::ecmgscs::CWProvision::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // ECM_response
 //----------------------------------------------------------------------------
-
-ts::ecmgscs::ECMResponse::ECMResponse() :
-    StreamMessage(ecmgscs::Protocol::Instance()->version(), Tags::ECM_response),
-    CP_number(0),
-    ECM_datagram()
-{
-}
 
 ts::ecmgscs::ECMResponse::ECMResponse(const tlv::MessageFactory& fact) :
     StreamMessage(fact, Tags::ECM_channel_id, Tags::ECM_stream_id),

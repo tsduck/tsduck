@@ -56,15 +56,17 @@ namespace ts {
     //!
     class TSDUCKDLL ECMGClient: private Thread
     {
-        TS_NOCOPY(ECMGClient);
+        TS_NOBUILD_NOCOPY(ECMGClient);
     public:
         //!
         //! Constructor.
+        //! @param [in] protocol Instance of ECMG <=> SCS protocol to use.
+        //! A reference to the protocol instance is kept inside the object.
         //! @param [in] extra_handler_stack_size If asynchronous ECM notification is used,
         //! an internal thread is created. This parameter gives the minimum amount of stack
         //! size for the execution of the handler. Zero for defaults.
         //!
-        ECMGClient(size_t extra_handler_stack_size = 0);
+        ECMGClient(const ecmgscs::Protocol& protocol, size_t extra_handler_stack_size = 0);
 
         //!
         //! Destructor.
@@ -165,16 +167,17 @@ namespace ts {
         typedef std::map <uint16_t, ECMGClientHandlerInterface*> AsyncRequests;
 
         // Private members
-        State                   _state;
-        const AbortInterface*   _abort;
-        tlv::Logger             _logger;
-        tlv::Connection <Mutex> _connection;     // connection with ECMG server
-        ecmgscs::ChannelStatus  _channel_status; // initial response to channel_setup
-        ecmgscs::StreamStatus   _stream_status;  // initial response to stream_setup
-        Mutex                   _mutex;          // exclusive access to protected fields
-        Condition               _work_to_do;     // notify receiver thread to do some work
-        AsyncRequests           _async_requests;
-        MessageQueue <tlv::Message, NullMutex> _response_queue;
+        const ecmgscs::Protocol& _protocol;
+        State                    _state = INITIAL;
+        const AbortInterface*    _abort = nullptr;
+        tlv::Logger              _logger {};
+        tlv::Connection <Mutex>  _connection {_protocol, true, 3}; // connection with ECMG server
+        ecmgscs::ChannelStatus   _channel_status {_protocol};      // initial response to channel_setup
+        ecmgscs::StreamStatus    _stream_status {_protocol};       // initial response to stream_setup
+        Mutex                    _mutex {};          // exclusive access to protected fields
+        Condition                _work_to_do {};     // notify receiver thread to do some work
+        AsyncRequests            _async_requests {};
+        MessageQueue <tlv::Message, NullMutex> _response_queue {RESPONSE_QUEUE_SIZE};
 
         // Build a CW_provision message.
         void buildCWProvision(ecmgscs::CWProvision& msg,

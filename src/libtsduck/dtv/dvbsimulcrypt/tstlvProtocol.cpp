@@ -34,17 +34,9 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::tlv::Protocol::Protocol() :
-    _has_version(false),
-    _version(0),
-    _commands()
-{
-}
-
 ts::tlv::Protocol::Protocol(VERSION v) :
     _has_version(true),
-    _version(v),
-    _commands()
+    _version(v)
 {
 }
 

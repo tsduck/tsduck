@@ -34,6 +34,7 @@
 #include "tstlvSerializer.h"
 #include "tsSection.h"
 #include "tsTSPacket.h"
+#include "tsNullReport.h"
 
 #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::EMMGClient::RECEIVER_STACK_SIZE;
@@ -45,25 +46,10 @@ const ts::MilliSecond ts::EMMGClient::RESPONSE_TIMEOUT;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::EMMGClient::EMMGClient(const DuckContext& duck) :
+ts::EMMGClient::EMMGClient(const DuckContext& duck, const emmgmux::Protocol& protocol) :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE)),
     _duck(duck),
-    _state(INITIAL),
-    _udp_address(),
-    _total_bytes(0),
-    _abort(nullptr),
-    _logger(),
-    _connection(emmgmux::Protocol::Instance(), true, 3),
-    _udp_socket(),
-    _channel_status(),
-    _stream_status(),
-    _mutex(),
-    _work_to_do(),
-    _got_response(),
-    _last_response(0),
-    _allocated_bw(0),
-    _error_status(),
-    _error_info()
+    _protocol(protocol)
 {
 }
 
@@ -222,7 +208,7 @@ bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
     cleanupResponse();
 
     // Send a channel_setup message to MUX
-    emmgmux::ChannelSetup channel_setup;
+    emmgmux::ChannelSetup channel_setup(_protocol);
     channel_setup.channel_id = data_channel_id;
     channel_setup.client_id = client_id;
     channel_setup.section_TSpkt_flag = !section_format;
@@ -250,7 +236,7 @@ bool ts::EMMGClient::connect(const IPv4SocketAddress& mux,
     cleanupResponse();
 
     // Send a stream_setup message to MUX.
-    emmgmux::StreamSetup stream_setup;
+    emmgmux::StreamSetup stream_setup(_protocol);
     stream_setup.channel_id = data_channel_id;
     stream_setup.stream_id = data_stream_id;
     stream_setup.client_id = client_id;
@@ -303,7 +289,7 @@ bool ts::EMMGClient::disconnect()
         cleanupResponse();
 
         // Politely send a stream_close_request and wait for a stream_close_response
-        emmgmux::StreamCloseRequest req;
+        emmgmux::StreamCloseRequest req(_protocol);
         req.channel_id = _stream_status.channel_id;
         req.stream_id = _stream_status.stream_id;
         req.client_id = _stream_status.client_id;
@@ -311,7 +297,7 @@ bool ts::EMMGClient::disconnect()
 
         // If we get a polite reply, send a channel_close
         if (ok) {
-            emmgmux::ChannelClose cc;
+            emmgmux::ChannelClose cc(_protocol);
             cc.channel_id = _channel_status.channel_id;
             cc.client_id = _channel_status.client_id;
             ok = _connection.send(cc, _logger);
@@ -347,7 +333,7 @@ bool ts::EMMGClient::requestBandwidth(uint16_t bandwidth, bool synchronous)
     cleanupResponse();
 
     // Send a stream_BW_request message to MUX.
-    emmgmux::StreamBWRequest request;
+    emmgmux::StreamBWRequest request(_protocol);
     request.channel_id = _stream_status.channel_id;
     request.stream_id = _stream_status.stream_id;
     request.client_id = _stream_status.client_id;
@@ -411,7 +397,7 @@ bool ts::EMMGClient::dataProvision(const void* data, size_t size)
 bool ts::EMMGClient::dataProvision(const std::vector<ByteBlockPtr>& data)
 {
     // Build a data provision message.
-    emmgmux::DataProvision request;
+    emmgmux::DataProvision request(_protocol);
     request.channel_id = _stream_status.channel_id;
     request.stream_id = _stream_status.stream_id;
     request.client_id = _stream_status.client_id;

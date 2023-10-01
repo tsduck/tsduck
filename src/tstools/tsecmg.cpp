@@ -34,6 +34,7 @@
 #include "tsMain.h"
 #include "tsDuckContext.h"
 #include "tsAsyncReport.h"
+#include "tsNullReport.h"
 #include "tsFatal.h"
 #include "tsMutex.h"
 #include "tsThread.h"
@@ -75,31 +76,23 @@ namespace {
     public:
         ECMGOptions(int argc, char *argv[]);
 
-        ts::DuckContext            duck;           // TSDuck execution context.
-        ts::AsyncReportArgs        logArgs;        // Options for asynchronous log.
-        int                        logProtocol;    // Log level for ECMG <=> SCS protocol.
-        int                        logData;        // Log level for CW/ECM data messages.
-        bool                       once;           // Accept only one client.
-        bool                       reusePort;      // Socket option.
-        ts::MilliSecond            ecmCompTime;    // ECM computation time.
-        ts::IPv4SocketAddress      serverAddress;  // TCP server local address.
-        ts::ecmgscs::ChannelStatus channelStatus;  // Standard parameters required by this ECMG.
-        ts::ecmgscs::StreamStatus  streamStatus;   // Standard parameters required by this ECMG.
+        ts::DuckContext            duck;                    // TSDuck execution context.
+        ts::AsyncReportArgs        logArgs {};              // Options for asynchronous log.
+        ts::ecmgscs::Protocol      ecmgscs {};              // ECMG <=> SCS protocol instance.
+        int                        logProtocol {ts::Severity::Debug};  // Log level for ECMG <=> SCS protocol.
+        int                        logData {ts::Severity::Debug};      // Log level for CW/ECM data messages.
+        bool                       once {false};            // Accept only one client.
+        bool                       reusePort {false};       // Socket option.
+        ts::MilliSecond            ecmCompTime {0};         // ECM computation time.
+        ts::IPv4SocketAddress      serverAddress {};        // TCP server local address.
+        ts::ecmgscs::ChannelStatus channelStatus {ecmgscs}; // Standard parameters required by this ECMG.
+        ts::ecmgscs::StreamStatus  streamStatus {ecmgscs};  // Standard parameters required by this ECMG.
     };
 }
 
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]"),
-    duck(this),
-    logArgs(),
-    logProtocol(ts::Severity::Debug),
-    logData(ts::Severity::Debug),
-    once(false),
-    reusePort(false),
-    ecmCompTime(0),
-    serverAddress(),
-    channelStatus(),
-    streamStatus()
+    duck(this)
 {
     logArgs.defineArgs(*this);
 
@@ -218,7 +211,7 @@ ECMGOptions::ECMGOptions(int argc, char *argv[]) :
     channelStatus.max_comp_time = intValue<uint16_t>(u"max-comp-time", uint16_t(ecmCompTime + 100));
 
     // Specify which ECMG <=> SCS version to use.
-    ts::ecmgscs::Protocol::Instance()->setVersion(protocolVersion);
+    ecmgscs.setVersion(protocolVersion);
     channelStatus.forceProtocolVersion(protocolVersion);
     streamStatus.forceProtocolVersion(protocolVersion);
 
@@ -255,10 +248,10 @@ public:
     ts::tlv::Logger& logger() { return _logger; }
 
 private:
-    ts::AsyncReport    _report;    // Asynchronous message report.
-    ts::tlv::Logger    _logger;    // Protocol message logger.
-    ts::Mutex          _mutex;     // Protect shared data.
-    std::set<uint16_t> _channels;  // Active channels.
+    ts::AsyncReport    _report;       // Asynchronous message report.
+    ts::tlv::Logger    _logger;       // Protocol message logger.
+    ts::Mutex          _mutex {};     // Protect shared data.
+    std::set<uint16_t> _channels {};  // Active channels.
 };
 
 
@@ -269,9 +262,7 @@ private:
 // Constructor.
 ECMGSharedData::ECMGSharedData(const ECMGOptions& opt) :
     _report(opt.maxSeverity(), opt.logArgs),
-    _logger(opt.logProtocol, &_report),
-    _mutex(),
-    _channels()
+    _logger(opt.logProtocol, &_report)
 {
     // The CW/ECM data messages have a distinct log level.
     _logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.logData);
@@ -317,11 +308,12 @@ public:
 
 private:
     const ECMGOptions&          _opt;
-    ECMGSharedData*             _shared;
-    ECMGConnectionPtr           _conn;
-    ts::UString                 _peer;
-    ts::Variable<uint16_t>      _channel;  // Current channel id.
-    std::map<uint16_t,uint16_t> _streams;  // Map of current stream id => ECM id.
+    ts::duck::Protocol          _protocol {};   // To encode ECM structure.
+    ECMGSharedData*             _shared {nullptr};
+    ECMGConnectionPtr           _conn {};
+    ts::UString                 _peer {};
+    ts::Variable<uint16_t>      _channel {};    // Current channel id.
+    std::map<uint16_t,uint16_t> _streams {};    // Map of current stream id => ECM id.
 
     // Handle the various ECMG client messages.
     bool handleChannelSetup(ts::ecmgscs::ChannelSetup* msg);
@@ -348,13 +340,9 @@ private:
 //----------------------------------------------------------------------------
 
 ECMGClientHandler::ECMGClientHandler(const ECMGOptions& opt, const ECMGConnectionPtr& conn, ECMGSharedData* shared, bool deleteWhenTerminated) :
-    ts::Thread(),
     _opt(opt),
     _shared(shared),
-    _conn(conn),
-    _peer(),
-    _channel(),
-    _streams()
+    _conn(conn)
 {
     // Set thread attributes. Beware of deleteWhenTerminated...
     ts::ThreadAttributes attr;
@@ -445,8 +433,8 @@ bool ECMGClientHandler::sendErrorResponse(const ts::tlv::Message* msg, uint16_t 
 {
     const ts::tlv::ChannelMessage* channelMsg = nullptr;
     const ts::tlv::StreamMessage* streamMsg = nullptr;
-    ts::ecmgscs::ChannelError channelError;
-    ts::ecmgscs::StreamError streamError;
+    ts::ecmgscs::ChannelError channelError(_opt.ecmgscs);
+    ts::ecmgscs::StreamError streamError(_opt.ecmgscs);
     ts::tlv::Message* resp = nullptr;
 
     // Build the appropriate response.
@@ -593,7 +581,7 @@ bool ECMGClientHandler::handleStreamCloseRequest(ts::ecmgscs::StreamCloseRequest
     else {
         // Stream ok, close it.
         _streams.erase(msg->stream_id);
-        ts::ecmgscs::StreamCloseResponse resp;
+        ts::ecmgscs::StreamCloseResponse resp(_opt.ecmgscs);
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
         return send(&resp);
@@ -618,7 +606,7 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
     }
     else {
         // Start to build the response.
-        ts::ecmgscs::ECMResponse resp;
+        ts::ecmgscs::ECMResponse resp(_opt.ecmgscs);
         resp.channel_id = msg->channel_id;
         resp.stream_id = msg->stream_id;
         resp.CP_number = msg->CP_number;
@@ -628,7 +616,7 @@ bool ECMGClientHandler::handleCWProvision(ts::ecmgscs::CWProvision* msg)
         const bool cpWrap = cpMax < msg->CP_number;
 
         // Add all CW's in the ECM (in the clear, yeah, but that's a fake/test ECMG).
-        ts::duck::ClearECM ecm;
+        ts::duck::ClearECM ecm(_protocol);
         for (auto it = msg->CP_CW_combination.begin(); it != msg->CP_CW_combination.end(); ++it) {
             if ((!cpWrap && (it->CP < msg->CP_number || it->CP > cpMax)) || (cpWrap && it->CP > cpMax && it->CP < msg->CP_number)) {
                 // Incorrect CP/CW combination.
@@ -712,8 +700,7 @@ int MainCode(int argc, char *argv[])
     {
         return EXIT_FAILURE;
     }
-    shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d",
-                            {opt.serverAddress, ts::ecmgscs::Protocol::Instance()->version()});
+    shared.report().verbose(u"TCP server listening on %s, using ECMG <=> SCS protocol version %d", {opt.serverAddress, opt.ecmgscs.version()});
 
     // On UNIX systems, ignore SIGPIPE. This signal is raised when trying to write to a disconnected
     // socket. This may happen when a client disconnects after sending stream_close_request without
@@ -726,7 +713,7 @@ int MainCode(int argc, char *argv[])
 
         // Accept one incoming connection.
         ts::IPv4SocketAddress clientAddress;
-        ECMGConnectionPtr conn(new ECMGConnection(ts::ecmgscs::Protocol::Instance(), true, 3));
+        ECMGConnectionPtr conn(new ECMGConnection(opt.ecmgscs, true, 3));
         ts::CheckNonNull(conn.pointer());
         if (!server.accept(*conn, clientAddress, shared.report())) {
             break;

@@ -32,29 +32,23 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor: associate the analyzer object with the address
-// and size of the binary message. The corresponding memory area
-// must remain alive as long as the object exists.
-// Also pre-analyze the first TLV field.
+// Constructor
 //----------------------------------------------------------------------------
 
-ts::tlv::Analyzer::Analyzer (const void* addr, size_t size) :
-    _base       (static_cast<const char*> (addr)),
-    _end        (_base + size),
-    _eom        (size == 0),
-    _valid      (true),
-    _tlv_addr   (_base),
-    _tlv_size   (0),
-    _tag        (0),
-    _value_addr (_base),
-    _length     (0)
+ts::tlv::Analyzer::Analyzer(const void* addr, size_t size) :
+    _base(static_cast<const char*>(addr)),
+    _end(_base + size),
+    _eom(size == 0),
+    _valid(true),
+    _tlv_addr(_base),
+    _value_addr(_base)
 {
     next();
 }
 
 
 //----------------------------------------------------------------------------
-//  This method analyzes the next TLV field in the stream
+// This method analyzes the next TLV field in the stream
 //----------------------------------------------------------------------------
 
 void ts::tlv::Analyzer::next()

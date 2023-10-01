@@ -33,6 +33,7 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
+#include "tsDuckProtocol.h"
 #include "tsTime.h"
 #include "tsSectionFile.h"
 #include "tsTablesDisplay.h"
@@ -60,11 +61,12 @@ namespace {
         ts::TablesDisplay     display;           // Options about displaying tables
         ts::PagerArgs         pager;             // Output paging options.
         ts::UDPReceiver       udp;               // Options about receiving UDP tables
-        ts::UStringVector     infiles;           // Input file names
-        ts::CRC32::Validation crc_validation;    // Validation of CRC32 in input sections
-        size_t                max_tables;        // Max number of tables to dump.
-        size_t                max_invalid_udp;   // Max number of invalid UDP messages before giving up.
-        bool                  no_encapsulation;  // Raw sections in UDP messages.
+        ts::duck::Protocol    duck_protocol {};  // To analyze incoming UDP messages
+        ts::UStringVector     infiles {};        // Input file names
+        ts::CRC32::Validation crc_validation = ts::CRC32::CHECK;  // Validation of CRC32 in input sections
+        size_t                max_tables = 0;            // Max number of tables to dump.
+        size_t                max_invalid_udp = 16;      // Max number of invalid UDP messages before giving up.
+        bool                  no_encapsulation = false;  // Raw sections in UDP messages.
     };
 }
 
@@ -73,12 +75,7 @@ Options::Options(int argc, char *argv[]) :
     duck(this),
     display(duck),
     pager(true, true),
-    udp(*this),
-    infiles(),
-    crc_validation(ts::CRC32::CHECK),
-    max_tables(0),
-    max_invalid_udp(16),
-    no_encapsulation(false)
+    udp(*this)
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
@@ -165,7 +162,7 @@ namespace {
             assert(insize <= packet.size());
             if (ok) {
                 // Analyze sections in the packet.
-                if (ts::TablesLogger::AnalyzeUDPMessage(packet.data(), insize, opt.no_encapsulation, sections, timestamp)) {
+                if (ts::TablesLogger::AnalyzeUDPMessage(opt.duck_protocol, packet.data(), insize, opt.no_encapsulation, sections, timestamp)) {
 
                     // Valid message, reset the number of consecutive invalid messages.
                     invalid_msg = 0;

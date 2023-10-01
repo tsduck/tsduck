@@ -84,7 +84,8 @@ void TagLengthValueTest::afterTest()
 
 void TagLengthValueTest::testECMG()
 {
-    ts::ecmgscs::ChannelStatus refMessage;
+    ts::ecmgscs::Protocol protocol;
+    ts::ecmgscs::ChannelStatus refMessage(protocol);
     refMessage.channel_id = 2;
     refMessage.section_TSpkt_flag = true;
     refMessage.has_AC_delay_start = true;
@@ -152,7 +153,7 @@ void TagLengthValueTest::testECMG()
     TSUNIT_EQUAL(sizeof(refData), data->size());
     TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
-    ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::ecmgscs::Protocol::Instance());
+    ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(ts::ecmgscs::Tags::channel_status, msg->tag());
@@ -184,7 +185,8 @@ void TagLengthValueTest::testECMG()
 
 void TagLengthValueTest::testEMMG()
 {
-    ts::emmgmux::StreamBWAllocation refMessage;
+    ts::emmgmux::Protocol protocol;
+    ts::emmgmux::StreamBWAllocation refMessage(protocol);
     refMessage.channel_id = 0x1234;
     refMessage.stream_id = 0x5678;
     refMessage.client_id = 0x98765432;
@@ -214,12 +216,12 @@ void TagLengthValueTest::testEMMG()
     refMessage.serialize(zer);
 
     debug() << "TagLengthValueTest::testEMMG: serialized:" << std::endl
-                 << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
+            << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
     TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
-    ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::emmgmux::Protocol::Instance());
+    ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(ts::emmgmux::Tags::stream_BW_allocation, msg->tag());
@@ -238,7 +240,8 @@ void TagLengthValueTest::testEMMG()
 
 void TagLengthValueTest::testECMGError()
 {
-    ts::ecmgscs::StreamError refMessage;
+    ts::ecmgscs::Protocol protocol;
+    ts::ecmgscs::StreamError refMessage(protocol);
     refMessage.channel_id = 2;
     refMessage.stream_id = 3;
     refMessage.error_status = {ts::ecmgscs::Errors::inv_ECM_id, ts::ecmgscs::Errors::out_of_compute};
@@ -274,7 +277,7 @@ void TagLengthValueTest::testECMGError()
     TSUNIT_EQUAL(sizeof(refData), data->size());
     TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
-    ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::ecmgscs::Protocol::Instance());
+    ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(ts::ecmgscs::Tags::stream_error, msg->tag());
@@ -292,7 +295,8 @@ void TagLengthValueTest::testECMGError()
 
 void TagLengthValueTest::testEMMGError()
 {
-    ts::emmgmux::StreamError refMessage;
+    ts::emmgmux::Protocol protocol;
+    ts::emmgmux::StreamError refMessage(protocol);
     refMessage.channel_id = 2;
     refMessage.stream_id = 3;
     refMessage.client_id = 4;
@@ -326,12 +330,12 @@ void TagLengthValueTest::testEMMGError()
     refMessage.serialize(zer);
 
     debug() << "TagLengthValueTest::testEMMGError: serialized:" << std::endl
-                 << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
+            << ts::UString::Dump(*data, ts::UString::HEXA, 2) << std::endl;
 
     TSUNIT_EQUAL(sizeof(refData), data->size());
     TSUNIT_EQUAL(0, ::memcmp(refData, data->data(), sizeof(data)));
 
-    ts::tlv::MessageFactory fac(refData, sizeof(refData), ts::emmgmux::Protocol::Instance());
+    ts::tlv::MessageFactory fac(refData, sizeof(refData), protocol);
     ts::tlv::MessagePtr msg(fac.factory());
     TSUNIT_ASSERT(!msg.isNull());
     TSUNIT_EQUAL(ts::tlv::TAG(ts::emmgmux::Tags::stream_error), msg->tag());

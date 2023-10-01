@@ -73,43 +73,37 @@ namespace ts {
         class TSDUCKDLL Message
         {
             TS_RULE_OF_FIVE(Message, );
+        protected:
+            //!
+            //! Alias for the superclass of subclasses.
+            //!
+            using superclass = Message;
+
         public:
             //!
             //! Check if the message has a protocol version number.
             //! @return True if the message has a protocol version number.
             //!
-            bool hasProtocolVersion() const
-            {
-                return _has_version;
-            }
+            bool hasProtocolVersion() const { return _has_version; }
 
             //!
             //! Get the protocol version number.
             //! @return The protocol version number.
             //!
-            VERSION protocolVersion() const
-            {
-                return _version;
-            }
+            VERSION protocolVersion() const { return _version; }
 
             //!
             //! Force the protocol version number to another value.
             //! Use with care.
             //! @param [in] version The protocol version number.
             //!
-            void forceProtocolVersion(VERSION version)
-            {
-                _version = version;
-            }
+            void forceProtocolVersion(VERSION version) { _version = version; }
 
             //!
             //! Get the message tag.
             //! @return The message tag.
             //!
-            TAG tag() const
-            {
-                return _tag;
-            }
+            TAG tag() const { return _tag; }
 
             //!
             //! Serialize the message using a Serializer.
@@ -316,28 +310,16 @@ namespace ts {
             //! @return The formatted string with embedded new-lines.
             //!
             template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type* = nullptr>
-            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = nullptr)
-            {
-                UString s;
-                for (auto i : val) {
-                    if (toString == nullptr) {
-                        s += dumpInteger(indent, name, i);
-                    }
-                    else {
-                        s += UString::Format(u"%*s%s = %s\n", {indent, u"", name, toString(i)});
-                    }
-                }
-                return s;
-            }
+            static UString dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT) = nullptr);
 
         private:
             // Unreachable constructor.
             Message() = delete;
 
             // Private members
-            bool    _has_version;
-            VERSION _version;
-            TAG     _tag;
+            bool    _has_version = false;
+            VERSION _version = 0;
+            TAG     _tag = 0;
         };
 
         //!
@@ -351,3 +333,71 @@ namespace ts {
         typedef SafePtr<Message, Mutex> MessagePtrMT;
     }
 }
+
+//!
+//! A macro to add in the declaration of a ts::tlv::Message subclass without version.
+//! @param classname Name of the enclosing class.
+//!
+#define TS_UNVERSIONED_TLV_MESSAGE(classname)                        \
+    public:                                                          \
+        /** Default constructor. */                                  \
+        classname();                                                 \
+        /** Constructor from a message factory. */                   \
+        /** @param [in] fact Message factory. */                     \
+        classname(const ts::tlv::MessageFactory& fact);              \
+        /* Implementation of Message. */                             \
+        virtual ts::UString dump(size_t indent = 0) const override;  \
+    protected:                                                       \
+        /* Implementation of Message. */                             \
+        virtual void serializeParameters(ts::tlv::Serializer&) const override
+
+//!
+//! A macro to add in the declaration of a ts::tlv::Message subclass with version.
+//! @param classname Name of the enclosing class.
+//! @param classname Message tag.
+//!
+#define TS_VERSIONED_TLV_MESSAGE(classname, tag)                     \
+    private:                                                         \
+        classname() = delete;                                        \
+    public:                                                          \
+        /** Constructor with version. */                             \
+        /** @param [in] version Protocol version. */                 \
+        classname(ts::tlv::VERSION version) :                        \
+            superclass(version, tag) {}                              \
+        /** Constructor with version from protocol. */               \
+        /** @param [in] proto Protocol definition. */                \
+        classname(const ts::tlv::Protocol& proto) :                  \
+            classname(proto.version()) {}                            \
+        /** Constructor from a message factory. */                   \
+        /** @param [in] fact Message factory. */                     \
+        classname(const ts::tlv::MessageFactory& fact);              \
+        /* Implementation of Message. */                             \
+        virtual ts::UString dump(size_t indent = 0) const override;  \
+    protected:                                                       \
+        /* Implementation of Message. */                             \
+        virtual void serializeParameters(ts::tlv::Serializer&) const override
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+#if !defined(DOXYGEN)
+
+// Dump a vector of integer values (helper routine for subclasses).
+template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>
+ts::UString ts::tlv::Message::dumpVector(size_t indent, const UString& name, const std::vector<INT>& val, UString(*toString)(INT))
+{
+    UString s;
+    for (auto i : val) {
+        if (toString == nullptr) {
+            s += dumpInteger(indent, name, i);
+        }
+        else {
+            s += UString::Format(u"%*s%s = %s\n", {indent, u"", name, toString(i)});
+        }
+    }
+    return s;
+}
+
+#endif // DOXYGEN

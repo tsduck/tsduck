@@ -28,6 +28,7 @@
 //----------------------------------------------------------------------------
 
 #include "tstlvLogger.h"
+#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
@@ -36,9 +37,18 @@
 
 ts::tlv::Logger::Logger(int default_level, Report* default_report) :
     _report(default_report != nullptr ? default_report : NullReport::Instance()),
-    _default_level(default_level),
-    _levels()
+    _default_level(default_level)
 {
+}
+
+
+//----------------------------------------------------------------------------
+// Set a new default report object.
+//----------------------------------------------------------------------------
+
+void ts::tlv::Logger::setReport(Report* default_report)
+{
+    _report = default_report != nullptr ? default_report : NullReport::Instance();
 }
 
 

@@ -52,23 +52,19 @@ namespace {
     public:
         GenECMOptions(int argc, char *argv[]);
 
-        ts::DuckContext    duck;       // TSDuck execution context.
-        ts::UString        outFile;    // Name of binary output file.
-        ts::ECMGClientArgs ecmg;       // ECMG parameters
-        uint16_t           cpNumber;   // Crypto-period number
-        ts::ByteBlock      cwCurrent;  // Current CW
-        ts::ByteBlock      cwNext;     // Next CW
+        ts::DuckContext       duck;          // TSDuck execution context.
+        ts::ecmgscs::Protocol ecmgscs {};    // ECMG <=> SCS protocol instance.
+        ts::UString           outFile {};    // Name of binary output file.
+        ts::ECMGClientArgs    ecmg {};       // ECMG parameters
+        uint16_t              cpNumber {0};  // Crypto-period number
+        ts::ByteBlock         cwCurrent {};  // Current CW
+        ts::ByteBlock         cwNext {};     // Next CW
     };
 }
 
 GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
-    duck(this),
-    outFile(),
-    ecmg(),
-    cpNumber(0),
-    cwCurrent(),
-    cwNext()
+    duck(this)
 {
     setIntro(u"This command connects to a DVB SimulCrypt compliant ECMG and requests "
              u"the generation of one ECM. Restriction: The target ECMG shall support "
@@ -99,6 +95,9 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     getIntValue(cpNumber, u"cp-number", 0);
     getHexaValue(cwCurrent, u"cw-current");
     getHexaValue(cwNext, u"cw-next");
+
+    // Specify which ECMG <=> SCS version to use.
+    ecmgscs.setVersion(ecmg.dvbsim_version);
 
     exitOnError();
 }
@@ -161,17 +160,14 @@ int MainCode(int argc, char *argv[])
 {
     GenECMOptions opt(argc, argv);
     ts::tlv::Logger logger(ts::Severity::Debug, &opt);
-    ts::ecmgscs::ChannelStatus channelStatus;
-    ts::ecmgscs::StreamStatus streamStatus;
-    ts::ECMGClient ecmg;
+    ts::ecmgscs::ChannelStatus channelStatus(opt.ecmgscs);
+    ts::ecmgscs::StreamStatus streamStatus(opt.ecmgscs);
+    ts::ECMGClient ecmg(opt.ecmgscs);
 
     // Set logging levels.
     logger.setDefaultSeverity(opt.ecmg.log_protocol);
     logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.ecmg.log_data);
     logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.ecmg.log_data);
-
-    // Specify which ECMG <=> SCS version to use.
-    ts::ecmgscs::Protocol::Instance()->setVersion(opt.ecmg.dvbsim_version);
 
     // Connect to ECMG.
     if (!ecmg.connect(opt.ecmg, channelStatus, streamStatus, nullptr, logger)) {
@@ -180,7 +176,7 @@ int MainCode(int argc, char *argv[])
     }
 
     // Request the ECM (synchronous operation).
-    ts::ecmgscs::ECMResponse response;
+    ts::ecmgscs::ECMResponse response(opt.ecmgscs);
     if (!ecmg.generateECM(opt.cpNumber, opt.cwCurrent, opt.cwNext, opt.ecmg.access_criteria, uint16_t(opt.ecmg.cp_duration / 100), response)) {
         ecmg.disconnect();
         return EXIT_FAILURE;
