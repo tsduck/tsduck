@@ -165,6 +165,7 @@ namespace ts {
 
         class TSDUCKDLL Protocol : public tlv::Protocol
         {
+            TS_NOCOPY(Protocol);
         public:
             //!
             //! Default constructor.
