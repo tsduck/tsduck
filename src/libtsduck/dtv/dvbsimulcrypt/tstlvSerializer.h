@@ -49,8 +49,8 @@ namespace ts {
         {
         private:
             // Private members:
-            ByteBlockPtr _bb;    // Associated binary block
-            int _length_offset;  // Location of TLV "length" field
+            ByteBlockPtr _bb {};      // Associated binary block
+            int _length_offset {-1};  // Location of TLV "length" field
 
         public:
             //!
@@ -59,11 +59,7 @@ namespace ts {
             //! @param [in] bb Safe pointer to an existing message block.
             //! The messages will be serialized in this block.
             //!
-            Serializer(const ByteBlockPtr& bb) :
-                _bb(bb),
-                _length_offset(-1)
-            {
-            }
+            Serializer(const ByteBlockPtr& bb) : _bb(bb) {}
 
             //!
             //! Constructor.
@@ -71,11 +67,7 @@ namespace ts {
             //! Useful to nest serializer when building compound TLV parameters.
             //! @param [in] s Another serializer, will use the same byte block for serialization.
             //!
-            Serializer(const Serializer& s) :
-                _bb(s._bb),
-                _length_offset(-1)
-            {
-            }
+            Serializer(const Serializer& s) : _bb(s._bb) {}
 
             //!
             //! Destructor.

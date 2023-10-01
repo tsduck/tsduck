@@ -52,7 +52,7 @@ namespace ts {
             //!
             //! Constructor for a protocol without version number.
             //!
-            Protocol();
+            Protocol() = default;
 
             //!
             //! Constructor for a protocol with version number.
@@ -150,25 +150,25 @@ namespace ts {
 
             // Description of a parameter:
             struct Parameter {
-                const Protocol* compound; // Compound TLV parameter (or 0)
-                size_t min_size;          // Min size (if compound == 0)
-                size_t max_size;          // Max size (if compound == 0)
-                size_t min_count;         // Min occurence count
-                size_t max_count;         // Max occurence count
+                const Protocol* compound;  // Compound TLV parameter (or nullptr)
+                size_t min_size;           // Min size (if compound == nullptr)
+                size_t max_size;           // Max size (if compound == nullptr)
+                size_t min_count;          // Min occurence count
+                size_t max_count;          // Max occurence count
             };
             typedef std::map<TAG,Parameter> ParameterMap;
 
             // Description of a command:
             struct Command {
-                ParameterMap params;
-                Command() : params() {}
+                Command() = default;
+                ParameterMap params {};
             };
             typedef std::map<TAG,Command> CommandMap;
 
             // Protocol private members
-            bool       _has_version;
-            VERSION    _version;
-            CommandMap _commands;
+            bool       _has_version {false};
+            VERSION    _version {0};
+            CommandMap _commands {};
         };
     }
 }

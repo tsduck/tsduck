@@ -32,25 +32,6 @@
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
-//----------------------------------------------------------------------------
-
-ts::ECMGClientArgs::ECMGClientArgs() :
-    ecmg_address(),
-    super_cas_id(0),
-    access_criteria(),
-    cp_duration(0),
-    dvbsim_version(0),
-    ecm_channel_id(0),
-    ecm_stream_id(0),
-    ecm_id(0),
-    log_protocol(0),
-    log_data(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 

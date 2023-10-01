@@ -60,8 +60,8 @@ namespace ts {
         virtual bool decipherECM(const Section& ecm, CWData& cw_even, CWData& cw_odd) override;
 
     private:
-        // Private fields.
-        uint16_t _cas_id;
+        uint16_t       _cas_id = 0;
+        duck::Protocol _protocol {};
     };
 }
 
@@ -73,8 +73,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"descrambler", ts::DescramblerPlugin);
 //----------------------------------------------------------------------------
 
 ts::DescramblerPlugin::DescramblerPlugin(TSP* tsp_) :
-    AbstractDescrambler(tsp_, u"Generic DVB descrambler"),
-    _cas_id(0)
+    AbstractDescrambler(tsp_, u"Generic DVB descrambler")
 {
     option(u"cas-id", 0, UINT16);
     help(u"cas-id",
@@ -141,7 +140,7 @@ bool ts::DescramblerPlugin::decipherECM(const Section& ecm, CWData& cw_even, CWD
     const size_t ecmSize = ecm.payloadSize();
 
     // Analyze ECM as a TLV message.
-    tlv::MessageFactory mf(ecmData, ecmSize, duck::Protocol::Instance());
+    tlv::MessageFactory mf(ecmData, ecmSize, _protocol);
     tlv::MessagePtr msg(mf.factory());
 
     // If this a valid ECM?

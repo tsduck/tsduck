@@ -36,7 +36,6 @@
 #pragma once
 #include "tstlvProtocol.h"
 #include "tstlvStreamMessage.h"
-#include "tsSingletonManager.h"
 
 namespace ts {
     //!
@@ -162,10 +161,12 @@ namespace ts {
 
         class TSDUCKDLL Protocol : public tlv::Protocol
         {
-            // This class is a singleton. Use static Instance() method.
-            TS_DECLARE_SINGLETON(Protocol);
-
         public:
+            //!
+            //! Default constructor.
+            //!
+            Protocol();
+
             // Implementation of pure virtual methods
             virtual void factory(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
             virtual void buildErrorResponse(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
@@ -182,28 +183,12 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelSetup : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelSetup, Tags::channel_setup);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;      // data_channel_id
-            uint32_t client_id;          //!< Client id.
-            bool     section_TSpkt_flag; //!< Use TS packets or sections.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelSetup();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelSetup(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;              // data_channel_id
+            uint32_t client_id = 0;              //!< Client id.
+            bool     section_TSpkt_flag = false; //!< Use TS packets or sections.
         };
 
         //!
@@ -211,27 +196,11 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelTest : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelTest, Tags::channel_test);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            uint32_t client_id;     //!< Client id.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelTest();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelTest(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;  // data_channel_id
+            uint32_t client_id = 0;  //!< Client id.
         };
 
         //!
@@ -239,28 +208,12 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelStatus : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelStatus, Tags::channel_status);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;      // data_channel_id
-            uint32_t client_id;          //!< Client id.
-            bool     section_TSpkt_flag; //!< Use TS packets or sections.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelStatus();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelStatus(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;              // data_channel_id
+            uint32_t client_id = 0;              //!< Client id.
+            bool     section_TSpkt_flag = false; //!< Use TS packets or sections.
         };
 
         //!
@@ -268,27 +221,11 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelClose : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelClose, Tags::channel_close);
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // data_channel_id
-            uint32_t client_id;     //!< Client id.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelClose();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelClose(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            uint32_t client_id = 0; //!< Client id.
         };
 
         //!
@@ -296,29 +233,13 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelError : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelError, Tags::channel_error);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;                  // data_channel_id
-            uint32_t client_id;                      //!< Client id.
-            std::vector<uint16_t> error_status;      //!< Error code.
-            std::vector<uint16_t> error_information; //!< Error information.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelError();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelError(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                     // data_channel_id
+            uint32_t client_id = 0;                     //!< Client id.
+            std::vector<uint16_t> error_status {};      //!< Error code.
+            std::vector<uint16_t> error_information {}; //!< Error information.
         };
 
         //!
@@ -326,30 +247,14 @@ namespace ts {
         //!
         class TSDUCKDLL StreamSetup : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamSetup, Tags::stream_setup);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            // uint16_t stream_id;  // data_stream_id
-            uint32_t client_id;     //!< Client id.
-            uint16_t data_id;       //!< Data id.
-            uint8_t  data_type;     //!< Data type.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamSetup();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamSetup(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;  // data_channel_id
+            // uint16_t stream_id;   // data_stream_id
+            uint32_t client_id = 0;  //!< Client id.
+            uint16_t data_id = 0;    //!< Data id.
+            uint8_t  data_type = 0;  //!< Data type.
         };
 
         //!
@@ -357,28 +262,12 @@ namespace ts {
         //!
         class TSDUCKDLL StreamTest : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamTest, Tags::stream_test);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            // uint16_t stream_id;  // data_stream_id
-            uint32_t client_id;     //!< Client id.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamTest();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamTest(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;  // data_channel_id
+            // uint16_t stream_id;   // data_stream_id
+            uint32_t client_id = 0;  //!< Client id.
         };
 
         //!
@@ -386,30 +275,14 @@ namespace ts {
         //!
         class TSDUCKDLL StreamStatus : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamStatus, Tags::stream_status);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            // uint16_t stream_id;  // data_stream_id
-            uint32_t client_id;     //!< Client id.
-            uint16_t data_id;       //!< Data id.
-            uint8_t  data_type;     //!< Data type.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamStatus();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamStatus(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;  // data_channel_id
+            // uint16_t stream_id;   // data_stream_id
+            uint32_t client_id = 0;  //!< Client id.
+            uint16_t data_id = 0;    //!< Data id.
+            uint8_t  data_type = 0;  //!< Data type.
         };
 
         //!
@@ -417,28 +290,12 @@ namespace ts {
         //!
         class TSDUCKDLL StreamCloseRequest : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamCloseRequest, Tags::stream_close_request);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            // uint16_t stream_id;  // data_stream_id
-            uint32_t client_id;     //!< Client id.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamCloseRequest();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamCloseRequest(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;  // data_channel_id
+            // uint16_t stream_id;   // data_stream_id
+            uint32_t client_id = 0;  //!< Client id.
         };
 
         //!
@@ -446,28 +303,12 @@ namespace ts {
         //!
         class TSDUCKDLL StreamCloseResponse : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamCloseResponse, Tags::stream_close_response);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            // uint16_t stream_id;  // data_stream_id
-            uint32_t client_id;     //!< Client id.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamCloseResponse();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamCloseResponse(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;  // data_channel_id
+            // uint16_t stream_id;   // data_stream_id
+            uint32_t client_id = 0;  //!< Client id.
         };
 
         //!
@@ -475,30 +316,14 @@ namespace ts {
         //!
         class TSDUCKDLL StreamError : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamError, Tags::stream_error);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;                  // data_channel_id
-            // uint16_t stream_id;                   // data_stream_id
-            uint32_t client_id;                      //!< Client id.
-            std::vector<uint16_t> error_status;      //!< Error code.
-            std::vector<uint16_t> error_information; //!< Error information.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamError();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamError(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                     // data_channel_id
+            // uint16_t stream_id;                      // data_stream_id
+            uint32_t client_id = 0;                     //!< Client id.
+            std::vector<uint16_t> error_status {};      //!< Error code.
+            std::vector<uint16_t> error_information {}; //!< Error information.
         };
 
         //!
@@ -506,30 +331,14 @@ namespace ts {
         //!
         class TSDUCKDLL StreamBWRequest : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamBWRequest, Tags::stream_BW_request);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            // uint16_t stream_id;  // data_stream_id
-            uint32_t client_id;     //!< Client id.
-            bool     has_bandwidth; //!< Field bandwidth is valid.
-            uint16_t bandwidth;     //!< Bandwidth in kbits / second.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamBWRequest();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamBWRequest(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;         // data_channel_id
+            // uint16_t stream_id;          // data_stream_id
+            uint32_t client_id = 0;         //!< Client id.
+            bool     has_bandwidth = false; //!< Field bandwidth is valid.
+            uint16_t bandwidth = 0;         //!< Bandwidth in kbits / second.
         };
 
         //!
@@ -537,30 +346,14 @@ namespace ts {
         //!
         class TSDUCKDLL StreamBWAllocation : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamBWAllocation, Tags::stream_BW_allocation);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // data_channel_id
-            // uint16_t stream_id;  // data_stream_id
-            uint32_t client_id;     //!< Client id.
-            bool     has_bandwidth; //!< Field bandwidth is valid.
-            uint16_t bandwidth;     //!< Bandwidth in kbits / second.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamBWAllocation();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamBWAllocation(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;         // data_channel_id
+            // uint16_t stream_id;          // data_stream_id
+            uint32_t client_id = 0;         //!< Client id.
+            bool     has_bandwidth = false; //!< Field bandwidth is valid.
+            uint16_t bandwidth = 0;         //!< Bandwidth in kbits / second.
         };
 
         //!
@@ -568,30 +361,14 @@ namespace ts {
         //!
         class TSDUCKDLL DataProvision : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(DataProvision, Tags::data_provision);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;               // data_channel_id, forbidden on UDP, required on TCP
-            // uint16_t stream_id;                // data_stream_id,  forbidden on UDP, required on TCP
-            uint32_t client_id;                   //!< Client id.
-            uint16_t data_id;                     //!< Data id (DataTypes).
-            std::vector <ByteBlockPtr> datagram;  //!< EMM or private data to send.
-
-            //!
-            //! Default constructor.
-            //!
-            DataProvision();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            DataProvision(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                  // data_channel_id, forbidden on UDP, required on TCP
+            // uint16_t stream_id;                   // data_stream_id,  forbidden on UDP, required on TCP
+            uint32_t client_id = 0;                  //!< Client id.
+            uint16_t data_id = 0;                    //!< Data id (DataTypes).
+            std::vector <ByteBlockPtr> datagram {};  //!< EMM or private data to send.
         };
 
 

@@ -64,8 +64,10 @@ namespace ts {
         //!
         //! Constructor.
         //! @param [in] duck TSDuck execution context. The reference is kept inside the packetizer.
+        //! @param [in] protocol Instance of EMMG/PDG <=> SCS protocol to use.
+        //! A reference to the protocol instance is kept inside the object.
         //!
-        EMMGClient(const DuckContext& duck);
+        EMMGClient(const DuckContext& duck, const emmgmux::Protocol& protocol);
 
         //!
         //! Destructor.
@@ -202,23 +204,24 @@ namespace ts {
         static const MilliSecond RESPONSE_TIMEOUT = 5000;
 
         // Private members
-        const DuckContext&     _duck;
-        volatile State         _state;
-        IPv4SocketAddress      _udp_address;
-        uint64_t               _total_bytes;
-        const AbortInterface*  _abort;
-        tlv::Logger            _logger;
-        tlv::Connection<Mutex> _connection;     // connection with MUX server
-        UDPSocket              _udp_socket;     // where to send data_provision if UDP is used
-        emmgmux::ChannelStatus _channel_status; // automatic response to channel_test
-        emmgmux::StreamStatus  _stream_status;  // automatic response to stream_test
-        Mutex                  _mutex;          // exclusive access to protected fields
-        Condition              _work_to_do;     // notify receiver thread to do some work
-        Condition              _got_response;   // notify application thread that a response arrived
-        tlv::TAG               _last_response;  // tag of last response message
-        uint16_t               _allocated_bw;   // last allocated bandwidth
-        std::vector<uint16_t>  _error_status;   // last error status
-        std::vector<uint16_t>  _error_info;     // last error information
+        const DuckContext&       _duck;
+        const emmgmux::Protocol& _protocol;
+        volatile State           _state {INITIAL};
+        IPv4SocketAddress        _udp_address {};
+        uint64_t                 _total_bytes {0};
+        const AbortInterface*    _abort {nullptr};
+        tlv::Logger              _logger {};
+        tlv::Connection<Mutex>   _connection {_protocol, true, 3};  // connection with MUX server
+        UDPSocket                _udp_socket {};                    // where to send data_provision if UDP is used
+        emmgmux::ChannelStatus   _channel_status {_protocol};       // automatic response to channel_test
+        emmgmux::StreamStatus    _stream_status {_protocol};        // automatic response to stream_test
+        Mutex                    _mutex {};           // exclusive access to protected fields
+        Condition                _work_to_do {};      // notify receiver thread to do some work
+        Condition                _got_response {};    // notify application thread that a response arrived
+        tlv::TAG                 _last_response {0};  // tag of last response message
+        uint16_t                 _allocated_bw {0};   // last allocated bandwidth
+        std::vector<uint16_t>    _error_status {};    // last error status
+        std::vector<uint16_t>    _error_info {};      // last error information
 
         // Receiver thread main code
         virtual void main() override;

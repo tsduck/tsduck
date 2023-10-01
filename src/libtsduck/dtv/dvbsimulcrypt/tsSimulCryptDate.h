@@ -287,7 +287,7 @@ namespace ts {
 
     private:
         // Private members
-        uint8_t _data[SIZE];
+        uint8_t _data[SIZE] {0};
     };
 }
 

@@ -31,9 +31,6 @@
 #include "tstlvMessageFactory.h"
 #include "tsSection.h"
 
-// Define protocol singleton instance
-TS_DEFINE_SINGLETON(ts::duck::Protocol);
-
 
 //----------------------------------------------------------------------------
 // Protocol name.
@@ -51,8 +48,7 @@ ts::UString ts::duck::Protocol::name() const
 // Protocol Constructor: Define the syntax of the protocol
 //----------------------------------------------------------------------------
 
-ts::duck::Protocol::Protocol() :
-    tlv::Protocol(ts::duck::CURRENT_VERSION)
+ts::duck::Protocol::Protocol() : tlv::Protocol(ts::duck::CURRENT_VERSION)
 {
     // Define the syntax of all commands:
     // add (cmd_tag, param_tag, min_size, max_size, min_count, max_count)
@@ -100,7 +96,7 @@ void ts::duck::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePt
 void ts::duck::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create an error message
-    SafePtr<Error> errmsg(new Error);
+    SafePtr<Error> errmsg(new Error(version()));
 
     // Convert general TLV error code into protocol error_status
     switch (fact.errorStatus()) {
@@ -180,19 +176,8 @@ namespace {
 // Log a section
 //----------------------------------------------------------------------------
 
-ts::duck::LogSection::LogSection() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_LOG_SECTION),
-    pid(),
-    timestamp(),
-    section()
-{
-}
-
 ts::duck::LogSection::LogSection(const tlv::MessageFactory& fact) :
-    tlv::Message(fact.protocolVersion(), fact.commandTag()),
-    pid(),
-    timestamp(),
-    section()
+    tlv::Message(fact.protocolVersion(), fact.commandTag())
 {
     if (1 == fact.count(Tags::PRM_PID)) {
         pid = fact.get<PID>(Tags::PRM_PID);
@@ -234,19 +219,8 @@ ts::UString ts::duck::LogSection::dump(size_t indent) const
 // Log a table
 //----------------------------------------------------------------------------
 
-ts::duck::LogTable::LogTable() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_LOG_TABLE),
-    pid(),
-    timestamp(),
-    sections()
-{
-}
-
 ts::duck::LogTable::LogTable(const tlv::MessageFactory& fact) :
-    tlv::Message(fact.protocolVersion(), fact.commandTag()),
-    pid(),
-    timestamp(),
-    sections()
+    tlv::Message(fact.protocolVersion(), fact.commandTag())
 {
     if (1 == fact.count(Tags::PRM_PID)) {
         pid = fact.get<PID>(Tags::PRM_PID);
@@ -298,19 +272,8 @@ ts::UString ts::duck::LogTable::dump(size_t indent) const
 // Fake / demo clear ECM
 //----------------------------------------------------------------------------
 
-ts::duck::ClearECM::ClearECM() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_ECM),
-    cw_even(),
-    cw_odd(),
-    access_criteria()
-{
-}
-
 ts::duck::ClearECM::ClearECM(const tlv::MessageFactory& fact) :
-    tlv::Message(fact.protocolVersion(), fact.commandTag()),
-    cw_even(),
-    cw_odd(),
-    access_criteria()
+    tlv::Message(fact.protocolVersion(), fact.commandTag())
 {
     if (fact.count(Tags::PRM_CW_EVEN) > 0) {
         fact.get(Tags::PRM_CW_EVEN, cw_even);
@@ -349,12 +312,6 @@ ts::UString ts::duck::ClearECM::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // Error message
 //----------------------------------------------------------------------------
-
-ts::duck::Error::Error() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_ERROR),
-    error_status(0)
-{
-}
 
 ts::duck::Error::Error(const tlv::MessageFactory& fact) :
     tlv::Message(fact.protocolVersion(), fact.commandTag()),

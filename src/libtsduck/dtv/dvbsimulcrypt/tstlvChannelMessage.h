@@ -44,9 +44,15 @@ namespace ts {
         class TSDUCKDLL ChannelMessage : public Message
         {
             TS_RULE_OF_FIVE(ChannelMessage, override);
+        protected:
+            //!
+            //! Alias for the superclass of subclasses.
+            //!
+            using superclass = ChannelMessage;
+
         public:
             // Protocol-documented fields:
-            uint16_t channel_id;  //!< Channel id.
+            uint16_t channel_id = 0;  //!< Channel id.
 
             //!
             //! Constructor.
