@@ -163,7 +163,9 @@ jobs:
 
     - name: Check if rebuild is necessary
       run: |
-        remote_version=$(curl -sL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
+        # Dummy attempts for intermittent TLS issues during tests.
+        for n in 1 2 3 4; do curl -sSL https://tsduck.io/ >/dev/null; sleep 1; done
+        remote_version=$(curl -sSL https://tsduck.io/download/prerelease/get-versions | jq -r '.latest?'; true)
         version=$(scripts/get-version-from-sources.py)
         fullversion=$(scripts/get-version-from-sources.py --full)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
@@ -193,7 +195,9 @@ jobs:
       run: |
         mkdir -p ../tsduck-test
         cd ../tsduck-test
-        curl -s -L https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1
+        curl -sSL https://github.com/tsduck/tsduck-test/tarball/master | tar xz --strip 1
+        # Dummy attempts for intermittent TLS issues during tests.
+        for n in 1 2 3 4; do curl -sSL https://tsduck.io/ >/dev/null; sleep 1; done
         ./run-all-tests.sh && status=$? || status=$?
         for f in $(find tmp -name '*.diff'); do
             echo "==== $f";
@@ -256,7 +260,7 @@ jobs:
 
     - name: Check if rebuild is necessary
       run: |
-        remote_version=$(curl -sL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
+        remote_version=$(curl -sSL https://tsduck.io/doxy/docversion.txt | grep '^[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*$'; true)
         version=$(scripts/get-version-from-sources.py)
         [[ "$version" == "$remote_version" ]] && rebuild=false || rebuild=true
         echo "Current version: $version, latest on tsduck.io: $remote_version"

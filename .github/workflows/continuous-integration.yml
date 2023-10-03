@@ -107,7 +107,10 @@ jobs:
     - name: Check built version
       run: make show-version
     - name: Run unitary tests
-      run: make test
+      run: |
+        # Dummy attempts for intermittent TLS issues during tests.
+        for n in 1 2 3 4; do curl -sSL https://tsduck.io/ >/dev/null; sleep 1; done
+        make test
     - name: Download test suite
       run: |
         # Try to download '<repo>-test' from the pull request owner, if there is one.
@@ -121,6 +124,8 @@ jobs:
         tar -C ../tsduck-test -x -z -f test.tgz --strip 1
     - name: Run test suite
       run: |
+        # Dummy attempts for intermittent TLS issues during tests.
+        for n in 1 2 3 4; do curl -sSL https://tsduck.io/ >/dev/null; sleep 1; done
         make test-suite && status=$? || status=$?
         cd ../tsduck-test
         for f in $(find tmp -name '*.diff'); do
