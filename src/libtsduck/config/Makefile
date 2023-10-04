@@ -100,6 +100,7 @@ install-devel:
 	    $(if $(NOPCSC),-e 's|libpcsclite||g') \
 	    $(if $(NOCURL),-e 's|libcurl||g') \
 	    $(if $(NOEDITLINE),-e 's|libedit||g') \
+	    $(if $(NOPCSTD),-e 's| *--std=[^ ]* *| |g') \
 	    $(if $(NOVATEK),-e 's|libusb-1.0||g') \
 	    $(if $(OPENBSD)$(NETBSD),-e 's| *-ldl *| |g') \
 	    $(if $(MACOS)$(OPENBSD),-e 's| *-lrt *| |g') \
