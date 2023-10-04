@@ -42,6 +42,7 @@
 #  - NOEDITLINE : No interactive line editing, remove dependency to libedit.
 #  - NOGITHUB   : No version check, no download, no upgrade from GitHub.
 #  - NOHWACCEL  : Disable hardware acceleration such as crypto instructions.
+#  - NOPCSTD    : Remove the std=c++11 flag from libtsduck's pkg-config file.
 #
 #  Options to define the representation of bitrates:
 #
