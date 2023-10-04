@@ -154,7 +154,7 @@
     //!
     //! The class @c basic_string from the C++ STL has more features starting
     //! with C++11. However, GCC does not support them with old versions, even
-    //! if --std=c++11 or 14 is specified. The level of language is increased
+    //! if -std=c++11 or 14 is specified. The level of language is increased
     //! but not the level of STL.
     //!
     #define TS_CXX11_STRING
@@ -221,6 +221,15 @@
 #if defined(TS_GCC_VERSION) && !defined(DOXYGEN)
     #if TS_GCC_VERSION >= 50100 && defined(TS_CXX11) && !defined(_GLIBCXX_USE_CXX11_ABI)
         #define _GLIBCXX_USE_CXX11_ABI 1
+    #endif
+#endif
+
+// TSDuck now requests to use C++11 at least.
+#if !defined(TS_CXX11)
+    #if defined(TS_MSC)
+        #error "TSDuck requires C++11 at least (C++14 on Windows), use /std:c++14 or higher"
+    #else
+        #error "TSDuck requires C++11 at least, use -std=c++11 or higher"
     #endif
 #endif
 

@@ -123,7 +123,7 @@ cmd_lib() {
 cmd_cflags() {
     local pcsc=
     [[ $SYSTEM == Linux && -d /usr/include/PCSC ]] && ! $(no_pcsc) && pcsc="-I/usr/include/PCSC"
-    echo "-I$(cmd_include) $pcsc --std=c++11"
+    echo "-I$(cmd_include) $pcsc -std=c++11"
 }
 
 cmd_so() {
