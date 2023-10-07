@@ -83,5 +83,5 @@ jobs:
     - name: Trigger download
       run: |
         sleep 300 # wait 5 minutes, hoping that the artifacts are published
-        curl -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/download/prerelease/get-nightly-builds -o update.log
+        curl --retry 5 --retry-all-errors -sL -H 'X-Upload-Credentials: ${{ secrets.UPLOAD_CREDENTIALS }}' https://tsduck.io/download/prerelease/get-nightly-builds -o update.log
         jq . update.log || cat update.log
