@@ -95,6 +95,7 @@ jobs:
       ORIGIN_REPO: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
       REFERENCE_REPO: tsduck/tsduck
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      TS_CURL_RETRY: retry=5,interval=100,host=tsduck.io
     steps:
     - uses: actions/checkout@master
     - name: Install dependencies
@@ -107,25 +108,20 @@ jobs:
     - name: Check built version
       run: make show-version
     - name: Run unitary tests
-      run: |
-        # Dummy attempts for intermittent TLS issues during tests.
-        for n in 1 2 3 4; do curl -sSL https://tsduck.io/ >/dev/null; sleep 1; done
-        make test
+      run: make test
     - name: Download test suite
       run: |
         # Try to download '<repo>-test' from the pull request owner, if there is one.
-        if curl -f -s -L "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
+        if curl -fsL "https://github.com/${ORIGIN_REPO}-test/tarball/master" -o test.tgz; then
             echo "Downloaded test suite from $ORIGIN_REPO"
         else
-            curl -f -s -L "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
+            curl -fsL "https://github.com/${REFERENCE_REPO}-test/tarball/master" -o test.tgz
             echo "Downloaded test suite from $REFERENCE_REPO"
         fi
         mkdir -p ../tsduck-test
         tar -C ../tsduck-test -x -z -f test.tgz --strip 1
     - name: Run test suite
       run: |
-        # Dummy attempts for intermittent TLS issues during tests.
-        for n in 1 2 3 4; do curl -sSL https://tsduck.io/ >/dev/null; sleep 1; done
         make test-suite && status=$? || status=$?
         cd ../tsduck-test
         for f in $(find tmp -name '*.diff'); do
