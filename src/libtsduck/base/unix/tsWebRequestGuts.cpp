@@ -42,6 +42,19 @@
 //  Also note that using curl_multi before version 7.66 is not very
 //  efficient since there is some sort of sleep/wait cycles.
 //
+//  RETRY POLICY:
+//  In rare cases, it has been noted that curl fails with "connection reset
+//  by peer" right after sending SSL client hello. Retrying may either
+//  succeed or fail. This is typically seen on some specific servers.
+//  All other clients, including all browsers and Windows WinInet library,
+//  work on the same host. Only curl command and libcurl fail. As a dirty
+//  workaround, the environment variable TS_CURL_RETRY can be set to specify
+//  a per-site retry policy. The value must be a comma-separated list of
+//  directives:
+//    RETRY=value : number of retries for following hosts.
+//    INTERVAL=value : milliseconds between retries for following hosts.
+//    HOST=name : host FQDN
+//
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
@@ -49,6 +62,8 @@
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsFileUtils.h"
+#include "tsSysUtils.h"
+#include "tsURL.h"
 
 
 //----------------------------------------------------------------------------
@@ -127,6 +142,17 @@ namespace {
     public:
         // Status code of libcurl initialization.
         const ::CURLcode initStatus;
+
+        // Get number of retries for an URL.
+        void getRetry(const ts::UString& url, size_t& retries, ts::MilliSecond& interval);
+
+    private:
+        // Per-host retry policy.
+        struct Retry {
+            size_t retries = 0;
+            ts::MilliSecond interval = 0;
+        };
+        std::map<ts::UString, Retry> _retries {};
     };
 
     TS_DEFINE_SINGLETON(LibCurlInit);
@@ -135,6 +161,39 @@ namespace {
     LibCurlInit::LibCurlInit() :
         initStatus(::curl_global_init(CURL_GLOBAL_ALL))
     {
+        // Load the retry policy from an environment variable (see comment in header of this file).
+        ts::UStringList dirs;
+        ts::GetEnvironment(u"TS_CURL_RETRY").split(dirs, ts::COMMA, true, true);
+        Retry retry;
+        for (const auto& dir : dirs) {
+            const size_t eq = dir.find(u'=');
+            if (eq != ts::NPOS) {
+                if (dir.startWith(u"RETRY=", ts::CASE_INSENSITIVE)) {
+                    dir.substr(eq + 1).toInteger(retry.retries);
+                }
+                else if (dir.startWith(u"INTERVAL=", ts::CASE_INSENSITIVE)) {
+                    dir.substr(eq + 1).toInteger(retry.interval);
+                }
+                else if (dir.startWith(u"HOST=", ts::CASE_INSENSITIVE)) {
+                    _retries.insert(std::make_pair(dir.substr(eq + 1).toLower(), retry));
+                }
+            }
+        }
+    }
+
+    // Get number of retries for an URL.
+    void LibCurlInit::getRetry(const ts::UString& url, size_t& retries, ts::MilliSecond& interval)
+    {
+        const ts::URL u(url);
+        const auto it = _retries.find(u.getHost().toLower());
+        if (it != _retries.end()) {
+            retries = it->second.retries;
+            interval = it->second.interval;
+        }
+        else {
+            retries = 0;
+            interval = 0;
+        }
     }
 }
 
@@ -181,6 +240,7 @@ private:
     ::CURLM*      _curlm {nullptr};            // "curl_multi" handler.
     ::CURL*       _curl {nullptr};             // "curl_easy" handler.
     ::curl_slist* _headers {nullptr};          // Request headers.
+    bool          _canRetry {false};           // Can retry the connection later.
     UString       _certFile {};                // Latest CA certificates file.
     ByteBlock     _data {};                    // Received data, filled by writeCallback(), emptied by receive().
     char          _error[CURL_ERROR_SIZE] {0}; // Error message buffer for libcurl.
@@ -190,8 +250,8 @@ private:
 
     // Libcurl callbacks for response headers and response data.
     // The userdata points to this SystemGuts object.
-    static size_t headerCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
-    static size_t writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
+    static size_t HeaderCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
+    static size_t WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata);
 };
 
 
@@ -292,186 +352,199 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
         return false;
     }
 
-    // Make sure we start from a clean state.
-    clear();
+    // Get retry scheme for that URL.
+    size_t retries = 0;
+    MilliSecond retryInterval = 0;
+    LibCurlInit::Instance()->getRetry(_request._originalURL, retries, retryInterval);
+    _request._report.debug(u"curl retries: %d, interval: %'d ms", {retries, retryInterval});
 
-    // If no CA certificate file is specified, bypass certificate processing.
-    if (_certFile.empty()) {
-        certState = CERT_NONE;
-    }
+    // Loop until all retries are exhausted.
+    for (;;) {
 
-    // Download the CA certificate file from CURL if requested.
-    const bool certFileExists = certState != CERT_NONE && FileExists(_certFile);
-    if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < MilliSecPerDay) {
-        // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
-        certState = CERT_DOWNLOAD;
-        _request._report.debug(u"reusing recent CA cert file %s", {_certFile});
-    }
-    else if ((certState == CERT_EXISTING && !certFileExists) || certState == CERT_DOWNLOAD) {
-        // We need to download it. Jump to CERT_DOWNLOAD if there was no file.
-        certState = CERT_DOWNLOAD;
-        _request._report.verbose(u"encountered certificate issue, downloading a fresh CA list from %s", {FRESH_CACERT_URL});
+        // Make sure we start from a clean state.
+        clear();
+        _canRetry = retries > 0;
 
-        WebRequest certRequest(_request._report);
-        certRequest.setAutoRedirect(true);
-        certRequest.setProxyHost(_request._proxyHost, _request._proxyPort);
-        certRequest.setProxyUser(_request._proxyUser, _request._proxyPassword);
-        certRequest.setReceiveTimeout(_request._receiveTimeout);
-        certRequest.setConnectionTimeout(_request._connectionTimeout);
-        certRequest._guts->_certFile.clear(); // don't recurse in case of cert issue!
-
-        if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !FileExists(_certFile)) {
-            _request._report.verbose(u"failed to get a fresh CA list, use default list");
+        // If no CA certificate file is specified, bypass certificate processing.
+        if (_certFile.empty()) {
             certState = CERT_NONE;
         }
-    }
 
-    // The initialization and cleanup sequences of _curlm and _curl must be protected
-    // when we have the ability to wakeup curl_multi from another thread.
-    {
+        // Download the CA certificate file from CURL if requested.
+        const bool certFileExists = certState != CERT_NONE && FileExists(_certFile);
+        if (certState == CERT_EXISTING && certFileExists && (Time::CurrentUTC() - GetFileModificationTimeUTC(_certFile)) < MilliSecPerDay) {
+            // The cert file is "fresh" (updated less than one day aga), no need to retry to load it, let's pretend we just downloaded it.
+            certState = CERT_DOWNLOAD;
+            _request._report.debug(u"reusing recent CA cert file %s", {_certFile});
+        }
+        else if ((certState == CERT_EXISTING && !certFileExists) || certState == CERT_DOWNLOAD) {
+            // We need to download it. Jump to CERT_DOWNLOAD if there was no file.
+            certState = CERT_DOWNLOAD;
+            _request._report.verbose(u"encountered certificate issue, downloading a fresh CA list from %s", {FRESH_CACERT_URL});
+
+            WebRequest certRequest(_request._report);
+            certRequest.setAutoRedirect(true);
+            certRequest.setProxyHost(_request._proxyHost, _request._proxyPort);
+            certRequest.setProxyUser(_request._proxyUser, _request._proxyPassword);
+            certRequest.setReceiveTimeout(_request._receiveTimeout);
+            certRequest.setConnectionTimeout(_request._connectionTimeout);
+            certRequest._guts->_certFile.clear(); // don't recurse in case of cert issue!
+
+            if (!certRequest.downloadFile(FRESH_CACERT_URL, _certFile) || !FileExists(_certFile)) {
+                _request._report.verbose(u"failed to get a fresh CA list, use default list");
+                certState = CERT_NONE;
+            }
+        }
+
+        // The initialization and cleanup sequences of _curlm and _curl must be protected
+        // when we have the ability to wakeup curl_multi from another thread.
+        {
 #if defined(TS_CURL_WAKEUP)
-        GuardMutex lock(_mutex);
+            GuardMutex lock(_mutex);
 #endif
-        // Initialize curl_multi and curl_easy
-        if ((_curlm = ::curl_multi_init()) == nullptr) {
-            _request._report.error(u"libcurl 'curl_multi' initialization error");
-            return false;
+            // Initialize curl_multi and curl_easy
+            if ((_curlm = ::curl_multi_init()) == nullptr) {
+                _request._report.error(u"libcurl 'curl_multi' initialization error");
+                return false;
+            }
+            if ((_curl = ::curl_easy_init()) == nullptr) {
+                _request._report.error(u"libcurl 'curl_easy' initialization error");
+                clear();
+                return false;
+            }
+
+            // Register the curl_easy handle inside the curl_multi handle.
+            ::CURLMcode mstatus = ::curl_multi_add_handle(_curlm, _curl);
+            if (mstatus != ::CURLM_OK) {
+                _request._report.error(multiMessage(u"curl_multi_add_handle error", mstatus));
+                clear();
+                return false;
+            }
         }
-        if ((_curl = ::curl_easy_init()) == nullptr) {
-            _request._report.error(u"libcurl 'curl_easy' initialization error");
-            clear();
-            return false;
+
+        // The curl_easy_setopt() function is a strange macro which triggers warnings.
+        TS_PUSH_WARNING()
+        TS_LLVM_NOWARNING(disabled-macro-expansion)
+
+        // Setup the error message buffer.
+        ::CURLcode status = ::curl_easy_setopt(_curl, CURLOPT_ERRORBUFFER, _error);
+
+        // Set the user agent.
+        if (status == ::CURLE_OK && !_request._userAgent.empty()) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_USERAGENT, _request._userAgent.toUTF8().c_str());
         }
 
-        // Register the curl_easy handle inside the curl_multi handle.
-        ::CURLMcode mstatus = ::curl_multi_add_handle(_curlm, _curl);
-        if (mstatus != ::CURLM_OK) {
-            _request._report.error(multiMessage(u"curl_multi_add_handle error", mstatus));
-            clear();
-            return false;
-        }
-    }
-
-    // The curl_easy_setopt() function is a strange macro which triggers warnings.
-    TS_PUSH_WARNING()
-    TS_LLVM_NOWARNING(disabled-macro-expansion)
-
-    // Setup the error message buffer.
-    ::CURLcode status = ::curl_easy_setopt(_curl, CURLOPT_ERRORBUFFER, _error);
-
-    // Set the user agent.
-    if (status == ::CURLE_OK && !_request._userAgent.empty()) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_USERAGENT, _request._userAgent.toUTF8().c_str());
-    }
-
-    // Set the starting URL.
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());
-    }
-
-    // Set the CA certificate file.
-    if (status == ::CURLE_OK && (certState == CERT_EXISTING || certState == CERT_DOWNLOAD)) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_CAINFO, _certFile.toUTF8().c_str());
-    }
-
-    // Set the connection timeout.
-    if (status == ::CURLE_OK && _request._connectionTimeout > 0) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_CONNECTTIMEOUT_MS, long(_request._connectionTimeout));
-    }
-
-    // Set the receive timeout. There is no such parameter in libcurl.
-    // We set this timeout to the max duration of low speed = 1 B/s.
-    if (status == ::CURLE_OK && _request._receiveTimeout > 0) {
-        // The LOW_SPEED_TIME option is in seconds. Round to higher.
-        const long timeout = long((_request._receiveTimeout + 999) / 1000);
-        status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_TIME, timeout);
+        // Set the starting URL.
         if (status == ::CURLE_OK) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_LIMIT, long(1)); // bytes/second
+            status = ::curl_easy_setopt(_curl, CURLOPT_URL, _request._originalURL.toUTF8().c_str());
         }
-    }
 
-    // Set the response callbacks.
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, &SystemGuts::writeCallback);
-    }
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_WRITEDATA, this);
-    }
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_HEADERFUNCTION, &SystemGuts::headerCallback);
-    }
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_HEADERDATA, this);
-    }
-
-    // Always follow redirections.
-    if (status == ::CURLE_OK) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, _request._autoRedirect ? 1L : 0L);
-    }
-
-    // Set the proxy settings.
-    if (status == ::CURLE_OK && !_request.proxyHost().empty()) {
-        status = ::curl_easy_setopt(_curl, CURLOPT_PROXY, _request.proxyHost().toUTF8().c_str());
-        if (status == ::CURLE_OK && _request.proxyPort() != 0) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPORT, long(_request.proxyPort()));
+        // Set the CA certificate file.
+        if (status == ::CURLE_OK && (certState == CERT_EXISTING || certState == CERT_DOWNLOAD)) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_CAINFO, _certFile.toUTF8().c_str());
         }
-        if (status == ::CURLE_OK && !_request.proxyUser().empty()) {
-            status = ::curl_easy_setopt(_curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
+
+        // Set the connection timeout.
+        if (status == ::CURLE_OK && _request._connectionTimeout > 0) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_CONNECTTIMEOUT_MS, long(_request._connectionTimeout));
+        }
+
+        // Set the receive timeout. There is no such parameter in libcurl.
+        // We set this timeout to the max duration of low speed = 1 B/s.
+        if (status == ::CURLE_OK && _request._receiveTimeout > 0) {
+            // The LOW_SPEED_TIME option is in seconds. Round to higher.
+            const long timeout = long((_request._receiveTimeout + 999) / 1000);
+            status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_TIME, timeout);
             if (status == ::CURLE_OK) {
-                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYUSERNAME, _request.proxyUser().toUTF8().c_str());
-            }
-            if (status == ::CURLE_OK && !_request.proxyPassword().empty()) {
-                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPASSWORD, _request.proxyPassword().toUTF8().c_str());
+                status = ::curl_easy_setopt(_curl, CURLOPT_LOW_SPEED_LIMIT, long(1)); // bytes/second
             }
         }
-    }
 
-    // Set the cookie file.
-    if (status == ::CURLE_OK && _request._useCookies) {
-        // COOKIEFILE can be empty.
-        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, _request._cookiesFileName.toUTF8().c_str());
-    }
-    if (status == ::CURLE_OK && _request._useCookies && !_request._cookiesFileName.empty()) {
-        // COOKIEJAR cannot be empty.
-        status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, _request._cookiesFileName.toUTF8().c_str());
-    }
-
-    // Set the request headers.
-    if (status == ::CURLE_OK && !_request._requestHeaders.empty()) {
-        for (const auto& it : _request._requestHeaders) {
-            const UString header(it.first + u": " + it.second);
-            _headers = ::curl_slist_append(_headers, header.toUTF8().c_str());
+        // Set the response callbacks.
+        if (status == ::CURLE_OK) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_WRITEFUNCTION, &SystemGuts::WriteCallback);
         }
-        status = ::curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _headers);
-    }
+        if (status == ::CURLE_OK) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_WRITEDATA, this);
+        }
+        if (status == ::CURLE_OK) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_HEADERFUNCTION, &SystemGuts::HeaderCallback);
+        }
+        if (status == ::CURLE_OK) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_HEADERDATA, this);
+        }
 
-    // End of curl_easy_setopt() sequence.
-    TS_POP_WARNING()
+        // Always follow redirections.
+        if (status == ::CURLE_OK) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_FOLLOWLOCATION, _request._autoRedirect ? 1L : 0L);
+        }
 
-    // Now process setopt error.
-    if (status != ::CURLE_OK) {
-        _request._report.error(easyMessage(u"libcurl setopt error", status));
-        clear();
-        return false;
-    }
+        // Set the proxy settings.
+        if (status == ::CURLE_OK && !_request.proxyHost().empty()) {
+            status = ::curl_easy_setopt(_curl, CURLOPT_PROXY, _request.proxyHost().toUTF8().c_str());
+            if (status == ::CURLE_OK && _request.proxyPort() != 0) {
+                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPORT, long(_request.proxyPort()));
+            }
+            if (status == ::CURLE_OK && !_request.proxyUser().empty()) {
+                status = ::curl_easy_setopt(_curl, CURLOPT_PROXYAUTH, CURLAUTH_ANY);
+                if (status == ::CURLE_OK) {
+                    status = ::curl_easy_setopt(_curl, CURLOPT_PROXYUSERNAME, _request.proxyUser().toUTF8().c_str());
+                }
+                if (status == ::CURLE_OK && !_request.proxyPassword().empty()) {
+                    status = ::curl_easy_setopt(_curl, CURLOPT_PROXYPASSWORD, _request.proxyPassword().toUTF8().c_str());
+                }
+            }
+        }
 
-    // There is no specific way to wait for connection and end of response header reception.
-    // So, wait until at least one data byte of response body is received.
-    // Make certificate error silent in phases CERT_INITIAL and CERT_EXISTING because we have other options later.
-    bool certError = false;
-    if (receive(nullptr, 0, nullptr, certState < CERT_DOWNLOAD ? &certError : nullptr)) {
-        return true;
-    }
+        // Set the cookie file.
+        if (status == ::CURLE_OK && _request._useCookies) {
+            // COOKIEFILE can be empty.
+            status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEFILE, _request._cookiesFileName.toUTF8().c_str());
+        }
+        if (status == ::CURLE_OK && _request._useCookies && !_request._cookiesFileName.empty()) {
+            // COOKIEJAR cannot be empty.
+            status = ::curl_easy_setopt(_curl, CURLOPT_COOKIEJAR, _request._cookiesFileName.toUTF8().c_str());
+        }
 
-    // Error, reset state.
-    clear();
+        // Set the request headers.
+        if (status == ::CURLE_OK && !_request._requestHeaders.empty()) {
+            for (const auto& it : _request._requestHeaders) {
+                const UString header(it.first + u": " + it.second);
+                _headers = ::curl_slist_append(_headers, header.toUTF8().c_str());
+            }
+            status = ::curl_easy_setopt(_curl, CURLOPT_HTTPHEADER, _headers);
+        }
 
-    // In case of certificate error, try with an updated list of CA certificates.
-    if (certError) {
-        return startTransfer(CertState(certState + 1));
-    }
-    else {
-        return false;
+        // End of curl_easy_setopt() sequence.
+        TS_POP_WARNING()
+
+        // Now process setopt error.
+        if (status != ::CURLE_OK) {
+            _request._report.error(easyMessage(u"libcurl setopt error", status));
+            clear();
+            return false;
+        }
+
+        // There is no specific way to wait for connection and end of response header reception.
+        // So, wait until at least one data byte of response body is received.
+        // Make certificate error silent in phases CERT_INITIAL and CERT_EXISTING because we have other options later.
+        bool certError = false;
+        if (receive(nullptr, 0, nullptr, certState < CERT_DOWNLOAD ? &certError : nullptr)) {
+            return true;
+        }
+        else if (certError) {
+            // In case of certificate error, try with an updated list of CA certificates.
+            certState = CertState(certState + 1);
+        }
+        else if (_canRetry) {
+            // No data received and some remaining retries.
+            _request._report.debug(u"cannot start transfer, retrying after %'d milliseconds", {retryInterval});
+            retries--;
+            SleepThread(retryInterval);
+        }
+        else {
+            return false;
+        }
     }
 }
 
@@ -482,6 +555,9 @@ bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 
 bool ts::WebRequest::SystemGuts::downloadError(const UString& msg, bool* certError)
 {
+    // If we can retry the connection, display the message in debug mode only.
+    int level = _canRetry ? Severity::Debug : Severity::Error;
+
     // There is no real deterministic way of diagnosing certificate error.
     // In practice, we get messages like this one:
     // "SSL peer certificate or SSH remote key was not OK, SSL certificate problem: unable to get local issuer certificate"
@@ -489,12 +565,12 @@ bool ts::WebRequest::SystemGuts::downloadError(const UString& msg, bool* certErr
         *certError = msg.contain(u"certificate", CASE_INSENSITIVE);
         if (*certError) {
             // In case of certificate error, fail silently.
-            return false;
+            level = Severity::Debug;
         }
     }
 
-    // Normal error processing.
-    _request._report.error(msg);
+    // Display the error message at the appropriate level.
+    _request._report.log(level, msg);
     return false;
 }
 
@@ -526,8 +602,7 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
         mstatus = ::curl_multi_perform(_curlm, &runningHandles);
 #endif
         if (mstatus != ::CURLM_OK) {
-            _request._report.error(multiMessage(u"download error", mstatus));
-            return false;
+            return downloadError(multiMessage(u"download error", mstatus), certError);
         }
 
         // If there is no more running handle, no need to wait for more.
@@ -538,13 +613,12 @@ bool ts::WebRequest::SystemGuts::receive(void* buffer, size_t maxSize, size_t* r
         // If there is still nothing in the response buffer, wait for something to be ready.
         if (_data.empty()) {
 
-            // Wait for something to happen on the sockets or some t
+            // Wait for something to happen on the sockets or some timeout.
             int numfds = 0;
 #if defined(TS_CURL_POLL)
             // Recent versions of curl have an explicit poll. Wait no more than one second.
             mstatus = ::curl_multi_poll(_curlm, nullptr, 0, 1000, &numfds);
 #else
-            // Recent versions of curl have an explicit poll. Wait no more than one second.
             mstatus = ::curl_multi_wait(_curlm, nullptr, 0, 1000, &numfds);
 #endif
             if (mstatus != ::CURLM_OK) {
@@ -657,6 +731,7 @@ void ts::WebRequest::SystemGuts::clear()
 
     // Cleanup response data buffer.
     _data.clear();
+    _canRetry = false;
 }
 
 
@@ -664,7 +739,7 @@ void ts::WebRequest::SystemGuts::clear()
 // Libcurl callback for response headers.
 //----------------------------------------------------------------------------
 
-size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
+size_t ts::WebRequest::SystemGuts::HeaderCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
     // The userdata points to the guts object.
     SystemGuts* guts = reinterpret_cast<SystemGuts*>(userdata);
@@ -684,7 +759,7 @@ size_t ts::WebRequest::SystemGuts::headerCallback(char *ptr, size_t size, size_t
 // Libcurl callback for response data.
 //----------------------------------------------------------------------------
 
-size_t ts::WebRequest::SystemGuts::writeCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
+size_t ts::WebRequest::SystemGuts::WriteCallback(char *ptr, size_t size, size_t nmemb, void *userdata)
 {
     // The userdata points to the guts object.
     SystemGuts* guts = reinterpret_cast<SystemGuts*>(userdata);
@@ -695,6 +770,8 @@ size_t ts::WebRequest::SystemGuts::writeCallback(char *ptr, size_t size, size_t 
         // Store response data in the SystemGuts.
         const size_t dataSize = size * nmemb;
         guts->_data.append(ptr, dataSize);
+        // After receiving some data, it is no longer possible to retry the connection.
+        guts->_canRetry = false;
         return dataSize;
     }
 }
