@@ -219,36 +219,6 @@ ts::UString ts::CallerLibraryFile()
 
 
 //----------------------------------------------------------------------------
-// Suspend the current thread for the specified period
-//----------------------------------------------------------------------------
-
-void ts::SleepThread(MilliSecond delay)
-{
-    if (delay > 0) {
-#if defined(TS_WINDOWS)
-        // Window implementation.
-        ::Sleep(::DWORD(delay));
-#else
-        // POSIX implementation.
-        ::timespec requested, remain;
-        requested.tv_sec = time_t(delay / 1000); // seconds
-        requested.tv_nsec = long((delay % 1000) * 1000000); // nanoseconds
-        while (::nanosleep(&requested, &remain) < 0) {
-            if (errno == EINTR) {
-                // Interrupted by a signal. Wait again.
-                requested = remain;
-            }
-            else {
-                // Actual error
-                throw ts::Exception(u"nanosleep error", errno);
-            }
-        }
-#endif
-    }
-}
-
-
-//----------------------------------------------------------------------------
 // Get current process characteristics.
 //----------------------------------------------------------------------------
 
@@ -263,9 +233,7 @@ ts::ProcessId ts::CurrentProcessId()
 
 bool ts::IsPrivilegedUser()
 {
-#if defined(TS_UNIX)
-    return ::geteuid() == 0;
-#else
+#if defined(TS_WINDOWS)
     ::SID_IDENTIFIER_AUTHORITY NtAuthority = SECURITY_NT_AUTHORITY;
     ::PSID AdministratorsGroup;
     ::BOOL ok = ::AllocateAndInitializeSid(&NtAuthority, 2, SECURITY_BUILTIN_DOMAIN_RID, DOMAIN_ALIAS_RID_ADMINS, 0, 0, 0, 0, 0, 0, &AdministratorsGroup);
@@ -276,6 +244,8 @@ bool ts::IsPrivilegedUser()
         ::FreeSid(AdministratorsGroup);
     }
     return ok;
+#else
+    return ::geteuid() == 0;
 #endif
 }
 
