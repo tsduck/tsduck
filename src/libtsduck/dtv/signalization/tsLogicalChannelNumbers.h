@@ -170,6 +170,6 @@ namespace ts {
 
         // LCN store private members.
         DuckContext& _duck;
-        LCNMap       _lcn_map;
+        LCNMap _lcn_map {};
     };
 }

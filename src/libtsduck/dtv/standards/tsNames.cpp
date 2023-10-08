@@ -105,7 +105,7 @@ bool ts::names::HasTableSpecificName(uint8_t did, uint8_t tid)
     const NamesFile* const repo = NamesFile::Instance(NamesFile::Predefined::DTV);
     return tid != TID_NULL &&
         did < 0x80 &&
-        repo->nameExists(u"DescriptorId", (NamesFile::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | NamesFile::Value(did));
+        repo->nameExists(u"DescriptorId", (NamesFile::Value(tid) << 40) | 0x000000FFFFFFFF00 | NamesFile::Value(did));
 }
 
 ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, NamesFlags flags)
@@ -117,7 +117,7 @@ ts::UString ts::names::DID(uint8_t did, uint32_t pds, uint8_t tid, NamesFlags fl
     }
     else if (tid != 0xFF) {
         // Could be a table-specific descriptor.
-        const NamesFile::Value fullValue = (NamesFile::Value(tid) << 40) | TS_UCONST64(0x000000FFFFFFFF00) | NamesFile::Value(did);
+        const NamesFile::Value fullValue = (NamesFile::Value(tid) << 40) | 0x000000FFFFFFFF00 | NamesFile::Value(did);
         return NameFromDTVWithFallback(u"DescriptorId", fullValue, NamesFile::Value(did), flags, 8);
     }
     else {

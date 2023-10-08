@@ -84,10 +84,10 @@ namespace ts {
         //!
         //! The int_t value corresponding to all bits set.
         //!
-        static constexpr int_t ALL = int_t(BITS == 8 * sizeof(int_t) ? ~int_t(0) : ~(~TS_UCONST64(0) << BITS));
+        static constexpr int_t ALL = int_t(BITS == 8 * sizeof(int_t) ? ~int_t(0) : ~(~uint64_t(0) << BITS));
         // Implementation note: (~int_t(0) << BIT) is more accurate but there is a bug in GCC which considers
         // ~int_t(0) as negative. This is incorrect since int_t is an unsigned type. As a workaround, we use
-        // ~(~TS_UCONST64(0) << BITS) and we cast the final result into int_t.
+        // ~(~uint64_t(0) << BITS) and we cast the final result into int_t.
 
         //!
         //! Constructor.

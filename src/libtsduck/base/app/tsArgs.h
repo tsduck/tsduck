@@ -1254,7 +1254,7 @@ namespace ts {
 template <typename INT, typename std::enable_if<std::is_same<INT, uint64_t>::value>::type*>
 bool ts::Args::IOption::inRange(INT value) const
 {
-    return value < TS_UCONST64(0x8000000000000000) && static_cast<int64_t>(value) >= min_value && static_cast<int64_t>(value) <= max_value;
+    return value < 0x8000000000000000 && static_cast<int64_t>(value) >= min_value && static_cast<int64_t>(value) <= max_value;
 }
 
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value>::type*>

@@ -434,7 +434,7 @@ namespace ts {
 
         // Private members
         const AbstractTable* const _table;  // Parent table (zero for descriptor list object outside a table).
-        ElementVector              _list;   // Vector of smart pointers to descriptors.
+        ElementVector _list {};             // Vector of safe pointers to descriptors.
 
         // Prepare removal of a private_data_specifier descriptor.
         // Return true if can be removed, false if it cannot (private descriptors ahead).

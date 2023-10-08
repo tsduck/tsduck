@@ -151,7 +151,6 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      TS_CURL_RETRY: retry=5,interval=100,host=tsduck.io
     steps:
 
     - name: Get TSDuck repo

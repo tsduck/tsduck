@@ -68,7 +68,7 @@ namespace ts {
     #if defined(TS_ARM64)
         asm("sbfm %0, %0, #0, #39" : "+r" (x)); return x;
     #else
-        return (x & TS_UCONST64(0x0000008000000000)) == 0 ? (x & TS_UCONST64(0x000000FFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFFFF0000000000));
+        return (x & 0x0000008000000000) == 0 ? (x & 0x000000FFFFFFFFFF) : int64_t(uint64_t(x) | 0xFFFFFF0000000000);
     #endif
     }
 
@@ -83,7 +83,7 @@ namespace ts {
     #if defined(TS_ARM64)
         asm("sbfm %0, %0, #0, #47" : "+r" (x)); return x;
     #else
-        return (x & TS_UCONST64(0x0000800000000000)) == 0 ? (x & TS_UCONST64(0x0000FFFFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFF000000000000));
+        return (x & 0x0000800000000000) == 0 ? (x & 0x0000FFFFFFFFFFFF) : int64_t(uint64_t(x) | 0xFFFF000000000000);
     #endif
     }
 
@@ -169,12 +169,12 @@ namespace ts {
     #else
         return
             ((x << 56)) |
-            ((x << 40) & TS_UCONST64(0x00FF000000000000)) |
-            ((x << 24) & TS_UCONST64(0x0000FF0000000000)) |
-            ((x <<  8) & TS_UCONST64(0x000000FF00000000)) |
-            ((x >>  8) & TS_UCONST64(0x00000000FF000000)) |
-            ((x >> 24) & TS_UCONST64(0x0000000000FF0000)) |
-            ((x >> 40) & TS_UCONST64(0x000000000000FF00)) |
+            ((x << 40) & 0x00FF000000000000) |
+            ((x << 24) & 0x0000FF0000000000) |
+            ((x <<  8) & 0x000000FF00000000) |
+            ((x >>  8) & 0x00000000FF000000) |
+            ((x >> 24) & 0x0000000000FF0000) |
+            ((x >> 40) & 0x000000000000FF00) |
             ((x >> 56));
     #endif
     }

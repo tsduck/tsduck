@@ -904,7 +904,7 @@ void BufferTest::testReadBitsBigEndian()
     // must be explicitly provided when instantiated on 64-bit integer types.
 
     // 100110101010001010101010101100101011101101000011010010110101
-    TSUNIT_EQUAL(TS_UCONST64(0x9AA2AAB2BB434B5), b.getBits<uint64_t>(60));
+    TSUNIT_EQUAL(0x9AA2AAB2BB434B5, b.getBits<uint64_t>(60));
     TSUNIT_EQUAL(87, b.currentReadBitOffset());
 
     // 001101011 (9 remaining bits)
@@ -1008,7 +1008,7 @@ void BufferTest::testGetUInt40BE()
 {
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.readSeek(0x89);
-    TSUNIT_EQUAL(TS_UCONST64(0x000000898A8B8C8D), b.getUInt40());
+    TSUNIT_EQUAL(0x000000898A8B8C8D, b.getUInt40());
 }
 
 void BufferTest::testGetUInt40LE()
@@ -1016,14 +1016,14 @@ void BufferTest::testGetUInt40LE()
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.setLittleEndian();
     b.readSeek(0x89);
-    TSUNIT_EQUAL(TS_UCONST64(0x0000008D8C8B8A89), b.getUInt40());
+    TSUNIT_EQUAL(0x0000008D8C8B8A89, b.getUInt40());
 }
 
 void BufferTest::testGetUInt48BE()
 {
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.readSeek(0x89);
-    TSUNIT_EQUAL(TS_UCONST64(0x0000898A8B8C8D8E), b.getUInt48());
+    TSUNIT_EQUAL(0x0000898A8B8C8D8E, b.getUInt48());
 }
 
 void BufferTest::testGetUInt48LE()
@@ -1031,14 +1031,14 @@ void BufferTest::testGetUInt48LE()
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.setLittleEndian();
     b.readSeek(0x89);
-    TSUNIT_EQUAL(TS_UCONST64(0x00008E8D8C8B8A89), b.getUInt48());
+    TSUNIT_EQUAL(0x00008E8D8C8B8A89, b.getUInt48());
 }
 
 void BufferTest::testGetUInt64BE()
 {
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.readSeek(0x89);
-    TSUNIT_EQUAL(TS_UCONST64(0x898A8B8C8D8E8F90), b.getUInt64());
+    TSUNIT_EQUAL(0x898A8B8C8D8E8F90, b.getUInt64());
 }
 
 void BufferTest::testGetUInt64LE()
@@ -1046,7 +1046,7 @@ void BufferTest::testGetUInt64LE()
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.setLittleEndian();
     b.readSeek(0x89);
-    TSUNIT_EQUAL(TS_UCONST64(0x908F8E8D8C8B8A89), b.getUInt64());
+    TSUNIT_EQUAL(0x908F8E8D8C8B8A89, b.getUInt64());
 }
 
 void BufferTest::testGetInt8()
@@ -1109,7 +1109,7 @@ void BufferTest::testGetInt40BE()
 {
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.readSeek(0xCC);
-    TSUNIT_EQUAL(TS_CONST64(-219885416496), b.getInt40()); // 0xCCCDCECFD0
+    TSUNIT_EQUAL(-219885416496, b.getInt40()); // 0xCCCDCECFD0
 }
 
 void BufferTest::testGetInt40LE()
@@ -1117,14 +1117,14 @@ void BufferTest::testGetInt40LE()
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.setLittleEndian();
     b.readSeek(0xCC);
-    TSUNIT_EQUAL(TS_CONST64(-202671993396), b.getInt40()); // 0xD0CFCECDCC
+    TSUNIT_EQUAL(-202671993396, b.getInt40()); // 0xD0CFCECDCC
 }
 
 void BufferTest::testGetInt48BE()
 {
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.readSeek(0xCC);
-    TSUNIT_EQUAL(TS_CONST64(-56290666622767), b.getInt48()); // 0xCCCDCECFD0D1
+    TSUNIT_EQUAL(-56290666622767, b.getInt48()); // 0xCCCDCECFD0D1
 }
 
 void BufferTest::testGetInt48LE()
@@ -1132,14 +1132,14 @@ void BufferTest::testGetInt48LE()
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.setLittleEndian();
     b.readSeek(0xCC);
-    TSUNIT_EQUAL(TS_CONST64(-50780206871092), b.getInt48()); // 0xD1D0CFCECDCC
+    TSUNIT_EQUAL(-50780206871092, b.getInt48()); // 0xD1D0CFCECDCC
 }
 
 void BufferTest::testGetInt64BE()
 {
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.readSeek(0xCC);
-    TSUNIT_EQUAL(TS_CONST64(-3689065127789604141), b.getInt64()); // 0xCCCDCECFD0D1D2D3
+    TSUNIT_EQUAL(-3689065127789604141, b.getInt64()); // 0xCCCDCECFD0D1D2D3
 }
 
 void BufferTest::testGetInt64LE()
@@ -1147,7 +1147,7 @@ void BufferTest::testGetInt64LE()
     ts::Buffer b(_bytes1, sizeof(_bytes1));
     b.setLittleEndian();
     b.readSeek(0xCC);
-    TSUNIT_EQUAL(TS_CONST64(-3183251291827679796), b.getInt64()); // 0xD3D2D1D0CFCECDCC
+    TSUNIT_EQUAL(-3183251291827679796, b.getInt64()); // 0xD3D2D1D0CFCECDCC
 }
 
 void BufferTest::testGetBitsSigned()

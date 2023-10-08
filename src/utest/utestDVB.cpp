@@ -196,28 +196,28 @@ void DVBTest::testUniversalLNB()
     TSUNIT_ASSERT(lnb.isValid());
     TSUNIT_ASSERT(!lnb.isPolarizationControlled());
     TSUNIT_EQUAL(2, lnb.bandsCount());
-    TSUNIT_EQUAL(TS_UCONST64(9750000000), lnb.legacyLowOscillatorFrequency());
-    TSUNIT_EQUAL(TS_UCONST64(10600000000), lnb.legacyHighOscillatorFrequency());
-    TSUNIT_EQUAL(TS_UCONST64(11700000000), lnb.legacySwitchFrequency());
+    TSUNIT_EQUAL(9750000000, lnb.legacyLowOscillatorFrequency());
+    TSUNIT_EQUAL(10600000000, lnb.legacyHighOscillatorFrequency());
+    TSUNIT_EQUAL(11700000000, lnb.legacySwitchFrequency());
 
     ts::LNB::Transposition tr;
 
-    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(11000000000), ts::POL_AUTO, report()));
-    TSUNIT_EQUAL(TS_UCONST64(11000000000), tr.satellite_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(1250000000), tr.intermediate_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(9750000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(lnb.transpose(tr, 11000000000, ts::POL_AUTO, report()));
+    TSUNIT_EQUAL(11000000000, tr.satellite_frequency);
+    TSUNIT_EQUAL(1250000000, tr.intermediate_frequency);
+    TSUNIT_EQUAL(9750000000, tr.oscillator_frequency);
     TSUNIT_ASSERT(!tr.stacked);
     TSUNIT_EQUAL(0, tr.band_index);
 
-    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(12000000000), ts::POL_AUTO, report()));
-    TSUNIT_EQUAL(TS_UCONST64(12000000000), tr.satellite_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(1400000000), tr.intermediate_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(10600000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(lnb.transpose(tr, 12000000000, ts::POL_AUTO, report()));
+    TSUNIT_EQUAL(12000000000, tr.satellite_frequency);
+    TSUNIT_EQUAL(1400000000, tr.intermediate_frequency);
+    TSUNIT_EQUAL(10600000000, tr.oscillator_frequency);
     TSUNIT_ASSERT(!tr.stacked);
     TSUNIT_EQUAL(1, tr.band_index);
 
     // Outside bands
-    TSUNIT_ASSERT(!lnb.transpose(tr, TS_UCONST64(8000000000), ts::POL_AUTO, report()));
+    TSUNIT_ASSERT(!lnb.transpose(tr, 8000000000, ts::POL_AUTO, report()));
 }
 
 void DVBTest::testJapanLNB()
@@ -235,22 +235,22 @@ void DVBTest::testJapanLNB()
     ts::LNB::Transposition tr;
 
     // Channel BS-15
-    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(11996000000), ts::POL_RIGHT, report()));
-    TSUNIT_EQUAL(TS_UCONST64(11996000000), tr.satellite_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(1318000000), tr.intermediate_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(10678000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(lnb.transpose(tr, 11996000000, ts::POL_RIGHT, report()));
+    TSUNIT_EQUAL(11996000000, tr.satellite_frequency);
+    TSUNIT_EQUAL(1318000000, tr.intermediate_frequency);
+    TSUNIT_EQUAL(10678000000, tr.oscillator_frequency);
     TSUNIT_ASSERT(tr.stacked);
 
     // Channel ND-15
-    TSUNIT_ASSERT(lnb.transpose(tr, TS_UCONST64(12551000000), ts::POL_LEFT, report()));
-    TSUNIT_EQUAL(TS_UCONST64(12551000000), tr.satellite_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(3046000000), tr.intermediate_frequency);
-    TSUNIT_EQUAL(TS_UCONST64(9505000000), tr.oscillator_frequency);
+    TSUNIT_ASSERT(lnb.transpose(tr, 12551000000, ts::POL_LEFT, report()));
+    TSUNIT_EQUAL(12551000000, tr.satellite_frequency);
+    TSUNIT_EQUAL(3046000000, tr.intermediate_frequency);
+    TSUNIT_EQUAL(9505000000, tr.oscillator_frequency);
     TSUNIT_ASSERT(tr.stacked);
 
     // Need polarization.
-    TSUNIT_ASSERT(!lnb.transpose(tr, TS_UCONST64(12551000000), ts::POL_NONE, report()));
+    TSUNIT_ASSERT(!lnb.transpose(tr, 12551000000, ts::POL_NONE, report()));
 
     // Outside bands
-    TSUNIT_ASSERT(!lnb.transpose(tr, TS_UCONST64(11000000000), ts::POL_RIGHT, report()));
+    TSUNIT_ASSERT(!lnb.transpose(tr, 11000000000, ts::POL_RIGHT, report()));
 }

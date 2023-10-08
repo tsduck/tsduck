@@ -59,7 +59,7 @@ namespace ts {
         //!
         //! Mask of meaningful bits in a MAC address.
         //!
-        static constexpr uint64_t MASK = TS_UCONST64(0x0000FFFFFFFFFFFF);
+        static constexpr uint64_t MASK = 0x0000FFFFFFFFFFFF;
 
         //!
         //! Default constructor
@@ -172,8 +172,8 @@ namespace ts {
         uint64_t _addr {0};  // A MAC address is a 48-bit word
 
         // Description of a MAC multicast address for IPv4.
-        static constexpr uint64_t MULTICAST_MASK   = TS_UCONST64(0xFFFFFF800000);
-        static constexpr uint64_t MULTICAST_PREFIX = TS_UCONST64(0x01005E000000);
+        static constexpr uint64_t MULTICAST_MASK   = 0x0000FFFFFF800000;
+        static constexpr uint64_t MULTICAST_PREFIX = 0x000001005E000000;
     };
 
     //!

@@ -1372,7 +1372,7 @@ ts::UString ts::UString::AfterBytes(const std::streampos& position)
 
 ts::UString ts::UString::HumanSize(int64_t value, const UString& units, bool forceSign)
 {
-    const int64_t k = TS_CONST64(1024);
+    const int64_t k = 1024;
 
     if (value < 8 * k) { // less than 8 kB => use bytes
         return Decimal(value, 0, true, u",", forceSign) + u" " + units;

@@ -419,7 +419,7 @@ bool ts::SpliceSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml::
              element->getBoolAttribute(no_regional_blackout, u"no_regional_blackout", false, true) &&
              element->getBoolAttribute(archive_allowed, u"archive_allowed", false, true) &&
              element->getIntAttribute(device_restrictions, u"device_restrictions", false, 3, 0, 3) &&
-             element->getOptionalIntAttribute(segmentation_duration, u"segmentation_duration", 0, TS_UCONST64(0x000000FFFFFFFFFF)) &&
+             element->getOptionalIntAttribute(segmentation_duration, u"segmentation_duration", 0, 0x000000FFFFFFFFFF) &&
              element->getIntAttribute(segmentation_type_id, u"segmentation_type_id", true) &&
              element->getIntAttribute(segment_num, u"segment_num", true) &&
              element->getIntAttribute(segments_expected, u"segments_expected", true) &&

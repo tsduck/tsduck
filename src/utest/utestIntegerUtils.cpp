@@ -249,7 +249,7 @@ void IntegerUtilsTest::testBitSize()
     TSUNIT_EQUAL(3, ts::BitSize(uint8_t(5)));
     TSUNIT_EQUAL(3, ts::BitSize(int8_t(5)));
     TSUNIT_EQUAL(8, ts::BitSize(int8_t(-1)));
-    TSUNIT_EQUAL(51, ts::BitSize(TS_UCONST64(0x000500000A003000)));
+    TSUNIT_EQUAL(51, ts::BitSize(0x000500000A003000));
 }
 
 void IntegerUtilsTest::testPower10()
@@ -258,7 +258,7 @@ void IntegerUtilsTest::testPower10()
     TSUNIT_EQUAL(10, ts::Power10(1));
     TSUNIT_EQUAL(100, ts::Power10(2));
     TSUNIT_EQUAL(1000000, ts::Power10(6));
-    TSUNIT_EQUAL(TS_UCONST64(1000000000000000), ts::Power10(15));
+    TSUNIT_EQUAL(1000000000000000, ts::Power10(15));
 
     TSUNIT_EQUAL(1, (ts::static_power10<uint8_t, 0>::value));
     TSUNIT_EQUAL(1, (ts::static_power10<int, 0>::value));
@@ -268,7 +268,7 @@ void IntegerUtilsTest::testPower10()
     TSUNIT_EQUAL(100, (ts::static_power10<int, 2>::value));
     TSUNIT_EQUAL(1000000, (ts::static_power10<uint32_t, 6>::value));
     TSUNIT_EQUAL(1000000, (ts::static_power10<uint64_t, 6>::value));
-    TSUNIT_EQUAL(TS_UCONST64(1000000000000000), (ts::static_power10<uint64_t, 15>::value));
+    TSUNIT_EQUAL(1000000000000000, (ts::static_power10<uint64_t, 15>::value));
 }
 
 void IntegerUtilsTest::testBoundCheck()

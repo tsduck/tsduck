@@ -61,7 +61,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        AudioLanguageOptions();
+        AudioLanguageOptions() = default;
 
         //!
         //! Get the language code.
@@ -187,10 +187,10 @@ namespace ts {
         static UString GetHelpString();
 
     private:
-        UString _language_code;       // always 3-chars
-        uint8_t _audio_type;
-        uint8_t _audio_stream_number; // if zero, use PID.
-        PID     _pid;
+        UString _language_code {3, SPACE};  // always 3-chars
+        uint8_t _audio_type {0};
+        uint8_t _audio_stream_number {1};   // use first audio stream by default, use PID if zero
+        PID     _pid {PID_NULL};
     };
 
     //!

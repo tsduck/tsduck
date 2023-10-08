@@ -205,8 +205,8 @@ void PlatformTest::testIntegerTypes()
 // Test case: 64-bit literals
 void PlatformTest::test64bitLiterals()
 {
-    uint64_t ui64 = TS_UCONST64(0xFEDCBA9876543210);
-    int64_t i64 = TS_CONST64(0xFEDCBA9876543210);
+    uint64_t ui64 = 0xFEDCBA9876543210;
+    int64_t i64 = 0xFEDCBA9876543210;
 
     TSUNIT_EQUAL(0x0FEDCBA9, uint32_t(ui64 >> 36));
     TSUNIT_EQUAL(0xFFEDCBA9, int32_t(i64 >> 36));

@@ -243,8 +243,8 @@ bool ts::BasicLocalEventDescriptor::analyzeXML(DuckContext& duck, const xml::Ele
     MilliSecond duration_extension = 0;
     bool ok =
         element->getIntAttribute(segmentation_mode, u"segmentation_mode", true, 0, 0x00, 0x0F) &&
-        element->getIntAttribute(start_time_NPT, u"start_time_NPT", segmentation_mode == 1, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
-        element->getIntAttribute(end_time_NPT, u"end_time_NPT", segmentation_mode == 1, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
+        element->getIntAttribute(start_time_NPT, u"start_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
+        element->getIntAttribute(end_time_NPT, u"end_time_NPT", segmentation_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
         element->getTimeAttribute(start_time, u"start_time", segmentation_mode > 1 && segmentation_mode < 6) &&
         element->getTimeAttribute(duration, u"duration", segmentation_mode > 1 && segmentation_mode < 6) &&
         element->getIntAttribute(start_time_extension, u"start_time_extension", false, 0) &&

@@ -262,22 +262,22 @@ void NetworkingTest::testIPv6Address()
 
     a1.setAddress(0, 1, 2, 3, 4, 5, 6, 7);
     TSUNIT_ASSERT(a1.hasAddress());
-    TSUNIT_EQUAL(TS_UCONST64(0x0000000100020003), a1.networkPrefix());
-    TSUNIT_EQUAL(TS_UCONST64(0x0004000500060007), a1.interfaceIdentifier());
+    TSUNIT_EQUAL(0x0000000100020003, a1.networkPrefix());
+    TSUNIT_EQUAL(0x0004000500060007, a1.interfaceIdentifier());
     TSUNIT_EQUAL(u"0:1:2:3:4:5:6:7", a1.toString());
     TSUNIT_EQUAL(u"0000:0001:0002:0003:0004:0005:0006:0007", a1.toFullString());
 
     a1.setAddress(0x12, 0x345, 0x6789, 0xFFFF, 0, 0, 0, 0xBEEF);
     TSUNIT_ASSERT(a1.hasAddress());
-    TSUNIT_EQUAL(TS_UCONST64(0x001203456789FFFF), a1.networkPrefix());
-    TSUNIT_EQUAL(TS_UCONST64(0x000000000000BEEF), a1.interfaceIdentifier());
+    TSUNIT_EQUAL(0x001203456789FFFF, a1.networkPrefix());
+    TSUNIT_EQUAL(0x000000000000BEEF, a1.interfaceIdentifier());
     TSUNIT_EQUAL(u"12:345:6789:ffff::beef", a1.toString());
     TSUNIT_EQUAL(u"0012:0345:6789:ffff:0000:0000:0000:beef", a1.toFullString());
 
     TSUNIT_ASSERT(a1.resolve(u"fe80::93a3:dea0:2108:b81e", CERR));
     TSUNIT_ASSERT(a1.hasAddress());
-    TSUNIT_EQUAL(TS_UCONST64(0xFE80000000000000), a1.networkPrefix());
-    TSUNIT_EQUAL(TS_UCONST64(0x93A3DEA02108B81E), a1.interfaceIdentifier());
+    TSUNIT_EQUAL(0xFE80000000000000, a1.networkPrefix());
+    TSUNIT_EQUAL(0x93A3DEA02108B81E, a1.interfaceIdentifier());
     TSUNIT_EQUAL(u"fe80::93a3:dea0:2108:b81e", a1.toString());
     TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", a1.toFullString());
 }
@@ -291,19 +291,19 @@ void NetworkingTest::testMACAddress()
     TSUNIT_ASSERT(a1.resolve(u"52:54:00:26:92:b4", CERR));
     TSUNIT_ASSERT(a1.hasAddress());
     TSUNIT_ASSERT(!a1.isMulticast());
-    TSUNIT_EQUAL(TS_UCONST64(0x5254002692B4), a1.address());
+    TSUNIT_EQUAL(0x5254002692B4, a1.address());
     TSUNIT_EQUAL(u"52:54:00:26:92:B4", a1.toString());
 
     TSUNIT_ASSERT(a1.resolve(u" 23:b3-A6 . bE : 56-4D", CERR));
     TSUNIT_ASSERT(a1.hasAddress());
     TSUNIT_ASSERT(!a1.isMulticast());
-    TSUNIT_EQUAL(TS_UCONST64(0x23B3A6BE564D), a1.address());
+    TSUNIT_EQUAL(0x23B3A6BE564D, a1.address());
     TSUNIT_EQUAL(u"23:B3:A6:BE:56:4D", a1.toString());
 
     TSUNIT_ASSERT(a1.toMulticast(ts::IPv4Address(225, 1, 2, 3)));
     TSUNIT_ASSERT(a1.hasAddress());
     TSUNIT_ASSERT(a1.isMulticast());
-    TSUNIT_EQUAL(TS_UCONST64(0x01005E010203), a1.address());
+    TSUNIT_EQUAL(0x01005E010203, a1.address());
     TSUNIT_EQUAL(u"01:00:5E:01:02:03", a1.toString());
 
     TSUNIT_ASSERT(!a1.toMulticast(ts::IPv4Address(192, 168, 2, 3)));
@@ -494,8 +494,8 @@ void NetworkingTest::testIPv6SocketAddress()
     sa1.set(0, 1, 2, 3, 4, 5, 6, 7, 1234);
     TSUNIT_ASSERT(sa1.hasAddress());
     TSUNIT_ASSERT(sa1.hasPort());
-    TSUNIT_EQUAL(TS_UCONST64(0x0000000100020003), sa1.networkPrefix());
-    TSUNIT_EQUAL(TS_UCONST64(0x0004000500060007), sa1.interfaceIdentifier());
+    TSUNIT_EQUAL(0x0000000100020003, sa1.networkPrefix());
+    TSUNIT_EQUAL(0x0004000500060007, sa1.interfaceIdentifier());
     TSUNIT_EQUAL(u"[0:1:2:3:4:5:6:7]:1234", sa1.toString());
     TSUNIT_EQUAL(u"[0000:0001:0002:0003:0004:0005:0006:0007]:1234", sa1.toFullString());
     TSUNIT_EQUAL(1234, sa1.port());
@@ -511,16 +511,16 @@ void NetworkingTest::testIPv6SocketAddress()
     TSUNIT_ASSERT(sa1.resolve(u"fe80::93a3:dea0:2108:b81e", CERR));
     TSUNIT_ASSERT(sa1.hasAddress());
     TSUNIT_ASSERT(!sa1.hasPort());
-    TSUNIT_EQUAL(TS_UCONST64(0xFE80000000000000), sa1.networkPrefix());
-    TSUNIT_EQUAL(TS_UCONST64(0x93A3DEA02108B81E), sa1.interfaceIdentifier());
+    TSUNIT_EQUAL(0xFE80000000000000, sa1.networkPrefix());
+    TSUNIT_EQUAL(0x93A3DEA02108B81E, sa1.interfaceIdentifier());
     TSUNIT_EQUAL(u"fe80::93a3:dea0:2108:b81e", sa1.toString());
     TSUNIT_EQUAL(u"fe80:0000:0000:0000:93a3:dea0:2108:b81e", sa1.toFullString());
 
     TSUNIT_ASSERT(sa2.resolve(u"[FE80::93A3:DEA0:2108:B81E]:1234", CERR));
     TSUNIT_ASSERT(sa2.hasAddress());
     TSUNIT_ASSERT(sa2.hasPort());
-    TSUNIT_EQUAL(TS_UCONST64(0xFE80000000000000), sa2.networkPrefix());
-    TSUNIT_EQUAL(TS_UCONST64(0x93A3DEA02108B81E), sa2.interfaceIdentifier());
+    TSUNIT_EQUAL(0xFE80000000000000, sa2.networkPrefix());
+    TSUNIT_EQUAL(0x93A3DEA02108B81E, sa2.interfaceIdentifier());
     TSUNIT_EQUAL(u"[fe80::93a3:dea0:2108:b81e]:1234", sa2.toString());
     TSUNIT_EQUAL(u"[fe80:0000:0000:0000:93a3:dea0:2108:b81e]:1234", sa2.toFullString());
 }

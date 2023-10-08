@@ -235,8 +235,8 @@ void HFBandTest::testBS()
     TSUNIT_EQUAL(1, hf->firstChannel());
     TSUNIT_EQUAL(24, hf->lastChannel());
 
-    TSUNIT_EQUAL(TS_UCONST64(11765840000), hf->frequency(3));
-    TSUNIT_EQUAL(3, hf->channelNumber(TS_UCONST64(11765840000)));
+    TSUNIT_EQUAL(11765840000, hf->frequency(3));
+    TSUNIT_EQUAL(3, hf->channelNumber(11765840000));
     TSUNIT_EQUAL(19180000, hf->bandWidth(3));
     TSUNIT_EQUAL(ts::POL_RIGHT, hf->polarization(17));
     TSUNIT_EQUAL(ts::POL_LEFT, hf->polarization(12));
@@ -252,8 +252,8 @@ void HFBandTest::testCS()
     TSUNIT_EQUAL(1, hf->firstChannel());
     TSUNIT_EQUAL(24, hf->lastChannel());
 
-    TSUNIT_EQUAL(TS_UCONST64(12311000000), hf->frequency(3));
-    TSUNIT_EQUAL(3, hf->channelNumber(TS_UCONST64(12311000000)));
+    TSUNIT_EQUAL(12311000000, hf->frequency(3));
+    TSUNIT_EQUAL(3, hf->channelNumber(12311000000));
     TSUNIT_EQUAL(20000000, hf->bandWidth(3));
     TSUNIT_EQUAL(ts::POL_LEFT, hf->polarization(17));
     TSUNIT_EQUAL(ts::POL_RIGHT, hf->polarization(12));

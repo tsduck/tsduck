@@ -233,32 +233,32 @@ void MemoryTest::testGetUInt32LE()
 
 void MemoryTest::testGetUInt40BE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x000000898A8B8C8D), ts::GetUInt40BE(_bytes + 0x89));
+    TSUNIT_EQUAL(0x000000898A8B8C8D, ts::GetUInt40BE(_bytes + 0x89));
 }
 
 void MemoryTest::testGetUInt40LE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x0000008D8C8B8A89), ts::GetUInt40LE(_bytes + 0x89));
+    TSUNIT_EQUAL(0x0000008D8C8B8A89, ts::GetUInt40LE(_bytes + 0x89));
 }
 
 void MemoryTest::testGetUInt48BE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x0000898A8B8C8D8E), ts::GetUInt48BE(_bytes + 0x89));
+    TSUNIT_EQUAL(0x0000898A8B8C8D8E, ts::GetUInt48BE(_bytes + 0x89));
 }
 
 void MemoryTest::testGetUInt48LE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x00008E8D8C8B8A89), ts::GetUInt48LE(_bytes + 0x89));
+    TSUNIT_EQUAL(0x00008E8D8C8B8A89, ts::GetUInt48LE(_bytes + 0x89));
 }
 
 void MemoryTest::testGetUInt64BE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x898A8B8C8D8E8F90), ts::GetUInt64BE(_bytes + 0x89));
+    TSUNIT_EQUAL(0x898A8B8C8D8E8F90, ts::GetUInt64BE(_bytes + 0x89));
 }
 
 void MemoryTest::testGetUInt64LE()
 {
-    TSUNIT_EQUAL(TS_UCONST64(0x908F8E8D8C8B8A89), ts::GetUInt64LE(_bytes + 0x89));
+    TSUNIT_EQUAL(0x908F8E8D8C8B8A89, ts::GetUInt64LE(_bytes + 0x89));
 }
 
 void MemoryTest::testGetInt8()
@@ -300,32 +300,32 @@ void MemoryTest::testGetInt32LE()
 
 void MemoryTest::testGetInt40BE()
 {
-    TSUNIT_EQUAL(TS_CONST64(-219885416496), ts::GetInt40BE(_bytes + 0xCC)); // 0xCCCDCECFD0
+    TSUNIT_EQUAL(-219885416496, ts::GetInt40BE(_bytes + 0xCC)); // 0xCCCDCECFD0
 }
 
 void MemoryTest::testGetInt40LE()
 {
-    TSUNIT_EQUAL(TS_CONST64(-202671993396), ts::GetInt40LE(_bytes + 0xCC)); // 0xD0CFCECDCC
+    TSUNIT_EQUAL(-202671993396, ts::GetInt40LE(_bytes + 0xCC)); // 0xD0CFCECDCC
 }
 
 void MemoryTest::testGetInt48BE()
 {
-    TSUNIT_EQUAL(TS_CONST64(-56290666622767), ts::GetInt48BE(_bytes + 0xCC)); // 0xCCCDCECFD0D1
+    TSUNIT_EQUAL(-56290666622767, ts::GetInt48BE(_bytes + 0xCC)); // 0xCCCDCECFD0D1
 }
 
 void MemoryTest::testGetInt48LE()
 {
-    TSUNIT_EQUAL(TS_CONST64(-50780206871092), ts::GetInt48LE(_bytes + 0xCC)); // 0xD1D0CFCECDCC
+    TSUNIT_EQUAL(-50780206871092, ts::GetInt48LE(_bytes + 0xCC)); // 0xD1D0CFCECDCC
 }
 
 void MemoryTest::testGetInt64BE()
 {
-    TSUNIT_EQUAL(TS_CONST64(-3689065127789604141), ts::GetInt64BE(_bytes + 0xCC)); // 0xCCCDCECFD0D1D2D3
+    TSUNIT_EQUAL(-3689065127789604141, ts::GetInt64BE(_bytes + 0xCC)); // 0xCCCDCECFD0D1D2D3
 }
 
 void MemoryTest::testGetInt64LE()
 {
-    TSUNIT_EQUAL(TS_CONST64(-3183251291827679796), ts::GetInt64LE(_bytes + 0xCC)); // 0xD3D2D1D0CFCECDCC
+    TSUNIT_EQUAL(-3183251291827679796, ts::GetInt64LE(_bytes + 0xCC)); // 0xD3D2D1D0CFCECDCC
 }
 
 void MemoryTest::testPutUInt8()
@@ -380,14 +380,14 @@ void MemoryTest::testPutUInt32LE()
 void MemoryTest::testPutUInt64BE()
 {
     uint8_t out[16];
-    ts::PutUInt64BE(out, TS_UCONST64(0x898A8B8C8D8E8F90));
+    ts::PutUInt64BE(out, 0x898A8B8C8D8E8F90);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 8));
 }
 
 void MemoryTest::testPutUInt64LE()
 {
     uint8_t out[16];
-    ts::PutUInt64LE(out, TS_UCONST64(0x908F8E8D8C8B8A89));
+    ts::PutUInt64LE(out, 0x908F8E8D8C8B8A89);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 8));
 }
 
@@ -395,14 +395,14 @@ void MemoryTest::testPutUInt64LE()
 void MemoryTest::testPutUInt48BE()
 {
     uint8_t out[16];
-    ts::PutUInt48BE(out, TS_UCONST64(0x0000898A8B8C8D8E));
+    ts::PutUInt48BE(out, 0x0000898A8B8C8D8E);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
 }
 
 void MemoryTest::testPutUInt48LE()
 {
     uint8_t out[16];
-    ts::PutUInt48LE(out, TS_UCONST64(0x00008E8D8C8B8A89));
+    ts::PutUInt48LE(out, 0x00008E8D8C8B8A89);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
 }
 
@@ -463,14 +463,14 @@ void MemoryTest::testPutInt32LE()
 void MemoryTest::testPutInt64BE()
 {
     uint8_t out[16];
-    ts::PutInt64BE(out, TS_CONST64(-3689065127789604141)); // 0xCCCDCECFD0D1D2D3
+    ts::PutInt64BE(out, -3689065127789604141); // 0xCCCDCECFD0D1D2D3
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0xCC, 8));
 }
 
 void MemoryTest::testPutInt64LE()
 {
     uint8_t out[16];
-    ts::PutInt64LE(out, TS_CONST64(-3183251291827679796)); // 0xD3D2D1D0CFCECDCC
+    ts::PutInt64LE(out, -3183251291827679796); // 0xD3D2D1D0CFCECDCC
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0xCC, 8));
 }
 
@@ -481,9 +481,9 @@ void MemoryTest::testGetIntVarBE()
     TSUNIT_EQUAL(0x101112, ts::GetIntVarBE<uint32_t>(_bytes + 0x10, 3));
     TSUNIT_EQUAL(0xCECFD0, ts::GetIntVarBE<uint32_t>(_bytes + 0xCE, 3));
     TSUNIT_EQUAL(0x4748494A, ts::GetIntVarBE<uint32_t>(_bytes + 0x47, 4));
-    TSUNIT_EQUAL(TS_UCONST64(0x000000898A8B8C8D), ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 5));
-    TSUNIT_EQUAL(TS_UCONST64(0x0000898A8B8C8D8E), ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 6));
-    TSUNIT_EQUAL(TS_UCONST64(0x898A8B8C8D8E8F90), ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 8));
+    TSUNIT_EQUAL(0x000000898A8B8C8D, ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 5));
+    TSUNIT_EQUAL(0x0000898A8B8C8D8E, ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 6));
+    TSUNIT_EQUAL(0x898A8B8C8D8E8F90, ts::GetIntVarBE<uint64_t>(_bytes + 0x89, 8));
 }
 
 void MemoryTest::testGetIntVarLE()
@@ -493,9 +493,9 @@ void MemoryTest::testGetIntVarLE()
     TSUNIT_EQUAL(0x121110, ts::GetIntVarLE<uint32_t>(_bytes + 0x10, 3));
     TSUNIT_EQUAL(0xD0CFCE, ts::GetIntVarLE<uint32_t>(_bytes + 0xCE, 3));
     TSUNIT_EQUAL(0x4A494847, ts::GetIntVarLE<uint32_t>(_bytes + 0x47, 4));
-    TSUNIT_EQUAL(TS_UCONST64(0x0000008D8C8B8A89), ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 5));
-    TSUNIT_EQUAL(TS_UCONST64(0x00008E8D8C8B8A89), ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 6));
-    TSUNIT_EQUAL(TS_UCONST64(0x908F8E8D8C8B8A89), ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 8));
+    TSUNIT_EQUAL(0x0000008D8C8B8A89, ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 5));
+    TSUNIT_EQUAL(0x00008E8D8C8B8A89, ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 6));
+    TSUNIT_EQUAL(0x908F8E8D8C8B8A89, ts::GetIntVarLE<uint64_t>(_bytes + 0x89, 8));
 }
 
 void MemoryTest::testPutIntVarBE()
@@ -509,9 +509,9 @@ void MemoryTest::testPutIntVarBE()
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 3));
     ts::PutIntVarBE(out, 4, 0x56575859);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x56, 4));
-    ts::PutIntVarBE(out, 6, TS_UCONST64(0x0000898A8B8C8D8E));
+    ts::PutIntVarBE(out, 6, 0x0000898A8B8C8D8E);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
-    ts::PutIntVarBE(out, 8, TS_UCONST64(0x898A8B8C8D8E8F90));
+    ts::PutIntVarBE(out, 8, 0x898A8B8C8D8E8F90);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 8));
 }
 
@@ -526,8 +526,8 @@ void MemoryTest::testPutIntVarLE()
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 3));
     ts::PutIntVarLE(out, 4, 0x59585756);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x56, 4));
-    ts::PutIntVarLE(out, 6, TS_UCONST64(0x00008E8D8C8B8A89));
+    ts::PutIntVarLE(out, 6, 0x00008E8D8C8B8A89);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 6));
-    ts::PutIntVarLE(out, 8, TS_UCONST64(0x908F8E8D8C8B8A89));
+    ts::PutIntVarLE(out, 8, 0x908F8E8D8C8B8A89);
     TSUNIT_EQUAL(0, ::memcmp(out, _bytes + 0x89, 8));
 }

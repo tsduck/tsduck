@@ -110,7 +110,7 @@ void CompactBitSetTest::testSize()
 
     TSUNIT_EQUAL(64, ts::CompactBitSet<64>::SIZE);
     TSUNIT_EQUAL(63, ts::CompactBitSet<64>::MAX);
-    TSUNIT_EQUAL(TS_UCONST64(0xFFFFFFFFFFFFFFFF), ts::CompactBitSet<64>::ALL);
+    TSUNIT_EQUAL(0xFFFFFFFFFFFFFFFF, ts::CompactBitSet<64>::ALL);
     TSUNIT_ASSUME(8 == sizeof(ts::CompactBitSet<64>));
 }
 
