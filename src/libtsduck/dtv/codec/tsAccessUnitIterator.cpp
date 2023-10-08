@@ -29,7 +29,6 @@
 
 #include "tsAccessUnitIterator.h"
 #include "tsPESPacket.h"
-#include "tsAVC.h"
 #include "tsHEVC.h"
 #include "tsVVC.h"
 
@@ -42,12 +41,7 @@ ts::AccessUnitIterator::AccessUnitIterator(const uint8_t* data, size_t size, uin
     _data(data),
     _data_size(size),
     _valid(PESPacket::HasCommonVideoHeader(data, size)),
-    _format(_valid ? default_format : CodecType::UNDEFINED),
-    _nalunit(nullptr),
-    _nalunit_size(0),
-    _nalunit_header_size(0),
-    _nalunit_index(0),
-    _nalunit_type(AVC_AUT_INVALID)
+    _format(_valid ? default_format : CodecType::UNDEFINED)
 {
     // If the area is valid, compute the actual format.
     if (_valid) {

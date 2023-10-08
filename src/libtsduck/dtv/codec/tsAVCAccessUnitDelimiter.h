@@ -63,7 +63,7 @@ namespace ts {
         virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
 
         // Access unit delimiter fields.
-        uint8_t primary_pic_type;  //!< Primary picture type, 3 bits
+        uint8_t primary_pic_type = 0;  //!< Primary picture type, 3 bits
 
     protected:
         // Inherited methods

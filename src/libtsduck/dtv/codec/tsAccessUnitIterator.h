@@ -35,6 +35,7 @@
 #pragma once
 #include "tsCodecType.h"
 #include "tsPSI.h"
+#include "tsAVC.h"
 
 namespace ts {
     //!
@@ -146,14 +147,14 @@ namespace ts {
         void reset();
 
     private:
-        const uint8_t* const _data;
-        const size_t   _data_size;
-        bool           _valid;
-        CodecType      _format;
-        const uint8_t* _nalunit;
-        size_t         _nalunit_size;
-        size_t         _nalunit_header_size;
-        size_t         _nalunit_index;
-        uint8_t        _nalunit_type;
+        const uint8_t* const _data = nullptr;
+        const size_t   _data_size = 0;
+        bool           _valid = false;
+        CodecType      _format = CodecType::UNDEFINED;
+        const uint8_t* _nalunit = nullptr;
+        size_t         _nalunit_size = 0;
+        size_t         _nalunit_header_size = 0;
+        size_t         _nalunit_index = 0;
+        uint8_t        _nalunit_type = AVC_AUT_INVALID;
     };
 }

@@ -61,8 +61,8 @@ namespace ts {
         virtual std::ostream& display(std::ostream& strm = std::cout, const UString& margin = UString(), int level = Severity::Info) const override;
 
         // Access unit delimiter fields.
-        uint8_t aud_irap_or_gdr_flag;  //!< IRAP or GDR, 1 bit
-        uint8_t aud_pic_type;          //!< Picture type, 3 bits
+        uint8_t aud_irap_or_gdr_flag = 0;  //!< IRAP or GDR, 1 bit
+        uint8_t aud_pic_type = 0;          //!< Picture type, 3 bits
 
     protected:
         // Inherited methods

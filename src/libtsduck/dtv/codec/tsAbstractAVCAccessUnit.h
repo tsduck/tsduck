@@ -52,14 +52,14 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        AbstractAVCAccessUnit();
+        AbstractAVCAccessUnit() = default;
 
         // Inherited.
         virtual void clear() override;
 
-        uint8_t forbidden_zero_bit;  //!< See ISO/IEC 14496-10 section 7.3.1
-        uint8_t nal_ref_idc;         //!< See ISO/IEC 14496-10 section 7.3.1
-        uint8_t nal_unit_type;       //!< See ISO/IEC 14496-10 section 7.3.1
+        uint8_t forbidden_zero_bit = 0;  //!< See ISO/IEC 14496-10 section 7.3.1
+        uint8_t nal_ref_idc = 0;         //!< See ISO/IEC 14496-10 section 7.3.1
+        uint8_t nal_unit_type = 0;       //!< See ISO/IEC 14496-10 section 7.3.1
 
     protected:
         // Inherited.

@@ -68,21 +68,21 @@ namespace ts {
         class TSDUCKDLL Scaling
         {
         public:
-            Scaling();                                             //!< Constructor.
-            uint8_t scaling_list_pred_mode_flag;                   //!< scaling_list_pred_mode_flag
+            Scaling() = default;                                      //!< Constructor.
+            uint8_t scaling_list_pred_mode_flag = 0;                  //!< scaling_list_pred_mode_flag
             // if (!scaling_list_pred_mode_flag) {
-                uint32_t scaling_list_pred_matrix_id_delta;        //!< scaling_list_pred_matrix_id_delta
+                uint32_t scaling_list_pred_matrix_id_delta = 0;       //!< scaling_list_pred_matrix_id_delta
             // } else {
                 // if (sizeId > 1) {
-                    int32_t scaling_list_dc_coef_minus8;           //!< scaling_list_dc_coef_minus8
+                    int32_t scaling_list_dc_coef_minus8 = 0;          //!< scaling_list_dc_coef_minus8
                 // }
                 // for (i = 0; i < coefNum; i++) {
-                    std::vector<int32_t> scaling_list_delta_coef;  //!< scaling_list_delta_coef
+                    std::vector<int32_t> scaling_list_delta_coef {};  //!< scaling_list_delta_coef
                 // }
             // }
         };
 
         //! HEVC scaling list data structure.
-        std::array<std::array<Scaling, 6>, 4> list;
+        std::array<std::array<Scaling, 6>, 4> list {};
     };
 }

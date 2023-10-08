@@ -54,7 +54,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        AVCAttributes();
+        AVCAttributes() = default;
 
         // Implementation of abstract methods.
         // The "binary data" is an AVC access unit.
@@ -110,10 +110,10 @@ namespace ts {
         UString chromaFormatName() const;
 
     private:
-        size_t  _hsize;    // Horizontal size in pixel
-        size_t  _vsize;    // Vertical size in pixel
-        int     _profile;  // AVC profile
-        int     _level;    // AVC level
-        uint8_t _chroma;   // Chroma format code (CHROMA_* from tsMPEG.h)
+        size_t  _hsize = 0;    // Horizontal size in pixel
+        size_t  _vsize = 0;    // Vertical size in pixel
+        int     _profile = 0;  // AVC profile
+        int     _level = 0;    // AVC level
+        uint8_t _chroma = 0;   // Chroma format code (CHROMA_* from tsMPEG.h)
     };
 }

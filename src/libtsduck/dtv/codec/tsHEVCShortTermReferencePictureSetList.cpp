@@ -34,39 +34,12 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::HEVCShortTermReferencePictureSetList::HEVCShortTermReferencePictureSetList(const uint8_t* data, size_t size, uint32_t num_short_term_ref_pic_sets) :
-    SuperClass(),
-    list()
+ts::HEVCShortTermReferencePictureSetList::HEVCShortTermReferencePictureSetList(const uint8_t* data, size_t size, uint32_t num_short_term_ref_pic_sets)
 {
     reset(num_short_term_ref_pic_sets);
     for (uint32_t i = 0; valid && i < num_short_term_ref_pic_sets; ++i) {
-        valid = parse(data, size, {i});
+        valid = HEVCShortTermReferencePictureSetList::parse(data, size, {i});
     }
-}
-
-
-ts::HEVCShortTermReferencePictureSetList::ShortTermReferencePictureSet::ShortTermReferencePictureSet() :
-    valid(false),
-    inter_ref_pic_set_prediction_flag(0),
-    delta_idx_minus1(0),
-    delta_rps_sign(0),
-    abs_delta_rps_minus1(0),
-    used_by_curr_pic_flag(),
-    use_delta_flag(),
-    num_negative_pics(0),
-    num_positive_pics(0),
-    delta_poc_s0_minus1(),
-    used_by_curr_pic_s0_flag(),
-    delta_poc_s1_minus1(),
-    used_by_curr_pic_s1_flag(),
-    NumNegativePics(0),
-    NumPositivePics(0),
-    UsedByCurrPicS0(),
-    UsedByCurrPicS1(),
-    DeltaPocS0(),
-    DeltaPocS1(),
-    NumDeltaPocs(0)
-{
 }
 
 

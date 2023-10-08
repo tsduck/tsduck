@@ -48,7 +48,7 @@ namespace ts {
         //! Maximum number of preferred names per descriptor.
         //! Defined in EACEM TR-030 section 9.2.11.2 and in the D-Book 7 Part A section 8.5.3.7.
         //!
-        static const size_t MAX_PREFERRED_NAMES = 5;
+        static constexpr size_t MAX_PREFERRED_NAMES = 5;
 
         //!
         //! For each language, there is a map of service names per 8-bit name_id.
@@ -61,7 +61,7 @@ namespace ts {
         typedef std::map<UString, NameByIdMap> LanguageMap;
 
         // AbstractPreferredNameListDescriptor public members:
-        LanguageMap entries;  //!< Map of language entries.
+        LanguageMap entries {};  //!< Map of language entries.
 
         // Inherited methods
         DeclareDisplayDescriptor();

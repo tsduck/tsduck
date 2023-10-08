@@ -50,16 +50,8 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            // Public members
-            UString language;  //!< ISO-639 language code, 3 characters.
-            UString name;      //!< Name in this language.
-
-            //!
-            //! Default constructor.
-            //! @param [in] lang ISO-639 language code, 3 characters.
-            //! @param [in] name Name for this language.
-            //!
-            Entry(const UString& lang = UString(), const UString& name = UString());
+            UString language {};  //!< ISO-639 language code, 3 characters.
+            UString name {};      //!< Name in this language.
         };
 
         //!
@@ -68,7 +60,7 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // Multiligual descriptor public members:
-        EntryList entries;  //!< List of language entries.
+        EntryList entries {};  //!< List of language entries.
 
         // Inherited methods
         DeclareDisplayDescriptor();
@@ -99,7 +91,7 @@ namespace ts {
         virtual bool analyzeXML(DuckContext&, const xml::Element*) override;
 
     private:
-        const UChar* _xml_attribute;
+        const UChar* _xml_attribute = nullptr;
 
         // Inaccessible operations.
         AbstractMultilingualDescriptor() = delete;

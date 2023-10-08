@@ -52,15 +52,15 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        AbstractHEVCAccessUnit();
+        AbstractHEVCAccessUnit() = default;
 
         // Inherited.
         virtual void clear() override;
 
-        uint8_t forbidden_zero_bit;     //!< 1 bit
-        uint8_t nal_unit_type;          //!< 6 bits
-        uint8_t nuh_layer_id;           //!< 6 bits
-        uint8_t nuh_temporal_id_plus1;  //!< 3 bits
+        uint8_t forbidden_zero_bit = 0;     //!< 1 bit
+        uint8_t nal_unit_type = 0;          //!< 6 bits
+        uint8_t nuh_layer_id = 0;           //!< 6 bits
+        uint8_t nuh_temporal_id_plus1 = 0;  //!< 3 bits
 
     protected:
         // Inherited.

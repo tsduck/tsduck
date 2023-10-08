@@ -200,8 +200,8 @@ namespace ts {
         virtual void deserializePayload(PSIBuffer& buf) = 0;
 
     private:
-        DID _tag;           // Descriptor tag.
-        PDS _required_pds;  // Required private data specifier.
+        DID _tag {DID_NULL};    // Descriptor tag.
+        PDS _required_pds {0};  // Required private data specifier.
 
         // Unreachable constructors and operators.
         AbstractDescriptor() = delete;

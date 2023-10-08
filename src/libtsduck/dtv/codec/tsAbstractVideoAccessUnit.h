@@ -53,15 +53,15 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        AbstractVideoAccessUnit();
+        AbstractVideoAccessUnit() = default;
 
         // Implementation of AbstractVideoData interface.
         virtual void clear() override;
         virtual bool parse(const uint8_t*, size_t, std::initializer_list<uint32_t> = std::initializer_list<uint32_t>()) override;
 
         // Validity of RBSP trailing bits
-        bool   rbsp_trailing_bits_valid;  //!< rbsp_trailing_bits_valid
-        size_t rbsp_trailing_bits_count;  //!< rbsp_trailing_bits_count
+        bool   rbsp_trailing_bits_valid = false;  //!< rbsp_trailing_bits_valid
+        size_t rbsp_trailing_bits_count = 0;      //!< rbsp_trailing_bits_count
 
     protected:
         //!

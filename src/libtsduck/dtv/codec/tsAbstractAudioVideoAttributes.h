@@ -49,19 +49,19 @@ namespace ts {
         //!
         //! Default constructor
         //!
-        AbstractAudioVideoAttributes();
+        AbstractAudioVideoAttributes() = default;
 
         //!
         //! Check if the values in the object are valid.
         //! @return True if the values in the object are valid.
         //!
-        bool isValid() const {return _is_valid;}
+        bool isValid() const { return _is_valid; }
 
         //!
         //! Invalidate the content of this instance.
         //! It must be rebuilt using audio/video binary data.
         //!
-        void invalidate() {_is_valid = false;}
+        void invalidate() { _is_valid = false; }
 
         //!
         //! Provides an audio/video binary data to be analyzed by this instance.
@@ -78,6 +78,6 @@ namespace ts {
         //! A flag which indicates if the content of this object is valid.
         //! It is the responsibility of the subclasses to set it.
         //!
-        bool _is_valid;
+        bool _is_valid = false;
     };
 }

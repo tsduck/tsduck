@@ -35,9 +35,7 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::AVCAccessUnitDelimiter::AVCAccessUnitDelimiter(const uint8_t* data, size_t size) :
-    SuperClass(),
-    primary_pic_type(0)
+ts::AVCAccessUnitDelimiter::AVCAccessUnitDelimiter(const uint8_t* data, size_t size)
 {
     parse(data, size);
 }
