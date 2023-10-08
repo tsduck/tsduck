@@ -62,8 +62,7 @@ ts::AbstractPreferredNameIdentifierDescriptor::AbstractPreferredNameIdentifierDe
                                                                                          Standards standards,
                                                                                          PDS pds,
                                                                                          const UChar* xml_legacy_name) :
-    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
-    name_id(0)
+    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
 {
     deserialize(duck, desc);
 }

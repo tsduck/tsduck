@@ -80,32 +80,32 @@ namespace ts {
         class TSDUCKDLL SubLayerParams
         {
         public:
-            SubLayerParams();                                          //!< Constructor.
-            uint8_t sub_layer_profile_present_flag;                    //!< sub_layer_profile_present_flag
-            uint8_t sub_layer_level_present_flag;                      //!< sub_layer_level_present_flag
+            SubLayerParams() = default;                                    //!< Constructor.
+            uint8_t sub_layer_profile_present_flag = 0;                    //!< sub_layer_profile_present_flag
+            uint8_t sub_layer_level_present_flag = 0;                      //!< sub_layer_level_present_flag
             // if (sub_layer_profile_present_flag) {
-                uint8_t sub_layer_profile_space;                       //!< sub_layer_profile_space
-                uint8_t sub_layer_tier_flag;                           //!< sub_layer_tier_flag
-                uint8_t sub_layer_profile_idc;                         //!< sub_layer_profile_idc
-                std::bitset<32> sub_layer_profile_compatibility_flag;  //!< sub_layer_profile_compatibility_flag
-                uint8_t sub_layer_progressive_source_flag;             //!< sub_layer_progressive_source_flag
-                uint8_t sub_layer_interlaced_source_flag;              //!< sub_layer_interlaced_source_flag
-                uint8_t sub_layer_non_packed_constraint_flag;          //!< sub_layer_non_packed_constraint_flag
-                uint8_t sub_layer_frame_only_constraint_flag;          //!< sub_layer_frame_only_constraint_flag
-                uint8_t sub_layer_max_12bit_constraint_flag;           //!< sub_layer_max_12bit_constraint_flag
-                uint8_t sub_layer_max_10bit_constraint_flag;           //!< sub_layer_max_10bit_constraint_flag
-                uint8_t sub_layer_max_8bit_constraint_flag;            //!< sub_layer_max_8bit_constraint_flag
-                uint8_t sub_layer_max_422chroma_constraint_flag;       //!< sub_layer_max_422chroma_constraint_flag
-                uint8_t sub_layer_max_420chroma_constraint_flag;       //!< sub_layer_max_420chroma_constraint_flag
-                uint8_t sub_layer_max_monochrome_constraint_flag;      //!< sub_layer_max_monochrome_constraint_flag
-                uint8_t sub_layer_intra_constraint_flag;               //!< sub_layer_intra_constraint_flag
-                uint8_t sub_layer_one_picture_only_constraint_flag;    //!< sub_layer_one_picture_only_constraint_flag
-                uint8_t sub_layer_lower_bit_rate_constraint_flag;      //!< sub_layer_lower_bit_rate_constraint_flag
-                uint8_t sub_layer_max_14bit_constraint_flag;           //!< sub_layer_max_14bit_constraint_flag
-                uint8_t sub_layer_inbld_flag;                          //!< sub_layer_inbld_flag
+                uint8_t sub_layer_profile_space = 0;                       //!< sub_layer_profile_space
+                uint8_t sub_layer_tier_flag = 0;                           //!< sub_layer_tier_flag
+                uint8_t sub_layer_profile_idc = 0;                         //!< sub_layer_profile_idc
+                std::bitset<32> sub_layer_profile_compatibility_flag {};   //!< sub_layer_profile_compatibility_flag
+                uint8_t sub_layer_progressive_source_flag = 0;             //!< sub_layer_progressive_source_flag
+                uint8_t sub_layer_interlaced_source_flag = 0;              //!< sub_layer_interlaced_source_flag
+                uint8_t sub_layer_non_packed_constraint_flag = 0;          //!< sub_layer_non_packed_constraint_flag
+                uint8_t sub_layer_frame_only_constraint_flag = 0;          //!< sub_layer_frame_only_constraint_flag
+                uint8_t sub_layer_max_12bit_constraint_flag = 0;           //!< sub_layer_max_12bit_constraint_flag
+                uint8_t sub_layer_max_10bit_constraint_flag = 0;           //!< sub_layer_max_10bit_constraint_flag
+                uint8_t sub_layer_max_8bit_constraint_flag = 0;            //!< sub_layer_max_8bit_constraint_flag
+                uint8_t sub_layer_max_422chroma_constraint_flag = 0;       //!< sub_layer_max_422chroma_constraint_flag
+                uint8_t sub_layer_max_420chroma_constraint_flag = 0;       //!< sub_layer_max_420chroma_constraint_flag
+                uint8_t sub_layer_max_monochrome_constraint_flag = 0;      //!< sub_layer_max_monochrome_constraint_flag
+                uint8_t sub_layer_intra_constraint_flag = 0;               //!< sub_layer_intra_constraint_flag
+                uint8_t sub_layer_one_picture_only_constraint_flag = 0;    //!< sub_layer_one_picture_only_constraint_flag
+                uint8_t sub_layer_lower_bit_rate_constraint_flag = 0;      //!< sub_layer_lower_bit_rate_constraint_flag
+                uint8_t sub_layer_max_14bit_constraint_flag = 0;           //!< sub_layer_max_14bit_constraint_flag
+                uint8_t sub_layer_inbld_flag = 0;                          //!< sub_layer_inbld_flag
             // }
             // if (sub_layer_level_present_flag) {
-                uint8_t sub_layer_level_idc;                           //!< sub_layer_level_idc
+                uint8_t sub_layer_level_idc = 0;                           //!< sub_layer_level_idc
             // }
         };
 
@@ -113,30 +113,30 @@ namespace ts {
         // HRD profile_tier_level fields.
         // See ITU-T Rec. H.265, 7.3.3
         //
-        bool profile_present_flag;                               //!< from parent structure
+        bool profile_present_flag = false;                           //!< from parent structure
         // if (profile_present_flag) {
-            uint8_t general_profile_space;                       //!< general_profile_space
-            uint8_t general_tier_flag;                           //!< general_tier_flag
-            uint8_t general_profile_idc;                         //!< general_profile_idc
-            std::bitset<32> general_profile_compatibility_flag;  //!< general_profile_compatibility_flag
-            uint8_t general_progressive_source_flag;             //!< general_progressive_source_flag
-            uint8_t general_interlaced_source_flag;              //!< general_interlaced_source_flag
-            uint8_t general_non_packed_constraint_flag;          //!< general_non_packed_constraint_flag
-            uint8_t general_frame_only_constraint_flag;          //!< general_frame_only_constraint_flag
-            uint8_t general_max_12bit_constraint_flag;           //!< general_max_12bit_constraint_flag
-            uint8_t general_max_10bit_constraint_flag;           //!< general_max_10bit_constraint_flag
-            uint8_t general_max_8bit_constraint_flag;            //!< general_max_8bit_constraint_flag
-            uint8_t general_max_422chroma_constraint_flag;       //!< general_max_422chroma_constraint_flag
-            uint8_t general_max_420chroma_constraint_flag;       //!< general_max_420chroma_constraint_flag
-            uint8_t general_max_monochrome_constraint_flag;      //!< general_max_monochrome_constraint_flag
-            uint8_t general_intra_constraint_flag;               //!< general_intra_constraint_flag
-            uint8_t general_one_picture_only_constraint_flag;    //!< general_one_picture_only_constraint_flag
-            uint8_t general_lower_bit_rate_constraint_flag;      //!< general_lower_bit_rate_constraint_flag
-            uint8_t general_max_14bit_constraint_flag;           //!< general_max_14bit_constraint_flag
-            uint8_t general_inbld_flag;                          //!< general_inbld_flag
+            uint8_t general_profile_space = 0;                       //!< general_profile_space
+            uint8_t general_tier_flag = 0;                           //!< general_tier_flag
+            uint8_t general_profile_idc = 0;                         //!< general_profile_idc
+            std::bitset<32> general_profile_compatibility_flag {};   //!< general_profile_compatibility_flag
+            uint8_t general_progressive_source_flag = 0;             //!< general_progressive_source_flag
+            uint8_t general_interlaced_source_flag = 0;              //!< general_interlaced_source_flag
+            uint8_t general_non_packed_constraint_flag = 0;          //!< general_non_packed_constraint_flag
+            uint8_t general_frame_only_constraint_flag = 0;          //!< general_frame_only_constraint_flag
+            uint8_t general_max_12bit_constraint_flag = 0;           //!< general_max_12bit_constraint_flag
+            uint8_t general_max_10bit_constraint_flag = 0;           //!< general_max_10bit_constraint_flag
+            uint8_t general_max_8bit_constraint_flag = 0;            //!< general_max_8bit_constraint_flag
+            uint8_t general_max_422chroma_constraint_flag = 0;       //!< general_max_422chroma_constraint_flag
+            uint8_t general_max_420chroma_constraint_flag = 0;       //!< general_max_420chroma_constraint_flag
+            uint8_t general_max_monochrome_constraint_flag = 0;      //!< general_max_monochrome_constraint_flag
+            uint8_t general_intra_constraint_flag = 0;               //!< general_intra_constraint_flag
+            uint8_t general_one_picture_only_constraint_flag = 0;    //!< general_one_picture_only_constraint_flag
+            uint8_t general_lower_bit_rate_constraint_flag = 0;      //!< general_lower_bit_rate_constraint_flag
+            uint8_t general_max_14bit_constraint_flag = 0;           //!< general_max_14bit_constraint_flag
+            uint8_t general_inbld_flag = 0;                          //!< general_inbld_flag
         // }
-        uint8_t general_level_idc;                               //!< general_level_idc
+        uint8_t general_level_idc = 0;                               //!< general_level_idc
         // for (i = 0; i <= maxNumSubLayersMinus1; i++) {...}
-        std::vector<SubLayerParams> sub_layers;                  //!< Per-sub-layer parameters
+        std::vector<SubLayerParams> sub_layers {};                   //!< Per-sub-layer parameters
     };
 }

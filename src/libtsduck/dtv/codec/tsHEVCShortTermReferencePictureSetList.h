@@ -112,52 +112,52 @@ namespace ts {
             //!
             //! Constructor.
             //!
-            ShortTermReferencePictureSet();
+            ShortTermReferencePictureSet() = default;
             //!
             //! Clear structure content.
             //!
             void clear();
 
             // Inline data:
-            bool valid;                                         //!< This structure is valid.
+            bool valid = false;                                     //!< This structure is valid.
             // if (stRpsIdx != 0) {
-                uint8_t inter_ref_pic_set_prediction_flag;      //!< inter_ref_pic_set_prediction_flag
+                uint8_t inter_ref_pic_set_prediction_flag = 0;      //!< inter_ref_pic_set_prediction_flag
             // }
             // if (inter_ref_pic_set_prediction_flag) {
                 // if (stRpsIdx == num_short_term_ref_pic_sets) {
-                    uint32_t delta_idx_minus1;                  //!< delta_idx_minus1
+                    uint32_t delta_idx_minus1 = 0;                  //!< delta_idx_minus1
                 // }
-                uint8_t delta_rps_sign;                         //!< delta_rps_sign
-                uint32_t abs_delta_rps_minus1;                  //!< abs_delta_rps_minus1
+                uint8_t delta_rps_sign = 0;                         //!< delta_rps_sign
+                uint32_t abs_delta_rps_minus1 = 0;                  //!< abs_delta_rps_minus1
                 // for (j = 0; j <= NumDeltaPocs[RefRpsIdx]; j++)
-                std::vector<uint8_t> used_by_curr_pic_flag;     //!< used_by_curr_pic_flag
+                std::vector<uint8_t> used_by_curr_pic_flag {};      //!< used_by_curr_pic_flag
                 // if (!used_by_curr_pic_flag) {
-                    std::vector<uint8_t> use_delta_flag;        //!< use_delta_flag
+                    std::vector<uint8_t> use_delta_flag {};         //!< use_delta_flag
                 // }
             // } else {
-                uint32_t num_negative_pics;                     //!< num_negative_pics
-                uint32_t num_positive_pics;                     //!< num_positive_pics
+                uint32_t num_negative_pics = 0;                     //!< num_negative_pics
+                uint32_t num_positive_pics = 0;                     //!< num_positive_pics
                 // for (i = 0; i < num_negative_pics; i++) {
-                std::vector<uint32_t> delta_poc_s0_minus1;      //!< delta_poc_minus1
-                std::vector<uint8_t> used_by_curr_pic_s0_flag;  //!< used_by_curr_pic_flag
+                std::vector<uint32_t> delta_poc_s0_minus1 {};       //!< delta_poc_minus1
+                std::vector<uint8_t> used_by_curr_pic_s0_flag {};   //!< used_by_curr_pic_flag
                 // for (i = 0; i < num_positive_pics; i++) {
-                std::vector<uint32_t> delta_poc_s1_minus1;      //!< delta_poc_minus1
-                std::vector<uint8_t> used_by_curr_pic_s1_flag;  //!< used_by_curr_pic_flag
+                std::vector<uint32_t> delta_poc_s1_minus1 {};       //!< delta_poc_minus1
+                std::vector<uint8_t> used_by_curr_pic_s1_flag {};   //!< used_by_curr_pic_flag
             // }
 
             // Synthetic variables:
-            uint32_t             NumNegativePics;  //!< ITU-T Rec. H.265, 7.4.8 (7-61, 7-63)
-            uint32_t             NumPositivePics;  //!< ITU-T Rec. H.265, 7.4.8 (7-62, 7-64)
-            std::vector<uint8_t> UsedByCurrPicS0;  //!< ITU-T Rec. H.265, 7.4.8 (7-65)
-            std::vector<uint8_t> UsedByCurrPicS1;  //!< ITU-T Rec. H.265, 7.4.8 (7-66)
-            std::vector<int32_t> DeltaPocS0;       //!< ITU-T Rec. H.265, 7.4.8 (7-67)
-            std::vector<int32_t> DeltaPocS1;       //!< ITU-T Rec. H.265, 7.4.8 (7-68)
-            uint32_t             NumDeltaPocs;     //!< ITU-T Rec. H.265, 7.4.8 (7-71)
+            uint32_t             NumNegativePics = 0;  //!< ITU-T Rec. H.265, 7.4.8 (7-61, 7-63)
+            uint32_t             NumPositivePics = 0;  //!< ITU-T Rec. H.265, 7.4.8 (7-62, 7-64)
+            std::vector<uint8_t> UsedByCurrPicS0 {};   //!< ITU-T Rec. H.265, 7.4.8 (7-65)
+            std::vector<uint8_t> UsedByCurrPicS1 {};   //!< ITU-T Rec. H.265, 7.4.8 (7-66)
+            std::vector<int32_t> DeltaPocS0 {};        //!< ITU-T Rec. H.265, 7.4.8 (7-67)
+            std::vector<int32_t> DeltaPocS1 {};        //!< ITU-T Rec. H.265, 7.4.8 (7-68)
+            uint32_t             NumDeltaPocs = 0;     //!< ITU-T Rec. H.265, 7.4.8 (7-71)
         };
 
         //!
         //! The list of ShortTermReferencePictureSet is organized as a vector.
         //!
-        std::vector<ShortTermReferencePictureSet> list;
+        std::vector<ShortTermReferencePictureSet> list {};
     };
 }

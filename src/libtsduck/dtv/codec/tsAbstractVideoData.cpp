@@ -29,11 +29,6 @@
 
 #include "tsAbstractVideoData.h"
 
-ts::AbstractVideoData::AbstractVideoData() :
-    valid(false)
-{
-}
-
 void ts::AbstractVideoData::clear()
 {
     valid = false;

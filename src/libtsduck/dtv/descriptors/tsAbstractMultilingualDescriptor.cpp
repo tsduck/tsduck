@@ -40,14 +40,7 @@
 
 ts::AbstractMultilingualDescriptor::AbstractMultilingualDescriptor(DID tag, const UChar* xml_name, const UChar* xml_attribute) :
     AbstractDescriptor(tag, xml_name, Standards::DVB, 0),
-    entries(),
     _xml_attribute(xml_attribute)
-{
-}
-
-ts::AbstractMultilingualDescriptor::Entry::Entry(const UString& lang_, const UString& name_) :
-    language(lang_),
-    name(name_)
 {
 }
 

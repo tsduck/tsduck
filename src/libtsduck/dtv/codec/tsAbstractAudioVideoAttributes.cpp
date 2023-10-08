@@ -29,11 +29,6 @@
 
 #include "tsAbstractAudioVideoAttributes.h"
 
-ts::AbstractAudioVideoAttributes::AbstractAudioVideoAttributes() :
-    _is_valid(false)
-{
-}
-
 ts::AbstractAudioVideoAttributes::~AbstractAudioVideoAttributes()
 {
 }

@@ -45,7 +45,7 @@ namespace ts {
     {
     public:
         // AbstractPreferredNameIdentifierDescriptor public members:
-        uint8_t name_id;  //!< Service name id from an EacemPreferredNameListDescriptor.
+        uint8_t name_id = 0;  //!< Service name id from an EacemPreferredNameListDescriptor.
 
         // Inherited methods
         DeclareDisplayDescriptor();

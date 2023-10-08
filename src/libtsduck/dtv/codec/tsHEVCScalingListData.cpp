@@ -34,20 +34,11 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::HEVCScalingListData::HEVCScalingListData(const uint8_t* data, size_t size) :
-    SuperClass(),
-    list()
+ts::HEVCScalingListData::HEVCScalingListData(const uint8_t* data, size_t size)
 {
-    parse(data, size);
+    HEVCScalingListData::parse(data, size);
 }
 
-ts::HEVCScalingListData::Scaling::Scaling() :
-    scaling_list_pred_mode_flag(0),
-    scaling_list_pred_matrix_id_delta(0),
-    scaling_list_dc_coef_minus8(0),
-    scaling_list_delta_coef()
-{
-}
 
 
 //----------------------------------------------------------------------------

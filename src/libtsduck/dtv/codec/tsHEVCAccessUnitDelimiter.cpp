@@ -35,11 +35,9 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::HEVCAccessUnitDelimiter::HEVCAccessUnitDelimiter(const uint8_t* data, size_t size) :
-    SuperClass(),
-    pic_type(0)
+ts::HEVCAccessUnitDelimiter::HEVCAccessUnitDelimiter(const uint8_t* data, size_t size)
 {
-    parse(data, size);
+    HEVCAccessUnitDelimiter::parse(data, size);
 }
 
 

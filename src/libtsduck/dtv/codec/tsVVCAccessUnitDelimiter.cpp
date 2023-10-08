@@ -35,12 +35,9 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::VVCAccessUnitDelimiter::VVCAccessUnitDelimiter(const uint8_t* data, size_t size) :
-    SuperClass(),
-    aud_irap_or_gdr_flag(false),
-    aud_pic_type(0)
+ts::VVCAccessUnitDelimiter::VVCAccessUnitDelimiter(const uint8_t* data, size_t size)
 {
-    parse(data, size);
+    VVCAccessUnitDelimiter::parse(data, size);
 }
 
 
@@ -51,7 +48,7 @@ ts::VVCAccessUnitDelimiter::VVCAccessUnitDelimiter(const uint8_t* data, size_t s
 void ts::VVCAccessUnitDelimiter::clear()
 {
     SuperClass::clear();
-    aud_irap_or_gdr_flag = false;
+    aud_irap_or_gdr_flag = 0;
     aud_pic_type = 0;
 }
 

@@ -92,19 +92,13 @@ namespace ts {
         //! Check end of stream.
         //! @return True if at end of stream.
         //!
-        bool endOfStream() const
-        {
-            return _byte >= _end;
-        }
+        bool endOfStream() const { return _byte >= _end; }
 
         //!
         //! Check if the current bit pointer is on a byte boundary.
         //! @return True if the current bit pointer is on a byte boundary.
         //!
-        bool byteAligned() const
-        {
-            return _bit == 0;
-        }
+        bool byteAligned() const { return _bit == 0; }
 
         //!
         //! Skip an rbsp_trailing_bits() as defined by ISO/EIC 14496-10 7.3.2.11.
@@ -188,11 +182,11 @@ namespace ts {
         bool se(INT& val);
 
     private:
-        const uint8_t* _base;         // Base address of the memory area to parse.
-        const uint8_t* _end;          // End address + 1 of the memory area.
-        size_t         _total_size;   // Size in bytes of the memory area.
-        const uint8_t* _byte;         // Current byte pointer inside memory area.
-        size_t         _bit;          // Current bit offset into *_byte
+        const uint8_t* _base = nullptr;   // Base address of the memory area to parse.
+        const uint8_t* _end = nullptr;    // End address + 1 of the memory area.
+        size_t         _total_size = 0;   // Size in bytes of the memory area.
+        const uint8_t* _byte = nullptr;   // Current byte pointer inside memory area.
+        size_t         _bit = 0;          // Current bit offset into *_byte
 
         //! @cond nodoxygen
         // A macro asserting the consistent state of this object.

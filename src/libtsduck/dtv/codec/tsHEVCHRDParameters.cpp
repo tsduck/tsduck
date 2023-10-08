@@ -35,44 +35,9 @@
 //----------------------------------------------------------------------------
 
 ts::HEVCHRDParameters::HEVCHRDParameters(const uint8_t* data, size_t size, bool commonInfPresentFlag, size_t maxNumSubLayersMinus1) :
-    SuperClass(),
-    common_inf_present_flag(commonInfPresentFlag),
-    nal_hrd_parameters_present_flag(0),
-    vcl_hrd_parameters_present_flag(0),
-    sub_pic_hrd_params_present_flag(0),
-    tick_divisor_minus2(0),
-    du_cpb_removal_delay_increment_length_minus1(0),
-    sub_pic_cpb_params_in_pic_timing_sei_flag(0),
-    dpb_output_delay_du_length_minus1(0),
-    bit_rate_scale(0),
-    cpb_size_scale(0),
-    cpb_size_du_scale(0),
-    initial_cpb_removal_delay_length_minus1(0),
-    au_cpb_removal_delay_length_minus1(0),
-    dpb_output_delay_length_minus1(0),
-    sub_layers()
+    common_inf_present_flag(commonInfPresentFlag)
 {
-    parse(data, size, {uint32_t(commonInfPresentFlag), uint32_t(maxNumSubLayersMinus1)});
-}
-
-ts::HEVCHRDParameters::SubLayerParams::SubLayerParams() :
-    fixed_pic_rate_general_flag(0),
-    fixed_pic_rate_within_cvs_flag(0),
-    elemental_duration_in_tc_minus1(0),
-    low_delay_hrd_flag(0),
-    cpb_cnt_minus1(0),
-    nal_hrd_parameters(),
-    vcl_hrd_parameters()
-{
-}
-
-ts::HEVCHRDParameters::CPBParams::CPBParams() :
-    bit_rate_value_minus1(0),
-    cpb_size_value_minus1(0),
-    cpb_size_du_value_minus1(0),
-    bit_rate_du_value_minus1(0),
-    cbr_flag(0)
-{
+    HEVCHRDParameters::parse(data, size, {uint32_t(commonInfPresentFlag), uint32_t(maxNumSubLayersMinus1)});
 }
 
 

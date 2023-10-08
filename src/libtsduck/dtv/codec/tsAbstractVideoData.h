@@ -55,7 +55,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        AbstractVideoData();
+        AbstractVideoData() = default;
 
         //!
         //! Clear all values.
@@ -79,7 +79,7 @@ namespace ts {
         //! Valid flag.
         //! Other fields are significant only if @a valid is true.
         //!
-        bool valid;
+        bool valid = false;
 
     protected:
         //!

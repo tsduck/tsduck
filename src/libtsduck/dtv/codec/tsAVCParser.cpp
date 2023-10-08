@@ -39,8 +39,7 @@ ts::AVCParser::AVCParser(const void* data, size_t size_in_bytes) :
     _base(reinterpret_cast<const uint8_t*>(data)),
     _end(_base + size_in_bytes),
     _total_size(size_in_bytes),
-    _byte(_base),
-    _bit(0)
+    _byte(_base)
 {
     ts_avcparser_assert_consistent();
 }

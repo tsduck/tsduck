@@ -353,6 +353,8 @@ namespace ts {
 
     enum : DID {
 
+        DID_NULL                = 0xFF, //!< Invalid DID value, can be used as placeholder.
+
         // Valid in all MPEG contexts:
 
         DID_VIDEO               = 0x02, //!< DID for video_stream_descriptor

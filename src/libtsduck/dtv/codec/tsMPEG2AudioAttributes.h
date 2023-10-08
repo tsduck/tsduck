@@ -50,7 +50,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        MPEG2AudioAttributes();
+        MPEG2AudioAttributes() = default;
 
         // Implementation of abstract methods.
         // The "binary data" is an audio frame or PES payload.
@@ -100,11 +100,11 @@ namespace ts {
         UString stereoDescription() const;
 
     private:
-        uint32_t _header;          // Last audio frame header
-        int      _layer;
-        BitRate  _bitrate;         // In kb/s
-        int      _sampling_freq;   // In Hz
-        int      _mode;            // See ISO 11172-3
-        int      _mode_extension;  // See ISO 11172-3
+        uint32_t _header = 0;          // Last audio frame header
+        int      _layer = 0;
+        BitRate  _bitrate = 0;         // In kb/s
+        int      _sampling_freq = 0;   // In Hz
+        int      _mode = 0;            // See ISO 11172-3
+        int      _mode_extension = 0;  // See ISO 11172-3
     };
 }

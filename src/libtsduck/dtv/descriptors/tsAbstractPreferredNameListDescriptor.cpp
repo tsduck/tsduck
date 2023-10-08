@@ -34,6 +34,8 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
+constexpr size_t ts::AbstractPreferredNameListDescriptor::MAX_PREFERRED_NAMES;
+
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -44,8 +46,7 @@ ts::AbstractPreferredNameListDescriptor::AbstractPreferredNameListDescriptor(DID
                                                                              Standards standards,
                                                                              PDS pds,
                                                                              const UChar* xml_legacy_name) :
-    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
-    entries()
+    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
 {
 }
 
@@ -61,8 +62,7 @@ ts::AbstractPreferredNameListDescriptor::AbstractPreferredNameListDescriptor(Duc
                                                                              Standards standards,
                                                                              PDS pds,
                                                                              const UChar* xml_legacy_name) :
-    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
-    entries()
+    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
 {
     deserialize(duck, desc);
 }

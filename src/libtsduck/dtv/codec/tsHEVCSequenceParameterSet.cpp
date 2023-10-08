@@ -35,74 +35,9 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::HEVCSequenceParameterSet::HEVCSequenceParameterSet(const uint8_t* data, size_t size) :
-    SuperClass(),
-    sps_video_parameter_set_id(0),
-    sps_max_sub_layers_minus1(0),
-    sps_temporal_id_nesting_flag(0),
-    profile_tier_level(),
-    sps_seq_parameter_set_id(0),
-    chroma_format_idc(0),
-    separate_colour_plane_flag(0),
-    pic_width_in_luma_samples(0),
-    pic_height_in_luma_samples(0),
-    conformance_window_flag(0),
-    conf_win_left_offset(0),
-    conf_win_right_offset(0),
-    conf_win_top_offset(0),
-    conf_win_bottom_offset(0),
-    bit_depth_luma_minus8(0),
-    bit_depth_chroma_minus8(0),
-    log2_max_pic_order_cnt_lsb_minus4(0),
-    sps_sub_layer_ordering_info_present_flag(0),
-    sps_max(),
-    log2_min_luma_coding_block_size_minus3(0),
-    log2_diff_max_min_luma_coding_block_size(0),
-    log2_min_luma_transform_block_size_minus2(0),
-    log2_diff_max_min_luma_transform_block_size(0),
-    max_transform_hierarchy_depth_inter(0),
-    max_transform_hierarchy_depth_intra(0),
-    scaling_list_enabled_flag(0),
-    sps_scaling_list_data_present_flag(0),
-    scaling_list_data(),
-    amp_enabled_flag(0),
-    sample_adaptive_offset_enabled_flag(0),
-    pcm_enabled_flag(0),
-    pcm_sample_bit_depth_luma_minus1(0),
-    pcm_sample_bit_depth_chroma_minus1(0),
-    log2_min_pcm_luma_coding_block_size_minus3(0),
-    log2_diff_max_min_pcm_luma_coding_block_size(0),
-    pcm_loop_filter_disabled_flag(0),
-    num_short_term_ref_pic_sets(0),
-    st_ref_pic_set(),
-    long_term_ref_pics_present_flag(0),
-    num_long_term_ref_pics_sps(0),
-    lt_ref(),
-    sps_temporal_mvp_enabled_flag(0),
-    strong_intra_smoothing_enabled_flag(0),
-    vui_parameters_present_flag(0),
-    vui(),
-    sps_extension_present_flag(0),
-    sps_range_extension_flag(0),
-    sps_multilayer_extension_flag(0),
-    sps_3d_extension_flag(0),
-    sps_scc_extension_flag(0),
-    sps_extension_4bits(0)
+ts::HEVCSequenceParameterSet::HEVCSequenceParameterSet(const uint8_t* data, size_t size)
 {
-    parse(data, size);
-}
-
-ts::HEVCSequenceParameterSet::SPSMax::SPSMax() :
-    sps_max_dec_pic_buffering_minus1(0),
-    sps_max_num_reorder_pics(0),
-    sps_max_latency_increase_plus1(0)
-{
-}
-
-ts::HEVCSequenceParameterSet::LongTermRef::LongTermRef() :
-    lt_ref_pic_poc_lsb_sps(0),
-    used_by_curr_pic_lt_sps_flag(0)
-{
+    HEVCSequenceParameterSet::parse(data, size);
 }
 
 

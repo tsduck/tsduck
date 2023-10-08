@@ -32,34 +32,19 @@
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
-//----------------------------------------------------------------------------
-
-ts::MPEG2AudioAttributes::MPEG2AudioAttributes() :
-    _header(0),
-    _layer(0),
-    _bitrate(0),
-    _sampling_freq(0),
-    _mode(0),
-    _mode_extension(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Provides an audio frame.
 //----------------------------------------------------------------------------
 
 bool ts::MPEG2AudioAttributes::moreBinaryData(const uint8_t* data, size_t size)
 {
     // Audio header is 4 bytes, starting with FFF
-    uint32_t header;
+    uint32_t header = 0;
     if (size < 4 || ((header = GetUInt32 (data)) & 0xFFF00000) != 0xFFF00000) {
         return false;
     }
 
     // Mask of fields we use in the header
-    const uint32_t HEADER_MASK = 0xFFFEFCF0;
+    constexpr uint32_t HEADER_MASK = 0xFFFEFCF0;
 
     // If content has not changed, nothing to do
     if (_is_valid && (_header & HEADER_MASK) == (header & HEADER_MASK)) {

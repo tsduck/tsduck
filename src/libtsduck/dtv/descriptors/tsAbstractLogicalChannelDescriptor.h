@@ -49,18 +49,9 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            // Public members
-            uint16_t service_id;  //!< Service id.
-            bool     visible;     //!< Service is visible. Not always defined, defaults to 1.
-            uint16_t lcn;         //!< Logical channel number.
-
-            //!
-            //! Constructor
-            //! @param [in] id Service id.
-            //! @param [in] visible Service is visible.
-            //! @param [in] lcn Logical channel number.
-            //!
-            Entry(uint16_t id = 0, bool visible = true, uint16_t lcn = 0);
+            uint16_t service_id = 0;  //!< Service id.
+            bool     visible = true;  //!< Service is visible. Not always defined, defaults to 1.
+            uint16_t lcn = 0;         //!< Logical channel number.
         };
 
         //!
@@ -71,10 +62,10 @@ namespace ts {
         //!
         //! Maximum number of services entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 63;
+        static constexpr size_t MAX_ENTRIES = 63;
 
         // AbstractLogicalChannelDescriptor public members:
-        EntryList entries;  //!< List of service entries.
+        EntryList entries {};  //!< List of service entries.
 
         // Inherited methods
         DeclareDisplayDescriptor();

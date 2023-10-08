@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! The delivery system can be modified by subclasses only
         //!
-        DeliverySystem _system;
+        DeliverySystem _system {DS_UNDEFINED};
 
         //!
         //! Protected constructor for subclasses.

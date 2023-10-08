@@ -34,6 +34,8 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
+constexpr size_t ts::AbstractLogicalChannelDescriptor::MAX_ENTRIES;
+
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -44,8 +46,7 @@ ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DID tag,
                                                                        Standards standards,
                                                                        PDS pds,
                                                                        const UChar* xml_legacy_name) :
-    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name),
-    entries()
+    AbstractDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
 {
 }
 
@@ -64,13 +65,6 @@ ts::AbstractLogicalChannelDescriptor::AbstractLogicalChannelDescriptor(DuckConte
     AbstractLogicalChannelDescriptor(tag, xml_name, standards, pds, xml_legacy_name)
 {
     deserialize(duck, desc);
-}
-
-ts::AbstractLogicalChannelDescriptor::Entry::Entry(uint16_t i, bool v, uint16_t l):
-    service_id(i),
-    visible(v),
-    lcn(l)
-{
 }
 
 
