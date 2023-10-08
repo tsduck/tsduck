@@ -30,8 +30,10 @@
 #include "tsDVBCharTable.h"
 #include "tsMemory.h"
 
+#if !defined(TS_CXX17)
 constexpr uint8_t  ts::DVBCharTable::DVB_SINGLE_BYTE_CRLF;
 constexpr uint16_t ts::DVBCharTable::DVB_CODEPOINT_CRLF;
+#endif
 
 
 //----------------------------------------------------------------------------

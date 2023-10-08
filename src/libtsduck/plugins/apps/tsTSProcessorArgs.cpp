@@ -31,8 +31,10 @@
 #include "tsPluginRepository.h"
 #include "tsArgsWithPlugins.h"
 
+#if !defined(TS_CXX17)
 constexpr size_t ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE;
 constexpr size_t ts::TSProcessorArgs::MIN_BUFFER_SIZE;
+#endif
 
 #define DEF_BITRATE_INTERVAL               5  // seconds
 #define DEF_INIT_BITRATE_PKT_INTERVAL   1000  // packets

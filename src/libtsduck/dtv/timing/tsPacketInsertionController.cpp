@@ -29,8 +29,10 @@
 
 #include "tsPacketInsertionController.h"
 
+#if !defined(TS_CXX17)
 constexpr size_t ts::PacketInsertionController::DEFAULT_WAIT_ALERT;
 constexpr size_t ts::PacketInsertionController::DEFAULT_BITRATE_RESET_PERCENT;
+#endif
 
 
 //----------------------------------------------------------------------------
