@@ -45,7 +45,7 @@
 
 // These constants represent the time epoch and the end of times.
 const ts::Time ts::Time::Epoch(0);
-const ts::Time ts::Time::Apocalypse(TS_CONST64(0x7FFFFFFFFFFFFFFF));
+const ts::Time ts::Time::Apocalypse(0x7FFFFFFFFFFFFFFF);
 
 // Portable representation of the UNIX epoch.
 const ts::Time ts::Time::UnixEpoch

@@ -152,7 +152,7 @@ bool ts::StreamEventDescriptor::analyzeXML(DuckContext& duck, const xml::Element
     UString text;
     bool ok =
         element->getIntAttribute(event_id, u"event_id", true, 0, 0x0000, 0xFFFF) &&
-        element->getIntAttribute(event_NPT, u"event_NPT", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
+        element->getIntAttribute(event_NPT, u"event_NPT", true, 0, 0, 0x00000001FFFFFFFF) &&
         element->getHexaTextChild(private_data, u"private_data", false, 0, MAX_DESCRIPTOR_SIZE - 10) &&
         element->getTextChild(text, u"private_text", false, false, UString(), 0, MAX_DESCRIPTOR_SIZE - 10);
 

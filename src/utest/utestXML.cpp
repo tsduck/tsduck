@@ -306,7 +306,7 @@ void XMLTest::testCreation()
     child1->setIntAttribute(u"int", -47);
     TSUNIT_ASSERT(child1->addElement(u"subChild1") != nullptr);
     TSUNIT_ASSERT((subchild2 = child1->addElement(u"subChild2")) != nullptr);
-    subchild2->setIntAttribute(u"int64", TS_CONST64(0x7FFFFFFFFFFFFFFF));
+    subchild2->setIntAttribute(u"int64", 0x7FFFFFFFFFFFFFFF);
 
     TSUNIT_ASSERT((child2 = root->addElement(u"child2")) != nullptr);
     TSUNIT_ASSERT(child2->addElement(u"fooBar") != nullptr);
@@ -321,7 +321,7 @@ void XMLTest::testCreation()
 
     int64_t i64;
     TSUNIT_ASSERT(subchild2->getIntAttribute(i64, u"int64", true));
-    TSUNIT_EQUAL(TS_CONST64(0x7FFFFFFFFFFFFFFF), i64);
+    TSUNIT_EQUAL(0x7FFFFFFFFFFFFFFF, i64);
 
     TSUNIT_EQUAL(
         u"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"

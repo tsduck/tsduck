@@ -39,8 +39,7 @@
 //----------------------------------------------------------------------------
 
 ts::DescriptorList::DescriptorList(const AbstractTable* table) :
-    _table(table),
-    _list()
+    _table(table)
 {
 }
 

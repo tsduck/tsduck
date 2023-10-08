@@ -226,8 +226,8 @@ bool ts::ContentLabellingDescriptor::analyzeXML(DuckContext& duck, const xml::El
            element->getIntAttribute(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
            element->getIntAttribute(content_time_base_indicator, u"content_time_base_indicator", true, 0, 0, 15) &&
            element->getHexaTextChild(content_reference_id, u"content_reference_id", false, 0, 255) &&
-           element->getIntAttribute(content_time_base_value, u"content_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
-           element->getIntAttribute(metadata_time_base_value, u"metadata_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
+           element->getIntAttribute(content_time_base_value, u"content_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, 0x1FFFFFFFF) &&
+           element->getIntAttribute(metadata_time_base_value, u"metadata_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, 0x1FFFFFFFF) &&
            element->getIntAttribute(content_id, u"content_id", content_time_base_indicator == 2, 0, 0, 0x7F) &&
            element->getHexaTextChild(time_base_association_data, u"time_base_association_data", false, 0, 255) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, 255);

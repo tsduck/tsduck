@@ -43,8 +43,7 @@
 //----------------------------------------------------------------------------
 
 ts::LogicalChannelNumbers::LogicalChannelNumbers(DuckContext& duck) :
-    _duck(duck),
-    _lcn_map()
+    _duck(duck)
 {
 }
 

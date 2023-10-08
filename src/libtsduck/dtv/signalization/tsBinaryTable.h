@@ -37,7 +37,6 @@
 #include "tsTablesPtr.h"
 #include "tsTS.h"
 #include "tsxml.h"
-#include "tsSection.h"
 
 namespace ts {
 
@@ -63,7 +62,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        BinaryTable();
+        BinaryTable() = default;
 
         //!
         //! Copy constructor.
@@ -339,12 +338,12 @@ namespace ts {
         BinaryTable(const BinaryTable& table) = delete;
 
         // Private fields
-        bool             _is_valid;
-        TID              _tid;
-        uint16_t         _tid_ext;
-        uint8_t          _version;
-        PID              _source_pid;
-        int              _missing_count;
-        SectionPtrVector _sections;
+        bool             _is_valid {false};
+        TID              _tid {TID_NULL};
+        uint16_t         _tid_ext {0};
+        uint8_t          _version {0};
+        PID              _source_pid {PID_NULL};
+        int              _missing_count {0};
+        SectionPtrVector _sections {};
     };
 }

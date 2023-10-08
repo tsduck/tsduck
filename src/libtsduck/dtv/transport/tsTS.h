@@ -396,7 +396,7 @@ namespace ts {
     //!
     //! Scale factor for PTS and DTS values (wrap up at 2^33).
     //!
-    constexpr uint64_t PTS_DTS_SCALE = TS_UCONST64(1) << PTS_DTS_BIT_SIZE;
+    constexpr uint64_t PTS_DTS_SCALE = 1LL << PTS_DTS_BIT_SIZE;
 
     //!
     //! Mask for PTS and DTS values (wrap up at 2^33).
@@ -425,17 +425,17 @@ namespace ts {
     //!
     //! An invalid PCR (Program Clock Reference) value, can be used as a marker.
     //!
-    constexpr uint64_t INVALID_PCR = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+    constexpr uint64_t INVALID_PCR = 0xFFFFFFFFFFFFFFFF;
 
     //!
     //! An invalid PTS value, can be used as a marker.
     //!
-    constexpr uint64_t INVALID_PTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+    constexpr uint64_t INVALID_PTS = 0xFFFFFFFFFFFFFFFF;
 
     //!
     //! An invalid DTS value, can be used as a marker.
     //!
-    constexpr uint64_t INVALID_DTS = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
+    constexpr uint64_t INVALID_DTS = 0xFFFFFFFFFFFFFFFF;
 
     //!
     //! Check if PCR2 follows PCR1 after wrap up.
@@ -495,7 +495,7 @@ namespace ts {
     //!
     TSDUCKDLL inline bool WrapUpPTS(uint64_t pts1, uint64_t pts2)
     {
-        return pts2 < pts1 && (pts1 - pts2) > TS_UCONST64(0x00000001F0000000);
+        return pts2 < pts1 && (pts1 - pts2) > 0x00000001F0000000LL;
     }
 
     //!

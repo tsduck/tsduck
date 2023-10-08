@@ -56,5 +56,11 @@ $(BINDIR)/utest_static: $(filter-out $(OBJDIR)/utestPluginRepository.o,$(OBJS)) 
 # Use make UTESTFLAGS="-d -t ClassTest::testName" for one single test in debug mode.
 .PHONY: test
 test: execs
-	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) $(BINDIR)/utest $(UTESTFLAGS)
-	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) $(BINDIR)/utest_static $(UTESTFLAGS)
+	@echo '  [UTEST] $(BINDIR)/utest $(UTESTFLAGS)'; \
+	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
+	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
+	$(BINDIR)/utest $(UTESTFLAGS)
+	@echo '  [UTEST] $(BINDIR)/utest_static $(UTESTFLAGS)'; \
+	TSPLUGINS_PATH=$(BINDIR) LD_LIBRARY_PATH=$(BINDIR) \
+	TS_CURL_RETRY="RETRY=5,INTERVAL=100,HOST=tsduck.io" \
+	$(BINDIR)/utest_static $(UTESTFLAGS)

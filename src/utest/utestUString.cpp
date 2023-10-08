@@ -1053,19 +1053,19 @@ void UStringTest::testToInteger()
     TSUNIT_EQUAL(0, ui32);
 
     TSUNIT_ASSERT(ts::UString(u"0").toInteger(ui64));
-    TSUNIT_EQUAL(TS_UCONST64(0), ui64);
+    TSUNIT_EQUAL(0, ui64);
 
     TSUNIT_ASSERT(ts::UString(u"0xffffffffFFFFFFFF").toInteger(ui64));
-    TSUNIT_EQUAL(TS_UCONST64(0XFFFFFFFFFFFFFFFF), ui64);
+    TSUNIT_EQUAL(0XFFFFFFFFFFFFFFFF, ui64);
 
     TSUNIT_ASSERT(ts::UString(u"0x7fffffffFFFFFFFF").toInteger(ui64));
-    TSUNIT_EQUAL(TS_UCONST64(0X7FFFFFFFFFFFFFFF), ui64);
+    TSUNIT_EQUAL(0X7FFFFFFFFFFFFFFF, ui64);
 
     TSUNIT_ASSERT(ts::UString(u"0").toInteger(i64));
-    TSUNIT_EQUAL(TS_CONST64(0), i64);
+    TSUNIT_EQUAL(0, i64);
 
     TSUNIT_ASSERT(ts::UString(u"0x7fffffffFFFFFFFF").toInteger(i64));
-    TSUNIT_EQUAL(TS_CONST64(0X7FFFFFFFFFFFFFFF), i64);
+    TSUNIT_EQUAL(0X7FFFFFFFFFFFFFFF, i64);
 
     TSUNIT_ASSERT(ts::UString(u" 12,345").toInteger(i, u",."));
     TSUNIT_EQUAL(12345, i);
@@ -1254,7 +1254,7 @@ void UStringTest::testDecimal()
     TSUNIT_EQUAL(u"0", ts::UString::Decimal(0));
     TSUNIT_EQUAL(u"0", ts::UString::Decimal(0L));
     TSUNIT_EQUAL(u"0", ts::UString::Decimal(-0));
-    TSUNIT_EQUAL(u"0", ts::UString::Decimal(TS_CONST64(0)));
+    TSUNIT_EQUAL(u"0", ts::UString::Decimal(0));
     TSUNIT_EQUAL(u"1,234", ts::UString::Decimal(1234));
     TSUNIT_EQUAL(u"     1,234", ts::UString::Decimal(1234, 10));
     TSUNIT_EQUAL(u"     1,234", ts::UString::Decimal(1234, 10, true));
@@ -1264,7 +1264,7 @@ void UStringTest::testDecimal()
     TSUNIT_EQUAL(u"    +1,234", ts::UString::Decimal(1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, true));
     TSUNIT_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, true));
     TSUNIT_EQUAL(u"    -1,234", ts::UString::Decimal(-1234, 10, true, ts::UString::DEFAULT_THOUSANDS_SEPARATOR, false));
-    TSUNIT_EQUAL(u"-1,234,567,890,123,456", ts::UString::Decimal(TS_CONST64(-1234567890123456)));
+    TSUNIT_EQUAL(u"-1,234,567,890,123,456", ts::UString::Decimal(-1234567890123456));
     TSUNIT_EQUAL(u"-32,768", ts::UString::Decimal(-32768));
     TSUNIT_EQUAL(u"-32,768", ts::UString::Decimal(int16_t(-32768)));
     TSUNIT_EQUAL(u"-9223372036854775808", ts::UString::Decimal(std::numeric_limits<int64_t>::min(), 0, true, u""));
@@ -1289,9 +1289,9 @@ void UStringTest::testHexa()
 {
     TSUNIT_EQUAL(u"0x00", ts::UString::Hexa<uint8_t>(0));
     TSUNIT_EQUAL(u"0x00000123", ts::UString::Hexa<uint32_t>(0x123));
-    TSUNIT_EQUAL(u"0x0000000000000123", ts::UString::Hexa(TS_UCONST64(0x123)));
-    TSUNIT_EQUAL(u"0xFFFFFFFFFFFFFFFD", ts::UString::Hexa(TS_CONST64(-3)));
-    TSUNIT_EQUAL(u"0xfffffffffffffffd", ts::UString::Hexa(TS_CONST64(-3), 0, ts::UString(), true, false));
+    TSUNIT_EQUAL(u"0x0000000000000123", ts::UString::Hexa(0x123LL));
+    TSUNIT_EQUAL(u"0xFFFFFFFFFFFFFFFD", ts::UString::Hexa(-3LL));
+    TSUNIT_EQUAL(u"0xfffffffffffffffd", ts::UString::Hexa(-3LL, 0, ts::UString(), true, false));
     TSUNIT_EQUAL(u"0x002", ts::UString::Hexa<uint16_t>(0x02, 3));
     TSUNIT_EQUAL(u"0x000002", ts::UString::Hexa<uint16_t>(0x02, 6));
     TSUNIT_EQUAL(u"0x0000<>0123", ts::UString::Hexa<uint32_t>(0x123, 0, u"<>"));
@@ -1408,7 +1408,7 @@ void UStringTest::testArgMixIn()
     enum : int8_t {EC = 4, ED = 8};
     const ts::IPv4SocketAddress sock(ts::IPv4Address(10, 20, 30, 40), 12345);
 
-    testArgMixInCalled2({12, u8, i16, TS_CONST64(-99), "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock});
+    testArgMixInCalled2({12, u8, i16, -99ll, "foo", ok, u"bar", us, ok + " 2", us + u" 2", sz, EB, EC, sock});
 }
 
 void UStringTest::testArgMixInCalled1(std::initializer_list<ts::ArgMixIn> list)
@@ -1489,7 +1489,7 @@ void UStringTest::testArgMixInCalled2(std::initializer_list<ts::ArgMixIn> list)
     TSUNIT_EQUAL(u"", it->toUString());
     ++it;
 
-    // TS_CONST64(-99)
+    // -99ll
     TSUNIT_ASSERT(!it->isOutputInteger());
     TSUNIT_ASSERT(it->isInteger());
     TSUNIT_ASSERT(it->isSigned());
@@ -1790,10 +1790,10 @@ void UStringTest::testFormat()
     TSUNIT_EQUAL(u"AB", ts::UString::Format(u"%X", {uint8_t(171)}));
     TSUNIT_EQUAL(u"00AB", ts::UString::Format(u"%X", {int16_t(171)}));
     TSUNIT_EQUAL(u"000000AB", ts::UString::Format(u"%X", {uint32_t(171)}));
-    TSUNIT_EQUAL(u"00000000000000AB", ts::UString::Format(u"%X", {TS_CONST64(171)}));
-    TSUNIT_EQUAL(u"000000000000000000AB", ts::UString::Format(u"%20X", {TS_CONST64(171)}));
-    TSUNIT_EQUAL(u"00AB", ts::UString::Format(u"%*X", {4, TS_CONST64(171)}));
-    TSUNIT_EQUAL(u"AB", ts::UString::Format(u"%*X", {1, TS_CONST64(171)}));
+    TSUNIT_EQUAL(u"00000000000000AB", ts::UString::Format(u"%X", {171LL}));
+    TSUNIT_EQUAL(u"000000000000000000AB", ts::UString::Format(u"%20X", {171LL}));
+    TSUNIT_EQUAL(u"00AB", ts::UString::Format(u"%*X", {4, 171LL}));
+    TSUNIT_EQUAL(u"AB", ts::UString::Format(u"%*X", {1, 171LL}));
     TSUNIT_EQUAL(u"0123,4567", ts::UString::Format(u"%'X", {uint32_t(0x1234567)}));
 
     // Enumerations
@@ -1862,8 +1862,8 @@ void UStringTest::testArgMixOut()
     uint16_t u16 = 439;
     int32_t  i32 = -123456;
     uint32_t u32 = 987654;
-    int64_t  i64 = TS_CONST64(-1234567890123);
-    uint64_t u64 = TS_UCONST64(9876543210657);
+    int64_t  i64 = -1234567890123;
+    uint64_t u64 = 9876543210657;
     size_t   sz  = 8;
     E1       e1  = E11;
     E2       e2  = E20;
@@ -1876,8 +1876,8 @@ void UStringTest::testArgMixOut()
     TSUNIT_EQUAL(440, u16);
     TSUNIT_EQUAL(-123455, i32);
     TSUNIT_EQUAL(987655, u32);
-    TSUNIT_EQUAL(TS_CONST64(-1234567890122), i64);
-    TSUNIT_EQUAL(TS_UCONST64(9876543210658), u64);
+    TSUNIT_EQUAL(-1234567890122, i64);
+    TSUNIT_EQUAL(9876543210658, u64);
     TSUNIT_EQUAL(9, sz);
     TSUNIT_EQUAL(E12, e1);
     TSUNIT_EQUAL(E21, e2);
@@ -1956,19 +1956,19 @@ void UStringTest::testArgMixOutCalled(std::initializer_list<ts::ArgMixOut> list)
     TSUNIT_ASSERT(it->storeInteger(++u32));
     ++it;
 
-    // int64_t  i64 = TS_CONST64(-1234567890123);
+    // int64_t  i64 = -1234567890123;
     TSUNIT_ASSERT(it->isSigned());
     TSUNIT_ASSERT(!it->isUnsigned());
     TSUNIT_EQUAL(8, it->size());
-    TSUNIT_EQUAL(TS_CONST64(-1234567890123), i64 = it->toInt64());
+    TSUNIT_EQUAL(-1234567890123, i64 = it->toInt64());
     TSUNIT_ASSERT(it->storeInteger(++i64));
     ++it;
 
-    // uint64_t u64 = TS_UCONST64(9876543210657);
+    // uint64_t u64 = 9876543210657;
     TSUNIT_ASSERT(!it->isSigned());
     TSUNIT_ASSERT(it->isUnsigned());
     TSUNIT_EQUAL(8, it->size());
-    TSUNIT_EQUAL(TS_UCONST64(9876543210657), u64 = it->toUInt64());
+    TSUNIT_EQUAL(9876543210657, u64 = it->toUInt64());
     TSUNIT_ASSERT(it->storeInteger(++u64));
     ++it;
 
@@ -2037,7 +2037,7 @@ void UStringTest::testScan()
     TSUNIT_EQUAL(40, index);
     TSUNIT_EQUAL(-654, i);
     TSUNIT_EQUAL(0x54, u8);
-    TSUNIT_EQUAL(TS_CONST64(0x0123456789ABCDEF), i64);
+    TSUNIT_EQUAL(0x0123456789ABCDEF, i64);
     TSUNIT_EQUAL(u'x', uc);
     TSUNIT_EQUAL(54, i16);
     TSUNIT_EQUAL(5, u32);

@@ -205,14 +205,14 @@ void TSFileTest::testDuck()
     packet.setPID(ts::PID(300));
     mdata.setLabel(1);
     mdata.setLabel(3);
-    mdata.setInputTimeStamp(TS_UCONST64(0x212345678), ts::SYSTEM_CLOCK_FREQ, ts::TimeSource::KERNEL);
+    mdata.setInputTimeStamp(0x212345678, ts::SYSTEM_CLOCK_FREQ, ts::TimeSource::KERNEL);
     TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
 
     packet.setPID(ts::PID(400));
     mdata.reset();
     mdata.setLabel(2);
     mdata.setLabel(4);
-    mdata.setInputTimeStamp(TS_UCONST64(0x223456789), ts::SYSTEM_CLOCK_FREQ, ts::TimeSource::PCR);
+    mdata.setInputTimeStamp(0x223456789, ts::SYSTEM_CLOCK_FREQ, ts::TimeSource::PCR);
     TSUNIT_ASSERT(file.writePackets(&packet, &mdata, 1, CERR));
 
     TSUNIT_EQUAL(2, file.writePacketsCount());
@@ -233,7 +233,7 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(mdata.hasLabel(3));
     TSUNIT_ASSERT(!mdata.hasLabel(4));
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
-    TSUNIT_EQUAL(TS_UCONST64(0x212345678), mdata.getInputTimeStamp());
+    TSUNIT_EQUAL(0x212345678, mdata.getInputTimeStamp());
     TSUNIT_EQUAL(ts::TimeSource::KERNEL, mdata.getInputTimeSource());
     TSUNIT_EQUAL(ts::TSPacketFormat::DUCK, file.packetFormat());
 
@@ -245,7 +245,7 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(!mdata.hasLabel(3));
     TSUNIT_ASSERT(mdata.hasLabel(4));
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
-    TSUNIT_EQUAL(TS_UCONST64(0x223456789), mdata.getInputTimeStamp());
+    TSUNIT_EQUAL(0x223456789, mdata.getInputTimeStamp());
     TSUNIT_EQUAL(ts::TimeSource::PCR, mdata.getInputTimeSource());
 
     TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
@@ -256,7 +256,7 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(mdata.hasLabel(3));
     TSUNIT_ASSERT(!mdata.hasLabel(4));
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
-    TSUNIT_EQUAL(TS_UCONST64(0x212345678), mdata.getInputTimeStamp());
+    TSUNIT_EQUAL(0x212345678, mdata.getInputTimeStamp());
     TSUNIT_EQUAL(ts::TimeSource::KERNEL, mdata.getInputTimeSource());
 
     TSUNIT_EQUAL(1, file.readPackets(&packet, &mdata, 1, CERR));
@@ -267,7 +267,7 @@ void TSFileTest::testDuck()
     TSUNIT_ASSERT(!mdata.hasLabel(3));
     TSUNIT_ASSERT(mdata.hasLabel(4));
     TSUNIT_ASSERT(mdata.hasInputTimeStamp());
-    TSUNIT_EQUAL(TS_UCONST64(0x223456789), mdata.getInputTimeStamp());
+    TSUNIT_EQUAL(0x223456789, mdata.getInputTimeStamp());
     TSUNIT_EQUAL(ts::TimeSource::PCR, mdata.getInputTimeSource());
 
     TSUNIT_EQUAL(0, file.readPackets(&packet, &mdata, 1, CERR));

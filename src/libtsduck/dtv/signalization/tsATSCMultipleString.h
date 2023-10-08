@@ -60,7 +60,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        ATSCMultipleString();
+        ATSCMultipleString() = default;
 
         //!
         //! Constructor with one string.
@@ -299,7 +299,7 @@ namespace ts {
         };
 
         // Private fields:
-        std::vector<StringElement> _strings;
+        std::vector<StringElement> _strings {};
 
         // The encoding mode for UTF-16:
         static const uint8_t MODE_UTF16 = 0x3F;

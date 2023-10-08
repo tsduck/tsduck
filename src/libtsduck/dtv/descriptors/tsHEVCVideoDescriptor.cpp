@@ -233,8 +233,8 @@ bool ts::HEVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getBoolAttribute(non_packed_constraint, u"non_packed_constraint_flag", true) &&
         element->getBoolAttribute(frame_only_constraint, u"frame_only_constraint_flag", true) &&
         // copied_44bits and reserved_zero_44bits are synonyms
-        element->getIntAttribute(copied_44bits, u"copied_44bits", false, 0, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
-        element->getIntAttribute(copied_44bits, u"reserved_zero_44bits", false, copied_44bits, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
+        element->getIntAttribute(copied_44bits, u"copied_44bits", false, 0, 0, 0x00000FFFFFFFFFFF) &&
+        element->getIntAttribute(copied_44bits, u"reserved_zero_44bits", false, copied_44bits, 0, 0x00000FFFFFFFFFFF) &&
         element->getIntAttribute(level_idc, u"level_idc", true) &&
         element->getBoolAttribute(HEVC_still_present, u"HEVC_still_present_flag", true) &&
         element->getBoolAttribute(HEVC_24hr_picture_present, u"HEVC_24hr_picture_present_flag", true) &&

@@ -372,12 +372,12 @@ namespace ts {
 
     TSDUCKDLL inline uint64_t ROL64(uint64_t word, int i)
     {
-        return (word << (i&63)) | ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >> (64-(i&63)));
+        return (word << (i & 63)) | ((word & 0xFFFFFFFFFFFFFFFF) >> (64 - (i & 63)));
     }
 
     TSDUCKDLL inline uint64_t ROR64(uint64_t word, int i)
     {
-        return ((word & TS_UCONST64(0xFFFFFFFFFFFFFFFF)) >> (i&63)) | (word << (64-(i&63)));
+        return ((word & 0xFFFFFFFFFFFFFFFF) >> (i & 63)) | (word << (64 - (i & 63)));
     }
 
     TSDUCKDLL inline uint64_t ROL64c(uint64_t word, const int i)

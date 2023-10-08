@@ -36,22 +36,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
-
-ts::BinaryTable::BinaryTable() :
-    _is_valid(false),
-    _tid(0xFF),
-    _tid_ext(0),
-    _version(0),
-    _source_pid(PID_NULL),
-    _missing_count(0),
-    _sections()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Move constructor.
 //----------------------------------------------------------------------------
 
@@ -115,14 +99,7 @@ ts::BinaryTable::BinaryTable(const BinaryTable& other, ShareMode mode) :
 // Constructor from an array of sections.
 //----------------------------------------------------------------------------
 
-ts::BinaryTable::BinaryTable(const SectionPtrVector& sections, bool replace, bool grow) :
-    _is_valid(false),
-    _tid(0xFF),
-    _tid_ext(0),
-    _version(0),
-    _source_pid(PID_NULL),
-    _missing_count(0),
-    _sections()
+ts::BinaryTable::BinaryTable(const SectionPtrVector& sections, bool replace, bool grow)
 {
     if (!addSections(sections, replace, grow)) {
         clear();

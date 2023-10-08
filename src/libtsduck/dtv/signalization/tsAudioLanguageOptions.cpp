@@ -48,19 +48,6 @@ ts::UString ts::AudioLanguageOptions::GetHelpString()
 
 
 //----------------------------------------------------------------------------
-// Default constructor
-//----------------------------------------------------------------------------
-
-ts::AudioLanguageOptions::AudioLanguageOptions() :
-    _language_code(3, u' '),  // always 3-chars
-    _audio_type(0),
-    _audio_stream_number(1),  // use first audio stream by default
-    _pid(PID_NULL)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Assign from a command-line option.
 //----------------------------------------------------------------------------
 

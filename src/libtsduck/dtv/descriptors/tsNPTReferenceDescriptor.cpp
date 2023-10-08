@@ -198,8 +198,8 @@ bool ts::NPTReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
 {
     return element->getBoolAttribute(post_discontinuity, u"post_discontinuity", false, false) &&
            element->getIntAttribute(content_id, u"content_id", false, 0x7F, 0x00, 0x7F) &&
-           element->getIntAttribute(STC_reference, u"STC_reference", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
-           element->getIntAttribute(NPT_reference, u"NPT_reference", true, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
+           element->getIntAttribute(STC_reference, u"STC_reference", true, 0, 0, 0x00000001FFFFFFFF) &&
+           element->getIntAttribute(NPT_reference, u"NPT_reference", true, 0, 0, 0x00000001FFFFFFFF) &&
            element->getIntAttribute(scale_numerator, u"scale_numerator", true) &&
            element->getIntAttribute(scale_denominator, u"scale_denominator", true);
 }

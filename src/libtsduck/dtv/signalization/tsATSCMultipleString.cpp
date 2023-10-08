@@ -46,11 +46,6 @@ const std::set<uint8_t> ts::ATSCMultipleString::_unicode_modes({
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::ATSCMultipleString::ATSCMultipleString() :
-    _strings()
-{
-}
-
 ts::ATSCMultipleString::ATSCMultipleString(const UString& language, const UString& text) :
     _strings({StringElement(language, text)})
 {

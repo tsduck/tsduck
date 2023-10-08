@@ -71,8 +71,7 @@ ts::Descriptor::Descriptor(DID tag, const ByteBlock& data) :
     }
 }
 
-ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, ShareMode mode) :
-    _data(nullptr)
+ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, ShareMode mode)
 {
     if (!bbp.isNull() && bbp->size() >= 2 && bbp->size() < 258 && (*bbp)[1] == bbp->size() - 2) {
         switch (mode) {
@@ -89,8 +88,7 @@ ts::Descriptor::Descriptor(const ByteBlockPtr& bbp, ShareMode mode) :
     }
 }
 
-ts::Descriptor::Descriptor(const Descriptor& desc, ShareMode mode) :
-    _data(nullptr)
+ts::Descriptor::Descriptor(const Descriptor& desc, ShareMode mode)
 {
     switch (mode) {
         case ShareMode::SHARE:

@@ -65,7 +65,7 @@ namespace ts {
         // - 8-bit: table-id for table-specific descriptors (or TID_NULL)
         // - 8-bit: tag extension (or EDID_NULL)
         // - 8-bit: descriptor tag (DID)
-        uint64_t _edid;
+        uint64_t _edid = 0xFFFFFFFFFFFFFFFF;
 
         // Private constructor from 64-bit value.
         EDID(uint64_t edid) : _edid(edid) {}
@@ -74,14 +74,14 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        EDID() : _edid(TS_UCONST64(0xFFFFFFFFFFFFFFFF)) {}
+        EDID() = default;
 
         //!
         //! Build the EDID for a standard MPEG or DVB descriptor.
         //! @param [in] did Descriptor tag.
         //! @return The corresponding EDID.
         //!
-        static EDID Standard(DID did) { return EDID(TS_UCONST64(0xFFFFFFFFFFFFFF00) | uint64_t(did & 0xFF)); }
+        static EDID Standard(DID did) { return EDID(0xFFFFFFFFFFFFFF00 | (did & 0xFF)); }
 
         //!
         //! Build the EDID for a private DVB descriptor.
@@ -89,21 +89,21 @@ namespace ts {
         //! @param [in] pds Associated private data specifier.
         //! @return The corresponding EDID.
         //!
-        static EDID Private(DID did, PDS pds) { return EDID((uint64_t(pds) << 32) | TS_UCONST64(0x00000000FFFFFF00) | uint64_t(did & 0xFF)); }
+        static EDID Private(DID did, PDS pds) { return EDID((uint64_t(pds) << 32) | 0x00000000FFFFFF00 | (did & 0xFF)); }
 
         //!
         //! Build the EDID for a DVB extension descriptor.
         //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_DVB_EXTENSION.
         //! @return The corresponding EDID.
         //!
-        static EDID ExtensionDVB(DID ext) { return EDID(TS_UCONST64(0xFFFFFFFFFFFF0000) | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_DVB_EXTENSION)); }
+        static EDID ExtensionDVB(DID ext) { return EDID(0xFFFFFFFFFFFF0000 | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_DVB_EXTENSION)); }
 
         //!
         //! Build the EDID for an MPEG extension descriptor.
         //! @param [in] ext Associated tag extension. The descriptor tag is implicitly DID_MPEG_EXTENSION.
         //! @return The corresponding EDID.
         //!
-        static EDID ExtensionMPEG(DID ext) { return EDID(TS_UCONST64(0xFFFFFFFFFFFF0000) | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_MPEG_EXTENSION)); }
+        static EDID ExtensionMPEG(DID ext) { return EDID(0xFFFFFFFFFFFF0000 | (uint64_t(ext & 0xFF) << 8) | uint64_t(DID_MPEG_EXTENSION)); }
 
         //!
         //! Build the EDID for a table-specific descriptor.
@@ -111,7 +111,7 @@ namespace ts {
         //! @param [in] tid Associated required table id.
         //! @return The corresponding EDID.
         //!
-        static EDID TableSpecific(DID did, TID tid) { return EDID(TS_UCONST64(0xFFFFFFFFFF00FF00) | (uint64_t(tid & 0xFF) << 16) | uint64_t(did & 0xFF)); }
+        static EDID TableSpecific(DID did, TID tid) { return EDID(0xFFFFFFFFFF00FF00 | (uint64_t(tid & 0xFF) << 16) | (did & 0xFF)); }
 
         //!
         //! Check if the extended descriptor id is valid.
@@ -123,7 +123,7 @@ namespace ts {
         //! Check if the descriptor is a standard one.
         //! @return True if the descriptor is a standard one.
         //!
-        bool isStandard() const { return (_edid & TS_UCONST64(0xFFFFFFFFFFFFFF00)) == TS_UCONST64(0xFFFFFFFFFFFFFF00); }
+        bool isStandard() const { return (_edid & 0xFFFFFFFFFFFFFF00) == 0xFFFFFFFFFFFFFF00; }
 
         //!
         //! Get the descriptor id (aka tag).

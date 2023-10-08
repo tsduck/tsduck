@@ -158,7 +158,7 @@ void SystemRandomGeneratorTest::testRange()
     ts::SystemRandomGenerator gen;
     testRandomRange(gen, 1000, 1200);
     testRandomRange(gen, -1100, -1000);
-    testRandomRange(gen, TS_CONST64(-0x7FFFFFFFFFFFFF00), TS_CONST64(0x7FFFFFFFFFFFFF00));
+    testRandomRange(gen, -0x7FFFFFFFFFFFFF00, 0x7FFFFFFFFFFFFF00);
     testRandomRange(gen, 747, 747);
     testRandomRange(gen, -380, -380);
 

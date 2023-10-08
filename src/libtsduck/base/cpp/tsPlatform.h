@@ -1210,58 +1210,6 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 
 
 //----------------------------------------------------------------------------
-// Definition of common integer literals.
-//----------------------------------------------------------------------------
-
-#if defined(DOXYGEN)
-
-    //!
-    //! Portable definition of a 64-bit signed literal.
-    //!
-    //! The C/C++ languages define the syntax for integer literals.
-    //! An integer literal is always @e typed.
-    //! Without suffix such as in @c 0, the literal has type @c int.
-    //! With an @c L suffix, such as in @c 0L, the literal has type @c long.
-    //! But there is no standard suffix or syntax for 64-bit literals;
-    //! different compilers have different syntaxes.
-    //!
-    //! This macro is a portable way to write 64-bit signed literals.
-    //!
-    //! Example:
-    //! @code
-    //! const int64_t aBigOne = TS_CONST64(0x7FFFFFFFFFFFFFFF);
-    //! @endcode
-    //!
-    #define TS_CONST64(n)
-    //!
-    //! Portable definition of a 64-bit unsigned literal.
-    //!
-    //! The C/C++ languages define the syntax for integer literals.
-    //! An integer literal is always @e typed.
-    //! Without suffix such as in @c 0, the literal has type @c int.
-    //! With an @c L suffix, such as in @c 0L, the literal has type @c long.
-    //! But there is no standard suffix or syntax for 64-bit literals;
-    //! different compilers have different syntaxes.
-    //!
-    //! This macro is a portable way to write 64-bit unsigned literals.
-    //!
-    //! Example:
-    //! @code
-    //! const uint64_t aBigOne = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-    //! @endcode
-    //!
-    #define TS_UCONST64(n)
-
-#elif defined(TS_MSC)
-    #define TS_CONST64(n)  n##i64
-    #define TS_UCONST64(n) n##ui64
-#else
-    #define TS_CONST64(n)  (int64_t(n##LL))
-    #define TS_UCONST64(n) (uint64_t(n##ULL))
-#endif
-
-
-//----------------------------------------------------------------------------
 // Source code identification.
 //----------------------------------------------------------------------------
 
@@ -1359,7 +1307,7 @@ namespace ts {
     //! This constant shall be used by convention to express an infinite
     //! number of sub-quantities of seconds.
     //!
-    constexpr SubSecond Infinite = TS_CONST64(0x7FFFFFFFFFFFFFFF);
+    constexpr SubSecond Infinite = 0x7FFFFFFFFFFFFFFF;
     //!
     //! Number of nanoseconds per second
     //!

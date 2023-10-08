@@ -242,7 +242,7 @@ bool ts::PcapFile::analyzeNgInterface(const uint8_t* data, size_t size, Report& 
                 ifd.time_units = Power10(data[0]);
             }
             else {
-                ifd.time_units = TS_UCONST64(1) << (data[0] & 0x7F);
+                ifd.time_units = 1LL << (data[0] & 0x7F);
             }
         }
 
