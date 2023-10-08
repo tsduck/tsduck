@@ -31,11 +31,9 @@
 #include "tsGuardCondition.h"
 #include "tsNullReport.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::ECMGClient::RECEIVER_STACK_SIZE;
 const size_t ts::ECMGClient::RESPONSE_QUEUE_SIZE;
 const ts::MilliSecond ts::ECMGClient::RESPONSE_TIMEOUT;
-#endif
 
 
 //----------------------------------------------------------------------------

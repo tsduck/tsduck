@@ -31,12 +31,10 @@
 #include "tsNullReport.h"
 #include "tsFileUtils.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::TimeShiftBuffer::MIN_TOTAL_PACKETS;
 constexpr size_t ts::TimeShiftBuffer::DEFAULT_TOTAL_PACKETS;
 constexpr size_t ts::TimeShiftBuffer::MIN_MEMORY_PACKETS;
 constexpr size_t ts::TimeShiftBuffer::DEFAULT_MEMORY_PACKETS;
-#endif
 
 
 //----------------------------------------------------------------------------

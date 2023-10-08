@@ -124,11 +124,9 @@ namespace ts {
 
 TS_REGISTER_PROCESSOR_PLUGIN(u"bitrate_monitor", ts::BitrateMonitorPlugin);
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr ts::BitRate::int_t ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MIN;
 constexpr ts::BitRate::int_t ts::BitrateMonitorPlugin::DEFAULT_BITRATE_MAX;
 constexpr size_t ts::BitrateMonitorPlugin::DEFAULT_TIME_WINDOW_SIZE;
-#endif
 
 
 //----------------------------------------------------------------------------

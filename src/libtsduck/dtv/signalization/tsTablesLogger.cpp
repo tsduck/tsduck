@@ -41,9 +41,7 @@
 #include "tsjsonObject.h"
 #include "tsMJD.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
-#endif
 
 
 //----------------------------------------------------------------------------

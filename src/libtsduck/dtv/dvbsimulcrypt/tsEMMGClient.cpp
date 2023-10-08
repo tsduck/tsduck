@@ -36,10 +36,8 @@
 #include "tsTSPacket.h"
 #include "tsNullReport.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::EMMGClient::RECEIVER_STACK_SIZE;
 const ts::MilliSecond ts::EMMGClient::RESPONSE_TIMEOUT;
-#endif
 
 
 //----------------------------------------------------------------------------

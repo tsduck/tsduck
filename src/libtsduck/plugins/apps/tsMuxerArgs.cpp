@@ -30,7 +30,6 @@
 #include "tsMuxerArgs.h"
 #include "tsArgsWithPlugins.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::MuxerArgs::DEFAULT_MAX_INPUT_PACKETS;
 constexpr size_t ts::MuxerArgs::MIN_INPUT_PACKETS;
 constexpr size_t ts::MuxerArgs::DEFAULT_MAX_OUTPUT_PACKETS;
@@ -42,7 +41,6 @@ constexpr ts::MilliSecond ts::MuxerArgs::DEFAULT_RESTART_DELAY;
 constexpr ts::MicroSecond ts::MuxerArgs::DEFAULT_CADENCE;
 constexpr ts::BitRate::int_t ts::MuxerArgs::MIN_PSI_BITRATE;
 constexpr ts::BitRate::int_t ts::MuxerArgs::DEFAULT_PSI_BITRATE;
-#endif
 
 
 //----------------------------------------------------------------------------

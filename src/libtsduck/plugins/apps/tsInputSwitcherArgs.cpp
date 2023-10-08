@@ -30,7 +30,6 @@
 #include "tsInputSwitcherArgs.h"
 #include "tsArgsWithPlugins.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::InputSwitcherArgs::DEFAULT_MAX_INPUT_PACKETS;
 constexpr size_t ts::InputSwitcherArgs::MIN_INPUT_PACKETS;
 constexpr size_t ts::InputSwitcherArgs::DEFAULT_MAX_OUTPUT_PACKETS;
@@ -38,7 +37,6 @@ constexpr size_t ts::InputSwitcherArgs::MIN_OUTPUT_PACKETS;
 constexpr size_t ts::InputSwitcherArgs::DEFAULT_BUFFERED_PACKETS;
 constexpr size_t ts::InputSwitcherArgs::MIN_BUFFERED_PACKETS;
 constexpr ts::MilliSecond ts::InputSwitcherArgs::DEFAULT_RECEIVE_TIMEOUT;
-#endif
 
 
 //----------------------------------------------------------------------------

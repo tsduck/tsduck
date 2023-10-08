@@ -33,10 +33,8 @@
 #include "tsDuckContext.h"
 #include "tsArgs.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::TSDatagramOutput::DEFAULT_PACKET_BURST;
 constexpr size_t ts::TSDatagramOutput::MAX_PACKET_BURST;
-#endif
 
 
 //----------------------------------------------------------------------------

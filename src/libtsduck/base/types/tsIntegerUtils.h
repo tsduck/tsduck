@@ -724,7 +724,6 @@ namespace ts {
 // Template definitions.
 //----------------------------------------------------------------------------
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 template <typename INT> constexpr INT ts::static_power10<INT,0>::value;
 template <typename INT> constexpr INT ts::static_power10<INT,1>::value;
 template <typename INT> constexpr INT ts::static_power10<INT,2>::value;
@@ -745,7 +744,6 @@ template <typename INT> constexpr INT ts::static_power10<INT,16>::value;
 template <typename INT> constexpr INT ts::static_power10<INT,17>::value;
 template <typename INT> constexpr INT ts::static_power10<INT,18>::value;
 template <typename INT> constexpr INT ts::static_power10<INT,19>::value;
-#endif
 
 
 //----------------------------------------------------------------------------

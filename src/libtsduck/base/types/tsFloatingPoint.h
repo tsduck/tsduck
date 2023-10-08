@@ -284,10 +284,8 @@ inline bool operator>(NUM_T x1, const ts::FloatingPoint<FLOAT_T,PREC>& x2) { ret
 // Template definitions.
 //----------------------------------------------------------------------------
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
 constexpr FLOAT_T ts::FloatingPoint<FLOAT_T,PREC,N>::EQUAL_PRECISION;
-#endif
 
 template <typename FLOAT_T, const size_t PREC, typename std::enable_if<std::is_floating_point<FLOAT_T>::value, int>::type N>
 const ts::FloatingPoint<FLOAT_T,PREC,N> ts::FloatingPoint<FLOAT_T,PREC,N>::MIN(std::numeric_limits<FLOAT_T>::lowest());

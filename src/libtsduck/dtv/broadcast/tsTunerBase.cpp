@@ -33,11 +33,9 @@
 #include "tsSignalState.h"
 #include "tsDeliverySystem.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr ts::MilliSecond ts::TunerBase::DEFAULT_SIGNAL_TIMEOUT;
 constexpr ts::MilliSecond ts::TunerBase::DEFAULT_SIGNAL_POLL;
 constexpr size_t ts::TunerBase::DEFAULT_DEMUX_BUFFER_SIZE;
-#endif
 
 
 //-----------------------------------------------------------------------------
