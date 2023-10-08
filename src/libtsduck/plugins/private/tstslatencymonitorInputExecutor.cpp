@@ -30,7 +30,9 @@
 #include "tstslatencymonitorInputExecutor.h"
 #include "tsLatencyMonitor.h"
 
+#if !defined(TS_CXX17)
 constexpr size_t ts::tslatencymonitor::InputExecutor::BUFFERED_PACKETS;
+#endif
 
 
 //----------------------------------------------------------------------------
