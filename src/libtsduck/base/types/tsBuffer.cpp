@@ -30,10 +30,8 @@
 #include "tsBuffer.h"
 #include "tsFatal.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::Buffer::DEFAULT_SIZE;
 constexpr size_t ts::Buffer::MINIMUM_SIZE;
-#endif
 
 
 //----------------------------------------------------------------------------

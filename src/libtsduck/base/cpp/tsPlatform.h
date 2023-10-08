@@ -56,14 +56,6 @@
 //!  @li Byte ordering: See @link TS_LITTLE_ENDIAN @endlink and @link TS_BIG_ENDIAN @endlink.
 //!  @li Processor architecture: See @link TS_I386 @endlink, @link TS_X86_64 @endlink, etc.
 //!
-//!  @section issues Solving various compilation issues
-//!
-//!  This header file defines some macros which can be used to solve
-//!  various C/C++ compilation issues.
-//!
-//!  @li Explicitly unused variables: See @link TS_UNUSED @endlink.
-//!  @li Definitions of C++ constants: See @link TS_NEED_STATIC_CONST_DEFINITIONS @endlink.
-//!
 //----------------------------------------------------------------------------
 
 #pragma once
@@ -785,7 +777,7 @@
 
 #else
 
-    // Use a two-step macro to allow stringification of parameters.
+    // Use a two-step macro to allow stringification of parameters for pragma.
     #if defined(TS_MSC)
         #define TS_PRAGMA1_(s) __pragma(s)
     #else
@@ -1021,59 +1013,6 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
     #define TSDUCKDLL __declspec(dllimport)
 #else
     #define TSDUCKDLL
-#endif
-
-//!
-//! @hideinitializer
-//! Compilation of definitions of C++ constants.
-//!
-//! It is a well-known pattern in C++ to define constants in header files as
-//! <code>static const</code>. Example:
-//! @code
-//! static const int FOO = 1;
-//! @endcode
-//! According to Stroustrup 10.4.6.2, this is only a declaration, which needs
-//! a definition somewhere else, without initialization. Example:
-//! @code
-//! const int classname::FOO;
-//! @endcode
-//!
-//! This is a really stupid oddity of C++ which is handled differently
-//! by compilers:
-//!
-//! @li GCC, with optimization: The declaration alone is fine.
-//!     The definition is accepted.
-//! @li GCC, without optimization: Sometimes, depending on the way the
-//!     constants are used, the definition is required. Without definition,
-//!     the linker complains about an undefined symbol.
-//! @li Microsoft C: The definition must not be used. Otherwise, the linker
-//!     complains about a multiply defined symbol.
-//!
-//! As a consequence, there are situations where the definition is
-//! required and situations where the definition is forbidden.
-//! The presence of the definition shall be conditioned to the macro
-//! @c TS_NEED_STATIC_CONST_DEFINITIONS.
-//!
-//! Example: In tsFoo.h, the constant is declared as:
-//! @code
-//! namespace ts {
-//!     class Foo
-//!     {
-//!     public:
-//!         static const size_t MAX_ENTRIES = 10;
-//!         ...
-//! @endcode
-//!
-//! In tsFoo.cpp, the definition of the constant shall be conditionally compiled
-//! since all compilers do not behave identically:
-//! @code
-//! #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-//! const size_t ts::Foo::MAX_ENTRIES;
-//! #endif
-//! @endcode
-//!
-#if defined(TS_GCC) || defined(DOXYGEN)
-    #define TS_NEED_STATIC_CONST_DEFINITIONS 1
 #endif
 
 //!

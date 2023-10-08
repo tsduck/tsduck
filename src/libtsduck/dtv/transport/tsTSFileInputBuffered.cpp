@@ -29,9 +29,7 @@
 
 #include "tsTSFileInputBuffered.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 const size_t ts::TSFileInputBuffered::MIN_BUFFER_SIZE;
-#endif
 
 
 //----------------------------------------------------------------------------

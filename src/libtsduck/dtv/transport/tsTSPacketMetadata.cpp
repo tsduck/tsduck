@@ -30,10 +30,8 @@
 #include "tsTSPacketMetadata.h"
 #include <cstddef>
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::TSPacketMetadata::SERIALIZATION_SIZE;
 constexpr uint8_t ts::TSPacketMetadata::SERIALIZATION_MAGIC;
-#endif
 
 
 //----------------------------------------------------------------------------

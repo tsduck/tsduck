@@ -29,7 +29,6 @@
 
 #include "tsReport.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr int ts::Severity::Fatal;
 constexpr int ts::Severity::Severe;
 constexpr int ts::Severity::Error;
@@ -37,7 +36,6 @@ constexpr int ts::Severity::Warning;
 constexpr int ts::Severity::Info;
 constexpr int ts::Severity::Verbose;
 constexpr int ts::Severity::Debug;
-#endif
 
 
 //----------------------------------------------------------------------------

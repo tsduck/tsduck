@@ -126,11 +126,9 @@ namespace {
     };
 }
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr uint32_t TestPlugin::EVENT_START;
 constexpr uint32_t TestPlugin::EVENT_STOP;
 constexpr uint32_t TestPlugin::EVENT_PACKET;
-#endif
 
 // Factory method.
 ts::ProcessorPlugin* TestPlugin::CreateInstance(ts::TSP* t)

@@ -67,10 +67,7 @@ uint16_t    ts::WebRequest::_defaultProxyPort = DefaultProxy::Instance()->url.ge
 ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance()->url.getUserName());
 ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance()->url.getPassword());
 const ts::UString ts::WebRequest::DEFAULT_USER_AGENT(u"tsduck");
-
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
 constexpr size_t ts::WebRequest::DEFAULT_CHUNK_SIZE;
-#endif
 
 
 //----------------------------------------------------------------------------

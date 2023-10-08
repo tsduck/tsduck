@@ -38,9 +38,7 @@
 #include "tsDektec.h"
 #include "tsAlgorithm.h"
 
-const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
-
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+const     ts::UString           ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 constexpr ts::SpectralInversion ts::ModulationArgs::DEFAULT_INVERSION;
 constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_INNER_FEC;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBS;
@@ -72,7 +70,6 @@ constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_COUNT;
 constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_INDEX;
 constexpr int                   ts::ModulationArgs::MAX_ISDBT_SEGMENT_COUNT;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
-#endif
 
 
 //----------------------------------------------------------------------------
