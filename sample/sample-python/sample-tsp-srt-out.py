@@ -3,7 +3,7 @@
 #
 #  TSDuck sample Python usage of SRT output plugin
 #  Copyright (c) 2023, Marwan Yassin
-#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #----------------------------------------------------------------------------
 

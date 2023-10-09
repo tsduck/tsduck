@@ -1,7 +1,7 @@
 ﻿#-----------------------------------------------------------------------------
 #
 #  Copyright (c) 2022, Thierry Lelegard
-#  BSD-2-Clause license, see the LICENSE.txt file
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Download and install the librist library for Windows.
 #  See parameters documentation in install-common.ps1.

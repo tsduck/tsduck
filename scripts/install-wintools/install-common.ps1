@@ -1,7 +1,7 @@
 ﻿#-----------------------------------------------------------------------------
 #
 #  Copyright (c) 2022, Thierry Lelegard
-#  BSD-2-Clause license, see the LICENSE.txt file
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Common part for all install scripts.
 #  Not a PowerShell module for easier integration of variables.
