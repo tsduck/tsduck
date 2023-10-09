@@ -1,62 +1,39 @@
 ﻿#-----------------------------------------------------------------------------
 #
 #  Copyright (c) 2022, Thierry Lelegard
-#  All rights reserved.
+#  BSD-2-Clause license, see the LICENSE.txt file
 #
-#  Redistribution and use in source and binary forms, with or without
-#  modification, are permitted provided that the following conditions are met:
+#  Common part for all install scripts.
+#  Not a PowerShell module for easier integration of variables.
 #
-#  1. Redistributions of source code must retain the above copyright notice,
-#     this list of conditions and the following disclaimer.
-#  2. Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution.
+#  Must be included as follow by all scripts:
+#  . "$PSScriptRoot\install-common.ps1"
 #
-#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-#  THE POSSIBILITY OF SUCH DAMAGE.
+#  Assume that the calling script defined standard installation parameters:
 #
-#-----------------------------------------------------------------------------
+#  -Destination directory
+#     Specify a local directory where the package will be downloaded.
+#     By default, use the downloads folder for the current user.
+#     Sometimes unused if there is no external package to download
+#     (Windows buildin features for instance).
 #
-# Common part for all install scripts.
-# Not a PowerShell module for easier integration of variables.
+#  -ForceDownload
+#     Force a download even if the package is already downloaded.
+#     Sometimes unused if there is no external package to download.
 #
-# Must be included as follow by all scripts:
-# . "$PSScriptRoot\install-common.ps1"
+#  -GitHubActions
+#     When used in a GitHub Action workflow, make sure that the required
+#     environment variables are propagated to subsequent jobs. Ignored when
+#     the installation of the package does not need specific variables.
 #
-# Assume that the calling script defined standard installation parameters:
+#  -NoInstall
+#     Do not install the package. Download it only. By default, the package
+#     is installed.
 #
-# -Destination directory
-#    Specify a local directory where the package will be downloaded.
-#    By default, use the downloads folder for the current user.
-#    Sometimes unused if there is no external package to download
-#    (Windows buildin features for instance).
-#
-# -ForceDownload
-#    Force a download even if the package is already downloaded.
-#    Sometimes unused if there is no external package to download.
-#
-# -GitHubActions
-#    When used in a GitHub Action workflow, make sure that the required
-#    environment variables are propagated to subsequent jobs. Ignored when
-#    the installation of the package does not need specific variables.
-#
-# -NoInstall
-#    Do not install the package. Download it only. By default, the package
-#    is installed.
-#
-# -NoPause
-#    Do not wait for the user to press <enter> at end of execution.
-#    By default, execute a "pause" instruction at the end of execution,
-#    which is useful when the script was run from Windows Explorer.
+#  -NoPause
+#     Do not wait for the user to press <enter> at end of execution.
+#     By default, execute a "pause" instruction at the end of execution,
+#     which is useful when the script was run from Windows Explorer.
 #
 #-----------------------------------------------------------------------------
 
