@@ -333,7 +333,7 @@ namespace ts {
 //!
 //! A macro to add in the declaration of a ts::tlv::Message subclass with version.
 //! @param classname Name of the enclosing class.
-//! @param classname Message tag.
+//! @param tag Message tag.
 //!
 #define TS_VERSIONED_TLV_MESSAGE(classname, tag)                     \
     private:                                                         \
