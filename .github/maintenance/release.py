@@ -3,7 +3,7 @@
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2023, Thierry Lelegard
-#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Manage TSDuck release on GitHub:
 #  --title: display the expected title of the latest release.

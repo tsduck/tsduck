@@ -3,7 +3,7 @@
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2023, Thierry Lelegard
-#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Build the file tsduck.dektec.names, containing Dektec-specific names.
 #  Syntax: build-dektec-names.py in-file out-file

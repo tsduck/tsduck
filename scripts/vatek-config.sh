@@ -3,7 +3,7 @@
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2023, Thierry Lelegard
-#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Get configuration for Vatek core API on current Linux or macOS system.
 #  Vatek provides an open-source API on GitHub for their modulator chips.

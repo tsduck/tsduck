@@ -3,7 +3,7 @@
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2023, Thierry Lelegard
-#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  This script updates the "tsduck" Homebrew formula for the most recent
 #  version. The update is performed on the local copy of the homebrew-core
