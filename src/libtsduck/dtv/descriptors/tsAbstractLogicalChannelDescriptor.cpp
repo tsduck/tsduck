@@ -34,7 +34,9 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
+#if !defined(TS_CXX17)
 constexpr size_t ts::AbstractLogicalChannelDescriptor::MAX_ENTRIES;
+#endif
 
 
 //----------------------------------------------------------------------------
