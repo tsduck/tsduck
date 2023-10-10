@@ -26,18 +26,9 @@ constexpr size_t ts::EITProcessor::DEFAULT_BUFFERED_SECTIONS;
 
 ts::EITProcessor::EITProcessor(DuckContext& duck, PID pid) :
     _duck(duck),
-    _input_pids(),
     _output_pid(pid),
-    _start_time_offset(0),
-    _date_only(false),
-    _max_buffered_sections(DEFAULT_BUFFERED_SECTIONS),
     _demux(_duck, nullptr, this),
-    _packetizer(duck, pid, this),
-    _sections(),
-    _removed_tids(),
-    _removed(),
-    _kept(),
-    _renamed()
+    _packetizer(_duck, pid, this)
 {
     _input_pids.set(pid);
     _demux.addPID(pid);

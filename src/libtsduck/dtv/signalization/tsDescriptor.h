@@ -203,15 +203,7 @@ namespace ts {
         //! @return True is the two descriptors are identical.
         //!
         bool operator==(const Descriptor& desc) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator.
-        //! @param [in] desc Another descriptor to compare.
-        //! @return True is the two descriptors are different.
-        //!
-        bool operator!=(const Descriptor& desc) const { return !operator==(desc); }
-#endif
+        TS_UNEQUAL_OPERATOR(Descriptor)
 
         //!
         //! Deserialize the descriptor.

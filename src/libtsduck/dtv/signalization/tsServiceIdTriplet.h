@@ -67,18 +67,7 @@ namespace ts {
         {
             return normalized() == svid.normalized();
         }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator.
-        //! @param [in] svid Another instance to compare.
-        //! @return True if this object != @a svid.
-        //!
-        bool operator!=(const ServiceIdTriplet& svid) const
-        {
-            return normalized() != svid.normalized();
-        }
-#endif
+        TS_UNEQUAL_OPERATOR(ServiceIdTriplet)
 
         //!
         //! Comparison operator.

@@ -16,11 +16,7 @@
 
 ts::PESPacketizer::PESPacketizer(const DuckContext& duck, PID pid, PESProviderInterface* provider) :
     AbstractPacketizer(duck, pid),
-    _provider(provider),
-    _pes(nullptr),
-    _next_byte(0),
-    _pes_out_count(0),
-    _pes_in_count(0)
+    _provider(provider)
 {
 }
 

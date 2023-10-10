@@ -44,18 +44,7 @@ namespace ts {
         {
             return organization_id == that.organization_id && application_id == that.application_id;
         }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Inequality operator.
-        //! @param[in] that Identifier to compare to.
-        //! @return True if both identifiers are not equals, False otherwise.
-        //!
-        bool operator!=(const ApplicationIdentifier& that) const
-        {
-            return organization_id != that.organization_id || application_id != that.application_id;
-        }
-#endif
+        TS_UNEQUAL_OPERATOR(ApplicationIdentifier)
 
         //!
         //! Lower than operator. It compares first the organization id, then the application id.

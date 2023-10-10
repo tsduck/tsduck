@@ -193,15 +193,7 @@ namespace ts {
         //! @return True if both object contains the same address, false otherwise.
         //!
         bool operator==(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) == 0; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] other Another instance to compare with.
-        //! @return True if both object contains distinct addresses, false otherwise.
-        //!
-        bool operator!=(const IPv6Address& other) const { return ::memcmp(_bytes, other._bytes, sizeof(_bytes)) != 0; }
-#endif
+        TS_UNEQUAL_OPERATOR(IPv6Address)
 
         //!
         //! Comparison "less than" operator.

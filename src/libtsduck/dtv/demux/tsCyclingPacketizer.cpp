@@ -18,14 +18,7 @@
 ts::CyclingPacketizer::CyclingPacketizer(const DuckContext& duck, PID pid, StuffingPolicy stuffing, const BitRate& bitrate) :
     Packetizer(duck, pid, this),
     _stuffing(stuffing),
-    _bitrate(bitrate),
-    _section_count(0),
-    _sched_sections(),
-    _other_sections(),
-    _sched_packets(0),
-    _current_cycle(1),
-    _remain_in_cycle(0),
-    _cycle_end(UNDEFINED)
+    _bitrate(bitrate)
 {
 }
 
@@ -35,10 +28,7 @@ ts::CyclingPacketizer::~CyclingPacketizer()
 
 ts::CyclingPacketizer::SectionDesc::SectionDesc(const SectionPtr& sec, MilliSecond rep) :
     section(sec),
-    repetition(rep),
-    last_packet(0),
-    due_packet(0),
-    last_cycle(0)
+    repetition(rep)
 {
 }
 

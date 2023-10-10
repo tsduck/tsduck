@@ -196,9 +196,8 @@ namespace ts {
         Fraction& operator/=(const Fraction& x) { return *this = *this / x; }
 
         bool operator==(const Fraction& x) const { return _num == x._num && _den == x._den; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        bool operator!=(const Fraction& x) const { return _num != x._num || _den != x._den; }
-#endif
+        TS_UNEQUAL_OPERATOR(Fraction)
+
         bool operator<=(const Fraction& x) const;
         bool operator>=(const Fraction& x) const;
         bool operator<(const Fraction& x) const;

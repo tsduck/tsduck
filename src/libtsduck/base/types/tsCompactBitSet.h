@@ -110,15 +110,7 @@ namespace ts {
         //! @return True if this object is equal to @a p.
         //!
         bool operator==(const CompactBitSet<BITS>& p) const { return _value == p._value; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] p Other instance to compare.
-        //! @return True if this object is different from @a p.
-        //!
-        bool operator!=(const CompactBitSet<BITS>& p) const { return _value != p._value; }
-#endif
+        TS_UNEQUAL_OPERATOR(CompactBitSet<BITS>)
 
         //!
         //! Get the size in bits of the bit set.

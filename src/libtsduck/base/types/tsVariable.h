@@ -152,17 +152,7 @@ namespace ts {
         //! contain equal values.
         //!
         bool operator==(const Variable<T>& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //!
-        //! @param [in] other An other instance to compare with.
-        //! @return True if any instance is uninitialized or both
-        //! are initialized with unequal values.
-        //!
-        bool operator!=(const Variable<T>& other) const;
-#endif
+        TS_UNEQUAL_OPERATOR(Variable<T>)
 
         //!
         //! Equality operator with a @a T instance.
@@ -341,16 +331,6 @@ bool ts::Variable<T>::operator==(const Variable<T>& other) const
 {
     return _access != nullptr && other._access != nullptr && *_access == *other._access;
 }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-template <typename T>
-bool ts::Variable<T>::operator!=(const Variable<T>& other) const
-{
-    // Note than we do not require that T provides operator!=.
-    // We just require operator==. So we use !(.. == ..).
-    return _access == nullptr || other._access == nullptr || !(*_access == *other._access);
-}
-#endif
 
 template <typename T>
 bool ts::Variable<T>::operator==(const T& obj) const

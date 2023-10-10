@@ -15,8 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::StandaloneTableDemux::StandaloneTableDemux(DuckContext& duck, const PIDSet& pid_filter) :
-    SectionDemux(duck, this, nullptr, pid_filter),
-    _tables()
+    SectionDemux(duck, this, nullptr, pid_filter)
 {
 }
 

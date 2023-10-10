@@ -51,7 +51,7 @@ namespace ts {
 
     private:
         // Private members
-        BinaryTablePtrVector _tables;
+        BinaryTablePtrVector _tables {};
 
         // Inherited from TableHandlerInterface
         // This hook is invoked when a complete table is available.

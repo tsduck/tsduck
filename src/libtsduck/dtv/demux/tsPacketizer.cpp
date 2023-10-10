@@ -18,12 +18,7 @@
 
 ts::Packetizer::Packetizer(const DuckContext& duck, PID pid, SectionProviderInterface* provider) :
     AbstractPacketizer(duck, pid),
-    _provider(provider),
-    _split_headers(false),
-    _section(nullptr),
-    _next_byte(0),
-    _section_out_count(0),
-    _section_in_count(0)
+    _provider(provider)
 {
 }
 

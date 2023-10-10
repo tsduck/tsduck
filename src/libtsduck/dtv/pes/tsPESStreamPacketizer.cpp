@@ -14,9 +14,7 @@
 //----------------------------------------------------------------------------
 
 ts::PESStreamPacketizer::PESStreamPacketizer(const DuckContext& duck, PID pid) :
-    PESPacketizer(duck, pid, this),
-    _max_queued(0),
-    _pes_queue()
+    PESPacketizer(duck, pid, this)
 {
 }
 

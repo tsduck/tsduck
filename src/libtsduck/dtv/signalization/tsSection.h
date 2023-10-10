@@ -242,17 +242,7 @@ namespace ts {
         //! @return True if the two sections are identical. False otherwise.
         //!
         bool operator==(const Section& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! The source PID's are ignored, only the section contents are compared.
-        //! Invalid sections are never identical.
-        //! @param [in] other Other section to compare.
-        //! @return True if the two sections are different. False otherwise.
-        //!
-        bool operator!=(const Section& other) const { return !operator==(other); }
-#endif
+        TS_UNEQUAL_OPERATOR(Section)
 
         //!
         //! Get the table id.

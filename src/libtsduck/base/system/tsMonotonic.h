@@ -67,15 +67,7 @@ namespace ts {
         //! @return True if this object == @a t.
         //!
         bool operator==(const Monotonic& t) const { return _value == t._value; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator.
-        //! @param [in] t Another instance to compare.
-        //! @return True if this object != @a t.
-        //!
-        bool operator!=(const Monotonic& t) const { return _value != t._value; }
-#endif
+        TS_UNEQUAL_OPERATOR(Monotonic)
 
         //!
         //! Comparison operator.

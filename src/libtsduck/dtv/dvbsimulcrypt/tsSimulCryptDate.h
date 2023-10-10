@@ -199,18 +199,7 @@ namespace ts {
         {
             return ::memcmp(_data, t._data, SIZE) == 0;
         }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] t Another date to compare with this object.
-        //! @return @c True is this object is different from the @a t object, @c false otherwise.
-        //!
-        bool operator!=(const SimulCryptDate& t) const
-        {
-            return ::memcmp(_data, t._data, SIZE) != 0;
-        }
-#endif
+        TS_UNEQUAL_OPERATOR(SimulCryptDate)
 
         //!
         //! Lower operator.

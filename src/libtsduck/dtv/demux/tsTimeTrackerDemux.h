@@ -67,7 +67,7 @@ namespace ts {
             //! Default constructor.
             //! @param [in] scale Scale offset after wrapping up at max value. Default is appropriate for PTS/DTS.
             //!
-            TimeTracker(uint64_t scale = PTS_DTS_SCALE);
+            TimeTracker(uint64_t scale = PTS_DTS_SCALE) : _scale(scale) {}
             //!
             //! Check if values were set in the object and if we can collect info.
             //! @returb True if we can collect valid info.
@@ -89,16 +89,16 @@ namespace ts {
             uint64_t duration() const;
 
         private:
-            uint64_t _scale;  //!< Scale offset after wrapping up at max value.
-            uint64_t _first;  //!< First value seen on PID (INVALID_PCR if none found).
-            uint64_t _last;   //!< Last value seen on PID (INVALID_PCR if none found).
-            uint64_t _offset; //!< Accumulated offsets after wrapping up at max value once or more.
+            uint64_t _scale {PTS_DTS_SCALE}; //!< Scale offset after wrapping up at max value.
+            uint64_t _first {INVALID_PCR};   //!< First value seen on PID (INVALID_PCR if none found).
+            uint64_t _last {INVALID_PCR};    //!< Last value seen on PID (INVALID_PCR if none found).
+            uint64_t _offset {0};            //!< Accumulated offsets after wrapping up at max value once or more.
         };
 
         typedef std::map<PID, TimeTracker> PIDContextMap;
 
-        PID           _pcrPID;    //!< First detected PID with PCR's.
-        TimeTracker   _pcrTime;   //!< PCR time tracker on _pcrPID.
-        PIDContextMap _pids;      //!< PTS time tracker per demuxed PID.
+        PID           _pcrPID {PID_NULL};    //!< First detected PID with PCR's.
+        TimeTracker   _pcrTime {PCR_SCALE};  //!< PCR time tracker on _pcrPID.
+        PIDContextMap _pids {};              //!< PTS time tracker per demuxed PID.
     };
 }

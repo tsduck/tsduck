@@ -15,13 +15,7 @@
 
 ts::AbstractDemux::AbstractDemux(DuckContext& duck, const PIDSet& pid_filter) :
     _duck(duck),
-    _pid_filter(pid_filter),
-    _packet_count(0),
-    _in_handler(false),
-    _pid_in_handler(PID_NULL),
-    _reset_pending(false),
-    _pid_reset_pending(false),
-    _demux_id(0)
+    _pid_filter(pid_filter)
 {
 }
 

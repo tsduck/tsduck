@@ -213,19 +213,13 @@ namespace ts {
         //! Get the current status of the demux.
         //! @param [out] status The returned status.
         //!
-        void getStatus(Status& status) const
-        {
-            status = _status;
-        }
+        void getStatus(Status& status) const { status = _status; }
 
         //!
         //! Check if the demux has errors.
         //! @return True if any error counter is not zero.
         //!
-        bool hasErrors() const
-        {
-            return _status.hasErrors();
-        }
+        bool hasErrors() const { return _status.hasErrors(); }
 
     protected:
         // Inherited methods
@@ -239,14 +233,14 @@ namespace ts {
         // This internal structure contains the analysis context for one TID/TIDext into one PID.
         struct ETIDContext
         {
-            bool    notified;       // The table was reported to application through a handler
-            uint8_t version;        // Version of this table
-            size_t  sect_expected;  // Number of expected sections in table
-            size_t  sect_received;  // Number of received sections in table
-            SectionPtrVector sects; // Array of sections
+            bool    notified {false};   // The table was reported to application through a handler
+            uint8_t version {0};        // Version of this table
+            size_t  sect_expected {0};  // Number of expected sections in table
+            size_t  sect_received {0};  // Number of received sections in table
+            SectionPtrVector sects {};  // Array of sections
 
             // Default constructor.
-            ETIDContext();
+            ETIDContext() = default;
 
             // Init for a new table.
             void init(uint8_t new_version, uint8_t last_section);
@@ -261,14 +255,14 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            PacketCounter pusi_pkt_index;     // Index of last packet with PUSI in this PID
-            uint8_t       continuity;         // Last continuity counter
-            bool          sync;               // We are synchronous in this PID
-            ByteBlock     ts;                 // TS payload buffer
-            std::map<ETID,ETIDContext> tids;  // TID analysis contexts
+            PacketCounter pusi_pkt_index {0};    // Index of last packet with PUSI in this PID
+            uint8_t       continuity {0};        // Last continuity counter
+            bool          sync {false};          // We are synchronous in this PID
+            ByteBlock     ts {};                 // TS payload buffer
+            std::map<ETID,ETIDContext> tids {};  // TID analysis contexts
 
             // Default constructor.
-            PIDContext();
+            PIDContext() = default;
 
             // Called when packet synchronization is lost on the pid.
             void syncLost();
@@ -281,15 +275,15 @@ namespace ts {
         void fixAndFlush(bool pack, bool fill_eit);
 
         // Private members:
-        TableHandlerInterface*          _table_handler;
-        SectionHandlerInterface*        _section_handler;
-        InvalidSectionHandlerInterface* _invalid_handler;
-        std::map<PID,PIDContext>        _pids;
-        Status _status;
-        bool   _get_current;
-        bool   _get_next;
-        bool   _track_invalid_version;
-        int    _ts_error_level;
+        TableHandlerInterface*          _table_handler {nullptr};
+        SectionHandlerInterface*        _section_handler {nullptr};
+        InvalidSectionHandlerInterface* _invalid_handler {nullptr};
+        std::map<PID,PIDContext>        _pids {};
+        Status _status {};
+        bool   _get_current {true};
+        bool   _get_next {false};
+        bool   _track_invalid_version {false};
+        int    _ts_error_level {Severity::Debug};
     };
 }
 

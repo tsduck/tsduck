@@ -23,8 +23,8 @@ namespace ts {
     {
     public:
         // Public members:
-        uint16_t transport_stream_id;  //!< Transport stream id.
-        uint16_t original_network_id;  //!< Original network id.
+        uint16_t transport_stream_id = 0;  //!< Transport stream id.
+        uint16_t original_network_id = 0;  //!< Original network id.
 
         //!
         //! Constructor.
@@ -58,18 +58,7 @@ namespace ts {
         {
             return transport_stream_id == tsid.transport_stream_id && original_network_id == tsid.original_network_id;
         }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator.
-        //! @param [in] tsid Another instance to compare.
-        //! @return True if this object != @a tsid.
-        //!
-        bool operator!=(const TransportStreamId& tsid) const
-        {
-            return transport_stream_id != tsid.transport_stream_id || original_network_id != tsid.original_network_id;
-        }
-#endif
+        TS_UNEQUAL_OPERATOR(TransportStreamId)
 
         //!
         //! Comparison operator.

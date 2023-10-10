@@ -25,23 +25,6 @@ ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values)
 
 
 //----------------------------------------------------------------------------
-// Operators
-//----------------------------------------------------------------------------
-
-bool ts::Enumeration::operator==(const Enumeration& other) const
-{
-    return _map == other._map;
-}
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-bool ts::Enumeration::operator!=(const Enumeration& other) const
-{
-    return _map != other._map;
-}
-#endif
-
-
-//----------------------------------------------------------------------------
 // Get the value from a name, abbreviation allowed.
 //----------------------------------------------------------------------------
 

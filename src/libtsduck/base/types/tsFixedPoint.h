@@ -168,9 +168,8 @@ namespace ts {
         FixedPoint& operator/=(const FixedPoint& x) { _value *= FACTOR; _value /= x._value; return *this; }
 
         bool operator==(const FixedPoint& x) const { return _value == x._value; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        bool operator!=(const FixedPoint& x) const { return _value != x._value; }
-#endif
+        TS_UNEQUAL_OPERATOR(FixedPoint)
+
         bool operator<=(const FixedPoint& x) const { return _value <= x._value; }
         bool operator>=(const FixedPoint& x) const { return _value >= x._value; }
         bool operator<(const FixedPoint& x) const { return _value < x._value; }

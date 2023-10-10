@@ -118,9 +118,9 @@ namespace ts {
 
     private:
         const DuckContext& _duck;              // TSDuck execution context.
-        PID                _pid;               // PID for injected sections.
-        uint8_t            _continuity;        // Continuity counter for next packet
-        PacketCounter      _packet_count;      // Number of generated packets
+        PID                _pid {PID_NULL};    // PID for injected sections.
+        uint8_t            _continuity {0};    // Continuity counter for next packet
+        PacketCounter      _packet_count {0};  // Number of generated packets
     };
 }
 

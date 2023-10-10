@@ -1085,6 +1085,19 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
         virtual ~classname()                              \
         /** @endcond */
 
+//!
+//! A macro to declare an unequal operator in the declaration of a class.
+//! Before C++20, define an inline != operator based on the == operator.
+//! In C++20 and beyond, != is implicitly derived from the corresponding ==
+//! and this macro does nothing.
+//! @param classname Name of the enclosing class.
+//!
+#if defined(TS_NEED_UNEQUAL_OPERATOR) && !defined(DOXYGEN)
+    #define TS_UNEQUAL_OPERATOR(classname) bool operator!=(const classname& other) const { return ! operator==(other); }
+#else
+    #define TS_UNEQUAL_OPERATOR(classname)
+#endif
+
 
 //----------------------------------------------------------------------------
 // Properties of some integer types.

@@ -241,18 +241,18 @@ namespace ts {
 
     private:
         DuckContext&          _duck;
-        PIDSet                _input_pids;
-        PID                   _output_pid;
-        MilliSecond           _start_time_offset;
-        bool                  _date_only;
-        size_t                _max_buffered_sections;
+        PIDSet                _input_pids {};
+        PID                   _output_pid {PID_NULL};
+        MilliSecond           _start_time_offset {0};
+        bool                  _date_only {false};
+        size_t                _max_buffered_sections {DEFAULT_BUFFERED_SECTIONS};
         SectionDemux          _demux;
         Packetizer            _packetizer;
-        std::list<SectionPtr> _sections;
-        std::set<TID>         _removed_tids;
-        std::list<Service>    _removed;
-        std::list<Service>    _kept;
-        std::list<std::pair<Service,Service>> _renamed;
+        std::list<SectionPtr> _sections {};
+        std::set<TID>         _removed_tids {};
+        std::list<Service>    _removed {};
+        std::list<Service>    _kept {};
+        std::list<std::pair<Service,Service>> _renamed {};
 
         // Check if a service matches a DVB triplet.
         // The service must have at least a service id or transport id.
