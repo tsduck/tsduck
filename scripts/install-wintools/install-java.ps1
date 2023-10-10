@@ -40,22 +40,30 @@ else {
     $ImageType = "jdk"
 }
 
-# Get latest LTS version.
-$lts = (Invoke-RestMethod $API/info/available_releases).most_recent_lts
+# Get latest LTS versions, in reverse order.
+$all_lts = (Invoke-RestMethod $API/info/available_releases).available_lts_releases
+[array]::Reverse($all_lts)
 
-# Get a list of assets for this LTS. Extract the one for 64-bit Windows.
-$bin = (Invoke-RestMethod $API/assets/latest/$lts/hotspot).binary | `
-    Where-Object os -eq windows | `
-    Where-Object architecture -eq x64 | `
-    Where-Object jvm_impl -eq hotspot | `
-    Where-Object heap_size -eq normal | `
-    Where-Object image_type -eq $ImageType | `
-    Where-Object project -eq jdk | `
-    Select-Object -First 1 -Property installer
+# Get a list of assets for LTS until one has 64-bit Windows.
+foreach ($lts in $all_lts) {
 
-$InstallerURL = $bin.installer.link
-$InstallerName = $bin.installer.name
-$InstallerPath = "$Destination\$InstallerName"
+    $bin = (Invoke-RestMethod $API/assets/latest/$lts/hotspot).binary | `
+        Where-Object os -eq windows | `
+        Where-Object architecture -eq x64 | `
+        Where-Object jvm_impl -eq hotspot | `
+        Where-Object heap_size -eq normal | `
+        Where-Object image_type -eq $ImageType | `
+        Where-Object project -eq jdk | `
+        Select-Object -First 1 -Property installer
+
+    $InstallerURL = $bin.installer.link
+    $InstallerName = $bin.installer.name
+    $InstallerPath = "$Destination\$InstallerName"
+
+    if (-not -not $InstallerURL -and -not -not $InstallerName) {
+        break
+    }
+}
 
 if (-not $InstallerURL -or -not $InstallerName) {
     Exit-Script "Cannot find URL for installer"
