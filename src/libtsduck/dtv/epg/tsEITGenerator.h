@@ -458,6 +458,9 @@ namespace ts {
         Packetizer           _packetizer;        // Packetizer for generated EIT's.
         EServiceMap          _services;          // Map of services -> segments -> events and sections.
         ESectionListArray    _injects;           // Arrays of sections for injection.
+        TID                  _last_tid;          // TID of last injected section, or 0.
+        uint16_t             _last_tidext;       // TIDEXT of last injected section.
+        size_t               _last_index;        // Queue index of last injected section.
         size_t               _obsolete_count;    // Number of obsolete sections in the injection lists.
         std::map<uint64_t,uint8_t> _versions;    // Last version of sections.
 
