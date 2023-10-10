@@ -24,9 +24,6 @@
 ts::PESDemux::PESDemux(DuckContext& duck, PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
     SuperClass(duck, pid_filter),
     _pes_handler(pes_handler),
-    _default_codec(CodecType::UNDEFINED),
-    _pids(),
-    _pid_types(),
     _section_demux(_duck, this)
 {
     // Analyze the PAT, to get the PMT's, to get the stream types.
@@ -34,29 +31,6 @@ ts::PESDemux::PESDemux(DuckContext& duck, PESHandlerInterface* pes_handler, cons
 }
 
 ts::PESDemux::~PESDemux()
-{
-}
-
-ts::PESDemux::PIDContext::PIDContext() :
-    pes_count(0),
-    continuity(0),
-    sync(false),
-    first_pkt(0),
-    last_pkt(0),
-    pcr(INVALID_PCR),
-    ts(new ByteBlock()),
-    audio(),
-    video(),
-    avc(),
-    hevc(),
-    ac3(),
-    ac3_count(0)
-{
-}
-
-ts::PESDemux::PIDType::PIDType() :
-    stream_type(ST_NULL),
-    default_codec(CodecType::UNDEFINED)
 {
 }
 

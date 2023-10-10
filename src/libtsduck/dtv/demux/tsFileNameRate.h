@@ -24,12 +24,12 @@ namespace ts {
     class TSDUCKDLL FileNameRate
     {
     public:
-        UString     file_name;     //!< File name.
-        UString     display_name;  //!< File name in display form.
-        bool        inline_xml;    //!< File name contains inline XML text (not a real file name).
-        Time        file_date;     //!< Last modification date of file.
-        MilliSecond repetition;    //!< Repetition rate in milliseconds.
-        size_t      retry_count;   //!< Number of allowed retry in case of error when using the file.
+        UString     file_name {};        //!< File name.
+        UString     display_name {};     //!< File name in display form.
+        bool        inline_xml {false};  //!< File name contains inline XML text (not a real file name).
+        Time        file_date {};        //!< Last modification date of file.
+        MilliSecond repetition {0};      //!< Repetition rate in milliseconds.
+        size_t      retry_count {1};     //!< Number of allowed retry in case of error when using the file.
 
         //!
         //! Default constructor.
@@ -44,15 +44,7 @@ namespace ts {
         //! @return True if this instance is equal to @a other.
         //!
         bool operator==(const FileNameRate& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator.
-        //! @param [in] other Other instance to compare.
-        //! @return True if this instance is different from @a other.
-        //!
-        bool operator!=(const FileNameRate& other) const { return !operator==(other); }
-#endif
+        TS_UNEQUAL_OPERATOR(FileNameRate)
 
         //!
         //! Comparison "less than" operator.

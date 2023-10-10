@@ -19,9 +19,7 @@ ts::FileNameRate::FileNameRate(const UString& name, MilliSecond rep) :
     file_name(name),
     display_name(xml::Document::DisplayFileName(file_name)),
     inline_xml(xml::Document::IsInlineXML(file_name)),
-    file_date(),
-    repetition(rep) ,
-    retry_count(1)
+    repetition(rep)
 {
 }
 

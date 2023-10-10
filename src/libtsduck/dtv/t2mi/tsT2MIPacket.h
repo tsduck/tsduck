@@ -46,7 +46,7 @@ namespace ts {
         //! Default constructor.
         //! The T2MIPacket is initially marked invalid.
         //!
-        T2MIPacket();
+        T2MIPacket() = default;
 
         //!
         //! Copy constructor.
@@ -132,17 +132,7 @@ namespace ts {
         //! @return True if the two packets are identical. False otherwise.
         //!
         bool operator==(const T2MIPacket& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! The source PID's are ignored, only the packet contents are compared.
-        //! Invalid packets are never identical.
-        //! @param [in] other Other packet to compare.
-        //! @return True if the two packets are different. False otherwise.
-        //!
-        bool operator!=(const T2MIPacket& other) const { return !operator==(other); }
-#endif
+        TS_UNEQUAL_OPERATOR(T2MIPacket)
 
         //!
         //! Access to the payload of the packet.
@@ -225,7 +215,7 @@ namespace ts {
 
     private:
         // Private fields
-        bool _is_valid;
+        bool _is_valid = false;
 
         // Validate binary content.
         void validate();

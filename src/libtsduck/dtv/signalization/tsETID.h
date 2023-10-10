@@ -73,15 +73,7 @@ namespace ts {
         //! @return True is this object == @a e.
         //!
         bool operator==(const ETID& e) const { return _etid == e._etid; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator.
-        //! @param [in] e Other instance to compare.
-        //! @return True is this object != @a e.
-        //!
-        bool operator!=(const ETID& e) const { return _etid != e._etid; }
-#endif
+        TS_UNEQUAL_OPERATOR(ETID)
 
         //!
         //! Comparison operator.

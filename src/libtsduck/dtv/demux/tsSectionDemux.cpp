@@ -115,15 +115,6 @@ void ts::SectionDemux::Status::display(Report& report, int level, const UString&
 // Analysis context for one TID/TIDext into one PID.
 //----------------------------------------------------------------------------
 
-ts::SectionDemux::ETIDContext::ETIDContext() :
-    notified(false),
-    version(0),
-    sect_expected(0),
-    sect_received(0),
-    sects()
-{
-}
-
 // Init for a new table.
 void ts::SectionDemux::ETIDContext::init(uint8_t new_version, uint8_t last_section)
 {
@@ -171,18 +162,9 @@ void ts::SectionDemux::ETIDContext::notify(SectionDemux& demux, bool pack, bool 
 
 //----------------------------------------------------------------------------
 // Analysis context for one PID.
+// Called when packet synchronization is lost on the pid.
 //----------------------------------------------------------------------------
 
-ts::SectionDemux::PIDContext::PIDContext() :
-    pusi_pkt_index(0),
-    continuity(0),
-    sync(false),
-    ts(),
-    tids()
-{
-}
-
-// Called when packet synchronization is lost on the pid.
 void ts::SectionDemux::PIDContext::syncLost()
 {
     sync = false;
@@ -197,14 +179,7 @@ void ts::SectionDemux::PIDContext::syncLost()
 ts::SectionDemux::SectionDemux(DuckContext& duck, TableHandlerInterface* table_handler, SectionHandlerInterface* section_handler, const PIDSet& pid_filter) :
     SuperClass(duck, pid_filter),
     _table_handler(table_handler),
-    _section_handler(section_handler),
-    _invalid_handler(nullptr),
-    _pids(),
-    _status(),
-    _get_current(true),
-    _get_next(false),
-    _track_invalid_version(false),
-    _ts_error_level(Severity::Debug)
+    _section_handler(section_handler)
 {
 }
 

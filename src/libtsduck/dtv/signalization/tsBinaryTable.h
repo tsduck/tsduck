@@ -101,17 +101,7 @@ namespace ts {
         //! @return True if the two tables are identical. False otherwise.
         //!
         bool operator==(const BinaryTable& table) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! The source PID's are ignored, only the table contents are compared.
-        //! Invalid tables are never identical.
-        //! @param [in] table Other table to compare.
-        //! @return True if the two tables are different. False otherwise.
-        //!
-        bool operator!=(const BinaryTable& table) const { return !operator==(table); }
-#endif
+        TS_UNEQUAL_OPERATOR(BinaryTable)
 
         //!
         //! Add a section to a table.

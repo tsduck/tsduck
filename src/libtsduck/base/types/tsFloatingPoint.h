@@ -163,9 +163,8 @@ namespace ts {
         FloatingPoint& operator/=(const FloatingPoint& x) { _value /= x._value; return *this; }
 
         bool operator==(const FloatingPoint& x) const { return std::abs(_value - x._value) < EQUAL_PRECISION; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        bool operator!=(const FloatingPoint& x) const { return std::abs(_value - x._value) >= EQUAL_PRECISION; }
-#endif
+        TS_UNEQUAL_OPERATOR(FloatingPoint)
+
         bool operator<=(const FloatingPoint& x) const { return _value <= x._value; }
         bool operator>=(const FloatingPoint& x) const { return _value >= x._value; }
         bool operator<(const FloatingPoint& x) const { return _value < x._value; }

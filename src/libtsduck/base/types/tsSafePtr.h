@@ -202,32 +202,11 @@ namespace ts {
         //! @return True if both safe pointers reference the same object
         //! and false otherwise.
         //!
-        bool operator==(const SafePtr<T,MUTEX> &sp) const
+        bool operator==(const SafePtr<T,MUTEX>& sp) const
         {
             return sp._shared == this->_shared;
         }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //!
-        //! Check if this safe pointer and the @a sp safe pointer point to different objects.
-        //!
-        //! @b Caveat: Null pointers are not reliably compared with this operator.
-        //! It shall not be used to compare against null pointer. Do not
-        //! check <code>!= nullptr</code>, use the method @c isNull() instead.
-        //! Also, if both safe pointers are null pointers, the result is
-        //! unpredictable, it can be true or false.
-        //!
-        //! @param [in] sp A safe pointer to compare with.
-        //! @return True if both safe pointers reference distinct objects
-        //! and false otherwise.
-        //!
-        bool operator!=(const SafePtr<T,MUTEX> &sp) const
-        {
-            return sp._shared != this->_shared;
-        }
-#endif
+        TS_UNEQUAL_OPERATOR(SafePtr)
 
         //!
         //! Redirection operator.

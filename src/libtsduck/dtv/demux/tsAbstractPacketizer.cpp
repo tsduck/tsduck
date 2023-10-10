@@ -16,10 +16,7 @@
 
 ts::AbstractPacketizer::AbstractPacketizer(const DuckContext& duck, PID pid) :
     _duck(duck),
-    _pid(pid),
-    _continuity(0),
-    _packet_count(0)
-{
+    _pid(pid){
 }
 
 ts::AbstractPacketizer::~AbstractPacketizer()

@@ -75,8 +75,8 @@ namespace ts {
         virtual std::ostream& display(std::ostream& strm) const override;
 
     private:
-        size_t                  _max_queued;  // Maximum number of queued PES packets
-        std::list<PESPacketPtr> _pes_queue;   // Queue of PES packets to process
+        size_t                  _max_queued {0};  // Maximum number of queued PES packets
+        std::list<PESPacketPtr> _pes_queue {};    // Queue of PES packets to process
 
         // Implementation of PESProviderInterface
         virtual void providePESPacket(PacketCounter counter, PESPacketPtr& pes) override;

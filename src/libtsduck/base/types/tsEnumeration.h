@@ -72,18 +72,8 @@ namespace ts {
         //! @return True if this object has the same content as @a other,
         //! false otherwise.
         //!
-        bool operator==(const Enumeration& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //!
-        //! @param [in] other Another instance to compare with.
-        //! @return True if this object does not have the same content as @a other,
-        //! false otherwise.
-        //!
-        bool operator!=(const Enumeration& other) const;
-#endif
+        bool operator==(const Enumeration& other) const { return _map == other._map; }
+        TS_UNEQUAL_OPERATOR(Enumeration)
 
         //!
         //! Get the number of entries in the enumeration.

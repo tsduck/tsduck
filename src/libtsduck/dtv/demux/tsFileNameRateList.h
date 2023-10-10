@@ -32,19 +32,13 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        FileNameRateList() :
-            SuperClass()
-        {
-        }
+        FileNameRateList() = default;
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        FileNameRateList(const FileNameRateList& other) :
-            SuperClass(other)
-        {
-        }
+        FileNameRateList(const FileNameRateList& other) : SuperClass(other) {}
 
         //!
         //! Decode a list of parameters containing a list of file names with

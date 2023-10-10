@@ -131,16 +131,7 @@ namespace ts {
         //! @return True if the two packets are identical. False otherwise.
         //!
         bool operator==(const DemuxedData& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! The source PID's are ignored, only the packet contents are compared.
-        //! @param [in] other Other packet to compare.
-        //! @return True if the two packets are different. False otherwise.
-        //!
-        bool operator!=(const DemuxedData& other) const { return !operator==(other); }
-#endif
+        TS_UNEQUAL_OPERATOR(DemuxedData)
 
         //!
         //! Get the source PID.
@@ -231,10 +222,10 @@ namespace ts {
 
     private:
         // Private fields
-        PID           _source_pid;   // Source PID (informational)
-        PacketCounter _first_pkt;    // Index of first packet in stream
-        PacketCounter _last_pkt;     // Index of last packet in stream
-        ByteBlockPtr  _data;         // Full binary content of the packet
+        PID           _source_pid {PID_NULL};  // Source PID (informational)
+        PacketCounter _first_pkt {0};          // Index of first packet in stream
+        PacketCounter _last_pkt {0};           // Index of last packet in stream
+        ByteBlockPtr  _data {};                // Full binary content of the packet
 
         // Inaccessible operations
         DemuxedData(const DemuxedData&) = delete;

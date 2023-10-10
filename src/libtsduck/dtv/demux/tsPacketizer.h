@@ -84,11 +84,11 @@ namespace ts {
         virtual std::ostream& display(std::ostream& strm) const override;
 
     private:
-        SectionProviderInterface* _provider;
-        bool           _split_headers;     // Allowed to split section header beetwen TS packets.
-        SectionPtr     _section;           // Current section to insert
-        size_t         _next_byte;         // Next byte to insert in current section
-        SectionCounter _section_out_count; // Number of output (packetized) sections
-        SectionCounter _section_in_count;  // Number of input (provided) sections
+        SectionProviderInterface* _provider {nullptr};
+        bool           _split_headers {false};  // Allowed to split section header beetwen TS packets.
+        SectionPtr     _section {};             // Current section to insert
+        size_t         _next_byte {0};          // Next byte to insert in current section
+        SectionCounter _section_out_count {0};  // Number of output (packetized) sections
+        SectionCounter _section_in_count {0};   // Number of input (provided) sections
     };
 }

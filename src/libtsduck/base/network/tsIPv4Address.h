@@ -187,15 +187,7 @@ namespace ts {
         //! @return True if both object contains the same address, false otherwise.
         //!
         bool operator==(const IPv4Address& a) const { return _addr == a._addr; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] a Another instance to compare with.
-        //! @return True if both object contains distinct addresses, false otherwise.
-        //!
-        bool operator!=(const IPv4Address& a) const { return _addr != a._addr; }
-#endif
+        TS_UNEQUAL_OPERATOR(IPv4Address)
 
         //!
         //! Comparison "less than" operator.

@@ -135,23 +135,8 @@ namespace ts {
         //! @return @c True is this object is equal to the @a other object,
         //! @c false otherwise.
         //!
-        bool operator==(const Time& other) const
-        {
-            return _value == other._value;
-        }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] other Another time to compare with this object.
-        //! @return @c True is this object is different from the @a other object,
-        //! @c false otherwise.
-        //!
-        bool operator!=(const Time& other) const
-        {
-            return _value != other._value;
-        }
-#endif
+        bool operator==(const Time& other) const { return _value == other._value; }
+        TS_UNEQUAL_OPERATOR(Time)
 
         //!
         //! Lower operator.
@@ -159,10 +144,7 @@ namespace ts {
         //! @return @c True is this time is before the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator<(const Time& other) const
-        {
-            return _value < other._value;
-        }
+        bool operator<(const Time& other) const { return _value < other._value; }
 
         //!
         //! Lower or equal operator.
@@ -170,10 +152,7 @@ namespace ts {
         //! @return @c True is this time is before or equal to the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator<=(const Time& other) const
-        {
-            return _value <= other._value;
-        }
+        bool operator<=(const Time& other) const { return _value <= other._value; }
 
         //!
         //! Greater operator.
@@ -181,10 +160,7 @@ namespace ts {
         //! @return @c True is this time is after the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator>(const Time& other) const
-        {
-            return _value > other._value;
-        }
+        bool operator>(const Time& other) const { return _value > other._value; }
 
         //!
         //! Greater or equal operator.
@@ -192,10 +168,7 @@ namespace ts {
         //! @return @c True is this time is after or equal to the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator>=(const Time& other) const
-        {
-            return _value >= other._value;
-        }
+        bool operator>=(const Time& other) const { return _value >= other._value; }
 
         //!
         //! Broken-down fields of a time value.
@@ -231,16 +204,7 @@ namespace ts {
             //! @c false otherwise.
             //!
             bool operator==(const Fields& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-            //!
-            //! Unequality operator.
-            //! @param [in] other Another @c Fields to compare with this object.
-            //! @return @c True is this object is different from the @a other object,
-            //! @c false otherwise.
-            //!
-            bool operator!=(const Fields& other) const { return !operator==(other); }
-#endif
+            TS_UNEQUAL_OPERATOR(Fields)
 
             //!
             //! Validation of the fields.

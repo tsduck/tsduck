@@ -15,12 +15,6 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::T2MIPacket::T2MIPacket() :
-    SuperClass(),
-    _is_valid(false)
-{
-}
-
 ts::T2MIPacket::T2MIPacket(const T2MIPacket& pp, ShareMode mode) :
     SuperClass(pp, mode),
     _is_valid(pp._is_valid)
@@ -34,22 +28,19 @@ ts::T2MIPacket::T2MIPacket(T2MIPacket&& pp) noexcept :
 }
 
 ts::T2MIPacket::T2MIPacket(const void* content, size_t content_size, PID source_pid) :
-    SuperClass(content, content_size, source_pid),
-    _is_valid(false)
+    SuperClass(content, content_size, source_pid)
 {
     validate();
 }
 
 ts::T2MIPacket::T2MIPacket(const ByteBlock& content, PID source_pid) :
-    SuperClass(content, source_pid),
-    _is_valid(false)
+    SuperClass(content, source_pid)
 {
     validate();
 }
 
 ts::T2MIPacket::T2MIPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
-    SuperClass(content_ptr, source_pid),
-    _is_valid(false)
+    SuperClass(content_ptr, source_pid)
 {
     validate();
 }

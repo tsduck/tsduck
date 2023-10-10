@@ -135,17 +135,7 @@ namespace ts {
         //! @return True if the two packets are identical. False otherwise.
         //!
         bool operator==(const PESPacket& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! The source PID's are ignored, only the packet contents are compared.
-        //! Invalid packets are never identical.
-        //! @param [in] other Other packet to compare.
-        //! @return True if the two packets are different. False otherwise.
-        //!
-        bool operator!=(const PESPacket& other) const { return !operator==(other); }
-#endif
+        TS_UNEQUAL_OPERATOR(PESPacket)
 
         //!
         //! Get the optional PCR value which was associated to the PES packets.
@@ -375,11 +365,11 @@ namespace ts {
 
     private:
         // Private fields
-        bool      _is_valid;     // Content of *_data is a valid packet
-        size_t    _header_size;  // PES header size in bytes
-        uint8_t   _stream_type;  // Stream type from PMT (informational)
-        CodecType _codec;        // Data format (informational)
-        uint64_t  _pcr;          // PCR value from TS packets (informational)
+        bool      _is_valid {false};              // Content of *_data is a valid packet
+        size_t    _header_size {0};               // PES header size in bytes
+        uint8_t   _stream_type {ST_NULL};         // Stream type from PMT (informational)
+        CodecType _codec {CodecType::UNDEFINED};  // Data format (informational)
+        uint64_t  _pcr {INVALID_PCR};             // PCR value from TS packets (informational)
 
         // Validate binary content.
         void validate();

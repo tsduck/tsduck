@@ -55,18 +55,7 @@ namespace ts {
         {
             return ::memcmp(b, p.b, PKT_SIZE) == 0;
         }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] p Other packet to compare.
-        //! @return True if this object is different from @a p.
-        //!
-        bool operator!=(const TSPacket& p) const
-        {
-            return ::memcmp(b, p.b, PKT_SIZE) != 0;
-        }
-#endif
+        TS_UNEQUAL_OPERATOR(TSPacket)
 
         //!
         //! Initialize a TS packet.

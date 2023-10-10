@@ -138,9 +138,8 @@ namespace ts {
         Integer& operator/=(const Integer& x) { _value /= x._value; return *this; }
 
         bool operator==(const Integer& x) const { return _value == x._value; }
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        bool operator!=(const Integer& x) const { return _value != x._value; }
-#endif
+        TS_UNEQUAL_OPERATOR(Integer)
+
         bool operator<=(const Integer& x) const { return _value <= x._value; }
         bool operator>=(const Integer& x) const { return _value >= x._value; }
         bool operator<(const Integer& x) const { return _value < x._value; }

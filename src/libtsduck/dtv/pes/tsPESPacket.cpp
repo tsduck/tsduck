@@ -24,12 +24,7 @@
 //----------------------------------------------------------------------------
 
 ts::PESPacket::PESPacket(PID source_pid) :
-    SuperClass(),
-    _is_valid(false),
-    _header_size(0),
-    _stream_type(ST_NULL),
-    _codec(CodecType::UNDEFINED),
-    _pcr(INVALID_PCR)
+    SuperClass(source_pid)
 {
 }
 
@@ -54,34 +49,19 @@ ts::PESPacket::PESPacket(PESPacket&& pp) noexcept :
 }
 
 ts::PESPacket::PESPacket(const void* content, size_t content_size, PID source_pid) :
-    SuperClass(content, content_size, source_pid),
-    _is_valid(false),
-    _header_size(0),
-    _stream_type(ST_NULL),
-    _codec(CodecType::UNDEFINED),
-    _pcr(INVALID_PCR)
+    SuperClass(content, content_size, source_pid)
 {
     validate();
 }
 
 ts::PESPacket::PESPacket(const ByteBlock& content, PID source_pid) :
-    SuperClass(content, source_pid),
-    _is_valid(false),
-    _header_size(0),
-    _stream_type(ST_NULL),
-    _codec(CodecType::UNDEFINED),
-    _pcr(INVALID_PCR)
+    SuperClass(content, source_pid)
 {
     validate();
 }
 
 ts::PESPacket::PESPacket(const ByteBlockPtr& content_ptr, PID source_pid) :
-    SuperClass(content_ptr, source_pid),
-    _is_valid(false),
-    _header_size(0),
-    _stream_type(ST_NULL),
-    _codec(CodecType::UNDEFINED),
-    _pcr(INVALID_PCR)
+    SuperClass(content_ptr, source_pid)
 {
     validate();
 }

@@ -14,18 +14,14 @@
 //----------------------------------------------------------------------------
 
 ts::DemuxedData::DemuxedData(PID source_pid) :
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    _source_pid(source_pid)
 {
 }
 
 ts::DemuxedData::DemuxedData(const DemuxedData& pp, ShareMode mode) :
     _source_pid(pp._source_pid),
     _first_pkt(pp._first_pkt),
-    _last_pkt(pp._last_pkt),
-    _data()
+    _last_pkt(pp._last_pkt)
 {
     switch (mode) {
         case ShareMode::SHARE:
@@ -50,24 +46,18 @@ ts::DemuxedData::DemuxedData(DemuxedData&& pp) noexcept :
 
 ts::DemuxedData::DemuxedData(const void* content, size_t content_size, PID source_pid) :
     _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
     _data(new ByteBlock(content, content_size))
 {
 }
 
 ts::DemuxedData::DemuxedData(const ByteBlock& content, PID source_pid) :
     _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
     _data(new ByteBlock(content))
 {
 }
 
 ts::DemuxedData::DemuxedData(const ByteBlockPtr& content_ptr, PID source_pid) :
     _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
     _data(content_ptr)
 {
 }

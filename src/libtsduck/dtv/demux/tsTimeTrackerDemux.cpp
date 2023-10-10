@@ -14,14 +14,6 @@
 // Internal class which tracks time stamps on one PID.
 //----------------------------------------------------------------------------
 
-ts::TimeTrackerDemux::TimeTracker::TimeTracker(uint64_t scale) :
-    _scale(scale),
-    _first(INVALID_PCR),
-    _last(INVALID_PCR),
-    _offset(0)
-{
-}
-
 // Reset all value, forget collected time stamps.
 void ts::TimeTrackerDemux::TimeTracker::reset()
 {
@@ -64,10 +56,7 @@ uint64_t ts::TimeTrackerDemux::TimeTracker::duration() const
 //----------------------------------------------------------------------------
 
 ts::TimeTrackerDemux::TimeTrackerDemux(DuckContext& duck, const PIDSet& pid_filter) :
-    SuperClass(duck, pid_filter),
-    _pcrPID(PID_NULL),
-    _pcrTime(PCR_SCALE),
-    _pids()
+    SuperClass(duck, pid_filter)
 {
 }
 

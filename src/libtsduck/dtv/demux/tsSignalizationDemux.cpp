@@ -43,21 +43,7 @@ ts::SignalizationDemux::SignalizationDemux(DuckContext& duck) :
 ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandlerInterface* handler, std::initializer_list<TID> tids) :
     _duck(duck),
     _demux(duck, this, this),
-    _handler(handler),
-    _full_filters(false),
-    _filtered_tids(),
-    _filtered_srv_ids(),
-    _filtered_srv_names(),
-    _last_pat(),
-    _last_pat_handled(false),
-    _last_nit(),
-    _last_nit_handled(false),
-    _ts_id(0xFFFF),
-    _orig_network_id(0xFFFF),
-    _network_id(0xFFFF),
-    _last_utc(),
-    _pids(),
-    _services()
+    _handler(handler)
 {
     _last_pat.invalidate();
     for (const auto& it : tids) {
@@ -1153,19 +1139,7 @@ ts::SignalizationDemux::PIDContextPtr ts::SignalizationDemux::getPIDContext(PID 
 
 // Constructor.
 ts::SignalizationDemux::PIDContext::PIDContext(PID pid_) :
-    pid(pid_),
-    pid_class(PIDClass::UNDEFINED),
-    codec(CodecType::UNDEFINED),
-    stream_type(ST_NULL),
-    cas_id(CASID_NULL),
-    packets(0),
-    pusi_count(0),
-    first_pusi(INVALID_PACKET_COUNTER),
-    last_pusi(INVALID_PACKET_COUNTER),
-    intra_count(0),
-    first_intra(INVALID_PACKET_COUNTER),
-    last_intra(INVALID_PACKET_COUNTER),
-    services()
+    pid(pid_)
 {
     if (pid == PID_NULL) {
         pid_class = PIDClass::STUFFING;
@@ -1217,9 +1191,7 @@ ts::SignalizationDemux::ServiceContextPtr ts::SignalizationDemux::getServiceCont
 }
 
 // Constructor.
-ts::SignalizationDemux::ServiceContext::ServiceContext(uint16_t service_id) :
-    service(),
-    pmt()
+ts::SignalizationDemux::ServiceContext::ServiceContext(uint16_t service_id)
 {
     service.setId(service_id); // must no be set in constructor, must set "modified"
     pmt.invalidate();

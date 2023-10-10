@@ -66,15 +66,7 @@ namespace ts {
         //! @return True if the two CRC32 are identical, false otherwise.
         //!
         bool operator==(const CRC32& c) const { return _fcs == c._fcs; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator with another CRC32 instance.
-        //! @param [in] c Other instance to compare.
-        //! @return True if the two CRC32 are different, false otherwise.
-        //!
-        bool operator!=(const CRC32& c) const { return _fcs != c._fcs; }
-#endif
+        TS_UNEQUAL_OPERATOR(CRC32)
 
         //!
         //! Reset the CRC32 computation, restart a new computation.

@@ -72,10 +72,10 @@ namespace ts {
         virtual std::ostream& display(std::ostream& strm) const override;
 
     private:
-        PESProviderInterface* _provider;
-        PESPacketPtr  _pes;               // Current PES packet to insert
-        size_t        _next_byte;         // Next byte to insert in current PES packet
-        PacketCounter _pes_out_count;     // Number of output (packetized) PES packets
-        PacketCounter _pes_in_count;      // Number of input (provided) PES packets
+        PESProviderInterface* _provider {nullptr};
+        PESPacketPtr  _pes {};             // Current PES packet to insert
+        size_t        _next_byte {0};      // Next byte to insert in current PES packet
+        PacketCounter _pes_out_count {0};  // Number of output (packetized) PES packets
+        PacketCounter _pes_in_count {0};   // Number of input (provided) PES packets
     };
 }
