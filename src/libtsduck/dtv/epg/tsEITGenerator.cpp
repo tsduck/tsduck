@@ -13,6 +13,9 @@
 #include "tsBCD.h"
 
 
+/* DVB specifies at least 25 ms. */
+#define SECTION_GAP 30
+
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
@@ -36,6 +39,9 @@ ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid, EITOptions options, c
     _packetizer(_duck, _eit_pid, this),
     _services(),
     _injects(),
+    _last_tid(0),
+    _last_tidext(0),
+    _last_index(0),
     _obsolete_count(0),
     _versions()
 {
@@ -75,6 +81,7 @@ void ts::EITGenerator::reset()
     for (size_t i = 0; i < _injects.size(); ++i) {
         _injects[i].clear();
     }
+    _last_tid = 0;
     _obsolete_count = 0;
     _versions.clear();
 }
@@ -1208,6 +1215,28 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
     // Make sure the EIT schedule are up-to-date.
     regenerateSchedule(now);
 
+    if (_last_tid) {
+        // Make sure no section for this {tid,tidext} is scheduled for SECTION_GAP
+        ESectionList& list(_injects[_last_index]);
+        const Time next_inject = now + SECTION_GAP;
+        auto it = list.begin();
+        while (it != list.end()) {
+            if ((*it)->next_inject >= next_inject)
+                break;
+            if ((*it)->section->tableId() != _last_tid || (*it)->section->tableIdExtension() != _last_tidext) {
+                ++it;
+                continue;
+            }
+            // We have a section with the same {tid,tidext}
+            const ESectionPtr next_sec = *it;
+            _duck.report().log(2, u"reschedule section %d at %s",
+                                {next_sec->section->sectionNumber(), next_inject});
+            it = list.erase(it);
+            enqueueInjectSection(next_sec, next_inject, false);
+        }
+        _last_tid = 0;
+    }
+
     // Loop on all injection queues, in decreasing order of priority.
     for (size_t index = 0; index < _injects.size(); ++index) {
 
@@ -1233,6 +1262,9 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
                 enqueueInjectSection(sec, now + _profile.repetitionSeconds(*sec->section) * MilliSecPerSec, false);
                 _duck.report().log(2, u"inject section TID 0x%X (%<d), service 0x%X (%<d), at %s, requeue for %s",
                                    {section->tableId(), section->tableIdExtension(), now, sec->next_inject});
+                _last_tid = section->tableId();
+                _last_tidext = section->tableIdExtension();
+                _last_index = index;
                 return;
             }
         }
