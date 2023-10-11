@@ -16,34 +16,9 @@
 ts::TSSpeedMetrics::TSSpeedMetrics(PacketCounter packets, NanoSecond nanosecs, size_t intervals) :
     _min_packets(packets),
     _min_nanosecs(nanosecs),
-    _max_intervals_num(intervals),
-    _session_start(),
-    _clock(),
-    _intervals(),
-    _next_interval(0),
-    _total(),
-    _start_interval(0),
-    _count_interval(0),
-    _remain_interval(0)
+    _max_intervals_num(intervals)
 {
     start();
-}
-
-
-//----------------------------------------------------------------------------
-// Results on an interval of time.
-//----------------------------------------------------------------------------
-
-ts::TSSpeedMetrics::Interval::Interval() :
-    packets(0),
-    duration(0)
-{
-}
-
-void ts::TSSpeedMetrics::Interval::clear()
-{
-    packets = 0;
-    duration = 0;
 }
 
 

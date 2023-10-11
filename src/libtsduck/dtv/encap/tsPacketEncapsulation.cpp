@@ -16,27 +16,9 @@ const size_t ts::PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS;
 //----------------------------------------------------------------------------
 
 ts::PacketEncapsulation::PacketEncapsulation(PID pidOutput, const PIDSet& pidInput, PID pcrReference) :
-    _packing(false),
-    _packDistance(NPOS),
-    _pesMode(DISABLED),
-    _pesOffset(0),
     _pidOutput(pidOutput),
     _pidInput(pidInput),
-    _pcrReference(pcrReference),
-    _lastError(),
-    _currentPacket(0),
-    _pcrLastPacket(INVALID_PACKET_COUNTER),
-    _pcrLastValue(INVALID_PCR),
-    _ptsPrevious(INVALID_PCR),
-    _bitrate(0),
-    _insertPCR(false),
-    _ccOutput(0),
-    _ccPES(1),
-    _lastCC(),
-    _lateDistance(0),
-    _lateMaxPackets(DEFAULT_MAX_BUFFERED_PACKETS),
-    _lateIndex(0),
-    _latePackets()
+    _pcrReference(pcrReference)
 {
 }
 

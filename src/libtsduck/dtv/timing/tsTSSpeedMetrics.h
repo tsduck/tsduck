@@ -108,27 +108,26 @@ namespace ts {
         // Results on an interval of time.
         struct Interval
         {
-            Interval();
-            void clear();
+            void clear() { packets = 0; duration = 0; }
 
-            PacketCounter packets;   // Number of processed packets.
-            NanoSecond    duration;  // Processing duration.
+            PacketCounter packets {0};   // Number of processed packets.
+            NanoSecond    duration {0};  // Processing duration.
         };
 
         // Configuration data:
-        PacketCounter _min_packets;        // Minimum packets to accumulate per interval.
-        NanoSecond    _min_nanosecs;       // Minimum number of nanoseconds per interval.
-        size_t        _max_intervals_num;  // Max number of sliding time intervals.
+        PacketCounter _min_packets {MIN_PACKET_PER_INTERVAL};    // Minimum packets to accumulate per interval.
+        NanoSecond    _min_nanosecs {MIN_NANOSEC_PER_INTERVAL};  // Minimum number of nanoseconds per interval.
+        size_t        _max_intervals_num {INTERVAL_COUNT};       // Max number of sliding time intervals.
         // Clocks:
-        Monotonic     _session_start;      // The clock when start() was called.
-        Monotonic     _clock;              // The reference clock.
+        Monotonic     _session_start {};      // The clock when start() was called.
+        Monotonic     _clock {};              // The reference clock.
         // Accumulated data since beginning of session:
-        std::vector<Interval> _intervals;  // Accumulate results, circular buffer.
-        size_t        _next_interval;      // Next interval to overwrite.
-        Interval      _total;              // Accumulated values in all _intervals.
+        std::vector<Interval> _intervals {};  // Accumulate results, circular buffer.
+        size_t        _next_interval {0};     // Next interval to overwrite.
+        Interval      _total {};              // Accumulated values in all _intervals.
         // Description of current interval:
-        NanoSecond    _start_interval;     // Start time of interval, from _start_session.
-        PacketCounter _count_interval;     // Number of processed packets in current interval.
-        PacketCounter _remain_interval;    // Number of packets to process in this interval before checking the clock.
+        NanoSecond    _start_interval {0};    // Start time of interval, from _start_session.
+        PacketCounter _count_interval {0};    // Number of processed packets in current interval.
+        PacketCounter _remain_interval {0};   // Number of packets to process in this interval before checking the clock.
     };
 }

@@ -12,36 +12,15 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor
-// Specify the criteria for valid bitrate analysis:
-// Minimum number of PID's, each with a minimum number of PCR"s.
+// Constructor and destructor.
 //----------------------------------------------------------------------------
 
 ts::PCRAnalyzer::PCRAnalyzer(size_t min_pid, size_t min_pcr) :
-    _use_dts(false),
-    _ignore_errors(false),
     _min_pid(std::max<size_t>(1, min_pid)),
-    _min_pcr(std::max<size_t>(1, min_pcr)),
-    _bitrate_valid(false),
-    _ts_pkt_cnt(0),
-    _ts_bitrate_188(0),
-    _ts_bitrate_204(0),
-    _ts_bitrate_cnt(0),
-    _inst_ts_bitrate_188(0),
-    _inst_ts_bitrate_204(0),
-    _completed_pids(0),
-    _pcr_pids(0),
-    _discontinuities(0),
-    _pid(),
-    _packet_pcr_index_map()
+    _min_pcr(std::max<size_t>(1, min_pcr))
 {
     TS_ZERO(_pid);
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
 
 ts::PCRAnalyzer::~PCRAnalyzer()
 {
@@ -50,37 +29,8 @@ ts::PCRAnalyzer::~PCRAnalyzer()
 
 
 //----------------------------------------------------------------------------
-// PIDAnalysis constructor
-//----------------------------------------------------------------------------
-
-ts::PCRAnalyzer::PIDAnalysis::PIDAnalysis() :
-    ts_pkt_cnt(0),
-    cur_continuity(0),
-    last_pcr_value(INVALID_PCR),
-    last_pcr_packet(0),
-    ts_bitrate_188(0),
-    ts_bitrate_204(0),
-    ts_bitrate_cnt(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // PCRAnalyzez::Status constructors
 //----------------------------------------------------------------------------
-
-ts::PCRAnalyzer::Status::Status() :
-    bitrate_valid(false),
-    bitrate_188(0),
-    bitrate_204(0),
-    packet_count(0),
-    pcr_count(0),
-    pcr_pids(0),
-    discontinuities(0),
-    instantaneous_bitrate_188(0),
-    instantaneous_bitrate_204(0)
-{
-}
 
 ts::PCRAnalyzer::Status::Status(const PCRAnalyzer& an) : Status()
 {

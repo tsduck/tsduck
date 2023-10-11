@@ -28,13 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::LogoTransmissionDescriptor::LogoTransmissionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    logo_transmission_type(0),
-    logo_id(0),
-    logo_version(0),
-    download_data_id(0),
-    logo_char(),
-    reserved_future_use()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

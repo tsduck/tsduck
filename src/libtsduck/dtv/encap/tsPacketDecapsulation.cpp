@@ -14,15 +14,8 @@
 //----------------------------------------------------------------------------
 
 ts::PacketDecapsulation::PacketDecapsulation(PID pid) :
-    _pidInput(pid),
-    _synchronized(false),
-    _ccInput(0),
-    _nextIndex(1),
-    _nextPacket(),
-    _lastError()
+    _pidInput(pid)
 {
-    // There is always implicitely one sync byte in decapsulated packets.
-    _nextPacket.b[0] = SYNC_BYTE;
 }
 
 
