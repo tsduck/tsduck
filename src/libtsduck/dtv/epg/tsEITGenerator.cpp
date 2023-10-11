@@ -13,9 +13,6 @@
 #include "tsBCD.h"
 
 
-/* DVB specifies at least 25 ms. */
-#define SECTION_GAP 30
-
 //----------------------------------------------------------------------------
 // Constructor.
 //----------------------------------------------------------------------------
@@ -23,27 +20,10 @@
 ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid, EITOptions options, const EITRepetitionProfile& profile) :
     _duck(duck),
     _eit_pid(pid),
-    _actual_ts_id(0),
-    _actual_ts_id_set(false),
-    _regenerate(false),
-    _packet_index(0),
-    _max_bitrate(0),
-    _ts_bitrate(0),
-    _ref_time(),
-    _ref_time_pkt(0),
-    _eit_inter_pkt(0),
-    _last_eit_pkt(0),
     _options(options),
     _profile(profile),
     _demux(_duck, nullptr, this),
-    _packetizer(_duck, _eit_pid, this),
-    _services(),
-    _injects(),
-    _last_tid(0),
-    _last_tidext(0),
-    _last_index(0),
-    _obsolete_count(0),
-    _versions()
+    _packetizer(_duck, _eit_pid, this)
 {
     // We need the PAT as long as the TS id is not known.
     _demux.addPID(PID_PAT);
@@ -81,7 +61,7 @@ void ts::EITGenerator::reset()
     for (size_t i = 0; i < _injects.size(); ++i) {
         _injects[i].clear();
     }
-    _last_tid = 0;
+    _last_tid = TID_NULL;
     _obsolete_count = 0;
     _versions.clear();
 }
@@ -91,11 +71,7 @@ void ts::EITGenerator::reset()
 // Event: Constructor of the structure containing binary events.
 //----------------------------------------------------------------------------
 
-ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size) :
-    event_id(0),
-    start_time(),
-    end_time(),
-    event_data()
+ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
 {
     size_t event_size = size;
 
@@ -116,11 +92,7 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size) :
 // ESection: Constructor of the structure for a section, ready to inject.
 //----------------------------------------------------------------------------
 
-ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& srv, TID tid, uint8_t section_number, uint8_t last_section_number) :
-    obsolete(false),
-    injected(false),
-    next_inject(),
-    section()
+ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& srv, TID tid, uint8_t section_number, uint8_t last_section_number)
 {
     // Build section data.
     ByteBlockPtr section_data(new ByteBlock(LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE));
@@ -220,31 +192,6 @@ uint8_t ts::EITGenerator::nextVersion(const ServiceIdTriplet& service_id, TID ta
         // Update version.
         return iter->second = (iter->second + 1) & SVERSION_MASK;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// ESegment: Constructor of an EIT sched segment (3 hours, up to 8 sections)
-//----------------------------------------------------------------------------
-
-ts::EITGenerator::ESegment::ESegment(const Time& seg_start_time) :
-    start_time(seg_start_time),
-    regenerate(true), // all segments must have at least one section
-    events(),
-    sections()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// EService: Constructor of the description of one service.
-//----------------------------------------------------------------------------
-
-ts::EITGenerator::EService::EService() :
-    regenerate(false),
-    pf(),
-    segments()
-{
 }
 
 
@@ -1215,26 +1162,36 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
     // Make sure the EIT schedule are up-to-date.
     regenerateSchedule(now);
 
-    if (_last_tid) {
-        // Make sure no section for this {tid,tidext} is scheduled for SECTION_GAP
+    // Make sure no section for the last injected {tid,tidext} is scheduled for _section_gap milliseconds.
+    if (_last_tid != TID_NULL) {
         ESectionList& list(_injects[_last_index]);
-        const Time next_inject = now + SECTION_GAP;
+        const Time next_inject = now + _section_gap;
+        int gap_count = 0;
         auto it = list.begin();
-        while (it != list.end()) {
-            if ((*it)->next_inject >= next_inject)
-                break;
+        while (it != list.end() && (*it)->next_inject < next_inject) {
             if ((*it)->section->tableId() != _last_tid || (*it)->section->tableIdExtension() != _last_tidext) {
                 ++it;
-                continue;
             }
-            // We have a section with the same {tid,tidext}
-            const ESectionPtr next_sec = *it;
-            _duck.report().log(2, u"reschedule section %d at %s",
-                                {next_sec->section->sectionNumber(), next_inject});
-            it = list.erase(it);
-            enqueueInjectSection(next_sec, next_inject, false);
+            else {
+                // We have a section with the same {tid,tidext}, need to reschedule it later.
+                const ESectionPtr next_sec = *it;
+                _duck.report().log(2, u"reschedule section %d at %s", {next_sec->section->sectionNumber(), next_inject});
+                it = list.erase(it);
+                // We can't call enqueueInjectSection() since we are currently walking through the same
+                // list and enqueueInjectSection() may change "it" iterator. Insert manually.
+                next_sec->next_inject = next_inject + gap_count++ * _section_gap;
+                auto it1 = it;
+                while (it1 != list.end() && (*it1)->next_inject < next_sec->next_inject) {
+                    ++it1;
+                }
+                const bool same_place = it1 == it;
+                it1 = list.insert(it1, next_sec);
+                if (same_place) {
+                    it = it1;
+                }
+            }
         }
-        _last_tid = 0;
+        _last_tid = TID_NULL;
     }
 
     // Loop on all injection queues, in decreasing order of priority.
