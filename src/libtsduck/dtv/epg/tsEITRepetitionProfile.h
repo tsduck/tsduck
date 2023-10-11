@@ -15,6 +15,7 @@
 #include "tsSection.h"
 #include "tsTime.h"
 #include "tsPSI.h"
+#include "tsEIT.h"
 
 namespace ts {
     //!
@@ -73,13 +74,13 @@ namespace ts {
         //! EIT schedule for events in the prime period (i.e. the next few days)
         //! are repeated more often than for later events.
         //!
-        size_t prime_days;
+        size_t prime_days {EIT::TOTAL_DAYS};
 
         //!
         //! Cycle time in seconds of each EIT sections repetition profile.
         //! The array is indexed by EITProfile.
         //!
-        std::array <size_t, PROFILE_COUNT> cycle_seconds;
+        std::array <size_t, PROFILE_COUNT> cycle_seconds {};
 
         //!
         //! Standard EIT repetition profile for satellite and cable networks.
