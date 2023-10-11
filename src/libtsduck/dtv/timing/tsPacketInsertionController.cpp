@@ -20,15 +20,6 @@ constexpr size_t ts::PacketInsertionController::DEFAULT_BITRATE_RESET_PERCENT;
 
 ts::PacketInsertionController::PacketInsertionController(Report& report) :
     _report(report),
-    _main_name(u"main stream"),
-    _sub_name(u"sub-stream"),
-    _main_packets(0),
-    _sub_packets(0),
-    _wait_alert(DEFAULT_WAIT_ALERT),
-    _accel_factor(1),
-    _accel_main_packets(0),
-    _accel_sub_packets(0),
-    _accel_max_wait(0),
     _main_bitrate(_report, _main_name),
     _sub_bitrate(_report, _sub_name)
 {
@@ -56,12 +47,7 @@ void ts::PacketInsertionController::reset()
 
 ts::PacketInsertionController::BitRateControl::BitRateControl(Report& report, const UString& name) :
     _report(report),
-    _name(name),
-    _count(0),
-    _value_0(0),
-    _diffs(0),
-    _average(0),
-    _reset_percent(DEFAULT_BITRATE_RESET_PERCENT)
+    _name(name)
 {
 }
 

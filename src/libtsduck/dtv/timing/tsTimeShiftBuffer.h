@@ -155,21 +155,21 @@ namespace ts {
         bool shift(TSPacket& packet, TSPacketMetadata& metadata, Report& report);
 
     private:
-        bool    _is_open;                // Buffer is open.
-        size_t  _cur_packets;            // Current number of packets in the buffer.
-        size_t  _total_packets;          // Total capacity of the buffer.
-        size_t  _mem_packets;            // Max packets in memory.
-        UString _directory;              // Where to store the backup file.
-        TSFile  _file;                   // Backup file on disk.
-        size_t  _next_read;              // Index in buffer of next packet to read.
-        size_t  _next_write;             // Index in buffer of next packet to write.
-        size_t  _wcache_next;            // Next index to write in _wcache (up to end of _wcache).
-        size_t  _rcache_end;             // End index in _rcache (after last loaded packet).
-        size_t  _rcache_next;            // Next index to read in _rcache.
-        TSPacketVector         _wcache;  // Write cache (or complete buffer if in memory).
-        TSPacketVector         _rcache;  // Read cache.
-        TSPacketMetadataVector _wmdata;  // Packet metadata for _wcache.
-        TSPacketMetadataVector _rmdata;  // Packet metadata for _rcache.
+        bool    _is_open {false};           // Buffer is open.
+        size_t  _cur_packets {0};           // Current number of packets in the buffer.
+        size_t  _total_packets {DEFAULT_TOTAL_PACKETS}; // Total capacity of the buffer.
+        size_t  _mem_packets {DEFAULT_MEMORY_PACKETS};  // Max packets in memory.
+        UString _directory {};              // Where to store the backup file.
+        TSFile  _file {};                   // Backup file on disk.
+        size_t  _next_read {0};             // Index in buffer of next packet to read.
+        size_t  _next_write {0};            // Index in buffer of next packet to write.
+        size_t  _wcache_next {0};           // Next index to write in _wcache (up to end of _wcache).
+        size_t  _rcache_end {0};            // End index in _rcache (after last loaded packet).
+        size_t  _rcache_next {0};           // Next index to read in _rcache.
+        TSPacketVector         _wcache {};  // Write cache (or complete buffer if in memory).
+        TSPacketVector         _rcache {};  // Read cache.
+        TSPacketMetadataVector _wmdata {};  // Packet metadata for _wcache.
+        TSPacketMetadataVector _rmdata {};  // Packet metadata for _rcache.
 
         // Seek, read, write in the backup file.
         bool seekFile(size_t index, Report& report);

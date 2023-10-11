@@ -27,11 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::MosaicDescriptor::MosaicDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    mosaic_entry_point(false),
-    number_of_horizontal_elementary_cells(0),
-    number_of_vertical_elementary_cells(0),
-    cells()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -47,19 +43,6 @@ ts::MosaicDescriptor::MosaicDescriptor(DuckContext& duck, const Descriptor& desc
     MosaicDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::MosaicDescriptor::Cell::Cell() :
-    logical_cell_id(0),
-    logical_cell_presentation_info(0),
-    elementary_cell_ids(),
-    cell_linkage_info(0),
-    bouquet_id(0),
-    original_network_id(0),
-    transport_stream_id(0),
-    service_id(0),
-    event_id(0)
-{
 }
 
 

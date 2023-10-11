@@ -25,12 +25,12 @@ namespace ts {
     {
     public:
         // LogoTransmissionDescriptor public members:
-        uint8_t   logo_transmission_type;  //!< Logo transmission type, condition all subsequent fields.
-        uint16_t  logo_id;                 //!< 9 bits, when logo_transmission_type is 0x01 or 0x02.
-        uint16_t  logo_version;            //!< 12 bits, when logo_transmission_type is 0x01.
-        uint16_t  download_data_id;        //!< 16 bits, when logo_transmission_type is 0x01.
-        UString   logo_char;               //!< Simple logo content, when logo_transmission_type is 0x03.
-        ByteBlock reserved_future_use;     //!< When logo_transmission_type is different from 0x01, 0x02, 0x03.
+        uint8_t   logo_transmission_type {0};  //!< Logo transmission type, condition all subsequent fields.
+        uint16_t  logo_id {0};                 //!< 9 bits, when logo_transmission_type is 0x01 or 0x02.
+        uint16_t  logo_version {0};            //!< 12 bits, when logo_transmission_type is 0x01.
+        uint16_t  download_data_id {0};        //!< 16 bits, when logo_transmission_type is 0x01.
+        UString   logo_char {};                //!< Simple logo content, when logo_transmission_type is 0x03.
+        ByteBlock reserved_future_use {};      //!< When logo_transmission_type is different from 0x01, 0x02, 0x03.
 
         //!
         //! Default constructor.

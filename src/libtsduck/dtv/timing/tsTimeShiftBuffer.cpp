@@ -19,25 +19,11 @@ constexpr size_t ts::TimeShiftBuffer::DEFAULT_MEMORY_PACKETS;
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors
+// Constructors and destructor
 //----------------------------------------------------------------------------
 
 ts::TimeShiftBuffer::TimeShiftBuffer(size_t count) :
-    _is_open(false),
-    _cur_packets(0),
-    _total_packets(std::max(count, MIN_TOTAL_PACKETS)),
-    _mem_packets(DEFAULT_MEMORY_PACKETS),
-    _directory(),
-    _file(),
-    _next_read(0),
-    _next_write(0),
-    _wcache_next(0),
-    _rcache_end(0),
-    _rcache_next(0),
-    _wcache(),
-    _rcache(),
-    _wmdata(),
-    _rmdata()
+    _total_packets(std::max(count, MIN_TOTAL_PACKETS))
 {
 }
 

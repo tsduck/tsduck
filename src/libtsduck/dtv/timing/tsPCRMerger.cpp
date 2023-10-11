@@ -15,9 +15,6 @@
 
 ts::PCRMerger::PCRMerger(DuckContext& duck) :
     _duck(duck),
-    _incremental_pcr(false),
-    _pcr_reset_backwards(false),
-    _pid_ctx(),
     _demux(duck, this)
 
 {
@@ -27,15 +24,7 @@ ts::PCRMerger::PCRMerger(DuckContext& duck) :
 
 ts::PCRMerger::PIDContext::PIDContext(PID p) :
     pid(p),
-    pcr_pid(p),  // each PID is its own PCR PID until proven otherwise in a PMT
-    first_pcr(INVALID_PCR),
-    first_pcr_pkt(0),
-    last_pcr(INVALID_PCR),
-    last_pcr_pkt(0),
-    last_pts(INVALID_PTS),
-    last_pts_pkt(0),
-    last_dts(INVALID_DTS),
-    last_dts_pkt(0)
+    pcr_pid(p)  // each PID is its own PCR PID until proven otherwise in a PMT
 {
 }
 

@@ -16,18 +16,7 @@
 
 ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
     _report(report == nullptr ? NullReport::Instance() : report),
-    _log_level(log_level),
-    _starting(false),
-    _regulated(false),
-    _opt_burst(0),
-    _opt_bitrate(0),
-    _cur_bitrate(0),
-    _burst_min(0),
-    _burst_duration(0),
-    _burst_end(),
-    _periods(),
-    _period_duration(NanoSecPerSec),
-    _cur_period(0)
+    _log_level(log_level)
 {
 }
 
