@@ -204,7 +204,7 @@ namespace ts {
         BitRate  _inst_ts_bitrate_204 {0}; // Sum of all computed TS bitrates (204-byte) for last second
         size_t   _completed_pids {0};      // Number of PIDs with enough PCRs
         size_t   _pcr_pids {0};            // Number of PIDs with PCRs
-        size_t   _discontinuities;         // Number of discontinuities
+        size_t   _discontinuities {0};     // Number of discontinuities
         PIDAnalysis* _pid[PID_MAX] {};     // Per-PID stats
         std::map<uint64_t, uint64_t> _packet_pcr_index_map {}; // Map of PCR/DTS to packet index across entire TS
         static constexpr size_t FOOLPROOF_MAP_LIMIT = 1000;    // Max number of entries in the PCR map
