@@ -8,20 +8,6 @@
 
 #include "tshlsMediaSegment.h"
 
-
-//----------------------------------------------------------------------------
-// Constructors and destructor.
-//----------------------------------------------------------------------------
-
-ts::hls::MediaSegment::MediaSegment() :
-    MediaElement(),
-    title(),
-    duration(0),
-    bitrate(0),
-    gap(false)
-{
-}
-
 ts::hls::MediaSegment::~MediaSegment()
 {
 }

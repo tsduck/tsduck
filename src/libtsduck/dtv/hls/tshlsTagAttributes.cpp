@@ -14,8 +14,7 @@
 // Constructor.
 //----------------------------------------------------------------------------
 
-ts::hls::TagAttributes::TagAttributes(const UString& params) :
-    _map()
+ts::hls::TagAttributes::TagAttributes(const UString& params)
 {
     reload(params);
 }

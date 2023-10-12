@@ -17,13 +17,13 @@
 #include "tsjsonArray.h"
 
 const ts::Enumeration ts::json::TypeEnum({
-    {u"Null literal",  int(ts::json::Type::Null)},
-    {u"True literal",  int(ts::json::Type::True)},
-    {u"False literal", int(ts::json::Type::False)},
-    {u"string",        int(ts::json::Type::String)},
-    {u"number",        int(ts::json::Type::Number)},
-    {u"object",        int(ts::json::Type::Object)},
-    {u"array",         int(ts::json::Type::Array)},
+    {u"Null literal",  ts::json::Type::Null},
+    {u"True literal",  ts::json::Type::True},
+    {u"False literal", ts::json::Type::False},
+    {u"string",        ts::json::Type::String},
+    {u"number",        ts::json::Type::Number},
+    {u"object",        ts::json::Type::Object},
+    {u"array",         ts::json::Type::Array},
 });
 
 

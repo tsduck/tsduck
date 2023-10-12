@@ -14,7 +14,7 @@
 // Enumeration descriptions of TSPacketFormat.
 //----------------------------------------------------------------------------
 
-const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatEnum({
+const ts::Enumeration ts::TSPacketFormatEnum({
     {u"autodetect", ts::TSPacketFormat::AUTODETECT},
     {u"TS",         ts::TSPacketFormat::TS},
     {u"M2TS",       ts::TSPacketFormat::M2TS},
@@ -22,7 +22,7 @@ const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatEnum({
     {u"duck",       ts::TSPacketFormat::DUCK},
 });
 
-const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatInputEnum({
+const ts::Enumeration ts::TSPacketFormatInputEnum({
     {u"autodetect", ts::TSPacketFormat::AUTODETECT},
     {u"TS",         ts::TSPacketFormat::TS},
     {u"M2TS",       ts::TSPacketFormat::M2TS},
@@ -30,7 +30,7 @@ const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatInputEnum({
     {u"duck",       ts::TSPacketFormat::DUCK},
 });
 
-const ts::TypedEnumeration<ts::TSPacketFormat> ts::TSPacketFormatOutputEnum({
+const ts::Enumeration ts::TSPacketFormatOutputEnum({
     {u"TS",         ts::TSPacketFormat::TS},
     {u"M2TS",       ts::TSPacketFormat::M2TS},
     {u"RS204",      ts::TSPacketFormat::RS204},

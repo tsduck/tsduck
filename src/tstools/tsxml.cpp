@@ -91,9 +91,9 @@ Options::Options(int argc, char *argv[]) :
     help(u"", u"Specify the list of input files. If any is specified as '-', the standard input is used.");
 
     option(u"attributes-merge", 0, ts::Enumeration({
-        {u"add",     int(ts::xml::MergeAttributes::ADD)},
-        {u"none",    int(ts::xml::MergeAttributes::NONE)},
-        {u"replace", int(ts::xml::MergeAttributes::REPLACE)},
+        {u"add",     ts::xml::MergeAttributes::ADD},
+        {u"none",    ts::xml::MergeAttributes::NONE},
+        {u"replace", ts::xml::MergeAttributes::REPLACE},
     }));
     help(u"attributes-merge", u"name",
          u"With --merge, specify how attributes are processed in merged node. "

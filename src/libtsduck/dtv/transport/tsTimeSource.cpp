@@ -8,7 +8,7 @@
 
 #include "tsTimeSource.h"
 
-const ts::TypedEnumeration<ts::TimeSource> ts::TimeSourceEnum({
+const ts::Enumeration ts::TimeSourceEnum({
     {u"undefined", ts::TimeSource::UNDEFINED},
     {u"hardware",  ts::TimeSource::HARDWARE},
     {u"kernel",    ts::TimeSource::KERNEL},

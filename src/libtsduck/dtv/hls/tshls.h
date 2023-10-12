@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsEnumeration.h"
+#include "tsEnumUtils.h"
 
 namespace ts {
     //!
@@ -45,7 +46,7 @@ namespace ts {
         //! @see RFC 8216, chapter 4.
         //! @see draft-pantos-hls-rfc8216bis-10
         //!
-        enum Tag {
+        enum class Tag {
             //
             // 4.4.1 Basic Tags
             //
@@ -102,9 +103,10 @@ namespace ts {
         //! Properties of playlist tags.
         //! Can be used as bitmask.
         //!
-        enum TagFlags {
-            TAG_MASTER = 0x0001,     //!< The tag is allowed in master playlists.
-            TAG_MEDIA  = 0x0002,     //!< The tag is allowed in media playlists.
+        enum class TagFlags {
+            NONE   = 0x0000,   //! Tag is not allowed anywhere.
+            MASTER = 0x0001,   //!< The tag is allowed in master playlists.
+            MEDIA  = 0x0002,   //!< The tag is allowed in media playlists.
         };
 
         //!
@@ -118,6 +120,7 @@ namespace ts {
         //! @param [in] tag The tag to get the properties of.
         //! @return A bitmask of TagFlags.
         //!
-        TSDUCKDLL int TagProperties(Tag tag);
+        TSDUCKDLL TagFlags TagProperties(Tag tag);
     }
 }
+TS_ENABLE_BITMASK_OPERATORS(ts::hls::TagFlags);

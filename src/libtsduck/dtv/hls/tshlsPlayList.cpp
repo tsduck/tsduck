@@ -13,33 +13,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::hls::PlayList::PlayList() :
-    _valid(false),
-    _version(1),
-    _type(PlayListType::UNKNOWN),
-    _original(),
-    _fileBase(),
-    _isURL(false),
-    _url(),
-    _targetDuration(0),
-    _mediaSequence(0),
-    _endList(false),
-    _utcDownload(),
-    _utcTermination(),
-    _segments(),
-    _playlists(),
-    _altPlaylists(),
-    _loadedContent(),
-    _autoSaveDir(),
-    _extraTags()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Clear the content of the playlist.
 //----------------------------------------------------------------------------
 
@@ -642,11 +615,11 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
     MediaSegment segNext;
 
     // Current tag and parameters.
-    Tag tag = EXTM3U;
+    Tag tag = Tag::EXTM3U;
     UString tagParams;
 
     // The playlist must always start with #EXTM3U.
-    if (_loadedContent.empty() || !getTag(_loadedContent.front(), tag, tagParams, strict, report) || tag != EXTM3U) {
+    if (_loadedContent.empty() || !getTag(_loadedContent.front(), tag, tagParams, strict, report) || tag != Tag::EXTM3U) {
         report.error(u"invalid HLS playlist, does not start with #EXTM3U");
         return false;
     }
@@ -701,21 +674,21 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
         else if (getTag(line, tag, tagParams, strict, report)) {
             // The line contains a tag.
             switch (tag) {
-                case EXTM3U: {
+                case Tag::EXTM3U: {
                     if (strict && lineNumber > 1) {
                         report.error(u"misplaced: %s", {line});
                         _valid = false;
                     }
                     break;
                 }
-                case VERSION: {
+                case Tag::VERSION: {
                     if (!tagParams.toInteger(_version) && strict) {
                         report.error(u"invalid HLS playlist version: %s", {line});
                         _valid = false;
                     }
                     break;
                 }
-                case EXTINF: {
+                case Tag::EXTINF: {
                     // #EXTINF:duration,[title]
                     // Apply to next segment only.
                     const size_t comma = tagParams.find(u",");  // can be NPOS
@@ -729,7 +702,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     }
                     break;
                 }
-                case BITRATE: {
+                case Tag::BITRATE: {
                     // #EXT-X-BITRATE:<rate>
                     BitRate kilobits = 0;
                     if (kilobits.fromString(tagParams)) {
@@ -742,13 +715,13 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     }
                     break;
                 }
-                case GAP: {
+                case Tag::GAP: {
                     // #EXT-X-GAP
                     // Apply to next segment only.
                     segNext.gap = true;
                     break;
                 }
-                case TARGETDURATION: {
+                case Tag::TARGETDURATION: {
                     // #EXT-X-TARGETDURATION:s
                     if (!tagParams.toInteger(_targetDuration) && strict) {
                         report.error(u"invalid target duration in %s", {line});
@@ -756,7 +729,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     }
                     break;
                 }
-                case MEDIA_SEQUENCE: {
+                case Tag::MEDIA_SEQUENCE: {
                     // #EXT-X-MEDIA-SEQUENCE:number
                     if (!tagParams.toInteger(_mediaSequence) && strict) {
                         report.error(u"invalid media sequence in %s", {line});
@@ -764,11 +737,11 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     }
                     break;
                 }
-                case ENDLIST: {
+                case Tag::ENDLIST: {
                     _endList = true;
                     break;
                 }
-                case PLAYLIST_TYPE: {
+                case Tag::PLAYLIST_TYPE: {
                     if (tagParams.similar(u"VOD")) {
                         setType(PlayListType::VOD, report);
                     }
@@ -781,7 +754,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     }
                     break;
                 }
-                case STREAM_INF: {
+                case Tag::STREAM_INF: {
                     // #EXT-X-STREAM-INF:<attribute-list>
                     // Apply to next playlist only.
                     const TagAttributes attr(tagParams);
@@ -798,7 +771,7 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     plNext.closedCaptions = attr.value(u"CLOSED-CAPTIONS");
                     break;
                 }
-                case MEDIA: {
+                case Tag::MEDIA: {
                     // #EXT-X-MEDIA:<attribute-list>
                     const TagAttributes attr(tagParams);
                     AltPlayList pl;
@@ -824,27 +797,27 @@ bool ts::hls::PlayList::parse(bool strict, Report& report)
                     _altPlaylists.push_back(pl);
                     break;
                 }
-                case BYTERANGE:
-                case DISCONTINUITY:
-                case KEY:
-                case MAP:
-                case PROGRAM_DATE_TIME:
-                case DATERANGE:
-                case SKIP:
-                case PRELOAD_HINT:
-                case RENDITION_REPORT:
-                case DISCONTINUITY_SEQUENCE:
-                case I_FRAMES_ONLY:
-                case PART_INF:
-                case SERVER_CONTROL:
-                case I_FRAME_STREAM_INF:
-                case SESSION_DATA:
-                case SESSION_KEY:
-                case CONTENT_STEERING:
-                case INDEPENDENT_SEGMENTS:
-                case START:
-                case DEFINE:
-                case PART:
+                case Tag::BYTERANGE:
+                case Tag::DISCONTINUITY:
+                case Tag::KEY:
+                case Tag::MAP:
+                case Tag::PROGRAM_DATE_TIME:
+                case Tag::DATERANGE:
+                case Tag::SKIP:
+                case Tag::PRELOAD_HINT:
+                case Tag::RENDITION_REPORT:
+                case Tag::DISCONTINUITY_SEQUENCE:
+                case Tag::I_FRAMES_ONLY:
+                case Tag::PART_INF:
+                case Tag::SERVER_CONTROL:
+                case Tag::I_FRAME_STREAM_INF:
+                case Tag::SESSION_DATA:
+                case Tag::SESSION_KEY:
+                case Tag::CONTENT_STEERING:
+                case Tag::INDEPENDENT_SEGMENTS:
+                case Tag::START:
+                case Tag::DEFINE:
+                case Tag::PART:
                     // Currently ignored tags.
                     break;
                 default:
@@ -883,12 +856,12 @@ bool ts::hls::PlayList::getTag(const UString& line, Tag& tag, UString& params, b
     }
 
     // Set playlist type based on tags which are unique to a playlist type.
-    const int flags = TagProperties(tag);
-    if ((flags & (TAG_MASTER | TAG_MEDIA)) == TAG_MASTER) {
+    const TagFlags flags = TagProperties(tag);
+    if ((flags & (TagFlags::MASTER | TagFlags::MEDIA)) == TagFlags::MASTER) {
         // This is a master-only tag.
         setType(PlayListType::MASTER, report);
     }
-    else if ((flags & (TAG_MASTER | TAG_MEDIA)) == TAG_MEDIA) {
+    else if ((flags & (TagFlags::MASTER | TagFlags::MEDIA)) == TagFlags::MEDIA) {
         // This is a media-only tag.
         setTypeMedia(report);
     }
@@ -1059,7 +1032,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
     // Start building the content.
     UString text;
-    text.format(u"#%s\n#%s:%d\n", {TagNames.name(EXTM3U), TagNames.name(VERSION), _version});
+    text.format(u"#%s\n#%s:%d\n", {TagNames.name(Tag::EXTM3U), TagNames.name(Tag::VERSION), _version});
 
     // Insert application-specific tags before standard tags.
     for (const auto& tag : _extraTags) {
@@ -1070,7 +1043,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
         // Loop on all alternative rendition playlists.
         for (const auto& pl : _altPlaylists) {
             // The initial fields are required.
-            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", {TagNames.name(MEDIA), pl.type, pl.groupId, pl.name});
+            text.format(u"#%s:TYPE=%s,GROUP-ID=\"%s\",NAME=\"%s\"", {TagNames.name(Tag::MEDIA), pl.type, pl.groupId, pl.name});
             if (pl.isDefault) {
                 text.append(u",DEFAULT=YES");
             }
@@ -1110,7 +1083,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
                 // The #EXT-X-STREAM-INF line must exactly preceed the URI line.
                 // Take care about string parameters: some are documented as quoted-string and
                 // some as enumerated-string. The former shall be quoted, the latter shall not.
-                text.format(u"#%s:BANDWIDTH=%d", {TagNames.name(STREAM_INF), pl.bandwidth.toInt()});
+                text.format(u"#%s:BANDWIDTH=%d", {TagNames.name(Tag::STREAM_INF), pl.bandwidth.toInt()});
                 if (pl.averageBandwidth > 0) {
                     text.format(u",AVERAGE-BANDWIDTH=%d", {pl.averageBandwidth.toInt()});
                 }
@@ -1157,24 +1130,24 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
     }
     else if (isMedia()) {
         // Global tags.
-        text.format(u"#%s:%d\n", {TagNames.name(TARGETDURATION), _targetDuration});
-        text.format(u"#%s:%d\n", {TagNames.name(MEDIA_SEQUENCE), _mediaSequence});
+        text.format(u"#%s:%d\n", {TagNames.name(Tag::TARGETDURATION), _targetDuration});
+        text.format(u"#%s:%d\n", {TagNames.name(Tag::MEDIA_SEQUENCE), _mediaSequence});
         if (_type == PlayListType::VOD) {
-            text.format(u"#%s:VOD\n", {TagNames.name(PLAYLIST_TYPE)});
+            text.format(u"#%s:VOD\n", {TagNames.name(Tag::PLAYLIST_TYPE)});
         }
         else if (_type == PlayListType::EVENT) {
-            text.format(u"#%s:EVENT\n", {TagNames.name(PLAYLIST_TYPE)});
+            text.format(u"#%s:EVENT\n", {TagNames.name(Tag::PLAYLIST_TYPE)});
         }
 
         // Loop on all media segments.
         for (const auto& seg : _segments) {
             if (!seg.relativeURI.empty()) {
-                text.format(u"#%s:%d.%03d,%s\n", {TagNames.name(EXTINF), seg.duration / MilliSecPerSec, seg.duration % MilliSecPerSec, seg.title});
+                text.format(u"#%s:%d.%03d,%s\n", {TagNames.name(Tag::EXTINF), seg.duration / MilliSecPerSec, seg.duration % MilliSecPerSec, seg.title});
                 if (seg.bitrate > 1024) {
-                    text.format(u"#%s:%d\n", {TagNames.name(BITRATE), (seg.bitrate / 1024).toInt()});
+                    text.format(u"#%s:%d\n", {TagNames.name(Tag::BITRATE), (seg.bitrate / 1024).toInt()});
                 }
                 if (seg.gap) {
-                    text.format(u"#%s\n", {TagNames.name(GAP)});
+                    text.format(u"#%s\n", {TagNames.name(Tag::GAP)});
                 }
                 text.format(u"%s\n", {seg.relativeURI});
             }
@@ -1182,7 +1155,7 @@ ts::UString ts::hls::PlayList::textContent(ts::Report &report) const
 
         // Mark end of list when necessary.
         if (_endList) {
-            text.format(u"#%s\n", {TagNames.name(ENDLIST)});
+            text.format(u"#%s\n", {TagNames.name(Tag::ENDLIST)});
         }
     }
     else {
