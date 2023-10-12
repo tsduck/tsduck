@@ -10,28 +10,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::hls::MediaPlayList::MediaPlayList() :
-    MediaElement(),
-    bandwidth(0),
-    averageBandwidth(0),
-    width(0),
-    height(0),
-    frameRate(0),
-    codecs(),
-    hdcp(),
-    videoRange(),
-    video(),
-    audio(),
-    subtitles(),
-    closedCaptions()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Implementation of StringifyInterface
 //----------------------------------------------------------------------------
 

@@ -16,7 +16,7 @@
 #include "tsTSP.h"
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
-#include "tsTypedEnumeration.h"
+#include "tsEnumeration.h"
 #include "tsDuckContext.h"
 
 namespace ts {
@@ -33,7 +33,7 @@ namespace ts {
     //!
     //! Displayable names of plugin types.
     //!
-    TSDUCKDLL extern const TypedEnumeration<PluginType> PluginTypeNames;
+    TSDUCKDLL extern const Enumeration PluginTypeNames;
 
     //!
     //! Base class of all @c tsp plugins.

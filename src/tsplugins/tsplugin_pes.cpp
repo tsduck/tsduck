@@ -170,12 +170,12 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     help(u"binary", u"Include binary dump in addition to hexadecimal.");
 
     option(u"h26x-default-format", 0, Enumeration({
-        {u"AVC",   int(CodecType::AVC)},
-        {u"H.264", int(CodecType::AVC)},
-        {u"HEVC",  int(CodecType::HEVC)},
-        {u"H.265", int(CodecType::HEVC)},
-        {u"VVC",   int(CodecType::VVC)},
-        {u"H.266", int(CodecType::VVC)},
+        {u"AVC",   CodecType::AVC},
+        {u"H.264", CodecType::AVC},
+        {u"HEVC",  CodecType::HEVC},
+        {u"H.265", CodecType::HEVC},
+        {u"VVC",   CodecType::VVC},
+        {u"H.266", CodecType::VVC},
     }));
     help(u"h26x-default-format", u"name",
          u"The video formats AVC (H.264), HEVC (H.265) and VVC (H.266) use the same binary bitstream format. "

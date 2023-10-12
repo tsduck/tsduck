@@ -23,15 +23,15 @@ const ts::PIDSet ts::AllPIDs (~NoPID);
 //----------------------------------------------------------------------------
 
 const ts::Enumeration ts::PIDClassEnum({
-    {u"undefined", int(ts::PIDClass::UNDEFINED)},
-    {u"PSI/SI",    int(ts::PIDClass::PSI)},
-    {u"EMM",       int(ts::PIDClass::EMM)},
-    {u"ECM",       int(ts::PIDClass::ECM)},
-    {u"video",     int(ts::PIDClass::VIDEO)},
-    {u"audio",     int(ts::PIDClass::AUDIO)},
-    {u"subtitles", int(ts::PIDClass::SUBTITLES)},
-    {u"data",      int(ts::PIDClass::DATA)},
-    {u"stuffing",  int(ts::PIDClass::STUFFING)},
+    {u"undefined", ts::PIDClass::UNDEFINED},
+    {u"PSI/SI",    ts::PIDClass::PSI},
+    {u"EMM",       ts::PIDClass::EMM},
+    {u"ECM",       ts::PIDClass::ECM},
+    {u"video",     ts::PIDClass::VIDEO},
+    {u"audio",     ts::PIDClass::AUDIO},
+    {u"subtitles", ts::PIDClass::SUBTITLES},
+    {u"data",      ts::PIDClass::DATA},
+    {u"stuffing",  ts::PIDClass::STUFFING},
 });
 
 

@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsTypedEnumeration.h"
+#include "tsEnumeration.h"
 
 namespace ts {
     //!
@@ -34,5 +34,5 @@ namespace ts {
     //!
     //! Enumeration description of ts::TimeSource.
     //!
-    TSDUCKDLL extern const TypedEnumeration<TimeSource> TimeSourceEnum;
+    TSDUCKDLL extern const Enumeration TimeSourceEnum;
 }

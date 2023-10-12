@@ -14,9 +14,9 @@
 //----------------------------------------------------------------------------
 
 const ts::Enumeration ts::TableScopeEnum({
-    {u"none",   int(ts::TableScope::NONE)},
-    {u"actual", int(ts::TableScope::ACTUAL)},
-    {u"all",    int(ts::TableScope::ALL)},
+    {u"none",   ts::TableScope::NONE},
+    {u"actual", ts::TableScope::ACTUAL},
+    {u"all",    ts::TableScope::ALL},
 });
 
 

@@ -336,13 +336,13 @@ ts::VatekOutputPlugin::VatekOutputPlugin(TSP* tsp_) :
          u"The default is 5,120,000 sym/s");
 
     option(u"t2-guard-interval", 0, Enumeration({
-        {u"1/128", t2_gi_1_128},
-        {u"1/32", t2_gi_1_32},
-        {u"1/16", t2_gi_1_16},
+        {u"1/128",  t2_gi_1_128},
+        {u"1/32",   t2_gi_1_32},
+        {u"1/16",   t2_gi_1_16},
         {u"19/256", t2_gi_19_256},
-        {u"1/8", t2_gi_1_8},
+        {u"1/8",    t2_gi_1_8},
         {u"19/128", t2_gi_19_128},
-        {u"1/4", t2_gi_1_4},
+        {u"1/4",    t2_gi_1_4},
     }));
     help(u"t2-guard-interval",
          u"DVB-T2: indicates the guard interval. The default is 1/128.");

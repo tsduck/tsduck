@@ -1179,6 +1179,7 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
                 it = list.erase(it);
                 // We can't call enqueueInjectSection() since we are currently walking through the same
                 // list and enqueueInjectSection() may change "it" iterator. Insert manually.
+                // Also reschedule each section "_section_gap" later than the previous one.
                 next_sec->next_inject = next_inject + gap_count++ * _section_gap;
                 auto it1 = it;
                 while (it1 != list.end() && (*it1)->next_inject < next_sec->next_inject) {

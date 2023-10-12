@@ -127,7 +127,7 @@ namespace ts {
             }
 
         private:
-            std::map<UString, UString> _map;
+            std::map<UString, UString> _map {};
         };
     }
 }

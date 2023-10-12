@@ -27,7 +27,7 @@ namespace ts {
             //!
             //! Constructor.
             //!
-            MediaElement();
+            MediaElement() = default;
 
             //!
             //! Get the URL string to use.
@@ -39,9 +39,9 @@ namespace ts {
             virtual UString toString() const override;
 
             // Public fields.
-            UString relativeURI;  //!< Relative URI, verbatime from playlist.
-            UString filePath;     //!< Full file path.
-            URL     url;          //!< Full URL, invalid if accessed by file path only.
+            UString relativeURI {};  //!< Relative URI, verbatime from playlist.
+            UString filePath {};     //!< Full file path.
+            URL     url {};          //!< Full URL, invalid if accessed by file path only.
         };
     }
 }

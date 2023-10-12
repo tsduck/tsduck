@@ -9,14 +9,14 @@
 #include "tsEnumeration.h"
 
 // Values for "not found"
-const int ts::Enumeration::UNKNOWN = std::numeric_limits<int>::max();
+const ts::Enumeration::int_t ts::Enumeration::UNKNOWN = std::numeric_limits<ts::Enumeration::int_t>::max();
 
 
 //----------------------------------------------------------------------------
-// Constructors.
+// Constructor from a variable list of string/value pairs.
 //----------------------------------------------------------------------------
 
-ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values)
+ts::Enumeration::Enumeration(std::initializer_list<NameValue> values)
 {
     for (const auto& it : values) {
         _map.insert(std::make_pair(it.value, it.name));
@@ -31,11 +31,11 @@ ts::Enumeration::Enumeration(const std::initializer_list<NameValue> values)
 TS_PUSH_WARNING()
 TS_GCC_NOWARNING(shadow) // workaround for a bug in GCC 7.5
 
-int ts::Enumeration::value(const UString& name, bool caseSensitive, bool abbreviated) const
+ts::Enumeration::int_t ts::Enumeration::value(const UString& name, bool caseSensitive, bool abbreviated) const
 {
     const UString lcName(name.toLower());
     size_t previousCount = 0;
-    int previous = UNKNOWN;
+    int_t previous = UNKNOWN;
 
     for (const auto& it : _map) {
         if ((caseSensitive && it.second == name) || (!caseSensitive && it.second.toLower() == lcName)) {
@@ -109,7 +109,7 @@ ts::UString ts::Enumeration::error(const UString& name1, bool caseSensitive, boo
 // Get the name from a value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Enumeration::intToName(int value, bool hexa, size_t hexDigitCount) const
+ts::UString ts::Enumeration::intToName(int_t value, bool hexa, size_t hexDigitCount) const
 {
     const auto it = _map.find(value);
     if (it != _map.end()) {
@@ -128,10 +128,10 @@ ts::UString ts::Enumeration::intToName(int value, bool hexa, size_t hexDigitCoun
 // Get the names from a bit-mask value.
 //----------------------------------------------------------------------------
 
-ts::UString ts::Enumeration::bitMaskNames(int value, const ts::UString& separator, bool hexa, size_t hexDigitCount) const
+ts::UString ts::Enumeration::bitMaskNames(int_t value, const ts::UString& separator, bool hexa, size_t hexDigitCount) const
 {
     UString list;
-    int done = 0; // Bitmask of all values which are already added in the list.
+    int_t done = 0; // Bitmask of all values which are already added in the list.
 
     // Insert all known names.
     for (const auto& it : _map) {
@@ -147,7 +147,7 @@ ts::UString ts::Enumeration::bitMaskNames(int value, const ts::UString& separato
 
     // Now loop on bits which were not already printed.
     value &= ~done;
-    for (int mask = 1; value != 0 && mask != 0; mask <<= 1) {
+    for (int_t mask = 1; value != 0 && mask != 0; mask <<= 1) {
         value &= ~mask;
         if (!list.empty()) {
             list += separator;

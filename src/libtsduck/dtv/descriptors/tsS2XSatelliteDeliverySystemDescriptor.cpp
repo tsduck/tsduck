@@ -204,12 +204,12 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& chann
 //----------------------------------------------------------------------------
 
 const ts::Enumeration ts::S2XSatelliteDeliverySystemDescriptor::RollOffNames({
-    {u"0.35",     0},
-    {u"0.25",     1},
-    {u"0.20",     2},
-    {u"0.15",     4},
-    {u"0.10",     5},
-    {u"0.05",     6},
+    {u"0.35", 0},
+    {u"0.25", 1},
+    {u"0.20", 2},
+    {u"0.15", 4},
+    {u"0.10", 5},
+    {u"0.05", 6},
 });
 
 

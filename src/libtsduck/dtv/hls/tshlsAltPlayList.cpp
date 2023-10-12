@@ -10,28 +10,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::hls::AltPlayList::AltPlayList() :
-    MediaElement(),
-    isDefault(false),
-    autoselect(false),
-    forced(false),
-    name(),
-    type(),
-    groupId(),
-    stableRenditionId(),
-    language(),
-    assocLanguage(),
-    inStreamId(),
-    characteristics(),
-    channels()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Implementation of StringifyInterface
 //----------------------------------------------------------------------------
 

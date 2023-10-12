@@ -34,21 +34,21 @@ const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({
-    {u"short",        int(ts::VersionInfo::Format::SHORT)},
-    {u"long",         int(ts::VersionInfo::Format::LONG)},
-    {u"integer",      int(ts::VersionInfo::Format::INTEGER)},
-    {u"date",         int(ts::VersionInfo::Format::DATE)},
-    {u"compiler",     int(ts::VersionInfo::Format::COMPILER)},
-    {u"system",       int(ts::VersionInfo::Format::SYSTEM)},
-    {u"acceleration", int(ts::VersionInfo::Format::ACCELERATION)},
-    {u"bitrate",      int(ts::VersionInfo::Format::BITRATE)},
-    {u"nsis",         int(ts::VersionInfo::Format::NSIS)},
-    {u"dektec",       int(ts::VersionInfo::Format::DEKTEC)},
-    {u"http",         int(ts::VersionInfo::Format::HTTP)},
-    {u"srt",          int(ts::VersionInfo::Format::SRT)},
-    {u"rist",         int(ts::VersionInfo::Format::RIST)},
-    {u"vatek",        int(ts::VersionInfo::Format::VATEK)},
-    {u"all",          int(ts::VersionInfo::Format::ALL)},
+    {u"short",        ts::VersionInfo::Format::SHORT},
+    {u"long",         ts::VersionInfo::Format::LONG},
+    {u"integer",      ts::VersionInfo::Format::INTEGER},
+    {u"date",         ts::VersionInfo::Format::DATE},
+    {u"compiler",     ts::VersionInfo::Format::COMPILER},
+    {u"system",       ts::VersionInfo::Format::SYSTEM},
+    {u"acceleration", ts::VersionInfo::Format::ACCELERATION},
+    {u"bitrate",      ts::VersionInfo::Format::BITRATE},
+    {u"nsis",         ts::VersionInfo::Format::NSIS},
+    {u"dektec",       ts::VersionInfo::Format::DEKTEC},
+    {u"http",         ts::VersionInfo::Format::HTTP},
+    {u"srt",          ts::VersionInfo::Format::SRT},
+    {u"rist",         ts::VersionInfo::Format::RIST},
+    {u"vatek",        ts::VersionInfo::Format::VATEK},
+    {u"all",          ts::VersionInfo::Format::ALL},
 });
 
 // Enumeration of supported features.
