@@ -139,9 +139,13 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
 {
     duck.defineArgsForCharset(*this);
 
-    option(u"actual");
-    help(u"actual",
-         u"Generate EIT actual. If neither --actual nor --other are specified, both are generated.");
+    option(u"actual-pf");
+    help(u"actual-pf",
+         u"Generate EIT actual p/f. If no option is specified, all EIT sections are generated.");
+
+    option(u"actual-schedule");
+    help(u"actual-schedule",
+         u"Generate EIT actual schedule. If no option is specified, all EIT sections are generated.");
 
     option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
@@ -220,13 +224,13 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"poll notifications when a file is being written and his size modified at "
          u"each poll. The default is " + UString::Decimal(DEFAULT_MIN_STABLE_DELAY) + u" ms.");
 
-    option(u"other");
-    help(u"other",
-         u"Generate EIT other. If neither --actual nor --other are specified, both are generated.");
+    option(u"other-pf");
+    help(u"other-pf",
+         u"Generate EIT other p/f. If no option is specified, all EIT sections are generated.");
 
-    option(u"pf");
-    help(u"pf",
-         u"Generate EIT p/f. If neither --pf nor --schedule are specified, both are generated.");
+    option(u"other-schedule");
+    help(u"other-schedule",
+         u"Generate EIT actual schedule. If no option is specified, all EIT sections are generated.");
 
     option(u"poll-interval", 0, UNSIGNED);
     help(u"poll-interval", u"milliseconds",
@@ -239,10 +243,6 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"EIT schedule for events in the prime period (i.e. the next few days) "
          u"are repeated more frequently than EIT schedule for later events. "
          u"The default is " + UString::Decimal(EITRepetitionProfile::SatelliteCable.prime_days) + u" days.");
-
-    option(u"schedule");
-    help(u"schedule",
-         u"Generate EIT schedule. If neither --pf nor --schedule are specified, both are generated.");
 
     option(u"stuffing");
     help(u"stuffing",
@@ -310,25 +310,21 @@ bool ts::EITInjectPlugin::getOptions()
 
     // Combination of EIT generation options.
     _eit_options = EITOptions::GEN_NONE;
-    if (present(u"actual")) {
-        _eit_options |= EITOptions::GEN_ACTUAL;
+    if (present(u"actual-pf")) {
+        _eit_options |= EITOptions::GEN_ACTUAL_PF;
     }
-    if (present(u"other")) {
-        _eit_options |= EITOptions::GEN_OTHER;
+    if (present(u"other-pf")) {
+        _eit_options |= EITOptions::GEN_OTHER_PF;
     }
-    if (!(_eit_options & (EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER))) {
-        // Generate EIT actual and other by default.
-        _eit_options |= EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER;
+    if (present(u"actual-schedule")) {
+        _eit_options |= EITOptions::GEN_ACTUAL_SCHED;
     }
-    if (present(u"pf")) {
-        _eit_options |= EITOptions::GEN_PF;
+    if (present(u"other-schedule")) {
+        _eit_options |= EITOptions::GEN_OTHER_SCHED;
     }
-    if (present(u"schedule")) {
-        _eit_options |= EITOptions::GEN_SCHED;
-    }
-    if (!(_eit_options & (EITOptions::GEN_PF | EITOptions::GEN_SCHED))) {
+    if (!(_eit_options & EITOptions::GEN_ALL)) {
         // Generate EIT p/f and schedule by default.
-        _eit_options |= EITOptions::GEN_PF | EITOptions::GEN_SCHED;
+        _eit_options |= EITOptions::GEN_ALL;
     }
     if (present(u"incoming-eits")) {
         _eit_options |= EITOptions::LOAD_INPUT;
