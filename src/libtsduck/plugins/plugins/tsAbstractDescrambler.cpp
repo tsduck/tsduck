@@ -19,22 +19,11 @@
 
 ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_, const UString& description, const UString& syntax, size_t stack_usage) :
     ProcessorPlugin(tsp_, description, syntax),
-    _use_service(false),
-    _need_ecm(false),
-    _abort(false),
-    _synchronous(false),
-    _swap_cw(false),
     _scrambling(*tsp),
-    _pids(),
     _service(duck, this),
     _stack_usage(stack_usage),
     _demux(duck, nullptr, this),
-    _ecm_streams(),
-    _scrambled_streams(),
-    _mutex(),
-    _ecm_to_do(),
-    _ecm_thread(this),
-    _stop_thread(false)
+    _ecm_thread(this)
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
@@ -105,36 +94,6 @@ bool ts::AbstractDescrambler::getOptions()
     }
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor of CWData inner class.
-//----------------------------------------------------------------------------
-
-ts::AbstractDescrambler::CWData::CWData(uint8_t mode) :
-    scrambling(mode),
-    cw(),
-    iv()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor of ECMStream inner class.
-//----------------------------------------------------------------------------
-
-ts::AbstractDescrambler::ECMStream::ECMStream(AbstractDescrambler* parent) :
-    last_tid(TID_NULL),
-    scrambling(parent->_scrambling),
-    cw_valid(false),
-    new_cw_even(false),
-    new_cw_odd(false),
-    new_ecm(false),
-    ecm(),
-    cw_even(),
-    cw_odd()
-{
 }
 
 

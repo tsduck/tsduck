@@ -43,20 +43,14 @@ namespace ts {
         //! This method feeds the CAS mapper with a TS packet.
         //! @param [in] pkt A new transport stream packet.
         //!
-        void feedPacket(const TSPacket& pkt)
-        {
-            _demux.feedPacket(pkt);
-        }
+        void feedPacket(const TSPacket& pkt) { _demux.feedPacket(pkt); }
 
         //!
         //! Filter PSI tables based on current/next indicator.
         //! @param [in] current Use "current" tables. This is true by default.
         //! @param [in] next Use "next" tables. This is false by default.
         //!
-        void setCurrentNext(bool current, bool next)
-        {
-            _demux.setCurrentNext(current, next);
-        }
+        void setCurrentNext(bool current, bool next) { _demux.setCurrentNext(current, next); }
 
         //!
         //! Track / untrack invalid section version numbers.
@@ -66,20 +60,14 @@ namespace ts {
         //! changes. This is considered as an error according to MPEG rules.
         //! @param [in] on Track invalid section versions. This is false by default.
         //!
-        void trackInvalidSectionVersions(bool on)
-        {
-            _demux.trackInvalidSectionVersions(on);
-        }
+        void trackInvalidSectionVersions(bool on) { _demux.trackInvalidSectionVersions(on); }
 
         //!
         //! Check if a PID is a known CA PID.
         //! @param [in] pid A PID to check.
         //! @return True if @ pid is a known ECM or EMM PID.
         //!
-        bool knownPID(PID pid) const
-        {
-            return Contains(_pids, pid);
-        }
+        bool knownPID(PID pid) const { return Contains(_pids, pid); }
 
         //!
         //! Get the CAS id of a CA PID (ECM or EMM).
@@ -136,7 +124,7 @@ namespace ts {
         // CAMapper private fields.
         DuckContext&      _duck;
         SectionDemux      _demux;
-        PIDDescriptionMap _pids;
+        PIDDescriptionMap _pids {};
 
         // Implementation of TableHandlerInterface
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

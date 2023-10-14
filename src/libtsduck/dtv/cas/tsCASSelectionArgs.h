@@ -32,14 +32,14 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        CASSelectionArgs();
+        CASSelectionArgs() = default;
 
         // Public fields, by options.
-        bool      pass_ecm;    //!< Pass PIDs containing ECM.
-        bool      pass_emm;    //!< Pass PIDs containing EMM.
-        uint16_t  min_cas_id;  //!< Minimum CA system id for ECM or EMM.
-        uint16_t  max_cas_id;  //!< Maximum CA system id for ECM or EMM.
-        uint32_t  cas_oper;    //!< CA operator id (depends on the CAS).
+        bool      pass_ecm {false};  //!< Pass PIDs containing ECM.
+        bool      pass_emm {false};  //!< Pass PIDs containing EMM.
+        uint16_t  min_cas_id {0};    //!< Minimum CA system id for ECM or EMM.
+        uint16_t  max_cas_id {0};    //!< Maximum CA system id for ECM or EMM.
+        uint32_t  cas_oper {0};      //!< CA operator id (depends on the CAS).
 
         //!
         //! Add command line option definitions in an Args.

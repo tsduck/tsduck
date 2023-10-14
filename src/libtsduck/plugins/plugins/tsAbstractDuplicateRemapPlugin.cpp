@@ -15,11 +15,6 @@
 
 ts::AbstractDuplicateRemapPlugin::AbstractDuplicateRemapPlugin(bool remap, TSP* tsp_, const UString& description, const UString& syntax) :
     ProcessorPlugin(tsp_, description, syntax),
-    _unchecked(false),
-    _newPIDs(),
-    _pidMap(),
-    _setLabels(),
-    _resetLabels(),
     _remap(remap),
     _noun(remap ? u"remapping" : u"duplication"),
     _verb(remap ? u"remap" : u"duplicate"),

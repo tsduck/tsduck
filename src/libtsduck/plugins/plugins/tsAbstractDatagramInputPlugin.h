@@ -75,25 +75,25 @@ namespace ts {
         enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
 
         // Configuration and command line options.
-        bool          _real_time;             // Real-time reception.
-        MilliSecond   _eval_time;             // Bitrate evaluation interval in milli-seconds
-        MilliSecond   _display_time;          // Bitrate display interval in milli-seconds
-        Enumeration   _time_priority_enum;    // Enumeration values for _time_priority
-        TimePriority  _time_priority;         // Priority of time stamps sources.
-        TimePriority  _default_time_priority; // Priority of time stamps sources.
+        bool          _real_time {false};              // Real-time reception.
+        MilliSecond   _eval_time {0};                  // Bitrate evaluation interval in milli-seconds
+        MilliSecond   _display_time {0};               // Bitrate display interval in milli-seconds
+        Enumeration   _time_priority_enum {};          // Enumeration values for _time_priority
+        TimePriority  _time_priority {RTP_TSP};        // Priority of time stamps sources.
+        TimePriority  _default_time_priority{RTP_TSP}; // Priority of time stamps sources.
 
         // Working data.
-        Time          _next_display;          // Next bitrate display time
-        Time          _start;                 // UTC date of first received packet
-        PacketCounter _packets;               // Number of received packets since _start
-        Time          _start_0;               // Start of previous bitrate evaluation period
-        PacketCounter _packets_0;             // Number of received packets since _start_0
-        Time          _start_1;               // Start of previous bitrate evaluation period
-        PacketCounter _packets_1;             // Number of received packets since _start_1
-        size_t        _inbuf_count;           // Number of remaining TS packets in inbuf
-        size_t        _inbuf_next;            // Byte index in _inbuf of next TS packet to return
-        size_t        _mdata_next;            // Index in _mdata of next TS packet metadata to return
-        ByteBlock     _inbuf;                 // Input buffer
-        TSPacketMetadataVector _mdata;        // Metadata for packets in _inbuf
+        Time          _next_display {};     // Next bitrate display time
+        Time          _start {};            // UTC date of first received packet
+        PacketCounter _packets {0};         // Number of received packets since _start
+        Time          _start_0 {};          // Start of previous bitrate evaluation period
+        PacketCounter _packets_0 {0};       // Number of received packets since _start_0
+        Time          _start_1 {};          // Start of previous bitrate evaluation period
+        PacketCounter _packets_1 {0};       // Number of received packets since _start_1
+        size_t        _inbuf_count {0};     // Number of remaining TS packets in inbuf
+        size_t        _inbuf_next {0};      // Byte index in _inbuf of next TS packet to return
+        size_t        _mdata_next {0};      // Index in _mdata of next TS packet metadata to return
+        ByteBlock     _inbuf {};            // Input buffer
+        TSPacketMetadataVector _mdata {};   // Metadata for packets in _inbuf
     };
 }
