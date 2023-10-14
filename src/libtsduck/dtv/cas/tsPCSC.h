@@ -105,10 +105,10 @@ namespace ts {
         //!
         struct TSDUCKDLL ReaderState
         {
-            UString   reader;         //!< Smartcard reader name.
-            ByteBlock atr;            //!< Last ATR value.
-            ::DWORD   current_state;  //!< Current reader state.
-            ::DWORD   event_state;    //!< Current event state.
+            UString   reader {};          //!< Smartcard reader name.
+            ByteBlock atr {};             //!< Last ATR value.
+            ::DWORD   current_state {0};  //!< Current reader state.
+            ::DWORD   event_state {0};    //!< Current event state.
 
             //!
             //! Constructor.
@@ -117,9 +117,7 @@ namespace ts {
             //!
             ReaderState(const UString& reader_ = UString(), ::DWORD current_state_ = SCARD_STATE_UNAWARE) :
                 reader(reader_),
-                atr(),
-                current_state(current_state_),
-                event_state(0)
+                current_state(current_state_)
             {
             }
         };

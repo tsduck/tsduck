@@ -18,19 +18,7 @@
 ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
     _scrambling_type(scrambling),
-    _explicit_type(false),
-    _out_cw_name(),
-    _out_cw_file(),
-    _cw_list(),
-    _next_cw(_cw_list.end()),
-    _encrypt_scv(SC_CLEAR),
-    _decrypt_scv(SC_CLEAR),
-    _dvbcsa(),
-    _dvbcissa(),
-    _idsa(),
-    _aescbc(),
-    _aesctr(),
-    _scrambler{nullptr, nullptr}
+    _next_cw(_cw_list.end())
 {
     setScramblingType(scrambling);
 }
@@ -40,18 +28,8 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
-    _out_cw_name(),
-    _out_cw_file(),
     _cw_list(other._cw_list),
-    _next_cw(_cw_list.end()),
-    _encrypt_scv(SC_CLEAR),
-    _decrypt_scv(SC_CLEAR),
-    _dvbcsa(),
-    _dvbcissa(),
-    _idsa(),
-    _aescbc(),
-    _aesctr(),
-    _scrambler{nullptr, nullptr}
+    _next_cw(_cw_list.end())
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
@@ -62,18 +40,8 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
-    _out_cw_name(),
-    _out_cw_file(),
     _cw_list(other._cw_list),
-    _next_cw(_cw_list.end()),
-    _encrypt_scv(SC_CLEAR),
-    _decrypt_scv(SC_CLEAR),
-    _dvbcsa(),
-    _dvbcissa(),
-    _idsa(),
-    _aescbc(),
-    _aesctr(),
-    _scrambler{nullptr, nullptr}
+    _next_cw(_cw_list.end())
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());

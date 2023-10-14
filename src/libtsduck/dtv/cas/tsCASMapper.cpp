@@ -22,8 +22,7 @@
 ts::CASMapper::CASMapper(DuckContext& duck) :
     TableHandlerInterface(),
     _duck(duck),
-    _demux(_duck, this),
-    _pids()
+    _demux(_duck, this)
 {
     // Specify the PID filters
     _demux.addPID(PID_PAT);

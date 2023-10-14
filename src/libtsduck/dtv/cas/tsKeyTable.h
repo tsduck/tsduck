@@ -41,7 +41,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        KeyTable();
+        KeyTable() = default;
 
         //!
         //! Clear the content of the key table.
@@ -149,7 +149,7 @@ namespace ts {
         bool loadXML(Report& report, const UString& text, bool replace, size_t id_size, size_t value_size);
 
     private:
-        std::map<ByteBlock,ByteBlock> _keys;  // key table, indexed by id
+        std::map<ByteBlock,ByteBlock> _keys {};  // key table, indexed by id
 
         // Common code for loadFile() and loadXML().
         bool parseXML(xml::Document& doc, bool replace, size_t id_size, size_t value_size);

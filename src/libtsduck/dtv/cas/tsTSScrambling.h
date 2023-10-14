@@ -196,20 +196,20 @@ namespace ts {
         typedef std::list<ByteBlock> CWList;
 
         Report&          _report;
-        uint8_t          _scrambling_type;
-        bool             _explicit_type;
-        UString          _out_cw_name;
-        std::ofstream    _out_cw_file;
-        CWList           _cw_list;
-        CWList::iterator _next_cw;
-        uint8_t          _encrypt_scv;  // Encryption: key to use (SC_EVEN_KEY or SC_ODD_KEY).
-        uint8_t          _decrypt_scv;  // Decryption: previous scrambling_control value.
-        DVBCSA2          _dvbcsa[2];    // Index 0 = even key, 1 = odd key.
-        DVBCISSA         _dvbcissa[2];
-        IDSA             _idsa[2];
-        CBC<AES>         _aescbc[2];
-        CTR<AES>         _aesctr[2];
-        CipherChaining*  _scrambler[2];
+        uint8_t          _scrambling_type {SCRAMBLING_RESERVED};
+        bool             _explicit_type {false};
+        UString          _out_cw_name {};
+        std::ofstream    _out_cw_file {};
+        CWList           _cw_list {};
+        CWList::iterator _next_cw {};
+        uint8_t          _encrypt_scv {SC_CLEAR};  // Encryption: key to use (SC_EVEN_KEY or SC_ODD_KEY).
+        uint8_t          _decrypt_scv {SC_CLEAR};  // Decryption: previous scrambling_control value.
+        DVBCSA2          _dvbcsa[2] {};            // Index 0 = even key, 1 = odd key.
+        DVBCISSA         _dvbcissa[2] {};
+        IDSA             _idsa[2] {};
+        CBC<AES>         _aescbc[2] {};
+        CTR<AES>         _aesctr[2] {};
+        CipherChaining*  _scrambler[2] {nullptr, nullptr};
 
         // Set the next fixed control word as scrambling key.
         bool setNextFixedCW(int parity);

@@ -60,19 +60,13 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        PIDOperatorSet() :
-            SuperClass()
-        {
-        }
+        PIDOperatorSet() = default;
 
         //!
         //! Copy constructor.
         //! @param [in] other Other instance to copy.
         //!
-        PIDOperatorSet(const PIDOperatorSet& other) :
-            SuperClass(other)
-        {
-        }
+        PIDOperatorSet(const PIDOperatorSet& other) = default;
 
         //!
         //! Search first ECM/EMM PID for a specific operator.

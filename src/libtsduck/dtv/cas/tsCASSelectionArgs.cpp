@@ -23,20 +23,6 @@ const std::vector<ts::CASSelectionArgs::PredefinedCAS> ts::CASSelectionArgs::_pr
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::CASSelectionArgs::CASSelectionArgs() :
-    pass_ecm(false),
-    pass_emm(false),
-    min_cas_id(0),
-    max_cas_id(0),
-    cas_oper(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
