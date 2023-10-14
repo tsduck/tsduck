@@ -216,6 +216,7 @@ ts::ScramblerPlugin::ScramblerPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"DVB scrambler", u"[options] [service]"),
     _service(duck, this),
     _logger(Severity::Debug, tsp_),
+    _cp(),  // required on old gcc 10 and below (gcc bug)
     _scrambling(*tsp),
     _pzer_pmt(duck)
 {

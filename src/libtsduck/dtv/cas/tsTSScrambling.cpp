@@ -36,6 +36,7 @@ ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
 }
 
 ts::TSScrambling::TSScrambling(const TSScrambling& other) :
+    BlockCipherAlertInterface(other),  // required on old gcc 8.5 and below (gcc bug)
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),

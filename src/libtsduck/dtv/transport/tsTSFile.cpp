@@ -61,6 +61,8 @@ ts::TSFile::TSFile() :
 
 ts::TSFile::TSFile(const TSFile& other) :
     TSPacketStream(other.packetFormat(), this, this),
+    AbstractReadStreamInterface(other),   // required on old gcc 8.5 and below (gcc bug)
+    AbstractWriteStreamInterface(other),  // required on old gcc 8.5 and below (gcc bug)
     _filename(other._filename),
     _repeat(other._repeat),
     _counter(0),
