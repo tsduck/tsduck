@@ -51,25 +51,25 @@ void ts::SectionFileArgs::defineArgs(Args& args)
               u"If the time is also specified, it is the current time for the snapshot of EIT present/following. "
               u"By default, use the oldest date in all EIT sections as base date.");
 
-    args.option(u"eit-actual");
-    args.help(u"eit-actual",
-              u"With --eit-normalization, generate EIT actual. "
-              u"If neither --eit-actual nor --eit-other are specified, both are generated.");
+    args.option(u"eit-actual-pf");
+    args.help(u"eit-actual-pf",
+              u"With --eit-normalization, generate EIT actual p/f. "
+              u"If no option is specified, all EIT sections are generated.");
 
-    args.option(u"eit-other");
-    args.help(u"eit-other",
-              u"With --eit-normalization, generate EIT other. "
-              u"If neither --eit-actual nor --eit-other are specified, both are generated.");
+    args.option(u"eit-other-pf");
+    args.help(u"eit-other-pf",
+              u"With --eit-normalization, generate EIT other p/f. "
+              u"If no option is specified, all EIT sections are generated.");
 
-    args.option(u"eit-pf");
-    args.help(u"eit-pf",
-              u"With --eit-normalization, generate EIT p/f. "
-              u"If neither --eit-pf nor --eit-schedule are specified, both are generated.");
+    args.option(u"eit-actual-schedule");
+    args.help(u"eit-actual-schedule",
+              u"With --eit-normalization, generate EIT actual schedule. "
+              u"If no option is specified, all EIT sections are generated.");
 
-    args.option(u"eit-schedule");
-    args.help(u"eit-schedule",
-              u"With --eit-normalization, generate EIT schedule. "
-              u"If neither --eit-pf nor --eit-schedule are specified, both are generated.");
+    args.option(u"eit-other-schedule");
+    args.help(u"eit-other-schedule",
+              u"With --eit-normalization, generate EIT other schedule. "
+              u"If no option is specified, all EIT sections are generated.");
 
     args.option(u"pack-and-flush");
     args.help(u"pack-and-flush",
@@ -98,25 +98,21 @@ bool ts::SectionFileArgs::loadArgs(DuckContext& duck, Args& args)
 
     // Combination of EIT generation options.
     eit_options = EITOptions::GEN_NONE;
-    if (args.present(u"eit-actual")) {
-        eit_options |= EITOptions::GEN_ACTUAL;
+    if (args.present(u"eit-actual-pf")) {
+        eit_options |= EITOptions::GEN_ACTUAL_PF;
     }
-    if (args.present(u"eit-other")) {
-        eit_options |= EITOptions::GEN_OTHER;
+    if (args.present(u"eit-other-pf")) {
+        eit_options |= EITOptions::GEN_OTHER_PF;
     }
-    if (!(eit_options & (EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER))) {
-        // Generate EIT actual and other by default.
-        eit_options |= EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER;
+    if (args.present(u"eit-actual-schedule")) {
+        eit_options |= EITOptions::GEN_ACTUAL_SCHED;
     }
-    if (args.present(u"eit-pf")) {
-        eit_options |= EITOptions::GEN_PF;
+    if (args.present(u"eit-other-schedule")) {
+        eit_options |= EITOptions::GEN_OTHER_SCHED;
     }
-    if (args.present(u"eit-schedule")) {
-        eit_options |= EITOptions::GEN_SCHED;
-    }
-    if (!(eit_options & (EITOptions::GEN_PF | EITOptions::GEN_SCHED))) {
-        // Generate EIT p/f and schedule by default.
-        eit_options |= EITOptions::GEN_PF | EITOptions::GEN_SCHED;
+    if (!(eit_options & EITOptions::GEN_ALL)) {
+        // Generate all sections by default.
+        eit_options |= EITOptions::GEN_ALL;
     }
 
     return true;

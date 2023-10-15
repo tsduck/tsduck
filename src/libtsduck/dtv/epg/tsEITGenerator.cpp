@@ -428,7 +428,7 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
         if (new_other || new_actual) {
 
             // Process EIT p/f.
-            if (bool(_options & EITOptions::GEN_PF)) {
+            if ((new_actual && bool(_options & EITOptions::GEN_ACTUAL_PF)) || (new_other && bool(_options & EITOptions::GEN_OTHER_PF))) {
                 if (need_eit && (srv.pf[0].isNull() || srv.pf[1].isNull())) {
                     // At least one EIT p/f shall be rebuilt.
                     regeneratePresentFollowing(srv_iter.first, srv_iter.second, now);
@@ -506,8 +506,8 @@ void ts::EITGenerator::setOptions(EITOptions options)
     const Time now(getCurrentTime());
 
     // Check the configuration has changed for EIT p/f and EIT schedule, respectively.
-    const bool pf_changed = (_options & (EITOptions::GEN_PF | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) != (old_options & (EITOptions::GEN_PF | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER));
-    const bool sched_changed = (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) != (old_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER));
+    const bool pf_changed = (_options & EITOptions::GEN_PF) != (old_options & EITOptions::GEN_PF);
+    const bool sched_changed = (_options & EITOptions::GEN_SCHED) != (old_options & EITOptions::GEN_SCHED);
 
     // If the combination of EIT to generate has changed, regenerate EIT.
     if ((pf_changed || sched_changed) && _actual_ts_id_set && now != Time::Epoch) {
@@ -520,10 +520,12 @@ void ts::EITGenerator::setOptions(EITOptions options)
 
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
             const bool need_eit = (actual && bool(_options & EITOptions::GEN_ACTUAL)) || (!actual && bool(_options & EITOptions::GEN_OTHER));
+            const auto GEN_PF = actual ? EITOptions::GEN_ACTUAL_PF : EITOptions::GEN_OTHER_PF;
+            const auto GEN_SCHED = actual ? EITOptions::GEN_ACTUAL_SCHED : EITOptions::GEN_OTHER_SCHED;
 
             // Process EIT p/f.
             if (pf_changed) {
-                if (!need_eit || !(_options & EITOptions::GEN_PF)) {
+                if (!need_eit || !(_options & GEN_PF)) {
                     // Remove existing EIT p/f sections.
                     for (size_t i = 0; i < srv.pf.size(); ++i) {
                         if (!srv.pf[i].isNull()) {
@@ -540,7 +542,7 @@ void ts::EITGenerator::setOptions(EITOptions options)
 
             // Process EIT schedule (all segments, all sections).
             if (sched_changed) {
-                if (!need_eit || !(_options & EITOptions::GEN_SCHED)) {
+                if (!need_eit || !(_options & GEN_SCHED)) {
                     // We no longer need the EIT schedule.
                     for (auto& seg_iter : srv.segments) {
                         ESegment& seg(*seg_iter);
@@ -701,8 +703,9 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
     }
 
     const bool actual = _actual_ts_id == service_id.transport_stream_id;
+    const auto GEN_PF = actual ? EITOptions::GEN_ACTUAL_PF : EITOptions::GEN_OTHER_PF;
 
-    if (!(_options & EITOptions::GEN_PF) || (actual && !(_options & EITOptions::GEN_ACTUAL)) || (!actual && !(_options & EITOptions::GEN_OTHER))) {
+    if (!(_options & GEN_PF)) {
         // This type of EIT cannot be (no time ref) or shall not be (excluded) generated. If sections exist, delete them.
         for (size_t i = 0; i < srv.pf.size(); ++i) {
             if (!srv.pf[i].isNull()) {
@@ -834,14 +837,14 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             const ServiceIdTriplet& service_id(srv_iter.first);
             EService& srv(srv_iter.second);
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
+            const auto GEN_SCHED = actual ? EITOptions::GEN_ACTUAL_SCHED : EITOptions::GEN_OTHER_SCHED;
             _duck.report().debug(u"regenerating events for service 0x%X (%<d)", {service_id});
 
             // Set of subtables to globally update their version (SYNC_VERSIONS only).
             std::set<TID> sync_tids;
 
             // Check if EIT schedule are needed for the service.
-            const bool need_eits = (actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) == (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) ||
-                                   (!actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_OTHER)) == (EITOptions::GEN_SCHED | EITOptions::GEN_OTHER));
+            const bool need_eits = bool(_options & GEN_SCHED);
 
             // Remove initial segments before last midnight.
             while (!srv.segments.empty() && srv.segments.front()->start_time < last_midnight) {
