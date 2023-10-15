@@ -20,9 +20,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"psi", ts::PSIPlugin);
 ts::PSIPlugin::PSIPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Extract PSI Information", u"[options]"),
     _display(duck),
-    _logger(_display),
-    _signal_event(false),
-    _event_code(0)
+    _logger(_display)
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);

@@ -47,29 +47,29 @@ namespace ts {
 
         private:
             // Command line options:
-            URL      _url;
-            BitRate  _minRate;
-            BitRate  _maxRate;
-            size_t   _minWidth;
-            size_t   _maxWidth;
-            size_t   _minHeight;
-            size_t   _maxHeight;
-            int      _startSegment;
-            bool     _listVariants;
-            bool     _lowestRate;
-            bool     _highestRate;
-            bool     _lowestRes;
-            bool     _highestRes;
-            size_t   _maxSegmentCount;
-            bool     _altSelection;
-            UString  _altType;
-            UString  _altName;
-            UString  _altGroupId;
-            UString  _altLanguage;
+            URL      _url {};
+            BitRate  _minRate {0};
+            BitRate  _maxRate {0};
+            size_t   _minWidth {0};
+            size_t   _maxWidth {0};
+            size_t   _minHeight {0};
+            size_t   _maxHeight {0};
+            int      _startSegment {0};
+            bool     _listVariants {false};
+            bool     _lowestRate {false};
+            bool     _highestRate {false};
+            bool     _lowestRes {false};
+            bool     _highestRes {false};
+            size_t   _maxSegmentCount {0};
+            bool     _altSelection {false};
+            UString  _altType {};
+            UString  _altName {};
+            UString  _altGroupId {};
+            UString  _altLanguage {};
 
             // Working data:
-            size_t   _segmentCount;
-            PlayList _playlist;
+            size_t   _segmentCount {0};
+            PlayList _playlist {};
         };
     }
 }

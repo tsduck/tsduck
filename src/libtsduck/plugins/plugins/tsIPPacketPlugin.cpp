@@ -17,8 +17,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"ip", ts::IPPacketPlugin);
 //----------------------------------------------------------------------------
 
 ts::IPPacketPlugin::IPPacketPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast, and pass them to next plugin", u"[options] address:port"),
-    _datagram(TSDatagramOutputOptions::ALLOW_RTP | TSDatagramOutputOptions::ALWAYS_BURST)
+    ProcessorPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast, and pass them to next plugin", u"[options] address:port")
 {
     _datagram.defineArgs(*this);
 }

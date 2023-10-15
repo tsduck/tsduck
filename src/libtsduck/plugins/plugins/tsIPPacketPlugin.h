@@ -38,6 +38,6 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TSDatagramOutput _datagram;
+        TSDatagramOutput _datagram {TSDatagramOutputOptions::ALLOW_RTP | TSDatagramOutputOptions::ALWAYS_BURST};
     };
 }

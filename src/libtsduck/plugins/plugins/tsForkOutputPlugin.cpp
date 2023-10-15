@@ -17,12 +17,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"fork", ts::ForkOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::ForkOutputPlugin::ForkOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'"),
-    _command(),
-    _nowait(false),
-    _format(TSPacketFormat::TS),
-    _buffer_size(0),
-    _pipe()
+    OutputPlugin(tsp_, u"Fork a process and send TS packets to its standard input", u"[options] 'command'")
 {
     DefineTSPacketFormatOutputOption(*this);
 

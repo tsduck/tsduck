@@ -39,10 +39,10 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        UString        _command;      // The command to run.
-        bool           _nowait;       // Don't wait for children termination.
-        TSPacketFormat _format;       // Packet format on the pipe
-        size_t         _buffer_size;  // Pipe buffer size in packets.
-        TSForkPipe     _pipe;         // The pipe device.
+        UString        _command {};       // The command to run.
+        bool           _nowait {false};   // Don't wait for children termination.
+        TSPacketFormat _format {TSPacketFormat::TS};  // Packet format on the pipe
+        size_t         _buffer_size {0};  // Pipe buffer size in packets.
+        TSForkPipe     _pipe {};          // The pipe device.
     };
 }

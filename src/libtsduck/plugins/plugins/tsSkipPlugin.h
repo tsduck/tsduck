@@ -35,7 +35,7 @@ namespace ts {
 
     private:
         // Command line options:
-        PacketCounter _skip_count;
-        bool          _use_stuffing;
+        PacketCounter _skip_count {0};
+        bool          _use_stuffing {false};
     };
 }

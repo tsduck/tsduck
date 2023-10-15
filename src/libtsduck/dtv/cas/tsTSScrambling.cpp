@@ -18,7 +18,13 @@
 ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
     _scrambling_type(scrambling),
-    _next_cw(_cw_list.end())
+    _next_cw(_cw_list.end()),
+    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
+    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
+    _idsa(),      // required on old gcc 10 and below (gcc bug)
+    _aescbc(),    // required on old gcc 10 and below (gcc bug)
+    _aesctr()     // required on old gcc 10 and below (gcc bug)
+
 {
     setScramblingType(scrambling);
 }
@@ -29,7 +35,12 @@ ts::TSScrambling::TSScrambling(const TSScrambling& other) :
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
     _cw_list(other._cw_list),
-    _next_cw(_cw_list.end())
+    _next_cw(_cw_list.end()),
+    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
+    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
+    _idsa(),      // required on old gcc 10 and below (gcc bug)
+    _aescbc(),    // required on old gcc 10 and below (gcc bug)
+    _aesctr()     // required on old gcc 10 and below (gcc bug)
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
@@ -41,7 +52,12 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
     _cw_list(other._cw_list),
-    _next_cw(_cw_list.end())
+    _next_cw(_cw_list.end()),
+    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
+    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
+    _idsa(),      // required on old gcc 10 and below (gcc bug)
+    _aescbc(),    // required on old gcc 10 and below (gcc bug)
+    _aesctr()     // required on old gcc 10 and below (gcc bug)
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());

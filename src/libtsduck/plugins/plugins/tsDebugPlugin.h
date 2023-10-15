@@ -34,10 +34,10 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        UString _tag;
-        char*   _null;
-        bool    _segfault;
-        bool    _exit;
-        int     _exit_code;
+        UString _tag {};
+        char*   _null {nullptr};
+        bool    _segfault {false};
+        bool    _exit {false};
+        int     _exit_code {EXIT_SUCCESS};
     };
 }

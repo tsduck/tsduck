@@ -17,8 +17,7 @@ TS_REGISTER_INPUT_PLUGIN(u"file", ts::FileInputPlugin);
 //----------------------------------------------------------------------------
 
 ts::FileInputPlugin::FileInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Read packets from one or more files", u"[options] [file-name ...]"),
-    _file()
+    InputPlugin(tsp_, u"Read packets from one or more files", u"[options] [file-name ...]")
 {
     _file.defineArgs(*this);
 }

@@ -17,8 +17,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"ip", ts::IPOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::IPOutputPlugin::IPOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast", u"[options] address:port"),
-    _datagram(TSDatagramOutputOptions::ALLOW_RTP)
+    OutputPlugin(tsp_, u"Send TS packets using UDP/IP, multicast or unicast", u"[options] address:port")
 {
     _datagram.defineArgs(*this);
 }

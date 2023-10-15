@@ -68,14 +68,14 @@ namespace ts {
         //!
         //! Web command line options can be accessed by subclasses for additional web operations.
         //!
-        WebRequestArgs webArgs;
+        WebRequestArgs webArgs {};
 
     private:
-        WebRequest _request;      // Current Web transfer in progress.
-        TSPacket   _partial;      // Buffer for incomplete packets.
-        size_t     _partialSize;  // Number of bytes in partial.
-        UString    _autoSaveDir;  // If not empty, automatically save loaded files to this directory.
-        TSFile     _outSave;      // TS file where to store the loaded file.
+        WebRequest _request;          // Current Web transfer in progress.
+        TSPacket   _partial {};       // Buffer for incomplete packets.
+        size_t     _partialSize {0};  // Number of bytes in partial.
+        UString    _autoSaveDir {};   // If not empty, automatically save loaded files to this directory.
+        TSFile     _outSave {};       // TS file where to store the loaded file.
 
         // Start/receive/stop on one single transfer.
         bool startTransfer();

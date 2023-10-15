@@ -38,6 +38,6 @@ namespace ts {
         virtual bool abortInput() override;
 
     private:
-        TSFileInputArgs _file;
+        TSFileInputArgs _file {};
     };
 }

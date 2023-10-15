@@ -18,8 +18,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"memory", ts::MemoryOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::MemoryOutputPlugin::MemoryOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Direct memory output to an application", u"[options]"),
-    _event_code(0)
+    OutputPlugin(tsp_, u"Direct memory output to an application", u"[options]")
 {
     setIntro(u"Developer plugin: This plugin is useful only to C++, Java or Python developers "
              u"who run a TSProcessor pipeline inside their applications and want this application "

@@ -34,6 +34,6 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        uint32_t _event_code;
+        uint32_t _event_code {0};
     };
 }

@@ -38,6 +38,6 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        TSDatagramOutput _datagram;
+        TSDatagramOutput _datagram {TSDatagramOutputOptions::ALLOW_RTP};
     };
 }

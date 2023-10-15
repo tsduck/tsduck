@@ -28,35 +28,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 
 ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename"),
-    _segmentTemplate(),
-    _playlistFile(),
-    _intraClose(false),
-    _useBitrateTag(false),
-    _alignFirstSegment(false),
-    _sliceOnly(false),
-    _playlistType(hls::PlayListType::UNKNOWN),
-    _liveDepth(0),
-    _liveExtraDepth(0),
-    _targetDuration(0),
-    _maxExtraDuration(0),
-    _fixedSegmentSize(0),
-    _initialMediaSeq(0),
-    _customTags(),
-    _closeLabels(),
-    _nameGenerator(),
     _demux(duck, this),
-    _patPackets(),
-    _pmtPackets(),
-    _pmtPID(PID_NULL),
-    _videoPID(PID_NULL),
-    _videoStreamType(ST_NULL),
-    _segStarted(false),
-    _segClosePending(false),
-    _segmentFile(),
-    _liveSegmentFiles(),
-    _playlist(),
-    _pcrAnalyzer(1, 4),  // Minimum required: 1 PID, 4 PCR
-    _previousBitrate(0),
     _ccFixer(NoPID, tsp)
 {
     option(u"", 0, FILENAME, 1, 1);

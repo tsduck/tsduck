@@ -17,8 +17,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"file", ts::FileOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::FileOutputPlugin::FileOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]"),
-    _file(true) // stdout allowed
+    OutputPlugin(tsp_, u"Write packets to a file", u"[options] [file-name]")
 {
     _file.defineArgs(*this);
 }

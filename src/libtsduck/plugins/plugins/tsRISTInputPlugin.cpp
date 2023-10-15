@@ -53,20 +53,13 @@ class ts::RISTInputPlugin::Guts
      TS_NOBUILD_NOCOPY(Guts);
 public:
      RISTPluginData rist;
-     MilliSecond    timeout;       // receive timeout.
-     ByteBlock      buffer;        // data in excess from last input.
-     int            last_qsize;    // last queue size in data blocks.
-     bool           qsize_warned;  // a warning was reporting on heavy queue size.
+     MilliSecond    timeout {0};           // receive timeout.
+     ByteBlock      buffer {};             // data in excess from last input.
+     int            last_qsize {0};        // last queue size in data blocks.
+     bool           qsize_warned {false};  // a warning was reporting on heavy queue size.
 
      // Constructor.
-     Guts(Args* args, TSP* tsp) :
-         rist(*tsp),
-         timeout(0),
-         buffer(),
-         last_qsize(0),
-         qsize_warned(false)
-     {
-     }
+     Guts(Args* args, TSP* tsp) : rist(*tsp) {}
 };
 
 

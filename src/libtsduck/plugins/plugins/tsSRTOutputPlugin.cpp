@@ -20,10 +20,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"srt", ts::SRTOutputPlugin);
 
 ts::SRTOutputPlugin::SRTOutputPlugin(TSP* tsp_) :
     OutputPlugin(tsp_, u"Send TS packets using Secure Reliable Transport (SRT)", u"[options] [address:port]"),
-    _multiple(false),
-    _restart_delay(0),
-    _datagram(TSDatagramOutputOptions::NONE, this),
-    _sock()
+    _datagram(TSDatagramOutputOptions::NONE, this)
 {
     _datagram.defineArgs(*this);
     _sock.defineArgs(*this);
