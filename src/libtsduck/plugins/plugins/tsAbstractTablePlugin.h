@@ -106,23 +106,23 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
     private:
-        bool              _abort;            // Error, abort as soon as possible.
-        UString           _table_name;       // Table name, informational only.
-        BitRate           _default_bitrate;  // Default bitrate of new PID.
-        PID               _pid;              // PID to process.
-        bool              _found_pid;        // Found the target PID.
-        bool              _found_table;      // Found an instance of the target table.
-        PacketCounter     _pkt_create;       // Packet# after which a new table shall be created
-        PacketCounter     _pkt_insert;       // Packet# after which a PID packet shall be inserted
-        MilliSecond       _create_after_ms;  // Create a new table if none found after that time.
-        BitRate           _bitrate;          // PID's bitrate (if no previous table found).
-        PacketCounter     _inter_pkt;        // Packet interval between two PID packets.
-        bool              _incr_version;     // Increment table version.
-        bool              _set_version;      // Set a new table version.
-        uint8_t           _new_version;      // New table version.
-        SectionDemux      _demux;            // Section demux.
-        CyclingPacketizer _pzer;             // Packetizer for modified tables.
-        TablePatchXML     _patch_xml;        // Table patcher using XML patch files.
+        bool              _abort {false};         // Error, abort as soon as possible.
+        UString           _table_name {};         // Table name, informational only.
+        BitRate           _default_bitrate {0};   // Default bitrate of new PID.
+        PID               _pid {PID_NULL};        // PID to process.
+        bool              _found_pid {false};     // Found the target PID.
+        bool              _found_table {false};   // Found an instance of the target table.
+        PacketCounter     _pkt_create {0};        // Packet# after which a new table shall be created
+        PacketCounter     _pkt_insert {0};        // Packet# after which a PID packet shall be inserted
+        MilliSecond       _create_after_ms {0};   // Create a new table if none found after that time.
+        BitRate           _bitrate {0};           // PID's bitrate (if no previous table found).
+        PacketCounter     _inter_pkt {0};         // Packet interval between two PID packets.
+        bool              _incr_version {false};  // Increment table version.
+        bool              _set_version {false};   // Set a new table version.
+        uint8_t           _new_version {0};       // New table version.
+        SectionDemux      _demux;                 // Section demux.
+        CyclingPacketizer _pzer;                  // Packetizer for modified tables.
+        TablePatchXML     _patch_xml;             // Table patcher using XML patch files.
 
         // Reinsert a table in the target PID.
         void reinsertTable(BinaryTable& table, bool is_target_table);

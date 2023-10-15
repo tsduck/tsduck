@@ -40,8 +40,8 @@ namespace ts {
     private:
         TablesDisplay _display;
         TablesLogger  _logger;
-        bool          _signal_event;  // Signal a plugin event on section.
-        uint32_t      _event_code;    // Event code to signal.
+        bool          _signal_event {false};  // Signal a plugin event on section.
+        uint32_t      _event_code {0};        // Event code to signal.
 
         // Implementation of SectionHandlerInterface
         virtual void handleSection(SectionDemux& demux, const Section& section) override;

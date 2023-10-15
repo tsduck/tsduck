@@ -55,13 +55,12 @@ class ts::RISTOutputPlugin::Guts
 public:
      TSDatagramOutput datagram;
      RISTPluginData   rist;
-     bool             npd;  // null packet deletion
+     bool             npd {false};  // null packet deletion
 
      // Constructor.
      Guts(RISTOutputPlugin* plugin) :
          datagram(TSDatagramOutputOptions::NONE, plugin),
-         rist(*plugin->tsp),
-         npd(false)
+         rist(*plugin->tsp)
      {
      }
 };

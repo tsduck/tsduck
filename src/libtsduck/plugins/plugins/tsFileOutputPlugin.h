@@ -37,6 +37,6 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        TSFileOutputArgs _file;
+        TSFileOutputArgs _file {true}; // stdout allowed
     };
 }

@@ -17,12 +17,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"debug", ts::DebugPlugin);
 //----------------------------------------------------------------------------
 
 ts::DebugPlugin::DebugPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Debug traces", u"[options]"),
-    _tag(),
-    _null(nullptr),
-    _segfault(false),
-    _exit(false),
-    _exit_code(0)
+    ProcessorPlugin(tsp_, u"Debug traces", u"[options]")
 {
     setIntro(u"A number of debug actions are executed for each packet. "
              u"By default, a debug-level message is displayed for each packet. "
@@ -49,7 +44,7 @@ bool ts::DebugPlugin::getOptions()
 {
     _segfault = present(u"segfault");
     _exit = present(u"exit");
-    getIntValue(_exit_code, u"exit");
+    getIntValue(_exit_code, u"exit", EXIT_SUCCESS);
     getValue(_tag, u"tag");
     if (!_tag.empty()) {
         _tag += u": ";

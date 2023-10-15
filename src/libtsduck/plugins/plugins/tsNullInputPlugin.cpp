@@ -17,10 +17,7 @@ TS_REGISTER_INPUT_PLUGIN(u"null", ts::NullInputPlugin);
 //----------------------------------------------------------------------------
 
 ts::NullInputPlugin::NullInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Generate null packets", u"[options] [count]"),
-    _max_count(0),
-    _count(0),
-    _limit(0)
+    InputPlugin(tsp_, u"Generate null packets", u"[options] [count]")
 {
     option(u"", 0, UNSIGNED, 0, 1);
     help(u"",

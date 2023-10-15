@@ -17,8 +17,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"file", ts::FilePacketPlugin);
 //----------------------------------------------------------------------------
 
 ts::FilePacketPlugin::FilePacketPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name"),
-    _file(false) // stdout not allowed
+    ProcessorPlugin(tsp_, u"Write packets to a file and pass them to next plugin", u"[options] file-name")
 {
     _file.defineArgs(*this);
 }

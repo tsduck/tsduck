@@ -20,28 +20,7 @@ TS_REGISTER_INPUT_PLUGIN(u"hls", ts::hls::InputPlugin);
 //----------------------------------------------------------------------------
 
 ts::hls::InputPlugin::InputPlugin(TSP* tsp_) :
-    AbstractHTTPInputPlugin(tsp_, u"Receive HTTP Live Streaming (HLS) media", u"[options] url"),
-    _url(),
-    _minRate(0),
-    _maxRate(0),
-    _minWidth(0),
-    _maxWidth(0),
-    _minHeight(0),
-    _maxHeight(0),
-    _startSegment(0),
-    _listVariants(false),
-    _lowestRate(false),
-    _highestRate(false),
-    _lowestRes(false),
-    _highestRes(false),
-    _maxSegmentCount(0),
-    _altSelection(false),
-    _altType(),
-    _altName(),
-    _altGroupId(),
-    _altLanguage(),
-    _segmentCount(0),
-    _playlist()
+    AbstractHTTPInputPlugin(tsp_, u"Receive HTTP Live Streaming (HLS) media", u"[options] url")
 {
     option(u"", 0, STRING, 1, 1);
     help(u"",

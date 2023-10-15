@@ -128,9 +128,9 @@ namespace ts {
 
         // Plugin private data.
         Receiver      _receiver;
-        bool          _started;
-        volatile bool _interrupted;
-        TSPacketQueue _queue;
+        bool          _started {false};
+        volatile bool _interrupted {false};
+        TSPacketQueue _queue {};
 
         // Standard input routine, now hidden from subclasses.
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;

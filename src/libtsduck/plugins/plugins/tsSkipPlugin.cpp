@@ -17,9 +17,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"skip", ts::SkipPlugin);
 //----------------------------------------------------------------------------
 
 ts::SkipPlugin::SkipPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Skip leading TS packets of a stream", u"[options] count"),
-    _skip_count(0),
-    _use_stuffing(false)
+    ProcessorPlugin(tsp_, u"Skip leading TS packets of a stream", u"[options] count")
 {
     option(u"", 0, UNSIGNED, 1, 1);
     help(u"", u"Number of leading packets to skip.");

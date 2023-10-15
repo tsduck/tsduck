@@ -20,12 +20,7 @@ TS_REGISTER_INPUT_PLUGIN(u"http", ts::HTTPInputPlugin);
 //----------------------------------------------------------------------------
 
 ts::HTTPInputPlugin::HTTPInputPlugin(TSP* tsp_) :
-    AbstractHTTPInputPlugin(tsp_, u"Read a transport stream from an HTTP server", u"[options] url"),
-    _repeat_count(0),
-    _ignore_errors(false),
-    _reconnect_delay(0),
-    _url(),
-    _transfer_count(0)
+    AbstractHTTPInputPlugin(tsp_, u"Read a transport stream from an HTTP server", u"[options] url")
 {
     option(u"", 0, STRING, 1, 1);
     help(u"", u"Specify the URL from which to read the transport stream.");

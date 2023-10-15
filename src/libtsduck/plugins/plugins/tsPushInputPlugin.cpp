@@ -15,10 +15,7 @@
 
 ts::PushInputPlugin::PushInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     InputPlugin(tsp_, description, syntax),
-    _receiver(this),
-    _started(false),
-    _interrupted(false),
-    _queue()
+    _receiver(this)
 {
 }
 

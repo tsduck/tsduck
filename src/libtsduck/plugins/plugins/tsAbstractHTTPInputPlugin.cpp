@@ -17,12 +17,7 @@
 
 ts::AbstractHTTPInputPlugin::AbstractHTTPInputPlugin(TSP* tsp_, const UString& description, const UString& syntax) :
     InputPlugin(tsp_, description, syntax),
-    webArgs(),
-    _request(*tsp),
-    _partial(),
-    _partialSize(0),
-    _autoSaveDir(),
-    _outSave()
+    _request(*tsp)
 {
     webArgs.defineArgs(*this);
 }

@@ -17,12 +17,7 @@ TS_REGISTER_INPUT_PLUGIN(u"fork", ts::ForkInputPlugin);
 //----------------------------------------------------------------------------
 
 ts::ForkInputPlugin::ForkInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Fork a process and receive TS packets from its standard output", u"[options] 'command'"),
-    _command(),
-    _nowait(false),
-    _format(TSPacketFormat::AUTODETECT),
-    _buffer_size(0),
-    _pipe()
+    InputPlugin(tsp_, u"Fork a process and receive TS packets from its standard output", u"[options] 'command'")
 {
     DefineTSPacketFormatInputOption(*this);
 

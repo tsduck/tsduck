@@ -18,8 +18,7 @@ TS_REGISTER_INPUT_PLUGIN(u"memory", ts::MemoryInputPlugin);
 //----------------------------------------------------------------------------
 
 ts::MemoryInputPlugin::MemoryInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"Direct memory input from an application", u"[options]"),
-    _event_code(0)
+    InputPlugin(tsp_, u"Direct memory input from an application", u"[options]")
 {
     setIntro(u"Developer plugin: This plugin is useful only to C++, Java or Python developers "
              u"who run a TSProcessor pipeline inside their applications and want this application "
