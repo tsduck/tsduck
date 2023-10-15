@@ -135,22 +135,22 @@ ts::EITMainOptions::EITMainOptions(int argc, char *argv[]) :
     cmd->help(u"terrestrial", u"Use the EIT cycle profile for terrestrial networks as specified in ETSI TS 101 211.");
     cmd->option(u"satellite");
     cmd->help(u"satellite", u"Use the EIT cycle profile for satellite and cable networks as specified in ETSI TS 101 211.");
-    cmd->option(u"pf");
-    cmd->help(u"pf", u"Enable the generation of EIT p/f.");
-    cmd->option(u"no-pf");
-    cmd->help(u"no-pf", u"Disable the generation of EIT p/f.");
-    cmd->option(u"schedule");
-    cmd->help(u"schedule", u"Enable the generation of EIT schedule.");
-    cmd->option(u"no-schedule");
-    cmd->help(u"no-schedule", u"Disable the generation of EIT schedule.");
-    cmd->option(u"actual");
-    cmd->help(u"actual", u"Enable the generation of EIT actual.");
-    cmd->option(u"no-actual");
-    cmd->help(u"no-actual", u"Disable the generation of EIT actual.");
-    cmd->option(u"other");
-    cmd->help(u"other", u"Enable the generation of EIT other.");
-    cmd->option(u"no-other");
-    cmd->help(u"no-other", u"Disable the generation of EIT other.");
+    cmd->option(u"actual-pf");
+    cmd->help(u"actual pf", u"Enable the generation of actual EIT p/f.");
+    cmd->option(u"no-actual-pf");
+    cmd->help(u"no-actual-pf", u"Disable the generation of actual EIT p/f.");
+    cmd->option(u"other-pf");
+    cmd->help(u"other pf", u"Enable the generation of other EIT p/f.");
+    cmd->option(u"no-other-pf");
+    cmd->help(u"no-other-pf", u"Disable the generation of other EIT p/f.");
+    cmd->option(u"actual-schedule");
+    cmd->help(u"actual schedule", u"Enable the generation of actual EIT schedule.");
+    cmd->option(u"no-actual-schedule");
+    cmd->help(u"no-actual-schedule", u"Disable the generation of actual EIT schedule.");
+    cmd->option(u"other-schedule");
+    cmd->help(u"other schedule", u"Enable the generation of other EIT schedule.");
+    cmd->option(u"no-other-schedule");
+    cmd->help(u"no-other-schedule", u"Disable the generation of other EIT schedule.");
     cmd->option(u"ts-id", 0, UINT16);
     cmd->help(u"ts-id", u"Set the actual transport stream id.");
     cmd->option<BitRate>(u"ts-bitrate");
@@ -426,36 +426,36 @@ ts::CommandStatus ts::EITCommand::dump(const UString& command, Args& args)
 ts::CommandStatus ts::EITCommand::set(const UString& command, Args& args)
 {
     bool set_options = false;
-    if (args.present(u"pf")) {
-        _eit_options |= EITOptions::GEN_PF;
+    if (args.present(u"actual-pf")) {
+        _eit_options |= EITOptions::GEN_ACTUAL_PF;
         set_options = true;
     }
-    if (args.present(u"no-pf")) {
-        _eit_options &= ~EITOptions::GEN_PF;
+    if (args.present(u"no-actual-pf")) {
+        _eit_options &= ~EITOptions::GEN_ACTUAL_PF;
         set_options = true;
     }
-    if (args.present(u"schedule")) {
-        _eit_options |= EITOptions::GEN_SCHED;
+    if (args.present(u"other-pf")) {
+        _eit_options |= EITOptions::GEN_OTHER_PF;
         set_options = true;
     }
-    if (args.present(u"no-schedule")) {
-        _eit_options &= ~EITOptions::GEN_SCHED;
+    if (args.present(u"no-other-pf")) {
+        _eit_options &= ~EITOptions::GEN_OTHER_PF;
         set_options = true;
     }
-    if (args.present(u"actual")) {
-        _eit_options |= EITOptions::GEN_ACTUAL;
+    if (args.present(u"actual-schedule")) {
+        _eit_options |= EITOptions::GEN_ACTUAL_SCHED;
         set_options = true;
     }
-    if (args.present(u"no-actual")) {
-        _eit_options &= ~EITOptions::GEN_ACTUAL;
+    if (args.present(u"no-actual-schedule")) {
+        _eit_options &= ~EITOptions::GEN_ACTUAL_SCHED;
         set_options = true;
     }
-    if (args.present(u"other")) {
-        _eit_options |= EITOptions::GEN_OTHER;
+    if (args.present(u"other-schedule")) {
+        _eit_options |= EITOptions::GEN_OTHER_SCHED;
         set_options = true;
     }
-    if (args.present(u"no-other")) {
-        _eit_options &= ~EITOptions::GEN_OTHER;
+    if (args.present(u"no-other-schedule")) {
+        _eit_options &= ~EITOptions::GEN_OTHER_SCHED;
         set_options = true;
     }
     if (set_options) {
