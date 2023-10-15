@@ -32,13 +32,13 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        SectionFileArgs();
+        SectionFileArgs() = default;
 
         // Public fields, by options.
-        bool       pack_and_flush;   //!< Pack and flush incomplete tables before exiting.
-        bool       eit_normalize;    //!< EIT normalization (ETSI TS 101 211).
-        Time       eit_base_time;    //!< Last midnight reference for EIT normalization.
-        EITOptions eit_options;      //!< EIT normalization options.
+        bool       pack_and_flush {false};             //!< Pack and flush incomplete tables before exiting.
+        bool       eit_normalize {false};              //!< EIT normalization (ETSI TS 101 211).
+        Time       eit_base_time {};                   //!< Last midnight reference for EIT normalization.
+        EITOptions eit_options {EITOptions::GEN_ALL};  //!< EIT normalization options.
 
         //!
         //! Add command line option definitions in an Args.

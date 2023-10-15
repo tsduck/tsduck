@@ -73,29 +73,29 @@ namespace ts {
         };
 
         // Command line options:
-        bool          _delete_files;
-        bool          _wait_first_batch;
-        bool          _use_system_time;
-        Time          _start_time;
-        EITOptions    _eit_options;
-        BitRate       _eit_bitrate;
-        UString       _files;
-        MilliSecond   _poll_interval;
-        MilliSecond   _min_stable_delay;
-        int           _ts_id;
-        EITRepetitionProfile _eit_profile;
+        bool          _delete_files {false};
+        bool          _wait_first_batch {false};
+        bool          _use_system_time {false};
+        Time          _start_time {};
+        EITOptions    _eit_options {EITOptions::GEN_ALL};
+        BitRate       _eit_bitrate {0};
+        UString       _files {};
+        MilliSecond   _poll_interval {0};
+        MilliSecond   _min_stable_delay {0};
+        int           _ts_id {-1};
+        EITRepetitionProfile _eit_profile {};
 
         // Working data.
         FileListener  _file_listener;
         EITGenerator  _eit_gen;
-        volatile bool _check_files;         // there are files in _polled_files
-        Mutex         _polled_files_mutex;  // exclusive access to _polled_files
-        UStringList   _polled_files;        // accessed by two threads, protected by mutex above.
+        volatile bool _check_files {false};    // there are files in _polled_files
+        Mutex         _polled_files_mutex {};  // exclusive access to _polled_files
+        UStringList   _polled_files {};        // accessed by two threads, protected by mutex above.
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
-        volatile bool _wfb_received;     // First batch was received.
-        Mutex         _wfb_mutex;        // Mutex waiting for _wfb_received.
-        Condition     _wfb_condition;    // Condition waiting for _wfb_received.
+        volatile bool _wfb_received {false};   // First batch was received.
+        Mutex         _wfb_mutex {};           // Mutex waiting for _wfb_received.
+        Condition     _wfb_condition {};       // Condition waiting for _wfb_received.
 
         // Load files in the context of the plugin thread.
         void loadFiles();
@@ -117,27 +117,14 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"eitinject", ts::EITInjectPlugin);
 
 ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Generate and inject EIT's in a transport stream", u"[options]"),
-    _delete_files(false),
-    _wait_first_batch(false),
-    _use_system_time(false),
-    _start_time(),
-    _eit_options(EITOptions::GEN_ALL),
-    _eit_bitrate(0),
-    _files(),
-    _poll_interval(0),
-    _min_stable_delay(0),
-    _ts_id(-1),
-    _eit_profile(),
     _file_listener(this),
-    _eit_gen(duck, PID_EIT),
-    _check_files(false),
-    _polled_files_mutex(),
-    _polled_files(),
-    _wfb_received(false),
-    _wfb_mutex(),
-    _wfb_condition()
+    _eit_gen(duck, PID_EIT)
 {
     duck.defineArgsForCharset(*this);
+
+    option(u"actual");
+    help(u"actual",
+         u"Generate EIT actual. Same as --actual-pf --actual-schedule.");
 
     option(u"actual-pf");
     help(u"actual-pf",
@@ -224,6 +211,10 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"poll notifications when a file is being written and his size modified at "
          u"each poll. The default is " + UString::Decimal(DEFAULT_MIN_STABLE_DELAY) + u" ms.");
 
+    option(u"other");
+    help(u"other",
+         u"Generate EIT other. Same as --other-pf --other-schedule.");
+
     option(u"other-pf");
     help(u"other-pf",
          u"Generate EIT other p/f. If no option is specified, all EIT sections are generated.");
@@ -231,6 +222,10 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
     option(u"other-schedule");
     help(u"other-schedule",
          u"Generate EIT actual schedule. If no option is specified, all EIT sections are generated.");
+
+    option(u"pf");
+    help(u"pf",
+         u"Generate EIT p/f. Same as --actual-pf --other-pf.");
 
     option(u"poll-interval", 0, UNSIGNED);
     help(u"poll-interval", u"milliseconds",
@@ -243,6 +238,10 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
          u"EIT schedule for events in the prime period (i.e. the next few days) "
          u"are repeated more frequently than EIT schedule for later events. "
          u"The default is " + UString::Decimal(EITRepetitionProfile::SatelliteCable.prime_days) + u" days.");
+
+    option(u"schedule");
+    help(u"schedule",
+         u"Generate EIT schedule. Same as --actual-schedule --other-schedule.");
 
     option(u"stuffing");
     help(u"stuffing",
@@ -310,6 +309,18 @@ bool ts::EITInjectPlugin::getOptions()
 
     // Combination of EIT generation options.
     _eit_options = EITOptions::GEN_NONE;
+    if (present(u"actual")) {
+        _eit_options |= EITOptions::GEN_ACTUAL;
+    }
+    if (present(u"other")) {
+        _eit_options |= EITOptions::GEN_OTHER;
+    }
+    if (present(u"pf")) {
+        _eit_options |= EITOptions::GEN_PF;
+    }
+    if (present(u"schedule")) {
+        _eit_options |= EITOptions::GEN_SCHED;
+    }
     if (present(u"actual-pf")) {
         _eit_options |= EITOptions::GEN_ACTUAL_PF;
     }

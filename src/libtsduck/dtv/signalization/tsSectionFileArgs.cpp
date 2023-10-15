@@ -12,19 +12,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::SectionFileArgs::SectionFileArgs() :
-    pack_and_flush(false),
-    eit_normalize(false),
-    eit_base_time(),
-    eit_options(EITOptions::GEN_ALL)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 
@@ -50,6 +37,26 @@ void ts::SectionFileArgs::defineArgs(Args& args)
               u"If only the date is present, it is used as base for the allocation of EIT schedule. "
               u"If the time is also specified, it is the current time for the snapshot of EIT present/following. "
               u"By default, use the oldest date in all EIT sections as base date.");
+
+    args.option(u"eit-actual");
+    args.help(u"eit-actual",
+              u"With --eit-normalization, generate EIT actual. "
+              u"Same as --eit-actual-pf --eit-actual-schedule.");
+
+    args.option(u"eit-other");
+    args.help(u"eit-other",
+              u"With --eit-normalization, generate EIT other. "
+              u"Same as --eit-other-pf --eit-other-schedule.");
+
+    args.option(u"eit-pf");
+    args.help(u"eit-pf",
+              u"With --eit-normalization, generate EIT p/f. "
+              u"Same as --eit-actual-pf --eit-other-pf.");
+
+    args.option(u"eit-schedule");
+    args.help(u"eit-schedule",
+              u"With --eit-normalization, generate EIT schedule. "
+              u"Same as --eit-actual-schedule --eit-other-schedule.");
 
     args.option(u"eit-actual-pf");
     args.help(u"eit-actual-pf",
@@ -98,6 +105,18 @@ bool ts::SectionFileArgs::loadArgs(DuckContext& duck, Args& args)
 
     // Combination of EIT generation options.
     eit_options = EITOptions::GEN_NONE;
+    if (args.present(u"eit-actual")) {
+        eit_options |= EITOptions::GEN_ACTUAL;
+    }
+    if (args.present(u"eit-other")) {
+        eit_options |= EITOptions::GEN_OTHER;
+    }
+    if (args.present(u"eit-pf")) {
+        eit_options |= EITOptions::GEN_PF;
+    }
+    if (args.present(u"eit-schedule")) {
+        eit_options |= EITOptions::GEN_SCHED;
+    }
     if (args.present(u"eit-actual-pf")) {
         eit_options |= EITOptions::GEN_ACTUAL_PF;
     }
