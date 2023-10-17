@@ -25,11 +25,11 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t   DecoderProfileCode;  //!< 6 bits
-        uint8_t   FrameDurationCode;   //!< 2 bits
-        uint8_t   MaxPayloadCode;      //!< 3 bits
-        uint8_t   StreamIndex;         //!< 3 bits
-        ByteBlock codec_selector;      //!< Selector bytes
+        uint8_t   DecoderProfileCode = 0;  //!< 6 bits
+        uint8_t   FrameDurationCode = 0;   //!< 2 bits
+        uint8_t   MaxPayloadCode = 0;      //!< 3 bits
+        uint8_t   StreamIndex = 0;         //!< 3 bits
+        ByteBlock codec_selector {};       //!< Selector bytes
 
         //!
         //! Default constructor.

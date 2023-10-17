@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Maximum number of services entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 63;
+        static constexpr size_t MAX_ENTRIES = 63;
 
         // NorDigLogicalChannelDescriptorV1 public members:
         EntryList entries;  //!< List of service entries.

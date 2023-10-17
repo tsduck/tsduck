@@ -201,10 +201,10 @@ namespace ts {
         public:
             // Public fields
             SectionPtr     section {};      // Pointer to section
-            MilliSecond    repetition {0};  // Repetition rate, zero if none
-            PacketCounter  last_packet {0}; // Packet index of last time the section was sent
-            PacketCounter  due_packet {0};  // Packet index of next time
-            SectionCounter last_cycle {0};  // Cycle index of last time the section was sent
+            MilliSecond    repetition = 0;  // Repetition rate, zero if none
+            PacketCounter  last_packet = 0; // Packet index of last time the section was sent
+            PacketCounter  due_packet = 0;  // Packet index of next time
+            SectionCounter last_cycle = 0;  // Cycle index of last time the section was sent
 
             // Constructor
             SectionDesc(const SectionPtr& sec, MilliSecond rep);
@@ -224,13 +224,13 @@ namespace ts {
 
         // Private members:
         StuffingPolicy  _stuffing {StuffingPolicy::NEVER};
-        BitRate         _bitrate {0};
-        size_t          _section_count {0};      // Number of sections in the 2 lists
+        BitRate         _bitrate = 0;
+        size_t          _section_count = 0;      // Number of sections in the 2 lists
         SectionDescList _sched_sections {};      // Scheduled sections, with repetition rates
         SectionDescList _other_sections {};      // Unscheduled sections
-        PacketCounter   _sched_packets {0};      // Size in TS packets of all sections in _sched_sections
+        PacketCounter   _sched_packets = 0;      // Size in TS packets of all sections in _sched_sections
         SectionCounter  _current_cycle {1};      // Cycle number (start at 1, always increasing)
-        size_t          _remain_in_cycle {0};    // Number of unsent sections in this cycle
+        size_t          _remain_in_cycle = 0;    // Number of unsent sections in this cycle
         SectionCounter  _cycle_end {UNDEFINED};  // At end of cycle, contains the index of last section
 
         static constexpr SectionCounter UNDEFINED = ~SectionCounter(0);

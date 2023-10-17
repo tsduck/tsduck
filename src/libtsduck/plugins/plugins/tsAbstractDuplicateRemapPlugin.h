@@ -38,7 +38,7 @@ namespace ts {
 
     protected:
         typedef std::map<PID, PID> PIDMap;    //!< A map from PID to PID.
-        bool             _unchecked {false};  //!< Ignore conflicting input/output PID's.
+        bool             _unchecked = false;  //!< Ignore conflicting input/output PID's.
         PIDSet           _newPIDs {};         //!< Set of output (duplicated or remapped) PID values.
         PIDMap           _pidMap {};          //!< Key = input pid, value = output PID.
         TSPacketLabelSet _setLabels {};       //!< Labels to set on output packets.

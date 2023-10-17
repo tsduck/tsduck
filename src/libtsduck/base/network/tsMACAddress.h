@@ -140,7 +140,7 @@ namespace ts {
         bool operator<(const MACAddress& other) const { return _addr < other._addr; }
 
     private:
-        uint64_t _addr {0};  // A MAC address is a 48-bit word
+        uint64_t _addr = 0;  // A MAC address is a 48-bit word
 
         // Description of a MAC multicast address for IPv4.
         static constexpr uint64_t MULTICAST_MASK   = 0x0000FFFFFF800000;

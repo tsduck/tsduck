@@ -77,7 +77,7 @@ namespace ts {
         //!
         //! Number of characters per charset.
         //!
-        static const size_t CHAR_COUNT = 96;
+        static constexpr size_t CHAR_COUNT = 96;
 
     private:
         //!

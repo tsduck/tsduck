@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // CopyrightDescriptor public members:
-        uint32_t  copyright_identifier;       //!< Copyright identifier.
-        ByteBlock additional_copyright_info;  //!< Optional additional information.
+        uint32_t  copyright_identifier = 0;      //!< Copyright identifier.
+        ByteBlock additional_copyright_info {};  //!< Optional additional information.
 
         //!
         //! Default constructor.

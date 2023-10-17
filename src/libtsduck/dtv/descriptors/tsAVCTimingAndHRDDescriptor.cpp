@@ -27,14 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::AVCTimingAndHRDDescriptor::AVCTimingAndHRDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    hrd_management_valid(false),
-    N_90khz(),
-    K_90khz(),
-    num_units_in_tick(),
-    fixed_frame_rate(false),
-    temporal_poc(false),
-    picture_to_display_conversion(false)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

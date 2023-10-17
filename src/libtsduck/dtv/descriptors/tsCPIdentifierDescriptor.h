@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // CPIdentifierDescriptor public members:
-        std::vector<uint16_t> cpids; //!< List of CP system ids.
+        std::vector<uint16_t> cpids {}; //!< List of CP system ids.
 
         //!
         //! Default constructor.

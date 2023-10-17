@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // CueIdentifierDescriptor public members:
-        uint8_t cue_stream_type;   //!< Type of cue messages in the PID.
+        uint8_t cue_stream_type = CUE_ALL_COMMANDS;   //!< Type of cue messages in the PID.
 
         //!
         //! Definition of names for cue stream types.

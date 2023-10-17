@@ -173,11 +173,11 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            PacketCounter        pes_count {0};   // Number of detected valid PES packets on this PID
-            uint8_t              continuity {0};  // Last continuity counter
-            bool                 sync {false};        // We are synchronous in this PID
-            PacketCounter        first_pkt {0};   // Index of first TS packet for current PES packet
-            PacketCounter        last_pkt {0};    // Index of last TS packet for current PES packet
+            PacketCounter        pes_count = 0;   // Number of detected valid PES packets on this PID
+            uint8_t              continuity = 0;  // Last continuity counter
+            bool                 sync = false;        // We are synchronous in this PID
+            PacketCounter        first_pkt = 0;   // Index of first TS packet for current PES packet
+            PacketCounter        last_pkt = 0;    // Index of last TS packet for current PES packet
             uint64_t             pcr {INVALID_PCR};         // First PCR for current PES packet
             ByteBlockPtr         ts {};          // TS payload buffer
             MPEG2AudioAttributes audio {};       // Current audio attributes
@@ -185,7 +185,7 @@ namespace ts {
             AVCAttributes        avc {};         // Current AVC attributes
             HEVCAttributes       hevc {};        // Current HEVC attributes
             AC3Attributes        ac3 {};         // Current AC-3 attributes
-            PacketCounter        ac3_count {0};   // Number of PES packets with contents which looks like AC-3
+            PacketCounter        ac3_count = 0;   // Number of PES packets with contents which looks like AC-3
 
             // Default constructor:
             PIDContext() : ts(new ByteBlock()) {}
@@ -228,7 +228,7 @@ namespace ts {
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
 
         // Private members:
-        PESHandlerInterface* _pes_handler {nullptr};
+        PESHandlerInterface* _pes_handler = nullptr;
         CodecType            _default_codec {CodecType::UNDEFINED};
         PIDContextMap        _pids {};
         PIDTypeMap           _pid_types {};

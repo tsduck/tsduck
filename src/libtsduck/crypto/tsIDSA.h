@@ -27,7 +27,7 @@ namespace ts {
         //!
         //! ATIS-IDSA control words size in bytes (AES-128 key size).
         //!
-        static const size_t KEY_SIZE = 16;
+        static constexpr size_t KEY_SIZE = 16;
 
         //!
         //! Constructor.

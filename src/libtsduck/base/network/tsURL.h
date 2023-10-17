@@ -166,7 +166,7 @@ namespace ts {
         UString  _username {};
         UString  _password {};
         UString  _host {};
-        uint16_t _port {0};
+        uint16_t _port = 0;
         UString  _path {};
         UString  _query {};
         UString  _fragment {};

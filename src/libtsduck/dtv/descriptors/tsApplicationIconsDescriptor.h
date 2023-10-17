@@ -29,9 +29,9 @@ namespace ts {
     {
     public:
         // ApplicationIconsDescriptor public members:
-        UString   icon_locator;         //!< Icon locator.
-        uint16_t  icon_flags;           //!< Icon size flags.
-        ByteBlock reserved_future_use;  //!< Reserved.
+        UString   icon_locator {};         //!< Icon locator.
+        uint16_t  icon_flags = 0;          //!< Icon size flags.
+        ByteBlock reserved_future_use {};  //!< Reserved.
 
         //!
         //! Default constructor.

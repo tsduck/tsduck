@@ -29,11 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::DVBAC4Descriptor::DVBAC4Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
-    ac4_dialog_enhancement_enabled(),
-    ac4_channel_mode(),
-    ac4_dsi_toc(),
-    additional_info()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY)
 {
 }
 

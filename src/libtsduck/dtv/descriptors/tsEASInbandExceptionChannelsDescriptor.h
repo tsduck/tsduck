@@ -35,8 +35,8 @@ namespace ts {
         {
         public:
             // Public members
-            uint8_t  RF_channel;      //!< RF channel number of the carrier.
-            uint16_t program_number;  //!< Programe number, aka service id.
+            uint8_t  RF_channel = 0;      //!< RF channel number of the carrier.
+            uint16_t program_number = 0;  //!< Programe number, aka service id.
 
             //!
             //! Default constructor.
@@ -54,10 +54,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 254 bytes.
         //!
-        static const size_t MAX_ENTRIES = 84;
+        static constexpr size_t MAX_ENTRIES = 84;
 
         // EASInbandExceptionChannelsDescriptor public members:
-        EntryList entries;  //!< The list of exception entries.
+        EntryList entries {};  //!< The list of exception entries.
 
         //!
         //! Default constructor.

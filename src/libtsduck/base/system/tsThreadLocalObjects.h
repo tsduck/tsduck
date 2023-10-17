@@ -81,7 +81,7 @@ namespace ts {
 #if defined(TS_WINDOWS)
         ::DWORD _tls_index {TLS_OUT_OF_INDEXES};
 #else
-        pthread_key_t _key {0};
+        pthread_key_t _key = 0;
         static void DeleteThreadLocalRepository(void*);
 #endif
     };

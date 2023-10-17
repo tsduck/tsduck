@@ -25,12 +25,12 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t  plp_id;                           //!< PLP id.
-        uint8_t  data_slice_id;                    //!< Data slice id.
-        uint32_t C2_system_tuning_frequency;       //!< Frequency in Hz.
-        uint8_t  C2_system_tuning_frequency_type;  //!< 2 bits
-        uint8_t  active_OFDM_symbol_duration;      //!< 3 bits
-        uint8_t  guard_interval;                   //!< 3 bits, guard interval
+        uint8_t  plp_id = 0;                           //!< PLP id.
+        uint8_t  data_slice_id = 0;                    //!< Data slice id.
+        uint32_t C2_system_tuning_frequency = 0;       //!< Frequency in Hz.
+        uint8_t  C2_system_tuning_frequency_type = 0;  //!< 2 bits
+        uint8_t  active_OFDM_symbol_duration = 0;      //!< 3 bits
+        uint8_t  guard_interval = 0;                   //!< 3 bits, guard interval
 
         //!
         //! Default constructor.

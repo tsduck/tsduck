@@ -166,10 +166,10 @@ namespace ts {
         private:
             Report&        _report;
             const UString& _name;
-            int64_t        _count {0};
-            BitRate        _value_0 {0};
-            BitRate        _diffs {0};
-            BitRate        _average {0};
+            int64_t        _count = 0;
+            BitRate        _value_0 = 0;
+            BitRate        _diffs = 0;
+            BitRate        _average = 0;
             size_t         _reset_percent {DEFAULT_BITRATE_RESET_PERCENT};
         };
 
@@ -177,13 +177,13 @@ namespace ts {
         Report&        _report;                      // Where to report messages.
         UString        _main_name {u"main stream"};  // Name of main stream.
         UString        _sub_name {u"sub-stream"};    // Name of sub-stream.
-        PacketCounter  _main_packets {0};            // Total number of packets in main stream so far.
-        PacketCounter  _sub_packets {0};             // Total number of packets in sub-stream so far.
+        PacketCounter  _main_packets = 0;            // Total number of packets in main stream so far.
+        PacketCounter  _sub_packets = 0;             // Total number of packets in sub-stream so far.
         size_t         _wait_alert {DEFAULT_WAIT_ALERT};  // Accelerate insertion above that number of waiting packets.
         size_t         _accel_factor {1};            // Acceleration factor, greater than 1 when too many packets are waiting.
-        PacketCounter  _accel_main_packets {0};      // Number of packets in main stream when current acceleration started.
-        PacketCounter  _accel_sub_packets {0};       // Number of packets in sub-stream wehn current acceleration started.
-        size_t         _accel_max_wait {0};          // Maximum number of waiting packet in current acceleration phase.
+        PacketCounter  _accel_main_packets = 0;      // Number of packets in main stream when current acceleration started.
+        PacketCounter  _accel_sub_packets = 0;       // Number of packets in sub-stream wehn current acceleration started.
+        size_t         _accel_max_wait = 0;          // Maximum number of waiting packet in current acceleration phase.
         BitRateControl _main_bitrate;                // Current bitrate in main stream.
         BitRateControl _sub_bitrate;                 // Current bitrate in sub-stream.
     };

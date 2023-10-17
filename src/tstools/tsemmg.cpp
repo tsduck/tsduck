@@ -24,10 +24,10 @@ TS_MAIN(MainCode);
 namespace {
     // Command line default arguments.
     static const uint16_t        DEFAULT_BANDWIDTH      = 100;
-    static const size_t          DEFAULT_EMM_SIZE       = 100;
+    static constexpr size_t          DEFAULT_EMM_SIZE       = 100;
     static const ts::TID         DEFAULT_EMM_MIN_TID    = ts::TID_EMM_FIRST;
     static const ts::TID         DEFAULT_EMM_MAX_TID    = ts::TID_EMM_LAST;
-    static const size_t          DEFAULT_BYTES_PER_SEND = 500;
+    static constexpr size_t          DEFAULT_BYTES_PER_SEND = 500;
     static const ts::MilliSecond DEFAULT_UDP_END_WAIT   = 100;
 
     // Minimum interval between two send operations.

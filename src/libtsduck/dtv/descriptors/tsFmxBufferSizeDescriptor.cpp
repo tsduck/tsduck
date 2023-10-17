@@ -26,23 +26,15 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::FmxBufferSizeDescriptor::FlexMuxBufferDescriptor_type::FlexMuxBufferDescriptor_type() :
-    flexMuxChnnel(0),
-    FB_BufferSize(0)
-{
-}
-
 ts::FmxBufferSizeDescriptor::FmxBufferSizeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    DefaultFlexMuxBufferDescriptor(),
-    FlexMuxBufferDescriptor()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
 void ts::FmxBufferSizeDescriptor::clearContent()
 {
-    DefaultFlexMuxBufferDescriptor.flexMuxChnnel=0;
-    DefaultFlexMuxBufferDescriptor.FB_BufferSize=0;
+    DefaultFlexMuxBufferDescriptor.flexMuxChnnel = 0;
+    DefaultFlexMuxBufferDescriptor.FB_BufferSize = 0;
     FlexMuxBufferDescriptor.clear();
 }
 

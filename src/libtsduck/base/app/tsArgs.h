@@ -469,7 +469,7 @@ namespace ts {
         //! Warning: use only for @a max_occur (@c size_t ). Do not use for @a max_value
         //! (@c int64_t ) since @c size_t is @c uint64_t on 64-bit platforms.
         //!
-        static const size_t UNLIMITED_COUNT;
+        static constexpr size_t UNLIMITED_COUNT = std::numeric_limits<size_t>::max();
 
         //!
         //! Unlimited value.
@@ -477,7 +477,7 @@ namespace ts {
         //! To be used as value for parameter @ max_value to indicate that there is no
         //! limit to the parameter integer value.
         //!
-        static const int64_t UNLIMITED_VALUE;
+        static const int64_t UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
 
         //!
         //! Set the description of the command.
@@ -1089,8 +1089,8 @@ namespace ts {
         {
         public:
             Variable<UString> string {};      // Orginal string value from command line (unset if option is present without value).
-            int64_t           int_base {0};   // First (or only) integer value.
-            size_t            int_count {0};  // Number of consecutive integer values.
+            int64_t           int_base = 0;   // First (or only) integer value.
+            size_t            int_count = 0;  // Number of consecutive integer values.
         };
 
         // List of values
@@ -1111,19 +1111,19 @@ namespace ts {
         {
         public:
             UString        name {};         // Long name (u"verbose" for --verbose)
-            UChar          short_name {0};  // Short option name (u'v' for -v), 0 if unused
-            ArgType        type {NONE};     // Argument type
-            size_t         min_occur {0};   // Minimum occurence
-            size_t         max_occur {0};   // Maximum occurence
-            int64_t        min_value {0};   // Minimum value (for integer args)
-            int64_t        max_value {0};   // Maximum value (for integer args)
-            size_t         decimals {0};    // Number of meaningful decimal digits
-            uint32_t       flags {0};       // Option flags
+            UChar          short_name = 0;  // Short option name (u'v' for -v), 0 if unused
+            ArgType        type = NONE;     // Argument type
+            size_t         min_occur = 0;   // Minimum occurence
+            size_t         max_occur = 0;   // Maximum occurence
+            int64_t        min_value = 0;   // Minimum value (for integer args)
+            int64_t        max_value = 0;   // Maximum value (for integer args)
+            size_t         decimals = 0;    // Number of meaningful decimal digits
+            uint32_t       flags = 0;       // Option flags
             Enumeration    enumeration {};  // Enumeration values (if not empty)
             UString        syntax {};       // Syntax of value (informational, "address:port" for instance)
             UString        help {};         // Help description
             ArgValueVector values {};       // Set of values after analysis
-            size_t         value_count {0}; // Number of values, can be > values.size() in case of ranges of integers
+            size_t         value_count = 0; // Number of values, can be > values.size() in case of ranges of integers
             AbstractNumberPtr anumber {};   // Dummy instance of AbstractNumber to validate the value, to deallocate
 
             // Constructor:
@@ -1174,7 +1174,7 @@ namespace ts {
         typedef std::map<UString,IOption> IOptionMap;
 
         // Private fields
-        Report*       _subreport {nullptr};
+        Report*       _subreport = nullptr;
         int           _saved_severity {Severity::Info};
         IOptionMap    _iopts {};
         UString       _description {};
@@ -1184,8 +1184,8 @@ namespace ts {
         UString       _tail {};
         UString       _app_name {};
         UStringVector _args {};
-        bool          _is_valid {false};
-        int           _flags {0};
+        bool          _is_valid = false;
+        int           _flags = 0;
 
         // List of characters which are allowed thousands separators and decimal points in integer values
         static const UChar* const THOUSANDS_SEPARATORS;

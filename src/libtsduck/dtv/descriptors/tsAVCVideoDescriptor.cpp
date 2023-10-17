@@ -27,19 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::AVCVideoDescriptor::AVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profile_idc(0),
-    constraint_set0(false),
-    constraint_set1(false),
-    constraint_set2(false),
-    constraint_set3(false),
-    constraint_set4(false),
-    constraint_set5(false),
-    AVC_compatible_flags(0),
-    level_idc(0),
-    AVC_still_present(false),
-    AVC_24_hour_picture(false),
-    frame_packing_SEI_not_present(false)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

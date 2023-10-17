@@ -30,22 +30,17 @@ namespace ts {
         //!
         struct TSDUCKDLL PreSelection
         {
-            // Public members
-            uint8_t            preselection_id;             //!< 5 bits, pre-selection id.
-            uint8_t            audio_rendering_indication;  //!< 3 bits, audio rendering indication.
-            bool               audio_description;           //!< Contain audio description.
-            bool               spoken_subtitles;            //!< Contain spoken subtitles.
-            bool               dialogue_enhancement;        //!< Contain dialogue enhancement.
-            bool               interactivity_enabled;       //!< Interactivity is enabled.
-            UString            ISO_639_language_code;       //!< Empty or 3 characters language code.
-            Variable<uint8_t>  message_id;                  //!< Text label, message id.
-            ByteBlock          aux_component_tags;          //!< When multi-stream info is present, list of component tags.
-            ByteBlock          future_extension;            //!< Future extension.
-
-            //!
-            //! Default constructor.
-            //!
-            PreSelection();
+            PreSelection() = default;                           //!< Constructor.
+            uint8_t            preselection_id = 0;             //!< 5 bits, pre-selection id.
+            uint8_t            audio_rendering_indication = 0;  //!< 3 bits, audio rendering indication.
+            bool               audio_description = false;       //!< Contain audio description.
+            bool               spoken_subtitles = false;        //!< Contain spoken subtitles.
+            bool               dialogue_enhancement = false;    //!< Contain dialogue enhancement.
+            bool               interactivity_enabled = false;   //!< Interactivity is enabled.
+            UString            ISO_639_language_code {};        //!< Empty or 3 characters language code.
+            Variable<uint8_t>  message_id {};                   //!< Text label, message id.
+            ByteBlock          aux_component_tags {};           //!< When multi-stream info is present, list of component tags.
+            ByteBlock          future_extension {};             //!< Future extension.
         };
 
         //!
@@ -54,7 +49,7 @@ namespace ts {
         typedef std::list<PreSelection> PreSelectionList;
 
         // AudioPreselectionDescriptor public members:
-        PreSelectionList entries;  //!< List of pre-selection entries.
+        PreSelectionList entries {};  //!< List of pre-selection entries.
 
         //!
         //! Default constructor.

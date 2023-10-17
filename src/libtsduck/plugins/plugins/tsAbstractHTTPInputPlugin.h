@@ -73,7 +73,7 @@ namespace ts {
     private:
         WebRequest _request;          // Current Web transfer in progress.
         TSPacket   _partial {};       // Buffer for incomplete packets.
-        size_t     _partialSize {0};  // Number of bytes in partial.
+        size_t     _partialSize = 0;  // Number of bytes in partial.
         UString    _autoSaveDir {};   // If not empty, automatically save loaded files to this directory.
         TSFile     _outSave {};       // TS file where to store the loaded file.
 

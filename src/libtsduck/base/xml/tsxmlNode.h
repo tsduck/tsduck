@@ -347,9 +347,9 @@ namespace ts {
         private:
             Report& _report;                // Where to report errors.
             UString _value {};              // Value of the node, depend on the node type.
-            Node*   _parent {nullptr};      // Parent node, null for a document.
-            Node*   _firstChild {nullptr};  // First child, can be null, other children are linked through the RingNode.
-            size_t  _inputLineNum {0};      // Line number in input document, zero if build programmatically.
+            Node*   _parent = nullptr;      // Parent node, null for a document.
+            Node*   _firstChild = nullptr;  // First child, can be null, other children are linked through the RingNode.
+            size_t  _inputLineNum = 0;      // Line number in input document, zero if build programmatically.
 
             // Default XML tweaks for orphan nodes.
             static const Tweaks defaultTweaks;

@@ -30,8 +30,7 @@ const size_t ts::EASInbandExceptionChannelsDescriptor::MAX_ENTRIES;
 //----------------------------------------------------------------------------
 
 ts::EASInbandExceptionChannelsDescriptor::EASInbandExceptionChannelsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

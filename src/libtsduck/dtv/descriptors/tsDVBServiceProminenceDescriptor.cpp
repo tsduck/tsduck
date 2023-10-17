@@ -27,26 +27,8 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::DVBServiceProminenceDescriptor::SOGI_region_type::SOGI_region_type() :
-    country_code(),
-    primary_region_code(),
-    secondary_region_code(),
-    tertiary_region_code()
-{
-}
-
-ts::DVBServiceProminenceDescriptor::SOGI_type::SOGI_type() :
-    SOGI_flag(false),
-    SOGI_priority(0),
-    service_id(),
-    regions()
-{
-}
-
 ts::DVBServiceProminenceDescriptor::DVBServiceProminenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    SOGI_list(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

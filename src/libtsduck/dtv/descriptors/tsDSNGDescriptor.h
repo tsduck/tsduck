@@ -26,7 +26,7 @@ namespace ts {
     {
     public:
         // DSNGDescriptor public members:
-        UString station_identification; //!< Station identification, see ETSI 301 210, Annex D.
+        UString station_identification {}; //!< Station identification, see ETSI 301 210, Annex D.
 
         //!
         //! Default constructor.

@@ -27,8 +27,8 @@ namespace ts {
     {
     public:
         // DataBroadcastIdDescriptor public members:
-        uint16_t  data_broadcast_id; //!< Data broadcast id.
-        ByteBlock private_data;      //!< Id selector bytes.
+        uint16_t  data_broadcast_id = 0; //!< Data broadcast id.
+        ByteBlock private_data {};       //!< Id selector bytes.
 
         //!
         //! Default constructor.

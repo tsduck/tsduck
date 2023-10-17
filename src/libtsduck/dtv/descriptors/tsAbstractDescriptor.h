@@ -180,7 +180,7 @@ namespace ts {
 
     private:
         DID _tag {DID_NULL};    // Descriptor tag.
-        PDS _required_pds {0};  // Required private data specifier.
+        PDS _required_pds = 0;  // Required private data specifier.
 
         // Unreachable constructors and operators.
         AbstractDescriptor() = delete;

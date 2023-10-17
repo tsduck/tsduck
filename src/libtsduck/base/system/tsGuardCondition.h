@@ -130,6 +130,6 @@ namespace ts {
     private:
         Mutex&     _mutex;
         Condition& _condition;
-        bool       _is_locked {false};
+        bool       _is_locked = false;
     };
 }

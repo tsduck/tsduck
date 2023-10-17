@@ -33,10 +33,10 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t onetw_id;    //!< Original network id.
-            uint16_t ts_id;       //!< Transport stream id.
-            uint16_t service_id;  //!< Service id.
-            uint16_t ecn;         //!< Eutelsat channel number.
+            uint16_t onetw_id = 0;    //!< Original network id.
+            uint16_t ts_id = 0;       //!< Transport stream id.
+            uint16_t service_id = 0;  //!< Service id.
+            uint16_t ecn = 0;         //!< Eutelsat channel number.
 
             //!
             //! Constructor
@@ -56,10 +56,10 @@ namespace ts {
         //!
         //! Maximum number of services entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 31;
+        static constexpr size_t MAX_ENTRIES = 31;
 
         // EutelsatChannelNumberDescriptor public members:
-        EntryList entries;  //!< List of service entries.
+        EntryList entries {};  //!< List of service entries.
 
         //!
         //! Default constructor.

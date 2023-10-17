@@ -477,14 +477,14 @@ namespace ts {
         const Charset* _charsetIn;     // DVB character set to interpret strings without prefix code.
         const Charset* _charsetOut;    // Preferred DVB character set to generate strings.
         uint16_t       _casId {CASID_NULL};              // Preferred CAS id.
-        PDS            _defaultPDS {0};                  // Default PDS value if undefined.
-        bool           _useLeapSeconds {true};           // Explicit use of leap seconds.
+        PDS            _defaultPDS = 0;                  // Default PDS value if undefined.
+        bool           _useLeapSeconds = true;           // Explicit use of leap seconds.
         Standards      _cmdStandards {Standards::NONE};  // Forced standards from the command line.
         Standards      _accStandards {Standards::NONE};  // Accumulated list of standards in the context.
         UString        _hfDefaultRegion {};              // Default region for UHF/VHF band.
-        MilliSecond    _timeReference {0};               // Time reference in milli-seconds from UTC (used in ISDB variants).
+        MilliSecond    _timeReference = 0;               // Time reference in milli-seconds from UTC (used in ISDB variants).
         UString        _timeRefConfig {};                // Time reference name from TSDuck configuration file.
-        int            _definedCmdOptions {0};           // Defined command line options.
+        int            _definedCmdOptions = 0;           // Defined command line options.
         const std::map<uint16_t, const UChar*> _predefined_cas {};  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.

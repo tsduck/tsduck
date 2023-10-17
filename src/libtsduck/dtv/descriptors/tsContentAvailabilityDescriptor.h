@@ -25,12 +25,12 @@ namespace ts {
     {
     public:
         // ContentAvailabilityDescriptor public members:
-        bool      copy_restriction_mode;   //!< Copy restriction.
-        bool      image_constraint_token;  //!< Image constraint.
-        bool      retention_mode;          //!< Rentention mode.
-        uint8_t   retention_state;         //!< 3 bits.
-        bool      encryption_mode;         //!< Encryption mode.
-        ByteBlock reserved_future_use;     //!< Additional info.
+        bool      copy_restriction_mode = false;   //!< Copy restriction.
+        bool      image_constraint_token = false;  //!< Image constraint.
+        bool      retention_mode = false;          //!< Rentention mode.
+        uint8_t   retention_state = 0;             //!< 3 bits.
+        bool      encryption_mode = false;         //!< Encryption mode.
+        ByteBlock reserved_future_use {};          //!< Additional info.
 
         //!
         //! Default constructor.

@@ -24,8 +24,8 @@ namespace ts {
     {
     public:
         // BoardInformationDescriptor public members:
-        UString title;  //!< Board information title.
-        UString text;   //!< Board information.
+        UString title {};  //!< Board information title.
+        UString text {};   //!< Board information.
 
         //!
         //! Default constructor.

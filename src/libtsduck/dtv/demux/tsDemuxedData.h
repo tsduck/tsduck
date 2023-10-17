@@ -222,9 +222,9 @@ namespace ts {
 
     private:
         // Private fields
-        PID           _source_pid {PID_NULL};  // Source PID (informational)
-        PacketCounter _first_pkt {0};          // Index of first packet in stream
-        PacketCounter _last_pkt {0};           // Index of last packet in stream
+        PID           _source_pid = PID_NULL;  // Source PID (informational)
+        PacketCounter _first_pkt = 0;          // Index of first packet in stream
+        PacketCounter _last_pkt = 0;           // Index of last packet in stream
         ByteBlockPtr  _data {};                // Full binary content of the packet
 
         // Inaccessible operations

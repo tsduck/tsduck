@@ -23,10 +23,10 @@ namespace ts {
     class TunerDeviceInfo
     {
     public:
-        int      adapter_number {0};   //!< DVB adapter number.
-        int      frontend_number {0};  //!< DVB frontend number.
-        uint16_t vendor_id {0};        //!< Vendor id (USB, PCI).
-        uint16_t product_id {0};       //!< Product id (USB, PCI).
+        int      adapter_number = 0;   //!< DVB adapter number.
+        int      frontend_number = 0;  //!< DVB frontend number.
+        uint16_t vendor_id = 0;        //!< Vendor id (USB, PCI).
+        uint16_t product_id = 0;       //!< Product id (USB, PCI).
         UString  manufacturer {};      //!< Manufacturer name.
         UString  product {};           //!< Product name.
         UString  version {};           //!< Product version string.

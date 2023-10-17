@@ -128,8 +128,8 @@ namespace ts {
 
         // Plugin private data.
         Receiver      _receiver;
-        bool          _started {false};
-        volatile bool _interrupted {false};
+        bool          _started = false;
+        volatile bool _interrupted = false;
         TSPacketQueue _queue {};
 
         // Standard input routine, now hidden from subclasses.

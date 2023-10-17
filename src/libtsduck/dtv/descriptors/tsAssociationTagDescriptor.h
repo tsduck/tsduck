@@ -25,10 +25,10 @@ namespace ts {
     {
     public:
         // AssociationTagDescriptor public members:
-        uint16_t  association_tag;  //!< Association tag.
-        uint16_t  use;              //!< Usage of associated bitstream.
-        ByteBlock selector_bytes;   //!< Selector bytes, depend on @a use.
-        ByteBlock private_data;     //!< Private data.
+        uint16_t  association_tag = 0;  //!< Association tag.
+        uint16_t  use = 0;              //!< Usage of associated bitstream.
+        ByteBlock selector_bytes {};    //!< Selector bytes, depend on @a use.
+        ByteBlock private_data {};      //!< Private data.
 
         //!
         //! Default constructor.

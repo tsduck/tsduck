@@ -35,9 +35,9 @@ namespace ts {
 
     private:
         UString _tag {};
-        char*   _null {nullptr};
-        bool    _segfault {false};
-        bool    _exit {false};
+        char*   _null = nullptr;
+        bool    _segfault = false;
+        bool    _exit = false;
         int     _exit_code {EXIT_SUCCESS};
     };
 }

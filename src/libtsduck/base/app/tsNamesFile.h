@@ -203,7 +203,7 @@ namespace ts {
         class ConfigEntry
         {
         public:
-            Value   last {0};  // Last value in the range.
+            Value   last = 0;  // Last value in the range.
             UString name {};   // Associated name.
 
             ConfigEntry(Value l = 0, const UString& n = UString()) : last(l), name(n) {}
@@ -218,7 +218,7 @@ namespace ts {
         {
             TS_NOCOPY(ConfigSection);
         public:
-            size_t          bits {0};     // Number of significant bits in values of the type.
+            size_t          bits = 0;     // Number of significant bits in values of the type.
             ConfigEntryMap  entries {};   // All entries, indexed by names.
             UString         inherit {};   // Redirect to this section if value not found.
 

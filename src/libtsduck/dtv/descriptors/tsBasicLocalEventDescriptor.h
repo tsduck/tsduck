@@ -25,13 +25,13 @@ namespace ts {
     {
     public:
         // BasicLocalEventDescriptor public members:
-        uint8_t     segmentation_mode;  //!< 4 bits
-        uint64_t    start_time_NPT;     //!< 33 bits, start Normal Play Time (NPT), when segmentation_mode == 1.
-        uint64_t    end_time_NPT;       //!< 33 bits, stop Normal Play Time (NPT), when segmentation_mode == 1.
-        MilliSecond start_time;         //!< HH:MM:SS.mmm time of the day, when segmentation_mode == 2 to 5.
-        MilliSecond duration;           //!< HH:MM:SS.mmm as duration, when segmentation_mode == 2 to 5.
-        ByteBlock   reserved_data;      //!< When segmentation_mode >= 6.
-        ByteBlock   component_tags;     //!< One byte per component tag.
+        uint8_t     segmentation_mode = 0;  //!< 4 bits
+        uint64_t    start_time_NPT = 0;     //!< 33 bits, start Normal Play Time (NPT), when segmentation_mode == 1.
+        uint64_t    end_time_NPT = 0;       //!< 33 bits, stop Normal Play Time (NPT), when segmentation_mode == 1.
+        MilliSecond start_time = 0;         //!< HH:MM:SS.mmm time of the day, when segmentation_mode == 2 to 5.
+        MilliSecond duration = 0;           //!< HH:MM:SS.mmm as duration, when segmentation_mode == 2 to 5.
+        ByteBlock   reserved_data {};       //!< When segmentation_mode >= 6.
+        ByteBlock   component_tags {};      //!< One byte per component tag.
 
         //!
         //! Default constructor.

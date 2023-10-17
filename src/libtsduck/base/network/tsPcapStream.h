@@ -133,10 +133,10 @@ namespace ts {
             DataBlock(const IPv4Packet& pkt, MicroSecond tstamp);
 
             ByteBlock   data {};         // TCP payload
-            size_t      index {0};       // index of next byte to read in data
-            uint32_t    sequence {0};    // TCP sequence number at start of data
-            bool        start {false};   // start of TCP stream.
-            bool        end {false};     // end of TCP stream.
+            size_t      index = 0;       // index of next byte to read in data
+            uint32_t    sequence = 0;    // TCP sequence number at start of data
+            bool        start = false;   // start of TCP stream.
+            bool        end = false;     // end of TCP stream.
             MicroSecond timestamp {-1};  // capture time stamp.
         };
         typedef SafePtr<DataBlock> DataBlockPtr;

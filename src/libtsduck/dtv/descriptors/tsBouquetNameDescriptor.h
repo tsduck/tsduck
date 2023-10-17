@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // BouquetNameDescriptor public members:
-        UString name; //!< Bouquet name.
+        UString name {}; //!< Bouquet name.
 
         //!
         //! Default constructor.

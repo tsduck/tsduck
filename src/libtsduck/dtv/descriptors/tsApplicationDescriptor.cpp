@@ -28,12 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::ApplicationDescriptor::ApplicationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profiles(),
-    service_bound(false),
-    visibility(0),
-    application_priority(0),
-    transport_protocol_labels()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -50,14 +45,6 @@ ts::ApplicationDescriptor::ApplicationDescriptor(DuckContext& duck, const Descri
     ApplicationDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::ApplicationDescriptor::Profile::Profile() :
-    application_profile(0),
-    version_major(0),
-    version_minor(0),
-    version_micro(0)
-{
 }
 
 

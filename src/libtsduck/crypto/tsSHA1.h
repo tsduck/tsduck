@@ -23,8 +23,8 @@ namespace ts {
     {
         TS_NOCOPY(SHA1);
     public:
-        static const size_t HASH_SIZE  = 20;  //!< SHA-1 hash size in bytes.
-        static const size_t BLOCK_SIZE = 64;  //!< SHA-1 block size in bytes.
+        static constexpr size_t HASH_SIZE  = 20;  //!< SHA-1 hash size in bytes.
+        static constexpr size_t BLOCK_SIZE = 64;  //!< SHA-1 block size in bytes.
 
         // Implementation of Hash interface:
         virtual UString name() const override;
@@ -38,8 +38,8 @@ namespace ts {
         SHA1();
 
     private:
-        uint64_t _length {0};                // Total message size in bits (already hashed, ie. excluding _buf)
-        size_t   _curlen {0};                // Used bytes in _buf
+        uint64_t _length = 0;                // Total message size in bits (already hashed, ie. excluding _buf)
+        size_t   _curlen = 0;                // Used bytes in _buf
         uint32_t _state[HASH_SIZE / 4] {};   // Current hash value (160 bits)
         uint8_t  _buf[BLOCK_SIZE] {};        // Current block to hash (512 bits)
 

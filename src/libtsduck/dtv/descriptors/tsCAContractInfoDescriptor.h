@@ -25,11 +25,11 @@ namespace ts {
     {
     public:
         // CAContractInfoDescriptor public members:
-        uint16_t  CA_system_id;               //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
-        uint8_t   CA_unit_id;                 //!< 4 bits, billing unit group.
-        ByteBlock component_tags;             //!< One byte per component tag.
-        ByteBlock contract_verification_info; //!< Contract description data.
-        UString   fee_name;                   //!< Contract description.
+        uint16_t  CA_system_id = 0;              //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
+        uint8_t   CA_unit_id = 0;                //!< 4 bits, billing unit group.
+        ByteBlock component_tags {};             //!< One byte per component tag.
+        ByteBlock contract_verification_info {}; //!< Contract description data.
+        UString   fee_name {};                   //!< Contract description.
 
         //!
         //! Default constructor.

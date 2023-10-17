@@ -168,33 +168,33 @@ namespace ts {
         size_t memoryPageSize() const { return _memoryPageSize; }
 
     private:
-        bool    _isLinux {false};
-        bool    _isFedora {false};
-        bool    _isRedHat {false};
-        bool    _isUbuntu {false};
-        bool    _isDebian {false};
-        bool    _isRaspbian {false};
-        bool    _isMacOS {false};
-        bool    _isBSD {false};
-        bool    _isFreeBSD {false};
-        bool    _isNetBSD {false};
-        bool    _isOpenBSD {false};
-        bool    _isDragonFlyBSD {false};
-        bool    _isWindows {false};
-        bool    _isIntel32 {false};
-        bool    _isIntel64 {false};
-        bool    _isArm32 {false};
-        bool    _isArm64 {false};
-        bool    _crcInstructions {false};
-        bool    _aesInstructions {false};
-        bool    _sha1Instructions {false};
-        bool    _sha256Instructions {false};
-        bool    _sha512Instructions {false};
+        bool    _isLinux = false;
+        bool    _isFedora = false;
+        bool    _isRedHat = false;
+        bool    _isUbuntu = false;
+        bool    _isDebian = false;
+        bool    _isRaspbian = false;
+        bool    _isMacOS = false;
+        bool    _isBSD = false;
+        bool    _isFreeBSD = false;
+        bool    _isNetBSD = false;
+        bool    _isOpenBSD = false;
+        bool    _isDragonFlyBSD = false;
+        bool    _isWindows = false;
+        bool    _isIntel32 = false;
+        bool    _isIntel64 = false;
+        bool    _isArm32 = false;
+        bool    _isArm64 = false;
+        bool    _crcInstructions = false;
+        bool    _aesInstructions = false;
+        bool    _sha1Instructions = false;
+        bool    _sha256Instructions = false;
+        bool    _sha512Instructions = false;
         int     _systemMajorVersion {-1};
         UString _systemVersion {};
         UString _systemName {};
         UString _hostName {};
         UString _cpuName {};
-        size_t  _memoryPageSize {0};
+        size_t  _memoryPageSize = 0;
     };
 }

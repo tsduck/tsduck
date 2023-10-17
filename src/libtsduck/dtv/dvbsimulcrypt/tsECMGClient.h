@@ -134,10 +134,10 @@ namespace ts {
         };
 
         // Stack size for execution of the receiver thread
-        static const size_t RECEIVER_STACK_SIZE = 128 * 1024;
+        static constexpr size_t RECEIVER_STACK_SIZE = 128 * 1024;
 
         // Maximum number of messages in response queue
-        static const size_t RESPONSE_QUEUE_SIZE = 10;
+        static constexpr size_t RESPONSE_QUEUE_SIZE = 10;
 
         // Timeout for responses from ECMG (except ECM generation)
         static const MilliSecond RESPONSE_TIMEOUT = 5000;

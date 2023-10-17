@@ -26,9 +26,9 @@ namespace ts {
     {
     public:
         // CPDescriptor public members:
-        uint16_t  cp_id;         //!< CP system id.
-        PID       cp_pid;        //!< PID for CP tables.
-        ByteBlock private_data;  //!< CP-specific private data.
+        uint16_t  cp_id = 0;          //!< CP system id.
+        PID       cp_pid = PID_NULL;  //!< PID for CP tables.
+        ByteBlock private_data {};    //!< CP-specific private data.
 
         //!
         //! Default constructor.

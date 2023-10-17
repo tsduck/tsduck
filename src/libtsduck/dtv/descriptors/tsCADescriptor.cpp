@@ -31,8 +31,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 ts::CADescriptor::CADescriptor(uint16_t cas_id_, PID ca_pid_) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     cas_id(cas_id_),
-    ca_pid(ca_pid_),
-    private_data()
+    ca_pid(ca_pid_)
 {
 }
 

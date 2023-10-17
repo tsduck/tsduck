@@ -28,12 +28,12 @@ namespace ts {
         //!
         struct TSDUCKDLL Subcell
         {
-            Subcell();                            //!< Default constructor.
-            uint8_t  cell_id_extension;           //!< Cell id extension.
-            int16_t  subcell_latitude;            //!< Subcell latitude in units of 90 deg / 2^15.
-            int16_t  subcell_longitude;           //!< Subcell longitude in units of 180 deg / 2^15.
-            uint16_t subcell_extent_of_latitude;  //!< 12 bits, subcell extend of latitude in units of 90 deg / 2^15.
-            uint16_t subcell_extent_of_longitude; //!< 12 bits, subcell extend of longitude in units of 180 deg / 2^15.
+            Subcell() = default;                      //!< Default constructor.
+            uint8_t  cell_id_extension = 0;           //!< Cell id extension.
+            int16_t  subcell_latitude = 0;            //!< Subcell latitude in units of 90 deg / 2^15.
+            int16_t  subcell_longitude = 0;           //!< Subcell longitude in units of 180 deg / 2^15.
+            uint16_t subcell_extent_of_latitude = 0;  //!< 12 bits, subcell extend of latitude in units of 90 deg / 2^15.
+            uint16_t subcell_extent_of_longitude = 0; //!< 12 bits, subcell extend of longitude in units of 180 deg / 2^15.
         };
 
         //!
@@ -46,13 +46,13 @@ namespace ts {
         //!
         struct TSDUCKDLL Cell
         {
-            Cell();                               //!< Default constructor.
-            uint16_t    cell_id;                  //!< Cell id.
-            int16_t     cell_latitude;            //!< Cell latitude in units of 90 deg / 2^15.
-            int16_t     cell_longitude;           //!< Cell longitude in units of 180 deg / 2^15.
-            uint16_t    cell_extent_of_latitude;  //!< 12 bits, cell extend of latitude in units of 90 deg / 2^15.
-            uint16_t    cell_extent_of_longitude; //!< 12 bits, cell extend of longitude in units of 180 deg / 2^15.
-            SubcellList subcells;                 //!< List of subcells.
+            Cell() = default;                         //!< Default constructor.
+            uint16_t    cell_id = 0;                  //!< Cell id.
+            int16_t     cell_latitude = 0;            //!< Cell latitude in units of 90 deg / 2^15.
+            int16_t     cell_longitude = 0;           //!< Cell longitude in units of 180 deg / 2^15.
+            uint16_t    cell_extent_of_latitude = 0;  //!< 12 bits, cell extend of latitude in units of 90 deg / 2^15.
+            uint16_t    cell_extent_of_longitude = 0; //!< 12 bits, cell extend of longitude in units of 180 deg / 2^15.
+            SubcellList subcells {};                  //!< List of subcells.
         };
 
         //!
@@ -61,7 +61,7 @@ namespace ts {
         typedef std::list<Cell> CellList;
 
         // CellListDescriptor public members:
-        CellList cells;  //!< The list of cells and subcells.
+        CellList cells {};  //!< The list of cells and subcells.
 
         //!
         //! Default constructor.

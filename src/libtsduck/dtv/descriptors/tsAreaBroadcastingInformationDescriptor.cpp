@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::AreaBroadcastingInformationDescriptor::AreaBroadcastingInformationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    stations()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,14 +41,6 @@ ts::AreaBroadcastingInformationDescriptor::AreaBroadcastingInformationDescriptor
     AreaBroadcastingInformationDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::AreaBroadcastingInformationDescriptor::Station::Station() :
-    station_id(0),
-    location_code(0),
-    broadcast_signal_format(0),
-    additional_station_info()
-{
 }
 
 

@@ -25,9 +25,9 @@ namespace ts {
     {
     public:
         // Public members:
-        uint16_t  CA_system_id;         //!< Conditional access system id.
-        uint16_t  ECM_repetition_rate;  //!< ECM repetition rate in milliseconds.
-        ByteBlock private_data;         //!< CAS-dependent private data.
+        uint16_t  CA_system_id = 0;         //!< Conditional access system id.
+        uint16_t  ECM_repetition_rate = 0;  //!< ECM repetition rate in milliseconds.
+        ByteBlock private_data {};          //!< CAS-dependent private data.
 
         //!
         //! Default constructor.

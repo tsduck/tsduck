@@ -59,9 +59,9 @@ namespace ts {
     {
     private:
 #if defined(TS_COM_INSTRUMENTATION)
-        mutable bool _traceCreator {false};  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
+        mutable bool _traceCreator = false;  // A call to creator() has returned &_ptr and the resulting pointer was not yet traced.
 #endif
-        COMCLASS* _ptr {nullptr};  // Encapsulated pointer to COM object.
+        COMCLASS* _ptr = nullptr;  // Encapsulated pointer to COM object.
 
     public:
         //!

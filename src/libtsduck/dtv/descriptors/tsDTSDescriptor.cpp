@@ -28,15 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DTSDescriptor::DTSDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    sample_rate_code(0),
-    bit_rate_code(0),
-    nblks(0),
-    fsize(0),
-    surround_mode(0),
-    lfe(false),
-    extended_surround(0),
-    additional_info()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

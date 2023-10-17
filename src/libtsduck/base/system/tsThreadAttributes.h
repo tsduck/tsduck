@@ -241,9 +241,9 @@ namespace ts {
         }
 
     private:
-        size_t  _stackSize {0};
-        bool    _deleteWhenTerminated {false};
-        int     _priority {0};
+        size_t  _stackSize = 0;
+        bool    _deleteWhenTerminated = false;
+        int     _priority = 0;
         UString _name {};
 
         //

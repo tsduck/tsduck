@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::ContentAdvisoryDescriptor::ContentAdvisoryDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,13 +41,6 @@ ts::ContentAdvisoryDescriptor::ContentAdvisoryDescriptor(DuckContext& duck, cons
     ContentAdvisoryDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::ContentAdvisoryDescriptor::Entry::Entry() :
-    rating_region(0),
-    rating_values(),
-    rating_description()
-{
 }
 
 

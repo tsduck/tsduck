@@ -33,11 +33,6 @@ ts::ApplicationUsageDescriptor::ApplicationUsageDescriptor(uint8_t type) :
 {
 }
 
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
-
 void ts::ApplicationUsageDescriptor::clearContent()
 {
     usage_type = 0;

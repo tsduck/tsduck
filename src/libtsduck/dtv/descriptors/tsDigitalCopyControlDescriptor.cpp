@@ -28,11 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::DigitalCopyControlDescriptor::DigitalCopyControlDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    digital_recording_control_data(0),
-    user_defined(0),
-    maximum_bitrate(),
-    components()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -48,14 +44,6 @@ ts::DigitalCopyControlDescriptor::DigitalCopyControlDescriptor(DuckContext& duck
     DigitalCopyControlDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::DigitalCopyControlDescriptor::Component::Component() :
-    component_tag(0),
-    digital_recording_control_data(0),
-    user_defined(0),
-    maximum_bitrate()
-{
 }
 
 

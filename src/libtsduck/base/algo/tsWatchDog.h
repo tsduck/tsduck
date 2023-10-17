@@ -94,13 +94,13 @@ namespace ts {
     private:
         Report&                   _log;                 // For debug messages.
         volatile int              _watchDogId;          // Application-defined watchdog identifier.
-        volatile bool             _terminate {false};   // Terminate the thread.
+        volatile bool             _terminate = false;   // Terminate the thread.
         Mutex                     _mutex {};            // Mutex to protect the following fields.
         Condition                 _condition {};        // Condition to signal when something changed.
         WatchDogHandlerInterface* _handler;             // Handler for expiration.
         MilliSecond               _timeout {Infinite};  // Expiration timeout, 0 means no timeout.
-        bool                      _active {false};      // The watchdog is active.
-        bool                      _started {false};     // The thread is started.
+        bool                      _active = false;      // The watchdog is active.
+        bool                      _started = false;     // The thread is started.
 
         // Activate the watchdog. Must be called with mutex held.
         void activate(GuardCondition& lock);

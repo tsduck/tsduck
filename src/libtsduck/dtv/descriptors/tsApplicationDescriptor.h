@@ -33,11 +33,11 @@ namespace ts {
         //!
         struct Profile
         {
-            Profile();                     //!< Default constructor.
-            uint16_t application_profile;  //!< Application profile code.
-            uint8_t  version_major;        //!< Major version number.
-            uint8_t  version_minor;        //!< Minor version number.
-            uint8_t  version_micro;        //!< Mico version number.
+            Profile() = default;               //!< Default constructor.
+            uint16_t application_profile = 0;  //!< Application profile code.
+            uint8_t  version_major = 0;        //!< Major version number.
+            uint8_t  version_minor = 0;        //!< Minor version number.
+            uint8_t  version_micro = 0;        //!< Mico version number.
         };
 
         //!
@@ -46,11 +46,11 @@ namespace ts {
         typedef std::list<Profile> ProfileList;
 
         // ApplicationDescriptor public members:
-        ProfileList profiles;                   //!< List of application profiles.
-        bool        service_bound;              //!< Application is bound to current service.
-        uint8_t     visibility;                 //!< Visibility code, 2 bits.
-        uint8_t     application_priority;       //!< Application priority.
-        ByteBlock   transport_protocol_labels;  //!< One byte per transport protocol label.
+        ProfileList profiles {};                   //!< List of application profiles.
+        bool        service_bound = false;         //!< Application is bound to current service.
+        uint8_t     visibility = 0;                //!< Visibility code, 2 bits.
+        uint8_t     application_priority = 0;      //!< Application priority.
+        ByteBlock   transport_protocol_labels {};  //!< One byte per transport protocol label.
 
         //!
         //! Default constructor.

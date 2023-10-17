@@ -225,20 +225,20 @@ namespace ts {
         std::set<uint8_t> _protocols {};
         IPv4SocketAddress _source {};
         IPv4SocketAddress _destination {};
-        bool              _bidirectional_filter {false};
-        bool              _wildcard_filter {true};
+        bool              _bidirectional_filter = false;
+        bool              _wildcard_filter = true;
         int               _display_addresses_severity {Severity::Debug};
-        size_t            _first_packet {0};
+        size_t            _first_packet = 0;
         size_t            _last_packet {std::numeric_limits<size_t>::max()};
-        MicroSecond       _first_time_offset {0};
+        MicroSecond       _first_time_offset = 0;
         MicroSecond       _last_time_offset {std::numeric_limits<ts::MicroSecond>::max()};
-        MicroSecond       _first_time {0};
+        MicroSecond       _first_time = 0;
         MicroSecond       _last_time {std::numeric_limits<ts::MicroSecond>::max()};
-        size_t            _opt_first_packet {0};
+        size_t            _opt_first_packet = 0;
         size_t            _opt_last_packet {std::numeric_limits<size_t>::max()};
-        MicroSecond       _opt_first_time_offset {0};
+        MicroSecond       _opt_first_time_offset = 0;
         MicroSecond       _opt_last_time_offset {std::numeric_limits<ts::MicroSecond>::max()};
-        MicroSecond       _opt_first_time {0};
+        MicroSecond       _opt_first_time = 0;
         MicroSecond       _opt_last_time {std::numeric_limits<ts::MicroSecond>::max()};
 
         // Get a date option and return it as micro-seconds since Unix epoch.

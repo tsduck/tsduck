@@ -33,8 +33,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t DII_identification;  //!< Identifier, 15 bits.
-            uint16_t association_tag;     //!< Tag.
+            uint16_t DII_identification = 0;  //!< Identifier, 15 bits.
+            uint16_t association_tag = 0;     //!< Tag.
 
             //!
             //! Default constructor.
@@ -52,11 +52,11 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 63;
+        static constexpr size_t MAX_ENTRIES = 63;
 
         // DIILocationDescriptor public members:
-        uint8_t   transport_protocol_label;  //!< Transport protocol label.
-        EntryList entries;                   //!< The list of module entries.
+        uint8_t   transport_protocol_label = 0;  //!< Transport protocol label.
+        EntryList entries {};                    //!< The list of module entries.
 
         //!
         //! Default constructor.

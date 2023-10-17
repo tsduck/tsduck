@@ -294,14 +294,14 @@ namespace ts {
         virtual bool decryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length);
 
     private:
-        bool      _key_set {false};                   // Current key successfully set.
-        int       _cipher_id {0};                     // Cipher identity (from application).
-        size_t    _key_encrypt_count {0};             // Number of times the current key was used for decryption.
-        size_t    _key_decrypt_count {0};             // Number of times the current key was used for decryption.
+        bool      _key_set = false;                   // Current key successfully set.
+        int       _cipher_id = 0;                     // Cipher identity (from application).
+        size_t    _key_encrypt_count = 0;             // Number of times the current key was used for decryption.
+        size_t    _key_decrypt_count = 0;             // Number of times the current key was used for decryption.
         size_t    _key_encrypt_max {UNLIMITED};       // Maximum number of times a key should be used for encryption.
         size_t    _key_decrypt_max {UNLIMITED};       // Maximum number of times a key should be used for decryption.
         ByteBlock _current_key{};                     // Current unscheduled key.
-        BlockCipherAlertInterface* _alert {nullptr};  // Alert handler.
+        BlockCipherAlertInterface* _alert = nullptr;  // Alert handler.
 
         // Check if encryption or decryption is allowed. Increment counters.
         bool allowEncrypt();

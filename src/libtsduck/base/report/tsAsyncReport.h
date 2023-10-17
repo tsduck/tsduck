@@ -118,7 +118,7 @@ namespace ts {
         {
             LogMessage(bool t, int s, const UString& m) : terminate(t), severity(s), message(m) {}
 
-            bool    terminate {false};  // ask the logging thread to terminate
+            bool    terminate = false;  // ask the logging thread to terminate
             int     severity {Severity::Info};
             UString message {};
         };
@@ -127,8 +127,8 @@ namespace ts {
 
         // Private members:
         LogMessageQueue _log_queue {};
-        volatile bool   _time_stamp {false};
-        volatile bool   _synchronous {false};
-        volatile bool   _terminated {false};
+        volatile bool   _time_stamp = false;
+        volatile bool   _synchronous = false;
+        volatile bool   _terminated = false;
     };
 }

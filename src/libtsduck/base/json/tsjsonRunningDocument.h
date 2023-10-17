@@ -75,9 +75,9 @@ namespace ts {
 
         private:
             TextFormatter _text {};             // The text formatter.
-            bool          _open_array {false};  // The array is open.
-            bool          _empty_array {false}; // The open array is currently empty.
-            size_t        _obj_count {0};       // Number of parent objects.
+            bool          _open_array = false;  // The array is open.
+            bool          _empty_array = false; // The open array is currently empty.
+            size_t        _obj_count = 0;       // Number of parent objects.
 
             // Look for a JSON array in a tree. Return true if one is found, false otherwise.
             // Build a path of objects, one per level. The last one is the array.

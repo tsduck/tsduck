@@ -28,12 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::DVBDTSUHDDescriptor::DVBDTSUHDDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    DecoderProfileCode(0),
-    FrameDurationCode(0),
-    MaxPayloadCode(0),
-    StreamIndex(0),
-    codec_selector()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

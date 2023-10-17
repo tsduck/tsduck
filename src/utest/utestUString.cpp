@@ -464,7 +464,7 @@ void UStringTest::testLetterCase()
         {ts::CYRILLIC_CAPITAL_LETTER_SHORT_U, ts::CYRILLIC_SMALL_LETTER_SHORT_U},
         {ts::CYRILLIC_CAPITAL_LETTER_DZHE, ts::CYRILLIC_SMALL_LETTER_DZHE},
     };
-    static const size_t tabSize = sizeof(tab) / sizeof(tab[0]);
+    static constexpr size_t tabSize = sizeof(tab) / sizeof(tab[0]);
 
     for (size_t i = 0; i < tabSize; ++i) {
         TSUNIT_ASSERT(ts::IsUpper(tab[i].upper));

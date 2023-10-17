@@ -67,7 +67,7 @@ namespace ts {
         //! Default number of intervals in the sliding window of bitrate computation.
         //! See the description of the class.
         //!
-        static const size_t INTERVAL_COUNT = 20;
+        static constexpr size_t INTERVAL_COUNT = 20;
 
         //!
         //! Constructor.
@@ -110,8 +110,8 @@ namespace ts {
         {
             void clear() { packets = 0; duration = 0; }
 
-            PacketCounter packets {0};   // Number of processed packets.
-            NanoSecond    duration {0};  // Processing duration.
+            PacketCounter packets = 0;   // Number of processed packets.
+            NanoSecond    duration = 0;  // Processing duration.
         };
 
         // Configuration data:
@@ -123,11 +123,11 @@ namespace ts {
         Monotonic     _clock {};              // The reference clock.
         // Accumulated data since beginning of session:
         std::vector<Interval> _intervals {};  // Accumulate results, circular buffer.
-        size_t        _next_interval {0};     // Next interval to overwrite.
+        size_t        _next_interval = 0;     // Next interval to overwrite.
         Interval      _total {};              // Accumulated values in all _intervals.
         // Description of current interval:
-        NanoSecond    _start_interval {0};    // Start time of interval, from _start_session.
-        PacketCounter _count_interval {0};    // Number of processed packets in current interval.
-        PacketCounter _remain_interval {0};   // Number of packets to process in this interval before checking the clock.
+        NanoSecond    _start_interval = 0;    // Start time of interval, from _start_session.
+        PacketCounter _count_interval = 0;    // Number of processed packets in current interval.
+        PacketCounter _remain_interval = 0;   // Number of packets to process in this interval before checking the clock.
     };
 }

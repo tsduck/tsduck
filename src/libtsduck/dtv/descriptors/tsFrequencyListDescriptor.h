@@ -27,7 +27,7 @@ namespace ts {
         //!
         //! Maximum number of frequency entries to fit in 254 bytes.
         //!
-        static const size_t MAX_ENTRIES = 63;
+        static constexpr size_t MAX_ENTRIES = 63;
 
         //!
         //! Type frequency in @a coding_type field.
@@ -45,8 +45,8 @@ namespace ts {
         static const Enumeration CodingTypeEnum;
 
         // FrequencyListDescriptor public members:
-        uint8_t               coding_type;  //!< 2 bits, type of frequency (cable, satellite, etc.)
-        std::vector<uint64_t> frequencies;  //!< The list of centre frequencies.
+        uint8_t               coding_type = UNDEFINED;  //!< 2 bits, type of frequency (cable, satellite, etc.)
+        std::vector<uint64_t> frequencies {};           //!< The list of centre frequencies.
 
         //!
         //! Default constructor.

@@ -49,7 +49,7 @@ namespace ts {
         //!
         //! Maximum number of regions per descriptor.
         //!
-        static const size_t MAX_REGION = 19;
+        static constexpr size_t MAX_REGION = 19;
 
         // LocalTimeOffsetDescriptor public members:
         RegionVector regions;  //!< Vector of region descriptions.

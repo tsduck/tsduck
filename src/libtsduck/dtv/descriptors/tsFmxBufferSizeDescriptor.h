@@ -35,15 +35,15 @@ namespace ts {
         //!
         class TSDUCKDLL FlexMuxBufferDescriptor_type {
         public:
-            uint8_t     flexMuxChnnel;       //!< 8 bits
-            uint32_t    FB_BufferSize;       //!< 24 bits
+            uint8_t  flexMuxChnnel = 0;  //!< 8 bits
+            uint32_t FB_BufferSize = 0;  //!< 24 bits
 
-            FlexMuxBufferDescriptor_type();     //!< Constructor
+            FlexMuxBufferDescriptor_type() = default;  //!< Constructor
         };
 
         // Public members:
-        FlexMuxBufferDescriptor_type              DefaultFlexMuxBufferDescriptor;  //!< Default FlexMux.
-        std::vector<FlexMuxBufferDescriptor_type> FlexMuxBufferDescriptor;         //!< Other FlexMux.
+        FlexMuxBufferDescriptor_type              DefaultFlexMuxBufferDescriptor {};  //!< Default FlexMux.
+        std::vector<FlexMuxBufferDescriptor_type> FlexMuxBufferDescriptor {};         //!< Other FlexMux.
 
         //!
         //! Default constructor.

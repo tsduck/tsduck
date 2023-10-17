@@ -33,7 +33,7 @@ namespace ts {
     {
         TS_RULE_OF_FIVE(IPv4Address, override);
     private:
-        uint32_t _addr {0};  // An IPv4 address is a 32-bit word in host byte order
+        uint32_t _addr = 0;  // An IPv4 address is a 32-bit word in host byte order
     public:
         //!
         //! Size in bits of an IPv4 address.

@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // DTSNeuralDescriptor public members:
-        uint8_t   config_id;        //!< DTS Neural configuation.
-        ByteBlock additional_info;  //!< Additional info byte.
+        uint8_t   config_id = 0;       //!< DTS Neural configuation.
+        ByteBlock additional_info {};  //!< Additional info byte.
 
         //!
         //! Default constructor.

@@ -84,8 +84,8 @@ namespace ts {
     private:
         UString _name_prefix {};               // Full name prefix.
         UString _name_suffix {};               // Full name suffix.
-        bool    _counter_mode {true};          // Use counter mode (ie. not date and time).
-        size_t  _counter_value {0};            // Next counter value in file names.
+        bool    _counter_mode = true;          // Use counter mode (ie. not date and time).
+        size_t  _counter_value = 0;            // Next counter value in file names.
         size_t  _counter_width {6};            // Counter width in file name.
         int     _time_fields {Time::DATETIME}; // The time fields to use.
         UString _last_time {};                 // The last returned time fields. Use _counter_value to avoid identical file names.

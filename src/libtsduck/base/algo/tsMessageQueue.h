@@ -194,7 +194,7 @@ namespace ts {
         mutable Mutex     _mutex {};         //!< Protect access to all private members
         mutable Condition _enqueued {};      //!< Signaled when some message is inserted
         mutable Condition _dequeued {};      //!< Signaled when some message is removed
-        size_t            _maxMessages {0};  //!< Max number of messages in the queue
+        size_t            _maxMessages = 0;  //!< Max number of messages in the queue
         MessageList       _queue {};         //!< Actual message queue.
 
         // Enqueue a safe pointer in the list and signal the condition.

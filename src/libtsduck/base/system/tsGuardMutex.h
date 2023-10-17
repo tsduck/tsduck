@@ -116,6 +116,6 @@ namespace ts {
 
     private:
         MutexInterface& _mutex;
-        bool _is_locked {false};
+        bool _is_locked = false;
     };
 }

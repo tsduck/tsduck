@@ -28,7 +28,7 @@ namespace ts {
     {
     public:
         // DVBJApplicationDescriptor public members:
-        UStringList parameters; //!< Application parameters.
+        UStringList parameters {}; //!< Application parameters.
 
         //!
         //! Default constructor.

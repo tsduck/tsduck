@@ -20,9 +20,9 @@ TS_MAIN(MainCode);
 //  Command line options
 //-----------------------------------------------------------------------------
 
-static const size_t   MIN_TS_BUFFER_SIZE     = 1024;             // 1 kB
-static const size_t   DEFAULT_TS_BUFFER_SIZE = 4 * 1024 * 1024;  // 4 MB
-static const size_t   MAX_TS_BUFFER_SIZE     = 16 * 1024 * 1024; // 16 MB
+static constexpr size_t   MIN_TS_BUFFER_SIZE     = 1024;             // 1 kB
+static constexpr size_t   DEFAULT_TS_BUFFER_SIZE = 4 * 1024 * 1024;  // 4 MB
+static constexpr size_t   MAX_TS_BUFFER_SIZE     = 16 * 1024 * 1024; // 16 MB
 static const uint64_t DEFAULT_MIN_INTERVAL   = 100;              // milliseconds
 
 namespace {

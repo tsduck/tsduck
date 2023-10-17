@@ -28,11 +28,11 @@ namespace ts {
     {
     public:
         // DTGGuidanceDescriptor public members:
-        uint8_t   guidance_type;          //!< 2-bit guidance type.
-        UString   ISO_639_language_code;  //!< 3-char language code, when guidance_type == 0 or 1.
-        UString   text;                   //!< Guidance text, when guidance_type == 0 or 1.
-        bool      guidance_mode;          //!< Guidance mode, when guidance_type == 1.
-        ByteBlock reserved_future_use;    //!< When guidance_type >= 2.
+        uint8_t   guidance_type = 0;         //!< 2-bit guidance type.
+        UString   ISO_639_language_code {};  //!< 3-char language code, when guidance_type == 0 or 1.
+        UString   text {};                   //!< Guidance text, when guidance_type == 0 or 1.
+        bool      guidance_mode = false;     //!< Guidance mode, when guidance_type == 1.
+        ByteBlock reserved_future_use {};    //!< When guidance_type >= 2.
 
         //!
         //! Default constructor.

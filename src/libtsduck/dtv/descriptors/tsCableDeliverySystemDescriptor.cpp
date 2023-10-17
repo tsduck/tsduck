@@ -26,12 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::CableDeliverySystemDescriptor::CableDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C, MY_XML_NAME),
-    frequency(0),
-    FEC_outer(0),
-    modulation(0),
-    symbol_rate(0),
-    FEC_inner(0)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C, MY_XML_NAME)
 {
 }
 

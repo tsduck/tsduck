@@ -41,9 +41,9 @@ namespace ts {
 
     private:
         UString        _command {};       // The command to run.
-        bool           _nowait {false};   // Don't wait for children termination.
-        TSPacketFormat _format {TSPacketFormat::AUTODETECT};  // Packet format on the pipe
-        size_t         _buffer_size {0};  // Pipe buffer size in packets.
+        bool           _nowait = false;   // Don't wait for children termination.
+        TSPacketFormat _format = TSPacketFormat::AUTODETECT;  // Packet format on the pipe
+        size_t         _buffer_size = 0;  // Pipe buffer size in packets.
         TSForkPipe     _pipe {};          // The pipe device.
     };
 }

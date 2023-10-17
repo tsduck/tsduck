@@ -48,7 +48,7 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg) override;
 
     private:
-        volatile bool _on {false};
+        volatile bool _on = false;
         Report&       _delegate;
     };
 }

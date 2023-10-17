@@ -144,7 +144,7 @@ namespace ts {
 
     private:
         // Monotonic clock value in system ticks
-        int64_t _value {0};
+        int64_t _value = 0;
 
 #if defined(TS_WINDOWS)
         // Timer handle

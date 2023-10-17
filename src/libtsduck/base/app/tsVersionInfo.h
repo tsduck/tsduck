@@ -107,7 +107,7 @@ namespace ts {
     private:
         Report& _report;
         Report& _debug;
-        bool    _started {false};
+        bool    _started = false;
 
         // Inherited from Thread.
         virtual void main() override;

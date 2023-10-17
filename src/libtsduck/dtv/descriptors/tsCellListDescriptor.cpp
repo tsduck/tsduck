@@ -27,8 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::CellListDescriptor::CellListDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    cells()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -41,25 +40,6 @@ ts::CellListDescriptor::CellListDescriptor(DuckContext& duck, const Descriptor& 
     CellListDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::CellListDescriptor::Cell::Cell() :
-    cell_id(0),
-    cell_latitude(0),
-    cell_longitude(0),
-    cell_extent_of_latitude(0),
-    cell_extent_of_longitude(0),
-    subcells()
-{
-}
-
-ts::CellListDescriptor::Subcell::Subcell() :
-    cell_id_extension(0),
-    subcell_latitude(0),
-    subcell_longitude(0),
-    subcell_extent_of_latitude(0),
-    subcell_extent_of_longitude(0)
-{
 }
 
 

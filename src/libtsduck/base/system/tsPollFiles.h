@@ -97,7 +97,7 @@ namespace ts {
         UString            _files_wildcard {};
         MilliSecond        _poll_interval {DEFAULT_POLL_INTERVAL};
         MilliSecond        _min_stable_delay {DEFAULT_MIN_STABLE_DELAY};
-        PollFilesListener* _listener {nullptr};
+        PollFilesListener* _listener = nullptr;
         PolledFileList     _polled_files {};   // Updated at each poll, sorted by file name
         PolledFileList     _notified_files {}; // Modifications to notify
 

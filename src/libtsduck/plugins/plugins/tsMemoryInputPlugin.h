@@ -34,6 +34,6 @@ namespace ts {
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
 
     private:
-        uint32_t _event_code {0};
+        uint32_t _event_code = 0;
     };
 }

@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // BroadcasterNameDescriptor public members:
-        UString name;   //!< Broadcaster name.
+        UString name {};   //!< Broadcaster name.
 
         //!
         //! Default constructor.

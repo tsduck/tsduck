@@ -29,8 +29,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t ES_ID;           //!< Elementary stream id.
-            uint8_t  FlexMuxChannel;  //!< FlexMux channel number.
+            uint16_t ES_ID = 0;           //!< Elementary stream id.
+            uint8_t  FlexMuxChannel = 0;  //!< FlexMux channel number.
 
             //!
             //! Default constructor.
@@ -48,10 +48,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 85;
+        static constexpr size_t MAX_ENTRIES = 85;
 
         // Descriptor public members:
-        EntryList entries;  //!< The list of SL_packetized stream entries.
+        EntryList entries {};  //!< The list of SL_packetized stream entries.
 
         //!
         //! Default constructor.

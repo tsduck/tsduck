@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t            dcc_arriving_request_type;  //!< Request type.
-        ATSCMultipleString dcc_arriving_request_text;  //!< Request name.
+        uint8_t            dcc_arriving_request_type = 0;  //!< Request type.
+        ATSCMultipleString dcc_arriving_request_text {};   //!< Request name.
 
         //!
         //! Default constructor.

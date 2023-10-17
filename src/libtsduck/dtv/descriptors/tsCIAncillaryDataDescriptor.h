@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // CIAncillaryDataDescriptor public members:
-        ByteBlock ancillary_data;  //!< CI ancillary data.
+        ByteBlock ancillary_data {};  //!< CI ancillary data.
 
         //!
         //! Default constructor.

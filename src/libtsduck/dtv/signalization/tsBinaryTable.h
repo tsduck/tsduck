@@ -307,12 +307,12 @@ namespace ts {
         BinaryTable(const BinaryTable& table) = delete;
 
         // Private fields
-        bool             _is_valid {false};
+        bool             _is_valid = false;
         TID              _tid {TID_NULL};
-        uint16_t         _tid_ext {0};
-        uint8_t          _version {0};
-        PID              _source_pid {PID_NULL};
-        int              _missing_count {0};
+        uint16_t         _tid_ext = 0;
+        uint8_t          _version = 0;
+        PID              _source_pid = PID_NULL;
+        int              _missing_count = 0;
         SectionPtrVector _sections {};
     };
 }

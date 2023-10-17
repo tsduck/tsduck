@@ -78,10 +78,10 @@ namespace ts {
         {
             Asset() = default;          //!< Default constructor.
             UString name {};            //!< File name (without URL or directory).
-            int64_t size {0};           //!< File size in bytes.
+            int64_t size = 0;           //!< File size in bytes.
             UString mimeType {};        //!< MIME type of the file content.
             UString url {};             //!< URL to download the file.
-            int     downloadCount {0};  //!< Download count.
+            int     downloadCount = 0;  //!< Download count.
         };
 
         //!
@@ -177,7 +177,7 @@ namespace ts {
         static bool GetAllVersions(GitHubReleaseVector& versions, const UString& owner, const UString& repository, Report& report = CERR);
 
     private:
-        bool           _isValid {false};
+        bool           _isValid = false;
         UString        _owner {};
         UString        _repository {};
         json::ValuePtr _root {};

@@ -365,8 +365,8 @@ namespace ts {
 
     private:
         // Private fields
-        bool      _is_valid {false};              // Content of *_data is a valid packet
-        size_t    _header_size {0};               // PES header size in bytes
+        bool      _is_valid = false;              // Content of *_data is a valid packet
+        size_t    _header_size = 0;               // PES header size in bytes
         uint8_t   _stream_type {ST_NULL};         // Stream type from PMT (informational)
         CodecType _codec {CodecType::UNDEFINED};  // Data format (informational)
         uint64_t  _pcr {INVALID_PCR};             // PCR value from TS packets (informational)

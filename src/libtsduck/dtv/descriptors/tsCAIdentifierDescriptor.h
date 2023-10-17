@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // Public members:
-        std::vector<uint16_t> casids; //!< List of CA system ids.
+        std::vector<uint16_t> casids {}; //!< List of CA system ids.
 
         //!
         //! Default constructor

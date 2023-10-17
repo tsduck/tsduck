@@ -28,14 +28,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
 
 ts::EutelsatChannelNumberDescriptor::EutelsatChannelNumberDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    entries()
+    EutelsatChannelNumberDescriptor()
 {
     deserialize(duck, desc);
 }

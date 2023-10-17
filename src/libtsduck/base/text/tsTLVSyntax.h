@@ -121,11 +121,11 @@ namespace ts {
         bool operator<(const TLVSyntax& other) const { return _start < other._start; }
 
     private:
-        int    _start {0};
-        int    _size {0};
+        int    _start = 0;
+        int    _size = 0;
         size_t _tagSize {1};
         size_t _lengthSize {1};
-        bool   _msb {true};
+        bool   _msb = true;
 
         // Compute the size of the longest TLV area starting at tlvStart.
         size_t longestTLV(const uint8_t* data, size_t dataSize, size_t tlvStart) const;

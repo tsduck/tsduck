@@ -28,12 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DVBAC3Descriptor::DVBAC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
-    component_type(),
-    bsid(),
-    mainid(),
-    asvc(),
-    additional_info()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY)
 {
 }
 
@@ -47,12 +42,7 @@ void ts::DVBAC3Descriptor::clearContent()
 }
 
 ts::DVBAC3Descriptor::DVBAC3Descriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    component_type(),
-    bsid(),
-    mainid(),
-    asvc(),
-    additional_info()
+    DVBAC3Descriptor()
 {
     deserialize(duck, desc);
 }

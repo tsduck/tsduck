@@ -29,18 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::AudioComponentDescriptor::AudioComponentDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    stream_content(2),  // audio content
-    component_type(0),
-    component_tag(0),
-    stream_type(0),
-    simulcast_group_tag(0xFF), // no simulcast
-    main_component(true),
-    quality_indicator(0),
-    sampling_rate(0),
-    ISO_639_language_code(),
-    ISO_639_language_code_2(),
-    text()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

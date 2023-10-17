@@ -29,11 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::EventGroupDescriptor::EventGroupDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    group_type(0),
-    actual_events(),
-    other_events(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -49,20 +45,6 @@ void ts::EventGroupDescriptor::clearContent()
     actual_events.clear();
     other_events.clear();
     private_data.clear();
-}
-
-ts::EventGroupDescriptor::ActualEvent::ActualEvent() :
-    service_id(0),
-    event_id(0)
-{
-}
-
-ts::EventGroupDescriptor::OtherEvent::OtherEvent() :
-    original_network_id(0),
-    transport_stream_id(0),
-    service_id(0),
-    event_id(0)
-{
 }
 
 

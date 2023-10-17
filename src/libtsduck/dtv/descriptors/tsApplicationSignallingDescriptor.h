@@ -30,8 +30,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t application_type;     //!< Application type, 15 bits.
-            uint8_t  AIT_version_number;   //!< Application Information Table version number, 5 bits.
+            uint16_t application_type = 0;     //!< Application type, 15 bits.
+            uint8_t  AIT_version_number = 0;   //!< Application Information Table version number, 5 bits.
 
             //!
             //! Default constructor.
@@ -49,10 +49,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 85;
+        static constexpr size_t MAX_ENTRIES = 85;
 
         // ApplicationSignallingDescriptor public members:
-        EntryList entries;  //!< The list of application entries.
+        EntryList entries {};  //!< The list of application entries.
 
         //!
         //! Default constructor.

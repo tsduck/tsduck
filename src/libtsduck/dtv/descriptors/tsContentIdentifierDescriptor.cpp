@@ -27,8 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ContentIdentifierDescriptor::ContentIdentifierDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    crids()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -41,14 +40,6 @@ ts::ContentIdentifierDescriptor::ContentIdentifierDescriptor(DuckContext& duck, 
 void ts::ContentIdentifierDescriptor::clearContent()
 {
     crids.clear();
-}
-
-ts::ContentIdentifierDescriptor::CRID::CRID() :
-    crid_type(0),
-    crid_location(0),
-    crid_ref(0),
-    crid()
-{
 }
 
 

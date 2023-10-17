@@ -14,12 +14,6 @@
 #include "tsOutputPager.h"
 #include "tsDuckConfigFile.h"
 
-// Unlimited number of occurences
-const size_t ts::Args::UNLIMITED_COUNT = std::numeric_limits<size_t>::max();
-
-// Unlimited value.
-const int64_t ts::Args::UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
-
 // List of characters which are allowed thousands separators and decimal points in integer values
 const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u", ";
 const ts::UChar* const ts::Args::DECIMAL_POINTS = u".";

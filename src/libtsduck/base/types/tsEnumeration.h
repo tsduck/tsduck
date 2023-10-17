@@ -55,7 +55,7 @@ namespace ts {
         {
         public:
             UString name {};    //!< Name for the value.
-            int_t   value {0};  //!< Value for the name.
+            int_t   value = 0;  //!< Value for the name.
 
             //!
             //! Constructor.

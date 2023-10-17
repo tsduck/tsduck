@@ -23,8 +23,8 @@ namespace ts {
     {
         TS_NOCOPY(DVBCSA2);
     public:
-        static const size_t KEY_BITS = 64;             //!< DVB CSA-2 control words size in bits.
-        static const size_t KEY_SIZE = KEY_BITS / 8;   //!< DVB CSA-2 control words size in bytes.
+        static constexpr size_t KEY_BITS = 64;             //!< DVB CSA-2 control words size in bits.
+        static constexpr size_t KEY_SIZE = KEY_BITS / 8;   //!< DVB CSA-2 control words size in bytes.
 
         //!
         //! Control word entropy reduction.
@@ -125,7 +125,7 @@ namespace ts {
         };
 
         // DVB-CSA scrambling data
-        bool         _init {false};
+        bool         _init = false;
         EntropyMode  _mode {REDUCE_ENTROPY};
         uint8_t      _key[KEY_SIZE] {};
         BlockCipher  _block {};

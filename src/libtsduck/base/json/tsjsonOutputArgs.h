@@ -94,17 +94,17 @@ namespace ts {
             bool report(const json::Value& root, json::RunningDocument& doc, Report& rep);
 
         private:
-            bool              _json_opt {false};      // Option --json
-            bool              _json_line {false};     // Option --json-line
-            bool              _json_tcp {false};      // Option --json-tcp
-            bool              _json_tcp_keep {false}; // Option --json-tcp-keep
-            bool              _json_udp {false};      // Option --json-udp
+            bool              _json_opt = false;      // Option --json
+            bool              _json_line = false;     // Option --json-line
+            bool              _json_tcp = false;      // Option --json-tcp
+            bool              _json_tcp_keep = false; // Option --json-tcp-keep
+            bool              _json_udp = false;      // Option --json-udp
             UString           _line_prefix {};        // Option --json-line="prefix"
             IPv4SocketAddress _tcp_destination {};    // TCP destination.
             IPv4SocketAddress _udp_destination {};    // UDP destination.
             IPv4Address       _udp_local {};          // Name of outgoing local address.
-            int               _udp_ttl {0};           // Time-to-live socket option.
-            size_t            _sock_buffer_size {0};  // Socket buffer size (TCP and UDP).
+            int               _udp_ttl = 0;           // Time-to-live socket option.
+            size_t            _sock_buffer_size = 0;  // Socket buffer size (TCP and UDP).
             UDPSocket         _udp_sock {};           // Output UDP socket.
             TelnetConnection  _tcp_sock {};           // Output TCP socket.
 

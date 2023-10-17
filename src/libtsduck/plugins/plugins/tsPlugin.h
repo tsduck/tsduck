@@ -53,7 +53,7 @@ namespace ts {
         //!
         //! Default stack usage in bytes for the thread executing a plugin.
         //!
-        static const size_t DEFAULT_STACK_USAGE = 128 * 1024;
+        static constexpr size_t DEFAULT_STACK_USAGE = 128 * 1024;
 
         //!
         //! Define the maximum stack usage for the thread executing the plugin.

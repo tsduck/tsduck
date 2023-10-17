@@ -35,8 +35,8 @@ namespace ts {
         SectionFileArgs() = default;
 
         // Public fields, by options.
-        bool       pack_and_flush {false};             //!< Pack and flush incomplete tables before exiting.
-        bool       eit_normalize {false};              //!< EIT normalization (ETSI TS 101 211).
+        bool       pack_and_flush = false;             //!< Pack and flush incomplete tables before exiting.
+        bool       eit_normalize = false;              //!< EIT normalization (ETSI TS 101 211).
         Time       eit_base_time {};                   //!< Last midnight reference for EIT normalization.
         EITOptions eit_options {EITOptions::GEN_ALL};  //!< EIT normalization options.
 

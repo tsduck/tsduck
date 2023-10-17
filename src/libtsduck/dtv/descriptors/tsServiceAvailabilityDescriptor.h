@@ -26,7 +26,7 @@ namespace ts {
         //!
         //! Maximum number of cells to fit in 255 bytes.
         //!
-        static const size_t MAX_CELLS = 127;
+        static constexpr size_t MAX_CELLS = 127;
 
         // ServiceAvailabilityDescriptor public members:
         bool                  availability;  //!< The service is available/unavailable in the listed cells.

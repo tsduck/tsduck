@@ -47,7 +47,7 @@ namespace ts {
         //! Default stack usage allocated to CAS-specific processing of an ECM.
         //! @see decipherECM()
         //!
-        static const size_t DEFAULT_ECM_THREAD_STACK_USAGE = 128 * 1024;
+        static constexpr size_t DEFAULT_ECM_THREAD_STACK_USAGE = 128 * 1024;
 
         //!
         //! Constructor for subclasses.
@@ -197,11 +197,11 @@ namespace ts {
             TID           last_tid {TID_NULL};  // Last table id (0x80 or 0x81)
             TSScrambling  scrambling;           // Descrambling using CW from the ECM's of this stream.
             // -- start of write-protected, read-volatile area --
-            volatile bool cw_valid {false};     // CW's are valid
-            volatile bool new_cw_even {false};  // New CW available (even)
-            volatile bool new_cw_odd {false};   // New CW available (odd)
+            volatile bool cw_valid = false;     // CW's are valid
+            volatile bool new_cw_even = false;  // New CW available (even)
+            volatile bool new_cw_odd = false;   // New CW available (odd)
             // -- start of protected area --
-            bool          new_ecm {false};      // New ECM available
+            bool          new_ecm = false;      // New ECM available
             Section       ecm {};               // Last received ECM
             CWData        cw_even {};           // Last valid CW (even)
             CWData        cw_odd {};            // Last valid CW (odd)
@@ -239,11 +239,11 @@ namespace ts {
         void analyzeDescriptors(const DescriptorList& dlist, std::set<PID>& ecm_pids, uint8_t& scrambling);
 
         // Abstract descrambler private data.
-        bool               _use_service {false};  // Descramble a service (ie. not a specific list of PID's).
-        bool               _need_ecm {false};     // We need to get control words from ECM's.
-        bool               _abort {false};        // Error, abort asap.
-        bool               _synchronous {false};  // Synchronous ECM deciphering.
-        bool               _swap_cw {false};      // Swap even/odd CW from ECM.
+        bool               _use_service = false;  // Descramble a service (ie. not a specific list of PID's).
+        bool               _need_ecm = false;     // We need to get control words from ECM's.
+        bool               _abort = false;        // Error, abort asap.
+        bool               _synchronous = false;  // Synchronous ECM deciphering.
+        bool               _swap_cw = false;      // Swap even/odd CW from ECM.
         TSScrambling       _scrambling;           // Default descrambling (used with fixed control words).
         PIDSet             _pids {};              // Explicit PID's to descramble.
         ServiceDiscovery   _service;              // Service to descramble (by name, id or none).
@@ -255,7 +255,7 @@ namespace ts {
         Condition          _ecm_to_do {};         // Notify thread to process ECM.
         ECMThread          _ecm_thread;           // Thread which deciphers ECM's.
         // -- start of protected area --
-        bool               _stop_thread {false};  // Terminate ECM processing thread
+        bool               _stop_thread = false;  // Terminate ECM processing thread
         // -- end of protected area --
     };
 }

@@ -27,21 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::EVCVideoDescriptor::EVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profile_idc(0),
-    level_idc(0),
-    toolset_idc_h(0),
-    toolset_idc_l(0),
-    progressive_source(false),
-    interlaced_source(false),
-    non_packed_constraint(false),
-    frame_only_constraint(false),
-    EVC_still_present(false),
-    EVC_24hr_picture_present(false),
-    HDR_WCG_idc(3),
-    video_properties_tag(0),
-    temporal_id_min(),
-    temporal_id_max()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

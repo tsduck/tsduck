@@ -34,15 +34,15 @@ namespace ts {
         class TSDUCKDLL Entry
         {
         public:
-            Entry();                  //!< Constructor.
-            UString  file_name;       //!< Audio file name.
-            uint8_t  audio_format;    //!< 7 bits, audio format.
-            uint8_t  audio_source;    //!< 8 bits, audio source.
-            uint16_t program_number;  //!< Program number, aka service id (audio_source == 0x01 or 0x02).
-            uint32_t carousel_id;     //!< Carousel id (audio_source == 0x01).
-            uint32_t download_id;     //!< Download id (audio_source == 0x02).
-            uint32_t module_id;       //!< Module id (audio_source == 0x02).
-            uint16_t application_id;  //!< Application id (audio_source == 0x01 or 0x02).
+            Entry() = default;            //!< Constructor.
+            UString  file_name {};        //!< Audio file name.
+            uint8_t  audio_format = 0;    //!< 7 bits, audio format.
+            uint8_t  audio_source = 0;    //!< 8 bits, audio source.
+            uint16_t program_number = 0;  //!< Program number, aka service id (audio_source == 0x01 or 0x02).
+            uint32_t carousel_id = 0;     //!< Carousel id (audio_source == 0x01).
+            uint32_t download_id = 0;     //!< Download id (audio_source == 0x02).
+            uint32_t module_id = 0;       //!< Module id (audio_source == 0x02).
+            uint16_t application_id = 0;  //!< Application id (audio_source == 0x01 or 0x02).
         };
 
         //!
@@ -51,7 +51,7 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // EASAudioFileDescriptor public members:
-        EntryList entries;  //!< The list of audio source entries.
+        EntryList entries {};  //!< The list of audio source entries.
 
         //!
         //! Default constructor.
