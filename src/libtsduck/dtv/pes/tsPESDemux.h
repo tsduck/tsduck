@@ -53,6 +53,23 @@ namespace ts {
         virtual void feedPacket(const TSPacket& pkt) override;
 
         //!
+        //! Flush any unterminated unbounded PES packet on the specified PID.
+        //! Unbounded PES packets have no predetermined size. They implicitely end when the next PES
+        //! packet starts on the same PID. However, at end of stream, there is no next PES packet and
+        //! the previous buffered data are not considered as a full unbounded packet. These data are lost.
+        //! This method shall be called at end of stream when the caller is certain that the buffered data
+        //! from the PID form a complete PES packet. This PES packet is then processed.
+        //! @param [in] pid PID containing an unbounded PES packet to complete.
+        //!
+        void flushUnboundedPES(PID pid);
+
+        //!
+        //! Flush any unterminated unbounded PES packet on all PID's.
+        //! @see flushUnboundedPES(PID)
+        //!
+        void flushUnboundedPES();
+
+        //!
         //! Replace the PES packet handler.
         //! @param [in] h The object to invoke when PES packets are analyzed.
         //!
@@ -203,9 +220,6 @@ namespace ts {
 
         // Process a complete PES packet
         void processPESPacket(PID, PIDContext&);
-
-        // Process an invalid PES packet
-        void handleInvalidPESPacket(PID, PIDContext&);
 
         // Process all video/audio analysis on the PES packet.
         void handlePESContent(PIDContext&, const PESPacket&);

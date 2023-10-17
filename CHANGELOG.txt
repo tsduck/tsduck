@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3279
+VERSION 3.36-3327
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -13,6 +13,12 @@ VERSION 3.36-3279
     - Option --buffer-size in output and packet processing plugins "ip"
       (already existed in input plugin "ip" but was missing in the two others).
     - Option --random in plugin "pcredit".
+    - Options --actual-pf, --actual-schedule, --other-pf, --other-schedule,
+      --no-actual-pf, --no-actual-schedule, --other-pf, --other-schedule in
+      command in "set" command of "tseit".
+    - Options --actual-pf, --actual-schedule, --other-pf, --other-schedule in
+      "tspacketize", "tstabcomp", plugins "inject", "eitinject".
+    - Option --flush-last-unbounded-pes in plugin "pes".
 
 [BUG] Bug fixes:
 
