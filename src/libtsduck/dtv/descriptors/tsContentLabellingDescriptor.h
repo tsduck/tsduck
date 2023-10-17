@@ -25,15 +25,15 @@ namespace ts {
     {
     public:
         // ContentLabellingDescriptor public members:
-        uint16_t  metadata_application_format;             //!< Meta-data application format.
-        uint32_t  metadata_application_format_identifier;  //!< When metadata_application_format== 0xFFFF.
-        uint8_t   content_time_base_indicator;             //!< 4 bits.
-        ByteBlock content_reference_id;                    //!< Content reference id data.
-        uint64_t  content_time_base_value;                 //!< 33 bits, when content_time_base_indicator == 1 or 2.
-        uint64_t  metadata_time_base_value;                //!< 33 bits, when content_time_base_indicator == 1 or 2.
-        uint8_t   content_id;                              //!< 7 bits, when content_time_base_indicator == 2.
-        ByteBlock time_base_association_data;              //!< When content_time_base_indicator == 3 to 7.
-        ByteBlock private_data;                            //!< Private data.
+        uint16_t  metadata_application_format = 0;             //!< Meta-data application format.
+        uint32_t  metadata_application_format_identifier = 0;  //!< When metadata_application_format== 0xFFFF.
+        uint8_t   content_time_base_indicator = 0;             //!< 4 bits.
+        ByteBlock content_reference_id {};                     //!< Content reference id data.
+        uint64_t  content_time_base_value = 0;                 //!< 33 bits, when content_time_base_indicator == 1 or 2.
+        uint64_t  metadata_time_base_value = 0;                //!< 33 bits, when content_time_base_indicator == 1 or 2.
+        uint8_t   content_id = 0;                              //!< 7 bits, when content_time_base_indicator == 2.
+        ByteBlock time_base_association_data {};               //!< When content_time_base_indicator == 3 to 7.
+        ByteBlock private_data {};                             //!< Private data.
 
         //!
         //! Default constructor.

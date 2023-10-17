@@ -28,10 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::DVBJApplicationLocationDescriptor::DVBJApplicationLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    base_directory(),
-    classpath_extension(),
-    initial_class()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

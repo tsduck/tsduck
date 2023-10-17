@@ -107,8 +107,8 @@ namespace ts {
         {
             UString   reader {};          //!< Smartcard reader name.
             ByteBlock atr {};             //!< Last ATR value.
-            ::DWORD   current_state {0};  //!< Current reader state.
-            ::DWORD   event_state {0};    //!< Current event state.
+            ::DWORD   current_state = 0;  //!< Current reader state.
+            ::DWORD   event_state = 0;    //!< Current event state.
 
             //!
             //! Constructor.

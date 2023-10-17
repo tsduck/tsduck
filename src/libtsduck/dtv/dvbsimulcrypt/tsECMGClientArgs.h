@@ -35,15 +35,15 @@ namespace ts {
 
         // Public fields, by options.
         IPv4SocketAddress ecmg_address {};      //!< -\-ecmg, ECMG socket address (required or optional)
-        uint32_t          super_cas_id {0};     //!< -\-super-cas-id, CA system & subsystem id
+        uint32_t          super_cas_id = 0;     //!< -\-super-cas-id, CA system & subsystem id
         ByteBlock         access_criteria {};   //!< -\-access-criteria
-        MilliSecond       cp_duration {0};      //!< -\-cp-duration, crypto-period duration
-        tlv::VERSION      dvbsim_version {0};   //!< -\-ecmg-scs-version
-        uint16_t          ecm_channel_id {0};   //!< -\-channel-id
-        uint16_t          ecm_stream_id {0};    //!< -\-stream-id
-        uint16_t          ecm_id {0};           //!< -\-ecm-id
-        int               log_protocol {0};     //!< -\-log-protocol
-        int               log_data {0};         //!< -\-log-data
+        MilliSecond       cp_duration = 0;      //!< -\-cp-duration, crypto-period duration
+        tlv::VERSION      dvbsim_version = 0;   //!< -\-ecmg-scs-version
+        uint16_t          ecm_channel_id = 0;   //!< -\-channel-id
+        uint16_t          ecm_stream_id = 0;    //!< -\-stream-id
+        uint16_t          ecm_id = 0;           //!< -\-ecm-id
+        int               log_protocol = 0;     //!< -\-log-protocol
+        int               log_data = 0;         //!< -\-log-data
 
         //!
         //! Add command line option definitions in an Args.

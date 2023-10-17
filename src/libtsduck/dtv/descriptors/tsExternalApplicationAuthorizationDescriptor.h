@@ -34,8 +34,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            ApplicationIdentifier application_identifier;  //!< Application identifier.
-            uint8_t               application_priority;    //!< Application priority.
+            ApplicationIdentifier application_identifier {};  //!< Application identifier.
+            uint8_t               application_priority = 0;   //!< Application priority.
 
             //!
             //! Default constructor.
@@ -58,10 +58,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 36;
+        static constexpr size_t MAX_ENTRIES = 36;
 
         // ExternalApplicationAuthorizationDescriptor public members:
-        EntryList entries;  //!< The list of application entries.
+        EntryList entries {};  //!< The list of application entries.
 
         //!
         //! Default constructor.

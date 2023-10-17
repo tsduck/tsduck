@@ -392,11 +392,11 @@ namespace ts {
             CodecType          codec {CodecType::UNDEFINED};          // Codec type (if any).
             uint8_t            stream_type {ST_NULL};                 // Stream type from PMT or ST_NULL.
             uint16_t           cas_id {CASID_NULL};                   // CAS id for ECM or EMM PID's.
-            PacketCounter      packets {0};                           // Number of packets in this PID.
-            PacketCounter      pusi_count {0};                        // Number of packets with PUSI.
+            PacketCounter      packets = 0;                           // Number of packets in this PID.
+            PacketCounter      pusi_count = 0;                        // Number of packets with PUSI.
             PacketCounter      first_pusi {INVALID_PACKET_COUNTER};   // Number of packets before first PUSI.
             PacketCounter      last_pusi {INVALID_PACKET_COUNTER};    // Number of packets before last PUSI.
-            PacketCounter      intra_count {0};                       // Number of packets with PUSI.
+            PacketCounter      intra_count = 0;                       // Number of packets with PUSI.
             PacketCounter      first_intra {INVALID_PACKET_COUNTER};  // Number of packets before first PUSI.
             PacketCounter      last_intra {INVALID_PACKET_COUNTER};   // Number of packets before last PUSI.
             std::set<uint16_t> services {};                           // List of services owning this PID.
@@ -427,15 +427,15 @@ namespace ts {
         // SignalizationDemux private fields.
         DuckContext&                   _duck;
         SectionDemux                   _demux;
-        SignalizationHandlerInterface* _handler {nullptr};
-        bool                           _full_filters {false};      // Use full filters by default.
+        SignalizationHandlerInterface* _handler = nullptr;
+        bool                           _full_filters = false;      // Use full filters by default.
         std::set<TID>                  _filtered_tids {};          // Set of filtered table id's.
         std::set<uint16_t>             _filtered_srv_ids {};       // Set of services which are filtered by id.
         std::set<UString>              _filtered_srv_names {};     // Set of services which are filtered by name.
         PAT                            _last_pat {};               // Last received PAT.
-        bool                           _last_pat_handled {false};  // Last received PAT was handled by application.
+        bool                           _last_pat_handled = false;  // Last received PAT was handled by application.
         NIT                            _last_nit {};               // Last received NIT.
-        bool                           _last_nit_handled {false};  // Last received NIT was handled by application.
+        bool                           _last_nit_handled = false;  // Last received NIT was handled by application.
         uint16_t                       _ts_id {0xFFFF};            // Transport stream id.
         uint16_t                       _orig_network_id {0xFFFF};  // Original network id.
         uint16_t                       _network_id {0xFFFF};       // Actual network id.

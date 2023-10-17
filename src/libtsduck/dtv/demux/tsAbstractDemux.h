@@ -180,13 +180,13 @@ namespace ts {
         // Protected directly accessible to subclasses.
         DuckContext&  _duck;             //!< The TSDuck execution context is accessible to all subclasses.
         PIDSet        _pid_filter {};    //!< Current set of filtered PID's.
-        PacketCounter _packet_count {0}; //!< Number of TS packets in the demultiplexed stream.
+        PacketCounter _packet_count = 0; //!< Number of TS packets in the demultiplexed stream.
 
     private:
-        bool _in_handler {false};        // True when in the context of an application-defined handler
-        PID  _pid_in_handler {PID_NULL}; // PID which is currently processed by the handler
-        bool _reset_pending {false};     // Delayed reset()
-        bool _pid_reset_pending {false}; // Delayed resetPID(_pid_in_handler)
-        int  _demux_id {0};              // Demux identity (from application)
+        bool _in_handler = false;        // True when in the context of an application-defined handler
+        PID  _pid_in_handler = PID_NULL; // PID which is currently processed by the handler
+        bool _reset_pending = false;     // Delayed reset()
+        bool _pid_reset_pending = false; // Delayed resetPID(_pid_in_handler)
+        int  _demux_id = 0;              // Demux identity (from application)
     };
 }

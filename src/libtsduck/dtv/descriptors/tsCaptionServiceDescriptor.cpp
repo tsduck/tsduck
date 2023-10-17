@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::CaptionServiceDescriptor::CaptionServiceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,16 +41,6 @@ ts::CaptionServiceDescriptor::CaptionServiceDescriptor(DuckContext& duck, const 
     CaptionServiceDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::CaptionServiceDescriptor::Entry::Entry() :
-    language(),
-    digital_cc(false),
-    line21_field(false),
-    caption_service_number(0),
-    easy_reader(false),
-    wide_aspect_ratio(false)
-{
 }
 
 

@@ -24,17 +24,17 @@ namespace ts {
     {
     public:
         // AudioComponentDescriptor public members:
-        uint8_t stream_content;           //!< 4 bits, 0x02 by default (audio content).
-        uint8_t component_type;           //!< Component type.
-        uint8_t component_tag;            //!< Component tag.
-        uint8_t stream_type;              //!< Stream type.
-        uint8_t simulcast_group_tag;      //!< Group tag.
-        bool    main_component;           //!< Is main audio component.
-        uint8_t quality_indicator;        //!< 2 bits, quality indicator.
-        uint8_t sampling_rate;            //!< 3 bits, sampling rate.
-        UString ISO_639_language_code;    //!< 3-character language code.
-        UString ISO_639_language_code_2;  //!< 3-character optional secondary language code.
-        UString text;                     //!< Component description.
+        uint8_t stream_content = 2;          //!< 4 bits, 0x02 by default (audio content).
+        uint8_t component_type = 0;          //!< Component type.
+        uint8_t component_tag = 0;           //!< Component tag.
+        uint8_t stream_type = 0;             //!< Stream type.
+        uint8_t simulcast_group_tag = 0xFF;  //!< Group tag, 0xFF means no simulcast
+        bool    main_component = true;       //!< Is main audio component.
+        uint8_t quality_indicator = 0;       //!< 2 bits, quality indicator.
+        uint8_t sampling_rate = 0;           //!< 3 bits, sampling rate.
+        UString ISO_639_language_code {};    //!< 3-character language code.
+        UString ISO_639_language_code_2 {};  //!< 3-character optional secondary language code.
+        UString text {};                     //!< Component description.
 
         //!
         //! Default constructor.

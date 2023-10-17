@@ -39,10 +39,10 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool             _abort {false};      // Error (service not found, etc).
-        PID              _pid {PID_NULL};        // Teletext PID.
+        bool             _abort = false;      // Error (service not found, etc).
+        PID              _pid = PID_NULL;        // Teletext PID.
         int              _page {-1};       // Teletext page.
-        int              _maxFrames {0};  // Max number of Teletext frames to generate.
+        int              _maxFrames = 0;  // Max number of Teletext frames to generate.
         UString          _language {};   // Language to select.
         UString          _outFile {};    // Output file name.
         ServiceDiscovery _service;    // Service name & id.

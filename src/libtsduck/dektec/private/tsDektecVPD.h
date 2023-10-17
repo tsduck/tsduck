@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Size of one VPD entry
-        static const size_t VPD_SIZE = 64;
+        static constexpr size_t VPD_SIZE = 64;
 
         // List of all VPD (always nul-terminated).
         char vpdid [VPD_SIZE];  // Flawfinder: ignore

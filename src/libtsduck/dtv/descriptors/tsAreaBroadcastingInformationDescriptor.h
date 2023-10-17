@@ -30,17 +30,17 @@ namespace ts {
         //!
         struct TSDUCKDLL Station
         {
-            Station();                           //!< Constructor.
-            uint32_t  station_id;                //!< 24 bits, station id.
-            uint16_t  location_code;             //!< Location code.
-            uint8_t   broadcast_signal_format;   //!< Broadcast signal format.
-            ByteBlock additional_station_info;   //!< Additional station info.
+            Station() = default;                    //!< Constructor.
+            uint32_t  station_id = 0;               //!< 24 bits, station id.
+            uint16_t  location_code = 0;            //!< Location code.
+            uint8_t   broadcast_signal_format = 0;  //!< Broadcast signal format.
+            ByteBlock additional_station_info {};   //!< Additional station info.
         };
 
         typedef std::list<Station> StationList;  //!< List of stations.
 
         // AreaBroadcastingInformationDescriptor public members:
-        StationList stations;  //!< List of stations.
+        StationList stations {};  //!< List of stations.
 
         //!
         //! Default constructor.

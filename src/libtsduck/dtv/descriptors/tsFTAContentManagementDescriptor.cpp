@@ -27,11 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::FTAContentManagementDescriptor::FTAContentManagementDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    user_defined(false),
-    do_not_scramble(false),
-    control_remote_access_over_internet(0),
-    do_not_apply_revocation(false)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

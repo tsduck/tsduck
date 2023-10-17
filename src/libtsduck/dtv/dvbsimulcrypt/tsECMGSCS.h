@@ -320,7 +320,7 @@ namespace ts {
         //!
         struct CPCWCombination
         {
-            uint16_t  CP {0};  //!< Crypto-period number.
+            uint16_t  CP = 0;  //!< Crypto-period number.
             ByteBlock CW {};   //!< Control word.
 
             //!

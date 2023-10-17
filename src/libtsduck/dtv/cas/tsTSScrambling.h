@@ -197,7 +197,7 @@ namespace ts {
 
         Report&          _report;
         uint8_t          _scrambling_type {SCRAMBLING_RESERVED};
-        bool             _explicit_type {false};
+        bool             _explicit_type = false;
         UString          _out_cw_name {};
         std::ofstream    _out_cw_file {};
         CWList           _cw_list {};

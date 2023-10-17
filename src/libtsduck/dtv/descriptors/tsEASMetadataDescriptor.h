@@ -29,8 +29,8 @@ namespace ts {
     {
     public:
         // EASMetadataDescriptor public members:
-        uint8_t fragment_number;   //!< XML text fragment number, 1 to 255.
-        UString XML_fragment;      //!< XML text fragment.
+        uint8_t fragment_number = 1;  //!< XML text fragment number, 1 to 255.
+        UString XML_fragment {};      //!< XML text fragment.
 
         //!
         //! Default constructor.

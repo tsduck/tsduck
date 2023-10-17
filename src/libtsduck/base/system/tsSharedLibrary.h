@@ -92,13 +92,13 @@ namespace ts {
         Report&            _report;
         UString            _filename {};
         UString            _error {};
-        bool               _is_loaded {false};
+        bool               _is_loaded = false;
         SharedLibraryFlags _flags {SharedLibraryFlags::NONE};
 
 #if defined(TS_WINDOWS)
-        ::HMODULE _module {0};
+        ::HMODULE _module = 0;
 #else
-        void* _dl {nullptr}; // dlopen/dlclose handle
+        void* _dl = nullptr; // dlopen/dlclose handle
 #endif
     };
 }

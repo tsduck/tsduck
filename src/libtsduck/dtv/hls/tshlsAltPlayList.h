@@ -34,9 +34,9 @@ namespace ts {
             virtual UString toString() const override;
 
             // Public fields.
-            bool    isDefault {false};     //!< The client should play this Rendition in the absence of information from the user indicating a different choice.
-            bool    autoselect {false};    //!< The client may choose to play this Rendition in the absence of explicit user preference.
-            bool    forced {false};        //!< The Rendition contains content that is considered essential to play.
+            bool    isDefault = false;     //!< The client should play this Rendition in the absence of information from the user indicating a different choice.
+            bool    autoselect = false;    //!< The client may choose to play this Rendition in the absence of explicit user preference.
+            bool    forced = false;        //!< The Rendition contains content that is considered essential to play.
             UString name {};               //!< Human-readable description of the Rendition. Required.
             UString type {};               //!< Playlist type, required, one of "AUDIO", "VIDEO", "SUBTITLES", "CLOSED-CAPTIONS".
             UString groupId {};            //!< Group to which the Rendition belongs. Required.

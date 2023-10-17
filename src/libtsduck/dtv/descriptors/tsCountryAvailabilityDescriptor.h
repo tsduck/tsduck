@@ -24,13 +24,13 @@ namespace ts {
     {
     public:
         // Public members:
-        bool          country_availability; //!< See ETSI EN 300 468, 6.2.10.
-        UStringVector country_codes;        //!< See ETSI EN 300 468, 6.2.10.
+        bool          country_availability = true; //!< See ETSI EN 300 468, 6.2.10.
+        UStringVector country_codes {};            //!< See ETSI EN 300 468, 6.2.10.
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 84;
+        static constexpr size_t MAX_ENTRIES = 84;
 
         //!
         //! Default constructor.

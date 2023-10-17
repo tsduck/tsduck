@@ -28,12 +28,12 @@ namespace ts {
     {
     public:
         // ApplicationStorageDescriptor public members:
-        uint8_t  storage_property;                  //!< Storage property.
-        bool     not_launchable_from_broadcast;     //!< Not launchable from broadcast.
-        bool     launchable_completely_from_cache;  //!< Launchable completely from cache.
-        bool     is_launchable_with_older_version;  //!< Is launchable with older version.
-        uint32_t version;                           //!< 31 bits, application version.
-        uint8_t  priority;                          //!< Application priority.
+        uint8_t  storage_property = 0;                      //!< Storage property.
+        bool     not_launchable_from_broadcast = false;     //!< Not launchable from broadcast.
+        bool     launchable_completely_from_cache = false;  //!< Launchable completely from cache.
+        bool     is_launchable_with_older_version = false;  //!< Is launchable with older version.
+        uint32_t version = 0;                               //!< 31 bits, application version.
+        uint8_t  priority = 0;                              //!< Application priority.
 
         //!
         //! Default constructor.

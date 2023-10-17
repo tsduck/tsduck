@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // DataComponentDescriptor public members:
-        uint16_t  data_component_id;               //!< Data component id as defined in ARIB STD-B10, Part 2, Annex J.
-        ByteBlock additional_data_component_info;  //!< Additional info, depends on id.
+        uint16_t  data_component_id = 0;              //!< Data component id as defined in ARIB STD-B10, Part 2, Annex J.
+        ByteBlock additional_data_component_info {};  //!< Additional info, depends on id.
 
         //!
         //! Default constructor.

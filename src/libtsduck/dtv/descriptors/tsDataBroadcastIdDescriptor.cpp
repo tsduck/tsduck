@@ -29,15 +29,12 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(uint16_t id) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    data_broadcast_id(id),
-    private_data()
+    data_broadcast_id(id)
 {
 }
 
 ts::DataBroadcastIdDescriptor::DataBroadcastIdDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    data_broadcast_id(0),
-    private_data()
+    DataBroadcastIdDescriptor()
 {
     deserialize(duck, desc);
 }

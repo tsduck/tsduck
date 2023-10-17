@@ -27,15 +27,9 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 void ts::ApplicationSignallingDescriptor::clearContent()
 {
@@ -43,8 +37,7 @@ void ts::ApplicationSignallingDescriptor::clearContent()
 }
 
 ts::ApplicationSignallingDescriptor::ApplicationSignallingDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    ApplicationSignallingDescriptor()
 {
     deserialize(duck, desc);
 }

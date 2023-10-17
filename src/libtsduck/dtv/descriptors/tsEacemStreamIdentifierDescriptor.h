@@ -27,7 +27,7 @@ namespace ts {
     {
     public:
         // EacemStreamIdentifierDescriptor public members:
-        uint8_t version;  //!< EACEM version byte.
+        uint8_t version = 0;  //!< EACEM version byte.
 
         //!
         //! Default constructor.

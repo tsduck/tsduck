@@ -315,6 +315,6 @@ namespace ts {
         virtual void writeLog(int severity, const UString& msg) = 0;
 
     private:
-        volatile bool _got_errors {false};
+        volatile bool _got_errors = false;
     };
 }

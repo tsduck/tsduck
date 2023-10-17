@@ -24,10 +24,10 @@ namespace ts {
     {
     public:
         // Public members:
-        bool    user_defined;                         //!< Reserved to user.
-        bool    do_not_scramble;                      //!< Do not scramble.
-        uint8_t control_remote_access_over_internet;  //!< 2 bits, access control over Internet.
-        bool    do_not_apply_revocation;              //!< Do not apply revocation.
+        bool    user_defined = false;                     //!< Reserved to user.
+        bool    do_not_scramble = false;                  //!< Do not scramble.
+        uint8_t control_remote_access_over_internet = 0;  //!< 2 bits, access control over Internet.
+        bool    do_not_apply_revocation = false;          //!< Do not apply revocation.
 
         //!
         //! Default constructor.

@@ -30,8 +30,8 @@ namespace ts {
         //!
         struct TSDUCKDLL Broadcaster
         {
-            uint16_t original_network_id;  //!< Original network id.
-            uint8_t  broadcaster_id;       //!< Broadcaster id.
+            uint16_t original_network_id = 0;  //!< Original network id.
+            uint8_t  broadcaster_id = 0;       //!< Broadcaster id.
             //!
             //! Constructor.
             //! @param [in] onid Original network id.
@@ -46,11 +46,11 @@ namespace ts {
         typedef std::list<Broadcaster> BroadcasterList;
 
         // ExtendedBroadcasterDescriptor public members:
-        uint8_t         broadcaster_type;            //!< 4 bits, broadcaster type.
-        uint16_t        terrestrial_broadcaster_id;  //!< Broadcaster id (aka terrestrial_sound_broadcaster_id), when broadcaster_type == 0x01 or 0x02.
-        ByteBlock       affiliation_ids;             //!< List of 8-bit affiliation ids, when broadcaster_type == 0x01 or 0x02.
-        BroadcasterList broadcasters;                //!< List of broadcasters, when broadcaster_type == 0x01 or 0x02.
-        ByteBlock       private_data;                //!< Private data when broadcaster_type == 0x01 or 0x02, reserved_future_use otherwise.
+        uint8_t         broadcaster_type = 0;            //!< 4 bits, broadcaster type.
+        uint16_t        terrestrial_broadcaster_id = 0;  //!< Broadcaster id (aka terrestrial_sound_broadcaster_id), when broadcaster_type == 0x01 or 0x02.
+        ByteBlock       affiliation_ids {};              //!< List of 8-bit affiliation ids, when broadcaster_type == 0x01 or 0x02.
+        BroadcasterList broadcasters {};                 //!< List of broadcasters, when broadcaster_type == 0x01 or 0x02.
+        ByteBlock       private_data {};                 //!< Private data when broadcaster_type == 0x01 or 0x02, reserved_future_use otherwise.
 
         //!
         //! Default constructor.

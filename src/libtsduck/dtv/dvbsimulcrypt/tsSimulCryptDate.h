@@ -37,7 +37,7 @@ namespace ts {
         //!
         //! Binary size in bytes of a DVB SimulCrypt date.
         //!
-        static const size_t SIZE = 8;
+        static constexpr size_t SIZE = 8;
 
         //!
         //! Default constructor.
@@ -255,7 +255,7 @@ namespace ts {
 
     private:
         // Private members
-        uint8_t _data[SIZE] {0};
+        uint8_t _data[SIZE] {0, 0, 0, 0, 0, 0, 0, 0};
     };
 }
 

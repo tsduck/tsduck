@@ -32,11 +32,11 @@ namespace ts {
         //!
         class SOGI_region_type {
         public:
-            SOGI_region_type();                        //!< Constructor.
-            Variable<UString>  country_code;           //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint8_t>  primary_region_code;    //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint8_t>  secondary_region_code;  //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint16_t> tertiary_region_code;   //!< ETSI EN 300 468, clause 6.4.18.
+            SOGI_region_type() = default;                 //!< Constructor.
+            Variable<UString>  country_code {};           //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint8_t>  primary_region_code {};    //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint8_t>  secondary_region_code {};  //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint16_t> tertiary_region_code {};   //!< ETSI EN 300 468, clause 6.4.18.
         };
 
         //!
@@ -45,16 +45,16 @@ namespace ts {
         //!
         class SOGI_type {
         public:
-            SOGI_type();                                  //!< Constructor.
-            bool                          SOGI_flag;      //!< ETSI EN 300 468, clause 6.4.18.
-            uint16_t                      SOGI_priority;  //!< ETSI EN 300 468, clause 6.4.18.
-            Variable<uint16_t>            service_id;     //!< ETSI EN 300 468, clause 6.4.18.
-            std::vector<SOGI_region_type> regions;        //!< ETSI EN 300 468, clause 6.4.18.
+            SOGI_type() = default;                            //!< Constructor.
+            bool                          SOGI_flag = false;  //!< ETSI EN 300 468, clause 6.4.18.
+            uint16_t                      SOGI_priority = 0;  //!< ETSI EN 300 468, clause 6.4.18.
+            Variable<uint16_t>            service_id {};      //!< ETSI EN 300 468, clause 6.4.18.
+            std::vector<SOGI_region_type> regions {};         //!< ETSI EN 300 468, clause 6.4.18.
         };
 
         // Public members:
-        std::vector<SOGI_type> SOGI_list;     //!< List of SOGI.
-        ByteBlock              private_data;  //!< Private data bytes.
+        std::vector<SOGI_type> SOGI_list {};     //!< List of SOGI.
+        ByteBlock              private_data {};  //!< Private data bytes.
 
         //!
         //! Default constructor.

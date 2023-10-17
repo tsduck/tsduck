@@ -30,11 +30,11 @@ namespace ts {
         //!
         struct TSDUCKDLL Component
         {
-            Component();                                       //!< Constructor.
-            uint8_t           component_tag;                   //!< Component tag.
-            uint8_t           digital_recording_control_data;  //!< 2 bits, copy control.
-            uint8_t           user_defined;                    //!< 4 bits, user-defined.
-            Variable<uint8_t> maximum_bitrate;                 //!< Optional bitrate, in units of 1/4 Mb/s.
+            Component() = default;                                 //!< Constructor.
+            uint8_t           component_tag = 0;                   //!< Component tag.
+            uint8_t           digital_recording_control_data = 0;  //!< 2 bits, copy control.
+            uint8_t           user_defined = 0;                    //!< 4 bits, user-defined.
+            Variable<uint8_t> maximum_bitrate {};                  //!< Optional bitrate, in units of 1/4 Mb/s.
         };
 
         //!
@@ -43,10 +43,10 @@ namespace ts {
         typedef std::list<Component> ComponentList;
 
         // DigitalCopyControlDescriptor public members:
-        uint8_t           digital_recording_control_data;  //!< 2 bits, copy control.
-        uint8_t           user_defined;                    //!< 4 bits, user-defined.
-        Variable<uint8_t> maximum_bitrate;                 //!< Optional bitrate, in units of 1/4 Mb/s.
-        ComponentList     components;                      //!< List of components.
+        uint8_t           digital_recording_control_data = 0;  //!< 2 bits, copy control.
+        uint8_t           user_defined = 0;                    //!< 4 bits, user-defined.
+        Variable<uint8_t> maximum_bitrate {};                  //!< Optional bitrate, in units of 1/4 Mb/s.
+        ComponentList     components {};                       //!< List of components.
 
         //!
         //! Default constructor.

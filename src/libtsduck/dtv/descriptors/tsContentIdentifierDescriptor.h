@@ -28,11 +28,11 @@ namespace ts {
         //!
         struct TSDUCKDLL CRID
         {
-            CRID();                  //!< Constructor.
-            uint8_t  crid_type;      //!< 6 bits.
-            uint8_t  crid_location;  //!< 2 bits.
-            uint16_t crid_ref;       //!< When crid_location == 1.
-            UString  crid;           //!< When crid_location == 0.
+            CRID() = default;            //!< Constructor.
+            uint8_t  crid_type = 0;      //!< 6 bits.
+            uint8_t  crid_location = 0;  //!< 2 bits.
+            uint16_t crid_ref = 0;       //!< When crid_location == 1.
+            UString  crid {};            //!< When crid_location == 0.
         };
 
         //!
@@ -41,7 +41,7 @@ namespace ts {
         typedef std::list<CRID> CRIDList;
 
         // ContentIdentifierDescriptor public members:
-        CRIDList crids;  //!< The list of CRID entries.
+        CRIDList crids {};  //!< The list of CRID entries.
 
         //!
         //! Default constructor.

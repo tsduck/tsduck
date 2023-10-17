@@ -24,10 +24,10 @@ namespace ts {
     {
     public:
         // AudioStreamDescriptor public members:
-        bool    free_format;          //!< Free format.
-        uint8_t ID;                   //!< 1 bit, ID value for the stream.
-        uint8_t layer;                //!< 2 bits, audio layer.
-        bool    variable_rate_audio;  //!< Has variable bitrate.
+        bool    free_format = false;          //!< Free format.
+        uint8_t ID = 0;                       //!< 1 bit, ID value for the stream.
+        uint8_t layer = 0;                    //!< 2 bits, audio layer.
+        bool    variable_rate_audio = false;  //!< Has variable bitrate.
 
         //!
         //! Default constructor.

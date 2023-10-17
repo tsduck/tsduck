@@ -24,8 +24,8 @@ namespace ts {
         TS_NOCOPY(SHA256);
     public:
         // Sizes in bytes
-        static const size_t HASH_SIZE  = 32;  //!< SHA-256 hash size in bytes.
-        static const size_t BLOCK_SIZE = 64;  //!< SHA-256 block size in bytes.
+        static constexpr size_t HASH_SIZE  = 32;  //!< SHA-256 hash size in bytes.
+        static constexpr size_t BLOCK_SIZE = 64;  //!< SHA-256 block size in bytes.
 
         // Implementation of Hash interface:
         virtual UString name() const override;
@@ -39,8 +39,8 @@ namespace ts {
         SHA256();
 
     private:
-        uint64_t _length {0};               // Total message size in bits (already hashed, ie. excluding _buf)
-        size_t   _curlen {0};               // Used bytes in _buf
+        uint64_t _length = 0;               // Total message size in bits (already hashed, ie. excluding _buf)
+        size_t   _curlen = 0;               // Used bytes in _buf
         uint32_t _state[HASH_SIZE / 4] {};  // Current hash value (256 bits, 32 bytes, 8 uint32)
         uint8_t  _buf[BLOCK_SIZE] {};       // Current block to hash (512 bits)
 

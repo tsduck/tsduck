@@ -52,8 +52,7 @@ void ts::CueIdentifierDescriptor::clearContent()
 }
 
 ts::CueIdentifierDescriptor::CueIdentifierDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    cue_stream_type(CUE_ALL_COMMANDS)
+    CueIdentifierDescriptor()
 {
     deserialize(duck, desc);
 }

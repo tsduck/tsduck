@@ -50,9 +50,9 @@ namespace ts {
 
     private:
         class Acceleration;
-        Acceleration* _accel {nullptr};  // Private data for hardware acceleration.
-        size_t        _kbits {0};        // Key size in bits.
-        int           _nrounds {0};      // Number of rounds
+        Acceleration* _accel = nullptr;  // Private data for hardware acceleration.
+        size_t        _kbits = 0;        // Key size in bits.
+        int           _nrounds = 0;      // Number of rounds
         uint32_t      _eK[60] {};        // Scheduled encryption keys
         uint32_t      _dK[60] {};        // Scheduled decryption keys
 

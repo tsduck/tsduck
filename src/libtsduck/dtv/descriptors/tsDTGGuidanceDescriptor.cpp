@@ -28,12 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::DTGGuidanceDescriptor::DTGGuidanceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    guidance_type(0),
-    ISO_639_language_code(),
-    text(),
-    guidance_mode(false),
-    reserved_future_use()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
 

@@ -98,8 +98,8 @@ namespace ts {
         static void sysHandler(int sig);
         virtual void main() override;  // ts::Thread implementation
 
-        volatile ::sig_atomic_t _terminate {0};
-        volatile ::sig_atomic_t _got_sigint {0};
+        volatile ::sig_atomic_t _terminate = 0;
+        volatile ::sig_atomic_t _got_sigint = 0;
 #if defined(TS_MAC)
         std::string             _sem_name {};
         ::sem_t*                _sem_address {SEM_FAILED};
@@ -108,10 +108,10 @@ namespace ts {
 #endif
 #endif
 
-        InterruptHandler* _handler {nullptr};
-        bool              _one_shot {false};
-        bool              _active {false};
-        volatile bool     _interrupted {false};
+        InterruptHandler* _handler = nullptr;
+        bool              _one_shot = false;
+        bool              _active = false;
+        volatile bool     _interrupted = false;
 
         // There is only one active instance at a time
         static UserInterrupt* volatile _active_instance;

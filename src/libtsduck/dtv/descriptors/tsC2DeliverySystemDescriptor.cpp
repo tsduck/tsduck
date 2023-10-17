@@ -27,13 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::C2DeliverySystemDescriptor::C2DeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C2, MY_XML_NAME),
-    plp_id(0),
-    data_slice_id(0),
-    C2_system_tuning_frequency(0),
-    C2_system_tuning_frequency_type(0),
-    active_OFDM_symbol_duration(0),
-    guard_interval(0)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_C2, MY_XML_NAME)
 {
 }
 

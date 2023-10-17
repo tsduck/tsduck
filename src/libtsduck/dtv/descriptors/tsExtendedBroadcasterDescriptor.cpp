@@ -28,12 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::ExtendedBroadcasterDescriptor::ExtendedBroadcasterDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    broadcaster_type(0),
-    terrestrial_broadcaster_id(0),
-    affiliation_ids(),
-    broadcasters(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Public members:
-        ATSCMultipleString component_name_string;    //!< Component name.
+        ATSCMultipleString component_name_string {};    //!< Component name.
 
         //!
         //! Default constructor.

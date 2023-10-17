@@ -167,9 +167,9 @@ namespace ts {
 
     private:
         UString _language_code {3, SPACE};  // always 3-chars
-        uint8_t _audio_type {0};
+        uint8_t _audio_type = 0;
         uint8_t _audio_stream_number {1};   // use first audio stream by default, use PID if zero
-        PID     _pid {PID_NULL};
+        PID     _pid = PID_NULL;
     };
 
     //!

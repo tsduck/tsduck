@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,20 +41,6 @@ ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor(DuckContext& duck, 
 void ts::AudioPreselectionDescriptor::clearContent()
 {
     entries.clear();
-}
-
-ts::AudioPreselectionDescriptor::PreSelection::PreSelection() :
-    preselection_id(0),
-    audio_rendering_indication(0),
-    audio_description(false),
-    spoken_subtitles(false),
-    dialogue_enhancement(false),
-    interactivity_enabled(false),
-    ISO_639_language_code(),
-    message_id(),
-    aux_component_tags(),
-    future_extension()
-{
 }
 
 
@@ -107,7 +92,7 @@ void ts::AudioPreselectionDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(!it->aux_component_tags.empty());
         buf.putBit(!it->future_extension.empty());
         if (!it->ISO_639_language_code.empty()) {
-            buf.putLanguageCode(it->ISO_639_language_code, true);
+            buf.putLanguageCode(it->ISO_639_language_code);
         }
         if (it->message_id.set()) {
             buf.putUInt8(it->message_id.value());

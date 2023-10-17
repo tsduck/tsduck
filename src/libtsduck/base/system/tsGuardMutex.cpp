@@ -35,7 +35,7 @@ ts::GuardMutex::~GuardMutex()
         if (_is_locked) {
             // With C++11, destructors are no longer allowed to throw an exception.
             static const char err[] = "\n\n*** Fatal error: GuardMutex failed to release mutex in destructor, aborting...\n\n";
-            static const size_t err_size = sizeof(err) - 1;
+            static constexpr size_t err_size = sizeof(err) - 1;
             FatalError(err, err_size);
         }
     }

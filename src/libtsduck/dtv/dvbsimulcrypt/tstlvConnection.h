@@ -128,9 +128,9 @@ namespace ts {
 
         private:
             const Protocol& _protocol;
-            bool            _auto_error_response {false};
-            size_t          _max_invalid_msg {0};
-            size_t          _invalid_msg_count {0};
+            bool            _auto_error_response = false;
+            size_t          _max_invalid_msg = 0;
+            size_t          _invalid_msg_count = 0;
             MUTEX           _send_mutex {};
             MUTEX           _receive_mutex {};
         };

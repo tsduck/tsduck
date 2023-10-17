@@ -28,9 +28,9 @@ namespace ts {
         //!
         struct TSDUCKDLL Subcell
         {
-            Subcell();                      //!< Default constructor.
-            uint8_t  cell_id_extension;     //!< Cell id extension.
-            uint64_t transposer_frequency;  //!< Frequency in Hz.
+            Subcell() = default;                //!< Default constructor.
+            uint8_t  cell_id_extension = 0;     //!< Cell id extension.
+            uint64_t transposer_frequency = 0;  //!< Frequency in Hz.
         };
 
         //!
@@ -43,10 +43,10 @@ namespace ts {
         //!
         struct TSDUCKDLL Cell
         {
-            Cell();                 //!< Default constructor.
-            uint16_t    cell_id;    //!< Cell id.
-            uint64_t    frequency;  //!< Frequency in Hz.
-            SubcellList subcells;   //!< List of subcells.
+            Cell() = default;           //!< Default constructor.
+            uint16_t    cell_id = 0;    //!< Cell id.
+            uint64_t    frequency = 0;  //!< Frequency in Hz.
+            SubcellList subcells {};    //!< List of subcells.
         };
 
         //!
@@ -55,7 +55,7 @@ namespace ts {
         typedef std::list<Cell> CellList;
 
         // CellFrequencyLinkDescriptor public members:
-        CellList cells;  //!< The list of cells and subcells.
+        CellList cells {};  //!< The list of cells and subcells.
 
         //!
         //! Default constructor.

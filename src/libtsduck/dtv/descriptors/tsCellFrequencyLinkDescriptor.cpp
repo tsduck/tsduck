@@ -27,8 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::CellFrequencyLinkDescriptor::CellFrequencyLinkDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    cells()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -41,19 +40,6 @@ ts::CellFrequencyLinkDescriptor::CellFrequencyLinkDescriptor(DuckContext& duck, 
 void ts::CellFrequencyLinkDescriptor::clearContent()
 {
     cells.clear();
-}
-
-ts::CellFrequencyLinkDescriptor::Cell::Cell() :
-    cell_id(0),
-    frequency(0),
-    subcells()
-{
-}
-
-ts::CellFrequencyLinkDescriptor::Subcell::Subcell() :
-    cell_id_extension(0),
-    transposer_frequency(0)
-{
 }
 
 

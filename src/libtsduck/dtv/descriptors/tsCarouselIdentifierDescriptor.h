@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // CarouselIdentifierDescriptor public members:
-        uint32_t  carousel_id;   //!< Carousel identifier.
-        ByteBlock private_data;  //!< Private data.
+        uint32_t  carousel_id = 0;  //!< Carousel identifier.
+        ByteBlock private_data {};  //!< Private data.
 
         //!
         //! Default constructor.

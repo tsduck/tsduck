@@ -29,9 +29,9 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t time_shift;            //!< 10 bits, time shift in minutes.
-            uint16_t major_channel_number;  //!< 10 bits, major channel of time-shifted service.
-            uint16_t minor_channel_number;  //!< 10 bits, minor channel of time-shifted service.
+            uint16_t time_shift = 0;            //!< 10 bits, time shift in minutes.
+            uint16_t major_channel_number = 0;  //!< 10 bits, major channel of time-shifted service.
+            uint16_t minor_channel_number = 0;  //!< 10 bits, minor channel of time-shifted service.
 
             //!
             //! Default constructor.
@@ -50,10 +50,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit the count on 5 bits.
         //!
-        static const size_t MAX_ENTRIES = 31;
+        static constexpr size_t MAX_ENTRIES = 31;
 
         // Public members:
-        EntryList entries;  //!< The list of service entries.
+        EntryList entries {};  //!< The list of service entries.
 
         //!
         //! Default constructor.

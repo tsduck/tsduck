@@ -304,12 +304,12 @@ namespace ts {
             };
 
             // MessageFactory private members:
-            const uint8_t*  _msg_base {nullptr};           // Addresse of raw TLV message
-            size_t          _msg_length {0};               // Size of raw TLV message
+            const uint8_t*  _msg_base = nullptr;           // Addresse of raw TLV message
+            size_t          _msg_length = 0;               // Size of raw TLV message
             const Protocol& _protocol;                     // Associated protocol definition
             tlv::Error      _error_status {OK};            // Error status or OK
-            uint16_t        _error_info {0};               // Associated error information
-            bool            _error_info_is_offset {false}; // Error info is an offset in message
+            uint16_t        _error_info = 0;               // Associated error information
+            bool            _error_info_is_offset = false; // Error info is an offset in message
             VERSION         _protocol_version = 0;
             TAG             _command_tag = 0;
 

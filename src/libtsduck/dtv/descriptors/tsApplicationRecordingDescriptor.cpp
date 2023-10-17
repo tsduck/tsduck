@@ -28,17 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::ApplicationRecordingDescriptor::ApplicationRecordingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    scheduled_recording(false),
-    trick_mode_aware(false),
-    time_shift(false),
-    dynamic(false),
-    av_synced(false),
-    initiating_replay(false),
-    labels(),
-    component_tags(),
-    private_data(),
-    reserved_future_use()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

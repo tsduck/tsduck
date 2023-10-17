@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // ExternalESIdDescriptor public members:
-        uint16_t external_ES_ID;  //!< External elementary stream identifier.
+        uint16_t external_ES_ID = 0;  //!< External elementary stream identifier.
 
         //!
         //! Default constructor.

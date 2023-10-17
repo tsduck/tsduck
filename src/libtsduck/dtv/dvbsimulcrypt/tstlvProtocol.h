@@ -145,8 +145,8 @@ namespace ts {
             typedef std::map<TAG,Command> CommandMap;
 
             // Protocol private members
-            bool       _has_version {false};
-            VERSION    _version {0};
+            bool       _has_version = false;
+            VERSION    _version = 0;
             CommandMap _commands {};
         };
     }

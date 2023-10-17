@@ -25,10 +25,10 @@ namespace ts {
     {
     public:
         // DeferredAssociationTagsDescriptor public members:
-        std::vector<uint16_t> association_tags;     //!< Association tags.
-        uint16_t              transport_stream_id;  //!< Transport stream id.
-        uint16_t              program_number;       //!< Program number.
-        ByteBlock             private_data;         //!< Private data.
+        std::vector<uint16_t> association_tags {};      //!< Association tags.
+        uint16_t              transport_stream_id = 0;  //!< Transport stream id.
+        uint16_t              program_number = 0;       //!< Program number.
+        ByteBlock             private_data {};          //!< Private data.
 
         //!
         //! Default constructor.

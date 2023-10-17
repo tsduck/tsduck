@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Public members:
-        ByteBlock stuffing;   //!< Stuffing data.
+        ByteBlock stuffing {};   //!< Stuffing data.
 
         //!
         //! Default constructor.

@@ -40,7 +40,7 @@ namespace ts {
         {
         public:
             Time   after {};   // Insert leap seconds right after the second in this time.
-            Second count {0};  // Number of leap second to add (could be negative if necessary).
+            Second count = 0;  // Number of leap second to add (could be negative if necessary).
 
             // Constructor.
             LeapSecond() = default;
@@ -50,7 +50,7 @@ namespace ts {
         };
 
         // TimeConfigurationFile private fields.
-        Second                  initial_seconds {0};  // Initial leap seconds before first leap second.
-        std::vector<LeapSecond> leap_seconds {0};     // Sorted list of defined leap seconds.
+        Second initial_seconds = 0;               // Initial leap seconds before first leap second.
+        std::vector<LeapSecond> leap_seconds {};  // Sorted list of defined leap seconds.
     };
 }

@@ -242,9 +242,9 @@ namespace ts {
     private:
         DuckContext&          _duck;
         PIDSet                _input_pids {};
-        PID                   _output_pid {PID_NULL};
-        MilliSecond           _start_time_offset {0};
-        bool                  _date_only {false};
+        PID                   _output_pid = PID_NULL;
+        MilliSecond           _start_time_offset = 0;
+        bool                  _date_only = false;
         size_t                _max_buffered_sections {DEFAULT_BUFFERED_SECTIONS};
         SectionDemux          _demux;
         Packetizer            _packetizer;

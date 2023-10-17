@@ -73,9 +73,9 @@ namespace ts {
         {
         public:
             Config() = default;
-            bool    log_messages {false};   // Log monitoring messages.
-            bool    stable_memory {false};  // If true, raise an alarm when the virtual memory increases.
-            int     max_cpu {0};            // Maximum allowed CPU percentage.
+            bool    log_messages = false;   // Log monitoring messages.
+            bool    stable_memory = false;  // If true, raise an alarm when the virtual memory increases.
+            int     max_cpu = 0;            // Maximum allowed CPU percentage.
             UString alarm_command {};       // Shell command to run on alarm.
         };
 
@@ -84,8 +84,8 @@ namespace ts {
         {
         public:
             Period() = default;
-            MilliSecond duration {0};   // Period duration in milliseconds.
-            MilliSecond interval {0};   // Monitoring interval in that period.
+            MilliSecond duration = 0;   // Period duration in milliseconds.
+            MilliSecond interval = 0;   // Monitoring interval in that period.
         };
         typedef std::list<Period> PeriodList;
 
@@ -95,7 +95,7 @@ namespace ts {
         PeriodList _periods {};         // List of monitoring periods.
         Mutex      _mutex {};
         Condition  _wake_up {};         // Accessed under mutex.
-        bool       _terminate {false};  // Accessed under mutex.
+        bool       _terminate = false;  // Accessed under mutex.
 
         // Inherited from Thread
         virtual void main() override;

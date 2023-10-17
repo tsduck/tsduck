@@ -28,7 +28,7 @@ namespace ts {
     {
     public:
         // DTGShortServiceNameDescriptor public members:
-        UString name; //!< Short service name.
+        UString name {}; //!< Short service name.
 
         //!
         //! Default constructor.

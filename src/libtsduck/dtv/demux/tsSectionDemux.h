@@ -233,10 +233,10 @@ namespace ts {
         // This internal structure contains the analysis context for one TID/TIDext into one PID.
         struct ETIDContext
         {
-            bool    notified {false};   // The table was reported to application through a handler
-            uint8_t version {0};        // Version of this table
-            size_t  sect_expected {0};  // Number of expected sections in table
-            size_t  sect_received {0};  // Number of received sections in table
+            bool    notified = false;   // The table was reported to application through a handler
+            uint8_t version = 0;        // Version of this table
+            size_t  sect_expected = 0;  // Number of expected sections in table
+            size_t  sect_received = 0;  // Number of received sections in table
             SectionPtrVector sects {};  // Array of sections
 
             // Default constructor.
@@ -255,9 +255,9 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            PacketCounter pusi_pkt_index {0};    // Index of last packet with PUSI in this PID
-            uint8_t       continuity {0};        // Last continuity counter
-            bool          sync {false};          // We are synchronous in this PID
+            PacketCounter pusi_pkt_index = 0;    // Index of last packet with PUSI in this PID
+            uint8_t       continuity = 0;        // Last continuity counter
+            bool          sync = false;          // We are synchronous in this PID
             ByteBlock     ts {};                 // TS payload buffer
             std::map<ETID,ETIDContext> tids {};  // TID analysis contexts
 
@@ -275,14 +275,14 @@ namespace ts {
         void fixAndFlush(bool pack, bool fill_eit);
 
         // Private members:
-        TableHandlerInterface*          _table_handler {nullptr};
-        SectionHandlerInterface*        _section_handler {nullptr};
-        InvalidSectionHandlerInterface* _invalid_handler {nullptr};
+        TableHandlerInterface*          _table_handler = nullptr;
+        SectionHandlerInterface*        _section_handler = nullptr;
+        InvalidSectionHandlerInterface* _invalid_handler = nullptr;
         std::map<PID,PIDContext>        _pids {};
         Status _status {};
-        bool   _get_current {true};
-        bool   _get_next {false};
-        bool   _track_invalid_version {false};
+        bool   _get_current = true;
+        bool   _get_next = false;
+        bool   _track_invalid_version = false;
         int    _ts_error_level {Severity::Debug};
     };
 }

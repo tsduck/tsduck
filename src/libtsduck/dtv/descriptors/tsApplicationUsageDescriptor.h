@@ -28,7 +28,7 @@ namespace ts {
     {
     public:
         // ApplicationUsageDescriptor public members:
-        uint8_t usage_type;  //!< Usage type.
+        uint8_t usage_type = 0;  //!< Usage type.
 
         //!
         //! Default constructor.

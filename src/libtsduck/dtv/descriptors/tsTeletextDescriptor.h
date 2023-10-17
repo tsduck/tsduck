@@ -81,7 +81,7 @@ namespace ts {
         //!
         //! Maximum number of language entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 51;
+        static constexpr size_t MAX_ENTRIES = 51;
 
         // Public members
         EntryList entries;  //!< The list of item entries in the descriptor.

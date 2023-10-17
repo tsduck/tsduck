@@ -253,11 +253,11 @@ namespace ts {
         typedef std::vector<ColumnLayout> LayoutVector;
 
         std::ostream& _out;                 // Output text device.
-        size_t        _lineWidth {0};       // Display line width.
-        size_t        _marginWidth {0};     // Display margin width.
-        size_t        _contentWidth {0};    // Line content width, without borders and margins.
-        size_t        _lineCount {0};       // Number of displayed lines.
-        bool          _tableOpen {false};   // A table has been open.
+        size_t        _lineWidth = 0;       // Display line width.
+        size_t        _marginWidth = 0;     // Display margin width.
+        size_t        _contentWidth = 0;    // Line content width, without borders and margins.
+        size_t        _lineCount = 0;       // Number of displayed lines.
+        bool          _tableOpen = false;   // A table has been open.
         UChar         _border {u'|'};       // Vertical border character.
         UString       _tableTop {};         // Line to display on top of a table.
         UString       _tableBottom {};      // Line to display on bottom of a table.

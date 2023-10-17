@@ -56,6 +56,6 @@ namespace ts {
         void uninitialize();
 
     private:
-        bool _is_init {false};
+        bool _is_init = false;
     };
 }

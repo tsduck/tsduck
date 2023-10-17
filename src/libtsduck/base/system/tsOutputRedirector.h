@@ -49,7 +49,7 @@ namespace ts {
 
     private:
         std::ostream&   _stream;
-        std::streambuf* _previous {nullptr};
+        std::streambuf* _previous = nullptr;
         std::ofstream   _file {};
     };
 }

@@ -27,16 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ContentLabellingDescriptor::ContentLabellingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    metadata_application_format(0),
-    metadata_application_format_identifier(0),
-    content_time_base_indicator(0),
-    content_reference_id(),
-    content_time_base_value(0),
-    metadata_time_base_value(0),
-    content_id(0),
-    time_base_association_data(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

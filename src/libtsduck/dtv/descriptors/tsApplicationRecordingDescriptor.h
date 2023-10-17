@@ -34,8 +34,8 @@ namespace ts {
         class TSDUCKDLL RecodingLabel
         {
         public:
-            UString label;               //!< Label.
-            uint8_t storage_properties;  //!< Storage properties.
+            UString label {};                //!< Label.
+            uint8_t storage_properties = 0;  //!< Storage properties.
 
             //!
             //! Constructor.
@@ -51,16 +51,16 @@ namespace ts {
         typedef std::list<RecodingLabel> RecodingLabelList;
 
         // ApplicationRecordingDescriptor public members:
-        bool      scheduled_recording;  //!< Accept scheduled recording.
-        bool      trick_mode_aware;     //!< Accept trick modes.
-        bool      time_shift;           //!< Accept time shift.
-        bool      dynamic;              //!< Relies on dynamic broadcast data.
-        bool      av_synced;            //!< Require streams events.
-        bool      initiating_replay;    //!< Replay is started by application.
-        RecodingLabelList labels;       //!< List of recording labels.
-        ByteBlock component_tags;       //!< List of component tags (one byte each).
-        ByteBlock private_data;         //!< Private data.
-        ByteBlock reserved_future_use;  //!< Reserved.
+        bool      scheduled_recording = false;  //!< Accept scheduled recording.
+        bool      trick_mode_aware = false;     //!< Accept trick modes.
+        bool      time_shift = false;           //!< Accept time shift.
+        bool      dynamic = false;              //!< Relies on dynamic broadcast data.
+        bool      av_synced = false;            //!< Require streams events.
+        bool      initiating_replay = false;    //!< Replay is started by application.
+        RecodingLabelList labels {};            //!< List of recording labels.
+        ByteBlock component_tags {};            //!< List of component tags (one byte each).
+        ByteBlock private_data {};              //!< Private data.
+        ByteBlock reserved_future_use {};       //!< Reserved.
 
         //!
         //! Default constructor.

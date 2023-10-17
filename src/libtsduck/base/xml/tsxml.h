@@ -57,7 +57,7 @@ namespace ts {
         //!
         //! Specify an unlimited number of elements.
         //!
-        static const size_t UNLIMITED = std::numeric_limits<size_t>::max();
+        static constexpr size_t UNLIMITED = std::numeric_limits<size_t>::max();
 
         //!
         //! How to process attributes when merging XML elements.

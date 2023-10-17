@@ -24,10 +24,10 @@ namespace ts {
     {
     public:
         // CAServiceDescriptor public members:
-        uint16_t              CA_system_id;             //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
-        uint8_t               ca_broadcaster_group_id;  //!< CA broadcaster group.
-        uint8_t               message_control;          //!< Delay time in days.
-        std::vector<uint16_t> service_ids;              //!< List of service ids.
+        uint16_t              CA_system_id = 0;             //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
+        uint8_t               ca_broadcaster_group_id = 0;  //!< CA broadcaster group.
+        uint8_t               message_control = 0;          //!< Delay time in days.
+        std::vector<uint16_t> service_ids {};               //!< List of service ids.
 
         //!
         //! Default constructor.

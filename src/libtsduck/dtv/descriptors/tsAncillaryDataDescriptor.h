@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // AncillaryDataDescriptor public members:
-        uint8_t ancillary_data_identifier;  //!< Data identifier (bit field).
+        uint8_t ancillary_data_identifier = 0;  //!< Data identifier (bit field).
 
         //!
         //! Default constructor.

@@ -25,12 +25,12 @@ namespace ts {
     {
     public:
         // DataContentDescriptor public members:
-        uint16_t  data_component_id;      //!< Data component id as defined in ARIB STD-B10, Part 2, Annex J.
-        uint8_t   entry_component;        //!< Entry component.
-        ByteBlock selector_bytes;         //!< Selector bytes.
-        ByteBlock component_refs;         //!< One byte per component reference.
-        UString   ISO_639_language_code;  //!< Language code.
-        UString   text;                   //!< Content description.
+        uint16_t  data_component_id = 0;     //!< Data component id as defined in ARIB STD-B10, Part 2, Annex J.
+        uint8_t   entry_component = 0;       //!< Entry component.
+        ByteBlock selector_bytes {};         //!< Selector bytes.
+        ByteBlock component_refs {};         //!< One byte per component reference.
+        UString   ISO_639_language_code {};  //!< Language code.
+        UString   text {};                   //!< Content description.
 
         //!
         //! Default constructor.

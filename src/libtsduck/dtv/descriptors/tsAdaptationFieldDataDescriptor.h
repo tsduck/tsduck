@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // AdaptationFieldDataDescriptor public members:
-        uint8_t adaptation_field_data_identifier;  //!< Data identifier (bit field).
+        uint8_t adaptation_field_data_identifier = 0;  //!< Data identifier (bit field).
 
         //!
         //! Default constructor.

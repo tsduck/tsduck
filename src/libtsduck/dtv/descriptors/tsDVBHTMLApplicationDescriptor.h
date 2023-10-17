@@ -28,8 +28,8 @@ namespace ts {
     {
     public:
         // DVBHTMLApplicationDescriptor public members:
-        std::vector<uint16_t> application_ids;  //!< Application identifiers.
-        UString               parameter;        //!< Application parameter.
+        std::vector<uint16_t> application_ids {};  //!< Application identifiers.
+        UString               parameter {};        //!< Application parameter.
 
         //!
         //! Default constructor.

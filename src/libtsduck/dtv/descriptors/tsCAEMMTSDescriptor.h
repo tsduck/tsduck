@@ -24,10 +24,10 @@ namespace ts {
     {
     public:
         // CAEMMTSDescriptor public members:
-        uint16_t CA_system_id;         //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
-        uint16_t transport_stream_id;  //!< Transport stream id.
-        uint16_t original_network_id;  //!< Original network id.
-        uint8_t  power_supply_period;  //!< Power-on time in minutes.
+        uint16_t CA_system_id = 0;         //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
+        uint16_t transport_stream_id = 0;  //!< Transport stream id.
+        uint16_t original_network_id = 0;  //!< Original network id.
+        uint8_t  power_supply_period = 0;  //!< Power-on time in minutes.
 
         //!
         //! Default constructor.

@@ -222,14 +222,14 @@ namespace ts {
         std::ofstream      _outFile {};          // Own stream when output to a file we created.
         std::ostringstream _outString {};        // Internal string buffer.
         std::ostream*      _out;                 // Address of current output stream. Never null.
-        size_t             _margin {0};          // Margin size for outer-most element.
+        size_t             _margin = 0;          // Margin size for outer-most element.
         size_t             _indent {2};          // Indent size for inner elements.
         EndOfLineMode      _eolMode {EndOfLineMode::NATIVE}; // Current end-of-line mode.
-        bool               _formatting {true};   // Apply margin and column formatting.
-        size_t             _curMargin {0};       // Current margin size.
+        bool               _formatting = true;   // Apply margin and column formatting.
+        size_t             _curMargin = 0;       // Current margin size.
         size_t             _tabSize {8};         // Tabulation size in characters.
-        size_t             _column {0};          // Current column in line, starting at 0.
-        bool               _afterSpace {false};  // After initial spaces in line.
+        size_t             _column = 0;          // Current column in line, starting at 0.
+        bool               _afterSpace = false;  // After initial spaces in line.
     };
 
     //!

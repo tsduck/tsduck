@@ -27,9 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    country_availability(true),
-    country_codes()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -40,9 +38,7 @@ void ts::CountryAvailabilityDescriptor::clearContent()
 }
 
 ts::CountryAvailabilityDescriptor::CountryAvailabilityDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    country_availability(true),
-    country_codes()
+    CountryAvailabilityDescriptor()
 {
     deserialize(duck, desc);
 }

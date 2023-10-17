@@ -26,11 +26,11 @@ namespace ts {
     {
     public:
         // Public members:
-        Variable<uint8_t> component_type;   //!< See ETSI EN 300 468, D.3.
-        Variable<uint8_t> bsid;             //!< See ETSI EN 300 468, D.3.
-        Variable<uint8_t> mainid;           //!< See ETSI EN 300 468, D.3.
-        Variable<uint8_t> asvc;             //!< See ETSI EN 300 468, D.3.
-        ByteBlock         additional_info;  //!< See ETSI EN 300 468, D.3.
+        Variable<uint8_t> component_type {};   //!< See ETSI EN 300 468, D.3.
+        Variable<uint8_t> bsid {};             //!< See ETSI EN 300 468, D.3.
+        Variable<uint8_t> mainid {};           //!< See ETSI EN 300 468, D.3.
+        Variable<uint8_t> asvc {};             //!< See ETSI EN 300 468, D.3.
+        ByteBlock         additional_info {};  //!< See ETSI EN 300 468, D.3.
 
         //!
         //! Default constructor.

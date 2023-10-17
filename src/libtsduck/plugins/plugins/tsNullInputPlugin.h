@@ -37,8 +37,8 @@ namespace ts {
         virtual bool setReceiveTimeout(MilliSecond timeout) override;
 
     private:
-        PacketCounter _max_count {0};   // Number of packets to generate
-        PacketCounter _count {0};       // Number of generated packets
-        PacketCounter _limit {0};       // Current max number of packets
+        PacketCounter _max_count = 0;   // Number of packets to generate
+        PacketCounter _count = 0;       // Number of generated packets
+        PacketCounter _limit = 0;       // Current max number of packets
     };
 }

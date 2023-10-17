@@ -177,7 +177,7 @@ namespace ts {
         };
 
         // Stack size for execution of the receiver thread.
-        static const size_t RECEIVER_STACK_SIZE = 128 * 1024;
+        static constexpr size_t RECEIVER_STACK_SIZE = 128 * 1024;
 
         // Timeout for responses from MUX.
         static const MilliSecond RESPONSE_TIMEOUT = 5000;
@@ -187,8 +187,8 @@ namespace ts {
         const emmgmux::Protocol& _protocol;
         volatile State           _state {INITIAL};
         IPv4SocketAddress        _udp_address {};
-        uint64_t                 _total_bytes {0};
-        const AbortInterface*    _abort {nullptr};
+        uint64_t                 _total_bytes = 0;
+        const AbortInterface*    _abort = nullptr;
         tlv::Logger              _logger {};
         tlv::Connection<Mutex>   _connection {_protocol, true, 3};  // connection with MUX server
         UDPSocket                _udp_socket {};                    // where to send data_provision if UDP is used
@@ -197,8 +197,8 @@ namespace ts {
         Mutex                    _mutex {};           // exclusive access to protected fields
         Condition                _work_to_do {};      // notify receiver thread to do some work
         Condition                _got_response {};    // notify application thread that a response arrived
-        tlv::TAG                 _last_response {0};  // tag of last response message
-        uint16_t                 _allocated_bw {0};   // last allocated bandwidth
+        tlv::TAG                 _last_response = 0;  // tag of last response message
+        uint16_t                 _allocated_bw = 0;   // last allocated bandwidth
         std::vector<uint16_t>    _error_status {};    // last error status
         std::vector<uint16_t>    _error_info {};      // last error information
 

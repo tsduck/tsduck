@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Public members:
-        ATSCMultipleString long_channel_name_text;    //!< Long channel name text.
+        ATSCMultipleString long_channel_name_text {};    //!< Long channel name text.
 
         //!
         //! Default constructor.

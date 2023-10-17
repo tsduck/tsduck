@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // DataStreamAlignmentDescriptor public members:
-        uint8_t alignment_type;  //!< Data stream alignment type.
+        uint8_t alignment_type = 0;  //!< Data stream alignment type.
 
         //!
         //! Default constructor.

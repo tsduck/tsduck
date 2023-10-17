@@ -42,7 +42,7 @@ namespace ts {
         //! Minimum buffer size.
         //! Used to minimize @a buffer_size in constructor and setBufferSize().
         //!
-        static const size_t MIN_BUFFER_SIZE = 16;
+        static constexpr size_t MIN_BUFFER_SIZE = 16;
 
         //!
         //! Set the buffer size.

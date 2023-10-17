@@ -28,12 +28,12 @@ namespace ts {
         //!
         struct TSDUCKDLL Announcement
         {
-            uint8_t  announcement_type;    //!< 4 bits
-            uint8_t  reference_type;       //!< 3 bits
-            uint16_t original_network_id;  //!< When reference_type == 1, 2 or 3
-            uint16_t transport_stream_id;  //!< When reference_type == 1, 2 or 3
-            uint16_t service_id;           //!< When reference_type == 1, 2 or 3
-            uint8_t  component_tag;        //!< When reference_type == 1, 2 or 3
+            uint8_t  announcement_type = 0;    //!< 4 bits
+            uint8_t  reference_type = 0;       //!< 3 bits
+            uint16_t original_network_id = 0;  //!< When reference_type == 1, 2 or 3
+            uint16_t transport_stream_id = 0;  //!< When reference_type == 1, 2 or 3
+            uint16_t service_id = 0;           //!< When reference_type == 1, 2 or 3
+            uint8_t  component_tag = 0;        //!< When reference_type == 1, 2 or 3
 
             //!
             //! Constructor.
@@ -48,7 +48,7 @@ namespace ts {
         typedef std::list<Announcement> AnnouncementList;
 
         // AnnouncementSupportDescriptor public members:
-        AnnouncementList announcements;  //!< The list of announcements.
+        AnnouncementList announcements {};  //!< The list of announcements.
 
         //!
         //! Default constructor.

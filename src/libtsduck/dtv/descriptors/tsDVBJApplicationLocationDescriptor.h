@@ -28,9 +28,9 @@ namespace ts {
     {
     public:
         // DVBJApplicationLocationDescriptor public members:
-        UString base_directory;       //!< Base directory.
-        UString classpath_extension;  //!< Class path extension.
-        UString initial_class;        //!< Initial class name.
+        UString base_directory {};       //!< Base directory.
+        UString classpath_extension {};  //!< Class path extension.
+        UString initial_class {};        //!< Initial class name.
 
         //!
         //! Default constructor.

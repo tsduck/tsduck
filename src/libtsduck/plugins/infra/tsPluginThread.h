@@ -54,7 +54,7 @@ namespace ts {
         //! Each plugin defines its own usage of the stack. The PluginThread
         //! class and its subclasses have their own additional stack usage.
         //!
-        static const size_t STACK_SIZE_OVERHEAD = 32 * 1024; // 32 kB
+        static constexpr size_t STACK_SIZE_OVERHEAD = 32 * 1024; // 32 kB
 
         //!
         //! Set the plugin name as displayed in log messages.

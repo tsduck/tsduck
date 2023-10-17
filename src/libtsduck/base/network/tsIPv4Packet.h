@@ -232,12 +232,12 @@ namespace ts {
         static bool UpdateIPHeaderChecksum(void* data, size_t size);
 
     private:
-        bool      _valid {false};
-        uint8_t   _proto_type {0};
-        size_t    _ip_header_size {0};
-        size_t    _proto_header_size {0};
-        Port      _source_port {0};
-        Port      _destination_port {0};
+        bool      _valid = false;
+        uint8_t   _proto_type = 0;
+        size_t    _ip_header_size = 0;
+        size_t    _proto_header_size = 0;
+        Port      _source_port = 0;
+        Port      _destination_port = 0;
         ByteBlock _data {};
     };
 }

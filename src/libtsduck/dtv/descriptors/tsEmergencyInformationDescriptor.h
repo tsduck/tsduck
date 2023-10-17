@@ -28,17 +28,17 @@ namespace ts {
         //!
         struct TSDUCKDLL Event
         {
-            Event();                             //!< Constructor.
-            uint16_t              service_id;    //!< Service id.
-            bool                  started;       //!< True: event started, false: event ended.
-            uint8_t               signal_level;  //!< Signal level (0 or 1).
-            std::vector<uint16_t> area_codes;    //!< List of area code, 12 bits each.
+            Event() = default;                      //!< Constructor.
+            uint16_t              service_id = 0;   //!< Service id.
+            bool                  started = false;  //!< True: event started, false: event ended.
+            uint8_t               signal_level = 0; //!< Signal level (0 or 1).
+            std::vector<uint16_t> area_codes {};    //!< List of area code, 12 bits each.
         };
 
         typedef std::list<Event> EventList;  //!< List of events.
 
         // EmergencyInformationDescriptor public members:
-        EventList events;  //!< List of events.
+        EventList events {};  //!< List of events.
 
         //!
         //! Default constructor.

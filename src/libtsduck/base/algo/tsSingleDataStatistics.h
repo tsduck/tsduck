@@ -123,12 +123,12 @@ namespace ts {
         //  References:
         //  [1] https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
         //
-        size_t _count {0};    // Total number of samples.
-        NUMBER _min {0};      // Minimum value.
-        NUMBER _max {0};      // Maximum value.
-        SIGNED _var_k {0};    // Variance: K constant (see [1])
-        SIGNED _var_ex {0};   // Variance: Ex accumulation (see [1])
-        SIGNED _var_ex2 {0};  // Variance: Ex2 accumulation (see [1])
+        size_t _count = 0;    // Total number of samples.
+        NUMBER _min = 0;      // Minimum value.
+        NUMBER _max = 0;      // Maximum value.
+        SIGNED _var_k = 0;    // Variance: K constant (see [1])
+        SIGNED _var_ex = 0;   // Variance: Ex accumulation (see [1])
+        SIGNED _var_ex2 = 0;  // Variance: Ex2 accumulation (see [1])
     };
 }
 

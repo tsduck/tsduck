@@ -40,10 +40,10 @@ namespace ts {
 
     private:
         UString                _command {};        // The command to run.
-        bool                   _nowait {false};    // Don't wait for children termination.
-        TSPacketFormat         _format {TSPacketFormat::TS};  // Packet format on the pipe
-        size_t                 _buffer_size {0};   // Max number of packets in buffer.
-        size_t                 _buffer_count {0};  // Number of packets currently in buffer.
+        bool                   _nowait = false;    // Don't wait for children termination.
+        TSPacketFormat         _format = TSPacketFormat::TS;  // Packet format on the pipe
+        size_t                 _buffer_size = 0;   // Max number of packets in buffer.
+        size_t                 _buffer_count = 0;  // Number of packets currently in buffer.
         TSPacketVector         _buffer {};         // Packet buffer.
         TSPacketMetadataVector _mdata {};          // Metadata for packets in buffer.
         TSForkPipe             _pipe {};           // The pipe device.

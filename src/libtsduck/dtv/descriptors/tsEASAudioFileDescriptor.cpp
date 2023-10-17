@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::EASAudioFileDescriptor::EASAudioFileDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,18 +41,6 @@ ts::EASAudioFileDescriptor::EASAudioFileDescriptor(DuckContext& duck, const Desc
 void ts::EASAudioFileDescriptor::clearContent()
 {
     entries.clear();
-}
-
-ts::EASAudioFileDescriptor::Entry::Entry() :
-    file_name(),
-    audio_format(0),
-    audio_source(0),
-    program_number(0),
-    carousel_id(0),
-    download_id(0),
-    module_id(0),
-    application_id(0)
-{
 }
 
 

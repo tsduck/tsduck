@@ -30,21 +30,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::ATSCAC3AudioStreamDescriptor::ATSCAC3AudioStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    sample_rate_code(0),
-    bsid(0),
-    bit_rate_code(0),
-    surround_mode(0),
-    bsmod(0),
-    num_channels(0),
-    full_svc(false),
-    mainid(0),
-    priority(0),
-    asvcflags(0),
-    text(),
-    language(),
-    language_2(),
-    additional_info()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -53,11 +39,6 @@ ts::ATSCAC3AudioStreamDescriptor::ATSCAC3AudioStreamDescriptor(DuckContext& duck
 {
     deserialize(duck, desc);
 }
-
-
-//----------------------------------------------------------------------------
-// Clear the content of this object.
-//----------------------------------------------------------------------------
 
 void ts::ATSCAC3AudioStreamDescriptor::clearContent()
 {

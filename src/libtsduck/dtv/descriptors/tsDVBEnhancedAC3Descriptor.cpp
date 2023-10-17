@@ -29,16 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::DVBEnhancedAC3Descriptor::DVBEnhancedAC3Descriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY),
-    component_type(),
-    bsid(),
-    mainid(),
-    asvc(),
-    mixinfoexists(false),
-    substream1(),
-    substream2(),
-    substream3(),
-    additional_info()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0, MY_XML_NAME_LEGACY)
 {
 }
 

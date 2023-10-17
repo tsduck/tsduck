@@ -219,8 +219,8 @@ namespace ts {
         {
             TS_NOCOPY(Cmd);
         public:
-            CommandLineHandler* handler {nullptr};
-            CommandLineMethod method {nullptr};
+            CommandLineHandler* handler = nullptr;
+            CommandLineMethod method = nullptr;
             UString name {};
             Args    args {};
         public:
@@ -243,8 +243,8 @@ namespace ts {
         // CommandLine private members.
         Report&            _report;
         UString            _shell {};
-        bool               _process_redirections {false};
-        int                _cmd_id_alloc {0};  // sequential allocator of command ids.
+        bool               _process_redirections = false;
+        int                _cmd_id_alloc = 0;  // sequential allocator of command ids.
         Enumeration        _cmd_enum {};       // commands name and ids, used to handle abbreviated command names.
         std::map<int,Cmd>  _commands {};       // command ids to arguments.
         PredefinedCommands _predefined;        // predefined commands handler.

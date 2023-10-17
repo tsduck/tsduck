@@ -30,14 +30,14 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            Entry();                                   //!< Default constructor.
-            uint8_t  plp_id;                           //!< PLP id.
-            uint8_t  data_slice_id;                    //!< Data slice id.
-            uint32_t C2_system_tuning_frequency;       //!< Frequency in Hz.
-            uint8_t  C2_system_tuning_frequency_type;  //!< 2 bits
-            uint8_t  active_OFDM_symbol_duration;      //!< 3 bits
-            uint8_t  guard_interval;                   //!< 3 bits, guard interval.
-            bool     master_channel;                   //!< Use master clock.
+            Entry() = default;                             //!< Default constructor.
+            uint8_t  plp_id = 0;                           //!< PLP id.
+            uint8_t  data_slice_id = 0;                    //!< Data slice id.
+            uint32_t C2_system_tuning_frequency = 0;       //!< Frequency in Hz.
+            uint8_t  C2_system_tuning_frequency_type = 0;  //!< 2 bits
+            uint8_t  active_OFDM_symbol_duration = 0;      //!< 3 bits
+            uint8_t  guard_interval = 0;                   //!< 3 bits, guard interval.
+            bool     master_channel = false;               //!< Use master clock.
         };
 
         //!
@@ -48,10 +48,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit in 254 bytes.
         //!
-        static const size_t MAX_ENTRIES = 31;
+        static constexpr size_t MAX_ENTRIES = 31;
 
         // C2BundleDeliverySystemDescriptor public members:
-        EntryList entries;  //!< The list of PLP entries.
+        EntryList entries {};  //!< The list of PLP entries.
 
         //!
         //! Default constructor.

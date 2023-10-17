@@ -29,8 +29,8 @@ namespace ts {
         TS_NOCOPY(PagerArgs);
     public:
         // Public fields
-        bool page_by_default {false}; //!< Use a page process by default.
-        bool use_pager {false};       //!< Actually use a page process.
+        bool page_by_default = false; //!< Use a page process by default.
+        bool use_pager = false;       //!< Actually use a page process.
 
         //!
         //! Default constructor.

@@ -28,19 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::AV1VideoDescriptor::AV1VideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    version(0),
-    seq_profile(0),
-    seq_level_idx_0(0),
-    seq_tier_0(0),
-    high_bitdepth(false),
-    twelve_bit(false),
-    monochrome(false),
-    chroma_subsampling_x(false),
-    chroma_subsampling_y(false),
-    chroma_sample_position(0),
-    HDR_WCG_idc(0),
-    initial_presentation_delay_minus_one()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
 

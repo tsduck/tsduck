@@ -36,7 +36,7 @@ namespace {
     static const int16_t  DEFAULT_TRANS_DELAY_STOP  = 0;
 
     // Stack size for execution of the client connection thread
-    static const size_t CLIENT_STACK_SIZE = 128 * 1024;
+    static constexpr size_t CLIENT_STACK_SIZE = 128 * 1024;
 
     // Instantiation of a TCP connection in a multi-thread context for TLV messages.
     typedef ts::tlv::Connection<ts::Mutex> ECMGConnection;

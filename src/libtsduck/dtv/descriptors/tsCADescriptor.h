@@ -34,9 +34,9 @@ namespace ts {
     {
     public:
         // CADescriptor public members:
-        uint16_t  cas_id;        //!< CA system id.
-        PID       ca_pid;        //!< PID for CA tables (ECM or EMM).
-        ByteBlock private_data;  //!< CA-specific private data.
+        uint16_t  cas_id = 0;       //!< CA system id.
+        PID       ca_pid = 0;       //!< PID for CA tables (ECM or EMM).
+        ByteBlock private_data {};  //!< CA-specific private data.
 
         //!
         //! Default constructor.

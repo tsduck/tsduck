@@ -27,8 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::AnnouncementSupportDescriptor::AnnouncementSupportDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    announcements()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -44,12 +43,7 @@ ts::AnnouncementSupportDescriptor::AnnouncementSupportDescriptor(DuckContext& du
 }
 
 ts::AnnouncementSupportDescriptor::Announcement::Announcement(uint8_t type) :
-    announcement_type(type),
-    reference_type(0),
-    original_network_id(0),
-    transport_stream_id(0),
-    service_id(0),
-    component_tag(0)
+    announcement_type(type)
 {
 }
 

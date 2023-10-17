@@ -44,7 +44,7 @@ namespace ts {
         //!
         //! Default size in packets of the buffer.
         //!
-        static const size_t DEFAULT_SIZE = 1000;
+        static constexpr size_t DEFAULT_SIZE = 1000;
 
         //!
         //! Default constructor.

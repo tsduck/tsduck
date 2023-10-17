@@ -158,24 +158,24 @@ namespace ts {
         public:
             InterfaceDesc() = default;
             uint16_t    link_type {LINKTYPE_UNKNOWN};
-            size_t      fcs_size {0};     // Number of Frame Cyclic Sequences bytes after each packet.
-            SubSecond   time_units {0};   // Time units per second.
-            MicroSecond time_offset {0};  // Offset to add to all time stamps.
+            size_t      fcs_size = 0;     // Number of Frame Cyclic Sequences bytes after each packet.
+            SubSecond   time_units = 0;   // Time units per second.
+            MicroSecond time_offset = 0;  // Offset to add to all time stamps.
         };
 
-        bool          _error {false};          // Error was set, may be logical error, not a file error.
-        std::istream* _in {nullptr};           // Point to actual input stream.
+        bool          _error = false;          // Error was set, may be logical error, not a file error.
+        std::istream* _in = nullptr;           // Point to actual input stream.
         std::ifstream _file {};                // Input file (when it is a named file).
         UString       _name {};                // Saved file name for messages.
-        bool          _be {false};             // The file use a big-endian representation.
-        bool          _ng {false};             // Pcapng format (not pcap).
-        uint16_t      _major {0};              // File format major version.
-        uint16_t      _minor {0};              // File format minor version.
-        size_t        _file_size {0};          // Number of bytes read so far.
-        size_t        _packet_count {0};       // Count of captured packets.
-        size_t        _ipv4_packet_count {0};  // Count of captured IPv4 packets.
-        size_t        _packets_size {0};       // Total size in bytes of captured packets.
-        size_t        _ipv4_packets_size {0};  // Total size in bytes of captured IPv4 packets.
+        bool          _be = false;             // The file use a big-endian representation.
+        bool          _ng = false;             // Pcapng format (not pcap).
+        uint16_t      _major = 0;              // File format major version.
+        uint16_t      _minor = 0;              // File format minor version.
+        size_t        _file_size = 0;          // Number of bytes read so far.
+        size_t        _packet_count = 0;       // Count of captured packets.
+        size_t        _ipv4_packet_count = 0;  // Count of captured IPv4 packets.
+        size_t        _packets_size = 0;       // Total size in bytes of captured packets.
+        size_t        _ipv4_packets_size = 0;  // Total size in bytes of captured IPv4 packets.
         MicroSecond   _first_timestamp {-1};   // Timestamp of first packet in file.
         MicroSecond   _last_timestamp {-1};    // Timestamp of last packet in file.
         std::vector<InterfaceDesc> _if {};     // Capture interfaces by index, only one in pcap files.

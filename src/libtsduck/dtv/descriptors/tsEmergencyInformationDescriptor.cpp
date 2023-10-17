@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::EmergencyInformationDescriptor::EmergencyInformationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    events()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,14 +41,6 @@ ts::EmergencyInformationDescriptor::EmergencyInformationDescriptor(DuckContext& 
     EmergencyInformationDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::EmergencyInformationDescriptor::Event::Event() :
-    service_id(0),
-    started(false),
-    signal_level(0),
-    area_codes()
-{
 }
 
 

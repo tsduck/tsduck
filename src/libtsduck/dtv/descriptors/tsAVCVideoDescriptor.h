@@ -24,18 +24,18 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t profile_idc;           //!< Same as AVC concept.
-        bool    constraint_set0;       //!< Same as AVC concept.
-        bool    constraint_set1;       //!< Same as AVC concept.
-        bool    constraint_set2;       //!< Same as AVC concept.
-        bool    constraint_set3;       //!< Same as AVC concept.
-        bool    constraint_set4;       //!< Same as AVC concept.
-        bool    constraint_set5;       //!< Same as AVC concept.
-        uint8_t AVC_compatible_flags;  //!< 2 bits.
-        uint8_t level_idc;             //!< Same as AVC concept.
-        bool    AVC_still_present;     //!< May contain still pictures.
-        bool    AVC_24_hour_picture;   //!< May contain 24-hour pictures.
-        bool    frame_packing_SEI_not_present;  //!< Same as AVC concept.
+        uint8_t profile_idc = 0;              //!< Same as AVC concept.
+        bool    constraint_set0 = false;      //!< Same as AVC concept.
+        bool    constraint_set1 = false;      //!< Same as AVC concept.
+        bool    constraint_set2 = false;      //!< Same as AVC concept.
+        bool    constraint_set3 = false;      //!< Same as AVC concept.
+        bool    constraint_set4 = false;      //!< Same as AVC concept.
+        bool    constraint_set5 = false;      //!< Same as AVC concept.
+        uint8_t AVC_compatible_flags = 0;     //!< 2 bits.
+        uint8_t level_idc = 0;                //!< Same as AVC concept.
+        bool    AVC_still_present = false;    //!< May contain still pictures.
+        bool    AVC_24_hour_picture = false;  //!< May contain 24-hour pictures.
+        bool    frame_packing_SEI_not_present = false;  //!< Same as AVC concept.
 
         //!
         //! Default constructor.

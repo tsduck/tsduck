@@ -203,7 +203,7 @@ namespace ts {
         virtual void handleClosed(Report& report = CERR) override;
 
     private:
-        bool _is_connected {false};
+        bool _is_connected = false;
 
         // Declare that the socket has just become connected / disconnected.
         void declareConnected(Report& report = CERR);

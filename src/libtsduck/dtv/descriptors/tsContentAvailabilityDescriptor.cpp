@@ -28,13 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::ContentAvailabilityDescriptor::ContentAvailabilityDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    copy_restriction_mode(false),
-    image_constraint_token(false),
-    retention_mode(false),
-    retention_state(0),
-    encryption_mode(false),
-    reserved_future_use()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

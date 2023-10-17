@@ -29,10 +29,10 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            Entry();                                       //!< Constructor.
-            uint8_t                   rating_region;       //!< Rating region id from RRT.
-            std::map<uint8_t,uint8_t> rating_values;       //!< Key = rating_dimension_j (8 bits), value = rating_value (4 bits).
-            ATSCMultipleString        rating_description;  //!< Rating description.
+            Entry() = default;                                //!< Constructor.
+            uint8_t                   rating_region = 0;      //!< Rating region id from RRT.
+            std::map<uint8_t,uint8_t> rating_values {};       //!< Key = rating_dimension_j (8 bits), value = rating_value (4 bits).
+            ATSCMultipleString        rating_description {};  //!< Rating description.
         };
 
         //!
@@ -43,10 +43,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit the count on 6 bits.
         //!
-        static const size_t MAX_ENTRIES = 63;
+        static constexpr size_t MAX_ENTRIES = 63;
 
         // Public members:
-        EntryList entries;  //!< The list of service entries.
+        EntryList entries {};  //!< The list of service entries.
 
         //!
         //! Default constructor.

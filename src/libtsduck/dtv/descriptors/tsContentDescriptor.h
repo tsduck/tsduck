@@ -32,12 +32,12 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // Public members:
-        EntryList entries;  //!< The list of content entries.
+        EntryList entries {};  //!< The list of content entries.
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 127;
+        static constexpr size_t MAX_ENTRIES = 127;
 
         //!
         //! Default constructor.
@@ -57,10 +57,10 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint8_t content_nibble_level_1;  //!< 4 bits, see ETSI EN 300 468, 6.2.9.
-            uint8_t content_nibble_level_2;  //!< 4 bits, see ETSI EN 300 468, 6.2.9.
-            uint8_t user_nibble_1;           //!< 4 bits, see ETSI EN 300 468, 6.2.9.
-            uint8_t user_nibble_2;           //!< 4 bits, see ETSI EN 300 468, 6.2.9.
+            uint8_t content_nibble_level_1 = 0;  //!< 4 bits, see ETSI EN 300 468, 6.2.9.
+            uint8_t content_nibble_level_2 = 0;  //!< 4 bits, see ETSI EN 300 468, 6.2.9.
+            uint8_t user_nibble_1 = 0;           //!< 4 bits, see ETSI EN 300 468, 6.2.9.
+            uint8_t user_nibble_2 = 0;           //!< 4 bits, see ETSI EN 300 468, 6.2.9.
 
             //!
             //! Default constructor.
@@ -73,6 +73,7 @@ namespace ts {
                 user_nibble_2(uint8_t(all) & 0x0F)
             {
             }
+
             //!
             //! Constructor.
             //! @param [in] l1 Level 1 nibble.
