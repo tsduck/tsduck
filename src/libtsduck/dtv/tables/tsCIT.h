@@ -29,10 +29,10 @@ namespace ts {
         class TSDUCKDLL CRID
         {
         public:
-            CRID();                         //!< Constructor.
-            uint16_t crid_ref;              //!< CRID reference.
-            uint8_t  prepend_string_index;  //!< Index in prepend_strings vector, 0xFF if none.
-            UString  unique_string;         //!< CRID unique part.
+            CRID() = default;                   //!< Constructor.
+            uint16_t crid_ref = 0;              //!< CRID reference.
+            uint8_t  prepend_string_index = 0;  //!< Index in prepend_strings vector, 0xFF if none.
+            UString  unique_string {};          //!< CRID unique part.
         };
 
         //!
@@ -40,13 +40,12 @@ namespace ts {
         //!
         typedef std::list<CRID> CRIDList;
 
-
         // CIT public members:
-        uint16_t      service_id;           //!< Service id.
-        uint16_t      transport_stream_id;  //!< Transport stream id.
-        uint16_t      original_network_id;  //!< Original network id.
-        UStringVector prepend_strings;      //!< Strings to prepend to unique_string in CRID.
-        CRIDList      crids;                //!< List of CRID.
+        uint16_t      service_id = 0;           //!< Service id.
+        uint16_t      transport_stream_id = 0;  //!< Transport stream id.
+        uint16_t      original_network_id = 0;  //!< Original network id.
+        UStringVector prepend_strings {};       //!< Strings to prepend to unique_string in CRID.
+        CRIDList      crids {};                 //!< List of CRID.
 
         //!
         //! Default constructor.

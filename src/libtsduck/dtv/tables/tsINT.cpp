@@ -55,9 +55,6 @@ ts::INT::Device& ts::INT::Device::operator=(const Device& other)
 
 ts::INT::INT(uint8_t version_, bool is_current_) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
-    action_type(0),
-    platform_id(0),
-    processing_order(0),
     platform_descs(this),
     devices(this)
 {

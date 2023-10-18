@@ -24,14 +24,14 @@ namespace ts {
     {
     public:
         // VideoStreamDescriptor public members:
-        bool    multiple_frame_rate;           //!< Has multiple frame rates.
-        uint8_t frame_rate_code;               //!< 4 bits, frame rate code, one of FPS_*.
-        bool    MPEG_1_only;                   //!< No MPEG-2 parameter when true.
-        bool    constrained_parameter;         //!< Has contrained parameter.
-        bool    still_picture;                 //!< Contains still pictures.
-        uint8_t profile_and_level_indication;  //!< Profile (MPEG-2 only).
-        uint8_t chroma_format;                 //!< 2 bits, chroma formzt value, one of CHROMA_*.
-        bool    frame_rate_extension;          //!< Extended frame rate format.
+        bool    multiple_frame_rate = false;       //!< Has multiple frame rates.
+        uint8_t frame_rate_code = 0;               //!< 4 bits, frame rate code, one of FPS_*.
+        bool    MPEG_1_only = false;               //!< No MPEG-2 parameter when true.
+        bool    constrained_parameter = false;     //!< Has contrained parameter.
+        bool    still_picture = false;             //!< Contains still pictures.
+        uint8_t profile_and_level_indication = 0;  //!< Profile (MPEG-2 only).
+        uint8_t chroma_format = 0;                 //!< 2 bits, chroma formzt value, one of CHROMA_*.
+        bool    frame_rate_extension = false;      //!< Extended frame rate format.
 
         //!
         //! Default constructor.

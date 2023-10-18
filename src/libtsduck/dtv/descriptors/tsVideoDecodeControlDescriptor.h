@@ -24,10 +24,10 @@ namespace ts {
     {
     public:
         // VideoDecodeControlDescriptor public members:
-        bool    still_picture;        //!< Presence of still pictures.
-        bool    sequence_end_code;    //!< Has sequence end code.
-        uint8_t video_encode_format;  //!< 4 bits.
-        uint8_t reserved_future_use;  //!< 2 bits.
+        bool    still_picture = false;        //!< Presence of still pictures.
+        bool    sequence_end_code = false;    //!< Has sequence end code.
+        uint8_t video_encode_format = 0;      //!< 4 bits.
+        uint8_t reserved_future_use = 3;      //!< 2 bits.
 
         //!
         //! Default constructor.

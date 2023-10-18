@@ -52,10 +52,6 @@ ts::EIT::EIT(bool is_actual_,
 
 ts::EIT::EIT(DuckContext& duck, const BinaryTable& table) :
     AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME, MY_STD, 0, true),  // TID will be updated by deserialize()
-    service_id(0),
-    ts_id(0),
-    onetw_id(0),
-    last_table_id(0),
     events(this)
 {
     deserialize(duck, table);
@@ -73,12 +69,7 @@ ts::EIT::EIT(const EIT& other) :
 }
 
 ts::EIT::Event::Event(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    event_id(0),
-    start_time(),
-    duration(0),
-    running_status(0),
-    CA_controlled(false)
+    EntryWithDescriptors(table)
 {
 }
 

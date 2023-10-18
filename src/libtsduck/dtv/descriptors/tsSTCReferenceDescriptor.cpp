@@ -28,16 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::STCReferenceDescriptor::STCReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    STC_reference_mode(0),
-    external_event(false),
-    external_event_id(0),
-    external_service_id(0),
-    external_network_id(0),
-    NPT_reference(0),
-    STC_reference(0),
-    time_reference(0),
-    reserved_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

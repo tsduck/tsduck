@@ -25,10 +25,10 @@ namespace ts {
     {
     public:
         // T2MIDescriptor public members:
-        uint8_t   t2mi_stream_id;              //!< Identifier of T2-MI packets (3 bits).
-        uint8_t   num_t2mi_streams_minus_one;  //!< Total number (minus 1) of T2-MI streams required to generate the complete DVB-T2 signal.
-        bool      pcr_iscr_common_clock_flag;  //!< Common clock source between PMT's PCR and ISCR (Input Stream Clock Reference).
-        ByteBlock reserved;                    //!< Reserved bytes.
+        uint8_t   t2mi_stream_id = 0;                  //!< Identifier of T2-MI packets (3 bits).
+        uint8_t   num_t2mi_streams_minus_one = 0;      //!< Total number (minus 1) of T2-MI streams required to generate the complete DVB-T2 signal.
+        bool      pcr_iscr_common_clock_flag = false;  //!< Common clock source between PMT's PCR and ISCR (Input Stream Clock Reference).
+        ByteBlock reserved {};                         //!< Reserved bytes.
 
         //!
         //! Default constructor.

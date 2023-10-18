@@ -27,16 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::HierarchyDescriptor::HierarchyDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    no_view_scalability_flag(false),
-    no_temporal_scalability(false),
-    no_spatial_scalability(false),
-    no_quality_scalability(false),
-    hierarchy_type(0),
-    hierarchy_layer_index(0),
-    tref_present(false),
-    hierarchy_embedded_layer_index(0),
-    hierarchy_channel(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // MessageDescriptor public members:
-        uint8_t message_id;     //!< Message identifier.
-        UString language_code;  //!< ISO-639 language code, 3 characters.
-        UString message;        //!< Message content.
+        uint8_t message_id = 0;    //!< Message identifier.
+        UString language_code {};  //!< ISO-639 language code, 3 characters.
+        UString message {};        //!< Message content.
 
         //!
         //! Default constructor.

@@ -51,11 +51,7 @@ ts::SDT::SDT(const SDT& other) :
 }
 
 ts::SDT::ServiceEntry::ServiceEntry(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    EITs_present(false),
-    EITpf_present(false),
-    running_status(0),
-    CA_controlled(false)
+    EntryWithDescriptors(table)
 {
 }
 

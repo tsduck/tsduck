@@ -29,9 +29,9 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            UString language;               //!< ISO-639 language code, 3 characters.
-            UString service_provider_name;  //!< Service provider name in this language.
-            UString service_name;           //!< Service name in this language.
+            UString language {};               //!< ISO-639 language code, 3 characters.
+            UString service_provider_name {};  //!< Service provider name in this language.
+            UString service_name {};           //!< Service name in this language.
 
             //!
             //! Default constructor.
@@ -48,7 +48,7 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // MultilingualServiceNameDescriptor public members:
-        EntryList entries;  //!< List of language entries.
+        EntryList entries {};  //!< List of language entries.
 
         //!
         //! Default constructor.

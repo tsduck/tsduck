@@ -25,11 +25,11 @@ namespace ts {
     {
     public:
         // CDT public members:
-        uint16_t       download_data_id;     //!< Dowload data id.
-        uint16_t       original_network_id;  //!< Original network id.
-        uint8_t        data_type;            //!< Data type.
-        DescriptorList descs;                //!< Top-level descriptor list.
-        ByteBlock      data_module;          //!< Data content.
+        uint16_t       download_data_id = 0;     //!< Dowload data id.
+        uint16_t       original_network_id = 0;  //!< Original network id.
+        uint8_t        data_type = 0;            //!< Data type.
+        DescriptorList descs;                    //!< Top-level descriptor list.
+        ByteBlock      data_module {};           //!< Data content.
 
         //!
         //! Default constructor.

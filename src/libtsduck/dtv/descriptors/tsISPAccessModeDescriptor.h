@@ -29,7 +29,7 @@ namespace ts {
     {
     public:
         // ISPAccessModeDescriptor public members:
-        uint8_t access_mode;  //!< ISP access mode, typically dialup.
+        uint8_t access_mode = 0;  //!< ISP access mode, typically dialup.
 
         //!
         //! Default constructor.

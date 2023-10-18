@@ -26,19 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::TerrestrialDeliverySystemDescriptor::TerrestrialDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T, MY_XML_NAME),
-    centre_frequency(0),
-    bandwidth(0),
-    high_priority(true),
-    no_time_slicing(true),
-    no_mpe_fec(true),
-    constellation(0),
-    hierarchy(0),
-    code_rate_hp(0),
-    code_rate_lp(0),
-    guard_interval(0),
-    transmission_mode(0),
-    other_frequency(false)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T, MY_XML_NAME)
 {
 }
 

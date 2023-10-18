@@ -30,31 +30,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::S2Xv2SatelliteDeliverySystemDescriptor::S2Xv2SatelliteDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME),
-    delivery_system_id(0),
-    S2Xv2_mode(0),
-    multiple_input_stream_flag(false),
-    roll_off(0),
-    NCR_version(0),
-    channel_bond(0),
-    polarization(0),
-    TS_GS_S2X_mode(0),
-    receiver_profiles(0),
-    satellite_id(0),
-    frequency(0),
-    symbol_rate(0),
-    input_stream_identifier(0),
-    scrambling_sequence_index(),
-    timeslice_number(0),
-    num_channel_bonds_minus1(0),
-    secondary_delivery_system_ids(),
-    SOSF_WH_sequence_number(0),
-    reference_scrambling_index(0),
-    SFFI(),
-    payload_scrambling_index(),
-    beamhopping_time_plan_id(0),
-    superframe_pilots_WH_sequence_number(0),
-    reserved_future_use()
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME)
 {
 }
 

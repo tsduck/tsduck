@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // MPEG4VideoDescriptor public members:
-        uint8_t MPEG4_visual_profile_and_level;  //!< MPEG-4 Video profile.
+        uint8_t MPEG4_visual_profile_and_level = 0;  //!< MPEG-4 Video profile.
 
         //!
         //! Default constructor.

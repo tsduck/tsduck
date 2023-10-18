@@ -41,7 +41,7 @@ namespace ts {
             TS_DEFAULT_ASSIGMENTS(Transport);
         public:
             // Public members
-            int preferred_section;  //!< Preferred section index for serialization (-1 means no preference).
+            int preferred_section = -1;  //!< Preferred section index for serialization (-1 means no preference).
 
             //!
             //! Constructor.
@@ -86,7 +86,7 @@ namespace ts {
         //! Table id extension.
         //! Interpretation of TID-extension differs between NIT and BAT.
         //!
-        uint16_t _tid_ext;
+        uint16_t _tid_ext = 0xFFFF;
 
         //!
         //! Constructor for subclasses.

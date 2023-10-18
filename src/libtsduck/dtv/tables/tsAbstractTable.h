@@ -257,7 +257,7 @@ namespace ts {
         private:
             // Parent table (zero for descriptor list object outside a table).
             const AbstractTable* const _table;
-            bool _auto_ordering;
+            bool _auto_ordering = false;
 
             // Inaccessible operations.
             EntryWithDescriptorsMap() = delete;
@@ -310,7 +310,7 @@ namespace ts {
         //!
         //! The table id can be modified by subclasses only.
         //!
-        TID _table_id;
+        TID _table_id = TID_NULL;
 
         //!
         //! Protected constructor for subclasses.

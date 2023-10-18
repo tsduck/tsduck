@@ -44,8 +44,7 @@ ts::SubtitlingDescriptor::Entry::Entry(const UString& code, uint8_t subt, uint16
 }
 
 ts::SubtitlingDescriptor::SubtitlingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -55,8 +54,7 @@ void ts::SubtitlingDescriptor::clearContent()
 }
 
 ts::SubtitlingDescriptor::SubtitlingDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    SubtitlingDescriptor()
 {
     deserialize(duck, desc);
 }

@@ -29,9 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::VirtualSegmentationDescriptor::VirtualSegmentationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    ticks_per_second(),
-    partitions()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -47,13 +45,6 @@ void ts::VirtualSegmentationDescriptor::clearContent()
     partitions.clear();
 }
 
-ts::VirtualSegmentationDescriptor::Partition::Partition() :
-    partition_id(0),
-    SAP_type_max(0),
-    boundary_PID(),
-    maximum_duration()
-{
-}
 
 //----------------------------------------------------------------------------
 // This is an extension descriptor.

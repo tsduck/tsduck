@@ -25,10 +25,10 @@ namespace ts {
     {
     public:
         // SystemManagementDescriptor public members:
-        uint8_t   broadcasting_flag;                       //!< 2 bits.
-        uint8_t   broadcasting_identifier;                 //!< 6 bits.
-        uint8_t   additional_broadcasting_identification;  //!< 8 bits.
-        ByteBlock additional_identification_info;          //!< Additional info.
+        uint8_t   broadcasting_flag = 0;                       //!< 2 bits.
+        uint8_t   broadcasting_identifier = 0;                 //!< 6 bits.
+        uint8_t   additional_broadcasting_identification = 0;  //!< 8 bits.
+        ByteBlock additional_identification_info {};           //!< Additional info.
 
         //!
         //! Default constructor.

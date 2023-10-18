@@ -43,8 +43,8 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Term);
             TS_DEFAULT_ASSIGMENTS(Term);
         public:
-            uint8_t  dcc_selection_type;  //!< DCC selection type.
-            uint64_t dcc_selection_id;    //!< DCC selection id.
+            uint8_t  dcc_selection_type = 0;  //!< DCC selection type.
+            uint64_t dcc_selection_id = 0;    //!< DCC selection id.
 
             //!
             //! Constructor.
@@ -92,11 +92,11 @@ namespace ts {
         typedef EntryWithDescriptorsList<Test> TestList;
 
         // DCCT public members:
-        uint8_t        dcc_subtype;       //!< DCC subtype, should be zero.
-        uint8_t        dcc_id;            //!< DCC id of this table.
-        uint8_t        protocol_version;  //!< ATSC protocol version.
-        TestList       tests;             //!< List of updates.
-        DescriptorList descs;             //!< Main descriptor list.
+        uint8_t        dcc_subtype = 0;       //!< DCC subtype, should be zero.
+        uint8_t        dcc_id = 0;            //!< DCC id of this table.
+        uint8_t        protocol_version = 0;  //!< ATSC protocol version.
+        TestList       tests;                 //!< List of updates.
+        DescriptorList descs;                 //!< Main descriptor list.
 
         //!
         //! Default constructor.

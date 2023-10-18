@@ -30,12 +30,12 @@ namespace ts {
         class TSDUCKDLL Event
         {
         public:
-            Event();                       //!< Constructor.
-            uint16_t transport_stream_id;  //!< Transport stream id.
-            uint16_t original_network_id;  //!< Original network id.
-            uint16_t service_id;           //!< Service id.
-            uint16_t event_id;             //!< Event id.
-            uint8_t  running_status;       //!< Running status of the event.
+            Event() = default;                 //!< Constructor.
+            uint16_t transport_stream_id = 0;  //!< Transport stream id.
+            uint16_t original_network_id = 0;  //!< Original network id.
+            uint16_t service_id = 0;           //!< Service id.
+            uint16_t event_id = 0;             //!< Event id.
+            uint8_t  running_status = 0;       //!< Running status of the event.
         };
 
         //!
@@ -44,7 +44,7 @@ namespace ts {
         typedef std::list<Event> EventList;
 
         // RST public members:
-        EventList events;  //!< List of events with a running status.
+        EventList events {};  //!< List of events with a running status.
 
         //!
         //! Definition of names for running status values.

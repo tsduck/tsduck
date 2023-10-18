@@ -28,7 +28,7 @@ namespace ts {
     {
     public:
         // IPSignallingDescriptor public members:
-        uint32_t platform_id;  //!< 24 bits, platform id.
+        uint32_t platform_id = 0;  //!< 24 bits, platform id.
 
         //!
         //! Default constructor.

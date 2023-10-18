@@ -29,9 +29,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::ERT::ERT(uint8_t vers, bool cur) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur),
-    event_relation_id(0),
-    information_provider_id(0),
-    relation_type(0),
     relations(this)
 {
 }
@@ -52,11 +49,7 @@ ts::ERT::ERT(DuckContext& duck, const BinaryTable& table) :
 }
 
 ts::ERT::Relation::Relation(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    node_id(0),
-    collection_mode(0),
-    parent_node_id(0),
-    reference_number(0)
+    EntryWithDescriptors(table)
 {
 }
 

@@ -29,11 +29,11 @@ namespace ts {
     {
     public:
         // IPMACGenericStreamLocationDescriptor public members:
-        uint16_t  interactive_network_id;  //!< Delivery system id.
-        uint8_t   modulation_system_type;  //!< Type of modulation.
-        uint16_t  modulation_system_id;    //!< System identifier, depending on modulation.
-        uint16_t  PHY_stream_id;           //!< Stream identifier, depending on modulation.
-        ByteBlock selector_bytes;          //!< Selector bytes.
+        uint16_t  interactive_network_id = 0;  //!< Delivery system id.
+        uint8_t   modulation_system_type = 0;  //!< Type of modulation.
+        uint16_t  modulation_system_id = 0;    //!< System identifier, depending on modulation.
+        uint16_t  PHY_stream_id = 0;           //!< Stream identifier, depending on modulation.
+        ByteBlock selector_bytes {};           //!< Selector bytes.
 
         //!
         //! Default constructor.

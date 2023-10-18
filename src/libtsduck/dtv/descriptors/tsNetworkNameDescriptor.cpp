@@ -33,8 +33,7 @@ ts::NetworkNameDescriptor::NetworkNameDescriptor(const UString& name_) :
 }
 
 ts::NetworkNameDescriptor::NetworkNameDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    name()
+    NetworkNameDescriptor()
 {
     deserialize(duck, desc);
 }

@@ -29,12 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::SIPrimeTSDescriptor::SIPrimeTSDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    parameter_version(0),
-    update_time(),
-    SI_prime_TS_network_id(0),
-    SI_prime_transport_stream_id(0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -51,12 +46,6 @@ ts::SIPrimeTSDescriptor::SIPrimeTSDescriptor(DuckContext& duck, const Descriptor
     SIPrimeTSDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::SIPrimeTSDescriptor::Entry::Entry() :
-    table_id(TID_NULL),
-    table_description()
-{
 }
 
 

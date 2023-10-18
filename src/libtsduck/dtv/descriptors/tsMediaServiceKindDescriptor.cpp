@@ -28,28 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::MediaServiceKindDescriptor::MediaServiceKindDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    media_service_kinds()
-{
-}
-
-ts::MediaServiceKindDescriptor::language_media_pair_type::language_media_pair_type() :
-    configuration_type(0),
-    lang_len_idc(0),
-    lang_len(0),
-    language_code(),
-    media_service_types()
-{
-}
-
-ts::MediaServiceKindDescriptor::media_service_kind_type::media_service_kind_type() :
-    media_description_flag(0),
-    media_type_idc(0),
-    ID_length_code(),
-    ID_type(),
-    ID_len(0),
-    media_ID_field(),
-    language_media_service_type_pairs()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

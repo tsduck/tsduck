@@ -27,19 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::MetadataDescriptor::MetadataDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    metadata_application_format(0),
-    metadata_application_format_identifier(0),
-    metadata_format(0),
-    metadata_format_identifier(0),
-    metadata_service_id(0),
-    decoder_config_flags(0),
-    service_identification(),
-    decoder_config(),
-    dec_config_identification(),
-    decoder_config_metadata_service_id(0),
-    reserved_data(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

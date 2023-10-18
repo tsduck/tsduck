@@ -25,9 +25,9 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t   sb_size;       //!< 2 bits, smoothing buffer size code.
-        uint8_t   sb_leak_rate;  //!< 6 bits, smoothing buffer leak rate code.
-        ByteBlock DVB_reserved;  //!< Additional data.
+        uint8_t   sb_size = 0;       //!< 2 bits, smoothing buffer size code.
+        uint8_t   sb_leak_rate = 0;  //!< 6 bits, smoothing buffer leak rate code.
+        ByteBlock DVB_reserved {};   //!< Additional data.
 
         //!
         //! Default constructor.

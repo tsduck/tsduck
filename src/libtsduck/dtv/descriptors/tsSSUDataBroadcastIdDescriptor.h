@@ -31,10 +31,10 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint32_t          oui;             //!< OUI, 24 bits.
-            uint8_t           update_type;     //!< Update type, 4 bits.
-            Variable<uint8_t> update_version;  //!< Update version, 5 bits.
-            ByteBlock         selector;        //!< Selector bytes.
+            uint32_t          oui = 0;             //!< OUI, 24 bits.
+            uint8_t           update_type = 0;     //!< Update type, 4 bits.
+            Variable<uint8_t> update_version {};   //!< Update version, 5 bits.
+            ByteBlock         selector {};         //!< Selector bytes.
 
             //!
             //! Constructor.
@@ -50,8 +50,8 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // SSUDataBroadcastIdDescriptor public members:
-        EntryList entries;       //!< The list of OUI entries.
-        ByteBlock private_data;  //!< Private data.
+        EntryList entries {};       //!< The list of OUI entries.
+        ByteBlock private_data {};  //!< Private data.
 
         //!
         //! Default constructor.

@@ -32,8 +32,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint32_t  oui;       //!< OUI, 24 bits.
-            ByteBlock selector;  //!< Selector bytes.
+            uint32_t  oui = 0;      //!< OUI, 24 bits.
+            ByteBlock selector {};  //!< Selector bytes.
 
             //!
             //! Constructor.
@@ -48,11 +48,11 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // SSULinkageDescriptor public members:
-        uint16_t  ts_id;         //!< Transport stream id.
-        uint16_t  onetw_id;      //!< Original network id.
-        uint16_t  service_id;    //!< Service id.
-        EntryList entries;       //!< The list of OUI entries.
-        ByteBlock private_data;  //!< Private data.
+        uint16_t  ts_id = 0;        //!< Transport stream id.
+        uint16_t  onetw_id = 0;     //!< Original network id.
+        uint16_t  service_id = 0;   //!< Service id.
+        EntryList entries {};       //!< The list of OUI entries.
+        ByteBlock private_data {};  //!< Private data.
 
         //!
         //! Default constructor.

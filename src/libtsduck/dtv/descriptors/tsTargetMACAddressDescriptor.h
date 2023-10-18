@@ -30,8 +30,8 @@ namespace ts {
     {
     public:
         // TargetMACAddressDescriptor public members:
-        MACAddress       MAC_addr_mask;  //!< MAC address mask
-        MACAddressVector MAC_addr;       //!< MAC addresses
+        MACAddress       MAC_addr_mask {};  //!< MAC address mask
+        MACAddressVector MAC_addr {};       //!< MAC addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

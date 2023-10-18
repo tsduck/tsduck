@@ -30,8 +30,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::NetworkChangeNotifyDescriptor::NetworkChangeNotifyDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    cells()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -44,25 +43,6 @@ ts::NetworkChangeNotifyDescriptor::NetworkChangeNotifyDescriptor(DuckContext& du
     NetworkChangeNotifyDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::NetworkChangeNotifyDescriptor::Cell::Cell() :
-    cell_id(0),
-    changes()
-{
-}
-
-ts::NetworkChangeNotifyDescriptor::Change::Change() :
-    network_change_id(0),
-    network_change_version(0),
-    start_time_of_change(),
-    change_duration(0),
-    receiver_category(0),
-    change_type(0),
-    message_id(0),
-    invariant_ts_tsid(),
-    invariant_ts_onid()
-{
 }
 
 

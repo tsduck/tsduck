@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsSCTE35.h"
 
 namespace ts {
     //!
@@ -28,8 +29,8 @@ namespace ts {
     {
     public:
         // SpliceAvailDescriptor public members:
-        uint32_t identifier;         //!< Descriptor owner, 0x43554549 ("CUEI").
-        uint32_t provider_avail_id;  //!< Provider id.
+        uint32_t identifier = SPLICE_ID_CUEI;  //!< Descriptor owner, 0x43554549 ("CUEI").
+        uint32_t provider_avail_id = 0;        //!< Provider id.
 
         //!
         //! Default constructor.

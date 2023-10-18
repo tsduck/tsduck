@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // Public members:
-        bool     closed_gop;      //!< A GOP header is encoded before every I-frame.
-        bool     identical_gop;   //!< Number of P- and B-frames between I-frames is the same throughout the sequence
-        uint16_t max_gop_length;  //!< 14 bits, 0 forbidden, maximum number of pictures between any two consecutive I-pictures
+        bool     closed_gop = false;      //!< A GOP header is encoded before every I-frame.
+        bool     identical_gop = false;   //!< Number of P- and B-frames between I-frames is the same throughout the sequence
+        uint16_t max_gop_length = 0;      //!< 14 bits, 0 forbidden, maximum number of pictures between any two consecutive I-pictures
 
         //!
         //! Default constructor.

@@ -28,11 +28,11 @@ namespace ts {
     {
     public:
         // IPMACStreamLocationDescriptor public members:
-        uint16_t network_id;           //!< Network id
-        uint16_t original_network_id;  //!< Original network id
-        uint16_t transport_stream_id;  //!< Transport stream id
-        uint16_t service_id;           //!< Service id
-        uint8_t  component_tag;        //!< Component tag
+        uint16_t network_id = 0;           //!< Network id
+        uint16_t original_network_id = 0;  //!< Original network id
+        uint16_t transport_stream_id = 0;  //!< Transport stream id
+        uint16_t service_id = 0;           //!< Service id
+        uint8_t  component_tag = 0;        //!< Component tag
 
         //!
         //! Default constructor.

@@ -29,9 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT), M
 //----------------------------------------------------------------------------
 
 ts::TargetMACAddressDescriptor::TargetMACAddressDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    MAC_addr_mask(),
-    MAC_addr()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

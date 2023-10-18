@@ -28,13 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::TransportProtocolDescriptor::TransportProtocolDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    protocol_id(0),
-    transport_protocol_label(0),
-    carousel(),
-    mpe(),
-    http(),
-    selector()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -54,34 +48,12 @@ void ts::TransportProtocolDescriptor::clearContent()
     selector.clear();
 }
 
-
-//----------------------------------------------------------------------------
-// Constructors for specific selector bytes layouts.
-//----------------------------------------------------------------------------
-
-ts::TransportProtocolDescriptor::Carousel::Carousel() :
-    original_network_id(),
-    transport_stream_id(),
-    service_id(),
-    component_tag(0)
-{
-}
-
 void ts::TransportProtocolDescriptor::Carousel::clear()
 {
     original_network_id.clear();
     transport_stream_id.clear();
     service_id.clear();
     component_tag= 0;
-}
-
-ts::TransportProtocolDescriptor::MPE::MPE() :
-    original_network_id(),
-    transport_stream_id(),
-    service_id(),
-    alignment_indicator(false),
-    urls()
-{
 }
 
 void ts::TransportProtocolDescriptor::MPE::clear()
@@ -91,12 +63,6 @@ void ts::TransportProtocolDescriptor::MPE::clear()
     service_id.clear();
     alignment_indicator = 0;
     urls.clear();
-}
-
-ts::TransportProtocolDescriptor::HTTPEntry::HTTPEntry() :
-    URL_base(),
-    URL_extensions()
-{
 }
 
 

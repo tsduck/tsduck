@@ -28,8 +28,8 @@ namespace ts {
     {
     public:
         // IPMACPlatformProviderNameDescriptor public members:
-        UString language_code;  //!< ISO-639 language code, 3 chars.
-        UString text;           //!< Platform provider name.
+        UString language_code {};  //!< ISO-639 language code, 3 chars.
+        UString text {};           //!< Platform provider name.
 
         //!
         //! Default constructor.

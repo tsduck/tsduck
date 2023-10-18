@@ -28,18 +28,18 @@ namespace ts {
         //!
         struct TSDUCKDLL Reference
         {
-            Reference();                     //!< Constructor.
-            uint16_t reference_node_id;      //!< Reference node id.
-            uint8_t  reference_number;       //!< Reference number.
-            uint8_t  last_reference_number;  //!< Last reference number.
+            Reference() = default;               //!< Constructor.
+            uint16_t reference_node_id = 0;      //!< Reference node id.
+            uint8_t  reference_number = 0;       //!< Reference number.
+            uint8_t  last_reference_number = 0;  //!< Last reference number.
         };
 
         typedef std::list<Reference> ReferenceList;  //!< List of references.
 
         // ReferenceDescriptor public members:
-        uint16_t      information_provider_id;  //!< Information provider id.
-        uint16_t      event_relation_id;        //!< Event relation id.
-        ReferenceList references;               //!< List of references.
+        uint16_t      information_provider_id = 0;  //!< Information provider id.
+        uint16_t      event_relation_id = 0;        //!< Event relation id.
+        ReferenceList references {};                //!< List of references.
 
         //!
         //! Default constructor.

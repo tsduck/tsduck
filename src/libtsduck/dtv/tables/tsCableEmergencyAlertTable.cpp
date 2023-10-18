@@ -28,22 +28,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::CableEmergencyAlertTable::CableEmergencyAlertTable(uint8_t sequence_number) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, sequence_number, true),
-    protocol_version(0),
-    EAS_event_ID(0),
-    EAS_originator_code(),
-    EAS_event_code(),
-    nature_of_activation_text(),
-    alert_message_time_remaining(0),
-    event_start_time(),
-    event_duration(0),
-    alert_priority(0),
-    details_OOB_source_ID(0),
-    details_major_channel_number(0),
-    details_minor_channel_number(0),
-    audio_OOB_source_ID(0),
-    alert_text(),
-    locations(),
-    exceptions(),
     descs(this)
 {
 }
@@ -74,13 +58,6 @@ ts::CableEmergencyAlertTable::CableEmergencyAlertTable(DuckContext& duck, const 
     CableEmergencyAlertTable()
 {
     deserialize(duck, table);
-}
-
-ts::CableEmergencyAlertTable::Location::Location(uint8_t state, uint8_t sub, uint16_t county) :
-    state_code(state),
-    county_subdivision(sub),
-    county_code(county)
-{
 }
 
 ts::CableEmergencyAlertTable::Exception::Exception(uint16_t oob) :

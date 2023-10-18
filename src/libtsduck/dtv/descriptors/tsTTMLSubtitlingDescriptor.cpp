@@ -27,15 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::TTMLSubtitlingDescriptor::TTMLSubtitlingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    language_code(),
-    subtitle_purpose(0),
-    TTS_suitability(0),
-    dvb_ttml_profile(),
-    qualifier(),
-    font_id(),
-    service_name(),
-    reserved_zero_future_use_bytes(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

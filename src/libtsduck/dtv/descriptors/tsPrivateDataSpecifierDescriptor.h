@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // Public members:
-        PDS pds; //!< Private data specifier.
+        PDS pds = 0; //!< Private data specifier.
 
         //!
         //! Default constructor.

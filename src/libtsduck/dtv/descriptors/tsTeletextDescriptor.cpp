@@ -41,14 +41,12 @@ ts::TeletextDescriptor::Entry::Entry(const UString& code, uint8_t type, uint16_t
 }
 
 ts::TeletextDescriptor::TeletextDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
 ts::TeletextDescriptor::TeletextDescriptor(DID tag, const UChar* xml_name, Standards standards, PDS pds) :
-    AbstractDescriptor(tag, xml_name, standards, pds),
-    entries()
+    AbstractDescriptor(tag, xml_name, standards, pds)
 {
 }
 

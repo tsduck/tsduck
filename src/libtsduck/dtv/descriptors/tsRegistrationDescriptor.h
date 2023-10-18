@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // RegistrationDescriptor public members:
-        uint32_t  format_identifier;               //!< Identifier obtained from a Registration Authority.
-        ByteBlock additional_identification_info;  //!< Identifier-dependent information.
+        uint32_t  format_identifier = 0;              //!< Identifier obtained from a Registration Authority.
+        ByteBlock additional_identification_info {};  //!< Identifier-dependent information.
 
         //!
         //! Default constructor.

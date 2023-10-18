@@ -28,16 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::LCEVCVideoDescriptor::LCEVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    lcevc_stream_tag(0),
-    profile_idc(0),
-    level_idc(0),
-    sublevel_idc(0),
-    processed_planes_type_flag(false),
-    picture_type_bit_flag(false),
-    field_type_bit_flag(false),
-    HDR_WCG_idc(3),
-    video_properties_tag(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

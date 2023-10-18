@@ -34,8 +34,7 @@ ts::NVODReferenceDescriptor::Entry::Entry(uint16_t ts, uint16_t net, uint16_t sr
 }
 
 ts::NVODReferenceDescriptor::NVODReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

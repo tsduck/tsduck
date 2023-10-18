@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // MPEG2AACAudioDescriptor public members:
-        uint8_t MPEG2_AAC_profile;                 //!< Profile
-        uint8_t MPEG2_AAC_channel_configuration;   //!< Channel configuration
-        uint8_t MPEG2_AAC_additional_information;  //!< Additional information
+        uint8_t MPEG2_AAC_profile = 0;                 //!< Profile
+        uint8_t MPEG2_AAC_channel_configuration = 0;   //!< Channel configuration
+        uint8_t MPEG2_AAC_additional_information = 0;  //!< Additional information
 
         //!
         //! Default constructor.

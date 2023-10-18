@@ -36,7 +36,7 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Application);
             TS_DEFAULT_ASSIGMENTS(Application);
         public:
-            uint8_t control_code;  //!< Control code of the application
+            uint8_t control_code = 0;  //!< Control code of the application
 
             //!
             //! Constructor.
@@ -51,10 +51,10 @@ namespace ts {
         typedef EntryWithDescriptorsMap<ApplicationIdentifier, Application> ApplicationMap;
 
         // AIT public members:
-        uint16_t       application_type;       //!< Type of the application.
-        bool           test_application_flag;  //!< Indicates the application is meant for receiver testing.
-        DescriptorList descs;                  //!< Common descriptor list.
-        ApplicationMap applications;           //!< Map of applications: key=application_identifier, value=application.
+        uint16_t       application_type = 0;           //!< Type of the application.
+        bool           test_application_flag = false;  //!< Indicates the application is meant for receiver testing.
+        DescriptorList descs;                          //!< Common descriptor list.
+        ApplicationMap applications;                   //!< Map of applications: key=application_identifier, value=application.
 
         //!
         //! Default constructor.

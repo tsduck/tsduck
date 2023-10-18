@@ -29,9 +29,9 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            Entry();                                       //!< Constructor.
-            uint8_t               transmission_type_info;  //!< Transmission type info.
-            std::vector<uint16_t> service_ids;             //!< List of service ids.
+            Entry() = default;                                 //!< Constructor.
+            uint8_t               transmission_type_info = 0;  //!< Transmission type info.
+            std::vector<uint16_t> service_ids {};              //!< List of service ids.
         };
 
         //!
@@ -40,10 +40,10 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // TSInformationDescriptor public members:
-        uint8_t   remote_control_key_id;  //!< Remote control key id.
-        UString   ts_name;                //!< TS name.
-        EntryList transmission_types;     //!< List of transmission type.
-        ByteBlock reserved_future_use;    //!< Future binary data.
+        uint8_t   remote_control_key_id = 0;  //!< Remote control key id.
+        UString   ts_name {};                 //!< TS name.
+        EntryList transmission_types {};      //!< List of transmission type.
+        ByteBlock reserved_future_use {};     //!< Future binary data.
 
         //!
         //! Default constructor.

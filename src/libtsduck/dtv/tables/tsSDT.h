@@ -38,10 +38,10 @@ namespace ts {
             TS_DEFAULT_ASSIGMENTS(ServiceEntry);
         public:
             // Public members
-            bool    EITs_present;    //!< There are EIT schedule on current TS.
-            bool    EITpf_present;   //!< There are EIT present/following on current TS.
-            uint8_t running_status;  //!< Running status code.
-            bool    CA_controlled;   //!< Controlled by a CA_system.
+            bool    EITs_present = false;    //!< There are EIT schedule on current TS.
+            bool    EITpf_present = false;   //!< There are EIT present/following on current TS.
+            uint8_t running_status = 0;      //!< Running status code.
+            bool    CA_controlled = false;   //!< Controlled by a CA_system.
 
             //!
             //! Constructor.
@@ -152,9 +152,9 @@ namespace ts {
         typedef EntryWithDescriptorsMap<uint16_t, ServiceEntry> ServiceMap;
 
         // SDT public members:
-        uint16_t   ts_id;     //!< Transport stream_id.
-        uint16_t   onetw_id;  //!< Original network id.
-        ServiceMap services;  //!< Map of services: key=service_id, value=service_description.
+        uint16_t   ts_id = 0;     //!< Transport stream_id.
+        uint16_t   onetw_id = 0;  //!< Original network id.
+        ServiceMap services;      //!< Map of services: key=service_id, value=service_description.
 
         //!
         //! Default constructor.

@@ -30,22 +30,12 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            // Public members
-            uint16_t service_id;   //!< Service id.
-            uint8_t  service_type; //!< Service type.
-            uint16_t channel_id;   //!< Channel id
-            uint16_t lcn;          //!< Logical channel number.
-            uint16_t sky_id;       //!< Sky channel number.
-
-            //!
-            //! Constructor
-            //! @param [in] id_ Service id.
-            //! @param [in] type_ Service type.
-            //! @param [in] cid_ Channel id.
-            //! @param [in] lcn_ Logical channel number.
-            //! @param [in] skyid_ Sky id.
-            //!
-            Entry(uint16_t id_ = 0, uint8_t type_ = 0, uint16_t cid_ = 0, uint16_t lcn_ = 0, uint16_t skyid_ = 0);
+            Entry() = default;         //!< Constructor.
+            uint16_t service_id = 0;   //!< Service id.
+            uint8_t  service_type = 0; //!< Service type.
+            uint16_t channel_id = 0;   //!< Channel id
+            uint16_t lcn = 0;          //!< Logical channel number.
+            uint16_t sky_id = 0;       //!< Sky channel number.
         };
 
         //!
@@ -59,8 +49,8 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 28;
 
         // SkyLogicalChannelNumberDescriptor public members:
-        EntryList entries;   //!< List of service entries.
-        uint16_t  region_id; //!< Region id (maybe in the UK?, 0xFFFF for all country).
+        EntryList entries {};    //!< List of service entries.
+        uint16_t  region_id = 0; //!< Region id (maybe in the UK?, 0xFFFF for all country).
 
         //!
         //! Default constructor.

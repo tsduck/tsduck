@@ -28,14 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::HEVCHierarchyExtensionDescriptor::HEVCHierarchyExtensionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    extension_dimension_bits(0),
-    hierarchy_layer_index(0),
-    temporal_id(0),
-    nuh_layer_id(0),
-    tref_present(false),
-    hierarchy_channel(0),
-    hierarchy_ext_embedded_layer_index()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

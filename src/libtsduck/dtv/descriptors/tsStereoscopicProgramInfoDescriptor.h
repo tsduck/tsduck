@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // StereoscopicProgramInfoDescriptor public members:
-        uint8_t stereoscopic_service_type;  //!< 3 bits, stereoscopic service type
+        uint8_t stereoscopic_service_type = 0;  //!< 3 bits, stereoscopic service type
 
         //!
         //! Default constructor.

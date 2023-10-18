@@ -13,8 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
-#include "tsIPv4Address.h"
-#include "tsIPUtils.h"
+#include "tsByteBlock.h"
 
 namespace ts {
     //!
@@ -31,8 +30,8 @@ namespace ts {
     {
     public:
         // TargetSmartcardDescriptor public members:
-        uint32_t  super_CA_system_id;  //!< Super CAS Id, as in DVB SimulCrypt.
-        ByteBlock private_data;        //!< Private data bytes.
+        uint32_t  super_CA_system_id = 0;  //!< Super CAS Id, as in DVB SimulCrypt.
+        ByteBlock private_data {};         //!< Private data bytes.
 
         //!
         //! Default constructor.

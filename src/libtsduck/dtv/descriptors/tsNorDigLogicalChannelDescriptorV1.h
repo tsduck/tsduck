@@ -32,9 +32,9 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t service_id;  //!< Service id.
-            bool     visible;     //!< Service is visible.
-            uint16_t lcn;         //!< Logical channel number, 14 bits.
+            uint16_t service_id = 0;   //!< Service id.
+            bool     visible = false;  //!< Service is visible.
+            uint16_t lcn = 0;          //!< Logical channel number, 14 bits.
 
             //!
             //! Constructor
@@ -56,7 +56,7 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 63;
 
         // NorDigLogicalChannelDescriptorV1 public members:
-        EntryList entries;  //!< List of service entries.
+        EntryList entries {};  //!< List of service entries.
 
         //!
         //! Default constructor.

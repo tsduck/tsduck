@@ -27,14 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::TimeSliceFECIdentifierDescriptor::TimeSliceFECIdentifierDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    time_slicing(false),
-    mpe_fec(0),
-    frame_size(0),
-    max_burst_duration(0),
-    max_average_rate(0),
-    time_slice_fec_id(0),
-    id_selector_bytes()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

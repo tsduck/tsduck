@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // ProtectionMessageDescriptor public members:
-        ByteBlock component_tags;   //!< List of component tags.
+        ByteBlock component_tags {};   //!< List of component tags.
 
         //!
         //! Default constructor.

@@ -27,13 +27,14 @@ namespace ts {
         //!
         //! Range entry.
         //!
-        struct TSDUCKDLL Range
+        class TSDUCKDLL Range
         {
-            Range();                             //!< Default constructor.
-            uint8_t   range_type;                //!< Range type.
-            int16_t   video_max_disparity_hint;  //!< 12 bits, required when range_type == 0.
-            int16_t   video_min_disparity_hint;  //!< 12 bits, required when range_type == 0.
-            ByteBlock range_selector;            //!< When range_type > 1.
+        public:
+            Range() = default;                       //!< Default constructor.
+            uint8_t   range_type = 0;                //!< Range type.
+            int16_t   video_max_disparity_hint = 0;  //!< 12 bits, required when range_type == 0.
+            int16_t   video_min_disparity_hint = 0;  //!< 12 bits, required when range_type == 0.
+            ByteBlock range_selector {};             //!< When range_type > 1.
         };
 
         //!
@@ -42,7 +43,7 @@ namespace ts {
         typedef std::list<Range> RangeList;
 
         // VideoDepthRangeDescriptor public members:
-        RangeList ranges;  //!< The list of ranges.
+        RangeList ranges {};  //!< The list of ranges.
 
         //!
         //! Default constructor.

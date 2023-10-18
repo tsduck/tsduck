@@ -28,12 +28,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::STT::STT() :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, 0, true),
-    protocol_version(0),
-    system_time(0),
-    GPS_UTC_offset(0),
-    DS_status(false),
-    DS_day_of_month(0),
-    DS_hour(0),
     descs(this)
 {
 }

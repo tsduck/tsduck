@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // NPTEndpointDescriptor public members:
-        uint64_t start_NPT;   //!< 33 bits, start Normal Play Time (NPT).
-        uint64_t stop_NPT;    //!< 33 bits, stop Normal Play Time (NPT).
+        uint64_t start_NPT = 0;   //!< 33 bits, start Normal Play Time (NPT).
+        uint64_t stop_NPT = 0;    //!< 33 bits, stop Normal Play Time (NPT).
 
         //!
         //! Default constructor.

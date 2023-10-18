@@ -29,8 +29,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            UString country_code;  //!< ISO-3166 country code, 3 characters.
-            uint8_t rating;        //!< Parental rating.
+            UString country_code {};  //!< ISO-3166 country code, 3 characters.
+            uint8_t rating = 0;       //!< Parental rating.
 
             //!
             //! Constructor.
@@ -58,7 +58,7 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 63;
 
         // Public members
-        EntryList entries;  //!< The list of item entries.
+        EntryList entries {};  //!< The list of item entries.
 
         //!
         //! Default constructor.

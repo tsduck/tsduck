@@ -26,22 +26,8 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::VBIDataDescriptor::Field::Field(bool parity, uint8_t offset) :
-    field_parity(parity),
-    line_offset(offset)
-{
-}
-
-ts::VBIDataDescriptor::Service::Service(uint8_t id) :
-    data_service_id(id),
-    fields(),
-    reserved()
-{
-}
-
 ts::VBIDataDescriptor::VBIDataDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    services()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

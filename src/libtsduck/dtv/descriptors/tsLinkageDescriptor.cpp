@@ -26,14 +26,6 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 // Constructors for substructures
 //----------------------------------------------------------------------------
 
-ts::LinkageDescriptor::MobileHandoverInfo::MobileHandoverInfo() :
-    handover_type(0),
-    origin_type(0),
-    network_id(0),
-    initial_service_id(0)
-{
-}
-
 void ts::LinkageDescriptor::MobileHandoverInfo::clear()
 {
     handover_type = 0;
@@ -42,31 +34,11 @@ void ts::LinkageDescriptor::MobileHandoverInfo::clear()
     initial_service_id = 0;
 }
 
-ts::LinkageDescriptor::EventLinkageInfo::EventLinkageInfo() :
-    target_event_id(0),
-    target_listed(false),
-    event_simulcast(false)
-{
-}
-
 void ts::LinkageDescriptor::EventLinkageInfo::clear()
 {
     target_event_id = 0;
     target_listed = false;
     event_simulcast = false;
-}
-
-ts::LinkageDescriptor::ExtendedEventLinkageInfo::ExtendedEventLinkageInfo() :
-    target_event_id(0),
-    target_listed(false),
-    event_simulcast(false),
-    link_type(0),
-    target_id_type(0),
-    user_defined_id(0),
-    target_transport_stream_id(0),
-    target_original_network_id(),
-    target_service_id()
-{
 }
 
 void ts::LinkageDescriptor::ExtendedEventLinkageInfo::clear()
@@ -92,11 +64,7 @@ ts::LinkageDescriptor::LinkageDescriptor(uint16_t ts, uint16_t onetw, uint16_t s
     ts_id(ts),
     onetw_id(onetw),
     service_id(service),
-    linkage_type(ltype),
-    mobile_handover_info(),
-    event_linkage_info(),
-    extended_event_linkage_info(),
-    private_data()
+    linkage_type(ltype)
 {
 }
 

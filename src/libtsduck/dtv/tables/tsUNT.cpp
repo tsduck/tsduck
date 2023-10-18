@@ -26,16 +26,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 // Description of a compatibility descriptor.
 //----------------------------------------------------------------------------
 
-ts::UNT::CompatibilityDescriptor::CompatibilityDescriptor() :
-    descriptorType(0xFF),  // user-defined
-    specifierType(0x01),   // IEEE OUI
-    specifierData(0),
-    model(0),
-    version(0),
-    subDescriptors(nullptr)  // not real descriptors
-{
-}
-
 ts::UNT::CompatibilityDescriptor::CompatibilityDescriptor(const CompatibilityDescriptor& other) :
     descriptorType(other.descriptorType),
     specifierType(other.specifierType),
@@ -71,8 +61,6 @@ ts::UNT::Platform::Platform(const AbstractTable* table, const Platform& other) :
 //----------------------------------------------------------------------------
 
 ts::UNT::Devices::Devices(const AbstractTable* table) :
-    EntryBase(),
-    compatibilityDescriptor(),
     platforms(table)
 {
 }
@@ -91,9 +79,6 @@ ts::UNT::Devices::Devices(const AbstractTable* table, const Devices& other) :
 
 ts::UNT::UNT(uint8_t version_, bool is_current_) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
-    action_type(0),
-    OUI(0),
-    processing_order(0),
     descs(this),
     devices(this)
 {

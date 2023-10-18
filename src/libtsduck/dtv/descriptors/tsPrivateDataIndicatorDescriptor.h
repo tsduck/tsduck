@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // Public members:
-        uint32_t private_data_indicator;  //!< Private data indicator.
+        uint32_t private_data_indicator = 0;  //!< Private data indicator.
 
         //!
         //! Default constructor.

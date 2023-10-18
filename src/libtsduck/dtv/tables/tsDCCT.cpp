@@ -33,9 +33,7 @@ const ts::Enumeration ts::DCCT::DCCContextNames({
 
 ts::DCCT::DCCT(uint8_t vers, uint8_t id) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, true), // DCCT is always "current"
-    dcc_subtype(0),
     dcc_id(id),
-    protocol_version(0),
     tests(this),
     descs(this)
 {
@@ -84,7 +82,7 @@ ts::DCCT::Term::Term(const AbstractTable* table, uint8_t type, uint64_t id) :
 
 uint16_t ts::DCCT::tableIdExtension() const
 {
-    return  uint16_t((uint16_t(dcc_subtype) << 8) | dcc_id);
+    return uint16_t((uint16_t(dcc_subtype) << 8) | dcc_id);
 }
 
 

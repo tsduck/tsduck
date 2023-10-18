@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    ranges()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,12 +41,6 @@ ts::TargetMACAddressRangeDescriptor::TargetMACAddressRangeDescriptor(DuckContext
     TargetMACAddressRangeDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::TargetMACAddressRangeDescriptor::Range::Range(const MACAddress& addr1, const MACAddress& addr2) :
-    MAC_addr_low(addr1),
-    MAC_addr_high(addr2)
-{
 }
 
 

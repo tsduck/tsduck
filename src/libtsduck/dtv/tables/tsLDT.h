@@ -48,10 +48,10 @@ namespace ts {
         typedef EntryWithDescriptorsMap<uint16_t, Description> DescriptionMap;
 
         // LDT public members:
-        uint16_t       original_service_id;       //!< Original service id.
-        uint16_t       transport_stream_id;       //!< Transport stream id.
-        uint16_t       original_network_id;       //!< Original network id.
-        DescriptionMap descriptions;              //!< List of descriptions.
+        uint16_t       original_service_id = 0;  //!< Original service id.
+        uint16_t       transport_stream_id = 0;  //!< Transport stream id.
+        uint16_t       original_network_id = 0;  //!< Original network id.
+        DescriptionMap descriptions;             //!< List of descriptions.
 
         //!
         //! Default constructor.

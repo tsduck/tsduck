@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // MultiplexBufferUtilizationDescriptor public members:
-        Variable<uint16_t> LTW_offset_lower_bound;  //!< 15 bits, in units of (27 MHz/300) clock periods
-        Variable<uint16_t> LTW_offset_upper_bound;  //!< 15 bits, in units of (27 MHz/300) clock periods
+        Variable<uint16_t> LTW_offset_lower_bound {};  //!< 15 bits, in units of (27 MHz/300) clock periods
+        Variable<uint16_t> LTW_offset_upper_bound {};  //!< 15 bits, in units of (27 MHz/300) clock periods
 
         //!
         //! Default constructor.

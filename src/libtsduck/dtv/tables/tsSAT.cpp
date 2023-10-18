@@ -22,16 +22,13 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 typedef ts::FloatingPoint<double> Double;
 
+
 //----------------------------------------------------------------------------
 // Constructors and assignment.
 //----------------------------------------------------------------------------
 
 ts::SAT::SAT(uint8_t vers, bool cur, uint16_t satellite_table_id_, uint16_t table_count_) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur),
-    satellite_position_v2_info(),
-    cell_fragment_info(),
-    time_association_fragment_info(),
-    beam_hopping_time_plan_info(),
     satellite_table_id(satellite_table_id_),
     table_count(table_count_)
 {
@@ -56,7 +53,7 @@ ts::SAT::SAT(const SAT& other) :
 
 void ts::SAT::clearContent()
 {
-   // satellite_table_id = 0;
+    // satellite_table_id = 0;
     satellite_position_v2_info.clear();
     cell_fragment_info.clear();
     time_association_fragment_info.clear();
@@ -110,12 +107,6 @@ size_t ts::SAT::maxPayloadSize() const
 // Geostationary satellite
 //----------------------------------------------------------------------------
 
-ts::SAT::satellite_position_v2_info_type::geostationary_position_type::geostationary_position_type() :
-    orbital_position(0),
-    west_east_flag(0)
-{
-}
-
 void ts::SAT::satellite_position_v2_info_type::geostationary_position_type::serialize(PSIBuffer& buf) const
 {
     buf.putBCD(orbital_position, 4);
@@ -163,22 +154,6 @@ bool ts::SAT::satellite_position_v2_info_type::geostationary_position_type::from
 //----------------------------------------------------------------------------
 // Earth orbiting satellite
 //----------------------------------------------------------------------------
-
-ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::earth_orbiting_satallite_type() :
-    epoch_year(0),
-    day_of_the_year(0),
-    day_fraction(0),
-    mean_motion_first_derivative(0),
-    mean_motion_second_derivative(0),
-    drag_term(0),
-    inclination(0),
-    right_ascension_of_the_ascending_node(0),
-    eccentricity(0),
-    argument_of_perigree(0),
-    mean_anomaly(0),
-    mean_motion(0)
-{
-}
 
 void ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::serialize(PSIBuffer& buf) const
 {
@@ -248,14 +223,6 @@ bool ts::SAT::satellite_position_v2_info_type::earth_orbiting_satallite_type::fr
 //----------------------------------------------------------------------------
 // Satellite position v2
 //----------------------------------------------------------------------------
-
-ts::SAT::satellite_position_v2_info_type::satellite_position_v2_info_type() :
-    satellite_id(0),
-    position_system(0),
-    geostationaryPosition(),
-    earthOrbiting()
-{
-}
 
 void ts::SAT::satellite_position_v2_info_type::serialize(PSIBuffer& buf) const
 {
@@ -339,12 +306,6 @@ bool ts::SAT::satellite_position_v2_info_type::fromXML(const xml::Element* eleme
 // Network Clock Reference
 //----------------------------------------------------------------------------
 
-ts::SAT::NCR_type::NCR_type() :
-    base(0),
-    ext(0)
-{
-}
-
 void ts::SAT::NCR_type::clear()
 {
     base = 0;
@@ -395,12 +356,6 @@ bool ts::SAT::NCR_type::fromXML(const xml::Element* element)
 // New Delivery System
 //----------------------------------------------------------------------------
 
-ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::new_delivery_system_id_type() :
-    new_delivery_system_id(0),
-    time_of_application()
-{
-}
-
 void ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::serialize(PSIBuffer& buf) const
 {
     buf.putUInt32(new_delivery_system_id);
@@ -428,12 +383,6 @@ bool ts::SAT::cell_fragment_info_type::new_delivery_system_id_type::fromXML(cons
 //----------------------------------------------------------------------------
 // Obsolescent Delivery System
 //----------------------------------------------------------------------------
-
-ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::obsolescent_delivery_system_id_type() :
-    obsolescent_delivery_system_id(0),
-    time_of_obsolescence()
-{
-}
 
 void ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::serialize(PSIBuffer& buf) const
 {
@@ -463,19 +412,6 @@ bool ts::SAT::cell_fragment_info_type::obsolescent_delivery_system_id_type::from
 //----------------------------------------------------------------------------
 // Cell Fragment
 //----------------------------------------------------------------------------
-
-ts::SAT::cell_fragment_info_type::cell_fragment_info_type() :
-    cell_fragment_id(0),
-    first_occurence(false),
-    last_occurence(false),
-    center_latitude(),
-    center_longitude(),
-    max_distance(),
-    delivery_system_ids(),
-    new_delivery_system_ids(),
-    obsolescent_delivery_system_ids()
-{
-}
 
 void ts::SAT::cell_fragment_info_type::serialize(PSIBuffer& buf) const
 {
@@ -614,18 +550,6 @@ bool ts::SAT::cell_fragment_info_type::fromXML(const xml::Element* element)
 // Time Association
 //----------------------------------------------------------------------------
 
-ts::SAT::time_association_info_type::time_association_info_type() :
-    association_type(0),
-    ncr(),
-    association_timestamp_seconds(0),
-    association_timestamp_nanoseconds(0),
-    leap59(false),
-    leap61(false),
-    past_leap59(false),
-    past_leap61(false)
-{
-}
-
 void ts::SAT::time_association_info_type::clear()
 {
     association_type = 0;
@@ -736,21 +660,6 @@ bool ts::SAT::beam_hopping_time_plan_info_type::slot::fromXML(const xml::Element
 //----------------------------------------------------------------------------
 // Beam Hopping Time Plan
 //----------------------------------------------------------------------------
-
-ts::SAT::beam_hopping_time_plan_info_type::beam_hopping_time_plan_info_type() :
-    beamhopping_time_plan_id(0),
-    time_of_application(),
-    cycle_duration(),
-    dwell_duration(),
-    on_time(),
-    current_slot(),
-    slot_transmission_on(),
-    grid_size(),
-    revisit_duration(),
-    sleep_time(),
-    sleep_duration()
-{
-}
 
 uint16_t ts::SAT::beam_hopping_time_plan_info_type::plan_length(void) const
 {

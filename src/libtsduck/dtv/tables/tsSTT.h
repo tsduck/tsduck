@@ -38,13 +38,13 @@ namespace ts {
     {
     public:
         // STT public members:
-        uint8_t        protocol_version;  //!< ATSC protocol version.
-        uint32_t       system_time;       //!< Number of GPS seconds since 00:00:00 UTC, January 6th, 1980.
-        uint8_t        GPS_UTC_offset;    //!< Current offset in seconds between GPS and UTC (UTC = GPS - GPS_UTC_offset)
-        bool           DS_status;         //!< Daylight Saving time is on.
-        uint8_t        DS_day_of_month;   //!< Day of month (1-31) for DS transition, zero if none planned in the next 28 days.
-        uint8_t        DS_hour;           //!< Hour of day for next DS transition, zero if none planned.
-        DescriptorList descs;             //!< Descriptor list.
+        uint8_t        protocol_version = 0;  //!< ATSC protocol version.
+        uint32_t       system_time = 0;       //!< Number of GPS seconds since 00:00:00 UTC, January 6th, 1980.
+        uint8_t        GPS_UTC_offset = 0;    //!< Current offset in seconds between GPS and UTC (UTC = GPS - GPS_UTC_offset)
+        bool           DS_status = false;     //!< Daylight Saving time is on.
+        uint8_t        DS_day_of_month = 0;   //!< Day of month (1-31) for DS transition, zero if none planned in the next 28 days.
+        uint8_t        DS_hour = 0;           //!< Hour of day for next DS transition, zero if none planned.
+        DescriptorList descs;                 //!< Descriptor list.
 
         //!
         //! Default constructor.

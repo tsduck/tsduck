@@ -30,18 +30,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME),
-    receiver_profiles(0),
-    S2X_mode(0),
-    TS_GS_S2X_mode(0),
-    scrambling_sequence_selector(false),
-    scrambling_sequence_index(0),
-    timeslice_number(0),
-    master_channel(),
-    num_channel_bonds_minus_one(false),
-    channel_bond_0(),
-    channel_bond_1(),
-    reserved_future_use()
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME)
 {
 }
 
@@ -64,18 +53,6 @@ ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor(D
     S2XSatelliteDeliverySystemDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::S2XSatelliteDeliverySystemDescriptor::Channel::Channel() :
-    frequency(0),
-    orbital_position(0),
-    east_not_west(false),
-    polarization(0),
-    roll_off(0),
-    symbol_rate(0),
-    multiple_input_stream_flag(false),
-    input_stream_identifier(0)
-{
 }
 
 void ts::S2XSatelliteDeliverySystemDescriptor::Channel::clear()

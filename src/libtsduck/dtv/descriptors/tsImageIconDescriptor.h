@@ -25,17 +25,17 @@ namespace ts {
     {
     public:
         // ImageIconDescriptor public members:
-        uint8_t   descriptor_number;        //!< 4 bits, index of this descriptor for this icon.
-        uint8_t   last_descriptor_number;   //!< 4 bits, index of last descriptor for this icon.
-        uint8_t   icon_id;                  //!< 3 bits, icon id in this descriptor loop.
-        uint8_t   icon_transport_mode;      //!< 2 bits, when descriptor_number == 0.
-        bool      has_position;             //!< A screen position is specified, when descriptor_number == 0.
-        uint8_t   coordinate_system;        //!< 3 bits, when descriptor_number == 0 and has_position == true.
-        uint16_t  icon_horizontal_origin;   //!< 12 bits, when descriptor_number == 0 and has_position == true.
-        uint16_t  icon_vertical_origin;     //!< 12 bits, when descriptor_number == 0 and has_position == true.
-        UString   icon_type;                //!< Icon MIME type, when descriptor_number == 0.
-        UString   url;                      //!< Icon URL, when descriptor_number == 0 and icon_transport_mode == 1.
-        ByteBlock icon_data;                //!< Icon data bytes, when descriptor_number > 0 or icon_transport_mode == 0.
+        uint8_t   descriptor_number = 0;        //!< 4 bits, index of this descriptor for this icon.
+        uint8_t   last_descriptor_number = 0;   //!< 4 bits, index of last descriptor for this icon.
+        uint8_t   icon_id = 0;                  //!< 3 bits, icon id in this descriptor loop.
+        uint8_t   icon_transport_mode = 0;      //!< 2 bits, when descriptor_number == 0.
+        bool      has_position = false;         //!< A screen position is specified, when descriptor_number == 0.
+        uint8_t   coordinate_system = 0;        //!< 3 bits, when descriptor_number == 0 and has_position == true.
+        uint16_t  icon_horizontal_origin = 0;   //!< 12 bits, when descriptor_number == 0 and has_position == true.
+        uint16_t  icon_vertical_origin = 0;     //!< 12 bits, when descriptor_number == 0 and has_position == true.
+        UString   icon_type {};                 //!< Icon MIME type, when descriptor_number == 0.
+        UString   url {};                       //!< Icon URL, when descriptor_number == 0 and icon_transport_mode == 1.
+        ByteBlock icon_data {};                 //!< Icon data bytes, when descriptor_number > 0 or icon_transport_mode == 0.
 
         //!
         //! Default constructor.

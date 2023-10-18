@@ -28,15 +28,15 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t        protocol_version;      //!< SCTE 35 protocol version, should be zero.
-        uint64_t       pts_adjustment;        //!< 33 bits, zero when creating a table.
-        uint16_t       tier;                  //!< 12 bits, authorization tier.
-        uint8_t        splice_command_type;   //!< Embedded splice command.
-        SpliceSchedule splice_schedule;       //!< SpliceSchedule command, valid when splice_command_type == SPLICE_SCHEDULE.
-        SpliceInsert   splice_insert;         //!< SpliceInsert command, valid when splice_command_type == SPLICE_INSERT.
-        SpliceTime     time_signal;           //!< TimeSignal command, valid when splice_command_type == SPLICE_TIME_SIGNAL.
-        SplicePrivateCommand private_command; //!< Private command, valid when splice_command_type == SPLICE_PRIVATE_COMMAND.
-        DescriptorList descs;                 //!< Descriptor list.
+        uint8_t        protocol_version = 0;      //!< SCTE 35 protocol version, should be zero.
+        uint64_t       pts_adjustment = 0;        //!< 33 bits, zero when creating a table.
+        uint16_t       tier = 0x0FFF;             //!< 12 bits, authorization tier.
+        uint8_t        splice_command_type = SPLICE_NULL;  //!< Embedded splice command.
+        SpliceSchedule splice_schedule {};        //!< SpliceSchedule command, valid when splice_command_type == SPLICE_SCHEDULE.
+        SpliceInsert   splice_insert {};          //!< SpliceInsert command, valid when splice_command_type == SPLICE_INSERT.
+        SpliceTime     time_signal {};            //!< TimeSignal command, valid when splice_command_type == SPLICE_TIME_SIGNAL.
+        SplicePrivateCommand private_command {};  //!< Private command, valid when splice_command_type == SPLICE_PRIVATE_COMMAND.
+        DescriptorList descs;                     //!< Descriptor list.
 
         //!
         //! Default constructor.

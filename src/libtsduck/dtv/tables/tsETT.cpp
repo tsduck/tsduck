@@ -27,11 +27,7 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 //----------------------------------------------------------------------------
 
 ts::ETT::ETT(uint8_t version_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, true), // ETT is always "current"
-    ETT_table_id_extension(0),
-    protocol_version(0),
-    ETM_id(0),
-    extended_text_message()
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, true) // ETT is always "current"
 {
 }
 

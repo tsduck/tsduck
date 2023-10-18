@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // Public members:
-        uint32_t maximum_bitrate;  //!< 22 bits, maximum bitrate in units of 50 bytes/second.
+        uint32_t maximum_bitrate = 0;  //!< 22 bits, maximum bitrate in units of 50 bytes/second.
 
         //!
         //! Unit of the @a maximum_bitrate field in bits/second.

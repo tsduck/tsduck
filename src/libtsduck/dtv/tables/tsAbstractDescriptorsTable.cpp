@@ -35,8 +35,7 @@ ts::AbstractDescriptorsTable::AbstractDescriptorsTable(const ts::AbstractDescrip
 
 ts::AbstractDescriptorsTable::AbstractDescriptorsTable(DuckContext& duck, TID tid, const UChar* xml_name, Standards standards, const BinaryTable& table) :
     AbstractLongTable(tid, xml_name, standards, 0, true),
-    descs(this),
-    _tid_ext(0xFFFF)
+    descs(this)
 {
     deserialize(duck, table);
 }

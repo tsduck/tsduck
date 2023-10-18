@@ -28,7 +28,7 @@ namespace ts {
     {
     public:
         // SimpleApplicationLocationDescriptor public members:
-        UString initial_path;  //!< Initial URL path.
+        UString initial_path {};  //!< Initial URL path.
 
         //!
         //! Default constructor.

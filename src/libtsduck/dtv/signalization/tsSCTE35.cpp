@@ -55,14 +55,3 @@ void ts::SpliceTime::serialize(ByteBlock& data) const
         data.appendUInt8(0x7F);
     }
 }
-
-
-//----------------------------------------------------------------------------
-// SplicePrivateCommand methods
-//----------------------------------------------------------------------------
-
-ts::SplicePrivateCommand::SplicePrivateCommand(uint32_t id) :
-    identifier(id),
-    private_bytes()
-{
-}

@@ -27,17 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::MVCExtensionDescriptor::MVCExtensionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    average_bitrate(0),
-    maximum_bitrate(0),
-    view_association_not_present(false),
-    base_view_is_left_eyeview(false),
-    view_order_index_min(0),
-    view_order_index_max(0),
-    temporal_id_start(0),
-    temporal_id_end(0),
-    no_sei_nal_unit_present(false),
-    no_prefix_nal_unit_present(false)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

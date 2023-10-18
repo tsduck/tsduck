@@ -28,10 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::ReferenceDescriptor::ReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    information_provider_id(0),
-    event_relation_id(0),
-    references()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -46,13 +43,6 @@ ts::ReferenceDescriptor::ReferenceDescriptor(DuckContext& duck, const Descriptor
     ReferenceDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::ReferenceDescriptor::Reference::Reference() :
-    reference_node_id(0),
-    reference_number(0),
-    last_reference_number(0)
-{
 }
 
 

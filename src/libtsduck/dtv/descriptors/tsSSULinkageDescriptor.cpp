@@ -30,9 +30,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ts_id(ts),
     onetw_id(onetw),
-    service_id(service),
-    entries(),
-    private_data()
+    service_id(service)
 {
 }
 
@@ -40,9 +38,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(uint16_t ts, uint16_t onetw, uint
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     ts_id(ts),
     onetw_id(onetw),
-    service_id(service),
-    entries(),
-    private_data()
+    service_id(service)
 {
     entries.push_back(Entry(oui));
 }
@@ -77,8 +73,7 @@ ts::SSULinkageDescriptor::SSULinkageDescriptor(DuckContext& duck, const ts::Link
 }
 
 ts::SSULinkageDescriptor::Entry::Entry(uint32_t oui_) :
-    oui(oui_),
-    selector()
+    oui(oui_)
 {
 }
 

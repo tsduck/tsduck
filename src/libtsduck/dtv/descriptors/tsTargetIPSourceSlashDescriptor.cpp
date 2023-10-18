@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::TargetIPSourceSlashDescriptor::TargetIPSourceSlashDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    addresses()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,14 +41,6 @@ ts::TargetIPSourceSlashDescriptor::TargetIPSourceSlashDescriptor(DuckContext& du
 void ts::TargetIPSourceSlashDescriptor::clearContent()
 {
     addresses.clear();
-}
-
-ts::TargetIPSourceSlashDescriptor::Address::Address(const IPv4Address& addr1, uint8_t mask1, const IPv4Address& addr2, uint8_t mask2) :
-    IPv4_source_addr(addr1),
-    IPv4_source_slash_mask(mask1),
-    IPv4_dest_addr(addr2),
-    IPv4_dest_slash_mask(mask2)
-{
 }
 
 

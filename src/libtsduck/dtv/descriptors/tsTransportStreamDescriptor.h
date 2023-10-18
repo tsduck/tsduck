@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // TransportStreamDescriptor public members:
-        UString compliance; //!< Standard compliance ("DVB" for DVB systems).
+        UString compliance {}; //!< Standard compliance ("DVB" for DVB systems).
 
         //!
         //! Default constructor.

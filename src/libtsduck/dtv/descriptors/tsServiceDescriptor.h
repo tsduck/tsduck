@@ -25,9 +25,9 @@ namespace ts {
     {
     public:
         // ServiceDescriptor public members:
-        uint8_t service_type;   //!< Service type.
-        UString provider_name;  //!< Provider name.
-        UString service_name;   //!< Service name.
+        uint8_t service_type = 0;  //!< Service type.
+        UString provider_name {};  //!< Provider name.
+        UString service_name {};   //!< Service name.
 
         //!
         //! Default constructor.

@@ -37,7 +37,7 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Stream);
             TS_DEFAULT_ASSIGMENTS(Stream);
         public:
-            uint8_t stream_type;  //!< Stream type, one of ST_* (eg ts::ST_MPEG2_VIDEO).
+            uint8_t stream_type = 0;  //!< Stream type, one of ST_* (eg ts::ST_MPEG2_VIDEO).
 
             //!
             //! Constructor.

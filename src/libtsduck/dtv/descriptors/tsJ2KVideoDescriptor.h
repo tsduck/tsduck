@@ -26,17 +26,17 @@ namespace ts {
     {
     public:
         // Public members:
-        uint16_t  profile_and_level;    //!< Same as J2K concept.
-        uint32_t  horizontal_size;      //!< Same as J2K concept.
-        uint32_t  vertical_size;        //!< Same as J2K concept.
-        uint32_t  max_bit_rate;         //!< Same as J2K concept.
-        uint32_t  max_buffer_size;      //!< Same as J2K concept.
-        uint16_t  DEN_frame_rate;       //!< Same as J2K concept.
-        uint16_t  NUM_frame_rate;       //!< Same as J2K concept.
-        uint8_t   color_specification;  //!< Same as J2K concept.
-        bool      still_mode;           //!< Same as J2K concept.
-        bool      interlaced_video;     //!< Same as J2K concept.
-        ByteBlock private_data;         //!< Private data
+        uint16_t  profile_and_level = 0;     //!< Same as J2K concept.
+        uint32_t  horizontal_size = 0;       //!< Same as J2K concept.
+        uint32_t  vertical_size = 0;         //!< Same as J2K concept.
+        uint32_t  max_bit_rate = 0;          //!< Same as J2K concept.
+        uint32_t  max_buffer_size = 0;       //!< Same as J2K concept.
+        uint16_t  DEN_frame_rate = 0;        //!< Same as J2K concept.
+        uint16_t  NUM_frame_rate = 0;        //!< Same as J2K concept.
+        uint8_t   color_specification = 0;   //!< Same as J2K concept.
+        bool      still_mode = false;        //!< Same as J2K concept.
+        bool      interlaced_video = false;  //!< Same as J2K concept.
+        ByteBlock private_data {};           //!< Private data
 
         //!
         //! Default constructor.

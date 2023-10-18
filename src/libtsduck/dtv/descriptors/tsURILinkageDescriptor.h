@@ -25,10 +25,10 @@ namespace ts {
     {
     public:
         // URILinkageDescriptor public members:
-        uint8_t   uri_linkage_type;      //!< URI linkage type.
-        UString   uri;                   //!< The URI.
-        uint16_t  min_polling_interval;  //!< Valid when uri_linkage_type == 0x00 or 0x01.
-        ByteBlock private_data;          //!< Private data.
+        uint8_t   uri_linkage_type = 0;      //!< URI linkage type.
+        UString   uri {};                    //!< The URI.
+        uint16_t  min_polling_interval = 0;  //!< Valid when uri_linkage_type == 0x00 or 0x01.
+        ByteBlock private_data {};           //!< Private data.
 
         //!
         //! Default constructor.

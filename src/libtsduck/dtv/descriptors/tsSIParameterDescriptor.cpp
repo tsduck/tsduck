@@ -29,10 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::SIParameterDescriptor::SIParameterDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    parameter_version(0),
-    update_time(),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -47,12 +44,6 @@ ts::SIParameterDescriptor::SIParameterDescriptor(DuckContext& duck, const Descri
     SIParameterDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::SIParameterDescriptor::Entry::Entry() :
-    table_id(TID_NULL),
-    table_description()
-{
 }
 
 

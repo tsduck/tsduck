@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Public members:
-        Time utc_time;  //!< UTC time.
+        Time utc_time {};  //!< UTC time.
 
         //!
         //! Default constructor.

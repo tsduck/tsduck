@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // ShortNodeInformationDescriptor public members:
-        UString ISO_639_language_code;  //!< Language code.
-        UString node_name;              //!< Node name.
-        UString text;                   //!< Information text.
+        UString ISO_639_language_code {};  //!< Language code.
+        UString node_name {};              //!< Node name.
+        UString text {};                   //!< Information text.
 
         //!
         //! Default constructor.

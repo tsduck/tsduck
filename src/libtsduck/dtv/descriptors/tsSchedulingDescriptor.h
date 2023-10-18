@@ -30,17 +30,17 @@ namespace ts {
     {
     public:
         // SchedulingDescriptor public members:
-        Time      start_date_time;            //!< Start time.
-        Time      end_date_time;              //!< End time.
-        bool      final_availability;         //!< Last schedule.
-        bool      periodicity;                //!< Periodically available.
-        uint8_t   period_unit;                //!< 2 bits, unit of @a period.
-        uint8_t   duration_unit;              //!< 2 bits, unit of @a duration.
-        uint8_t   estimated_cycle_time_unit;  //!< 2 bits, unit of @a estimated.
-        uint8_t   period;                     //!< SSU repetition period.
-        uint8_t   duration;                   //!< SSU duration.
-        uint8_t   estimated_cycle_time;       //!< Duration of one cycle.
-        ByteBlock private_data;               //!< Private data
+        Time      start_date_time {};             //!< Start time.
+        Time      end_date_time {};               //!< End time.
+        bool      final_availability = false;     //!< Last schedule.
+        bool      periodicity = false;            //!< Periodically available.
+        uint8_t   period_unit = 0;                //!< 2 bits, unit of @a period.
+        uint8_t   duration_unit = 0;              //!< 2 bits, unit of @a duration.
+        uint8_t   estimated_cycle_time_unit = 0;  //!< 2 bits, unit of @a estimated.
+        uint8_t   period = 0;                     //!< SSU repetition period.
+        uint8_t   duration = 0;                   //!< SSU duration.
+        uint8_t   estimated_cycle_time = 0;       //!< Duration of one cycle.
+        ByteBlock private_data {};                //!< Private data
 
         //!
         //! Default constructor.

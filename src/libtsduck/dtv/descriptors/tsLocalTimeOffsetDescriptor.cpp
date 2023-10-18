@@ -29,17 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::LocalTimeOffsetDescriptor::LocalTimeOffsetDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    regions()
-{
-}
-
-ts::LocalTimeOffsetDescriptor::Region::Region() :
-    country(),
-    region_id(0),
-    time_offset(0),
-    next_change(),
-    next_time_offset(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

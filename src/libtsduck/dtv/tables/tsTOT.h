@@ -30,9 +30,9 @@ namespace ts {
         typedef LocalTimeOffsetDescriptor::RegionVector RegionVector;  //!< Alias from LocalTimeOffsetDescriptor.
 
         // Public members:
-        Time           utc_time; //!< UTC time.
-        RegionVector   regions;  //!< Vector of region descriptions.
-        DescriptorList descs;    //!< Descriptor list, except local_time_offset_descriptor.
+        Time           utc_time {}; //!< UTC time.
+        RegionVector   regions {};  //!< Vector of region descriptions.
+        DescriptorList descs;       //!< Descriptor list, except local_time_offset_descriptor.
 
         //!
         //! Default constructor.

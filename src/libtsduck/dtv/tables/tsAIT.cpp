@@ -51,8 +51,7 @@ ts::AIT::AIT(const AIT& other) :
 }
 
 ts::AIT::Application::Application(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    control_code(0)
+    EntryWithDescriptors(table)
 {
 }
 

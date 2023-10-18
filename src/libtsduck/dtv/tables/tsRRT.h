@@ -32,11 +32,11 @@ namespace ts {
         typedef std::list<RatingValue> RatingValueList;  //!< List of rating values.
 
         // RRT public members:
-        uint8_t            rating_region;       //!< Rating region id.
-        uint8_t            protocol_version;    //!< ATSC protocol version.
-        ATSCMultipleString rating_region_name;  //!< Rating region name.
-        DimensionList      dimensions;          //!< List of dimensions.
-        DescriptorList     descs;               //!< Program-level descriptor list.
+        uint8_t            rating_region = 0;     //!< Rating region id.
+        uint8_t            protocol_version = 0;   //!< ATSC protocol version.
+        ATSCMultipleString rating_region_name {};  //!< Rating region name.
+        DimensionList      dimensions {};          //!< List of dimensions.
+        DescriptorList     descs;                  //!< Program-level descriptor list.
 
         //!
         //! Description of a dimension.
@@ -44,10 +44,10 @@ namespace ts {
         class TSDUCKDLL Dimension
         {
         public:
-            Dimension();                         //!< Constructor.
-            bool               graduated_scale;  //!< Rating values represent a graduated scale: higher rating values represent increasing levels of rated content within the dimension.
-            ATSCMultipleString dimension_name;   //!< Dimension name.
-            RatingValueList    values;           //!< List of rating values in this dimension.
+            Dimension() = default;                       //!< Constructor.
+            bool               graduated_scale = false;  //!< Rating values represent a graduated scale: higher rating values represent increasing levels of rated content within the dimension.
+            ATSCMultipleString dimension_name {};        //!< Dimension name.
+            RatingValueList    values {};                //!< List of rating values in this dimension.
         };
 
         //!
@@ -56,9 +56,9 @@ namespace ts {
         class TSDUCKDLL RatingValue
         {
         public:
-            RatingValue();                            //!< Constructor.
-            ATSCMultipleString abbrev_rating_value;   //!< Abbreviated name for this rating value.
-            ATSCMultipleString rating_value;          //!< Full name for this rating value.
+            RatingValue() = default;                     //!< Constructor.
+            ATSCMultipleString abbrev_rating_value {};   //!< Abbreviated name for this rating value.
+            ATSCMultipleString rating_value {};          //!< Full name for this rating value.
         };
 
         //!

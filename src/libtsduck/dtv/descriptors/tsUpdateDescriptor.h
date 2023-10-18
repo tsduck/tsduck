@@ -29,10 +29,10 @@ namespace ts {
     {
     public:
         // UpdateDescriptor public members:
-        uint8_t   update_flag;      //!< 2 bits
-        uint8_t   update_method;    //!< 4 bits
-        uint8_t   update_priority;  //!< 2 bits
-        ByteBlock private_data;     //!< Private data
+        uint8_t   update_flag = 0;      //!< 2 bits
+        uint8_t   update_method = 0;    //!< 4 bits
+        uint8_t   update_priority = 0;  //!< 2 bits
+        ByteBlock private_data {};      //!< Private data
 
         //!
         //! Default constructor.

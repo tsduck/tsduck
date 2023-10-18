@@ -31,7 +31,7 @@ namespace ts {
     {
     public:
         // TargetSerialNumberDescriptor public members:
-        ByteBlock serial_data;  //!< Serial number bytes.
+        ByteBlock serial_data {};  //!< Serial number bytes.
 
         //!
         //! Default constructor.

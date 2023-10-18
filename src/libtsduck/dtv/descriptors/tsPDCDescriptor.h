@@ -24,10 +24,10 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t pil_month;    //!< Month number in programme_identification_label (PIL).
-        uint8_t pil_day;      //!< Day number in programme_identification_label (PIL).
-        uint8_t pil_hours;    //!< Hours in programme_identification_label (PIL).
-        uint8_t pil_minutes;  //!< Minutes in programme_identification_label (PIL).
+        uint8_t pil_month = 0;    //!< Month number in programme_identification_label (PIL).
+        uint8_t pil_day = 0;      //!< Day number in programme_identification_label (PIL).
+        uint8_t pil_hours = 0;    //!< Hours in programme_identification_label (PIL).
+        uint8_t pil_minutes = 0;  //!< Minutes in programme_identification_label (PIL).
 
         //!
         //! Default constructor.

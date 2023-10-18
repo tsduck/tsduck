@@ -28,9 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::SHDeliverySystemDescriptor::SHDeliverySystemDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    diversity_mode(0),
-    modulations()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -44,40 +42,6 @@ void ts::SHDeliverySystemDescriptor::clearContent()
 {
     diversity_mode = 0;
     modulations.clear();
-}
-
-ts::SHDeliverySystemDescriptor::Modulation::Modulation() :
-    is_ofdm(false),
-    tdm(),
-    ofdm(),
-    interleaver_presence(false),
-    short_interleaver(false),
-    common_multiplier(0),
-    nof_late_taps(0),
-    nof_slices(0),
-    slice_distance(0),
-    non_late_increments(0)
-{
-}
-
-ts::SHDeliverySystemDescriptor::TDM::TDM() :
-    polarization(0),
-    roll_off(0),
-    modulation_mode(0),
-    code_rate(0),
-    symbol_rate(0)
-{
-}
-
-ts::SHDeliverySystemDescriptor::OFDM::OFDM() :
-    bandwidth(0),
-    priority(0),
-    constellation_and_hierarchy(0),
-    code_rate(0),
-    guard_interval(0),
-    transmission_mode(0),
-    common_frequency(0)
-{
 }
 
 

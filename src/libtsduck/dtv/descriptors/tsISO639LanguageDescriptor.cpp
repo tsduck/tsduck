@@ -39,21 +39,18 @@ ts::ISO639LanguageDescriptor::Entry::Entry(const UString& code, uint8_t type) :
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    ISO639LanguageDescriptor()
 {
     deserialize(duck, desc);
 }
 
 ts::ISO639LanguageDescriptor::ISO639LanguageDescriptor(const UString& code, uint8_t type) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    ISO639LanguageDescriptor()
 {
     entries.push_back(Entry(code, type));
 }

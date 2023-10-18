@@ -29,9 +29,9 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t transport_stream_id;  //!< Transport stream id.
-            uint16_t original_network_id;  //!< Original network id.
-            uint16_t service_id;           //!< Service id.
+            uint16_t transport_stream_id = 0;  //!< Transport stream id.
+            uint16_t original_network_id = 0;  //!< Original network id.
+            uint16_t service_id = 0;           //!< Service id.
 
             //!
             //! Default constructor.
@@ -53,7 +53,7 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 42;
 
         // NVODReferenceDescriptor public members:
-        EntryList entries;  //!< The list of service entries.
+        EntryList entries {};  //!< The list of service entries.
 
         //!
         //! Default constructor.

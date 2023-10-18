@@ -36,12 +36,7 @@ namespace {
 //----------------------------------------------------------------------------
 
 ts::IPMACGenericStreamLocationDescriptor::IPMACGenericStreamLocationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    interactive_network_id(0),
-    modulation_system_type(0),
-    modulation_system_id(0),
-    PHY_stream_id(0),
-    selector_bytes()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

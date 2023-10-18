@@ -21,24 +21,7 @@
 //----------------------------------------------------------------------------
 
 ts::SpliceSchedule::SpliceSchedule() :
-    AbstractSignalization(MY_XML_NAME, MY_STD),
-    events()
-{
-}
-
-ts::SpliceSchedule::Event::Event() :
-    event_id(0),
-    canceled(false),
-    splice_out(false),
-    program_splice(false),
-    use_duration(false),
-    program_utc(0),
-    components_utc(),
-    duration_pts(0),
-    auto_return(false),
-    program_id(0),
-    avail_num(0),
-    avails_expected(0)
+    AbstractSignalization(MY_XML_NAME, MY_STD)
 {
 }
 

@@ -28,12 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::MPEGH3DAudioMultiStreamDescriptor::MPEGH3DAudioMultiStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    this_is_main_stream(false),
-    this_stream_id(0),
-    num_auxiliary_streams(0),
-    mae_groups(),
-    reserved()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -50,14 +45,6 @@ ts::MPEGH3DAudioMultiStreamDescriptor::MPEGH3DAudioMultiStreamDescriptor(DuckCon
     MPEGH3DAudioMultiStreamDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::MPEGH3DAudioMultiStreamDescriptor::Group::Group() :
-    mae_group_id(0),
-    is_in_main_stream(false),
-    is_in_ts(false),
-    auxiliary_stream_id(0)
-{
 }
 
 

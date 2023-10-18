@@ -25,13 +25,13 @@ namespace ts {
     {
     public:
         // Public members:
-        bool      time_slicing;        //!< See ETSI EN 301 192, 9.5.
-        uint8_t   mpe_fec;             //!< See ETSI EN 301 192, 9.5, 2 bits.
-        uint8_t   frame_size;          //!< See ETSI EN 301 192, 9.5, 3 bits.
-        uint8_t   max_burst_duration;  //!< See ETSI EN 301 192, 9.5.
-        uint8_t   max_average_rate;    //!< See ETSI EN 301 192, 9.5, 4 bits.
-        uint8_t   time_slice_fec_id;   //!< See ETSI EN 301 192, 9.5, 4 bits.
-        ByteBlock id_selector_bytes;   //!< See ETSI EN 301 192, 9.5.
+        bool      time_slicing = false;    //!< See ETSI EN 301 192, 9.5.
+        uint8_t   mpe_fec = 0;             //!< See ETSI EN 301 192, 9.5, 2 bits.
+        uint8_t   frame_size = 0;          //!< See ETSI EN 301 192, 9.5, 3 bits.
+        uint8_t   max_burst_duration = 0;  //!< See ETSI EN 301 192, 9.5.
+        uint8_t   max_average_rate = 0;    //!< See ETSI EN 301 192, 9.5, 4 bits.
+        uint8_t   time_slice_fec_id = 0;   //!< See ETSI EN 301 192, 9.5, 4 bits.
+        ByteBlock id_selector_bytes {};    //!< See ETSI EN 301 192, 9.5.
 
         //!
         //! Default constructor.

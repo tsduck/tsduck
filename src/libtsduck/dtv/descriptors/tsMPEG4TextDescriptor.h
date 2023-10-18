@@ -32,10 +32,9 @@ namespace ts {
         class TSDUCKDLL TextConfig_type
         {
         public:
-            uint8_t              textFormat;               //!< 8 bits, ISO/IEC 14496-17, clause 5.2
-            ByteBlock            formatSpecificTextConfig; //!< 16 bits, ISO/IEC 14496-17, clause 5.2
-
-            TextConfig_type();                      //!< Constructor
+            TextConfig_type() = default;           //!< Constructor
+            uint8_t   textFormat = 0;              //!< 8 bits, ISO/IEC 14496-17, clause 5.2
+            ByteBlock formatSpecificTextConfig {}; //!< 16 bits, ISO/IEC 14496-17, clause 5.2
         };
 
         //!
@@ -45,29 +44,26 @@ namespace ts {
         class TSDUCKDLL Sample_index_and_description_type
         {
         public:
-            uint8_t              sample_index;            //!< 8 bits, ISO/IEC 14496-17, clause 7.5
-            TextConfig_type      SampleDescription;       //!< ISO/IEC 14496-17, clause 7.5
-
-
-            Sample_index_and_description_type();    //!< Constructor
+            Sample_index_and_description_type() = default;  //!< Constructor
+            uint8_t         sample_index = 0;               //!< 8 bits, ISO/IEC 14496-17, clause 7.5
+            TextConfig_type SampleDescription {};           //!< ISO/IEC 14496-17, clause 7.5
         };
 
         // Public members:
-        uint8_t            textFormat;              //!< 8 bits, ISO/IEC 14496-17, clause 5.2
-        uint8_t            ThreeGPPBaseFormat;      //!< 8 bits, ISO/IEC 14496-17, clause 7.5
-        uint8_t            profileLevel;            //!< 8 bits, ISO/IEC 14496-17, clause 7.5
-        uint32_t           durationClock;           //!< 24 bits, ISO/IEC 14496-17, clause 7.5
-        uint8_t            sampleDescriptionFlags;  //!< 2 bits, ISO/IEC 14496-17, clause 7.5
-        uint8_t            layer;                   //!< 2 bits, ISO/IEC 14496-17, clause 7.5
-        uint16_t           text_track_width;        //!< 16 bits, ISO/IEC 14496-17, clause 7.5
-        uint16_t           text_track_height;       //!< 16 bits, ISO/IEC 14496-17, clause 7.5
-        ByteBlock          Compatible_3GPPFormat;   //!< list of 8 bit values, ISO/IEC 14496-17, clause 7.5
-        Variable<uint16_t> scene_width;             //!< 16 bits, ISO/IEC 14496-17, clause 7.5
-        Variable<uint16_t> scene_height;            //!< 16 bits, ISO/IEC 14496-17, clause 7.5
-        Variable<uint16_t> horizontal_scene_offset; //!< 16 bits, ISO/IEC 14496-17, clause 7.5
-        Variable<uint16_t> vertical_scene_offset;   //!< 16 bits, ISO/IEC 14496-17, clause 7.5
-
-        std::vector<Sample_index_and_description_type> Sample_index_and_description;   //!< list of sample indexes, ISO/IEC 14496-17, clause 7.5
+        uint8_t            textFormat = 0;              //!< 8 bits, ISO/IEC 14496-17, clause 5.2
+        uint8_t            ThreeGPPBaseFormat = 0;      //!< 8 bits, ISO/IEC 14496-17, clause 7.5
+        uint8_t            profileLevel = 0;            //!< 8 bits, ISO/IEC 14496-17, clause 7.5
+        uint32_t           durationClock = 0;           //!< 24 bits, ISO/IEC 14496-17, clause 7.5
+        uint8_t            sampleDescriptionFlags = 0;  //!< 2 bits, ISO/IEC 14496-17, clause 7.5
+        uint8_t            layer = 0;                   //!< 2 bits, ISO/IEC 14496-17, clause 7.5
+        uint16_t           text_track_width = 0;        //!< 16 bits, ISO/IEC 14496-17, clause 7.5
+        uint16_t           text_track_height = 0;       //!< 16 bits, ISO/IEC 14496-17, clause 7.5
+        ByteBlock          Compatible_3GPPFormat {};    //!< list of 8 bit values, ISO/IEC 14496-17, clause 7.5
+        Variable<uint16_t> scene_width {};              //!< 16 bits, ISO/IEC 14496-17, clause 7.5
+        Variable<uint16_t> scene_height {};             //!< 16 bits, ISO/IEC 14496-17, clause 7.5
+        Variable<uint16_t> horizontal_scene_offset {};  //!< 16 bits, ISO/IEC 14496-17, clause 7.5
+        Variable<uint16_t> vertical_scene_offset {};    //!< 16 bits, ISO/IEC 14496-17, clause 7.5
+        std::vector<Sample_index_and_description_type> Sample_index_and_description {}; //!< list of sample indexes, ISO/IEC 14496-17, clause 7.5
 
         //!
         //! Default constructor.

@@ -26,30 +26,8 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::MVCOperationPointDescriptor::Point::Point() :
-    applicable_temporal_id(0),
-    num_target_output_views(0),
-    ES_references()
-{
-}
-
-ts::MVCOperationPointDescriptor::Level::Level() :
-    level_idc(0),
-    operation_points()
-{
-}
-
 ts::MVCOperationPointDescriptor::MVCOperationPointDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profile_idc(0),
-    constraint_set0(false),
-    constraint_set1(false),
-    constraint_set2(false),
-    constraint_set3(false),
-    constraint_set4(false),
-    constraint_set5(false),
-    AVC_compatible_flags(0),
-    levels()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

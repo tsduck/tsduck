@@ -28,10 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::TargetRegionNameDescriptor::TargetRegionNameDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    country_code(),
-    ISO_639_language_code(),
-    regions()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -46,15 +43,6 @@ ts::TargetRegionNameDescriptor::TargetRegionNameDescriptor(DuckContext& duck, co
     TargetRegionNameDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::TargetRegionNameDescriptor::Region::Region() :
-    region_depth(0),
-    region_name(),
-    primary_region_code(0),
-    secondary_region_code(0),
-    tertiary_region_code(0)
-{
 }
 
 

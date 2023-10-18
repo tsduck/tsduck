@@ -29,13 +29,14 @@ namespace ts {
         //!
         //! Partition entry.
         //!
-        struct TSDUCKDLL Partition
+        class TSDUCKDLL Partition
         {
-            Partition();                          //!< Constructor.
-            uint8_t            partition_id;      //!< 3 bits
-            uint8_t            SAP_type_max;      //!< 3 bits
-            Variable<PID>      boundary_PID;      //!< Optional PID.
-            Variable<uint32_t> maximum_duration;  //!< Up to 29 bits, unit is tick (see ticks_per_second).
+        public:
+            Partition() = default;                   //!< Constructor.
+            uint8_t            partition_id = 0;     //!< 3 bits
+            uint8_t            SAP_type_max = 0;     //!< 3 bits
+            Variable<PID>      boundary_PID {};      //!< Optional PID.
+            Variable<uint32_t> maximum_duration {};  //!< Up to 29 bits, unit is tick (see ticks_per_second).
         };
 
         //!
@@ -49,8 +50,8 @@ namespace ts {
         static constexpr size_t MAX_PARTITION = 3;
 
         // VirtualSegmentationDescriptor public members:
-        Variable<uint32_t> ticks_per_second;  //!< 21 bits, optional number of ticks per second
-        PartitionList      partitions;        //!< List of partitions.
+        Variable<uint32_t> ticks_per_second {};  //!< 21 bits, optional number of ticks per second
+        PartitionList      partitions {};        //!< List of partitions.
 
         //!
         //! Default constructor.

@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // SystemClockDescriptor public members:
-        bool    external_clock_reference;  //!< Has an external clock reference.
-        uint8_t clock_accuracy_integer;    //!< 6 bits, fractional frequency accuracy of the system clock in parts per million.
-        uint8_t clock_accuracy_exponent;   //!< 3 bits, exponent for @a clock_accuracy_integer.
+        bool    external_clock_reference = false;  //!< Has an external clock reference.
+        uint8_t clock_accuracy_integer = 0;        //!< 6 bits, fractional frequency accuracy of the system clock in parts per million.
+        uint8_t clock_accuracy_exponent = 0;       //!< 3 bits, exponent for @a clock_accuracy_integer.
 
         //!
         //! Default constructor.

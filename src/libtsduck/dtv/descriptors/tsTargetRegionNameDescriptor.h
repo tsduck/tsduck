@@ -28,12 +28,12 @@ namespace ts {
         //!
         struct TSDUCKDLL Region
         {
-            Region();                        //!< Default constructor.
-            uint8_t  region_depth;           //!< 2 bits, number of region codes, must be at least 1.
-            UString  region_name;            //!< Region name.
-            uint8_t  primary_region_code;    //!< Primary region code.
-            uint8_t  secondary_region_code;  //!< Optional secondary region code.
-            uint16_t tertiary_region_code;   //!< Optional tertiary region code.
+            Region() = default;                  //!< Default constructor.
+            uint8_t  region_depth = 0;           //!< 2 bits, number of region codes, must be at least 1.
+            UString  region_name {};             //!< Region name.
+            uint8_t  primary_region_code = 0;    //!< Primary region code.
+            uint8_t  secondary_region_code = 0;  //!< Optional secondary region code.
+            uint16_t tertiary_region_code = 0;   //!< Optional tertiary region code.
         };
 
         //!
@@ -42,9 +42,9 @@ namespace ts {
         typedef std::list<Region> RegionList;
 
         // TargetRegionNameDescriptor public members:
-        UString    country_code;           //!< 3-character country code.
-        UString    ISO_639_language_code;  //!< 3-character language code.
-        RegionList regions;                //!< The list of regions.
+        UString    country_code {};           //!< 3-character country code.
+        UString    ISO_639_language_code {};  //!< 3-character language code.
+        RegionList regions {};                //!< The list of regions.
 
         //!
         //! Default constructor.

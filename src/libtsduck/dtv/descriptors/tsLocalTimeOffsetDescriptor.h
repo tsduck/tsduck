@@ -29,16 +29,12 @@ namespace ts {
         //!
         struct TSDUCKDLL Region
         {
-            UString      country;            //!< Country code, must be 3-chars long.
-            unsigned int region_id;          //!< Region id.
-            int          time_offset;        //!< Local time minus UTC, in minutes.
-            Time         next_change;        //!< UTC of next time change.
-            int          next_time_offset;   //!< Time @a time_offset after @a next_change.
-
-            //!
-            //! Default constructor.
-            //!
-            Region();
+            Region() = default;                 //!< Default constructor.
+            UString      country {};            //!< Country code, must be 3-chars long.
+            unsigned int region_id = 0;         //!< Region id.
+            int          time_offset = 0;       //!< Local time minus UTC, in minutes.
+            Time         next_change {};        //!< UTC of next time change.
+            int          next_time_offset = 0;  //!< Time @a time_offset after @a next_change.
         };
 
         //!
@@ -52,7 +48,7 @@ namespace ts {
         static constexpr size_t MAX_REGION = 19;
 
         // LocalTimeOffsetDescriptor public members:
-        RegionVector regions;  //!< Vector of region descriptions.
+        RegionVector regions {};  //!< Vector of region descriptions.
 
         //!
         //! Default constructor.

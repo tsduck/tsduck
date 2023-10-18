@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // VideoWindowDescriptor public members:
-        uint16_t horizontal_offset;  //!< 14 bits, horizontal offset.
-        uint16_t vertical_offset;    //!< 14 bits, vertical offset.
-        uint8_t  window_priority;    //!< 4 bits, window priority.
+        uint16_t horizontal_offset = 0;  //!< 14 bits, horizontal offset.
+        uint16_t vertical_offset = 0;    //!< 14 bits, vertical offset.
+        uint8_t  window_priority = 0;    //!< 4 bits, window priority.
 
         //!
         //! Default constructor.

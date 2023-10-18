@@ -29,9 +29,9 @@ namespace ts {
         //!
         struct TSDUCKDLL TVAId
         {
-            TVAId();                  //!< Constructor.
-            uint16_t TVA_id;          //!< TV-Anytime id.
-            uint8_t  running_status;  //!< 3-bit running status.
+            TVAId() = default;            //!< Constructor.
+            uint16_t TVA_id = 0;          //!< TV-Anytime id.
+            uint8_t  running_status = 0;  //!< 3-bit running status.
         };
 
         //!
@@ -45,7 +45,7 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 85;
 
         // TVAIdDescriptor public members:
-        TVAIdList TVA_ids;  //!< The list of TVA_id entries.
+        TVAIdList TVA_ids {};  //!< The list of TVA_id entries.
 
         //!
         //! Default constructor.

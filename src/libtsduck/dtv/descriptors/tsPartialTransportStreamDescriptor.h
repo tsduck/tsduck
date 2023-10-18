@@ -25,9 +25,9 @@ namespace ts {
     {
     public:
         // PartialTransportStreamDescriptor public members:
-        uint32_t peak_rate;                         //!< 22 bits
-        uint32_t minimum_overall_smoothing_rate;    //!< 22 bits
-        uint16_t maximum_overall_smoothing_buffer;  //!< 14 bits
+        uint32_t peak_rate = 0;                                                  //!< 22 bits
+        uint32_t minimum_overall_smoothing_rate = UNDEFINED_SMOOTHING_RATE;      //!< 22 bits
+        uint16_t maximum_overall_smoothing_buffer = UNDEFINED_SMOOTHING_BUFFER;  //!< 14 bits
 
         static const uint32_t UNDEFINED_SMOOTHING_RATE   = 0x3FFFFF;  //!< "undefined" value for @a minimum_overall_smoothing_rate.
         static const uint16_t UNDEFINED_SMOOTHING_BUFFER = 0x3FFF;    //!< "undefined" value for @a maximum_overall_smoothing_buffer.

@@ -27,13 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::NPTReferenceDescriptor::NPTReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    post_discontinuity(false),
-    content_id(0),
-    STC_reference(0),
-    NPT_reference(0),
-    scale_numerator(0),
-    scale_denominator(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

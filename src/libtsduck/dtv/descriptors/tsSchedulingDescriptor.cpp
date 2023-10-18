@@ -36,18 +36,7 @@ const ts::Enumeration ts::SchedulingDescriptor::SchedulingUnitNames({
 //----------------------------------------------------------------------------
 
 ts::SchedulingDescriptor::SchedulingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    start_date_time(),
-    end_date_time(),
-    final_availability(false),
-    periodicity(false),
-    period_unit(0),
-    duration_unit(0),
-    estimated_cycle_time_unit(0),
-    period(0),
-    duration(0),
-    estimated_cycle_time(0),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

@@ -27,18 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::MetadataPointerDescriptor::MetadataPointerDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    metadata_application_format(0),
-    metadata_application_format_identifier(0),
-    metadata_format(0),
-    metadata_format_identifier(0),
-    metadata_service_id(0),
-    MPEG_carriage_flags(0),
-    metadata_locator(),
-    program_number(0),
-    transport_stream_location(0),
-    transport_stream_id(0),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

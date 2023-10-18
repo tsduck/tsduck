@@ -32,31 +32,30 @@ namespace ts {
         class TSDUCKDLL Channel
         {
         public:
-            Channel();                            //!< Default constructor.
-            void clear();                         //!< Clear content.
-
-            uint64_t frequency;                   //!< Frequency in Hz.
-            uint16_t orbital_position;            //!< Orbital position, unit is 0.1 degree.
-            bool     east_not_west;               //!< True for East, false for West.
-            uint8_t  polarization;                //!< 2 bits, polarization.
-            uint8_t  roll_off;                    //!< 3 bits, roll-off factor.
-            uint64_t symbol_rate;                 //!< Symbol rate in symbols/second.
-            bool     multiple_input_stream_flag;  //!< True when input_stream_identifier is valid.
-            uint8_t  input_stream_identifier;     //!< Input stream identifier.
+            Channel() = default;                          //!< Default constructor.
+            void clear();                                 //!< Clear content.
+            uint64_t frequency = 0;                       //!< Frequency in Hz.
+            uint16_t orbital_position = 0;                //!< Orbital position, unit is 0.1 degree.
+            bool     east_not_west = false;               //!< True for East, false for West.
+            uint8_t  polarization = 0;                    //!< 2 bits, polarization.
+            uint8_t  roll_off = 0;                        //!< 3 bits, roll-off factor.
+            uint64_t symbol_rate = 0;                     //!< Symbol rate in symbols/second.
+            bool     multiple_input_stream_flag = false;  //!< True when input_stream_identifier is valid.
+            uint8_t  input_stream_identifier = 0;         //!< Input stream identifier.
         };
 
         // S2XSatelliteDeliverySystemDescriptor public members:
-        uint8_t   receiver_profiles;             //!< 5 bits, receiver_profiles bit mask.
-        uint8_t   S2X_mode;                      //!< 2 bits, S2X mode.
-        uint8_t   TS_GS_S2X_mode;                //!< 2 bits, TS-GS S2X mode.
-        bool      scrambling_sequence_selector;  //!< True when scrambling_sequence_index is valid.
-        uint32_t  scrambling_sequence_index;     //!< 18 bits, scrambling sequence index.
-        uint8_t   timeslice_number;              //!< Time slice number, valid when S2X_mode==2.
-        Channel   master_channel;                //!< Master channel
-        bool      num_channel_bonds_minus_one;   //!< When true, use two channel bonds.
-        Channel   channel_bond_0;                //!< First channel bond, valid when S2X_mode==3.
-        Channel   channel_bond_1;                //!< Second channel bond, valid when S2X_mode==3 and num_channel_bonds_minus_one is true.
-        ByteBlock reserved_future_use;           //!< For future modes.
+        uint8_t   receiver_profiles = 0;                 //!< 5 bits, receiver_profiles bit mask.
+        uint8_t   S2X_mode = 0;                          //!< 2 bits, S2X mode.
+        uint8_t   TS_GS_S2X_mode = 0;                    //!< 2 bits, TS-GS S2X mode.
+        bool      scrambling_sequence_selector = false;  //!< True when scrambling_sequence_index is valid.
+        uint32_t  scrambling_sequence_index = 0;         //!< 18 bits, scrambling sequence index.
+        uint8_t   timeslice_number = 0;                  //!< Time slice number, valid when S2X_mode==2.
+        Channel   master_channel {};                     //!< Master channel
+        bool      num_channel_bonds_minus_one {};        //!< When true, use two channel bonds.
+        Channel   channel_bond_0 {};                     //!< First channel bond, valid when S2X_mode==3.
+        Channel   channel_bond_1 {};                     //!< Second channel bond, valid when S2X_mode==3 and num_channel_bonds_minus_one is true.
+        ByteBlock reserved_future_use {};                //!< For future modes.
 
         //!
         //! Default constructor.

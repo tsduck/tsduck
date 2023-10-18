@@ -28,7 +28,7 @@ namespace ts {
     {
     public:
         // SSUSubgroupAssociationDescriptor public members:
-        uint64_t subgroup_tag;   //!< 40 bits, subgroup tag
+        uint64_t subgroup_tag = 0;   //!< 40 bits, subgroup tag
 
         //!
         //! Default constructor.

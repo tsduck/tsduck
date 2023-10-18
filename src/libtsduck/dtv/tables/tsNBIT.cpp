@@ -47,11 +47,7 @@ ts::NBIT::NBIT(DuckContext& duck, const BinaryTable& table) :
 }
 
 ts::NBIT::Information::Information(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    information_type(0),
-    description_body_location(0),
-    user_defined(0),
-    key_ids()
+    EntryWithDescriptors(table)
 {
 }
 

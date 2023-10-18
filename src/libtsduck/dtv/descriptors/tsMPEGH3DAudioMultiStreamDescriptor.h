@@ -30,12 +30,11 @@ namespace ts {
         class TSDUCKDLL Group
         {
         public:
-            Group();                      //!< Contructor.
-            uint8_t mae_group_id;         //!< 7 bits.
-            bool    is_in_main_stream;    //!< Audio data in this group is present in the main stream.
-            bool    is_in_ts;             //!< When is_in_main_stream == false.
-            uint8_t auxiliary_stream_id;  //!< 7 bits. When is_in_main_stream == false.
-
+            Group() = default;                  //!< Contructor.
+            uint8_t mae_group_id = 0;           //!< 7 bits.
+            bool    is_in_main_stream = false;  //!< Audio data in this group is present in the main stream.
+            bool    is_in_ts = false;           //!< When is_in_main_stream == false.
+            uint8_t auxiliary_stream_id = 0;    //!< 7 bits. When is_in_main_stream == false.
         };
 
         //!
@@ -44,11 +43,11 @@ namespace ts {
         typedef std::list<Group> GroupList;
 
         // MPEGH3DAudioMultiStreamDescriptor public members:
-        bool      this_is_main_stream;    //!< The stream is a main stream, not an auxiliary stream.
-        uint8_t   this_stream_id;         //!< 7 bits.
-        uint8_t   num_auxiliary_streams;  //!< 7 bits. When this_is_main_stream == true.
-        GroupList mae_groups;             //!< When this_is_main_stream == true.
-        ByteBlock reserved;               //!< Reserved data.
+        bool      this_is_main_stream = false;  //!< The stream is a main stream, not an auxiliary stream.
+        uint8_t   this_stream_id = 0;           //!< 7 bits.
+        uint8_t   num_auxiliary_streams = 0;    //!< 7 bits. When this_is_main_stream == true.
+        GroupList mae_groups {};                //!< When this_is_main_stream == true.
+        ByteBlock reserved {};                  //!< Reserved data.
 
         //!
         //! Default constructor.

@@ -30,9 +30,9 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint8_t stream_type;            //!< Stream type, same as in PMT.
-            PID     elementary_PID;         //!< Component PID.
-            UString ISO_639_language_code;  //!< 3-character language code.
+            uint8_t stream_type = 0;            //!< Stream type, same as in PMT.
+            PID     elementary_PID = PID_NULL;  //!< Component PID.
+            UString ISO_639_language_code {};   //!< 3-character language code.
 
             //!
             //! Default constructor.
@@ -54,8 +54,8 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 42;
 
         // Public members:
-        PID       PCR_PID;  //!< PID containing PCR's in the service.
-        EntryList entries;  //!< The list of PID entries.
+        PID       PCR_PID = PID_NULL;  //!< PID containing PCR's in the service.
+        EntryList entries {};          //!< The list of PID entries.
 
         //!
         //! Default constructor.

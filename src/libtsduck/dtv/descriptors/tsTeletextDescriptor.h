@@ -29,9 +29,9 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint8_t  teletext_type;  //!< Teletext type, 5 bits.
-            uint16_t page_number;    //!< Teletext page number, combination of page and magazine number.
-            UString  language_code;  //!< ISO-639 language code, 3 characters.
+            uint8_t  teletext_type = 0;  //!< Teletext type, 5 bits.
+            uint16_t page_number = 0;    //!< Teletext page number, combination of page and magazine number.
+            UString  language_code {};   //!< ISO-639 language code, 3 characters.
 
             //!
             //! Default constructor.
@@ -84,7 +84,7 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 51;
 
         // Public members
-        EntryList entries;  //!< The list of item entries in the descriptor.
+        EntryList entries {};  //!< The list of item entries in the descriptor.
 
         //!
         //! Default constructor.

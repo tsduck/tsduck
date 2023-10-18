@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // HierarchicalTransmissionDescriptor public members:
-        bool high_quality;   //!< True when high quality, false for low quality.
-        PID  reference_PID;  //!< Reference PID.
+        bool high_quality = false;      //!< True when high quality, false for low quality.
+        PID  reference_PID = PID_NULL;  //!< Reference PID.
 
         //!
         //! Default constructor.

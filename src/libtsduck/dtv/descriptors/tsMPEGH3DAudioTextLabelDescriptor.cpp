@@ -27,37 +27,8 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::MPEGH3DAudioTextLabelDescriptor::groupDescription_type::groupDescription_type() :
-    mae_descriptionGroupID(0),
-    groupDescriptionData()
-{
-}
-
-ts::MPEGH3DAudioTextLabelDescriptor::switchGroupDescription_type::switchGroupDescription_type() :
-    mae_descriptionSwitchGroupID(0),
-    switchGroupDescriptionData()
-{
-}
-
-ts::MPEGH3DAudioTextLabelDescriptor::groupPresetsDescription_type::groupPresetsDescription_type() :
-    mae_descriptionGroupPresetID(0),
-    groupDescriptionPresetData()
-{
-}
-
-ts::MPEGH3DAudioTextLabelDescriptor::descriptionLanguage_type::descriptionLanguage_type() :
-    descriptionLanguage(),
-    group_descriptions(),
-    switch_group_descriptions(),
-    group_preset_descriptions()
-{
-}
-
 ts::MPEGH3DAudioTextLabelDescriptor::MPEGH3DAudioTextLabelDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    _3dAudioSceneInfoID(0),
-    description_languages(),
-    numReservedBytes()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
