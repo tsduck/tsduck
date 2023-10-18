@@ -29,7 +29,7 @@ namespace ts {
         bool    no_spatial_scalability = false;      //!< No spatial scalability.
         bool    no_quality_scalability = false;      //!< No quality scalability.
         uint8_t hierarchy_type = 0;                  //!< 4 bits, hierarchy type.
-        uint8_t hierarchy_layer_index;               //!< 6 bits, hierarchy layer index.
+        uint8_t hierarchy_layer_index = 0;           //!< 6 bits, hierarchy layer index.
         bool    tref_present = false;                //!< tref present.
         uint8_t hierarchy_embedded_layer_index = 0;  //!< 6 bits, hierarchy embedded layer index.
         uint8_t hierarchy_channel = 0;               //!< 6 bits, hierarchy channel.
