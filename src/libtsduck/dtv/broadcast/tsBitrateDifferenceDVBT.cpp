@@ -14,9 +14,7 @@
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::BitrateDifferenceDVBT::BitrateDifferenceDVBT() :
-    tune(),
-    bitrate_diff(0)
+ts::BitrateDifferenceDVBT::BitrateDifferenceDVBT()
 {
     // All operations on this class are implicitly on DVB-T.
     tune.delivery_system = DS_DVB_T;

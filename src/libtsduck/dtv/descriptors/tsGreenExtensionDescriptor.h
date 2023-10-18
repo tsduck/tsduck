@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // GreenExtensionDescriptor public members:
-        std::vector<uint16_t> constant_backlight_voltage_time_intervals;  //!< Specified in 6.4 of ISO/IEC 23001-11.
-        std::vector<uint16_t> max_variations;                             //!< Specified in 6.4 of ISO/IEC 23001-11.
+        std::vector<uint16_t> constant_backlight_voltage_time_intervals {};  //!< Specified in 6.4 of ISO/IEC 23001-11.
+        std::vector<uint16_t> max_variations {};                             //!< Specified in 6.4 of ISO/IEC 23001-11.
 
         //!
         //! Maximum number of elements in each array (count must fit on 2 bits).

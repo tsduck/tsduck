@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Public members:
-        ByteBlock attributes;   //!< List of genre attributes, one byte per attribute.
+        ByteBlock attributes {};   //!< List of genre attributes, one byte per attribute.
 
         //!
         //! Default constructor.

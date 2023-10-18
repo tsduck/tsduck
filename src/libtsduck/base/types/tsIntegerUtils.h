@@ -726,11 +726,7 @@ template <typename INT> constexpr INT ts::static_power10<INT,18>::value;
 template <typename INT> constexpr INT ts::static_power10<INT,19>::value;
 #endif
 
-
-//----------------------------------------------------------------------------
 // Not inlined to avoid optimization which breaks the code.
-//----------------------------------------------------------------------------
-
 template <typename INT, typename std::enable_if<std::is_integral<INT>::value, int>::type N>
 bool ts::add_overflow(INT a, INT b)
 {

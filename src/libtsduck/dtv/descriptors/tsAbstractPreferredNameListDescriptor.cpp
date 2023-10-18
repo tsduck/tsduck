@@ -13,10 +13,6 @@
 #include "tsDuckContext.h"
 #include "tsxmlElement.h"
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::AbstractPreferredNameListDescriptor::MAX_PREFERRED_NAMES;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Constructors

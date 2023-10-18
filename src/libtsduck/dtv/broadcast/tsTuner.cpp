@@ -21,7 +21,6 @@
 ts::Tuner::Tuner(DuckContext& duck) :
     TunerBase(duck),
     _device(new TunerDevice(duck)),
-    _emulator(nullptr),
     _current(_device)
 {
     CheckNonNull(_device);

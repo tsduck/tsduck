@@ -29,10 +29,10 @@ namespace ts {
     {
     public:
         // GraphicsConstraintsDescriptor public members:
-        bool      can_run_without_visible_ui;           //!< Can run without visible UI.
-        bool      handles_configuration_changed;        //!< Handles configuration changed.
-        bool      handles_externally_controlled_video;  //!< Handles externally controlled video.
-        ByteBlock graphics_configuration;               //!< Graphics configuration bytes.
+        bool      can_run_without_visible_ui = false;           //!< Can run without visible UI.
+        bool      handles_configuration_changed = false;        //!< Handles configuration changed.
+        bool      handles_externally_controlled_video = false;  //!< Handles externally controlled video.
+        ByteBlock graphics_configuration {};                    //!< Graphics configuration bytes.
 
         //!
         //! Default constructor.

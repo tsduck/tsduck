@@ -288,9 +288,7 @@ inline bool operator>(INT1 x1, ts::FixedPoint<INT2, PREC> x2) { return x2 < x1; 
 #if !defined(TS_CXX17)
 template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
 constexpr size_t ts::FixedPoint<INT_T,PREC,N>::PRECISION;
-#endif
 
-#if !defined(TS_CXX17)
 template <typename INT_T, const size_t PREC, typename std::enable_if<std::is_integral<INT_T>::value && std::is_signed<INT_T>::value, int>::type N>
 constexpr INT_T ts::FixedPoint<INT_T,PREC,N>::FACTOR;
 #endif

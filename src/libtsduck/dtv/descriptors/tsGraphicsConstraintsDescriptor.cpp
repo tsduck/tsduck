@@ -28,11 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::GraphicsConstraintsDescriptor::GraphicsConstraintsDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    can_run_without_visible_ui(false),
-    handles_configuration_changed(false),
-    handles_externally_controlled_video(false),
-    graphics_configuration()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
