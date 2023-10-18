@@ -29,28 +29,7 @@
 //----------------------------------------------------------------------------
 
 ts::TSFile::TSFile() :
-    TSPacketStream(TSPacketFormat::AUTODETECT, this, this),
-    _filename(),
-    _repeat(0),
-    _counter(0),
-    _start_offset(0),
-    _open_null(0),
-    _close_null(0),
-    _open_null_read(0),
-    _close_null_read(0),
-    _is_open(false),
-    _flags(NONE),
-    _severity(Severity::Error),
-    _at_eof(false),
-    _aborted(false),
-    _rewindable(false),
-    _regular(false),
-    _std_inout(false),
-#if defined(TS_WINDOWS)
-    _handle(INVALID_HANDLE_VALUE)
-#else
-    _fd(-1)
-#endif
+    TSPacketStream(TSPacketFormat::AUTODETECT, this, this)
 {
 }
 

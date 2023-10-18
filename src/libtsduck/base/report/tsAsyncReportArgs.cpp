@@ -9,7 +9,9 @@
 #include "tsAsyncReportArgs.h"
 #include "tsArgs.h"
 
-const size_t ts::AsyncReportArgs::MAX_LOG_MESSAGES;
+#if !defined(TS_CXX17)
+constexpr size_t ts::AsyncReportArgs::MAX_LOG_MESSAGES;
+#endif
 
 
 //----------------------------------------------------------------------------

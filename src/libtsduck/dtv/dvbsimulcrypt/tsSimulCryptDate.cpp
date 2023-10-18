@@ -8,8 +8,6 @@
 
 #include "tsSimulCryptDate.h"
 
-const size_t ts::SimulCryptDate::SIZE;
-
 
 //----------------------------------------------------------------------------
 // Constructors

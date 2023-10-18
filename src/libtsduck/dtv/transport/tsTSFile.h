@@ -187,26 +187,26 @@ namespace ts {
         virtual size_t readPackets(TSPacket* buffer, TSPacketMetadata* metadata, size_t max_packets, Report& report) override;
 
     private:
-        UString       _filename;         //!< Input file name.
-        size_t        _repeat;           //!< Repeat count (0 means infinite)
-        size_t        _counter;          //!< Current repeat count
-        uint64_t      _start_offset;     //!< Initial byte offset in file
-        size_t        _open_null;        //!< Number of artificial null packets to insert after open().
-        size_t        _close_null;       //!< Number of artificial null packets to insert before close().
-        size_t        _open_null_read;   //!< Remaining null packets to read after open().
-        size_t        _close_null_read;  //!< Remaining null packets to read before close().
-        volatile bool _is_open;          //!< Check if file is actually open
-        OpenFlags     _flags;            //!< Flags which were specified at open
-        int           _severity;         //!< Severity level for error reporting
-        volatile bool _at_eof;           //!< End of file has been reached
-        volatile bool _aborted;          //!< Operation has been aborted, no operation available
-        bool          _rewindable;       //!< Opened in rewindable mode
-        bool          _regular;          //!< Is a regular file (ie. not a pipe or special device)
-        bool          _std_inout;        //!< File is standard input or output.
+        UString       _filename {};          //!< Input file name.
+        size_t        _repeat = 0;           //!< Repeat count (0 means infinite)
+        size_t        _counter = 0;          //!< Current repeat count
+        uint64_t      _start_offset = 0;     //!< Initial byte offset in file
+        size_t        _open_null = 0;        //!< Number of artificial null packets to insert after open().
+        size_t        _close_null = 0;       //!< Number of artificial null packets to insert before close().
+        size_t        _open_null_read = 0;   //!< Remaining null packets to read after open().
+        size_t        _close_null_read = 0;  //!< Remaining null packets to read before close().
+        volatile bool _is_open = false;      //!< Check if file is actually open
+        OpenFlags     _flags = NONE;         //!< Flags which were specified at open
+        int           _severity = Severity::Error;   //!< Severity level for error reporting
+        volatile bool _at_eof = false;       //!< End of file has been reached
+        volatile bool _aborted = false;      //!< Operation has been aborted, no operation available
+        bool          _rewindable = false;   //!< Opened in rewindable mode
+        bool          _regular = false;      //!< Is a regular file (ie. not a pipe or special device)
+        bool          _std_inout = false;    //!< File is standard input or output.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle;           //!< File handle
+        ::HANDLE      _handle = INVALID_HANDLE_VALUE;
 #else
-        int           _fd;               //!< File descriptor
+        int           _fd = -1;
 #endif
 
         // Implementation of AbstractReadStreamInterface
