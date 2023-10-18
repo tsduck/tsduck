@@ -35,23 +35,15 @@ namespace ts {
         class Address
         {
         public:
-            IPv4Address IPv4_source_addr;         //!< IPv4 source address.
-            uint8_t   IPv4_source_slash_mask;   //!< Number of bits in source network mask.
-            IPv4Address IPv4_dest_addr;           //!< IPv4 destination address.
-            uint8_t   IPv4_dest_slash_mask;     //!< Number of bits in destination network mask.
-
-            //!
-            //! Constructor
-            //! @param [in] addr1 IPv4 source address.
-            //! @param [in] mask1 Number of bits in source network mask.
-            //! @param [in] addr2 IPv4 destination address.
-            //! @param [in] mask2 Number of bits in destination network mask.
-            //!
-            Address(const IPv4Address& addr1 = IPv4Address(), uint8_t mask1 = 0, const IPv4Address& addr2 = IPv4Address(), uint8_t mask2 = 0);
+            Address() = default;                      //!< Constructor
+            IPv4Address IPv4_source_addr {};          //!< IPv4 source address.
+            uint8_t     IPv4_source_slash_mask = 0;   //!< Number of bits in source network mask.
+            IPv4Address IPv4_dest_addr {};            //!< IPv4 destination address.
+            uint8_t     IPv4_dest_slash_mask = 0;     //!< Number of bits in destination network mask.
         };
 
         // TargetIPSourceSlashDescriptor public members:
-        std::vector<Address> addresses;  //!< IPv4 addresses
+        std::vector<Address> addresses {};  //!< IPv4 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

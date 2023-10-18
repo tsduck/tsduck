@@ -25,9 +25,9 @@ namespace ts {
     {
     public:
         // Public members
-        UString language_code;  //!< ISO-639 language code, 3 characters.
-        UString event_name;     //!< Event name.
-        UString text;           //!< Short event description.
+        UString language_code {};  //!< ISO-639 language code, 3 characters.
+        UString event_name {};     //!< Event name.
+        UString text {};           //!< Short event description.
 
         //!
         //! Default constructor.

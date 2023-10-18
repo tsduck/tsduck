@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsAbstractDescriptor.h"
+#include "tsSCTE35.h"
 
 namespace ts {
     //!
@@ -28,9 +29,9 @@ namespace ts {
     {
     public:
         // SpliceDTMFDescriptor public members:
-        uint32_t identifier;  //!< Descriptor owner, 0x43554549 ("CUEI").
-        uint8_t  preroll;     //!< Pre-roll time in tenths of seconds.
-        UString  DTMF;        //!< Dial string (only '*', '#' and '0'-'9' are allowed).
+        uint32_t identifier = SPLICE_ID_CUEI;  //!< Descriptor owner, 0x43554549 ("CUEI").
+        uint8_t  preroll = 0;                  //!< Pre-roll time in tenths of seconds.
+        UString  DTMF {};                      //!< Dial string (only '*', '#' and '0'-'9' are allowed).
 
         //!
         //! Maximum size of the DTMF character string.

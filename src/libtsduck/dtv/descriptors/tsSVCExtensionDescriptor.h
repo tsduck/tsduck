@@ -24,17 +24,17 @@ namespace ts {
     {
     public:
         // SVCExtensionDescriptor public members:
-        uint16_t width;                    //!< In pixels
-        uint16_t height;                   //!< In pixels
-        uint16_t frame_rate;               //!< In frames / 256 seconds
-        uint16_t average_bitrate;          //!< In kb/s
-        uint16_t maximum_bitrate;          //!< In kb/s
-        uint8_t  dependency_id;            //!< 3 bits
-        uint8_t  quality_id_start;         //!< 4 bits
-        uint8_t  quality_id_end;           //!< 4 bits
-        uint8_t  temporal_id_start;        //!< 3 bits
-        uint8_t  temporal_id_end;          //!< 3 bits
-        bool     no_sei_nal_unit_present;  //!< 1 bit
+        uint16_t width = 0;                        //!< In pixels
+        uint16_t height = 0;                       //!< In pixels
+        uint16_t frame_rate = 0;                   //!< In frames / 256 seconds
+        uint16_t average_bitrate = 0;              //!< In kb/s
+        uint16_t maximum_bitrate = 0;              //!< In kb/s
+        uint8_t  dependency_id = 0;                //!< 3 bits
+        uint8_t  quality_id_start = 0;             //!< 4 bits
+        uint8_t  quality_id_end = 0;               //!< 4 bits
+        uint8_t  temporal_id_start = 0;            //!< 3 bits
+        uint8_t  temporal_id_end = 0;              //!< 3 bits
+        bool     no_sei_nal_unit_present = false;  //!< 1 bit
 
         //!
         //! Default constructor.

@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // ServiceRelocatedDescriptor public members:
-        uint16_t old_original_network_id;   //!< Old original network id.
-        uint16_t old_transport_stream_id;   //!< Old transport stream id.
-        uint16_t old_service_id;            //!< Old service id.
+        uint16_t old_original_network_id = 0;   //!< Old original network id.
+        uint16_t old_transport_stream_id = 0;   //!< Old transport stream id.
+        uint16_t old_service_id = 0;            //!< Old service id.
 
         //!
         //! Default constructor.

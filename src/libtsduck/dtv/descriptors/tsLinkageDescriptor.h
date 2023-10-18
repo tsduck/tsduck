@@ -54,13 +54,13 @@ namespace ts {
         class TSDUCKDLL MobileHandoverInfo
         {
         public:
-            MobileHandoverInfo();         //!< Default constructor.
-            void clear();                 //!< Clear object content.
+            MobileHandoverInfo() = default;   //!< Default constructor.
+            void clear();                     //!< Clear object content.
 
-            uint8_t  handover_type;       //!< Hand-over type, 4 bits.
-            uint8_t  origin_type;         //!< Origin type, 0 = NIT, 1 = SDT.
-            uint16_t network_id;          //!< Network when handover_type == 0x01, 0x02, 0x03.
-            uint16_t initial_service_id;  //!< Initial service when origin_type == 0x00
+            uint8_t  handover_type = 0;       //!< Hand-over type, 4 bits.
+            uint8_t  origin_type = 0;         //!< Origin type, 0 = NIT, 1 = SDT.
+            uint16_t network_id = 0;          //!< Network when handover_type == 0x01, 0x02, 0x03.
+            uint16_t initial_service_id = 0;  //!< Initial service when origin_type == 0x00
         };
 
         //!
@@ -69,12 +69,12 @@ namespace ts {
         class TSDUCKDLL EventLinkageInfo
         {
         public:
-            EventLinkageInfo();         //!< Default constructor.
-            void clear();               //!< Clear object content.
+            EventLinkageInfo() = default;      //!< Default constructor.
+            void clear();                      //!< Clear object content.
 
-            uint16_t target_event_id;   //!< Target event.
-            bool     target_listed;     //!< Service is listed in SDT.
-            bool     event_simulcast;   //!< Target and source event are simulcast.
+            uint16_t target_event_id = 0;      //!< Target event.
+            bool     target_listed = false;    //!< Service is listed in SDT.
+            bool     event_simulcast = false;  //!< Target and source event are simulcast.
         };
 
         //!
@@ -83,18 +83,18 @@ namespace ts {
         class TSDUCKDLL ExtendedEventLinkageInfo
         {
         public:
-            ExtendedEventLinkageInfo();                      //!< Default constructor.
-            void clear();                                    //!< Clear object content.
+            ExtendedEventLinkageInfo() = default;               //!< Default constructor.
+            void clear();                                       //!< Clear object content.
 
-            uint16_t           target_event_id;              //!< Target event.
-            bool               target_listed;                //!< Service is listed in SDT.
-            bool               event_simulcast;              //!< Target and source event are simulcast.
-            uint8_t            link_type;                    //!< Link type, 2 bits.
-            uint8_t            target_id_type;               //!< Target type, 2 bits.
-            uint16_t           user_defined_id;              //!< User-defined id when target_id_type == 3
-            uint16_t           target_transport_stream_id;   //!< Target TS when target_id_type == 1
-            Variable<uint16_t> target_original_network_id;   //!< Optional target original network.
-            Variable<uint16_t> target_service_id;            //!< Optional target service.
+            uint16_t           target_event_id = 0;             //!< Target event.
+            bool               target_listed = false;           //!< Service is listed in SDT.
+            bool               event_simulcast = false;         //!< Target and source event are simulcast.
+            uint8_t            link_type = 0;                   //!< Link type, 2 bits.
+            uint8_t            target_id_type = 0;              //!< Target type, 2 bits.
+            uint16_t           user_defined_id = 0;             //!< User-defined id when target_id_type == 3
+            uint16_t           target_transport_stream_id = 0;  //!< Target TS when target_id_type == 1
+            Variable<uint16_t> target_original_network_id {};   //!< Optional target original network.
+            Variable<uint16_t> target_service_id {};            //!< Optional target service.
         };
 
         //!
@@ -103,14 +103,14 @@ namespace ts {
         typedef std::list<ExtendedEventLinkageInfo> ExtendedEventLinkageList;
 
         // LinkageDescriptor public members:
-        uint16_t                 ts_id;                        //!< Transport stream id.
-        uint16_t                 onetw_id;                     //!< Original network id.
-        uint16_t                 service_id;                   //!< Service id.
-        uint8_t                  linkage_type;                 //!< Linkage type, LINKAGE_* constants, eg ts::LINKAGE_INFO.
-        MobileHandoverInfo       mobile_handover_info;         //!< mobile_hand-over_info when linkage_type == LINKAGE_HAND_OVER.
-        EventLinkageInfo         event_linkage_info;           //!< event_linkage_info when linkage_type == LINKAGE_EVENT.
-        ExtendedEventLinkageList extended_event_linkage_info;  //!< extended_event_linkage_info when linkage_type in LINKAGE_EXT_EVENT_MIN .. LINKAGE_EXT_EVENT_MAX.
-        ByteBlock                private_data;                 //!< Private data, depends on linkage type.
+        uint16_t                 ts_id = 0;                       //!< Transport stream id.
+        uint16_t                 onetw_id = 0;                    //!< Original network id.
+        uint16_t                 service_id = 0;                  //!< Service id.
+        uint8_t                  linkage_type = 0;                //!< Linkage type, LINKAGE_* constants, eg ts::LINKAGE_INFO.
+        MobileHandoverInfo       mobile_handover_info {};         //!< mobile_hand-over_info when linkage_type == LINKAGE_HAND_OVER.
+        EventLinkageInfo         event_linkage_info {};           //!< event_linkage_info when linkage_type == LINKAGE_EVENT.
+        ExtendedEventLinkageList extended_event_linkage_info {};  //!< extended_event_linkage_info when linkage_type in LINKAGE_EXT_EVENT_MIN .. LINKAGE_EXT_EVENT_MAX.
+        ByteBlock                private_data {};                 //!< Private data, depends on linkage type.
 
         //!
         //! Default constructor

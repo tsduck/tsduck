@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // TransportProfileDescriptor public members:
-        uint8_t   transport_profile;  //!< Transport profile.
-        ByteBlock private_data;       //!< Private data.
+        uint8_t   transport_profile = 0;  //!< Transport profile.
+        ByteBlock private_data {};        //!< Private data.
 
         //!
         //! Default constructor.

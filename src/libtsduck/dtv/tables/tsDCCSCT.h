@@ -44,14 +44,14 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Update);
             TS_DEFAULT_ASSIGMENTS(Update);
         public:
-            UpdateType         update_type;                    //!< Update type.
-            uint8_t            genre_category_code;            //!< When update_type == new_genre_category.
-            ATSCMultipleString genre_category_name_text;       //!< When update_type == new_genre_category.
-            uint8_t            dcc_state_location_code;        //!< When update_type == new_state.
-            ATSCMultipleString dcc_state_location_code_text;   //!< When update_type == new_state.
-            uint8_t            state_code;                     //!< When update_type == new_county.
-            uint16_t           dcc_county_location_code;       //!< 10 bits. When update_type == new_county.
-            ATSCMultipleString dcc_county_location_code_text;  //!< When update_type == new_county.
+            UpdateType         update_type = UpdateType(0);       //!< Update type.
+            uint8_t            genre_category_code = 0;           //!< When update_type == new_genre_category.
+            ATSCMultipleString genre_category_name_text {};       //!< When update_type == new_genre_category.
+            uint8_t            dcc_state_location_code = 0;       //!< When update_type == new_state.
+            ATSCMultipleString dcc_state_location_code_text {};   //!< When update_type == new_state.
+            uint8_t            state_code = 0;                    //!< When update_type == new_county.
+            uint16_t           dcc_county_location_code = 0;      //!< 10 bits. When update_type == new_county.
+            ATSCMultipleString dcc_county_location_code_text {};  //!< When update_type == new_county.
 
             //!
             //! Constructor.
@@ -67,10 +67,10 @@ namespace ts {
         typedef EntryWithDescriptorsList<Update> UpdateList;
 
         // DCCSCT public members:
-        uint16_t       dccsct_type;       //!< DCCSCT type (zero by default, the only valid value).
-        uint8_t        protocol_version;  //!< ATSC protocol version.
-        UpdateList     updates;           //!< List of updates.
-        DescriptorList descs;             //!< Main descriptor list.
+        uint16_t       dccsct_type = 0;       //!< DCCSCT type (zero by default, the only valid value).
+        uint8_t        protocol_version = 0;  //!< ATSC protocol version.
+        UpdateList     updates;               //!< List of updates.
+        DescriptorList descs;                 //!< Main descriptor list.
 
         //!
         //! Default constructor.

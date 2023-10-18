@@ -28,18 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::ImageIconDescriptor::ImageIconDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    descriptor_number(0),
-    last_descriptor_number(0),
-    icon_id(0),
-    icon_transport_mode(0),
-    has_position(false),
-    coordinate_system(0),
-    icon_horizontal_origin(0),
-    icon_vertical_origin(0),
-    icon_type(),
-    url(),
-    icon_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

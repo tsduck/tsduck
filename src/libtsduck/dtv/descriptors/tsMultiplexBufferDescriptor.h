@@ -24,8 +24,8 @@ namespace ts {
     {
     public:
         // Public members:
-        uint32_t MB_buffer_size;  //!< 24 bits, in bytes
-        uint32_t TB_leak_rate;    //!< 24 bits, in units of 400 bits/s
+        uint32_t MB_buffer_size = 0;  //!< 24 bits, in bytes
+        uint32_t TB_leak_rate = 0;    //!< 24 bits, in units of 400 bits/s
 
         //!
         //! Default constructor.

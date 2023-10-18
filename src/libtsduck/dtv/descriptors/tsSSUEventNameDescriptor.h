@@ -28,9 +28,9 @@ namespace ts {
     {
     public:
         // SSUEventNameDescriptor public members:
-        UString ISO_639_language_code;  //!< Country code, must be 3-chars long.
-        UString name;                   //!< Event name.
-        UString text;                   //!< Event text.
+        UString ISO_639_language_code {};  //!< Country code, must be 3-chars long.
+        UString name {};                   //!< Event name.
+        UString text {};                   //!< Event text.
 
         //!
         //! Default constructor.

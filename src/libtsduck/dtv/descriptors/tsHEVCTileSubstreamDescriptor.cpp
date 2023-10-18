@@ -24,19 +24,8 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::HEVCTileSubstreamDescriptor::substream_type::substream_type() :
-    Flag(false),
-    AdditionalSubstreamID(0)
-{
-}
-
 ts::HEVCTileSubstreamDescriptor::HEVCTileSubstreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    SubstreamID(0),
-    PreambleFlag(),
-    PatternReference(),
-    Substreams(),
-    ReferenceFlag(1)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

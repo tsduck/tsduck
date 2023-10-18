@@ -27,7 +27,6 @@ TS_REGISTER_TABLE(ts::MGT, {MY_TID}, MY_STD, MY_XML_NAME, ts::MGT::DisplaySectio
 
 ts::MGT::MGT(uint8_t version_) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, true), // MGT is always "current"
-    protocol_version(0),
     tables(this),
     descs(this)
 {
@@ -49,9 +48,6 @@ ts::MGT::MGT(DuckContext& duck, const BinaryTable& table) :
 
 ts::MGT::TableType::TableType(const AbstractTable* table) :
     EntryWithDescriptors(table),
-    table_type(0),
-    table_type_PID(PID_NULL),
-    table_type_version_number(0),
     number_bytes(0)
 {
 }

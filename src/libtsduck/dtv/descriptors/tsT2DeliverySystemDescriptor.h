@@ -29,9 +29,9 @@ namespace ts {
         //!
         struct TSDUCKDLL Subcell
         {
-            Subcell();                      //!< Default constructor.
-            uint8_t  cell_id_extension;     //!< Cell id extension.
-            uint64_t transposer_frequency;  //!< Subcell transposer frequency in Hz.
+            Subcell() = default;                //!< Default constructor.
+            uint8_t  cell_id_extension = 0;     //!< Cell id extension.
+            uint64_t transposer_frequency = 0;  //!< Subcell transposer frequency in Hz.
         };
 
         //!
@@ -44,10 +44,10 @@ namespace ts {
         //!
         struct TSDUCKDLL Cell
         {
-            Cell();                                  //!< Default constructor.
-            uint16_t              cell_id;           //!< Cell id.
-            std::vector<uint64_t> centre_frequency;  //!< Cell centre frequencies in Hz.
-            SubcellList           subcells;          //!< List of subcells.
+            Cell() = default;                           //!< Default constructor.
+            uint16_t              cell_id = 0;          //!< Cell id.
+            std::vector<uint64_t> centre_frequency {};  //!< Cell centre frequencies in Hz.
+            SubcellList           subcells {};          //!< List of subcells.
         };
 
         //!
@@ -56,16 +56,16 @@ namespace ts {
         typedef std::list<Cell> CellList;
 
         // T2DeliverySystemDescriptor public members:
-        uint8_t   plp_id;             //!< PLP id.
-        uint16_t  T2_system_id;       //!< T2 system id.
-        bool      has_extension;      //!< If true, all subsequent fields are used. When false, they are ignored.
-        uint8_t   SISO_MISO;          //!< 2 bits, SISO/MISO indicator.
-        uint8_t   bandwidth;          //!< 2 bits, bandwidth.
-        uint8_t   guard_interval;     //!< 3 bits, guard interval.
-        uint8_t   transmission_mode;  //!< 3 bits, transmission mode.
-        bool      other_frequency;    //!< Other frequencies exist.
-        bool      tfs;                //!< TFS arrangement in place.
-        CellList  cells;              //!< List of cells.
+        uint8_t   plp_id = 0;               //!< PLP id.
+        uint16_t  T2_system_id = 0;         //!< T2 system id.
+        bool      has_extension = false;    //!< If true, all subsequent fields are used. When false, they are ignored.
+        uint8_t   SISO_MISO = 0;            //!< 2 bits, SISO/MISO indicator.
+        uint8_t   bandwidth = 0;            //!< 2 bits, bandwidth.
+        uint8_t   guard_interval = 0;       //!< 3 bits, guard interval.
+        uint8_t   transmission_mode = 0;    //!< 3 bits, transmission mode.
+        bool      other_frequency = false;  //!< Other frequencies exist.
+        bool      tfs = false;              //!< TFS arrangement in place.
+        CellList  cells {};                 //!< List of cells.
 
         //!
         //! Default constructor.

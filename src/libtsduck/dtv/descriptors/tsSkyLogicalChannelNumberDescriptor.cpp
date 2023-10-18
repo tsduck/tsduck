@@ -29,9 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::SkyLogicalChannelNumberDescriptor::SkyLogicalChannelNumberDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    entries(),
-    region_id(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
 
@@ -45,15 +43,6 @@ ts::SkyLogicalChannelNumberDescriptor::SkyLogicalChannelNumberDescriptor(DuckCon
     SkyLogicalChannelNumberDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::SkyLogicalChannelNumberDescriptor::Entry::Entry(uint16_t id_, uint8_t type_, uint16_t cid_, uint16_t lcn_, uint16_t skyid_):
-    service_id(id_),
-    service_type(type_),
-    channel_id(cid_),
-    lcn(lcn_),
-    sky_id(skyid_)
-{
 }
 
 

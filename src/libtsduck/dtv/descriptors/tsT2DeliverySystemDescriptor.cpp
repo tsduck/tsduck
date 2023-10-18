@@ -27,17 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::T2DeliverySystemDescriptor::T2DeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T2, MY_XML_NAME),
-    plp_id(0),
-    T2_system_id(0),
-    has_extension(false),
-    SISO_MISO(0),
-    bandwidth(0),
-    guard_interval(0),
-    transmission_mode(0),
-    other_frequency(false),
-    tfs(false),
-    cells()
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_T2, MY_XML_NAME)
 {
 }
 
@@ -59,19 +49,6 @@ void ts::T2DeliverySystemDescriptor::clearContent()
     other_frequency = false;
     tfs = false;
     cells.clear();
-}
-
-ts::T2DeliverySystemDescriptor::Cell::Cell() :
-    cell_id(0),
-    centre_frequency(),
-    subcells()
-{
-}
-
-ts::T2DeliverySystemDescriptor::Subcell::Subcell() :
-    cell_id_extension(0),
-    transposer_frequency(0)
-{
 }
 
 

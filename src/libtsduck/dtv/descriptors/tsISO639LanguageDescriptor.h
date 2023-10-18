@@ -29,8 +29,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            UString language_code;  //!< ISO-639 language code, 3 characters.
-            uint8_t audio_type;     //!< Audio type.
+            UString language_code {};  //!< ISO-639 language code, 3 characters.
+            uint8_t audio_type = 0;    //!< Audio type.
 
             //!
             //! Default constructor.
@@ -65,7 +65,7 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 63;
 
         // ISO639LanguageDescriptor public members:
-        EntryList entries;  //!< List of language entries.
+        EntryList entries {};  //!< List of language entries.
 
         //!
         //! Default constructor.

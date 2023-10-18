@@ -29,9 +29,9 @@ namespace ts {
     {
     public:
         // SSULocationDescriptor public members:
-        uint16_t  data_broadcast_id;  //!< Data broadcast id.
-        uint16_t  association_tag;    //!< Only if @a data broadcast id == 0x000A.
-        ByteBlock private_data;       //!< Private data
+        uint16_t  data_broadcast_id = 0;  //!< Data broadcast id.
+        uint16_t  association_tag = 0;    //!< Only if @a data broadcast id == 0x000A.
+        ByteBlock private_data {};        //!< Private data
 
         //!
         //! Default constructor.

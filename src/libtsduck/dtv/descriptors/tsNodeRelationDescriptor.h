@@ -25,11 +25,11 @@ namespace ts {
     {
     public:
         // NodeRelationDescriptor public members:
-        uint8_t            reference_type;           //!< 4 bits, reference type.
-        Variable<uint16_t> information_provider_id;  //!< Optional information provider id.
-        Variable<uint16_t> event_relation_id;        //!< Optional event relation id.
-        uint16_t           reference_node_id;        //!< Reference node id.
-        uint8_t            reference_number;         //!< Reference number.
+        uint8_t            reference_type = 0;          //!< 4 bits, reference type.
+        Variable<uint16_t> information_provider_id {};  //!< Optional information provider id.
+        Variable<uint16_t> event_relation_id {};        //!< Optional event relation id.
+        uint16_t           reference_node_id = 0;       //!< Reference node id.
+        uint8_t            reference_number = 0;        //!< Reference number.
 
         //!
         //! Default constructor.

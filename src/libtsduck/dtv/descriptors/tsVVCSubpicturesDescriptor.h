@@ -24,11 +24,11 @@ namespace ts {
     {
     public:
         // Public members:
-        bool                 default_service_mode;  //!< EN 300 468 clause 6.4.17
-        std::vector<uint8_t> component_tag;         //!< 8 bits, EN 300 468 clause 6.4.17
-        std::vector<uint8_t> vvc_subpicture_id;     //!< 8 bits, EN 300 468 clause 6.4.17
-        uint8_t              processing_mode;       //!< 3 bits, EN 300 468 clause 6.4.17
-        UString              service_description;   //!< EN 300 468 clause 6.4.17
+        bool                 default_service_mode = 0;  //!< EN 300 468 clause 6.4.17
+        std::vector<uint8_t> component_tag {};          //!< 8 bits, EN 300 468 clause 6.4.17
+        std::vector<uint8_t> vvc_subpicture_id {};      //!< 8 bits, EN 300 468 clause 6.4.17
+        uint8_t              processing_mode = 0;       //!< 3 bits, EN 300 468 clause 6.4.17
+        UString              service_description {};    //!< EN 300 468 clause 6.4.17
 
         //!
         //! Default constructor.

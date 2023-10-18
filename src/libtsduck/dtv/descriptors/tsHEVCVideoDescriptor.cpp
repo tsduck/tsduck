@@ -27,23 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::HEVCVideoDescriptor::HEVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profile_space(0),
-    tier(false),
-    profile_idc(0),
-    profile_compatibility_indication(0),
-    progressive_source(false),
-    interlaced_source(false),
-    non_packed_constraint(false),
-    frame_only_constraint(false),
-    copied_44bits(0),
-    level_idc(0),
-    HEVC_still_present(false),
-    HEVC_24hr_picture_present(false),
-    sub_pic_hrd_params_not_present(true),
-    HDR_WCG_idc(3),
-    temporal_id_min(),
-    temporal_id_max()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

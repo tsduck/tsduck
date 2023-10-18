@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // PartialReceptionDescriptor public members:
-        std::vector<uint16_t> service_ids;  //!< List of service ids.
+        std::vector<uint16_t> service_ids {};  //!< List of service ids.
 
         //!
         //! Default constructor.

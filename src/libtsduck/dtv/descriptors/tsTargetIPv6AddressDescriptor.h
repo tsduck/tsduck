@@ -31,8 +31,8 @@ namespace ts {
     {
     public:
         // TargetIPv6AddressDescriptor public members:
-        IPv6Address       IPv6_addr_mask;  //!< IPv6 address mask
-        IPv6AddressVector IPv6_addr;       //!< IPv6 addresses
+        IPv6Address       IPv6_addr_mask {};  //!< IPv6 address mask
+        IPv6AddressVector IPv6_addr {};       //!< IPv6 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

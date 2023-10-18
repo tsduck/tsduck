@@ -14,7 +14,6 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsIPv6Address.h"
-#include "tsIPUtils.h"
 
 namespace ts {
     //!
@@ -35,23 +34,15 @@ namespace ts {
         class Address
         {
         public:
-            IPv6Address IPv6_source_addr;         //!< IPv6 source address.
-            uint8_t     IPv6_source_slash_mask;   //!< Number of bits in source network mask.
-            IPv6Address IPv6_dest_addr;           //!< IPv6 destination address.
-            uint8_t     IPv6_dest_slash_mask;     //!< Number of bits in destination network mask.
-
-            //!
-            //! Constructor
-            //! @param [in] addr1 IPv6 source address.
-            //! @param [in] mask1 Number of bits in source network mask.
-            //! @param [in] addr2 IPv6 destination address.
-            //! @param [in] mask2 Number of bits in destination network mask.
-            //!
-            Address(const IPv6Address& addr1 = IPv6Address(), uint8_t mask1 = 0, const IPv6Address& addr2 = IPv6Address(), uint8_t mask2 = 0);
+            Address() = default;                    //!< Constructor
+            IPv6Address IPv6_source_addr {};        //!< IPv6 source address.
+            uint8_t     IPv6_source_slash_mask {};  //!< Number of bits in source network mask.
+            IPv6Address IPv6_dest_addr {};          //!< IPv6 destination address.
+            uint8_t     IPv6_dest_slash_mask {};    //!< Number of bits in destination network mask.
         };
 
         // TargetIPv6SourceSlashDescriptor public members:
-        std::vector<Address> addresses;  //!< IPv6 addresses
+        std::vector<Address> addresses {};  //!< IPv6 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

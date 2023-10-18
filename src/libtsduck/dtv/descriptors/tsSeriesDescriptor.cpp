@@ -29,14 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::SeriesDescriptor::SeriesDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    series_id(0),
-    repeat_label(0),
-    program_pattern(0),
-    expire_date(),
-    episode_number(0),
-    last_episode_number(0),
-    series_name()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

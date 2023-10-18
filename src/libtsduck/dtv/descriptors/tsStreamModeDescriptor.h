@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // StreamModeDescriptor public members:
-        uint8_t stream_mode;    //!< Stream mode, state machine.
+        uint8_t stream_mode = 0;    //!< Stream mode, state machine.
 
         //!
         //! Default constructor.

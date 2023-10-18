@@ -27,18 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::SVCExtensionDescriptor::SVCExtensionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    width(0),
-    height(0),
-    frame_rate(0),
-    average_bitrate(0),
-    maximum_bitrate(0),
-    dependency_id(0),
-    quality_id_start(0),
-    quality_id_end(0),
-    temporal_id_start(0),
-    temporal_id_end(0),
-    no_sei_nal_unit_present(false)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

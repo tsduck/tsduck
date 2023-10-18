@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // Public members:
-        uint32_t metadata_input_leak_rate;   //!< 22 bits, in units of 400 bits/s
-        uint32_t metadata_buffer_size;       //!< 22 bits, in units of 1024 bytes.
-        uint32_t metadata_output_leak_rate;  //!< 22 bits, in units of 400 bits/s
+        uint32_t metadata_input_leak_rate = 0;   //!< 22 bits, in units of 400 bits/s
+        uint32_t metadata_buffer_size = 0;       //!< 22 bits, in units of 1024 bytes.
+        uint32_t metadata_output_leak_rate = 0;  //!< 22 bits, in units of 400 bits/s
 
         //!
         //! Default constructor.

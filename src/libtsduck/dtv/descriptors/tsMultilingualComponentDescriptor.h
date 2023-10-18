@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // MultilingualComponentDescriptor fields, in addition to inherited "entries".
-        uint8_t component_tag;  //!< Component tag, aka. stream identifier.
+        uint8_t component_tag = 0;  //!< Component tag, aka. stream identifier.
 
         //!
         //! Default constructor.

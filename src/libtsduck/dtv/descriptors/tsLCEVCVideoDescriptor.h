@@ -26,15 +26,15 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t   lcevc_stream_tag;                  //!< 8 bits.
-        uint8_t   profile_idc;                       //!< 4 bits.
-        uint8_t   level_idc;                         //!< 4 bits.
-        uint8_t   sublevel_idc;                      //!< 2 bits.
-        bool      processed_planes_type_flag;        //!< bool.
-        bool      picture_type_bit_flag;             //!< bool.
-        bool      field_type_bit_flag;               //!< bool.
-        uint8_t   HDR_WCG_idc;                       //!< 2 bits.
-        uint8_t   video_properties_tag;              //!< 4 bits.
+        uint8_t   lcevc_stream_tag = 0;                //!< 8 bits.
+        uint8_t   profile_idc = 0;                     //!< 4 bits.
+        uint8_t   level_idc = 0;                       //!< 4 bits.
+        uint8_t   sublevel_idc = 0;                    //!< 2 bits.
+        bool      processed_planes_type_flag = false;  //!< bool.
+        bool      picture_type_bit_flag = false;       //!< bool.
+        bool      field_type_bit_flag = false;         //!< bool.
+        uint8_t   HDR_WCG_idc = 3;                     //!< 2 bits.
+        uint8_t   video_properties_tag = 0;            //!< 4 bits.
 
         //!
         //! Default constructor.

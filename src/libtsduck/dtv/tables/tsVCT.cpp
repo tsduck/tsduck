@@ -20,8 +20,6 @@
 
 ts::VCT::VCT(TID tid, const UChar* xml_name, Standards standards, uint8_t version_, bool is_current_) :
     AbstractLongTable(tid, xml_name, standards, version_, is_current_),
-    protocol_version(0),
-    transport_stream_id(0),
     channels(this),
     descs(this)
 {
@@ -37,22 +35,7 @@ ts::VCT::VCT(const VCT& other) :
 }
 
 ts::VCT::Channel::Channel(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    short_name(),
-    major_channel_number(0),
-    minor_channel_number(0),
-    modulation_mode(0),
-    carrier_frequency(0),
-    channel_TSID(0),
-    program_number(0),
-    ETM_location(0),
-    access_controlled(false),
-    hidden(false),
-    hide_guide(false),
-    service_type(0),
-    source_id(0),
-    path_select(0),
-    out_of_band(false)
+    EntryWithDescriptors(table)
 {
 }
 

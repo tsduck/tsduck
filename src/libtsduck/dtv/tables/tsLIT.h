@@ -42,7 +42,7 @@ namespace ts {
             //!
             Event(const AbstractTable* table);
 
-            uint16_t local_event_id;  //!< Content version.
+            uint16_t local_event_id = 0;  //!< Content version.
         };
 
         //!
@@ -51,11 +51,11 @@ namespace ts {
         typedef EntryWithDescriptorsList<Event> EventList;
 
         // LIT public members:
-        uint16_t  event_id;             //!< Event id.
-        uint16_t  service_id;           //!< Service id.
-        uint16_t  transport_stream_id;  //!< Transport stream id.
-        uint16_t  original_network_id;  //!< Original network id.
-        EventList events;               //!< List of local events.
+        uint16_t  event_id = 0;             //!< Event id.
+        uint16_t  service_id = 0;           //!< Service id.
+        uint16_t  transport_stream_id = 0;  //!< Transport stream id.
+        uint16_t  original_network_id = 0;  //!< Original network id.
+        EventList events;                   //!< List of local events.
 
         //!
         //! Default constructor.

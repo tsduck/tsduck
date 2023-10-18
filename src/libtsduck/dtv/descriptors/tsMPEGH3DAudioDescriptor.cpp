@@ -28,12 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::MPEGH3DAudioDescriptor::MPEGH3DAudioDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    mpegh_3da_profile_level_indication(0),
-    interactivity_enabled(false),
-    reference_channel_layout(0),
-    CompatibleSetIndication(),
-    reserved()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

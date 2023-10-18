@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // MPEG4AudioDescriptor public members:
-        uint8_t MPEG4_audio_profile_and_level;  //!< MPEG-4 Audio profile.
+        uint8_t MPEG4_audio_profile_and_level = 0;  //!< MPEG-4 Audio profile.
 
         //!
         //! Default constructor.

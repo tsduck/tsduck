@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // SLDescriptor public members:
-        uint16_t ES_ID;  //!< Elementary stream identifier.
+        uint16_t ES_ID = 0;  //!< Elementary stream identifier.
 
         //!
         //! Default constructor.

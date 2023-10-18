@@ -27,15 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::VideoStreamDescriptor::VideoStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    multiple_frame_rate(false),
-    frame_rate_code(0),
-    MPEG_1_only(false),
-    constrained_parameter(false),
-    still_picture(false),
-    profile_and_level_indication(0),
-    chroma_format(0),
-    frame_rate_extension(false)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

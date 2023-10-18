@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // TargetBackgroundGridDescriptor public members:
-        uint16_t horizontal_size;           //!< 14 bits, horizontal size.
-        uint16_t vertical_size;             //!< 14 bits, vertical size.
-        uint8_t  aspect_ratio_information;  //!< 4 bits, aspect ration code, one of AR_*.
+        uint16_t horizontal_size = 0;           //!< 14 bits, horizontal size.
+        uint16_t vertical_size = 0;             //!< 14 bits, vertical size.
+        uint8_t  aspect_ratio_information = 0;  //!< 4 bits, aspect ration code, one of AR_*.
 
         //!
         //! Default constructor.

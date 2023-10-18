@@ -28,8 +28,8 @@ namespace ts {
     {
     public:
         // QualityExtensionDescriptor public members:
-        uint8_t                 field_size_bytes;   //!< constant size in bytes of the value for a metric in each sample
-        std::vector<uint32_t>   metric_codes;       //!< metrics that are present in teh bitstream
+        uint8_t               field_size_bytes = 0;  //!< constant size in bytes of the value for a metric in each sample
+        std::vector<uint32_t> metric_codes {};       //!< metrics that are present in teh bitstream
 
         //!
         //! Default constructor.

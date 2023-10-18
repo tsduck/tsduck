@@ -27,18 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::J2KVideoDescriptor::J2KVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profile_and_level(0),
-    horizontal_size(0),
-    vertical_size(0),
-    max_bit_rate(0),
-    max_buffer_size(0),
-    DEN_frame_rate(0),
-    NUM_frame_rate(0),
-    color_specification(0),
-    still_mode(false),
-    interlaced_video(false),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

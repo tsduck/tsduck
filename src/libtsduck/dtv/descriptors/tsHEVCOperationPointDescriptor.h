@@ -29,11 +29,10 @@ namespace ts {
         //!
         class ES_in_OP_type {
         public:
-            bool        necessary_layer_flag;  //!< 1 bit
-            bool        output_layer_flag;     //!< 1 bit
-            uint8_t     ptl_ref_idx;           //!< 6 bits
-
-            ES_in_OP_type();        //!< Constructor
+            ES_in_OP_type() = default;             //!< Constructor
+            bool    necessary_layer_flag = false;  //!< 1 bit
+            bool    output_layer_flag = false;     //!< 1 bit
+            uint8_t ptl_ref_idx = 0;               //!< 6 bits
         };
 
         //!
@@ -41,10 +40,9 @@ namespace ts {
         //!
         class ES_type {
         public:
-            bool        prepend_dependencies;  //!< 1 bit
-            uint8_t     ES_reference;          //!< 6 bits
-
-            ES_type();              //!< Constructor
+            ES_type() = default;                   //!< Constructor
+            bool    prepend_dependencies = false;  //!< 1 bit
+            uint8_t ES_reference = 0;              //!< 6 bits
         };
 
         //!
@@ -52,21 +50,20 @@ namespace ts {
         //!
         class operation_point_type {
         public:
-            uint8_t                     target_ols;                     //!< 8 bits.
-            std::vector<ES_type>        ESs;                            //!< Elementary streams.
-            std::vector<ES_in_OP_type>  ESinOPs;                        //!< Elementary streams in operation point.
-            uint8_t                     constant_frame_rate_info_idc;   //!< 2 bits
-            uint8_t                     applicable_temporal_id;         //!< 3 bits
-            Variable<uint16_t>          frame_rate_indicator;           //!< 12 bits
-            Variable<uint32_t>          avg_bit_rate;                   //!< 24 bits
-            Variable<uint32_t>          max_bit_rate;                   //!< 24 bits
-
-            operation_point_type();         //!< Constructor
+            operation_point_type() = default;                              //!< Constructor
+            uint8_t                     target_ols = 0;                    //!< 8 bits.
+            std::vector<ES_type>        ESs {};                            //!< Elementary streams.
+            std::vector<ES_in_OP_type>  ESinOPs {};                        //!< Elementary streams in operation point.
+            uint8_t                     constant_frame_rate_info_idc = 0;  //!< 2 bits
+            uint8_t                     applicable_temporal_id = 0;        //!< 3 bits
+            Variable<uint16_t>          frame_rate_indicator {};           //!< 12 bits
+            Variable<uint32_t>          avg_bit_rate {};                   //!< 24 bits
+            Variable<uint32_t>          max_bit_rate {};                   //!< 24 bits
         };
 
         // public members:
-        std::vector<ByteBlock>            profile_tier_level_infos;  //!< ISO/IEC 13818-1 clause 2.6.100
-        std::vector<operation_point_type> operation_points;          //!< ISO/IEC 13818-1 clause 2.6.100
+        std::vector<ByteBlock>            profile_tier_level_infos {};  //!< ISO/IEC 13818-1 clause 2.6.100
+        std::vector<operation_point_type> operation_points {};          //!< ISO/IEC 13818-1 clause 2.6.100
 
         //!
         //! Default constructor.

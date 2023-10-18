@@ -32,8 +32,8 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(CRIDAuthority);
             TS_DEFAULT_ASSIGMENTS(CRIDAuthority);
         public:
-            UString name;    //!< CRID authority name.
-            uint8_t policy;  //!< 2 bits, CRID authority policy.
+            UString name {};     //!< CRID authority name.
+            uint8_t policy = 0;  //!< 2 bits, CRID authority policy.
 
             //!
             //! Basic constructor.
@@ -63,7 +63,7 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(ResolutionProvider);
             TS_DEFAULT_ASSIGMENTS(ResolutionProvider);
         public:
-            UString          name;              //!< Resolution provider name.
+            UString          name {};           //!< Resolution provider name.
             CRIDAutorityList CRID_authorities;  //!< List of CRID autorities.
 
             //!
@@ -86,10 +86,10 @@ namespace ts {
         typedef EntryWithDescriptorsList<ResolutionProvider> ResolutionProviderList;
 
         // RNT public members:
-        uint16_t               context_id;       //!< Network or bouquet id.
-        uint8_t                context_id_type;  //!< Type of content in context_id.
-        DescriptorList         descs;            //!< Top-level descriptor list.
-        ResolutionProviderList providers;        //!< List of resolution providers.
+        uint16_t               context_id = 0;       //!< Network or bouquet id.
+        uint8_t                context_id_type = 0;  //!< Type of content in context_id.
+        DescriptorList         descs;                //!< Top-level descriptor list.
+        ResolutionProviderList providers;            //!< List of resolution providers.
 
         //!
         //! Default constructor.

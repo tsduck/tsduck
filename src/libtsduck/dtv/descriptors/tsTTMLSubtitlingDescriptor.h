@@ -25,14 +25,14 @@ namespace ts {
     {
     public:
         // Public members:
-        UString              language_code;          //!< 24 bits, EN 303 560
-        uint8_t              subtitle_purpose;       //!< 6 bits, EN 303 560
-        uint8_t              TTS_suitability;        //!< 2 bits
-        std::vector<uint8_t> dvb_ttml_profile;       //!< set of 8 bit values
-        Variable<uint32_t>   qualifier;              //!< 32 bits
-        std::vector<uint8_t> font_id;                //!< set of 7 bit values
-        UString              service_name;           //!< service name string
-        size_t               reserved_zero_future_use_bytes;  //!< arbitrary number of zero value bytes - not specified in EN 303 560
+        UString              language_code {};      //!< 24 bits, EN 303 560
+        uint8_t              subtitle_purpose = 0;  //!< 6 bits, EN 303 560
+        uint8_t              TTS_suitability = 0;   //!< 2 bits
+        std::vector<uint8_t> dvb_ttml_profile {};   //!< set of 8 bit values
+        Variable<uint32_t>   qualifier {};          //!< 32 bits
+        std::vector<uint8_t> font_id {};            //!< set of 7 bit values
+        UString              service_name {};       //!< service name string
+        size_t               reserved_zero_future_use_bytes = 0;  //!< arbitrary number of zero value bytes - not specified in EN 303 560
 
         //!
         //! Default constructor.

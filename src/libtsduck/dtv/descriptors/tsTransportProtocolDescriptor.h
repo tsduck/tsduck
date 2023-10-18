@@ -32,38 +32,41 @@ namespace ts {
         //!
         //! Selector byte layout when protocol_id == MHP_PROTO_CAROUSEL.
         //!
-        struct Carousel
+        class Carousel
         {
-            Carousel();                              //!< Default constructor.
-            void clear();                            //!< Reset content.
-            Variable<uint16_t> original_network_id;  //!< Optional original network id.
-            Variable<uint16_t> transport_stream_id;  //!< Optional transport stream id.
-            Variable<uint16_t> service_id;           //!< Optional service id.
-            uint8_t            component_tag;        //!< Component tag.
+        public:
+            Carousel() = default;                       //!< Default constructor.
+            void clear();                               //!< Reset content.
+            Variable<uint16_t> original_network_id {};  //!< Optional original network id.
+            Variable<uint16_t> transport_stream_id {};  //!< Optional transport stream id.
+            Variable<uint16_t> service_id {};           //!< Optional service id.
+            uint8_t            component_tag = 0;       //!< Component tag.
         };
 
         //!
         //! Selector byte layout when protocol_id == MHP_PROTO_MPE.
         //!
-        struct MPE
+        class MPE
         {
-            MPE();                                   //!< Default constructor.
-            void clear();                            //!< Reset content.
-            Variable<uint16_t> original_network_id;  //!< Optional original network id.
-            Variable<uint16_t> transport_stream_id;  //!< Optional transport stream id.
-            Variable<uint16_t> service_id;           //!< Optional service id.
-            bool               alignment_indicator;  //!< Alignment indicator.
-            UStringList        urls;                 //!< List of URL's.
+        public:
+            MPE() = default;                                 //!< Default constructor.
+            void clear();                                    //!< Reset content.
+            Variable<uint16_t> original_network_id {};       //!< Optional original network id.
+            Variable<uint16_t> transport_stream_id {};       //!< Optional transport stream id.
+            Variable<uint16_t> service_id {};                //!< Optional service id.
+            bool               alignment_indicator = false;  //!< Alignment indicator.
+            UStringList        urls {};                      //!< List of URL's.
         };
 
         //!
         //! One entry in selector bytes when protocol_id == MHP_PROTO_HTTP.
         //!
-        struct HTTPEntry
+        class HTTPEntry
         {
-            HTTPEntry();                             //!< Default constructor.
-            UString URL_base;                        //!< URL base.
-            UStringList URL_extensions;              //!< List of URL extensions.
+        public:
+            HTTPEntry() = default;          //!< Default constructor.
+            UString     URL_base {};        //!< URL base.
+            UStringList URL_extensions {};  //!< List of URL extensions.
         };
 
         //!
@@ -72,12 +75,12 @@ namespace ts {
         typedef std::list<HTTPEntry> HTTP;
 
         // TransportProtocolDescriptor public members:
-        uint16_t  protocol_id;               //!< Transport protocol id, one of MHP_PROTO_* values.
-        uint8_t   transport_protocol_label;  //!< Transport protocol label.
-        Carousel  carousel;                  //!< Selector when protocol_id == MHP_PROTO_CAROUSEL.
-        MPE       mpe;                       //!< Selector when protocol_id == MHP_PROTO_MPE.
-        HTTP      http;                      //!< Selector when protocol_id == MHP_PROTO_HTTP.
-        ByteBlock selector;                  //!< Selector for other protocol ids.
+        uint16_t  protocol_id = 0;               //!< Transport protocol id, one of MHP_PROTO_* values.
+        uint8_t   transport_protocol_label = 0;  //!< Transport protocol label.
+        Carousel  carousel {};                   //!< Selector when protocol_id == MHP_PROTO_CAROUSEL.
+        MPE       mpe {};                        //!< Selector when protocol_id == MHP_PROTO_MPE.
+        HTTP      http {};                       //!< Selector when protocol_id == MHP_PROTO_HTTP.
+        ByteBlock selector {};                   //!< Selector for other protocol ids.
 
         //!
         //! Default constructor.

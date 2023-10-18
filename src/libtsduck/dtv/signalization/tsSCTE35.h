@@ -94,13 +94,13 @@ namespace ts {
     {
     public:
         // Public fields:
-        uint32_t  identifier;     //!< SMPTE identifier.
-        ByteBlock private_bytes;  //!< Private command content.
+        uint32_t  identifier = 0;    //!< SMPTE identifier.
+        ByteBlock private_bytes {};  //!< Private command content.
 
         //!
         //! Constructor
         //! @param [in] id SMPTE identifier.
         //!
-        SplicePrivateCommand(uint32_t id = 0);
+        SplicePrivateCommand(uint32_t id = 0) : identifier(id) {}
     };
 }

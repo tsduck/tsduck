@@ -44,15 +44,13 @@ ts::AbstractTransportListTable::AbstractTransportListTable(DuckContext& duck,
                                                            const BinaryTable& table) :
     AbstractLongTable(tid, xml_name, standards, 0, true),
     descs(this),
-    transports(this),
-    _tid_ext(0xFFFF)
+    transports(this)
 {
     deserialize(duck, table);
 }
 
 ts::AbstractTransportListTable::Transport::Transport(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    preferred_section(-1)
+    EntryWithDescriptors(table)
 {
 }
 

@@ -34,35 +34,8 @@ constexpr size_t PROFILE_TIER_LEVEL_INFO_SIZE = 96 / 8;   // number of bytes for
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::HEVCOperationPointDescriptor::ES_in_OP_type::ES_in_OP_type() :
-    necessary_layer_flag(false),
-    output_layer_flag(false),
-    ptl_ref_idx(0)
-{
-}
-
-ts::HEVCOperationPointDescriptor::ES_type::ES_type() :
-    prepend_dependencies(false),
-    ES_reference(0)
-{
-}
-
-ts::HEVCOperationPointDescriptor::operation_point_type::operation_point_type() :
-    target_ols(0),
-    ESs(),
-    ESinOPs(),
-    constant_frame_rate_info_idc(0),
-    applicable_temporal_id(0),
-    frame_rate_indicator(),
-    avg_bit_rate(),
-    max_bit_rate()
-{
-}
-
 ts::HEVCOperationPointDescriptor::HEVCOperationPointDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profile_tier_level_infos(),
-    operation_points()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

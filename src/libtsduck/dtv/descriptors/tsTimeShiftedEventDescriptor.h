@@ -24,8 +24,8 @@ namespace ts {
     {
     public:
         // Public members:
-        uint16_t reference_service_id;  //!< Reference service.
-        uint16_t reference_event_id;    //!< Reference event.
+        uint16_t reference_service_id = 0;  //!< Reference service.
+        uint16_t reference_event_id = 0;    //!< Reference event.
 
         //!
         //! Default constructor.

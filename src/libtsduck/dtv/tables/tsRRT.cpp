@@ -29,9 +29,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 ts::RRT::RRT(uint8_t vers, uint8_t reg) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, true), // RRT is always "current"
     rating_region(reg),
-    protocol_version(0),
-    rating_region_name(),
-    dimensions(),
     descs(this)
 {
 }
@@ -50,20 +47,6 @@ ts::RRT::RRT(DuckContext& duck, const BinaryTable& table) :
     RRT()
 {
     deserialize(duck, table);
-}
-
-
-ts::RRT::Dimension::Dimension() :
-    graduated_scale(false),
-    dimension_name(),
-    values()
-{
-}
-
-ts::RRT::RatingValue::RatingValue() :
-    abbrev_rating_value(),
-    rating_value()
-{
 }
 
 

@@ -28,11 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::TSInformationDescriptor::TSInformationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    remote_control_key_id(0),
-    ts_name(),
-    transmission_types(),
-    reserved_future_use()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -48,12 +44,6 @@ ts::TSInformationDescriptor::TSInformationDescriptor(DuckContext& duck, const De
     TSInformationDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::TSInformationDescriptor::Entry::Entry() :
-    transmission_type_info(0),
-    service_ids()
-{
 }
 
 

@@ -31,9 +31,9 @@ namespace ts {
         class TSDUCKDLL Schedule
         {
         public:
-            Schedule();         //!< Constructor
-            Time   start_time;  //!< Event start_time in UTC (or JST in Japan).
-            Second duration;    //!< Event duration in seconds.
+            Schedule() = default;  //!< Constructor
+            Time   start_time {};  //!< Event start_time in UTC (or JST in Japan).
+            Second duration = 0;   //!< Event duration in seconds.
         };
 
         //!
@@ -58,10 +58,10 @@ namespace ts {
             //!
             ContentVersion(const AbstractTable* table);
 
-            uint16_t     content_version;        //!< Content version.
-            uint16_t     content_minor_version;  //!< Content minor version.
-            uint8_t      version_indicator;      //!< 2 bits, how to use the version.
-            ScheduleList schedules;              //!< List of schedules.
+            uint16_t     content_version = 0;        //!< Content version.
+            uint16_t     content_minor_version = 0;  //!< Content minor version.
+            uint8_t      version_indicator = 0;      //!< 2 bits, how to use the version.
+            ScheduleList schedules {};               //!< List of schedules.
         };
 
         //!
@@ -70,11 +70,11 @@ namespace ts {
         typedef EntryWithDescriptorsList<ContentVersion> ContentVersionList;
 
         // PCAT public members:
-        uint16_t           service_id;           //!< Service id.
-        uint16_t           transport_stream_id;  //!< Transport stream id.
-        uint16_t           original_network_id;  //!< Original network id.
-        uint32_t           content_id;           //!< Content id.
-        ContentVersionList versions;             //!< List of content versions.
+        uint16_t           service_id = 0;           //!< Service id.
+        uint16_t           transport_stream_id = 0;  //!< Transport stream id.
+        uint16_t           original_network_id = 0;  //!< Original network id.
+        uint32_t           content_id = 0;           //!< Content id.
+        ContentVersionList versions;                 //!< List of content versions.
 
         //!
         //! Default constructor.

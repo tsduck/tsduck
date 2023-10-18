@@ -26,7 +26,7 @@ namespace ts {
     {
     public:
         // Public members:
-        ByteBlock lcevc_stream_tags;       //!< array of 8 bit values.
+        ByteBlock lcevc_stream_tags {};  //!< array of 8 bit values.
 
         //!
         //! Default constructor.

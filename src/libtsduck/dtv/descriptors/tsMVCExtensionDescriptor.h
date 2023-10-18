@@ -24,16 +24,16 @@ namespace ts {
     {
     public:
         // MVCExtensionDescriptor public members:
-        uint16_t average_bitrate;               //!< In kb/s
-        uint16_t maximum_bitrate;               //!< In kb/s
-        bool     view_association_not_present;  //!< 1 bit
-        bool     base_view_is_left_eyeview;     //!< 1 bit
-        uint16_t view_order_index_min;          //!< 10 bit
-        uint16_t view_order_index_max;          //!< 10 bit
-        uint8_t  temporal_id_start;             //!< 3 bits
-        uint8_t  temporal_id_end;               //!< 3 bits
-        bool     no_sei_nal_unit_present;       //!< 1 bit
-        bool     no_prefix_nal_unit_present;    //!< 1 bit
+        uint16_t average_bitrate = 0;                   //!< In kb/s
+        uint16_t maximum_bitrate = 0;                   //!< In kb/s
+        bool     view_association_not_present = false;  //!< 1 bit
+        bool     base_view_is_left_eyeview = false;     //!< 1 bit
+        uint16_t view_order_index_min = 0;              //!< 10 bit
+        uint16_t view_order_index_max = 0;              //!< 10 bit
+        uint8_t  temporal_id_start = 0;                 //!< 3 bits
+        uint8_t  temporal_id_end = 0;                   //!< 3 bits
+        bool     no_sei_nal_unit_present = false;       //!< 1 bit
+        bool     no_prefix_nal_unit_present = false;    //!< 1 bit
 
         //!
         //! Default constructor.

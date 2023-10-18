@@ -25,8 +25,8 @@ namespace ts {
     {
     public:
         // ITT public members:
-        uint16_t       event_id;  //!< Event id.
-        DescriptorList descs;     //!< Descriptor list.
+        uint16_t       event_id = 0;  //!< Event id.
+        DescriptorList descs;         //!< Descriptor list.
 
         //!
         //! Default constructor.

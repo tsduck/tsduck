@@ -48,10 +48,10 @@ namespace ts {
         typedef EntryWithDescriptorsMap<uint8_t, Broadcaster> BroadcasterMap;
 
         // BIT public members:
-        uint16_t       original_network_id;       //!< Original network id.
-        bool           broadcast_view_propriety;  //!< User indication with a unit of broadcaster name is appropriate.
-        DescriptorList descs;                     //!< Top-level descriptor list.
-        BroadcasterMap broadcasters;              //!< List of broadcasters descriptions.
+        uint16_t       original_network_id = 0;           //!< Original network id.
+        bool           broadcast_view_propriety = false;  //!< User indication with a unit of broadcaster name is appropriate.
+        DescriptorList descs;                             //!< Top-level descriptor list.
+        BroadcasterMap broadcasters;                      //!< List of broadcasters descriptions.
 
         //!
         //! Default constructor.

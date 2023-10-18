@@ -40,8 +40,7 @@ ts::ParentalRatingDescriptor::Entry::Entry(const UString& code, uint8_t rate) :
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -51,15 +50,13 @@ void ts::ParentalRatingDescriptor::clearContent()
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    ParentalRatingDescriptor()
 {
     deserialize(duck, desc);
 }
 
 ts::ParentalRatingDescriptor::ParentalRatingDescriptor(const UString& code, uint8_t rate) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    ParentalRatingDescriptor()
 {
     entries.push_back(Entry(code, rate));
 }

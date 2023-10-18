@@ -35,8 +35,6 @@ const ts::Enumeration ts::DCCSCT::UpdateTypeNames({
 
 ts::DCCSCT::DCCSCT(uint8_t version_) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, true), // DCCSCT is always "current"
-    dccsct_type(0),
-    protocol_version(0),
     updates(this),
     descs(this)
 {
@@ -59,14 +57,7 @@ ts::DCCSCT::DCCSCT(DuckContext& duck, const BinaryTable& table) :
 
 ts::DCCSCT::Update::Update(const AbstractTable* table, UpdateType type) :
     EntryWithDescriptors(table),
-    update_type(type),
-    genre_category_code(0),
-    genre_category_name_text(),
-    dcc_state_location_code(0),
-    dcc_state_location_code_text(),
-    state_code(0),
-    dcc_county_location_code(0),
-    dcc_county_location_code_text()
+    update_type(type)
 {
 }
 

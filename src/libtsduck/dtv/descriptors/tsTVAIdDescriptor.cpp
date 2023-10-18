@@ -27,8 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::TVAIdDescriptor::TVAIdDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    TVA_ids()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -41,12 +40,6 @@ ts::TVAIdDescriptor::TVAIdDescriptor(DuckContext& duck, const Descriptor& desc) 
 void ts::TVAIdDescriptor::clearContent()
 {
     TVA_ids.clear();
-}
-
-ts::TVAIdDescriptor::TVAId::TVAId() :
-    TVA_id(0),
-    running_status(0)
-{
 }
 
 

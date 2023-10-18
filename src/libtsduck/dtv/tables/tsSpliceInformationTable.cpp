@@ -28,14 +28,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::SpliceInformationTable::SpliceInformationTable() :
     AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
-    protocol_version(0),
-    pts_adjustment(0),
-    tier(0x0FFF),
-    splice_command_type(SPLICE_NULL),
-    splice_schedule(),
-    splice_insert(),
-    time_signal(),
-    private_command(),
     descs(this)
 {
 }

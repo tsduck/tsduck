@@ -25,10 +25,10 @@ namespace ts {
     {
     public:
         // ETT public members:
-        uint16_t           ETT_table_id_extension;  //!< Table extension, for ETT segmentation.
-        uint8_t            protocol_version;        //!< ATSC protocol version.
-        uint32_t           ETM_id;                  //!< Extended text message id.
-        ATSCMultipleString extended_text_message;   //!< Extended text message.
+        uint16_t           ETT_table_id_extension = 0;  //!< Table extension, for ETT segmentation.
+        uint8_t            protocol_version = 0;        //!< ATSC protocol version.
+        uint32_t           ETM_id = 0;                  //!< Extended text message id.
+        ATSCMultipleString extended_text_message {};    //!< Extended text message.
 
         //!
         //! Default constructor.

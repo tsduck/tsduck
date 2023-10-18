@@ -30,10 +30,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 
 ts::ISDBAccessControlDescriptor::ISDBAccessControlDescriptor(uint16_t id, PID p) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    CA_system_id(id),
-    transmission_type(7), // broadcast route
-    pid(p),
-    private_data()
+    CA_system_id(id)
 {
 }
 

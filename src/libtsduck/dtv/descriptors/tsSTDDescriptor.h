@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // Public members:
-        bool leak_valid;  //!< Leak valid flag.
+        bool leak_valid = false;  //!< Leak valid flag.
 
         //!
         //! Default constructor.

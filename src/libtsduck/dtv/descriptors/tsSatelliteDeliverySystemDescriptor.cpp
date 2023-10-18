@@ -26,15 +26,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::SatelliteDeliverySystemDescriptor::SatelliteDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_UNDEFINED, MY_XML_NAME),
-    frequency(0),
-    orbital_position(0),
-    east_not_west(false),
-    polarization(0),
-    symbol_rate(0),
-    modulation(0),
-    roll_off(0),
-    FEC_inner(0)
+    AbstractDeliverySystemDescriptor(MY_DID, DS_UNDEFINED, MY_XML_NAME)
 {
 }
 

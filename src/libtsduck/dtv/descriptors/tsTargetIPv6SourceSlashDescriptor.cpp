@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::TargetIPv6SourceSlashDescriptor::TargetIPv6SourceSlashDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    addresses()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -42,14 +41,6 @@ ts::TargetIPv6SourceSlashDescriptor::TargetIPv6SourceSlashDescriptor(DuckContext
     TargetIPv6SourceSlashDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::TargetIPv6SourceSlashDescriptor::Address::Address(const IPv6Address& addr1, uint8_t mask1, const IPv6Address& addr2, uint8_t mask2) :
-    IPv6_source_addr(addr1),
-    IPv6_source_slash_mask(mask1),
-    IPv6_dest_addr(addr2),
-    IPv6_dest_slash_mask(mask2)
-{
 }
 
 

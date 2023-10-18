@@ -33,8 +33,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            UString label;               //!< Label string.
-            uint8_t prefetch_priority;   //!< Prefetch priority, 1 to 100.
+            UString label {};               //!< Label string.
+            uint8_t prefetch_priority = 0;  //!< Prefetch priority, 1 to 100.
 
             //!
             //! Default constructor.
@@ -50,8 +50,8 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // PrefetchDescriptor public members:
-        uint8_t   transport_protocol_label;  //!< Transport protocol label.
-        EntryList entries;                   //!< The list of module entries.
+        uint8_t   transport_protocol_label = 0;  //!< Transport protocol label.
+        EntryList entries {};                   //!< The list of module entries.
 
         //!
         //! Default constructor.

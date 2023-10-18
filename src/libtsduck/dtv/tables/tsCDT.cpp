@@ -29,11 +29,7 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::CDT::CDT(uint8_t vers, bool cur) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur),
-    download_data_id(0),
-    original_network_id(0),
-    data_type(0),
-    descs(this),
-    data_module()
+    descs(this)
 {
 }
 

@@ -21,20 +21,7 @@
 //----------------------------------------------------------------------------
 
 ts::SpliceInsert::SpliceInsert() :
-    AbstractSignalization(MY_XML_NAME, MY_STD),
-    event_id(0),
-    canceled(true),
-    splice_out(false),
-    immediate(false),
-    program_splice(false),
-    use_duration(false),
-    program_pts(),
-    components_pts(),
-    duration_pts(INVALID_PTS),
-    auto_return(false),
-    program_id(0),
-    avail_num(0),
-    avails_expected(0)
+    AbstractSignalization(MY_XML_NAME, MY_STD)
 {
 }
 

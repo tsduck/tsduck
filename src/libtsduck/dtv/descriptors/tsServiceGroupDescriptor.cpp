@@ -29,10 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::ServiceGroupDescriptor::ServiceGroupDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    service_group_type(0),
-    simultaneous_services(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -47,12 +44,6 @@ ts::ServiceGroupDescriptor::ServiceGroupDescriptor(DuckContext& duck, const Desc
     ServiceGroupDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::ServiceGroupDescriptor::SimultaneousService::SimultaneousService() :
-    primary_service_id(0),
-    secondary_service_id(0)
-{
 }
 
 

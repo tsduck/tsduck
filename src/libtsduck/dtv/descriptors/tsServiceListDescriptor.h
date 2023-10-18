@@ -29,8 +29,8 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            uint16_t service_id;     //!< Service id.
-            uint8_t  service_type;   //!< Service type.
+            uint16_t service_id = 0;    //!< Service id.
+            uint8_t  service_type = 0;  //!< Service type.
 
             //!
             //! Default constructor.
@@ -51,7 +51,7 @@ namespace ts {
         static constexpr size_t MAX_ENTRIES = 85;
 
         // ServiceListDescriptor public members:
-        EntryList entries;  //!< The list of service entries.
+        EntryList entries {};  //!< The list of service entries.
 
         //!
         //! Default constructor.

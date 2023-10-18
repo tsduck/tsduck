@@ -25,25 +25,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionMPEG(MY_EDID), MY_XML_NAME, 
 //----------------------------------------------------------------------------
 
 ts::HEVCSubregionDescriptor::HEVCSubregionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    SubstreamIDsPerLine(0),
-    TotalSubstreamIDs(0),
-    LevelFullPanorama(0),
-    SubregionLayouts()
-{
-}
-
-ts::HEVCSubregionDescriptor::pattern_type::pattern_type() :
-    SubstreamOffset()
-{
-}
-
-ts::HEVCSubregionDescriptor::subregion_layout_type::subregion_layout_type() :
-    PreambleSubstreamID(),
-    Level(0),
-    PictureSizeHor(0),
-    PictureSizeVer(0),
-    Patterns()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

@@ -59,19 +59,13 @@ namespace ts {
         //! Check if this is an "actual" NIT.
         //! @return True for NIT Actual Network, false for NIT Other Network.
         //!
-        bool isActual() const
-        {
-            return _table_id == TID_NIT_ACT;
-        }
+        bool isActual() const { return _table_id == TID_NIT_ACT; }
 
         //!
         //! Set if this is an "actual" NIT.
         //! @param [in] is_actual True for NIT Actual Network, false for NIT Other Network.
         //!
-        void setActual(bool is_actual)
-        {
-            _table_id = uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH);
-        }
+        void setActual(bool is_actual) { _table_id = uint8_t(is_actual ? TID_NIT_ACT : TID_NIT_OTH); }
 
         // Inherited methods
         DeclareDisplaySection();

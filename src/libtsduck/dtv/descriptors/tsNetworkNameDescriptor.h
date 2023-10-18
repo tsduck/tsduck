@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // NetworkNameDescriptor public members:
-        UString name; //!< Network name.
+        UString name {}; //!< Network name.
 
         //!
         //! Default constructor.

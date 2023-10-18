@@ -33,9 +33,8 @@ namespace ts {
         //!
         class pattern_type {
         public:
-            std::vector<int8_t>    SubstreamOffset;            //!< offset to be added
-
-            pattern_type();         //!< Constructor
+            pattern_type() = default;                //!< Constructor
+            std::vector<int8_t> SubstreamOffset {};  //!< offset to be added
         };
 
         //!
@@ -43,20 +42,19 @@ namespace ts {
         //!
         class subregion_layout_type {
         public:
-            Variable<uint8_t>           PreambleSubstreamID;    //!< 7 bits. Indicates the SubstreamID of the ES to be prepended to the ES to which this descriptor applies
-            uint8_t                     Level;                  //!< Value of the profile as specified in ISO/IEC 23008-2 that applies to the subregion layout
-            uint16_t                    PictureSizeHor;         //!< Horizontal subregion dimension, measured in pixels
-            uint16_t                    PictureSizeVer;         //!< Vertical subregion dimension, measured in pixels
-            std::vector<pattern_type>   Patterns;               //!< Patterns
-
-            subregion_layout_type();    //!< Constructor
+            subregion_layout_type() = default;                 //!< Constructor
+            Variable<uint8_t>         PreambleSubstreamID {};  //!< 7 bits. Indicates the SubstreamID of the ES to be prepended to the ES to which this descriptor applies
+            uint8_t                   Level = 0;               //!< Value of the profile as specified in ISO/IEC 23008-2 that applies to the subregion layout
+            uint16_t                  PictureSizeHor = 0;      //!< Horizontal subregion dimension, measured in pixels
+            uint16_t                  PictureSizeVer = 0;      //!< Vertical subregion dimension, measured in pixels
+            std::vector<pattern_type> Patterns {};             //!< Patterns
         };
 
         // Public members:
-        uint8_t                             SubstreamIDsPerLine;    //!< 7 bits. The number of HEVC tile substreams that are coded representations of tiles that are arranged horizontally and span the width of the whole panorama.
-        uint8_t                             TotalSubstreamIDs;      //!< Total number of HEVC tile substreams that represent tiles for the whole panorama.
-        uint8_t                             LevelFullPanorama;      //!< Level of the profile as specified in ISO/IEC 23008-2 that applies to the whole panorama.
-        std::vector<subregion_layout_type>  SubregionLayouts;       //!< Subregion layouts.
+        uint8_t                             SubstreamIDsPerLine = 0;  //!< 7 bits. The number of HEVC tile substreams that are coded representations of tiles that are arranged horizontally and span the width of the whole panorama.
+        uint8_t                             TotalSubstreamIDs = 0;    //!< Total number of HEVC tile substreams that represent tiles for the whole panorama.
+        uint8_t                             LevelFullPanorama = 0;    //!< Level of the profile as specified in ISO/IEC 23008-2 that applies to the whole panorama.
+        std::vector<subregion_layout_type>  SubregionLayouts {};      //!< Subregion layouts.
 
         //!
         //! Default constructor.

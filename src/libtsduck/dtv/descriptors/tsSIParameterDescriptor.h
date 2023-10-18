@@ -31,9 +31,9 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            Entry();                      //!< Constructor.
-            TID       table_id;           //!< Table id.
-            ByteBlock table_description;  //!< Table description.
+            Entry() = default;               //!< Constructor.
+            TID       table_id = TID_NULL;   //!< Table id.
+            ByteBlock table_description {};  //!< Table description.
         };
 
         //!
@@ -42,9 +42,9 @@ namespace ts {
         typedef std::list<Entry> EntryList;
 
         // SIParameterDescriptor public members:
-        uint8_t   parameter_version;  //!< Update count.
-        Time      update_time;        //!< Update date (the time inside the day is ignored).
-        EntryList entries;            //!< Table entries.
+        uint8_t   parameter_version = 0;  //!< Update count.
+        Time      update_time {};         //!< Update date (the time inside the day is ignored).
+        EntryList entries {};             //!< Table entries.
 
         //!
         //! Default constructor.

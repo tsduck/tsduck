@@ -29,7 +29,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 ts::ATSCEIT::ATSCEIT(uint8_t version_, uint16_t source_id_) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, true), // ATSC EIT is always "current"
     source_id(source_id_),
-    protocol_version(0),
     events(this)
 {
 }
@@ -50,12 +49,7 @@ ts::ATSCEIT::ATSCEIT(const ATSCEIT& other) :
 }
 
 ts::ATSCEIT::Event::Event(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    event_id(0),
-    start_time(),
-    ETM_location(0),
-    length_in_seconds(0),
-    title_text()
+    EntryWithDescriptors(table)
 {
 }
 

@@ -30,16 +30,16 @@ namespace ts {
         //!
         struct TSDUCKDLL Change
         {
-            Change();                                  //!< Default constructor.
-            uint8_t            network_change_id;      //!< Network change id.
-            uint8_t            network_change_version; //!< Network change version.
-            Time               start_time_of_change;   //!< Start time of change.
-            Second             change_duration;        //!< Change duration in seconds (must be less than 12 hours)?
-            uint8_t            receiver_category;      //!< 3 bits, 0 for all, 1 for T2/S2/C2.
-            uint8_t            change_type;            //!< 4 bits, type of change.
-            uint8_t            message_id;             //!< Message id.
-            Variable<uint16_t> invariant_ts_tsid;      //!< Optional invariant TS id.
-            Variable<uint16_t> invariant_ts_onid;      //!< Original network id of optional invariant TS.
+            Change() = default;                            //!< Default constructor.
+            uint8_t            network_change_id = 0;      //!< Network change id.
+            uint8_t            network_change_version = 0; //!< Network change version.
+            Time               start_time_of_change {};    //!< Start time of change.
+            Second             change_duration = 0;        //!< Change duration in seconds (must be less than 12 hours)?
+            uint8_t            receiver_category = 0;      //!< 3 bits, 0 for all, 1 for T2/S2/C2.
+            uint8_t            change_type = 0;            //!< 4 bits, type of change.
+            uint8_t            message_id = 0;             //!< Message id.
+            Variable<uint16_t> invariant_ts_tsid {};       //!< Optional invariant TS id.
+            Variable<uint16_t> invariant_ts_onid {};       //!< Original network id of optional invariant TS.
         };
 
         //!
@@ -52,9 +52,9 @@ namespace ts {
         //!
         struct TSDUCKDLL Cell
         {
-            Cell();               //!< Default constructor.
-            uint16_t   cell_id;   //!< Cell id.
-            ChangeList changes;   //!< List of changes.
+            Cell() = default;        //!< Default constructor.
+            uint16_t   cell_id = 0;  //!< Cell id.
+            ChangeList changes {};   //!< List of changes.
         };
 
         //!
@@ -63,7 +63,7 @@ namespace ts {
         typedef std::list<Cell> CellList;
 
         // NetworkChangeNotifyDescriptor public members:
-        CellList cells;  //!< The list of cells and changes.
+        CellList cells {};  //!< The list of cells and changes.
 
         //!
         //! Default constructor.

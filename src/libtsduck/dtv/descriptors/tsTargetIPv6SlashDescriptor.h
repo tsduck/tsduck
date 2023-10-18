@@ -35,19 +35,13 @@ namespace ts {
         class Address
         {
         public:
-            IPv6Address IPv6_addr;         //!< IPv6 address.
-            uint8_t     IPv6_slash_mask;   //!< Number of bits in network mask.
-
-            //!
-            //! Constructor
-            //! @param [in] addr IPv6 address.
-            //! @param [in] mask Number of bits in network mask.
-            //!
-            Address(const IPv6Address& addr = IPv6Address(), uint8_t mask = 0);
+            Address() = default;             //!< Constructor
+            IPv6Address IPv6_addr {};        //!< IPv6 address.
+            uint8_t     IPv6_slash_mask {};  //!< Number of bits in network mask.
         };
 
         // TargetIPv6SlashDescriptor public members:
-        std::vector<Address> addresses;  //!< IPv6 addresses
+        std::vector<Address> addresses {};  //!< IPv6 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

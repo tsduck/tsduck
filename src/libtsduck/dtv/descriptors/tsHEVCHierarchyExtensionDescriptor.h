@@ -26,13 +26,13 @@ namespace ts {
     {
     public:
         // HEVCHierarchyExtensionDescriptor public members:
-        uint16_t  extension_dimension_bits; //!< Bit mask.
-        uint8_t   hierarchy_layer_index;    //!< 6 bits.
-        uint8_t   temporal_id;              //!< 3 bits.
-        uint8_t   nuh_layer_id;             //!< 6 bits.
-        bool      tref_present;             //!< TREF field may be present in PES header.
-        uint8_t   hierarchy_channel;        //!< 6 bits.
-        ByteBlock hierarchy_ext_embedded_layer_index;  //!< List of 6-bit index values.
+        uint16_t  extension_dimension_bits = 0; //!< Bit mask.
+        uint8_t   hierarchy_layer_index = 0;    //!< 6 bits.
+        uint8_t   temporal_id = 0;              //!< 3 bits.
+        uint8_t   nuh_layer_id = 0;             //!< 6 bits.
+        bool      tref_present = false;         //!< TREF field may be present in PES header.
+        uint8_t   hierarchy_channel = 0;        //!< 6 bits.
+        ByteBlock hierarchy_ext_embedded_layer_index {};  //!< List of 6-bit index values.
 
         //!
         //! Default constructor.

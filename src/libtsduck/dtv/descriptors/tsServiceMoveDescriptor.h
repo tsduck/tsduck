@@ -24,9 +24,9 @@ namespace ts {
     {
     public:
         // ServiceMoveDescriptor public members:
-        uint16_t new_original_network_id;   //!< New original network id.
-        uint16_t new_transport_stream_id;   //!< New transport stream id.
-        uint16_t new_service_id;            //!< New service id.
+        uint16_t new_original_network_id = 0;   //!< New original network id.
+        uint16_t new_transport_stream_id = 0;   //!< New transport stream id.
+        uint16_t new_service_id = 0;            //!< New service id.
 
         //!
         //! Default constructor.

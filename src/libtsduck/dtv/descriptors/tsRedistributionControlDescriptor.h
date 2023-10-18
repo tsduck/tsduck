@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Public members:
-        ByteBlock rc_information;   //!< Redistribution control information.
+        ByteBlock rc_information {};   //!< Redistribution control information.
 
         //!
         //! Default constructor.

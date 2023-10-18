@@ -28,12 +28,7 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 //----------------------------------------------------------------------------
 
 ts::CIT::CIT(uint8_t version_, bool is_current_) :
-    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
-    service_id(0),
-    transport_stream_id(0),
-    original_network_id(0),
-    prepend_strings(),
-    crids()
+    AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_)
 {
 }
 
@@ -41,13 +36,6 @@ ts::CIT::CIT(DuckContext& duck, const BinaryTable& table) :
     CIT()
 {
     deserialize(duck, table);
-}
-
-ts::CIT::CRID::CRID() :
-    crid_ref(0),
-    prepend_string_index(0),
-    unique_string()
-{
 }
 
 

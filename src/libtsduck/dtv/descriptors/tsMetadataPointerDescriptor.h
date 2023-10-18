@@ -25,17 +25,17 @@ namespace ts {
     {
     public:
         // MetadataPointerDescriptor public members:
-        uint16_t  metadata_application_format;             //!< Meta-data application format.
-        uint32_t  metadata_application_format_identifier;  //!< When metadata_application_format== 0xFFFF.
-        uint8_t   metadata_format;                         //!< Meta-data format.
-        uint32_t  metadata_format_identifier;              //!< When metadata_format== 0xFF.
-        uint8_t   metadata_service_id;                     //!< Meta-data service id.
-        uint8_t   MPEG_carriage_flags;                     //!< 2 bits.
-        ByteBlock metadata_locator;                        //!< Meta-data locator record.
-        uint16_t  program_number;                          //!< When MPEG_carriage_flags <= 2.
-        uint16_t  transport_stream_location;               //!< When MPEG_carriage_flags == 1.
-        uint16_t  transport_stream_id;                     //!< When MPEG_carriage_flags == 1.
-        ByteBlock private_data;                            //!< Private data.
+        uint16_t  metadata_application_format = 0;             //!< Meta-data application format.
+        uint32_t  metadata_application_format_identifier = 0;  //!< When metadata_application_format== 0xFFFF.
+        uint8_t   metadata_format = 0;                         //!< Meta-data format.
+        uint32_t  metadata_format_identifier = 0;              //!< When metadata_format== 0xFF.
+        uint8_t   metadata_service_id = 0;                     //!< Meta-data service id.
+        uint8_t   MPEG_carriage_flags = 0;                     //!< 2 bits.
+        ByteBlock metadata_locator {};                         //!< Meta-data locator record.
+        uint16_t  program_number = 0;                          //!< When MPEG_carriage_flags <= 2.
+        uint16_t  transport_stream_location = 0;               //!< When MPEG_carriage_flags == 1.
+        uint16_t  transport_stream_id = 0;                     //!< When MPEG_carriage_flags == 1.
+        ByteBlock private_data {};                             //!< Private data.
 
         //!
         //! Default constructor.

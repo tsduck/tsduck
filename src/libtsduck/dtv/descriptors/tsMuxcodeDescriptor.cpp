@@ -29,23 +29,8 @@ auto constexpr MAX_SLOTS = 0x1F;            // 5 bits for the slotCount
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::MuxCodeDescriptor::substructure_type::substructure_type() :
-    repititionCount(0),
-    m4MuxChannel(),
-    numberOfBytes()
-{
-}
-
-ts::MuxCodeDescriptor::MuxCodeTableEntry_type::MuxCodeTableEntry_type() :
-    MuxCode(0),
-    version(0),
-    substructure()
-{
-}
-
 ts::MuxCodeDescriptor::MuxCodeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    MuxCodeTableEntry()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

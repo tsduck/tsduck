@@ -25,12 +25,12 @@ namespace ts {
     {
     public:
         // NPTReferenceDescriptor public members:
-        bool     post_discontinuity;   //!< Post discontinuity indicator.
-        uint8_t  content_id;           //!< 7 bits, optional content id.
-        uint64_t STC_reference;        //!< 33 bits, reference System Time Clock (STC), PCR value in PTS units, ie. PCR/300.
-        uint64_t NPT_reference;        //!< 33 bits, reference Normal Play Time (NPT).
-        uint16_t scale_numerator;      //!< Numerator of NPT/STC rate change.
-        uint16_t scale_denominator;    //!< Denominator of NPT/STC rate change.
+        bool     post_discontinuity = false;  //!< Post discontinuity indicator.
+        uint8_t  content_id = 0;              //!< 7 bits, optional content id.
+        uint64_t STC_reference = 0;           //!< 33 bits, reference System Time Clock (STC), PCR value in PTS units, ie. PCR/300.
+        uint64_t NPT_reference = 0;           //!< 33 bits, reference Normal Play Time (NPT).
+        uint16_t scale_numerator = 0;         //!< Numerator of NPT/STC rate change.
+        uint16_t scale_denominator = 0;       //!< Denominator of NPT/STC rate change.
 
         //!
         //! Default constructor.

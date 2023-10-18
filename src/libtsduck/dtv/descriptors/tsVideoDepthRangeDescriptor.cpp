@@ -29,8 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::VideoDepthRangeDescriptor::VideoDepthRangeDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    ranges()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -38,14 +37,6 @@ ts::VideoDepthRangeDescriptor::VideoDepthRangeDescriptor(DuckContext& duck, cons
     VideoDepthRangeDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::VideoDepthRangeDescriptor::Range::Range() :
-    range_type(0),
-    video_max_disparity_hint(0),
-    video_min_disparity_hint(0),
-    range_selector()
-{
 }
 
 void ts::VideoDepthRangeDescriptor::clearContent()

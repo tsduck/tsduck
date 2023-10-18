@@ -25,7 +25,7 @@ namespace ts {
     {
     public:
         // Public members:
-        bool transition;  //!< Transport stream transition.
+        bool transition = false;  //!< Transport stream transition.
 
         //!
         //! Default constructor.

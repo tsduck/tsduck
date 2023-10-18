@@ -28,9 +28,7 @@
 //----------------------------------------------------------------------------
 
 ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -68,9 +66,7 @@ ts::SSUDataBroadcastIdDescriptor::SSUDataBroadcastIdDescriptor(DuckContext& duck
 
 ts::SSUDataBroadcastIdDescriptor::Entry::Entry(uint32_t oui_, uint8_t upd_) :
     oui(oui_),
-    update_type(upd_),
-    update_version(),
-    selector()
+    update_type(upd_)
 {
 }
 

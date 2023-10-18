@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // StreamIdentifierDescriptor public members:
-        uint8_t component_tag;  //!< Component tag.
+        uint8_t component_tag = 0;  //!< Component tag.
 
         //!
         //! Default constructor.

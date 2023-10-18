@@ -24,13 +24,13 @@ namespace ts {
     {
     public:
         // TelephoneDescriptor public members:
-        bool    foreign_availability;     //!< Can be called from outside the country.
-        uint8_t connection_type;          //!< 5 bits, connection type.
-        UString country_prefix;           //!< Country prefix.
-        UString international_area_code;  //!< International area code.
-        UString operator_code;            //!< Operator code.
-        UString national_area_code;       //!< National area code.
-        UString core_number;              //!< Core number.
+        bool    foreign_availability = false;  //!< Can be called from outside the country.
+        uint8_t connection_type = 0;           //!< 5 bits, connection type.
+        UString country_prefix {};             //!< Country prefix.
+        UString international_area_code {};    //!< International area code.
+        UString operator_code {};              //!< Operator code.
+        UString national_area_code {};         //!< National area code.
+        UString core_number {};                //!< Core number.
 
         // Maximum string sizes, based on sizes of length fields.
         static constexpr size_t MAX_COUNTRY_PREFIX_LENGTH          = 3;  //!< Maximum length of @a country_prefix.

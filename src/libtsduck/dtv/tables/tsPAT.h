@@ -30,9 +30,9 @@ namespace ts {
         typedef std::map<uint16_t, PID> ServiceMap;
 
         // Public members:
-        uint16_t   ts_id;    //!< Transport stream id.
-        PID        nit_pid;  //!< PID for NIT.
-        ServiceMap pmts;     //!< Map of PMT PID's: key=service_id, value=pmt_pid.
+        uint16_t   ts_id = 0;          //!< Transport stream id.
+        PID        nit_pid = PID_NIT;  //!< PID for NIT.
+        ServiceMap pmts {};            //!< Map of PMT PID's: key=service_id, value=pmt_pid.
 
         //!
         //! Default constructor.

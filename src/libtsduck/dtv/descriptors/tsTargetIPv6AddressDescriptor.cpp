@@ -29,9 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, ts::TID_UNT), M
 //----------------------------------------------------------------------------
 
 ts::TargetIPv6AddressDescriptor::TargetIPv6AddressDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    IPv6_addr_mask(),
-    IPv6_addr()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

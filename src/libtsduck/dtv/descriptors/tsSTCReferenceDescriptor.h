@@ -25,15 +25,15 @@ namespace ts {
     {
     public:
         // STCReferenceDescriptor public members:
-        uint8_t     STC_reference_mode;   //!< 4 bits.
-        bool        external_event;       //!< Presence of external event.
-        uint16_t    external_event_id;    //!< When external_event == true.
-        uint16_t    external_service_id;  //!< When external_event == true.
-        uint16_t    external_network_id;  //!< When external_event == true.
-        uint64_t    NPT_reference;        //!< 33 bits, when STC_reference_mode == 1.
-        uint64_t    STC_reference;        //!< 33 bits, when STC_reference_mode == 1 or 3 or 5.
-        MilliSecond time_reference;       //!< HH:MM:SS.mmm, when STC_reference_mode == 3 or 5.
-        ByteBlock   reserved_data;        //!< When STC_reference_mode not in 0,1,3,5.
+        uint8_t     STC_reference_mode = 0;   //!< 4 bits.
+        bool        external_event = false;   //!< Presence of external event.
+        uint16_t    external_event_id = 0;    //!< When external_event == true.
+        uint16_t    external_service_id = 0;  //!< When external_event == true.
+        uint16_t    external_network_id = 0;  //!< When external_event == true.
+        uint64_t    NPT_reference = 0;        //!< 33 bits, when STC_reference_mode == 1.
+        uint64_t    STC_reference = 0;        //!< 33 bits, when STC_reference_mode == 1 or 3 or 5.
+        MilliSecond time_reference = 0;       //!< HH:MM:SS.mmm, when STC_reference_mode == 3 or 5.
+        ByteBlock   reserved_data {};         //!< When STC_reference_mode not in 0,1,3,5.
 
         //!
         //! Default constructor.

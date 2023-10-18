@@ -36,10 +36,10 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(TableType);
             TS_DEFAULT_ASSIGMENTS(TableType);
         public:
-            uint16_t table_type;                 //!< Referenced table type (this is not a table id).
-            PID      table_type_PID;             //!< PID carrying this referenced table.
-            uint8_t  table_type_version_number;  //!< 5 bits, version_number of the referenced table.
-            uint32_t number_bytes;               //!< Size in bytes of the referenced table.
+            uint16_t table_type = 0;                 //!< Referenced table type (this is not a table id).
+            PID      table_type_PID = PID_NULL;      //!< PID carrying this referenced table.
+            uint8_t  table_type_version_number = 0;  //!< 5 bits, version_number of the referenced table.
+            uint32_t number_bytes = 0;               //!< Size in bytes of the referenced table.
 
             //!
             //! Constructor.
@@ -54,9 +54,9 @@ namespace ts {
         typedef EntryWithDescriptorsList<TableType> TableTypeList;
 
         // MGT public members:
-        uint8_t        protocol_version;  //!< ATSC protocol version.
-        TableTypeList  tables;            //!< List of table types which are described in this MGT.
-        DescriptorList descs;             //!< Main descriptor list.
+        uint8_t        protocol_version = 0;  //!< ATSC protocol version.
+        TableTypeList  tables;                //!< List of table types which are described in this MGT.
+        DescriptorList descs;                 //!< Main descriptor list.
 
         //!
         //! Default constructor.

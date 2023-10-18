@@ -8,7 +8,6 @@
 
 #include "tsSpliceDTMFDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -29,10 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::SpliceDTMFDescriptor::SpliceDTMFDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    identifier(SPLICE_ID_CUEI),
-    preroll(0),
-    DTMF()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

@@ -28,14 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::TelephoneDescriptor::TelephoneDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    foreign_availability(false),
-    connection_type(0),
-    country_prefix(),
-    international_area_code(),
-    operator_code(),
-    national_area_code(),
-    core_number()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

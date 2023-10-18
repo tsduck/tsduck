@@ -34,10 +34,10 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Information);
             TS_DEFAULT_ASSIGMENTS(Information);
         public:
-            uint8_t information_type;           //!< 4 bits, information type
-            uint8_t description_body_location;  //!< 2 bits, where to find the description.
-            uint8_t user_defined;               //!< No predefined interpretation.
-            std::vector<uint16_t> key_ids;      //!< List of key ids, depends on information_type.
+            uint8_t information_type = 0;           //!< 4 bits, information type
+            uint8_t description_body_location = 0;  //!< 2 bits, where to find the description.
+            uint8_t user_defined = 0;               //!< No predefined interpretation.
+            std::vector<uint16_t> key_ids {};       //!< List of key ids, depends on information_type.
 
             //!
             //! Constructor.
@@ -52,8 +52,8 @@ namespace ts {
         typedef EntryWithDescriptorsMap<uint16_t, Information> InformationMap;
 
         // NBIT public members:
-        uint16_t       original_network_id;  //!< Original network id.
-        InformationMap informations;         //!< List of informations.
+        uint16_t       original_network_id = 0;  //!< Original network id.
+        InformationMap informations;             //!< List of informations.
 
         //!
         //! Default constructor.

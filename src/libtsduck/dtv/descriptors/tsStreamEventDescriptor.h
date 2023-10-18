@@ -26,9 +26,9 @@ namespace ts {
     {
     public:
         // StreamEventDescriptor public members:
-        uint16_t  event_id;      //!< Event id.
-        uint64_t  event_NPT;     //!< 33 bits, event Normal Play Time (NPT).
-        ByteBlock private_data;  //!< Specific private data.
+        uint16_t  event_id = 0;     //!< Event id.
+        uint64_t  event_NPT = 0;    //!< 33 bits, event Normal Play Time (NPT).
+        ByteBlock private_data {};  //!< Specific private data.
 
         //!
         //! Default constructor.

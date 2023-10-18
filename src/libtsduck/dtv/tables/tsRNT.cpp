@@ -29,8 +29,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::RNT::RNT(uint8_t version_, bool is_current_) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, version_, is_current_),
-    context_id(0),
-    context_id_type(0),
     descs(this),
     providers(this)
 {
@@ -44,7 +42,6 @@ ts::RNT::RNT(DuckContext& duck, const BinaryTable& table) :
 
 ts::RNT::ResolutionProvider::ResolutionProvider(const AbstractTable* table) :
     EntryWithDescriptors(table),
-    name(),
     CRID_authorities(table)
 {
 }
@@ -57,9 +54,7 @@ ts::RNT::ResolutionProvider::ResolutionProvider(const AbstractTable* table, cons
 }
 
 ts::RNT::CRIDAuthority::CRIDAuthority(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    name(),
-    policy(0)
+    EntryWithDescriptors(table)
 {
 }
 

@@ -28,7 +28,7 @@ namespace ts {
     {
     public:
         // SimpleApplicationBoundaryDescriptor public members:
-        UStringList boundary_extension;  //!< URL prefixes.
+        UStringList boundary_extension {};  //!< URL prefixes.
 
         //!
         //! Default constructor.

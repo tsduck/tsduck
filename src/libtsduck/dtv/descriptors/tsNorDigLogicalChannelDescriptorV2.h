@@ -32,9 +32,9 @@ namespace ts {
         struct TSDUCKDLL Service
         {
             // Public members
-            uint16_t service_id;  //!< Service id.
-            bool     visible;     //!< Service is visible.
-            uint16_t lcn;         //!< Logical channel number, 10 bits.
+            uint16_t service_id = 0;   //!< Service id.
+            bool     visible = false;  //!< Service is visible.
+            uint16_t lcn = 0;          //!< Logical channel number, 10 bits.
 
             //!
             //! Constructor
@@ -56,10 +56,10 @@ namespace ts {
         struct TSDUCKDLL ChannelList
         {
             // Public members
-            uint8_t     channel_list_id;    //!< Channel list id.
-            UString     channel_list_name;  //!< Channel list name.
-            UString     country_code;       //!< 3-character country code.
-            ServiceList services;           //!< List of services.
+            uint8_t     channel_list_id = 0;   //!< Channel list id.
+            UString     channel_list_name {};  //!< Channel list name.
+            UString     country_code {};       //!< 3-character country code.
+            ServiceList services {};           //!< List of services.
 
             //!
             //! Constructor
@@ -76,7 +76,7 @@ namespace ts {
         typedef std::list<ChannelList> ChannelListList;
 
         // NorDigLogicalChannelDescriptorV2 public members:
-        ChannelListList entries;  //!< List of channel list entries.
+        ChannelListList entries {};  //!< List of channel list entries.
 
         //!
         //! Default constructor.

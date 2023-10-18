@@ -26,7 +26,7 @@ namespace ts {
     {
     public:
         // ServiceIdentifierDescriptor public members:
-        UString identifier; //!< Service identifier.
+        UString identifier {}; //!< Service identifier.
 
         //!
         //! Default constructor.

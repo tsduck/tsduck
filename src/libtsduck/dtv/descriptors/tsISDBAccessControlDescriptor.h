@@ -26,10 +26,10 @@ namespace ts {
     {
     public:
         // ISDBAccessControlDescriptor public members:
-        uint16_t  CA_system_id;       //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
-        uint8_t   transmission_type;  //!< Transmission type (broadcast by default).
-        PID       pid;                //!< PID for CA tables (ECM or EMM).
-        ByteBlock private_data;       //!< CA-specific private data.
+        uint16_t  CA_system_id = 0;       //!< Conditional access system id as defined in ARIB STD-B10, Part 2, Annex M.
+        uint8_t   transmission_type = 7;  //!< Transmission type (broadcast by default). Default is 7, broadcast route.
+        PID       pid = PID_NULL;         //!< PID for CA tables (ECM or EMM).
+        ByteBlock private_data {};        //!< CA-specific private data.
 
         //!
         //! Default constructor.

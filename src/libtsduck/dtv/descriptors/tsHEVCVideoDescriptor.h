@@ -26,22 +26,22 @@ namespace ts {
     {
     public:
         // Public members:
-        uint8_t   profile_space;                     //!< 2 bits. Same as HEVC concept.
-        bool      tier;                              //!< Same as HEVC concept.
-        uint8_t   profile_idc;                       //!< 5 bits. Same as HEVC concept.
-        uint32_t  profile_compatibility_indication;  //!< Same as HEVC concept.
-        bool      progressive_source;                //!< Same as HEVC concept.
-        bool      interlaced_source;                 //!< Same as HEVC concept.
-        bool      non_packed_constraint;             //!< Same as HEVC concept.
-        bool      frame_only_constraint;             //!< Same as HEVC concept.
-        uint64_t  copied_44bits;                     //!< 44 bits, default to zero.
-        uint8_t   level_idc;                         //!< Same as HEVC concept.
-        bool      HEVC_still_present;                //!< Same as HEVC concept.
-        bool      HEVC_24hr_picture_present;         //!< Same as HEVC concept.
-        bool      sub_pic_hrd_params_not_present;    //!< Same as HEVC concept.
-        uint8_t   HDR_WCG_idc;                       //!< 2 bits, same as HEVC concept.
-        Variable<uint8_t> temporal_id_min;           //!< 3 bits, optional, specify both min and max or none.
-        Variable<uint8_t> temporal_id_max;           //!< 3 bits, optional, specify both min and max or none.
+        uint8_t   profile_space = 0;                      //!< 2 bits. Same as HEVC concept.
+        bool      tier = false;                           //!< Same as HEVC concept.
+        uint8_t   profile_idc = 0;                        //!< 5 bits. Same as HEVC concept.
+        uint32_t  profile_compatibility_indication = 0;   //!< Same as HEVC concept.
+        bool      progressive_source = false;             //!< Same as HEVC concept.
+        bool      interlaced_source = false;              //!< Same as HEVC concept.
+        bool      non_packed_constraint = false;          //!< Same as HEVC concept.
+        bool      frame_only_constraint = false;          //!< Same as HEVC concept.
+        uint64_t  copied_44bits = 0;                      //!< 44 bits, default to zero.
+        uint8_t   level_idc = 0;                          //!< Same as HEVC concept.
+        bool      HEVC_still_present = false;             //!< Same as HEVC concept.
+        bool      HEVC_24hr_picture_present = false;      //!< Same as HEVC concept.
+        bool      sub_pic_hrd_params_not_present = false; //!< Same as HEVC concept.
+        uint8_t   HDR_WCG_idc = 0;                        //!< 2 bits, same as HEVC concept.
+        Variable<uint8_t> temporal_id_min {};             //!< 3 bits, optional, specify both min and max or none.
+        Variable<uint8_t> temporal_id_max {};             //!< 3 bits, optional, specify both min and max or none.
 
         //!
         //! Default constructor.

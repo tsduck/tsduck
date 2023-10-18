@@ -42,10 +42,10 @@ namespace ts {
             //!
             Relation(const AbstractTable* table);
 
-            uint16_t node_id;           //!< Node id.
-            uint8_t  collection_mode;   //!< 4 bits, collection mode.
-            uint16_t parent_node_id;    //!< Parent node id.
-            uint8_t  reference_number;  //!< Reference number
+            uint16_t node_id = 0;           //!< Node id.
+            uint8_t  collection_mode = 0;   //!< 4 bits, collection mode.
+            uint16_t parent_node_id = 0;    //!< Parent node id.
+            uint8_t  reference_number = 0;  //!< Reference number
         };
 
         //!
@@ -54,10 +54,10 @@ namespace ts {
         typedef EntryWithDescriptorsList<Relation> RelationList;
 
         // ERT public members:
-        uint16_t     event_relation_id;        //!< Event relation id.
-        uint16_t     information_provider_id;  //!< Information provider id.
-        uint8_t      relation_type;            //!< 4 bits, relation type.
-        RelationList relations;                //!< List of event relations.
+        uint16_t     event_relation_id = 0;        //!< Event relation id.
+        uint16_t     information_provider_id = 0;  //!< Information provider id.
+        uint8_t      relation_type = 0;            //!< 4 bits, relation type.
+        RelationList relations;                    //!< List of event relations.
 
         //!
         //! Default constructor.

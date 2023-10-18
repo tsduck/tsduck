@@ -30,9 +30,9 @@ namespace ts {
         //!
         struct TSDUCKDLL SimultaneousService
         {
-            SimultaneousService();          //!< Constructor.
-            uint16_t primary_service_id;    //!< Primary service id.
-            uint16_t secondary_service_id;  //!< Secondary service id.
+            SimultaneousService() = default;    //!< Constructor.
+            uint16_t primary_service_id = 0;    //!< Primary service id.
+            uint16_t secondary_service_id = 0;  //!< Secondary service id.
         };
 
         //!
@@ -41,9 +41,9 @@ namespace ts {
         typedef std::list<SimultaneousService> SimultaneousServiceList;
 
         // ServiceGroupDescriptor public members:
-        uint8_t                 service_group_type;     //!< 4 bits, group type.
-        SimultaneousServiceList simultaneous_services;  //!< List of simultaneous service, when service_group_type == 1.
-        ByteBlock               private_data;           //!< Private data for other group types.
+        uint8_t                 service_group_type = 0;    //!< 4 bits, group type.
+        SimultaneousServiceList simultaneous_services {};  //!< List of simultaneous service, when service_group_type == 1.
+        ByteBlock               private_data {};           //!< Private data for other group types.
 
         //!
         //! Default constructor.

@@ -24,7 +24,7 @@ namespace ts {
     {
     public:
         // ScramblingDescriptor public members:
-        uint8_t scrambling_mode;  //!< Scrambling mode.
+        uint8_t scrambling_mode = 0;  //!< Scrambling mode.
 
         //!
         //! Default constructor.

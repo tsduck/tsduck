@@ -29,8 +29,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 ts::StreamEventDescriptor::StreamEventDescriptor(uint16_t id, uint64_t npt) :
     AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
     event_id(id),
-    event_NPT(npt),
-    private_data()
+    event_NPT(npt)
 {
 }
 

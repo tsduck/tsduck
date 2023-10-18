@@ -36,11 +36,11 @@ namespace ts {
             TS_DEFAULT_ASSIGMENTS(Event);
         public:
             // Public members
-            uint16_t           event_id;           //!< Event id, 14 bits.
-            Time               start_time;         //!< Event start_time.
-            uint8_t            ETM_location;       //!< Location of extended text message, 2 bits.
-            Second             length_in_seconds;  //!< Event duration in seconds, 20 bits.
-            ATSCMultipleString title_text;         //!< Multi-lingual event title.
+            uint16_t           event_id = 0;           //!< Event id, 14 bits.
+            Time               start_time {};          //!< Event start_time.
+            uint8_t            ETM_location = 0;       //!< Location of extended text message, 2 bits.
+            Second             length_in_seconds = 0;  //!< Event duration in seconds, 20 bits.
+            ATSCMultipleString title_text {};          //!< Multi-lingual event title.
 
             //!
             //! Constructor.
@@ -55,9 +55,9 @@ namespace ts {
         typedef EntryWithDescriptorsList<Event> EventList;
 
         // EIT public members:
-        uint16_t  source_id;         //!< EIT source id.
-        uint8_t   protocol_version;  //!< ATSC protocol version.
-        EventList events;            //!< List of events.
+        uint16_t  source_id = 0;         //!< EIT source id.
+        uint8_t   protocol_version = 0;  //!< ATSC protocol version.
+        EventList events;                //!< List of events.
 
         //!
         //! Default constructor.

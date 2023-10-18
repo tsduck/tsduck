@@ -134,11 +134,11 @@ namespace ts {
             TS_DEFAULT_ASSIGMENTS(Event);
         public:
             // Public members
-            uint16_t event_id;           //!< Event id.
-            Time     start_time;         //!< Event start_time in UTC (or JST in Japan).
-            Second   duration;           //!< Event duration in seconds.
-            uint8_t  running_status;     //!< Running status code.
-            bool     CA_controlled;      //!< Controlled by a CA_system.
+            uint16_t event_id = 0;           //!< Event id.
+            Time     start_time {};          //!< Event start_time in UTC (or JST in Japan).
+            Second   duration = 0;           //!< Event duration in seconds.
+            uint8_t  running_status = 0;     //!< Running status code.
+            bool     CA_controlled = false;  //!< Controlled by a CA_system.
 
             //!
             //! Constructor.
@@ -161,11 +161,11 @@ namespace ts {
         typedef EntryWithDescriptorsList<Event> EventList;
 
         // EIT public members:
-        uint16_t  service_id;     //!< Service_id.
-        uint16_t  ts_id;          //!< Transport stream_id.
-        uint16_t  onetw_id;       //!< Original network id.
-        TID       last_table_id;  //!< Last table id.
-        EventList events;         //!< List of events.
+        uint16_t  service_id = 0;            //!< Service_id.
+        uint16_t  ts_id = 0;                 //!< Transport stream_id.
+        uint16_t  onetw_id = 0;              //!< Original network id.
+        TID       last_table_id = TID_NULL;  //!< Last table id.
+        EventList events;                    //!< List of events.
 
         //!
         //! Compute an EIT table id.

@@ -27,15 +27,9 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::MultilingualComponentDescriptor::MultilingualComponentDescriptor() :
-    AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR),
-    component_tag(0)
+    AbstractMultilingualDescriptor(MY_DID, MY_XML_NAME, MY_XML_ATTR)
 {
 }
-
-
-//----------------------------------------------------------------------------
-// Constructor from a binary descriptor
-//----------------------------------------------------------------------------
 
 void ts::MultilingualComponentDescriptor::clearContent()
 {

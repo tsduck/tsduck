@@ -39,33 +39,31 @@ namespace ts {
         //!
         class language_media_pair_type {
         public:
-            uint8_t              configuration_type;     //!< 2 bits
-            uint8_t              lang_len_idc;           //!< 2 bits
-            uint8_t              lang_len;               //!< 8 bits, only used if lang_len_idc==7
-            UString              language_code;          //!< BCP47 compliant language code
-            std::vector<uint8_t> media_service_types;    //!< service types associated with this language
-
-            language_media_pair_type();        //!< Constructor
-        };
+            language_media_pair_type() = default;         //!< Constructor
+            uint8_t              configuration_type = 0;  //!< 2 bits
+            uint8_t              lang_len_idc = 0;        //!< 2 bits
+            uint8_t              lang_len = 0;            //!< 8 bits, only used if lang_len_idc==7
+            UString              language_code {};        //!< BCP47 compliant language code
+            std::vector<uint8_t> media_service_types {};  //!< service types associated with this language
+       };
 
         //!
         //! Description of a media service.
         //!
         class media_service_kind_type {
         public:
-            uint8_t                                 media_description_flag;  //!< 1 bit
-            uint8_t                                 media_type_idc;          //!< 2 bits
-            Variable<uint8_t>                       ID_length_code;          //!< 3 bits
-            Variable<uint16_t>                      ID_type;                 //!< 13 bits
-            uint8_t                                 ID_len;                  //!< 8 bits, only used if ID_length_code==0
-            UString                                 media_ID_field;          //!< identifier of the data element
-            std::vector<language_media_pair_type>   language_media_service_type_pairs;  //!< list of language/service type pairs for this media type
-
-            media_service_kind_type();          //!< Constructor
+            media_service_kind_type() = default;            //!< Constructor
+            uint8_t            media_description_flag = 0;  //!< 1 bit
+            uint8_t            media_type_idc = 0;          //!< 2 bits
+            Variable<uint8_t>  ID_length_code {};           //!< 3 bits
+            Variable<uint16_t> ID_type {};                  //!< 13 bits
+            uint8_t            ID_len = 0;                  //!< 8 bits, only used if ID_length_code==0
+            UString            media_ID_field {};           //!< identifier of the data element
+            std::vector<language_media_pair_type> language_media_service_type_pairs {};  //!< list of language/service type pairs for this media type
         };
 
         // Public members:
-        std::vector<media_service_kind_type>     media_service_kinds;  //!< Description of all media services.
+        std::vector<media_service_kind_type> media_service_kinds {};  //!< Description of all media services.
 
         //!
         //! Default constructor.

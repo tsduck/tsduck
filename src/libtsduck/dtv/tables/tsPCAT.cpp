@@ -29,10 +29,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::PCAT::PCAT(uint8_t vers, bool cur) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur),
-    service_id(0),
-    transport_stream_id(0),
-    original_network_id(0),
-    content_id(0),
     versions(this)
 {
 }
@@ -54,17 +50,7 @@ ts::PCAT::PCAT(DuckContext& duck, const BinaryTable& table) :
 }
 
 ts::PCAT::ContentVersion::ContentVersion(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    content_version(0),
-    content_minor_version(0),
-    version_indicator(0),
-    schedules()
-{
-}
-
-ts::PCAT::Schedule::Schedule() :
-    start_time(),
-    duration(0)
+    EntryWithDescriptors(table)
 {
 }
 

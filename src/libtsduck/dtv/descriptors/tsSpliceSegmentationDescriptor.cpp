@@ -8,7 +8,6 @@
 
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -29,24 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    identifier(SPLICE_ID_CUEI),
-    segmentation_event_id(0),
-    segmentation_event_cancel(false),
-    program_segmentation(true),
-    web_delivery_allowed(true),
-    no_regional_blackout(true),
-    archive_allowed(true),
-    device_restrictions(3),
-    pts_offsets(),
-    segmentation_duration(),
-    segmentation_upid_type(0),
-    segmentation_upid(),
-    segmentation_type_id(0),
-    segment_num(0),
-    segments_expected(0),
-    sub_segment_num(0),
-    sub_segments_expected(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

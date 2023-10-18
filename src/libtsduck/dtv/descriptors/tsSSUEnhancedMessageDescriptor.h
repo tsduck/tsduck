@@ -28,11 +28,11 @@ namespace ts {
     {
     public:
         // SSUEnhancedMessageDescriptor public members:
-        uint8_t descriptor_number;       //!< 4 bits, descriptor number.
-        uint8_t last_descriptor_number;  //!< 4 bits, last descriptor number.
-        UString ISO_639_language_code;   //!< 3 char, language code.
-        uint8_t message_index;           //!< 5 bits, message index.
-        UString text;                    //!< Message text.
+        uint8_t descriptor_number = 0;       //!< 4 bits, descriptor number.
+        uint8_t last_descriptor_number = 0;  //!< 4 bits, last descriptor number.
+        UString ISO_639_language_code {};    //!< 3 char, language code.
+        uint8_t message_index = 0;           //!< 5 bits, message index.
+        UString text {};                     //!< Message text.
 
         //!
         //! Default constructor.

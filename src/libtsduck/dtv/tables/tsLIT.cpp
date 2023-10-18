@@ -29,10 +29,6 @@ TS_REGISTER_TABLE(MY_CLASS, {MY_TID}, MY_STD, MY_XML_NAME, MY_CLASS::DisplaySect
 
 ts::LIT::LIT(uint8_t vers, bool cur) :
     AbstractLongTable(MY_TID, MY_XML_NAME, MY_STD, vers, cur),
-    event_id(0),
-    service_id(0),
-    transport_stream_id(0),
-    original_network_id(0),
     events(this)
 {
 }
@@ -54,8 +50,7 @@ ts::LIT::LIT(DuckContext& duck, const BinaryTable& table) :
 }
 
 ts::LIT::Event::Event(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    local_event_id(0)
+    EntryWithDescriptors(table)
 {
 }
 

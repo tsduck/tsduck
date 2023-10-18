@@ -24,11 +24,11 @@ namespace ts {
     {
     public:
         // StereoscopicVideoInfoDescriptor public members:
-        bool    base_video;                    //!< Base video stream
-        bool    leftview;                      //!< True if left view video stream (when base_video is true).
-        bool    usable_as_2D;                  //!< Can be sued as a 2D video stream (when base_video is false).
-        uint8_t horizontal_upsampling_factor;  //!< 4 bits, horizontal upsampling factor code (when base_video is false).
-        uint8_t vertical_upsampling_factor;    //!< 4 bits, vertical upsampling factor code (when base_video is false).
+        bool    base_video = false;                //!< Base video stream
+        bool    leftview = false;                  //!< True if left view video stream (when base_video is true).
+        bool    usable_as_2D = false;              //!< Can be sued as a 2D video stream (when base_video is false).
+        uint8_t horizontal_upsampling_factor = 0;  //!< 4 bits, horizontal upsampling factor code (when base_video is false).
+        uint8_t vertical_upsampling_factor = 0;    //!< 4 bits, vertical upsampling factor code (when base_video is false).
 
         //!
         //! Default constructor.

@@ -24,12 +24,12 @@ namespace ts {
     {
     public:
         // HybridInformationDescriptor public members:
-        bool     has_location;   //!< A location is present in the descriptor.
-        bool     location_type;  //!< Type: false = broadcast, true = connected
-        uint8_t  format;         //!< Location format, 4 bits.
-        uint8_t  component_tag;  //!< Service component tag (when has_location && !location_type).
-        uint16_t module_id;      //!< Module id (when has_location && !location_type).
-        UString  URL;            //!< URL (when has_location && location_type).
+        bool     has_location = false;   //!< A location is present in the descriptor.
+        bool     location_type = false;  //!< Type: false = broadcast, true = connected
+        uint8_t  format = 0;             //!< Location format, 4 bits.
+        uint8_t  component_tag = 0;      //!< Service component tag (when has_location && !location_type).
+        uint16_t module_id = 0;          //!< Module id (when has_location && !location_type).
+        UString  URL {};                 //!< URL (when has_location && location_type).
 
         //!
         //! Default constructor.

@@ -27,18 +27,12 @@ namespace ts {
         //!
         //! A field entry.
         //!
-        struct TSDUCKDLL Field
+        class TSDUCKDLL Field
         {
-            // Public members
-            bool    field_parity;  //!< True for first (odd) field of a frame, false for second (even) field.
-            uint8_t line_offset;   //!< Line offset, 5 bits.
-
-            //!
-            //! Default constructor.
-            //! @param [in] parity True for first (odd) field of a frame, false for second (even) field.
-            //! @param [in] offset Line offset.
-            //!
-            Field(bool parity = false, uint8_t offset = 0);
+        public:
+            Field() = default;             //!< Constructor.
+            bool    field_parity = false;  //!< True for first (odd) field of a frame, false for second (even) field.
+            uint8_t line_offset = 0;       //!< Line offset, 5 bits.
         };
 
         //!
@@ -49,27 +43,22 @@ namespace ts {
         //!
         //! A service entry.
         //!
-        struct TSDUCKDLL Service
+        class TSDUCKDLL Service
         {
-            // Public members
-            uint8_t   data_service_id;  //!< VBI service type.
-            FieldList fields;           //!< List of fields.
-            ByteBlock reserved;         //!< Reserved bytes, when data_service_id is not any of 1, 2, 4, 5, 6, 7.
-
+        public:
+            uint8_t   data_service_id = 0;  //!< VBI service type.
+            FieldList fields {};            //!< List of fields.
+            ByteBlock reserved {};          //!< Reserved bytes, when data_service_id is not any of 1, 2, 4, 5, 6, 7.
             //!
             //! Default constructor.
             //! @param [in] id VBI service type.
             //!
-            Service(uint8_t id = 0);
-
+            Service(uint8_t id = 0) : data_service_id(id) {}
             //!
             //! Check if a service entry has reserved bytes.
             //! @return True if @a reserved is used. Return false if the list of fields are used.
             //!
-            bool hasReservedBytes() const
-            {
-                return EntryHasReservedBytes(data_service_id);
-            }
+            bool hasReservedBytes() const { return EntryHasReservedBytes(data_service_id); }
         };
 
         //!
@@ -78,7 +67,7 @@ namespace ts {
         typedef std::list<Service> ServiceList;
 
         // Public members
-        ServiceList services;  //!< The list of service entries in the descriptor.
+        ServiceList services {};  //!< The list of service entries in the descriptor.
 
         //!
         //! Default constructor.

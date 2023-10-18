@@ -24,18 +24,18 @@ namespace ts {
     {
     public:
         // TerrestrialDeliverySystemDescriptor public members:
-        uint64_t centre_frequency;   //!< Frequency in Hz (warning: coded in 10 Hz units in descriptor).
-        uint8_t  bandwidth;          //!< Bandwidth, 0..7 (3 bits).
-        bool     high_priority;      //!< Must be true if hierarchy == 0.
-        bool     no_time_slicing;    //!< No time slicing.
-        bool     no_mpe_fec;         //!< NO MPE-FEC.
-        uint8_t  constellation;      //!< Constellation, 0..3 (2 bits).
-        uint8_t  hierarchy;          //!< Hierarchy, 0..7 (3 bits).
-        uint8_t  code_rate_hp;       //!< Code Rate, high priority, 0..7 (3 bits).
-        uint8_t  code_rate_lp;       //!< Code Rate, low priority, 0..7 (3 bits).
-        uint8_t  guard_interval;     //!< Guard interval, 0..3 (2 bits).
-        uint8_t  transmission_mode;  //!< Transmission mode, 0..3 (2 bits).
-        bool     other_frequency;    //!< Other frequency.
+        uint64_t centre_frequency = 0;     //!< Frequency in Hz (warning: coded in 10 Hz units in descriptor).
+        uint8_t  bandwidth = 0;            //!< Bandwidth, 0..7 (3 bits).
+        bool     high_priority = true;     //!< Must be true if hierarchy == 0.
+        bool     no_time_slicing = true;   //!< No time slicing.
+        bool     no_mpe_fec = true;        //!< NO MPE-FEC.
+        uint8_t  constellation = 0;        //!< Constellation, 0..3 (2 bits).
+        uint8_t  hierarchy = 0;            //!< Hierarchy, 0..7 (3 bits).
+        uint8_t  code_rate_hp = 0;         //!< Code Rate, high priority, 0..7 (3 bits).
+        uint8_t  code_rate_lp = 0;         //!< Code Rate, low priority, 0..7 (3 bits).
+        uint8_t  guard_interval = 0;       //!< Guard interval, 0..3 (2 bits).
+        uint8_t  transmission_mode = 0;    //!< Transmission mode, 0..3 (2 bits).
+        bool     other_frequency = false;  //!< Other frequency.
 
         //!
         //! Default constructor.

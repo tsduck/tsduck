@@ -34,19 +34,13 @@ namespace ts {
         class Range
         {
         public:
-            MACAddress MAC_addr_low;   //!< First MAC address.
-            MACAddress MAC_addr_high;  //!< Last MAC address.
-
-            //!
-            //! Constructor
-            //! @param [in] addr1 First MAC address.
-            //! @param [in] addr2 Last MAC address.
-            //!
-            Range(const MACAddress& addr1 = MACAddress(), const MACAddress& addr2 = MACAddress());
+            Range() = default;            //!< Constructor
+            MACAddress MAC_addr_low {};   //!< First MAC address.
+            MACAddress MAC_addr_high {};  //!< Last MAC address.
         };
 
         // TargetMACAddressRangeDescriptor public members:
-        std::vector<Range> ranges;  //!< MAC address ranges.
+        std::vector<Range> ranges {};  //!< MAC address ranges.
 
         //!
         //! Maximum number of entries to fit in 255 bytes.

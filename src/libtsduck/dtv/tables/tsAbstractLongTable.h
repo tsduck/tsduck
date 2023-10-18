@@ -24,8 +24,8 @@ namespace ts {
         TS_RULE_OF_FIVE(AbstractLongTable, override);
     public:
         // Common public members:
-        uint8_t version;     //!< Table version number.
-        bool    is_current;  //!< True if table is current, false if table is next.
+        uint8_t version = 0;        //!< Table version number.
+        bool    is_current = true;  //!< True if table is current, false if table is next.
 
         //!
         //! Get the table id extension.

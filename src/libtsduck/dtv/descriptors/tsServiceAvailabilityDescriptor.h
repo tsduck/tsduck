@@ -29,8 +29,8 @@ namespace ts {
         static constexpr size_t MAX_CELLS = 127;
 
         // ServiceAvailabilityDescriptor public members:
-        bool                  availability;  //!< The service is available/unavailable in the listed cells.
-        std::vector<uint16_t> cell_ids;      //!< The cell ids.
+        bool                  availability = false;  //!< The service is available/unavailable in the listed cells.
+        std::vector<uint16_t> cell_ids {};           //!< The cell ids.
 
         //!
         //! Default constructor.

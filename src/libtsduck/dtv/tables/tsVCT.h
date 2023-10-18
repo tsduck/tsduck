@@ -36,22 +36,22 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Channel);
             TS_DEFAULT_ASSIGMENTS(Channel);
         public:
-            UString  short_name;             //!< Channel short name (up to 7 characters).
-            uint16_t major_channel_number;   //!< 10 bits, major channel number.
-            uint16_t minor_channel_number;   //!< 10 bits, minor channel number.
-            uint8_t  modulation_mode;        //!< Modulation, can be anolog, terrestrial (VSB) or cable (QAM).
-            uint32_t carrier_frequency;      //!< Should be a carrier frequency but specified as zero by ATSC (?).
-            uint16_t channel_TSID;           //!< Transport stream id of the TS carrying the channel.
-            uint16_t program_number;         //!< Program number (aka. service id) of the channel.
-            uint8_t  ETM_location;           //!< 2 bits, location of Extended Text Message.
-            bool     access_controlled;      //!< Under access control.
-            bool     hidden;                 //!< Hidden service.
-            bool     hide_guide;             //!< Hide associated program guide information.
-            uint8_t  service_type;           //!< 6 bits, ATSC service type.
-            uint16_t source_id;              //!< ATSC source id.
+            UString  short_name {};              //!< Channel short name (up to 7 characters).
+            uint16_t major_channel_number = 0;   //!< 10 bits, major channel number.
+            uint16_t minor_channel_number = 0;   //!< 10 bits, minor channel number.
+            uint8_t  modulation_mode = 0;        //!< Modulation, can be anolog, terrestrial (VSB) or cable (QAM).
+            uint32_t carrier_frequency = 0;      //!< Should be a carrier frequency but specified as zero by ATSC (?).
+            uint16_t channel_TSID = 0;           //!< Transport stream id of the TS carrying the channel.
+            uint16_t program_number = 0;         //!< Program number (aka. service id) of the channel.
+            uint8_t  ETM_location = 0;           //!< 2 bits, location of Extended Text Message.
+            bool     access_controlled = false;  //!< Under access control.
+            bool     hidden = false;             //!< Hidden service.
+            bool     hide_guide = false;         //!< Hide associated program guide information.
+            uint8_t  service_type = 0;           //!< 6 bits, ATSC service type.
+            uint16_t source_id = 0;              //!< ATSC source id.
             // The following fields are valid only in the context of a CVCT.
-            uint8_t  path_select;            //!< Either 0 (Path 1) or 1 (Path 2). Warning: CVCT only.
-            bool     out_of_band;            //!< Out-of-band service. Warning: CVCT only.
+            uint8_t  path_select = 0;            //!< Either 0 (Path 1) or 1 (Path 2). Warning: CVCT only.
+            bool     out_of_band = false;        //!< Out-of-band service. Warning: CVCT only.
 
             //!
             //! Constructor.
@@ -72,10 +72,10 @@ namespace ts {
         typedef EntryWithDescriptorsList<Channel> ChannelList;
 
         // VCT public members:
-        uint8_t        protocol_version;     //!< ATSC protocol version.
-        uint16_t       transport_stream_id;  //!< Transport stream id.
-        ChannelList    channels;             //!< List of channels which are described in this VCT.
-        DescriptorList descs;                //!< Program-level descriptor list.
+        uint8_t        protocol_version = 0;     //!< ATSC protocol version.
+        uint16_t       transport_stream_id = 0;  //!< Transport stream id.
+        ChannelList    channels;                 //!< List of channels which are described in this VCT.
+        DescriptorList descs;                    //!< Program-level descriptor list.
 
         //!
         //! Copy constructor.

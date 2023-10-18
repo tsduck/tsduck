@@ -34,7 +34,7 @@ namespace ts {
         //! Table_id extension.
         //! When unused (CAT, TSDT), it must be left to the default value 0xFFFF.
         //!
-        uint16_t _tid_ext;
+        uint16_t _tid_ext = 0xFFFF;
 
         //!
         //! Constructor for subclasses.

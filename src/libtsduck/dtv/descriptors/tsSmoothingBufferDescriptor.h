@@ -24,8 +24,8 @@ namespace ts {
     {
     public:
         // SmoothingBufferDescriptor public members:
-        uint32_t sb_leak_rate;  //!< 22 bits, smoothing buffer leak rate in units of 400 b/s.
-        uint32_t sb_size;       //!< 22 bits, smoothing buffer size in bytes.
+        uint32_t sb_leak_rate = 0;  //!< 22 bits, smoothing buffer leak rate in units of 400 b/s.
+        uint32_t sb_size = 0;       //!< 22 bits, smoothing buffer size in bytes.
 
         //!
         //! Default constructor.

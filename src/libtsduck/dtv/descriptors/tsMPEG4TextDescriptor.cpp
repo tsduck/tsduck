@@ -39,26 +39,13 @@ const std::vector<uint8_t> ts::MPEG4TextDescriptor::allowed_profileLevel_values 
     0x10
 };
 
+
 //----------------------------------------------------------------------------
 // Constructors
 //----------------------------------------------------------------------------
 
 ts::MPEG4TextDescriptor::MPEG4TextDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    textFormat(0),
-    ThreeGPPBaseFormat(0),
-    profileLevel(0),
-    durationClock(0),
-    sampleDescriptionFlags(0),
-    layer(0),
-    text_track_width(0),
-    text_track_height(0),
-    Compatible_3GPPFormat(),
-    scene_width(),
-    scene_height(),
-    horizontal_scene_offset(),
-    vertical_scene_offset(),
-    Sample_index_and_description()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -86,17 +73,6 @@ ts::MPEG4TextDescriptor::MPEG4TextDescriptor(DuckContext& duck, const Descriptor
     deserialize(duck, desc);
 }
 
-ts::MPEG4TextDescriptor::Sample_index_and_description_type::Sample_index_and_description_type() :
-    sample_index(0),
-    SampleDescription()
-{
-}
-
-ts::MPEG4TextDescriptor::TextConfig_type::TextConfig_type() :
-    textFormat(0),
-    formatSpecificTextConfig()
-{
-}
 
 //----------------------------------------------------------------------------
 // Serialization

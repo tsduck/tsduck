@@ -42,8 +42,7 @@ const ts::Enumeration ts::RST::RunningStatusNames({
 //----------------------------------------------------------------------------
 
 ts::RST::RST() :
-    AbstractTable(MY_TID, MY_XML_NAME, MY_STD),
-    events()
+    AbstractTable(MY_TID, MY_XML_NAME, MY_STD)
 {
 }
 
@@ -51,15 +50,6 @@ ts::RST::RST(DuckContext& duck, const BinaryTable& table) :
     RST()
 {
     deserialize(duck, table);
-}
-
-ts::RST::Event::Event() :
-    transport_stream_id(0),
-    original_network_id(0),
-    service_id(0),
-    event_id(0),
-    running_status(0)
-{
 }
 
 

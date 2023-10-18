@@ -28,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::NorDigLogicalChannelDescriptorV2::NorDigLogicalChannelDescriptorV2() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, MY_PDS)
 {
 }
 
@@ -49,8 +48,7 @@ ts::NorDigLogicalChannelDescriptorV2::Service::Service(uint16_t id, bool vis, ui
 ts::NorDigLogicalChannelDescriptorV2::ChannelList::ChannelList(uint8_t id, const UString& name, const UString& country) :
     channel_list_id(id),
     channel_list_name(name),
-    country_code(country),
-    services()
+    country_code(country)
 {
 }
 

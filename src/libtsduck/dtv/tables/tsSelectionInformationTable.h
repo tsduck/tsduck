@@ -35,7 +35,7 @@ namespace ts {
             TS_NO_DEFAULT_CONSTRUCTORS(Service);
             TS_DEFAULT_ASSIGMENTS(Service);
         public:
-            uint8_t running_status;  //!< Running status of the event.
+            uint8_t running_status = 0;  //!< Running status of the event.
 
             //!
             //! Constructor.

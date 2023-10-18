@@ -28,9 +28,9 @@ namespace ts {
     {
     public:
         // SSUURIDescriptor public members:
-        uint8_t max_holdoff_time;      //!< Max holdoff time in minutes.
-        uint8_t min_polling_interval;  //!< Min polling interval in hours.
-        UString uri;                   //!< The URI.
+        uint8_t max_holdoff_time = 0;      //!< Max holdoff time in minutes.
+        uint8_t min_polling_interval = 0;  //!< Min polling interval in hours.
+        UString uri {};                    //!< The URI.
 
         //!
         //! Default constructor.

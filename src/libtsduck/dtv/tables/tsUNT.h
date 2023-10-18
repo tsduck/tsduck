@@ -32,17 +32,17 @@ namespace ts {
         class TSDUCKDLL CompatibilityDescriptor
         {
         public:
-            uint8_t        descriptorType;   //!< Type of descriptor.
-            uint8_t        specifierType;    //!< Specified type, default is 1 (IEEE OUI).
-            uint32_t       specifierData;    //!< 24 bits, specified data, must be an IEEE OUI as described in IEEE 802.
-            uint16_t       model;            //!< Device model.
-            uint16_t       version;          //!< Device version.
-            DescriptorList subDescriptors;   //!< Device-specific descriptors, not real MPEG/DVB descriptors.
+            uint8_t        descriptorType = 0xFF;     //!< Type of descriptor. Default: user defined.
+            uint8_t        specifierType = 0x01;      //!< Specified type, default is 1 (IEEE OUI). Default: IEEE OUI.
+            uint32_t       specifierData = 0;         //!< 24 bits, specified data, must be an IEEE OUI as described in IEEE 802.
+            uint16_t       model = 0;                 //!< Device model.
+            uint16_t       version = 0;               //!< Device version.
+            DescriptorList subDescriptors {nullptr};  //!< Device-specific descriptors, not real MPEG/DVB descriptors, no link to table.
 
             //!
             //! Default constructor.
             //!
-            explicit CompatibilityDescriptor();
+            CompatibilityDescriptor() = default;
 
             //!
             //! Copy constructor.
@@ -112,8 +112,8 @@ namespace ts {
         class TSDUCKDLL Devices : public EntryBase
         {
         public:
-            CompatibilityDescriptorList compatibilityDescriptor;   //!< The entries of the compatibilityDescriptor.
-            PlatformList                platforms;                 //!< The list of platforms.
+            CompatibilityDescriptorList compatibilityDescriptor {};   //!< The entries of the compatibilityDescriptor.
+            PlatformList                platforms;                    //!< The list of platforms.
 
             //!
             //! Basic constructor.
@@ -148,11 +148,11 @@ namespace ts {
         typedef EntryWithDescriptorsList<Devices> DevicesList;
 
         // UNT public members:
-        uint8_t        action_type;       //!< Action type.
-        uint32_t       OUI;               //!< OUI, 24 bits.
-        uint8_t        processing_order;  //!< Processing order code.
-        DescriptorList descs;             //!< Common descriptor loop.
-        DevicesList    devices;           //!< List of sets of devices.
+        uint8_t        action_type = 0;       //!< Action type.
+        uint32_t       OUI = 0;               //!< OUI, 24 bits.
+        uint8_t        processing_order = 0;  //!< Processing order code.
+        DescriptorList descs;                 //!< Common descriptor loop.
+        DevicesList    devices;               //!< List of sets of devices.
 
         //!
         //! Default constructor.

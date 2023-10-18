@@ -43,13 +43,7 @@
 //----------------------------------------------------------------------------
 
 ts::HybridInformationDescriptor::HybridInformationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    has_location(false),
-    location_type(false),
-    format(0),
-    component_tag(0),
-    module_id(0),
-    URL()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

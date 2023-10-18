@@ -27,10 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::PartialTransportStreamDescriptor::PartialTransportStreamDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    peak_rate(0),
-    minimum_overall_smoothing_rate(UNDEFINED_SMOOTHING_RATE),
-    maximum_overall_smoothing_buffer(UNDEFINED_SMOOTHING_BUFFER)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 

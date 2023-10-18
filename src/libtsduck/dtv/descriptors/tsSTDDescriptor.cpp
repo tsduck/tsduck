@@ -33,8 +33,7 @@ ts::STDDescriptor::STDDescriptor(bool leak_valid_) :
 }
 
 ts::STDDescriptor::STDDescriptor(DuckContext& duck, const Descriptor& desc) :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    leak_valid(false)
+    STDDescriptor()
 {
     deserialize(duck, desc);
 }
