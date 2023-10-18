@@ -90,8 +90,8 @@ namespace ts {
         virtual std::ostream& displayStatus(std::ostream& strm, const UString& margin = UString(), bool extended = false) override;
 
     private:
-        TunerBase* _device;    // Physical tuner device.
-        TunerBase* _emulator;  // File-based tuner emulator.
-        TunerBase* _current;   // Current tuner.
+        TunerBase* _device = nullptr;    // Physical tuner device.
+        TunerBase* _emulator = nullptr;  // File-based tuner emulator.
+        TunerBase* _current = nullptr;   // Current tuner.
     };
 }

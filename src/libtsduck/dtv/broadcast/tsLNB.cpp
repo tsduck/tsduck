@@ -18,13 +18,6 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::LNB::LNB() :
-    _name(),
-    _alias(),
-    _bands()
-{
-}
-
 ts::LNB::LNB(const UString& name, Report& report) : LNB()
 {
     set(name, report);
@@ -38,24 +31,6 @@ ts::LNB::LNB(uint64_t frequency) : LNB()
 ts::LNB::LNB(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency) : LNB()
 {
     set(low_frequency, high_frequency, switch_frequency);
-}
-
-ts::LNB::Transposition::Transposition() :
-    satellite_frequency(0),
-    intermediate_frequency(0),
-    oscillator_frequency(0),
-    stacked(false),
-    band_index(0)
-{
-}
-
-ts::LNB::Band::Band() :
-    low(0),
-    high(0),
-    oscillator(0),
-    switch_freq(0),
-    polarity(POL_NONE)
-{
 }
 
 

@@ -63,32 +63,32 @@ namespace ts {
         //!
         //! Set to true when the signal is confirmed to be locked at the input of the demodulator.
         //!
-        bool signal_locked;
+        bool signal_locked = false;
 
         //!
         //! Signal strength.
         //!
-        Variable<Value> signal_strength;
+        Variable<Value> signal_strength {};
 
         //!
         //! Signal to noise ratio (SNR).
         //!
-        Variable<Value> signal_noise_ratio;
+        Variable<Value> signal_noise_ratio {};
 
         //!
         //! Bit error rate (BER).
         //!
-        Variable<Value> bit_error_rate;
+        Variable<Value> bit_error_rate {};
 
         //!
         //! Packet error rate (PER).
         //!
-        Variable<Value> packet_error_rate;
+        Variable<Value> packet_error_rate {};
 
         //!
         //! Constructor.
         //!
-        SignalState();
+        SignalState() = default;
 
         //!
         //! Clear content, reset all values, they become "unset"

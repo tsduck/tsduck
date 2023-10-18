@@ -31,7 +31,7 @@ namespace ts {
         // - 7 bits: years from base.
         // - 4 bits: month (1-12)
         // - 5 bits: day (1-31)
-        uint16_t _value;
+        uint16_t _value = INVALID_DATE;
 
         // Compute the 16-bit value.
         uint16_t toUInt16(int year, int month, int day) const;
@@ -56,7 +56,7 @@ namespace ts {
         //! Default constructor. The date is initially invalid.
         //!
         //!
-        CASDate() : _value(INVALID_DATE) {}
+        CASDate() = default;
 
         //!
         //! Constructor from a 16-bit binary value.
@@ -215,7 +215,7 @@ uint16_t ts::CASDate<YEARBASE>::toUInt16(int year, int month, int day) const
 
 // Constructor from Time
 template <int YEARBASE>
-ts::CASDate<YEARBASE>::CASDate(const Time& t) : _value(0)
+ts::CASDate<YEARBASE>::CASDate(const Time& t)
 {
     const Time::Fields f(t);
     _value = toUInt16(f.year, f.month, f.day);

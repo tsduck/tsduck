@@ -44,7 +44,7 @@ namespace ts {
         //! Default constructor.
         //! The object is initially invalid.
         //!
-        LNB();
+        LNB() = default;
 
         //!
         //! Constructor from an LNB name.
@@ -138,12 +138,12 @@ namespace ts {
         class TSDUCKDLL Transposition
         {
         public:
-            Transposition();                  //!< Constructor.
-            uint64_t satellite_frequency;     //!< Satellite frequency.
-            uint64_t intermediate_frequency;  //!< Intermediate frequency.
-            uint64_t oscillator_frequency;    //!< Oscillator frequency.
-            bool     stacked;                 //!< All transpositions are "stacked", no need to send a command to the dish.
-            size_t   band_index;              //!< Band index to switch to (e.g. 0 and 1 for low and high band of a universal LNB).
+            Transposition() = default;            //!< Constructor.
+            uint64_t satellite_frequency = 0;     //!< Satellite frequency.
+            uint64_t intermediate_frequency = 0;  //!< Intermediate frequency.
+            uint64_t oscillator_frequency = 0;    //!< Oscillator frequency.
+            bool     stacked = false;             //!< All transpositions are "stacked", no need to send a command to the dish.
+            size_t   band_index = 0;              //!< Band index to switch to (e.g. 0 and 1 for low and high band of a universal LNB).
         };
 
         //!
@@ -189,18 +189,18 @@ namespace ts {
         class Band
         {
         public:
-            Band();                    // Constructor.
-            uint64_t     low;          // Lower bound of frequency band.
-            uint64_t     high;         // Higher bound of frequency band.
-            uint64_t     oscillator;   // Oscillator frequency (base of transposition).
-            uint64_t     switch_freq;  // Switch frequency (to next band).
-            Polarization polarity;     // Polarity of this band (POL_NONE if not polarity-driven).
+            Band() = default;                  // Constructor.
+            uint64_t     low = 0;              // Lower bound of frequency band.
+            uint64_t     high = 0;             // Higher bound of frequency band.
+            uint64_t     oscillator = 0;       // Oscillator frequency (base of transposition).
+            uint64_t     switch_freq = 0;      // Switch frequency (to next band).
+            Polarization polarity = POL_NONE;  // Polarity of this band (POL_NONE if not polarity-driven).
         };
 
         // LNB private members.
-        UString           _name;     // Official or rebuilt name.
-        UString           _alias;    // Convenient alias, safe for command line use.
-        std::vector<Band> _bands;    // All supported frequency bands.
+        UString           _name {};     // Official or rebuilt name.
+        UString           _alias {};    // Convenient alias, safe for command line use.
+        std::vector<Band> _bands {};    // All supported frequency bands.
 
         // Safe pointer to an LNB object.
         // Not thread-safe since these objects are loaded once and remain constant.

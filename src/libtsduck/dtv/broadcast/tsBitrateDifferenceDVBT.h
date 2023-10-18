@@ -30,8 +30,8 @@ namespace ts {
     class TSDUCKDLL BitrateDifferenceDVBT
     {
     public:
-        ModulationArgs tune;          //!< Modulation parameters.
-        BitRate        bitrate_diff;  //!< Difference between a target bitrate and the theoretial bitrate for these tuner parameters.
+        ModulationArgs tune {};           //!< Modulation parameters.
+        BitRate        bitrate_diff = 0;  //!< Difference between a target bitrate and the theoretial bitrate for these tuner parameters.
 
         //!
         //! Default constructor.

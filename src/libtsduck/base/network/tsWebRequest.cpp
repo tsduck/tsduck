@@ -47,10 +47,6 @@ ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance()->url.getU
 ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance()->url.getPassword());
 const ts::UString ts::WebRequest::DEFAULT_USER_AGENT(u"tsduck");
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::WebRequest::DEFAULT_CHUNK_SIZE;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Constructor.

@@ -15,11 +15,6 @@
 #include "tsTSPacket.h"
 #include "tsNullReport.h"
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::EMMGClient::RECEIVER_STACK_SIZE;
-constexpr ts::MilliSecond ts::EMMGClient::RESPONSE_TIMEOUT;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Constructor

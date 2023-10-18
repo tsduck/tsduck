@@ -15,10 +15,6 @@
 #define MY_XML_NAME u"splice_insert"
 #define MY_STD ts::Standards::SCTE
 
-#if !defined(TS_CXX17)
-constexpr uint32_t ts::SpliceInsert::INVALID_EVENT_ID;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Default constructor.

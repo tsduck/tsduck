@@ -15,32 +15,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors
-//----------------------------------------------------------------------------
-
-ts::HFBand::HFBand(const UString band_name) :
-    _band_name(band_name),
-    _channel_count(0),
-    _regions(),
-    _channels()
-{
-}
-
-ts::HFBand::ChannelsRange::ChannelsRange() :
-    first_channel(0),
-    last_channel(0),
-    base_frequency(0),
-    channel_width(0),
-    first_offset(0),
-    last_offset(0),
-    offset_width(0),
-    even_polarity(POL_NONE),
-    odd_polarity(POL_NONE)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // GetBand static method.
 //----------------------------------------------------------------------------
 
@@ -438,10 +412,6 @@ bool ts::HFBand::HFBandIndex::operator<(const HFBandIndex& other) const
 TS_DEFINE_SINGLETON(ts::HFBand::HFBandRepository);
 
 ts::HFBand::HFBandRepository::HFBandRepository() :
-    _mutex(),
-    _default_region(),
-    _objects(),
-    _allRegions(),
     _voidBand(new HFBand(u""))
 {
 }

@@ -22,10 +22,6 @@
 
 TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML_NAME, MY_CLASS::DisplayDescriptor);
 
-#if !defined(TS_CXX17)
-constexpr size_t ts::EASInbandExceptionChannelsDescriptor::MAX_ENTRIES;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Constructors

@@ -55,55 +55,6 @@ constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
-//----------------------------------------------------------------------------
-
-ts::ModulationArgs::ModulationArgs() :
-    delivery_system(),
-    frequency(),
-    polarity(),
-    lnb(),
-    inversion(),
-    symbol_rate(),
-    inner_fec(),
-    satellite_number(),
-    modulation(),
-    bandwidth(),
-    fec_hp(),
-    fec_lp(),
-    transmission_mode(),
-    guard_interval(),
-    hierarchy(),
-    pilots(),
-    roll_off(),
-    plp(),
-    isi(),
-    pls_code(),
-    pls_mode(),
-    sound_broadcasting(),
-    sb_subchannel_id(),
-    sb_segment_count(),
-    sb_segment_index(),
-    isdbt_layers(),
-    isdbt_partial_reception(),
-    layer_a_fec(),
-    layer_a_modulation(),
-    layer_a_segment_count(),
-    layer_a_time_interleaving(),
-    layer_b_fec(),
-    layer_b_modulation(),
-    layer_b_segment_count(),
-    layer_b_time_interleaving(),
-    layer_c_fec(),
-    layer_c_modulation(),
-    layer_c_segment_count(),
-    layer_c_time_interleaving(),
-    stream_id()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Reset all values, they become "unset"
 //----------------------------------------------------------------------------
 

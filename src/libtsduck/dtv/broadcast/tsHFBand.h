@@ -242,18 +242,18 @@ namespace ts {
         {
         public:
             // Public members
-            uint32_t     first_channel;
-            uint32_t     last_channel;
-            uint64_t     base_frequency;
-            uint64_t     channel_width;
-            int32_t      first_offset;
-            int32_t      last_offset;
-            uint64_t     offset_width;
-            Polarization even_polarity;
-            Polarization odd_polarity;
+            uint32_t     first_channel = 0;
+            uint32_t     last_channel = 0;
+            uint64_t     base_frequency = 0;
+            uint64_t     channel_width = 0;
+            int32_t      first_offset = 0;
+            int32_t      last_offset = 0;
+            uint64_t     offset_width = 0;
+            Polarization even_polarity = POL_NONE;
+            Polarization odd_polarity = POL_NONE;
 
             // Constructor.
-            ChannelsRange();
+            ChannelsRange() = default;
 
             // Lowest and highest frequency in range.
             uint64_t lowestFrequency(bool strict) const;
@@ -270,13 +270,13 @@ namespace ts {
         typedef SafePtr<HFBand,NullMutex> HFBandPtr;
 
         // HFBand members.
-        const UString     _band_name;     // Type of HF band.
-        uint32_t          _channel_count; // Number of channels in the band.
-        UStringList       _regions;       // List of applicable regions.
-        ChannelsRangeList _channels;      // Channel ranges, in order of channel numbers.
+        const UString     _band_name {};       // Type of HF band.
+        uint32_t          _channel_count = 0;  // Number of channels in the band.
+        UStringList       _regions {};         // List of applicable regions.
+        ChannelsRangeList _channels {};        // Channel ranges, in order of channel numbers.
 
         // Default constructor (private only, use GetBand() from application).
-        HFBand(const UString band_name);
+        HFBand(const UString band_name) : _band_name(band_name) {}
 
         // Get the range of channels for a given channel number. Null _channels.end() on error.
         ChannelsRangeList::const_iterator getRange(uint32_t channel) const;
@@ -288,8 +288,8 @@ namespace ts {
         class HFBandIndex: public StringifyInterface
         {
         public:
-            UString band;   // Lower case, no space.
-            UString region; // Lower case, no space.
+            UString band {};   // Lower case, no space.
+            UString region {}; // Lower case, no space.
 
             // Constructor.
             HFBandIndex(const UString& b, const UString& r);
@@ -327,11 +327,11 @@ namespace ts {
             const UStringList allBands(const UString& region) const;
 
         private:
-            mutable Mutex _mutex;
-            UString       _default_region;
-            HFBandMap     _objects;
-            UStringList   _allRegions;
-            HFBandPtr     _voidBand;
+            mutable Mutex _mutex {};
+            UString       _default_region {};
+            HFBandMap     _objects {};
+            UStringList   _allRegions {};
+            HFBandPtr     _voidBand {};
         };
     };
 }

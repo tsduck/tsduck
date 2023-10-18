@@ -14,15 +14,6 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::SignalState::SignalState() :
-    signal_locked(false),
-    signal_strength(),
-    signal_noise_ratio(),
-    bit_error_rate(),
-    packet_error_rate()
-{
-}
-
 void ts::SignalState::clear()
 {
     signal_locked = false;
