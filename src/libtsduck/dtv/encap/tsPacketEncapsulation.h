@@ -287,24 +287,24 @@ namespace ts {
         typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
 
         bool             _packing = false;         // Packing mode.
-        size_t           _packDistance {NPOS};     // Maximum distance between inner packets.
-        PESMode          _pesMode {DISABLED};      // PES mode selected.
+        size_t           _packDistance = NPOS;     // Maximum distance between inner packets.
+        PESMode          _pesMode = DISABLED;      // PES mode selected.
         size_t           _pesOffset = 0;           // PES Offset used in the Synchronous mode.
         PID              _pidOutput = PID_NULL;    // Output PID.
         PIDSet           _pidInput {};             // Input PID's to encapsulate.
         PID              _pcrReference = PID_NULL; // Insert PCR's based on this reference PID.
         UString          _lastError {};            // Last error message.
         PacketCounter    _currentPacket = 0;       // Total TS packets since last reset.
-        PacketCounter    _pcrLastPacket {INVALID_PACKET_COUNTER};   // Packet index of last PCR in reference PID.
-        uint64_t         _pcrLastValue {INVALID_PCR};               // Last PCR value in reference PID.
-        uint64_t         _ptsPrevious {INVALID_PTS};                // Previous PTS value in PES ASYNC mode.
+        PacketCounter    _pcrLastPacket = INVALID_PACKET_COUNTER;   // Packet index of last PCR in reference PID.
+        uint64_t         _pcrLastValue = INVALID_PCR;               // Last PCR value in reference PID.
+        uint64_t         _ptsPrevious = INVALID_PTS;                // Previous PTS value in PES ASYNC mode.
         BitRate          _bitrate = 0;             // Bitrate computed from last PCR.
         bool             _insertPCR = false;       // Insert a PCR in next output packet.
         uint8_t          _ccOutput = 0;            // Continuity counter in output PID.
         uint8_t          _ccPES {1};               // Continuity counter in PES ASYNC mode.
         PIDCCMap         _lastCC {};               // Continuity counter by PID.
         size_t           _lateDistance = 0;        // Distance from the last packet.
-        size_t           _lateMaxPackets {DEFAULT_MAX_BUFFERED_PACKETS};  // Maximum number of packets in _latePackets.
+        size_t           _lateMaxPackets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _latePackets.
         size_t           _lateIndex = 0;           // Index in first late packet.
         TSPacketPtrQueue _latePackets {};          // Packets to insert later.
 

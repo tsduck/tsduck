@@ -180,12 +180,12 @@ namespace ts {
         static constexpr size_t RECEIVER_STACK_SIZE = 128 * 1024;
 
         // Timeout for responses from MUX.
-        static const MilliSecond RESPONSE_TIMEOUT = 5000;
+        static constexpr MilliSecond RESPONSE_TIMEOUT = 5000;
 
         // Private members
         const DuckContext&       _duck;
         const emmgmux::Protocol& _protocol;
-        volatile State           _state {INITIAL};
+        volatile State           _state = INITIAL;
         IPv4SocketAddress        _udp_address {};
         uint64_t                 _total_bytes = 0;
         const AbortInterface*    _abort = nullptr;

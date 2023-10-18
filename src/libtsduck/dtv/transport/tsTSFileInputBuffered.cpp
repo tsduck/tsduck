@@ -8,8 +8,6 @@
 
 #include "tsTSFileInputBuffered.h"
 
-const size_t ts::TSFileInputBuffered::MIN_BUFFER_SIZE;
-
 
 //----------------------------------------------------------------------------
 // Constructor

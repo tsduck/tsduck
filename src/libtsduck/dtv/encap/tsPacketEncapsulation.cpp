@@ -8,8 +8,6 @@
 
 #include "tsPacketEncapsulation.h"
 
-const size_t ts::PacketEncapsulation::DEFAULT_MAX_BUFFERED_PACKETS;
-
 
 //----------------------------------------------------------------------------
 // Constructor.

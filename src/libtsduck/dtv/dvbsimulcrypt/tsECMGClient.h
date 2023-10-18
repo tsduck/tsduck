@@ -140,7 +140,7 @@ namespace ts {
         static constexpr size_t RESPONSE_QUEUE_SIZE = 10;
 
         // Timeout for responses from ECMG (except ECM generation)
-        static const MilliSecond RESPONSE_TIMEOUT = 5000;
+        static constexpr MilliSecond RESPONSE_TIMEOUT = 5000;
 
         // List of asynchronous ECM requests: key=cp_number, value=handler
         typedef std::map <uint16_t, ECMGClientHandlerInterface*> AsyncRequests;
