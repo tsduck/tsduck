@@ -66,22 +66,22 @@ namespace ts {
         void cleanup();
 
         // Working data.
-        ::rist_profile          profile;  //!< RIST profile.
-        ::rist_ctx*             ctx;      //!< RIST context.
-        ::rist_logging_settings log;      //!< RIST logging settings.
+        ::rist_profile          profile = RIST_PROFILE_SIMPLE; //!< RIST profile.
+        ::rist_ctx*             ctx = nullptr;                 //!< RIST context.
+        ::rist_logging_settings log {};                        //!< RIST logging settings.
 
     private:
         // Working data.
         Report&  _report;
-        uint32_t _buffer_size;
-        int      _encryption_type;
-        UString  _secret;
-        int      _stats_interval;
-        UString  _stats_prefix;
-        IPv4SocketAddressVector          _allowed;
-        IPv4SocketAddressVector          _denied;
-        UStringVector                    _peer_urls;
-        std::vector<::rist_peer_config*> _peer_configs;
+        uint32_t _buffer_size = 0;
+        int      _encryption_type = 0;
+        UString  _secret {};
+        int      _stats_interval = 0;
+        UString  _stats_prefix {};
+        IPv4SocketAddressVector          _allowed {};
+        IPv4SocketAddressVector          _denied {};
+        UStringVector                    _peer_urls {};
+        std::vector<::rist_peer_config*> _peer_configs {};
 
         // Analyze a list of options containing socket addresses.
         bool getSocketValues(Args& args, IPv4SocketAddressVector& list, const UChar* option);

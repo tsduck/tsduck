@@ -31,14 +31,14 @@ namespace ts {
 
     private:
         // Command line options:
-        uint16_t _pid;         // Target PID
-        int      _opt_addpkt;  // addpkt in addpkt/inpkt parameter
-        int      _opt_inpkt;   // inpkt in addpkt/inpkt parameter
+        uint16_t _pid = PID_NULL;  // Target PID
+        int      _opt_addpkt = 0;  // addpkt in addpkt/inpkt parameter
+        int      _opt_inpkt = 0;   // inpkt in addpkt/inpkt parameter
 
         // Working data:
-        uint8_t  _last_cc;     // Last continuity counter in PID
-        int      _in_count;    // Input packet countdown for next insertion
-        int      _add_count;   // Current number of packets to add
+        uint8_t  _last_cc = 0;     // Last continuity counter in PID
+        int      _in_count = 0;    // Input packet countdown for next insertion
+        int      _add_count = 0;   // Current number of packets to add
     };
 }
 
@@ -50,13 +50,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"boostpid", ts::BoostPIDPlugin);
 //----------------------------------------------------------------------------
 
 ts::BoostPIDPlugin::BoostPIDPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Boost the bitrate of a PID, stealing stuffing packets", u"[options] pid addpkt inpkt"),
-    _pid(PID_NULL),
-    _opt_addpkt(0),
-    _opt_inpkt(0),
-    _last_cc(0),
-    _in_count(0),
-    _add_count(0)
+    ProcessorPlugin(tsp_, u"Boost the bitrate of a PID, stealing stuffing packets", u"[options] pid addpkt inpkt")
 {
     option(u"", 0, UNSIGNED, 3, 3);
     help(u"",

@@ -31,7 +31,7 @@ bool ts::RISTInputPlugin::isRealTime()
 #define NORIST_ERROR_MSG u"This version of TSDuck was compiled without RIST support"
 #define NORIST_ERROR(ret) { tsp->error(NORIST_ERROR_MSG); return (ret); }
 
-ts::RISTInputPlugin::RISTInputPlugin(TSP* t) : InputPlugin(t), _guts(nullptr) {}
+ts::RISTInputPlugin::RISTInputPlugin(TSP* t) : InputPlugin(t) {}
 ts::RISTInputPlugin::~RISTInputPlugin() {}
 bool ts::RISTInputPlugin::getOptions() NORIST_ERROR(false)
 bool ts::RISTInputPlugin::setReceiveTimeout(MilliSecond) NORIST_ERROR(false)
@@ -53,10 +53,10 @@ class ts::RISTInputPlugin::Guts
      TS_NOBUILD_NOCOPY(Guts);
 public:
      RISTPluginData rist;
-     MilliSecond    timeout {0};           // receive timeout.
+     MilliSecond    timeout = 0;           // receive timeout.
      ByteBlock      buffer {};             // data in excess from last input.
-     int            last_qsize {0};        // last queue size in data blocks.
-     bool           qsize_warned {false};  // a warning was reporting on heavy queue size.
+     int            last_qsize = 0;        // last queue size in data blocks.
+     bool           qsize_warned = false;  // a warning was reporting on heavy queue size.
 
      // Constructor.
      Guts(Args* args, TSP* tsp) : rist(*tsp) {}

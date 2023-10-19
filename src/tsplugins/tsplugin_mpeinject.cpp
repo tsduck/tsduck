@@ -52,17 +52,17 @@ namespace ts {
         typedef MessageQueue<Section, Mutex> SectionQueue;
 
         // Command line options.
-        PID        _mpe_pid;        // PID into insert the MPE datagrams.
-        bool       _replace;        // Replace incoming PID if it exists.
-        bool       _pack_sections;  // Packet DSM-CC section, without stuffing in TS packets.
-        size_t     _max_queued;     // Max number of queued sections.
-        MACAddress _default_mac;    // Default MAC address in MPE section for unicast packets.
+        PID        _mpe_pid = PID_NULL;     // PID into insert the MPE datagrams.
+        bool       _replace = false;        // Replace incoming PID if it exists.
+        bool       _pack_sections = false;  // Packet DSM-CC section, without stuffing in TS packets.
+        size_t     _max_queued = DEFAULT_MAX_QUEUED_SECTION; // Max number of queued sections.
+        MACAddress _default_mac {};         // Default MAC address in MPE section for unicast packets.
 
         // Working data.
-        volatile bool  _terminate;      // Force termination flag for thread.
-        SectionQueue   _section_queue;  // Queue of datagrams between the UDP server and the MPE inserter.
-        Packetizer     _packetizer;     // Packetizer for MPE sections.
-        ReceiverVector _receivers;      // UDP receiver threads.
+        volatile bool  _terminate = false;  // Force termination flag for thread.
+        SectionQueue   _section_queue {DEFAULT_MAX_QUEUED_SECTION};  // Queue of datagrams between the UDP server and the MPE inserter.
+        Packetizer     _packetizer {duck, PID_NULL, this};           // Packetizer for MPE sections.
+        ReceiverVector _receivers {};       // UDP receiver threads.
 
         // Implementation of SectionProviderInterface.
         virtual void provideSection(SectionCounter counter, SectionPtr& section) override;
@@ -90,11 +90,11 @@ namespace ts {
             bool closeSocket() { return _sock.close(*_plugin->tsp); }
 
         private:
-            MPEInjectPlugin*  _plugin;     // Parent plugin.
-            IPv4SocketAddress _new_source; // Masquerade source socket in MPE section.
-            IPv4SocketAddress _new_dest;   // Masquerade destination socket in MPE section.
-            UDPReceiver       _sock;       // Incoming socket with associated command line options.
-            size_t            _index;      // Receiver index.
+            MPEInjectPlugin* const _plugin;    // Parent plugin.
+            IPv4SocketAddress _new_source {};  // Masquerade source socket in MPE section.
+            IPv4SocketAddress _new_dest {};    // Masquerade destination socket in MPE section.
+            UDPReceiver       _sock;           // Incoming socket with associated command line options.
+            size_t            _index = 0;      // Receiver index.
         };
     };
 }
@@ -107,16 +107,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"mpeinject", ts::MPEInjectPlugin);
 //----------------------------------------------------------------------------
 
 ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port ..."),
-    _mpe_pid(PID_NULL),
-    _replace(false),
-    _pack_sections(false),
-    _max_queued(DEFAULT_MAX_QUEUED_SECTION),
-    _default_mac(),
-    _terminate(false),
-    _section_queue(DEFAULT_MAX_QUEUED_SECTION),
-    _packetizer(duck, PID_NULL, this),
-    _receivers()
+    ProcessorPlugin(tsp_, u"Inject an incoming UDP stream into MPE (Multi-Protocol Encapsulation)", u"[options] [address:]port ...")
 {
     // Use a dummy UDP receiver to define common options.
     UDPReceiver dummy(*tsp);
@@ -179,10 +170,7 @@ ts::MPEInjectPlugin::MPEInjectPlugin(TSP* tsp_) :
 ts::MPEInjectPlugin::ReceiverThread::ReceiverThread(MPEInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
     _plugin(plugin),
-    _new_source(),
-    _new_dest(),
-    _sock(*_plugin->tsp),
-    _index(0)
+    _sock(*_plugin->tsp)
 {
 }
 

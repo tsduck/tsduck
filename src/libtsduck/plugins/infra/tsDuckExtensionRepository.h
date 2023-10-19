@@ -100,7 +100,7 @@ namespace ts {
         TS_POP_WARNING()
 
         // List of loaded extensions.
-        std::list<Extension> _extensions;
+        std::list<Extension> _extensions {};
 
         // Load all extensions in constructor of an internal singleton.
         // There is a trick here. If we load all extensions in the constructor of DuckExtensionRepository,

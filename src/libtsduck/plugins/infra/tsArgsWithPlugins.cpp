@@ -32,8 +32,7 @@ ts::ArgsWithPlugins::ArgsWithPlugins(size_t min_inputs,
     _min_plugins(min_plugins),
     _max_plugins(max_plugins),
     _min_outputs(min_outputs),
-    _max_outputs(max_outputs),
-    _plugins()
+    _max_outputs(max_outputs)
 {
     setDirectSyntax(syntax);
 

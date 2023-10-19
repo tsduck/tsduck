@@ -36,11 +36,11 @@ namespace ts {
         virtual BitRateConfidence getBitrateConfidence() override;
 
     private:
-        int             _dev_number;  // Device adapter number.
-        UString         _dev_name;    // Device name.
-        BitRate         _bitrate;     // Nominal output bitrate.
-        HiDesDevice     _device;      // HiDes device object.
-        HiDesDeviceInfo _dev_info;    // HiDes device information.
+        int             _dev_number = -1;  // Device adapter number.
+        UString         _dev_name {};      // Device name.
+        BitRate         _bitrate = 0;      // Nominal output bitrate.
+        HiDesDevice     _device {};        // HiDes device object.
+        HiDesDeviceInfo _dev_info {};      // HiDes device information.
     };
 }
 
@@ -52,12 +52,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hides", ts::HiDesOutputPlugin);
 //----------------------------------------------------------------------------
 
 ts::HiDesOutputPlugin::HiDesOutputPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Send packets to a HiDes modulator device", u"[options]"),
-    _dev_number(-1),
-    _dev_name(),
-    _bitrate(0),
-    _device(),
-    _dev_info()
+    OutputPlugin(tsp_, u"Send packets to a HiDes modulator device", u"[options]")
 {
     option(u"adapter", 'a', UNSIGNED);
     help(u"adapter",

@@ -39,16 +39,16 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool             _abort = false;      // Error (service not found, etc).
-        PID              _pid = PID_NULL;        // Teletext PID.
-        int              _page {-1};       // Teletext page.
-        int              _maxFrames = 0;  // Max number of Teletext frames to generate.
-        UString          _language {};   // Language to select.
-        UString          _outFile {};    // Output file name.
-        ServiceDiscovery _service;    // Service name & id.
-        TeletextDemux    _demux;      // Teletext demux to extract subtitle frames.
-        SubRipGenerator  _srtOutput {};  // Generate SRT output file.
-        std::set<int>    _pages {};      // Set of all Teletext pages in the PID (for information only).
+        bool             _abort = false;              // Error (service not found, etc).
+        PID              _pid = PID_NULL;             // Teletext PID.
+        int              _page {-1};                  // Teletext page.
+        int              _maxFrames = 0;              // Max number of Teletext frames to generate.
+        UString          _language {};                // Language to select.
+        UString          _outFile {};                 // Output file name.
+        ServiceDiscovery _service {duck, this};       // Service name & id.
+        TeletextDemux    _demux {duck, this, NoPID};  // Teletext demux to extract subtitle frames.
+        SubRipGenerator  _srtOutput {};               // Generate SRT output file.
+        std::set<int>    _pages {};                   // Set of all Teletext pages in the PID (for information only).
 
         // Implementation of interfaces.
         virtual void handlePMT(const PMT&, PID) override;

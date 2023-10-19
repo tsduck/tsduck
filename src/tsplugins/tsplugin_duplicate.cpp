@@ -37,9 +37,9 @@ namespace ts {
         typedef SafePtr<TSPacket> TSPacketPtr;
         typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
 
-        bool             _silentDrop;       // Silently drop packets on overflow.
-        size_t           _maxBuffered;      // Max buffered packets.
-        TSPacketPtrQueue _queue;            // Buffered packets, waiting for null packets to replace.
+        bool             _silentDrop = false;  // Silently drop packets on overflow.
+        size_t           _maxBuffered = 0;     // Max buffered packets.
+        TSPacketPtrQueue _queue {};            // Buffered packets, waiting for null packets to replace.
     };
 }
 
@@ -51,10 +51,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"duplicate", ts::DuplicatePlugin);
 //----------------------------------------------------------------------------
 
 ts::DuplicatePlugin::DuplicatePlugin(TSP* tsp_) :
-    AbstractDuplicateRemapPlugin(false, tsp_, u"Duplicate PID's, reusing null packets", u"[options] [pid[-pid]=newpid ...]"),
-    _silentDrop(false),
-    _maxBuffered(0),
-    _queue()
+    AbstractDuplicateRemapPlugin(false, tsp_, u"Duplicate PID's, reusing null packets", u"[options] [pid[-pid]=newpid ...]")
 {
     option(u"drop-overflow", 'd');
     help(u"drop-overflow",

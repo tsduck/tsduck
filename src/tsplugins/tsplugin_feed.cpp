@@ -43,24 +43,24 @@ namespace ts {
 
     private:
         // Command line options:
-        bool              _replace_ts;     // Replace extracted TS.
-        PID               _feed_pid;       // Original value for --pid.
-        TSFile::OpenFlags _outfile_flags;  // Open flags for output file.
-        UString           _outfile_name;   // Output file name.
-        uint8_t           _service_type;   // Service type carrying an inner TS.
-        uint8_t           _stream_type;    // Service type carrying an inner TS.
+        bool              _replace_ts = false;     // Replace extracted TS.
+        PID               _feed_pid = PID_NULL;       // Original value for --pid.
+        TSFile::OpenFlags _outfile_flags = TSFile::NONE;  // Open flags for output file.
+        UString           _outfile_name {};   // Output file name.
+        uint8_t           _service_type = DEFAULT_SERVICE_TYPE;   // Service type carrying an inner TS.
+        uint8_t           _stream_type = DEFAULT_STREAM_TYPE;    // Service type carrying an inner TS.
 
         // Working data.
-        bool              _abort;          // Error, abort asap.
-        bool              _sync;           // Synchronized extraction of packets.
-        uint8_t           _last_cc;        // Continuity counter from last packet in the PID.
-        PID               _extract_pid;    // PID carrying the T2-MI encapsulation.
-        TSFile            _outfile;        // Output file for extracted stream.
-        ByteBlock         _outdata;        // Output data buffer.
-        SectionDemux      _demux;          // A demux to extract all interesting tables.
-        std::set<uint16_t>          _all_services;   // All declared service ids in the TS.
-        std::map<uint16_t, uint8_t> _service_types;  // Service id -> service type.
-        std::map<uint16_t, PID>     _service_pids;   // Service id -> candidate PID.
+        bool              _abort = false;               // Error, abort asap.
+        bool              _sync = false;                // Synchronized extraction of packets.
+        uint8_t           _last_cc = 0xFF;              // Continuity counter from last packet in the PID.
+        PID               _extract_pid = PID_NULL;      // PID carrying the T2-MI encapsulation.
+        TSFile            _outfile {};                  // Output file for extracted stream.
+        ByteBlock         _outdata {};                  // Output data buffer.
+        SectionDemux      _demux {duck, this};          // A demux to extract all interesting tables.
+        std::set<uint16_t>          _all_services {};   // All declared service ids in the TS.
+        std::map<uint16_t, uint8_t> _service_types {};  // Service id -> service type.
+        std::map<uint16_t, PID>     _service_pids {};   // Service id -> candidate PID.
 
         // Resynchronize the output buffer.
         void resyncBuffer();
@@ -78,23 +78,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"feed", ts::FeedPlugin);
 //----------------------------------------------------------------------------
 
 ts::FeedPlugin::FeedPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract an encapsulated TS from an outer feed TS", u"[options]"),
-    _replace_ts(false),
-    _feed_pid(PID_NULL),
-    _outfile_flags(TSFile::NONE),
-    _outfile_name(),
-    _service_type(DEFAULT_SERVICE_TYPE),
-    _stream_type(DEFAULT_STREAM_TYPE),
-    _abort(false),
-    _sync(false),
-    _last_cc(0xFF),
-    _extract_pid(PID_NULL),
-    _outfile(),
-    _outdata(),
-    _demux(duck, this),
-    _all_services(),
-    _service_types(),
-    _service_pids()
+    ProcessorPlugin(tsp_, u"Extract an encapsulated TS from an outer feed TS", u"[options]")
 {
     option(u"append", 'a');
     help(u"append",

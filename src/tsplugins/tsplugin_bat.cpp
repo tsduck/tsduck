@@ -35,13 +35,13 @@ namespace ts {
 
     private:
         // Command line options:
-        bool               _single_bat;        // Modify one single BAT only
-        uint16_t           _bouquet_id;        // Bouquet id of the BAT to modify (if _single_bat)
-        std::set<uint16_t> _remove_serv_ids;   // Set of services to remove
-        std::set<uint16_t> _remove_ts_ids;     // Set of transport streams to remove
-        std::vector<DID>   _removed_desc_tags; // Set of descriptor tags to remove
-        PDS                _pds;               // Private data specifier for removed descriptors
-        bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        bool               _single_bat = false;        // Modify one single BAT only
+        uint16_t           _bouquet_id = 0;            // Bouquet id of the BAT to modify (if _single_bat)
+        std::set<uint16_t> _remove_serv_ids {};        // Set of services to remove
+        std::set<uint16_t> _remove_ts_ids {};          // Set of transport streams to remove
+        std::vector<DID>   _removed_desc_tags {};      // Set of descriptor tags to remove
+        PDS                _pds = 0;                   // Private data specifier for removed descriptors
+        bool               _cleanup_priv_desc = false; // Remove private desc without preceding PDS desc
 
         // Process a list of descriptors according to the command line options.
         void processDescriptorList(DescriptorList&);
@@ -56,14 +56,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"bat", ts::BATPlugin);
 //----------------------------------------------------------------------------
 
 ts::BATPlugin::BATPlugin(TSP* tsp_) :
-   AbstractTablePlugin(tsp_, u"Perform various transformations on the BAT", u"[options]", u"BAT", PID_BAT),
-   _single_bat(false),
-   _bouquet_id(0),
-   _remove_serv_ids(),
-   _remove_ts_ids(),
-   _removed_desc_tags(),
-   _pds(0),
-   _cleanup_priv_desc(false)
+   AbstractTablePlugin(tsp_, u"Perform various transformations on the BAT", u"[options]", u"BAT", PID_BAT)
 {
     option(u"bouquet-id", 'b', UINT16);
     help(u"bouquet-id",

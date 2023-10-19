@@ -27,41 +27,44 @@ namespace ts {
     class TSDUCKDLL TSProcessorArgs
     {
     public:
-        UString           app_name;         //!< Application name, for help messages.
-        bool              ignore_jt;        //!< Ignore "joint termination" options in plugins.
-        bool              log_plugin_index; //!< Log plugin index with plugin name.
-        size_t            ts_buffer_size;   //!< Size in bytes of the global TS packet buffer.
-        size_t            max_flush_pkt;    //!< Max processed packets before flush.
-        size_t            max_input_pkt;    //!< Max packets per input operation.
-        size_t            max_output_pkt;   //!< Max packets per outsput operation.
-        size_t            init_input_pkt;   //!< Initial number of input packets to read before starting the processing (zero means default).
-        size_t            instuff_nullpkt;  //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
-        size_t            instuff_inpkt;    //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
-        size_t            instuff_start;    //!< Add input stuffing: add @a instuff_start null packets before actual input.
-        size_t            instuff_stop;     //!< Add input stuffing: add @a instuff_end null packets after end of actual input.
-        BitRate           fixed_bitrate;    //!< Fixed input bitrate (user-specified).
-        MilliSecond       bitrate_adj;      //!< Bitrate adjust interval.
-        PacketCounter     init_bitrate_adj; //!< As long as input bitrate is unknown, reevaluate periodically.
-        Tristate          realtime;         //!< Use real-time options.
-        MilliSecond       receive_timeout;  //!< Timeout on input operations.
-        MilliSecond       final_wait;       //!< Time to wait after last input packet. Zero means infinite, negative means none.
-        uint16_t          control_port;     //!< TCP server port for control commands.
-        IPv4Address       control_local;    //!< Local interface on which to listen for control commands.
-        bool              control_reuse;    //!< Set the 'reuse port' socket option on the control TCP server port.
-        IPv4AddressVector control_sources;  //!< Remote IP addresses which are allowed to send control commands.
-        MilliSecond       control_timeout;  //!< Reception timeout in milliseconds for control commands.
-        DuckContext::SavedArgs duck_args;   //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
-        PluginOptions          input;       //!< Input plugin description.
-        PluginOptionsVector    plugins;     //!< Packet processor plugins descriptions.
-        PluginOptions          output;      //!< Output plugin description.
+        UString           app_name {};              //!< Application name, for help messages.
+        bool              ignore_jt = false;        //!< Ignore "joint termination" options in plugins.
+        bool              log_plugin_index = false; //!< Log plugin index with plugin name.
+        size_t            ts_buffer_size = DEFAULT_BUFFER_SIZE; //!< Size in bytes of the global TS packet buffer.
+        size_t            max_flush_pkt = 0;        //!< Max processed packets before flush.
+        size_t            max_input_pkt = 0;        //!< Max packets per input operation.
+        size_t            max_output_pkt = NPOS;    //!< Max packets per outsput operation. NPOS means unlimited.
+        size_t            init_input_pkt = 0;       //!< Initial number of input packets to read before starting the processing (zero means default).
+        size_t            instuff_nullpkt = 0;      //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
+        size_t            instuff_inpkt = 0;        //!< Add input stuffing: add @a instuff_nullpkt null packets every @a instuff_inpkt input packets.
+        size_t            instuff_start = 0;        //!< Add input stuffing: add @a instuff_start null packets before actual input.
+        size_t            instuff_stop = 0;         //!< Add input stuffing: add @a instuff_end null packets after end of actual input.
+        BitRate           fixed_bitrate = 0;        //!< Fixed input bitrate (user-specified).
+        MilliSecond       bitrate_adj = DEFAULT_BITRATE_INTERVAL; //!< Bitrate adjust interval.
+        PacketCounter     init_bitrate_adj = DEFAULT_INIT_BITRATE_PKT_INTERVAL; //!< As long as input bitrate is unknown, reevaluate periodically.
+        Tristate          realtime = Tristate::Maybe; //!< Use real-time options.
+        MilliSecond       receive_timeout = 0;      //!< Timeout on input operations.
+        MilliSecond       final_wait = -1;          //!< Time to wait after last input packet. Zero means infinite, negative means none.
+        uint16_t          control_port = 0;         //!< TCP server port for control commands.
+        IPv4Address       control_local {};         //!< Local interface on which to listen for control commands.
+        bool              control_reuse = false;    //!< Set the 'reuse port' socket option on the control TCP server port.
+        IPv4AddressVector control_sources {};       //!< Remote IP addresses which are allowed to send control commands.
+        MilliSecond       control_timeout = DEFAULT_CONTROL_TIMEOUT; //!< Reception timeout in milliseconds for control commands.
+        DuckContext::SavedArgs duck_args {};        //!< Default TSDuck context options for all plugins. Each plugin can override them in its context.
+        PluginOptions          input {};            //!< Input plugin description.
+        PluginOptionsVector    plugins {};          //!< Packet processor plugins descriptions.
+        PluginOptions          output {};           //!< Output plugin description.
 
-        static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;  //!< Default size in bytes of global TS buffer.
-        static constexpr size_t MIN_BUFFER_SIZE = 18800;             //!< Minimum size in bytes of global TS buffer.
+        static constexpr size_t DEFAULT_BUFFER_SIZE = 16 * 1000000;               //!< Default size in bytes of global TS buffer.
+        static constexpr size_t MIN_BUFFER_SIZE = 18800;                          //!< Minimum size in bytes of global TS buffer.
+        static constexpr MilliSecond DEFAULT_CONTROL_TIMEOUT = 5000;              //!< Default control command reception timeout, in milliseconds.
+        static constexpr MilliSecond DEFAULT_BITRATE_INTERVAL = 5000;             //!< Default bitrate adjustment interval, in milliseconds.
+        static constexpr PacketCounter DEFAULT_INIT_BITRATE_PKT_INTERVAL = 1000;  //!< Default initial bitrate reevaluation interval, in packets.
 
         //!
         //! Constructor.
         //!
-        TSProcessorArgs();
+        TSProcessorArgs() = default;
 
         //!
         //! Add command line option definitions in an Args.

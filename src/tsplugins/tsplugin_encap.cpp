@@ -32,16 +32,16 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool                         _ignoreErrors;  // Ignore encapsulation errors.
-        bool                         _pack;          // Outer packet packing option.
-        size_t                       _packLimit;     // Max limit distance.
-        size_t                       _maxBuffered;   // Max buffered packets.
-        PID                          _pidOutput;     // Output PID.
-        PID                          _pidPCR;        // PCR reference PID.
-        PIDSet                       _pidsInput;     // Input PID's.
-        PacketEncapsulation::PESMode _pesMode;       // Enable PES mode and select type.
-        size_t                       _pesOffset;     // Offset value in PES Synchronous.
-        PacketEncapsulation          _encap;         // Encapsulation engine.
+        bool                         _ignoreErrors = false;  // Ignore encapsulation errors.
+        bool                         _pack = false;          // Outer packet packing option.
+        size_t                       _packLimit = 0;         // Max limit distance.
+        size_t                       _maxBuffered = 0;       // Max buffered packets.
+        PID                          _pidOutput = PID_NULL;  // Output PID.
+        PID                          _pidPCR = PID_NULL;     // PCR reference PID.
+        PIDSet                       _pidsInput {};          // Input PID's.
+        PacketEncapsulation::PESMode _pesMode = PacketEncapsulation::DISABLED;
+        size_t                       _pesOffset = 0;         // Offset value in PES Synchronous.
+        PacketEncapsulation          _encap {};              // Encapsulation engine.
     };
 }
 
@@ -53,17 +53,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"encap", ts::EncapPlugin);
 //----------------------------------------------------------------------------
 
 ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Encapsulate packets from several PID's into one single PID", u"[options]"),
-    _ignoreErrors(false),
-    _pack(false),
-    _packLimit(0),
-    _maxBuffered(0),
-    _pidOutput(PID_NULL),
-    _pidPCR(PID_NULL),
-    _pidsInput(),
-    _pesMode(PacketEncapsulation::DISABLED),
-    _pesOffset(0),
-    _encap()
+    ProcessorPlugin(tsp_, u"Encapsulate packets from several PID's into one single PID", u"[options]")
 {
     option(u"ignore-errors", 'i');
     help(u"ignore-errors",

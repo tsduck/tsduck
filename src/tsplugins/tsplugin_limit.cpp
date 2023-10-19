@@ -47,23 +47,23 @@ namespace ts {
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         // Plugin fields.
-        bool          _useWallClock;
-        BitRate       _maxBitrate;
-        PacketCounter _threshold1;
-        PacketCounter _threshold2;
-        PacketCounter _threshold3;
-        PacketCounter _threshold4;
-        PacketCounter _thresholdAV;   // Threshold for audio/video packets.
-        BitRate       _curBitrate;    // Instant bitrate (between to consecutive PCR).
-        PacketCounter _currentPacket; // Total number of packets so far in the TS.
-        PacketCounter _excessPoint;   // Last packet from which we computed excess packets.
-        PacketCounter _excessPackets; // Number of packets in excess (to drop).
-        PacketCounter _excessBits;    // Number of bits in excess, in addition to packets.
-        PIDSet        _pids1;         // PIDs to sacrifice at threshold 1.
-        SectionDemux  _demux;         // Demux to collect PAT and PMT's.
-        PIDContextMap _pidContexts;   // One context per PID in the TS.
-        Monotonic     _clock;         // Monotonic clock for live streams.
-        size_t        _bitsSecond;    // Number of bits in current second.
+        bool          _useWallClock = false;
+        BitRate       _maxBitrate = 0;
+        PacketCounter _threshold1 = 0;
+        PacketCounter _threshold2 = 0;
+        PacketCounter _threshold3 = 0;
+        PacketCounter _threshold4 = 0;
+        PacketCounter _thresholdAV = 0;     // Threshold for audio/video packets.
+        BitRate       _curBitrate = 0;      // Instant bitrate (between to consecutive PCR).
+        PacketCounter _currentPacket = 0;   // Total number of packets so far in the TS.
+        PacketCounter _excessPoint = 0;     // Last packet from which we computed excess packets.
+        PacketCounter _excessPackets = 0;   // Number of packets in excess (to drop).
+        PacketCounter _excessBits = 0;      // Number of bits in excess, in addition to packets.
+        PIDSet        _pids1 {};            // PIDs to sacrifice at threshold 1.
+        SectionDemux  _demux {duck, this};  // Demux to collect PAT and PMT's.
+        PIDContextMap _pidContexts {};      // One context per PID in the TS.
+        Monotonic     _clock {};            // Monotonic clock for live streams.
+        size_t        _bitsSecond = 0;      // Number of bits in current second.
 
         // Context per PID in the TS.
         struct PIDContext
@@ -72,13 +72,13 @@ namespace ts {
             PIDContext() = delete;
             PIDContext(PID pid);
 
-            PID           pid;         // PID value.
-            bool          psi;         // The PID contains PSI/SI.
-            bool          video;       // The PID contains video.
-            bool          audio;       // The PID contains audio.
-            uint64_t      pcrValue;    // Last PCR value.
-            PacketCounter pcrPacket;   // Global packet index for pcrValue.
-            PacketCounter dropCount;   // Number of dropped packets in this PID.
+            const PID     pid;                    // PID value.
+            bool          psi = false;            // The PID contains PSI/SI.
+            bool          video = false;          // The PID contains video.
+            bool          audio = false;          // The PID contains audio.
+            uint64_t      pcrValue = INVALID_PCR; // Last PCR value.
+            PacketCounter pcrPacket = 0;          // Global packet index for pcrValue.
+            PacketCounter dropCount = 0;          // Number of dropped packets in this PID.
         };
 
         // Get or create the context for a PID.
@@ -100,24 +100,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"limit", ts::LimitPlugin);
 //----------------------------------------------------------------------------
 
 ts::LimitPlugin::LimitPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Limit the global bitrate by dropping packets", u"[options]"),
-    _useWallClock(false),
-    _maxBitrate(0),
-    _threshold1(0),
-    _threshold2(0),
-    _threshold3(0),
-    _threshold4(0),
-    _thresholdAV(0),
-    _curBitrate(0),
-    _currentPacket(0),
-    _excessPoint(0),
-    _excessPackets(0),
-    _excessBits(0),
-    _pids1(),
-    _demux(duck, this),
-    _pidContexts(),
-    _clock(),
-    _bitsSecond(0)
+    ProcessorPlugin(tsp_, u"Limit the global bitrate by dropping packets", u"[options]")
 {
     setIntro(u"This plugin limits the global bitrate of the transport stream. "
              u"Packets are dropped when necessary to maintain the overall bitrate "
@@ -248,12 +231,7 @@ ts::LimitPlugin::PIDContextPtr ts::LimitPlugin::getContext(PID pid)
 
 ts::LimitPlugin::PIDContext::PIDContext(PID pid_) :
     pid(pid_ <= PID_NULL ? pid_ : PID(PID_NULL)),
-    psi(pid <= PID_DVB_LAST),
-    video(false),
-    audio(false),
-    pcrValue(INVALID_PCR),
-    pcrPacket(0),
-    dropCount(0)
+    psi(pid <= PID_DVB_LAST)
 {
 }
 

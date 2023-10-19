@@ -38,8 +38,8 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TablesDisplay _display;
-        PSILogger     _logger;
+        TablesDisplay _display {duck};
+        PSILogger     _logger {_display};
         bool          _signal_event = false;  // Signal a plugin event on section.
         uint32_t      _event_code = 0;        // Event code to signal.
 

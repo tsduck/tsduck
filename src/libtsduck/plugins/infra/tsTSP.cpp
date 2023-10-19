@@ -14,14 +14,7 @@
 //----------------------------------------------------------------------------
 
 ts::TSP::TSP(int max_severity) :
-    Report(max_severity),
-    _use_realtime(false),
-    _tsp_bitrate(0),
-    _tsp_bitrate_confidence(BitRateConfidence::LOW),
-    _tsp_timeout(Infinite),
-    _tsp_aborting(false),
-    _total_packets(0),
-    _plugin_packets(0)
+    Report(max_severity)
 {
 }
 

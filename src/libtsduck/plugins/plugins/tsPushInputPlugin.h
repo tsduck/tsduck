@@ -127,7 +127,7 @@ namespace ts {
         };
 
         // Plugin private data.
-        Receiver      _receiver;
+        Receiver      _receiver {this};
         bool          _started = false;
         volatile bool _interrupted = false;
         TSPacketQueue _queue {};

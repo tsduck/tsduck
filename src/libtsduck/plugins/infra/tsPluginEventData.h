@@ -126,10 +126,10 @@ namespace ts {
         bool hasError() const { return _error; }
 
     private:
-        bool     _read_only;
-        bool     _error;
-        uint8_t* _data;
-        size_t   _max_size;
-        size_t   _cur_size;
+        bool     _read_only = true;
+        bool     _error = false;
+        uint8_t* _data = nullptr;
+        size_t   _max_size = 0;
+        size_t   _cur_size = 0;
     };
 }

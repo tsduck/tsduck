@@ -191,11 +191,11 @@ namespace ts {
         virtual ~TSP() override;
 
     protected:
-        bool              _use_realtime;            //!< The plugin should use realtime defaults.
-        BitRate           _tsp_bitrate;             //!< TSP input bitrate.
-        BitRateConfidence _tsp_bitrate_confidence;  //!< TSP input bitrate confidence.
-        MilliSecond       _tsp_timeout;             //!< Timeout when waiting for packets (infinite by default).
-        volatile bool     _tsp_aborting;            //!< TSP is currently aborting.
+        bool              _use_realtime = false;     //!< The plugin should use realtime defaults.
+        BitRate           _tsp_bitrate = 0;          //!< TSP input bitrate.
+        BitRateConfidence _tsp_bitrate_confidence = BitRateConfidence::LOW;  //!< TSP input bitrate confidence.
+        MilliSecond       _tsp_timeout = Infinite;   //!< Timeout when waiting for packets (infinite by default).
+        volatile bool     _tsp_aborting = false;     //!< TSP is currently aborting.
 
         //!
         //! Constructor for subclasses.
@@ -222,8 +222,8 @@ namespace ts {
         void restartPluginSession() { _plugin_packets = 0; }
 
     private:
-        PacketCounter _total_packets;   // Total processed packets in the plugin thread.
-        PacketCounter _plugin_packets;  // Total processed packets in the plugin object.
+        PacketCounter _total_packets = 0;   // Total processed packets in the plugin thread.
+        PacketCounter _plugin_packets = 0;  // Total processed packets in the plugin object.
 
         // A dirty hack for the default implementation of ts::ProcessorPlugin::processPacketWindow().
         friend class ProcessorPlugin;

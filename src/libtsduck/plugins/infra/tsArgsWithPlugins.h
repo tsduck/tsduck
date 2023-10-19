@@ -89,7 +89,7 @@ namespace ts {
         const size_t _max_plugins;
         const size_t _min_outputs;
         const size_t _max_outputs;
-        std::map<PluginType,PluginOptionsVector> _plugins;
+        std::map<PluginType,PluginOptionsVector> _plugins {};
 
         // Non-virtual version of setSyntax(), can be called in constructor.
         void setDirectSyntax(const UString& syntax);

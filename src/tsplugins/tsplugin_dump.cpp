@@ -32,13 +32,13 @@ namespace ts {
 
     private:
         // Command line options:
-        TSDumpArgs _dump;
-        UString    _outname;
+        TSDumpArgs _dump {};
+        UString    _outname {};
 
         // Working data.
-        std::ofstream _outfile;
-        std::ostream* _out;
-        bool          _add_endline;
+        std::ofstream _outfile {};
+        std::ostream* _out = &std::cout;
+        bool          _add_endline = false;
     };
 }
 
@@ -50,12 +50,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"dump", ts::DumpPlugin);
 //----------------------------------------------------------------------------
 
 ts::DumpPlugin::DumpPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Dump transport stream packets", u"[options]"),
-    _dump(),
-    _outname(),
-    _outfile(),
-    _out(&std::cout),
-    _add_endline(false)
+    ProcessorPlugin(tsp_, u"Dump transport stream packets", u"[options]")
 {
     _dump.defineArgs(*this);
 

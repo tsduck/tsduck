@@ -43,12 +43,12 @@ namespace ts {
         typedef MessageQueue<UString, Mutex> CommandQueue;
 
         // Plugin private fields.
-        volatile bool    _terminate;      // Force termination flag for thread.
-        size_t           _max_queued;     // Max number of queued commands.
-        IPv4AddressSet   _allowedRemote;  // Set of allowed remotes.
-        UDPReceiver      _sock;           // Incoming socket with associated command line options
-        CommandQueue     _command_queue;  // Queue of commands between the UDP server and the plugin thread.
-        TSPacketLabelSet _set_labels;     // Labels to set on all packets.
+        volatile bool    _terminate = false;
+        size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
+        IPv4AddressSet   _allowedRemote {};
+        UDPReceiver      _sock {*tsp};
+        CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};
+        TSPacketLabelSet _set_labels {};
 
         // Invoked in the context of the server thread.
         virtual void main() override;
@@ -64,13 +64,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"cutoff", ts::CutoffPlugin);
 
 ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Set labels on TS packets upon reception of UDP messages", u"[options] [address:]port"),
-    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _terminate(false),
-    _max_queued(DEFAULT_MAX_QUEUED_COMMANDS),
-    _allowedRemote(),
-    _sock(*tsp_),
-    _command_queue(DEFAULT_MAX_QUEUED_COMMANDS),
-    _set_labels()
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE))
 {
     // UDP receiver common options.
     _sock.defineArgs(*this, true, true, false);

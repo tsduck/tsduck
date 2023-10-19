@@ -46,22 +46,22 @@ namespace ts {
 
     private:
         // Command line options:
-        bool            _descramble;      // Descramble instead of scramble
-        Service         _service_arg;     // Service name & id
-        PIDSet          _scrambled;       // List of PID's to (de)scramble
-        ECB<AES>        _ecb;             // AES cipher in ECB mode
-        CBC<AES>        _cbc;             // AES cipher in CBC mode
-        CTS1<AES>       _cts1;            // AES cipher in CTS mode, RFC 2040 definition
-        CTS2<AES>       _cts2;            // AES cipher in CTS mode, NIST definition
-        CTS3<AES>       _cts3;            // AES cipher in ECB-CTS mode
-        CTS4<AES>       _cts4;            // AES cipher in ECB-CTS mode (ST version)
-        DVS042<AES>     _dvs042;          // AES cipher in DVS 042 mode
-        CipherChaining* _chain;           // Selected cipher chaining mode
+        bool            _descramble = false; // Descramble instead of scramble
+        Service         _service_arg {};     // Service name & id
+        PIDSet          _scrambled {};       // List of PID's to (de)scramble
+        ECB<AES>        _ecb {};             // AES cipher in ECB mode
+        CBC<AES>        _cbc {};             // AES cipher in CBC mode
+        CTS1<AES>       _cts1 {};            // AES cipher in CTS mode, RFC 2040 definition
+        CTS2<AES>       _cts2 {};            // AES cipher in CTS mode, NIST definition
+        CTS3<AES>       _cts3 {};            // AES cipher in ECB-CTS mode
+        CTS4<AES>       _cts4 {};            // AES cipher in ECB-CTS mode (ST version)
+        DVS042<AES>     _dvs042 {};          // AES cipher in DVS 042 mode
+        CipherChaining* _chain = nullptr;    // Selected cipher chaining mode
 
         // Working data:
-        bool            _abort;           // Error (service not found, etc)
-        Service         _service;         // Service name & id
-        SectionDemux    _demux;           // Section demux
+        bool            _abort = false;      // Error (service not found, etc)
+        Service         _service {};         // Service name & id
+        SectionDemux    _demux {duck, this}; // Section demux
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -81,21 +81,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"aes", ts::AESPlugin);
 //----------------------------------------------------------------------------
 
 ts::AESPlugin::AESPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets", u"[options] [service]"),
-    _descramble(false),
-    _service_arg(),
-    _scrambled(),
-    _ecb(),
-    _cbc(),
-    _cts1(),
-    _cts2(),
-    _cts3(),
-    _cts4(),
-    _dvs042(),
-    _chain(nullptr),
-    _abort(false),
-    _service(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets", u"[options] [service]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

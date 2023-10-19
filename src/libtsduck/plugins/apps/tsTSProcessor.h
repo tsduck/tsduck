@@ -88,15 +88,15 @@ namespace ts {
         // The resulting bottleneck of this single mutex is acceptable as long
         // as all protected operations are fast (pointer update, simple arithmetic).
 
-        Report&               _report;           // Common log object.
-        Mutex                 _mutex;            // Global mutex.
-        volatile bool         _terminating;      // In the process of terminating everything.
-        TSProcessorArgs       _args;             // Processing options.
-        tsp::InputExecutor*   _input;            // Input processor execution thread.
-        tsp::OutputExecutor*  _output;           // Output processor execution thread.
-        tsp::ControlServer*   _control;          // TSP control command server thread.
-        PacketBuffer*         _packet_buffer;    // Global TS packet buffer.
-        PacketMetadataBuffer* _metadata_buffer;  // Global packet metabata buffer.
+        Report&               _report;                     // Common log object.
+        Mutex                 _mutex {};                   // Global mutex.
+        volatile bool         _terminating = false;        // In the process of terminating everything.
+        TSProcessorArgs       _args {};                    // Processing options.
+        tsp::InputExecutor*   _input = nullptr;            // Input processor execution thread.
+        tsp::OutputExecutor*  _output = nullptr;           // Output processor execution thread.
+        tsp::ControlServer*   _control = nullptr;          // TSP control command server thread.
+        PacketBuffer*         _packet_buffer = nullptr;    // Global TS packet buffer.
+        PacketMetadataBuffer* _metadata_buffer = nullptr;  // Global packet metabata buffer.
 
         // Deallocate and cleanup internal resources.
         void cleanupInternal();

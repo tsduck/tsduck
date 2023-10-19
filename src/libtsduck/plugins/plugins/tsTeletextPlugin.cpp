@@ -19,9 +19,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"teletext", ts::TeletextPlugin);
 //----------------------------------------------------------------------------
 
 ts::TeletextPlugin::TeletextPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract Teletext subtitles in SRT format", u"[options]"),
-    _service(duck, this),
-    _demux(duck, this, NoPID)
+    ProcessorPlugin(tsp_, u"Extract Teletext subtitles in SRT format", u"[options]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
