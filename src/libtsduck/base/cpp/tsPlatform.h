@@ -815,6 +815,8 @@ TS_LLVM_NOWARNING(reserved-identifier)            // Identifier '_Xxx' is reserv
 TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Require C++11, no need for C++98 compatibility.
 TS_LLVM_NOWARNING(c++2a-compat)                   // Compatibility with C++2a is not yet a concern.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
+TS_LLVM_NOWARNING(unsafe-buffer-usage)            // "unsafe pointer arithmetic" (new with clang 16) => we know what we are doing here.
+
 
 TS_MSC_NOWARNING(4100)  // unreferenced formal parameter
 TS_MSC_NOWARNING(4189)  // local variable is initialized but not referenced
