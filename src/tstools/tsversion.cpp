@@ -40,9 +40,9 @@ namespace {
         // The following options apply to the current instance of TSDuck.
         // They are always available.
 
-        bool        current;    // Display current version of TSDuck, this executable.
-        bool        integer;    // Display current version of TSDuck as integer value.
-        bool        extensions; // List extensions.
+        bool        current = false;    // Display current version of TSDuck, this executable.
+        bool        integer = false;    // Display current version of TSDuck as integer value.
+        bool        extensions = false; // List extensions.
 
         // The following options are used to detect, download and upgrade new versions of TSDuck.
         // They are disabled when TS_NO_GITHUB is defined. With this macro, TSDuck is unlinked
@@ -50,48 +50,27 @@ namespace {
         // repositories of a given Linux distro.
 
 #if !defined(TS_NO_GITHUB)
-        bool        latest;     // Display the latest version of TSDuck.
-        bool        check;      // Check if a new version of TSDuck is available.
-        bool        all;        // List all available versions of TSDuck.
-        bool        download;   // Download the latest version.
-        bool        force;      // Force downloads.
-        bool        binary;     // With --download, fetch the binaries.
-        bool        source;     // With --download, feth the source code instead of the binaries.
-        bool        upgrade;    // Upgrade TSDuck to the latest version.
-        ts::UString name;       // Use the specified version, not the latest one.
-        ts::UString out_dir;    // Output directory for downloaded files.
+        bool        latest = false;     // Display the latest version of TSDuck.
+        bool        check = false;      // Check if a new version of TSDuck is available.
+        bool        all = false;        // List all available versions of TSDuck.
+        bool        download = false;   // Download the latest version.
+        bool        force = false;      // Force downloads.
+        bool        binary = false;     // With --download, fetch the binaries.
+        bool        source = false;     // With --download, feth the source code instead of the binaries.
+        bool        upgrade = false;    // Upgrade TSDuck to the latest version.
+        ts::UString name {};            // Use the specified version, not the latest one.
+        ts::UString out_dir {};         // Output directory for downloaded files.
 #endif
-
-        // Enumeration of support options.
-        // The values are 0 or 1, indicating support.
-        ts::Enumeration support;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-
 #if !defined(TS_NO_GITHUB)
-    Args(u"Check version, download and upgrade TSDuck", u"[options]"),
-    current(false),
-    integer(false),
-    extensions(false),
-    latest(false),
-    check(false),
-    all(false),
-    download(false),
-    force(false),
-    binary(false),
-    source(false),
-    upgrade(false),
-    name(),
-    out_dir(),
+    Args(u"Check version, download and upgrade TSDuck", u"[options]")
 #else
     Args(u"Display TSDuck version and extensions", u"[options]"),
-    current(true),
-    integer(false),
-    extensions(false),
+    current(true)
 #endif
-    support(ts::VersionInfo::SupportEnum)
 {
     option(u"extensions", 'e');
     help(u"extensions", u"List all available TSDuck extensions.");
@@ -102,7 +81,11 @@ Options::Options(int argc, char *argv[]) :
          u"comparison in a script. Example: " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::INTEGER) +
          u" for " + ts::VersionInfo::GetVersion(ts::VersionInfo::Format::SHORT) + u".");
 
-    support.add(u"all", -1); // negative means list all
+    // Enumeration of support options. The values are 0 or 1, indicating support.
+    // Add a negative value meaning list all.
+    ts::Enumeration support(ts::VersionInfo::SupportEnum);
+    support.add(u"all", -1);
+
     option(u"support", 0, support);
     help(u"support",
          u"Check support for a specific feature. Using 'all' displays all features. "

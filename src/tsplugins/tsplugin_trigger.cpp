@@ -36,23 +36,23 @@ namespace ts {
 
     private:
         // Command line options:
-        PacketCounter    _minInterPacket; // Minimum interval in packets between two actions.
-        MilliSecond      _minInterTime;   // Minimum interval in milliseconds between two actions.
-        UString          _execute;        // Command to execute on trigger.
-        UString          _udpDestination; // UDP/IP destination address:port.
-        UString          _udpLocal;       // Name of outgoing local address (empty if unspecified).
-        ByteBlock        _udpMessage;     // What to send as UDP message.
-        int              _udpTTL;         // Time-to-live socket option.
-        bool             _onStart;        // Trigger action on start.
-        bool             _onStop;         // Trigger action on stop.
-        bool             _allPackets;     // Trigger on all packets in the stream.
-        bool             _allLabels;      // Need all labels to be set.
-        TSPacketLabelSet _labels;         // Trigger on packets with these labels.
+        PacketCounter    _minInterPacket = 0;  // Minimum interval in packets between two actions.
+        MilliSecond      _minInterTime = 0;    // Minimum interval in milliseconds between two actions.
+        UString          _execute {};          // Command to execute on trigger.
+        UString          _udpDestination {};   // UDP/IP destination address:port.
+        UString          _udpLocal {};         // Name of outgoing local address (empty if unspecified).
+        ByteBlock        _udpMessage {};       // What to send as UDP message.
+        int              _udpTTL = 0;          // Time-to-live socket option.
+        bool             _onStart = false;     // Trigger action on start.
+        bool             _onStop = false;      // Trigger action on stop.
+        bool             _allPackets = false;  // Trigger on all packets in the stream.
+        bool             _allLabels = false;   // Need all labels to be set.
+        TSPacketLabelSet _labels {};           // Trigger on packets with these labels.
 
         // Working data:
-        PacketCounter _lastPacket;    // Last action packet.
-        Time          _lastTime;      // UTC time of last action.
-        UDPSocket     _sock;          // Output socket.
+        PacketCounter _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
+        Time          _lastTime {};            // UTC time of last action.
+        UDPSocket     _sock {false, *tsp};     // Output socket.
 
         // Trigger the actions (exec, UDP).
         void trigger();
@@ -67,22 +67,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"trigger", ts::TriggerPlugin);
 //----------------------------------------------------------------------------
 
 ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Trigger actions on selected TS packets", u"[options]"),
-    _minInterPacket(0),
-    _minInterTime(0),
-    _execute(),
-    _udpDestination(),
-    _udpLocal(),
-    _udpMessage(),
-    _udpTTL(0),
-    _onStart(false),
-    _onStop(false),
-    _allPackets(false),
-    _allLabels(false),
-    _labels(),
-    _lastPacket(INVALID_PACKET_COUNTER),
-    _lastTime(),
-    _sock(false, *tsp)
+    ProcessorPlugin(tsp_, u"Trigger actions on selected TS packets", u"[options]")
 {
     option(u"all-labels", 'a');
     help(u"all-labels",

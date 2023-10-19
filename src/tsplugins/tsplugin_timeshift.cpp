@@ -32,9 +32,9 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool            _drop_initial;   // Drop initial packets instead of null.
-        MilliSecond     _time_shift_ms;  // Time-shift in milliseconds.
-        TimeShiftBuffer _buffer;         // The timeshift buffer logic.
+        bool            _drop_initial = false;  // Drop initial packets instead of null.
+        MilliSecond     _time_shift_ms = 0;     // Time-shift in milliseconds.
+        TimeShiftBuffer _buffer {};             // The timeshift buffer logic.
 
         // Try to initialize the buffer using the time as size.
         // Return false on fatal error only.
@@ -50,10 +50,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"timeshift", ts::TimeShiftPlugin);
 //----------------------------------------------------------------------------
 
 ts::TimeShiftPlugin::TimeShiftPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Delay transmission by a fixed amount of packets", u"[options]"),
-    _drop_initial(false),
-    _time_shift_ms(0),
-    _buffer()
+    ProcessorPlugin(tsp_, u"Delay transmission by a fixed amount of packets", u"[options]")
 {
     option(u"directory", 0, DIRECTORY);
     help(u"directory",
