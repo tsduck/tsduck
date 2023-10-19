@@ -45,6 +45,7 @@ namespace ts {
         public:
             // Constructor, destructor.
             ServiceDesc() = default;
+            ~ServiceDesc() override;
 
             // Public fields
             SectionCounter eitpf_count = 0;
@@ -95,6 +96,10 @@ ts::EITPlugin::EITPlugin(TSP* tsp_) :
 {
     option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"Specify the output file for the report (default: standard output).");
+}
+
+ts::EITPlugin::ServiceDesc::~ServiceDesc()
+{
 }
 
 
