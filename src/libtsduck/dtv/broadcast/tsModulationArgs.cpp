@@ -98,7 +98,8 @@ ts::ModulationArgs::ModulationArgs() :
     layer_c_modulation(),
     layer_c_segment_count(),
     layer_c_time_interleaving(),
-    stream_id()
+    stream_id(),
+    unicable()
 {
 }
 
@@ -149,6 +150,7 @@ void ts::ModulationArgs::clear()
     layer_c_segment_count.clear();
     layer_c_time_interleaving.clear();
     stream_id.clear();
+    unicable.clear();
 }
 
 
@@ -219,7 +221,8 @@ bool ts::ModulationArgs::hasModulationArgs() const
         layer_c_modulation.set() ||
         layer_c_segment_count.set() ||
         layer_c_time_interleaving.set() ||
-        stream_id.set();
+        stream_id.set() ||
+        unicable.set();
 }
 
 
@@ -1088,6 +1091,9 @@ std::ostream& ts::ModulationArgs::display(std::ostream& strm, const ts::UString&
             if (verbose) {
                 strm << margin << "Satellite number: " << satellite_number.value(DEFAULT_SATELLITE_NUMBER) << std::endl;
             }
+            if (unicable.set()) {
+                strm << margin << "Unicable params: " << unicable.value() << std::endl;
+            }
             break;
         }
         case TT_ISDB_S: {
@@ -1267,6 +1273,9 @@ ts::UString ts::ModulationArgs::toPluginOptions(bool no_local) const
             if (!no_local && satellite_number.set()) {
                 opt += UString::Format(u" --satellite-number %d", {satellite_number.value()});
             }
+            if (unicable.set()) {
+                opt += UString::Format(u" --unicable %s", {unicable.value()});
+            }
             break;
         }
         case TT_ISDB_S: {
@@ -1438,6 +1447,7 @@ bool ts::ModulationArgs::loadArgs(DuckContext& duck, Args& args)
         }
     }
     args.getOptionalIntValue(satellite_number, u"satellite-number");
+    args.getOptionalValue(unicable, u"unicable");
 
     // Mark arguments as invalid is some errors were found.
     if (!status) {
@@ -1661,6 +1671,13 @@ void ts::ModulationArgs::defineArgs(Args& args, bool allow_short_options)
               u"Can be used in replacement to --frequency. "
               u"Can be combined with an --offset-count option. "
               u"The UHF frequency layout depends on the region, see --hf-band-region option.");
+
+    args.option(u"unicable", 0, Args::STRING);
+    args.help(u"unicable", u"'string'",
+         u"Where value is like <version>,<userband slot>,<userband frequency in MHz>. "
+         u"Use this option to indicate that the satellite switch is a Unicable one "
+         u"and provide the necessary parameters to drive it. If this option is not "
+         u"specified, a DiSEqC switch or LNB will be assumed.");
 
     args.option(u"vhf-channel", allow_short_options ? 'v' : 0, Args::POSITIVE);
     args.help(u"vhf-channel",
