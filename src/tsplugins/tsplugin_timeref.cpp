@@ -38,26 +38,26 @@ namespace ts {
 
     private:
         // Command line options:
-        bool              _update_tdt;        // Update the TDT
-        bool              _update_tot;        // Update the TOT
-        bool              _update_eit;        // Update the EIT's
-        bool              _eit_date_only;     // Update date field only in EIT
-        bool              _use_timeref;       // Use a new time reference
-        bool              _system_sync;       // Synchronous with system clock.
-        bool              _update_local;      // Update local time info, not only UTC
-        MilliSecond       _add_milliseconds;  // Add this to all time values
-        Time              _startref;          // Starting value of new time reference
-        int               _local_offset;      // Local time offset in minutes (INT_MAX if unspecified)
-        int               _next_offset;       // Next time offset after DST change, in minutes (INT_MAX if unspecified)
-        Time              _next_change;       // Next DST time
-        std::set<UString> _only_countries;    // Countries for TOT local time modification
-        std::set<int>     _only_regions;      // Regions for TOT local time modification
+        bool              _update_tdt = false;      // Update the TDT
+        bool              _update_tot = false;      // Update the TOT
+        bool              _update_eit = false;      // Update the EIT's
+        bool              _eit_date_only = false;   // Update date field only in EIT
+        bool              _use_timeref = false;     // Use a new time reference
+        bool              _system_sync = false;     // Synchronous with system clock.
+        bool              _update_local = false;    // Update local time info, not only UTC
+        MilliSecond       _add_milliseconds = 0;    // Add this to all time values
+        Time              _startref {};             // Starting value of new time reference
+        int               _local_offset = INT_MAX;  // Local time offset in minutes (INT_MAX if unspecified)
+        int               _next_offset = INT_MAX;   // Next time offset after DST change, in minutes (INT_MAX if unspecified)
+        Time              _next_change {};          // Next DST time
+        std::set<UString> _only_countries {};       // Countries for TOT local time modification
+        std::set<int>     _only_regions {};         // Regions for TOT local time modification
 
         // Processing data:
-        Time              _timeref;           // Current value of new time reference
-        PacketCounter     _timeref_pkt;       // Packet number for _timeref
-        EITProcessor      _eit_processor;     // Modify EIT's
-        bool              _eit_active;        // Update EIT's now (disabled during init phase with --start)
+        Time              _timeref {};              // Current value of new time reference
+        PacketCounter     _timeref_pkt = 0;         // Packet number for _timeref
+        EITProcessor      _eit_processor {duck};    // Modify EIT's
+        bool              _eit_active = false;      // Update EIT's now (disabled during init phase with --start)
 
         // Process a TDT or TOT section.
         void processSection(uint8_t* section, size_t size);
@@ -75,25 +75,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"timeref", ts::TimeRefPlugin);
 //----------------------------------------------------------------------------
 
 ts::TimeRefPlugin::TimeRefPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Update TDT and TOT with a new time reference", u"[options]"),
-    _update_tdt(false),
-    _update_tot(false),
-    _update_eit(false),
-    _eit_date_only(false),
-    _use_timeref(false),
-    _system_sync(false),
-    _update_local(false),
-    _add_milliseconds(0),
-    _startref(Time::Epoch),
-    _local_offset(INT_MAX),
-    _next_offset(INT_MAX),
-    _next_change(Time::Epoch),
-    _only_countries(),
-    _only_regions(),
-    _timeref(Time::Epoch),
-    _timeref_pkt(0),
-    _eit_processor(duck),
-    _eit_active(false)
+    ProcessorPlugin(tsp_, u"Update TDT and TOT with a new time reference", u"[options]")
 {
     option(u"add", 'a', INTEGER, 0, 1, std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
     help(u"add", u"seconds",

@@ -38,49 +38,31 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck;          // TSDuck execution contexts.
-        ts::UStringVector        infiles;       // Input file names.
-        ts::UString              outfile;       // Output file name.
-        ts::UString              model;         // Model file name.
-        ts::UStringVector        patches;       // XML patch files.
-        ts::UStringVector        sorted_tags;   // Sort the content of these tags.
-        bool                     reformat;      // Reformat input files.
-        bool                     uncomment;     // Remove comments.
-        bool                     xml_line;      // Output XML on one single line.
-        bool                     tables_model;  // Use table model file.
-        bool                     use_model;     // There is a model to use.
-        bool                     from_json;     // Perform an automated JSON-to-XML conversion on input.
-        bool                     merge_inputs;  // Merge all input XML files as one.
-        bool                     need_output;   // An output file is needed.
-        ts::UString              xml_prefix;    // Prefix in XML line.
-        size_t                   indent;        // Output indentation.
-        ts::xml::Tweaks          xml_tweaks;    // XML formatting options.
-        ts::xml::MergeAttributes merge_attr;    // How to merge attributes (with merge_inputs);
-        ts::json::OutputArgs     json;          // JSON output options.
+        ts::DuckContext          duck;                  // TSDuck execution contexts.
+        ts::UStringVector        infiles {};            // Input file names.
+        ts::UString              outfile {};            // Output file name.
+        ts::UString              model {};              // Model file name.
+        ts::UStringVector        patches {};            // XML patch files.
+        ts::UStringVector        sorted_tags {};        // Sort the content of these tags.
+        bool                     reformat = false;      // Reformat input files.
+        bool                     uncomment = false;     // Remove comments.
+        bool                     xml_line = false;      // Output XML on one single line.
+        bool                     tables_model = false;  // Use table model file.
+        bool                     use_model = false;     // There is a model to use.
+        bool                     from_json = false;     // Perform an automated JSON-to-XML conversion on input.
+        bool                     merge_inputs = false;  // Merge all input XML files as one.
+        bool                     need_output = false;   // An output file is needed.
+        ts::UString              xml_prefix {};         // Prefix in XML line.
+        size_t                   indent = 2;            // Output indentation.
+        ts::xml::Tweaks          xml_tweaks {};         // XML formatting options.
+        ts::xml::MergeAttributes merge_attr = ts::xml::MergeAttributes::NONE; // How to merge attributes (with merge_inputs);
+        ts::json::OutputArgs     json {};               // JSON output options.
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Test tool for TSDuck XML manipulation", u"[options] [input-file ...]"),
-    duck(this),
-    infiles(),
-    outfile(),
-    model(),
-    patches(),
-    sorted_tags(),
-    reformat(false),
-    uncomment(false),
-    xml_line(false),
-    tables_model(false),
-    use_model(false),
-    from_json(false),
-    merge_inputs(false),
-    need_output(false),
-    xml_prefix(),
-    indent(2),
-    xml_tweaks(),
-    merge_attr(ts::xml::MergeAttributes::NONE),
-    json()
+    duck(this)
 {
     json.defineArgs(*this, true, u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
     xml_tweaks.defineArgs(*this);

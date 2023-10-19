@@ -32,19 +32,19 @@ namespace ts {
 
     private:
         // Command line options:
-        bool           _exclude_last;     // Exclude packet which triggers the condition
-        PacketCounter  _pack_max;         // Stop at Nth packet
-        PacketCounter  _unit_start_max;   // Stop at Nth packet with payload unit start
-        PacketCounter  _null_seq_max;     // Stop at Nth sequence of null packets
-        MilliSecond    _msec_max;         // Stop after N milli-seconds
+        bool           _exclude_last = false;     // Exclude packet which triggers the condition
+        PacketCounter  _pack_max = 0;             // Stop at Nth packet
+        PacketCounter  _unit_start_max = 0;       // Stop at Nth packet with payload unit start
+        PacketCounter  _null_seq_max = 0;         // Stop at Nth sequence of null packets
+        MilliSecond    _msec_max = 0;             // Stop after N milli-seconds
 
         // Working data:
-        PacketCounter  _unit_start_cnt;   // Payload unit start counter
-        PacketCounter  _null_seq_cnt;     // Sequence of null packets counter
-        Time           _start_time;       // Time of first packet reception
-        PID            _previous_pid;     // PID of previous packet
-        bool           _terminated;       // Final condition is met
-        bool           _transparent;      // Pass all packets, no longer check conditions
+        PacketCounter  _unit_start_cnt = 0;       // Payload unit start counter
+        PacketCounter  _null_seq_cnt = 0;         // Sequence of null packets counter
+        Time           _start_time {};            // Time of first packet reception
+        PID            _previous_pid = PID_NULL;  // PID of previous packet
+        bool           _terminated = false;       // Final condition is met
+        bool           _transparent = false;      // Pass all packets, no longer check conditions
     };
 }
 
@@ -56,18 +56,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"until", ts::UntilPlugin);
 //----------------------------------------------------------------------------
 
 ts::UntilPlugin::UntilPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Copy packets until one of the specified conditions is met", u"[options]"),
-    _exclude_last(false),
-    _pack_max(0),
-    _unit_start_max(0),
-    _null_seq_max(0),
-    _msec_max(0),
-    _unit_start_cnt(0),
-    _null_seq_cnt(0),
-    _start_time(Time::Epoch),
-    _previous_pid(PID_NULL),
-    _terminated(false),
-    _transparent(false)
+    ProcessorPlugin(tsp_, u"Copy packets until one of the specified conditions is met", u"[options]")
 {
     option(u"bytes", 'b', UNSIGNED);
     help(u"bytes", u"Stop after processing the specified number of bytes.");
