@@ -28,8 +28,9 @@ namespace ts {
         //!
         //! Asset information.
         //!
-        struct TSDUCKDLL AssetInfo
+        class TSDUCKDLL AssetInfo
         {
+        public:
             AssetInfo() = default;                            //!< Default constructor.
             uint8_t           asset_construction = 0;         //!< 5 bits, bit mask.
             bool              vbr = false;                    //!< Variable bitrate
@@ -42,8 +43,9 @@ namespace ts {
         //!
         //! Substream information.
         //!
-        struct TSDUCKDLL SubstreamInfo
+        class TSDUCKDLL SubstreamInfo
         {
+        public:
             SubstreamInfo() = default;                        //!< Default constructor.
             uint8_t                channel_count = 0;         //!< 5 bits, number of channels.
             bool                   LFE = false;               //!< LFE (Low Frequency Effects) present.

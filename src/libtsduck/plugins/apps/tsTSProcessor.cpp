@@ -11,7 +11,6 @@
 #include "tstspOutputExecutor.h"
 #include "tstspProcessorExecutor.h"
 #include "tstspControlServer.h"
-#include "tsMonotonic.h"
 #include "tsGuardMutex.h"
 
 
@@ -20,16 +19,7 @@
 //----------------------------------------------------------------------------
 
 ts::TSProcessor::TSProcessor(Report& report) :
-    PluginEventHandlerRegistry(),
-    _report(report),
-    _mutex(),
-    _terminating(false),
-    _args(),
-    _input(nullptr),
-    _output(nullptr),
-    _control(nullptr),
-    _packet_buffer(nullptr),
-    _metadata_buffer(nullptr)
+    _report(report)
 {
 }
 

@@ -18,19 +18,7 @@ bool tsRISTPluginDataIsEmpty = true; // Avoid warning about empty module.
 //----------------------------------------------------------------------------
 
 ts::RISTPluginData::RISTPluginData(Report& report) :
-    profile(RIST_PROFILE_SIMPLE),
-    ctx(nullptr),
-    log(),
-    _report(report),
-    _buffer_size(0),
-    _encryption_type(0),
-    _secret(),
-    _stats_interval(0),
-    _stats_prefix(),
-    _allowed(),
-    _denied(),
-    _peer_urls(),
-    _peer_configs()
+    _report(report)
 {
     log.log_level = SeverityToRistLog(_report.maxSeverity());
     log.log_cb = LogCallback;

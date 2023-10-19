@@ -28,9 +28,9 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::TSPControlCommand cmdline;
-        ts::UString           command;
-        ts::IPv4SocketAddress tsp_address;
+        ts::TSPControlCommand cmdline {*this};
+        ts::UString           command {};
+        ts::IPv4SocketAddress tsp_address {};
 
         // Inherited methods.
         virtual ts::UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
@@ -38,10 +38,7 @@ namespace {
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Send control commands to a running tsp", u"[options] command ...", GATHER_PARAMETERS),
-    cmdline(*this),
-    command(),
-    tsp_address()
+    Args(u"Send control commands to a running tsp", u"[options] command ...", GATHER_PARAMETERS)
 {
     cmdline.setShell(ts::Args::GetAppName(argc, argv));
 

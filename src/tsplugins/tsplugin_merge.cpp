@@ -46,41 +46,41 @@ namespace ts {
 
     private:
         // Command line options.
-        UString          _command;             // Command which generates the main stream.
-        TSPacketFormat   _format;              // Packet format on the pipe
-        size_t           _max_queue;           // Maximum number of queued packets.
-        size_t           _accel_threshold;     // Queue threshold after which insertion is accelerated.
-        bool             _no_wait;             // Do not wait for command completion.
-        bool             _merge_psi;           // Merge PSI/SI information.
-        bool             _pcr_restamp;         // Restamp PCR from the merged stream.
-        bool             _incremental_pcr;     // Use incremental method to restamp PCR's.
-        bool             _merge_smoothing;     // Smoothen packet insertion.
-        bool             _ignore_conflicts;    // Ignore PID conflicts.
-        bool             _pcr_reset_backwards; // Reset PCR restamping when DTS/PTD move backwards the PCR.
-        bool             _terminate;           // Terminate processing after last merged packet.
-        bool             _restart;             // Restart command after termination.
-        MilliSecond      _restart_interval;    // Interval before restarting the merge command.
-        BitRate          _user_bitrate;        // User-specified bitrate of the merged stream.
-        PIDSet           _allowed_pids;        // List of PID's to merge (other PID's from the merged stream are dropped).
-        TSPacketLabelSet _set_labels;          // Labels to set on output packets.
-        TSPacketLabelSet _reset_labels;        // Labels to reset on output packets.
+        UString          _command {};                                       // Command which generates the main stream.
+        TSPacketFormat   _format = TSPacketFormat::AUTODETECT;              // Packet format on the pipe
+        size_t           _max_queue = DEFAULT_MAX_QUEUED_PACKETS;           // Maximum number of queued packets.
+        size_t           _accel_threshold = DEFAULT_MAX_QUEUED_PACKETS / 2; // Queue threshold after which insertion is accelerated.
+        bool             _no_wait = false;             // Do not wait for command completion.
+        bool             _merge_psi = false;           // Merge PSI/SI information.
+        bool             _pcr_restamp = false;         // Restamp PCR from the merged stream.
+        bool             _incremental_pcr = false;     // Use incremental method to restamp PCR's.
+        bool             _merge_smoothing = false;     // Smoothen packet insertion.
+        bool             _ignore_conflicts = false;    // Ignore PID conflicts.
+        bool             _pcr_reset_backwards = false; // Reset PCR restamping when DTS/PTD move backwards the PCR.
+        bool             _terminate = false;           // Terminate processing after last merged packet.
+        bool             _restart = false;             // Restart command after termination.
+        MilliSecond      _restart_interval = 0;        // Interval before restarting the merge command.
+        BitRate          _user_bitrate = 0;            // User-specified bitrate of the merged stream.
+        PIDSet           _allowed_pids {};             // List of PID's to merge (other PID's from the merged stream are dropped).
+        TSPacketLabelSet _set_labels {};               // Labels to set on output packets.
+        TSPacketLabelSet _reset_labels {};             // Labels to reset on output packets.
 
         // The ForkPipe is dynamically allocated to avoid reusing the same object when the command is restarted.
         typedef SafePtr<TSForkPipe> TSForkPipePtr;
 
         // Working data.
-        bool          _got_eof;            // Got end of merged stream.
-        volatile bool _stopping;           // Plugin stop in progress.
-        PacketCounter _merged_count;       // Number of merged packets.
-        PacketCounter _hold_count;         // Number of times we didn't try to merge to perform smoothing insertion.
-        PacketCounter _empty_count;        // Number of times we could merge but there was no packet to merge.
-        TSForkPipePtr _pipe;               // Executed command.
-        TSPacketQueue _queue;              // TS packet queur from merge to main.
-        PIDSet        _main_pids;          // Set of detected PID's in main stream.
-        PIDSet        _merge_pids;         // Set of detected PID's in merged stream that we pass in main stream.
-        PCRMerger     _pcr_merger;         // Adjust PCR's in merged stream.
-        PSIMerger     _psi_merger;         // Used to merge PSI/SI from both streams.
-        PacketInsertionController _insert_control;  // Used to control insertion points for the merge
+        bool          _got_eof = false;    // Got end of merged stream.
+        volatile bool _stopping = false;   // Plugin stop in progress.
+        PacketCounter _merged_count = 0;   // Number of merged packets.
+        PacketCounter _hold_count = 0;     // Number of times we didn't try to merge to perform smoothing insertion.
+        PacketCounter _empty_count = 0;    // Number of times we could merge but there was no packet to merge.
+        TSForkPipePtr _pipe {};            // Executed command.
+        TSPacketQueue _queue {};           // TS packet queur from merge to main.
+        PIDSet        _main_pids {};       // Set of detected PID's in main stream.
+        PIDSet        _merge_pids {};      // Set of detected PID's in merged stream that we pass in main stream.
+        PCRMerger     _pcr_merger {duck};  // Adjust PCR's in merged stream.
+        PSIMerger     _psi_merger {duck, PSIMerger::NONE};  // Used to merge PSI/SI from both streams.
+        PacketInsertionController _insert_control {*tsp};   // Used to control insertion points for the merge
 
         // Start/restart/stop the merge command.
         bool startStopCommand(bool do_close, bool do_start);
@@ -103,37 +103,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"merge", ts::MergePlugin);
 
 ts::MergePlugin::MergePlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Merge TS packets coming from the standard output of a command", u"[options] 'command'"),
-    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _command(),
-    _format(TSPacketFormat::AUTODETECT),
-    _max_queue(DEFAULT_MAX_QUEUED_PACKETS),
-    _accel_threshold(_max_queue / 2),
-    _no_wait(false),
-    _merge_psi(false),
-    _pcr_restamp(false),
-    _incremental_pcr(false),
-    _merge_smoothing(false),
-    _ignore_conflicts(false),
-    _pcr_reset_backwards(false),
-    _terminate(false),
-    _restart(false),
-    _restart_interval(0),
-    _user_bitrate(0),
-    _allowed_pids(),
-    _set_labels(),
-    _reset_labels(),
-    _got_eof(false),
-    _stopping(false),
-    _merged_count(0),
-    _hold_count(0),
-    _empty_count(0),
-    _pipe(),
-    _queue(),
-    _main_pids(),
-    _merge_pids(),
-    _pcr_merger(duck),
-    _psi_merger(duck, PSIMerger::NONE),
-    _insert_control(*tsp)
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE))
 {
     _insert_control.setMainStreamName(u"main stream");
     _insert_control.setSubStreamName(u"merged stream");

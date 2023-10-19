@@ -14,8 +14,6 @@
 //----------------------------------------------------------------------------
 
 ts::PluginEventData::PluginEventData(const uint8_t* data, size_t size) :
-    _read_only(true),
-    _error(false),
     _data(const_cast<uint8_t*>(data)),
     _max_size(data == nullptr ? 0 : size),
     _cur_size(_max_size)
@@ -24,7 +22,6 @@ ts::PluginEventData::PluginEventData(const uint8_t* data, size_t size) :
 
 ts::PluginEventData::PluginEventData(uint8_t* data, size_t size, size_t max_size) :
     _read_only(data == nullptr),
-    _error(false),
     _data(data),
     _max_size(data == nullptr ? 0 : max_size),
     _cur_size(std::min(size, _max_size))

@@ -18,9 +18,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"tables", ts::TablesPlugin);
 //----------------------------------------------------------------------------
 
 ts::TablesPlugin::TablesPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Collect PSI/SI Tables", u"[options]"),
-    _display(duck),
-    _logger(_display)
+    ProcessorPlugin(tsp_, u"Collect PSI/SI Tables", u"[options]")
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);

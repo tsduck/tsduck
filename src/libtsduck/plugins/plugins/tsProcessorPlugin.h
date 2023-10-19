@@ -16,8 +16,6 @@
 #include "tsTSPacket.h"
 #include "tsTSPacketMetadata.h"
 #include "tsTSPacketWindow.h"
-#include "tsEnumeration.h"
-#include "tsDuckContext.h"
 
 namespace ts {
     //!

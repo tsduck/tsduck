@@ -49,32 +49,32 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
-            PIDContext();                   // Constructor
-            PacketCounter     pkt_count;    // Number of packets on this PID
-            PacketCounter     first_pkt;    // First packet in TS
-            PacketCounter     last_pkt;     // Last packet in TS
-            uint16_t          service_id;   // One service the PID belongs to
-            uint8_t           scrambling;   // Last scrambling control value
-            TID               last_tid;     // Last table on this PID
-            Variable<uint8_t> pes_strid;    // PES stream id
+            PIDContext() = default;                 // Constructor
+            PacketCounter     pkt_count = 0;        // Number of packets on this PID
+            PacketCounter     first_pkt = 0;        // First packet in TS
+            PacketCounter     last_pkt = 0;         // Last packet in TS
+            uint16_t          service_id = 0;       // One service the PID belongs to
+            uint8_t           scrambling = 0;       // Last scrambling control value
+            TID               last_tid = TID_NULL;  // Last table on this PID
+            Variable<uint8_t> pes_strid {};         // PES stream id
         };
 
         // Command line options
-        bool          _report_eit;        // Report EIT
-        bool          _report_cas;        // Report CAS events
-        bool          _time_all;          // Report all TDT/TOT
-        bool          _ignore_stream_id;  // Ignore stream_id modifications
-        bool          _use_milliseconds;  // Report playback time instead of packet number
-        PacketCounter _suspend_after;     // Number of missing packets after which a PID is considered as suspended
-        UString       _outfile_name;      // Output file name
+        bool          _report_eit = false;        // Report EIT
+        bool          _report_cas = false;        // Report CAS events
+        bool          _time_all = false;          // Report all TDT/TOT
+        bool          _ignore_stream_id = false;  // Ignore stream_id modifications
+        bool          _use_milliseconds = false;  // Report playback time instead of packet number
+        PacketCounter _suspend_after = 0;         // Number of missing packets after which a PID is considered as suspended
+        UString       _outfile_name {};           // Output file name
 
         // Workign data
-        std::ofstream _outfile;           // User-specified output file
-        TDT           _last_tdt;          // Last received TDT
-        PacketCounter _last_tdt_pkt;      // Packet# of last TDT
-        bool          _last_tdt_reported; // Last TDT already reported
-        SectionDemux  _demux;             // Section filter
-        std::map<PID,PIDContext> _cpids;  // Description of each PID
+        std::ofstream _outfile {};                // User-specified output file
+        TDT           _last_tdt {};               // Last received TDT
+        PacketCounter _last_tdt_pkt = 0;          // Packet# of last TDT
+        bool          _last_tdt_reported = false; // Last TDT already reported
+        SectionDemux  _demux {duck, this, this};  // Section filter
+        std::map<PID,PIDContext> _cpids {};       // Description of each PID
 
         // Invoked by the demux.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -97,20 +97,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"history", ts::HistoryPlugin);
 //----------------------------------------------------------------------------
 
 ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Report a history of major events on the transport stream", u"[options]"),
-    _report_eit(false),
-    _report_cas(false),
-    _time_all(false),
-    _ignore_stream_id(false),
-    _use_milliseconds(false),
-    _suspend_after(0),
-    _outfile_name(),
-    _outfile(),
-    _last_tdt(Time::Epoch),
-    _last_tdt_pkt(0),
-    _last_tdt_reported(false),
-    _demux(duck, this, this),
-    _cpids()
+    ProcessorPlugin(tsp_, u"Report a history of major events on the transport stream", u"[options]")
 {
     option(u"cas", 'c');
     help(u"cas", u"Report all CAS events (ECM, crypto-periods).");
@@ -150,22 +137,6 @@ ts::HistoryPlugin::HistoryPlugin(TSP* tsp_) :
 
     option(u"time-all", 't');
     help(u"time-all", u"Report all TDT and TOT. By default, only report TDT preceeding another event.");
-}
-
-
-//----------------------------------------------------------------------------
-// Description of one PID : Constructor.
-//----------------------------------------------------------------------------
-
-ts::HistoryPlugin::PIDContext::PIDContext() :
-    pkt_count(0),
-    first_pkt(0),
-    last_pkt(0),
-    service_id(0),
-    scrambling(0),
-    last_tid(0),
-    pes_strid()
-{
 }
 
 

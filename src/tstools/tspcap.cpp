@@ -34,7 +34,7 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck;
+        ts::DuckContext       duck {this};
         ts::PagerArgs         pager {true, true};
         ts::UString           input_file {};
         bool                  print_summary {false};
@@ -53,8 +53,7 @@ namespace {
 
 // Get command line options.
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Analyze pcap and pcap-ng files", u"[options] [input-file]"),
-    duck(this)
+    ts::Args(u"Analyze pcap and pcap-ng files", u"[options] [input-file]")
 {
     ts::PcapFilter file;
     file.defineArgs(*this);

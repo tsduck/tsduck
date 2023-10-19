@@ -36,31 +36,21 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck;
-        bool                  continuous;    // Continuous packetization
-        StuffPolicy           stuffing_policy;
-        ts::CRC32::Validation crc_op;        // Validate/recompute CRC32
-        ts::PID               pid;           // Target PID
-        ts::BitRate           bitrate;       // Target PID bitrate
-        ts::UString           outfile;       // Output file
-        ts::FileNameRateList  infiles;       // Input file names and repetition rates
-        FType                 inType;        // Input files type
-        ts::SectionFileArgs   sections_opt;  // Section file options
+        ts::DuckContext       duck {this};
+        bool                  continuous = false;  // Continuous packetization
+        StuffPolicy           stuffing_policy = StuffPolicy::NEVER;
+        ts::CRC32::Validation crc_op = ts::CRC32::COMPUTE;
+        ts::PID               pid = ts::PID_NULL;  // Target PID
+        ts::BitRate           bitrate = 0;         // Target PID bitrate
+        ts::UString           outfile {};          // Output file
+        ts::FileNameRateList  infiles {};          // Input file names and repetition rates
+        FType                 inType {FType::UNSPECIFIED};
+        ts::SectionFileArgs   sections_opt {};     // Section file options
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]"),
-    duck(this),
-    continuous(false),
-    stuffing_policy(StuffPolicy::NEVER),
-    crc_op(ts::CRC32::COMPUTE),
-    pid(ts::PID_NULL),
-    bitrate(0),
-    outfile(),
-    infiles(),
-    inType(FType::UNSPECIFIED),
-    sections_opt()
+    Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]")
 {
     duck.defineArgsForCharset(*this);
     sections_opt.defineArgs(*this);

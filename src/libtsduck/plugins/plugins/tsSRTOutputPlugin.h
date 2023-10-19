@@ -41,7 +41,7 @@ namespace ts {
     private:
         bool             _multiple = false;   // Accept multiple (sequential) connections.
         MilliSecond      _restart_delay = 0;  // If _multiple, wait before reconnecting.
-        TSDatagramOutput _datagram;           // Buffering TS packets.
+        TSDatagramOutput _datagram {TSDatagramOutputOptions::NONE, this}; // Buffering TS packets.
         SRTSocket        _sock {};            // Outgoing SRT socket.
 
         // Implementation of TSDatagramOutputHandlerInterface.

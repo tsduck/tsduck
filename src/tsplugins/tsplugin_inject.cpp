@@ -43,33 +43,33 @@ namespace ts {
 
     private:
         // Command line options:
-        FileNameRateList  _infiles;           // Input file names and repetition rates
-        FType             _intype;            // Input files type
-        SectionFileArgs   _sections_opt;      // Section processing options
-        bool              _specific_rates;    // Some input files have specific repetition rates
-        bool              _undefined_rates;   // At least one file has no specific repetition rate.
-        bool              _use_files_bitrate; // Use the bitrate from the repetition rates in files
-        PID               _inject_pid;        // Target PID
-        CRC32::Validation _crc_op;            // Validate/recompute CRC32
-        StuffPolicy       _stuffing_policy;   // Stuffing policy at end of section or cycle
-        bool              _replace;           // Replace existing PID content
-        bool              _terminate;         // Terminate processing when insertion is complete
-        bool              _poll_files;        // Poll the presence of input files at regular intervals
-        MilliSecond       _poll_files_ms;     // Interval in milliseconds between two file polling
-        size_t            _repeat_count;      // Repeat cycle, zero means infinite
-        BitRate           _pid_bitrate;       // Target bitrate for new PID
-        PacketCounter     _pid_inter_pkt;     // # TS packets between 2 new PID packets
-        PacketCounter     _eval_interval;     // PID bitrate re-evaluation interval
+        FileNameRateList  _infiles {};                // Input file names and repetition rates
+        FType             _intype = FType::UNSPECIFIED; // Input files type
+        SectionFileArgs   _sections_opt {};           // Section processing options
+        bool              _specific_rates = false;    // Some input files have specific repetition rates
+        bool              _undefined_rates = false;   // At least one file has no specific repetition rate.
+        bool              _use_files_bitrate = false; // Use the bitrate from the repetition rates in files
+        PID               _inject_pid = PID_NULL;     // Target PID
+        CRC32::Validation _crc_op = CRC32::CHECK;     // Validate/recompute CRC32
+        StuffPolicy       _stuffing_policy = StuffPolicy::NEVER; // Stuffing policy at end of section or cycle
+        bool              _replace = false;           // Replace existing PID content
+        bool              _terminate = false;         // Terminate processing when insertion is complete
+        bool              _poll_files = false;        // Poll the presence of input files at regular intervals
+        MilliSecond       _poll_files_ms = DEF_POLL_FILE_MS; // Interval in milliseconds between two file polling
+        size_t            _repeat_count = 0;          // Repeat cycle, zero means infinite
+        BitRate           _pid_bitrate = 0;           // Target bitrate for new PID
+        PacketCounter     _pid_inter_pkt = 0;         // # TS packets between 2 new PID packets
+        PacketCounter     _eval_interval = 0;         // PID bitrate re-evaluation interval
 
         // Working data:
-        Time              _poll_file_next;    // Next UTC time of poll file
-        bool              _completed;         // Last cycle terminated
-        BitRate           _files_bitrate;     // Bitrate from the repetition rates in files
-        PacketCounter     _pid_next_pkt;      // Next time to insert a packet
-        PacketCounter     _packet_count;      // TS packet counter
-        PacketCounter     _pid_packet_count;  // Packet counter in -PID to replace
-        PacketCounter     _cycle_count;       // Number of insertion cycles
-        CyclingPacketizer _pzer;              // Packetizer for table
+        Time              _poll_file_next {};         // Next UTC time of poll file
+        bool              _completed = false;         // Last cycle terminated
+        BitRate           _files_bitrate = 0;         // Bitrate from the repetition rates in files
+        PacketCounter     _pid_next_pkt = 0;          // Next time to insert a packet
+        PacketCounter     _packet_count = 0;          // TS packet counter
+        PacketCounter     _pid_packet_count = 0;      // Packet counter in -PID to replace
+        PacketCounter     _cycle_count = 0;           // Number of insertion cycles
+        CyclingPacketizer _pzer {duck, PID_NULL, StuffPolicy::NEVER};
 
         // Reload files, reset packetizer. Return true on success, false on error.
         bool reloadFiles();
@@ -90,32 +90,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"inject", ts::InjectPlugin);
 //----------------------------------------------------------------------------
 
 ts::InjectPlugin::InjectPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Inject tables and sections in a TS", u"[options] input-file[=rate] ..."),
-    _infiles(),
-    _intype(FType::UNSPECIFIED),
-    _sections_opt(),
-    _specific_rates(false),
-    _undefined_rates(false),
-    _use_files_bitrate(false),
-    _inject_pid(PID_NULL),
-    _crc_op(CRC32::CHECK),
-    _stuffing_policy(StuffPolicy::NEVER),
-    _replace(false),
-    _terminate(false),
-    _poll_files(false),
-    _poll_files_ms(DEF_POLL_FILE_MS),
-    _repeat_count(0),
-    _pid_bitrate(0),
-    _pid_inter_pkt(0),
-    _eval_interval(0),
-    _poll_file_next(),
-    _completed(false),
-    _files_bitrate(0),
-    _pid_next_pkt(0),
-    _packet_count(0),
-    _pid_packet_count(0),
-    _cycle_count(0),
-    _pzer(duck, PID_NULL, StuffPolicy::NEVER)
+    ProcessorPlugin(tsp_, u"Inject tables and sections in a TS", u"[options] input-file[=rate] ...")
 {
     duck.defineArgsForCharset(*this);
     _sections_opt.defineArgs(*this);

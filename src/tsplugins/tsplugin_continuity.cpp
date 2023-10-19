@@ -31,12 +31,12 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        UString            _tag;          // Message tag
-        bool               _fix;          // Fix incorrect continuity counters
-        bool               _no_replicate; // Option --no-replicate-duplicated
-        int                _log_level;    // Log level for discontinuity messages
-        PIDSet             _pids;         // PID values to check or fix
-        ContinuityAnalyzer _cc_analyzer;  // Continuity counters analyzer
+        UString            _tag {};                      // Message tag
+        bool               _fix = false;                 // Fix incorrect continuity counters
+        bool               _no_replicate = false;        // Option --no-replicate-duplicated
+        int                _log_level = Severity::Info;  // Log level for discontinuity messages
+        PIDSet             _pids {};                     // PID values to check or fix
+        ContinuityAnalyzer _cc_analyzer {NoPID, tsp};    // Continuity counters analyzer
     };
 }
 
@@ -48,13 +48,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"continuity", ts::ContinuityPlugin);
 //----------------------------------------------------------------------------
 
 ts::ContinuityPlugin::ContinuityPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Check or fix continuity counters on TS packets", u"[options]"),
-    _tag(),
-    _fix(false),
-    _no_replicate(false),
-    _log_level(Severity::Info),
-    _pids(),
-    _cc_analyzer(NoPID, tsp)
+    ProcessorPlugin(tsp_, u"Check or fix continuity counters on TS packets", u"[options]")
 {
     option(u"fix", 'f');
     help(u"fix",

@@ -216,10 +216,10 @@ namespace ts {
         typedef std::map<UString, ProcessorPluginFactory> ProcessorMap;
         typedef std::map<UString, OutputPluginFactory>    OutputMap;
 
-        bool         _sharedLibraryAllowed;
-        InputMap     _inputPlugins;
-        ProcessorMap _processorPlugins;
-        OutputMap    _outputPlugins;
+        bool         _sharedLibraryAllowed = true;
+        InputMap     _inputPlugins {};
+        ProcessorMap _processorPlugins {};
+        OutputMap    _outputPlugins {};
 
         template<typename FACTORY>
         FACTORY getFactory(const UString& name, const UString& type, const std::map<UString,FACTORY>&, Report&);

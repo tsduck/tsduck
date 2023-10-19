@@ -23,8 +23,7 @@ const ts::DuckExtensionRepository::Loader ts::DuckExtensionRepository::LoaderIns
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::DuckExtensionRepository::DuckExtensionRepository() :
-    _extensions()
+ts::DuckExtensionRepository::DuckExtensionRepository()
 {
 }
 

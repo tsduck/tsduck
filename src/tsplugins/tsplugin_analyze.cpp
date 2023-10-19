@@ -35,19 +35,19 @@ namespace ts {
 
     private:
         // Command line options:
-        UString           _output_name;
-        NanoSecond        _output_interval;
-        bool              _multiple_output;
-        bool              _cumulative;
-        TSAnalyzerOptions _analyzer_options;
+        UString           _output_name {};
+        NanoSecond        _output_interval = 0;
+        bool              _multiple_output = false;
+        bool              _cumulative = false;
+        TSAnalyzerOptions _analyzer_options {};
 
         // Working data:
-        std::ofstream     _output_stream;
-        std::ostream*     _output;
-        TSSpeedMetrics    _metrics;
-        NanoSecond        _next_report;
-        TSAnalyzerReport  _analyzer;
-        FileNameGenerator _name_gen;
+        std::ofstream     _output_stream {};
+        std::ostream*     _output = nullptr;
+        TSSpeedMetrics    _metrics {};
+        NanoSecond        _next_report = 0;
+        TSAnalyzerReport  _analyzer {duck};
+        FileNameGenerator _name_gen {};
 
         bool openOutput();
         void closeOutput();
@@ -63,18 +63,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"analyze", ts::AnalyzePlugin);
 //----------------------------------------------------------------------------
 
 ts::AnalyzePlugin::AnalyzePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze the structure of a transport stream", u"[options]"),
-    _output_name(),
-    _output_interval(0),
-    _multiple_output(false),
-    _cumulative(false),
-    _analyzer_options(),
-    _output_stream(),
-    _output(nullptr),
-    _metrics(),
-    _next_report(0),
-    _analyzer(duck),
-    _name_gen()
+    ProcessorPlugin(tsp_, u"Analyze the structure of a transport stream", u"[options]")
 {
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);

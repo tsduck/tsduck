@@ -15,6 +15,7 @@
 #include "tsPlugin.h"
 #include "tsPluginEventHandlerInterface.h"
 #include "tsVariable.h"
+#include "tsUString.h"
 #include "tsMutex.h"
 
 namespace ts {
@@ -30,7 +31,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        PluginEventHandlerRegistry();
+        PluginEventHandlerRegistry() = default;
 
         //!
         //! Registration criteria for an event handler.
@@ -44,37 +45,42 @@ namespace ts {
         class TSDUCKDLL Criteria
         {
         public:
-            Variable<UString>    plugin_name;   //!< When specified, the plugin must match that name.
-            Variable<size_t>     plugin_index;  //!< When specified, the plugin must be at that index in the chain.
-            Variable<PluginType> plugin_type;   //!< When specified, the plugin must be of this type.
-            Variable<uint32_t>   event_code;    //!< When specified, the event must use that code.
+            Variable<UString>    plugin_name {};   //!< When specified, the plugin must match that name.
+            Variable<size_t>     plugin_index {};  //!< When specified, the plugin must be at that index in the chain.
+            Variable<PluginType> plugin_type {};   //!< When specified, the plugin must be of this type.
+            Variable<uint32_t>   event_code {};    //!< When specified, the event must use that code.
 
             //!
             //! Default constructor.
             //! No criteria is set, meaning it matches all events.
             //!
-            Criteria();
+            Criteria() = default;
 
             //!
             //! Constructor with an event code.
             //! It matches all events with that code from any plugin.
             //! @param [in] code Event code.
             //!
-            Criteria(uint32_t code);
+            Criteria(uint32_t code) : event_code(code) {}
 
             //!
             //! Constructor with a plugin type.
             //! It matches all events from any plugin of that type.
             //! @param [in] type Plugin type.
             //!
-            Criteria(PluginType type);
+            Criteria(PluginType type) : plugin_type(type) {}
 
             //!
             //! Constructor with a plugin name.
             //! It matches all events from any plugin of that name.
             //! @param [in] name Plugin name.
             //!
-            Criteria(const UString& name);
+            Criteria(const UString& name) : plugin_name(name) {}
+
+            //!
+            //! A common empty criteria, meaning "any event".
+            //!
+            static const Criteria Any;
         };
 
         //!
@@ -83,7 +89,7 @@ namespace ts {
         //! @param [in] handler The event handler to register.
         //! @param [in] criteria The criteria for which the handler is to be called.
         //!
-        void registerEventHandler(PluginEventHandlerInterface* handler, const Criteria& criteria = Criteria());
+        void registerEventHandler(PluginEventHandlerInterface* handler, const Criteria& criteria = Criteria::Any);
 
         //!
         //! Unregister all occurences of an event handler.
@@ -107,8 +113,8 @@ namespace ts {
         typedef std::list<HandlerEntry> HandlerEntryList;
 
         // Accessing the list, including executing an event handler is done under a mutex.
-        mutable Mutex    _mutex;
-        mutable bool     _calling_handlers;
-        HandlerEntryList _handlers;
+        mutable Mutex    _mutex {};
+        mutable bool     _calling_handlers = false;
+        HandlerEntryList _handlers {};
     };
 }

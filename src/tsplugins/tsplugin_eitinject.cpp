@@ -73,27 +73,27 @@ namespace ts {
         };
 
         // Command line options:
-        bool          _delete_files {false};
-        bool          _wait_first_batch {false};
-        bool          _use_system_time {false};
+        bool          _delete_files = false;
+        bool          _wait_first_batch = false;
+        bool          _use_system_time = false;
         Time          _start_time {};
-        EITOptions    _eit_options {EITOptions::GEN_ALL};
-        BitRate       _eit_bitrate {0};
+        EITOptions    _eit_options = EITOptions::GEN_ALL;
+        BitRate       _eit_bitrate = 0;
         UString       _files {};
-        MilliSecond   _poll_interval {0};
-        MilliSecond   _min_stable_delay {0};
-        int           _ts_id {-1};
+        MilliSecond   _poll_interval = 0;
+        MilliSecond   _min_stable_delay = 0;
+        int           _ts_id = -1;
         EITRepetitionProfile _eit_profile {};
 
         // Working data.
         FileListener  _file_listener;
         EITGenerator  _eit_gen;
-        volatile bool _check_files {false};    // there are files in _polled_files
+        volatile bool _check_files = false;    // there are files in _polled_files
         Mutex         _polled_files_mutex {};  // exclusive access to _polled_files
         UStringList   _polled_files {};        // accessed by two threads, protected by mutex above.
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
-        volatile bool _wfb_received {false};   // First batch was received.
+        volatile bool _wfb_received = false;   // First batch was received.
         Mutex         _wfb_mutex {};           // Mutex waiting for _wfb_received.
         Condition     _wfb_condition {};       // Condition waiting for _wfb_received.
 

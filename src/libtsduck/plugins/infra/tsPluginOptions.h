@@ -48,8 +48,8 @@ namespace ts {
         //!
         UString toString(PluginType type) const;
 
-        UString       name;  //!< Plugin name.
-        UStringVector args;  //!< Plugin options.
+        UString       name {};  //!< Plugin name.
+        UStringVector args {};  //!< Plugin options.
     };
 
     //!

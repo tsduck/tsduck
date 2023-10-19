@@ -36,10 +36,10 @@ namespace ts {
 
     private:
         // Command line options:
-        bool                  _cleanup_priv_desc; // Remove private desc without preceding PDS desc
-        std::vector<uint16_t> _remove_casid;      // Set of CAS id to remove
-        std::vector<uint16_t> _remove_pid;        // Set of EMM PID to remove
-        DescriptorList        _add_descs;         // List of descriptors to add
+        bool                  _cleanup_priv_desc = false; // Remove private desc without preceding PDS desc
+        std::vector<uint16_t> _remove_casid {};           // Set of CAS id to remove
+        std::vector<uint16_t> _remove_pid {};             // Set of EMM PID to remove
+        DescriptorList        _add_descs {nullptr};       // List of descriptors to add
     };
 }
 
@@ -51,11 +51,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"cat", ts::CATPlugin);
 //----------------------------------------------------------------------------
 
 ts::CATPlugin::CATPlugin (TSP* tsp_) :
-    AbstractTablePlugin(tsp_, u"Perform various transformations on the CAT", u"[options]", u"CAT", PID_CAT),
-    _cleanup_priv_desc(false),
-    _remove_casid(),
-    _remove_pid(),
-    _add_descs(nullptr)
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the CAT", u"[options]", u"CAT", PID_CAT)
 {
     option(u"add-ca-descriptor", 'a', STRING, 0, UNLIMITED_COUNT);
     help(u"add-ca-descriptor", u"casid/pid[/private-data]",

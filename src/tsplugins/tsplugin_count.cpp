@@ -36,28 +36,28 @@ namespace ts {
         // This structure is used at each --interval.
         struct IntervalReport
         {
-            Time          start;            // Interval start time in UTC.
-            PacketCounter counted_packets;  // Total counted packets.
-            PacketCounter total_packets;    // Total TS packets.
+            Time          start {};             // Interval start time in UTC.
+            PacketCounter counted_packets = 0;  // Total counted packets.
+            PacketCounter total_packets = 0;    // Total TS packets.
 
             // Constructor.
-            IntervalReport() : start(), counted_packets(0), total_packets(0) {}
+            IntervalReport() = default;
         };
 
         // Command  line options:
-        UString        _tag;                // Message tag
-        bool           _negate;             // Negate filter (exclude selected packets)
-        PIDSet         _pids;               // PID values to filter
-        bool           _brief_report;       // Display biref report, values but not comments
-        bool           _report_all;         // Report packet index and PID of each packet
-        bool           _report_summary;     // Report summary
-        bool           _report_total;       // Report total of all PIDs
-        PacketCounter  _report_interval;    // If non-zero, report time-stamp at this packet interval
+        UString        _tag {};                  // Message tag
+        bool           _negate = false;          // Negate filter (exclude selected packets)
+        PIDSet         _pids {};                 // PID values to filter
+        bool           _brief_report = false;    // Display biref report, values but not comments
+        bool           _report_all = false;      // Report packet index and PID of each packet
+        bool           _report_summary = false;  // Report summary
+        bool           _report_total = false;    // Report total of all PIDs
+        PacketCounter  _report_interval = 0;     // If non-zero, report time-stamp at this packet interval
 
         // Working data:
-        std::ofstream  _outfile;            // User-specified output file
-        IntervalReport _last_report;        // Last report content
-        PacketCounter  _counters[PID_MAX];  // Packet counter per PID
+        std::ofstream  _outfile {};              // User-specified output file
+        IntervalReport _last_report {};          // Last report content
+        PacketCounter  _counters[PID_MAX] {};    // Packet counter per PID
 
         // Report a line
         void report(const UChar* fmt, const std::initializer_list<ArgMixIn> args);
@@ -72,18 +72,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"count", ts::CountPlugin);
 //----------------------------------------------------------------------------
 
 ts::CountPlugin::CountPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Count TS packets per PID", u"[options]"),
-    _tag(),
-    _negate(false),
-    _pids(),
-    _brief_report(false),
-    _report_all(false),
-    _report_summary(false),
-    _report_total(false),
-    _report_interval(0),
-    _outfile(),
-    _last_report(),
-    _counters()
+    ProcessorPlugin(tsp_, u"Count TS packets per PID", u"[options]")
 {
     option(u"all", 'a');
     help(u"all",

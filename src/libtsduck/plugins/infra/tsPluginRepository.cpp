@@ -30,11 +30,7 @@ const ts::Enumeration ts::PluginRepository::ListProcessorEnum({
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::PluginRepository::PluginRepository() :
-    _sharedLibraryAllowed(true),
-    _inputPlugins(),
-    _processorPlugins(),
-    _outputPlugins()
+ts::PluginRepository::PluginRepository()
 {
 }
 

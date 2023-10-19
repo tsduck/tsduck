@@ -44,9 +44,9 @@ namespace ts {
         virtual size_t stackUsage() const override {return 512 * 1024;} // 512 kB
 
     private:
-        Tuner     _tuner;            // DVB tuner device
-        TunerArgs _tuner_args;       // Command-line tuning arguments
-        BitRate   _previous_bitrate; // Previous value from getBitrate()
+        Tuner     _tuner {duck};          // DVB tuner device
+        TunerArgs _tuner_args {false};    // Command-line tuning arguments
+        BitRate   _previous_bitrate = 0;  // Previous value from getBitrate()
     };
 }
 
@@ -58,10 +58,7 @@ TS_REGISTER_INPUT_PLUGIN(u"dvb", ts::DVBInputPlugin);
 //----------------------------------------------------------------------------
 
 ts::DVBInputPlugin::DVBInputPlugin(TSP* tsp_) :
-    InputPlugin(tsp_, u"DVB receiver device input", u"[options]"),
-    _tuner(duck),
-    _tuner_args(false),
-    _previous_bitrate(0)
+    InputPlugin(tsp_, u"DVB receiver device input", u"[options]")
 {
     // Define common tuning options
     duck.defineArgsForHFBand(*this);

@@ -36,18 +36,18 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool          _abort;           // Error (service not found, etc)
-        Service       _service;         // Service name & id
-        bool          _pass_packets;    // Pass packets trigger
-        Status        _drop_status;     // Status for dropped packets
-        bool          _video_only;      // Check video PIDs only
-        bool          _audio_only;      // Check audio PIDs only
-        TOT           _last_tot;        // Last received TOT
-        PacketCounter _drop_after;      // Number of packets after last clear
-        PacketCounter _current_pkt;     // Current TS packet number
-        PacketCounter _last_clear_pkt;  // Last clear packet number
-        PIDSet        _clear_pids;      // List of PIDs to check for clear packets
-        SectionDemux  _demux;           // Section demux
+        bool          _abort = false;         // Error (service not found, etc)
+        Service       _service {};            // Service name & id
+        bool          _pass_packets = false;  // Pass packets trigger
+        Status        _drop_status = TSP_OK;  // Status for dropped packets
+        bool          _video_only = false;    // Check video PIDs only
+        bool          _audio_only = false;    // Check audio PIDs only
+        TOT           _last_tot {};           // Last received TOT
+        PacketCounter _drop_after = 0;        // Number of packets after last clear
+        PacketCounter _current_pkt = 0;       // Current TS packet number
+        PacketCounter _last_clear_pkt = 0;    // Last clear packet number
+        PIDSet        _clear_pids {};         // List of PIDs to check for clear packets
+        SectionDemux  _demux {duck, this};    // Section demux
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable (SectionDemux&, const BinaryTable&) override;
@@ -67,19 +67,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"clear", ts::ClearPlugin);
 //----------------------------------------------------------------------------
 
 ts::ClearPlugin::ClearPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract clear (non scrambled) sequences of a transport stream", u"[options]"),
-    _abort(false),
-    _service(),
-    _pass_packets(false),
-    _drop_status(TSP_OK),
-    _video_only(false),
-    _audio_only(false),
-    _last_tot(Time::Epoch),
-    _drop_after(0),
-    _current_pkt(0),
-    _last_clear_pkt(0),
-    _clear_pids(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Extract clear (non scrambled) sequences of a transport stream", u"[options]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
