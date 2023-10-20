@@ -42,7 +42,7 @@ namespace ts {
 
     private:
         // Context per PID in the TS.
-        struct PIDContext;
+        class PIDContext;
         typedef SafePtr<PIDContext, NullMutex> PIDContextPtr;
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
@@ -66,12 +66,11 @@ namespace ts {
         size_t        _bitsSecond = 0;      // Number of bits in current second.
 
         // Context per PID in the TS.
-        struct PIDContext
+        class PIDContext
         {
-            // Constructor.
-            PIDContext() = delete;
-            PIDContext(PID pid);
-
+            TS_NOBUILD_NOCOPY(PIDContext);
+        public:
+            PIDContext(PID pid);                  // Constructor.
             const PID     pid;                    // PID value.
             bool          psi = false;            // The PID contains PSI/SI.
             bool          video = false;          // The PID contains video.
