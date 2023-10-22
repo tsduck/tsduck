@@ -8,6 +8,13 @@
 
 #include "tsProcessorPlugin.h"
 
+const ts::Enumeration ts::ProcessorPlugin::StatusNames({
+    {u"pass", TSP_OK},
+    {u"stop", TSP_END},
+    {u"drop", TSP_DROP},
+    {u"null", TSP_NULL}
+});
+
 
 //----------------------------------------------------------------------------
 // Constructors and destructors.

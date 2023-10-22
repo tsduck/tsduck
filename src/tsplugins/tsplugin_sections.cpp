@@ -39,30 +39,30 @@ namespace ts {
 
     private:
         // Command line options.
-        bool                   _section_stuffing;
-        bool                   _use_null_pid;
-        bool                   _reverse_eitd;
-        bool                   _keep_selected;
-        bool                   _selections_present;   // there are selection options in the command line
-        MultiBoolPredicate     _predicate;            // global "and" / "or" on all criteria, see option --and
-        MonoBoolPredicate      _valid_predicate;      // see method condition()
-        BoolPredicate          _cond_predicate;       // see method condition()
-        size_t                 _max_buffered_sections;
-        PIDSet                 _input_pids;
-        PID                    _output_pid;
-        std::set<TID>          _tids;
-        std::set<uint16_t>     _exts;
-        std::set<uint32_t>     _etids;
-        std::set<uint8_t>      _versions;
-        std::set<uint8_t>      _section_numbers;
-        std::vector<ByteBlock> _contents;
-        std::vector<ByteBlock> _contents_masks;
+        bool                   _section_stuffing = false;
+        bool                   _use_null_pid = false;
+        bool                   _reverse_eitd = false;
+        bool                   _keep_selected = false;
+        bool                   _selections_present = false;    // there are selection options in the command line
+        MultiBoolPredicate     _predicate = nullptr;           // global "and" / "or" on all criteria, see option --and
+        MonoBoolPredicate      _valid_predicate = nullptr;     // see method condition()
+        BoolPredicate          _cond_predicate = nullptr;      // see method condition()
+        size_t                 _max_buffered_sections = 1024;  // hard-coded for now
+        PIDSet                 _input_pids {};
+        PID                    _output_pid = PID_NULL;
+        std::set<TID>          _tids {};
+        std::set<uint16_t>     _exts {};
+        std::set<uint32_t>     _etids {};
+        std::set<uint8_t>      _versions {};
+        std::set<uint8_t>      _section_numbers {};
+        std::vector<ByteBlock> _contents {};
+        std::vector<ByteBlock> _contents_masks {};
 
         // Working data.
-        std::list<SectionPtr> _sections;
-        SectionDemux          _demux;
-        Packetizer            _packetizer;
-        TablePatchXML         _patch_xml;
+        std::list<SectionPtr> _sections {};
+        SectionDemux          _demux {duck, nullptr, this};
+        Packetizer            _packetizer {duck, PID_NULL, this};
+        TablePatchXML         _patch_xml {duck};
 
         // Compute a condition in the chain of _predicate.
         // - valid: the condition needs to be checked (eg. there are some tids to remove).
@@ -89,29 +89,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"sections", ts::SectionsPlugin);
 //----------------------------------------------------------------------------
 
 ts::SectionsPlugin::SectionsPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove, keep or merge sections from various PID's", u"[options]"),
-    _section_stuffing(false),
-    _use_null_pid(false),
-    _reverse_eitd(false),
-    _keep_selected(false),
-    _selections_present(false),
-    _predicate(nullptr),
-    _valid_predicate(nullptr),
-    _cond_predicate(nullptr),
-    _max_buffered_sections(1024), // hard-coded for now
-    _input_pids(),
-    _output_pid(PID_NULL),
-    _tids(),
-    _exts(),
-    _etids(),
-    _versions(),
-    _section_numbers(),
-    _contents(),
-    _contents_masks(),
-    _sections(),
-    _demux(duck, nullptr, this),
-    _packetizer(duck, PID_NULL, this),
-    _patch_xml(duck)
+    ProcessorPlugin(tsp_, u"Remove, keep or merge sections from various PID's", u"[options]")
 {
     option(u"and", 'a');
     help(u"and",

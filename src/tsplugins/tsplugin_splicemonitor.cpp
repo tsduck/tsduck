@@ -50,48 +50,48 @@ namespace ts {
         class SpliceEvent
         {
         public:
-            SpliceEvent();                   // Constructor.
-            PacketCounter first_cmd_packet;  // Packet index of first occurence of splice command for signaled event.
-            uint32_t      event_id;          // Signaled event id.
-            uint64_t      event_pts;         // Signaled PTS (lowest PTS value in command).
-            bool          event_out;         // Copy of splice_out for this event.
-            size_t        event_count;       // Number of occurences of same insert commands for this event.
+            SpliceEvent() = default;                // Constructor.
+            PacketCounter first_cmd_packet = 0;     // Packet index of first occurence of splice command for signaled event.
+            uint32_t      event_id = SpliceInsert::INVALID_EVENT_ID;  // Signaled event id.
+            uint64_t      event_pts = INVALID_PTS;  // Signaled PTS (lowest PTS value in command).
+            bool          event_out = false;        // Copy of splice_out for this event.
+            size_t        event_count = 0;          // Number of occurences of same insert commands for this event.
         };
 
         // Context of a PID containing SCTE-35 splice commands.
         class SpliceContext
         {
         public:
-            SpliceContext();                 // Constructor.
-            uint64_t      last_pts;          // Last PTS value in audio/video PID's for that splice PID.
-            PacketCounter last_pts_packet;   // Packet index of last PTS.
-            std::map<uint32_t,SpliceEvent> splice_events;  // Map event id to splice event.
+            SpliceContext() = default;                        // Constructor.
+            uint64_t      last_pts = INVALID_PTS;             // Last PTS value in audio/video PID's for that splice PID.
+            PacketCounter last_pts_packet = 0;                // Packet index of last PTS.
+            std::map<uint32_t,SpliceEvent> splice_events {};  // Map event id to splice event.
         };
 
         // Command line options:
-        bool        _packet_index;      // Show packet index.
-        bool        _use_log;           // Use tsp logger for messages.
-        bool        _no_adjustment;     // Do not adjust PTS of splice command reception time.
-        PID         _splice_pid;        // The only splice PID to monitor.
-        PID         _pts_pid;           // The only PTS PID to use.
-        UString     _output_file;       // Output file name.
-        UString     _alarm_command;     // Alarm command name.
-        size_t      _min_repetition;    // Minimum number of occurrences per command.
-        size_t      _max_repetition;    // Maximum number of occurrences per command.
-        MilliSecond _min_preroll;       // Minimum pre-roll time in milliseconds.
-        MilliSecond _max_preroll;       // Maximum pre-roll time in milliseconds.
-        json::OutputArgs _json_args;    // JSON output.
-        std::bitset<256> _log_cmds;     // List of splice commands to display.
+        bool        _packet_index = false;   // Show packet index.
+        bool        _use_log = false;        // Use tsp logger for messages.
+        bool        _no_adjustment = false;  // Do not adjust PTS of splice command reception time.
+        PID         _splice_pid = PID_NULL;  // The only splice PID to monitor.
+        PID         _pts_pid = PID_NULL;     // The only PTS PID to use.
+        UString     _output_file {};         // Output file name.
+        UString     _alarm_command {};       // Alarm command name.
+        size_t      _min_repetition = 0;     // Minimum number of occurrences per command.
+        size_t      _max_repetition = 0;     // Maximum number of occurrences per command.
+        MilliSecond _min_preroll = 0;        // Minimum pre-roll time in milliseconds.
+        MilliSecond _max_preroll = 0;        // Maximum pre-roll time in milliseconds.
+        json::OutputArgs _json_args {};      // JSON output.
+        std::bitset<256> _log_cmds {};       // List of splice commands to display.
 
         // Working data:
-        TablesDisplay               _display;          // Display engine for splice information tables.
-        bool                        _displayed_table;  // Just displayed a table.
-        std::map<PID,SpliceContext> _splice_contexts;  // Map splice PID to splice context.
-        std::map<PID,PID>           _splice_pids;      // Map audio/video PID to splice PID.
-        SectionDemux                _section_demux;    // Section filter for splice information.
-        SignalizationDemux          _sig_demux;        // Signalization demux to get PMT's.
-        xml::JSONConverter          _x2j_conv;         // XML-to-JSON converter.
-        json::RunningDocument       _json_doc;         // JSON document, built on-the-fly.
+        TablesDisplay               _display {duck};             // Display engine for splice information tables.
+        bool                        _displayed_table = false;    // Just displayed a table.
+        std::map<PID,SpliceContext> _splice_contexts {};         // Map splice PID to splice context.
+        std::map<PID,PID>           _splice_pids {};             // Map audio/video PID to splice PID.
+        SectionDemux                _section_demux {duck, this}; // Section filter for splice information.
+        SignalizationDemux          _sig_demux {duck, this};     // Signalization demux to get PMT's.
+        xml::JSONConverter          _x2j_conv {*tsp};            // XML-to-JSON converter.
+        json::RunningDocument       _json_doc {*tsp};            // JSON document, built on-the-fly.
 
         // Associate all audio/video PID's in a PMT to a splice PID.
         void setSplicePID(const PMT&, PID);
@@ -118,28 +118,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"splicemonitor", ts::SpliceMonitorPlugin);
 //----------------------------------------------------------------------------
 
 ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Monitor SCTE 35 splice information", u"[options]"),
-    _packet_index(false),
-    _use_log(false),
-    _no_adjustment(false),
-    _splice_pid(PID_NULL),
-    _pts_pid(PID_NULL),
-    _output_file(),
-    _alarm_command(),
-    _min_repetition(0),
-    _max_repetition(0),
-    _min_preroll(0),
-    _max_preroll(0),
-    _json_args(),
-    _log_cmds(),
-    _display(duck),
-    _displayed_table(false),
-    _splice_contexts(),
-    _splice_pids(),
-    _section_demux(duck, this),
-    _sig_demux(duck, this),
-    _x2j_conv(*tsp),
-    _json_doc(*tsp)
+    ProcessorPlugin(tsp_, u"Monitor SCTE 35 splice information", u"[options]")
 {
     _json_args.defineArgs(*this, true, u"Build a JSON report into the specified file. Using '-' means standard output.");
 
@@ -217,32 +196,6 @@ ts::SpliceMonitorPlugin::SpliceMonitorPlugin(TSP* tsp_) :
     help(u"time-pid",
          u"Specify one video or audio PID containing PTS time stamps to link with SCTE-35 sections to monitor. "
          u"By default, the PMT's are used to link between PTS PID's and SCTE-35 PID's.");
-}
-
-
-//----------------------------------------------------------------------------
-// Context of a PID containing SCTE-35 splice commands.
-//----------------------------------------------------------------------------
-
-ts::SpliceMonitorPlugin::SpliceContext::SpliceContext() :
-    last_pts(INVALID_PTS),
-    last_pts_packet(0),
-    splice_events()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// SCTE-35 splice event.
-//----------------------------------------------------------------------------
-
-ts::SpliceMonitorPlugin::SpliceEvent::SpliceEvent() :
-    first_cmd_packet(0),
-    event_id(SpliceInsert::INVALID_EVENT_ID),
-    event_pts(INVALID_PTS),
-    event_out(false),
-    event_count(0)
-{
 }
 
 

@@ -41,13 +41,11 @@ namespace ts {
         class PIDContext
         {
         public:
-            uint64_t total_sections;     // Total number of sections.
-            uint64_t stuffing_sections;  // Number of stuffing sections.
-            uint64_t total_bytes;        // Total number of bytes in sections.
-            uint64_t stuffing_bytes;     // Total number of bytes in stuffing sections.
-
-            // Constructor.
-            PIDContext();
+            PIDContext() = default;          // Constructor.
+            uint64_t total_sections = 0;     // Total number of sections.
+            uint64_t stuffing_sections = 0;  // Number of stuffing sections.
+            uint64_t total_bytes = 0;        // Total number of bytes in sections.
+            uint64_t stuffing_bytes = 0;     // Total number of bytes in stuffing sections.
 
             // Format as a string.
             UString toString() const;
@@ -57,15 +55,15 @@ namespace ts {
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         // Plugin private fields.
-        UString          _output_name;    // Output file name
-        std::ofstream    _output_stream;  // Output file stream
-        std::ostream*    _output;         // Actual output stream
-        CASSelectionArgs _cas_args;       // CAS selection
-        PIDSet           _analyze_pids;   // List of PIDs to pass
-        SectionDemux     _analyze_demux;  // Demux for sections to analyze for stuffing
-        SectionDemux     _psi_demux;      // Demux for PSI parsing
-        PIDContext       _total;          // Global context.
-        PIDContextMap    _pid_contexts;   // Contexts of analyzed PID's.
+        UString          _output_name {};    // Output file name
+        std::ofstream    _output_stream {};  // Output file stream
+        std::ostream*    _output = nullptr;  // Actual output stream
+        CASSelectionArgs _cas_args {};       // CAS selection
+        PIDSet           _analyze_pids {};   // List of PIDs to pass
+        SectionDemux     _analyze_demux {duck, nullptr, this};  // Demux for sections to analyze for stuffing
+        SectionDemux     _psi_demux {duck, this, nullptr};      // Demux for PSI tables parsing
+        PIDContext       _total {};          // Global context.
+        PIDContextMap    _pid_contexts {};   // Contexts of analyzed PID's.
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -81,18 +79,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"stuffanalyze", ts::StuffAnalyzePlugin);
 //----------------------------------------------------------------------------
 
 ts::StuffAnalyzePlugin::StuffAnalyzePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze the level of stuffing in tables", u"[options]"),
-    TableHandlerInterface(),
-    SectionHandlerInterface(),
-    _output_name(),
-    _output_stream(),
-    _output(nullptr),
-    _cas_args(),
-    _analyze_pids(),
-    _analyze_demux(duck, nullptr, this),  // this one intercepts all sections for stuffing analysis
-    _psi_demux(duck, this, nullptr),      // this one is used for PSI parsing
-    _total(),
-    _pid_contexts()
+    ProcessorPlugin(tsp_, u"Analyze the level of stuffing in tables", u"[options]")
 {
     option(u"output-file", 'o', FILENAME);
     help(u"output-file",
@@ -152,19 +139,6 @@ bool ts::StuffAnalyzePlugin::start()
     }
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// PID context constructor.
-//----------------------------------------------------------------------------
-
-ts::StuffAnalyzePlugin::PIDContext::PIDContext() :
-    total_sections(0),
-    stuffing_sections(0),
-    total_bytes(0),
-    stuffing_bytes(0)
-{
 }
 
 

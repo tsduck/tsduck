@@ -33,11 +33,11 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        CASSelectionArgs _cas_args;    // CAS selection
-        bool             _pass_pmt;    // Pass PIDs containing PMT
-        Status           _drop_status; // Status for dropped packets
-        PIDSet           _pass_pids;   // List of PIDs to pass
-        SectionDemux     _demux;       // Section filter
+        CASSelectionArgs _cas_args {};            // CAS selection
+        bool             _pass_pmt = false;       // Pass PIDs containing PMT
+        Status           _drop_status = TSP_DROP; // Status for dropped packets
+        PIDSet           _pass_pids {};           // List of PIDs to pass
+        SectionDemux     _demux {duck, this};     // Section filter
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -55,12 +55,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"sifilter", ts::SIFilterPlugin);
 //----------------------------------------------------------------------------
 
 ts::SIFilterPlugin::SIFilterPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract PID's containing the specified PSI/SI", u"[options]"),
-    _cas_args(),
-    _pass_pmt(false),
-    _drop_status(TSP_DROP),
-    _pass_pids(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Extract PID's containing the specified PSI/SI", u"[options]")
 {
     option(u"bat");
     help(u"bat", u"Extract PID 0x0011 (SDT/BAT).");

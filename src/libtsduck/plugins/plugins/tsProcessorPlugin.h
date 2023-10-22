@@ -86,6 +86,11 @@ namespace ts {
         };
 
         //!
+        //! Names of packet status values.
+        //!
+        static const Enumeration StatusNames;
+
+        //!
         //! Get the preferred packet window size.
         //!
         //! This method shall be overriden by plugins which prefer to use the "packet window" processing method.

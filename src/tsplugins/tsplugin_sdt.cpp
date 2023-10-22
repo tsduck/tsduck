@@ -34,11 +34,11 @@ namespace ts {
 
     private:
         // Command line options:
-        bool                  _use_other;          // Modify an SDT Other, not the SDT Actual.
-        uint16_t              _other_ts_id;        // TS id of the SDT Other to modify.
-        Service               _service;            // New or modified service properties.
-        std::vector<uint16_t> _remove_serv;        // Set of services to remove
-        bool                  _cleanup_priv_desc;  // Remove private desc without preceding PDS desc
+        bool                  _use_other = false;          // Modify an SDT Other, not the SDT Actual.
+        uint16_t              _other_ts_id = false;        // TS id of the SDT Other to modify.
+        Service               _service {};                 // New or modified service properties.
+        std::vector<uint16_t> _remove_serv {};             // Set of services to remove
+        bool                  _cleanup_priv_desc = false;  // Remove private desc without preceding PDS desc
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
@@ -54,12 +54,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"sdt", ts::SDTPlugin);
 //----------------------------------------------------------------------------
 
 ts::SDTPlugin::SDTPlugin(TSP* tsp_) :
-    AbstractTablePlugin(tsp_, u"Perform various transformations on the SDT", u"[options]", u"SDT", PID_SDT),
-    _use_other(false),
-    _other_ts_id(false),
-    _service(),
-    _remove_serv(),
-    _cleanup_priv_desc(false)
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the SDT", u"[options]", u"SDT", PID_SDT)
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
