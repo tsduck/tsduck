@@ -20,24 +20,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor and destructors.
-//----------------------------------------------------------------------------
-
-ts::TablesDisplay::TablesDisplay(DuckContext& d) :
-    _duck(d),
-    _raw_dump(false),
-    _raw_flags(UString::HEXA),
-    _tlv_syntax(),
-    _min_nested_tlv(0)
-{
-}
-
-ts::TablesDisplay::~TablesDisplay()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 

@@ -52,7 +52,7 @@ namespace ts {
         };
 
     private:
-        std::vector<Register::FilterFactory> _factories;
+        std::vector<Register::FilterFactory> _factories {};
     };
 }
 

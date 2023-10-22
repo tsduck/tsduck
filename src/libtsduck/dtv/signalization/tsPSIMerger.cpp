@@ -19,29 +19,7 @@
 
 ts::PSIMerger::PSIMerger(DuckContext& duck, Options options) :
     _duck(duck),
-    _options(options),
-    _main_demux(_duck, this),                // Complete table handler only
-    _main_eit_demux(_duck, nullptr, this),   // Section handler only, do not accumulate incomplete sections.
-    _merge_demux(_duck, this),               // Complete table handler only
-    _merge_eit_demux(_duck, nullptr, this),  // Section handler only, do not accumulate incomplete sections.
-    _pat_pzer(duck),
-    _cat_pzer(duck),
-    _nit_pzer(duck),
-    _sdt_bat_pzer(duck),
-    _eit_pzer(duck, PID_EIT, this),
-    _main_tsid(),
-    _main_pat(),
-    _merge_pat(),
-    _main_cat(),
-    _merge_cat(),
-    _main_sdt(),
-    _merge_sdt(),
-    _main_nit(),
-    _merge_nit(),
-    _main_bats(),
-    _merge_bats(),
-    _eits(),
-    _max_eits(128) // hard-coded for now
+    _options(options)
 {
     reset();
 }

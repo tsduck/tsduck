@@ -31,13 +31,7 @@ const ts::UChar* const ts::SectionFile::XML_TABLES_MODEL = u"tsduck.tables.model
 
 ts::SectionFile::SectionFile(DuckContext& duck) :
     _duck(duck),
-    _report(duck.report()),
-    _tables(),
-    _sections(),
-    _orphanSections(),
-    _model(_report),
-    _xmlTweaks(),
-    _crc_op(CRC32::IGNORE)
+    _report(duck.report())
 {
 }
 

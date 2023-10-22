@@ -31,12 +31,12 @@ namespace ts {
         virtual bool start() override;
 
     private:
-        std::vector<uint16_t> _remove_serv;  // Set of services to remove
-        ServiceVector         _add_serv;     // Set of services to add
-        PID                   _new_nit_pid;  // New PID for NIT
-        bool                  _remove_nit;   // Remove NIT from PAT
-        bool                  _set_tsid;     // Set a new TS id
-        uint16_t              _new_tsid;     // New TS id
+        std::vector<uint16_t> _remove_serv {};        // Set of services to remove
+        ServiceVector         _add_serv {};           // Set of services to add
+        PID                   _new_nit_pid = PID_NIT; // New PID for NIT
+        bool                  _remove_nit = false;    // Remove NIT from PAT
+        bool                  _set_tsid = false;      // Set a new TS id
+        uint16_t              _new_tsid = 0;          // New TS id
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
@@ -52,13 +52,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pat", ts::PATPlugin);
 //----------------------------------------------------------------------------
 
 ts::PATPlugin::PATPlugin(TSP* tsp_) :
-    AbstractTablePlugin(tsp_, u"Perform various transformations on the PAT", u"[options]", u"PAT", PID_PAT),
-    _remove_serv(),
-    _add_serv(),
-    _new_nit_pid(PID_NIT),
-    _remove_nit(false),
-    _set_tsid(false),
-    _new_tsid(0)
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the PAT", u"[options]", u"PAT", PID_PAT)
 {
     option(u"add-service", 'a', STRING, 0, UNLIMITED_COUNT);
     help(u"add-service", u"service-id/pid",

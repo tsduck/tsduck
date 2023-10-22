@@ -49,25 +49,25 @@ namespace ts {
         typedef std::map<PID,SpliceContextPtr> SpliceContextMap;
 
         // PCRExtractPlugin private members
-        PIDSet           _pids;           // List of PID's to analyze
-        UString          _separator;      // Field separator
-        bool             _all_pids;       // Analyze all PID's
-        bool             _noheader;       // Suppress header
-        bool             _good_pts_only;  // Keep "good" PTS only
-        bool             _get_pcr;        // Get PCR
-        bool             _get_opcr;       // Get OPCR
-        bool             _get_pts;        // Get PTS
-        bool             _get_dts;        // Get DTS
-        bool             _csv_format;     // Output in CSV format
-        bool             _log_format;     // Output in log format
-        bool             _evaluate_pcr;   // Evaluate PCR offset for packets with PTS/DTS without PCR
-        bool             _scte35;         // Detect SCTE 35 PTS values
-        UString          _output_name;    // Output file name (empty means stderr)
-        std::ofstream    _output_stream;  // Output stream file
-        std::ostream*    _output;         // Reference to actual output stream file
-        PIDContextMap    _stats;          // Per-PID statistics
-        SpliceContextMap _splices;        // Per-PID splice information
-        SectionDemux     _demux;          // Section demux for service and SCTE 35 analysis
+        PIDSet           _pids {};           // List of PID's to analyze
+        UString          _separator {};      // Field separator
+        bool             _all_pids = false;       // Analyze all PID's
+        bool             _noheader = false;       // Suppress header
+        bool             _good_pts_only = false;  // Keep "good" PTS only
+        bool             _get_pcr = false;        // Get PCR
+        bool             _get_opcr = false;       // Get OPCR
+        bool             _get_pts = false;        // Get PTS
+        bool             _get_dts = false;        // Get DTS
+        bool             _csv_format = false;     // Output in CSV format
+        bool             _log_format = false;     // Output in log format
+        bool             _evaluate_pcr = false;   // Evaluate PCR offset for packets with PTS/DTS without PCR
+        bool             _scte35 = false;         // Detect SCTE 35 PTS values
+        UString          _output_name {};    // Output file name (empty means stderr)
+        std::ofstream    _output_stream {};  // Output stream file
+        std::ostream*    _output = nullptr;         // Reference to actual output stream file
+        PIDContextMap    _stats {};          // Per-PID statistics
+        SpliceContextMap _splices {};        // Per-PID splice information
+        SectionDemux     _demux {duck, this};          // Section demux for service and SCTE 35 analysis
 
         // Types of time stamps.
         enum DataType {PCR, OPCR, PTS, DTS};
@@ -84,12 +84,12 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(PIDData);
         public:
-            PIDData(DataType);             // Constructor.
-            const DataType type;           // Data type.
-            PacketCounter  count;          // Number of data of this type in this PID.
-            uint64_t       first_value;    // First data value of this type in this PID.
-            uint64_t       last_value;     // First data value of this type in this PID.
-            PacketCounter  last_packet;    // Packet index in TS of last value.
+            PIDData(DataType t) : type(t) {}
+            const DataType type;                       // Data type.
+            PacketCounter  count = 0;                  // Number of data of this type in this PID.
+            uint64_t       first_value = INVALID_PCR;  // First data value of this type in this PID.
+            uint64_t       last_value = INVALID_PCR;   // First data value of this type in this PID.
+            PacketCounter  last_packet = 0;            // Packet index in TS of last value.
         };
 
         // Description of one PID carrying PCR, PTS or DTS.
@@ -97,15 +97,15 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
-            PIDContext(PID);              // Constructor.
-            const PID     pid;            // PID value.
-            PacketCounter packet_count;   // Number of packets in this PID.
-            PID           pcr_pid;        // PID containing PCR in the same service.
-            uint64_t      last_good_pts;
-            PIDData       pcr;
-            PIDData       opcr;
-            PIDData       pts;
-            PIDData       dts;
+            PIDContext(PID p) : pid(p) {}
+            const PID     pid;                 // PID value.
+            PacketCounter packet_count = 0;    // Number of packets in this PID.
+            PID           pcr_pid = PID_NULL;  // PID containing PCR in the same service.
+            uint64_t      last_good_pts = INVALID_PTS;
+            PIDData       pcr {PCR};
+            PIDData       opcr {OPCR};
+            PIDData       pts {PTS};
+            PIDData       dts {DTS};
         };
 
         // Description of one PID carrying SCTE 35 splice information.
@@ -113,8 +113,8 @@ namespace ts {
         {
             TS_NOCOPY(SpliceContext);
         public:
-            SpliceContext();    // Constructor.
-            PIDSet components;  // All service components for this slice info PID.
+            SpliceContext() = default;
+            PIDSet components {};  // All service components for this slice info PID.
         };
 
         // Implementation of TableHandlerInterface.
@@ -143,26 +143,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pcrextract", ts::PCRExtractPlugin);
 //----------------------------------------------------------------------------
 
 ts::PCRExtractPlugin::PCRExtractPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extracts PCR, OPCR, PTS, DTS from TS packet for analysis", u"[options]"),
-    _pids(),
-    _separator(),
-    _all_pids(false),
-    _noheader(false),
-    _good_pts_only(false),
-    _get_pcr(false),
-    _get_opcr(false),
-    _get_pts(false),
-    _get_dts(false),
-    _csv_format(false),
-    _log_format(false),
-    _evaluate_pcr(false),
-    _scte35(false),
-    _output_name(),
-    _output_stream(),
-    _output(nullptr),
-    _stats(),
-    _splices(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Extracts PCR, OPCR, PTS, DTS from TS packet for analysis", u"[options]")
 {
     option(u"csv", 'c');
     help(u"csv",
@@ -242,32 +223,6 @@ const ts::Enumeration ts::PCRExtractPlugin::_type_names({
     {u"DTS",  DTS},
     {u"PTS",  PTS}
 });
-
-ts::PCRExtractPlugin::PIDData::PIDData(DataType type_) :
-    type(type_),
-    count(0),
-    first_value(INVALID_PCR), // Same as INVALID_PTS and INVALID_DTS
-    last_value(INVALID_PCR),
-    last_packet(0)
-{
-}
-
-ts::PCRExtractPlugin::PIDContext::PIDContext(PID pid_) :
-    pid(pid_),
-    packet_count(0),
-    pcr_pid(PID_NULL),
-    last_good_pts(INVALID_PTS),
-    pcr(PCR),
-    opcr(OPCR),
-    pts(PTS),
-    dts(DTS)
-{
-}
-
-ts::PCRExtractPlugin::SpliceContext::SpliceContext() :
-    components()
-{
-}
 
 
 //----------------------------------------------------------------------------

@@ -38,9 +38,9 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        Status        _drop_status; // Status for dropped packets
-        PIDSet        _pass_pids;   // List of PIDs to pass
-        SectionDemux  _demux;       // Section filter
+        Status        _drop_status = TSP_DROP;  // Status for dropped packets
+        PIDSet        _pass_pids {};            // List of PIDs to pass
+        SectionDemux  _demux {duck, this};      // Section filter
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -62,10 +62,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"rmorphan", ts::RMOrphanPlugin);
 //----------------------------------------------------------------------------
 
 ts::RMOrphanPlugin::RMOrphanPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove orphan (unreferenced) PID's", u"[options]"),
-    _drop_status(TSP_DROP),
-    _pass_pids(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Remove orphan (unreferenced) PID's", u"[options]")
 {
     duck.defineArgsForStandards(*this);
 

@@ -313,13 +313,13 @@ namespace ts {
         class TableDescription
         {
         public:
-            Standards              standards;  // Standards for this table id.
-            uint16_t               minCAS;     // Minimum CAS id for this table id (CASID_NULL if none).
-            uint16_t               maxCAS;     // Maximum CAS id for this table id (CASID_NULL if none).
-            TableFactory           factory;    // Function to build an instance of the table.
-            DisplaySectionFunction display;    // Function to display a section.
-            LogSectionFunction     log;        // Function to log a section.
-            std::array<PID,8>      pids;       // Standard PID's for the standard, stop at first PID_NULL.
+            Standards              standards = Standards::NONE;  // Standards for this table id.
+            uint16_t               minCAS = CASID_NULL;          // Minimum CAS id for this table id (CASID_NULL if none).
+            uint16_t               maxCAS = CASID_NULL;          // Maximum CAS id for this table id (CASID_NULL if none).
+            TableFactory           factory = nullptr;            // Function to build an instance of the table.
+            DisplaySectionFunction display = nullptr;            // Function to display a section.
+            LogSectionFunction     log = nullptr;                // Function to log a section.
+            std::array<PID,8>      pids {};                      // Standard PID's for the standard, stop at first PID_NULL.
 
             // Constructor.
             TableDescription();
@@ -336,21 +336,21 @@ namespace ts {
         class DescriptorDescription
         {
         public:
-            DescriptorFactory         factory;    // Function to build an instance of the descriptor.
-            DisplayDescriptorFunction display;    // Function to display a descriptor.
+            DescriptorFactory         factory;  // Function to build an instance of the descriptor.
+            DisplayDescriptorFunction display;  // Function to display a descriptor.
 
             // Constructor.
             DescriptorDescription(DescriptorFactory fact = nullptr, DisplayDescriptorFunction disp = nullptr);
         };
 
         // PSIRepository instance private members.
-        std::multimap<TID, TableDescription>            _tables;                   // Description of all table ids, potential multiple entries per table idx
-        std::map<EDID, DescriptorDescription>           _descriptors;              // Description of all descriptors, by extended id.
-        std::map<UString, TableFactory>                 _tableNames;               // XML table name to table factory
-        std::map<UString, DescriptorFactory>            _descriptorNames;          // XML descriptor name to descriptor factory
-        std::multimap<UString, TID>                     _descriptorTablesIds;      // XML descriptor name to table id for table-specific descriptors
-        std::map<uint16_t, DisplayCADescriptorFunction> _casIdDescriptorDisplays;  // CA_system_id to display function for CA_descriptor.
-        UStringList                                     _xmlModelFiles;            // Additional XML model files for tables.
+        std::multimap<TID, TableDescription>            _tables {};                   // Description of all table ids, potential multiple entries per table idx
+        std::map<EDID, DescriptorDescription>           _descriptors {};              // Description of all descriptors, by extended id.
+        std::map<UString, TableFactory>                 _tableNames {};               // XML table name to table factory
+        std::map<UString, DescriptorFactory>            _descriptorNames {};          // XML descriptor name to descriptor factory
+        std::multimap<UString, TID>                     _descriptorTablesIds {};      // XML descriptor name to table id for table-specific descriptors
+        std::map<uint16_t, DisplayCADescriptorFunction> _casIdDescriptorDisplays {};  // CA_system_id to display function for CA_descriptor.
+        UStringList                                     _xmlModelFiles {};            // Additional XML model files for tables.
 
         // Common code to lookup a table function.
         template <typename FUNCTION, typename std::enable_if<std::is_pointer<FUNCTION>::value>::type* = nullptr>

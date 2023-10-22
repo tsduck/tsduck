@@ -41,10 +41,10 @@ namespace ts {
         typedef SafePtr<CyclingPacketizer, NullMutex> CyclingPacketizerPtr;
         typedef std::map<PID, CyclingPacketizerPtr> PacketizerMap;
 
-        bool          _update_psi;      // Update all PSI
-        bool          _pmt_ready;       // All PMT PID's are known
-        SectionDemux  _demux;           // Section demux
-        PacketizerMap _pzer;            // Packetizer for sections
+        bool          _update_psi = false;  // Update all PSI
+        bool          _pmt_ready = false;   // All PMT PID's are known
+        SectionDemux  _demux {duck, this};  // Section demux
+        PacketizerMap _pzer {};             // Packetizer for sections
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -68,11 +68,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"remap", ts::RemapPlugin);
 //----------------------------------------------------------------------------
 
 ts::RemapPlugin::RemapPlugin(TSP* tsp_) :
-    AbstractDuplicateRemapPlugin(true, tsp_, u"Generic PID remapper", u"[options] [pid[-pid]=newpid ...]"),
-    _update_psi(false),
-    _pmt_ready(false),
-    _demux(duck, this),
-    _pzer()
+    AbstractDuplicateRemapPlugin(true, tsp_, u"Generic PID remapper", u"[options] [pid[-pid]=newpid ...]")
 {
     option(u"no-psi", 'n');
     help(u"no-psi",

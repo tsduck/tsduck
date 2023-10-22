@@ -37,26 +37,26 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        UString       _output_name;     // Output file name
-        std::ofstream _output_stream;   // Output file stream
-        std::ostream* _output;          // Actual output stream
-        UString       _comment_prefix;  // Prefix for comment lines
-        UString       _variable_prefix; // Prefix for environment variable names
-        bool          _use_comment;     // Add comment line
-        bool          _use_variable;    // Environment variable format
-        bool          _terminate;       // Terminate after one NIT
-        bool          _dvb_options;     // Output format: dvb plugin options
-        bool          _all_nits;        // Also include all "NIT other"
-        bool          _nit_other;       // Analyze one "NIT other"
-        uint16_t      _network_id;      // Network id of "NIT other" to analyze
-        PID           _nit_pid;         // PID for the NIT (default: read PAT)
-        size_t        _nit_count;       // Number of analyzed NIT's
-        SectionDemux  _demux;           // Section demux
-        ChannelFile   _channels;        // Channel database
-        UString       _channel_file;    // Name of channel configuration file.
-        bool          _save_channel_file;     // Save a fresh new version of channel configuration file.
-        bool          _update_channel_file;   // Update previous content of channel configuration file.
-        bool          _default_channel_file;  // Use default channel configuration file.
+        UString       _output_name {};                // Output file name
+        std::ofstream _output_stream {};              // Output file stream
+        std::ostream* _output = nullptr;              // Actual output stream
+        UString       _comment_prefix {};             // Prefix for comment lines
+        UString       _variable_prefix {};            // Prefix for environment variable names
+        bool          _use_comment = false;           // Add comment line
+        bool          _use_variable = false;          // Environment variable format
+        bool          _terminate = false;             // Terminate after one NIT
+        bool          _dvb_options = false;           // Output format: dvb plugin options
+        bool          _all_nits = false;              // Also include all "NIT other"
+        bool          _nit_other = false;             // Analyze one "NIT other"
+        uint16_t      _network_id = 0;                // Network id of "NIT other" to analyze
+        PID           _nit_pid = PID_NULL;            // PID for the NIT (default: read PAT)
+        size_t        _nit_count = 0;                 // Number of analyzed NIT's
+        SectionDemux  _demux {duck, this};            // Section demux
+        ChannelFile   _channels {};                   // Channel database
+        UString       _channel_file {};               // Name of channel configuration file.
+        bool          _save_channel_file = false;     // Save a fresh new version of channel configuration file.
+        bool          _update_channel_file = false;   // Update previous content of channel configuration file.
+        bool          _default_channel_file = false;  // Use default channel configuration file.
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -75,27 +75,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"nitscan", ts::NITScanPlugin);
 //----------------------------------------------------------------------------
 
 ts::NITScanPlugin::NITScanPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze the NIT and output a list of tuning information", u"[options]"),
-    _output_name(),
-    _output_stream(),
-    _output(nullptr),
-    _comment_prefix(),
-    _variable_prefix(),
-    _use_comment(false),
-    _use_variable(false),
-    _terminate(false),
-    _dvb_options(false),
-    _all_nits(false),
-    _nit_other(false),
-    _network_id(0),
-    _nit_pid(PID_NULL),
-    _nit_count(0),
-    _demux(duck, this),
-    _channels(),
-    _channel_file(),
-    _save_channel_file(false),
-    _update_channel_file(false),
-    _default_channel_file(false)
+    ProcessorPlugin(tsp_, u"Analyze the NIT and output a list of tuning information", u"[options]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

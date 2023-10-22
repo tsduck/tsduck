@@ -23,8 +23,13 @@ namespace ts {
     {
     public:
         // Public members:
-        uint16_t service_id;  //!< Service id.
-        uint8_t  version;     //!< General-purpose version (typically a table version), not part of the DVB triplet.
+        uint16_t service_id = 0;  //!< Service id.
+        uint8_t  version = 0;     //!< General-purpose version (typically a table version), not part of the DVB triplet.
+
+        //!
+        //! Default constructor.
+        //!
+        ServiceIdTriplet() = default;
 
         //!
         //! Constructor.
@@ -33,7 +38,12 @@ namespace ts {
         //! @param [in] onid Original network id.
         //! @param [in] vers Optional version.
         //!
-        ServiceIdTriplet(uint16_t svid = 0, uint16_t tsid = 0, uint16_t onid = 0, uint8_t vers = 0);
+        ServiceIdTriplet(uint16_t svid, uint16_t tsid, uint16_t onid, uint8_t vers = 0) :
+            TransportStreamId(tsid, onid),
+            service_id(svid),
+            version(vers)
+        {
+        }
 
         //!
         //! Constructor.

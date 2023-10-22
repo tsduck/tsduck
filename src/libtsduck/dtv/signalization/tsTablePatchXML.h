@@ -36,7 +36,7 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] duck TSDuck execution context.
         //!
-        TablePatchXML(DuckContext& duck);
+        TablePatchXML(DuckContext& duck) : _duck(duck) {}
 
         //!
         //! Add command line option definitions in an Args.
@@ -127,8 +127,8 @@ namespace ts {
         typedef ts::SafePtr<ts::xml::PatchDocument> PatchDocumentPtr;
         typedef std::vector<PatchDocumentPtr> PatchDocumentVector;
 
-        DuckContext&        _duck;        // TSDuck execution context.
-        UStringVector       _patchFiles;  // XML patch file names.
-        PatchDocumentVector _patches;     // XML patch files as loaded documents
+        DuckContext&        _duck;           // TSDuck execution context.
+        UStringVector       _patchFiles {};  // XML patch file names.
+        PatchDocumentVector _patches {};     // XML patch files as loaded documents
     };
 }

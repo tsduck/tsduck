@@ -35,13 +35,13 @@ namespace ts {
         enum {UNIT_DEFAULT, UNIT_PCR, UNIT_PTS, UNIT_MILLISEC, UNIT_NANOSEC};
 
         // Command line options.
-        bool    _ignore_scrambled;
-        bool    _random;
-        int64_t _add_pcr;
-        int64_t _add_pts;
-        int64_t _add_dts;
-        PIDSet  _pids;
-        SystemRandomGenerator _prng;
+        bool    _ignore_scrambled = false;
+        bool    _random = false;
+        int64_t _add_pcr = 0;
+        int64_t _add_pts = 0;
+        int64_t _add_dts = 0;
+        PIDSet  _pids {};
+        SystemRandomGenerator _prng {};
 
         // Return actual value to apply.
         int64_t adjust(int64_t value);
@@ -56,14 +56,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pcredit", ts::PCREditPlugin);
 //----------------------------------------------------------------------------
 
 ts::PCREditPlugin::PCREditPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Edit PCR, PTS and DTS values in various ways", u"[options]"),
-    _ignore_scrambled(false),
-    _random(false),
-    _add_pcr(0),
-    _add_pts(0),
-    _add_dts(0),
-    _pids(),
-    _prng()
+    ProcessorPlugin(tsp_, u"Edit PCR, PTS and DTS values in various ways", u"[options]")
 {
     option(u"add-dts", 0, INT64);
     help(u"add-dts",

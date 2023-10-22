@@ -35,27 +35,27 @@ namespace ts {
         // Description of one PID
         struct PIDContext
         {
-            PIDContext();                  // Constructor.
-            uint64_t      pcr_value;       // Last PCR value in this PID.
-            PacketCounter pcr_packet;      // Packet index containing last PCR.
-            uint64_t      pcr_timestamp;   // Input timestamp of packet containing last PCR (or INVALID _PCR).
-            TimeSource    pcr_timesource;  // Source of input time stamp.
+            PIDContext() = default;
+            uint64_t      pcr_value = INVALID_PCR;                 // Last PCR value in this PID.
+            PacketCounter pcr_packet = 0;                          // Packet index containing last PCR.
+            uint64_t      pcr_timestamp = INVALID_PCR;             // Input timestamp of packet containing last PCR (or INVALID _PCR).
+            TimeSource    pcr_timesource = TimeSource::UNDEFINED;  // Source of input time stamp.
         };
 
         // Command line options.
-        bool    _absolute;       // Use PCR absolute value, not micro-second
-        bool    _input_synch;    // Use input-synchronous verification, base on input timestamps
-        BitRate _bitrate;        // Expected bitrate (0 if unknown)
-        int64_t _jitter_max;     // Max accepted jitter in PCR units
-        int64_t _jitter_unreal;  // Max realistic jitter
-        bool    _time_stamp;     // Display time stamps
-        PIDSet  _pid_list;       // Array of pid values to filter
+        bool    _absolute = false;     // Use PCR absolute value, not micro-second
+        bool    _input_synch = false;  // Use input-synchronous verification, base on input timestamps
+        BitRate _bitrate = 0;          // Expected bitrate (0 if unknown)
+        int64_t _jitter_max = 0;       // Max accepted jitter in PCR units
+        int64_t _jitter_unreal = 0;    // Max realistic jitter
+        bool    _time_stamp = false;   // Display time stamps
+        PIDSet  _pid_list {};          // Array of pid values to filter
 
         // Working data.
-        PacketCounter            _nb_pcr_ok;         // Number of PCR without jitter
-        PacketCounter            _nb_pcr_nok;        // Number of PCR with jitter
-        PacketCounter            _nb_pcr_unchecked;  // Number of unchecked PCR (no previous ref)
-        std::map<PID,PIDContext> _stats;             // Per-PID statistics
+        PacketCounter            _nb_pcr_ok = 0;         // Number of PCR without jitter
+        PacketCounter            _nb_pcr_nok = 0;        // Number of PCR with jitter
+        PacketCounter            _nb_pcr_unchecked = 0;  // Number of unchecked PCR (no previous ref)
+        std::map<PID,PIDContext> _stats {};              // Per-PID statistics
 
         // PCR units per micro-second.
         static constexpr int64_t PCR_PER_MICRO_SEC = int64_t(SYSTEM_CLOCK_FREQ) / MicroSecPerSec;
@@ -76,36 +76,13 @@ constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_MAX;
 constexpr int64_t ts::PCRVerifyPlugin::DEFAULT_JITTER_UNREAL;
 #endif
 
-//----------------------------------------------------------------------------
-// PID context constructor
-//----------------------------------------------------------------------------
-
-ts::PCRVerifyPlugin::PIDContext::PIDContext() :
-    pcr_value(INVALID_PCR),
-    pcr_packet(0),
-    pcr_timestamp(INVALID_PCR),
-    pcr_timesource(TimeSource::UNDEFINED)
-{
-}
-
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
 ts::PCRVerifyPlugin::PCRVerifyPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Verify PCR's from TS packets", u"[options]"),
-    _absolute(false),
-    _input_synch(false),
-    _bitrate(0),
-    _jitter_max(0),
-    _jitter_unreal(0),
-    _time_stamp(false),
-    _pid_list(),
-    _nb_pcr_ok(0),
-    _nb_pcr_nok(0),
-    _nb_pcr_unchecked(0),
-    _stats()
+    ProcessorPlugin(tsp_, u"Verify PCR's from TS packets", u"[options]")
 {
     option(u"absolute", 'a');
     help(u"absolute",

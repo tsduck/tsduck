@@ -25,45 +25,9 @@
 //----------------------------------------------------------------------------
 
 ts::PSILogger::PSILogger(TablesDisplay& display) :
-    TableHandlerInterface(),
-    SectionHandlerInterface(),
-    _all_versions(false),
-    _clear(false),
-    _cat_only(false),
-    _dump(false),
-    _use_text(false),
-    _use_xml(false),
-    _use_json(false),
-    _log_xml_line(false),
-    _log_json_line(false),
-    _use_current(true),
-    _use_next(false),
-    _text_destination(),
-    _xml_destination(),
-    _json_destination(),
-    _log_xml_prefix(),
-    _log_json_prefix(),
-    _xml_tweaks(),
     _display(display),
     _duck(_display.duck()),
-    _report(_duck.report()),
-    _table_handler(nullptr),
-    _section_handler(nullptr),
-    _xml_doc(_report),
-    _x2j_conv(_report),
-    _json_doc(_report),
-    _abort(false),
-    _pat_ok(_cat_only),
-    _cat_ok(_clear),
-    _sdt_ok(_cat_only),
-    _bat_ok(false),
-    _expected_pmt(0),
-    _received_pmt(0),
-    _clear_packets_cnt(0),
-    _scrambled_packets_cnt(0),
-    _previous_pat(),
-    _demux(_duck, this, _dump ? this : nullptr),
-    _standards(Standards::NONE)
+    _report(_duck.report())
 {
 }
 

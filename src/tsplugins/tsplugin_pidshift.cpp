@@ -36,16 +36,16 @@ namespace ts {
 
     private:
         // Command line options:
-        bool            _ignore_errors;  // Ignore evaluation errors.
-        size_t          _shift_packets;  // Shift buffer size in packets.
-        MilliSecond     _shift_ms;       // Shift buffer size in milliseconds.
-        MilliSecond     _eval_ms;        // Initial evaluation phase duration in milliseconds.
-        PIDSet          _pids;           // List of PID's to shift forward.
+        bool            _ignore_errors = false;  // Ignore evaluation errors.
+        size_t          _shift_packets = 0;      // Shift buffer size in packets.
+        MilliSecond     _shift_ms = 0;           // Shift buffer size in milliseconds.
+        MilliSecond     _eval_ms = 0;            // Initial evaluation phase duration in milliseconds.
+        PIDSet          _pids {};                // List of PID's to shift forward.
 
         // Working data:
-        bool            _pass_all;       // Pass all packets after an error.
-        PacketCounter   _init_packets;   // Count packets in PID's to shift during initial evaluation phase.
-        TimeShiftBuffer _buffer;         // The timeshift buffer logic.
+        bool            _pass_all = false;       // Pass all packets after an error.
+        PacketCounter   _init_packets = 0;       // Count packets in PID's to shift during initial evaluation phase.
+        TimeShiftBuffer _buffer {};              // The timeshift buffer logic.
     };
 }
 
@@ -57,15 +57,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pidshift", ts::PIDShiftPlugin);
 //----------------------------------------------------------------------------
 
 ts::PIDShiftPlugin::PIDShiftPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Shift one or more PID's forward in the transport stream", u"[options]"),
-    _ignore_errors(false),
-    _shift_packets(0),
-    _shift_ms(0),
-    _eval_ms(0),
-    _pids(),
-    _pass_all(false),
-    _init_packets(0),
-    _buffer()
+    ProcessorPlugin(tsp_, u"Shift one or more PID's forward in the transport stream", u"[options]")
 {
     option(u"pid", 'p', PIDVAL, 1, UNLIMITED_COUNT);
     help(u"pid", u"pid1[-pid2]",

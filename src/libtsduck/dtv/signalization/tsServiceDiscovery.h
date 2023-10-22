@@ -84,10 +84,10 @@ namespace ts {
 
     private:
         DuckContext& _duck;
-        bool         _notFound;    // Set when service does not exist.
-        SignalizationHandlerInterface* _pmtHandler;  // Handler to call for each new PMT.
-        PMT          _pmt;         // Last valid PMT for the service.
-        SectionDemux _demux;       // PSI demux for service discovery.
+        bool         _notFound = false;     // Set when service does not exist.
+        SignalizationHandlerInterface* _pmtHandler = nullptr;  // Handler to call for each new PMT.
+        PMT          _pmt {};               // Last valid PMT for the service.
+        SectionDemux _demux {_duck, this};  // PSI demux for service discovery.
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

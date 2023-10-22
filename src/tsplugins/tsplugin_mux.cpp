@@ -32,30 +32,30 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        TSFile        _file;                  // Input file
-        bool          _terminate;             // Terminate processing after last new packet.
-        bool          _update_cc;             // Ignore continuity counters.
-        bool          _check_pid_conflict;    // Check new PIDs in TS
-        PIDSet        _ts_pids;               // PID's on original TS
-        bool          _force_pid;             // PID value to force
-        PID           _force_pid_value;       // PID value to force
-        BitRate       _bitrate;               // Target bitrate for inserted packets
-        PacketCounter _inter_pkt;             // # TS packets between 2 new PID packets
-        PacketCounter _pid_next_pkt;          // Next time to insert a packet
-        PacketCounter _packet_count;          // TS packet counter
-        uint64_t      _inter_time;            // Milliseconds between 2 new packets, internally calculated to PTS (multiplicated by 90)
-        uint64_t      _min_pts;               // Start only inserting packets when this PTS has been passed
-        PID           _pts_pid;               // defines the PID of min-pts setting
-        uint64_t      _max_pts;               // After this PTS has been seen, stop inserting
-        bool          _pts_range_ok;          // signal indicates if we shall insert
-        uint64_t      _max_insert_count;      // from userinput, maximum packets to insert
-        uint64_t      _inserted_packet_count; // counts inserted packets
-        uint64_t      _youngest_pts;          // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
-        uint64_t      _pts_last_inserted;     // stores nearest pts (actually pcr/300) of last packet insertion
-        TSPacketFormat     _file_format;      // Input file format
-        TSPacketLabelSet   _setLabels;        // Labels to set on output packets.
-        TSPacketLabelSet   _resetLabels;      // Labels to reset on output packets.
-        ContinuityAnalyzer _cc_fixer;         // To fix continuity counters in mux'ed PID's
+        TSFile        _file {};                       // Input file
+        bool          _terminate = false;             // Terminate processing after last new packet.
+        bool          _update_cc = false;             // Ignore continuity counters.
+        bool          _check_pid_conflict = false;    // Check new PIDs in TS
+        PIDSet        _ts_pids {};                    // PID's on original TS
+        bool          _force_pid = false;             // PID value to force
+        PID           _force_pid_value = PID_NULL;    // PID value to force
+        BitRate       _bitrate = 0;                   // Target bitrate for inserted packets
+        PacketCounter _inter_pkt = 0;                 // # TS packets between 2 new PID packets
+        PacketCounter _pid_next_pkt = 0;              // Next time to insert a packet
+        PacketCounter _packet_count = 0;              // TS packet counter
+        uint64_t      _inter_time = 0;                // Milliseconds between 2 new packets, internally calculated to PTS (multiplicated by 90)
+        uint64_t      _min_pts = 0;                   // Start only inserting packets when this PTS has been passed
+        PID           _pts_pid = PID_NULL;            // defines the PID of min-pts setting
+        uint64_t      _max_pts = 0;                   // After this PTS has been seen, stop inserting
+        bool          _pts_range_ok = false;          // signal indicates if we shall insert
+        uint64_t      _max_insert_count = 0;          // from userinput, maximum packets to insert
+        uint64_t      _inserted_packet_count = 0;     // counts inserted packets
+        uint64_t      _youngest_pts = 0;              // stores last pcr value seen (calculated from PCR to PTS value by dividing by 300)
+        uint64_t      _pts_last_inserted = 0;         // stores nearest pts (actually pcr/300) of last packet insertion
+        TSPacketFormat     _file_format = TSPacketFormat::AUTODETECT; // Input file format
+        TSPacketLabelSet   _setLabels {};             // Labels to set on output packets.
+        TSPacketLabelSet   _resetLabels {};           // Labels to reset on output packets.
+        ContinuityAnalyzer _cc_fixer {AllPIDs, tsp};  // To fix continuity counters in mux'ed PID's
     };
 }
 
@@ -67,31 +67,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"mux", ts::MuxPlugin);
 //----------------------------------------------------------------------------
 
 ts::MuxPlugin::MuxPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Insert TS packets in a transport stream", u"[options] input-file"),
-    _file(),
-    _terminate(false),
-    _update_cc(false),
-    _check_pid_conflict(false),
-    _ts_pids(),
-    _force_pid(false),
-    _force_pid_value(PID_NULL),
-    _bitrate(0),
-    _inter_pkt(0),
-    _pid_next_pkt(0),
-    _packet_count(0),
-    _inter_time(0),
-    _min_pts(0),
-    _pts_pid(0),
-    _max_pts(0),
-    _pts_range_ok(false),
-    _max_insert_count(0),
-    _inserted_packet_count(0),
-    _youngest_pts(0),
-    _pts_last_inserted(0),
-    _file_format(TSPacketFormat::AUTODETECT),
-    _setLabels(),
-    _resetLabels(),
-    _cc_fixer(AllPIDs, tsp)
+    ProcessorPlugin(tsp_, u"Insert TS packets in a transport stream", u"[options] input-file")
 {
     DefineTSPacketFormatInputOption(*this);
 
@@ -208,7 +184,7 @@ bool ts::MuxPlugin::start()
     getIntValue(_inter_time, u"inter-time", 0);
     getIntValue(_min_pts, u"min-pts", 0);
     getIntValue(_max_pts, u"max-pts", 0);
-    getIntValue(_pts_pid, u"pts-pid", 0);
+    getIntValue(_pts_pid, u"pts-pid", PID_NULL);
     getIntValue(_max_insert_count, u"max-insert-count", 0);
     _packet_count = 0;
     _pid_next_pkt = 0;
@@ -289,7 +265,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
     if (pid == _pts_pid && pkt.hasPTS()) {
         currentpts = pkt.getPTS();
     }
-    else if ((pid == _pts_pid || _pts_pid == 0) && pkt.hasPCR()) {
+    else if ((pid == _pts_pid || _pts_pid == PID_NULL) && pkt.hasPCR()) {
         // If no --pts-pid was specified, use first PID with PCR's as reference.
         _pts_pid = pid;
         currentpts = pkt.getPCR() / SYSTEM_CLOCK_SUBFACTOR;
@@ -301,7 +277,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
 
         // check if min-pts is reached
         if (_min_pts != 0) {
-            if (_pts_pid == 0 || pid == _pts_pid) {
+            if (_pts_pid == PID_NULL || pid == _pts_pid) {
                 if (currentpts > _min_pts  && (currentpts < _max_pts || _max_pts == 0)) {
                     tsp->debug(u"Found minmaxpts range OK at PTS: %'d, enabling packet insertion", { currentpts });
                     _pts_range_ok = true;
@@ -322,7 +298,7 @@ ts::ProcessorPlugin::Status ts::MuxPlugin::processPacket(TSPacket& pkt, TSPacket
         }
 
         // check if max-pts is reached
-        if (_max_pts != 0 && _max_pts < currentpts && (pid == _pts_pid || _pts_pid == 0)) {
+        if (_max_pts != 0 && _max_pts < currentpts && (pid == _pts_pid || _pts_pid == PID_NULL)) {
             tsp->debug(u"max-pts %d reached, disabling packet insertion at PTS: %'d", { _max_pts,currentpts });
             _pts_range_ok = false;
         }

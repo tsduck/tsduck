@@ -209,13 +209,13 @@ namespace ts {
         bool                     _exit = false;
         uint32_t                 _table_count = 0;
         PacketCounter            _packet_count = 0;
-        SectionDemux             _demux;
-        CASMapper                _cas_mapper;
-        xml::RunningDocument     _xml_doc;                   // XML document, built on-the-fly.
-        xml::JSONConverter       _x2j_conv;                  // XML-to-JSON converter.
-        json::RunningDocument    _json_doc;                  // JSON document, built on-the-fly.
+        SectionDemux             _demux {_duck};
+        CASMapper                _cas_mapper {_duck};
+        xml::RunningDocument     _xml_doc {_report};         // XML document, built on-the-fly.
+        xml::JSONConverter       _x2j_conv {_report};        // XML-to-JSON converter.
+        json::RunningDocument    _json_doc {_report};        // JSON document, built on-the-fly.
         std::ofstream            _bin_file {};               // Binary output file.
-        UDPSocket                _sock;                      // Output socket.
+        UDPSocket                _sock {false, _report};     // Output socket.
         std::map<PID,ByteBlock>  _short_sections {};         // Tracking duplicate short sections by PID with a section hash.
         std::map<PID,ByteBlock>  _last_sections {};          // Tracking duplicate sections by PID with a section hash (with --all-sections).
         std::map<PID,std::set<ByteBlock>> _deep_hashes {};   // Tracking of deep duplicate sections.

@@ -476,14 +476,14 @@ namespace ts {
         static const UChar* const XML_TABLES_MODEL;
 
     private:
-        DuckContext&         _duck;            // Reference to TSDuck execution context.
-        Report&              _report;          // Where to report errors.
-        BinaryTablePtrVector _tables;          // Loaded tables.
-        SectionPtrVector     _sections;        // All sections from the file.
-        SectionPtrVector     _orphanSections;  // Sections which do not belong to any table.
-        xml::JSONConverter   _model;           // XML model for tables.
-        xml::Tweaks          _xmlTweaks;       // XML formatting and parsing tweaks.
-        CRC32::Validation    _crc_op;          // Processing of CRC32 when loading sections.
+        DuckContext&         _duck;                   // Reference to TSDuck execution context.
+        Report&              _report;                 // Where to report errors.
+        BinaryTablePtrVector _tables {};              // Loaded tables.
+        SectionPtrVector     _sections {};            // All sections from the file.
+        SectionPtrVector     _orphanSections {};      // Sections which do not belong to any table.
+        xml::JSONConverter   _model {_report};        // XML model for tables.
+        xml::Tweaks          _xmlTweaks {};           // XML formatting and parsing tweaks.
+        CRC32::Validation    _crc_op = CRC32::IGNORE; // Processing of CRC32 when loading sections.
 
         // Load the XML model in this instance, if not already done.
         bool loadThisModel();

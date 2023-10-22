@@ -75,14 +75,14 @@ namespace ts {
         typedef std::map<PID, PIDContextPtr> PIDContextMap;
 
         // PCRAdjustPlugin private members
-        BitRate       _user_bitrate;      // User-specified bitrate.
-        PIDSet        _pids;              // User-specified list of PIDs.
-        bool          _ignore_dts;        // Do not modify DTS values.
-        bool          _ignore_pts;        // Do not modify PTS values.
-        bool          _ignore_scrambled;  // Do not modify scrambled PID's.
-        uint64_t      _min_pcr_interval;  // Minimum interval between two PCR's. Ignored if zero.
-        SectionDemux  _demux;             // Section demux to get service descriptions.
-        PIDContextMap _pid_contexts;      // Map of all PID contexts.
+        BitRate       _user_bitrate = 0;          // User-specified bitrate.
+        PIDSet        _pids {};                   // User-specified list of PIDs.
+        bool          _ignore_dts = false;        // Do not modify DTS values.
+        bool          _ignore_pts = false;        // Do not modify PTS values.
+        bool          _ignore_scrambled = false;  // Do not modify scrambled PID's.
+        uint64_t      _min_pcr_interval = 0;      // Minimum interval between two PCR's. Ignored if zero.
+        SectionDemux  _demux {duck, this};        // Section demux to get service descriptions.
+        PIDContextMap _pid_contexts {};           // Map of all PID contexts.
 
         // TableHandlerInterface implementation.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -95,19 +95,19 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
-            const PID     pid;                  // PID value.
-            PIDContextPtr pcr_ctx;              // Context for associated PCR PID.
-            bool          scrambled;            // The PID contains scrambled packets.
-            bool          sync_pdts;            // PTS and DTS are still synchronous with the PCR, do not modify them.
-            uint8_t       last_cc;              // Last continuity counter in this PID.
-            uint64_t      last_original_pcr;    // Last PCR value, before modification.
-            uint64_t      last_updated_pcr;     // Last PCR value, after modification.
-            PacketCounter last_pcr_packet;      // Last PCR packet index.
-            uint64_t      last_created_pcr;     // Last created PCR value in a null packet.
-            PacketCounter last_created_packet;  // Packet index of the last created PCR.
+            const PID     pid;                             // PID value.
+            PIDContextPtr pcr_ctx {};                      // Context for associated PCR PID.
+            bool          scrambled = false;               // The PID contains scrambled packets.
+            bool          sync_pdts = false;               // PTS and DTS are still synchronous with the PCR, do not modify them.
+            uint8_t       last_cc = 0;                     // Last continuity counter in this PID.
+            uint64_t      last_original_pcr = INVALID_PCR; // Last PCR value, before modification.
+            uint64_t      last_updated_pcr = INVALID_PCR;  // Last PCR value, after modification.
+            PacketCounter last_pcr_packet = 0;             // Last PCR packet index.
+            uint64_t      last_created_pcr = INVALID_PCR;  // Last created PCR value in a null packet.
+            PacketCounter last_created_packet = 0;         // Packet index of the last created PCR.
 
             // Constructor.
-            PIDContext(PID);
+            PIDContext(PID p) : pid(p) {}
 
             // Retrieve the last updated PCR. INVALID_PCR if unknown.
             uint64_t lastPCR() const;
@@ -129,15 +129,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pcradjust", ts::PCRAdjustPlugin);
 //----------------------------------------------------------------------------
 
 ts::PCRAdjustPlugin::PCRAdjustPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Adjust PCR's according to a constant bitrate", u"[options]"),
-    _user_bitrate(0),
-    _pids(),
-    _ignore_dts(false),
-    _ignore_pts(false),
-    _ignore_scrambled(false),
-    _min_pcr_interval(0),
-    _demux(duck, this),
-    _pid_contexts()
+    ProcessorPlugin(tsp_, u"Adjust PCR's according to a constant bitrate", u"[options]")
 {
     option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
@@ -203,25 +195,6 @@ bool ts::PCRAdjustPlugin::start()
     _demux.reset();
     _demux.addPID(PID_PAT);
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Description of one PID.
-//----------------------------------------------------------------------------
-
-ts::PCRAdjustPlugin::PIDContext::PIDContext(PID pid_) :
-    pid(pid_),
-    pcr_ctx(),
-    scrambled(false),
-    sync_pdts(true),
-    last_cc(0),
-    last_original_pcr(INVALID_PCR),
-    last_updated_pcr(INVALID_PCR),
-    last_pcr_packet(0),
-    last_created_pcr(INVALID_PCR),
-    last_created_packet(0)
-{
 }
 
 

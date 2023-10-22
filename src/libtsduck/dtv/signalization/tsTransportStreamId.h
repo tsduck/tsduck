@@ -27,11 +27,16 @@ namespace ts {
         uint16_t original_network_id = 0;  //!< Original network id.
 
         //!
+        //! Default constructor.
+        //!
+        TransportStreamId() = default;
+
+        //!
         //! Constructor.
         //! @param [in] tsid Transport stream id.
         //! @param [in] onid Original network id.
         //!
-        TransportStreamId(uint16_t tsid = 0, uint16_t onid = 0);
+        TransportStreamId(uint16_t tsid, uint16_t onid);
 
         //!
         //! Clear the content of this object.

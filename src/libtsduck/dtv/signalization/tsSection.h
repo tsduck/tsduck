@@ -47,7 +47,7 @@ namespace ts {
         //! Default constructor.
         //! Section is initially marked invalid.
         //!
-        Section();
+        Section() = default;
 
         //!
         //! Copy constructor.
@@ -526,7 +526,7 @@ namespace ts {
 
     private:
         // Private fields
-        bool _is_valid;
+        bool _is_valid = false;
 
         // Validate binary content.
         void validate(CRC32::Validation);
