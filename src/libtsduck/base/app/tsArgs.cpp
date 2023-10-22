@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -34,12 +13,6 @@
 #include "tsVersionInfo.h"
 #include "tsOutputPager.h"
 #include "tsDuckConfigFile.h"
-
-// Unlimited number of occurences
-const size_t ts::Args::UNLIMITED_COUNT = std::numeric_limits<size_t>::max();
-
-// Unlimited value.
-const int64_t ts::Args::UNLIMITED_VALUE = std::numeric_limits<int64_t>::max();
 
 // List of characters which are allowed thousands separators and decimal points in integer values
 const ts::UChar* const ts::Args::THOUSANDS_SEPARATORS = u", ";
@@ -54,18 +27,6 @@ const ts::Enumeration ts::Args::HelpFormatEnum({
     {u"full",        ts::Args::HELP_FULL},
     {u"options",     ts::Args::HELP_OPTIONS},
 });
-
-
-//----------------------------------------------------------------------------
-// Constructors for ArgValue
-//----------------------------------------------------------------------------
-
-ts::Args::ArgValue::ArgValue() :
-    string(),
-    int_base(0),
-    int_count(0)
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -92,11 +53,6 @@ ts::Args::IOption::IOption(const UChar* name_,
     max_value(max_value_),
     decimals(decimals_),
     flags(flags_),
-    enumeration(),
-    syntax(),
-    help(),
-    values(),
-    value_count(0),
     anumber(anumber_)
 {
     // Provide default max_occur
@@ -182,7 +138,7 @@ ts::Args::IOption::IOption(const UChar* name_,
             type = INTEGER;
             break;
         case INT32:
-            min_value = -TS_CONST64(0x80000000);
+            min_value = -0x80000000LL;
             max_value = 0x7FFFFFFF;
             type = INTEGER;
             break;
@@ -210,14 +166,8 @@ ts::Args::IOption::IOption(const UChar*       name_,
     max_occur(max_occur_),
     min_value(std::numeric_limits<int>::min()),
     max_value(std::numeric_limits<int>::max()),
-    decimals(0),
     flags(flags_),
-    enumeration(enumeration_),
-    syntax(),
-    help(),
-    values(),
-    value_count(0),
-    anumber()
+    enumeration(enumeration_)
 {
     // Provide default max_occur
     if (max_occur == 0) {
@@ -430,17 +380,9 @@ ts::UString ts::Args::IOption::helpText(size_t line_width) const
 
 ts::Args::Args(const UString& description, const UString& syntax, int flags) :
     Report(),
-    _subreport(nullptr),
     _saved_severity(maxSeverity()),
-    _iopts(),
     _description(description),
-    _shell(),
     _syntax(syntax),
-    _intro(),
-    _tail(),
-    _app_name(),
-    _args(),
-    _is_valid(false),
     _flags(flags)
 {
     adjustPredefinedOptions();

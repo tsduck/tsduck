@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -56,7 +35,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        PcapFilter();
+        PcapFilter() = default;
 
         //!
         //! Filter packets starting at the specified number.
@@ -243,24 +222,24 @@ namespace ts {
         virtual bool readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& report) override;
 
     private:
-        std::set<uint8_t> _protocols;
-        IPv4SocketAddress _source;
-        IPv4SocketAddress _destination;
-        bool              _bidirectional_filter;
-        bool              _wildcard_filter;
-        int               _display_addresses_severity;
-        size_t            _first_packet;
-        size_t            _last_packet;
-        MicroSecond       _first_time_offset;
-        MicroSecond       _last_time_offset;
-        MicroSecond       _first_time;
-        MicroSecond       _last_time;
-        size_t            _opt_first_packet;
-        size_t            _opt_last_packet;
-        MicroSecond       _opt_first_time_offset;
-        MicroSecond       _opt_last_time_offset;
-        MicroSecond       _opt_first_time;
-        MicroSecond       _opt_last_time;
+        std::set<uint8_t> _protocols {};
+        IPv4SocketAddress _source {};
+        IPv4SocketAddress _destination {};
+        bool              _bidirectional_filter = false;
+        bool              _wildcard_filter = true;
+        int               _display_addresses_severity {Severity::Debug};
+        size_t            _first_packet = 0;
+        size_t            _last_packet {std::numeric_limits<size_t>::max()};
+        MicroSecond       _first_time_offset = 0;
+        MicroSecond       _last_time_offset {std::numeric_limits<ts::MicroSecond>::max()};
+        MicroSecond       _first_time = 0;
+        MicroSecond       _last_time {std::numeric_limits<ts::MicroSecond>::max()};
+        size_t            _opt_first_packet = 0;
+        size_t            _opt_last_packet {std::numeric_limits<size_t>::max()};
+        MicroSecond       _opt_first_time_offset = 0;
+        MicroSecond       _opt_last_time_offset {std::numeric_limits<ts::MicroSecond>::max()};
+        MicroSecond       _opt_first_time = 0;
+        MicroSecond       _opt_last_time {std::numeric_limits<ts::MicroSecond>::max()};
 
         // Get a date option and return it as micro-seconds since Unix epoch.
         ts::MicroSecond getDate(Args& args, const ts::UChar* arg_name, ts::MicroSecond def_value);

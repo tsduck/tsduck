@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -35,57 +14,9 @@
 //----------------------------------------------------------------------------
 
 ts::HEVCProfileTierLevel::HEVCProfileTierLevel(const uint8_t* data, size_t size, bool profilePresentFlag, size_t maxNumSubLayersMinus1) :
-    SuperClass(),
-    profile_present_flag(profilePresentFlag),
-    general_profile_space(0),
-    general_tier_flag(0),
-    general_profile_idc(0),
-    general_profile_compatibility_flag(0),
-    general_progressive_source_flag(0),
-    general_interlaced_source_flag(0),
-    general_non_packed_constraint_flag(0),
-    general_frame_only_constraint_flag(0),
-    general_max_12bit_constraint_flag(0),
-    general_max_10bit_constraint_flag(0),
-    general_max_8bit_constraint_flag(0),
-    general_max_422chroma_constraint_flag(0),
-    general_max_420chroma_constraint_flag(0),
-    general_max_monochrome_constraint_flag(0),
-    general_intra_constraint_flag(0),
-    general_one_picture_only_constraint_flag(0),
-    general_lower_bit_rate_constraint_flag(0),
-    general_max_14bit_constraint_flag(0),
-    general_inbld_flag(0),
-    general_level_idc(0),
-    sub_layers()
+    profile_present_flag(profilePresentFlag)
 {
-    parse(data, size, {uint32_t(profilePresentFlag), uint32_t(maxNumSubLayersMinus1)});
-}
-
-ts::HEVCProfileTierLevel::SubLayerParams::SubLayerParams() :
-    sub_layer_profile_present_flag(0),
-    sub_layer_level_present_flag(0),
-    sub_layer_profile_space(0),
-    sub_layer_tier_flag(0),
-    sub_layer_profile_idc(0),
-    sub_layer_profile_compatibility_flag(),
-    sub_layer_progressive_source_flag(0),
-    sub_layer_interlaced_source_flag(0),
-    sub_layer_non_packed_constraint_flag(0),
-    sub_layer_frame_only_constraint_flag(0),
-    sub_layer_max_12bit_constraint_flag(0),
-    sub_layer_max_10bit_constraint_flag(0),
-    sub_layer_max_8bit_constraint_flag(0),
-    sub_layer_max_422chroma_constraint_flag(0),
-    sub_layer_max_420chroma_constraint_flag(0),
-    sub_layer_max_monochrome_constraint_flag(0),
-    sub_layer_intra_constraint_flag(0),
-    sub_layer_one_picture_only_constraint_flag(0),
-    sub_layer_lower_bit_rate_constraint_flag(0),
-    sub_layer_max_14bit_constraint_flag(0),
-    sub_layer_inbld_flag(0),
-    sub_layer_level_idc(0)
-{
+    HEVCProfileTierLevel::parse(data, size, {uint32_t(profilePresentFlag), uint32_t(maxNumSubLayersMinus1)});
 }
 
 

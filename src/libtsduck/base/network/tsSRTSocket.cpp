@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2020-2023, Anthony Delannoy
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -339,22 +318,29 @@ TS_MSC_NOWARNING(4668)  // 'xxx' is not defined as a preprocessor macro, replaci
 // This is a known GCC bug since 2012, never fixed: #if is too early in lex analysis and #pragma are not yet parsed.
 // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=53431
 #if defined(TS_GCC_ONLY) && !defined(__APPLE__)
-#define __APPLE__ 0
-#define ZERO__APPLE__ 1
+    #define __APPLE__ 0
+    #define ZERO__APPLE__ 1
 #endif
 
 #include <srt/srt.h>
 
-// On Windows, access_control.h as missing in the binary installer before 1.5.3.
-#if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
-#define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
+// The header access_control.h was introduced in version 1.4.2.
+// On Windows, access_control.h was missing in the binary installer before 1.5.3.
+#if SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,4,2)
+    typedef SRT_REJECT_REASON RejectReason;
 #else
-#include <srt/access_control.h>
+    #define HAS_SRT_ACCESS_CONTROL 1
+    typedef int RejectReason;
+    #if defined(TS_WINDOWS) && SRT_VERSION_VALUE < SRT_MAKE_VERSION_VALUE(1,5,3)
+        #define SRT_REJX_OVERLOAD 1402 // manually defined when header is missing.
+    #else
+        #include <srt/access_control.h>
+    #endif
 #endif
 
 #if defined(ZERO__APPLE__)
-#undef __APPLE__
-#undef ZERO__APPLE__
+    #undef __APPLE__
+    #undef ZERO__APPLE__
 #endif
 
 TS_POP_WARNING()
@@ -434,7 +420,7 @@ private:
      SRTSocket* _parent;
 public:
      // Default constructor.
-     Guts(SRTSocket* parent);
+     Guts(SRTSocket* parent) : _parent(parent) {}
 
      bool send(const void* data, size_t size, const IPv4SocketAddress& dest, Report& report);
      bool setSockOpt(int optName, const char* optNameStr, const void* optval, size_t optlen, Report& report);
@@ -446,118 +432,60 @@ public:
      bool reportStats(Report& report);
 
      // Socket working data.
-     IPv4SocketAddress    local_address;
-     IPv4SocketAddress    remote_address;
-     SRTSocketMode        mode;
-     volatile ::SRTSOCKET sock;       // SRT socket for data transmission
-     volatile ::SRTSOCKET listener;   // Listener SRT socket when srt_listen() is used.
-     size_t               total_sent_bytes;
-     size_t               total_received_bytes;
-     Time                 next_stats;
+     IPv4SocketAddress    local_address {};
+     IPv4SocketAddress    remote_address {};
+     SRTSocketMode        mode {SRTSocketMode::DEFAULT};
+     volatile ::SRTSOCKET sock {SRT_INVALID_SOCK};       // SRT socket for data transmission
+     volatile ::SRTSOCKET listener {SRT_INVALID_SOCK};   // Listener SRT socket when srt_listen() is used.
+     size_t               total_sent_bytes {0};
+     size_t               total_received_bytes {0};
+     Time                 next_stats {};
 
      // Socket options.
-     ::SRT_TRANSTYPE transtype;
-     std::string packet_filter;
-     std::string passphrase;
-     std::string streamid;
-     int         polling_time;
-     bool        messageapi;
-     bool        nakreport;
-     bool        reuse_port;
-     int         backlog;
-     int         conn_timeout;
-     int         ffs;
-     ::linger    linger_opt;
-     int         lossmaxttl;
-     int         mss;
-     int         ohead_bw;
-     int         payload_size;
-     int         rcvbuf;
-     int         sndbuf;
-     bool        enforce_encryption;
-     int32_t     kmrefreshrate;
-     int32_t     kmpreannounce;
-     int         udp_rcvbuf;
-     int         udp_sndbuf;
-     int64_t     input_bw;
-     int64_t     max_bw;
-     int32_t     iptos;
-     int32_t     ipttl;
-     int32_t     latency;
-     int32_t     min_version;
-     int32_t     pbkeylen;
-     int32_t     peer_idle_timeout;
-     int32_t     peer_latency;
-     int32_t     rcv_latency;
-     bool        tlpktdrop;
-     bool        disconnected;
-     bool        final_stats;
-     bool        json_line;
-     UString     json_prefix;
-     MilliSecond stats_interval;
-     SRTStatMode stats_mode;
+     ::SRT_TRANSTYPE transtype {SRTT_INVALID};
+     std::string packet_filter {};
+     std::string passphrase {};
+     std::string streamid {};
+     int         polling_time {-1};
+     bool        messageapi {false};
+     bool        nakreport {false};
+     bool        reuse_port {false};
+     int         backlog {0};
+     int         conn_timeout {-1};
+     int         ffs {-1};
+     ::linger    linger_opt {0, 0};
+     int         lossmaxttl {-1};
+     int         mss {-1};
+     int         ohead_bw {-1};
+     int         payload_size {-1};
+     int         rcvbuf {-1};
+     int         sndbuf {-1};
+     bool        enforce_encryption {false};
+     int32_t     kmrefreshrate {-1};
+     int32_t     kmpreannounce {-1};
+     int         udp_rcvbuf {-1};
+     int         udp_sndbuf {-1};
+     int64_t     input_bw {-1};
+     int64_t     max_bw {-1};
+     int32_t     iptos {-1};
+     int32_t     ipttl {-1};
+     int32_t     latency {-1};
+     int32_t     min_version {-1};
+     int32_t     pbkeylen {-1};
+     int32_t     peer_idle_timeout {-1};
+     int32_t     peer_latency {-1};
+     int32_t     rcv_latency {-1};
+     bool        tlpktdrop {false};
+     bool        disconnected {false};
+     bool        final_stats {false};
+     bool        json_line {false};
+     UString     json_prefix {};
+     MilliSecond stats_interval {0};
+     SRTStatMode stats_mode {SRTStatMode::ALL};
 private:
      // Callback which is called on any incoming connection.
      static int listenCallback(void* param, SRTSOCKET ns, int hsversion, const ::sockaddr* peeraddr, const char* streamid);
 };
-
-
-//----------------------------------------------------------------------------
-// Guts constructor.
-//----------------------------------------------------------------------------
-
-ts::SRTSocket::Guts::Guts(SRTSocket* parent) :
-    _parent(parent),
-    local_address(),
-    remote_address(),
-    mode(SRTSocketMode::DEFAULT),
-    sock(SRT_INVALID_SOCK),
-    listener(SRT_INVALID_SOCK),
-    total_sent_bytes(0),
-    total_received_bytes(0),
-    next_stats(),
-    transtype(SRTT_INVALID),
-    packet_filter(),
-    passphrase(),
-    streamid(),
-    polling_time(-1),
-    messageapi(false),
-    nakreport(false),
-    reuse_port(false),
-    backlog(0),
-    conn_timeout(-1),
-    ffs(-1),
-    linger_opt{0, 0},
-    lossmaxttl(-1),
-    mss(-1),
-    ohead_bw(-1),
-    payload_size(-1),
-    rcvbuf(-1),
-    sndbuf(-1),
-    enforce_encryption(false),
-    kmrefreshrate(-1),
-    kmpreannounce(-1),
-    udp_rcvbuf(-1),
-    udp_sndbuf(-1),
-    input_bw(-1),
-    max_bw(-1),
-    iptos(-1),
-    ipttl(-1),
-    latency(-1),
-    min_version(-1),
-    pbkeylen(-1),
-    peer_idle_timeout(-1),
-    peer_latency(-1),
-    rcv_latency(-1),
-    tlpktdrop(false),
-    disconnected(false),
-    final_stats(false),
-    json_line(false),
-    json_prefix(),
-    stats_interval(0),
-    stats_mode(SRTStatMode::ALL)
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -1046,7 +974,9 @@ int ts::SRTSocket::Guts::listenCallback(void* param, SRTSOCKET sock, int hsversi
     Guts* guts = reinterpret_cast<Guts*>(param);
     if (guts == nullptr || (guts->listener != SRT_INVALID_SOCK && guts->sock != SRT_INVALID_SOCK)) {
         // A connection is already established, revoke all others.
-        ::srt_setrejectreason(sock, SRT_REJX_OVERLOAD);
+        #if defined(HAS_SRT_ACCESS_CONTROL)
+            ::srt_setrejectreason(sock, SRT_REJX_OVERLOAD);
+        #endif
         return -1;
     }
     else {
@@ -1065,17 +995,21 @@ bool ts::SRTSocket::Guts::srtConnect(const IPv4SocketAddress& addr, Report& repo
         const int err = ::srt_getlasterror(&errno);
         std::string err_str(::srt_strerror(err, errno));
         if (err == SRT_ECONNREJ) {
-            const int reason = ::srt_getrejectreason(sock);
+            const RejectReason reason = ::srt_getrejectreason(sock);
             report.debug(u"srt_connect rejected, reason: %d", {reason});
+#if defined(HAS_SRT_ACCESS_CONTROL)
             if (reason == SRT_REJX_OVERLOAD) {
                 // Extended rejection reasons (REJX) have no meaningful error strings.
                 // Since this one is expected, treat it differently.
                 err_str.append(", server is overloaded, too many client connections already established");
             }
             else {
+#endif
                 err_str.append(", reject reason: ");
                 err_str.append(::srt_rejectreason_str(reason));
+#if defined(HAS_SRT_ACCESS_CONTROL)
             }
+#endif
         }
         report.error(u"error during srt_connect: %s", {err_str});
         return false;

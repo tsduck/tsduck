@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2022-2023, Paul Higgs
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -59,14 +38,17 @@ namespace ts {
             //! HEVC subregion descriptor set to '1'), an additional ES signalled by the value of PreambleSubstreamID in the HEVC subregion descriptor
             //! is prepended before this ES. In other cases, the semantics of Flag[0] is reserved. Flag[i] for values of i > 0 is reserved.
             //!
-            uint8_t     Flag;
+            uint8_t Flag = 0;
             //!
             //! 7 bits. Indicates an additional SubstreamID that belongs to the subregion when the reassembly process according to
             //! "Carriage of HEVC motion-constrained tile sets as separate elementary streams" or "Carriage of HEVC motion-constrained tile sets in a
             //! common ES using AF descriptors" is executed.
-            uint8_t     AdditionalSubstreamID;
-
-            substream_type();     //!< Constructor
+            //!
+            uint8_t AdditionalSubstreamID = 0;
+            //!
+            //! Constructor
+            //!
+            substream_type() = default;
         };
 
         //!
@@ -75,35 +57,34 @@ namespace ts {
         //! program. This value is used to identify each HEVC tile substream. The value 0 is used for substreams that contain information
         //! applicable to multiple HEVC tile substreams.
         //!
-        uint8_t                     SubstreamID;
+        uint8_t SubstreamID = 0;
         //!
         //! 1 bit. When set to '1' and each HEVC tile substream is carried in its own ES (signalled by the SubstreamMarkingFlag in the HEVC
         //! subregion descriptor set to '1'), an access unit carried in the ES signalled by the value of PreambleSubstreamID in the HEVC subregion descriptor
         //! is prepended before an access unit carried in this ES.
         //! In case SubstreamMarkingFlag in the HEVC subregion descriptor set to '0', the semantics of this flag is reserved.
         //!
-        Variable<uint8_t>           PreambleFlag;
+        Variable<uint8_t> PreambleFlag {};
         //!
         //! 7 bits. A number in the range of 1 to PatternCount (as found in the HEVC subregion descriptor) to the HEVC tile substream.
         //! This number is used as an index j to the array SubstreamOffset[k][j][i] when the reassembly process is executed.
         //!
-        Variable<uint8_t>           PatternReference;
+        Variable<uint8_t> PatternReference {};
         //!
         //! Array of 7 bit fields indicates additional SubstreamIDs that belong to the subregion when the reassembly process according
         //! to "Carriage of HEVC motion-constrained tile sets as separate elementary streams" or "Carriage of HEVC motion-constrained
         //! tile sets in a common ES using AF descriptors "is executed.
-        std::vector<substream_type> Substreams;
-
+        std::vector<substream_type> Substreams {};
 
     private:
         //!
         //! 1 bit. When set to '1', this descriptor indicates the index j > 0 of the pattern signalled by the HEVC subregion descriptor
         //! to be used to calculate additional SubstreamIDs. If the value of the field descriptor_length specifying the size of this
         //! descriptor excluding preceding header bytes is 1, the value of ReferenceFlag is reserved.
-        uint8_t ReferenceFlag;
+        //!
+        uint8_t ReferenceFlag = 1;
 
     public:
-
         //!
         //! Default constructor.
         //!

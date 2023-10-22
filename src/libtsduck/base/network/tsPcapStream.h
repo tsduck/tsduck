@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -70,7 +49,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        PcapStream();
+        PcapStream() = default;
 
         //!
         //! Get the address of the client peer.
@@ -150,15 +129,15 @@ namespace ts {
         class DataBlock
         {
         public:
-            DataBlock();
+            DataBlock() = default;
             DataBlock(const IPv4Packet& pkt, MicroSecond tstamp);
 
-            ByteBlock   data;       // TCP payload
-            size_t      index;      // index of next byte to read in data
-            uint32_t    sequence;   // TCP sequence number at start of data
-            bool        start;      // start of TCP stream.
-            bool        end;        // end of TCP stream.
-            MicroSecond timestamp;  // capture time stamp.
+            ByteBlock   data {};         // TCP payload
+            size_t      index = 0;       // index of next byte to read in data
+            uint32_t    sequence = 0;    // TCP sequence number at start of data
+            bool        start = false;   // start of TCP stream.
+            bool        end = false;     // end of TCP stream.
+            MicroSecond timestamp {-1};  // capture time stamp.
         };
         typedef SafePtr<DataBlock> DataBlockPtr;
         typedef std::list<DataBlockPtr> DataBlockQueue;
@@ -168,10 +147,10 @@ namespace ts {
         {
         public:
             // Constructor.
-            Stream() : packets() {}
+            Stream() = default;
 
             // Future packets to process.
-            DataBlockQueue packets;
+            DataBlockQueue packets {};
 
             // Check if data are immediately available.
             bool dataAvailable() const;
@@ -186,9 +165,9 @@ namespace ts {
         static constexpr size_t IDST = 1;
 
         // PcapStream private fields.
-        IPv4SocketAddress     _client;
-        IPv4SocketAddress     _server;
-        std::array<Stream, 2> _streams;
+        IPv4SocketAddress     _client {};
+        IPv4SocketAddress     _server {};
+        std::array<Stream, 2> _streams {};
 
         // Read IP packets and fill the two streams until one packet is read from the specified peer.
         // Index must be either ISRC, IDST or NPOS (any direction). Updated with actual index.

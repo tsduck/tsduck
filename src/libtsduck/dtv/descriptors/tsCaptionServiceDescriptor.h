@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -49,18 +28,13 @@ namespace ts {
         //!
         struct TSDUCKDLL Entry
         {
-            // Public members
-            UString  language;                //!< 3-character language code.
-            bool     digital_cc;              //!< Digital closed captions (vs. analog).
-            bool     line21_field;            //!< When digital_cc == false.
-            uint8_t  caption_service_number;  //!< When digital_cc == true.
-            bool     easy_reader;             //!< Easy_reader type CC.
-            bool     wide_aspect_ratio;       //!< 16:9 vs. 4:3.
-
-            //!
-            //! Default constructor.
-            //!
-            Entry();
+            Entry() = default;                    //!< Constructor.
+            UString  language {};                 //!< 3-character language code.
+            bool     digital_cc = false;          //!< Digital closed captions (vs. analog).
+            bool     line21_field = false;        //!< When digital_cc == false.
+            uint8_t  caption_service_number = 0;  //!< When digital_cc == true.
+            bool     easy_reader = false;         //!< Easy_reader type CC.
+            bool     wide_aspect_ratio = false;   //!< 16:9 vs. 4:3.
         };
 
         //!
@@ -71,10 +45,10 @@ namespace ts {
         //!
         //! Maximum number of entries to fit the count on 5 bits.
         //!
-        static const size_t MAX_ENTRIES = 31;
+        static constexpr size_t MAX_ENTRIES = 31;
 
         // Public members:
-        EntryList entries;  //!< The list of service entries.
+        EntryList entries {};  //!< The list of service entries.
 
         //!
         //! Default constructor.

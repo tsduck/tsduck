@@ -1,78 +1,16 @@
 //----------------------------------------------------------------------------
 //
-//  TSDuck - The MPEG Transport Stream Toolkit
-//  Copyright (c) 2005-2023, Thierry Lelegard
-//  All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright
-//     notice, this list of conditions and the following disclaimer in the
-//     documentation and/or other materials provided with the distribution.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-//  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-//  THE POSSIBILITY OF SUCH DAMAGE.
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2023, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
 //
 //----------------------------------------------------------------------------
 
 #include "tsPluginEventHandlerRegistry.h"
 #include "tsGuardMutex.h"
 
-
-//----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::PluginEventHandlerRegistry::PluginEventHandlerRegistry() :
-    _mutex(),
-    _calling_handlers(false),
-    _handlers()
-{
-}
-
-ts::PluginEventHandlerRegistry::Criteria::Criteria() :
-    plugin_name(),
-    plugin_index(),
-    plugin_type(),
-    event_code()
-{
-}
-
-ts::PluginEventHandlerRegistry::Criteria::Criteria(uint32_t code) :
-    plugin_name(),
-    plugin_index(),
-    plugin_type(),
-    event_code(code)
-{
-}
-
-ts::PluginEventHandlerRegistry::Criteria::Criteria(PluginType type) :
-    plugin_name(),
-    plugin_index(),
-    plugin_type(type),
-    event_code()
-{
-}
-
-ts::PluginEventHandlerRegistry::Criteria::Criteria(const UString& name) :
-    plugin_name(name),
-    plugin_index(),
-    plugin_type(),
-    event_code()
-{
-}
+// A common empty criteria, meaning "any event".
+const ts::PluginEventHandlerRegistry::Criteria ts::PluginEventHandlerRegistry::Criteria::Any;
 
 
 //----------------------------------------------------------------------------

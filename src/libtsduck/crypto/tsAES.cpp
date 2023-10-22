@@ -27,12 +27,7 @@ volatile bool ts::AES::_accel_supported = false;
 // Constructor and destructor.
 //----------------------------------------------------------------------------
 
-ts::AES::AES() :
-    _accel(nullptr),
-    _kbits(0),
-    _nrounds(0),
-    _eK(),
-    _dK()
+ts::AES::AES()
 {
     // Check once if AES acceleration is supported at runtime.
     // This logic does not require explicit synchronization.

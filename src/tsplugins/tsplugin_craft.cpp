@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -55,13 +34,13 @@ namespace ts {
 
     private:
         // Command line options:
-        uint8_t       _initCC;      // continuity_counter
-        bool          _constantCC;  // Do not increment continuity counter
-        PacketCounter _maxCount;    // Number of packets to generate
+        uint8_t       _initCC = 0;          // continuity_counter
+        bool          _constantCC = false;  // Do not increment continuity counter
+        PacketCounter _maxCount = 0;        // Number of packets to generate
 
         // Working data:
-        PacketCounter _limit;       // Current max number of packets
-        TSPacket      _packet;      // Template of packet to generate
+        PacketCounter _limit = 0;           // Current max number of packets
+        TSPacket      _packet {NullPacket}; // Template of packet to generate
     };
 }
 
@@ -82,44 +61,44 @@ namespace ts {
 
     private:
         // Command line options:
-        bool      _setDiscontinuity;
-        bool      _clearDiscontinuity;
-        bool      _setTransportError;
-        bool      _clearTransportError;
-        bool      _setTransportPriority;
-        bool      _clearTransportPriority;
-        bool      _setESPriority;
-        bool      _clearESPriority;
-        bool      _resizePayload;
-        bool      _noRepeat;
-        size_t    _payloadSize;
-        bool      _noPayload;
-        bool      _pesPayload;
-        ByteBlock _payloadPattern;
-        ByteBlock _payloadAnd;
-        ByteBlock _payloadOr;
-        ByteBlock _payloadXor;
-        size_t    _offsetPattern;
-        ByteBlock _privateData;
-        bool      _clearPrivateData;
-        bool      _clearPCR;
-        uint64_t  _newPCR;
-        bool      _clearOPCR;
-        uint64_t  _newOPCR;
-        bool      _setPID;
-        PID       _newPID;
-        bool      _setPUSI;
-        bool      _clearPUSI;
-        bool      _setRandomAccess;
-        bool      _clearRandomAccess;
-        bool      _packPESHeader;
-        bool      _setScrambling;
-        uint8_t   _newScrambling;
-        bool      _setCC;
-        uint8_t   _newCC;
-        bool      _setSpliceCountdown;
-        bool      _clearSpliceCountdown;
-        uint8_t   _newSpliceCountdown;
+        bool      _setDiscontinuity = false;
+        bool      _clearDiscontinuity = false;
+        bool      _setTransportError = false;
+        bool      _clearTransportError = false;
+        bool      _setTransportPriority = false;
+        bool      _clearTransportPriority = false;
+        bool      _setESPriority = false;
+        bool      _clearESPriority = false;
+        bool      _resizePayload = false;
+        bool      _noRepeat = false;
+        size_t    _payloadSize = 0;
+        bool      _noPayload = false;
+        bool      _pesPayload = false;
+        ByteBlock _payloadPattern {};
+        ByteBlock _payloadAnd {};
+        ByteBlock _payloadOr {};
+        ByteBlock _payloadXor {};
+        size_t    _offsetPattern = 0;
+        ByteBlock _privateData {};
+        bool      _clearPrivateData = false;
+        bool      _clearPCR = false;
+        uint64_t  _newPCR = 0;
+        bool      _clearOPCR = false;
+        uint64_t  _newOPCR = 0;
+        bool      _setPID = false;
+        PID       _newPID = PID_NULL;
+        bool      _setPUSI = false;
+        bool      _clearPUSI = false;
+        bool      _setRandomAccess = false;
+        bool      _clearRandomAccess = false;
+        bool      _packPESHeader = false;
+        bool      _setScrambling = false;
+        uint8_t   _newScrambling = 0;
+        bool      _setCC = false;
+        uint8_t   _newCC = 0;
+        bool      _setSpliceCountdown = false;
+        bool      _clearSpliceCountdown = false;
+        uint8_t   _newSpliceCountdown = 0;
 
         // Perform --pack-pes-header on a packet.
         void packPESHeader(TSPacket&);
@@ -144,12 +123,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"craft", ts::CraftPlugin);
 //----------------------------------------------------------------------------
 
 ts::CraftInput::CraftInput(TSP* tsp_) :
-    InputPlugin(tsp_, u"Build specifically crafted input packets", u"[options]"),
-    _initCC(0),
-    _constantCC(false),
-    _maxCount(0),
-    _limit(0),
-    _packet(NullPacket)
+    InputPlugin(tsp_, u"Build specifically crafted input packets", u"[options]")
 {
     option(u"constant-cc");
     help(u"constant-cc",
@@ -314,6 +288,7 @@ bool ts::CraftInput::getOptions()
     assert(afSize + payloadSize == 184);
 
     // Build packet header.
+    _packet = NullPacket;
     _packet.b[0] = 0x47;
     _packet.b[1] =
         (transportError ? 0x80 : 0x00) |
@@ -440,45 +415,7 @@ size_t ts::CraftInput::receive(TSPacket* buffer, TSPacketMetadata* pkt_data, siz
 //----------------------------------------------------------------------------
 
 ts::CraftPlugin::CraftPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Craft specific low-level transformations on packets", u"[options]"),
-    _setDiscontinuity(false),
-    _clearDiscontinuity(false),
-    _setTransportError(false),
-    _clearTransportError(false),
-    _setTransportPriority(false),
-    _clearTransportPriority(false),
-    _setESPriority(false),
-    _clearESPriority(false),
-    _resizePayload(false),
-    _noRepeat(false),
-    _payloadSize(0),
-    _noPayload(false),
-    _pesPayload(false),
-    _payloadPattern(),
-    _payloadAnd(),
-    _payloadOr(),
-    _payloadXor(),
-    _offsetPattern(0),
-    _privateData(),
-    _clearPrivateData(false),
-    _clearPCR(false),
-    _newPCR(0),
-    _clearOPCR(false),
-    _newOPCR(0),
-    _setPID(false),
-    _newPID(PID_NULL),
-    _setPUSI(false),
-    _clearPUSI(false),
-    _setRandomAccess(false),
-    _clearRandomAccess(false),
-    _packPESHeader(false),
-    _setScrambling(false),
-    _newScrambling(0),
-    _setCC(false),
-    _newCC(0),
-    _setSpliceCountdown(false),
-    _clearSpliceCountdown(false),
-    _newSpliceCountdown(0)
+    ProcessorPlugin(tsp_, u"Craft specific low-level transformations on packets", u"[options]")
 {
     setIntro(u"This plugin modifies precise fields in all TS packets. "
              u"Some operations may need space in the adaptation field. "

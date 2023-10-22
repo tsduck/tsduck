@@ -2,37 +2,11 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
 #include "tsPacketInsertionController.h"
-
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr size_t ts::PacketInsertionController::DEFAULT_WAIT_ALERT;
-constexpr size_t ts::PacketInsertionController::DEFAULT_BITRATE_RESET_PERCENT;
-#endif
 
 
 //----------------------------------------------------------------------------
@@ -41,15 +15,6 @@ constexpr size_t ts::PacketInsertionController::DEFAULT_BITRATE_RESET_PERCENT;
 
 ts::PacketInsertionController::PacketInsertionController(Report& report) :
     _report(report),
-    _main_name(u"main stream"),
-    _sub_name(u"sub-stream"),
-    _main_packets(0),
-    _sub_packets(0),
-    _wait_alert(DEFAULT_WAIT_ALERT),
-    _accel_factor(1),
-    _accel_main_packets(0),
-    _accel_sub_packets(0),
-    _accel_max_wait(0),
     _main_bitrate(_report, _main_name),
     _sub_bitrate(_report, _sub_name)
 {
@@ -77,12 +42,7 @@ void ts::PacketInsertionController::reset()
 
 ts::PacketInsertionController::BitRateControl::BitRateControl(Report& report, const UString& name) :
     _report(report),
-    _name(name),
-    _count(0),
-    _value_0(0),
-    _diffs(0),
-    _average(0),
-    _reset_percent(DEFAULT_BITRATE_RESET_PERCENT)
+    _name(name)
 {
 }
 

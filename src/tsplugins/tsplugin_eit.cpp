@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -65,13 +44,13 @@ namespace ts {
         {
         public:
             // Constructor, destructor.
-            ServiceDesc();
-            virtual ~ServiceDesc() override;
+            ServiceDesc() = default;
+            ~ServiceDesc() override;
 
             // Public fields
-            SectionCounter eitpf_count;
-            SectionCounter eits_count;
-            MilliSecond    max_time;    // Max time ahead of current time for EIT
+            SectionCounter eitpf_count = 0;
+            SectionCounter eits_count = 0;
+            MilliSecond    max_time = 0;    // Max time ahead of current time for EIT
         };
 
         // Combination of TS id / service id into one 32-bit index
@@ -83,15 +62,15 @@ namespace ts {
         typedef std::map <uint32_t, ServiceDesc> ServiceMap;
 
         // EITPlugin private members
-        std::ofstream      _outfile;          // Specified output file
-        Time               _last_utc;         // Last UTC time seen in TDT
-        SectionCounter     _eitpf_act_count;
-        SectionCounter     _eitpf_oth_count;
-        SectionCounter     _eits_act_count;
-        SectionCounter     _eits_oth_count;
-        SectionDemux       _demux;            // Section filter
-        ServiceMap         _services;         // Description of services
-        Variable<uint16_t> _ts_id;            // Current TS id
+        std::ofstream      _outfile {};
+        Time               _last_utc {};  // Last UTC time seen in TDT
+        SectionCounter     _eitpf_act_count = 0;
+        SectionCounter     _eitpf_oth_count = 0;
+        SectionCounter     _eits_act_count = 0;
+        SectionCounter     _eits_oth_count = 0;
+        SectionDemux       _demux {duck, this, this};
+        ServiceMap         _services {};
+        Variable<uint16_t> _ts_id {};
 
         // Return a reference to a service description
         ServiceDesc& getServiceDesc(uint16_t ts_id, uint16_t service_id);
@@ -113,32 +92,10 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"eit", ts::EITPlugin);
 //----------------------------------------------------------------------------
 
 ts::EITPlugin::EITPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Analyze EIT sections", u"[options]"),
-    _outfile(),
-    _last_utc(),
-    _eitpf_act_count(0),
-    _eitpf_oth_count(0),
-    _eits_act_count(0),
-    _eits_oth_count(0),
-    _demux(duck, this, this),
-    _services(),
-    _ts_id()
+    ProcessorPlugin(tsp_, u"Analyze EIT sections", u"[options]")
 {
     option(u"output-file", 'o', FILENAME);
     help(u"output-file", u"Specify the output file for the report (default: standard output).");
-}
-
-
-//----------------------------------------------------------------------------
-// Service description constructor
-//----------------------------------------------------------------------------
-
-ts::EITPlugin::ServiceDesc::ServiceDesc() :
-    Service(),
-    eitpf_count(0),
-    eits_count(0),
-    max_time(0)
-{
 }
 
 ts::EITPlugin::ServiceDesc::~ServiceDesc()

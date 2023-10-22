@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -362,27 +341,27 @@ namespace ts {
         class SystemGuts;
 
         Report&       _report;
-        UString       _userAgent;
-        bool          _autoRedirect;
-        UString       _originalURL;
-        UString       _finalURL;
-        MilliSecond   _connectionTimeout;
-        MilliSecond   _receiveTimeout;
-        UString       _proxyHost;
-        uint16_t      _proxyPort;
-        UString       _proxyUser;
-        UString       _proxyPassword;
-        UString       _cookiesFileName;
-        bool          _useCookies;
-        bool          _deleteCookiesFile;  // delete the cookies file on close
-        HeadersMap    _requestHeaders;     // all request headers (to send)
-        HeadersMap    _responseHeaders;    // all response headers (received)
-        int           _httpStatus;         // 200, 404, etc.
-        size_t        _contentSize;        // actually downloaded size
-        size_t        _headerContentSize;  // content size, as announced in response header
-        volatile bool _isOpen;             // The transfer is open/started.
-        volatile bool _interrupted;        // interrupted by application-defined handler
-        SystemGuts*   _guts;               // system-specific data
+        UString       _userAgent {DEFAULT_USER_AGENT};
+        bool          _autoRedirect = true;
+        UString       _originalURL {};
+        UString       _finalURL {};
+        MilliSecond   _connectionTimeout = 0;
+        MilliSecond   _receiveTimeout = 0;
+        UString       _proxyHost {};
+        uint16_t      _proxyPort = 0;
+        UString       _proxyUser {};
+        UString       _proxyPassword {};
+        UString       _cookiesFileName {};
+        bool          _useCookies = false;
+        bool          _deleteCookiesFile = false; // delete the cookies file on close
+        HeadersMap    _requestHeaders {};         // all request headers (to send)
+        HeadersMap    _responseHeaders {};        // all response headers (received)
+        int           _httpStatus = 0;            // 200, 404, etc.
+        size_t        _contentSize = 0;           // actually downloaded size
+        size_t        _headerContentSize = 0;     // content size, as announced in response header
+        volatile bool _isOpen = false;            // the transfer is open/started.
+        volatile bool _interrupted = false;       // interrupted by application-defined handler
+        SystemGuts*   _guts = nullptr;            // system-specific data
 
         static UString  _defaultProxyHost;
         static uint16_t _defaultProxyPort;

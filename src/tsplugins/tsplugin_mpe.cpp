@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -58,41 +37,41 @@ namespace ts {
 
     private:
         // Command line options.
-        bool          _log;               // Log MPE datagrams.
-        bool          _sync_layout;       // Display a layout of 0x47 sync bytes.
-        bool          _dump_datagram;     // Dump complete network datagrams.
-        bool          _dump_udp;          // Dump UDP payloads.
-        bool          _send_udp;          // Send all datagrams through UDP.
-        bool          _log_hexa_line;     // Log datagrams as one hexa line in the system message log.
-        bool          _signal_event;      // Signal a plugin event on MPE packet.
-        bool          _all_mpe_pids;      // Extract all MPE PID's.
-        bool          _outfile_append;    // Append file.
-        UString       _outfile_name;      // Output file name.
-        UString       _log_hexa_prefix;   // Prefix before hexa log line.
-        PacketCounter _max_datagram;      // Maximum number of datagrams to extract.
-        size_t        _min_net_size;      // Minimum size of network datagrams.
-        size_t        _max_net_size;      // Maximum size of network datagrams.
-        size_t        _min_udp_size;      // Minimum size of UDP datagrams.
-        size_t        _max_udp_size;      // Maximum size of UDP datagrams.
-        size_t        _dump_max;          // Max dump size in bytes.
-        size_t        _skip_size;         // Initial bytes to skip for --dump and --output-file.
-        uint32_t      _event_code;        // Event code to signal.
-        int           _ttl;               // Time to live option.
-        PIDSet        _pids;              // Explicitly specified PID's to extract.
-        IPv4SocketAddress _ip_source;     // IP source filter.
-        IPv4SocketAddress _ip_dest;       // IP destination filter.
-        IPv4SocketAddress _ip_forward;    // Forwarded socket address.
-        IPv4Address       _local_address; // Local IP address for UDP forwarding.
-        uint16_t          _local_port;    // Local UDP source port for UDP forwarding.
+        bool          _log = false;             // Log MPE datagrams.
+        bool          _sync_layout = false;     // Display a layout of 0x47 sync bytes.
+        bool          _dump_datagram = false;   // Dump complete network datagrams.
+        bool          _dump_udp = false;        // Dump UDP payloads.
+        bool          _send_udp = false;        // Send all datagrams through UDP.
+        bool          _log_hexa_line = false;   // Log datagrams as one hexa line in the system message log.
+        bool          _signal_event = false;    // Signal a plugin event on MPE packet.
+        bool          _all_mpe_pids = false;    // Extract all MPE PID's.
+        bool          _outfile_append = false;  // Append file.
+        UString       _outfile_name {};         // Output file name.
+        UString       _log_hexa_prefix {};      // Prefix before hexa log line.
+        PacketCounter _max_datagram = 0;        // Maximum number of datagrams to extract.
+        size_t        _min_net_size = 0;        // Minimum size of network datagrams.
+        size_t        _max_net_size = 0;        // Maximum size of network datagrams.
+        size_t        _min_udp_size = 0;        // Minimum size of UDP datagrams.
+        size_t        _max_udp_size = 0;        // Maximum size of UDP datagrams.
+        size_t        _dump_max = 0;            // Max dump size in bytes.
+        size_t        _skip_size = 0;           // Initial bytes to skip for --dump and --output-file.
+        uint32_t      _event_code = 0;          // Event code to signal.
+        int           _ttl = 0;                 // Time to live option.
+        PIDSet        _pids {};                 // Explicitly specified PID's to extract.
+        IPv4SocketAddress _ip_source {};        // IP source filter.
+        IPv4SocketAddress _ip_dest {};          // IP destination filter.
+        IPv4SocketAddress _ip_forward {};       // Forwarded socket address.
+        IPv4Address       _local_address {};    // Local IP address for UDP forwarding.
+        uint16_t          _local_port = IPv4SocketAddress::AnyPort; // Local UDP source port for UDP forwarding.
 
         // Plugin private fields.
-        bool          _abort;             // Error, abort asap.
-        UDPSocket     _sock;              // Outgoing UDP socket (forwarded datagrams).
-        int           _previous_uc_ttl;   // Previous unicast TTL which was set.
-        int           _previous_mc_ttl;   // Previous multicast TTL which was set.
-        PacketCounter _datagram_count;    // Number of extracted datagrams.
-        std::ofstream _outfile;           // Output file for extracted datagrams.
-        MPEDemux      _demux;             // MPE demux to extract MPE datagrams.
+        bool          _abort = false;           // Error, abort asap.
+        UDPSocket     _sock {false, *tsp};      // Outgoing UDP socket (forwarded datagrams).
+        int           _previous_uc_ttl = 0;     // Previous unicast TTL which was set.
+        int           _previous_mc_ttl = 0;     // Previous multicast TTL which was set.
+        PacketCounter _datagram_count = 0;      // Number of extracted datagrams.
+        std::ofstream _outfile {};              // Output file for extracted datagrams.
+        MPEDemux      _demux {duck, this};      // MPE demux to extract MPE datagrams.
 
         // Inherited methods.
         virtual void handleMPENewPID(MPEDemux&, const PMT&, PID) override;
@@ -111,41 +90,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"mpe", ts::MPEPlugin);
 //----------------------------------------------------------------------------
 
 ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract MPE (Multi-Protocol Encapsulation) datagrams", u"[options]"),
-    MPEHandlerInterface(),
-    _log(false),
-    _sync_layout(false),
-    _dump_datagram(false),
-    _dump_udp(false),
-    _send_udp(false),
-    _log_hexa_line(false),
-    _signal_event(false),
-    _all_mpe_pids(false),
-    _outfile_append(false),
-    _outfile_name(),
-    _log_hexa_prefix(),
-    _max_datagram(0),
-    _min_net_size(0),
-    _max_net_size(0),
-    _min_udp_size(0),
-    _max_udp_size(0),
-    _dump_max(0),
-    _skip_size(0),
-    _event_code(0),
-    _ttl(0),
-    _pids(),
-    _ip_source(),
-    _ip_dest(),
-    _ip_forward(),
-    _local_address(),
-    _local_port(IPv4SocketAddress::AnyPort),
-    _abort(false),
-    _sock(false, *tsp_),
-    _previous_uc_ttl(0),
-    _previous_mc_ttl(0),
-    _datagram_count(0),
-    _outfile(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Extract MPE (Multi-Protocol Encapsulation) datagrams", u"[options]")
 {
     option(u"append", 'a');
     help(u"append",

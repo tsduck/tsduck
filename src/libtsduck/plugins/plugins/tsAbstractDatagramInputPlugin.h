@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -96,25 +75,25 @@ namespace ts {
         enum TimePriority {RTP_SYSTEM_TSP, SYSTEM_RTP_TSP, RTP_TSP, SYSTEM_TSP, TSP_ONLY};
 
         // Configuration and command line options.
-        bool          _real_time;             // Real-time reception.
-        MilliSecond   _eval_time;             // Bitrate evaluation interval in milli-seconds
-        MilliSecond   _display_time;          // Bitrate display interval in milli-seconds
-        Enumeration   _time_priority_enum;    // Enumeration values for _time_priority
-        TimePriority  _time_priority;         // Priority of time stamps sources.
-        TimePriority  _default_time_priority; // Priority of time stamps sources.
+        bool          _real_time = false;              // Real-time reception.
+        MilliSecond   _eval_time = 0;                  // Bitrate evaluation interval in milli-seconds
+        MilliSecond   _display_time = 0;               // Bitrate display interval in milli-seconds
+        Enumeration   _time_priority_enum {};          // Enumeration values for _time_priority
+        TimePriority  _time_priority {RTP_TSP};        // Priority of time stamps sources.
+        TimePriority  _default_time_priority{RTP_TSP}; // Priority of time stamps sources.
 
         // Working data.
-        Time          _next_display;          // Next bitrate display time
-        Time          _start;                 // UTC date of first received packet
-        PacketCounter _packets;               // Number of received packets since _start
-        Time          _start_0;               // Start of previous bitrate evaluation period
-        PacketCounter _packets_0;             // Number of received packets since _start_0
-        Time          _start_1;               // Start of previous bitrate evaluation period
-        PacketCounter _packets_1;             // Number of received packets since _start_1
-        size_t        _inbuf_count;           // Number of remaining TS packets in inbuf
-        size_t        _inbuf_next;            // Byte index in _inbuf of next TS packet to return
-        size_t        _mdata_next;            // Index in _mdata of next TS packet metadata to return
-        ByteBlock     _inbuf;                 // Input buffer
-        TSPacketMetadataVector _mdata;        // Metadata for packets in _inbuf
+        Time          _next_display {};     // Next bitrate display time
+        Time          _start {};            // UTC date of first received packet
+        PacketCounter _packets = 0;         // Number of received packets since _start
+        Time          _start_0 {};          // Start of previous bitrate evaluation period
+        PacketCounter _packets_0 = 0;       // Number of received packets since _start_0
+        Time          _start_1 {};          // Start of previous bitrate evaluation period
+        PacketCounter _packets_1 = 0;       // Number of received packets since _start_1
+        size_t        _inbuf_count = 0;     // Number of remaining TS packets in inbuf
+        size_t        _inbuf_next = 0;      // Byte index in _inbuf of next TS packet to return
+        size_t        _mdata_next = 0;      // Index in _mdata of next TS packet metadata to return
+        ByteBlock     _inbuf {};            // Input buffer
+        TSPacketMetadataVector _mdata {};   // Metadata for packets in _inbuf
     };
 }

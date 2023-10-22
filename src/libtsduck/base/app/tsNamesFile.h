@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -224,10 +203,10 @@ namespace ts {
         class ConfigEntry
         {
         public:
-            Value   last;   // Last value in the range.
-            UString name;   // Associated name.
+            Value   last = 0;  // Last value in the range.
+            UString name {};   // Associated name.
 
-            ConfigEntry(Value l = 0, const UString& n = UString());
+            ConfigEntry(Value l = 0, const UString& n = UString()) : last(l), name(n) {}
         };
 
         // Map of configuration entries, indexed by first value of the range.
@@ -239,11 +218,11 @@ namespace ts {
         {
             TS_NOCOPY(ConfigSection);
         public:
-            size_t          bits;      // Number of significant bits in values of the type.
-            ConfigEntryMap  entries;   // All entries, indexed by names.
-            UString         inherit;   // Redirect to this section if value not found.
+            size_t          bits = 0;     // Number of significant bits in values of the type.
+            ConfigEntryMap  entries {};   // All entries, indexed by names.
+            UString         inherit {};   // Redirect to this section if value not found.
 
-            ConfigSection();
+            ConfigSection() = default;
             ~ConfigSection();
 
             // Check if a range is free, ie no value is defined in the range.

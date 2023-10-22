@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -70,7 +49,7 @@ namespace ts {
         //! Default constructor.
         //! The initial value is the Epoch.
         //!
-        Time() : _value(0) {}
+        Time() = default;
 
         //!
         //! Constructor from broken-down date fields.
@@ -156,23 +135,8 @@ namespace ts {
         //! @return @c True is this object is equal to the @a other object,
         //! @c false otherwise.
         //!
-        bool operator==(const Time& other) const
-        {
-            return _value == other._value;
-        }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] other Another time to compare with this object.
-        //! @return @c True is this object is different from the @a other object,
-        //! @c false otherwise.
-        //!
-        bool operator!=(const Time& other) const
-        {
-            return _value != other._value;
-        }
-#endif
+        bool operator==(const Time& other) const { return _value == other._value; }
+        TS_UNEQUAL_OPERATOR(Time)
 
         //!
         //! Lower operator.
@@ -180,10 +144,7 @@ namespace ts {
         //! @return @c True is this time is before the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator<(const Time& other) const
-        {
-            return _value < other._value;
-        }
+        bool operator<(const Time& other) const { return _value < other._value; }
 
         //!
         //! Lower or equal operator.
@@ -191,10 +152,7 @@ namespace ts {
         //! @return @c True is this time is before or equal to the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator<=(const Time& other) const
-        {
-            return _value <= other._value;
-        }
+        bool operator<=(const Time& other) const { return _value <= other._value; }
 
         //!
         //! Greater operator.
@@ -202,10 +160,7 @@ namespace ts {
         //! @return @c True is this time is after the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator>(const Time& other) const
-        {
-            return _value > other._value;
-        }
+        bool operator>(const Time& other) const { return _value > other._value; }
 
         //!
         //! Greater or equal operator.
@@ -213,10 +168,7 @@ namespace ts {
         //! @return @c True is this time is after or equal to the @a other object time,
         //! @c false otherwise.
         //!
-        bool operator>=(const Time& other) const
-        {
-            return _value >= other._value;
-        }
+        bool operator>=(const Time& other) const { return _value >= other._value; }
 
         //!
         //! Broken-down fields of a time value.
@@ -252,16 +204,7 @@ namespace ts {
             //! @c false otherwise.
             //!
             bool operator==(const Fields& other) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-            //!
-            //! Unequality operator.
-            //! @param [in] other Another @c Fields to compare with this object.
-            //! @return @c True is this object is different from the @a other object,
-            //! @c false otherwise.
-            //!
-            bool operator!=(const Fields& other) const { return !operator==(other); }
-#endif
+            TS_UNEQUAL_OPERATOR(Fields)
 
             //!
             //! Validation of the fields.
@@ -765,7 +708,7 @@ namespace ts {
 
     private:
         // A time is a 64-bit value. The resolution depends on the operating system.
-        int64_t _value;
+        int64_t _value = 0;
 
         // Private constructor from a 64-bit value
         Time(const int64_t& value) : _value(value) {}

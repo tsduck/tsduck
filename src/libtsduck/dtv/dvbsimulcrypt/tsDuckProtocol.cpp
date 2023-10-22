@@ -2,37 +2,13 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
 #include "tsDuckProtocol.h"
 #include "tstlvMessageFactory.h"
 #include "tsSection.h"
-
-// Define protocol singleton instance
-TS_DEFINE_SINGLETON(ts::duck::Protocol);
 
 
 //----------------------------------------------------------------------------
@@ -51,8 +27,7 @@ ts::UString ts::duck::Protocol::name() const
 // Protocol Constructor: Define the syntax of the protocol
 //----------------------------------------------------------------------------
 
-ts::duck::Protocol::Protocol() :
-    tlv::Protocol(ts::duck::CURRENT_VERSION)
+ts::duck::Protocol::Protocol() : tlv::Protocol(ts::duck::CURRENT_VERSION)
 {
     // Define the syntax of all commands:
     // add (cmd_tag, param_tag, min_size, max_size, min_count, max_count)
@@ -100,7 +75,7 @@ void ts::duck::Protocol::factory(const tlv::MessageFactory& fact, tlv::MessagePt
 void ts::duck::Protocol::buildErrorResponse(const tlv::MessageFactory& fact, tlv::MessagePtr& msg) const
 {
     // Create an error message
-    SafePtr<Error> errmsg(new Error);
+    SafePtr<Error> errmsg(new Error(version()));
 
     // Convert general TLV error code into protocol error_status
     switch (fact.errorStatus()) {
@@ -180,19 +155,8 @@ namespace {
 // Log a section
 //----------------------------------------------------------------------------
 
-ts::duck::LogSection::LogSection() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_LOG_SECTION),
-    pid(),
-    timestamp(),
-    section()
-{
-}
-
 ts::duck::LogSection::LogSection(const tlv::MessageFactory& fact) :
-    tlv::Message(fact.protocolVersion(), fact.commandTag()),
-    pid(),
-    timestamp(),
-    section()
+    tlv::Message(fact.protocolVersion(), fact.commandTag())
 {
     if (1 == fact.count(Tags::PRM_PID)) {
         pid = fact.get<PID>(Tags::PRM_PID);
@@ -234,19 +198,8 @@ ts::UString ts::duck::LogSection::dump(size_t indent) const
 // Log a table
 //----------------------------------------------------------------------------
 
-ts::duck::LogTable::LogTable() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_LOG_TABLE),
-    pid(),
-    timestamp(),
-    sections()
-{
-}
-
 ts::duck::LogTable::LogTable(const tlv::MessageFactory& fact) :
-    tlv::Message(fact.protocolVersion(), fact.commandTag()),
-    pid(),
-    timestamp(),
-    sections()
+    tlv::Message(fact.protocolVersion(), fact.commandTag())
 {
     if (1 == fact.count(Tags::PRM_PID)) {
         pid = fact.get<PID>(Tags::PRM_PID);
@@ -298,19 +251,8 @@ ts::UString ts::duck::LogTable::dump(size_t indent) const
 // Fake / demo clear ECM
 //----------------------------------------------------------------------------
 
-ts::duck::ClearECM::ClearECM() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_ECM),
-    cw_even(),
-    cw_odd(),
-    access_criteria()
-{
-}
-
 ts::duck::ClearECM::ClearECM(const tlv::MessageFactory& fact) :
-    tlv::Message(fact.protocolVersion(), fact.commandTag()),
-    cw_even(),
-    cw_odd(),
-    access_criteria()
+    tlv::Message(fact.protocolVersion(), fact.commandTag())
 {
     if (fact.count(Tags::PRM_CW_EVEN) > 0) {
         fact.get(Tags::PRM_CW_EVEN, cw_even);
@@ -349,12 +291,6 @@ ts::UString ts::duck::ClearECM::dump(size_t indent) const
 //----------------------------------------------------------------------------
 // Error message
 //----------------------------------------------------------------------------
-
-ts::duck::Error::Error() :
-    tlv::Message(duck::Protocol::Instance()->version(), Tags::MSG_ERROR),
-    error_status(0)
-{
-}
 
 ts::duck::Error::Error(const tlv::MessageFactory& fact) :
     tlv::Message(fact.protocolVersion(), fact.commandTag()),

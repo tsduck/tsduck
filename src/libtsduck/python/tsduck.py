@@ -2,30 +2,7 @@
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2023, Thierry Lelegard
-#  All rights reserved.
-#
-#  Redistribution and use in source and binary forms, with or without
-#  modification, are permitted provided that the following conditions are met:
-#
-#  1. Redistributions of source code must retain the above copyright notice,
-#     this list of conditions and the following disclaimer.
-#  2. Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution.
-#
-#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-#  THE POSSIBILITY OF SUCH DAMAGE.
-#
-#-----------------------------------------------------------------------------
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  TSDuck Python bindings
 #
@@ -246,7 +223,7 @@ class NativeObject:
     def __init__(self):
         # Storage of a pointer to the C++ object.
         # Subclasses constructors should initialize it using the result of some native function.
-        self._native_object = ctypes.c_void_p(0)
+        self.__native_object = ctypes.c_void_p(0)
 
     ##
     # Explicitly free the underlying C++ object.
@@ -257,7 +234,21 @@ class NativeObject:
     def delete(self):
         # Subclasses constructors should free it using some native function
         # and then call super().delete() to cleanup the field.
-        self._native_object = ctypes.c_void_p(0)
+        self.__native_object = ctypes.c_void_p(0)
+
+    ##
+    # Set the native object. This is typically done by subclass constructors.
+    # @param obj Address of the C++ native object to store.
+    #
+    def _setNative(self, obj):
+        self.__native_object = obj
+
+    ##
+    # Get the native object. This is typically used by subclasses.
+    # @return Address of the C++ native object.
+    #
+    def _getNative(self):
+        return self.__native_object
 
 
 #-----------------------------------------------------------------------------
@@ -317,7 +308,7 @@ class Report(NativeObject):
         cfunc = _lib.tspySetMaxSeverity
         cfunc.restype = None
         tspySetMaxSeveritycfunc.argtypes = [ctypes.c_void_p, ctypes.c_int]
-        cfunc(self._native_object, severity)
+        cfunc(self._getNative(), severity)
 
     ##
     # Log a message to the report.
@@ -331,7 +322,7 @@ class Report(NativeObject):
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_int, _c_uint8_p, ctypes.c_size_t]
         buf = _InByteBuffer(message)
-        cfunc(self._native_object, severity, buf.data_ptr(), buf.size())
+        cfunc(self._getNative(), severity, buf.data_ptr(), buf.size())
 
     ##
     # Log a messages at error level.
@@ -393,8 +384,8 @@ class NullReport(Report):
         cfunc = _lib.tspyNullReport
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = []
-        self._native_object = cfunc()
-        # Not to be deleted, this is a singleton.
+        self._setNative(cfunc())
+        # Not to be deleted, this is a singleton => no delete() in this subclass.
 
 
 #-----------------------------------------------------------------------------
@@ -416,8 +407,8 @@ class StdErrReport(Report):
         cfunc = _lib.tspyStdErrReport
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = []
-        self._native_object = cfunc()
-        # Not to be deleted, this is a singleton.
+        self._setNative(cfunc())
+        # Not to be deleted, this is a singleton => no delete() in this subclass.
 
 
 #-----------------------------------------------------------------------------
@@ -443,7 +434,7 @@ class AsyncReport(Report):
         cfunc = _lib.tspyNewAsyncReport
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = [ctypes.c_int, ctypes.c_bool, ctypes.c_bool, ctypes.c_size_t]
-        self._native_object = cfunc(severity, sync_log, timed_log, log_msg_count)
+        self._setNative(cfunc(severity, sync_log, timed_log, log_msg_count))
 
     # Explicitly free the underlying C++ object (inherited).
     def delete(self):
@@ -451,7 +442,7 @@ class AsyncReport(Report):
         cfunc = _lib.tspyDeleteReport
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
         super().delete()
 
     ##
@@ -463,7 +454,7 @@ class AsyncReport(Report):
         cfunc = _lib.tspyTerminateAsyncReport
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
 
 #-----------------------------------------------------------------------------
@@ -490,7 +481,7 @@ class AbstractSyncReport(AsyncReport):
 
         # Keep a reference on the callback in the object instance.
         callback = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t)
-        self._cb = callback(log_callback)
+        self.__cb = callback(log_callback)
 
         # Finally create the native object.
         # void* tspyNewPySyncReport(ts::py::SyncReport::LogCallback log, int severity)
@@ -498,7 +489,7 @@ class AbstractSyncReport(AsyncReport):
         cfunc.restype = ctypes.c_void_p
         # Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
         # cfunc.argtypes = [???, ctypes.c_int]
-        self._native_object = cfunc(self._cb, severity)
+        self._setNative(cfunc(self.__cb, severity))
 
 
 #-----------------------------------------------------------------------------
@@ -528,7 +519,7 @@ class AbstractAsyncReport(AsyncReport):
 
         # Keep a reference on the callback in the object instance.
         callback = ctypes.CFUNCTYPE(None, ctypes.c_int, ctypes.c_void_p, ctypes.c_size_t)
-        self._cb = callback(log_callback)
+        self.__cb = callback(log_callback)
 
         # Finally create the native object.
         # void* tspyNewPyAsyncReport(ts::py::AsyncReport::LogCallback log, int severity, bool sync_log, size_t log_msg_count)
@@ -536,7 +527,7 @@ class AbstractAsyncReport(AsyncReport):
         cfunc.restype = ctypes.c_void_p
         # Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
         # cfunc.argtypes = [???, ctypes.c_int, ctypes.c_bool, ctypes.c_size_t]
-        self._native_object = cfunc(self._cb, severity, sync_log, log_msg_count)
+        self._setNative(cfunc(self.__cb, severity, sync_log, log_msg_count))
 
 
 #-----------------------------------------------------------------------------
@@ -573,12 +564,12 @@ class DuckContext(NativeObject):
     #
     def __init__(self, report):
         super().__init__()
-        self._report = report
+        self.__report = report
         # void* tspyNewDuckContext(void* report)
         cfunc = _lib.tspyNewDuckContext
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = [ctypes.c_void_p]
-        self._native_object = cfunc(self._report._native_object)
+        self._setNative(cfunc(self.__report._getNative()))
 
     # Explicitly free the underlying C++ object (inherited).
     def delete(self):
@@ -586,7 +577,7 @@ class DuckContext(NativeObject):
         cfunc = _lib.tspyDeleteDuckContext
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
         super().delete()
 
     ##
@@ -604,7 +595,7 @@ class DuckContext(NativeObject):
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         buf = _InByteBuffer(charset)
-        return bool(cfunc(self._native_object, buf.data_ptr(), buf.size()))
+        return bool(cfunc(self._getNative(), buf.data_ptr(), buf.size()))
 
     ##
     # Set the default CAS id to use.
@@ -616,7 +607,7 @@ class DuckContext(NativeObject):
         cfunc = _lib.tspyDuckContextSetDefaultCASId
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_uint16]
-        cfunc(self._native_object, cas)
+        cfunc(self._getNative(), cas)
 
     ##
     # Set the default private data specifier to use in the absence of explicit private_data_specifier_descriptor.
@@ -628,7 +619,7 @@ class DuckContext(NativeObject):
         cfunc = _lib.tspyDuckContextSetDefaultPDS
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-        cfunc(self._native_object, pds)
+        cfunc(self._getNative(), pds)
 
     ##
     # Add a list of standards which are present in the transport stream or context.
@@ -640,7 +631,7 @@ class DuckContext(NativeObject):
         cfunc = _lib.tspyDuckContextAddStandards
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-        cfunc(self._native_object, mask)
+        cfunc(self._getNative(), mask)
 
     ##
     # Get the list of standards which are present in the transport stream or context.
@@ -651,7 +642,7 @@ class DuckContext(NativeObject):
         cfunc = _lib.tspyDuckContextStandards
         cfunc.restype = ctypes.c_uint32
         cfunc.argtypes = [ctypes.c_void_p]
-        return int(cfunc(self._native_object))
+        return int(cfunc(self._getNative()))
 
     ##
     # Reset the list of standards which are present in the transport stream or context.
@@ -663,7 +654,7 @@ class DuckContext(NativeObject):
         cfunc = _lib.tspyDuckContextResetStandards
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_uint32]
-        cfunc(self._native_object, mask)
+        cfunc(self._getNative(), mask)
 
     ##
     # Set a non-standard time reference offset.
@@ -679,7 +670,7 @@ class DuckContext(NativeObject):
         cfunc = _lib.tspyDuckContextSetTimeReferenceOffset
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_int64]
-        cfunc(self._native_object, offset)
+        cfunc(self._getNative(), offset)
 
     ##
     # Set a non-standard time reference offset using a name.
@@ -693,7 +684,7 @@ class DuckContext(NativeObject):
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         buf = _InByteBuffer(name)
-        return bool(cfunc(self._native_object, buf.data_ptr(), buf.size()))
+        return bool(cfunc(self._getNative(), buf.data_ptr(), buf.size()))
 
 
 #-----------------------------------------------------------------------------
@@ -814,7 +805,7 @@ class AbstractPluginEventHandler(NativeObject):
 
         # -- back to __init__():
         # Keep a reference on the callback in the object instance.
-        self._cb = callback(event_callback)
+        self.__cb = callback(event_callback)
 
         # Finally create the native object.
         # void* tspyNewPyPluginEventHandler(ts::py::PluginEventHandler::PyCallback callback)
@@ -823,7 +814,7 @@ class AbstractPluginEventHandler(NativeObject):
         cfunc.argtypes = [ctypes.c_void_p]
         # Don't know which type to use for ctypes.CFUNCTYPE() as first parameter.
         # cfunc.argtypes = [???]
-        self._native_object = cfunc(self._cb)
+        self._setNative(cfunc(self.__cb))
 
     # Explicitly free the underlying C++ object (inherited).
     def delete(self):
@@ -831,7 +822,7 @@ class AbstractPluginEventHandler(NativeObject):
         cfunc = _lib.tspyDeletePyPluginEventHandler
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
         super().delete()
 
     ##
@@ -904,12 +895,12 @@ class SectionFile(NativeObject):
     #
     def __init__(self, duck):
         super().__init__()
-        self._duck = duck
+        self.__duck = duck
         # void* tspyNewSectionFile(void* report)
         cfunc = _lib.tspyNewSectionFile
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = [ctypes.c_void_p]
-        self._native_object = cfunc(self._duck._native_object)
+        self._setNative(cfunc(self.__duck._getNative()))
 
     # Explicitly free the underlying C++ object (inherited).
     def delete(self):
@@ -917,7 +908,7 @@ class SectionFile(NativeObject):
         cfunc = _lib.tspyDeleteSectionFile
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
         super().delete()
 
     ##
@@ -929,7 +920,7 @@ class SectionFile(NativeObject):
         cfunc = _lib.tspySectionFileClear
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
     ##
     # Get the size in bytes of all sections.
@@ -941,7 +932,7 @@ class SectionFile(NativeObject):
         cfunc = _lib.tspySectionFileBinarySize
         cfunc.restype = ctypes.c_size_t
         cfunc.argtypes = [ctypes.c_void_p]
-        return int(cfunc(self._native_object))
+        return int(cfunc(self._getNative()))
 
     ##
     # Get the total number of sections in the file.
@@ -952,7 +943,7 @@ class SectionFile(NativeObject):
         cfunc = _lib.tspySectionFileSectionsCount
         cfunc.restype = ctypes.c_size_t
         cfunc.argtypes = [ctypes.c_void_p]
-        return int(cfunc(self._native_object))
+        return int(cfunc(self._getNative()))
 
     ##
     # Get the total number of full tables in the file.
@@ -964,7 +955,7 @@ class SectionFile(NativeObject):
         cfunc = _lib.tspySectionFileTablesCount
         cfunc.restype = ctypes.c_size_t
         cfunc.argtypes = [ctypes.c_void_p]
-        return int(cfunc(self._native_object))
+        return int(cfunc(self._getNative()))
 
     ##
     # Set the CRC32 processing mode when loading binary sections.
@@ -977,7 +968,7 @@ class SectionFile(NativeObject):
         cfunc = _lib.tspySectionFileSetCRCValidation
         cfunc.restype = None
         tspySectionFileSetCRCValidationcfunc.argtypes = [ctypes.c_void_p, ctypes.c_int]
-        cfunc(self._native_object, mode)
+        cfunc(self._getNative(), mode)
 
     ##
     # Load a binary section file from a memory buffer.
@@ -992,7 +983,7 @@ class SectionFile(NativeObject):
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         size = ctypes.c_size_t(len(data))
         carray_type = ctypes.c_uint8 * size.value
-        return bool(cfunc(self._native_object, ctypes.cast(carray_type.from_buffer(data), _c_uint8_p), size))
+        return bool(cfunc(self._getNative(), ctypes.cast(carray_type.from_buffer(data), _c_uint8_p), size))
 
     ##
     # Get the binary content of a section file.
@@ -1006,7 +997,7 @@ class SectionFile(NativeObject):
         size = ctypes.c_size_t(self.binarySize())
         data = bytearray(size.value)
         carray_type = ctypes.c_uint8 * size.value
-        cfunc(self._native_object, ctypes.cast(carray_type.from_buffer(data), _c_uint8_p), ctypes.byref(size))
+        cfunc(self._getNative(), ctypes.cast(carray_type.from_buffer(data), _c_uint8_p), ctypes.byref(size))
         return data[:size.value]
 
     ##
@@ -1022,7 +1013,7 @@ class SectionFile(NativeObject):
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
-        return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
+        return bool(cfunc(self._getNative(), name.data_ptr(), name.size()))
 
     ##
     # Save a binary section file.
@@ -1036,7 +1027,7 @@ class SectionFile(NativeObject):
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
-        return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
+        return bool(cfunc(self._getNative(), name.data_ptr(), name.size()))
 
     ##
     # Load an XML file.
@@ -1052,7 +1043,7 @@ class SectionFile(NativeObject):
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
-        return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
+        return bool(cfunc(self._getNative(), name.data_ptr(), name.size()))
 
     ##
     # Save an XML file.
@@ -1066,7 +1057,7 @@ class SectionFile(NativeObject):
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
-        return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
+        return bool(cfunc(self._getNative(), name.data_ptr(), name.size()))
 
     ##
     # Save a JSON file after automated XML-to-JSON conversion.
@@ -1080,7 +1071,7 @@ class SectionFile(NativeObject):
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         name = _InByteBuffer(file)
-        return bool(cfunc(self._native_object, name.data_ptr(), name.size()))
+        return bool(cfunc(self._getNative(), name.data_ptr(), name.size()))
 
     ##
     # Serialize as XML text.
@@ -1092,11 +1083,11 @@ class SectionFile(NativeObject):
         cfunc.restype = ctypes.c_size_t
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, _c_size_p]
         buf = _OutByteBuffer(2048)
-        len = cfunc(self._native_object, buf.data_ptr(), buf.size_ptr())
+        len = cfunc(self._getNative(), buf.data_ptr(), buf.size_ptr())
         if len > 2048:
             # First try was too short
             buf = _OutByteBuffer(len)
-            len = cfunc(self._native_object, buf.data_ptr(), buf.size_ptr())
+            len = cfunc(self._getNative(), buf.data_ptr(), buf.size_ptr())
         return buf.to_string()
 
     ##
@@ -1109,11 +1100,11 @@ class SectionFile(NativeObject):
         cfunc.restype = ctypes.c_size_t
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, _c_size_p]
         buf = _OutByteBuffer(2048)
-        len = cfunc(self._native_object, buf.data_ptr(), buf.size_ptr())
+        len = cfunc(self._getNative(), buf.data_ptr(), buf.size_ptr())
         if len > 2048:
             # First try was too short
             buf = _OutByteBuffer(len)
-            len = cfunc(self._native_object, buf.data_ptr(), buf.size_ptr())
+            len = cfunc(self._getNative(), buf.data_ptr(), buf.size_ptr())
         return buf.to_string()
 
     ##
@@ -1140,7 +1131,7 @@ class SectionFile(NativeObject):
         cfunc = _lib.tspySectionFileReorganizeEITs
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-        cfunc(self._native_object, year, month, day)
+        cfunc(self._getNative(), year, month, day)
 
 
 #-----------------------------------------------------------------------------
@@ -1161,13 +1152,13 @@ class SystemMonitor(NativeObject):
     #
     def __init__(self, report, config = None):
         super().__init__()
-        self._report = report
+        self.__report = report
         # void* tspyNewSystemMonitor(void* report, const uint8_t* config, size_t config_size)
         cfunc = _lib.tspyNewSystemMonitor
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = [ctypes.c_void_p, _c_uint8_p, ctypes.c_size_t]
         buf = _InByteBuffer(config)
-        self._native_object = cfunc(self._report._native_object, buf.data_ptr(), buf.size())
+        self._setNative(cfunc(self.__report._getNative(), buf.data_ptr(), buf.size()))
 
     # Explicitly free the underlying C++ object (inherited).
     def delete(self):
@@ -1175,7 +1166,7 @@ class SystemMonitor(NativeObject):
         cfunc = _lib.tspyDeleteReport
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
         super().delete()
 
     ##
@@ -1187,7 +1178,7 @@ class SystemMonitor(NativeObject):
         cfunc = _lib.tspyStartSystemMonitor
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
     ##
     # Stop the monitoring thread.
@@ -1200,7 +1191,7 @@ class SystemMonitor(NativeObject):
         cfunc = _lib.tspyStopSystemMonitor
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
     ##
     # Synchronously wait for the monitoring thread to stop.
@@ -1211,7 +1202,7 @@ class SystemMonitor(NativeObject):
         cfunc = _lib.tspyWaitSystemMonitor
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
 
 #-----------------------------------------------------------------------------
@@ -1241,7 +1232,7 @@ class PluginEventHandlerRegistry(NativeObject):
         cfunc = _lib.tspyPluginEventHandlerRegister
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32]
-        cfunc(self._native_object, handler._native_object, ctypes.c_uint32(event_code))
+        cfunc(self._getNative(), handler._getNative(), ctypes.c_uint32(event_code))
 
     ##
     # Register an event handler for all events from the input plugin.
@@ -1253,7 +1244,7 @@ class PluginEventHandlerRegistry(NativeObject):
         cfunc = _lib.tspyPluginEventHandlerRegisterInput
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-        cfunc(self._native_object, handler._native_object)
+        cfunc(self._getNative(), handler._getNative())
 
     ##
     # Register an event handler for all events from the output plugin.
@@ -1265,7 +1256,7 @@ class PluginEventHandlerRegistry(NativeObject):
         cfunc = _lib.tspyPluginEventHandlerRegisterOutput
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
-        cfunc(self._native_object, handler._native_object)
+        cfunc(self._getNative(), handler._getNative())
 
 
 
@@ -1320,14 +1311,14 @@ class TSProcessor(PluginEventHandlerRegistry):
     #
     def __init__(self, report):
         super().__init__()
-        self._report = report
+        self.__report = report
 
         # Create the native object.
         # void* tspyNewTSProcessor(void* report)
         cfunc = _lib.tspyNewTSProcessor
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = [ctypes.c_void_p]
-        self._native_object = cfunc(self._report._native_object)
+        self._setNative(cfunc(self.__report._getNative()))
 
         # Publicly customizable tsp options:
         ## Option -\-ignore-joint-termination.
@@ -1371,7 +1362,7 @@ class TSProcessor(PluginEventHandlerRegistry):
         cfunc = _lib.tspyDeleteTSProcessor
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
         super().delete()
 
     ##
@@ -1416,7 +1407,7 @@ class TSProcessor(PluginEventHandlerRegistry):
         cfunc = _lib.tspyStartTSProcessor
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(self._tspyTSProcessorArgs)]
-        if not cfunc(self._native_object, ctypes.byref(args)):
+        if not cfunc(self._getNative(), ctypes.byref(args)):
             raise TSPStartError("Error starting TS processor")
 
     ##
@@ -1428,7 +1419,7 @@ class TSProcessor(PluginEventHandlerRegistry):
         cfunc = _lib.tspyAbortTSProcessor
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
     ##
     # Suspend the calling thread until TS processing is completed.
@@ -1439,7 +1430,7 @@ class TSProcessor(PluginEventHandlerRegistry):
         cfunc = _lib.tspyWaitTSProcessor
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
 
 #-----------------------------------------------------------------------------
@@ -1500,14 +1491,14 @@ class InputSwitcher(PluginEventHandlerRegistry):
     #
     def __init__(self, report):
         super().__init__()
-        self._report = report
+        self.__report = report
 
         # Create the native object.
         # void* tspyNewInputSwitcher(void* report)
         cfunc = _lib.tspyNewInputSwitcher
         cfunc.restype = ctypes.c_void_p
         cfunc.argtypes = [ctypes.c_void_p]
-        self._native_object = cfunc(self._report._native_object)
+        self._setNative(cfunc(self.__report._getNative()))
 
         # Publicly customizable input switcher options:
         ## Fast switch between input plugins.
@@ -1560,7 +1551,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyDeleteInputSwitcher
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
         super().delete()
 
     ##
@@ -1612,7 +1603,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyStartInputSwitcher
         cfunc.restype = ctypes.c_bool
         cfunc.argtypes = [ctypes.c_void_p, ctypes.POINTER(self._tspyInputSwitcherArgs)]
-        if not cfunc(self._native_object, ctypes.byref(args)):
+        if not cfunc(self._getNative(), ctypes.byref(args)):
             raise SwitchStartError("Error starting input switcher")
 
     ##
@@ -1625,7 +1616,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyInputSwitcherSetInput
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p, ctypes.c_size_t]
-        cfunc(self._native_object, plugin_index)
+        cfunc(self._getNative(), plugin_index)
 
     ##
     # Switch to the next input plugin.
@@ -1636,7 +1627,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyInputSwitcherNextInput
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
     ##
     # Switch to the previous input plugin.
@@ -1647,7 +1638,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyInputSwitcherPreviousInput
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
     ##
     # Get the index of the current input plugin.
@@ -1658,7 +1649,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyInputSwitcherCurrentInput
         cfunc.restype = ctypes.c_size_t
         cfunc.argtypes = [ctypes.c_void_p]
-        return int(cfunc(self._native_object))
+        return int(cfunc(self._getNative()))
 
     ##
     # Terminate the processing.
@@ -1669,7 +1660,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyStopInputSwitcher
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
     ##
     # Suspend the calling thread until input switcher session is completed.
@@ -1680,7 +1671,7 @@ class InputSwitcher(PluginEventHandlerRegistry):
         cfunc = _lib.tspyWaitInputSwitcher
         cfunc.restype = None
         cfunc.argtypes = [ctypes.c_void_p]
-        cfunc(self._native_object)
+        cfunc(self._getNative())
 
 
 #-----------------------------------------------------------------------------

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -51,12 +30,11 @@ namespace ts {
         class TSDUCKDLL Group
         {
         public:
-            Group();                      //!< Contructor.
-            uint8_t mae_group_id;         //!< 7 bits.
-            bool    is_in_main_stream;    //!< Audio data in this group is present in the main stream.
-            bool    is_in_ts;             //!< When is_in_main_stream == false.
-            uint8_t auxiliary_stream_id;  //!< 7 bits. When is_in_main_stream == false.
-
+            Group() = default;                  //!< Contructor.
+            uint8_t mae_group_id = 0;           //!< 7 bits.
+            bool    is_in_main_stream = false;  //!< Audio data in this group is present in the main stream.
+            bool    is_in_ts = false;           //!< When is_in_main_stream == false.
+            uint8_t auxiliary_stream_id = 0;    //!< 7 bits. When is_in_main_stream == false.
         };
 
         //!
@@ -65,11 +43,11 @@ namespace ts {
         typedef std::list<Group> GroupList;
 
         // MPEGH3DAudioMultiStreamDescriptor public members:
-        bool      this_is_main_stream;    //!< The stream is a main stream, not an auxiliary stream.
-        uint8_t   this_stream_id;         //!< 7 bits.
-        uint8_t   num_auxiliary_streams;  //!< 7 bits. When this_is_main_stream == true.
-        GroupList mae_groups;             //!< When this_is_main_stream == true.
-        ByteBlock reserved;               //!< Reserved data.
+        bool      this_is_main_stream = false;  //!< The stream is a main stream, not an auxiliary stream.
+        uint8_t   this_stream_id = 0;           //!< 7 bits.
+        uint8_t   num_auxiliary_streams = 0;    //!< 7 bits. When this_is_main_stream == true.
+        GroupList mae_groups {};                //!< When this_is_main_stream == true.
+        ByteBlock reserved {};                  //!< Reserved data.
 
         //!
         //! Default constructor.

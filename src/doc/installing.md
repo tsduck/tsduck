@@ -4,6 +4,25 @@ TSDuck can be installed on Windows, Linux, macOS and BSD systems (FreeBSD, OpenB
 
 # Windows {#wininstall}
 
+On Windows systems, TSDuck can be installed using a binary installer (traditional method)
+or using the `winget` package manager (modern method).
+
+## Using winget  {#winget}
+
+TSDuck is installable on Windows systems using
+[the winget package manager](https://learn.microsoft.com/en-us/windows/package-manager/winget/).
+
+`winget` is now the preferred package manager for open source and third-party products
+on Windows systems. It is documented and supported by Microsoft. It should be pre-installed
+on all recent Windows 10 and Windows 11 systems.
+
+The TSDuck installation command is simply:
+~~~
+winget install tsduck
+~~~
+
+## Download an installer  {#windownload}
+
 [Executable binary installers for the latest TSDuck version](https://tsduck.io/download/tsduck)
 are available for 64-bit Windows on Intel systems.
 

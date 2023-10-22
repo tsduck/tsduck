@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -37,18 +16,7 @@
 
 ts::PCRRegulator::PCRRegulator(Report* report, int log_level) :
     _report(report == nullptr ? NullReport::Instance() : report),
-    _log_level(log_level),
-    _user_pid(PID_NULL),
-    _pid(PID_NULL),
-    _opt_burst(0),
-    _burst_pkt_cnt(0),
-    _wait_min(0),
-    _started(false),
-    _pcr_first(0),
-    _pcr_last(0),
-    _pcr_offset(0),
-    _clock_first(),
-    _clock_last()
+    _log_level(log_level)
 {
 }
 
@@ -135,7 +103,8 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
         // Normally, adjacent PCR's are way much closer, but let's be tolerant.
         constexpr uint64_t max_pcr_diff = 2 * SYSTEM_CLOCK_FREQ; // 2 seconds in PCR units
         const bool valid_pcr_seq = _started &&
-            ((pcr < _pcr_last && pcr + PCR_SCALE < _pcr_last + max_pcr_diff) ||
+            (_pcr_last == INVALID_PCR ||
+             (pcr < _pcr_last && pcr + PCR_SCALE < _pcr_last + max_pcr_diff) ||
              (pcr > _pcr_last && pcr < _pcr_last + max_pcr_diff));
 
         // Try to detect incorrect PCR sequences (such as cycling input).
@@ -164,7 +133,7 @@ bool ts::PCRRegulator::regulate(const TSPacket& pkt)
             // One complete PCR round is only 26.5 hours. So, it it realistic to go through more than one round.
             // In an uint64_t value, we can accumulate 21664 years in PCR units. So, we can safely assume that
             // there will be no overflow when accumulating PCR's on 64 bits.
-            if (pcr < _pcr_last) {
+            if (_pcr_last != INVALID_PCR && pcr < _pcr_last) {
                 _pcr_offset += PCR_SCALE;
             }
 

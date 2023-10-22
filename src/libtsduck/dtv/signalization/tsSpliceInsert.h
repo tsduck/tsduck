@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -35,6 +14,7 @@
 #pragma once
 #include "tsAbstractSignalization.h"
 #include "tsSCTE35.h"
+#include "tsTS.h"
 
 namespace ts {
     //!
@@ -58,19 +38,19 @@ namespace ts {
         static constexpr uint32_t INVALID_EVENT_ID = 0xFFFFFFFF;
 
         // Public members, derived from SCTE 35 standard.
-        uint32_t          event_id;        //!< Splice event id.
-        bool              canceled;        //!< When true, event is canceled, other fields are ignored.
-        bool              splice_out;      //!< When true, this is a "splice out" event, "splice in" otherwise.
-        bool              immediate;       //!< When true, should splice asap, time fields are ignored.
-        bool              program_splice;  //!< When true, all components are spliced.
-        bool              use_duration;    //!< When true, the duration of the splice out / splice in sequence is given.
-        SpliceTime        program_pts;     //!< PTS time value of the event (valid if !canceled && program_splice && !immediate).
-        SpliceByComponent components_pts;  //!< PTS time value of the event by component (valid if !canceled && !program_splice && !immediate).
-        uint64_t          duration_pts;    //!< Duration of the splice out / splice in sequence (valid if !canceled && use_duration).
-        bool              auto_return;     //!< When true, there won't be an explicit "splice in" event, use duration_pts (valid if !canceled && use_duration).
-        uint16_t          program_id;      //!< Unique program id.
-        uint8_t           avail_num;       //!< Identification for a specific avail within one program_id.
-        uint8_t           avails_expected; //!< Expected number of individual avails within the current viewing event.
+        uint32_t          event_id = 0;               //!< Splice event id.
+        bool              canceled = true;            //!< When true, event is canceled, other fields are ignored.
+        bool              splice_out = false;         //!< When true, this is a "splice out" event, "splice in" otherwise.
+        bool              immediate = false;          //!< When true, should splice asap, time fields are ignored.
+        bool              program_splice = false;     //!< When true, all components are spliced.
+        bool              use_duration = false;       //!< When true, the duration of the splice out / splice in sequence is given.
+        SpliceTime        program_pts {};             //!< PTS time value of the event (valid if !canceled && program_splice && !immediate).
+        SpliceByComponent components_pts {};          //!< PTS time value of the event by component (valid if !canceled && !program_splice && !immediate).
+        uint64_t          duration_pts = INVALID_PTS; //!< Duration of the splice out / splice in sequence (valid if !canceled && use_duration).
+        bool              auto_return = false;        //!< When true, there won't be an explicit "splice in" event, use duration_pts (valid if !canceled && use_duration).
+        uint16_t          program_id = 0;             //!< Unique program id.
+        uint8_t           avail_num = 0;              //!< Identification for a specific avail within one program_id.
+        uint8_t           avails_expected = 0;        //!< Expected number of individual avails within the current viewing event.
 
         //!
         //! Default constructor.

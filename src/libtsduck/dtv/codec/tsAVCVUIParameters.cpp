@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -34,44 +13,9 @@
 // Constructor from a binary area
 //----------------------------------------------------------------------------
 
-ts::AVCVUIParameters::AVCVUIParameters(const uint8_t* data, size_t size) :
-    SuperClass(),
-    aspect_ratio_info_present_flag(0),
-    aspect_ratio_idc(0),
-    sar_width(0),
-    sar_height(0),
-    overscan_info_present_flag(0),
-    overscan_appropriate_flag(0),
-    video_signal_type_present_flag(0),
-    video_format(0),
-    video_full_range_flag(0),
-    colour_description_present_flag(0),
-    colour_primaries(0),
-    transfer_characteristics(0),
-    matrix_coefficients(0),
-    chroma_loc_info_present_flag(0),
-    chroma_sample_loc_type_top_field(0),
-    chroma_sample_loc_type_bottom_field(0),
-    timing_info_present_flag(0),
-    num_units_in_tick(0),
-    time_scale(0),
-    fixed_frame_rate_flag(0),
-    nal_hrd_parameters_present_flag(0),
-    nal_hrd(),
-    vcl_hrd_parameters_present_flag(0),
-    vcl_hrd(),
-    low_delay_hrd_flag(0),
-    pic_struct_present_flag(0),
-    bitstream_restriction_flag(0),
-    motion_vectors_over_pic_boundaries_flag(0),
-    max_bytes_per_pic_denom(0),
-    max_bits_per_mb_denom(0),
-    log2_max_mv_length_horizontal(0),
-    log2_max_mv_length_vertical(0),
-    num_reorder_frames(0),
-    max_dec_frame_buffering(0)
+ts::AVCVUIParameters::AVCVUIParameters(const uint8_t* data, size_t size)
 {
-    parse(data, size);
+    AVCVUIParameters::parse(data, size);
 }
 
 

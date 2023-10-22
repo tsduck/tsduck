@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -67,15 +46,15 @@ namespace ts {
             TS_NOBUILD_NOCOPY(ServiceContext);
         public:
             // Command line options:
-            const UString     service_spec;  // Service name or id.
-            bool              spec_by_id;    // Service is specified by id (ie. not by name).
+            const UString     service_spec;        // Service name or id.
+            bool              spec_by_id = false;  // Service is specified by id (ie. not by name).
 
             // Working data:
-            uint16_t          service_id;    // Service id.
-            bool              id_known;      // Service id is known.
-            CyclingPacketizer pzer_pmt;      // Packetizer for modified PMT.
-            std::set<PID>     pids;          // Set of component PID's.
-            PID               pmt_pid;       // PID for the PMT (PID _NULL if unknown).
+            uint16_t          service_id = 0;      // Service id.
+            bool              id_known = false;    // Service id is known.
+            CyclingPacketizer pzer_pmt;            // Packetizer for modified PMT.
+            std::set<PID>     pids {};             // Set of component PID's.
+            PID               pmt_pid = PID_NULL;  // PID for the PMT (PID _NULL if unknown).
 
             // Constructor:
             ServiceContext(DuckContext& duck, const UString& parameter);
@@ -96,29 +75,29 @@ namespace ts {
         };
 
         // Plugin command line options:
-        ServiceContextVector _services;           // Description of services.
-        UStringVector        _audio_langs;        // Audio language codes to keep
-        std::set<PID>        _audio_pids;         // Audio PID's to keep
-        UStringVector        _subtitles_langs;    // Subtitles language codes to keep
-        std::set<PID>        _subtitles_pids;     // Subtitles PID's to keep
-        bool                 _no_subtitles;       // Remove all subtitles
-        bool                 _no_ecm;             // Remove all ECM PIDs
-        bool                 _include_cas;        // Include CAS info (CAT & EMM)
-        bool                 _include_eit;        // Include EIT's for the specified service
-        bool                 _pes_only;           // Keep PES streams only
-        bool                 _ignore_absent;      // Do not stop if a service is not present
-        Status               _drop_status;        // Status for dropped packets
+        ServiceContextVector _services {};             // Description of services.
+        UStringVector        _audio_langs {};          // Audio language codes to keep
+        std::set<PID>        _audio_pids {};           // Audio PID's to keep
+        UStringVector        _subtitles_langs {};      // Subtitles language codes to keep
+        std::set<PID>        _subtitles_pids {};       // Subtitles PID's to keep
+        bool                 _no_subtitles = false;    // Remove all subtitles
+        bool                 _no_ecm = false;          // Remove all ECM PIDs
+        bool                 _include_cas = false;     // Include CAS info (CAT & EMM)
+        bool                 _include_eit = false;     // Include EIT's for the specified service
+        bool                 _pes_only = false;        // Keep PES streams only
+        bool                 _ignore_absent = false;   // Do not stop if a service is not present
+        Status               _drop_status = TSP_DROP;  // Status for dropped packets
 
         // Plugin working data:
-        bool                 _abort;              // Error (service not found, etc)
-        uint8_t              _pat_version;        // Version of next PAT.
-        uint8_t              _sdt_version;        // Version of next SDT.
-        PAT                  _last_pat;           // Last received PAT.
-        SectionDemux         _demux;              // Section demux
-        CyclingPacketizer    _pzer_sdt;           // Packetizer for modified SDT
-        CyclingPacketizer    _pzer_pat;           // Packetizer for modified PAT
-        EITProcessor         _eit_process;        // Modify EIT's
-        uint8_t              _pid_state[PID_MAX]; // Status of each PID.
+        bool                 _abort = false;           // Error (service not found, etc)
+        uint8_t              _pat_version = 0;         // Version of next PAT.
+        uint8_t              _sdt_version = 0;         // Version of next SDT.
+        PAT                  _last_pat {};             // Last received PAT.
+        SectionDemux         _demux {duck, this};
+        CyclingPacketizer    _pzer_sdt {duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer    _pzer_pat {duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        EITProcessor         _eit_process {duck, PID_EIT};
+        uint8_t              _pid_state[PID_MAX] {};   // Status of each PID.
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;
@@ -162,28 +141,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"zap", ts::ZapPlugin);
 //----------------------------------------------------------------------------
 
 ts::ZapPlugin::ZapPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Zap on one or more services, remove all other services", u"[options] service ..."),
-    _services(),
-    _audio_langs(),
-    _audio_pids(),
-    _subtitles_langs(),
-    _subtitles_pids(),
-    _no_subtitles(false),
-    _no_ecm(false),
-    _include_cas(false),
-    _include_eit(false),
-    _pes_only(false),
-    _ignore_absent(false),
-    _drop_status(TSP_DROP),
-    _abort(false),
-    _pat_version(0),
-    _sdt_version(0),
-    _last_pat(),
-    _demux(duck, this),
-    _pzer_sdt(duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_pat(duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _eit_process(duck, PID_EIT),
-    _pid_state()
+    ProcessorPlugin(tsp_, u"Zap on one or more services, remove all other services", u"[options] service ...")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
@@ -304,12 +262,7 @@ bool ts::ZapPlugin::getOptions()
 
 ts::ZapPlugin::ServiceContext::ServiceContext(DuckContext& duck, const UString& parameter) :
     service_spec(parameter),
-    spec_by_id(false),
-    service_id(0),
-    id_known(false),
-    pzer_pmt(duck, PID_NULL, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    pids(),
-    pmt_pid(PID_NULL)
+    pzer_pmt(duck, PID_NULL, CyclingPacketizer::StuffingPolicy::ALWAYS)
 {
     id_known = spec_by_id = parameter.toInteger(service_id, UString::DEFAULT_THOUSANDS_SEPARATOR);
 }

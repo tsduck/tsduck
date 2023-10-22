@@ -1,29 +1,8 @@
 //----------------------------------------------------------------------------
 //
-//  TSDuck - The MPEG Transport Stream Toolkit
-//  Copyright (c) 2005-2023, Thierry Lelegard
-//  All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright
-//     notice, this list of conditions and the following disclaimer in the
-//     documentation and/or other materials provided with the distribution.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-//  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-//  THE POSSIBILITY OF SUCH DAMAGE.
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2023, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
 //
 //----------------------------------------------------------------------------
 
@@ -39,39 +18,29 @@
 ts::TSScrambling::TSScrambling(Report& report, uint8_t scrambling) :
     _report(report),
     _scrambling_type(scrambling),
-    _explicit_type(false),
-    _out_cw_name(),
-    _out_cw_file(),
-    _cw_list(),
     _next_cw(_cw_list.end()),
-    _encrypt_scv(SC_CLEAR),
-    _decrypt_scv(SC_CLEAR),
-    _dvbcsa(),
-    _dvbcissa(),
-    _idsa(),
-    _aescbc(),
-    _aesctr(),
-    _scrambler{nullptr, nullptr}
+    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
+    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
+    _idsa(),      // required on old gcc 10 and below (gcc bug)
+    _aescbc(),    // required on old gcc 10 and below (gcc bug)
+    _aesctr()     // required on old gcc 10 and below (gcc bug)
+
 {
     setScramblingType(scrambling);
 }
 
 ts::TSScrambling::TSScrambling(const TSScrambling& other) :
+    BlockCipherAlertInterface(other),  // required on old gcc 8.5 and below (gcc bug)
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
-    _out_cw_name(),
-    _out_cw_file(),
     _cw_list(other._cw_list),
     _next_cw(_cw_list.end()),
-    _encrypt_scv(SC_CLEAR),
-    _decrypt_scv(SC_CLEAR),
-    _dvbcsa(),
-    _dvbcissa(),
-    _idsa(),
-    _aescbc(),
-    _aesctr(),
-    _scrambler{nullptr, nullptr}
+    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
+    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
+    _idsa(),      // required on old gcc 10 and below (gcc bug)
+    _aescbc(),    // required on old gcc 10 and below (gcc bug)
+    _aesctr()     // required on old gcc 10 and below (gcc bug)
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
@@ -82,18 +51,13 @@ ts::TSScrambling::TSScrambling(TSScrambling&& other) :
     _report(other._report),
     _scrambling_type(other._scrambling_type),
     _explicit_type(other._explicit_type),
-    _out_cw_name(),
-    _out_cw_file(),
     _cw_list(other._cw_list),
     _next_cw(_cw_list.end()),
-    _encrypt_scv(SC_CLEAR),
-    _decrypt_scv(SC_CLEAR),
-    _dvbcsa(),
-    _dvbcissa(),
-    _idsa(),
-    _aescbc(),
-    _aesctr(),
-    _scrambler{nullptr, nullptr}
+    _dvbcsa(),    // required on old gcc 10 and below (gcc bug)
+    _dvbcissa(),  // required on old gcc 10 and below (gcc bug)
+    _idsa(),      // required on old gcc 10 and below (gcc bug)
+    _aescbc(),    // required on old gcc 10 and below (gcc bug)
+    _aesctr()     // required on old gcc 10 and below (gcc bug)
 {
     setScramblingType(_scrambling_type);
     _dvbcsa[0].setEntropyMode(other._dvbcsa[0].entropyMode());
@@ -161,6 +125,12 @@ void ts::TSScrambling::setEntropyMode(DVBCSA2::EntropyMode mode)
 {
     _dvbcsa[0].setEntropyMode(mode);
     _dvbcsa[1].setEntropyMode(mode);
+}
+
+ts::DVBCSA2::EntropyMode ts::TSScrambling::entropyMode() const
+{
+    return (_scrambling_type == SCRAMBLING_DVB_CSA1 || _scrambling_type == SCRAMBLING_DVB_CSA2) ?
+            _dvbcsa[0].entropyMode() : DVBCSA2::FULL_CW;
 }
 
 

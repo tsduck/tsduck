@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -57,31 +36,21 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck;
-        bool                  continuous;    // Continuous packetization
-        StuffPolicy           stuffing_policy;
-        ts::CRC32::Validation crc_op;        // Validate/recompute CRC32
-        ts::PID               pid;           // Target PID
-        ts::BitRate           bitrate;       // Target PID bitrate
-        ts::UString           outfile;       // Output file
-        ts::FileNameRateList  infiles;       // Input file names and repetition rates
-        FType                 inType;        // Input files type
-        ts::SectionFileArgs   sections_opt;  // Section file options
+        ts::DuckContext       duck {this};
+        bool                  continuous = false;  // Continuous packetization
+        StuffPolicy           stuffing_policy = StuffPolicy::NEVER;
+        ts::CRC32::Validation crc_op = ts::CRC32::COMPUTE;
+        ts::PID               pid = ts::PID_NULL;  // Target PID
+        ts::BitRate           bitrate = 0;         // Target PID bitrate
+        ts::UString           outfile {};          // Output file
+        ts::FileNameRateList  infiles {};          // Input file names and repetition rates
+        FType                 inType {FType::UNSPECIFIED};
+        ts::SectionFileArgs   sections_opt {};     // Section file options
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]"),
-    duck(this),
-    continuous(false),
-    stuffing_policy(StuffPolicy::NEVER),
-    crc_op(ts::CRC32::COMPUTE),
-    pid(ts::PID_NULL),
-    bitrate(0),
-    outfile(),
-    infiles(),
-    inType(FType::UNSPECIFIED),
-    sections_opt()
+    Args(u"Packetize PSI/SI sections in a transport stream PID", u"[options] [input-file[=rate] ...]")
 {
     duck.defineArgsForCharset(*this);
     sections_opt.defineArgs(*this);

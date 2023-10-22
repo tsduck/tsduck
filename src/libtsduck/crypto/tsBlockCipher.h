@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -51,7 +30,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        BlockCipher();
+        BlockCipher() = default;
 
         //!
         //! Virtual destructor.
@@ -315,14 +294,14 @@ namespace ts {
         virtual bool decryptInPlaceImpl(void* data, size_t data_length, size_t* max_actual_length);
 
     private:
-        bool      _key_set;                // Current key successfully set.
-        int       _cipher_id;              // Cipher identity (from application).
-        size_t    _key_encrypt_count;      // Number of times the current key was used for decryption.
-        size_t    _key_decrypt_count;      // Number of times the current key was used for decryption.
-        size_t    _key_encrypt_max;        // Maximum number of times a key should be used for encryption.
-        size_t    _key_decrypt_max;        // Maximum number of times a key should be used for decryption.
-        ByteBlock _current_key;            // Current unscheduled key.
-        BlockCipherAlertInterface* _alert; // Alert handler.
+        bool      _key_set = false;                   // Current key successfully set.
+        int       _cipher_id = 0;                     // Cipher identity (from application).
+        size_t    _key_encrypt_count = 0;             // Number of times the current key was used for decryption.
+        size_t    _key_decrypt_count = 0;             // Number of times the current key was used for decryption.
+        size_t    _key_encrypt_max {UNLIMITED};       // Maximum number of times a key should be used for encryption.
+        size_t    _key_decrypt_max {UNLIMITED};       // Maximum number of times a key should be used for decryption.
+        ByteBlock _current_key{};                     // Current unscheduled key.
+        BlockCipherAlertInterface* _alert = nullptr;  // Alert handler.
 
         // Check if encryption or decryption is allowed. Increment counters.
         bool allowEncrypt();

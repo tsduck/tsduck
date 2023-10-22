@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -187,25 +166,25 @@ namespace ts {
         private:
             Report&        _report;
             const UString& _name;
-            int64_t        _count;
-            BitRate        _value_0;
-            BitRate        _diffs;
-            BitRate        _average;
-            size_t         _reset_percent;
+            int64_t        _count = 0;
+            BitRate        _value_0 = 0;
+            BitRate        _diffs = 0;
+            BitRate        _average = 0;
+            size_t         _reset_percent {DEFAULT_BITRATE_RESET_PERCENT};
         };
 
         // PacketInsertionController private members.
-        Report&        _report;              // Where to report messages.
-        UString        _main_name;           // Name of main stream.
-        UString        _sub_name;            // Name of sub-stream.
-        PacketCounter  _main_packets;        // Total number of packets in main stream so far.
-        PacketCounter  _sub_packets;         // Total number of packets in sub-stream so far.
-        size_t         _wait_alert;          // Accelerate insertion above that number of waiting packets.
-        size_t         _accel_factor;        // Acceleration factor, greater than 1 when too many packets are waiting.
-        PacketCounter  _accel_main_packets;  // Number of packets in main stream when current acceleration started.
-        PacketCounter  _accel_sub_packets;   // Number of packets in sub-stream wehn current acceleration started.
-        size_t         _accel_max_wait;      // Maximum number of waiting packet in current acceleration phase.
-        BitRateControl _main_bitrate;        // Current bitrate in main stream.
-        BitRateControl _sub_bitrate;         // Current bitrate in sub-stream.
+        Report&        _report;                      // Where to report messages.
+        UString        _main_name {u"main stream"};  // Name of main stream.
+        UString        _sub_name {u"sub-stream"};    // Name of sub-stream.
+        PacketCounter  _main_packets = 0;            // Total number of packets in main stream so far.
+        PacketCounter  _sub_packets = 0;             // Total number of packets in sub-stream so far.
+        size_t         _wait_alert {DEFAULT_WAIT_ALERT};  // Accelerate insertion above that number of waiting packets.
+        size_t         _accel_factor {1};            // Acceleration factor, greater than 1 when too many packets are waiting.
+        PacketCounter  _accel_main_packets = 0;      // Number of packets in main stream when current acceleration started.
+        PacketCounter  _accel_sub_packets = 0;       // Number of packets in sub-stream wehn current acceleration started.
+        size_t         _accel_max_wait = 0;          // Maximum number of waiting packet in current acceleration phase.
+        BitRateControl _main_bitrate;                // Current bitrate in main stream.
+        BitRateControl _sub_bitrate;                 // Current bitrate in sub-stream.
     };
 }

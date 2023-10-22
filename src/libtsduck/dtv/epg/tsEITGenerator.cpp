@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -41,24 +20,10 @@
 ts::EITGenerator::EITGenerator(DuckContext& duck, PID pid, EITOptions options, const EITRepetitionProfile& profile) :
     _duck(duck),
     _eit_pid(pid),
-    _actual_ts_id(0),
-    _actual_ts_id_set(false),
-    _regenerate(false),
-    _packet_index(0),
-    _max_bitrate(0),
-    _ts_bitrate(0),
-    _ref_time(),
-    _ref_time_pkt(0),
-    _eit_inter_pkt(0),
-    _last_eit_pkt(0),
     _options(options),
     _profile(profile),
     _demux(_duck, nullptr, this),
-    _packetizer(_duck, _eit_pid, this),
-    _services(),
-    _injects(),
-    _obsolete_count(0),
-    _versions()
+    _packetizer(_duck, _eit_pid, this)
 {
     // We need the PAT as long as the TS id is not known.
     _demux.addPID(PID_PAT);
@@ -96,6 +61,7 @@ void ts::EITGenerator::reset()
     for (size_t i = 0; i < _injects.size(); ++i) {
         _injects[i].clear();
     }
+    _last_tid = TID_NULL;
     _obsolete_count = 0;
     _versions.clear();
 }
@@ -105,11 +71,7 @@ void ts::EITGenerator::reset()
 // Event: Constructor of the structure containing binary events.
 //----------------------------------------------------------------------------
 
-ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size) :
-    event_id(0),
-    start_time(),
-    end_time(),
-    event_data()
+ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size)
 {
     size_t event_size = size;
 
@@ -130,11 +92,7 @@ ts::EITGenerator::Event::Event(const uint8_t*& data, size_t& size) :
 // ESection: Constructor of the structure for a section, ready to inject.
 //----------------------------------------------------------------------------
 
-ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& srv, TID tid, uint8_t section_number, uint8_t last_section_number) :
-    obsolete(false),
-    injected(false),
-    next_inject(),
-    section()
+ts::EITGenerator::ESection::ESection(EITGenerator* gen, const ServiceIdTriplet& srv, TID tid, uint8_t section_number, uint8_t last_section_number)
 {
     // Build section data.
     ByteBlockPtr section_data(new ByteBlock(LONG_SECTION_HEADER_SIZE + EIT::EIT_PAYLOAD_FIXED_SIZE + SECTION_CRC32_SIZE));
@@ -234,31 +192,6 @@ uint8_t ts::EITGenerator::nextVersion(const ServiceIdTriplet& service_id, TID ta
         // Update version.
         return iter->second = (iter->second + 1) & SVERSION_MASK;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// ESegment: Constructor of an EIT sched segment (3 hours, up to 8 sections)
-//----------------------------------------------------------------------------
-
-ts::EITGenerator::ESegment::ESegment(const Time& seg_start_time) :
-    start_time(seg_start_time),
-    regenerate(true), // all segments must have at least one section
-    events(),
-    sections()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// EService: Constructor of the description of one service.
-//----------------------------------------------------------------------------
-
-ts::EITGenerator::EService::EService() :
-    regenerate(false),
-    pf(),
-    segments()
-{
 }
 
 
@@ -495,7 +428,7 @@ void ts::EITGenerator::setTransportStreamId(uint16_t new_ts_id)
         if (new_other || new_actual) {
 
             // Process EIT p/f.
-            if (bool(_options & EITOptions::GEN_PF)) {
+            if ((new_actual && bool(_options & EITOptions::GEN_ACTUAL_PF)) || (new_other && bool(_options & EITOptions::GEN_OTHER_PF))) {
                 if (need_eit && (srv.pf[0].isNull() || srv.pf[1].isNull())) {
                     // At least one EIT p/f shall be rebuilt.
                     regeneratePresentFollowing(srv_iter.first, srv_iter.second, now);
@@ -573,8 +506,8 @@ void ts::EITGenerator::setOptions(EITOptions options)
     const Time now(getCurrentTime());
 
     // Check the configuration has changed for EIT p/f and EIT schedule, respectively.
-    const bool pf_changed = (_options & (EITOptions::GEN_PF | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) != (old_options & (EITOptions::GEN_PF | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER));
-    const bool sched_changed = (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER)) != (old_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER));
+    const bool pf_changed = (_options & EITOptions::GEN_PF) != (old_options & EITOptions::GEN_PF);
+    const bool sched_changed = (_options & EITOptions::GEN_SCHED) != (old_options & EITOptions::GEN_SCHED);
 
     // If the combination of EIT to generate has changed, regenerate EIT.
     if ((pf_changed || sched_changed) && _actual_ts_id_set && now != Time::Epoch) {
@@ -587,10 +520,12 @@ void ts::EITGenerator::setOptions(EITOptions options)
 
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
             const bool need_eit = (actual && bool(_options & EITOptions::GEN_ACTUAL)) || (!actual && bool(_options & EITOptions::GEN_OTHER));
+            const auto GEN_PF = actual ? EITOptions::GEN_ACTUAL_PF : EITOptions::GEN_OTHER_PF;
+            const auto GEN_SCHED = actual ? EITOptions::GEN_ACTUAL_SCHED : EITOptions::GEN_OTHER_SCHED;
 
             // Process EIT p/f.
             if (pf_changed) {
-                if (!need_eit || !(_options & EITOptions::GEN_PF)) {
+                if (!need_eit || !(_options & GEN_PF)) {
                     // Remove existing EIT p/f sections.
                     for (size_t i = 0; i < srv.pf.size(); ++i) {
                         if (!srv.pf[i].isNull()) {
@@ -607,7 +542,7 @@ void ts::EITGenerator::setOptions(EITOptions options)
 
             // Process EIT schedule (all segments, all sections).
             if (sched_changed) {
-                if (!need_eit || !(_options & EITOptions::GEN_SCHED)) {
+                if (!need_eit || !(_options & GEN_SCHED)) {
                     // We no longer need the EIT schedule.
                     for (auto& seg_iter : srv.segments) {
                         ESegment& seg(*seg_iter);
@@ -768,8 +703,9 @@ void ts::EITGenerator::regeneratePresentFollowing(const ServiceIdTriplet& servic
     }
 
     const bool actual = _actual_ts_id == service_id.transport_stream_id;
+    const auto GEN_PF = actual ? EITOptions::GEN_ACTUAL_PF : EITOptions::GEN_OTHER_PF;
 
-    if (!(_options & EITOptions::GEN_PF) || (actual && !(_options & EITOptions::GEN_ACTUAL)) || (!actual && !(_options & EITOptions::GEN_OTHER))) {
+    if (!(_options & GEN_PF)) {
         // This type of EIT cannot be (no time ref) or shall not be (excluded) generated. If sections exist, delete them.
         for (size_t i = 0; i < srv.pf.size(); ++i) {
             if (!srv.pf[i].isNull()) {
@@ -901,14 +837,14 @@ void ts::EITGenerator::regenerateSchedule(const Time& now)
             const ServiceIdTriplet& service_id(srv_iter.first);
             EService& srv(srv_iter.second);
             const bool actual = service_id.transport_stream_id == _actual_ts_id;
+            const auto GEN_SCHED = actual ? EITOptions::GEN_ACTUAL_SCHED : EITOptions::GEN_OTHER_SCHED;
             _duck.report().debug(u"regenerating events for service 0x%X (%<d)", {service_id});
 
             // Set of subtables to globally update their version (SYNC_VERSIONS only).
             std::set<TID> sync_tids;
 
             // Check if EIT schedule are needed for the service.
-            const bool need_eits = (actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) == (EITOptions::GEN_SCHED | EITOptions::GEN_ACTUAL)) ||
-                                   (!actual && (_options & (EITOptions::GEN_SCHED | EITOptions::GEN_OTHER)) == (EITOptions::GEN_SCHED | EITOptions::GEN_OTHER));
+            const bool need_eits = bool(_options & GEN_SCHED);
 
             // Remove initial segments before last midnight.
             while (!srv.segments.empty() && srv.segments.front()->start_time < last_midnight) {
@@ -1229,6 +1165,39 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
     // Make sure the EIT schedule are up-to-date.
     regenerateSchedule(now);
 
+    // Make sure no section for the last injected {tid,tidext} is scheduled for _section_gap milliseconds.
+    if (_last_tid != TID_NULL) {
+        ESectionList& list(_injects[_last_index]);
+        const Time next_inject = now + _section_gap;
+        int gap_count = 0;
+        auto it = list.begin();
+        while (it != list.end() && (*it)->next_inject < next_inject) {
+            if ((*it)->section->tableId() != _last_tid || (*it)->section->tableIdExtension() != _last_tidext) {
+                ++it;
+            }
+            else {
+                // We have a section with the same {tid,tidext}, need to reschedule it later.
+                const ESectionPtr next_sec = *it;
+                _duck.report().log(2, u"reschedule section %d at %s", {next_sec->section->sectionNumber(), next_inject});
+                it = list.erase(it);
+                // We can't call enqueueInjectSection() since we are currently walking through the same
+                // list and enqueueInjectSection() may change "it" iterator. Insert manually.
+                // Also reschedule each section "_section_gap" later than the previous one.
+                next_sec->next_inject = next_inject + gap_count++ * _section_gap;
+                auto it1 = it;
+                while (it1 != list.end() && (*it1)->next_inject < next_sec->next_inject) {
+                    ++it1;
+                }
+                const bool same_place = it1 == it;
+                it1 = list.insert(it1, next_sec);
+                if (same_place) {
+                    it = it1;
+                }
+            }
+        }
+        _last_tid = TID_NULL;
+    }
+
     // Loop on all injection queues, in decreasing order of priority.
     for (size_t index = 0; index < _injects.size(); ++index) {
 
@@ -1254,6 +1223,9 @@ void ts::EITGenerator::provideSection(SectionCounter counter, SectionPtr& sectio
                 enqueueInjectSection(sec, now + _profile.repetitionSeconds(*sec->section) * MilliSecPerSec, false);
                 _duck.report().log(2, u"inject section TID 0x%X (%<d), service 0x%X (%<d), at %s, requeue for %s",
                                    {section->tableId(), section->tableIdExtension(), now, sec->next_inject});
+                _last_tid = section->tableId();
+                _last_tidext = section->tableIdExtension();
+                _last_index = index;
                 return;
             }
         }

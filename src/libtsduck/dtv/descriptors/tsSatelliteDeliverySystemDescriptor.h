@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -62,14 +41,14 @@ namespace ts {
     {
     public:
         // SatelliteDeliverySystemDescriptor public members:
-        uint64_t frequency;          //!< Frequency in Hz (warning: coded in 10 kHz units in descriptor).
-        uint16_t orbital_position;   //!< Orbital position, unit is 0.1 degree.
-        bool     east_not_west;      //!< True for East, false for West.
-        uint8_t  polarization;       //!< Polarization, 2 bits.
-        uint64_t symbol_rate;        //!< Symbol rate (warning: coded in 100 symbol/s units in descriptor).
-        uint8_t  modulation;         //!< Modulation type, 2 bits with DVB, 5 bits with ISDB.
-        uint8_t  roll_off;           //!< Roll-off factor, 2 bits (DVB-S2 only).
-        uint8_t  FEC_inner;          //!< FEC inner, 4 bits, value depends on DVB vs. ISDB.
+        uint64_t frequency = 0;          //!< Frequency in Hz (warning: coded in 10 kHz units in descriptor).
+        uint16_t orbital_position = 0;   //!< Orbital position, unit is 0.1 degree.
+        bool     east_not_west = false;  //!< True for East, false for West.
+        uint8_t  polarization = 0;       //!< Polarization, 2 bits.
+        uint64_t symbol_rate = 0;        //!< Symbol rate (warning: coded in 100 symbol/s units in descriptor).
+        uint8_t  modulation = 0;         //!< Modulation type, 2 bits with DVB, 5 bits with ISDB.
+        uint8_t  roll_off = 0;           //!< Roll-off factor, 2 bits (DVB-S2 only).
+        uint8_t  FEC_inner = 0;          //!< FEC inner, 4 bits, value depends on DVB vs. ISDB.
 
         //!
         //! Default constructor.

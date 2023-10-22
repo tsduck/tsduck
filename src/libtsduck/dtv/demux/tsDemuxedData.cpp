@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -35,18 +14,14 @@
 //----------------------------------------------------------------------------
 
 ts::DemuxedData::DemuxedData(PID source_pid) :
-    _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
-    _data()
+    _source_pid(source_pid)
 {
 }
 
 ts::DemuxedData::DemuxedData(const DemuxedData& pp, ShareMode mode) :
     _source_pid(pp._source_pid),
     _first_pkt(pp._first_pkt),
-    _last_pkt(pp._last_pkt),
-    _data()
+    _last_pkt(pp._last_pkt)
 {
     switch (mode) {
         case ShareMode::SHARE:
@@ -71,24 +46,18 @@ ts::DemuxedData::DemuxedData(DemuxedData&& pp) noexcept :
 
 ts::DemuxedData::DemuxedData(const void* content, size_t content_size, PID source_pid) :
     _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
     _data(new ByteBlock(content, content_size))
 {
 }
 
 ts::DemuxedData::DemuxedData(const ByteBlock& content, PID source_pid) :
     _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
     _data(new ByteBlock(content))
 {
 }
 
 ts::DemuxedData::DemuxedData(const ByteBlockPtr& content_ptr, PID source_pid) :
     _source_pid(source_pid),
-    _first_pkt(0),
-    _last_pkt(0),
     _data(content_ptr)
 {
 }

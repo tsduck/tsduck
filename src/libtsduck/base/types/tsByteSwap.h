@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -68,7 +47,7 @@ namespace ts {
     #if defined(TS_ARM64)
         asm("sbfm %0, %0, #0, #39" : "+r" (x)); return x;
     #else
-        return (x & TS_UCONST64(0x0000008000000000)) == 0 ? (x & TS_UCONST64(0x000000FFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFFFF0000000000));
+        return (x & 0x0000008000000000) == 0 ? (x & 0x000000FFFFFFFFFF) : int64_t(uint64_t(x) | 0xFFFFFF0000000000);
     #endif
     }
 
@@ -83,7 +62,7 @@ namespace ts {
     #if defined(TS_ARM64)
         asm("sbfm %0, %0, #0, #47" : "+r" (x)); return x;
     #else
-        return (x & TS_UCONST64(0x0000800000000000)) == 0 ? (x & TS_UCONST64(0x0000FFFFFFFFFFFF)) : int64_t(uint64_t(x) | TS_UCONST64(0xFFFF000000000000));
+        return (x & 0x0000800000000000) == 0 ? (x & 0x0000FFFFFFFFFFFF) : int64_t(uint64_t(x) | 0xFFFF000000000000);
     #endif
     }
 
@@ -169,12 +148,12 @@ namespace ts {
     #else
         return
             ((x << 56)) |
-            ((x << 40) & TS_UCONST64(0x00FF000000000000)) |
-            ((x << 24) & TS_UCONST64(0x0000FF0000000000)) |
-            ((x <<  8) & TS_UCONST64(0x000000FF00000000)) |
-            ((x >>  8) & TS_UCONST64(0x00000000FF000000)) |
-            ((x >> 24) & TS_UCONST64(0x0000000000FF0000)) |
-            ((x >> 40) & TS_UCONST64(0x000000000000FF00)) |
+            ((x << 40) & 0x00FF000000000000) |
+            ((x << 24) & 0x0000FF0000000000) |
+            ((x <<  8) & 0x000000FF00000000) |
+            ((x >>  8) & 0x00000000FF000000) |
+            ((x >> 24) & 0x0000000000FF0000) |
+            ((x >> 40) & 0x000000000000FF00) |
             ((x >> 56));
     #endif
     }

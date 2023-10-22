@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -195,22 +174,22 @@ namespace ts {
         virtual bool writeStreamBuffer(const void* addr, size_t size) override;
 
     private:
-        InputMode     _in_mode;       // Input mode for the created process.
-        OutputMode    _out_mode;      // Output mode for the created process.
-        volatile bool _is_open;       // Open and running.
-        WaitMode      _wait_mode;     // How to wait for child process termination in close().
-        bool          _in_pipe;       // The process uses an input pipe.
-        bool          _out_pipe;      // The process uses an output pipe.
-        bool          _use_pipe;      // The process uses a pipe, somehow.
-        bool          _ignore_abort;  // Ignore early termination of child process.
-        volatile bool _broken_pipe;   // Pipe is broken, do not attempt to write.
-        volatile bool _eof;           // Got end of file on input pipe.
+        InputMode     _in_mode {STDIN_PIPE};     // Input mode for the created process.
+        OutputMode    _out_mode {KEEP_BOTH};     // Output mode for the created process.
+        volatile bool _is_open = false;          // Open and running.
+        WaitMode      _wait_mode {ASYNCHRONOUS}; // How to wait for child process termination in close().
+        bool          _in_pipe = false;          // The process uses an input pipe.
+        bool          _out_pipe = false;         // The process uses an output pipe.
+        bool          _use_pipe = false;         // The process uses a pipe, somehow.
+        bool          _ignore_abort = false;     // Ignore early termination of child process.
+        volatile bool _broken_pipe = false;      // Pipe is broken, do not attempt to write.
+        volatile bool _eof = false;              // Got end of file on input pipe.
 #if defined(TS_WINDOWS)
-        ::HANDLE      _handle;        // Pipe output handle.
-        ::HANDLE      _process;       // Handle to child process.
+        ::HANDLE      _handle {INVALID_HANDLE_VALUE};  // Pipe output handle.
+        ::HANDLE      _process {INVALID_HANDLE_VALUE}; // Handle to child process.
 #else
-        ::pid_t       _fpid;          // Forked process id (UNIX PID, not MPEG PID!)
-        int           _fd;            // Pipe output file descriptor.
+        ::pid_t       _fpid = 0;                 // Forked process id (UNIX PID, not MPEG PID!)
+        int           _fd {-1};                  // Pipe output file descriptor.
 #endif
     };
 }

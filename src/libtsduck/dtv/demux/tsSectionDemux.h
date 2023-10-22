@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -234,19 +213,13 @@ namespace ts {
         //! Get the current status of the demux.
         //! @param [out] status The returned status.
         //!
-        void getStatus(Status& status) const
-        {
-            status = _status;
-        }
+        void getStatus(Status& status) const { status = _status; }
 
         //!
         //! Check if the demux has errors.
         //! @return True if any error counter is not zero.
         //!
-        bool hasErrors() const
-        {
-            return _status.hasErrors();
-        }
+        bool hasErrors() const { return _status.hasErrors(); }
 
     protected:
         // Inherited methods
@@ -260,14 +233,14 @@ namespace ts {
         // This internal structure contains the analysis context for one TID/TIDext into one PID.
         struct ETIDContext
         {
-            bool    notified;       // The table was reported to application through a handler
-            uint8_t version;        // Version of this table
-            size_t  sect_expected;  // Number of expected sections in table
-            size_t  sect_received;  // Number of received sections in table
-            SectionPtrVector sects; // Array of sections
+            bool    notified = false;   // The table was reported to application through a handler
+            uint8_t version = 0;        // Version of this table
+            size_t  sect_expected = 0;  // Number of expected sections in table
+            size_t  sect_received = 0;  // Number of received sections in table
+            SectionPtrVector sects {};  // Array of sections
 
             // Default constructor.
-            ETIDContext();
+            ETIDContext() = default;
 
             // Init for a new table.
             void init(uint8_t new_version, uint8_t last_section);
@@ -282,14 +255,14 @@ namespace ts {
         // This internal structure contains the analysis context for one PID.
         struct PIDContext
         {
-            PacketCounter pusi_pkt_index;     // Index of last packet with PUSI in this PID
-            uint8_t       continuity;         // Last continuity counter
-            bool          sync;               // We are synchronous in this PID
-            ByteBlock     ts;                 // TS payload buffer
-            std::map<ETID,ETIDContext> tids;  // TID analysis contexts
+            PacketCounter pusi_pkt_index = 0;    // Index of last packet with PUSI in this PID
+            uint8_t       continuity = 0;        // Last continuity counter
+            bool          sync = false;          // We are synchronous in this PID
+            ByteBlock     ts {};                 // TS payload buffer
+            std::map<ETID,ETIDContext> tids {};  // TID analysis contexts
 
             // Default constructor.
-            PIDContext();
+            PIDContext() = default;
 
             // Called when packet synchronization is lost on the pid.
             void syncLost();
@@ -302,15 +275,15 @@ namespace ts {
         void fixAndFlush(bool pack, bool fill_eit);
 
         // Private members:
-        TableHandlerInterface*          _table_handler;
-        SectionHandlerInterface*        _section_handler;
-        InvalidSectionHandlerInterface* _invalid_handler;
-        std::map<PID,PIDContext>        _pids;
-        Status _status;
-        bool   _get_current;
-        bool   _get_next;
-        bool   _track_invalid_version;
-        int    _ts_error_level;
+        TableHandlerInterface*          _table_handler = nullptr;
+        SectionHandlerInterface*        _section_handler = nullptr;
+        InvalidSectionHandlerInterface* _invalid_handler = nullptr;
+        std::map<PID,PIDContext>        _pids {};
+        Status _status {};
+        bool   _get_current = true;
+        bool   _get_next = false;
+        bool   _track_invalid_version = false;
+        int    _ts_error_level {Severity::Debug};
     };
 }
 

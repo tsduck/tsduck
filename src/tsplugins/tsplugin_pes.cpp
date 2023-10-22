@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -65,44 +44,45 @@ namespace ts {
 
     private:
         // Commmand line options.
-        bool      _trace_packets;
-        bool      _trace_packet_index;
-        bool      _dump_pes_header;
-        bool      _dump_pes_payload;
-        bool      _dump_start_code;
-        bool      _dump_nal_units;
-        bool      _dump_avc_sei;
-        bool      _video_attributes;
-        bool      _audio_attributes;
-        bool      _intra_images;
-        bool      _negate_nal_unit_filter;
-        bool      _multiple_files;
-        uint32_t  _hexa_flags;
-        size_t    _hexa_bpl;
-        size_t    _max_dump_size;
-        size_t    _max_dump_count;
-        int       _min_payload;    // Minimum payload size (<0: no filter)
-        int       _max_payload;    // Maximum payload size (<0: no filter)
-        UString   _out_filename;
-        UString   _pes_filename;
-        UString   _es_filename;
-        PIDSet    _pids;
-        CodecType _default_h26x;
-        std::set<uint8_t>    _nal_unit_filter;
-        std::set<uint32_t>   _sei_type_filter;
-        std::list<ByteBlock> _sei_uuid_filter;
+        bool      _trace_packets {false};
+        bool      _trace_packet_index {false};
+        bool      _dump_pes_header {false};
+        bool      _dump_pes_payload {false};
+        bool      _dump_start_code {false};
+        bool      _dump_nal_units {false};
+        bool      _dump_avc_sei {false};
+        bool      _video_attributes {false};
+        bool      _audio_attributes {false};
+        bool      _intra_images {false};
+        bool      _negate_nal_unit_filter {false};
+        bool      _multiple_files {false};
+        bool      _flush_last {false};
+        uint32_t  _hexa_flags {0};
+        size_t    _hexa_bpl {0};
+        size_t    _max_dump_size {0};
+        size_t    _max_dump_count {0};
+        int       _min_payload {0};    // Minimum payload size (<0: no filter)
+        int       _max_payload {0};    // Maximum payload size (<0: no filter)
+        UString   _out_filename {};
+        UString   _pes_filename {};
+        UString   _es_filename {};
+        PIDSet    _pids {};
+        CodecType _default_h26x {CodecType::UNDEFINED};
+        std::set<uint8_t>    _nal_unit_filter {};
+        std::set<uint32_t>   _sei_type_filter {};
+        std::list<ByteBlock> _sei_uuid_filter {};
 
         // Working data.
-        bool              _abort;
-        std::ofstream     _out_file;
-        std::ostream*     _out;
-        std::ofstream     _pes_file;
-        std::ostream*     _pes_stream;
-        std::ofstream     _es_file;
-        std::ostream*     _es_stream;
+        bool              _abort {false};
+        std::ofstream     _out_file {};
+        std::ostream*     _out {nullptr};
+        std::ofstream     _pes_file {};
+        std::ostream*     _pes_stream {nullptr};
+        std::ofstream     _es_file {};
+        std::ostream*     _es_stream {nullptr};
         PESDemux          _demux;
-        FileNameGenerator _pes_name_gen;
-        FileNameGenerator _es_name_gen;
+        FileNameGenerator _pes_name_gen {};
+        FileNameGenerator _es_name_gen {};
 
         // Open output file.
         bool openOutput(const UString&, std::ofstream*, std::ostream**, bool binary);
@@ -143,42 +123,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pes", ts::PESPlugin);
 
 ts::PESPlugin::PESPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Analyze PES packets", u"[options]"),
-    _trace_packets(false),
-    _trace_packet_index(false),
-    _dump_pes_header(false),
-    _dump_pes_payload(false),
-    _dump_start_code(false),
-    _dump_nal_units(false),
-    _dump_avc_sei(false),
-    _video_attributes(false),
-    _audio_attributes(false),
-    _intra_images(false),
-    _negate_nal_unit_filter(false),
-    _multiple_files(false),
-    _hexa_flags(0),
-    _hexa_bpl(0),
-    _max_dump_size(0),
-    _max_dump_count(0),
-    _min_payload(0),
-    _max_payload(0),
-    _out_filename(),
-    _pes_filename(),
-    _es_filename(),
-    _pids(),
-    _default_h26x(CodecType::UNDEFINED),
-    _nal_unit_filter(),
-    _sei_type_filter(),
-    _sei_uuid_filter(),
-    _abort(false),
-    _out_file(),
-    _out(nullptr),
-    _pes_file(),
-    _pes_stream(nullptr),
-    _es_file(),
-    _es_stream(nullptr),
-    _demux(duck, this),
-    _pes_name_gen(),
-    _es_name_gen()
+    _demux(duck, this)
 {
     option(u"audio-attributes", 'a');
     help(u"audio-attributes", u"Display audio attributes.");
@@ -190,13 +135,19 @@ ts::PESPlugin::PESPlugin(TSP* tsp_) :
     option(u"binary", 'b');
     help(u"binary", u"Include binary dump in addition to hexadecimal.");
 
+    option(u"flush-last-unbounded-pes", 'f');
+    help(u"flush-last-unbounded-pes",
+         u"At end of stream, consider the last unbounded PES packet as complete in each PID. "
+         u"By default, there is no guarantee that the unbounded buffered data at end of stream "
+         u"form a valid PES packet and they are discarded.");
+
     option(u"h26x-default-format", 0, Enumeration({
-        {u"AVC",   int(CodecType::AVC)},
-        {u"H.264", int(CodecType::AVC)},
-        {u"HEVC",  int(CodecType::HEVC)},
-        {u"H.265", int(CodecType::HEVC)},
-        {u"VVC",   int(CodecType::VVC)},
-        {u"H.266", int(CodecType::VVC)},
+        {u"AVC",   CodecType::AVC},
+        {u"H.264", CodecType::AVC},
+        {u"HEVC",  CodecType::HEVC},
+        {u"H.265", CodecType::HEVC},
+        {u"VVC",   CodecType::VVC},
+        {u"H.266", CodecType::VVC},
     }));
     help(u"h26x-default-format", u"name",
          u"The video formats AVC (H.264), HEVC (H.265) and VVC (H.266) use the same binary bitstream format. "
@@ -339,6 +290,7 @@ bool ts::PESPlugin::getOptions()
     _audio_attributes = present(u"audio-attributes");
     _intra_images = present(u"intra-image");
     _multiple_files = present(u"multiple-files");
+    _flush_last = present(u"flush-last-unbounded-pes");
     getIntValue(_max_dump_size, u"max-dump-size", 0);
     getIntValue(_max_dump_count, u"max-dump-count", 0);
     getIntValue(_min_payload, u"min-payload-size", -1);
@@ -483,7 +435,9 @@ void ts::PESPlugin::saveOnePES(FileNameGenerator& namegen, const uint8_t* data, 
 
 bool ts::PESPlugin::stop()
 {
-    // Close output files.
+    if (_flush_last && !_abort) {
+        _demux.flushUnboundedPES();
+    }
     if (_out_file.is_open()) {
         _out_file.close();
     }

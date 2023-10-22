@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -50,10 +29,10 @@ namespace ts {
         struct TSDUCKDLL Entry
         {
             // Public members
-            UString  language_code;         //!< ISO-639 language code, 3 characters.
-            uint8_t  subtitling_type;       //!< Subtitling type.
-            uint16_t composition_page_id;   //!< Composition page identifier.
-            uint16_t ancillary_page_id;     //!< Ancillary page identifier.
+            UString  language_code {};          //!< ISO-639 language code, 3 characters.
+            uint8_t  subtitling_type = 0;       //!< Subtitling type.
+            uint16_t composition_page_id = 0;   //!< Composition page identifier.
+            uint16_t ancillary_page_id = 0;     //!< Ancillary page identifier.
 
             //!
             //! Default constructor.
@@ -88,10 +67,10 @@ namespace ts {
         //!
         //! Maximum number of language entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 31;
+        static constexpr size_t MAX_ENTRIES = 31;
 
         // Public members
-        EntryList entries;  //!< The list of item entries in the descriptor.
+        EntryList entries {};  //!< The list of item entries in the descriptor.
 
         //!
         //! Default constructor.

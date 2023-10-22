@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -249,7 +228,7 @@ void IntegerUtilsTest::testBitSize()
     TSUNIT_EQUAL(3, ts::BitSize(uint8_t(5)));
     TSUNIT_EQUAL(3, ts::BitSize(int8_t(5)));
     TSUNIT_EQUAL(8, ts::BitSize(int8_t(-1)));
-    TSUNIT_EQUAL(51, ts::BitSize(TS_UCONST64(0x000500000A003000)));
+    TSUNIT_EQUAL(51, ts::BitSize(0x000500000A003000));
 }
 
 void IntegerUtilsTest::testPower10()
@@ -258,7 +237,7 @@ void IntegerUtilsTest::testPower10()
     TSUNIT_EQUAL(10, ts::Power10(1));
     TSUNIT_EQUAL(100, ts::Power10(2));
     TSUNIT_EQUAL(1000000, ts::Power10(6));
-    TSUNIT_EQUAL(TS_UCONST64(1000000000000000), ts::Power10(15));
+    TSUNIT_EQUAL(1000000000000000, ts::Power10(15));
 
     TSUNIT_EQUAL(1, (ts::static_power10<uint8_t, 0>::value));
     TSUNIT_EQUAL(1, (ts::static_power10<int, 0>::value));
@@ -268,7 +247,7 @@ void IntegerUtilsTest::testPower10()
     TSUNIT_EQUAL(100, (ts::static_power10<int, 2>::value));
     TSUNIT_EQUAL(1000000, (ts::static_power10<uint32_t, 6>::value));
     TSUNIT_EQUAL(1000000, (ts::static_power10<uint64_t, 6>::value));
-    TSUNIT_EQUAL(TS_UCONST64(1000000000000000), (ts::static_power10<uint64_t, 15>::value));
+    TSUNIT_EQUAL(1000000000000000, (ts::static_power10<uint64_t, 15>::value));
 }
 
 void IntegerUtilsTest::testBoundCheck()

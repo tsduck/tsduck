@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -36,6 +15,7 @@
 #include "tsPlugin.h"
 #include "tsPluginEventHandlerInterface.h"
 #include "tsVariable.h"
+#include "tsUString.h"
 #include "tsMutex.h"
 
 namespace ts {
@@ -51,7 +31,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        PluginEventHandlerRegistry();
+        PluginEventHandlerRegistry() = default;
 
         //!
         //! Registration criteria for an event handler.
@@ -65,37 +45,42 @@ namespace ts {
         class TSDUCKDLL Criteria
         {
         public:
-            Variable<UString>    plugin_name;   //!< When specified, the plugin must match that name.
-            Variable<size_t>     plugin_index;  //!< When specified, the plugin must be at that index in the chain.
-            Variable<PluginType> plugin_type;   //!< When specified, the plugin must be of this type.
-            Variable<uint32_t>   event_code;    //!< When specified, the event must use that code.
+            Variable<UString>    plugin_name {};   //!< When specified, the plugin must match that name.
+            Variable<size_t>     plugin_index {};  //!< When specified, the plugin must be at that index in the chain.
+            Variable<PluginType> plugin_type {};   //!< When specified, the plugin must be of this type.
+            Variable<uint32_t>   event_code {};    //!< When specified, the event must use that code.
 
             //!
             //! Default constructor.
             //! No criteria is set, meaning it matches all events.
             //!
-            Criteria();
+            Criteria() = default;
 
             //!
             //! Constructor with an event code.
             //! It matches all events with that code from any plugin.
             //! @param [in] code Event code.
             //!
-            Criteria(uint32_t code);
+            Criteria(uint32_t code) : event_code(code) {}
 
             //!
             //! Constructor with a plugin type.
             //! It matches all events from any plugin of that type.
             //! @param [in] type Plugin type.
             //!
-            Criteria(PluginType type);
+            Criteria(PluginType type) : plugin_type(type) {}
 
             //!
             //! Constructor with a plugin name.
             //! It matches all events from any plugin of that name.
             //! @param [in] name Plugin name.
             //!
-            Criteria(const UString& name);
+            Criteria(const UString& name) : plugin_name(name) {}
+
+            //!
+            //! A common empty criteria, meaning "any event".
+            //!
+            static const Criteria Any;
         };
 
         //!
@@ -104,7 +89,7 @@ namespace ts {
         //! @param [in] handler The event handler to register.
         //! @param [in] criteria The criteria for which the handler is to be called.
         //!
-        void registerEventHandler(PluginEventHandlerInterface* handler, const Criteria& criteria = Criteria());
+        void registerEventHandler(PluginEventHandlerInterface* handler, const Criteria& criteria = Criteria::Any);
 
         //!
         //! Unregister all occurences of an event handler.
@@ -128,8 +113,8 @@ namespace ts {
         typedef std::list<HandlerEntry> HandlerEntryList;
 
         // Accessing the list, including executing an event handler is done under a mutex.
-        mutable Mutex    _mutex;
-        mutable bool     _calling_handlers;
-        HandlerEntryList _handlers;
+        mutable Mutex    _mutex {};
+        mutable bool     _calling_handlers = false;
+        HandlerEntryList _handlers {};
     };
 }

@@ -1,29 +1,8 @@
 //----------------------------------------------------------------------------
 //
-//  TSDuck - The MPEG Transport Stream Toolkit
-//  Copyright (c) 2005-2023, Thierry Lelegard
-//  All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright
-//     notice, this list of conditions and the following disclaimer in the
-//     documentation and/or other materials provided with the distribution.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-//  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-//  THE POSSIBILITY OF SUCH DAMAGE.
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2023, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
 //
 //----------------------------------------------------------------------------
 //!
@@ -55,14 +34,6 @@
 //!  @li Operating system: See @link TS_LINUX @endlink, @link TS_WINDOWS @endlink, etc.
 //!  @li Byte ordering: See @link TS_LITTLE_ENDIAN @endlink and @link TS_BIG_ENDIAN @endlink.
 //!  @li Processor architecture: See @link TS_I386 @endlink, @link TS_X86_64 @endlink, etc.
-//!
-//!  @section issues Solving various compilation issues
-//!
-//!  This header file defines some macros which can be used to solve
-//!  various C/C++ compilation issues.
-//!
-//!  @li Explicitly unused variables: See @link TS_UNUSED @endlink.
-//!  @li Definitions of C++ constants: See @link TS_NEED_STATIC_CONST_DEFINITIONS @endlink.
 //!
 //----------------------------------------------------------------------------
 
@@ -154,7 +125,7 @@
     //!
     //! The class @c basic_string from the C++ STL has more features starting
     //! with C++11. However, GCC does not support them with old versions, even
-    //! if --std=c++11 or 14 is specified. The level of language is increased
+    //! if -std=c++11 or 14 is specified. The level of language is increased
     //! but not the level of STL.
     //!
     #define TS_CXX11_STRING
@@ -221,6 +192,15 @@
 #if defined(TS_GCC_VERSION) && !defined(DOXYGEN)
     #if TS_GCC_VERSION >= 50100 && defined(TS_CXX11) && !defined(_GLIBCXX_USE_CXX11_ABI)
         #define _GLIBCXX_USE_CXX11_ABI 1
+    #endif
+#endif
+
+// TSDuck now requests to use C++11 at least.
+#if !defined(TS_CXX11)
+    #if defined(TS_MSC)
+        #error "TSDuck requires C++11 at least (C++14 on Windows), use /std:c++14 or higher"
+    #else
+        #error "TSDuck requires C++11 at least, use -std=c++11 or higher"
     #endif
 #endif
 
@@ -776,7 +756,7 @@
 
 #else
 
-    // Use a two-step macro to allow stringification of parameters.
+    // Use a two-step macro to allow stringification of parameters for pragma.
     #if defined(TS_MSC)
         #define TS_PRAGMA1_(s) __pragma(s)
     #else
@@ -835,6 +815,8 @@ TS_LLVM_NOWARNING(reserved-identifier)            // Identifier '_Xxx' is reserv
 TS_LLVM_NOWARNING(c++98-compat-pedantic)          // Require C++11, no need for C++98 compatibility.
 TS_LLVM_NOWARNING(c++2a-compat)                   // Compatibility with C++2a is not yet a concern.
 TS_LLVM_NOWARNING(documentation-unknown-command)  // Some valid doxygen directives are unknown to clang.
+TS_LLVM_NOWARNING(unsafe-buffer-usage)            // "unsafe pointer arithmetic" (new with clang 16) => we know what we are doing here.
+
 
 TS_MSC_NOWARNING(4100)  // unreferenced formal parameter
 TS_MSC_NOWARNING(4189)  // local variable is initialized but not referenced
@@ -875,6 +857,7 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <map>
 #include <set>
 #include <bitset>
+#include <type_traits>
 #include <algorithm>
 #include <iterator>
 #include <limits>
@@ -887,12 +870,15 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <exception>
 #include <stdexcept>
 #include <atomic>
+#include <thread>
+#include <chrono>
 #include <typeinfo>
 #include <cassert>
 #include <cstdlib>
 #include <cstdarg>
 #include <cstdio>
 #include <cstdint>
+#include <cinttypes>
 #include <cstring>
 #include <cctype>
 #include <cstddef>
@@ -901,8 +887,11 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #include <fcntl.h>
 #if defined(TS_WINDOWS)
     #include <windows.h>
-#else
+#endif
+#if defined(TS_UNIX)
     #include <unistd.h>
+    #include <glob.h>
+    #include <sys/mman.h>
 #endif
 #include "tsAfterStandardHeaders.h"
 
@@ -1008,59 +997,6 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 #endif
 
 //!
-//! @hideinitializer
-//! Compilation of definitions of C++ constants.
-//!
-//! It is a well-known pattern in C++ to define constants in header files as
-//! <code>static const</code>. Example:
-//! @code
-//! static const int FOO = 1;
-//! @endcode
-//! According to Stroustrup 10.4.6.2, this is only a declaration, which needs
-//! a definition somewhere else, without initialization. Example:
-//! @code
-//! const int classname::FOO;
-//! @endcode
-//!
-//! This is a really stupid oddity of C++ which is handled differently
-//! by compilers:
-//!
-//! @li GCC, with optimization: The declaration alone is fine.
-//!     The definition is accepted.
-//! @li GCC, without optimization: Sometimes, depending on the way the
-//!     constants are used, the definition is required. Without definition,
-//!     the linker complains about an undefined symbol.
-//! @li Microsoft C: The definition must not be used. Otherwise, the linker
-//!     complains about a multiply defined symbol.
-//!
-//! As a consequence, there are situations where the definition is
-//! required and situations where the definition is forbidden.
-//! The presence of the definition shall be conditioned to the macro
-//! @c TS_NEED_STATIC_CONST_DEFINITIONS.
-//!
-//! Example: In tsFoo.h, the constant is declared as:
-//! @code
-//! namespace ts {
-//!     class Foo
-//!     {
-//!     public:
-//!         static const size_t MAX_ENTRIES = 10;
-//!         ...
-//! @endcode
-//!
-//! In tsFoo.cpp, the definition of the constant shall be conditionally compiled
-//! since all compilers do not behave identically:
-//! @code
-//! #if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-//! const size_t ts::Foo::MAX_ENTRIES;
-//! #endif
-//! @endcode
-//!
-#if defined(TS_GCC) || defined(DOXYGEN)
-    #define TS_NEED_STATIC_CONST_DEFINITIONS 1
-#endif
-
-//!
 //! A macro to disable object copy in the declaration of a class.
 //! The copy and move constructors and assignments are explicitly deleted.
 //! @param classname Name of the enclosing class.
@@ -1100,23 +1036,24 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //! A macro to declare the default assignment operators in the declaration of a class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_DEFAULT_ASSIGMENTS(classname)                 \
-    public:                                              \
-        /** @cond nodoxygen */                           \
-        classname& operator=(classname&&) = default;     \
-        classname& operator=(const classname&) = default \
+#define TS_DEFAULT_ASSIGMENTS(classname)                  \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default  \
         /** @endcond */
 
 //!
 //! A macro to declare the default copy and move constructors and assignment operators in the declaration of a class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_DEFAULT_COPY_MOVE(classname)       \
-        TS_DEFAULT_ASSIGMENTS(classname);     \
-    public:                                   \
-        /** @cond nodoxygen */                \
-        classname(classname&&) = default;     \
-        classname(const classname&) = default \
+#define TS_DEFAULT_COPY_MOVE(classname)                   \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname(classname&&) = default;                 \
+        classname(const classname&) = default;            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default  \
         /** @endcond */
 
 //!
@@ -1125,24 +1062,43 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
 //! @param classname Name of the enclosing class.
 //! @param dtor_attributes Post attributes for the destructor.
 //!
-#define TS_RULE_OF_FIVE(classname, dtor_attributes) \
-        TS_DEFAULT_COPY_MOVE(classname);            \
-    public:                                         \
-        /** @cond nodoxygen */                      \
-        virtual ~classname() dtor_attributes        \
+#define TS_RULE_OF_FIVE(classname, dtor_attributes)       \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname(classname&&) = default;                 \
+        classname(const classname&) = default;            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default; \
+        virtual ~classname() dtor_attributes              \
         /** @endcond */
 
 //!
 //! A macro to declare the basic operators in the declaration of an interface class.
 //! @param classname Name of the enclosing class.
 //!
-#define TS_INTERFACE(classname)          \
-        TS_DEFAULT_COPY_MOVE(classname); \
-    public:                              \
-        /** @cond nodoxygen */           \
-        classname() = default;           \
-        virtual ~classname()             \
+#define TS_INTERFACE(classname)                           \
+    public:                                               \
+        /** @cond nodoxygen */                            \
+        classname() = default;                            \
+        classname(classname&&) = default;                 \
+        classname(const classname&) = default;            \
+        classname& operator=(classname&&) = default;      \
+        classname& operator=(const classname&) = default; \
+        virtual ~classname()                              \
         /** @endcond */
+
+//!
+//! A macro to declare an unequal operator in the declaration of a class.
+//! Before C++20, define an inline != operator based on the == operator.
+//! In C++20 and beyond, != is implicitly derived from the corresponding ==
+//! and this macro does nothing.
+//! @param classname Name of the enclosing class.
+//!
+#if defined(TS_NEED_UNEQUAL_OPERATOR) && !defined(DOXYGEN)
+    #define TS_UNEQUAL_OPERATOR(classname) bool operator!=(const classname& other) const { return ! operator==(other); }
+#else
+    #define TS_UNEQUAL_OPERATOR(classname)
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -1183,58 +1139,6 @@ TS_MSC_NOWARNING(5045)  // Compiler will insert Spectre mitigation for memory lo
     #define TS_WCHAR_SIZE 2
 #else
     #error "size of wchar_t is unknown on this platform"
-#endif
-
-
-//----------------------------------------------------------------------------
-// Definition of common integer literals.
-//----------------------------------------------------------------------------
-
-#if defined(DOXYGEN)
-
-    //!
-    //! Portable definition of a 64-bit signed literal.
-    //!
-    //! The C/C++ languages define the syntax for integer literals.
-    //! An integer literal is always @e typed.
-    //! Without suffix such as in @c 0, the literal has type @c int.
-    //! With an @c L suffix, such as in @c 0L, the literal has type @c long.
-    //! But there is no standard suffix or syntax for 64-bit literals;
-    //! different compilers have different syntaxes.
-    //!
-    //! This macro is a portable way to write 64-bit signed literals.
-    //!
-    //! Example:
-    //! @code
-    //! const int64_t aBigOne = TS_CONST64(0x7FFFFFFFFFFFFFFF);
-    //! @endcode
-    //!
-    #define TS_CONST64(n)
-    //!
-    //! Portable definition of a 64-bit unsigned literal.
-    //!
-    //! The C/C++ languages define the syntax for integer literals.
-    //! An integer literal is always @e typed.
-    //! Without suffix such as in @c 0, the literal has type @c int.
-    //! With an @c L suffix, such as in @c 0L, the literal has type @c long.
-    //! But there is no standard suffix or syntax for 64-bit literals;
-    //! different compilers have different syntaxes.
-    //!
-    //! This macro is a portable way to write 64-bit unsigned literals.
-    //!
-    //! Example:
-    //! @code
-    //! const uint64_t aBigOne = TS_UCONST64(0xFFFFFFFFFFFFFFFF);
-    //! @endcode
-    //!
-    #define TS_UCONST64(n)
-
-#elif defined(TS_MSC)
-    #define TS_CONST64(n)  n##i64
-    #define TS_UCONST64(n) n##ui64
-#else
-    #define TS_CONST64(n)  (int64_t(n##LL))
-    #define TS_UCONST64(n) (uint64_t(n##ULL))
 #endif
 
 
@@ -1336,7 +1240,7 @@ namespace ts {
     //! This constant shall be used by convention to express an infinite
     //! number of sub-quantities of seconds.
     //!
-    constexpr SubSecond Infinite = TS_CONST64(0x7FFFFFFFFFFFFFFF);
+    constexpr SubSecond Infinite = 0x7FFFFFFFFFFFFFFF;
     //!
     //! Number of nanoseconds per second
     //!

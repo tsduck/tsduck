@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -273,21 +252,21 @@ namespace ts {
     private:
         typedef std::vector<ColumnLayout> LayoutVector;
 
-        std::ostream& _out;              //!< Output text device.
-        size_t        _lineWidth;        //!< Display line width.
-        size_t        _marginWidth;      //!< Display margin width.
-        size_t        _contentWidth;     //!< Line content width, without borders and margins.
-        size_t        _lineCount;        //!< Number of displayed lines.
-        bool          _tableOpen;        //!< A table has been open.
-        UChar         _border;           //!< Vertical border character.
-        UString       _tableTop;         //!< Line to display on top of a table.
-        UString       _tableBottom;      //!< Line to display on bottom of a table.
-        UString       _sectionLine;      //!< Line to display before a section.
-        UString       _subSectionLine;   //!< Line to display before a subsection.
-        UString       _leftMargin;       //!< Left margin content.
-        UString       _rightMargin;      //!< Right margin content.
-        LayoutVector  _requestedLayout;  //!< User-requested ColumnLayout layout.
-        LayoutVector  _layout;           //!< Actual column layout, after adjustment.
+        std::ostream& _out;                 // Output text device.
+        size_t        _lineWidth = 0;       // Display line width.
+        size_t        _marginWidth = 0;     // Display margin width.
+        size_t        _contentWidth = 0;    // Line content width, without borders and margins.
+        size_t        _lineCount = 0;       // Number of displayed lines.
+        bool          _tableOpen = false;   // A table has been open.
+        UChar         _border {u'|'};       // Vertical border character.
+        UString       _tableTop {};         // Line to display on top of a table.
+        UString       _tableBottom {};      // Line to display on bottom of a table.
+        UString       _sectionLine {};      // Line to display before a section.
+        UString       _subSectionLine {};   // Line to display before a subsection.
+        UString       _leftMargin {};       // Left margin content.
+        UString       _rightMargin {};      // Right margin content.
+        LayoutVector  _requestedLayout {};  // User-requested ColumnLayout layout.
+        LayoutVector  _layout {};           // Actual column layout, after adjustment.
 
         // Recompute layout based on grid width.
         void adjustLayout();

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -127,23 +106,23 @@ namespace ts {
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
 
     private:
-        bool              _abort;            // Error, abort as soon as possible.
-        UString           _table_name;       // Table name, informational only.
-        BitRate           _default_bitrate;  // Default bitrate of new PID.
-        PID               _pid;              // PID to process.
-        bool              _found_pid;        // Found the target PID.
-        bool              _found_table;      // Found an instance of the target table.
-        PacketCounter     _pkt_create;       // Packet# after which a new table shall be created
-        PacketCounter     _pkt_insert;       // Packet# after which a PID packet shall be inserted
-        MilliSecond       _create_after_ms;  // Create a new table if none found after that time.
-        BitRate           _bitrate;          // PID's bitrate (if no previous table found).
-        PacketCounter     _inter_pkt;        // Packet interval between two PID packets.
-        bool              _incr_version;     // Increment table version.
-        bool              _set_version;      // Set a new table version.
-        uint8_t           _new_version;      // New table version.
-        SectionDemux      _demux;            // Section demux.
-        CyclingPacketizer _pzer;             // Packetizer for modified tables.
-        TablePatchXML     _patch_xml;        // Table patcher using XML patch files.
+        bool              _abort = false;         // Error, abort as soon as possible.
+        UString           _table_name {};         // Table name, informational only.
+        BitRate           _default_bitrate = 0;   // Default bitrate of new PID.
+        PID               _pid = PID_NULL;        // PID to process.
+        bool              _found_pid = false;     // Found the target PID.
+        bool              _found_table = false;   // Found an instance of the target table.
+        PacketCounter     _pkt_create = 0;        // Packet# after which a new table shall be created
+        PacketCounter     _pkt_insert = 0;        // Packet# after which a PID packet shall be inserted
+        MilliSecond       _create_after_ms = 0;   // Create a new table if none found after that time.
+        BitRate           _bitrate = 0;           // PID's bitrate (if no previous table found).
+        PacketCounter     _inter_pkt = 0;         // Packet interval between two PID packets.
+        bool              _incr_version = false;  // Increment table version.
+        bool              _set_version = false;   // Set a new table version.
+        uint8_t           _new_version = 0;       // New table version.
+        SectionDemux      _demux;                 // Section demux.
+        CyclingPacketizer _pzer;                  // Packetizer for modified tables.
+        TablePatchXML     _patch_xml;             // Table patcher using XML patch files.
 
         // Reinsert a table in the target PID.
         void reinsertTable(BinaryTable& table, bool is_target_table);

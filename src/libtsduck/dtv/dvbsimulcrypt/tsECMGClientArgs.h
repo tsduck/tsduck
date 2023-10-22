@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -52,19 +31,19 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        ECMGClientArgs();
+        ECMGClientArgs() = default;
 
         // Public fields, by options.
-        IPv4SocketAddress ecmg_address;     //!< -\-ecmg, ECMG socket address (required or optional)
-        uint32_t          super_cas_id;     //!< -\-super-cas-id, CA system & subsystem id
-        ByteBlock         access_criteria;  //!< -\-access-criteria
-        MilliSecond       cp_duration;      //!< -\-cp-duration, crypto-period duration
-        tlv::VERSION      dvbsim_version;   //!< -\-ecmg-scs-version
-        uint16_t          ecm_channel_id;   //!< -\-channel-id
-        uint16_t          ecm_stream_id;    //!< -\-stream-id
-        uint16_t          ecm_id;           //!< -\-ecm-id
-        int               log_protocol;     //!< -\-log-protocol
-        int               log_data;         //!< -\-log-data
+        IPv4SocketAddress ecmg_address {};      //!< -\-ecmg, ECMG socket address (required or optional)
+        uint32_t          super_cas_id = 0;     //!< -\-super-cas-id, CA system & subsystem id
+        ByteBlock         access_criteria {};   //!< -\-access-criteria
+        MilliSecond       cp_duration = 0;      //!< -\-cp-duration, crypto-period duration
+        tlv::VERSION      dvbsim_version = 0;   //!< -\-ecmg-scs-version
+        uint16_t          ecm_channel_id = 0;   //!< -\-channel-id
+        uint16_t          ecm_stream_id = 0;    //!< -\-stream-id
+        uint16_t          ecm_id = 0;           //!< -\-ecm-id
+        int               log_protocol = 0;     //!< -\-log-protocol
+        int               log_data = 0;         //!< -\-log-data
 
         //!
         //! Add command line option definitions in an Args.

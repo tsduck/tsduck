@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -59,49 +38,31 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck;          // TSDuck execution contexts.
-        ts::UStringVector        infiles;       // Input file names.
-        ts::UString              outfile;       // Output file name.
-        ts::UString              model;         // Model file name.
-        ts::UStringVector        patches;       // XML patch files.
-        ts::UStringVector        sorted_tags;   // Sort the content of these tags.
-        bool                     reformat;      // Reformat input files.
-        bool                     uncomment;     // Remove comments.
-        bool                     xml_line;      // Output XML on one single line.
-        bool                     tables_model;  // Use table model file.
-        bool                     use_model;     // There is a model to use.
-        bool                     from_json;     // Perform an automated JSON-to-XML conversion on input.
-        bool                     merge_inputs;  // Merge all input XML files as one.
-        bool                     need_output;   // An output file is needed.
-        ts::UString              xml_prefix;    // Prefix in XML line.
-        size_t                   indent;        // Output indentation.
-        ts::xml::Tweaks          xml_tweaks;    // XML formatting options.
-        ts::xml::MergeAttributes merge_attr;    // How to merge attributes (with merge_inputs);
-        ts::json::OutputArgs     json;          // JSON output options.
+        ts::DuckContext          duck;                  // TSDuck execution contexts.
+        ts::UStringVector        infiles {};            // Input file names.
+        ts::UString              outfile {};            // Output file name.
+        ts::UString              model {};              // Model file name.
+        ts::UStringVector        patches {};            // XML patch files.
+        ts::UStringVector        sorted_tags {};        // Sort the content of these tags.
+        bool                     reformat = false;      // Reformat input files.
+        bool                     uncomment = false;     // Remove comments.
+        bool                     xml_line = false;      // Output XML on one single line.
+        bool                     tables_model = false;  // Use table model file.
+        bool                     use_model = false;     // There is a model to use.
+        bool                     from_json = false;     // Perform an automated JSON-to-XML conversion on input.
+        bool                     merge_inputs = false;  // Merge all input XML files as one.
+        bool                     need_output = false;   // An output file is needed.
+        ts::UString              xml_prefix {};         // Prefix in XML line.
+        size_t                   indent = 2;            // Output indentation.
+        ts::xml::Tweaks          xml_tweaks {};         // XML formatting options.
+        ts::xml::MergeAttributes merge_attr = ts::xml::MergeAttributes::NONE; // How to merge attributes (with merge_inputs);
+        ts::json::OutputArgs     json {};               // JSON output options.
     };
 }
 
 Options::Options(int argc, char *argv[]) :
     Args(u"Test tool for TSDuck XML manipulation", u"[options] [input-file ...]"),
-    duck(this),
-    infiles(),
-    outfile(),
-    model(),
-    patches(),
-    sorted_tags(),
-    reformat(false),
-    uncomment(false),
-    xml_line(false),
-    tables_model(false),
-    use_model(false),
-    from_json(false),
-    merge_inputs(false),
-    need_output(false),
-    xml_prefix(),
-    indent(2),
-    xml_tweaks(),
-    merge_attr(ts::xml::MergeAttributes::NONE),
-    json()
+    duck(this)
 {
     json.defineArgs(*this, true, u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
     xml_tweaks.defineArgs(*this);
@@ -112,9 +73,9 @@ Options::Options(int argc, char *argv[]) :
     help(u"", u"Specify the list of input files. If any is specified as '-', the standard input is used.");
 
     option(u"attributes-merge", 0, ts::Enumeration({
-        {u"add",     int(ts::xml::MergeAttributes::ADD)},
-        {u"none",    int(ts::xml::MergeAttributes::NONE)},
-        {u"replace", int(ts::xml::MergeAttributes::REPLACE)},
+        {u"add",     ts::xml::MergeAttributes::ADD},
+        {u"none",    ts::xml::MergeAttributes::NONE},
+        {u"replace", ts::xml::MergeAttributes::REPLACE},
     }));
     help(u"attributes-merge", u"name",
          u"With --merge, specify how attributes are processed in merged node. "

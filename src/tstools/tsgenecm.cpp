@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -52,23 +31,19 @@ namespace {
     public:
         GenECMOptions(int argc, char *argv[]);
 
-        ts::DuckContext    duck;       // TSDuck execution context.
-        ts::UString        outFile;    // Name of binary output file.
-        ts::ECMGClientArgs ecmg;       // ECMG parameters
-        uint16_t           cpNumber;   // Crypto-period number
-        ts::ByteBlock      cwCurrent;  // Current CW
-        ts::ByteBlock      cwNext;     // Next CW
+        ts::DuckContext       duck;          // TSDuck execution context.
+        ts::ecmgscs::Protocol ecmgscs {};    // ECMG <=> SCS protocol instance.
+        ts::UString           outFile {};    // Name of binary output file.
+        ts::ECMGClientArgs    ecmg {};       // ECMG parameters
+        uint16_t              cpNumber {0};  // Crypto-period number
+        ts::ByteBlock         cwCurrent {};  // Current CW
+        ts::ByteBlock         cwNext {};     // Next CW
     };
 }
 
 GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
-    duck(this),
-    outFile(),
-    ecmg(),
-    cpNumber(0),
-    cwCurrent(),
-    cwNext()
+    duck(this)
 {
     setIntro(u"This command connects to a DVB SimulCrypt compliant ECMG and requests "
              u"the generation of one ECM. Restriction: The target ECMG shall support "
@@ -99,6 +74,9 @@ GenECMOptions::GenECMOptions(int argc, char *argv[]) :
     getIntValue(cpNumber, u"cp-number", 0);
     getHexaValue(cwCurrent, u"cw-current");
     getHexaValue(cwNext, u"cw-next");
+
+    // Specify which ECMG <=> SCS version to use.
+    ecmgscs.setVersion(ecmg.dvbsim_version);
 
     exitOnError();
 }
@@ -161,17 +139,14 @@ int MainCode(int argc, char *argv[])
 {
     GenECMOptions opt(argc, argv);
     ts::tlv::Logger logger(ts::Severity::Debug, &opt);
-    ts::ecmgscs::ChannelStatus channelStatus;
-    ts::ecmgscs::StreamStatus streamStatus;
-    ts::ECMGClient ecmg;
+    ts::ecmgscs::ChannelStatus channelStatus(opt.ecmgscs);
+    ts::ecmgscs::StreamStatus streamStatus(opt.ecmgscs);
+    ts::ECMGClient ecmg(opt.ecmgscs);
 
     // Set logging levels.
     logger.setDefaultSeverity(opt.ecmg.log_protocol);
     logger.setSeverity(ts::ecmgscs::Tags::CW_provision, opt.ecmg.log_data);
     logger.setSeverity(ts::ecmgscs::Tags::ECM_response, opt.ecmg.log_data);
-
-    // Specify which ECMG <=> SCS version to use.
-    ts::ecmgscs::Protocol::Instance()->setVersion(opt.ecmg.dvbsim_version);
 
     // Connect to ECMG.
     if (!ecmg.connect(opt.ecmg, channelStatus, streamStatus, nullptr, logger)) {
@@ -180,7 +155,7 @@ int MainCode(int argc, char *argv[])
     }
 
     // Request the ECM (synchronous operation).
-    ts::ecmgscs::ECMResponse response;
+    ts::ecmgscs::ECMResponse response(opt.ecmgscs);
     if (!ecmg.generateECM(opt.cpNumber, opt.cwCurrent, opt.cwNext, opt.ecmg.access_criteria, uint16_t(opt.ecmg.cp_duration / 100), response)) {
         ecmg.disconnect();
         return EXIT_FAILURE;

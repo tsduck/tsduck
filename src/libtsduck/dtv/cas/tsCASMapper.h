@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -64,20 +43,14 @@ namespace ts {
         //! This method feeds the CAS mapper with a TS packet.
         //! @param [in] pkt A new transport stream packet.
         //!
-        void feedPacket(const TSPacket& pkt)
-        {
-            _demux.feedPacket(pkt);
-        }
+        void feedPacket(const TSPacket& pkt) { _demux.feedPacket(pkt); }
 
         //!
         //! Filter PSI tables based on current/next indicator.
         //! @param [in] current Use "current" tables. This is true by default.
         //! @param [in] next Use "next" tables. This is false by default.
         //!
-        void setCurrentNext(bool current, bool next)
-        {
-            _demux.setCurrentNext(current, next);
-        }
+        void setCurrentNext(bool current, bool next) { _demux.setCurrentNext(current, next); }
 
         //!
         //! Track / untrack invalid section version numbers.
@@ -87,20 +60,14 @@ namespace ts {
         //! changes. This is considered as an error according to MPEG rules.
         //! @param [in] on Track invalid section versions. This is false by default.
         //!
-        void trackInvalidSectionVersions(bool on)
-        {
-            _demux.trackInvalidSectionVersions(on);
-        }
+        void trackInvalidSectionVersions(bool on) { _demux.trackInvalidSectionVersions(on); }
 
         //!
         //! Check if a PID is a known CA PID.
         //! @param [in] pid A PID to check.
         //! @return True if @ pid is a known ECM or EMM PID.
         //!
-        bool knownPID(PID pid) const
-        {
-            return Contains(_pids, pid);
-        }
+        bool knownPID(PID pid) const { return Contains(_pids, pid); }
 
         //!
         //! Get the CAS id of a CA PID (ECM or EMM).
@@ -157,7 +124,7 @@ namespace ts {
         // CAMapper private fields.
         DuckContext&      _duck;
         SectionDemux      _demux;
-        PIDDescriptionMap _pids;
+        PIDDescriptionMap _pids {};
 
         // Implementation of TableHandlerInterface
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

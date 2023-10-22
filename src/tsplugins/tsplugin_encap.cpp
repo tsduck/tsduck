@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -53,16 +32,16 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool                         _ignoreErrors;  // Ignore encapsulation errors.
-        bool                         _pack;          // Outer packet packing option.
-        size_t                       _packLimit;     // Max limit distance.
-        size_t                       _maxBuffered;   // Max buffered packets.
-        PID                          _pidOutput;     // Output PID.
-        PID                          _pidPCR;        // PCR reference PID.
-        PIDSet                       _pidsInput;     // Input PID's.
-        PacketEncapsulation::PESMode _pesMode;       // Enable PES mode and select type.
-        size_t                       _pesOffset;     // Offset value in PES Synchronous.
-        PacketEncapsulation          _encap;         // Encapsulation engine.
+        bool                         _ignoreErrors = false;  // Ignore encapsulation errors.
+        bool                         _pack = false;          // Outer packet packing option.
+        size_t                       _packLimit = 0;         // Max limit distance.
+        size_t                       _maxBuffered = 0;       // Max buffered packets.
+        PID                          _pidOutput = PID_NULL;  // Output PID.
+        PID                          _pidPCR = PID_NULL;     // PCR reference PID.
+        PIDSet                       _pidsInput {};          // Input PID's.
+        PacketEncapsulation::PESMode _pesMode = PacketEncapsulation::DISABLED;
+        size_t                       _pesOffset = 0;         // Offset value in PES Synchronous.
+        PacketEncapsulation          _encap {};              // Encapsulation engine.
     };
 }
 
@@ -74,17 +53,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"encap", ts::EncapPlugin);
 //----------------------------------------------------------------------------
 
 ts::EncapPlugin::EncapPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Encapsulate packets from several PID's into one single PID", u"[options]"),
-    _ignoreErrors(false),
-    _pack(false),
-    _packLimit(0),
-    _maxBuffered(0),
-    _pidOutput(PID_NULL),
-    _pidPCR(PID_NULL),
-    _pidsInput(),
-    _pesMode(PacketEncapsulation::DISABLED),
-    _pesOffset(0),
-    _encap()
+    ProcessorPlugin(tsp_, u"Encapsulate packets from several PID's into one single PID", u"[options]")
 {
     option(u"ignore-errors", 'i');
     help(u"ignore-errors",

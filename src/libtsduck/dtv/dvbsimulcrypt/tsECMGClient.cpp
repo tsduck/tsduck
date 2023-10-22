@@ -2,57 +2,22 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
 #include "tsECMGClient.h"
 #include "tsGuardCondition.h"
-
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-const size_t ts::ECMGClient::RECEIVER_STACK_SIZE;
-const size_t ts::ECMGClient::RESPONSE_QUEUE_SIZE;
-const ts::MilliSecond ts::ECMGClient::RESPONSE_TIMEOUT;
-#endif
+#include "tsNullReport.h"
 
 
 //----------------------------------------------------------------------------
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::ECMGClient::ECMGClient(size_t extra_handler_stack_size) :
+ts::ECMGClient::ECMGClient(const ecmgscs::Protocol& protocol, size_t extra_handler_stack_size) :
     Thread(ThreadAttributes().setStackSize(RECEIVER_STACK_SIZE + extra_handler_stack_size)),
-    _state(INITIAL),
-    _abort(nullptr),
-    _logger(),
-    _connection(ecmgscs::Protocol::Instance(), true, 3),
-    _channel_status(),
-    _stream_status(),
-    _mutex(),
-    _work_to_do(),
-    _async_requests(),
-    _response_queue(RESPONSE_QUEUE_SIZE)
+    _protocol(protocol)
 {
 }
 
@@ -139,7 +104,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     }
 
     // Send a channel_setup message to ECMG
-    ecmgscs::ChannelSetup channel_setup;
+    ecmgscs::ChannelSetup channel_setup(_protocol);
     channel_setup.channel_id = args.ecm_channel_id;
     channel_setup.Super_CAS_id = args.super_cas_id;
     if (!_connection.send(channel_setup, _logger)) {
@@ -166,7 +131,7 @@ bool ts::ECMGClient::connect(const ECMGClientArgs& args,
     channel_status = _channel_status = *csp;
 
     // Send a stream_setup message to ECMG
-    ecmgscs::StreamSetup stream_setup;
+    ecmgscs::StreamSetup stream_setup(_protocol);
     stream_setup.channel_id = args.ecm_channel_id;
     stream_setup.stream_id = args.ecm_stream_id;
     stream_setup.ECM_id = args.ecm_id;
@@ -216,7 +181,7 @@ bool ts::ECMGClient::disconnect()
     bool ok = previous_state == CONNECTED;
     if (ok) {
         // Politely send a stream_close_request
-        ecmgscs::StreamCloseRequest req;
+        ecmgscs::StreamCloseRequest req(_protocol);
         req.channel_id = _stream_status.channel_id;
         req.stream_id = _stream_status.stream_id;
         tlv::MessagePtr resp;
@@ -227,7 +192,7 @@ bool ts::ECMGClient::disconnect()
             resp->tag() == ecmgscs::Tags::stream_close_response;
         // If we get a polite reply, send a channel_close
         if (ok) {
-            ecmgscs::ChannelClose cc;
+            ecmgscs::ChannelClose cc(_protocol);
             cc.channel_id = _channel_status.channel_id;
             ok = _connection.send(cc, _logger);
         }
@@ -288,7 +253,7 @@ bool ts::ECMGClient::generateECM(uint16_t cp_number,
                                  ecmgscs::ECMResponse& ecm_response)
 {
     // Build a CW_provision message
-    ecmgscs::CWProvision msg;
+    ecmgscs::CWProvision msg(_protocol);
     buildCWProvision(msg, cp_number, current_cw, next_cw, ac, cp_duration);
 
     // Send the CW_provision message
@@ -336,7 +301,7 @@ bool ts::ECMGClient::submitECM(uint16_t cp_number,
                                ECMGClientHandlerInterface* ecm_handler)
 {
     // Build a CW_provision message
-    ecmgscs::CWProvision msg;
+    ecmgscs::CWProvision msg(_protocol);
     buildCWProvision(msg, cp_number, current_cw, next_cw, ac, cp_duration);
 
     // Register an asynchronous request

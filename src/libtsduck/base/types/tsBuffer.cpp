@@ -2,35 +2,14 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
 #include "tsBuffer.h"
 #include "tsFatal.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+#if !defined(TS_CXX17)
 constexpr size_t ts::Buffer::DEFAULT_SIZE;
 constexpr size_t ts::Buffer::MINIMUM_SIZE;
 #endif
@@ -71,14 +50,8 @@ bool ts::Buffer::isValid() const
 //----------------------------------------------------------------------------
 
 ts::Buffer::State::State(bool rdonly, size_t size) :
-    reason(Reason::FULL),
     read_only(rdonly),
-    end(size),
-    rbyte(0),
-    wbyte(0),
-    rbit(0),
-    wbit(0),
-    len_bits(0)
+    end(size)
 {
 }
 
@@ -97,14 +70,7 @@ ts::Buffer::Buffer(size_t size) :
     _buffer(nullptr), // adjusted later
     _buffer_size(std::max(MINIMUM_SIZE, size)),
     _allocated(true),
-    _big_endian(true),
-    _read_error(false),
-    _write_error(false),
-    _user_error(false),
-    _state(false, size),
-    _saved_states(),
-    _realigned(),
-    _reserved_bits_errors()
+    _state(false, size)
 {
     _buffer = new uint8_t[_buffer_size];
     CheckNonNull(_buffer);
@@ -155,14 +121,7 @@ ts::Buffer::Buffer(void* data, size_t size, bool read_only) :
     _buffer(reinterpret_cast<uint8_t*>(data)),
     _buffer_size(size),
     _allocated(false),
-    _big_endian(true),
-    _read_error(false),
-    _write_error(false),
-    _user_error(false),
-    _state(read_only, size),
-    _saved_states(),
-    _realigned(),
-    _reserved_bits_errors()
+    _state(read_only, size)
 {
     if (_state.read_only) {
         _state.wbyte = _state.end;
@@ -209,14 +168,7 @@ ts::Buffer::Buffer(const void* data, size_t size) :
     _buffer(reinterpret_cast<uint8_t*>(const_cast<void*>(data))),
     _buffer_size(size),
     _allocated(false),
-    _big_endian(true),
-    _read_error(false),
-    _write_error(false),
-    _user_error(false),
-    _state(true, size),
-    _saved_states(),
-    _realigned(),
-    _reserved_bits_errors()
+    _state(true, size)
 {
     _state.wbyte = _buffer_size;
 }

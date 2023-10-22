@@ -2,30 +2,7 @@
 #
 #  TSDuck - The MPEG Transport Stream Toolkit
 #  Copyright (c) 2005-2023, Thierry Lelegard
-#  All rights reserved.
-#
-#  Redistribution and use in source and binary forms, with or without
-#  modification, are permitted provided that the following conditions are met:
-#
-#  1. Redistributions of source code must retain the above copyright notice,
-#     this list of conditions and the following disclaimer.
-#  2. Redistributions in binary form must reproduce the above copyright
-#     notice, this list of conditions and the following disclaimer in the
-#     documentation and/or other materials provided with the distribution.
-#
-#  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-#  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-#  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-#  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-#  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-#  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-#  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-#  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-#  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-#  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-#  THE POSSIBILITY OF SUCH DAMAGE.
-#
-#-----------------------------------------------------------------------------
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #  Common makefile definitions for the TSDuck project.
 #  To be included in all makefiles in the project.
@@ -454,6 +431,7 @@ ifeq ($(GCC_VERSION_DONE),)
     export USE_GCC := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i -e gcc -e g++),true)
     export USE_LLVM := $(if $(shell $(CXX) --version 2>/dev/null | $(GREP) -i clang),true)
     export LLVM_12 := $(call F_GE,$(LLVM_MAJOR),12)
+    export LLVM_15 := $(call F_GE,$(LLVM_MAJOR),15)
     export GCC_5 := $(call F_GE,$(GCC_MAJOR),5)
     export GCC_6 := $(call F_GE,$(GCC_MAJOR),6)
 endif
@@ -588,7 +566,7 @@ else ifneq ($(DRAGONFLYBSD),)
     SOFLAGS = -Wl,-soname=$(notdir $@),-z,noexecstack
 else ifneq ($(MACOS),)
     # Build flags on macOS
-    LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib
+    LDFLAGS += -Wl,-rpath,@executable_path -Wl,-rpath,@executable_path/../lib -Xlinker $(if $(LLVM_15),-no_warn_duplicate_libraries)
     SOFLAGS = -install_name '@rpath/$(notdir $@)'
 endif
 

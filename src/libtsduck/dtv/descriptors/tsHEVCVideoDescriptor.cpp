@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -48,23 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::HEVCVideoDescriptor::HEVCVideoDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    profile_space(0),
-    tier(false),
-    profile_idc(0),
-    profile_compatibility_indication(0),
-    progressive_source(false),
-    interlaced_source(false),
-    non_packed_constraint(false),
-    frame_only_constraint(false),
-    copied_44bits(0),
-    level_idc(0),
-    HEVC_still_present(false),
-    HEVC_24hr_picture_present(false),
-    sub_pic_hrd_params_not_present(true),
-    HDR_WCG_idc(3),
-    temporal_id_min(),
-    temporal_id_max()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -233,8 +196,8 @@ bool ts::HEVCVideoDescriptor::analyzeXML(DuckContext& duck, const xml::Element* 
         element->getBoolAttribute(non_packed_constraint, u"non_packed_constraint_flag", true) &&
         element->getBoolAttribute(frame_only_constraint, u"frame_only_constraint_flag", true) &&
         // copied_44bits and reserved_zero_44bits are synonyms
-        element->getIntAttribute(copied_44bits, u"copied_44bits", false, 0, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
-        element->getIntAttribute(copied_44bits, u"reserved_zero_44bits", false, copied_44bits, 0, TS_UCONST64(0x00000FFFFFFFFFFF)) &&
+        element->getIntAttribute(copied_44bits, u"copied_44bits", false, 0, 0, 0x00000FFFFFFFFFFF) &&
+        element->getIntAttribute(copied_44bits, u"reserved_zero_44bits", false, copied_44bits, 0, 0x00000FFFFFFFFFFF) &&
         element->getIntAttribute(level_idc, u"level_idc", true) &&
         element->getBoolAttribute(HEVC_still_present, u"HEVC_still_present_flag", true) &&
         element->getBoolAttribute(HEVC_24hr_picture_present, u"HEVC_24hr_picture_present_flag", true) &&

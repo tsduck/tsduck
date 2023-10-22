@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -51,18 +30,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor() :
-    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME),
-    receiver_profiles(0),
-    S2X_mode(0),
-    TS_GS_S2X_mode(0),
-    scrambling_sequence_selector(false),
-    scrambling_sequence_index(0),
-    timeslice_number(0),
-    master_channel(),
-    num_channel_bonds_minus_one(false),
-    channel_bond_0(),
-    channel_bond_1(),
-    reserved_future_use()
+    AbstractDeliverySystemDescriptor(MY_DID, DS_DVB_S2, MY_XML_NAME)
 {
 }
 
@@ -85,18 +53,6 @@ ts::S2XSatelliteDeliverySystemDescriptor::S2XSatelliteDeliverySystemDescriptor(D
     S2XSatelliteDeliverySystemDescriptor()
 {
     deserialize(duck, desc);
-}
-
-ts::S2XSatelliteDeliverySystemDescriptor::Channel::Channel() :
-    frequency(0),
-    orbital_position(0),
-    east_not_west(false),
-    polarization(0),
-    roll_off(0),
-    symbol_rate(0),
-    multiple_input_stream_flag(false),
-    input_stream_identifier(0)
-{
 }
 
 void ts::S2XSatelliteDeliverySystemDescriptor::Channel::clear()
@@ -225,12 +181,12 @@ void ts::S2XSatelliteDeliverySystemDescriptor::deserializeChannel(Channel& chann
 //----------------------------------------------------------------------------
 
 const ts::Enumeration ts::S2XSatelliteDeliverySystemDescriptor::RollOffNames({
-    {u"0.35",     0},
-    {u"0.25",     1},
-    {u"0.20",     2},
-    {u"0.15",     4},
-    {u"0.10",     5},
-    {u"0.05",     6},
+    {u"0.35", 0},
+    {u"0.25", 1},
+    {u"0.20", 2},
+    {u"0.15", 4},
+    {u"0.10", 5},
+    {u"0.05", 6},
 });
 
 

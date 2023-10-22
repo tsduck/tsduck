@@ -2,83 +2,25 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
 #include "tsTSProcessorArgs.h"
-#include "tsPluginRepository.h"
 #include "tsArgsWithPlugins.h"
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+#if !defined(TS_CXX17)
 constexpr size_t ts::TSProcessorArgs::DEFAULT_BUFFER_SIZE;
 constexpr size_t ts::TSProcessorArgs::MIN_BUFFER_SIZE;
+constexpr ts::MilliSecond ts::TSProcessorArgs::DEFAULT_CONTROL_TIMEOUT;
+constexpr ts::MilliSecond ts::TSProcessorArgs::DEFAULT_BITRATE_INTERVAL;
+constexpr ts::PacketCounter ts::TSProcessorArgs::DEFAULT_INIT_BITRATE_PKT_INTERVAL;
 #endif
 
-#define DEF_BITRATE_INTERVAL               5  // seconds
-#define DEF_INIT_BITRATE_PKT_INTERVAL   1000  // packets
-#define DEF_MAX_FLUSH_PKT_OFL          10000  // packets
-#define DEF_MAX_FLUSH_PKT_RT            1000  // packets
-#define DEF_MAX_INPUT_PKT_OFL              0  // packets
-#define DEF_MAX_INPUT_PKT_RT            1000  // packets
-#define DEF_CONTROL_TIMEOUT             5000  // milliseconds
-
-
-//----------------------------------------------------------------------------
-// Constructor.
-//----------------------------------------------------------------------------
-
-ts::TSProcessorArgs::TSProcessorArgs() :
-    app_name(),
-    ignore_jt(false),
-    log_plugin_index(false),
-    ts_buffer_size(DEFAULT_BUFFER_SIZE),
-    max_flush_pkt(0),
-    max_input_pkt(0),
-    max_output_pkt(NPOS), // unlimited
-    init_input_pkt(0),
-    instuff_nullpkt(0),
-    instuff_inpkt(0),
-    instuff_start(0),
-    instuff_stop(0),
-    fixed_bitrate(0),
-    bitrate_adj(DEF_BITRATE_INTERVAL * MilliSecPerSec),
-    init_bitrate_adj(DEF_INIT_BITRATE_PKT_INTERVAL),
-    realtime(Tristate::Maybe),
-    receive_timeout(0),
-    final_wait(-1),
-    control_port(0),
-    control_local(),
-    control_reuse(false),
-    control_sources(),
-    control_timeout(DEF_CONTROL_TIMEOUT),
-    duck_args(),
-    input(),
-    plugins(),
-    output()
-{
-}
+#define DEF_MAX_FLUSH_PKT_OFL  10000  // packets
+#define DEF_MAX_FLUSH_PKT_RT    1000  // packets
+#define DEF_MAX_INPUT_PKT_OFL      0  // packets
+#define DEF_MAX_INPUT_PKT_RT    1000  // packets
 
 
 //----------------------------------------------------------------------------
@@ -116,7 +58,7 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
     args.help(u"bitrate-adjust-interval",
               u"Specify the interval in seconds between bitrate adjustments, "
               u"ie. when the output bitrate is adjusted to the input one. "
-              u"The default is " TS_USTRINGIFY(DEF_BITRATE_INTERVAL) u" seconds. "
+              u"The default is " + UString::Decimal(DEFAULT_BITRATE_INTERVAL / MilliSecPerSec) + u" seconds. "
               u"Some output processors ignore this setting. Typically, ASI "
               u"or modulator devices use it, while file devices ignore it. "
               u"This option is ignored if --bitrate is specified. ");
@@ -153,7 +95,7 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
     args.option(u"control-timeout", 0, Args::UNSIGNED);
     args.help(u"control-timeout", u"milliseconds",
               u"Specify the reception timeout in milliseconds for control commands. "
-              u"The default timeout is " TS_STRINGIFY(DEF_CONTROL_TIMEOUT) u" ms.");
+              u"The default timeout is " + UString::Decimal(DEFAULT_CONTROL_TIMEOUT) + u" ms.");
 
     args.option(u"final-wait", 0, Args::INT64);
     args.help(u"final-wait", u"milliseconds",
@@ -236,7 +178,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     log_plugin_index = args.present(u"log-plugin-index");
     ts_buffer_size = args.intValue<size_t>(u"buffer-size-mb", DEFAULT_BUFFER_SIZE);
     args.getValue(fixed_bitrate, u"bitrate", 0);
-    bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEF_BITRATE_INTERVAL);
+    bitrate_adj = MilliSecPerSec * args.intValue(u"bitrate-adjust-interval", DEFAULT_BITRATE_INTERVAL / MilliSecPerSec);
     args.getIntValue(max_flush_pkt, u"max-flushed-packets", 0);
     args.getIntValue(max_input_pkt, u"max-input-packets", 0);
     args.getIntValue(max_output_pkt, u"max-output-packets", NPOS); // unlimited by default
@@ -248,7 +190,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(receive_timeout, u"receive-timeout", 0);
     args.getIntValue(final_wait, u"final-wait", -1);
     args.getIntValue(control_port, u"control-port", 0);
-    args.getIntValue(control_timeout, u"control-timeout", DEF_CONTROL_TIMEOUT);
+    args.getIntValue(control_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);
     control_reuse = args.present(u"control-reuse-port");
 
     // Convert MB in MiB for buffer size for compatibility with original versions.

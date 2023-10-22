@@ -2,34 +2,12 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
 #include "tsSpliceSegmentationDescriptor.h"
 #include "tsDescriptor.h"
-#include "tsSCTE35.h"
 #include "tsTablesDisplay.h"
 #include "tsPSIRepository.h"
 #include "tsPSIBuffer.h"
@@ -50,24 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::TableSpecific(MY_DID, MY_TID), MY_XML
 //----------------------------------------------------------------------------
 
 ts::SpliceSegmentationDescriptor::SpliceSegmentationDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    identifier(SPLICE_ID_CUEI),
-    segmentation_event_id(0),
-    segmentation_event_cancel(false),
-    program_segmentation(true),
-    web_delivery_allowed(true),
-    no_regional_blackout(true),
-    archive_allowed(true),
-    device_restrictions(3),
-    pts_offsets(),
-    segmentation_duration(),
-    segmentation_upid_type(0),
-    segmentation_upid(),
-    segmentation_type_id(0),
-    segment_num(0),
-    segments_expected(0),
-    sub_segment_num(0),
-    sub_segments_expected(0)
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -419,7 +380,7 @@ bool ts::SpliceSegmentationDescriptor::analyzeXML(DuckContext& duck, const xml::
              element->getBoolAttribute(no_regional_blackout, u"no_regional_blackout", false, true) &&
              element->getBoolAttribute(archive_allowed, u"archive_allowed", false, true) &&
              element->getIntAttribute(device_restrictions, u"device_restrictions", false, 3, 0, 3) &&
-             element->getOptionalIntAttribute(segmentation_duration, u"segmentation_duration", 0, TS_UCONST64(0x000000FFFFFFFFFF)) &&
+             element->getOptionalIntAttribute(segmentation_duration, u"segmentation_duration", 0, 0x000000FFFFFFFFFF) &&
              element->getIntAttribute(segmentation_type_id, u"segmentation_type_id", true) &&
              element->getIntAttribute(segment_num, u"segment_num", true) &&
              element->getIntAttribute(segments_expected, u"segments_expected", true) &&

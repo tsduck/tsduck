@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -50,10 +29,10 @@ namespace ts {
         //!
         struct TSDUCKDLL Point
         {
-            Point();                            //!< Contructor.
-            uint8_t   applicable_temporal_id;   //!< 3 bits.
-            uint8_t   num_target_output_views;  //!< 8 bits.
-            ByteBlock ES_references;            //!< List of 6-bit ES references.
+            Point() = default;                      //!< Contructor.
+            uint8_t   applicable_temporal_id = 0;   //!< 3 bits.
+            uint8_t   num_target_output_views = 0;  //!< 8 bits.
+            ByteBlock ES_references {};             //!< List of 6-bit ES references.
         };
 
         //!
@@ -66,9 +45,9 @@ namespace ts {
         //!
         struct TSDUCKDLL Level
         {
-            Level();                     //!< Contructor.
-            uint8_t   level_idc;         //!< MVC level.
-            PointList operation_points;  //!< List of operational points.
+            Level() = default;              //!< Contructor.
+            uint8_t   level_idc = 0;        //!< MVC level.
+            PointList operation_points {};  //!< List of operational points.
         };
 
         //!
@@ -77,15 +56,15 @@ namespace ts {
         typedef std::list<Level> LevelList;
 
         // MVCOperationPointDescriptor public members:
-        uint8_t   profile_idc;           //!< MVC profile.
-        bool      constraint_set0;       //!< Defined in H.264, ISO/IEC 14496-10
-        bool      constraint_set1;       //!< Defined in H.264, ISO/IEC 14496-10
-        bool      constraint_set2;       //!< Defined in H.264, ISO/IEC 14496-10
-        bool      constraint_set3;       //!< Defined in H.264, ISO/IEC 14496-10
-        bool      constraint_set4;       //!< Defined in H.264, ISO/IEC 14496-10
-        bool      constraint_set5;       //!< Defined in H.264, ISO/IEC 14496-10
-        uint8_t   AVC_compatible_flags;  //!< 2 bits, defined in H.264, ISO/IEC 14496-10
-        LevelList levels;                //!< List of level entries.
+        uint8_t   profile_idc = 0;           //!< MVC profile.
+        bool      constraint_set0 = false;   //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set1 = false;   //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set2 = false;   //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set3 = false;   //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set4 = false;   //!< Defined in H.264, ISO/IEC 14496-10
+        bool      constraint_set5 = false;   //!< Defined in H.264, ISO/IEC 14496-10
+        uint8_t   AVC_compatible_flags = 0;  //!< 2 bits, defined in H.264, ISO/IEC 14496-10
+        LevelList levels {};                 //!< List of level entries.
 
         //!
         //! Default constructor.

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -33,36 +12,15 @@
 
 
 //----------------------------------------------------------------------------
-// Constructor
-// Specify the criteria for valid bitrate analysis:
-// Minimum number of PID's, each with a minimum number of PCR"s.
+// Constructor and destructor.
 //----------------------------------------------------------------------------
 
 ts::PCRAnalyzer::PCRAnalyzer(size_t min_pid, size_t min_pcr) :
-    _use_dts(false),
-    _ignore_errors(false),
     _min_pid(std::max<size_t>(1, min_pid)),
-    _min_pcr(std::max<size_t>(1, min_pcr)),
-    _bitrate_valid(false),
-    _ts_pkt_cnt(0),
-    _ts_bitrate_188(0),
-    _ts_bitrate_204(0),
-    _ts_bitrate_cnt(0),
-    _inst_ts_bitrate_188(0),
-    _inst_ts_bitrate_204(0),
-    _completed_pids(0),
-    _pcr_pids(0),
-    _discontinuities(0),
-    _pid(),
-    _packet_pcr_index_map()
+    _min_pcr(std::max<size_t>(1, min_pcr))
 {
     TS_ZERO(_pid);
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor
-//----------------------------------------------------------------------------
 
 ts::PCRAnalyzer::~PCRAnalyzer()
 {
@@ -71,37 +29,8 @@ ts::PCRAnalyzer::~PCRAnalyzer()
 
 
 //----------------------------------------------------------------------------
-// PIDAnalysis constructor
-//----------------------------------------------------------------------------
-
-ts::PCRAnalyzer::PIDAnalysis::PIDAnalysis() :
-    ts_pkt_cnt(0),
-    cur_continuity(0),
-    last_pcr_value(INVALID_PCR),
-    last_pcr_packet(0),
-    ts_bitrate_188(0),
-    ts_bitrate_204(0),
-    ts_bitrate_cnt(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // PCRAnalyzez::Status constructors
 //----------------------------------------------------------------------------
-
-ts::PCRAnalyzer::Status::Status() :
-    bitrate_valid(false),
-    bitrate_188(0),
-    bitrate_204(0),
-    packet_count(0),
-    pcr_count(0),
-    pcr_pids(0),
-    discontinuities(0),
-    instantaneous_bitrate_188(0),
-    instantaneous_bitrate_204(0)
-{
-}
 
 ts::PCRAnalyzer::Status::Status(const PCRAnalyzer& an) : Status()
 {

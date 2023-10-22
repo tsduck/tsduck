@@ -201,6 +201,38 @@ The TSDuck commands are located in the `bin` subdirectory and can be executed
 from here without any additional setup. It is probably a good idea to add this
 `bin` directory in your `PATH` environment variable.
 
+## Using pkgconfig after installation {#pkgconfiginstall}
+
+Applications may use the `pkgconfig` utility to reference the TSDuck library.
+A file named `tsduck.pc` is installed in the appropriate directory.
+
+However, `pkgconfig` has its own limitations, specifically regarding the
+configured compilation options.
+
+TSDuck is a C++ library which requires a minimum revision of the language.
+Currently, the minimum revision is C++11. All more recent revisions are supported.
+By default, most C++ compilers are based on older revisions. Therefore, compiling
+an application using TSDuck with the default options fails. At least, `-std=c++11`
+is required. To avoid compilation problems with most applications, `-std=c++11` is
+enforced in `tsduck.pc`.
+
+However, some applications may need to explicitly specify a more recent revision,
+such as `-std=c++14` or `-std=c++20`, which conflicts with `-std=c++11` in `tsduck.pc`.
+
+For that use case, you may install TSDuck without reference to the C++ revision
+using the following command:
+~~~
+make install NOPCSTD=1
+~~~
+
+The counterpart is that the applications _must_ specify a `-std` option and the
+revision must be C++11 or more recent.
+
+A generic solution would be that each library and the application all provide a
+_minimum_ revision of the C++ language and pkgconfig would provide a synthetic
+`-std` option which fulfills all requirements. However, this feature does not
+exist in pkgconfig, hence this trick.
+
 ## Running from the build location {#runbuildunix}
 
 It is sometimes useful to run a TSDuck binary, `tsp` or any other, directly
