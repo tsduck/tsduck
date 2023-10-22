@@ -58,26 +58,26 @@ namespace ts {
         typedef std::map<PID, SafePtr<DescriptorList>> DescriptorListByPID;
 
         // PMTPlugin instance fields
-        ServiceDiscovery     _service;               // Service of PMT to modify
-        std::vector<PID>     _removed_pids;          // Set of PIDs to remove from PMT
-        std::vector<DID>     _removed_desc_tags;     // Set of descriptor tags to remove
-        std::vector<uint8_t> _removed_stream_types;  // Set of stream types to remove
-        std::list<NewPID>    _added_pids;            // List of PID to add
-        std::map<PID,PID>    _moved_pids;            // List of renamed PID's in PMT (key=old, value=new)
-        bool                 _set_servid;            // Set a new service id
-        uint16_t             _new_servid;            // New service id
-        bool                 _set_pcrpid;            // Set a new PCR PID
-        PID                  _new_pcrpid;            // New PCR PID
-        PDS                  _pds;                   // Private data specifier for removed descriptors
-        bool                 _add_stream_id;         // Add stream_identifier_descriptor on all components
-        bool                 _ac3_atsc2dvb;          // Modify AC-3 signaling from ATSC to DVB method
-        bool                 _eac3_atsc2dvb;         // Modify Enhanced-AC-3 signaling from ATSC to DVB method
-        bool                 _cleanup_priv_desc;     // Remove private desc without preceding PDS desc
-        DescriptorList       _add_descs;             // List of descriptors to add at program level
-        DescriptorListByPID  _add_pid_descs;         // Lists of descriptors to add by PID
-        AudioLanguageOptionsVector _languages;       // Audio languages to set
-        std::vector<PID>     _sort_pids;             // Sorting order of PIDs in PMT
-        UStringVector        _sort_languages;        // Sorting order of audio and subtitles PIDs in PMT
+        ServiceDiscovery     _service {duck, nullptr};   // Service of PMT to modify
+        std::vector<PID>     _removed_pids {};           // Set of PIDs to remove from PMT
+        std::vector<DID>     _removed_desc_tags {};      // Set of descriptor tags to remove
+        std::vector<uint8_t> _removed_stream_types {};   // Set of stream types to remove
+        std::list<NewPID>    _added_pids {};             // List of PID to add
+        std::map<PID,PID>    _moved_pids {};             // List of renamed PID's in PMT (key=old, value=new)
+        bool                 _set_servid = false;        // Set a new service id
+        uint16_t             _new_servid = 0;            // New service id
+        bool                 _set_pcrpid = false;        // Set a new PCR PID
+        PID                  _new_pcrpid = PID_NULL;     // New PCR PID
+        PDS                  _pds = 0;                   // Private data specifier for removed descriptors
+        bool                 _add_stream_id = false;     // Add stream_identifier_descriptor on all components
+        bool                 _ac3_atsc2dvb = false;      // Modify AC-3 signaling from ATSC to DVB method
+        bool                 _eac3_atsc2dvb = false;     // Modify Enhanced-AC-3 signaling from ATSC to DVB method
+        bool                 _cleanup_priv_desc = false; // Remove private desc without preceding PDS desc
+        DescriptorList       _add_descs {nullptr};       // List of descriptors to add at program level
+        DescriptorListByPID  _add_pid_descs {};          // Lists of descriptors to add by PID
+        AudioLanguageOptionsVector _languages {};        // Audio languages to set
+        std::vector<PID>     _sort_pids {};              // Sorting order of PIDs in PMT
+        UStringVector        _sort_languages {};         // Sorting order of audio and subtitles PIDs in PMT
 
         // Implementation of AbstractTablePlugin.
         virtual void createNewTable(BinaryTable& table) override;
@@ -104,27 +104,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pmt", ts::PMTPlugin);
 //----------------------------------------------------------------------------
 
 ts::PMTPlugin::PMTPlugin(TSP* tsp_) :
-    AbstractTablePlugin(tsp_, u"Perform various transformations on the PMT", u"[options]", u"PMT"),
-    _service(duck, nullptr),
-    _removed_pids(),
-    _removed_desc_tags(),
-    _removed_stream_types(),
-    _added_pids(),
-    _moved_pids(),
-    _set_servid(false),
-    _new_servid(0),
-    _set_pcrpid(false),
-    _new_pcrpid(PID_NULL),
-    _pds(0),
-    _add_stream_id(false),
-    _ac3_atsc2dvb(false),
-    _eac3_atsc2dvb(false),
-    _cleanup_priv_desc(false),
-    _add_descs(nullptr),
-    _add_pid_descs(),
-    _languages(),
-    _sort_pids(),
-    _sort_languages()
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the PMT", u"[options]", u"PMT")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

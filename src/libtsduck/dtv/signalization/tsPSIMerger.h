@@ -110,35 +110,35 @@ namespace ts {
         void reset(Options options);
 
     private:
-        DuckContext&       _duck;             // Reference to TSDuck context.
-        Options            _options;          // Merging options.
-        SectionDemux       _main_demux;       // Demux on main transport stream.
-        SectionDemux       _main_eit_demux;   // Demux on main transport stream for EIT's.
-        SectionDemux       _merge_demux;      // Demux on merged transport stream.
-        SectionDemux       _merge_eit_demux;  // Demux on merged transport stream for EIT's.
-        CyclingPacketizer  _pat_pzer;         // Packetizer for modified PAT in main TS.
-        CyclingPacketizer  _cat_pzer;         // Packetizer for modified CAT in main TS.
-        CyclingPacketizer  _nit_pzer;         // Packetizer for modified NIT's in main TS.
-        CyclingPacketizer  _sdt_bat_pzer;     // Packetizer for modified SDT/BAT in main TS.
-        Packetizer         _eit_pzer;         // Packetizer for the mixed EIT's.
-        Variable<uint16_t> _main_tsid;        // TS id of the main stream.
-        PAT                _main_pat;         // Last input PAT from main TS (version# is current output version).
-        PAT                _merge_pat;        // Last input PAT from merged TS.
-        CAT                _main_cat;         // Last input CAT from main TS (version# is current output version).
-        CAT                _merge_cat;        // Last input CAT from merged TS.
-        SDT                _main_sdt;         // Last input SDT Actual from main TS (version# is current output version).
-        SDT                _merge_sdt;        // Last input SDT Actual from merged TS.
-        NIT                _main_nit;         // Last input NIT Actual from main TS (version# is current output version).
-        NIT                _merge_nit;        // Last input NIT Actual from merged TS.
-        std::map<uint16_t, BAT> _main_bats;   // Map of last input BAT/bouquet_it from main TS (version# is current output version).
-        std::map<uint16_t, BAT> _merge_bats;  // Map of last input BAT/bouquet_it from merged TS.
-        std::list<SectionPtr>   _eits;        // List of EIT sections to insert.
-        size_t                  _max_eits;    // Maximum number of buffered EIT sections.
+        DuckContext&       _duck;                                    // Reference to TSDuck context.
+        Options            _options = DEFAULT;                       // Merging options.
+        SectionDemux       _main_demux {_duck, this};                // Demux on main transport stream. Complete table handler only.
+        SectionDemux       _main_eit_demux {_duck, nullptr, this};   // Demux on main transport stream for EIT's. Section handler only.
+        SectionDemux       _merge_demux {_duck, this};               // Demux on merged transport stream. Complete table handler only.
+        SectionDemux       _merge_eit_demux {_duck, nullptr, this};  // Demux on merged transport stream for EIT's.
+        CyclingPacketizer  _pat_pzer {_duck};                        // Packetizer for modified PAT in main TS.
+        CyclingPacketizer  _cat_pzer {_duck};                        // Packetizer for modified CAT in main TS.
+        CyclingPacketizer  _nit_pzer {_duck};                        // Packetizer for modified NIT's in main TS.
+        CyclingPacketizer  _sdt_bat_pzer {_duck};                    // Packetizer for modified SDT/BAT in main TS.
+        Packetizer         _eit_pzer {_duck, PID_EIT, this};         // Packetizer for the mixed EIT's.
+        Variable<uint16_t> _main_tsid {};          // TS id of the main stream.
+        PAT                _main_pat {};           // Last input PAT from main TS (version# is current output version).
+        PAT                _merge_pat {};          // Last input PAT from merged TS.
+        CAT                _main_cat {};           // Last input CAT from main TS (version# is current output version).
+        CAT                _merge_cat {};          // Last input CAT from merged TS.
+        SDT                _main_sdt {};           // Last input SDT Actual from main TS (version# is current output version).
+        SDT                _merge_sdt {};          // Last input SDT Actual from merged TS.
+        NIT                _main_nit {};           // Last input NIT Actual from main TS (version# is current output version).
+        NIT                _merge_nit {};          // Last input NIT Actual from merged TS.
+        std::map<uint16_t, BAT> _main_bats {};     // Map of last input BAT/bouquet_it from main TS (version# is current output version).
+        std::map<uint16_t, BAT> _merge_bats {};    // Map of last input BAT/bouquet_it from merged TS.
+        std::list<SectionPtr>   _eits {};          // List of EIT sections to insert.
+        size_t                  _max_eits = 128;   // Maximum number of buffered EIT sections (hard-coded for now).
 
-        static constexpr int DEMUX_MAIN      = 1; // Id of the demux from the main TS.
-        static constexpr int DEMUX_MAIN_EIT  = 2; // Id of the demux from the main TS for EIT's.
-        static constexpr int DEMUX_MERGE     = 3; // Id of the demux from the secondary TS to merge.
-        static constexpr int DEMUX_MERGE_EIT = 4; // Id of the demux from the secondary TS to merge for EIT's.
+        static constexpr int DEMUX_MAIN      = 1;  // Id of the demux from the main TS.
+        static constexpr int DEMUX_MAIN_EIT  = 2;  // Id of the demux from the main TS for EIT's.
+        static constexpr int DEMUX_MERGE     = 3;  // Id of the demux from the secondary TS to merge.
+        static constexpr int DEMUX_MERGE_EIT = 4;  // Id of the demux from the secondary TS to merge for EIT's.
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux& demux, const BinaryTable& table) override;

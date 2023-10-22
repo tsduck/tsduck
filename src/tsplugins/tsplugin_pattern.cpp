@@ -30,10 +30,10 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        uint8_t   _offset_pusi;      // Start offset in packets with PUSI
-        uint8_t   _offset_non_pusi;  // Start offset in packets without PUSI
-        ByteBlock _pattern;          // Binary pattern to apply
-        PIDSet    _pid_list;         // Array of pid values to filter
+        uint8_t   _offset_pusi = 0;      // Start offset in packets with PUSI
+        uint8_t   _offset_non_pusi = 0;  // Start offset in packets without PUSI
+        ByteBlock _pattern {};           // Binary pattern to apply
+        PIDSet    _pid_list {};          // Array of pid values to filter
     };
 }
 
@@ -45,11 +45,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pattern", ts::PatternPlugin);
 //----------------------------------------------------------------------------
 
 ts::PatternPlugin::PatternPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Replace packet payload with a binary pattern on selected PID's", u"[options] pattern"),
-    _offset_pusi(0),
-    _offset_non_pusi(0),
-    _pattern(),
-    _pid_list()
+    ProcessorPlugin(tsp_, u"Replace packet payload with a binary pattern on selected PID's", u"[options] pattern")
 {
     option(u"", 0, HEXADATA, 1, 1, 1, PKT_MAX_PAYLOAD_SIZE);
     help(u"",

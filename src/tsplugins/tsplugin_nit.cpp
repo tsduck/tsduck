@@ -47,31 +47,31 @@ namespace ts {
         // A map of service list descriptors, indexed by ts id / original netwok id.
         typedef std::map<TransportStreamId, ServiceListDescriptor> SLDMap;
 
-        PID                _nit_pid;              // PID for the NIT (default: read PAT)
-        UString            _new_netw_name;        // New network name
-        bool               _set_netw_id;          // Change network id
-        uint16_t           _new_netw_id;          // New network id
-        bool               _use_nit_other;        // Use a NIT Other, not the NIT Actual
-        uint16_t           _nit_other_id;         // Network id of the NIT Other to hack
-        int                _lcn_oper;             // Operation on LCN descriptors
-        int                _sld_oper;             // Operation on service_list_descriptors
-        std::set<uint16_t> _remove_serv;          // Set of services to remove
-        std::set<uint16_t> _remove_ts;            // Set of transport streams to remove
-        std::vector<DID>   _removed_desc;         // Set of descriptor tags to remove
-        PDS                _pds;                  // Private data specifier for removed descriptors
-        bool               _cleanup_priv_desc;    // Remove private desc without preceding PDS desc
-        bool               _update_mpe_fec;       // In terrestrial delivery
-        uint8_t            _mpe_fec;
-        bool               _update_time_slicing;  // In terrestrial delivery
-        uint8_t            _time_slicing;
-        bool               _build_sld;            // Build service list descriptors.
-        bool               _add_all_srv_in_sld;   // Add all services in service list descriptors, even when the type in unknown.
-        uint8_t            _default_srv_type;     // Default service type in service list descriptors.
-        SectionDemux       _demux;                // Section demux to collect PAT and SDT to build service list descriptors.
-        NIT                _last_nit;             // Last valid NIT found, after modification.
-        PAT                _last_pat;             // Last valid input PAT.
-        SDT                _last_sdt_act;         // Last valid input SDT Actual.
-        SLDMap             _collected_sld;        // A map of service list descriptors per TS id.
+        PID                _nit_pid = PID_NIT;            // PID for the NIT (default: read PAT)
+        UString            _new_netw_name {};             // New network name
+        bool               _set_netw_id = false;          // Change network id
+        uint16_t           _new_netw_id = 0;              // New network id
+        bool               _use_nit_other = false;        // Use a NIT Other, not the NIT Actual
+        uint16_t           _nit_other_id = 0;             // Network id of the NIT Other to hack
+        int                _lcn_oper = 0;                 // Operation on LCN descriptors
+        int                _sld_oper = 0;                 // Operation on service_list_descriptors
+        std::set<uint16_t> _remove_serv {};               // Set of services to remove
+        std::set<uint16_t> _remove_ts {};                 // Set of transport streams to remove
+        std::vector<DID>   _removed_desc {};              // Set of descriptor tags to remove
+        PDS                _pds = 0;                      // Private data specifier for removed descriptors
+        bool               _cleanup_priv_desc = false;    // Remove private desc without preceding PDS desc
+        bool               _update_mpe_fec = false;       // In terrestrial delivery
+        uint8_t            _mpe_fec = 0;
+        bool               _update_time_slicing = false;  // In terrestrial delivery
+        uint8_t            _time_slicing = 0;
+        bool               _build_sld = false;            // Build service list descriptors.
+        bool               _add_all_srv_in_sld = false;   // Add all services in service list descriptors, even when the type in unknown.
+        uint8_t            _default_srv_type = 0;         // Default service type in service list descriptors.
+        SectionDemux       _demux {duck, this};           // Section demux to collect PAT and SDT to build service list descriptors.
+        NIT                _last_nit {};                  // Last valid NIT found, after modification.
+        PAT                _last_pat {};                  // Last valid input PAT.
+        SDT                _last_sdt_act {};              // Last valid input SDT Actual.
+        SLDMap             _collected_sld {};             // A map of service list descriptors per TS id.
 
         // Values for _lcn_oper and _sld_oper.
         enum {
@@ -105,32 +105,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"nit", ts::NITPlugin);
 //----------------------------------------------------------------------------
 
 ts::NITPlugin::NITPlugin(TSP* tsp_) :
-    AbstractTablePlugin(tsp_, u"Perform various transformations on the NIT", u"[options]", u"NIT", PID_NIT),
-    _nit_pid(PID_NIT),
-    _new_netw_name(),
-    _set_netw_id(false),
-    _new_netw_id(0),
-    _use_nit_other(false),
-    _nit_other_id(0),
-    _lcn_oper(0),
-    _sld_oper(0),
-    _remove_serv(),
-    _remove_ts(),
-    _removed_desc(),
-    _pds(0),
-    _cleanup_priv_desc(false),
-    _update_mpe_fec(false),
-    _mpe_fec(0),
-    _update_time_slicing(false),
-    _time_slicing(0),
-    _build_sld(false),
-    _add_all_srv_in_sld(false),
-    _default_srv_type(0),
-    _demux(duck, this),
-    _last_nit(),
-    _last_pat(),
-    _last_sdt_act(),
-    _collected_sld()
+    AbstractTablePlugin(tsp_, u"Perform various transformations on the NIT", u"[options]", u"NIT", PID_NIT)
 {
     option(u"build-service-list-descriptors", 0);
     help(u"build-service-list-descriptors",

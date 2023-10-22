@@ -10,43 +10,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::Service::Service() :
-    _modified(false),
-    _id(),
-    _tsid(),
-    _onid(),
-    _pmt_pid(),
-    _lcn(),
-    _type_dvb(),
-    _type_atsc(),
-    _name(),
-    _provider(),
-    _eits_present(),
-    _eitpf_present(),
-    _ca_controlled(),
-    _running_status(),
-    _major_id_atsc(),
-    _minor_id_atsc()
-{
-}
-
-ts::Service::Service(uint16_t id) :
-    Service()
-{
-    _id = id;
-}
-
-ts::Service::Service(const UString& desc) :
-    Service()
-{
-    set(desc);
-}
-
-
-//----------------------------------------------------------------------------
 // Reset using a string description.
 // If the string evaluates to an integer (decimal or hexa),
 // this is a service id, otherwise this is a service name.

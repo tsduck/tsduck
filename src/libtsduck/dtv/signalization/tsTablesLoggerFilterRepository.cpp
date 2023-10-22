@@ -15,8 +15,7 @@ TS_DEFINE_SINGLETON(ts::TablesLoggerFilterRepository);
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TablesLoggerFilterRepository::TablesLoggerFilterRepository() :
-    _factories()
+ts::TablesLoggerFilterRepository::TablesLoggerFilterRepository()
 {
 }
 

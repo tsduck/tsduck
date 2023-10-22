@@ -66,23 +66,23 @@ namespace ts {
         class PIDState
         {
         public:
-            PID        pid;                  // PID value.
-            bool       currentlyOut;         // PID is currently spliced out.
-            uint64_t   outStart;             // When spliced out, PTS value at the time of splicing out.
-            uint64_t   totalAdjust;          // Total removed time in PTS units.
-            uint64_t   lastPTS;              // Last PTS value in this PID.
-            EventByPTS events;               // Ordered map of upcoming slice events.
-            bool       immediateOut;         // Currently splicing out for an immediate event
-            uint32_t   immediateEventId;     // Event ID associated with immediate splice out event
-            bool       cancelImmediateOut;   // Want to cancel current immediate splice out event
-            bool       isAudio;              // Associated with audio stream
-            bool       isVideo;              // Associated with video stream
-            uint64_t   lastOutEnd;           // When spliced back in, PTS value at the time of the splice in
-            uint64_t   ptsLastSeekPoint;     // PTS of last seek point for this PID
-            uint64_t   ptsBetweenSeekPoints; // PTS difference between last seek points for this PID
+            PID        pid = PID_NULL;                     // PID value.
+            bool       currentlyOut = false;               // PID is currently spliced out.
+            uint64_t   outStart = INVALID_PTS;             // When spliced out, PTS value at the time of splicing out.
+            uint64_t   totalAdjust = 0;                    // Total removed time in PTS units.
+            uint64_t   lastPTS = INVALID_PTS;              // Last PTS value in this PID.
+            EventByPTS events {};                          // Ordered map of upcoming slice events.
+            bool       immediateOut = false;               // Currently splicing out for an immediate event
+            uint32_t   immediateEventId = 0;               // Event ID associated with immediate splice out event
+            bool       cancelImmediateOut = false;         // Want to cancel current immediate splice out event
+            bool       isAudio = false;                    // Associated with audio stream
+            bool       isVideo = false;                    // Associated with video stream
+            uint64_t   lastOutEnd = INVALID_PTS;           // When spliced back in, PTS value at the time of the splice in
+            uint64_t   ptsLastSeekPoint = INVALID_PTS;     // PTS of last seek point for this PID
+            uint64_t   ptsBetweenSeekPoints = INVALID_PTS; // PTS difference between last seek points for this PID
 
             // Constructor
-            PIDState(PID = PID_NULL);
+            PIDState(PID p = PID_NULL) : pid(p) {}
 
             // Add a splicing event in a PID.
             void addEvent(uint64_t pts, bool spliceOut, uint32_t eventId, bool immediate);
@@ -100,19 +100,19 @@ namespace ts {
         // Plugin Implementation
         // ------------------------------------------------------------
 
-        bool               _abort;       // Error (service not found, etc)
-        bool               _continue;    // Continue processing if no splice information is found.
-        bool               _adjustTime;  // Adjust PTS and DTS time stamps.
-        bool               _fixCC;       // Fix continuity counters.
-        Status             _dropStatus;  // Status for dropped packets
-        ServiceDiscovery   _service;     // Service name & id.
-        SectionDemux       _demux;       // Section filter for splice information.
-        TagByPID           _tagsByPID;   // Mapping between PID's and component tags in the service.
-        StateByPID         _states;      // Map of current state by PID in the service.
-        std::set<uint32_t> _eventIDs;    // set of event IDs of interest
-        bool               _dryRun;      // Just report what it would do
-        PID                _videoPID;    // First video PID, if there is one
-        ContinuityAnalyzer _ccFixer;     // To fix continuity counters in spliced PID's.
+        bool               _abort = false;               // Error (service not found, etc)
+        bool               _continue = false;            // Continue processing if no splice information is found.
+        bool               _adjustTime = false;          // Adjust PTS and DTS time stamps.
+        bool               _fixCC = false;               // Fix continuity counters.
+        Status             _dropStatus = TSP_DROP;       // Status for dropped packets
+        ServiceDiscovery   _service {duck, this};        // Service name & id.
+        SectionDemux       _demux {duck, nullptr, this}; // Section filter for splice information.
+        TagByPID           _tagsByPID {};                // Mapping between PID's and component tags in the service.
+        StateByPID         _states {};                   // Map of current state by PID in the service.
+        std::set<uint32_t> _eventIDs {};                 // Set of event IDs of interest
+        bool               _dryRun = false;              // Just report what it would do
+        PID                _videoPID = PID_NULL;         // First video PID, if there is one
+        ContinuityAnalyzer _ccFixer {NoPID, tsp};        // To fix continuity counters in spliced PID's.
 
         // Implementation of interfaces.
         virtual void handleSection(SectionDemux&, const Section&) override;
@@ -128,20 +128,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"rmsplice", ts::RMSplicePlugin);
 //----------------------------------------------------------------------------
 
 ts::RMSplicePlugin::RMSplicePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove ads insertions from a program using SCTE 35 splice information", u"[options] [service]"),
-    _abort(false),
-    _continue(false),
-    _adjustTime(false),
-    _fixCC(false),
-    _dropStatus(TSP_DROP),
-    _service(duck, this),
-    _demux(duck, nullptr, this),
-    _tagsByPID(),
-    _states(),
-    _eventIDs(),
-    _dryRun(false),
-    _videoPID(PID_NULL),
-    _ccFixer(NoPID, tsp)
+    ProcessorPlugin(tsp_, u"Remove ads insertions from a program using SCTE 35 splice information", u"[options] [service]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
@@ -221,29 +208,6 @@ bool ts::RMSplicePlugin::start()
     _ccFixer.setPIDFilter(NoPID);
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor
-//----------------------------------------------------------------------------
-
-ts::RMSplicePlugin::PIDState::PIDState(PID pid_) :
-    pid(pid_),
-    currentlyOut(false),
-    outStart(INVALID_PTS),
-    totalAdjust(0),
-    lastPTS(INVALID_PTS),
-    events(),
-    immediateOut(false),
-    immediateEventId(0),
-    cancelImmediateOut(false),
-    isAudio(false),
-    isVideo(false),
-    lastOutEnd(INVALID_PTS),
-    ptsLastSeekPoint(INVALID_PTS),
-    ptsBetweenSeekPoints(INVALID_PTS)
-{
 }
 
 

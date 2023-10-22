@@ -19,12 +19,6 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::Section::Section() :
-    SuperClass(),
-    _is_valid(false)
-{
-}
-
 ts::Section::Section(const Section& sect, ShareMode mode) :
     SuperClass(sect, mode),
     _is_valid(sect._is_valid)

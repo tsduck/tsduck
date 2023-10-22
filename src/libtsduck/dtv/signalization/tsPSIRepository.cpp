@@ -19,25 +19,11 @@ TS_DEFINE_SINGLETON(ts::PSIRepository);
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::PSIRepository::PSIRepository() :
-    _tables(),
-    _descriptors(),
-    _tableNames(),
-    _descriptorNames(),
-    _descriptorTablesIds(),
-    _casIdDescriptorDisplays(),
-    _xmlModelFiles()
+ts::PSIRepository::PSIRepository()
 {
 }
 
-ts::PSIRepository::TableDescription::TableDescription() :
-    standards(Standards::NONE),
-    minCAS(CASID_NULL),
-    maxCAS(CASID_NULL),
-    factory(nullptr),
-    display(nullptr),
-    log(nullptr),
-    pids()
+ts::PSIRepository::TableDescription::TableDescription()
 {
     for (size_t i = 0; i < pids.size(); ++i) {
         pids[i] = PID_NULL;

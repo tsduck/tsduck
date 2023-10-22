@@ -31,9 +31,9 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        PSIMerger _psi_merger;    // Engine to merge PSI/SI.
-        size_t    _main_label;    // Label of packets from main stream or greater than LABEL_MAX if none.
-        size_t    _merge_label;   // Label of packets from main stream or greater than LABEL_MAX if none.
+        PSIMerger _psi_merger {duck, PSIMerger::NONE};      // Engine to merge PSI/SI.
+        size_t    _main_label = TSPacketLabelSet::MAX + 1;  // Label of packets from main stream or greater than LABEL_MAX if none.
+        size_t    _merge_label = TSPacketLabelSet::MAX + 1; // Label of packets from main stream or greater than LABEL_MAX if none.
     };
 }
 
@@ -45,10 +45,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"psimerge", ts::PSIMergePlugin);
 //----------------------------------------------------------------------------
 
 ts::PSIMergePlugin::PSIMergePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Merge PSI/SI from mixed streams", u"[options]"),
-    _psi_merger(duck, PSIMerger::NONE),
-    _main_label(TSPacketLabelSet::MAX + 1),
-    _merge_label(TSPacketLabelSet::MAX + 1)
+    ProcessorPlugin(tsp_, u"Merge PSI/SI from mixed streams", u"[options]")
 {
     setIntro(u"This plugin assumes that the PSI/SI for two independent streams "
              u"are multiplexed in the same transport streams but the packets from "

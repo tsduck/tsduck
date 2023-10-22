@@ -35,9 +35,9 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        PCRAnalyzer _pcr_analyzer; // PCR analysis context
-        BitRate     _bitrate;      // Last remembered bitrate (keep it signed)
-        UString     _pcr_name;     // Time stamp type name
+        PCRAnalyzer _pcr_analyzer {}; // PCR analysis context
+        BitRate     _bitrate = 0;     // Last remembered bitrate (keep it signed)
+        UString     _pcr_name {};     // Time stamp type name
 
         // PCR analysis is done permanently. Typically, the analysis of a
         // constant stream will produce different results quite often. But
@@ -59,10 +59,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pcrbitrate", ts::PCRBitratePlugin);
 //----------------------------------------------------------------------------
 
 ts::PCRBitratePlugin::PCRBitratePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Permanently recompute bitrate based on PCR analysis", u"[options]"),
-    _pcr_analyzer(),
-    _bitrate(0),
-    _pcr_name()
+    ProcessorPlugin(tsp_, u"Permanently recompute bitrate based on PCR analysis", u"[options]")
 {
     option(u"dts", 'd');
     help(u"dts",

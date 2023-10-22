@@ -21,12 +21,8 @@
 //----------------------------------------------------------------------------
 
 ts::ServiceDiscovery::ServiceDiscovery(DuckContext& duck, SignalizationHandlerInterface* pmtHandler) :
-    Service(),
     _duck(duck),
-    _notFound(false),
-    _pmtHandler(pmtHandler),
-    _pmt(),
-    _demux(duck, this)
+    _pmtHandler(pmtHandler)
 {
     _pmt.invalidate();
 }

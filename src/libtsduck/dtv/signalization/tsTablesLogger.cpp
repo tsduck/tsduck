@@ -28,13 +28,7 @@
 ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _display(display),
     _duck(_display.duck()),
-    _report(_duck.report()),
-    _demux(_duck),
-    _cas_mapper(_duck),
-    _xml_doc(_report),
-    _x2j_conv(_report),
-    _json_doc(_report),
-    _sock(false, _report)
+    _report(_duck.report())
 {
     // Create an instance of each registered section filter.
     TablesLoggerFilterRepository::Instance()->createFilters(_section_filters);

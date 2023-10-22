@@ -40,14 +40,14 @@ namespace ts {
         //! Constructor.
         //! By default, all displays are done on @c std::cout.
         //! Use redirect() to redirect the output to a file.
-        //! @param [in,out] d TSDuck context.
+        //! @param [in,out] duck TSDuck context.
         //!
-        explicit TablesDisplay(DuckContext& d);
+        explicit TablesDisplay(DuckContext& duck) : _duck(duck) {}
 
         //!
         //! Virtual destructor.
         //!
-        virtual ~TablesDisplay();
+        virtual ~TablesDisplay() = default;
 
         //!
         //! Add command line option definitions in an Args.
@@ -458,10 +458,10 @@ namespace ts {
             size_t num_per_line = 3);
 
     private:
-        DuckContext&    _duck;            // Reference to the associated TSDuck context.
-        bool            _raw_dump;        // Raw dump of section, no interpretation.
-        uint32_t        _raw_flags;       // Dump flags in raw mode.
-        TLVSyntaxVector _tlv_syntax;      // TLV syntax to apply to unknown sections.
-        size_t          _min_nested_tlv;  // Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
+        DuckContext&    _duck;                      // Reference to the associated TSDuck context.
+        bool            _raw_dump = false;          // Raw dump of section, no interpretation.
+        uint32_t        _raw_flags = UString::HEXA; // Dump flags in raw mode.
+        TLVSyntaxVector _tlv_syntax {};             // TLV syntax to apply to unknown sections.
+        size_t          _min_nested_tlv = 0;        // Minimum size of a TLV record after which it is interpreted as a nested TLV (0=disabled).
     };
 }

@@ -36,15 +36,15 @@ namespace ts {
 
     private:
         // Command line options:
-        bool          _pcr_synchronous;
-        BitRate       _bitrate;
-        PacketCounter _burst;
-        MilliSecond   _wait_min;
-        PID           _pid_pcr;
+        bool          _pcr_synchronous = false;
+        BitRate       _bitrate = 0;
+        PacketCounter _burst = 0;
+        MilliSecond   _wait_min = 0;
+        PID           _pid_pcr = PID_NULL;
 
         // Working data:
-        BitRateRegulator _bitrate_regulator;
-        PCRRegulator     _pcr_regulator;
+        BitRateRegulator _bitrate_regulator {tsp, Severity::Verbose};
+        PCRRegulator     _pcr_regulator {tsp, Severity::Verbose};
     };
 }
 
@@ -56,14 +56,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"regulate", ts::RegulatePlugin);
 //----------------------------------------------------------------------------
 
 ts::RegulatePlugin::RegulatePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Regulate the TS packets flow based on PCR or bitrate", u"[options]"),
-    _pcr_synchronous(false),
-    _bitrate(),
-    _burst(0),
-    _wait_min(0),
-    _pid_pcr(PID_NULL),
-    _bitrate_regulator(tsp, Severity::Verbose),
-    _pcr_regulator(tsp, Severity::Verbose)
+    ProcessorPlugin(tsp_, u"Regulate the TS packets flow based on PCR or bitrate", u"[options]")
 {
     option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",

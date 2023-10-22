@@ -44,42 +44,42 @@ namespace ts {
 
     private:
         // Commmand line options.
-        bool      _trace_packets {false};
-        bool      _trace_packet_index {false};
-        bool      _dump_pes_header {false};
-        bool      _dump_pes_payload {false};
-        bool      _dump_start_code {false};
-        bool      _dump_nal_units {false};
-        bool      _dump_avc_sei {false};
-        bool      _video_attributes {false};
-        bool      _audio_attributes {false};
-        bool      _intra_images {false};
-        bool      _negate_nal_unit_filter {false};
-        bool      _multiple_files {false};
-        bool      _flush_last {false};
-        uint32_t  _hexa_flags {0};
-        size_t    _hexa_bpl {0};
-        size_t    _max_dump_size {0};
-        size_t    _max_dump_count {0};
-        int       _min_payload {0};    // Minimum payload size (<0: no filter)
-        int       _max_payload {0};    // Maximum payload size (<0: no filter)
+        bool      _trace_packets = false;
+        bool      _trace_packet_index = false;
+        bool      _dump_pes_header = false;
+        bool      _dump_pes_payload = false;
+        bool      _dump_start_code = false;
+        bool      _dump_nal_units = false;
+        bool      _dump_avc_sei = false;
+        bool      _video_attributes = false;
+        bool      _audio_attributes = false;
+        bool      _intra_images = false;
+        bool      _negate_nal_unit_filter = false;
+        bool      _multiple_files = false;
+        bool      _flush_last = false;
+        uint32_t  _hexa_flags = 0;
+        size_t    _hexa_bpl = 0;
+        size_t    _max_dump_size = 0;
+        size_t    _max_dump_count = 0;
+        int       _min_payload = 0;    // Minimum payload size (<0: no filter)
+        int       _max_payload = 0;    // Maximum payload size (<0: no filter)
         UString   _out_filename {};
         UString   _pes_filename {};
         UString   _es_filename {};
         PIDSet    _pids {};
-        CodecType _default_h26x {CodecType::UNDEFINED};
+        CodecType _default_h26x = CodecType::UNDEFINED;
         std::set<uint8_t>    _nal_unit_filter {};
         std::set<uint32_t>   _sei_type_filter {};
         std::list<ByteBlock> _sei_uuid_filter {};
 
         // Working data.
-        bool              _abort {false};
+        bool              _abort = false;
         std::ofstream     _out_file {};
-        std::ostream*     _out {nullptr};
+        std::ostream*     _out = nullptr;
         std::ofstream     _pes_file {};
-        std::ostream*     _pes_stream {nullptr};
+        std::ostream*     _pes_stream = nullptr;
         std::ofstream     _es_file {};
-        std::ostream*     _es_stream {nullptr};
+        std::ostream*     _es_stream = nullptr;
         PESDemux          _demux;
         FileNameGenerator _pes_name_gen {};
         FileNameGenerator _es_name_gen {};

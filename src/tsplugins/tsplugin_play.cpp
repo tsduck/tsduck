@@ -37,9 +37,9 @@ namespace ts {
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
 
     private:
-        bool       _use_mplayer;
-        bool       _use_xine;
-        TSForkPipe _pipe;
+        bool       _use_mplayer = false;
+        bool       _use_xine = false;
+        TSForkPipe _pipe {};
 
         // Search a file in a search path. Return true is found
         bool searchInPath(UString& result, const UStringVector& path, const UString& name);
@@ -54,10 +54,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"play", ts::PlayPlugin);
 //----------------------------------------------------------------------------
 
 ts::PlayPlugin::PlayPlugin(TSP* tsp_) :
-    OutputPlugin(tsp_, u"Play output TS on any supported media player in the system", u"[options]"),
-    _use_mplayer(false),
-    _use_xine(false),
-    _pipe()
+    OutputPlugin(tsp_, u"Play output TS on any supported media player in the system", u"[options]")
 {
 #if !defined(TS_WINDOWS)
 

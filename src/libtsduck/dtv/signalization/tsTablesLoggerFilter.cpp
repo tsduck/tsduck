@@ -19,27 +19,6 @@ TS_REGISTER_SECTION_FILTER(ts::TablesLoggerFilter);
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::TablesLoggerFilter::TablesLoggerFilter() :
-    _diversified(false),
-    _negate_tid(false),
-    _negate_tidext(false),
-    _negate_secnum(false),
-    _psi_si(false),
-    _pids(),
-    _tids(),
-    _tidexts(),
-    _secnums(),
-    _content_filter(),
-    _content_mask(),
-    _pat()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define section filtering command line options in an Args.
 //----------------------------------------------------------------------------
 

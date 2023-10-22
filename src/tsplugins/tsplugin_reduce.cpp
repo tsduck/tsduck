@@ -42,20 +42,20 @@ namespace ts {
         enum class Error {NONE, PKT_OVERFLOW, NO_BITRATE, USE_PREVIOUS, LOW_BITRATE};
 
         // Command line parameters:
-        BitRate       _target_bitrate;   // Target bitrate to read, zero if fixed proportion is used.
-        BitRate       _input_bitrate;    // User-sepcified input bitrate.
-        MilliSecond   _window_ms;        // Packet window size in milliseconds.
-        PacketCounter _window_pkts;      // Packet window size in packets.
-        bool          _pcr_based;        // Use PCR's in packet window to compute the number f packets to remove.
-        PIDSet        _pcr_pids;         // Reference PCR PID's.
-        PacketCounter _fixed_rempkt;     // rempkt parameter, zero if target
-        PacketCounter _fixed_inpkt;      // inpkt parameter
+        BitRate       _target_bitrate = 0;   // Target bitrate to read, zero if fixed proportion is used.
+        BitRate       _input_bitrate = 0;    // User-sepcified input bitrate.
+        MilliSecond   _window_ms = 0;        // Packet window size in milliseconds.
+        PacketCounter _window_pkts = 0;      // Packet window size in packets.
+        bool          _pcr_based = false;        // Use PCR's in packet window to compute the number f packets to remove.
+        PIDSet        _pcr_pids {};         // Reference PCR PID's.
+        PacketCounter _fixed_rempkt = 0;     // rempkt parameter, zero if target
+        PacketCounter _fixed_inpkt = 0;      // inpkt parameter
 
         // Working data:
-        PacketCounter _pkt_to_remove;    // Current number of packets to remove
-        uint64_t      _bits_to_remove;   // Current number of bits to remove
-        BitRate       _previous_bitrate; // Bitrate from previous packet window.
-        Error         _error;            // Last error code.
+        PacketCounter _pkt_to_remove = 0;    // Current number of packets to remove
+        uint64_t      _bits_to_remove = 0;   // Current number of bits to remove
+        BitRate       _previous_bitrate = 0; // Bitrate from previous packet window.
+        Error         _error = Error::NONE;            // Last error code.
 
         // Compute bitrate in a packet window.
         BitRate computeBitRate(const TSPacketWindow& win) const;
@@ -82,7 +82,7 @@ ts::ReducePlugin::ReducePlugin(TSP* tsp_) :
     _pkt_to_remove(0),
     _bits_to_remove(0),
     _previous_bitrate(0),
-    _error(Error::NONE)
+    _error()
 {
     // Legacy parameters, now in --fixed-proportion.
     option(u"", 0, POSITIVE, 0, 2);

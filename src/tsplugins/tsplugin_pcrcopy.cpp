@@ -32,25 +32,25 @@ namespace ts {
 
     private:
         // Command line options.
-        PID           _ref_pid_arg;     // Reference PCR source.
-        PID           _target_pid_arg;  // Target PID to alter.
-        size_t        _ref_label;       // Label which indicates the reference PID.
-        size_t        _target_label;    // Label which indicates the target PID.
-        PacketCounter _every;           // Insert a PCR every N packets (if not zero).
-        size_t        _max_shift;       // Maximum number of bytes to shift.
-        bool          _pusi;            // Insert a PCR in PUSI packets.
+        PID           _ref_pid_arg = PID_NULL;     // Reference PCR source.
+        PID           _target_pid_arg = PID_NULL;  // Target PID to alter.
+        size_t        _ref_label = TSPacketLabelSet::MAX + 1;    // Label which indicates the reference PID.
+        size_t        _target_label = TSPacketLabelSet::MAX + 1; // Label which indicates the target PID.
+        PacketCounter _every = 0;                  // Insert a PCR every N packets (if not zero).
+        size_t        _max_shift = 0;              // Maximum number of bytes to shift.
+        bool          _pusi = false;               // Insert a PCR in PUSI packets.
 
         // Working data.
-        PID           _ref_pid;         // Current reference PCR source.
-        PID           _target_pid;      // Current target PID to alter.
-        PacketCounter _target_packets;  // Number of packets in target PID.
-        PacketCounter _ref_packet;      // Packet index of last PCR in reference PID.
-        uint64_t      _ref_pcr;         // Last PCR value in reference PID.
-        uint8_t       _target_cc_in;    // Last read continuity counter in target PID.
-        uint8_t       _target_cc_out;   // Last written continuity counter in target PID.
-        bool          _shift_overflow;  // Overflow in target shift buffer, resync at next PUSI.
-        size_t        _shift_pusi;      // Position of a PUSI in shift buffer (NPOS if there is none).
-        ByteBlock     _shift_buffer;    // Buffer for shifted payload.
+        PID           _ref_pid = PID_NULL;         // Current reference PCR source.
+        PID           _target_pid = PID_NULL;      // Current target PID to alter.
+        PacketCounter _target_packets = 0;         // Number of packets in target PID.
+        PacketCounter _ref_packet = 0;             // Packet index of last PCR in reference PID.
+        uint64_t      _ref_pcr = INVALID_PCR;      // Last PCR value in reference PID.
+        uint8_t       _target_cc_in = 0;           // Last read continuity counter in target PID.
+        uint8_t       _target_cc_out = 0;          // Last written continuity counter in target PID.
+        bool          _shift_overflow = false;     // Overflow in target shift buffer, resync at next PUSI.
+        size_t        _shift_pusi = NPOS;          // Position of a PUSI in shift buffer (NPOS if there is none).
+        ByteBlock     _shift_buffer {};            // Buffer for shifted payload.
 
         // Process a packet from the target PID, insert PCR when needed, shift payload.
         // Can also be used on the null PID to insert shifted payload.
@@ -66,24 +66,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"pcrcopy", ts::PCRCopyPlugin);
 //----------------------------------------------------------------------------
 
 ts::PCRCopyPlugin::PCRCopyPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Copy and synchronize PCR's from one PID to another", u"[options]"),
-    _ref_pid_arg(PID_NULL),
-    _target_pid_arg(PID_NULL),
-    _ref_label(TSPacketLabelSet::MAX + 1),
-    _target_label(TSPacketLabelSet::MAX + 1),
-    _every(0),
-    _max_shift(0),
-    _pusi(true),
-    _ref_pid(PID_NULL),
-    _target_pid(PID_NULL),
-    _target_packets(0),
-    _ref_packet(0),
-    _ref_pcr(INVALID_PCR),
-    _target_cc_in(0),
-    _target_cc_out(0),
-    _shift_overflow(false),
-    _shift_pusi(NPOS),
-    _shift_buffer()
+    ProcessorPlugin(tsp_, u"Copy and synchronize PCR's from one PID to another", u"[options]")
 {
     option(u"reference-pid", 'r', PIDVAL);
     help(u"reference-pid",
