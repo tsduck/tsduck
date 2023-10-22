@@ -35,6 +35,7 @@ const ts::Enumeration ts::PrivateDataSpecifierEnum({
     {u"CanalPlus", ts::PDS_CANALPLUS},
     {u"Eutelsat",  ts::PDS_EUTELSAT},
     {u"OFCOM",     ts::PDS_OFCOM},
+    {u"Australia", ts::PDS_AUSTRALIA},
     {u"AVS",       ts::PDS_AVS},
     {u"AOM",       ts::PDS_AOM},
 });
