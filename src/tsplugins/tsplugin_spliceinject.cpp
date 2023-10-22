@@ -75,28 +75,28 @@ namespace ts {
 
     private:
         // Command line options:
-        bool          _use_files;         // Use file polling input.
-        bool          _use_udp;           // Use UDP input.
-        bool          _delete_files;
-        bool          _reuse_port;
-        bool          _wait_first_batch;  // Option --wait-first-batch (wfb).
-        PID           _inject_pid_opt;    // PID for injection, as specified in cmmand line.
-        PID           _pcr_pid_opt;       // PID containing PCR's, as specified in cmmand line.
-        PID           _pts_pid_opt;       // PID containing PTS's, as specified in cmmand line.
-        BitRate       _min_bitrate;
-        PacketCounter _min_inter_packet;
-        UString       _files;
-        UString       _service_ref;       // Service name or id.
-        IPv4SocketAddress _server_address;
-        size_t        _sock_buf_size;
-        size_t        _inject_count;
-        MilliSecond   _inject_interval;
-        MilliSecond   _start_delay;
-        MilliSecond   _poll_interval;
-        MilliSecond   _min_stable_delay;
-        int64_t       _max_file_size;
-        size_t        _queue_size;
-        SectionPtr    _null_splice;       // A null splice section to maintain PID bitrate.
+        bool          _use_files = false;         // Use file polling input.
+        bool          _use_udp = false;           // Use UDP input.
+        bool          _delete_files = false;
+        bool          _reuse_port = false;
+        bool          _wait_first_batch = false;  // Option --wait-first-batch (wfb).
+        PID           _inject_pid_opt = PID_NULL; // PID for injection, as specified in cmmand line.
+        PID           _pcr_pid_opt = PID_NULL;    // PID containing PCR's, as specified in cmmand line.
+        PID           _pts_pid_opt = PID_NULL;    // PID containing PTS's, as specified in cmmand line.
+        BitRate       _min_bitrate = 0;
+        PacketCounter _min_inter_packet = 0;
+        UString       _files {};
+        UString       _service_ref {};            // Service name or id.
+        IPv4SocketAddress _server_address {};
+        size_t        _sock_buf_size = 0;
+        size_t        _inject_count = 0;
+        MilliSecond   _inject_interval = 0;
+        MilliSecond   _start_delay = 0;
+        MilliSecond   _poll_interval = 0;
+        MilliSecond   _min_stable_delay = 0;
+        int64_t       _max_file_size = 0;
+        size_t        _queue_size = 0;
+        SectionPtr    _null_splice {};            // A null splice section to maintain PID bitrate.
 
         // The plugin contains two internal threads in addition to the packet processing thread.
         // One thread polls input files and another thread receives UDP messages.
@@ -108,24 +108,23 @@ namespace ts {
         class SpliceCommand : public StringifyInterface
         {
             TS_NOBUILD_NOCOPY(SpliceCommand);
+        private:
+            SpliceInjectPlugin* const _plugin;
         public:
             SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec);
 
-            SpliceInformationTable sit;       // The analyzed Splice Information Table.
-            SectionPtr             section;   // The binary SIT section.
-            uint64_t               next_pts;  // Next PTS after which the section shall be inserted (INVALID_PTS means immediate).
-            uint64_t               last_pts;  // PTS after which the section shall no longer be inserted (INVALID_PTS means never).
-            uint64_t               interval;  // Interval between two insertions in PTS units.
-            size_t                 count;     // Remaining number of injections.
+            SpliceInformationTable sit {};                  // The analyzed Splice Information Table.
+            SectionPtr             section {};              // The binary SIT section.
+            uint64_t               next_pts = INVALID_PTS;  // Next PTS after which the section shall be inserted (INVALID_PTS means immediate).
+            uint64_t               last_pts = INVALID_PTS;  // PTS after which the section shall no longer be inserted (INVALID_PTS means never).
+            uint64_t               interval = (_plugin->_inject_interval * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec;  // Interval between two insertions in PTS units.
+            size_t                 count = 1;               // Remaining number of injections.
 
             // A comparison function to sort commands in the queues.
             bool operator<(const SpliceCommand& other) const;
 
             // Implementation of StringifyInterface
             virtual UString toString() const override;
-
-        private:
-            SpliceInjectPlugin* const _plugin;
         };
 
         // Splice commands are passed from the server threads to the plugin thread using a message queue.
@@ -149,9 +148,9 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            TSP* const                _tsp;
-            PollFiles                 _poller;
-            volatile bool             _terminate;
+            TSP* const                _tsp = _plugin->tsp;
+            PollFiles                 _poller {UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_tsp};
+            volatile bool             _terminate = false;
 
             // Implementation of Thread.
             virtual void main() override;
@@ -175,9 +174,9 @@ namespace ts {
 
         private:
             SpliceInjectPlugin* const _plugin;
-            TSP* const                _tsp;
-            UDPReceiver               _client;
-            volatile bool             _terminate;
+            TSP* const                _tsp = _plugin->tsp;
+            UDPReceiver               _client {*_plugin->tsp};
+            volatile bool             _terminate = false;
 
             // Implementation of Thread.
             virtual void main() override;
@@ -187,23 +186,23 @@ namespace ts {
         // Plugin working data
         // -------------------
 
-        bool             _abort;            // Error found, abort asap.
-        ServiceDiscovery _service;          // Service holding the SCTE 35 injection.
-        FileListener     _file_listener;    // File listener thread.
-        UDPListener      _udp_listener;     // UDP listener thread.
-        CommandQueue     _queue;            // Queue for splice commands.
-        Packetizer       _packetizer;       // Packetizer for Splice Information sections.
-        uint64_t         _last_pts;         // Last PTS value from a clock reference.
-        PID              _inject_pid_act;   // PID for injection, actual.
-        PID              _pcr_pid_act;      // PID containing PCR's, actual.
-        PID              _pts_pid_act;      // PID containing PTS's, actual.
-        PacketCounter    _last_inject_pkt;  // Insertion point of last splice command packet.
-        PacketCounter    _inter_packet;     // Interval between two splice command packets (0 if none speficied).
+        bool             _abort = false;               // Error found, abort asap.
+        ServiceDiscovery _service {duck, this};        // Service holding the SCTE 35 injection.
+        FileListener     _file_listener {this};        // File listener thread.
+        UDPListener      _udp_listener {this};         // UDP listener thread.
+        CommandQueue     _queue {};                    // Queue for splice commands.
+        Packetizer       _packetizer {duck, PID_NULL, this};  // Packetizer for Splice Information sections.
+        uint64_t         _last_pts = INVALID_PTS;      // Last PTS value from a clock reference.
+        PID              _inject_pid_act = PID_NULL;   // PID for injection, actual.
+        PID              _pcr_pid_act = PID_NULL;      // PID containing PCR's, actual.
+        PID              _pts_pid_act = PID_NULL;      // PID containing PTS's, actual.
+        PacketCounter    _last_inject_pkt = 0;         // Insertion point of last splice command packet.
+        PacketCounter    _inter_packet = 0;            // Interval between two splice command packets (0 if none speficied).
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
-        volatile bool    _wfb_received;     // First batch was received.
-        Mutex            _wfb_mutex;        // Mutex waiting for _wfb_received.
-        Condition        _wfb_condition;    // Condition waiting for _wfb_received.
+        volatile bool    _wfb_received = false;        // First batch was received.
+        Mutex            _wfb_mutex {};                // Mutex waiting for _wfb_received.
+        Condition        _wfb_condition{};             // Condition waiting for _wfb_received.
 
         // Implementation of SignalizationHandlerInterface.
         virtual void handlePMT(const PMT&, PID) override;
@@ -225,44 +224,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"spliceinject", ts::SpliceInjectPlugin);
 //----------------------------------------------------------------------------
 
 ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Inject SCTE 35 splice commands in a transport stream", u"[options]"),
-    _use_files(false),
-    _use_udp(false),
-    _delete_files(false),
-    _reuse_port(false),
-    _wait_first_batch(false),
-    _inject_pid_opt(PID_NULL),
-    _pcr_pid_opt(PID_NULL),
-    _pts_pid_opt(PID_NULL),
-    _min_bitrate(0),
-    _min_inter_packet(0),
-    _files(),
-    _service_ref(),
-    _server_address(),
-    _sock_buf_size(0),
-    _inject_count(0),
-    _inject_interval(0),
-    _start_delay(0),
-    _poll_interval(0),
-    _min_stable_delay(0),
-    _max_file_size(0),
-    _queue_size(0),
-    _null_splice(),
-    _abort(false),
-    _service(duck, this),
-    _file_listener(this),
-    _udp_listener(this),
-    _queue(),
-    _packetizer(duck, PID_NULL, this),
-    _last_pts(INVALID_PTS),
-    _inject_pid_act(PID_NULL),
-    _pcr_pid_act(PID_NULL),
-    _pts_pid_act(PID_NULL),
-    _last_inject_pkt(0),
-    _inter_packet(0),
-    _wfb_received(false),
-    _wfb_mutex(),
-    _wfb_condition()
+    ProcessorPlugin(tsp_, u"Inject SCTE 35 splice commands in a transport stream", u"[options]")
 {
     // Build a null splice command section for PID stuffing.
     SpliceInformationTable null_splice;
@@ -843,13 +805,8 @@ void ts::SpliceInjectPlugin::processSectionMessage(const uint8_t* addr, size_t s
 //----------------------------------------------------------------------------
 
 ts::SpliceInjectPlugin::SpliceCommand::SpliceCommand(SpliceInjectPlugin* plugin, const SectionPtr& sec) :
-    sit(),
-    section(sec),
-    next_pts(INVALID_PTS),   // inject immediately
-    last_pts(INVALID_PTS),   // no injection time limit
-    interval((plugin->_inject_interval * SYSTEM_CLOCK_SUBFREQ) / MilliSecPerSec), // in PTS units
-    count(1),
-    _plugin(plugin)
+    _plugin(plugin),
+    section(sec)
 {
     // Analyze the section.
     if (section.isNull() || !section->isValid()) {
@@ -980,10 +937,7 @@ ts::UString ts::SpliceInjectPlugin::SpliceCommand::toString() const
 
 ts::SpliceInjectPlugin::FileListener::FileListener(SpliceInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _plugin(plugin),
-    _tsp(plugin->tsp),
-    _poller(UString(), this, PollFiles::DEFAULT_POLL_INTERVAL, PollFiles::DEFAULT_MIN_STABLE_DELAY, *_tsp),
-    _terminate(false)
+    _plugin(plugin)
 {
 }
 
@@ -1052,10 +1006,7 @@ bool ts::SpliceInjectPlugin::FileListener::handlePolledFiles(const PolledFileLis
 
 ts::SpliceInjectPlugin::UDPListener::UDPListener(SpliceInjectPlugin* plugin) :
     Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _plugin(plugin),
-    _tsp(plugin->tsp),
-    _client(*plugin->tsp),
-    _terminate(false)
+    _plugin(plugin)
 {
 }
 

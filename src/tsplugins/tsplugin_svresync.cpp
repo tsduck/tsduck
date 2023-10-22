@@ -33,24 +33,24 @@ namespace ts {
 
     private:
         // Command line options:
-        UString          _target_service;  // Target service to resync.
-        UString          _ref_service;     // Reference service.
-        PID              _ref_pid;         // Reference PID.
-        TSPacketLabelSet _set_labels;      // Labels to set on modified packets
+        UString          _target_service {};  // Target service to resync.
+        UString          _ref_service {};     // Reference service.
+        PID              _ref_pid = PID_NULL; // Reference PID.
+        TSPacketLabelSet _set_labels {};      // Labels to set on modified packets
 
         // Working data:
-        PID                _cur_ref_pid;         // Current reference PID.
-        uint64_t           _last_ref_pcr;        // Last PCR value in the reference PID.
-        PacketCounter      _last_ref_packet;     // Packet index for _last_ref_pcr.
-        uint64_t           _delta_pts;           // Value to add in target PTS and DTS (modulo PTS_DTS_SCALE).
-        bool               _bitrate_error;       // PCR adjustment does not take into account packet distance between ref and target PCR.
-        PacketCounter      _pcr_adjust_count;    // Number of adjusted PCR.
-        PacketCounter      _pts_adjust_count;    // Number of adjusted PTS.
-        PacketCounter      _dts_adjust_count;    // Number of adjusted DTS.
-        PID                _target_pcr_pid;      // Main PCR PID of target service, just to detect change.
-        PIDSet             _target_pids;         // Components of the target service, where to adjust PCR, PTS, DTS.
-        PIDSet             _modified_pids;       // PID's with actually modified packets.
-        SignalizationDemux _demux;               // Analyze the transport stream.
+        PID                _cur_ref_pid = PID_NULL;     // Current reference PID.
+        uint64_t           _last_ref_pcr = INVALID_PCR; // Last PCR value in the reference PID.
+        PacketCounter      _last_ref_packet = 0;        // Packet index for _last_ref_pcr.
+        uint64_t           _delta_pts = 0;              // Value to add in target PTS and DTS (modulo PTS_DTS_SCALE).
+        bool               _bitrate_error = false;      // PCR adjustment does not take into account packet distance between ref and target PCR.
+        PacketCounter      _pcr_adjust_count = 0;       // Number of adjusted PCR.
+        PacketCounter      _pts_adjust_count = 0;       // Number of adjusted PTS.
+        PacketCounter      _dts_adjust_count = 0;       // Number of adjusted DTS.
+        PID                _target_pcr_pid = PID_NULL;  // Main PCR PID of target service, just to detect change.
+        PIDSet             _target_pids {};             // Components of the target service, where to adjust PCR, PTS, DTS.
+        PIDSet             _modified_pids {};           // PID's with actually modified packets.
+        SignalizationDemux _demux {duck, this};         // Analyze the transport stream.
 
         // Implementation of SignalizationHandlerInterface
         virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed) override;
@@ -65,23 +65,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"svresync", ts::SVResyncPlugin);
 //----------------------------------------------------------------------------
 
 ts::SVResyncPlugin::SVResyncPlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Resynchronize the clock of a service based on another service", u"[options] service"),
-    _target_service(),
-    _ref_service(),
-    _ref_pid(PID_NULL),
-    _set_labels(),
-    _cur_ref_pid(PID_NULL),
-    _last_ref_pcr(INVALID_PCR),
-    _last_ref_packet(0),
-    _delta_pts(0),
-    _bitrate_error(false),
-    _pcr_adjust_count(0),
-    _pts_adjust_count(0),
-    _dts_adjust_count(0),
-    _target_pcr_pid(PID_NULL),
-    _target_pids(),
-    _modified_pids(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Resynchronize the clock of a service based on another service", u"[options] service")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

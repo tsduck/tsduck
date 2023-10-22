@@ -30,7 +30,7 @@ namespace ts {
         TS_NOBUILD_NOCOPY(StatsPlugin);
     public:
         // Implementation of plugin API
-        StatsPlugin (TSP*);
+        StatsPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;
@@ -44,24 +44,24 @@ namespace ts {
         typedef std::map<size_t, ContextPtr> ContextMap;
 
         // Command line options.
-        bool       _track_pids;        // Track PID's, not labels.
-        bool       _log;               // Report statistics through the logger, not files.
-        bool       _csv;               // Use CSV format for statistics.
-        bool       _header;            // Display header lines.
-        bool       _multiple_output;   // Don't rewrite output files with --interval.
-        UString    _csv_separator;     // Separator character in CSV lines.
-        UString    _output_name;       // Output file name.
-        NanoSecond _output_interval;   // Recreate output at this time interval.
-        PIDSet     _pids;              // List of PID's to track.
-        TSPacketLabelSet _labels;      // List of labels to track.
+        bool       _track_pids = true;       // Track PID's, not labels.
+        bool       _log = false;             // Report statistics through the logger, not files.
+        bool       _csv = false;             // Use CSV format for statistics.
+        bool       _header = false;          // Display header lines.
+        bool       _multiple_output = false; // Don't rewrite output files with --interval.
+        UString    _csv_separator = TS_DEFAULT_CSV_SEPARATOR; // Separator character in CSV lines.
+        UString    _output_name {};          // Output file name.
+        NanoSecond _output_interval = 0;     // Recreate output at this time interval.
+        PIDSet     _pids {};                 // List of PID's to track.
+        TSPacketLabelSet _labels {};         // List of labels to track.
 
         // Working data.
-        std::ofstream     _output_stream;  // Output file stream.
-        std::ostream*     _output;         // Point to actual output stream.
-        ContextMap        _ctx_map;        // Description of all tracked categories of packets.
-        TSSpeedMetrics    _metrics;        // Timing to synchronize next output files.
-        NanoSecond        _next_report;    // Next time to create next output.
-        FileNameGenerator _name_gen;       // Generate multiple output file names.
+        std::ofstream     _output_stream {};  // Output file stream.
+        std::ostream*     _output = nullptr;  // Point to actual output stream.
+        ContextMap        _ctx_map {};        // Description of all tracked categories of packets.
+        TSSpeedMetrics    _metrics {};        // Timing to synchronize next output files.
+        NanoSecond        _next_report = 0;   // Next time to create next output.
+        FileNameGenerator _name_gen {};       // Generate multiple output file names.
 
         // Get or create the description of a tracked PID or label.
         ContextPtr getContext(size_t index);
@@ -75,12 +75,10 @@ namespace ts {
         class Context
         {
         public:
-            uint64_t total_pkt;      // Total number of packets in that category.
-            uint64_t last_ts_index;  // Index in TS of last packet of the category.
-            SingleDataStatistics<uint64_t> ipkt; // Inter-packet distance statistics.
-
-            // Constructor.
-            Context();
+            Context() = default;         // Constructor.
+            uint64_t total_pkt = 0;      // Total number of packets in that category.
+            uint64_t last_ts_index = 0;  // Index in TS of last packet of the category.
+            SingleDataStatistics<uint64_t> ipkt {}; // Inter-packet distance statistics.
 
             // Add packet data to the context.
             void addPacketData(PacketCounter, const TSPacket&);
@@ -96,23 +94,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"stats", ts::StatsPlugin);
 //----------------------------------------------------------------------------
 
 ts::StatsPlugin::StatsPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Report various statistics on PID's and labels", u"[options]"),
-    _track_pids(true),
-    _log(false),
-    _csv(false),
-    _header(false),
-    _multiple_output(false),
-    _csv_separator(TS_DEFAULT_CSV_SEPARATOR),
-    _output_name(),
-    _output_interval(0),
-    _pids(),
-    _labels(),
-    _output_stream(),
-    _output(nullptr),
-    _ctx_map(),
-    _metrics(),
-    _next_report(0),
-    _name_gen()
+    ProcessorPlugin(tsp_, u"Report various statistics on PID's and labels", u"[options]")
 {
     option(u"csv", 'c');
     help(u"csv",
@@ -394,18 +376,6 @@ ts::StatsPlugin::ContextPtr ts::StatsPlugin::getContext(size_t index)
         _ctx_map[index] = ptr;
         return ptr;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor of a tracked PID context.
-//----------------------------------------------------------------------------
-
-ts::StatsPlugin::Context::Context() :
-    total_pkt(0),
-    last_ts_index(0),
-    ipkt()
-{
 }
 
 

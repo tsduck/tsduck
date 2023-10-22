@@ -40,20 +40,20 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool              _abort;          // Error (service not found, etc)
-        bool              _pat_found;      // PAT was found, ready to pass packets
-        uint16_t          _ts_id;          // Tranport stream id
-        Service           _new_service;    // New service name & id
-        Service           _old_service;    // Old service name & id
-        bool              _ignore_bat;     // Do not modify the BAT
-        bool              _ignore_eit;     // Do not modify the EIT's
-        bool              _ignore_nit;     // Do not modify the NIT
-        SectionDemux      _demux;          // Section demux
-        CyclingPacketizer _pzer_pat;       // Packetizer for modified PAT
-        CyclingPacketizer _pzer_pmt;       // Packetizer for modified PMT
-        CyclingPacketizer _pzer_sdt_bat;   // Packetizer for modified SDT/BAT
-        CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
-        EITProcessor      _eit_process;    // Modify EIT's
+        bool              _abort = false;      // Error (service not found, etc)
+        bool              _pat_found = false;  // PAT was found, ready to pass packets
+        uint16_t          _ts_id = 0;          // Tranport stream id
+        Service           _new_service {};     // New service name & id
+        Service           _old_service {};     // Old service name & id
+        bool              _ignore_bat = false; // Do not modify the BAT
+        bool              _ignore_eit = false; // Do not modify the EIT's
+        bool              _ignore_nit = false; // Do not modify the NIT
+        SectionDemux      _demux {duck, this};
+        CyclingPacketizer _pzer_pat {duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer _pzer_pmt {duck, PID_NULL, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer _pzer_sdt_bat {duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer _pzer_nit {duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        EITProcessor      _eit_process {duck, PID_EIT};
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -75,21 +75,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"svrename", ts::SVRenamePlugin);
 //----------------------------------------------------------------------------
 
 ts::SVRenamePlugin::SVRenamePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Rename a service, assign a new service name and/or new service id", u"[options] [service]"),
-    _abort(false),
-    _pat_found(false),
-    _ts_id(0),
-    _new_service(),
-    _old_service(),
-    _ignore_bat(false),
-    _ignore_eit(false),
-    _ignore_nit(false),
-    _demux(duck, this),
-    _pzer_pat(duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_pmt(duck, PID_NULL, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_nit(duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _eit_process(duck, PID_EIT)
+    ProcessorPlugin(tsp_, u"Rename a service, assign a new service name and/or new service id", u"[options] [service]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

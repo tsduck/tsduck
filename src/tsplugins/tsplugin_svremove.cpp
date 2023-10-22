@@ -41,22 +41,22 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool              _abort;          // Error (service not found, etc)
-        bool              _ready;          // Ready to pass packets
-        bool              _transparent;    // Transparent mode, pass all packets
-        Service           _service;        // Service name & id
-        bool              _ignore_absent;  // Ignore service if absent
-        bool              _ignore_bat;     // Do not modify the BAT
-        bool              _ignore_eit;     // Do not modify the EIT's
-        bool              _ignore_nit;     // Do not modify the NIT
-        Status            _drop_status;    // Status for dropped packets
-        PIDSet            _drop_pids;      // List of PIDs to drop
-        PIDSet            _ref_pids;       // List of other referenced PIDs
-        SectionDemux      _demux;          // Section demux
-        CyclingPacketizer _pzer_pat;       // Packetizer for modified PAT
-        CyclingPacketizer _pzer_sdt_bat;   // Packetizer for modified SDT/BAT
-        CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
-        EITProcessor      _eit_process;    // Modify EIT's
+        bool              _abort = false;          // Error (service not found, etc)
+        bool              _ready = false;          // Ready to pass packets
+        bool              _transparent = false;    // Transparent mode, pass all packets
+        Service           _service {};             // Service name & id
+        bool              _ignore_absent = false;  // Ignore service if absent
+        bool              _ignore_bat = false;     // Do not modify the BAT
+        bool              _ignore_eit = false;     // Do not modify the EIT's
+        bool              _ignore_nit = false;     // Do not modify the NIT
+        Status            _drop_status = TSP_DROP; // Status for dropped packets
+        PIDSet            _drop_pids {};           // List of PIDs to drop
+        PIDSet            _ref_pids {};            // List of other referenced PIDs
+        SectionDemux      _demux {duck, this};     // Section demux
+        CyclingPacketizer _pzer_pat {duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer _pzer_sdt_bat {duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer _pzer_nit {duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        EITProcessor      _eit_process {duck, PID_EIT};
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -81,23 +81,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"svremove", ts::SVRemovePlugin);
 //----------------------------------------------------------------------------
 
 ts::SVRemovePlugin::SVRemovePlugin (TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Remove a service", u"[options] service"),
-    _abort(false),
-    _ready(false),
-    _transparent(false),
-    _service(),
-    _ignore_absent(false),
-    _ignore_bat(false),
-    _ignore_eit(false),
-    _ignore_nit(false),
-    _drop_status(TSP_DROP),
-    _drop_pids(),
-    _ref_pids(),
-    _demux(duck, this),
-    _pzer_pat(duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_nit(duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _eit_process(duck, PID_EIT)
+    ProcessorPlugin(tsp_, u"Remove a service", u"[options] service")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

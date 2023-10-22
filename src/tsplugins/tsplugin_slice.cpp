@@ -47,15 +47,14 @@ namespace ts {
         typedef std::vector<SliceEvent> SliceEventVector;
 
         // SlicePlugin private members
-        bool              _use_time;     // Use milliseconds in SliceEvent::value
-        bool              _ignore_pcr;   // Do not use PCR's, rely on previous plugins' bitrate
-        Status            _status;       // Current packet status to return
-        PacketCounter     _packet_cnt;   // Packet counter
-        uint64_t          _time_factor;  // Factor to apply to get milli-seconds
-        const Enumeration _status_names; // Names of packet status
-        PCRAnalyzer       _pcr_analyzer; // PCR analyzer for time stamping
-        SliceEventVector  _events;       // Sorted list of time events to apply
-        size_t            _next_index;   // Index of next SliceEvent to apply
+        bool              _use_time = false;     // Use milliseconds in SliceEvent::value
+        bool              _ignore_pcr = false;   // Do not use PCR's, rely on previous plugins' bitrate
+        Status            _status = TSP_OK;       // Current packet status to return
+        PacketCounter     _packet_cnt = 0;   // Packet counter
+        uint64_t          _time_factor = 0;  // Factor to apply to get milli-seconds
+        PCRAnalyzer       _pcr_analyzer {}; // PCR analyzer for time stamping
+        SliceEventVector  _events {};       // Sorted list of time events to apply
+        size_t            _next_index = 0;   // Index of next SliceEvent to apply
 
         // Add event in the list from one option.
         void addEvents(const UChar* option, Status status);
@@ -70,16 +69,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"slice", ts::SlicePlugin);
 //----------------------------------------------------------------------------
 
 ts::SlicePlugin::SlicePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Pass or drop packets based on packet numbers", u"[options]"),
-    _use_time(false),
-    _ignore_pcr(false),
-    _status(TSP_OK),
-    _packet_cnt(0),
-    _time_factor(0),
-    _status_names({{u"pass", TSP_OK}, {u"stop", TSP_END}, {u"drop", TSP_DROP}, {u"null", TSP_NULL}}),
-    _pcr_analyzer(),
-   _events(),
-   _next_index(0)
+    ProcessorPlugin(tsp_, u"Pass or drop packets based on packet numbers", u"[options]")
 {
     option(u"drop",'d', UNSIGNED, 0, UNLIMITED_COUNT);
     help(u"drop",
@@ -148,9 +138,9 @@ bool ts::SlicePlugin::start()
     _next_index = 0;
 
     if (tsp->verbose()) {
-        tsp->verbose(u"initial packet processing: %s", {_status_names.name(_status)});
+        tsp->verbose(u"initial packet processing: %s", {StatusNames.name(_status)});
         for (auto& it : _events) {
-            tsp->verbose(u"packet %s after %'d %s", {_status_names.name(it.status), it.value, _use_time ? u"ms" : u"packets"});
+            tsp->verbose(u"packet %s after %'d %s", {StatusNames.name(it.status), it.value, _use_time ? u"ms" : u"packets"});
         }
     }
 
@@ -217,7 +207,7 @@ ts::ProcessorPlugin::Status ts::SlicePlugin::processPacket(TSPacket& pkt, TSPack
         // Yes, we just passed a schedule
         _status = _events[_next_index].status;
         _next_index++;
-        tsp->verbose(u"new packet processing: %s after %'d packets", {_status_names.name(_status), _packet_cnt});
+        tsp->verbose(u"new packet processing: %s after %'d packets", {StatusNames.name(_status), _packet_cnt});
     }
 
     // Count packets
