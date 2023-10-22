@@ -292,6 +292,18 @@ Bits = 32
 0x00002372 = DTT Samoa
 0x00002B00 = DTT Sky New Zealand
 0x00003200 = Australian Terrestrial Television Networks
+0x00003201 = Australia, ABC
+0x00003202 = Australia, SBS
+0x00003203 = Australia, NINE
+0x00003204 = Australia, SEVEN
+0x00003205 = Australia, TEN
+0x00003206-0x00003209 = Australia, reserved for future use
+0x0000320A = Australia, WIN
+0x0000320B = Australia, Prime
+0x0000320C = Australia, SCA
+0x0000320D = Australia, independent regional
+0x0000320E = Australia, Imparja (all states)
+0x0000320F = Australia, Southern Cross (all states)
 0x0000333A = Digital TV Group
 0x00006000 = NDS
 0x00006001-0x00006006 = NDC
@@ -661,6 +673,20 @@ Bits = 8
 0x0000233A_87 = UK DTT Short Service Name
 0x0000233A_88 = UK DTT HD Simulcast Logical Channel Number
 0x0000233A_89 = UK DTT Guidance
+# With PDS for Free TV Australia.
+# Each operator reuses the same descriptors with its own PDS.
+0x00003200_83 = Free TV Australia Logical Channel
+0x00003201_83 = Free TV Australia (ABC) Logical Channel
+0x00003202_83 = Free TV Australia (SBS) Logical Channel
+0x00003203_83 = Free TV Australia (NINE) Logical Channel
+0x00003204_83 = Free TV Australia (SEVEN) Logical Channel
+0x00003205_83 = Free TV Australia (TEN) Logical Channel
+0x0000320A_83 = Free TV Australia (WIN) Logical Channel
+0x0000320B_83 = Free TV Australia (Prime) Logical Channel
+0x0000320C_83 = Free TV Australia (SCA) Logical Channel
+0x0000320D_83 = Free TV Australia (independent regional) Logical Channel
+0x0000320E_83 = Free TV Australia (Imparja) Logical Channel
+0x0000320F_83 = Free TV Australia (Southern Cross) Logical Channel
 # With PDS for AOM.
 # Descriptors are defined by the Alliance for Open Media.
 0x414F4D53_80 = AV1 Video

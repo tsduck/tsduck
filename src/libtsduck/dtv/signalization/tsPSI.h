@@ -312,6 +312,7 @@ namespace ts {
         PDS_CANALPLUS = 0x000000C0, //!< Private data specifier for Canal+.
         PDS_EUTELSAT  = 0x0000055F, //!< Private data specifier for EutelSat.
         PDS_OFCOM     = 0x0000233A, //!< Private data specifier for DTT UK (OFCOM, formerly ITC).
+        PDS_AUSTRALIA = 0x00003200, //!< Private data specifier for Free TV Australia.
         PDS_AOM       = 0x414F4D53, //!< Private data specifier for the Alliance for Open Media (AOM) (value is "AOMS" in ASCII).
         PDS_ATSC      = 0x41545343, //!< Fake private data specifier for ATSC descriptors (value is "ATSC" in ASCII).
         PDS_AVS       = 0x41565356, //!< Private data specifier for AVS Working Group of China (value is "AVSV" in ASCII).
@@ -563,6 +564,10 @@ namespace ts {
         DID_OFCOM_SHORT_SRV_NAM = 0x87, //!< DID for OFCOM/DTG short_service_name_descriptor
         DID_OFCOM_HD_SIMULCAST  = 0x88, //!< DID for OFCOM/DTG HD_simulcast_logical_channel_descriptor
         DID_OFCOM_GUIDANCE      = 0x89, //!< DID for OFCOM/DTG guidance_descriptor
+
+        // Valid in DVB context after PDS_AUSTRALIA private_data_specifier
+
+        DID_AUSTRALIA_LOGICAL_CHAN  = 0x83, //!< DID for Free TV Australia logical_channel_descriptor
 
         // Valid in DVB context after PDS_CANALPLUS private_data_specifier
 
