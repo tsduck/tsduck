@@ -3,28 +3,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -112,52 +91,52 @@ namespace ts {
             //!
             //! Constructor.
             //!
-            ShortTermReferencePictureSet();
+            ShortTermReferencePictureSet() = default;
             //!
             //! Clear structure content.
             //!
             void clear();
 
             // Inline data:
-            bool valid;                                         //!< This structure is valid.
+            bool valid = false;                                     //!< This structure is valid.
             // if (stRpsIdx != 0) {
-                uint8_t inter_ref_pic_set_prediction_flag;      //!< inter_ref_pic_set_prediction_flag
+                uint8_t inter_ref_pic_set_prediction_flag = 0;      //!< inter_ref_pic_set_prediction_flag
             // }
             // if (inter_ref_pic_set_prediction_flag) {
                 // if (stRpsIdx == num_short_term_ref_pic_sets) {
-                    uint32_t delta_idx_minus1;                  //!< delta_idx_minus1
+                    uint32_t delta_idx_minus1 = 0;                  //!< delta_idx_minus1
                 // }
-                uint8_t delta_rps_sign;                         //!< delta_rps_sign
-                uint32_t abs_delta_rps_minus1;                  //!< abs_delta_rps_minus1
+                uint8_t delta_rps_sign = 0;                         //!< delta_rps_sign
+                uint32_t abs_delta_rps_minus1 = 0;                  //!< abs_delta_rps_minus1
                 // for (j = 0; j <= NumDeltaPocs[RefRpsIdx]; j++)
-                std::vector<uint8_t> used_by_curr_pic_flag;     //!< used_by_curr_pic_flag
+                std::vector<uint8_t> used_by_curr_pic_flag {};      //!< used_by_curr_pic_flag
                 // if (!used_by_curr_pic_flag) {
-                    std::vector<uint8_t> use_delta_flag;        //!< use_delta_flag
+                    std::vector<uint8_t> use_delta_flag {};         //!< use_delta_flag
                 // }
             // } else {
-                uint32_t num_negative_pics;                     //!< num_negative_pics
-                uint32_t num_positive_pics;                     //!< num_positive_pics
+                uint32_t num_negative_pics = 0;                     //!< num_negative_pics
+                uint32_t num_positive_pics = 0;                     //!< num_positive_pics
                 // for (i = 0; i < num_negative_pics; i++) {
-                std::vector<uint32_t> delta_poc_s0_minus1;      //!< delta_poc_minus1
-                std::vector<uint8_t> used_by_curr_pic_s0_flag;  //!< used_by_curr_pic_flag
+                std::vector<uint32_t> delta_poc_s0_minus1 {};       //!< delta_poc_minus1
+                std::vector<uint8_t> used_by_curr_pic_s0_flag {};   //!< used_by_curr_pic_flag
                 // for (i = 0; i < num_positive_pics; i++) {
-                std::vector<uint32_t> delta_poc_s1_minus1;      //!< delta_poc_minus1
-                std::vector<uint8_t> used_by_curr_pic_s1_flag;  //!< used_by_curr_pic_flag
+                std::vector<uint32_t> delta_poc_s1_minus1 {};       //!< delta_poc_minus1
+                std::vector<uint8_t> used_by_curr_pic_s1_flag {};   //!< used_by_curr_pic_flag
             // }
 
             // Synthetic variables:
-            uint32_t             NumNegativePics;  //!< ITU-T Rec. H.265, 7.4.8 (7-61, 7-63)
-            uint32_t             NumPositivePics;  //!< ITU-T Rec. H.265, 7.4.8 (7-62, 7-64)
-            std::vector<uint8_t> UsedByCurrPicS0;  //!< ITU-T Rec. H.265, 7.4.8 (7-65)
-            std::vector<uint8_t> UsedByCurrPicS1;  //!< ITU-T Rec. H.265, 7.4.8 (7-66)
-            std::vector<int32_t> DeltaPocS0;       //!< ITU-T Rec. H.265, 7.4.8 (7-67)
-            std::vector<int32_t> DeltaPocS1;       //!< ITU-T Rec. H.265, 7.4.8 (7-68)
-            uint32_t             NumDeltaPocs;     //!< ITU-T Rec. H.265, 7.4.8 (7-71)
+            uint32_t             NumNegativePics = 0;  //!< ITU-T Rec. H.265, 7.4.8 (7-61, 7-63)
+            uint32_t             NumPositivePics = 0;  //!< ITU-T Rec. H.265, 7.4.8 (7-62, 7-64)
+            std::vector<uint8_t> UsedByCurrPicS0 {};   //!< ITU-T Rec. H.265, 7.4.8 (7-65)
+            std::vector<uint8_t> UsedByCurrPicS1 {};   //!< ITU-T Rec. H.265, 7.4.8 (7-66)
+            std::vector<int32_t> DeltaPocS0 {};        //!< ITU-T Rec. H.265, 7.4.8 (7-67)
+            std::vector<int32_t> DeltaPocS1 {};        //!< ITU-T Rec. H.265, 7.4.8 (7-68)
+            uint32_t             NumDeltaPocs = 0;     //!< ITU-T Rec. H.265, 7.4.8 (7-71)
         };
 
         //!
         //! The list of ShortTermReferencePictureSet is organized as a vector.
         //!
-        std::vector<ShortTermReferencePictureSet> list;
+        std::vector<ShortTermReferencePictureSet> list {};
     };
 }

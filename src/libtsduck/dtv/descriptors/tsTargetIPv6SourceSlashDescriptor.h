@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -35,7 +14,6 @@
 #pragma once
 #include "tsAbstractDescriptor.h"
 #include "tsIPv6Address.h"
-#include "tsIPUtils.h"
 
 namespace ts {
     //!
@@ -56,28 +34,20 @@ namespace ts {
         class Address
         {
         public:
-            IPv6Address IPv6_source_addr;         //!< IPv6 source address.
-            uint8_t     IPv6_source_slash_mask;   //!< Number of bits in source network mask.
-            IPv6Address IPv6_dest_addr;           //!< IPv6 destination address.
-            uint8_t     IPv6_dest_slash_mask;     //!< Number of bits in destination network mask.
-
-            //!
-            //! Constructor
-            //! @param [in] addr1 IPv6 source address.
-            //! @param [in] mask1 Number of bits in source network mask.
-            //! @param [in] addr2 IPv6 destination address.
-            //! @param [in] mask2 Number of bits in destination network mask.
-            //!
-            Address(const IPv6Address& addr1 = IPv6Address(), uint8_t mask1 = 0, const IPv6Address& addr2 = IPv6Address(), uint8_t mask2 = 0);
+            Address() = default;                    //!< Constructor
+            IPv6Address IPv6_source_addr {};        //!< IPv6 source address.
+            uint8_t     IPv6_source_slash_mask {};  //!< Number of bits in source network mask.
+            IPv6Address IPv6_dest_addr {};          //!< IPv6 destination address.
+            uint8_t     IPv6_dest_slash_mask {};    //!< Number of bits in destination network mask.
         };
 
         // TargetIPv6SourceSlashDescriptor public members:
-        std::vector<Address> addresses;  //!< IPv6 addresses
+        std::vector<Address> addresses {};  //!< IPv6 addresses
 
         //!
         //! Maximum number of entries to fit in 255 bytes.
         //!
-        static const size_t MAX_ENTRIES = 7;
+        static constexpr size_t MAX_ENTRIES = 7;
 
         //!
         //! Default constructor.

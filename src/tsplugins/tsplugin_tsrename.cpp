@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -59,24 +38,24 @@ namespace ts {
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 
     private:
-        bool              _abort;          // Error (service not found, etc)
-        bool              _ready;          // Ready to pass packets
-        PID               _nit_pid;        // PID for the NIT
-        uint16_t          _old_ts_id;      // Old transport stream id
-        bool              _set_ts_id;      // Modify transport stream id
-        uint16_t          _new_ts_id;      // New transport stream id
-        bool              _set_onet_id;    // Update original network id
-        uint16_t          _new_onet_id;    // New original network id
-        bool              _ignore_bat;     // Do not modify the BAT
-        bool              _ignore_eit;     // Do not modify the EIT's
-        bool              _ignore_nit;     // Do not modify the NIT
-        bool              _add_bat;        // Add a new TS entry in the BAT instead of replacing
-        bool              _add_nit;        // Add a new TS entry in the NIT instead of replacing
-        SectionDemux      _demux;          // Section demux
-        CyclingPacketizer _pzer_pat;       // Packetizer for modified PAT
-        CyclingPacketizer _pzer_sdt_bat;   // Packetizer for modified SDT/BAT
-        CyclingPacketizer _pzer_nit;       // Packetizer for modified NIT
-        EITProcessor      _eit_process;    // Modify EIT's
+        bool              _abort = false;        // Error (service not found, etc)
+        bool              _ready = false;        // Ready to pass packets
+        PID               _nit_pid = PID_NIT;    // PID for the NIT
+        uint16_t          _old_ts_id = 0;        // Old transport stream id
+        bool              _set_ts_id = false;    // Modify transport stream id
+        uint16_t          _new_ts_id = 0;        // New transport stream id
+        bool              _set_onet_id = false;  // Update original network id
+        uint16_t          _new_onet_id = 0;      // New original network id
+        bool              _ignore_bat = false;   // Do not modify the BAT
+        bool              _ignore_eit = false;   // Do not modify the EIT's
+        bool              _ignore_nit = false;   // Do not modify the NIT
+        bool              _add_bat = false;      // Add a new TS entry in the BAT instead of replacing
+        bool              _add_nit = false;      // Add a new TS entry in the NIT instead of replacing
+        SectionDemux      _demux {duck, this};
+        CyclingPacketizer _pzer_pat {duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer _pzer_sdt_bat {duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CyclingPacketizer _pzer_nit {duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        EITProcessor      _eit_process {duck, PID_EIT};
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -96,25 +75,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"tsrename", ts::TSRenamePlugin);
 //----------------------------------------------------------------------------
 
 ts::TSRenamePlugin::TSRenamePlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Rename a transport stream", u"[options]"),
-    _abort(false),
-    _ready(false),
-    _nit_pid(PID_NIT),
-    _old_ts_id(0),
-    _set_ts_id(false),
-    _new_ts_id(0),
-    _set_onet_id(false),
-    _new_onet_id(0),
-    _ignore_bat(false),
-    _ignore_eit(false),
-    _ignore_nit(false),
-    _add_bat(false),
-    _add_nit(false),
-    _demux(duck, this),
-    _pzer_pat(duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_sdt_bat(duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pzer_nit(duck, PID_NIT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _eit_process(duck, PID_EIT)
+    ProcessorPlugin(tsp_, u"Rename a transport stream", u"[options]")
 {
     option(u"add", 'a');
     help(u"add", u"Equivalent to --add-bat --add-nit.");

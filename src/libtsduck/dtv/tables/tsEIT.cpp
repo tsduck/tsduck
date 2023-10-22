@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -49,21 +28,6 @@ TS_REGISTER_TABLE(MY_CLASS, ts::Range<ts::TID>(ts::TID_EIT_MIN, ts::TID_EIT_MAX)
                   // DVB has only one standard PID for EIT, ISDB adds two others.
                   {ts::PID_EIT, ts::PID_ISDB_EIT_2, ts::PID_ISDB_EIT_3});
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr size_t ts::EIT::SEGMENTS_PER_TABLE;
-constexpr size_t ts::EIT::SEGMENTS_PER_DAY;
-constexpr size_t ts::EIT::SECTIONS_PER_SEGMENT;
-constexpr size_t ts::EIT::TOTAL_TABLES_COUNT;
-constexpr size_t ts::EIT::TOTAL_SEGMENTS_COUNT;
-constexpr size_t ts::EIT::TOTAL_DAYS;
-constexpr ts::MilliSecond ts::EIT::SEGMENT_DURATION;
-constexpr ts::MilliSecond ts::EIT::TABLE_DURATION;
-constexpr ts::MilliSecond ts::EIT::TOTAL_DURATION;
-constexpr size_t ts::EIT::EIT_HEADER_SIZE;
-constexpr size_t ts::EIT::EIT_PAYLOAD_FIXED_SIZE;
-constexpr size_t ts::EIT::EIT_EVENT_FIXED_SIZE;
-#endif
-
 
 //----------------------------------------------------------------------------
 // Constructors
@@ -88,10 +52,6 @@ ts::EIT::EIT(bool is_actual_,
 
 ts::EIT::EIT(DuckContext& duck, const BinaryTable& table) :
     AbstractLongTable(TID_EIT_PF_ACT, MY_XML_NAME, MY_STD, 0, true),  // TID will be updated by deserialize()
-    service_id(0),
-    ts_id(0),
-    onetw_id(0),
-    last_table_id(0),
     events(this)
 {
     deserialize(duck, table);
@@ -109,12 +69,7 @@ ts::EIT::EIT(const EIT& other) :
 }
 
 ts::EIT::Event::Event(const AbstractTable* table) :
-    EntryWithDescriptors(table),
-    event_id(0),
-    start_time(),
-    duration(0),
-    running_status(0),
-    CA_controlled(false)
+    EntryWithDescriptors(table)
 {
 }
 

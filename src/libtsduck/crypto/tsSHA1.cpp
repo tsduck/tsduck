@@ -27,9 +27,7 @@ volatile bool ts::SHA1::_accel_supported = false;
 // Constructor
 //----------------------------------------------------------------------------
 
-ts::SHA1::SHA1() :
-    _length(0),
-    _curlen(0)
+ts::SHA1::SHA1()
 {
     // Check once if SHA-1 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.

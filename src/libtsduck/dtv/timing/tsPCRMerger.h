@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -132,10 +111,10 @@ namespace ts {
 
         // Private fields.
         DuckContext&       _duck;
-        bool               _incremental_pcr;      // Use incremental method to restamp PCR's.
-        bool               _pcr_reset_backwards;  // Reset PCR restamping when DTS/PTD move backwards the PCR.
-        PIDContextMap      _pid_ctx;              // Description of PID's from the merged stream.
-        SignalizationDemux _demux;                // Analyze the signalization in the merged stream.
+        bool               _incremental_pcr = false;      // Use incremental method to restamp PCR's.
+        bool               _pcr_reset_backwards = false;  // Reset PCR restamping when DTS/PTD move backwards the PCR.
+        PIDContextMap      _pid_ctx {};                   // Description of PID's from the merged stream.
+        SignalizationDemux _demux;                        // Analyze the signalization in the merged stream.
 
         // Get the description of a PID inside the merged stream.
         PIDContextPtr getContext(PID pid);
@@ -148,16 +127,16 @@ namespace ts {
         {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
-            const PID     pid;            // The described PID.
-            PID           pcr_pid;        // Associated PCR PID (can be the PID itself).
-            uint64_t      first_pcr;      // First original PCR value in this PID.
-            PacketCounter first_pcr_pkt;  // Index in the main stream of the packet with the first PCR.
-            uint64_t      last_pcr;       // Last PCR value in this PID, after adjustment in main stream.
-            PacketCounter last_pcr_pkt;   // Index in the main stream of the packet with the last PCR.
-            uint64_t      last_pts;       // Last PTS value in this PID.
-            PacketCounter last_pts_pkt;   // Index in the main stream of the packet with the last PTS.
-            uint64_t      last_dts;       // Last DTS value in this PID.
-            PacketCounter last_dts_pkt;   // Index in the main stream of the packet with the last DTS.
+            const PID     pid;                     // The described PID.
+            PID           pcr_pid = PID_NULL;      // Associated PCR PID (can be the PID itself).
+            uint64_t      first_pcr {INVALID_PCR}; // First original PCR value in this PID.
+            PacketCounter first_pcr_pkt = 0;       // Index in the main stream of the packet with the first PCR.
+            uint64_t      last_pcr {INVALID_PCR};  // Last PCR value in this PID, after adjustment in main stream.
+            PacketCounter last_pcr_pkt = 0;        // Index in the main stream of the packet with the last PCR.
+            uint64_t      last_pts {INVALID_PTS};  // Last PTS value in this PID.
+            PacketCounter last_pts_pkt = 0;        // Index in the main stream of the packet with the last PTS.
+            uint64_t      last_dts {INVALID_DTS};  // Last DTS value in this PID.
+            PacketCounter last_dts_pkt = 0;        // Index in the main stream of the packet with the last DTS.
 
             // Constructor.
             PIDContext(PID);

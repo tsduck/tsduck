@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -49,8 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 //----------------------------------------------------------------------------
 
 ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    entries()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -63,20 +41,6 @@ ts::AudioPreselectionDescriptor::AudioPreselectionDescriptor(DuckContext& duck, 
 void ts::AudioPreselectionDescriptor::clearContent()
 {
     entries.clear();
-}
-
-ts::AudioPreselectionDescriptor::PreSelection::PreSelection() :
-    preselection_id(0),
-    audio_rendering_indication(0),
-    audio_description(false),
-    spoken_subtitles(false),
-    dialogue_enhancement(false),
-    interactivity_enabled(false),
-    ISO_639_language_code(),
-    message_id(),
-    aux_component_tags(),
-    future_extension()
-{
 }
 
 
@@ -128,7 +92,7 @@ void ts::AudioPreselectionDescriptor::serializePayload(PSIBuffer& buf) const
         buf.putBit(!it->aux_component_tags.empty());
         buf.putBit(!it->future_extension.empty());
         if (!it->ISO_639_language_code.empty()) {
-            buf.putLanguageCode(it->ISO_639_language_code, true);
+            buf.putLanguageCode(it->ISO_639_language_code);
         }
         if (it->message_id.set()) {
             buf.putUInt8(it->message_id.value());

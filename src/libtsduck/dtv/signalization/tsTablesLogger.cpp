@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -36,15 +15,10 @@
 #include "tsFileUtils.h"
 #include "tsDuckContext.h"
 #include "tsSimulCryptDate.h"
-#include "tsDuckProtocol.h"
 #include "tsxmlElement.h"
 #include "tsjsonArray.h"
 #include "tsjsonObject.h"
 #include "tsMJD.h"
-
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
-constexpr size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
-#endif
 
 
 //----------------------------------------------------------------------------
@@ -52,74 +26,15 @@ constexpr size_t ts::TablesLogger::DEFAULT_LOG_SIZE;
 //----------------------------------------------------------------------------
 
 ts::TablesLogger::TablesLogger(TablesDisplay& display) :
-    TableHandlerInterface(),
-    SectionHandlerInterface(),
-    _use_text(false),
-    _use_xml(false),
-    _use_json(false),
-    _use_binary(false),
-    _use_udp(false),
-    _text_destination(),
-    _xml_destination(),
-    _json_destination(),
-    _bin_destination(),
-    _udp_destination(),
-    _bin_multi_files(false),
-    _bin_stdout(false),
-    _flush(false),
-    _rewrite_xml(false),
-    _rewrite_json(false),
-    _rewrite_binary(false),
-    _log_xml_line(false),
-    _log_json_line(false),
-    _log_hexa_line(false),
-    _log_xml_prefix(),
-    _log_json_prefix(),
-    _log_hexa_prefix(),
-    _udp_local(),
-    _udp_ttl(0),
-    _udp_raw(false),
-    _all_sections(false),
-    _all_once(false),
-    _invalid_sections(false),
-    _invalid_only(false),
-    _invalid_versions(false),
-    _max_tables(0),
-    _time_stamp(false),
-    _packet_index(false),
-    _logger(false),
-    _log_size(DEFAULT_LOG_SIZE),
-    _no_duplicate(false),
-    _no_deep_duplicate(false),
-    _pack_all_sections(false),
-    _pack_and_flush(false),
-    _fill_eit(false),
-    _use_current(true),
-    _use_next(false),
-    _xml_tweaks(),
-    _initial_pids(),
-    _xml_options(),
     _display(display),
     _duck(_display.duck()),
     _report(_duck.report()),
-    _table_handler(nullptr),
-    _section_handler(nullptr),
-    _abort(false),
-    _exit(false),
-    _table_count(0),
-    _packet_count(0),
     _demux(_duck),
     _cas_mapper(_duck),
     _xml_doc(_report),
     _x2j_conv(_report),
     _json_doc(_report),
-    _bin_file(),
-    _sock(false, _report),
-    _short_sections(),
-    _last_sections(),
-    _deep_hashes(),
-    _sections_once(),
-    _section_filters()
+    _sock(false, _report)
 {
     // Create an instance of each registered section filter.
     TablesLoggerFilterRepository::Instance()->createFilters(_section_filters);
@@ -979,7 +894,7 @@ void ts::TablesLogger::sendUDP(const ts::BinaryTable& table)
     }
     else {
         // Build a TLV message.
-        duck::LogTable msg;
+        duck::LogTable msg(_duck_protocol);
         msg.pid = table.sourcePID();
         msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
         for (size_t i = 0; i < table.sectionCount(); ++i) {
@@ -1001,7 +916,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
     }
     else {
         // Build a TLV message.
-        duck::LogSection msg;
+        duck::LogSection msg(_duck_protocol);
         msg.pid = section.sourcePID();
         msg.timestamp = SimulCryptDate(Time::CurrentLocalTime());
         msg.section = new Section(section, ShareMode::SHARE);
@@ -1021,7 +936,7 @@ void ts::TablesLogger::sendUDP(const ts::Section& section)
 // Static routine to analyze UDP messages as sent with option --ip-udp.
 //----------------------------------------------------------------------------
 
-bool ts::TablesLogger::AnalyzeUDPMessage(const uint8_t* data, size_t size, bool no_encapsulation, SectionPtrVector& sections, Time& timestamp)
+bool ts::TablesLogger::AnalyzeUDPMessage(const duck::Protocol& protocol, const uint8_t* data, size_t size, bool no_encapsulation, SectionPtrVector& sections, Time& timestamp)
 {
     // Clear output parameters.
     sections.clear();
@@ -1056,7 +971,7 @@ bool ts::TablesLogger::AnalyzeUDPMessage(const uint8_t* data, size_t size, bool 
     }
     else {
         // TLV messages in UDP packets. Decode the message.
-        tlv::MessageFactory mf(data, size, duck::Protocol::Instance());
+        tlv::MessageFactory mf(data, size, protocol);
         tlv::MessagePtr msg(mf.factory());
 
         // We expected only two possible messages:

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -64,12 +43,12 @@ namespace ts {
         typedef MessageQueue<UString, Mutex> CommandQueue;
 
         // Plugin private fields.
-        volatile bool    _terminate;      // Force termination flag for thread.
-        size_t           _max_queued;     // Max number of queued commands.
-        IPv4AddressSet   _allowedRemote;  // Set of allowed remotes.
-        UDPReceiver      _sock;           // Incoming socket with associated command line options
-        CommandQueue     _command_queue;  // Queue of commands between the UDP server and the plugin thread.
-        TSPacketLabelSet _set_labels;     // Labels to set on all packets.
+        volatile bool    _terminate = false;
+        size_t           _max_queued = DEFAULT_MAX_QUEUED_COMMANDS;
+        IPv4AddressSet   _allowedRemote {};
+        UDPReceiver      _sock {*tsp};
+        CommandQueue     _command_queue {DEFAULT_MAX_QUEUED_COMMANDS};
+        TSPacketLabelSet _set_labels {};
 
         // Invoked in the context of the server thread.
         virtual void main() override;
@@ -85,13 +64,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"cutoff", ts::CutoffPlugin);
 
 ts::CutoffPlugin::CutoffPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Set labels on TS packets upon reception of UDP messages", u"[options] [address:]port"),
-    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE)),
-    _terminate(false),
-    _max_queued(DEFAULT_MAX_QUEUED_COMMANDS),
-    _allowedRemote(),
-    _sock(*tsp_),
-    _command_queue(DEFAULT_MAX_QUEUED_COMMANDS),
-    _set_labels()
+    Thread(ThreadAttributes().setStackSize(SERVER_THREAD_STACK_SIZE))
 {
     // UDP receiver common options.
     _sock.defineArgs(*this, true, true, false);

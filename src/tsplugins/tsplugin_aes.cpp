@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -67,22 +46,22 @@ namespace ts {
 
     private:
         // Command line options:
-        bool            _descramble;      // Descramble instead of scramble
-        Service         _service_arg;     // Service name & id
-        PIDSet          _scrambled;       // List of PID's to (de)scramble
-        ECB<AES>        _ecb;             // AES cipher in ECB mode
-        CBC<AES>        _cbc;             // AES cipher in CBC mode
-        CTS1<AES>       _cts1;            // AES cipher in CTS mode, RFC 2040 definition
-        CTS2<AES>       _cts2;            // AES cipher in CTS mode, NIST definition
-        CTS3<AES>       _cts3;            // AES cipher in ECB-CTS mode
-        CTS4<AES>       _cts4;            // AES cipher in ECB-CTS mode (ST version)
-        DVS042<AES>     _dvs042;          // AES cipher in DVS 042 mode
-        CipherChaining* _chain;           // Selected cipher chaining mode
+        bool            _descramble = false; // Descramble instead of scramble
+        Service         _service_arg {};     // Service name & id
+        PIDSet          _scrambled {};       // List of PID's to (de)scramble
+        ECB<AES>        _ecb {};             // AES cipher in ECB mode
+        CBC<AES>        _cbc {};             // AES cipher in CBC mode
+        CTS1<AES>       _cts1 {};            // AES cipher in CTS mode, RFC 2040 definition
+        CTS2<AES>       _cts2 {};            // AES cipher in CTS mode, NIST definition
+        CTS3<AES>       _cts3 {};            // AES cipher in ECB-CTS mode
+        CTS4<AES>       _cts4 {};            // AES cipher in ECB-CTS mode (ST version)
+        DVS042<AES>     _dvs042 {};          // AES cipher in DVS 042 mode
+        CipherChaining* _chain = nullptr;    // Selected cipher chaining mode
 
         // Working data:
-        bool            _abort;           // Error (service not found, etc)
-        Service         _service;         // Service name & id
-        SectionDemux    _demux;           // Section demux
+        bool            _abort = false;      // Error (service not found, etc)
+        Service         _service {};         // Service name & id
+        SectionDemux    _demux {duck, this}; // Section demux
 
         // Invoked by the demux when a complete table is available.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;
@@ -102,21 +81,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"aes", ts::AESPlugin);
 //----------------------------------------------------------------------------
 
 ts::AESPlugin::AESPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets", u"[options] [service]"),
-    _descramble(false),
-    _service_arg(),
-    _scrambled(),
-    _ecb(),
-    _cbc(),
-    _cts1(),
-    _cts2(),
-    _cts3(),
-    _cts4(),
-    _dvs042(),
-    _chain(nullptr),
-    _abort(false),
-    _service(),
-    _demux(duck, this)
+    ProcessorPlugin(tsp_, u"Experimental AES scrambling of TS packets", u"[options] [service]")
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);

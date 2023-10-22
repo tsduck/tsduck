@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -35,9 +14,11 @@
 #pragma once
 #include "tsTCPConnection.h"
 #include "tstlvProtocol.h"
-#include "tsMutex.h"
+#include "tstlvMessageFactory.h"
 #include "tstlvMessage.h"
 #include "tstlvLogger.h"
+#include "tsMutex.h"
+#include "tsGuardMutex.h"
 
 namespace ts {
     namespace tlv {
@@ -63,7 +44,7 @@ namespace ts {
             //!
             //! Constructor.
             //! @param [in] protocol The incoming messages are interpreted
-            //! according to this protocol.
+            //! according to this protocol. The reference is kept in this object.
             //! @param [in] auto_error_response When an invalid message is
             //! received, the corresponding error message is automatically
             //! sent back to the sender when @a auto_error_response is true.
@@ -71,7 +52,7 @@ namespace ts {
             //! automatically disconnected when the number of consecutive
             //! invalid messages has reached this value.
             //!
-            explicit Connection(const Protocol* protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
+            explicit Connection(const Protocol& protocol, bool auto_error_response = true, size_t max_invalid_msg = 0);
 
             //!
             //! Serialize and send a TLV message.
@@ -125,10 +106,7 @@ namespace ts {
             //! @param [in] on When an invalid message is received, the corresponding
             //! error message is automatically sent back to the sender when @a on is true.
             //!
-            void setAutoErrorResponse(bool on)
-            {
-                _auto_error_response = on;
-            }
+            void setAutoErrorResponse(bool on) { _auto_error_response = on; }
 
             //!
             //! Get invalid message threshold.
@@ -149,14 +127,131 @@ namespace ts {
             virtual void handleConnected(Report&) override;
 
         private:
-            const Protocol* _protocol;
-            bool            _auto_error_response;
-            size_t          _max_invalid_msg;
-            size_t          _invalid_msg_count;
-            MUTEX           _send_mutex;
-            MUTEX           _receive_mutex;
+            const Protocol& _protocol;
+            bool            _auto_error_response = false;
+            size_t          _max_invalid_msg = 0;
+            size_t          _invalid_msg_count = 0;
+            MUTEX           _send_mutex {};
+            MUTEX           _receive_mutex {};
         };
     }
 }
 
-#include "tstlvConnectionTemplate.h"
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Constructor.
+template <class MUTEX>
+ts::tlv::Connection<MUTEX>::Connection(const Protocol& protocol, bool auto_error_response, size_t max_invalid_msg) :
+    ts::TCPConnection(),
+    _protocol(protocol),
+    _auto_error_response(auto_error_response),
+    _max_invalid_msg(max_invalid_msg)
+{
+}
+
+// Invoked when connection is established.
+// With MSVC, we get a bogus warning:
+// warning C4505: 'ts::tlv::Connection<ts::Mutex>::handleConnected': unreferenced local function has been removed
+TS_PUSH_WARNING()
+TS_MSC_NOWARNING(4505)
+template <class MUTEX>
+void ts::tlv::Connection<MUTEX>::handleConnected(Report& report)
+{
+    SuperClass::handleConnected(report);
+    _invalid_msg_count = 0;
+}
+TS_POP_WARNING()
+
+// Serialize and send a TLV message.
+template <class MUTEX>
+bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Report& report)
+{
+    tlv::Logger logger(Severity::Debug, &report);
+    return send(msg, logger);
+}
+
+// Serialize and send a TLV message.
+template <class MUTEX>
+bool ts::tlv::Connection<MUTEX>::send(const Message& msg, Logger& logger)
+{
+    logger.log(msg, u"sending message to " + peerName());
+
+    ByteBlockPtr bbp(new ByteBlock);
+    Serializer serial(bbp);
+    msg.serialize(serial);
+
+    GuardMutex lock(_send_mutex);
+    return SuperClass::send(bbp->data(), bbp->size(), logger.report());
+}
+
+// Receive a TLV message (wait for the message, deserialize it and validate it)
+template <class MUTEX>
+bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* abort, Report& report)
+{
+    tlv::Logger logger(Severity::Debug, &report);
+    return receive(msg, abort, logger);
+}
+
+// Receive a TLV message (wait for the message, deserialize it and validate it)
+template <class MUTEX>
+bool ts::tlv::Connection<MUTEX>::receive(MessagePtr& msg, const AbortInterface* abort, Logger& logger)
+{
+    const bool has_version(_protocol.hasVersion());
+    const size_t header_size(has_version ? 5 : 4);
+    const size_t length_offset(has_version ? 3 : 2);
+
+    // Loop until a valid message is received
+    for (;;) {
+        ByteBlock bb(header_size);
+
+        // Receive complete message
+        {
+            GuardMutex lock(_receive_mutex);
+
+            // Read message header
+            if (!SuperClass::receive(bb.data(), header_size, abort, logger.report())) {
+                return false;
+            }
+
+            // Get message length and read message payload
+            const size_t length = GetUInt16(bb.data() + length_offset);
+            bb.resize(header_size + length);
+            if (!SuperClass::receive(bb.data() + header_size, length, abort, logger.report())) {
+                return false;
+            }
+        }
+
+        // Analyze the message
+        MessageFactory mf(bb.data(), bb.size(), _protocol);
+        if (mf.errorStatus() == tlv::OK) {
+            _invalid_msg_count = 0;
+            mf.factory(msg);
+            if (!msg.isNull()) {
+                logger.log(*msg, u"received message from " + peerName());
+            }
+            return true;
+        }
+
+        // Received an invalid message
+        _invalid_msg_count++;
+
+        // Send back an error message if necessary
+        if (_auto_error_response) {
+            MessagePtr resp;
+            mf.buildErrorResponse(resp);
+            if (!send(*resp, logger.report())) {
+                return false;
+            }
+        }
+
+        // If invalid message max has been reached, break the connection
+        if (_max_invalid_msg > 0 && _invalid_msg_count >= _max_invalid_msg) {
+            logger.report().error(u"too many invalid messages from %s, disconnecting", {peerName()});
+            disconnect(logger.report());
+            return false;
+        }
+    }
+}

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -35,44 +14,9 @@
 //----------------------------------------------------------------------------
 
 ts::HEVCHRDParameters::HEVCHRDParameters(const uint8_t* data, size_t size, bool commonInfPresentFlag, size_t maxNumSubLayersMinus1) :
-    SuperClass(),
-    common_inf_present_flag(commonInfPresentFlag),
-    nal_hrd_parameters_present_flag(0),
-    vcl_hrd_parameters_present_flag(0),
-    sub_pic_hrd_params_present_flag(0),
-    tick_divisor_minus2(0),
-    du_cpb_removal_delay_increment_length_minus1(0),
-    sub_pic_cpb_params_in_pic_timing_sei_flag(0),
-    dpb_output_delay_du_length_minus1(0),
-    bit_rate_scale(0),
-    cpb_size_scale(0),
-    cpb_size_du_scale(0),
-    initial_cpb_removal_delay_length_minus1(0),
-    au_cpb_removal_delay_length_minus1(0),
-    dpb_output_delay_length_minus1(0),
-    sub_layers()
+    common_inf_present_flag(commonInfPresentFlag)
 {
-    parse(data, size, {uint32_t(commonInfPresentFlag), uint32_t(maxNumSubLayersMinus1)});
-}
-
-ts::HEVCHRDParameters::SubLayerParams::SubLayerParams() :
-    fixed_pic_rate_general_flag(0),
-    fixed_pic_rate_within_cvs_flag(0),
-    elemental_duration_in_tc_minus1(0),
-    low_delay_hrd_flag(0),
-    cpb_cnt_minus1(0),
-    nal_hrd_parameters(),
-    vcl_hrd_parameters()
-{
-}
-
-ts::HEVCHRDParameters::CPBParams::CPBParams() :
-    bit_rate_value_minus1(0),
-    cpb_size_value_minus1(0),
-    cpb_size_du_value_minus1(0),
-    bit_rate_du_value_minus1(0),
-    cbr_flag(0)
-{
+    HEVCHRDParameters::parse(data, size, {uint32_t(commonInfPresentFlag), uint32_t(maxNumSubLayersMinus1)});
 }
 
 

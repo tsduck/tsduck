@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -36,6 +15,7 @@
 #include "tsPSI.h"
 #include "tsPES.h"
 #include "tsAccessUnitIterator.h"
+#include "tsAlgorithm.h"
 
 
 //----------------------------------------------------------------------------
@@ -45,9 +25,6 @@
 ts::PESDemux::PESDemux(DuckContext& duck, PESHandlerInterface* pes_handler, const PIDSet& pid_filter) :
     SuperClass(duck, pid_filter),
     _pes_handler(pes_handler),
-    _default_codec(CodecType::UNDEFINED),
-    _pids(),
-    _pid_types(),
     _section_demux(_duck, this)
 {
     // Analyze the PAT, to get the PMT's, to get the stream types.
@@ -55,29 +32,6 @@ ts::PESDemux::PESDemux(DuckContext& duck, PESHandlerInterface* pes_handler, cons
 }
 
 ts::PESDemux::~PESDemux()
-{
-}
-
-ts::PESDemux::PIDContext::PIDContext() :
-    pes_count(0),
-    continuity(0),
-    sync(false),
-    first_pkt(0),
-    last_pkt(0),
-    pcr(INVALID_PCR),
-    ts(new ByteBlock()),
-    audio(),
-    video(),
-    avc(),
-    hevc(),
-    ac3(),
-    ac3_count(0)
-{
-}
-
-ts::PESDemux::PIDType::PIDType() :
-    stream_type(ST_NULL),
-    default_codec(CodecType::UNDEFINED)
 {
 }
 
@@ -324,6 +278,34 @@ void ts::PESDemux::processPacket(const TSPacket& pkt)
 
 
 //-----------------------------------------------------------------------------
+// Flush any unterminated unbounded PES packet on the specified PID.
+//-----------------------------------------------------------------------------
+
+void ts::PESDemux::flushUnboundedPES(PID pid)
+{
+    const auto pci = _pids.find(pid);
+    if (pci != _pids.end() && pci->second.sync && !pci->second.ts.isNull() && !pci->second.ts->empty()) {
+        processPESPacket(pid, pci->second);
+    }
+}
+
+
+//-----------------------------------------------------------------------------
+//! Flush any unterminated unbounded PES packet on all PID's.
+//-----------------------------------------------------------------------------
+
+void ts::PESDemux::flushUnboundedPES()
+{
+    // Get the list of PID's first, then search each of them one by one.
+    // Because a handler can modify the list, we cannot call processPESPacket() while walkig through the map.
+    const std::set<PID> pids(MapKeysSet(_pids));
+    for (auto pid : pids) {
+        flushUnboundedPES(pid);
+    }
+}
+
+
+//-----------------------------------------------------------------------------
 // This hook is invoked when a complete table is available.
 // Implementation of TableHandlerInterface.
 //-----------------------------------------------------------------------------
@@ -374,8 +356,6 @@ void ts::PESDemux::processPESPacketIfComplete(PID pid, PIDContext& pc)
         if (len != 0 && pc.ts->size() >= 6 + len) {
             // We have the complete PES packet.
             processPESPacket(pid, pc);
-            // Consider that we lose sync in case there are additional TS packets on that PID before next PUSI.
-            pc.syncLost();
         }
     }
 }
@@ -387,47 +367,60 @@ void ts::PESDemux::processPESPacketIfComplete(PID pid, PIDContext& pc)
 
 void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
 {
-    // Build a PES packet object around the TS buffer
-    PESPacket pes(pc.ts, pid);
-    if (!pes.isValid()) {
-        handleInvalidPESPacket(pid, pc);
-        return;
-    }
-
-    // Count valid PES packets
-    pc.pes_count++;
-
-    // Location of the PES packet inside the demultiplexed stream
-    pes.setFirstTSPacketIndex(pc.first_pkt);
-    pes.setLastTSPacketIndex(pc.last_pkt);
-    pes.setPCR(pc.pcr);
-
-    // Set stream type and codec if known.
-    const auto it_type = _pid_types.find(pid);
-    if (it_type != _pid_types.end()) {
-        pes.setStreamType(it_type->second.stream_type);
-        pes.setCodec(it_type->second.default_codec);
-    }
-
-    // Set a default codec if none was set from the PMT and the data look compatible.
-    pes.setDefaultCodec(getDefaultCodec(pid));
+    // Note: We need to process even if _pes_handler is null. Subclasses of the
+    // PES demux may override handlePESPacket() and have their own processing.
 
     // Mark that we are in the context of handlers.
     // This is used to prevent the destruction of PID contexts during the execution of a handler.
     beforeCallingHandler(pid);
     try {
-        // Handle complete packet (virtual method). This must be executed even if _pes_handler is null
-        // because handlePESPacket() is virtual and can be overridden in a subclass (cf. TeletextDemux).
-        handlePESPacket(pes);
+        // Build a PES packet object around the TS buffer
+        PESPacket pes(pc.ts, pid);
 
-        // Analyze audio/video content of the packet and notify all corresponding events.
-        handlePESContent(pc, pes);
+        if (pes.isValid()) {
+            // Count valid PES packets
+            pc.pes_count++;
+
+            // Location of the PES packet inside the demultiplexed stream
+            pes.setFirstTSPacketIndex(pc.first_pkt);
+            pes.setLastTSPacketIndex(pc.last_pkt);
+            pes.setPCR(pc.pcr);
+
+            // Set stream type and codec if known.
+            const auto it_type = _pid_types.find(pid);
+            if (it_type != _pid_types.end()) {
+                pes.setStreamType(it_type->second.stream_type);
+                pes.setCodec(it_type->second.default_codec);
+            }
+
+            // Set a default codec if none was set from the PMT and the data look compatible.
+            pes.setDefaultCodec(getDefaultCodec(pid));
+
+            // Handle complete packet (virtual method). This must be executed even if _pes_handler is null
+            // because handlePESPacket() is virtual and can be overridden in a subclass (cf. TeletextDemux).
+            handlePESPacket(pes);
+
+            // Analyze audio/video content of the packet and notify all corresponding events.
+            if (_pes_handler != nullptr) {
+                handlePESContent(pc, pes);
+            }
+        }
+        else if (_pes_handler != nullptr) {
+            // Handle an invalid PES packet. Prepare raw demuxed data.
+            DemuxedData data(pc.ts, pid);
+            data.setFirstTSPacketIndex(pc.first_pkt);
+            data.setLastTSPacketIndex(pc.last_pkt);
+            _pes_handler->handleInvalidPESPacket(*this, data);
+        }
     }
     catch (...) {
         afterCallingHandler(false);
         throw;
     }
     afterCallingHandler(true);
+
+    // Consider that we lose sync in case there are additional TS packets on that PID before next PUSI.
+    pc.syncLost();
 }
 
 
@@ -438,38 +431,10 @@ void ts::PESDemux::processPESPacket(PID pid, PIDContext& pc)
 
 void ts::PESDemux::handlePESPacket(const PESPacket& pes)
 {
+    // Process PES packet
     if (_pes_handler != nullptr) {
         _pes_handler->handlePESPacket(*this, pes);
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Process an invalid PES packet
-//----------------------------------------------------------------------------
-
-void ts::PESDemux::handleInvalidPESPacket(PID pid, PIDContext& pc)
-{
-    // Nothing to do without a handler.
-    if (_pes_handler == nullptr) {
-        return;
-    }
-
-    // Prepare a raw demuxed data.
-    DemuxedData data(pc.ts, pid);
-    data.setFirstTSPacketIndex(pc.first_pkt);
-    data.setLastTSPacketIndex(pc.last_pkt);
-
-    // Call the user's handler.
-    beforeCallingHandler(pid);
-    try {
-        _pes_handler->handleInvalidPESPacket(*this, data);
-    }
-    catch (...) {
-        afterCallingHandler(false);
-        throw;
-    }
-    afterCallingHandler(true);
 }
 
 
@@ -479,11 +444,6 @@ void ts::PESDemux::handleInvalidPESPacket(PID pid, PIDContext& pc)
 
 void ts::PESDemux::handlePESContent(PIDContext& pc, const PESPacket& pes)
 {
-    // Nothing to do without a handler.
-    if (_pes_handler == nullptr) {
-        return;
-    }
-
     // Packet payload content (constants).
     const uint8_t* const pl_data = pes.payload();
     const size_t pl_size = pes.payloadSize();

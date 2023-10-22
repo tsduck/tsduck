@@ -1,29 +1,8 @@
 //----------------------------------------------------------------------------
 //
-//  TSDuck - The MPEG Transport Stream Toolkit
-//  Copyright (c) 2005-2023, Thierry Lelegard
-//  All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright
-//     notice, this list of conditions and the following disclaimer in the
-//     documentation and/or other materials provided with the distribution.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-//  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-//  THE POSSIBILITY OF SUCH DAMAGE.
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2023, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
 //
 //----------------------------------------------------------------------------
 
@@ -40,7 +19,7 @@
 
 const ts::UString ts::ModulationArgs::DEFAULT_ISDBT_LAYERS(u"ABC"); // all layers
 
-#if defined(TS_NEED_STATIC_CONST_DEFINITIONS)
+#if !defined(TS_CXX17)
 constexpr ts::SpectralInversion ts::ModulationArgs::DEFAULT_INVERSION;
 constexpr ts::InnerFEC          ts::ModulationArgs::DEFAULT_INNER_FEC;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_SYMBOL_RATE_DVBS;
@@ -73,55 +52,6 @@ constexpr int                   ts::ModulationArgs::DEFAULT_SB_SEGMENT_INDEX;
 constexpr int                   ts::ModulationArgs::MAX_ISDBT_SEGMENT_COUNT;
 constexpr uint32_t              ts::ModulationArgs::DEFAULT_STREAM_ID;
 #endif
-
-
-//----------------------------------------------------------------------------
-// Default constructor.
-//----------------------------------------------------------------------------
-
-ts::ModulationArgs::ModulationArgs() :
-    delivery_system(),
-    frequency(),
-    polarity(),
-    lnb(),
-    inversion(),
-    symbol_rate(),
-    inner_fec(),
-    satellite_number(),
-    modulation(),
-    bandwidth(),
-    fec_hp(),
-    fec_lp(),
-    transmission_mode(),
-    guard_interval(),
-    hierarchy(),
-    pilots(),
-    roll_off(),
-    plp(),
-    isi(),
-    pls_code(),
-    pls_mode(),
-    sound_broadcasting(),
-    sb_subchannel_id(),
-    sb_segment_count(),
-    sb_segment_index(),
-    isdbt_layers(),
-    isdbt_partial_reception(),
-    layer_a_fec(),
-    layer_a_modulation(),
-    layer_a_segment_count(),
-    layer_a_time_interleaving(),
-    layer_b_fec(),
-    layer_b_modulation(),
-    layer_b_segment_count(),
-    layer_b_time_interleaving(),
-    layer_c_fec(),
-    layer_c_modulation(),
-    layer_c_segment_count(),
-    layer_c_time_interleaving(),
-    stream_id()
-{
-}
 
 
 //----------------------------------------------------------------------------

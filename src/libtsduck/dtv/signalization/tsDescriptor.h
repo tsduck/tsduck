@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -52,7 +31,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        Descriptor() : _data(nullptr) {}
+        Descriptor() = default;
 
         //!
         //! Copy constructor.
@@ -136,27 +115,18 @@ namespace ts {
         //! Check if a descriptor has valid content.
         //! @return True if a descriptor has valid content.
         //!
-        bool isValid() const
-        {
-            return !_data.isNull();
-        }
+        bool isValid() const { return !_data.isNull(); }
 
         //!
         //! Invalidate descriptor content.
         //!
-        void invalidate()
-        {
-            _data.clear();
-        }
+        void invalidate() { _data.clear(); }
 
         //!
         //! Get the descriptor tag.
         //! @return The descriptor tag or the reserved value 0 if the descriptor is invalid.
         //!
-        DID tag() const
-        {
-            return _data.isNull() ? 0 : _data->at(0);
-        }
+        DID tag() const { return _data.isNull() ? 0 : _data->at(0); }
 
         //!
         //! Get the extended descriptor id.
@@ -178,46 +148,31 @@ namespace ts {
         //! Access to the full binary content of the descriptor.
         //! @return Address of the full binary content of the descriptor.
         //!
-        const uint8_t* content() const
-        {
-            return _data->data();
-        }
+        const uint8_t* content() const { return _data->data(); }
 
         //!
         //! Size of the binary content of the descriptor.
         //! @return Size of the binary content of the descriptor.
         //!
-        size_t size() const
-        {
-            return _data->size();
-        }
+        size_t size() const { return _data->size(); }
 
         //!
         //! Access to the payload of the descriptor.
         //! @return Address of the payload of the descriptor.
         //!
-        const uint8_t* payload() const
-        {
-            return _data->data() + 2;
-        }
+        const uint8_t* payload() const { return _data->data() + 2; }
 
         //!
         //! Access to the payload of the descriptor.
         //! @return Address of the payload of the descriptor.
         //!
-        uint8_t* payload()
-        {
-            return _data->data() + 2;
-        }
+        uint8_t* payload() { return _data->data() + 2; }
 
         //!
         //! Size of the payload of the descriptor.
         //! @return Size in bytes of the payload of the descriptor.
         //!
-        size_t payloadSize() const
-        {
-            return _data->size() - 2;
-        }
+        size_t payloadSize() const { return _data->size() - 2; }
 
         //!
         //! Replace the payload of the descriptor.
@@ -232,10 +187,7 @@ namespace ts {
         //! The tag is unchanged, the size is adjusted.
         //! @param [in] payload The new payload data.
         //!
-        void replacePayload(const ByteBlock& payload)
-        {
-            replacePayload(payload.data(), payload.size());
-        }
+        void replacePayload(const ByteBlock& payload) { replacePayload(payload.data(), payload.size()); }
 
         //!
         //! Resize (truncate or extend) the payload of the descriptor.
@@ -251,15 +203,7 @@ namespace ts {
         //! @return True is the two descriptors are identical.
         //!
         bool operator==(const Descriptor& desc) const;
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Comparison operator.
-        //! @param [in] desc Another descriptor to compare.
-        //! @return True is the two descriptors are different.
-        //!
-        bool operator!=(const Descriptor& desc) const { return !operator==(desc); }
-#endif
+        TS_UNEQUAL_OPERATOR(Descriptor)
 
         //!
         //! Deserialize the descriptor.
@@ -309,7 +253,6 @@ namespace ts {
     private:
         Descriptor(const Descriptor&) = delete;
 
-        // Private fields
-        ByteBlockPtr _data; // full binary content of the descriptor
+        ByteBlockPtr _data {}; // full binary content of the descriptor
     };
 }

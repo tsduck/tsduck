@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -36,6 +15,7 @@
 #include "tsAbstractDescriptor.h"
 #include "tsByteBlock.h"
 #include "tsVariable.h"
+#include "tsSCTE35.h"
 
 namespace ts {
     //!
@@ -56,23 +36,23 @@ namespace ts {
         typedef std::map<uint8_t, uint64_t> PTSOffsetByComponent;
 
         // SpliceSegmentationDescriptor public members:
-        uint32_t  identifier;                  //!< Descriptor owner, 0x43554549 ("CUEI").
-        uint32_t  segmentation_event_id;       //!< Event id.
-        bool      segmentation_event_cancel;   //!< When true, event is canceled, other fields are ignored.
-        bool      program_segmentation;        //!< When true, all components are segmented.
-        bool      web_delivery_allowed;        //!< When true, web delivery is allowed.
-        bool      no_regional_blackout;        //!< When true, no regional blackout is applied.
-        bool      archive_allowed;             //!< When true, recording is allowed.
-        uint8_t   device_restrictions;         //!< 2 bits code
-        PTSOffsetByComponent pts_offsets;            //!< PTS offsets, indexed by component tag.
-        Variable<uint64_t>   segmentation_duration;  //!< 40 bits, in PTS units.
-        uint8_t   segmentation_upid_type;      //!< Segmentation upid type.
-        ByteBlock segmentation_upid;           //!< Segmentation upid value.
-        uint8_t   segmentation_type_id;        //!< Segmentation type.
-        uint8_t   segment_num;                 //!< Segment number.
-        uint8_t   segments_expected;           //!< Expected number of segments.
-        uint8_t   sub_segment_num;             //!< Sub-segment number (if segmentation_type_id == 0x34 or 0x36).
-        uint8_t   sub_segments_expected;       //!< Expected number of sub-segments (if segmentation_type_id == 0x34 or 0x36).
+        uint32_t  identifier = SPLICE_ID_CUEI;          //!< Descriptor owner, 0x43554549 ("CUEI").
+        uint32_t  segmentation_event_id = 0;            //!< Event id.
+        bool      segmentation_event_cancel = false;    //!< When true, event is canceled, other fields are ignored.
+        bool      program_segmentation = false;         //!< When true, all components are segmented.
+        bool      web_delivery_allowed = false;         //!< When true, web delivery is allowed.
+        bool      no_regional_blackout = false;         //!< When true, no regional blackout is applied.
+        bool      archive_allowed = false;              //!< When true, recording is allowed.
+        uint8_t   device_restrictions = 0;              //!< 2 bits code
+        PTSOffsetByComponent pts_offsets {};            //!< PTS offsets, indexed by component tag.
+        Variable<uint64_t>   segmentation_duration {};  //!< 40 bits, in PTS units.
+        uint8_t   segmentation_upid_type = 0;           //!< Segmentation upid type.
+        ByteBlock segmentation_upid {};                 //!< Segmentation upid value.
+        uint8_t   segmentation_type_id = 0;             //!< Segmentation type.
+        uint8_t   segment_num = 0;                      //!< Segment number.
+        uint8_t   segments_expected = 0;                //!< Expected number of segments.
+        uint8_t   sub_segment_num = 0;                  //!< Sub-segment number (if segmentation_type_id == 0x34 or 0x36).
+        uint8_t   sub_segments_expected = 0;            //!< Expected number of sub-segments (if segmentation_type_id == 0x34 or 0x36).
 
         //!
         //! Default constructor.

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -491,22 +470,22 @@ namespace ts {
         void restoreArgs(const SavedArgs& args);
 
     private:
-        Report*        _report;            // Pointer to a report for error messages. Never null.
-        std::ostream*  _initial_out;       // Initial text output stream. Never null.
-        std::ostream*  _out;               // Pointer to text output stream. Never null.
-        std::ofstream  _outFile;           // Open stream when redirected to a file by name.
-        const Charset* _charsetIn;         // DVB character set to interpret strings without prefix code.
-        const Charset* _charsetOut;        // Preferred DVB character set to generate strings.
-        uint16_t       _casId;             // Preferred CAS id.
-        PDS            _defaultPDS;        // Default PDS value if undefined.
-        bool           _useLeapSeconds;    // Explicit use of leap seconds.
-        Standards      _cmdStandards;      // Forced standards from the command line.
-        Standards      _accStandards;      // Accumulated list of standards in the context.
-        UString        _hfDefaultRegion;   // Default region for UHF/VHF band.
-        MilliSecond    _timeReference;     // Time reference in milli-seconds from UTC (used in ISDB variants).
-        UString        _timeRefConfig;     // Time reference name from TSDuck configuration file.
-        int            _definedCmdOptions; // Defined command line options.
-        const std::map<uint16_t, const UChar*> _predefined_cas;  // Predefined CAS names, index by CAS id (first in range).
+        Report*        _report;        // Pointer to a report for error messages. Never null.
+        std::ostream*  _initial_out;   // Initial text output stream. Never null.
+        std::ostream*  _out;           // Pointer to text output stream. Never null.
+        std::ofstream  _outFile {};    // Open stream when redirected to a file by name.
+        const Charset* _charsetIn;     // DVB character set to interpret strings without prefix code.
+        const Charset* _charsetOut;    // Preferred DVB character set to generate strings.
+        uint16_t       _casId {CASID_NULL};              // Preferred CAS id.
+        PDS            _defaultPDS = 0;                  // Default PDS value if undefined.
+        bool           _useLeapSeconds = true;           // Explicit use of leap seconds.
+        Standards      _cmdStandards {Standards::NONE};  // Forced standards from the command line.
+        Standards      _accStandards {Standards::NONE};  // Accumulated list of standards in the context.
+        UString        _hfDefaultRegion {};              // Default region for UHF/VHF band.
+        MilliSecond    _timeReference = 0;               // Time reference in milli-seconds from UTC (used in ISDB variants).
+        UString        _timeRefConfig {};                // Time reference name from TSDuck configuration file.
+        int            _definedCmdOptions = 0;           // Defined command line options.
+        const std::map<uint16_t, const UChar*> _predefined_cas {};  // Predefined CAS names, index by CAS id (first in range).
 
         // List of command line options to define and analyze.
         enum CmdOptions {

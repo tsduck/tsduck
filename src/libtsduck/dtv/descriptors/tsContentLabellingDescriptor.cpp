@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -48,16 +27,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Standard(MY_DID), MY_XML_NAME, MY_CLA
 //----------------------------------------------------------------------------
 
 ts::ContentLabellingDescriptor::ContentLabellingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    metadata_application_format(0),
-    metadata_application_format_identifier(0),
-    content_time_base_indicator(0),
-    content_reference_id(),
-    content_time_base_value(0),
-    metadata_time_base_value(0),
-    content_id(0),
-    time_base_association_data(),
-    private_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -226,8 +196,8 @@ bool ts::ContentLabellingDescriptor::analyzeXML(DuckContext& duck, const xml::El
            element->getIntAttribute(metadata_application_format_identifier, u"metadata_application_format_identifier", metadata_application_format == 0xFFFF) &&
            element->getIntAttribute(content_time_base_indicator, u"content_time_base_indicator", true, 0, 0, 15) &&
            element->getHexaTextChild(content_reference_id, u"content_reference_id", false, 0, 255) &&
-           element->getIntAttribute(content_time_base_value, u"content_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
-           element->getIntAttribute(metadata_time_base_value, u"metadata_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, TS_UCONST64(0x1FFFFFFFF)) &&
+           element->getIntAttribute(content_time_base_value, u"content_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, 0x1FFFFFFFF) &&
+           element->getIntAttribute(metadata_time_base_value, u"metadata_time_base_value", content_time_base_indicator == 1 || content_time_base_indicator == 2, 0, 0, 0x1FFFFFFFF) &&
            element->getIntAttribute(content_id, u"content_id", content_time_base_indicator == 2, 0, 0, 0x7F) &&
            element->getHexaTextChild(time_base_association_data, u"time_base_association_data", false, 0, 255) &&
            element->getHexaTextChild(private_data, u"private_data", false, 0, 255);

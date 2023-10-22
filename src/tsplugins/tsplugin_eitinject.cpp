@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -94,29 +73,29 @@ namespace ts {
         };
 
         // Command line options:
-        bool          _delete_files;
-        bool          _wait_first_batch;
-        bool          _use_system_time;
-        Time          _start_time;
-        EITOptions    _eit_options;
-        BitRate       _eit_bitrate;
-        UString       _files;
-        MilliSecond   _poll_interval;
-        MilliSecond   _min_stable_delay;
-        int           _ts_id;
-        EITRepetitionProfile _eit_profile;
+        bool          _delete_files = false;
+        bool          _wait_first_batch = false;
+        bool          _use_system_time = false;
+        Time          _start_time {};
+        EITOptions    _eit_options = EITOptions::GEN_ALL;
+        BitRate       _eit_bitrate = 0;
+        UString       _files {};
+        MilliSecond   _poll_interval = 0;
+        MilliSecond   _min_stable_delay = 0;
+        int           _ts_id = -1;
+        EITRepetitionProfile _eit_profile {};
 
         // Working data.
         FileListener  _file_listener;
         EITGenerator  _eit_gen;
-        volatile bool _check_files;         // there are files in _polled_files
-        Mutex         _polled_files_mutex;  // exclusive access to _polled_files
-        UStringList   _polled_files;        // accessed by two threads, protected by mutex above.
+        volatile bool _check_files = false;    // there are files in _polled_files
+        Mutex         _polled_files_mutex {};  // exclusive access to _polled_files
+        UStringList   _polled_files {};        // accessed by two threads, protected by mutex above.
 
         // Specific support for deterministic start (wfb = wait first batch, non-regression testing).
-        volatile bool _wfb_received;     // First batch was received.
-        Mutex         _wfb_mutex;        // Mutex waiting for _wfb_received.
-        Condition     _wfb_condition;    // Condition waiting for _wfb_received.
+        volatile bool _wfb_received = false;   // First batch was received.
+        Mutex         _wfb_mutex {};           // Mutex waiting for _wfb_received.
+        Condition     _wfb_condition {};       // Condition waiting for _wfb_received.
 
         // Load files in the context of the plugin thread.
         void loadFiles();
@@ -138,31 +117,22 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"eitinject", ts::EITInjectPlugin);
 
 ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
     ProcessorPlugin(tsp_, u"Generate and inject EIT's in a transport stream", u"[options]"),
-    _delete_files(false),
-    _wait_first_batch(false),
-    _use_system_time(false),
-    _start_time(),
-    _eit_options(EITOptions::GEN_ALL),
-    _eit_bitrate(0),
-    _files(),
-    _poll_interval(0),
-    _min_stable_delay(0),
-    _ts_id(-1),
-    _eit_profile(),
     _file_listener(this),
-    _eit_gen(duck, PID_EIT),
-    _check_files(false),
-    _polled_files_mutex(),
-    _polled_files(),
-    _wfb_received(false),
-    _wfb_mutex(),
-    _wfb_condition()
+    _eit_gen(duck, PID_EIT)
 {
     duck.defineArgsForCharset(*this);
 
     option(u"actual");
     help(u"actual",
-         u"Generate EIT actual. If neither --actual nor --other are specified, both are generated.");
+         u"Generate EIT actual. Same as --actual-pf --actual-schedule.");
+
+    option(u"actual-pf");
+    help(u"actual-pf",
+         u"Generate EIT actual p/f. If no option is specified, all EIT sections are generated.");
+
+    option(u"actual-schedule");
+    help(u"actual-schedule",
+         u"Generate EIT actual schedule. If no option is specified, all EIT sections are generated.");
 
     option<BitRate>(u"bitrate", 'b');
     help(u"bitrate",
@@ -243,11 +213,19 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
 
     option(u"other");
     help(u"other",
-         u"Generate EIT other. If neither --actual nor --other are specified, both are generated.");
+         u"Generate EIT other. Same as --other-pf --other-schedule.");
+
+    option(u"other-pf");
+    help(u"other-pf",
+         u"Generate EIT other p/f. If no option is specified, all EIT sections are generated.");
+
+    option(u"other-schedule");
+    help(u"other-schedule",
+         u"Generate EIT actual schedule. If no option is specified, all EIT sections are generated.");
 
     option(u"pf");
     help(u"pf",
-         u"Generate EIT p/f. If neither --pf nor --schedule are specified, both are generated.");
+         u"Generate EIT p/f. Same as --actual-pf --other-pf.");
 
     option(u"poll-interval", 0, UNSIGNED);
     help(u"poll-interval", u"milliseconds",
@@ -263,7 +241,7 @@ ts::EITInjectPlugin::EITInjectPlugin(TSP* tsp_) :
 
     option(u"schedule");
     help(u"schedule",
-         u"Generate EIT schedule. If neither --pf nor --schedule are specified, both are generated.");
+         u"Generate EIT schedule. Same as --actual-schedule --other-schedule.");
 
     option(u"stuffing");
     help(u"stuffing",
@@ -337,19 +315,27 @@ bool ts::EITInjectPlugin::getOptions()
     if (present(u"other")) {
         _eit_options |= EITOptions::GEN_OTHER;
     }
-    if (!(_eit_options & (EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER))) {
-        // Generate EIT actual and other by default.
-        _eit_options |= EITOptions::GEN_ACTUAL | EITOptions::GEN_OTHER;
-    }
     if (present(u"pf")) {
         _eit_options |= EITOptions::GEN_PF;
     }
     if (present(u"schedule")) {
         _eit_options |= EITOptions::GEN_SCHED;
     }
-    if (!(_eit_options & (EITOptions::GEN_PF | EITOptions::GEN_SCHED))) {
+    if (present(u"actual-pf")) {
+        _eit_options |= EITOptions::GEN_ACTUAL_PF;
+    }
+    if (present(u"other-pf")) {
+        _eit_options |= EITOptions::GEN_OTHER_PF;
+    }
+    if (present(u"actual-schedule")) {
+        _eit_options |= EITOptions::GEN_ACTUAL_SCHED;
+    }
+    if (present(u"other-schedule")) {
+        _eit_options |= EITOptions::GEN_OTHER_SCHED;
+    }
+    if (!(_eit_options & EITOptions::GEN_ALL)) {
         // Generate EIT p/f and schedule by default.
-        _eit_options |= EITOptions::GEN_PF | EITOptions::GEN_SCHED;
+        _eit_options |= EITOptions::GEN_ALL;
     }
     if (present(u"incoming-eits")) {
         _eit_options |= EITOptions::LOAD_INPUT;

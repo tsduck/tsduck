@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -40,22 +19,11 @@
 
 ts::AbstractDescrambler::AbstractDescrambler(TSP* tsp_, const UString& description, const UString& syntax, size_t stack_usage) :
     ProcessorPlugin(tsp_, description, syntax),
-    _use_service(false),
-    _need_ecm(false),
-    _abort(false),
-    _synchronous(false),
-    _swap_cw(false),
     _scrambling(*tsp),
-    _pids(),
     _service(duck, this),
     _stack_usage(stack_usage),
     _demux(duck, nullptr, this),
-    _ecm_streams(),
-    _scrambled_streams(),
-    _mutex(),
-    _ecm_to_do(),
-    _ecm_thread(this),
-    _stop_thread(false)
+    _ecm_thread(this)
 {
     // We need to define character sets to specify service names.
     duck.defineArgsForCharset(*this);
@@ -126,36 +94,6 @@ bool ts::AbstractDescrambler::getOptions()
     }
 
     return true;
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor of CWData inner class.
-//----------------------------------------------------------------------------
-
-ts::AbstractDescrambler::CWData::CWData(uint8_t mode) :
-    scrambling(mode),
-    cw(),
-    iv()
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor of ECMStream inner class.
-//----------------------------------------------------------------------------
-
-ts::AbstractDescrambler::ECMStream::ECMStream(AbstractDescrambler* parent) :
-    last_tid(TID_NULL),
-    scrambling(parent->_scrambling),
-    cw_valid(false),
-    new_cw_even(false),
-    new_cw_odd(false),
-    new_ecm(false),
-    ecm(),
-    cw_even(),
-    cw_odd()
-{
 }
 
 

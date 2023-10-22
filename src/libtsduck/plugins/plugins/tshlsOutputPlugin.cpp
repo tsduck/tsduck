@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -49,35 +28,7 @@ TS_REGISTER_OUTPUT_PLUGIN(u"hls", ts::hls::OutputPlugin);
 
 ts::hls::OutputPlugin::OutputPlugin(TSP* tsp_) :
     ts::OutputPlugin(tsp_, u"Generate HTTP Live Streaming (HLS) media", u"[options] filename"),
-    _segmentTemplate(),
-    _playlistFile(),
-    _intraClose(false),
-    _useBitrateTag(false),
-    _alignFirstSegment(false),
-    _sliceOnly(false),
-    _playlistType(hls::PlayListType::UNKNOWN),
-    _liveDepth(0),
-    _liveExtraDepth(0),
-    _targetDuration(0),
-    _maxExtraDuration(0),
-    _fixedSegmentSize(0),
-    _initialMediaSeq(0),
-    _customTags(),
-    _closeLabels(),
-    _nameGenerator(),
     _demux(duck, this),
-    _patPackets(),
-    _pmtPackets(),
-    _pmtPID(PID_NULL),
-    _videoPID(PID_NULL),
-    _videoStreamType(ST_NULL),
-    _segStarted(false),
-    _segClosePending(false),
-    _segmentFile(),
-    _liveSegmentFiles(),
-    _playlist(),
-    _pcrAnalyzer(1, 4),  // Minimum required: 1 PID, 4 PCR
-    _previousBitrate(0),
     _ccFixer(NoPID, tsp)
 {
     option(u"", 0, FILENAME, 1, 1);

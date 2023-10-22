@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -49,14 +28,17 @@ public:
 
     void testSystemRandomGenerator();
     void testBetterSystemRandomGenerator();
+    void testRange();
 
     TSUNIT_TEST_BEGIN(SystemRandomGeneratorTest);
     TSUNIT_TEST(testSystemRandomGenerator);
     TSUNIT_TEST(testBetterSystemRandomGenerator);
+    TSUNIT_TEST(testRange);
     TSUNIT_TEST_END();
 
 private:
     void testRandom(ts::RandomGenerator& prng);
+    void testRandomRange(ts::RandomGenerator& prng, int64_t min, int64_t max);
 };
 
 TSUNIT_REGISTER(SystemRandomGeneratorTest);
@@ -112,8 +94,7 @@ void SystemRandomGeneratorTest::testRandom(ts::RandomGenerator& prng)
     const size_t zero1 = std::count(data1.begin(), data1.end(), 0);
     const size_t zero2 = std::count(data2.begin(), data2.end(), 0);
 
-    debug() << prng.name() << ": zeroes over " << data1.size() << " bytes: "
-        << zero1 << ", " << zero2 << std::endl;
+    debug() << prng.name() << ": zeroes over " << data1.size() << " bytes: " << zero1 << ", " << zero2 << std::endl;
 
     TSUNIT_ASSERT(zero1 < data1.size() / 10);
     TSUNIT_ASSERT(zero2 < data2.size() / 10);
@@ -134,4 +115,32 @@ void SystemRandomGeneratorTest::testSystemRandomGenerator()
 void SystemRandomGeneratorTest::testBetterSystemRandomGenerator()
 {
     testRandom(*ts::BetterSystemRandomGenerator::Instance());
+}
+
+void SystemRandomGeneratorTest::testRandomRange(ts::RandomGenerator& prng, int64_t min, int64_t max)
+{
+    TSUNIT_ASSERT(prng.ready());
+    int64_t val = 0;
+
+    for (int i = 0; i < 100; i++) {
+        TSUNIT_ASSERT(prng.readInt(val, min, max));
+        if (val < min || val > max) {
+            debug() << "SystemRandomGeneratorTest: min: " << min << ", max: " << max << ", value: " << val << std::endl;
+        }
+        TSUNIT_ASSERT(val >= min);
+        TSUNIT_ASSERT(val <= max);
+    }
+}
+
+void SystemRandomGeneratorTest::testRange()
+{
+    ts::SystemRandomGenerator gen;
+    testRandomRange(gen, 1000, 1200);
+    testRandomRange(gen, -1100, -1000);
+    testRandomRange(gen, -0x7FFFFFFFFFFFFF00, 0x7FFFFFFFFFFFFF00);
+    testRandomRange(gen, 747, 747);
+    testRandomRange(gen, -380, -380);
+
+    int val = 0;
+    TSUNIT_ASSERT(!gen.readInt(val, 5, 1));
 }

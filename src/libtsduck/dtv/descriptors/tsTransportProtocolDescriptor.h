@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -53,38 +32,41 @@ namespace ts {
         //!
         //! Selector byte layout when protocol_id == MHP_PROTO_CAROUSEL.
         //!
-        struct Carousel
+        class Carousel
         {
-            Carousel();                              //!< Default constructor.
-            void clear();                            //!< Reset content.
-            Variable<uint16_t> original_network_id;  //!< Optional original network id.
-            Variable<uint16_t> transport_stream_id;  //!< Optional transport stream id.
-            Variable<uint16_t> service_id;           //!< Optional service id.
-            uint8_t            component_tag;        //!< Component tag.
+        public:
+            Carousel() = default;                       //!< Default constructor.
+            void clear();                               //!< Reset content.
+            Variable<uint16_t> original_network_id {};  //!< Optional original network id.
+            Variable<uint16_t> transport_stream_id {};  //!< Optional transport stream id.
+            Variable<uint16_t> service_id {};           //!< Optional service id.
+            uint8_t            component_tag = 0;       //!< Component tag.
         };
 
         //!
         //! Selector byte layout when protocol_id == MHP_PROTO_MPE.
         //!
-        struct MPE
+        class MPE
         {
-            MPE();                                   //!< Default constructor.
-            void clear();                            //!< Reset content.
-            Variable<uint16_t> original_network_id;  //!< Optional original network id.
-            Variable<uint16_t> transport_stream_id;  //!< Optional transport stream id.
-            Variable<uint16_t> service_id;           //!< Optional service id.
-            bool               alignment_indicator;  //!< Alignment indicator.
-            UStringList        urls;                 //!< List of URL's.
+        public:
+            MPE() = default;                                 //!< Default constructor.
+            void clear();                                    //!< Reset content.
+            Variable<uint16_t> original_network_id {};       //!< Optional original network id.
+            Variable<uint16_t> transport_stream_id {};       //!< Optional transport stream id.
+            Variable<uint16_t> service_id {};                //!< Optional service id.
+            bool               alignment_indicator = false;  //!< Alignment indicator.
+            UStringList        urls {};                      //!< List of URL's.
         };
 
         //!
         //! One entry in selector bytes when protocol_id == MHP_PROTO_HTTP.
         //!
-        struct HTTPEntry
+        class HTTPEntry
         {
-            HTTPEntry();                             //!< Default constructor.
-            UString URL_base;                        //!< URL base.
-            UStringList URL_extensions;              //!< List of URL extensions.
+        public:
+            HTTPEntry() = default;          //!< Default constructor.
+            UString     URL_base {};        //!< URL base.
+            UStringList URL_extensions {};  //!< List of URL extensions.
         };
 
         //!
@@ -93,12 +75,12 @@ namespace ts {
         typedef std::list<HTTPEntry> HTTP;
 
         // TransportProtocolDescriptor public members:
-        uint16_t  protocol_id;               //!< Transport protocol id, one of MHP_PROTO_* values.
-        uint8_t   transport_protocol_label;  //!< Transport protocol label.
-        Carousel  carousel;                  //!< Selector when protocol_id == MHP_PROTO_CAROUSEL.
-        MPE       mpe;                       //!< Selector when protocol_id == MHP_PROTO_MPE.
-        HTTP      http;                      //!< Selector when protocol_id == MHP_PROTO_HTTP.
-        ByteBlock selector;                  //!< Selector for other protocol ids.
+        uint16_t  protocol_id = 0;               //!< Transport protocol id, one of MHP_PROTO_* values.
+        uint8_t   transport_protocol_label = 0;  //!< Transport protocol label.
+        Carousel  carousel {};                   //!< Selector when protocol_id == MHP_PROTO_CAROUSEL.
+        MPE       mpe {};                        //!< Selector when protocol_id == MHP_PROTO_MPE.
+        HTTP      http {};                       //!< Selector when protocol_id == MHP_PROTO_HTTP.
+        ByteBlock selector {};                   //!< Selector for other protocol ids.
 
         //!
         //! Default constructor.

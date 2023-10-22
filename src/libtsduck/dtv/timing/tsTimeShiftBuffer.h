@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -176,21 +155,21 @@ namespace ts {
         bool shift(TSPacket& packet, TSPacketMetadata& metadata, Report& report);
 
     private:
-        bool    _is_open;                // Buffer is open.
-        size_t  _cur_packets;            // Current number of packets in the buffer.
-        size_t  _total_packets;          // Total capacity of the buffer.
-        size_t  _mem_packets;            // Max packets in memory.
-        UString _directory;              // Where to store the backup file.
-        TSFile  _file;                   // Backup file on disk.
-        size_t  _next_read;              // Index in buffer of next packet to read.
-        size_t  _next_write;             // Index in buffer of next packet to write.
-        size_t  _wcache_next;            // Next index to write in _wcache (up to end of _wcache).
-        size_t  _rcache_end;             // End index in _rcache (after last loaded packet).
-        size_t  _rcache_next;            // Next index to read in _rcache.
-        TSPacketVector         _wcache;  // Write cache (or complete buffer if in memory).
-        TSPacketVector         _rcache;  // Read cache.
-        TSPacketMetadataVector _wmdata;  // Packet metadata for _wcache.
-        TSPacketMetadataVector _rmdata;  // Packet metadata for _rcache.
+        bool    _is_open = false;           // Buffer is open.
+        size_t  _cur_packets = 0;           // Current number of packets in the buffer.
+        size_t  _total_packets {DEFAULT_TOTAL_PACKETS}; // Total capacity of the buffer.
+        size_t  _mem_packets {DEFAULT_MEMORY_PACKETS};  // Max packets in memory.
+        UString _directory {};              // Where to store the backup file.
+        TSFile  _file {};                   // Backup file on disk.
+        size_t  _next_read = 0;             // Index in buffer of next packet to read.
+        size_t  _next_write = 0;            // Index in buffer of next packet to write.
+        size_t  _wcache_next = 0;           // Next index to write in _wcache (up to end of _wcache).
+        size_t  _rcache_end = 0;            // End index in _rcache (after last loaded packet).
+        size_t  _rcache_next = 0;           // Next index to read in _rcache.
+        TSPacketVector         _wcache {};  // Write cache (or complete buffer if in memory).
+        TSPacketVector         _rcache {};  // Read cache.
+        TSPacketMetadataVector _wmdata {};  // Packet metadata for _wcache.
+        TSPacketMetadataVector _rmdata {};  // Packet metadata for _rcache.
 
         // Seek, read, write in the backup file.
         bool seekFile(size_t index, Report& report);

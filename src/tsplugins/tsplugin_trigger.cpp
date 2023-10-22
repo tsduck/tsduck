@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -57,23 +36,23 @@ namespace ts {
 
     private:
         // Command line options:
-        PacketCounter    _minInterPacket; // Minimum interval in packets between two actions.
-        MilliSecond      _minInterTime;   // Minimum interval in milliseconds between two actions.
-        UString          _execute;        // Command to execute on trigger.
-        UString          _udpDestination; // UDP/IP destination address:port.
-        UString          _udpLocal;       // Name of outgoing local address (empty if unspecified).
-        ByteBlock        _udpMessage;     // What to send as UDP message.
-        int              _udpTTL;         // Time-to-live socket option.
-        bool             _onStart;        // Trigger action on start.
-        bool             _onStop;         // Trigger action on stop.
-        bool             _allPackets;     // Trigger on all packets in the stream.
-        bool             _allLabels;      // Need all labels to be set.
-        TSPacketLabelSet _labels;         // Trigger on packets with these labels.
+        PacketCounter    _minInterPacket = 0;  // Minimum interval in packets between two actions.
+        MilliSecond      _minInterTime = 0;    // Minimum interval in milliseconds between two actions.
+        UString          _execute {};          // Command to execute on trigger.
+        UString          _udpDestination {};   // UDP/IP destination address:port.
+        UString          _udpLocal {};         // Name of outgoing local address (empty if unspecified).
+        ByteBlock        _udpMessage {};       // What to send as UDP message.
+        int              _udpTTL = 0;          // Time-to-live socket option.
+        bool             _onStart = false;     // Trigger action on start.
+        bool             _onStop = false;      // Trigger action on stop.
+        bool             _allPackets = false;  // Trigger on all packets in the stream.
+        bool             _allLabels = false;   // Need all labels to be set.
+        TSPacketLabelSet _labels {};           // Trigger on packets with these labels.
 
         // Working data:
-        PacketCounter _lastPacket;    // Last action packet.
-        Time          _lastTime;      // UTC time of last action.
-        UDPSocket     _sock;          // Output socket.
+        PacketCounter _lastPacket = INVALID_PACKET_COUNTER; // Last action packet.
+        Time          _lastTime {};            // UTC time of last action.
+        UDPSocket     _sock {false, *tsp};     // Output socket.
 
         // Trigger the actions (exec, UDP).
         void trigger();
@@ -88,22 +67,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"trigger", ts::TriggerPlugin);
 //----------------------------------------------------------------------------
 
 ts::TriggerPlugin::TriggerPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Trigger actions on selected TS packets", u"[options]"),
-    _minInterPacket(0),
-    _minInterTime(0),
-    _execute(),
-    _udpDestination(),
-    _udpLocal(),
-    _udpMessage(),
-    _udpTTL(0),
-    _onStart(false),
-    _onStop(false),
-    _allPackets(false),
-    _allLabels(false),
-    _labels(),
-    _lastPacket(INVALID_PACKET_COUNTER),
-    _lastTime(),
-    _sock(false, *tsp)
+    ProcessorPlugin(tsp_, u"Trigger actions on selected TS packets", u"[options]")
 {
     option(u"all-labels", 'a');
     help(u"all-labels",

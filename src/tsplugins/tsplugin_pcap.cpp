@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -60,23 +39,24 @@ namespace ts {
 
     private:
         // Command line options:
-        UString           _file_name;       // Pcap file name.
-        IPv4SocketAddress _destination;     // Selected destination UDP socket address.
-        IPv4SocketAddress _source;          // Selected source UDP socket address.
-        bool              _multicast;       // Use multicast destinations only.
-        bool              _udp_emmg_mux;    // Extract packets from EMMG/PDG <=> MUX data provisions in UDP mode.
-        bool              _tcp_emmg_mux;    // Extract packets from EMMG/PDG <=> MUX data provisions in TCP mode.
-        bool              _has_client_id;   // _emmg_client_id is used.
-        bool              _has_data_id;     // _emmg_data_id is used.
-        uint32_t          _emmg_client_id;  // EMMG<=>MUX client id to filter.
-        uint16_t          _emmg_data_id;    // EMMG<=>MUX data id to filter.
+        UString           _file_name {};            // Pcap file name.
+        IPv4SocketAddress _destination {};          // Selected destination UDP socket address.
+        IPv4SocketAddress _source {};               // Selected source UDP socket address.
+        bool              _multicast {false};       // Use multicast destinations only.
+        bool              _udp_emmg_mux {false};    // Extract packets from EMMG/PDG <=> MUX data provisions in UDP mode.
+        bool              _tcp_emmg_mux {false};    // Extract packets from EMMG/PDG <=> MUX data provisions in TCP mode.
+        bool              _has_client_id {false};   // _emmg_client_id is used.
+        bool              _has_data_id {false};     // _emmg_data_id is used.
+        uint32_t          _emmg_client_id {0};      // EMMG<=>MUX client id to filter.
+        uint16_t          _emmg_data_id {0};        // EMMG<=>MUX data id to filter.
 
         // Working data:
-        PcapFilter           _pcap_udp;         // Pcap file, in UDP mode.
-        PcapStream           _pcap_tcp;         // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
-        MicroSecond          _first_tstamp;     // Time stamp of first datagram.
-        IPv4SocketAddress    _act_destination;  // Actual destination UDP socket address.
-        IPv4SocketAddressSet _all_sources;      // All source addresses.
+        PcapFilter           _pcap_udp {};          // Pcap file, in UDP mode.
+        PcapStream           _pcap_tcp {};          // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
+        MicroSecond          _first_tstamp {0};     // Time stamp of first datagram.
+        IPv4SocketAddress    _act_destination {};   // Actual destination UDP socket address.
+        IPv4SocketAddressSet _all_sources {};       // All source addresses.
+        emmgmux::Protocol    _emmgmux {};           // EMMG/PDG <=> MUX protocol instance to decode TCP stream.
 
         // Internal receive methods.
         bool receiveUDP(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp);
@@ -99,22 +79,7 @@ ts::PcapInputPlugin::PcapInputPlugin(TSP* tsp_) :
     AbstractDatagramInputPlugin(tsp_, IP_MAX_PACKET_SIZE,
                                 u"Read TS packets from a pcap or pcap-ng file", u"[options] [file-name]",
                                 u"pcap", u"pcap capture time stamp",
-                                false), // not real-time network reception
-    _file_name(),
-    _destination(),
-    _source(),
-    _multicast(false),
-    _udp_emmg_mux(false),
-    _tcp_emmg_mux(false),
-    _has_client_id(false),
-    _has_data_id(false),
-    _emmg_client_id(0),
-    _emmg_data_id(0),
-    _pcap_udp(),
-    _pcap_tcp(),
-    _first_tstamp(0),
-    _act_destination(),
-    _all_sources()
+                                false) // not real-time network reception
 {
     _pcap_udp.defineArgs(*this);
 
@@ -426,15 +391,14 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
 
     // Adjust protocol version when necessary.
     const ts::tlv::VERSION version = msg[0];
-    tlv::Protocol* const protocol = emmgmux::Protocol::Instance();
-    if (version != protocol->version()) {
+    if (version != _emmgmux.version()) {
         tsp->debug(u"switching EMMG <=> MUX version protocol to %d", {version});
-        protocol->setVersion(version);
+        _emmgmux.setVersion(version);
     }
 
     // Interpret the data as data_provision TLV message.
     tlv::MessagePtr ptr;
-    tlv::MessageFactory mf(msg, msg_size, protocol);
+    tlv::MessageFactory mf(msg, msg_size, _emmgmux);
     if (mf.errorStatus() != tlv::OK) {
         return 0;
     }

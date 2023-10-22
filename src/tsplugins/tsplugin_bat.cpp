@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -56,13 +35,13 @@ namespace ts {
 
     private:
         // Command line options:
-        bool               _single_bat;        // Modify one single BAT only
-        uint16_t           _bouquet_id;        // Bouquet id of the BAT to modify (if _single_bat)
-        std::set<uint16_t> _remove_serv_ids;   // Set of services to remove
-        std::set<uint16_t> _remove_ts_ids;     // Set of transport streams to remove
-        std::vector<DID>   _removed_desc_tags; // Set of descriptor tags to remove
-        PDS                _pds;               // Private data specifier for removed descriptors
-        bool               _cleanup_priv_desc; // Remove private desc without preceding PDS desc
+        bool               _single_bat = false;        // Modify one single BAT only
+        uint16_t           _bouquet_id = 0;            // Bouquet id of the BAT to modify (if _single_bat)
+        std::set<uint16_t> _remove_serv_ids {};        // Set of services to remove
+        std::set<uint16_t> _remove_ts_ids {};          // Set of transport streams to remove
+        std::vector<DID>   _removed_desc_tags {};      // Set of descriptor tags to remove
+        PDS                _pds = 0;                   // Private data specifier for removed descriptors
+        bool               _cleanup_priv_desc = false; // Remove private desc without preceding PDS desc
 
         // Process a list of descriptors according to the command line options.
         void processDescriptorList(DescriptorList&);
@@ -77,14 +56,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"bat", ts::BATPlugin);
 //----------------------------------------------------------------------------
 
 ts::BATPlugin::BATPlugin(TSP* tsp_) :
-   AbstractTablePlugin(tsp_, u"Perform various transformations on the BAT", u"[options]", u"BAT", PID_BAT),
-   _single_bat(false),
-   _bouquet_id(0),
-   _remove_serv_ids(),
-   _remove_ts_ids(),
-   _removed_desc_tags(),
-   _pds(0),
-   _cleanup_priv_desc(false)
+   AbstractTablePlugin(tsp_, u"Perform various transformations on the BAT", u"[options]", u"BAT", PID_BAT)
 {
     option(u"bouquet-id", 'b', UINT16);
     help(u"bouquet-id",

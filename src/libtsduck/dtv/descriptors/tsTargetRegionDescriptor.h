@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -49,12 +28,12 @@ namespace ts {
         //!
         struct TSDUCKDLL Region
         {
-            Region();                        //!< Default constructor.
-            UString  country_code;           //!< Optional 3-character country code.
-            uint8_t  region_depth;           //!< 2 bits, number of region codes.
-            uint8_t  primary_region_code;    //!< Optional primary region code.
-            uint8_t  secondary_region_code;  //!< Optional secondary region code.
-            uint16_t tertiary_region_code;   //!< Optional tertiary region code.
+            Region() = default;                  //!< Default constructor.
+            UString  country_code {};            //!< Optional 3-character country code.
+            uint8_t  region_depth = 0;           //!< 2 bits, number of region codes.
+            uint8_t  primary_region_code = 0;    //!< Optional primary region code.
+            uint8_t  secondary_region_code = 0;  //!< Optional secondary region code.
+            uint16_t tertiary_region_code = 0;   //!< Optional tertiary region code.
         };
 
         //!
@@ -63,8 +42,8 @@ namespace ts {
         typedef std::list<Region> RegionList;
 
         // TargetRegionDescriptor public members:
-        UString    country_code;  //!< 3-character country code.
-        RegionList regions;       //!< The list of regions.
+        UString    country_code {};  //!< 3-character country code.
+        RegionList regions {};       //!< The list of regions.
 
         //!
         //! Default constructor.

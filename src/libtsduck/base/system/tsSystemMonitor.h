@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -93,30 +72,30 @@ namespace ts {
         class Config
         {
         public:
-            Config();               // Constructor.
-            bool    log_messages;   // Log monitoring messages.
-            bool    stable_memory;  // If true, raise an alarm when the virtual memory increases.
-            int     max_cpu;        // Maximum allowed CPU percentage.
-            UString alarm_command;  // Shell command to run on alarm.
+            Config() = default;
+            bool    log_messages = false;   // Log monitoring messages.
+            bool    stable_memory = false;  // If true, raise an alarm when the virtual memory increases.
+            int     max_cpu = 0;            // Maximum allowed CPU percentage.
+            UString alarm_command {};       // Shell command to run on alarm.
         };
 
         // Description of a monitoring period.
         class Period: public Config
         {
         public:
-            Period();               // Constructor.
-            MilliSecond duration;   // Period duration in milliseconds.
-            MilliSecond interval;   // Monitoring interval in that period.
+            Period() = default;
+            MilliSecond duration = 0;   // Period duration in milliseconds.
+            MilliSecond interval = 0;   // Monitoring interval in that period.
         };
         typedef std::list<Period> PeriodList;
 
         // Private members
         Report&    _report;
-        UString    _config_file;  // XML configuration file name.
-        PeriodList _periods;      // List of monitoring periods.
-        Mutex      _mutex;
-        Condition  _wake_up;      // Accessed under mutex.
-        bool       _terminate;    // Accessed under mutex.
+        UString    _config_file {};     // XML configuration file name.
+        PeriodList _periods {};         // List of monitoring periods.
+        Mutex      _mutex {};
+        Condition  _wake_up {};         // Accessed under mutex.
+        bool       _terminate = false;  // Accessed under mutex.
 
         // Inherited from Thread
         virtual void main() override;

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2022-2023, Paul Higgs
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -54,9 +33,8 @@ namespace ts {
         //!
         class pattern_type {
         public:
-            std::vector<int8_t>    SubstreamOffset;            //!< offset to be added
-
-            pattern_type();         //!< Constructor
+            pattern_type() = default;                //!< Constructor
+            std::vector<int8_t> SubstreamOffset {};  //!< offset to be added
         };
 
         //!
@@ -64,20 +42,19 @@ namespace ts {
         //!
         class subregion_layout_type {
         public:
-            Variable<uint8_t>           PreambleSubstreamID;    //!< 7 bits. Indicates the SubstreamID of the ES to be prepended to the ES to which this descriptor applies
-            uint8_t                     Level;                  //!< Value of the profile as specified in ISO/IEC 23008-2 that applies to the subregion layout
-            uint16_t                    PictureSizeHor;         //!< Horizontal subregion dimension, measured in pixels
-            uint16_t                    PictureSizeVer;         //!< Vertical subregion dimension, measured in pixels
-            std::vector<pattern_type>   Patterns;               //!< Patterns
-
-            subregion_layout_type();    //!< Constructor
+            subregion_layout_type() = default;                 //!< Constructor
+            Variable<uint8_t>         PreambleSubstreamID {};  //!< 7 bits. Indicates the SubstreamID of the ES to be prepended to the ES to which this descriptor applies
+            uint8_t                   Level = 0;               //!< Value of the profile as specified in ISO/IEC 23008-2 that applies to the subregion layout
+            uint16_t                  PictureSizeHor = 0;      //!< Horizontal subregion dimension, measured in pixels
+            uint16_t                  PictureSizeVer = 0;      //!< Vertical subregion dimension, measured in pixels
+            std::vector<pattern_type> Patterns {};             //!< Patterns
         };
 
         // Public members:
-        uint8_t                             SubstreamIDsPerLine;    //!< 7 bits. The number of HEVC tile substreams that are coded representations of tiles that are arranged horizontally and span the width of the whole panorama.
-        uint8_t                             TotalSubstreamIDs;      //!< Total number of HEVC tile substreams that represent tiles for the whole panorama.
-        uint8_t                             LevelFullPanorama;      //!< Level of the profile as specified in ISO/IEC 23008-2 that applies to the whole panorama.
-        std::vector<subregion_layout_type>  SubregionLayouts;       //!< Subregion layouts.
+        uint8_t                             SubstreamIDsPerLine = 0;  //!< 7 bits. The number of HEVC tile substreams that are coded representations of tiles that are arranged horizontally and span the width of the whole panorama.
+        uint8_t                             TotalSubstreamIDs = 0;    //!< Total number of HEVC tile substreams that represent tiles for the whole panorama.
+        uint8_t                             LevelFullPanorama = 0;    //!< Level of the profile as specified in ISO/IEC 23008-2 that applies to the whole panorama.
+        std::vector<subregion_layout_type>  SubregionLayouts {};      //!< Subregion layouts.
 
         //!
         //! Default constructor.

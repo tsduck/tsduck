@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -52,7 +31,7 @@ namespace ts {
         //! Constructor.
         //! @param [in,out] report Where to report error.
         //!
-        explicit UDPReceiver(Report& report = CERR);
+        explicit UDPReceiver(Report& report = CERR) : UDPSocket(false, report) {}
 
         //!
         //! Add command line option definitions in an Args.
@@ -141,23 +120,23 @@ namespace ts {
                              MicroSecond* timestamp = nullptr) override;
 
     private:
-        bool              _dest_is_parameter;  // Destination address is a command line parameter, not an option.
-        bool              _receiver_specified; // An address is specified.
-        bool              _use_ssm;            // Use source-specific multicast.
-        size_t            _receiver_index;     // The number of the selected receiver on the command line.
-        size_t            _receiver_count;     // The number of receivers on the command line.
-        IPv4SocketAddress _dest_addr;          // Expected destination of packets.
-        IPv4Address       _local_address;      // Local address on which to listen.
-        bool              _reuse_port;         // Reuse port socket option.
-        bool              _default_interface;  // Use default local interface.
-        bool              _use_first_source;   // Use socket address of first received packet to filter subsequent packets.
-        bool              _mc_loopback;        // Multicast loopback option
-        bool              _recv_timestamps;    // Get receive timestamps.
-        size_t            _recv_bufsize;       // Socket receive buffer size.
-        MilliSecond       _recv_timeout;       // Receive timeout.
-        IPv4SocketAddress _use_source;         // Filter on this socket address of sender (can be a simple filter of an SSM source).
-        IPv4SocketAddress _first_source;       // Socket address of first received packet.
-        IPv4SocketAddressSet _sources;         // Set of all detected packet sources.
+        bool              _dest_is_parameter = true;   // Destination address is a command line parameter, not an option.
+        bool              _receiver_specified = false; // An address is specified.
+        bool              _use_ssm = false;            // Use source-specific multicast.
+        size_t            _receiver_index = 0;         // The number of the selected receiver on the command line.
+        size_t            _receiver_count = 0;         // The number of receivers on the command line.
+        IPv4SocketAddress _dest_addr {};               // Expected destination of packets.
+        IPv4Address       _local_address {};           // Local address on which to listen.
+        bool              _reuse_port = false;         // Reuse port socket option.
+        bool              _default_interface = false;  // Use default local interface.
+        bool              _use_first_source = false;   // Use socket address of first received packet to filter subsequent packets.
+        bool              _mc_loopback = true;         // Multicast loopback option
+        bool              _recv_timestamps = true;     // Get receive timestamps, currently hardcoded, is there a reason to disable it?
+        size_t            _recv_bufsize = 0;           // Socket receive buffer size.
+        MilliSecond       _recv_timeout {-1};          // Receive timeout.
+        IPv4SocketAddress _use_source {};              // Filter on this socket address of sender (can be a simple filter of an SSM source).
+        IPv4SocketAddress _first_source {};            // Socket address of first received packet.
+        IPv4SocketAddressSet _sources {};              // Set of all detected packet sources.
 
         // Get the command line argument for the destination parameter.
         const UChar* destinationOptionName() const { return _dest_is_parameter ? u"" : u"ip-udp"; }

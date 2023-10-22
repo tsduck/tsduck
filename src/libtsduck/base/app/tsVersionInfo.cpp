@@ -1,29 +1,8 @@
 //----------------------------------------------------------------------------
 //
-//  TSDuck - The MPEG Transport Stream Toolkit
-//  Copyright (c) 2005-2023, Thierry Lelegard
-//  All rights reserved.
-//
-//  Redistribution and use in source and binary forms, with or without
-//  modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright
-//     notice, this list of conditions and the following disclaimer in the
-//     documentation and/or other materials provided with the distribution.
-//
-//  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-//  AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-//  IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-//  ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-//  LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-//  CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-//  SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-//  INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-//  CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-//  ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-//  THE POSSIBILITY OF SUCH DAMAGE.
+// TSDuck - The MPEG Transport Stream Toolkit
+// Copyright (c) 2005-2023, Thierry Lelegard
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/#license
 //
 //----------------------------------------------------------------------------
 
@@ -55,21 +34,21 @@ const int TSDUCK_LIBRARY_BITRATE_SYMBOL = 0;
 
 // Enumeration description of ts::VersionFormat.
 const ts::Enumeration ts::VersionInfo::FormatEnum({
-    {u"short",        int(ts::VersionInfo::Format::SHORT)},
-    {u"long",         int(ts::VersionInfo::Format::LONG)},
-    {u"integer",      int(ts::VersionInfo::Format::INTEGER)},
-    {u"date",         int(ts::VersionInfo::Format::DATE)},
-    {u"compiler",     int(ts::VersionInfo::Format::COMPILER)},
-    {u"system",       int(ts::VersionInfo::Format::SYSTEM)},
-    {u"acceleration", int(ts::VersionInfo::Format::ACCELERATION)},
-    {u"bitrate",      int(ts::VersionInfo::Format::BITRATE)},
-    {u"nsis",         int(ts::VersionInfo::Format::NSIS)},
-    {u"dektec",       int(ts::VersionInfo::Format::DEKTEC)},
-    {u"http",         int(ts::VersionInfo::Format::HTTP)},
-    {u"srt",          int(ts::VersionInfo::Format::SRT)},
-    {u"rist",         int(ts::VersionInfo::Format::RIST)},
-    {u"vatek",        int(ts::VersionInfo::Format::VATEK)},
-    {u"all",          int(ts::VersionInfo::Format::ALL)},
+    {u"short",        ts::VersionInfo::Format::SHORT},
+    {u"long",         ts::VersionInfo::Format::LONG},
+    {u"integer",      ts::VersionInfo::Format::INTEGER},
+    {u"date",         ts::VersionInfo::Format::DATE},
+    {u"compiler",     ts::VersionInfo::Format::COMPILER},
+    {u"system",       ts::VersionInfo::Format::SYSTEM},
+    {u"acceleration", ts::VersionInfo::Format::ACCELERATION},
+    {u"bitrate",      ts::VersionInfo::Format::BITRATE},
+    {u"nsis",         ts::VersionInfo::Format::NSIS},
+    {u"dektec",       ts::VersionInfo::Format::DEKTEC},
+    {u"http",         ts::VersionInfo::Format::HTTP},
+    {u"srt",          ts::VersionInfo::Format::SRT},
+    {u"rist",         ts::VersionInfo::Format::RIST},
+    {u"vatek",        ts::VersionInfo::Format::VATEK},
+    {u"all",          ts::VersionInfo::Format::ALL},
 });
 
 // Enumeration of supported features.
@@ -118,8 +97,7 @@ const ts::Enumeration ts::VersionInfo::SupportEnum({
 
 ts::VersionInfo::VersionInfo(Report& report) :
     _report(report),
-    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : _report),
-    _started(false)
+    _debug(GetEnvironment(u"TS_DEBUG_NEW_VERSION").empty() ? NULLREP : _report)
 {
 }
 

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -60,56 +39,56 @@ namespace ts {
         typedef std::list<PacketRange> PacketRangeList;
 
         // Command line options:
-        Status             _drop_status;        // Return status for unselected packets
-        int                _scrambling_ctrl;    // Scrambling control value (<0: no filter)
-        bool               _need_demux;         // Need the help of the signalization demux.
-        bool               _with_payload;       // Packets with payload
-        bool               _with_af;            // Packets with adaptation field
-        bool               _with_pes;           // Packets with clear PES headers
-        bool               _with_pcr;           // Packets with PCR or OPCR
-        bool               _with_splice;        // Packets with splice_countdown in adaptation field
-        bool               _unit_start;         // Packets with payload unit start
-        bool               _intra_frame;        // Packets with start of video intra-frame
-        bool               _nullified;          // Packets which were nullified by a previous plugin
-        bool               _input_stuffing;     // Null packets which were artificially inserted
-        bool               _valid;              // Packets with valid sync byte and error ind
-        bool               _negate;             // Negate filter (exclude selected packets)
-        bool               _video;              // Part of a video PID
-        bool               _audio;              // Part of an audio PID
-        bool               _subtitles;          // Part of a subtitles PID
-        bool               _ecm;                // Part of an ECM PID
-        bool               _emm;                // Part of an EMM PID
-        bool               _psi;                // Part of global PSI/SI PID.
-        int                _min_payload;        // Minimum payload size (<0: no filter)
-        int                _max_payload;        // Maximum payload size (<0: no filter)
-        int                _min_af;             // Minimum adaptation field size (<0: no filter)
-        int                _max_af;             // Maximum adaptation field size (<0: no filter)
-        int                _splice;             // Exact splice_countdown value (<-128: no filter)
-        int                _min_splice;         // Minimum splice_countdown value (<-128: no filter)
-        int                _max_splice;         // Maximum splice_countdown value (<-128: no filter)
-        PacketCounter      _after_packets;      // Number of initial packets to skip
-        PacketCounter      _every_packets;      // Filter 1 out of this number of packets
-        CodecType          _codec;              // Filter on codec type
-        PIDSet             _explicit_pid;       // Explicit PID values to filter
-        ByteBlock          _pattern;            // Byte pattern to search.
-        bool               _search_payload;     // Search pattern in payload only
-        bool               _use_search_offset;  // Search at specified offset only
-        size_t             _search_offset;      // Offset where to search.
-        PacketRangeList    _ranges;             // Ranges of packets to filter.
-        std::set<uint8_t>  _stream_ids;         // PES stream ids to filter
-        std::set<uint16_t> _service_ids;        // Service ids to filter
-        UStringVector      _service_names;      // Service names to filter.
-        TSPacketLabelSet   _labels;             // Select packets with any of these labels
-        TSPacketLabelSet   _set_labels;         // Labels to set on filtered packets
-        TSPacketLabelSet   _reset_labels;       // Labels to reset on filtered packets
-        TSPacketLabelSet   _set_perm_labels;    // Labels to set on all packets after getting one packet
-        TSPacketLabelSet   _reset_perm_labels;  // Labels to reset on all packets after getting one packet
+        Status             _drop_status = TSP_DROP;     // Return status for unselected packets
+        int                _scrambling_ctrl = 0;        // Scrambling control value (<0: no filter)
+        bool               _need_demux = false;         // Need the help of the signalization demux.
+        bool               _with_payload = false;       // Packets with payload
+        bool               _with_af = false;            // Packets with adaptation field
+        bool               _with_pes = false;           // Packets with clear PES headers
+        bool               _with_pcr = false;           // Packets with PCR or OPCR
+        bool               _with_splice = false;        // Packets with splice_countdown in adaptation field
+        bool               _unit_start = false;         // Packets with payload unit start
+        bool               _intra_frame = false;        // Packets with start of video intra-frame
+        bool               _nullified = false;          // Packets which were nullified by a previous plugin
+        bool               _input_stuffing = false;     // Null packets which were artificially inserted
+        bool               _valid = false;              // Packets with valid sync byte and error ind
+        bool               _negate = false;             // Negate filter (exclude selected packets)
+        bool               _video = false;              // Part of a video PID
+        bool               _audio = false;              // Part of an audio PID
+        bool               _subtitles = false;          // Part of a subtitles PID
+        bool               _ecm = false;                // Part of an ECM PID
+        bool               _emm = false;                // Part of an EMM PID
+        bool               _psi = false;                // Part of global PSI/SI PID.
+        int                _min_payload = 0;            // Minimum payload size (<0: no filter)
+        int                _max_payload = 0;            // Maximum payload size (<0: no filter)
+        int                _min_af = 0;                 // Minimum adaptation field size (<0: no filter)
+        int                _max_af = 0;                 // Maximum adaptation field size (<0: no filter)
+        int                _splice = 0;                 // Exact splice_countdown value (<-128: no filter)
+        int                _min_splice = 0;             // Minimum splice_countdown value (<-128: no filter)
+        int                _max_splice = 0;             // Maximum splice_countdown value (<-128: no filter)
+        PacketCounter      _after_packets = 0;          // Number of initial packets to skip
+        PacketCounter      _every_packets = 0;          // Filter 1 out of this number of packets
+        CodecType          _codec = CodecType::UNDEFINED; // Filter on codec type
+        PIDSet             _explicit_pid {};            // Explicit PID values to filter
+        ByteBlock          _pattern {};                 // Byte pattern to search.
+        bool               _search_payload = false;     // Search pattern in payload only
+        bool               _use_search_offset = false;  // Search at specified offset only
+        size_t             _search_offset = 0;          // Offset where to search.
+        PacketRangeList    _ranges {};                  // Ranges of packets to filter.
+        std::set<uint8_t>  _stream_ids {};              // PES stream ids to filter
+        std::set<uint16_t> _service_ids {};             // Service ids to filter
+        UStringVector      _service_names {};           // Service names to filter.
+        TSPacketLabelSet   _labels {};                  // Select packets with any of these labels
+        TSPacketLabelSet   _set_labels {};              // Labels to set on filtered packets
+        TSPacketLabelSet   _reset_labels {};            // Labels to reset on filtered packets
+        TSPacketLabelSet   _set_perm_labels {};         // Labels to set on all packets after getting one packet
+        TSPacketLabelSet   _reset_perm_labels {};       // Labels to reset on all packets after getting one packet
 
         // Working data:
-        PacketCounter      _filtered_packets;   // Number of filtered packets
-        PIDSet             _stream_id_pid;      // PID values selected from stream ids
-        std::set<uint16_t> _all_service_ids;    // All service ids to filter, after service name resolution
-        SignalizationDemux _demux;              // Full signalization demux
+        PacketCounter      _filtered_packets = 0;       // Number of filtered packets
+        PIDSet             _stream_id_pid {};           // PID values selected from stream ids
+        std::set<uint16_t> _all_service_ids {};         // All service ids to filter, after service name resolution
+        SignalizationDemux _demux {duck};               // Full signalization demux
 
         // Implementation of SignalizationHandlerInterface
         virtual void handleService(uint16_t ts_id, const Service& service, const PMT& pmt, bool removed) override;
@@ -124,55 +103,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"filter", ts::FilterPlugin);
 //----------------------------------------------------------------------------
 
 ts::FilterPlugin::FilterPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions", u"[options]"),
-    _drop_status(TSP_DROP),
-    _scrambling_ctrl(0),
-    _need_demux(false),
-    _with_payload(false),
-    _with_af(false),
-    _with_pes(false),
-    _with_pcr(false),
-    _with_splice(false),
-    _unit_start(false),
-    _intra_frame(false),
-    _nullified(false),
-    _input_stuffing(false),
-    _valid(false),
-    _negate(false),
-    _video(false),
-    _audio(false),
-    _subtitles(false),
-    _ecm(false),
-    _emm(false),
-    _psi(false),
-    _min_payload(0),
-    _max_payload(0),
-    _min_af(0),
-    _max_af(0),
-    _splice(0),
-    _min_splice(0),
-    _max_splice(0),
-    _after_packets(0),
-    _every_packets(0),
-    _codec(CodecType::UNDEFINED),
-    _explicit_pid(),
-    _pattern(),
-    _search_payload(false),
-    _use_search_offset(false),
-    _search_offset(0),
-    _ranges(),
-    _stream_ids(),
-    _service_ids(),
-    _service_names(),
-    _labels(),
-    _set_labels(),
-    _reset_labels(),
-    _set_perm_labels(),
-    _reset_perm_labels(),
-    _filtered_packets(0),
-    _stream_id_pid(),
-    _all_service_ids(),
-    _demux(duck)
+    ProcessorPlugin(tsp_, u"Filter TS packets according to various conditions", u"[options]")
 {
     option(u"adaptation-field");
     help(u"adaptation-field", u"Select packets with an adaptation field.");

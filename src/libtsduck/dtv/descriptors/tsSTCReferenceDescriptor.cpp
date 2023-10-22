@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -49,16 +28,7 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::Private(MY_DID, MY_PDS), MY_XML_NAME,
 //----------------------------------------------------------------------------
 
 ts::STCReferenceDescriptor::STCReferenceDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    STC_reference_mode(0),
-    external_event(false),
-    external_event_id(0),
-    external_service_id(0),
-    external_network_id(0),
-    NPT_reference(0),
-    STC_reference(0),
-    time_reference(0),
-    reserved_data()
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
@@ -240,8 +210,8 @@ bool ts::STCReferenceDescriptor::analyzeXML(DuckContext& duck, const xml::Elemen
         element->getIntAttribute(external_event_id, u"external_event_id", external_event) &&
         element->getIntAttribute(external_service_id, u"external_service_id", external_event) &&
         element->getIntAttribute(external_network_id, u"external_network_id", external_event) &&
-        element->getIntAttribute(NPT_reference, u"NPT_reference", STC_reference_mode == 1, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
-        element->getIntAttribute(STC_reference, u"STC_reference", STC_reference_mode == 1 || STC_reference_mode == 3 || STC_reference_mode == 5, 0, 0, TS_UCONST64(0x00000001FFFFFFFF)) &&
+        element->getIntAttribute(NPT_reference, u"NPT_reference", STC_reference_mode == 1, 0, 0, 0x00000001FFFFFFFF) &&
+        element->getIntAttribute(STC_reference, u"STC_reference", STC_reference_mode == 1 || STC_reference_mode == 3 || STC_reference_mode == 5, 0, 0, 0x00000001FFFFFFFF) &&
         element->getTimeAttribute(time_reference, u"time_reference", STC_reference_mode == 3 || STC_reference_mode == 5) &&
         element->getIntAttribute(time_reference_extension, u"time_reference_extension", false, 0) &&
         element->getHexaTextChild(reserved_data, u"reserved_data", false);

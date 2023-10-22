@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -36,7 +15,6 @@
 #pragma once
 #include "tstlvProtocol.h"
 #include "tstlvStreamMessage.h"
-#include "tsSingletonManager.h"
 #include "tsDVBCSA2.h"
 
 namespace ts {
@@ -166,10 +144,13 @@ namespace ts {
 
         class TSDUCKDLL Protocol : public tlv::Protocol
         {
-            // This class is a singleton. Use static Instance() method.
-            TS_DECLARE_SINGLETON(Protocol);
-
+            TS_NOCOPY(Protocol);
         public:
+            //!
+            //! Default constructor.
+            //!
+            Protocol();
+
             // Implementation of pure virtual methods
             virtual void factory(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
             virtual void buildErrorResponse(const tlv::MessageFactory&, tlv::MessagePtr&) const override;
@@ -186,27 +167,11 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelSetup : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelSetup, Tags::channel_setup);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id; // ECM_channel_id
-            uint32_t Super_CAS_id;  //!< Super CAS id.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelSetup();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelSetup(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;     // ECM_channel_id
+            uint32_t Super_CAS_id = 0;  //!< Super CAS id.
         };
 
         //!
@@ -214,26 +179,10 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelTest : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelTest, Tags::channel_test);
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // ECM_channel_id
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelTest();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelTest(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -241,43 +190,27 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelStatus : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelStatus, Tags::channel_status);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;              // ECM_channel_id
-            bool     section_TSpkt_flag;         //!< Field section_TSpkt_flag.
-            bool     has_AC_delay_start;         //!< Field AC_delay_start is valid.
-            int16_t  AC_delay_start;             //!< Field AC_delay_start.
-            bool     has_AC_delay_stop;          //!< Field AC_delay_stop is valid.
-            int16_t  AC_delay_stop;              //!< Field AC_delay_stop.
-            int16_t  delay_start;                //!< Field delay_start.
-            int16_t  delay_stop;                 //!< Field delay_stop.
-            bool     has_transition_delay_start; //!< Field transition_delay_start is valid.
-            int16_t  transition_delay_start;     //!< Field transition_delay_start.
-            bool     has_transition_delay_stop;  //!< Field transition_delay_stop is valid.
-            int16_t  transition_delay_stop;      //!< Field transition_delay_stop.
-            uint16_t ECM_rep_period;             //!< Field ECM_rep_period.
-            uint16_t max_streams;                //!< Field max_streams.
-            uint16_t min_CP_duration;            //!< Field min_CP_duration.
-            uint8_t  lead_CW;                    //!< Field lead_CW.
-            uint8_t  CW_per_msg;                 //!< Field CW_per_msg.
-            uint16_t max_comp_time;              //!< Field max_comp_time.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelStatus();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelStatus(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                      // ECM_channel_id
+            bool     section_TSpkt_flag = false;         //!< Field section_TSpkt_flag.
+            bool     has_AC_delay_start = false;         //!< Field AC_delay_start is valid.
+            int16_t  AC_delay_start = 0;                 //!< Field AC_delay_start.
+            bool     has_AC_delay_stop = false;          //!< Field AC_delay_stop is valid.
+            int16_t  AC_delay_stop = 0;                  //!< Field AC_delay_stop.
+            int16_t  delay_start = 0;                    //!< Field delay_start.
+            int16_t  delay_stop = 0;                     //!< Field delay_stop.
+            bool     has_transition_delay_start = false; //!< Field transition_delay_start is valid.
+            int16_t  transition_delay_start = 0;         //!< Field transition_delay_start.
+            bool     has_transition_delay_stop = false;  //!< Field transition_delay_stop is valid.
+            int16_t  transition_delay_stop = 0;          //!< Field transition_delay_stop.
+            uint16_t ECM_rep_period = 0;                 //!< Field ECM_rep_period.
+            uint16_t max_streams = 0;                    //!< Field max_streams.
+            uint16_t min_CP_duration = 0;                //!< Field min_CP_duration.
+            uint8_t  lead_CW = 0;                        //!< Field lead_CW.
+            uint8_t  CW_per_msg = 0;                     //!< Field CW_per_msg.
+            uint16_t max_comp_time = 0;                  //!< Field max_comp_time.
         };
 
         //!
@@ -285,26 +218,10 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelClose : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelClose, Tags::channel_close);
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // ECM_channel_id
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelClose();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelClose(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -312,28 +229,12 @@ namespace ts {
         //!
         class TSDUCKDLL ChannelError : public tlv::ChannelMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ChannelError, Tags::channel_error);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;                  // ECM_channel_id
-            std::vector<uint16_t> error_status;      //!< Error code.
-            std::vector<uint16_t> error_information; //!< Error information.
-
-            //!
-            //! Default constructor.
-            //!
-            ChannelError();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ChannelError(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                     // ECM_channel_id
+            std::vector<uint16_t> error_status {};      //!< Error code.
+            std::vector<uint16_t> error_information {}; //!< Error information.
         };
 
         //!
@@ -341,29 +242,13 @@ namespace ts {
         //!
         class TSDUCKDLL StreamSetup : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamSetup, Tags::stream_setup);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;        // ECM_channel_id
-            // uint16_t stream_id;         // ECM_stream_id
-            uint16_t ECM_id;               //!< ECM id.
-            uint16_t nominal_CP_duration;  //!< Nominal CP duration.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamSetup();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamSetup(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;            // ECM_channel_id
+            // uint16_t stream_id;             // ECM_stream_id
+            uint16_t ECM_id = 0;               //!< ECM id.
+            uint16_t nominal_CP_duration = 0;  //!< Nominal CP duration.
         };
 
         //!
@@ -371,27 +256,11 @@ namespace ts {
         //!
         class TSDUCKDLL StreamTest : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamTest, Tags::stream_test);
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // ECM_channel_id
             // uint16_t stream_id;  // ECM_stream_id
-
-            //!
-            //! Default constructor.
-            //!
-            StreamTest();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamTest(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -399,29 +268,13 @@ namespace ts {
         //!
         class TSDUCKDLL StreamStatus : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamStatus, Tags::stream_status);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;                  // ECM_channel_id
-            // uint16_t stream_id;                   // ECM_stream_id
-            uint16_t ECM_id;                         //!< ECM id.
-            bool     access_criteria_transfer_mode;  //!< Access Criteria transfer mode.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamStatus();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamStatus(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                          // ECM_channel_id
+            // uint16_t stream_id;                           // ECM_stream_id
+            uint16_t ECM_id = 0;                             //!< ECM id.
+            bool     access_criteria_transfer_mode = false;  //!< Access Criteria transfer mode.
         };
 
         //!
@@ -429,27 +282,11 @@ namespace ts {
         //!
         class TSDUCKDLL StreamCloseRequest : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamCloseRequest, Tags::stream_close_request);
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // ECM_channel_id
             // uint16_t stream_id;  // ECM_stream_id
-
-            //!
-            //! Default constructor.
-            //!
-            StreamCloseRequest();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamCloseRequest(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -457,27 +294,11 @@ namespace ts {
         //!
         class TSDUCKDLL StreamCloseResponse : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamCloseResponse, Tags::stream_close_response);
         public:
             // Protocol-documented fields:
             // uint16_t channel_id; // ECM_channel_id
             // uint16_t stream_id;  // ECM_stream_id
-
-            //!
-            //! Default constructor.
-            //!
-            StreamCloseResponse();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamCloseResponse(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
         };
 
         //!
@@ -485,29 +306,13 @@ namespace ts {
         //!
         class TSDUCKDLL StreamError : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(StreamError, Tags::stream_error);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;                  // ECM_channel_id
-            // uint16_t stream_id;                   // ECM_stream_id
-            std::vector<uint16_t> error_status;      //!< Error code.
-            std::vector<uint16_t> error_information; //!< Error information.
-
-            //!
-            //! Default constructor.
-            //!
-            StreamError();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            StreamError(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                     // ECM_channel_id
+            // uint16_t stream_id;                      // ECM_stream_id
+            std::vector<uint16_t> error_status {};      //!< Error code.
+            std::vector<uint16_t> error_information {}; //!< Error information.
         };
 
         //!
@@ -515,8 +320,8 @@ namespace ts {
         //!
         struct CPCWCombination
         {
-            uint16_t  CP;  //!< Crypto-period number.
-            ByteBlock CW;  //!< Control word.
+            uint16_t  CP = 0;  //!< Crypto-period number.
+            ByteBlock CW {};   //!< Control word.
 
             //!
             //! Constructor.
@@ -547,35 +352,19 @@ namespace ts {
         //!
         class TSDUCKDLL CWProvision : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(CWProvision, Tags::CW_provision);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;                         // ECM_channel_id
-            // uint16_t stream_id;                          // ECM_stream_id
-            uint16_t  CP_number;                            //!< CP number.
-            bool      has_CW_encryption;                    //!< Field CW_encryption is valid.
-            ByteBlock CW_encryption;                        //!< Field CW_encryption.
-            std::vector<CPCWCombination> CP_CW_combination; //!< CP/CW combinations.
-            bool      has_CP_duration;                      //!< Field CP_duration is valid.
-            uint16_t  CP_duration;                          //!< CP duration.
-            bool      has_access_criteria;                  //!< Field access_criteria is valid.
-            ByteBlock access_criteria;                      //!< Access Criteria.
-
-            //!
-            //! Default constructor.
-            //!
-            CWProvision();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            CWProvision(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;                            // ECM_channel_id
+            // uint16_t stream_id;                             // ECM_stream_id
+            uint16_t  CP_number = 0;                           //!< CP number.
+            bool      has_CW_encryption = false;               //!< Field CW_encryption is valid.
+            ByteBlock CW_encryption {};                        //!< Field CW_encryption.
+            std::vector<CPCWCombination> CP_CW_combination {}; //!< CP/CW combinations.
+            bool      has_CP_duration = false;                 //!< Field CP_duration is valid.
+            uint16_t  CP_duration = 0;                         //!< CP duration.
+            bool      has_access_criteria = false;             //!< Field access_criteria is valid.
+            ByteBlock access_criteria {};                      //!< Access Criteria.
         };
 
         //!
@@ -583,29 +372,13 @@ namespace ts {
         //!
         class TSDUCKDLL ECMResponse : public tlv::StreamMessage
         {
+            TS_VERSIONED_TLV_MESSAGE(ECMResponse, Tags::ECM_response);
         public:
             // Protocol-documented fields:
-            // uint16_t channel_id;   // ECM_channel_id
-            // uint16_t stream_id;    // ECM_stream_id
-            uint16_t  CP_number;      //!< CP number.
-            ByteBlock ECM_datagram;   //!< ECM packets or section.
-
-            //!
-            //! Default constructor.
-            //!
-            ECMResponse();
-            //!
-            //! Constructor from a message factory.
-            //! @param [in] fact Message factory.
-            //!
-            ECMResponse(const tlv::MessageFactory& fact);
-
-            // Implementation of Message.
-            virtual UString dump(size_t indent = 0) const override;
-
-        protected:
-            // Implementation of Message.
-            virtual void serializeParameters(tlv::Serializer& fact) const override;
+            // uint16_t channel_id;      // ECM_channel_id
+            // uint16_t stream_id;       // ECM_stream_id
+            uint16_t  CP_number = 0;     //!< CP number.
+            ByteBlock ECM_datagram {};   //!< ECM packets or section.
         };
 
 

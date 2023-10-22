@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -64,21 +43,7 @@ ts::SignalizationDemux::SignalizationDemux(DuckContext& duck) :
 ts::SignalizationDemux::SignalizationDemux(DuckContext& duck, SignalizationHandlerInterface* handler, std::initializer_list<TID> tids) :
     _duck(duck),
     _demux(duck, this, this),
-    _handler(handler),
-    _full_filters(false),
-    _filtered_tids(),
-    _filtered_srv_ids(),
-    _filtered_srv_names(),
-    _last_pat(),
-    _last_pat_handled(false),
-    _last_nit(),
-    _last_nit_handled(false),
-    _ts_id(0xFFFF),
-    _orig_network_id(0xFFFF),
-    _network_id(0xFFFF),
-    _last_utc(),
-    _pids(),
-    _services()
+    _handler(handler)
 {
     _last_pat.invalidate();
     for (const auto& it : tids) {
@@ -1174,19 +1139,7 @@ ts::SignalizationDemux::PIDContextPtr ts::SignalizationDemux::getPIDContext(PID 
 
 // Constructor.
 ts::SignalizationDemux::PIDContext::PIDContext(PID pid_) :
-    pid(pid_),
-    pid_class(PIDClass::UNDEFINED),
-    codec(CodecType::UNDEFINED),
-    stream_type(ST_NULL),
-    cas_id(CASID_NULL),
-    packets(0),
-    pusi_count(0),
-    first_pusi(INVALID_PACKET_COUNTER),
-    last_pusi(INVALID_PACKET_COUNTER),
-    intra_count(0),
-    first_intra(INVALID_PACKET_COUNTER),
-    last_intra(INVALID_PACKET_COUNTER),
-    services()
+    pid(pid_)
 {
     if (pid == PID_NULL) {
         pid_class = PIDClass::STUFFING;
@@ -1238,9 +1191,7 @@ ts::SignalizationDemux::ServiceContextPtr ts::SignalizationDemux::getServiceCont
 }
 
 // Constructor.
-ts::SignalizationDemux::ServiceContext::ServiceContext(uint16_t service_id) :
-    service(),
-    pmt()
+ts::SignalizationDemux::ServiceContext::ServiceContext(uint16_t service_id)
 {
     service.setId(service_id); // must no be set in constructor, must set "modified"
     pmt.invalidate();

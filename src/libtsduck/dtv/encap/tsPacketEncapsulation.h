@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard (PES mode by lars18th)
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -257,7 +236,7 @@ namespace ts {
         //!
         //! Default maximum number of buffered packets.
         //!
-        static const size_t DEFAULT_MAX_BUFFERED_PACKETS = 1024;
+        static constexpr size_t DEFAULT_MAX_BUFFERED_PACKETS = 1024;
 
         //!
         //! Set the maximum number of buffered packets.
@@ -307,27 +286,27 @@ namespace ts {
         typedef SafePtr<TSPacket> TSPacketPtr;
         typedef std::deque<TSPacketPtr> TSPacketPtrQueue;
 
-        bool             _packing;         // Packing mode.
-        size_t           _packDistance;    // Maximum distance between inner packets.
-        PESMode          _pesMode;         // PES mode selected.
-        size_t           _pesOffset;       // PES Offset used in the Synchronous mode.
-        PID              _pidOutput;       // Output PID.
-        PIDSet           _pidInput;        // Input PID's to encapsulate.
-        PID              _pcrReference;    // Insert PCR's based on this reference PID.
-        UString          _lastError;       // Last error message.
-        PacketCounter    _currentPacket;   // Total TS packets since last reset.
-        PacketCounter    _pcrLastPacket;   // Packet index of last PCR in reference PID.
-        uint64_t         _pcrLastValue;    // Last PCR value in reference PID.
-        uint64_t         _ptsPrevious;     // Previous PTS value in PES ASYNC mode.
-        BitRate          _bitrate;         // Bitrate computed from last PCR.
-        bool             _insertPCR;       // Insert a PCR in next output packet.
-        uint8_t          _ccOutput;        // Continuity counter in output PID.
-        uint8_t          _ccPES;           // Continuity counter in PES ASYNC mode.
-        PIDCCMap         _lastCC;          // Continuity counter by PID.
-        size_t           _lateDistance;    // Distance from the last packet.
-        size_t           _lateMaxPackets;  // Maximum number of packets in _latePackets.
-        size_t           _lateIndex;       // Index in first late packet.
-        TSPacketPtrQueue _latePackets;     // Packets to insert later.
+        bool             _packing = false;         // Packing mode.
+        size_t           _packDistance = NPOS;     // Maximum distance between inner packets.
+        PESMode          _pesMode = DISABLED;      // PES mode selected.
+        size_t           _pesOffset = 0;           // PES Offset used in the Synchronous mode.
+        PID              _pidOutput = PID_NULL;    // Output PID.
+        PIDSet           _pidInput {};             // Input PID's to encapsulate.
+        PID              _pcrReference = PID_NULL; // Insert PCR's based on this reference PID.
+        UString          _lastError {};            // Last error message.
+        PacketCounter    _currentPacket = 0;       // Total TS packets since last reset.
+        PacketCounter    _pcrLastPacket = INVALID_PACKET_COUNTER;   // Packet index of last PCR in reference PID.
+        uint64_t         _pcrLastValue = INVALID_PCR;               // Last PCR value in reference PID.
+        uint64_t         _ptsPrevious = INVALID_PTS;                // Previous PTS value in PES ASYNC mode.
+        BitRate          _bitrate = 0;             // Bitrate computed from last PCR.
+        bool             _insertPCR = false;       // Insert a PCR in next output packet.
+        uint8_t          _ccOutput = 0;            // Continuity counter in output PID.
+        uint8_t          _ccPES {1};               // Continuity counter in PES ASYNC mode.
+        PIDCCMap         _lastCC {};               // Continuity counter by PID.
+        size_t           _lateDistance = 0;        // Distance from the last packet.
+        size_t           _lateMaxPackets = DEFAULT_MAX_BUFFERED_PACKETS;  // Maximum number of packets in _latePackets.
+        size_t           _lateIndex = 0;           // Index in first late packet.
+        TSPacketPtrQueue _latePackets {};          // Packets to insert later.
 
         // Reset PCR information, lost synchronization.
         void resetPCR();

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -33,6 +12,7 @@
 
 #include "tsMain.h"
 #include "tsDuckContext.h"
+#include "tsDuckProtocol.h"
 #include "tsTime.h"
 #include "tsSectionFile.h"
 #include "tsTablesDisplay.h"
@@ -60,11 +40,12 @@ namespace {
         ts::TablesDisplay     display;           // Options about displaying tables
         ts::PagerArgs         pager;             // Output paging options.
         ts::UDPReceiver       udp;               // Options about receiving UDP tables
-        ts::UStringVector     infiles;           // Input file names
-        ts::CRC32::Validation crc_validation;    // Validation of CRC32 in input sections
-        size_t                max_tables;        // Max number of tables to dump.
-        size_t                max_invalid_udp;   // Max number of invalid UDP messages before giving up.
-        bool                  no_encapsulation;  // Raw sections in UDP messages.
+        ts::duck::Protocol    duck_protocol {};  // To analyze incoming UDP messages
+        ts::UStringVector     infiles {};        // Input file names
+        ts::CRC32::Validation crc_validation = ts::CRC32::CHECK;  // Validation of CRC32 in input sections
+        size_t                max_tables = 0;            // Max number of tables to dump.
+        size_t                max_invalid_udp = 16;      // Max number of invalid UDP messages before giving up.
+        bool                  no_encapsulation = false;  // Raw sections in UDP messages.
     };
 }
 
@@ -73,12 +54,7 @@ Options::Options(int argc, char *argv[]) :
     duck(this),
     display(duck),
     pager(true, true),
-    udp(*this),
-    infiles(),
-    crc_validation(ts::CRC32::CHECK),
-    max_tables(0),
-    max_invalid_udp(16),
-    no_encapsulation(false)
+    udp(*this)
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);
@@ -165,7 +141,7 @@ namespace {
             assert(insize <= packet.size());
             if (ok) {
                 // Analyze sections in the packet.
-                if (ts::TablesLogger::AnalyzeUDPMessage(packet.data(), insize, opt.no_encapsulation, sections, timestamp)) {
+                if (ts::TablesLogger::AnalyzeUDPMessage(opt.duck_protocol, packet.data(), insize, opt.no_encapsulation, sections, timestamp)) {
 
                     // Valid message, reset the number of consecutive invalid messages.
                     invalid_msg = 0;

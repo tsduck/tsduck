@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 #----------------------------------------------------------------------------
 #
-# TSDuck sample Python usage of spliceinject plugin.
-# Copyright (c) 2023, Marwan Yassin
-# All rights reserved.
+#  TSDuck sample Python usage of spliceinject plugin.
+#  Copyright (c) 2023, Marwan Yassin
+#  BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 #
 #----------------------------------------------------------------------------
 

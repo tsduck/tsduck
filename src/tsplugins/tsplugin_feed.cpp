@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //
@@ -64,24 +43,24 @@ namespace ts {
 
     private:
         // Command line options:
-        bool              _replace_ts;     // Replace extracted TS.
-        PID               _feed_pid;       // Original value for --pid.
-        TSFile::OpenFlags _outfile_flags;  // Open flags for output file.
-        UString           _outfile_name;   // Output file name.
-        uint8_t           _service_type;   // Service type carrying an inner TS.
-        uint8_t           _stream_type;    // Service type carrying an inner TS.
+        bool              _replace_ts = false;     // Replace extracted TS.
+        PID               _feed_pid = PID_NULL;       // Original value for --pid.
+        TSFile::OpenFlags _outfile_flags = TSFile::NONE;  // Open flags for output file.
+        UString           _outfile_name {};   // Output file name.
+        uint8_t           _service_type = DEFAULT_SERVICE_TYPE;   // Service type carrying an inner TS.
+        uint8_t           _stream_type = DEFAULT_STREAM_TYPE;    // Service type carrying an inner TS.
 
         // Working data.
-        bool              _abort;          // Error, abort asap.
-        bool              _sync;           // Synchronized extraction of packets.
-        uint8_t           _last_cc;        // Continuity counter from last packet in the PID.
-        PID               _extract_pid;    // PID carrying the T2-MI encapsulation.
-        TSFile            _outfile;        // Output file for extracted stream.
-        ByteBlock         _outdata;        // Output data buffer.
-        SectionDemux      _demux;          // A demux to extract all interesting tables.
-        std::set<uint16_t>          _all_services;   // All declared service ids in the TS.
-        std::map<uint16_t, uint8_t> _service_types;  // Service id -> service type.
-        std::map<uint16_t, PID>     _service_pids;   // Service id -> candidate PID.
+        bool              _abort = false;               // Error, abort asap.
+        bool              _sync = false;                // Synchronized extraction of packets.
+        uint8_t           _last_cc = 0xFF;              // Continuity counter from last packet in the PID.
+        PID               _extract_pid = PID_NULL;      // PID carrying the T2-MI encapsulation.
+        TSFile            _outfile {};                  // Output file for extracted stream.
+        ByteBlock         _outdata {};                  // Output data buffer.
+        SectionDemux      _demux {duck, this};          // A demux to extract all interesting tables.
+        std::set<uint16_t>          _all_services {};   // All declared service ids in the TS.
+        std::map<uint16_t, uint8_t> _service_types {};  // Service id -> service type.
+        std::map<uint16_t, PID>     _service_pids {};   // Service id -> candidate PID.
 
         // Resynchronize the output buffer.
         void resyncBuffer();
@@ -99,23 +78,7 @@ TS_REGISTER_PROCESSOR_PLUGIN(u"feed", ts::FeedPlugin);
 //----------------------------------------------------------------------------
 
 ts::FeedPlugin::FeedPlugin(TSP* tsp_) :
-    ProcessorPlugin(tsp_, u"Extract an encapsulated TS from an outer feed TS", u"[options]"),
-    _replace_ts(false),
-    _feed_pid(PID_NULL),
-    _outfile_flags(TSFile::NONE),
-    _outfile_name(),
-    _service_type(DEFAULT_SERVICE_TYPE),
-    _stream_type(DEFAULT_STREAM_TYPE),
-    _abort(false),
-    _sync(false),
-    _last_cc(0xFF),
-    _extract_pid(PID_NULL),
-    _outfile(),
-    _outdata(),
-    _demux(duck, this),
-    _all_services(),
-    _service_types(),
-    _service_pids()
+    ProcessorPlugin(tsp_, u"Extract an encapsulated TS from an outer feed TS", u"[options]")
 {
     option(u"append", 'a');
     help(u"append",

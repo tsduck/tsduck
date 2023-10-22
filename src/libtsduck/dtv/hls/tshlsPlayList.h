@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -55,7 +34,7 @@ namespace ts {
             //!
             //! Constructor.
             //!
-            PlayList();
+            PlayList() = default;
 
             //!
             //! Clear the content of the playlist.
@@ -454,24 +433,24 @@ namespace ts {
             typedef std::deque<MediaPlayList> MediaPlayListQueue;
             typedef std::deque<AltPlayList> AltPlayListQueue;
 
-            bool               _valid;           // Content loaded and valid.
-            int                _version;         // Playlist format version.
-            PlayListType       _type;            // Playlist type.
-            UString            _original;        // Original URL or file name.
-            UString            _fileBase;        // Base file path to resolve relative URI's (when original is a file name).
-            bool               _isURL;           // The base is an URL, not a directory name.
-            URL                _url;             // Original URL.
-            Second             _targetDuration;  // Segment target duration (media playlist).
-            size_t             _mediaSequence;   // Sequence number of first segment (media playlist).
-            bool               _endList;         // End of list indicator (media playlist).
-            Time               _utcDownload;     // UTC time of download.
-            Time               _utcTermination;  // UTC time of termination (download + all segment durations).
-            MediaSegmentQueue  _segments;        // List of media segments (media playlist).
-            MediaPlayListQueue _playlists;       // List of media playlists (master playlist).
-            AltPlayListQueue   _altPlaylists;    // List of alternative rendition media playlists (master playlist).
-            UStringList        _loadedContent;   // Loaded text content (can be different from current content).
-            UString            _autoSaveDir;     // If not empty, automatically save loaded playlist to this directory.
-            UStringList        _extraTags;       // Additional tags which were manually added by the application.
+            bool               _valid = false;       // Content loaded and valid.
+            int                _version {1};         // Playlist format version.
+            PlayListType       _type {PlayListType::UNKNOWN}; // Playlist type.
+            UString            _original {};         // Original URL or file name.
+            UString            _fileBase {};         // Base file path to resolve relative URI's (when original is a file name).
+            bool               _isURL = false;       // The base is an URL, not a directory name.
+            URL                _url {};              // Original URL.
+            Second             _targetDuration = 0;  // Segment target duration (media playlist).
+            size_t             _mediaSequence = 0;   // Sequence number of first segment (media playlist).
+            bool               _endList = false;     // End of list indicator (media playlist).
+            Time               _utcDownload {};      // UTC time of download.
+            Time               _utcTermination {};   // UTC time of termination (download + all segment durations).
+            MediaSegmentQueue  _segments {};         // List of media segments (media playlist).
+            MediaPlayListQueue _playlists {};        // List of media playlists (master playlist).
+            AltPlayListQueue   _altPlaylists {};     // List of alternative rendition media playlists (master playlist).
+            UStringList        _loadedContent {};    // Loaded text content (can be different from current content).
+            UString            _autoSaveDir {};      // If not empty, automatically save loaded playlist to this directory.
+            UStringList        _extraTags {};        // Additional tags which were manually added by the application.
 
             // Empty data to return.
             static const MediaSegment EmptySegment;

@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -34,39 +13,12 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::HEVCShortTermReferencePictureSetList::HEVCShortTermReferencePictureSetList(const uint8_t* data, size_t size, uint32_t num_short_term_ref_pic_sets) :
-    SuperClass(),
-    list()
+ts::HEVCShortTermReferencePictureSetList::HEVCShortTermReferencePictureSetList(const uint8_t* data, size_t size, uint32_t num_short_term_ref_pic_sets)
 {
     reset(num_short_term_ref_pic_sets);
     for (uint32_t i = 0; valid && i < num_short_term_ref_pic_sets; ++i) {
-        valid = parse(data, size, {i});
+        valid = HEVCShortTermReferencePictureSetList::parse(data, size, {i});
     }
-}
-
-
-ts::HEVCShortTermReferencePictureSetList::ShortTermReferencePictureSet::ShortTermReferencePictureSet() :
-    valid(false),
-    inter_ref_pic_set_prediction_flag(0),
-    delta_idx_minus1(0),
-    delta_rps_sign(0),
-    abs_delta_rps_minus1(0),
-    used_by_curr_pic_flag(),
-    use_delta_flag(),
-    num_negative_pics(0),
-    num_positive_pics(0),
-    delta_poc_s0_minus1(),
-    used_by_curr_pic_s0_flag(),
-    delta_poc_s1_minus1(),
-    used_by_curr_pic_s1_flag(),
-    NumNegativePics(0),
-    NumPositivePics(0),
-    UsedByCurrPicS0(),
-    UsedByCurrPicS1(),
-    DeltaPocS0(),
-    DeltaPocS1(),
-    NumDeltaPocs(0)
-{
 }
 
 

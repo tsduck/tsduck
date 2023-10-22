@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -44,7 +23,6 @@
 #endif
 
 namespace ts {
-
     //!
     //! An instance of this class handles the Ctrl+C user interrupt.
     //! @ingroup system
@@ -120,21 +98,20 @@ namespace ts {
         static void sysHandler(int sig);
         virtual void main() override;  // ts::Thread implementation
 
-        volatile ::sig_atomic_t _terminate;
-        volatile ::sig_atomic_t _got_sigint;
+        volatile ::sig_atomic_t _terminate = 0;
+        volatile ::sig_atomic_t _got_sigint = 0;
 #if defined(TS_MAC)
-        std::string             _sem_name;
-        ::sem_t*                _sem_address;
+        std::string             _sem_name {};
+        ::sem_t*                _sem_address {SEM_FAILED};
 #else
-        ::sem_t                 _sem_instance;
+        ::sem_t                 _sem_instance {};
+#endif
 #endif
 
-#endif
-
-        InterruptHandler* _handler;
-        bool              _one_shot;
-        bool              _active;
-        volatile bool     _interrupted;
+        InterruptHandler* _handler = nullptr;
+        bool              _one_shot = false;
+        bool              _active = false;
+        volatile bool     _interrupted = false;
 
         // There is only one active instance at a time
         static UserInterrupt* volatile _active_instance;

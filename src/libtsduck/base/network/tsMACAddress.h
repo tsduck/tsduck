@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 //!
@@ -59,24 +38,18 @@ namespace ts {
         //!
         //! Mask of meaningful bits in a MAC address.
         //!
-        static constexpr uint64_t MASK = TS_UCONST64(0x0000FFFFFFFFFFFF);
+        static constexpr uint64_t MASK = 0x0000FFFFFFFFFFFF;
 
         //!
         //! Default constructor
         //!
-        MACAddress() :
-            _addr(0)
-        {
-        }
+        MACAddress() = default;
 
         //!
         //! Constructor from an integer address.
         //! @param [in] addr The MAC address as a 48-bit integer.
         //!
-        MACAddress(uint64_t addr) :
-            _addr(addr & MASK)
-        {
-        }
+        MACAddress(uint64_t addr) : _addr(addr & MASK) {}
 
         //!
         //! Constructor from 6 bytes.
@@ -95,23 +68,14 @@ namespace ts {
         //! @return True if both object contains the same address, false otherwise.
         //!
         bool operator==(const MACAddress& a) const { return _addr == a._addr; }
-
-#if defined(TS_NEED_UNEQUAL_OPERATOR)
-        //!
-        //! Unequality operator.
-        //! @param [in] a Another instance to compare with.
-        //! @return True if both object contains distinct addresses, false otherwise.
-        //!
-        bool operator!=(const MACAddress& a) const {return _addr != a._addr;}
-#endif
+        TS_UNEQUAL_OPERATOR(MACAddress)
 
         //!
         //! Constructor from a string in "a:b:c:d:e:f" format.
         //! @param [in] name A string in "a:b:c:d:e:f" format.
         //! @param [in] report Where to report errors.
         //!
-        MACAddress(const UString& name, Report& report) :
-            _addr(0)
+        MACAddress(const UString& name, Report& report)
         {
             MACAddress::resolve(name, report);
         }
@@ -176,11 +140,11 @@ namespace ts {
         bool operator<(const MACAddress& other) const { return _addr < other._addr; }
 
     private:
-        uint64_t _addr;  // A MAC address is a 48-bit word
+        uint64_t _addr = 0;  // A MAC address is a 48-bit word
 
         // Description of a MAC multicast address for IPv4.
-        static constexpr uint64_t MULTICAST_MASK   = TS_UCONST64(0xFFFFFF800000);
-        static constexpr uint64_t MULTICAST_PREFIX = TS_UCONST64(0x01005E000000);
+        static constexpr uint64_t MULTICAST_MASK   = 0x0000FFFFFF800000;
+        static constexpr uint64_t MULTICAST_PREFIX = 0x000001005E000000;
     };
 
     //!

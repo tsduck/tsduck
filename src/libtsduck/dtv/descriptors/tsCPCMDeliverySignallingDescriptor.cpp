@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2022-2023, Paul Higgs
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -49,35 +28,21 @@ TS_REGISTER_DESCRIPTOR(MY_CLASS, ts::EDID::ExtensionDVB(MY_EDID), MY_XML_NAME, M
 // Constructors
 //----------------------------------------------------------------------------
 
-ts::CPCMDeliverySignallingDescriptor::CPSvector::CPSvector() :
-    C_and_R_regime_mask(0),
-    cps_byte()
+ts::CPCMDeliverySignallingDescriptor::CPCMDeliverySignallingDescriptor() :
+    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0)
 {
 }
 
-ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::CPCMv1Signalling() :
-    copy_control(0),
-    do_not_cpcm_scramble(false),
-    viewable(false),
-    move_local(false),
-    view_local(false),
-    move_and_copy_propagation_information(0),
-    view_propagation_information(0),
-    remote_access_record_flag(false),
-    export_beyond_trust(false),
-    disable_analogue_sd_export(false),
-    disable_analogue_sd_consumption(false),
-    disable_analogue_hd_export(false),
-    disable_analogue_hd_consumption(false),
-    image_constraint(false),
-    view_window_start(),
-    view_window_end(),
-    view_period_from_first_playback(),
-    simultaneous_view_count(),
-    remote_access_delay(),
-    remote_access_date(),
-    cps_vector()
+void ts::CPCMDeliverySignallingDescriptor::clearContent()
 {
+    cpcm_version = 0;
+    cpcm_v1_delivery_signalling.clearContent();
+}
+
+ts::CPCMDeliverySignallingDescriptor::CPCMDeliverySignallingDescriptor(DuckContext& duck, const Descriptor& desc) :
+    CPCMDeliverySignallingDescriptor()
+{
+    deserialize(duck, desc);
 }
 
 void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::clearContent()
@@ -103,25 +68,6 @@ void ts::CPCMDeliverySignallingDescriptor::CPCMv1Signalling::clearContent()
     remote_access_delay.clear();
     remote_access_date.clear();
     cps_vector.clear();
-}
-
-ts::CPCMDeliverySignallingDescriptor::CPCMDeliverySignallingDescriptor() :
-    AbstractDescriptor(MY_DID, MY_XML_NAME, MY_STD, 0),
-    cpcm_version(0),
-    cpcm_v1_delivery_signalling()
-{
-}
-
-void ts::CPCMDeliverySignallingDescriptor::clearContent()
-{
-    cpcm_version = 0;
-    cpcm_v1_delivery_signalling.clearContent();
-}
-
-ts::CPCMDeliverySignallingDescriptor::CPCMDeliverySignallingDescriptor(DuckContext& duck, const Descriptor& desc) :
-    CPCMDeliverySignallingDescriptor()
-{
-    deserialize(duck, desc);
 }
 
 

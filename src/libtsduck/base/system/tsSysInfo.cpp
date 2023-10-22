@@ -2,28 +2,7 @@
 //
 // TSDuck - The MPEG Transport Stream Toolkit
 // Copyright (c) 2005-2023, Thierry Lelegard
-// All rights reserved.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// 1. Redistributions of source code must retain the above copyright notice,
-//    this list of conditions and the following disclaimer.
-// 2. Redistributions in binary form must reproduce the above copyright
-//    notice, this list of conditions and the following disclaimer in the
-//    documentation and/or other materials provided with the distribution.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
-// LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-// CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-// SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-// INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-// CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
-// THE POSSIBILITY OF SUCH DAMAGE.
+// BSD-2-Clause license, see LICENSE.txt file or https://tsduck.io/license
 //
 //----------------------------------------------------------------------------
 
@@ -55,78 +34,40 @@ TS_DEFINE_SINGLETON(ts::SysInfo);
 ts::SysInfo::SysInfo() :
 #if defined(TS_LINUX)
     _isLinux(true),
-#else
-    _isLinux(false),
 #endif
-    _isFedora(false),
-    _isRedHat(false),
-    _isUbuntu(false),
-    _isDebian(false),
-    _isRaspbian(false),
 #if defined(TS_MAC)
     _isMacOS(true),
-#else
-    _isMacOS(false),
 #endif
 #if defined(TS_BSD)
     _isBSD(true),
-#else
-    _isBSD(false),
 #endif
 #if defined(TS_FREEBSD)
     _isFreeBSD(true),
-#else
-    _isFreeBSD(false),
 #endif
 #if defined(TS_NETBSD)
     _isNetBSD(true),
-#else
-    _isNetBSD(false),
 #endif
 #if defined(TS_OPENBSD)
     _isOpenBSD(true),
-#else
-    _isOpenBSD(false),
 #endif
 #if defined(TS_DRAGONFLYBSD)
     _isDragonFlyBSD(true),
-#else
-    _isDragonFlyBSD(false),
 #endif
 #if defined(TS_WINDOWS)
     _isWindows(true),
-#else
-    _isWindows(false),
 #endif
 #if defined(TS_I386)
     _isIntel32(true),
-#else
-    _isIntel32(false),
 #endif
 #if defined(TS_X86_64)
     _isIntel64(true),
-#else
-    _isIntel64(false),
 #endif
 #if defined(TS_ARM32)
     _isArm32(true),
-#else
-    _isArm32(false),
 #endif
 #if defined(TS_ARM64)
     _isArm64(true),
-#else
-    _isArm64(false),
 #endif
-    _crcInstructions(false),
-    _aesInstructions(false),
-    _sha1Instructions(false),
-    _sha256Instructions(false),
-    _sha512Instructions(false),
-    _systemMajorVersion(-1),
-    _systemVersion(),
-    _systemName(),
-    _hostName(),
 #if defined(TS_I386)
     _cpuName(u"Intel x86"),
 #elif defined(TS_X86_64)
