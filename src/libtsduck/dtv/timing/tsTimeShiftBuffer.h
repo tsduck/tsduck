@@ -157,8 +157,8 @@ namespace ts {
     private:
         bool    _is_open = false;           // Buffer is open.
         size_t  _cur_packets = 0;           // Current number of packets in the buffer.
-        size_t  _total_packets {DEFAULT_TOTAL_PACKETS}; // Total capacity of the buffer.
-        size_t  _mem_packets {DEFAULT_MEMORY_PACKETS};  // Max packets in memory.
+        size_t  _total_packets = DEFAULT_TOTAL_PACKETS; // Total capacity of the buffer.
+        size_t  _mem_packets = DEFAULT_MEMORY_PACKETS;  // Max packets in memory.
         UString _directory {};              // Where to store the backup file.
         TSFile  _file {};                   // Backup file on disk.
         size_t  _next_read = 0;             // Index in buffer of next packet to read.

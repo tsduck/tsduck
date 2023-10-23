@@ -219,10 +219,10 @@ namespace ts {
             const UStringList& allNames(Report& report);
 
         private:
-            mutable Mutex            _mutex;
-            LNBPtr                   _default_lnb;
-            std::map<UString,LNBPtr> _lnbs;
-            UStringList              _names;
+            mutable Mutex            _mutex {};
+            LNBPtr                   _default_lnb {};
+            std::map<UString,LNBPtr> _lnbs {};
+            UStringList              _names {};
 
             // Convert a name to an index in LNB map.
             static UString ToIndex(const UString& name);

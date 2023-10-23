@@ -89,9 +89,9 @@ namespace ts {
             uint64_t duration() const;
 
         private:
-            uint64_t _scale {PTS_DTS_SCALE}; //!< Scale offset after wrapping up at max value.
-            uint64_t _first {INVALID_PCR};   //!< First value seen on PID (INVALID_PCR if none found).
-            uint64_t _last {INVALID_PCR};    //!< Last value seen on PID (INVALID_PCR if none found).
+            uint64_t _scale = PTS_DTS_SCALE; //!< Scale offset after wrapping up at max value.
+            uint64_t _first = INVALID_PCR;   //!< First value seen on PID (INVALID_PCR if none found).
+            uint64_t _last = INVALID_PCR;    //!< Last value seen on PID (INVALID_PCR if none found).
             uint64_t _offset = 0;            //!< Accumulated offsets after wrapping up at max value once or more.
         };
 

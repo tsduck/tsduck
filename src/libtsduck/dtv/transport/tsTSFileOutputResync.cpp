@@ -14,9 +14,7 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::TSFileOutputResync::TSFileOutputResync() :
-    TSFile(),
-    _ccFixer(AllPIDs)
+ts::TSFileOutputResync::TSFileOutputResync()
 {
     // Continuity counters are generated regardless of previous values.
     _ccFixer.setGenerator(true);

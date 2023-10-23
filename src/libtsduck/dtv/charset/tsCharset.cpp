@@ -24,8 +24,7 @@ ts::Charset::Charset(const UChar* name) :
     }
 }
 
-ts::Charset::Charset(std::initializer_list<const UChar*> names) :
-    _name()
+ts::Charset::Charset(std::initializer_list<const UChar*> names)
 {
     for (auto it : names) {
         if (it != nullptr && *it != CHAR_NULL) {
@@ -50,8 +49,7 @@ ts::Charset::~Charset()
 
 TS_DEFINE_SINGLETON(ts::Charset::Repository);
 
-ts::Charset::Repository::Repository() :
-    _map()
+ts::Charset::Repository::Repository()
 {
 }
 

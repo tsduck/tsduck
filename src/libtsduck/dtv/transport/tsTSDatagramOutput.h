@@ -15,6 +15,7 @@
 #include "tsTSDatagramOutputHandlerInterface.h"
 #include "tsTSPacket.h"
 #include "tsUDPSocket.h"
+#include "tsIPProtocols.h"
 #include "tsEnumUtils.h"
 
 namespace ts {
@@ -113,40 +114,40 @@ namespace ts {
         bool                              const _raw_udp;  // Use raw UDP socket.
 
         // Common command line options.
-        size_t            _pkt_burst;          // Number of TS packets per UDP message
-        bool              _enforce_burst;      // Option --enforce-burst
-        bool              _use_rtp;            // Use real-time transport protocol
-        uint8_t           _rtp_pt;             // RTP payload type.
-        bool              _rtp_fixed_sequence; // RTP sequence number starts with a fixed value
-        uint16_t          _rtp_start_sequence; // RTP starting sequence number
-        bool              _rtp_fixed_ssrc;     // RTP SSRC id has a fixed value
-        uint32_t          _rtp_user_ssrc;      // RTP user-specified SSRC id
-        PID               _pcr_user_pid;       // User-specified PCR PID.
-        bool              _rs204_format;       // Use 204-byte format with Reed Solomon placeholder.
+        size_t            _pkt_burst = DEFAULT_PACKET_BURST; // Number of TS packets per UDP message
+        bool              _enforce_burst = false;      // Option --enforce-burst
+        bool              _use_rtp = false;            // Use real-time transport protocol
+        uint8_t           _rtp_pt = RTP_PT_MP2T;       // RTP payload type.
+        bool              _rtp_fixed_sequence = false; // RTP sequence number starts with a fixed value
+        uint16_t          _rtp_start_sequence = 0;     // RTP starting sequence number
+        bool              _rtp_fixed_ssrc = false;     // RTP SSRC id has a fixed value
+        uint32_t          _rtp_user_ssrc = 0;          // RTP user-specified SSRC id
+        PID               _pcr_user_pid = PID_NULL;    // User-specified PCR PID.
+        bool              _rs204_format = false;       // Use 204-byte format with Reed Solomon placeholder.
 
         // Command line options for raw UDP.
-        IPv4SocketAddress _destination;        // Destination address/port.
-        IPv4Address       _local_addr;         // Local address.
-        uint16_t          _local_port;         // Local UDP source port.
-        int               _ttl;                // Time to live option.
-        int               _tos;                // Type of service option.
-        bool              _mc_loopback;        // Multicast loopback option
-        bool              _force_mc_local;     // Force multicast outgoing local interface
-        size_t            _send_bufsize;       // Socket send buffer size.
+        IPv4SocketAddress _destination {};             // Destination address/port.
+        IPv4Address       _local_addr {};              // Local address.
+        uint16_t          _local_port = IPv4SocketAddress::AnyPort; // Local UDP source port.
+        int               _ttl = 0;                    // Time to live option.
+        int               _tos = -1;                   // Type of service option.
+        bool              _mc_loopback = true;         // Multicast loopback option
+        bool              _force_mc_local = false;     // Force multicast outgoing local interface
+        size_t            _send_bufsize = 0;           // Socket send buffer size.
 
         // Working data.
-        bool              _is_open;            // Currently in progress
-        uint16_t          _rtp_sequence;       // RTP current sequence number
-        uint32_t          _rtp_ssrc;           // RTP current SSRC id (constant during a session)
-        PID               _pcr_pid;            // Current PCR PID.
-        uint64_t          _last_pcr;           // Last PCR value in PCR PID
-        uint64_t          _last_rtp_pcr;       // Last RTP timestamp in PCR units (in last datagram)
-        PacketCounter     _last_rtp_pcr_pkt;   // Packet index of last datagram
-        uint64_t          _rtp_pcr_offset;     // Value to substract from PCR to get RTP timestamp
-        PacketCounter     _pkt_count;          // Total packet counter for output packets
-        size_t            _out_count;          // Number of packets in _out_buffer
-        TSPacketVector    _out_buffer;         // Buffered packets for output with --enforce-burst
-        UDPSocket         _sock;               // Outgoing socket for raw UDP
+        bool              _is_open = false;            // Currently in progress
+        uint16_t          _rtp_sequence = 0;           // RTP current sequence number
+        uint32_t          _rtp_ssrc = 0;               // RTP current SSRC id (constant during a session)
+        PID               _pcr_pid = PID_NULL;         // Current PCR PID.
+        uint64_t          _last_pcr = INVALID_PCR;     // Last PCR value in PCR PID
+        uint64_t          _last_rtp_pcr = INVALID_PCR; // Last RTP timestamp in PCR units (in last datagram)
+        PacketCounter     _last_rtp_pcr_pkt = 0;       // Packet index of last datagram
+        uint64_t          _rtp_pcr_offset = 0;         // Value to substract from PCR to get RTP timestamp
+        PacketCounter     _pkt_count = 0;              // Total packet counter for output packets
+        size_t            _out_count = 0;              // Number of packets in _out_buffer
+        TSPacketVector    _out_buffer {};              // Buffered packets for output with --enforce-burst
+        UDPSocket         _sock {};                    // Outgoing socket for raw UDP
 
         // Implementation of TSDatagramOutputHandlerInterface.
         // The object is its own handler in case of raw UDP output.

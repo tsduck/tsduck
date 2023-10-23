@@ -14,9 +14,7 @@
 //----------------------------------------------------------------------------
 
 ts::PacketInsertionController::PacketInsertionController(Report& report) :
-    _report(report),
-    _main_bitrate(_report, _main_name),
-    _sub_bitrate(_report, _sub_name)
+    _report(report)
 {
 }
 

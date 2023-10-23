@@ -23,7 +23,7 @@ TS_MAIN(MainCode);
 static constexpr size_t   MIN_TS_BUFFER_SIZE     = 1024;             // 1 kB
 static constexpr size_t   DEFAULT_TS_BUFFER_SIZE = 4 * 1024 * 1024;  // 4 MB
 static constexpr size_t   MAX_TS_BUFFER_SIZE     = 16 * 1024 * 1024; // 16 MB
-static const uint64_t DEFAULT_MIN_INTERVAL   = 100;              // milliseconds
+static constexpr uint64_t DEFAULT_MIN_INTERVAL   = 100;              // milliseconds
 
 namespace {
     class Options: public ts::Args
@@ -32,41 +32,26 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::BitRate target_bitrate;
-        ts::PID     reference_pid;
-        size_t      buffer_size;
-        uint64_t    leading_packets;
-        uint64_t    trailing_packets;
-        uint64_t    final_inter_packet;
-        uint64_t    initial_inter_packet;
-        uint64_t    min_interval_ms;
-        bool        dts_based;
-        bool        dyn_final_inter_packet;
-        bool        dyn_initial_inter_packet;
-        ts::UString input_file;
-        ts::UString output_file;
-        ts::TSPacketFormat input_format;
-        ts::TSPacketFormat output_format;
+        ts::BitRate target_bitrate = 0;
+        ts::PID     reference_pid = ts::PID_NULL;
+        size_t      buffer_size = 0;
+        uint64_t    leading_packets = 0;
+        uint64_t    trailing_packets = 0;
+        uint64_t    final_inter_packet = 0;
+        uint64_t    initial_inter_packet = 0;
+        uint64_t    min_interval_ms = 0;
+        bool        dts_based = false;
+        bool        dyn_final_inter_packet = false;
+        bool        dyn_initial_inter_packet = false;
+        ts::UString input_file {};
+        ts::UString output_file {};
+        ts::TSPacketFormat input_format = ts::TSPacketFormat::AUTODETECT;
+        ts::TSPacketFormat output_format = ts::TSPacketFormat::TS;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Add stuffing to a transport stream to reach a target bitrate", u"[options] [input-file]"),
-    target_bitrate(0),
-    reference_pid(ts::PID_NULL),
-    buffer_size(0),
-    leading_packets(0),
-    trailing_packets(0),
-    final_inter_packet(0),
-    initial_inter_packet(0),
-    min_interval_ms(0),
-    dts_based(false),
-    dyn_final_inter_packet(false),
-    dyn_initial_inter_packet(false),
-    input_file(),
-    output_file(),
-    input_format(ts::TSPacketFormat::AUTODETECT),
-    output_format(ts::TSPacketFormat::TS)
+    Args(u"Add stuffing to a transport stream to reach a target bitrate", u"[options] [input-file]")
 {
     option(u"", 0, FILENAME, 0, 1);
     help(u"",

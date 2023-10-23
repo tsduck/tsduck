@@ -31,39 +31,25 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext     duck;            // Execution context.
-        ts::UStringVector   inFiles;         // Input file names.
-        ts::UString         outFile;         // Output file path.
-        bool                outIsDir;        // Output name is a directory.
-        bool                useStdIn;        // At least one input file is the standard input.
-        bool                useStdOut;       // Use standard output.
-        bool                compile;         // Explicit compilation.
-        bool                decompile;       // Explicit decompilation.
-        bool                fromJSON;        // All input files are JSON.
-        bool                toJSON;          // Decompile to JSON.
-        bool                xmlModel;        // Display XML model instead of compilation.
-        bool                withExtensions;  // XML model with extensions.
-        ts::SectionFileArgs sectionOptions;  // Section file processing options.
-        ts::xml::Tweaks     xmlTweaks;       // XML formatting options.
+        ts::DuckContext     duck {this};             // Execution context.
+        ts::UStringVector   inFiles {};              // Input file names.
+        ts::UString         outFile {};              // Output file path.
+        bool                outIsDir = false;        // Output name is a directory.
+        bool                useStdIn = false;        // At least one input file is the standard input.
+        bool                useStdOut = false;       // Use standard output.
+        bool                compile = false;         // Explicit compilation.
+        bool                decompile = false;       // Explicit decompilation.
+        bool                fromJSON = false;        // All input files are JSON.
+        bool                toJSON = false;          // Decompile to JSON.
+        bool                xmlModel = false;        // Display XML model instead of compilation.
+        bool                withExtensions = false;  // XML model with extensions.
+        ts::SectionFileArgs sectionOptions {};       // Section file processing options.
+        ts::xml::Tweaks     xmlTweaks {};            // XML formatting options.
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"PSI/SI tables compiler", u"[options] filename ..."),
-    duck(this),
-    inFiles(),
-    outFile(),
-    outIsDir(false),
-    useStdIn(false),
-    useStdOut(false),
-    compile(false),
-    decompile(false),
-    fromJSON(false),
-    toJSON(false),
-    xmlModel(false),
-    withExtensions(false),
-    sectionOptions(),
-    xmlTweaks()
+    Args(u"PSI/SI tables compiler", u"[options] filename ...")
 {
     duck.defineArgsForStandards(*this);
     duck.defineArgsForTimeReference(*this);

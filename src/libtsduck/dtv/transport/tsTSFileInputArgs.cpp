@@ -11,31 +11,6 @@
 
 
 //----------------------------------------------------------------------------
-// Default constructor.
-//----------------------------------------------------------------------------
-
-ts::TSFileInputArgs::TSFileInputArgs() :
-    _aborted(true),
-    _interleave(false),
-    _first_terminate(false),
-    _interleave_chunk(0),
-    _interleave_remain(0),
-    _current_filename(0),
-    _current_file(0),
-    _repeat_count(1),
-    _start_offset(0),
-    _base_label(0),
-    _file_format(TSPacketFormat::AUTODETECT),
-    _filenames(),
-    _start_stuffing(),
-    _stop_stuffing(),
-    _eof(),
-    _files()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Add command line option definitions in an Args.
 //----------------------------------------------------------------------------
 

@@ -40,23 +40,17 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext         duck;
-        size_t                  buffer_size;
-        ts::BitRate             fixed_bitrate;
-        ts::PluginOptions       input;
-        ts::PluginOptionsVector plugins;
-        ts::PluginOptions       output;
+        ts::DuckContext         duck {this};
+        size_t                  buffer_size = 0;
+        ts::BitRate             fixed_bitrate = 0;
+        ts::PluginOptions       input {};
+        ts::PluginOptionsVector plugins {};
+        ts::PluginOptions       output {};
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1, u"Mono-thread profiling and debugging environment for tsp plugins", u"[options]"),
-    duck(this),
-    buffer_size(0),
-    fixed_bitrate(0),
-    input(),
-    plugins(),
-    output()
+    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1, u"Mono-thread profiling and debugging environment for tsp plugins", u"[options]")
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForCharset(*this);
@@ -112,8 +106,8 @@ namespace {
         virtual bool thisJointTerminated() const override { return false; }
 
     protected:
-        Options& _opt;          // Application options.
-        bool     _own_bitrate;  // This plugin manages its own bitrate (ie. does not get it from previous plugin).
+        Options& _opt;              // Application options.
+        bool _own_bitrate = false;  // This plugin manages its own bitrate (ie. does not get it from previous plugin).
 
         // Inherited from Report (via TSP)
         virtual void writeLog(int severity, const ts::UString& msg) override;
@@ -123,10 +117,10 @@ namespace {
         void updateBitrateFromCurrent();
 
     private:
-        size_t          _index;        // Plugin index in the chain.
-        ts::UString     _name;         // Plugin name.
-        ts::Plugin*     _shlib;        // Plugin instance.
-        PluginExecutor* _previous;     // Previous plugin executor.
+        size_t          _index = 0;           // Plugin index in the chain.
+        ts::UString     _name {};             // Plugin name.
+        ts::Plugin*     _shlib = nullptr;     // Plugin instance.
+        PluginExecutor* _previous = nullptr;  // Previous plugin executor.
     };
 }
 
@@ -134,10 +128,7 @@ namespace {
 PluginExecutor::PluginExecutor(Options& opt, size_t index, PluginExecutor* previous) :
     ts::TSP(opt.maxSeverity()),
     _opt(opt),
-    _own_bitrate(false),
     _index(index),
-    _name(),
-    _shlib(nullptr),
     _previous(previous)
 {
     const ts::UStringVector* args = nullptr;

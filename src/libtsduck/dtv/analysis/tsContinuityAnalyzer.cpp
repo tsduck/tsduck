@@ -16,26 +16,7 @@
 
 ts::ContinuityAnalyzer::ContinuityAnalyzer(const PIDSet& pid_filter, Report* report) :
     _report(report != nullptr ? report : NullReport::Instance()),
-    _severity(Severity::Info),
-    _display_errors(false),
-    _fix_errors(false),
-    _replicate_dup(true),
-    _generator(false),
-    _prefix(),
-    _total_packets(0),
-    _processed_packets(0),
-    _fix_count(0),
-    _error_count(0),
-    _pid_filter(pid_filter),
-    _pid_states()
-{
-}
-
-ts::ContinuityAnalyzer::PIDState::PIDState() :
-    first_cc(INVALID_CC),
-    last_cc_out(INVALID_CC),
-    dup_count(0),
-    last_pkt_in()
+    _pid_filter(pid_filter)
 {
 }
 

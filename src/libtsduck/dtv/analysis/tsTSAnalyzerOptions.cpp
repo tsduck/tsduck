@@ -11,35 +11,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors and destructors.
-//----------------------------------------------------------------------------
-
-ts::TSAnalyzerOptions::TSAnalyzerOptions() :
-    ts_analysis(false),
-    service_analysis(false),
-    wide(false),
-    pid_analysis(false),
-    table_analysis(false),
-    error_analysis(false),
-    normalized(false),
-    deterministic(false),
-    json(),
-    service_list(false),
-    pid_list(false),
-    global_pid_list(false),
-    unreferenced_pid_list(false),
-    pes_pid_list(false),
-    service_pid_list(false),
-    service_id(0),
-    prefix(),
-    title(),
-    suspect_min_error_count(1),
-    suspect_max_consecutive(1)
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Define command line options in an Args.
 //----------------------------------------------------------------------------
 

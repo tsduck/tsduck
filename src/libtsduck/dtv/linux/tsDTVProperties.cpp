@@ -170,8 +170,7 @@ void ts::DTVProperties::DTVNames::reg(const char* name, const char* value)
 }
 
 // The constructor builds the map once.
-ts::DTVProperties::DTVNames::DTVNames() :
-    _names()
+ts::DTVProperties::DTVNames::DTVNames()
 {
     // Explicit zero.
     assert(DTV_UNDEFINED == 0);

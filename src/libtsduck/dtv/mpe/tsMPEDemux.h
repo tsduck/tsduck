@@ -101,11 +101,11 @@ namespace ts {
         void processMPEDiscovery(const PMT& pmt, PID pid);
 
         // Private members:
-        MPEHandlerInterface* _handler;    // Application-defined handler
-        SectionDemux         _psi_demux;  // Demux for PSI parsing.
-        uint16_t             _ts_id;      // Current transport stream id.
-        PMTMap               _pmts;       // Map of all PMT's in the TS.
-        PIDSet               _new_pids;   // New MPE PID's which where signalled to the application.
-        std::set<uint32_t>   _int_tags;   // Set of service_id / component_tag from the INT.
+        MPEHandlerInterface* _handler = nullptr; // Application-defined handler
+        SectionDemux         _psi_demux;         // Demux for PSI parsing.
+        uint16_t             _ts_id = 0;         // Current transport stream id.
+        PMTMap               _pmts {};           // Map of all PMT's in the TS.
+        PIDSet               _new_pids {};       // New MPE PID's which where signalled to the application.
+        std::set<uint32_t>   _int_tags {};       // Set of service_id / component_tag from the INT.
     };
 }

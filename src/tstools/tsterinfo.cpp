@@ -19,18 +19,16 @@ TS_MAIN(MainCode);
 
 
 //----------------------------------------------------------------------------
-//  Lists of possible real values for DVB-T modulation parameters
-//  (exclude "auto" and "unspecified" values).
+// Lists of possible real values for DVB-T modulation parameters
+// (exclude "auto" and "unspecified" values).
 //----------------------------------------------------------------------------
 
 namespace {
-
     const ts::Enumeration DVBTModulationEnum({
         {u"QPSK",   ts::QPSK},
         {u"16-QAM", ts::QAM_16},
         {u"64-QAM", ts::QAM_64},
     });
-
     const ts::Enumeration DVBTHPFECEnum({
         {u"1/2",  ts::FEC_1_2},
         {u"2/3",  ts::FEC_2_3},
@@ -38,7 +36,6 @@ namespace {
         {u"5/6",  ts::FEC_5_6},
         {u"7/8",  ts::FEC_7_8},
     });
-
     const ts::Enumeration DVBTGuardIntervalEnum({
         {u"1/32", ts::GUARD_1_32},
         {u"1/16", ts::GUARD_1_16},
@@ -59,40 +56,26 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext   duck;            // TSDuck execution contexts
-        uint64_t          frequency;       // Carrier frequency from which to get UHF channel
-        uint32_t          uhf_channel;     // UHF channel from which to compute frequency
-        uint32_t          vhf_channel;     // VHF channel from which to compute frequency
-        int32_t           hf_offset;       // UHF/VHF offset from channel
-        ts::BitRate       bitrate;         // TS bitrate from which to guess modulation parameters
-        size_t            max_guess;       // Max number of modulation parameters to guess.
-        ts::Modulation    constellation;   // Modulation parameters to compute bitrate
-        ts::InnerFEC      fec_hp;
-        ts::GuardInterval guard_interval;
-        ts::BandWidth     bandwidth;
-        bool              simple;          // Simple output
-        bool              default_region;  // Display the default region for UHF/VHF band frequency layout
+        ts::DuckContext   duck {this};         // TSDuck execution contexts
+        uint64_t          frequency = 0;       // Carrier frequency from which to get UHF channel
+        uint32_t          uhf_channel = 0;     // UHF channel from which to compute frequency
+        uint32_t          vhf_channel = 0;     // VHF channel from which to compute frequency
+        int32_t           hf_offset = 0;       // UHF/VHF offset from channel
+        ts::BitRate       bitrate = 0;         // TS bitrate from which to guess modulation parameters
+        size_t            max_guess = 0;       // Max number of modulation parameters to guess.
+        ts::Modulation    constellation = ts::QAM_AUTO;  // Modulation parameters to compute bitrate
+        ts::InnerFEC      fec_hp = ts::FEC_NONE;
+        ts::GuardInterval guard_interval = ts::GUARD_AUTO;
+        ts::BandWidth     bandwidth = 0;
+        bool              simple = false;          // Simple output
+        bool              default_region = false;  // Display the default region for UHF/VHF band frequency layout
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Compute or convert DVB-Terrestrial information", u"[options]"),
-    duck(this),
-    frequency(0),
-    uhf_channel(0),
-    vhf_channel(0),
-    hf_offset(0),
-    bitrate(0),
-    max_guess(0),
-    constellation(ts::QAM_AUTO),
-    fec_hp(ts::FEC_NONE),
-    guard_interval(ts::GUARD_AUTO),
-    bandwidth(0),
-    simple(false),
-    default_region(false)
+    Args(u"Compute or convert DVB-Terrestrial information", u"[options]")
 {
     duck.defineArgsForHFBand(*this);
-
     DefineLegacyBandWidthArg(*this, u"bandwidth", 'w', 8000000);
 
     option<ts::BitRate>(u"bitrate", 'b');

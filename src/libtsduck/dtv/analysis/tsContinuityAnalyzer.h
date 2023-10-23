@@ -235,30 +235,30 @@ namespace ts {
         class PIDState
         {
         public:
-            PIDState();            // Constructor
-            uint8_t  first_cc;     // First CC value in a PID.
-            uint8_t  last_cc_out;  // Last output CC value in a PID.
-            size_t   dup_count;    // Consecutive duplicate count.
-            TSPacket last_pkt_in;  // Last input packet (before modification, if any).
+            PIDState() = default;              // Constructor
+            uint8_t  first_cc = INVALID_CC;    // First CC value in a PID.
+            uint8_t  last_cc_out = INVALID_CC; // Last output CC value in a PID.
+            size_t   dup_count = 0;            // Consecutive duplicate count.
+            TSPacket last_pkt_in {};           // Last input packet (before modification, if any).
         };
 
         // A map of PID state, indexed by PID.
         typedef std::map<PID,PIDState> PIDStateMap;
 
         // Private members.
-        Report*       _report;            // Where to report errors, never null.
-        int           _severity;          // Severity level for error messages.
-        bool          _display_errors;    // Display discontinuity errors.
-        bool          _fix_errors;        // Fix discontinuity errors.
-        bool          _replicate_dup;     // With _fix_errors, replicate duplicate packets.
-        bool          _generator;         // Use generator mode.
-        UString       _prefix;            // Message prefix.
-        PacketCounter _total_packets;     // Total number of packets.
-        PacketCounter _processed_packets; // Number of processed packets.
-        PacketCounter _fix_count;         // Number of fixed (modified) packets.
-        PacketCounter _error_count;       // Number of discontinuity errors.
-        PIDSet        _pid_filter;        // Current set of filtered PID's.
-        PIDStateMap   _pid_states;        // State of all PID's.
+        Report*       _report;                    // Where to report errors, never null.
+        int           _severity = Severity::Info; // Severity level for error messages.
+        bool          _display_errors = false;    // Display discontinuity errors.
+        bool          _fix_errors = false;        // Fix discontinuity errors.
+        bool          _replicate_dup = true;      // With _fix_errors, replicate duplicate packets.
+        bool          _generator = false;         // Use generator mode.
+        UString       _prefix {};                 // Message prefix.
+        PacketCounter _total_packets = 0;         // Total number of packets.
+        PacketCounter _processed_packets = 0;     // Number of processed packets.
+        PacketCounter _fix_count = 0;             // Number of fixed (modified) packets.
+        PacketCounter _error_count = 0;           // Number of discontinuity errors.
+        PIDSet        _pid_filter {};             // Current set of filtered PID's.
+        PIDStateMap   _pid_states {};             // State of all PID's.
 
         // Internal version of feedPacket.
         // The packet is modified only if update is true.

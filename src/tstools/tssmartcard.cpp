@@ -29,21 +29,16 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        bool        continue_on_error;    // Continue sending APDU's after an error.
-        ts::UString reader;               // Optional reader name
-        uint32_t    timeout_ms;           // Timeout in milliseconds
-        uint32_t    reset_action;         // Type of reset to apply
-        std::vector<ts::ByteBlock> apdu;  // List of APDU to send
+        bool        continue_on_error = false;  // Continue sending APDU's after an error.
+        ts::UString reader {};                  // Optional reader name
+        uint32_t    timeout_ms = 0;             // Timeout in milliseconds
+        uint32_t    reset_action = 0;           // Type of reset to apply
+        std::vector<ts::ByteBlock> apdu {};     // List of APDU to send
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"List or control smartcards", u"[options] [reader-name]"),
-    continue_on_error(false),
-    reader(),
-    timeout_ms(0),
-    reset_action(0),
-    apdu()
+    Args(u"List or control smartcards", u"[options] [reader-name]")
 {
     option(u"", 0, STRING, 0, 1);
     help(u"",

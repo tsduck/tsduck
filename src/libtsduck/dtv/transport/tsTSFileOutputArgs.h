@@ -78,28 +78,33 @@ namespace ts {
         //!
         bool write(const TSPacket* buffer, const TSPacketMetadata* pkt_data, size_t packet_count, Report& report, AbortInterface* abort = nullptr);
 
+        //!
+        //! Default retry interval in milliseconds.
+        //!
+        static constexpr MilliSecond DEFAULT_RETRY_INTERVAL  = 2000;
+
     private:
         // Command line options:
         const bool        _allow_stdout;
-        UString           _name;
-        TSFile::OpenFlags _flags;
-        TSPacketFormat    _file_format;
-        bool              _reopen;
-        MilliSecond       _retry_interval;
-        size_t            _retry_max;
-        size_t            _start_stuffing;
-        size_t            _stop_stuffing;
-        uint64_t          _max_size;
-        Second            _max_duration;
-        size_t            _max_files;
-        bool              _multiple_files;
+        UString           _name {};
+        TSFile::OpenFlags _flags = TSFile::NONE;
+        TSPacketFormat    _file_format = TSPacketFormat::TS;
+        bool              _reopen = false;
+        MilliSecond       _retry_interval = DEFAULT_RETRY_INTERVAL;
+        size_t            _retry_max = 0;
+        size_t            _start_stuffing = 0;
+        size_t            _stop_stuffing = 0;
+        uint64_t          _max_size = 0;
+        Second            _max_duration = 0;
+        size_t            _max_files = 0;
+        bool              _multiple_files = false;
 
         // Working data:
-        TSFile            _file;
-        FileNameGenerator _name_gen;
-        uint64_t          _current_size;
-        Time              _next_open_time;
-        UStringList       _current_files;
+        TSFile            _file {};
+        FileNameGenerator _name_gen {};
+        uint64_t          _current_size = 0;
+        Time              _next_open_time {};
+        UStringList       _current_files {};
 
         // Open the file, retry on error if necessary.
         // Use max number of retries. Updated with remaining number of retries.

@@ -37,27 +37,19 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        size_t      sync_size;   // number of initial bytes to analyze for resync
-        size_t      contig_size; // required size of contiguous packets to accept a stream slice
-        size_t      packet_size; // specific non-standard input packet size (zero means use standard sizes)
-        size_t      header_size; // header size (when packet_size > 0)
-        bool        cont_sync;   // continuous synchronization (default: stop on error)
-        bool        keep;        // keep packet size (default: reduce to 188 bytes)
-        ts::UString infile;      // Input file name
-        ts::UString outfile;     // Output file name
+        size_t      sync_size = 0;      // number of initial bytes to analyze for resync
+        size_t      contig_size = 0;    // required size of contiguous packets to accept a stream slice
+        size_t      packet_size = 0;    // specific non-standard input packet size (zero means use standard sizes)
+        size_t      header_size = 0;    // header size (when packet_size > 0)
+        bool        cont_sync = false;  // continuous synchronization (default: stop on error)
+        bool        keep = false;       // keep packet size (default: reduce to 188 bytes)
+        ts::UString infile {};          // Input file name
+        ts::UString outfile {};         // Output file name
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Resynchronize a non-standard or corrupted MPEG transport stream", u"[options] [filename]"),
-    sync_size(0),
-    contig_size(0),
-    packet_size(0),
-    header_size(0),
-    cont_sync(false),
-    keep(false),
-    infile(),
-    outfile()
+    Args(u"Resynchronize a non-standard or corrupted MPEG transport stream", u"[options] [filename]")
 {
     option(u"", 0, FILENAME, 0, 1);
     help(u"", u"Input MPEG transport stream file (standard input if omitted).");

@@ -453,14 +453,14 @@ namespace ts {
         PacketCounter        _ref_time_pkt = 0;          // Packet index at last reference time.
         PacketCounter        _eit_inter_pkt = 0;         // Inter-packet distance in the EIT PID (zero if unbound).
         PacketCounter        _last_eit_pkt = 0;          // Packet index at last EIT insertion.
-        EITOptions           _options {EITOptions::GEN_ALL}; // EIT generation options flags.
+        EITOptions           _options = EITOptions::GEN_ALL; // EIT generation options flags.
         EITRepetitionProfile _profile {};                // EIT repetition profile.
         SectionDemux         _demux;                     // Section demux for input stream, get PAT, TDT, TOT, EIT.
         Packetizer           _packetizer;                // Packetizer for generated EIT's.
         EServiceMap          _services {};               // Map of services -> segments -> events and sections.
         ESectionListArray    _injects {};                // Arrays of sections for injection.
-        MilliSecond          _section_gap {30};          // Minimum gap between sections of the same tid/tidext, DVB specifies at least 25 ms.
-        TID                  _last_tid {TID_NULL};       // TID of last injected section, or 0.
+        MilliSecond          _section_gap = 30;          // Minimum gap between sections of the same tid/tidext, DVB specifies at least 25 ms.
+        TID                  _last_tid = TID_NULL;       // TID of last injected section, or 0.
         uint16_t             _last_tidext = 0;           // TIDEXT of last injected section.
         size_t               _last_index = 0;            // Queue index of last injected section.
         size_t               _obsolete_count = 0;        // Number of obsolete sections in the injection lists.

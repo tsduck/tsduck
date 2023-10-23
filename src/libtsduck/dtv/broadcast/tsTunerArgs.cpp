@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsTunerArgs.h"
-#include "tsTuner.h"
 #include "tsChannelFile.h"
 #include "tsDuckContext.h"
 #include "tsHFBand.h"
@@ -19,13 +18,6 @@
 //----------------------------------------------------------------------------
 
 ts::TunerArgs::TunerArgs(bool info_only) :
-    ModulationArgs(),
-    device_name(),
-    signal_timeout(Tuner::DEFAULT_SIGNAL_TIMEOUT),
-    receive_timeout(0),
-    demux_buffer_size(Tuner::DEFAULT_DEMUX_BUFFER_SIZE),
-    demux_queue_size(Tuner::DEFAULT_SINK_QUEUE_SIZE),
-    receiver_name(),
     _info_only(info_only)
 {
 }

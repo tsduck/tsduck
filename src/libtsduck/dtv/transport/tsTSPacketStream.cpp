@@ -14,14 +14,9 @@
 //----------------------------------------------------------------------------
 
 ts::TSPacketStream::TSPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer) :
-    _total_read(0),
-    _total_write(0),
     _format(format),
     _reader(reader),
-    _writer(writer),
-    _last_timestamp(0),
-    _trail_size(0),
-    _trail()
+    _writer(writer)
 {
 }
 

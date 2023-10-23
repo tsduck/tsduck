@@ -35,7 +35,7 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        TSPacketWindow();
+        TSPacketWindow() = default;
 
         //!
         //! Clear the content of the packet window.
@@ -145,10 +145,10 @@ namespace ts {
         // Same as public get() but returns non-null addresses for dropped packets.
         bool getInternal(size_t index, TSPacket*& packet, TSPacketMetadata*& metadata) const;
 
-        size_t                   _size;              // Number of packets in the window.
-        size_t                   _nullify_count;     // Number of nullified packets.
-        size_t                   _drop_count;        // Number of dropped packets.
-        mutable volatile size_t  _last_range_index;  // Last accessed range (to optimiza sequential access).
-        std::vector<PacketRange> _ranges;            // Ranges of contiguous packets.
+        size_t                   _size = 0;              // Number of packets in the window.
+        size_t                   _nullify_count = 0;     // Number of nullified packets.
+        size_t                   _drop_count = 0;        // Number of dropped packets.
+        mutable volatile size_t  _last_range_index = 0;  // Last accessed range (to optimiza sequential access).
+        std::vector<PacketRange> _ranges {};             // Ranges of contiguous packets.
     };
 }

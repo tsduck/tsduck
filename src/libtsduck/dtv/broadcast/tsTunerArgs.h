@@ -13,11 +13,9 @@
 
 #pragma once
 #include "tsModulationArgs.h"
+#include "tsTuner.h"
 
 namespace ts {
-
-    class Tuner;
-
     //!
     //! Parameters for tuners and their command-line definitions.
     //! @ingroup hardware
@@ -29,12 +27,12 @@ namespace ts {
     {
     public:
         // Public fields
-        UString     device_name;        //!< Name of tuner device.
-        MilliSecond signal_timeout;     //!< Signal locking timeout in milliseconds.
-        MilliSecond receive_timeout;    //!< Packet received timeout in milliseconds.
-        size_t      demux_buffer_size;  //!< Demux buffer size in bytes (Linux-specific).
-        size_t      demux_queue_size;   //!< Max number of queued media samples (Windows-specific).
-        UString     receiver_name;      //!< Name of the DirectShow receiver to use (Windows-specific).
+        UString     device_name {};       //!< Name of tuner device.
+        MilliSecond signal_timeout = Tuner::DEFAULT_SIGNAL_TIMEOUT; //!< Signal locking timeout in milliseconds.
+        MilliSecond receive_timeout = 0;  //!< Packet received timeout in milliseconds.
+        size_t      demux_buffer_size = Tuner::DEFAULT_DEMUX_BUFFER_SIZE; //!< Demux buffer size in bytes (Linux-specific).
+        size_t      demux_queue_size = Tuner::DEFAULT_SINK_QUEUE_SIZE; //!< Max number of queued media samples (Windows-specific).
+        UString     receiver_name {};     //!< Name of the DirectShow receiver to use (Windows-specific).
 
         //!
         //! Default constructor.
@@ -55,6 +53,6 @@ namespace ts {
         bool configureTuner(Tuner& tuner) const;
 
     private:
-        bool _info_only;
+        bool _info_only = false;
     };
 }

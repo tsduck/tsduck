@@ -36,12 +36,12 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck;              // TSDuck execution context.
-        ts::TablesDisplay     display;           // Options about displaying tables
-        ts::PagerArgs         pager;             // Output paging options.
-        ts::UDPReceiver       udp;               // Options about receiving UDP tables
-        ts::duck::Protocol    duck_protocol {};  // To analyze incoming UDP messages
-        ts::UStringVector     infiles {};        // Input file names
+        ts::DuckContext       duck {this};               // TSDuck execution context.
+        ts::TablesDisplay     display {duck};            // Options about displaying tables
+        ts::PagerArgs         pager {true, true};        // Output paging options.
+        ts::UDPReceiver       udp {*this};               // Options about receiving UDP tables
+        ts::duck::Protocol    duck_protocol {};          // To analyze incoming UDP messages
+        ts::UStringVector     infiles {};                // Input file names
         ts::CRC32::Validation crc_validation = ts::CRC32::CHECK;  // Validation of CRC32 in input sections
         size_t                max_tables = 0;            // Max number of tables to dump.
         size_t                max_invalid_udp = 16;      // Max number of invalid UDP messages before giving up.
@@ -50,11 +50,7 @@ namespace {
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]"),
-    duck(this),
-    display(duck),
-    pager(true, true),
-    udp(*this)
+    Args(u"Dump PSI/SI tables, as saved by tstables", u"[options] [filename ...]")
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);

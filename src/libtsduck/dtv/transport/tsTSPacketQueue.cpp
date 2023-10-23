@@ -16,17 +16,7 @@
 //----------------------------------------------------------------------------
 
 ts::TSPacketQueue::TSPacketQueue(size_t size) :
-    _eof(false),
-    _stopped(false),
-    _mutex(),
-    _enqueued(),
-    _dequeued(),
-    _buffer(size),
-    _pcr(1, 12),
-    _inCount(0),
-    _readIndex(0),
-    _writeIndex(0),
-    _bitrate(0)
+    _buffer(size)
 {
 }
 
