@@ -88,15 +88,15 @@ namespace ts {
 
     private:
         DuckContext&   _duck;
-        bool           _pat_only;
-        bool           _completed;
-        SectionDemux   _demux;
-        ModulationArgs _tparams;
-        SafePtr<PAT>   _pat;
-        SafePtr<SDT>   _sdt;
-        SafePtr<NIT>   _nit;
-        SafePtr<MGT>   _mgt;
-        SafePtr<VCT>   _vct;
+        bool           _pat_only = false;
+        bool           _completed = false;
+        SectionDemux   _demux {_duck, this};
+        ModulationArgs _tparams {};
+        SafePtr<PAT>   _pat {};
+        SafePtr<SDT>   _sdt {};
+        SafePtr<NIT>   _nit {};
+        SafePtr<MGT>   _mgt {};
+        SafePtr<VCT>   _vct {};
 
         // Implementation of TableHandlerInterface.
         virtual void handleTable(SectionDemux&, const BinaryTable&) override;

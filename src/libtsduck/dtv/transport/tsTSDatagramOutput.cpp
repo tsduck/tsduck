@@ -8,7 +8,6 @@
 
 #include "tsTSDatagramOutput.h"
 #include "tsSystemRandomGenerator.h"
-#include "tsIPProtocols.h"
 #include "tsDuckContext.h"
 #include "tsArgs.h"
 
@@ -21,37 +20,7 @@
 ts::TSDatagramOutput::TSDatagramOutput(TSDatagramOutputOptions flags, TSDatagramOutputHandlerInterface* output) :
     _flags(flags),
     _output(output != nullptr ? output : this),
-    _raw_udp(output == nullptr),
-    _pkt_burst(DEFAULT_PACKET_BURST),
-    _enforce_burst(false),
-    _use_rtp(false),
-    _rtp_pt(RTP_PT_MP2T),
-    _rtp_fixed_sequence(false),
-    _rtp_start_sequence(0),
-    _rtp_fixed_ssrc(false),
-    _rtp_user_ssrc(0),
-    _pcr_user_pid(PID_NULL),
-    _rs204_format(false),
-    _destination(),
-    _local_addr(),
-    _local_port(IPv4SocketAddress::AnyPort),
-    _ttl(0),
-    _tos(-1),
-    _mc_loopback(true),
-    _force_mc_local(false),
-    _send_bufsize(0),
-    _is_open(false),
-    _rtp_sequence(0),
-    _rtp_ssrc(0),
-    _pcr_pid(PID_NULL),
-    _last_pcr(INVALID_PCR),
-    _last_rtp_pcr(INVALID_PCR),
-    _last_rtp_pcr_pkt(0),
-    _rtp_pcr_offset(0),
-    _pkt_count(0),
-    _out_count(0),
-    _out_buffer(),
-    _sock()
+    _raw_udp(output == nullptr)
 {
 }
 

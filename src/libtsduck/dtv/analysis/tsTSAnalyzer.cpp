@@ -32,66 +32,11 @@ const ts::UString ts::TSAnalyzer::UNREFERENCED(u"Unreferenced");
 
 ts::TSAnalyzer::TSAnalyzer(DuckContext& duck, const BitRate& bitrate_hint, BitRateConfidence bitrate_confidence) :
     _duck(duck),
-    _ts_id(0),
-    _ts_id_valid(false),
-    _ts_pkt_cnt(0),
-    _invalid_sync(0),
-    _transport_errors(0),
-    _suspect_ignored(0),
-    _pid_cnt(0),
-    _scrambled_pid_cnt(0),
-    _pcr_pid_cnt(0),
-    _global_pid_cnt(0),
-    _global_scr_pids(0),
-    _global_pkt_cnt(0),
-    _global_bitrate(0),
-    _psisi_pid_cnt(0),
-    _psisi_scr_pids(0),
-    _psisi_pkt_cnt(0),
-    _psisi_bitrate(0),
-    _unref_pid_cnt(0),
-    _unref_scr_pids(0),
-    _unref_pkt_cnt(0),
-    _unref_bitrate(0),
-    _ts_pcr_bitrate_188(0),
-    _ts_pcr_bitrate_204(0),
     _ts_user_bitrate(bitrate_hint),
-    _ts_user_br_confidence(bitrate_confidence),
-    _ts_bitrate(0),
-    _duration(0),
-    _first_utc(Time::Epoch),
-    _last_utc(Time::Epoch),
-    _first_local(Time::Epoch),
-    _last_local(Time::Epoch),
-    _first_tdt(Time::Epoch),
-    _last_tdt(Time::Epoch),
-    _first_tot(Time::Epoch),
-    _last_tot(Time::Epoch),
-    _first_stt(Time::Epoch),
-    _last_stt(Time::Epoch),
-    _country_code(),
-    _scrambled_services_cnt(0),
-    _tid_present(),
-    _pids(),
-    _services(),
-    _modified(false),
-    _ts_bitrate_sum(0),
-    _ts_bitrate_cnt(0),
-    _preceding_errors(0),
-    _preceding_suspects(0),
-    _min_error_before_suspect(1),
-    _max_consecutive_suspects(1),
-    _demux(_duck, this, this),
-    _pes_demux(_duck, this),
-    _t2mi_demux(_duck, this)
+    _ts_user_br_confidence(bitrate_confidence)
 {
     resetSectionDemux();
 }
-
-
-//----------------------------------------------------------------------------
-// Destructor for the TS analyzer
-//----------------------------------------------------------------------------
 
 ts::TSAnalyzer::~TSAnalyzer()
 {
@@ -222,70 +167,7 @@ const ts::TSAnalyzer::PIDContext::KnownPIDMap ts::TSAnalyzer::PIDContext::KNOWN_
 
 ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
     pid(pid_),
-    description(description_),
-    comment(),
-    languages(),
-    attributes(),
-    services(),
-    is_pmt_pid(false),
-    is_pcr_pid(false),
-    referenced(false),
-    optional(false),
-    carry_pes(false),
-    carry_section(false),
-    carry_ecm(false),
-    carry_emm(false),
-    carry_audio(false),
-    carry_video(false),
-    carry_t2mi(false),
-    scrambled(false),
-    same_stream_id(false),
-    pes_stream_id(0),
-    stream_type(0),
-    ts_pkt_cnt(0),
-    ts_af_cnt(0),
-    unit_start_cnt(0),
-    pl_start_cnt(0),
-    pmt_cnt(0),
-    crypto_period(0),
-    unexp_discont(0),
-    exp_discont(0),
-    duplicated(0),
-    ts_sc_cnt(0),
-    inv_ts_sc_cnt(0),
-    inv_sections(0),
-    inv_pes(0),
-    inv_pes_start(0),
-    t2mi_cnt(0),
-    first_pcr(INVALID_PCR),
-    last_pcr(INVALID_PCR),
-    first_pts(INVALID_PTS),
-    last_pts(INVALID_PTS),
-    first_dts(INVALID_DTS),
-    last_dts(INVALID_DTS),
-    pcr_cnt(0),
-    pts_cnt(0),
-    dts_cnt(0),
-    pcr_leap_cnt(0),
-    pts_leap_cnt(0),
-    dts_leap_cnt(0),
-    ts_pcr_bitrate(0),
-    bitrate(0),
-    cas_id(0),
-    cas_operators(),
-    sections(),
-    ssu_oui(),
-    t2mi_plp_ts(),
-    cur_continuity(0),
-    audio2(),
-    cur_ts_sc(0),
-    cur_ts_sc_pkt(0),
-    cryptop_cnt(0),
-    cryptop_ts_cnt(0),
-    br_last_pcr(INVALID_PCR),
-    br_last_pcr_pkt(0),
-    ts_bitrate_sum(0),
-    ts_bitrate_cnt(0)
+    description(description_)
 {
     // Guess the initial description, based on the PID
     // Global PID's (PAT, CAT, etc) are marked as "referenced" since they
@@ -299,57 +181,6 @@ ts::TSAnalyzer::PIDContext::PIDContext(PID pid_, const UString& description_) :
         optional = it->second.optional;
         carry_section = it->second.sections;
     }
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor for the ETID context
-//----------------------------------------------------------------------------
-
-ts::TSAnalyzer::ETIDContext::ETIDContext(const ETID& etid_) :
-    etid(etid_),
-    table_count(0),
-    section_count(0),
-    repetition_ts(0),
-    min_repetition_ts(0),
-    max_repetition_ts(0),
-    first_version(0),
-    last_version(0),
-    versions(),
-    first_pkt(0),
-    last_pkt(0)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Constructor for the Service context
-//----------------------------------------------------------------------------
-
-ts::TSAnalyzer::ServiceContext::ServiceContext(uint16_t serv_id) :
-    service_id(serv_id),
-    orig_netw_id(0),
-    service_type(0),
-    name(),
-    provider(),
-    pmt_pid(0),
-    pcr_pid(0),
-    pid_cnt(0),
-    scrambled_pid_cnt(0),
-    ts_pkt_cnt(0),
-    bitrate(0),
-    carry_ssu(false),
-    carry_t2mi(false)
-{
-}
-
-
-//----------------------------------------------------------------------------
-// Destructor for the Service context
-//----------------------------------------------------------------------------
-
-ts::TSAnalyzer::ServiceContext::~ServiceContext()
-{
 }
 
 

@@ -28,15 +28,15 @@ namespace ts {
         TS_NOCOPY(TSDumpArgs);
     public:
         // Public fields
-        uint32_t dump_flags;  //!< Dump options for Hexa and Packet::dump
-        bool     log;         //!< Option -\-log
-        size_t   log_size;    //!< Size to display with -\-log
-        PIDSet   pids;        //!< PID values to dump
+        uint32_t dump_flags = 0;  //!< Dump options for Hexa and Packet::dump
+        bool     log = false;     //!< Option -\-log
+        size_t   log_size = 0;    //!< Size to display with -\-log
+        PIDSet   pids {};         //!< PID values to dump
 
         //!
         //! Default constructor.
         //!
-        TSDumpArgs();
+        TSDumpArgs() = default;
 
         //!
         //! Add command line option definitions in an Args.

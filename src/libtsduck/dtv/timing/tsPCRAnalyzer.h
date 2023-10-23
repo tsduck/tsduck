@@ -183,7 +183,7 @@ namespace ts {
         {
             uint64_t ts_pkt_cnt = 0;       // Count of TS packets
             uint8_t  cur_continuity = 0;   // Current continuity counter
-            uint64_t last_pcr_value {INVALID_PCR}; // Last PCR/DTS value in this PID
+            uint64_t last_pcr_value = INVALID_PCR; // Last PCR/DTS value in this PID
             uint64_t last_pcr_packet = 0;  // Packet index containing last PCR/DTS
             BitRate  ts_bitrate_188 = 0;   // Sum of all computed TS bitrates (188-byte)
             BitRate  ts_bitrate_204 = 0;   // Sum of all computed TS bitrates (204-byte)

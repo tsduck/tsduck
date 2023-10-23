@@ -36,7 +36,7 @@ namespace ts {
         //! Default constructor.
         //! Section is initially marked invalid.
         //!
-        MPEPacket();
+        MPEPacket() = default;
 
         //!
         //! Copy constructor.
@@ -253,10 +253,10 @@ namespace ts {
 
     private:
         // Private fields
-        bool         _is_valid;    // A valid datagram is present.
-        PID          _source_pid;  // Source PID (informational).
-        MACAddress   _dest_mac;    // Destination MAC address (in DSM-CC section).
-        ByteBlockPtr _datagram;    // Full binary content of the datagram.
+        bool         _is_valid = false;      // A valid datagram is present.
+        PID          _source_pid = PID_NULL; // Source PID (informational).
+        MACAddress   _dest_mac {};           // Destination MAC address (in DSM-CC section).
+        ByteBlockPtr _datagram {};           // Full binary content of the datagram.
 
         // Locate UDP payload and size in a datagram.
         // Output parameters are optional. Return false on error.

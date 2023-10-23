@@ -155,30 +155,25 @@ namespace ts {
             TS_NOBUILD_NOCOPY(ServiceContext);
         public:
             // Public members - Synthetic data (do not modify outside ServiceContext methods)
-            const uint16_t service_id;         //!< Service id.
-            uint16_t       orig_netw_id;       //!< Original network id.
-            uint8_t        service_type;       //!< Service type.
-            UString        name;               //!< Service name.
-            UString        provider;           //!< Service provider name.
-            PID            pmt_pid;            //!< PID of PMT.
-            PID            pcr_pid;            //!< PID of PCR's (if any).
-            size_t         pid_cnt;            //!< Number of PID's.
-            size_t         scrambled_pid_cnt;  //!< Number of scrambled PID's.
-            uint64_t       ts_pkt_cnt;         //!< Number of TS packets.
-            BitRate        bitrate;            //!< Average service bitrate in b/s.
-            bool           carry_ssu;          //!< Carry System Software Update.
-            bool           carry_t2mi;         //!< Carry T2-MI encasulated data.
+            const uint16_t service_id;            //!< Service id.
+            uint16_t       orig_netw_id = 0;      //!< Original network id.
+            uint8_t        service_type = 0;      //!< Service type.
+            UString        name {};               //!< Service name.
+            UString        provider {};           //!< Service provider name.
+            PID            pmt_pid = 0;           //!< PID of PMT.
+            PID            pcr_pid = 0;           //!< PID of PCR's (if any).
+            size_t         pid_cnt = 0;           //!< Number of PID's.
+            size_t         scrambled_pid_cnt = 0; //!< Number of scrambled PID's.
+            uint64_t       ts_pkt_cnt = 0;        //!< Number of TS packets.
+            BitRate        bitrate = 0;           //!< Average service bitrate in b/s.
+            bool           carry_ssu = false;     //!< Carry System Software Update.
+            bool           carry_t2mi = false;    //!< Carry T2-MI encasulated data.
 
             //!
             //! Constructor.
             //! @param [in] serv_id Service id.
             //!
-            ServiceContext(uint16_t serv_id);
-
-            //!
-            //! Destructor.
-            //!
-            ~ServiceContext();
+            ServiceContext(uint16_t serv_id) : service_id(serv_id) {}
 
             //!
             //! Get a displayable service name.
@@ -237,25 +232,25 @@ namespace ts {
             TS_NOBUILD_NOCOPY(ETIDContext);
         public:
             // Public members - Synthetic data (do not modify outside ETIDContext methods)
-            const ETID etid;                     //!< ETID value.
-            uint64_t   table_count;              //!< Number of occurences of this table (section# 0).
-            uint64_t   section_count;            //!< Number of occurences of sections in this table.
-            uint64_t   repetition_ts;            //!< Average number of TS packets between occurences of this table (section# 0).
-            uint64_t   min_repetition_ts;        //!< Minimum number of TS packets between occurences of this table (section# 0).
-            uint64_t   max_repetition_ts;        //!< Maximum number of TS packets between occurences of this table (section# 0).
-            uint8_t    first_version;            //!< First version encountered.
-            uint8_t    last_version;             //!< First version encountered.
-            std::bitset<SVERSION_MAX> versions;  //!< Set of versions.
+            const ETID etid;                       //!< ETID value.
+            uint64_t   table_count = 0;            //!< Number of occurences of this table (section# 0).
+            uint64_t   section_count = 0;          //!< Number of occurences of sections in this table.
+            uint64_t   repetition_ts = 0;          //!< Average number of TS packets between occurences of this table (section# 0).
+            uint64_t   min_repetition_ts = 0;      //!< Minimum number of TS packets between occurences of this table (section# 0).
+            uint64_t   max_repetition_ts = 0;      //!< Maximum number of TS packets between occurences of this table (section# 0).
+            uint8_t    first_version = 0;          //!< First version encountered.
+            uint8_t    last_version = 0;           //!< First version encountered.
+            std::bitset<SVERSION_MAX> versions {}; //!< Set of versions.
 
             // Public members - Analysis data: Repetition interval evaluation:
-            uint64_t   first_pkt;                 //!< Last packet index of first section# 0.
-            uint64_t   last_pkt;                  //!< Last packet index of last section# 0.
+            uint64_t   first_pkt = 0;              //!< Last packet index of first section# 0.
+            uint64_t   last_pkt = 0;               //!< Last packet index of last section# 0.
 
             //!
             //! Constructor.
-            //! @param [in] etid Extended table id.
+            //! @param [in] ext Extended table id.
             //!
-            ETIDContext(const ETID& etid);
+            ETIDContext(const ETID& ext) : etid(ext) {}
         };
 
         //!
@@ -290,77 +285,77 @@ namespace ts {
             TS_NOBUILD_NOCOPY(PIDContext);
         public:
             // Public members - Synthetic data (do not modify outside PIDContext methods)
-            const PID     pid;             //!< PID value.
-            UString       description;     //!< Readable description string (ie "MPEG-2 Audio").
-            UString       comment;         //!< Additional description (ie "MPE", "HbbTV").
-            UStringVector languages;       //!< For audio or subtitles (3 chars per language).
-            UStringVector attributes;      //!< Audio or video attributes (several lines if attributes changed).
-            ServiceIdSet  services;        //!< List of service ids the PID belongs to.
-            bool          is_pmt_pid;      //!< Is the PMT PID for this service.
-            bool          is_pcr_pid;      //!< Is the PCR PID for this service.
-            bool          referenced;      //!< Is referenced (by service or global).
-            bool          optional;        //!< Optional PID, don't display report if no packet.
-            bool          carry_pes;       //!< This PID carries PES packets.
-            bool          carry_section;   //!< This PID carries sections.
-            bool          carry_ecm;       //!< This PID carries ECM's.
-            bool          carry_emm;       //!< This PID carries EMM's.
-            bool          carry_audio;     //!< This PID carries audio data.
-            bool          carry_video;     //!< This PID carries video data.
-            bool          carry_t2mi;      //!< Carry T2-MI encasulated data.
-            bool          scrambled;       //!< Contains some scrambled packets.
-            bool          same_stream_id;  //!< All PES packets have same stream_id.
-            uint8_t       pes_stream_id;   //!< Stream_id in PES packets on this PID.
-            uint8_t       stream_type;     //!< Stream type in PMT.
-            uint64_t      ts_pkt_cnt;      //!< Number of TS packets.
-            uint64_t      ts_af_cnt;       //!< Number of TS packets with adaptation field.
-            uint64_t      unit_start_cnt;  //!< Number of unit_start in packets.
-            uint64_t      pl_start_cnt;    //!< Number of unit_start & has_payload in packets.
-            uint64_t      pmt_cnt;         //!< Number of PMT (for PMT PID's).
-            uint64_t      crypto_period;   //!< Average number of TS packets per crypto-period.
-            uint64_t      unexp_discont;   //!< Number of unexpected discontinuities.
-            uint64_t      exp_discont;     //!< Number of expected discontinuities.
-            uint64_t      duplicated;      //!< Number of duplicated packets.
-            uint64_t      ts_sc_cnt;       //!< Number of scrambled packets.
-            uint64_t      inv_ts_sc_cnt;   //!< Number of invalid scrambling control in TS headers.
-            uint64_t      inv_sections;    //!< Number of invalid sections.
-            uint64_t      inv_pes;         //!< Number of invalid PES packets.
-            uint64_t      inv_pes_start;   //!< Number of invalid PES start code.
-            uint64_t      t2mi_cnt;        //!< Number of T2-MI packets.
-            uint64_t      first_pcr;       //!< First PCR value in the PID, if any.
-            uint64_t      last_pcr;        //!< Last PCR value in the PID, if any.
-            uint64_t      first_pts;       //!< First PTS value in the PID, if any.
-            uint64_t      last_pts;        //!< Last PTS value in the PID, if any.
-            uint64_t      first_dts;       //!< First DTS value in the PID, if any.
-            uint64_t      last_dts;        //!< Last DTS value in the PID, if any.
-            uint64_t      pcr_cnt;         //!< Number of PCR's.
-            uint64_t      pts_cnt;         //!< Number of PTS's.
-            uint64_t      dts_cnt;         //!< Number of DTS's.
-            uint64_t      pcr_leap_cnt;    //!< Number of leaps in PCR's (potential time discontinuities).
-            uint64_t      pts_leap_cnt;    //!< Number of leaps in PTS's (potential time discontinuities).
-            uint64_t      dts_leap_cnt;    //!< Number of leaps in DTS's (potential time discontinuities).
-            BitRate       ts_pcr_bitrate;  //!< Average TS bitrate in b/s (eval from PCR).
-            BitRate       bitrate;         //!< Average PID bitrate in b/s.
-            uint16_t      cas_id;          //!< For EMM and ECM streams.
-            std::set<uint32_t>         cas_operators; //!< Operators for EMM and ECM streams, when applicable.
-            ETIDContextMap             sections;      //!< List of sections in this PID.
-            std::set<uint32_t>         ssu_oui;       //!< Set of applicable OUI's for SSU.
-            std::map<uint8_t,uint64_t> t2mi_plp_ts;   //!< For T2-MI streams, map key = PLP (Physical Layer Pipe) to value = number of embedded TS packets.
+            const PID     pid;                     //!< PID value.
+            UString       description {};          //!< Readable description string (ie "MPEG-2 Audio").
+            UString       comment {};              //!< Additional description (ie "MPE", "HbbTV").
+            UStringVector languages {};            //!< For audio or subtitles (3 chars per language).
+            UStringVector attributes {};           //!< Audio or video attributes (several lines if attributes changed).
+            ServiceIdSet  services {};             //!< List of service ids the PID belongs to.
+            bool          is_pmt_pid = false;      //!< Is the PMT PID for this service.
+            bool          is_pcr_pid = false;      //!< Is the PCR PID for this service.
+            bool          referenced = false;      //!< Is referenced (by service or global).
+            bool          optional = false;        //!< Optional PID, don't display report if no packet.
+            bool          carry_pes = false;       //!< This PID carries PES packets.
+            bool          carry_section = false;   //!< This PID carries sections.
+            bool          carry_ecm = false;       //!< This PID carries ECM's.
+            bool          carry_emm = false;       //!< This PID carries EMM's.
+            bool          carry_audio = false;     //!< This PID carries audio data.
+            bool          carry_video = false;     //!< This PID carries video data.
+            bool          carry_t2mi = false;      //!< Carry T2-MI encasulated data.
+            bool          scrambled = false;       //!< Contains some scrambled packets.
+            bool          same_stream_id = false;  //!< All PES packets have same stream_id.
+            uint8_t       pes_stream_id = 0;       //!< Stream_id in PES packets on this PID.
+            uint8_t       stream_type = 0;         //!< Stream type in PMT.
+            uint64_t      ts_pkt_cnt = 0;          //!< Number of TS packets.
+            uint64_t      ts_af_cnt = 0;           //!< Number of TS packets with adaptation field.
+            uint64_t      unit_start_cnt = 0;      //!< Number of unit_start in packets.
+            uint64_t      pl_start_cnt = 0;        //!< Number of unit_start & has_payload in packets.
+            uint64_t      pmt_cnt = 0;             //!< Number of PMT (for PMT PID's).
+            uint64_t      crypto_period = 0;       //!< Average number of TS packets per crypto-period.
+            uint64_t      unexp_discont = 0;       //!< Number of unexpected discontinuities.
+            uint64_t      exp_discont = 0;         //!< Number of expected discontinuities.
+            uint64_t      duplicated = 0;          //!< Number of duplicated packets.
+            uint64_t      ts_sc_cnt = 0;           //!< Number of scrambled packets.
+            uint64_t      inv_ts_sc_cnt = 0;       //!< Number of invalid scrambling control in TS headers.
+            uint64_t      inv_sections = 0;        //!< Number of invalid sections.
+            uint64_t      inv_pes = 0;             //!< Number of invalid PES packets.
+            uint64_t      inv_pes_start = 0;       //!< Number of invalid PES start code.
+            uint64_t      t2mi_cnt = 0;            //!< Number of T2-MI packets.
+            uint64_t      first_pcr = INVALID_PCR; //!< First PCR value in the PID, if any.
+            uint64_t      last_pcr = INVALID_PCR;  //!< Last PCR value in the PID, if any.
+            uint64_t      first_pts = INVALID_PTS; //!< First PTS value in the PID, if any.
+            uint64_t      last_pts = INVALID_PTS;  //!< Last PTS value in the PID, if any.
+            uint64_t      first_dts = INVALID_DTS; //!< First DTS value in the PID, if any.
+            uint64_t      last_dts = INVALID_DTS;  //!< Last DTS value in the PID, if any.
+            uint64_t      pcr_cnt = 0;             //!< Number of PCR's.
+            uint64_t      pts_cnt = 0;             //!< Number of PTS's.
+            uint64_t      dts_cnt = 0;             //!< Number of DTS's.
+            uint64_t      pcr_leap_cnt = 0;        //!< Number of leaps in PCR's (potential time discontinuities).
+            uint64_t      pts_leap_cnt = 0;        //!< Number of leaps in PTS's (potential time discontinuities).
+            uint64_t      dts_leap_cnt = 0;        //!< Number of leaps in DTS's (potential time discontinuities).
+            BitRate       ts_pcr_bitrate = 0;      //!< Average TS bitrate in b/s (eval from PCR).
+            BitRate       bitrate = 0;             //!< Average PID bitrate in b/s.
+            uint16_t      cas_id = 0;              //!< For EMM and ECM streams.
+            std::set<uint32_t>         cas_operators {}; //!< Operators for EMM and ECM streams, when applicable.
+            ETIDContextMap             sections {};      //!< List of sections in this PID.
+            std::set<uint32_t>         ssu_oui {};       //!< Set of applicable OUI's for SSU.
+            std::map<uint8_t,uint64_t> t2mi_plp_ts {};   //!< For T2-MI streams, map key = PLP (Physical Layer Pipe) to value = number of embedded TS packets.
 
             // Public members - Analysis data:
-            uint8_t       cur_continuity;   //!< Current continuity count.
-            MPEG2AudioAttributes audio2;    //!< Last MPEG-2 audio attributes.
+            uint8_t       cur_continuity = 0;   //!< Current continuity count.
+            MPEG2AudioAttributes audio2 {};     //!< Last MPEG-2 audio attributes.
 
             // Public members - Analysis data: Crypto-period evaluation:
-            uint8_t       cur_ts_sc;        //!< Current scrambling control in TS header.
-            uint64_t      cur_ts_sc_pkt;    //!< First packet index of current crypto-period.
-            uint64_t      cryptop_cnt;      //!< Number of crypto-periods.
-            uint64_t      cryptop_ts_cnt;   //!< Number of TS packets in all crypto-periods.
+            uint8_t       cur_ts_sc = 0;        //!< Current scrambling control in TS header.
+            uint64_t      cur_ts_sc_pkt = 0;    //!< First packet index of current crypto-period.
+            uint64_t      cryptop_cnt = 0;      //!< Number of crypto-periods.
+            uint64_t      cryptop_ts_cnt = 0;   //!< Number of TS packets in all crypto-periods.
 
             // Public members - Analysis data: Bitrate evaluation
-            uint64_t      br_last_pcr;      //!< Last PCR value in the PID, for bitrate computation.
-            uint64_t      br_last_pcr_pkt;  //!< Index of packet with last PCR.
-            BitRate       ts_bitrate_sum;   //!< Sum of all computed TS bitrates.
-            uint64_t      ts_bitrate_cnt;   //!< Number of computed TS bitrates.
+            uint64_t      br_last_pcr = INVALID_PCR; //!< Last PCR value in the PID, for bitrate computation.
+            uint64_t      br_last_pcr_pkt = 0;       //!< Index of packet with last PCR.
+            BitRate       ts_bitrate_sum = 0;        //!< Sum of all computed TS bitrates.
+            uint64_t      ts_bitrate_cnt = 0;        //!< Number of computed TS bitrates.
 
             //!
             //! Default constructor.
@@ -384,8 +379,9 @@ namespace ts {
 
         private:
             // Description of a few known PID's
-            struct KnownPID
+            class KnownPID
             {
+            public:
                 const UChar* name;
                 bool optional;
                 bool sections;
@@ -435,49 +431,49 @@ namespace ts {
         // TSAnalyzer protected members.
         // Accessible to subclasses, valid after calling recomputeStatistics().
         // Important: subclasses shall not modify these fields, just read them.
-        DuckContext&         _duck;               //!< TSDuck execution context
-        uint16_t             _ts_id;              //!< Transport stream id.
-        bool                 _ts_id_valid;        //!< Transport stream id is valid.
-        uint64_t             _ts_pkt_cnt;         //!< Number of TS packets.
-        uint64_t             _invalid_sync;       //!< Number of packets with invalid sync byte (not 0x47).
-        uint64_t             _transport_errors;   //!< Number of packets with transport error.
-        uint64_t             _suspect_ignored;    //!< Number of suspect packets, ignored.
-        size_t               _pid_cnt;            //!< Number of PID's (with actual packets).
-        size_t               _scrambled_pid_cnt;  //!< Number of scrambled PID's.
-        size_t               _pcr_pid_cnt;        //!< Number of PID's with PCR's.
-        size_t               _global_pid_cnt;     //!< Number of global PID's (ref but no service).
-        size_t               _global_scr_pids;    //!< Number of scrambled global PID's.
-        uint64_t             _global_pkt_cnt;     //!< Number of packets in global PID's.
-        BitRate              _global_bitrate;     //!< Bitrate for global PID's.
-        size_t               _psisi_pid_cnt;      //!< Number of global PSI/SI PID's (0x00 to 0x1F).
-        size_t               _psisi_scr_pids;     //!< Number of scrambled global PSI/SI PID's (normally zero).
-        uint64_t             _psisi_pkt_cnt;      //!< Number of packets in global PSI/SI PID's.
-        BitRate              _psisi_bitrate;      //!< Bitrate for global PSI/SI PID's.
-        size_t               _unref_pid_cnt;      //!< Number of unreferenced PID's.
-        size_t               _unref_scr_pids;     //!< Number of scrambled unreferenced PID's.
-        uint64_t             _unref_pkt_cnt;      //!< Number of packets in unreferenced PID's.
-        BitRate              _unref_bitrate;      //!< Bitrate for unreferenced PID's.
-        BitRate              _ts_pcr_bitrate_188; //!< Average TS bitrate in b/s (eval from PCR).
-        BitRate              _ts_pcr_bitrate_204; //!< Average TS bitrate in b/s (eval from PCR).
-        BitRate              _ts_user_bitrate;    //!< User-specified TS bitrate (if any).
-        BitRateConfidence    _ts_user_br_confidence;  //!< Confidence in user-specified TS bitrate.
-        BitRate              _ts_bitrate;         //!< TS bitrate (either from PCR or options).
-        MilliSecond          _duration;           //!< Total broadcast duration.
-        Time                 _first_utc;          //!< First system UTC time (first packet).
-        Time                 _last_utc;           //!< Last system UTC time (recomputeStatistics).
-        Time                 _first_local;        //!< First system local time (first packet).
-        Time                 _last_local;         //!< Last system local time (recomputeStatistics).
-        Time                 _first_tdt;          //!< First TDT UTC time stamp.
-        Time                 _last_tdt;           //!< Last TDT UTC time stamp.
-        Time                 _first_tot;          //!< First TOT local time stamp.
-        Time                 _last_tot;           //!< Last TOT local time stamp.
-        Time                 _first_stt;          //!< First STT (ATCS) UTC time stamp.
-        Time                 _last_stt;           //!< Last STT (ATCS) time stamp.
-        UString              _country_code;       //!< TOT country code.
-        uint16_t             _scrambled_services_cnt; //!< Number of scrambled services;.
-        std::bitset<TID_MAX> _tid_present;        //!< Array of detected tables.
-        PIDContextMap        _pids;               //!< Description of PIDs.
-        ServiceContextMap    _services;           //!< Description of services, map key: service id..
+        DuckContext&         _duck;                   //!< TSDuck execution context
+        uint16_t             _ts_id = 0;              //!< Transport stream id.
+        bool                 _ts_id_valid = false;    //!< Transport stream id is valid.
+        uint64_t             _ts_pkt_cnt = 0;         //!< Number of TS packets.
+        uint64_t             _invalid_sync = 0;       //!< Number of packets with invalid sync byte (not 0x47).
+        uint64_t             _transport_errors = 0;   //!< Number of packets with transport error.
+        uint64_t             _suspect_ignored = 0;    //!< Number of suspect packets, ignored.
+        size_t               _pid_cnt = 0;            //!< Number of PID's (with actual packets).
+        size_t               _scrambled_pid_cnt = 0;  //!< Number of scrambled PID's.
+        size_t               _pcr_pid_cnt = 0;        //!< Number of PID's with PCR's.
+        size_t               _global_pid_cnt = 0;     //!< Number of global PID's (ref but no service).
+        size_t               _global_scr_pids = 0;    //!< Number of scrambled global PID's.
+        uint64_t             _global_pkt_cnt = 0;     //!< Number of packets in global PID's.
+        BitRate              _global_bitrate = 0;     //!< Bitrate for global PID's.
+        size_t               _psisi_pid_cnt = 0;      //!< Number of global PSI/SI PID's (0x00 to 0x1F).
+        size_t               _psisi_scr_pids = 0;     //!< Number of scrambled global PSI/SI PID's (normally zero).
+        uint64_t             _psisi_pkt_cnt = 0;      //!< Number of packets in global PSI/SI PID's.
+        BitRate              _psisi_bitrate = 0;      //!< Bitrate for global PSI/SI PID's.
+        size_t               _unref_pid_cnt = 0;      //!< Number of unreferenced PID's.
+        size_t               _unref_scr_pids = 0;     //!< Number of scrambled unreferenced PID's.
+        uint64_t             _unref_pkt_cnt = 0;      //!< Number of packets in unreferenced PID's.
+        BitRate              _unref_bitrate = 0;      //!< Bitrate for unreferenced PID's.
+        BitRate              _ts_pcr_bitrate_188 = 0; //!< Average TS bitrate in b/s (eval from PCR).
+        BitRate              _ts_pcr_bitrate_204 = 0; //!< Average TS bitrate in b/s (eval from PCR).
+        BitRate              _ts_user_bitrate = 0;    //!< User-specified TS bitrate (if any).
+        BitRateConfidence    _ts_user_br_confidence = BitRateConfidence::LOW;  //!< Confidence in user-specified TS bitrate.
+        BitRate              _ts_bitrate = 0;         //!< TS bitrate (either from PCR or options).
+        MilliSecond          _duration = 0;           //!< Total broadcast duration.
+        Time                 _first_utc {};           //!< First system UTC time (first packet).
+        Time                 _last_utc {};            //!< Last system UTC time (recomputeStatistics).
+        Time                 _first_local {};         //!< First system local time (first packet).
+        Time                 _last_local {};          //!< Last system local time (recomputeStatistics).
+        Time                 _first_tdt {};           //!< First TDT UTC time stamp.
+        Time                 _last_tdt {};            //!< Last TDT UTC time stamp.
+        Time                 _first_tot {};           //!< First TOT local time stamp.
+        Time                 _last_tot {};            //!< Last TOT local time stamp.
+        Time                 _first_stt {};           //!< First STT (ATCS) UTC time stamp.
+        Time                 _last_stt {};            //!< Last STT (ATCS) time stamp.
+        UString              _country_code {};        //!< TOT country code.
+        uint16_t             _scrambled_services_cnt = 0; //!< Number of scrambled services.
+        std::bitset<TID_MAX> _tid_present {};         //!< Array of detected tables.
+        PIDContextMap        _pids {};                //!< Description of PIDs.
+        ServiceContextMap    _services {};            //!< Description of services, map key: service id.
 
     private:
         // Constant string "Unreferenced"
@@ -532,15 +528,15 @@ namespace ts {
         virtual void handleTSPacket(T2MIDemux& demux, const T2MIPacket& t2mi, const TSPacket& ts) override;
 
         // TSAnalyzer private members (state data, used during analysis):
-        bool         _modified;                  // Internal data modified, need recomputeStatistics
-        BitRate      _ts_bitrate_sum;            // Sum of all computed TS bitrates
-        uint64_t     _ts_bitrate_cnt;            // Number of computed TS bitrates
-        uint64_t     _preceding_errors;          // Number of contiguous invalid packets before current packet
-        uint64_t     _preceding_suspects;        // Number of contiguous suspects packets before current packet
-        uint64_t     _min_error_before_suspect;  // Required number of invalid packets before starting suspect
-        uint64_t     _max_consecutive_suspects;  // Max number of consecutive suspect packets before clearing suspect
-        SectionDemux _demux;                     // PSI tables analysis
-        PESDemux     _pes_demux;                 // Audio/video analysis
-        T2MIDemux    _t2mi_demux;                // T2-MI analysis
+        bool         _modified = false;              // Internal data modified, need recomputeStatistics
+        BitRate      _ts_bitrate_sum = 0;            // Sum of all computed TS bitrates
+        uint64_t     _ts_bitrate_cnt = 0;            // Number of computed TS bitrates
+        uint64_t     _preceding_errors = 0;          // Number of contiguous invalid packets before current packet
+        uint64_t     _preceding_suspects = 0;        // Number of contiguous suspects packets before current packet
+        uint64_t     _min_error_before_suspect = 1;  // Required number of invalid packets before starting suspect
+        uint64_t     _max_consecutive_suspects = 1;  // Max number of consecutive suspect packets before clearing suspect
+        SectionDemux _demux {_duck, this, this};     // PSI tables analysis
+        PESDemux     _pes_demux {_duck, this};       // Audio/video analysis
+        T2MIDemux    _t2mi_demux {_duck, this};      // T2-MI analysis
     };
 }

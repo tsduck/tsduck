@@ -18,17 +18,17 @@
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::LNB::LNB(const UString& name, Report& report) : LNB()
+ts::LNB::LNB(const UString& name, Report& report)
 {
     set(name, report);
 }
 
-ts::LNB::LNB(uint64_t frequency) : LNB()
+ts::LNB::LNB(uint64_t frequency)
 {
     set(frequency);
 }
 
-ts::LNB::LNB(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency) : LNB()
+ts::LNB::LNB(uint64_t low_frequency, uint64_t high_frequency, uint64_t switch_frequency)
 {
     set(low_frequency, high_frequency, switch_frequency);
 }
@@ -218,11 +218,7 @@ ts::UStringList ts::LNB::GetAllNames(Report& report)
 
 TS_DEFINE_SINGLETON(ts::LNB::LNBRepository);
 
-ts::LNB::LNBRepository::LNBRepository() :
-    _mutex(),
-    _default_lnb(),
-    _lnbs(),
-    _names()
+ts::LNB::LNBRepository::LNBRepository()
 {
 }
 

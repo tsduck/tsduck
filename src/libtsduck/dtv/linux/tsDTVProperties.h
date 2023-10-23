@@ -188,7 +188,7 @@ namespace ts {
         public:
             const char* name(uint32_t cmd);
         private:
-            std::map<uint32_t,const char*> _names;
+            std::map<uint32_t,const char*> _names {};
             void reg(const char* name, const char* value);
         };
     };

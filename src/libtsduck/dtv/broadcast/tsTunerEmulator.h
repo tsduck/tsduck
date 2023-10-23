@@ -93,14 +93,14 @@ namespace ts {
         class Channel
         {
         public:
-            uint64_t       frequency;   // Center frequency in Hz.
-            uint64_t       bandwidth;   // Bandwidth in Hz, over which reception is possible.
-            DeliverySystem delivery;    // Delivery system for this frequency.
-            UString        file;        // TS file name.
-            UString        pipe;        // Command line to pipe output in terminal emulator.
+            uint64_t       frequency = 0;            // Center frequency in Hz.
+            uint64_t       bandwidth = 0;            // Bandwidth in Hz, over which reception is possible.
+            DeliverySystem delivery = DS_UNDEFINED;  // Delivery system for this frequency.
+            UString        file {};                  // TS file name.
+            UString        pipe {};                  // Command line to pipe output in terminal emulator.
 
             // Constructor.
-            Channel();
+            Channel() = default;
 
             // Compute the distance of a frequency from the center one.
             uint64_t distance(uint64_t frequency) const;
@@ -113,15 +113,15 @@ namespace ts {
         };
 
         // Tuner emulator private members.
-        DeliverySystemSet    _delivery_systems;  // Collection of all delivery systems.
-        UString              _xml_file_path;     // Main XML file path.
-        bool                 _info_only;         // Open mode, useless here, just informational.
-        State                _state;             // Current state.
-        TSFile               _file;              // Current TS file.
-        TSForkPipe           _pipe;              // Current pipe process.
-        std::vector<Channel> _channels;          // Map of channels.
-        size_t               _tune_index;        // Currently tuned channel.
-        uint64_t             _tune_frequency;    // Requested frequency.
-        int                  _strength;          // Signal strength in percent.
+        DeliverySystemSet    _delivery_systems {};   // Collection of all delivery systems.
+        UString              _xml_file_path {};      // Main XML file path.
+        bool                 _info_only = false;     // Open mode, useless here, just informational.
+        State                _state = State::CLOSED; // Current state.
+        TSFile               _file {};               // Current TS file.
+        TSForkPipe           _pipe {};               // Current pipe process.
+        std::vector<Channel> _channels {};           // Map of channels.
+        size_t               _tune_index = 0;        // Currently tuned channel.
+        uint64_t             _tune_frequency = 0;    // Requested frequency.
+        int                  _strength = -1;         // Signal strength in percent.
     };
 }

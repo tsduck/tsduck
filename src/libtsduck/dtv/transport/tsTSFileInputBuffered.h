@@ -158,11 +158,11 @@ namespace ts {
         bool seek(PacketCounter position, Report& report);
 
     private:
-        TSPacketVector         _buffer;         // Seekable packet circular buffer.
-        TSPacketMetadataVector _metadata;       // Seekable packet metadata circular buffer.
-        size_t                 _first_index;    // Index of first packet in buffer.
-        size_t                 _current_offset; // Offset from _first_index of "current" readable packet
-        size_t                 _total_count;    // Total count of valid packets in buffer.
+        TSPacketVector         _buffer;             // Seekable packet circular buffer.
+        TSPacketMetadataVector _metadata;           // Seekable packet metadata circular buffer.
+        size_t                 _first_index = 0;    // Index of first packet in buffer.
+        size_t                 _current_offset = 0; // Offset from _first_index of "current" readable packet
+        size_t                 _total_count = 0;    // Total count of valid packets in buffer.
 
         // Make sure that the generic open() returns an error.
         virtual bool open(const UString& filename, OpenFlags flags, Report& report, TSPacketFormat format) override;

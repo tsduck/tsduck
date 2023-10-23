@@ -129,15 +129,15 @@ namespace ts {
         //!
         void resetPacketStream(TSPacketFormat format, AbstractReadStreamInterface* reader, AbstractWriteStreamInterface* writer);
 
-        PacketCounter _total_read;   //!< Total read packets.
-        PacketCounter _total_write;  //!< Total written packets.
+        PacketCounter _total_read = 0;   //!< Total read packets.
+        PacketCounter _total_write = 0;  //!< Total written packets.
 
     private:
-        TSPacketFormat                _format;
-        AbstractReadStreamInterface*  _reader;
-        AbstractWriteStreamInterface* _writer;
-        uint64_t _last_timestamp;             // Last write time stamp in PCR units (M2TS files).
-        size_t   _trail_size;                 // Number of meaningful bytes in _trail
-        uint8_t  _trail[MAX_TRAILER_SIZE+1];  // Transient buffer for auto-detection of trailer
+        TSPacketFormat                _format = TSPacketFormat::TS;
+        AbstractReadStreamInterface*  _reader = nullptr;
+        AbstractWriteStreamInterface* _writer = nullptr;
+        uint64_t _last_timestamp = 0;             // Last write time stamp in PCR units (M2TS files).
+        size_t   _trail_size = 0;                 // Number of meaningful bytes in _trail
+        uint8_t  _trail[MAX_TRAILER_SIZE+1] {};   // Transient buffer for auto-detection of trailer
     };
 }

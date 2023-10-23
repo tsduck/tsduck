@@ -11,32 +11,13 @@
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
 
-#define DEF_RETRY_INTERVAL 2000 // milliseconds
-
 
 //----------------------------------------------------------------------------
 // Default constructor.
 //----------------------------------------------------------------------------
 
 ts::TSFileOutputArgs::TSFileOutputArgs(bool allow_stdout) :
-    _allow_stdout(allow_stdout),
-    _name(),
-    _flags(TSFile::NONE),
-    _file_format(TSPacketFormat::TS),
-    _reopen(false),
-    _retry_interval(DEF_RETRY_INTERVAL),
-    _retry_max(0),
-    _start_stuffing(0),
-    _stop_stuffing(0),
-    _max_size(0),
-    _max_duration(0),
-    _max_files(0),
-    _multiple_files(false),
-    _file(),
-    _name_gen(),
-    _current_size(0),
-    _next_open_time(),
-    _current_files()
+    _allow_stdout(allow_stdout)
 {
 }
 
@@ -81,7 +62,7 @@ void ts::TSFileOutputArgs::defineArgs(Args& args)
     args.help(u"retry-interval", u"milliseconds",
               u"With --reopen-on-error, specify the number of milliseconds to wait before "
               u"attempting to reopen the file after a failure. The default is " +
-              UString::Decimal(DEF_RETRY_INTERVAL) + u" milliseconds.");
+              UString::Decimal(DEFAULT_RETRY_INTERVAL) + u" milliseconds.");
 
     args.option(u"max-retry", 0, Args::UINT32);
     args.help(u"max-retry",
@@ -124,7 +105,7 @@ bool ts::TSFileOutputArgs::loadArgs(DuckContext& duck, Args& args)
     args.getValue(_name);
     _reopen = args.present(u"reopen-on-error");
     args.getIntValue(_retry_max, u"max-retry", 0);
-    args.getIntValue(_retry_interval, u"retry-interval", DEF_RETRY_INTERVAL);
+    args.getIntValue(_retry_interval, u"retry-interval", DEFAULT_RETRY_INTERVAL);
     args.getIntValue(_start_stuffing, u"add-start-stuffing", 0);
     args.getIntValue(_stop_stuffing, u"add-stop-stuffing", 0);
     args.getIntValue(_max_files, u"max-files", 0);

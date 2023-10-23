@@ -84,15 +84,15 @@ namespace ts {
 
     private:
         Report*       _report = nullptr;
-        int           _log_level {Severity::Info};
+        int           _log_level = Severity::Info;
         PID           _user_pid = PID_NULL;     // User-specified reference PID.
         PID           _pid = PID_NULL;          // Current reference PID.
         PacketCounter _opt_burst = 0;           // Number of packets to burst at a time
         PacketCounter _burst_pkt_cnt = 0;       // Number of packets in current burst
         NanoSecond    _wait_min = 0;            // Minimum delay between two waits (ns)
         bool          _started = false;         // First PCR found, regulation started.
-        uint64_t      _pcr_first {INVALID_PCR}; // First PCR value.
-        uint64_t      _pcr_last {INVALID_PCR};  // Last PCR value.
+        uint64_t      _pcr_first = INVALID_PCR; // First PCR value.
+        uint64_t      _pcr_last = INVALID_PCR;  // Last PCR value.
         uint64_t      _pcr_offset = 0;          // Offset to add to PCR value, accumulate all PCR wrap-down sequences.
         Monotonic     _clock_first {};          // System time at first PCR.
         Monotonic     _clock_last {};           // System time at last wait

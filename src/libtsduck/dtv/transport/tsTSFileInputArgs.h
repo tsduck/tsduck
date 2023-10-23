@@ -30,7 +30,7 @@ namespace ts {
         //!
         //! Default constructor.
         //!
-        TSFileInputArgs();
+        TSFileInputArgs() = default;
 
         //!
         //! Add command line option definitions in an Args.
@@ -81,22 +81,22 @@ namespace ts {
         void abort();
 
     private:
-        volatile bool       _aborted;            // Set when abortInput() is set.
-        bool                _interleave;         // Read all files simultaneously with interleaving.
-        bool                _first_terminate;    // With _interleave, terminate when the first file terminates.
-        size_t              _interleave_chunk;   // Number of packets per chunk when _interleave.
-        size_t              _interleave_remain;  // Remaining packets to read in current chunk of current file.
-        size_t              _current_filename;   // Current file index in _filenames.
-        size_t              _current_file;       // Current file index in _files. Depends on _interleave.
-        size_t              _repeat_count;
-        uint64_t            _start_offset;
-        size_t              _base_label;
-        TSPacketFormat      _file_format;
-        UStringVector       _filenames;
-        std::vector<size_t> _start_stuffing;
-        std::vector<size_t> _stop_stuffing;
-        std::set<size_t>    _eof;                // Set of file indexes having reached end of file.
-        std::vector<TSFile> _files;              // Array of open files, only one without interleave.
+        volatile bool       _aborted = true;          // Set when abortInput() is set.
+        bool                _interleave = false;      // Read all files simultaneously with interleaving.
+        bool                _first_terminate = false; // With _interleave, terminate when the first file terminates.
+        size_t              _interleave_chunk = 0;    // Number of packets per chunk when _interleave.
+        size_t              _interleave_remain = 0;   // Remaining packets to read in current chunk of current file.
+        size_t              _current_filename = 0;    // Current file index in _filenames.
+        size_t              _current_file = 0;        // Current file index in _files. Depends on _interleave.
+        size_t              _repeat_count = 1;
+        uint64_t            _start_offset = 0;
+        size_t              _base_label = 0;
+        TSPacketFormat      _file_format = TSPacketFormat::AUTODETECT;
+        UStringVector       _filenames {};
+        std::vector<size_t> _start_stuffing {};
+        std::vector<size_t> _stop_stuffing {};
+        std::set<size_t>    _eof {};                  // Set of file indexes having reached end of file.
+        std::vector<TSFile> _files {};                // Array of open files, only one without interleave.
 
         // Open one input file.
         bool openFile(size_t name_index, size_t file_index, Report& report);

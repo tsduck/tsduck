@@ -16,10 +16,7 @@
 ts::TSFileInputBuffered::TSFileInputBuffered(size_t buffer_size) :
     TSFile(),
     _buffer(std::max(buffer_size, MIN_BUFFER_SIZE)),
-    _metadata(_buffer.size()),
-    _first_index(0),
-    _current_offset(0),
-    _total_count(0)
+    _metadata(_buffer.size())
 {
 }
 

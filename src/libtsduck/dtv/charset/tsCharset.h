@@ -194,9 +194,9 @@ namespace ts {
             void add(const UString& name, const Charset* charset);
             void remove(const Charset* charset);
         private:
-            std::map<UString, const Charset*> _map;
+            std::map<UString, const Charset*> _map {};
         };
 
-        UString _name;  // Character set name.
+        UString _name {};  // Character set name.
     };
 }

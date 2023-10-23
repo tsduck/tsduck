@@ -115,9 +115,9 @@ namespace ts {
         };
 
         // Configuration data:
-        PacketCounter _min_packets {MIN_PACKET_PER_INTERVAL};    // Minimum packets to accumulate per interval.
-        NanoSecond    _min_nanosecs {MIN_NANOSEC_PER_INTERVAL};  // Minimum number of nanoseconds per interval.
-        size_t        _max_intervals_num {INTERVAL_COUNT};       // Max number of sliding time intervals.
+        PacketCounter _min_packets = MIN_PACKET_PER_INTERVAL;    // Minimum packets to accumulate per interval.
+        NanoSecond    _min_nanosecs = MIN_NANOSEC_PER_INTERVAL;  // Minimum number of nanoseconds per interval.
+        size_t        _max_intervals_num = INTERVAL_COUNT;       // Max number of sliding time intervals.
         // Clocks:
         Monotonic     _session_start {};      // The clock when start() was called.
         Monotonic     _clock {};              // The reference clock.

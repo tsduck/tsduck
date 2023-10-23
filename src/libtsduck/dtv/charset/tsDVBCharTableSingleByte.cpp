@@ -34,9 +34,7 @@ const ts::DVBCharset ts::DVBCharTableSingleByte::DVB_ISO_8859_15(u"ISO-8859-15",
 
 ts::DVBCharTableSingleByte::DVBCharTableSingleByte(const UChar* name, uint32_t tableCode, std::initializer_list<uint16_t> init, std::initializer_list<uint8_t> revDiac) :
     DVBCharTable(name, tableCode),
-    _upperCodePoints(init),
-    _bytesMap(),
-    _reversedDiacritical()
+    _upperCodePoints(init)
 {
     // Check the size of the upper code point table.
     if (_upperCodePoints.size() != (0x100 - 0xA0)) {

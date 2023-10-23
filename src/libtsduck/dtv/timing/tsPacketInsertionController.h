@@ -179,12 +179,12 @@ namespace ts {
         UString        _sub_name {u"sub-stream"};    // Name of sub-stream.
         PacketCounter  _main_packets = 0;            // Total number of packets in main stream so far.
         PacketCounter  _sub_packets = 0;             // Total number of packets in sub-stream so far.
-        size_t         _wait_alert {DEFAULT_WAIT_ALERT};  // Accelerate insertion above that number of waiting packets.
-        size_t         _accel_factor {1};            // Acceleration factor, greater than 1 when too many packets are waiting.
+        size_t         _wait_alert = DEFAULT_WAIT_ALERT;  // Accelerate insertion above that number of waiting packets.
+        size_t         _accel_factor = 1;            // Acceleration factor, greater than 1 when too many packets are waiting.
         PacketCounter  _accel_main_packets = 0;      // Number of packets in main stream when current acceleration started.
         PacketCounter  _accel_sub_packets = 0;       // Number of packets in sub-stream wehn current acceleration started.
         size_t         _accel_max_wait = 0;          // Maximum number of waiting packet in current acceleration phase.
-        BitRateControl _main_bitrate;                // Current bitrate in main stream.
-        BitRateControl _sub_bitrate;                 // Current bitrate in sub-stream.
+        BitRateControl _main_bitrate {_report, _main_name};  // Current bitrate in main stream.
+        BitRateControl _sub_bitrate {_report, _sub_name};    // Current bitrate in sub-stream.
     };
 }

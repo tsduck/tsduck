@@ -49,21 +49,16 @@ namespace {
     public:
         TSSwitchOptions(int argc, char *argv[]);
 
-        bool                  monitor;         // Run a resource monitoring thread in the background.
-        ts::UString           monitor_config;  // System monitoring configuration file.
-        ts::DuckContext       duck;            // TSDuck context
-        ts::AsyncReportArgs   log_args;        // Asynchronous logger arguments.
-        ts::InputSwitcherArgs switch_args;     // TS processing arguments.
+        ts::DuckContext       duck {this};        // TSDuck context
+        bool                  monitor = false;    // Run a resource monitoring thread in the background.
+        ts::UString           monitor_config {};  // System monitoring configuration file.
+        ts::AsyncReportArgs   log_args {};        // Asynchronous logger arguments.
+        ts::InputSwitcherArgs switch_args {};     // TS processing arguments.
     };
 }
 
 TSSwitchOptions::TSSwitchOptions(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1, u"TS input source switch using remote control", u"[tsswitch-options]"),
-    monitor(false),
-    monitor_config(),
-    duck(this),
-    log_args(),
-    switch_args()
+    ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1, u"TS input source switch using remote control", u"[tsswitch-options]")
 {
     log_args.defineArgs(*this);
     switch_args.defineArgs(*this);

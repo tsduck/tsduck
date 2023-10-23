@@ -19,17 +19,7 @@
 //-----------------------------------------------------------------------------
 
 ts::TunerEmulator::TunerEmulator(DuckContext& duck) :
-    TunerBase(duck),
-    _delivery_systems(),
-    _xml_file_path(),
-    _info_only(false),
-    _state(State::CLOSED),
-    _file(),
-    _pipe(),
-    _channels(),
-    _tune_index(0),
-    _tune_frequency(0),
-    _strength(-1)
+    TunerBase(duck)
 {
 }
 
@@ -41,15 +31,6 @@ ts::TunerEmulator::~TunerEmulator()
 //-----------------------------------------------------------------------------
 // Description of a channel.
 //-----------------------------------------------------------------------------
-
-ts::TunerEmulator::Channel::Channel() :
-    frequency(0),
-    bandwidth(0),
-    delivery(DS_UNDEFINED),
-    file(),
-    pipe()
-{
-}
 
 // Compute the distance of a frequency from the center one.
 uint64_t ts::TunerEmulator::Channel::distance(uint64_t freq) const

@@ -21,11 +21,7 @@
 ts::MPEDemux::MPEDemux(DuckContext& duck, MPEHandlerInterface* mpe_handler, const PIDSet& pid_filter) :
     SuperClass(duck, pid_filter),
     _handler(mpe_handler),
-    _psi_demux(duck, this, this),
-    _ts_id(0),
-    _pmts(),
-    _new_pids(),
-    _int_tags()
+    _psi_demux(duck, this, this)
 {
     immediateReset();
 }

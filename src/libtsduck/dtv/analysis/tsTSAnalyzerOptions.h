@@ -33,37 +33,37 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        TSAnalyzerOptions();
+        TSAnalyzerOptions() = default;
 
         // Full analysis options:
-        bool ts_analysis;            //!< Option -\-ts-analysis
-        bool service_analysis;       //!< Option -\-service-analysis
-        bool wide;                   //!< Option -\-wide-display
-        bool pid_analysis;           //!< Option -\-pid-analysis
-        bool table_analysis;         //!< Option -\-table-analysis
-        bool error_analysis;         //!< Option -\-error-analysis
+        bool ts_analysis = false;            //!< Option -\-ts-analysis
+        bool service_analysis = false;       //!< Option -\-service-analysis
+        bool wide = false;                   //!< Option -\-wide-display
+        bool pid_analysis = false;           //!< Option -\-pid-analysis
+        bool table_analysis = false;         //!< Option -\-table-analysis
+        bool error_analysis = false;         //!< Option -\-error-analysis
 
         // Normalized output:
-        bool normalized;             //!< Option -\-normalized
-        bool deterministic;          //!< Option -\-deterministic
-        json::OutputArgs json;       //!< Options -\-json and -\-json-line
+        bool normalized = false;             //!< Option -\-normalized
+        bool deterministic = false;          //!< Option -\-deterministic
+        json::OutputArgs json {};            //!< Options -\-json and -\-json-line
 
         // One-line report options:
-        bool service_list;           //!< Option -\-service-list
-        bool pid_list;               //!< Option -\-pid-list
-        bool global_pid_list;        //!< Option -\-global-pid-list
-        bool unreferenced_pid_list;  //!< Option -\-unreferenced-pid-list
-        bool pes_pid_list;           //!< Option -\-pes-pid-list
-        bool service_pid_list;       //!< Option -\-service-pid-list service-id
-        uint16_t service_id;         //!< Service id for -\-service-pid-list
-        UString prefix;              //!< Option -\-prefix "string"
+        bool service_list = false;           //!< Option -\-service-list
+        bool pid_list = false;               //!< Option -\-pid-list
+        bool global_pid_list = false;        //!< Option -\-global-pid-list
+        bool unreferenced_pid_list = false;  //!< Option -\-unreferenced-pid-list
+        bool pes_pid_list = false;           //!< Option -\-pes-pid-list
+        bool service_pid_list = false;       //!< Option -\-service-pid-list service-id
+        uint16_t service_id = 0;             //!< Service id for -\-service-pid-list
+        UString prefix {};                   //!< Option -\-prefix "string"
 
         // Additional options
-        UString title;               //!< Option -\-title "string"
+        UString title {};                    //!< Option -\-title "string"
 
         // Suspect packets detection
-        uint64_t suspect_min_error_count;  //!< Option -\-suspect-min-error-count
-        uint64_t suspect_max_consecutive;  //!< Option -\-suspect-max-consecutive
+        uint64_t suspect_min_error_count = 1;  //!< Option -\-suspect-min-error-count
+        uint64_t suspect_max_consecutive = 1;  //!< Option -\-suspect-max-consecutive
 
         //!
         //! Add command line option definitions in an Args.

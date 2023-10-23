@@ -129,13 +129,13 @@ namespace ts {
         public:
             const PID     pid;                     // The described PID.
             PID           pcr_pid = PID_NULL;      // Associated PCR PID (can be the PID itself).
-            uint64_t      first_pcr {INVALID_PCR}; // First original PCR value in this PID.
+            uint64_t      first_pcr = INVALID_PCR; // First original PCR value in this PID.
             PacketCounter first_pcr_pkt = 0;       // Index in the main stream of the packet with the first PCR.
-            uint64_t      last_pcr {INVALID_PCR};  // Last PCR value in this PID, after adjustment in main stream.
+            uint64_t      last_pcr = INVALID_PCR;  // Last PCR value in this PID, after adjustment in main stream.
             PacketCounter last_pcr_pkt = 0;        // Index in the main stream of the packet with the last PCR.
-            uint64_t      last_pts {INVALID_PTS};  // Last PTS value in this PID.
+            uint64_t      last_pts = INVALID_PTS;  // Last PTS value in this PID.
             PacketCounter last_pts_pkt = 0;        // Index in the main stream of the packet with the last PTS.
-            uint64_t      last_dts {INVALID_DTS};  // Last DTS value in this PID.
+            uint64_t      last_dts = INVALID_DTS;  // Last DTS value in this PID.
             PacketCounter last_dts_pkt = 0;        // Index in the main stream of the packet with the last DTS.
 
             // Constructor.

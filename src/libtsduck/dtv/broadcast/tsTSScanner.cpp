@@ -23,15 +23,7 @@
 
 ts::TSScanner::TSScanner(DuckContext& duck, Tuner& tuner, MilliSecond timeout, bool pat_only):
     _duck(duck),
-    _pat_only(pat_only),
-    _completed(false),
-    _demux(_duck, this),
-    _tparams(),
-    _pat(),
-    _sdt(),
-    _nit(),
-    _mgt(),
-    _vct()
+    _pat_only(pat_only)
 {
     // Collect PAT, SDT, NIT, MGT.
     _demux.addPID(PID_PAT);

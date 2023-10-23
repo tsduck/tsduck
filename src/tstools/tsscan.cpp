@@ -41,51 +41,31 @@ namespace {
     public:
         ScanOptions(int argc, char *argv[]);
 
-        ts::DuckContext   duck;
-        ts::TunerArgs     tuner_args;
-        bool              uhf_scan;
-        bool              vhf_scan;
-        bool              nit_scan;
-        bool              no_offset;
-        bool              use_best_strength;
-        uint32_t          first_channel;
-        uint32_t          last_channel;
-        int32_t           first_offset;
-        int32_t           last_offset;
-        int64_t           min_strength;
-        bool              show_modulation;
-        bool              list_services;
-        bool              global_services;
-        ts::MilliSecond   psi_timeout;
-        const ts::HFBand* hfband;
-        ts::UString       channel_file;
-        bool              update_channel_file;
-        bool              default_channel_file;
+        ts::DuckContext   duck {this};
+        ts::TunerArgs     tuner_args {false};
+        bool              uhf_scan = false;
+        bool              vhf_scan = false;
+        bool              nit_scan = false;
+        bool              no_offset = false;
+        bool              use_best_strength = false;
+        uint32_t          first_channel = 0;
+        uint32_t          last_channel = 0;
+        int32_t           first_offset = 0;
+        int32_t           last_offset = 0;
+        int64_t           min_strength = 0;
+        bool              show_modulation = false;
+        bool              list_services = false;
+        bool              global_services = false;
+        ts::MilliSecond   psi_timeout = 0;
+        const ts::HFBand* hfband = nullptr;
+        ts::UString       channel_file {};
+        bool              update_channel_file = false;
+        bool              default_channel_file = false;
     };
 }
 
 ScanOptions::ScanOptions(int argc, char *argv[]) :
-    Args(u"Scan a DTV network frequencies and services", u"[options]"),
-    duck(this),
-    tuner_args(false),
-    uhf_scan(false),
-    vhf_scan(false),
-    nit_scan(false),
-    no_offset(false),
-    use_best_strength(false),
-    first_channel(0),
-    last_channel(0),
-    first_offset(0),
-    last_offset(0),
-    min_strength(0),
-    show_modulation(false),
-    list_services(false),
-    global_services(false),
-    psi_timeout(0),
-    hfband(),
-    channel_file(),
-    update_channel_file(false),
-    default_channel_file(false)
+    Args(u"Scan a DTV network frequencies and services", u"[options]")
 {
     duck.defineArgsForCharset(*this);
     duck.defineArgsForHFBand(*this);

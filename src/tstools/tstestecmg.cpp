@@ -39,31 +39,30 @@ namespace {
     public:
         CmdOptions(int argc, char *argv[]);
 
-        ts::DuckContext       duck;
+        ts::DuckContext       duck {this};
         ts::AsyncReportArgs   log_args {};
         ts::IPv4SocketAddress ecmg_address {};
         ts::ecmgscs::Protocol ecmgscs {};
-        uint32_t              super_cas_id {0};
+        uint32_t              super_cas_id = 0;
         ts::ByteBlock         access_criteria {};
-        ts::Second            cp_duration {0};
-        ts::Second            stat_interval {0};
-        ts::tlv::VERSION      dvbsim_version {0};
-        uint16_t              channel_count {0};
-        uint16_t              streams_per_channel {0};
-        uint16_t              first_ecm_channel_id {0};
-        uint16_t              first_ecm_stream_id {0};
-        uint16_t              first_ecm_id {0};
-        size_t                cw_size {0};
-        size_t                max_ecm {0};
-        ts::Second            max_seconds {0};
-        int                   log_protocol {0};
-        int                   log_data {0};
+        ts::Second            cp_duration = 0;
+        ts::Second            stat_interval = 0;
+        ts::tlv::VERSION      dvbsim_version = 0;
+        uint16_t              channel_count = 0;
+        uint16_t              streams_per_channel = 0;
+        uint16_t              first_ecm_channel_id = 0;
+        uint16_t              first_ecm_stream_id = 0;
+        uint16_t              first_ecm_id = 0;
+        size_t                cw_size = 0;
+        size_t                max_ecm = 0;
+        ts::Second            max_seconds = 0;
+        int                   log_protocol = 0;
+        int                   log_data = 0;
     };
 }
 
 CmdOptions::CmdOptions(int argc, char *argv[]) :
-    ts::Args(u"Test a DVB SimulCrypt compliant ECMG with an artificial load", u"[options] host:port"),
-    duck(this)
+    ts::Args(u"Test a DVB SimulCrypt compliant ECMG with an artificial load", u"[options] host:port")
 {
     log_args.defineArgs(*this);
 

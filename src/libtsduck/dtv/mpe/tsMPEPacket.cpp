@@ -17,14 +17,6 @@
 // Constructors.
 //----------------------------------------------------------------------------
 
-ts::MPEPacket::MPEPacket() :
-    _is_valid(false),
-    _source_pid(PID_NULL),
-    _dest_mac(),
-    _datagram()
-{
-}
-
 ts::MPEPacket::MPEPacket(const MPEPacket& other, ShareMode mode) :
     _is_valid(other._is_valid),
     _source_pid(other._source_pid),
@@ -57,8 +49,7 @@ ts::MPEPacket::MPEPacket(MPEPacket&& other) noexcept :
 ts::MPEPacket::MPEPacket(ByteBlockPtr datagram, ShareMode mode, const MACAddress& mac, PID pid) :
     _is_valid(!datagram.isNull() && FindUDP(datagram->data(), datagram->size())),
     _source_pid(pid),
-    _dest_mac(mac),
-    _datagram()
+    _dest_mac(mac)
 {
     if (_is_valid) {
         switch (mode) {
@@ -75,8 +66,7 @@ ts::MPEPacket::MPEPacket(ByteBlockPtr datagram, ShareMode mode, const MACAddress
     }
 }
 
-ts::MPEPacket::MPEPacket(const Section& section) :
-    MPEPacket()
+ts::MPEPacket::MPEPacket(const Section& section)
 {
     copy(section);
 }

@@ -147,17 +147,17 @@ namespace ts {
         void stop();
 
     private:
-        volatile bool     _eof;         // The writer thread has reported an end of file.
-        volatile bool     _stopped;     // The read thread has reported a stop condition.
-        mutable Mutex     _mutex;       // Protect access to shared data.
-        mutable Condition _enqueued;    // Signaled when packets are inserted.
-        mutable Condition _dequeued;    // Signaled when packets were freed.
-        TSPacketVector    _buffer;      // The packet buffer.
-        PCRAnalyzer       _pcr;         // PCR analyzer to get the bitrate.
-        size_t            _inCount;     // Number of packets currently inside the buffer.
-        size_t            _readIndex;   // Index of next packet to read.
-        size_t            _writeIndex;  // Index of next packet to write.
-        BitRate           _bitrate;     // Bitrate as set by the writer thread.
+        volatile bool     _eof = false;      // The writer thread has reported an end of file.
+        volatile bool     _stopped = false;  // The read thread has reported a stop condition.
+        mutable Mutex     _mutex {};         // Protect access to shared data.
+        mutable Condition _enqueued {};      // Signaled when packets are inserted.
+        mutable Condition _dequeued {};      // Signaled when packets were freed.
+        TSPacketVector    _buffer {};        // The packet buffer.
+        PCRAnalyzer       _pcr {1, 12};      // PCR analyzer to get the bitrate.
+        size_t            _inCount = 0;      // Number of packets currently inside the buffer.
+        size_t            _readIndex = 0;    // Index of next packet to read.
+        size_t            _writeIndex = 0;   // Index of next packet to write.
+        BitRate           _bitrate = 0;      // Bitrate as set by the writer thread.
 
         // Get bitrate, must be called with mutex held.
         BitRate getBitrate() const;
