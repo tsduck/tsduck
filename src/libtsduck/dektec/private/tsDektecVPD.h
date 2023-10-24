@@ -28,18 +28,18 @@ namespace ts {
         static constexpr size_t VPD_SIZE = 64;
 
         // List of all VPD (always nul-terminated).
-        char vpdid [VPD_SIZE];  // Flawfinder: ignore
-        char cl    [VPD_SIZE];  // Flawfinder: ignore
-        char ec    [VPD_SIZE];  // Flawfinder: ignore
-        char mn    [VPD_SIZE];  // Flawfinder: ignore
-        char pd    [VPD_SIZE];  // Flawfinder: ignore
-        char pn    [VPD_SIZE];  // Flawfinder: ignore
-        char sn    [VPD_SIZE];  // Flawfinder: ignore
-        char xt    [VPD_SIZE];  // Flawfinder: ignore
-        char bo    [VPD_SIZE];  // Flawfinder: ignore
+        char vpdid [VPD_SIZE];
+        char cl    [VPD_SIZE];
+        char ec    [VPD_SIZE];
+        char mn    [VPD_SIZE];
+        char pd    [VPD_SIZE];
+        char pn    [VPD_SIZE];
+        char sn    [VPD_SIZE];
+        char xt    [VPD_SIZE];
+        char bo    [VPD_SIZE];
 
         // Constructors
-        DektecVPD() {clear();}
+        DektecVPD() { clear(); }
         DektecVPD(const Dtapi::DtDeviceDesc& dev) {get(dev);}
         DektecVPD(Dtapi::DtDevice& dev) {get(dev);}
 

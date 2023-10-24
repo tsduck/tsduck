@@ -46,7 +46,7 @@ namespace ts {
 
     private:
         class Guts;
-        Guts* _guts;
+        Guts* _guts = nullptr;
     };
 }
 

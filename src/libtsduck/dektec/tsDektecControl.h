@@ -47,7 +47,7 @@ namespace ts {
     private:
         // Redirect it to an internal DTAPI-dependent "guts" class.
         class Guts;
-        DuckContext _duck;
-        Guts* _guts;
+        DuckContext _duck {this};
+        Guts* _guts = nullptr;
     };
 }

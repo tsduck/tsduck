@@ -24,9 +24,7 @@ namespace {
     }
 }
 
-ts::HiDesDevice::HiDesDevice() :
-    _is_open(false),
-    _guts(nullptr)
+ts::HiDesDevice::HiDesDevice()
 {
 }
 

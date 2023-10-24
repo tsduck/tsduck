@@ -16,15 +16,10 @@
 //----------------------------------------------------------------------------
 
 ts::jni::PluginEventHandler::PluginEventHandler(JNIEnv* env, jobject obj, jstring handle_method) :
-    _valid(false),
-    _env(env),
-    _obj_ref(env == nullptr || obj == nullptr ? nullptr : env->NewGlobalRef(obj)),
-    _obj_method(nullptr),
-    _pec_class(nullptr),
-    _pec_constructor(nullptr),
-    _pec_outdata(nullptr)
+    _env(env)
 {
-    if (_obj_ref != nullptr) {
+    if (env != nullptr && obj != nullptr) {
+        _obj_ref = env->NewGlobalRef(obj);
         const char* const handle_str = env->GetStringUTFChars(handle_method, nullptr);
         // Cache the method id of the handler method in the io.tsduck.PluginEventContext class.
         if (handle_str != nullptr) {

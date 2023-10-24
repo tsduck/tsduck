@@ -22,9 +22,7 @@
 //----------------------------------------------------------------------------
 
 ts::VatekControl::VatekControl(int argc, char *argv[]) :
-    Args(u"Control VATek devices", u"[options] [device]"),
-    _duck(this),
-    _dev_index(-1)
+    Args(u"Control VATek devices", u"[options] [device]")
 {
     option(u"", 0, UNSIGNED, 0, 1);
     help(u"",

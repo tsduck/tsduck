@@ -47,7 +47,7 @@ namespace ts {
 
     private:
         class Guts;
-        Guts* _guts;
+        Guts* _guts = nullptr;
 
         // Output start error: log error, detach channel & device, return false.
         bool startError(const UString& = UString(), unsigned int = 0); // Dtapi::DTAPI_RESULT

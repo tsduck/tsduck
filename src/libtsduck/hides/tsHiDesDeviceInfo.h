@@ -23,25 +23,25 @@ namespace ts {
     class TSDUCKDLL HiDesDeviceInfo
     {
     public:
-        int      index;            //!< Adapter index.
-        UString  name;             //!< Device name.
-        UString  path;             //!< Device path name, can be identical to @a name.
-        uint16_t usb_mode;         //!< USB mode, 0x0110 for 1.1, 0x0200 for 2.0.
-        uint16_t vendor_id;        //!< Device USB vendor id.
-        uint16_t product_id;       //!< Device USB product id.
-        uint16_t chip_type;        //!< Chip type, eg 0x9500 for IT9500.
-        int      device_type;      //!< 0 = GANYMEDE, 1 = JUPITER, 2 = GEMINI (to be confirmed by tests).
-        UString  driver_version;   //!< Driver version string.
-        UString  api_version;      //!< API version string.
-        UString  link_fw_version;  //!< Link-level firmware version string.
-        UString  ofdm_fw_version;  //!< OFDM firmware version string.
-        UString  company;          //!< Vendor company.
-        UString  hw_info;          //!< Additional hardware information.
+        int      index = -1;          //!< Adapter index.
+        UString  name {};             //!< Device name.
+        UString  path {};             //!< Device path name, can be identical to @a name.
+        uint16_t usb_mode = 0;        //!< USB mode, 0x0110 for 1.1, 0x0200 for 2.0.
+        uint16_t vendor_id = 0;       //!< Device USB vendor id.
+        uint16_t product_id = 0;      //!< Device USB product id.
+        uint16_t chip_type = 0;       //!< Chip type, eg 0x9500 for IT9500.
+        int      device_type = -1;    //!< 0 = GANYMEDE, 1 = JUPITER, 2 = GEMINI (to be confirmed by tests).
+        UString  driver_version {};   //!< Driver version string.
+        UString  api_version {};      //!< API version string.
+        UString  link_fw_version {};  //!< Link-level firmware version string.
+        UString  ofdm_fw_version {};  //!< OFDM firmware version string.
+        UString  company {};          //!< Vendor company.
+        UString  hw_info {};          //!< Additional hardware information.
 
         //!
         //! Constructor.
         //!
-        HiDesDeviceInfo();
+        HiDesDeviceInfo() = default;
 
         //!
         //! Clear all information.
