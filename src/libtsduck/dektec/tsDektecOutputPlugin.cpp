@@ -39,60 +39,32 @@ class ts::DektecOutputPlugin::Guts
 {
     TS_NOCOPY(Guts);
 public:
-    Guts();                                  // Constructor
-    bool                 starting;           // Starting phase (loading FIFO, no transmit)
-    bool                 is_started;         // Device started
-    bool                 mute_on_stop;       // Device supports output muting
-    int                  dev_index;          // Dektec device index
-    int                  chan_index;         // Device output channel index
-    DektecDevice         device;             // Device characteristics
-    Dtapi::DtDevice      dtdev;              // Device descriptor
-    Dtapi::DtOutpChannel chan;               // Output channel
-    int                  detach_mode;        // Detach mode
-    int                  iostd_value;        // Value parameter for SetIoConfig on I/O standard.
-    int                  iostd_subvalue;     // SubValue parameter for SetIoConfig on I/O standard.
-    BitRate              opt_bitrate;        // Bitrate option (0 means unspecified)
-    BitRate              cur_bitrate;        // Current output bitrate
-    int                  max_fifo_size;      // Maximum FIFO size
-    int                  fifo_size;          // Actual FIFO size
-    bool                 preload_fifo;       // Preload FIFO before starting transmission
-    int                  preload_fifo_size;  // Size of FIFO to preload before starting transmission
-    uint64_t             preload_fifo_delay; // Preload FIFO such that it starts transmission after specified delay in ms
-    bool                 maintain_preload;   // Roughly maintain the buffer size if the FIFO is preloaded prior to starting transmission
-    bool                 drop_to_maintain;   // Drop packets as necessary to maintain preload
-    int                  maintain_threshold; // Threshold in FIFO beyond preload_fifo_size before it starts dropping packets if drop_to_maintain enabled
-    bool                 drop_to_preload;    // Drop sufficient packets to get back to preload FIFO size--only set to true at run-time if would exceed preload plus threshold
-    bool                 carrier_only;       // Output carrier frequency only, no modulated TS
-    int                  power_mode;         // Power mode to set on DTU-315
+    Guts() = default;                               // Constructor
+    bool                 starting = false;          // Starting phase (loading FIFO, no transmit)
+    bool                 is_started = false;        // Device started
+    bool                 mute_on_stop = false;      // Device supports output muting
+    int                  dev_index = -1;            // Dektec device index
+    int                  chan_index = -1;           // Device output channel index
+    DektecDevice         device {};                 // Device characteristics
+    Dtapi::DtDevice      dtdev {};                  // Device descriptor
+    Dtapi::DtOutpChannel chan {};                   // Output channel
+    int                  detach_mode = 0;           // Detach mode
+    int                  iostd_value = -1;          // Value parameter for SetIoConfig on I/O standard.
+    int                  iostd_subvalue = -1;       // SubValue parameter for SetIoConfig on I/O standard.
+    BitRate              opt_bitrate = 0;           // Bitrate option (0 means unspecified)
+    BitRate              cur_bitrate = 0;           // Current output bitrate
+    int                  max_fifo_size = 0;         // Maximum FIFO size
+    int                  fifo_size = 0;             // Actual FIFO size
+    bool                 preload_fifo = false;      // Preload FIFO before starting transmission
+    int                  preload_fifo_size = 0;     // Size of FIFO to preload before starting transmission
+    uint64_t             preload_fifo_delay = 0;    // Preload FIFO such that it starts transmission after specified delay in ms
+    bool                 maintain_preload = false;  // Roughly maintain the buffer size if the FIFO is preloaded prior to starting transmission
+    bool                 drop_to_maintain = false;  // Drop packets as necessary to maintain preload
+    int                  maintain_threshold = 0;    // Threshold in FIFO beyond preload_fifo_size before it starts dropping packets if drop_to_maintain enabled
+    bool                 drop_to_preload = false;   // Drop sufficient packets to get back to preload FIFO size--only set to true at run-time if would exceed preload plus threshold
+    bool                 carrier_only = false;      // Output carrier frequency only, no modulated TS
+    int                  power_mode = -1;           // Power mode to set on DTU-315
 };
-
-ts::DektecOutputPlugin::Guts::Guts() :
-    starting(false),
-    is_started(false),
-    mute_on_stop(false),
-    dev_index(-1),
-    chan_index(-1),
-    device(),
-    dtdev(),
-    chan(),
-    detach_mode(0),
-    iostd_value(-1),
-    iostd_subvalue(-1),
-    opt_bitrate(0),
-    cur_bitrate(0),
-    max_fifo_size(0),
-    fifo_size(0),
-    preload_fifo(false),
-    preload_fifo_size(0),
-    preload_fifo_delay(0),
-    maintain_preload(false),
-    drop_to_maintain(false),
-    maintain_threshold(0),
-    drop_to_preload(false),
-    carrier_only(false),
-    power_mode(-1)
-{
-}
 
 
 //----------------------------------------------------------------------------

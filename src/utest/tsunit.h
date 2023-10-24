@@ -52,6 +52,7 @@
 #pragma clang diagnostic ignored "-Wexit-time-destructors"  // Idem
 #pragma clang diagnostic ignored "-Wpadded"                 // Allow padding between class fields
 #pragma clang diagnostic ignored "-Wdocumentation-unknown-command" // Should work but fails with clang 10.0.0 on Linux
+#pragma clang diagnostic ignored "-Wunsafe-buffer-usage"    // "unsafe pointer arithmetic" (new with clang 16)
 #endif
 
 #include <limits>

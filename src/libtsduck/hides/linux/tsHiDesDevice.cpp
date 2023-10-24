@@ -81,16 +81,16 @@
 class ts::HiDesDevice::Guts
 {
 public:
-    int             fd;             // File descriptor.
-    bool            transmitting;   // Transmission in progress.
-    bool            waiting_write;  // The driver supports waiting write.
-    uint64_t        all_write;      // Statistics: total number of write(2) operations.
-    uint64_t        fail_write;     // Statistics: number of failed write(2) operations.
-    HiDesDeviceInfo info;           // Portable device information.
+    int             fd = -1;                // File descriptor.
+    bool            transmitting = false;   // Transmission in progress.
+    bool            waiting_write = false;  // The driver supports waiting write.
+    uint64_t        all_write = 0;          // Statistics: total number of write(2) operations.
+    uint64_t        fail_write = 0;         // Statistics: number of failed write(2) operations.
+    HiDesDeviceInfo info {};                // Portable device information.
 
     // Constructor, destructor.
-    Guts();
-    ~Guts();
+    Guts() = default;
+    ~Guts() { close(); }
 
     // Open a device. Index is optional.
     bool open(int index, const UString& name, Report& report);
@@ -110,31 +110,10 @@ public:
 
 
 //----------------------------------------------------------------------------
-// Guts, constructor and destructor.
-//----------------------------------------------------------------------------
-
-ts::HiDesDevice::Guts::Guts() :
-    fd(-1),
-    transmitting(false),
-    waiting_write(false),
-    all_write(0),
-    fail_write(0),
-    info()
-{
-}
-
-ts::HiDesDevice::Guts::~Guts()
-{
-    close();
-}
-
-
-//----------------------------------------------------------------------------
 // Public class, constructor and destructor.
 //----------------------------------------------------------------------------
 
 ts::HiDesDevice::HiDesDevice() :
-    _is_open(false),
     _guts(new Guts)
 {
 }

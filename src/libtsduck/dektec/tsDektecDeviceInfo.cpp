@@ -11,25 +11,6 @@
 
 
 //----------------------------------------------------------------------------
-// Constructors.
-//----------------------------------------------------------------------------
-
-ts::DektecDeviceInfo::DektecDeviceInfo() :
-    model(),
-    description(),
-    inputPorts(),
-    outputPorts()
-{
-}
-
-ts::DektecDeviceInfo::PortInfo::PortInfo() :
-    type(),
-    description()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Get information on all Dektec devices in the system.
 //----------------------------------------------------------------------------
 

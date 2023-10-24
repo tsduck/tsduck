@@ -17,9 +17,7 @@
 #if defined(TS_NO_DTAPI)
 
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
-    Args(u"Control Dektec devices (unimplemented)"),
-    _duck(this),
-    _guts(nullptr)
+    Args(u"Control Dektec devices (unimplemented)")
 {
 }
 
@@ -62,20 +60,20 @@ class ts::DektecControl::Guts
 private:
     Report& _report;
 public:
-    bool    _list_all;       // List all Dektec devices
-    bool    _normalized;     // List in "normalized" format
-    json::OutputArgs _json;  // List in JSON format
-    int     _wait_sec;       // Wait time before exit
-    size_t  _devindex;       // Dektec device
-    bool    _reset;          // Reset the device
-    bool    _set_led;        // Change LED state
-    int     _led_state;      // State of the LED (one of DTAPI_LED_*)
-    int     _set_input;      // Port number to set as input, for directional ports
-    int     _set_output;     // Port number to set as output, for directional ports
-    int     _power_mode;     // Power mode to set on DTU-315
+    bool    _list_all = false;    // List all Dektec devices
+    bool    _normalized = false;  // List in "normalized" format
+    json::OutputArgs _json {};    // List in JSON format
+    int     _wait_sec = 0;        // Wait time before exit
+    size_t  _devindex = 0;        // Dektec device
+    bool    _reset = false;       // Reset the device
+    bool    _set_led = false;     // Change LED state
+    int     _led_state = 0;       // State of the LED (one of DTAPI_LED_*)
+    int     _set_input = 0;       // Port number to set as input, for directional ports
+    int     _set_output = 0;      // Port number to set as output, for directional ports
+    int     _power_mode = -1;     // Power mode to set on DTU-315
 
     // Constructor
-    Guts(Report& report);
+    Guts(Report& report) : _report(report) {}
 
     // Apply commands to one device. Return command status.
     int oneDevice(const DektecDevice& device);
@@ -104,25 +102,8 @@ public:
 // Constructors and destructors.
 //----------------------------------------------------------------------------
 
-ts::DektecControl::Guts::Guts(Report& report) :
-    _report(report),
-    _list_all(false),
-    _normalized(false),
-    _json(),
-    _wait_sec(0),
-    _devindex(0),
-    _reset(false),
-    _set_led(false),
-    _led_state(0),
-    _set_input(0),
-    _set_output(0),
-    _power_mode(-1)
-{
-}
-
 ts::DektecControl::DektecControl(int argc, char *argv[]) :
     Args(u"Control Dektec devices", u"[options] [device]"),
-    _duck(this),
     _guts(new Guts(*this))
 {
     option(u"", 0, UNSIGNED, 0, 1);

@@ -164,7 +164,7 @@ namespace ts {
         // Redirect it to an internal system-dependent "guts" class.
         class Guts;
 
-        bool  _is_open;
-        Guts* _guts;
+        bool  _is_open = false;
+        Guts* _guts = nullptr;
     };
 }

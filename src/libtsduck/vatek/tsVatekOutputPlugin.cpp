@@ -49,12 +49,12 @@ public:
     TSP* const tsp;
 
     // Plugin private working data.
-    hvatek_devices   m_hdevices;
-    hvatek_chip      m_hchip;
-    hvatek_usbstream m_husbstream;
-    usbstream_param  m_param;
-    int32_t          m_index;
-    Pusbstream_slice m_slicebuf;
+    hvatek_devices   m_hdevices = nullptr;
+    hvatek_chip      m_hchip = nullptr;
+    hvatek_usbstream m_husbstream = nullptr;
+    usbstream_param  m_param {};
+    int32_t          m_index = -1;
+    Pusbstream_slice m_slicebuf = nullptr;
 
     // Same as in parent plugin.
     bool start();
@@ -84,13 +84,7 @@ public:
 
 ts::VatekOutputPlugin::Guts::Guts(VatekOutputPlugin* vop) :
     plugin(vop),
-    tsp(vop->tsp),
-    m_hdevices(nullptr),
-    m_hchip(nullptr),
-    m_husbstream(nullptr),
-    m_param(),
-    m_index(-1),
-    m_slicebuf(nullptr)
+    tsp(vop->tsp)
 {
     memset(&m_param, 0, sizeof(usbstream_param));
     m_param.r2param.freqkhz = 473000;

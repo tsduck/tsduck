@@ -16,11 +16,10 @@
 
 ts::jni::AsyncReport::AsyncReport(JNIEnv* env, jobject obj, jstring log_method, int max_severity, const AsyncReportArgs& args) :
     ts::AsyncReport(max_severity, args),
-    _env(env),
-    _obj_ref(env == nullptr || obj == nullptr ? nullptr : env->NewGlobalRef(obj)),
-    _obj_method(nullptr)
+    _env(env)
 {
-    if (_obj_ref != nullptr) {
+    if (env != nullptr && obj != nullptr) {
+        _obj_ref = env->NewGlobalRef(obj);
         const char* const log_str = env->GetStringUTFChars(log_method, nullptr);
         if (log_str != nullptr) {
             _obj_method = env->GetMethodID(env->GetObjectClass(_obj_ref), log_str, "(" JCS_INT JCS_STRING ")" JCS_VOID);

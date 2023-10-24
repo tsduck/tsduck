@@ -18,7 +18,6 @@ bool tsDektecInputPluginIsEmpty = true; // Avoid warning about empty module.
 #include "tsDektecArgsUtils.h"
 #include "tsDektecDevice.h"
 #include "tsModulation.h"
-#include "tsIntegerUtils.h"
 #include "tsSysUtils.h"
 #include "tsFatal.h"
 #include "tsLNB.h"
@@ -38,58 +37,31 @@ class ts::DektecInputPlugin::Guts
 {
     TS_NOCOPY(Guts);
 public:
-    Guts();                              // Constructor.
-    bool                is_started;      // Device started
-    int                 dev_index;       // Dektec device index
-    int                 chan_index;      // Device input channel index
-    int                 timeout_ms;      // Receive timeout in milliseconds.
-    int                 iostd_value;     // Value parameter for SetIoConfig on I/O standard.
-    int                 iostd_subvalue;  // SubValue parameter for SetIoConfig on I/O standard.
-    int                 max_fifo_size;   // Maximum FIFO size
-    int                 opt_fifo_size;   // Requested FIFO size option
-    int                 cur_fifo_size;   // Actual current FIFO size
-    bool                preload_fifo;    // Preload FIFO before starting reception
-    DektecDevice        device;          // Device characteristics
-    Dtapi::DtDevice     dtdev;           // Device descriptor
-    Dtapi::DtInpChannel chan;            // Input channel
-    int                 init_cnt;        // Count the first inputs
-    BitRate             cur_bitrate;     // Current input bitrate
-    bool                got_bitrate;     // Got bitrate at least once.
-    uint64_t            demod_freq;      // Demodulation frequency in Hz
-    Dtapi::DtDemodPars  demod_pars;      // Demodulation parameters
-    Dtapi::DtIpPars2    ip_pars;         // TS-over-IP parameters
-    int                 sat_number;      // Satellite number
-    Polarization        polarity;        // Polarity.
-    bool                high_band;       // Use LNB high frequency band.
-    bool                lnb_setup;       // Need LNB setup.
+    Guts() = default;                          // Constructor.
+    bool                is_started = false;    // Device started
+    int                 dev_index = -1;        // Dektec device index
+    int                 chan_index = -1;       // Device input channel index
+    int                 timeout_ms = -1;       // Receive timeout in milliseconds.
+    int                 iostd_value = -1;      // Value parameter for SetIoConfig on I/O standard.
+    int                 iostd_subvalue = -1;   // SubValue parameter for SetIoConfig on I/O standard.
+    int                 max_fifo_size = DTA_FIFO_SIZE;  // Maximum FIFO size
+    int                 opt_fifo_size = 0;     // Requested FIFO size option
+    int                 cur_fifo_size = 0;     // Actual current FIFO size
+    bool                preload_fifo = false;  // Preload FIFO before starting reception
+    DektecDevice        device {};             // Device characteristics
+    Dtapi::DtDevice     dtdev {};              // Device descriptor
+    Dtapi::DtInpChannel chan {};               // Input channel
+    int                 init_cnt = 0;          // Count the first inputs
+    BitRate             cur_bitrate = 0;       // Current input bitrate
+    bool                got_bitrate = false;   // Got bitrate at least once.
+    uint64_t            demod_freq = 0;        // Demodulation frequency in Hz
+    Dtapi::DtDemodPars  demod_pars {};         // Demodulation parameters
+    Dtapi::DtIpPars2    ip_pars {};            // TS-over-IP parameters
+    int                 sat_number = 0;        // Satellite number
+    Polarization        polarity = POL_VERTICAL;  // Polarity.
+    bool                high_band = false;     // Use LNB high frequency band.
+    bool                lnb_setup = false;     // Need LNB setup.
 };
-
-ts::DektecInputPlugin::Guts::Guts() :
-    is_started(false),
-    dev_index(-1),
-    chan_index(-1),
-    timeout_ms(-1),
-    iostd_value(-1),
-    iostd_subvalue(-1),
-    max_fifo_size(DTA_FIFO_SIZE),
-    opt_fifo_size(0),
-    cur_fifo_size(0),
-    preload_fifo(false),
-    device(),
-    dtdev(),
-    chan(),
-    init_cnt(0),
-    cur_bitrate(0),
-    got_bitrate(false),
-    demod_freq(0),
-    demod_pars(),
-    ip_pars(),
-    sat_number(0),
-    polarity(POL_VERTICAL),
-    high_band(false),
-    lnb_setup(false)
-{
-}
 
 
 //----------------------------------------------------------------------------
@@ -942,7 +914,7 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
     int size = (fifo_load == 0) ? PKT_SIZE : fifo_load;
 
     // Do not read more than buffer can hold
-    size = std::min(size, (int)(max_packets * 188));
+    size = std::min(size, int(max_packets * 188));
 
     // Receive packets.
     if (_guts->timeout_ms < 0) {

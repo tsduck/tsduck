@@ -50,13 +50,13 @@ namespace ts {
             // Inherited from ts::PluginEventHandlerInterface
             virtual void handlePluginEvent(const PluginEventContext& context) override;
 
-            bool      _valid;            // If true, all JNI references are valid.
-            JNIEnv*   _env;              // JNI environment in the thread which called the constructor.
-            jobject   _obj_ref;          // Global JNI reference to the Java object to notify.
-            jmethodID _obj_method;       // Method to handle events in the Java object.
-            jclass    _pec_class;        // Global reference to Java class io.tsduck.PluginEventContext
-            jmethodID _pec_constructor;  // Constructor method to create a io.tsduck.PluginEventContext
-            jfieldID  _pec_outdata;      // Internal private field "_outputData" in io.tsduck.PluginEventContext
+            bool      _valid = false;              // If true, all JNI references are valid.
+            JNIEnv*   _env = nullptr;              // JNI environment in the thread which called the constructor.
+            jobject   _obj_ref = nullptr;          // Global JNI reference to the Java object to notify.
+            jmethodID _obj_method = nullptr;       // Method to handle events in the Java object.
+            jclass    _pec_class = nullptr;        // Global reference to Java class io.tsduck.PluginEventContext
+            jmethodID _pec_constructor = nullptr;  // Constructor method to create a io.tsduck.PluginEventContext
+            jfieldID  _pec_outdata = nullptr;      // Internal private field "_outputData" in io.tsduck.PluginEventContext
         };
     }
 }

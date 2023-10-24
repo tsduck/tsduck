@@ -47,21 +47,15 @@ namespace ts {
     class DektecDevice
     {
     public:
-        UString              model;    //!< Device model name.
-        Dtapi::DtDeviceDesc  desc;     //!< Device description, as returned by DTAPI.
-        DektecPortDescVector input;    //!< Vector of input ports.
-        DektecPortDescVector output;   //!< Vector of output ports.
+        UString              model {};    //!< Device model name.
+        Dtapi::DtDeviceDesc  desc {};     //!< Device description, as returned by DTAPI.
+        DektecPortDescVector input {};    //!< Vector of input ports.
+        DektecPortDescVector output {};   //!< Vector of output ports.
 
         //!
         //! Constructor
         //!
-        DektecDevice() :
-            model(),
-            desc(),
-            input(),
-            output()
-        {
-        }
+        DektecDevice() = default;
 
         //!
         //! Load the description of a Dektec device into this object.

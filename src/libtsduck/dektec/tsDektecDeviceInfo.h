@@ -42,9 +42,9 @@ namespace ts {
         class TSDUCKDLL PortInfo
         {
         public:
-            PortInfo();           //!< Constructor.
-            UString type;         //!< Port type.
-            UString description;  //!< Port description.
+            PortInfo() = default;    //!< Constructor.
+            UString type {};         //!< Port type.
+            UString description {};  //!< Port description.
         };
 
         //!
@@ -52,11 +52,11 @@ namespace ts {
         //!
         typedef std::vector<PortInfo> PortInfoVector;
 
-        DektecDeviceInfo();          //!< Constructor.
-        UString        model;        //!< Device model;
-        UString        description;  //!< Device description.
-        PortInfoVector inputPorts;   //!< Description of all input ports on this device.
-        PortInfoVector outputPorts;  //!< Description of all output ports on this device.
+        DektecDeviceInfo() = default;   //!< Constructor.
+        UString        model {};        //!< Device model;
+        UString        description {};  //!< Device description.
+        PortInfoVector inputPorts {};   //!< Description of all input ports on this device.
+        PortInfoVector outputPorts {};  //!< Description of all output ports on this device.
 
         //!
         //! Get information on all Dektec devices in the system.
