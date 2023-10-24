@@ -699,6 +699,18 @@ bool ts::DektecInputPlugin::start()
         DektecDevice::ReportIpPars(_guts->ip_pars, *tsp, Severity::Debug, u"  ");
         tsp->debug(u"}");
 
+        // For unicast the IP address is actually a don't care, but the DTAPI
+        // only accepts 0.0.0.0 or the board own IP address => Check for unicast
+        // IP address and set it to 0.0.0.0, so that DTAPI always accepts it
+        if (!(_guts->ip_pars.m_Ip[0] >= 224 && _guts->ip_pars.m_Ip[0] <= 239)) {
+            // Not in the multicast range => must be unicast
+            _guts->ip_pars.m_Ip[0] = _guts->ip_pars.m_Ip[1] = _guts->ip_pars.m_Ip[2] = _guts->ip_pars.m_Ip[3] = 0;
+        }
+        if (!(_guts->ip_pars.m_Ip2[0] >= 224 && _guts->ip_pars.m_Ip2[0] <= 239)) {
+            // Not in the multicast range => must be unicast
+            _guts->ip_pars.m_Ip2[0] = _guts->ip_pars.m_Ip2[1] = _guts->ip_pars.m_Ip2[2] = _guts->ip_pars.m_Ip2[3] = 0;
+        }
+
         status = _guts->chan.SetIpPars(&_guts->ip_pars);
         if (status != DTAPI_OK) {
             return startError(u"output device SetIpPars error", status);
@@ -915,29 +927,31 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
         _guts->init_cnt--;
     }
 
-    // After initialization, we check the receive FIFO load before reading it.
-    if (_guts->init_cnt == 0) {
-        int fifo_load = 0;
-        status = _guts->chan.GetFifoLoad(fifo_load);
-        if (status != DTAPI_OK) {
-            tsp->error(u"error getting input FIFO load: %s", {DektecStrError(status)});
-        }
-        else if (fifo_load >= _guts->cur_fifo_size) {
-            tsp->warning(u"input FIFO full, possible packet loss");
-        }
+    int fifo_load = 0;
+    status = _guts->chan.GetFifoLoad(fifo_load);
+    if (status != DTAPI_OK) {
+        tsp->error(u"error getting input FIFO load: %s", {DektecStrError(status)});
     }
 
-    // Do not read more than what a DTA device accepts (is this still useful?)
-    size_t size = round_down(std::min(max_packets * PKT_SIZE, DTA_MAX_IO_SIZE), PKT_SIZE);
+    // After initialization, we check the receive FIFO load before reading it.
+    if (_guts->init_cnt == 0 && fifo_load >= _guts->cur_fifo_size) {
+        tsp->warning(u"input FIFO full, possible packet loss");
+    }
+
+    // If no data is available, wait for at least 1 packet
+    int size = (fifo_load == 0) ? PKT_SIZE : fifo_load;
+
+    // Do not read more than buffer can hold
+    size = std::min(size, (int)(max_packets * 188));
 
     // Receive packets.
     if (_guts->timeout_ms < 0) {
         // Receive without timeout (wait forever if no input signal).
-        status = _guts->chan.Read(reinterpret_cast<char*>(buffer), int(size), -1);
+        status = _guts->chan.Read(reinterpret_cast<char*>(buffer), size, -1);
     }
     else {
         // Receive with timeout (can be null, ie. non-blocking).
-        status = _guts->chan.Read(reinterpret_cast<char*>(buffer), int(size), _guts->timeout_ms);
+        status = _guts->chan.Read(reinterpret_cast<char*>(buffer), size, _guts->timeout_ms);
     }
 
     if (status == DTAPI_OK) {
