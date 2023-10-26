@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractDatagramInputPlugin.h"
-#include "tsSysUtils.h"
 #include "tsIPProtocols.h"
 
 

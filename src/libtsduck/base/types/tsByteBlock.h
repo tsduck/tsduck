@@ -83,9 +83,10 @@ namespace ts {
         //!
         //! Find the first occurence of a byte value in a byte block.
         //! @param [in] value The byte value to search.
+        //! @param [in] start Index where to start (at the beginning by default).
         //! @return The index of the first occurence of @a value in the byte block or @a NPOS if not found.
         //!
-        TSDUCKDLL size_type find(uint8_t value);
+        TSDUCKDLL size_type find(uint8_t value, size_type start = 0);
 
         //!
         //! Replace the content of a byte block.
