@@ -67,9 +67,9 @@ ts::ByteBlock::ByteBlock(std::initializer_list<uint8_t> init) :
 // Find the first occurence of a byte value in a byte block.
 //----------------------------------------------------------------------------
 
-ts::ByteBlock::size_type ts::ByteBlock::find(uint8_t value)
+ts::ByteBlock::size_type ts::ByteBlock::find(uint8_t value, size_type start)
 {
-    for (size_type i = 0; i < size(); ++i) {
+    for (size_type i = start; i < size(); ++i) {
         if ((*this)[i] == value) {
             return i;
         }

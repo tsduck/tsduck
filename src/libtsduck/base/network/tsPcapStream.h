@@ -137,7 +137,7 @@ namespace ts {
             uint32_t    sequence = 0;    // TCP sequence number at start of data
             bool        start = false;   // start of TCP stream.
             bool        end = false;     // end of TCP stream.
-            MicroSecond timestamp {-1};  // capture time stamp.
+            MicroSecond timestamp = -1;  // capture time stamp.
         };
         typedef SafePtr<DataBlock> DataBlockPtr;
         typedef std::list<DataBlockPtr> DataBlockQueue;

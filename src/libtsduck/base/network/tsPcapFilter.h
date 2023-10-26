@@ -22,9 +22,8 @@ namespace ts {
     //!
     //! Read a pcap or pcapng file with packet filtering.
     //!
-    //! This class also implements ArgsSupplierInterface to set filtering options
-    //! from the command line: @c -\-first-packet, @c -\-first-timestamp,
-    //! @c -\-first-date, @c -\-last-packet, @c -\-last-timestamp, @c -\-last-date.
+    //! This class also sets filtering options from the command line:
+    //! @c -\-first-packet, @c -\-first-timestamp, @c -\-first-date, @c -\-last-packet, @c -\-last-timestamp, @c -\-last-date.
     //!
     //! @ingroup net
     //!

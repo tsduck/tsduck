@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3345
+VERSION 3.36-3348
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -19,6 +19,7 @@ VERSION 3.36-3345
     - Options --actual-pf, --actual-schedule, --other-pf, --other-schedule in
       "tspacketize", "tstabcomp", plugins "inject", "eitinject".
     - Option --flush-last-unbounded-pes in plugin "pes".
+    - Option --http to input plugin "pcap'.
 
 [BUG] Bug fixes:
 
