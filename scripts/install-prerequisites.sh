@@ -225,6 +225,10 @@ elif [[ "$DISTRO" == "Ubuntu" ]]; then
     [[ -z $NOJAVA                                          ]] && PKGLIST+=(default-jdk)
     [[ -z $NODOXYGEN                                       ]] && PKGLIST+=(doxygen graphviz)
 
+    # On Ubuntu 22.04, the default clang is clang-14. There is a bug which prevents C++20
+    # compilation (incompatible with gcc header files). Install clang-15, in case we need clang.
+    [[ $VERSION -eq 2204 ]] && PKGLIST+=(clang-15)
+
     echo "Packages: ${PKGLIST[*]}"
     $DRYRUN && exit 0
 

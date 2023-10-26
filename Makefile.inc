@@ -443,6 +443,12 @@ ifneq ($(LLVM)$(FREEBSD)$(OPENBSD),)
     export USE_GCC :=
     export USE_LLVM := true
     CXX = clang++
+    # On some systems (e.g. Ubuntu 22.04), clang-14 is the default but is
+    # incompatible with the installed gcc header files in C++20 mode.
+    # If clang-15 is installed, use it instead of clang-14.
+    ifeq ($(LLVM_MAJOR),14)
+        CXX := $(call F_COMMAND,clang++-15,clang++)
+    endif
 endif
 
 # Compilation flags for various types of optimization.
