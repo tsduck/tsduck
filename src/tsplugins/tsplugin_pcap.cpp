@@ -481,7 +481,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
                     return false;
                 }
                 // Report and skip all header lines in data buffer.
-                while (end != NPOS) {
+                do {
                     header.assign(reinterpret_cast<const char*>(&_tcp_data[start]), end - start);
                     while (!header.empty() && std::isspace(header.back())) {
                         header.pop_back();
@@ -489,7 +489,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
                     tsp->debug(u"response header: %s", {header});
                     start = end + 1;
                     end = _tcp_data.find('\n', start);
-                }
+                } while (end != NPOS && !header.empty());
                 // Strip the complete header lines from the data buffer.
                 _tcp_data.erase(0, start);
                 // Exit header phase when an empty header line was found.
