@@ -50,16 +50,19 @@ namespace ts {
         bool              _has_data_id = false;     // _emmg_data_id is used.
         uint32_t          _emmg_client_id = 0;      // EMMG<=>MUX client id to filter.
         uint16_t          _emmg_data_id = 0;        // EMMG<=>MUX data id to filter.
+        size_t            _http_chunk_size = 65535; // Size to load from the TCP session each time we reload the buffer.
 
         // Working data:
         PcapFilter           _pcap_udp {};          // Pcap file, in UDP mode.
         PcapStream           _pcap_tcp {};          // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
         MicroSecond          _first_tstamp = 0;     // Time stamp of first datagram.
-        IPv4SocketAddress    _act_destination {};   // Actual destination UDP socket address.
+        IPv4SocketAddress    _actual_dest {};       // Actual destination UDP socket address.
         IPv4SocketAddressSet _all_sources {};       // All source addresses.
         emmgmux::Protocol    _emmgmux {};           // EMMG/PDG <=> MUX protocol instance to decode TCP stream.
         IPv4SocketAddress    _http_server {};       // Server side if HTTP session.
-        ByteBlock            _tcp_data {};          // TCP session buffer.
+        ByteBlock            _data {};              // Session data buffer, for HTTP mode.
+        size_t               _data_next = 0;        // Next index in _data.
+        bool                 _data_error = false;   // Content of _data is invalid.
         bool (PcapInputPlugin::*_receive)(uint8_t*, size_t, size_t&, MicroSecond&) = nullptr; // Receive handler.
 
         // Internal receive methods.
@@ -70,6 +73,9 @@ namespace ts {
         // Identify and extract TS packets from an EMMG/PDG <=> MUX data_provision message.
         bool isDataProvision(const uint8_t* data, size_t size);
         size_t extractDataProvision(uint8_t* buffer, size_t buffer_size, const uint8_t* msg, size_t msg_size);
+
+        // Report an HTTP content error, make the rest of the stream as invalid.
+        void contentErrorHTTP();
     };
 }
 
@@ -198,30 +204,37 @@ bool ts::PcapInputPlugin::getOptions()
 bool ts::PcapInputPlugin::start()
 {
     _first_tstamp = -1;
-    _act_destination = _destination;
+    _actual_dest = _destination;
     _all_sources.clear();
-    _tcp_data.clear();
+    _data.clear();
+    _data_next = 0;
+    _data_error = false;
 
     // HTTP: start with known address as server. It will be reset when the session is identified.
     _http_server = _source.hasAddress() ? _source : _destination;
+
+    // Select the right receive method.
+    if (_http) {
+        _receive = &PcapInputPlugin::receiveHTTP;
+    }
+    else if (_tcp_emmg_mux) {
+        _receive = &PcapInputPlugin::receiveEMMG;
+    }
+    else {
+        _receive = &PcapInputPlugin::receiveUDP;
+    }
 
     // Initialize superclass and pcap file.
     bool ok = AbstractDatagramInputPlugin::start();
     if (ok) {
         if (_http || _tcp_emmg_mux) {
-            _receive = _http ? &PcapInputPlugin::receiveHTTP : &PcapInputPlugin::receiveEMMG;
             ok = _pcap_tcp.open(_file_name, *tsp);
-            if (ok) {
-                _pcap_tcp.setBidirectionalFilter(_source, _destination);
-                _pcap_tcp.setReportAddressesFilterSeverity(Severity::Verbose);
-            }
+            _pcap_tcp.setBidirectionalFilter(_source, _destination);
+            _pcap_tcp.setReportAddressesFilterSeverity(Severity::Verbose);
         }
         else {
-            _receive = &PcapInputPlugin::receiveUDP;
             ok = _pcap_udp.open(_file_name, *tsp);
-            if (ok) {
-                _pcap_udp.setProtocolFilterUDP();
-            }
+            _pcap_udp.setProtocolFilterUDP();
         }
     }
     return ok;
@@ -246,6 +259,7 @@ bool ts::PcapInputPlugin::stop()
 
 bool ts::PcapInputPlugin::receiveDatagram(uint8_t* buffer, size_t buffer_size, size_t& ret_size, MicroSecond& timestamp)
 {
+    // Dispatch on appropriate receive handler.
     return (this->*_receive)(buffer, buffer_size, ret_size, timestamp);
 }
 
@@ -271,12 +285,12 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
         const IPv4SocketAddress dst(ip.destinationSocketAddress());
 
         // Filter source or destination socket address if one was specified.
-        if (!src.match(_source) || !dst.match(_act_destination)) {
+        if (!src.match(_source) || !dst.match(_actual_dest)) {
             continue; // not a matching address
         }
 
         // If the destination is not yet found, filter multicast addresses if required.
-        if (!_act_destination.hasAddress() && _multicast && !dst.isMulticast()) {
+        if (!_actual_dest.hasAddress() && _multicast && !dst.isMulticast()) {
             continue; // not a multicast address
         }
 
@@ -288,7 +302,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
         // The destination can be dynamically selected (address, port or both) by the first UDP datagram containing TS packets.
         if (_udp_emmg_mux) {
             // Try to decode UDP packet as DVB SimulCrypt.
-            if (!_act_destination.hasAddress() || !_act_destination.hasPort()) {
+            if (!_actual_dest.hasAddress() || !_actual_dest.hasPort()) {
                 // The actual destination is not fully known yet.
                 // We are still waiting for the first UDP datagram containing a data_provision message.
                 // Is there any in this one?
@@ -296,7 +310,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
                     continue; // no data_provision message in this UDP datagram.
                 }
                 // We just found the first UDP datagram with a data_provision message, now use this destination address all the time.
-                _act_destination = dst;
+                _actual_dest = dst;
                 tsp->verbose(u"using UDP destination address %s", {dst});
             }
 
@@ -308,7 +322,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
         }
         else {
             // Look for raw TS.
-            if (!_act_destination.hasAddress() || !_act_destination.hasPort()) {
+            if (!_actual_dest.hasAddress() || !_actual_dest.hasPort()) {
                 // The actual destination is not fully known yet.
                 // We are still waiting for the first UDP datagram containing TS packets.
                 // Is there any TS packet in this one?
@@ -318,7 +332,7 @@ bool ts::PcapInputPlugin::receiveUDP(uint8_t *buffer, size_t buffer_size, size_t
                     continue; // no TS packet in this UDP datagram.
                 }
                 // We just found the first UDP datagram with TS packets, now use this destination address all the time.
-                _act_destination = dst;
+                _actual_dest = dst;
                 tsp->verbose(u"using UDP destination address %s", {dst});
             }
 
@@ -460,57 +474,29 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
 
 bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, MicroSecond &timestamp)
 {
-    // The first time, detect start of HTTP session and skip HTTP headers.
+    ret_size = 0;
+
+    // The first time, detect start of HTTP session or resynchronize on a TS packet.
     if (tsp->pluginPackets() == 0) {
         if (_pcap_tcp.startOfStream(_http_server, *tsp)) {
-            // At start of TCP session, report and skip HTTP headers.
+            // At start of TCP session.
             _http_server = _pcap_tcp.serverPeer();
             tsp->debug(u"at start of HTTP session, server: %s", {_http_server});
-            std::string header;
-            do {
-                // Read a chunk of data, must contain at least one header line within the requested size.
-                size_t size = 2048;
-                if (!_pcap_tcp.readTCP(_http_server, _tcp_data, size, timestamp, *tsp)) {
-                    return false;
-                }
-                // Find the first header line.
-                size_t start = 0;
-                size_t end = _tcp_data.find('\n', start);
-                if (end == NPOS) {
-                    tsp->error(u"cannot find HTTP reponse headers at start of HTTP session");
-                    return false;
-                }
-                // Report and skip all header lines in data buffer.
-                do {
-                    header.assign(reinterpret_cast<const char*>(&_tcp_data[start]), end - start);
-                    while (!header.empty() && std::isspace(header.back())) {
-                        header.pop_back();
-                    }
-                    tsp->debug(u"response header: %s", {header});
-                    start = end + 1;
-                    end = _tcp_data.find('\n', start);
-                } while (end != NPOS && !header.empty());
-                // Strip the complete header lines from the data buffer.
-                _tcp_data.erase(0, start);
-                // Exit header phase when an empty header line was found.
-                // Returned data (TS packets), shall start immediately after.
-            } while (!header.empty());
         }
         else {
             // The pcap file probably started in the middle of a TCP session.
             // Try to find 2 adjacent starts of packets (0x47).
-            size_t size = 3 * PKT_SIZE;
-            if (!_pcap_tcp.readTCP(_http_server, _tcp_data, size, timestamp, *tsp)) {
-                return false;
-            }
+            size_t size = _http_chunk_size;
+            _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
             size_t start = 0;
             for (;;) {
-                start = _tcp_data.find(SYNC_BYTE, start);
-                if (start == NPOS || start + PKT_SIZE >= _tcp_data.size()) {
-                    tsp->error(u"captured stream starts in the middle of the TCP session and no TS packet was found");
+                start = _data.find(SYNC_BYTE, start);
+                if (start == NPOS || start + PKT_SIZE >= _data.size()) {
+                    // Could not find two adjacent TS packets.
+                    contentErrorHTTP();
                     return false;
                 }
-                else if (_tcp_data[start + PKT_SIZE] != SYNC_BYTE) {
+                else if (_data[start + PKT_SIZE] != SYNC_BYTE) {
                     // Found a sync byte but not sync with next packet, try further on.
                     start++;
                 }
@@ -520,31 +506,100 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
                 }
             }
             // Strip initial partial packet.
-            _tcp_data.erase(0, start);
+            _data_next = start;
+        }
+    }
+    else if (_data_error) {
+        // TCP stream alread marked as invalid.
+        return false;
+    }
+
+    // Read and copy TS packets in the caller's buffer.
+    while (buffer_size >= PKT_SIZE) {
+
+        // Make sure we have enough data for two TS packets or a header line.
+        if (_data_next + 1024 > _data.size()) {
+            // Read more but don't fail on error, need to process what we already have in _data.
+            size_t size = _http_chunk_size;
+            _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
+        }
+
+        // If less than a packet could be read in the buffer, this is the end of file.
+        if (_data_next + PKT_SIZE > _data.size()) {
+            break;
+        }
+
+        // In RTSP sessions, the packets may be encapsulated with a 4-byte header:
+        // '$' one-byte-channel-id two-byte-length
+        if (_data_next + 4 + PKT_SIZE <= _data.size() && _data[_data_next] == '$' && _data[_data_next + 4] == SYNC_BYTE) {
+            // Ignore the RTSP data header.
+            _data_next += 4;
+        }
+
+        if (_data_next + PKT_SIZE <= _data.size() && _data[_data_next] == SYNC_BYTE) {
+            // Found one TS packet.
+            ::memcpy(buffer, _data.data() + _data_next, PKT_SIZE);
+            _data_next += PKT_SIZE;
+            buffer += PKT_SIZE;
+            buffer_size -= PKT_SIZE;
+            ret_size += PKT_SIZE;
+        }
+        else {
+            // Must be an HTTP or RTSP header, an ASCII string, terminated by CR/LF.
+            const size_t eol = _data.find('\n', _data_next);
+            if (eol == NPOS) {
+                // No header found, invalid content.
+                contentErrorHTTP();
+                break;
+            }
+
+            // Extract and skip the header line.
+            std::string header(reinterpret_cast<const char*>(_data.data() + _data_next), eol - _data_next);
+            _data_next = eol + 1;
+
+            // Remove trailing spaces (cr/lf)
+            while (!header.empty() && std::isspace(header.back())) {
+                header.pop_back();
+            }
+
+            // Validate that the header contains only ASCII characters.
+            // Otherwise, this is probably garbage binary data with a '\n' somewhere.
+            for (auto c : header) {
+                if (c < 0x20 || c > 0x7E) {
+                    contentErrorHTTP();
+                    header.clear();
+                    break;
+                }
+            }
+
+            // Display header in debug mode.
+            if (!header.empty()) {
+                tsp->debug(u"response header: %s", {header});
+            }
         }
     }
 
-    // This is not really a datagram, so let's read only a multiple of TS packet size.
-    buffer_size = round_down(buffer_size, PKT_SIZE);
-
-    // Read more data to fill the user buffer.
-    if (_tcp_data.size() < buffer_size) {
-        size_t size = buffer_size - _tcp_data.size();
-        if (!_pcap_tcp.readTCP(_http_server, _tcp_data, size, timestamp, *tsp)) {
-            return false;
-        }
+    // Cleanup internal buffer if it becomes too large.
+    if (_data_next >= _data.size()) {
+        _data.clear();
+        _data_next = 0;
     }
-
-    // Copy into user's buffer.
-    ret_size = std::min(buffer_size, _tcp_data.size());
-    ::memcpy(buffer, _tcp_data.data(), ret_size);
-
-    // Keep remaining data in buffer for next time.
-    if (ret_size < _tcp_data.size()) {
-        _tcp_data.erase(0, ret_size);
+    else if (_data.size() > 100 * PKT_SIZE) {
+        _data.erase(0, _data_next);
+        _data_next = 0;
     }
-    else {
-        _tcp_data.clear();
-    }
-    return true;
+    return ret_size > 0;
+}
+
+
+//----------------------------------------------------------------------------
+// Report an HTTP content error, return false.
+//----------------------------------------------------------------------------
+
+void ts::PcapInputPlugin::contentErrorHTTP()
+{
+    _data_error = true;
+    _data.clear();
+    _data_next = 0;
+    tsp->error(u"content error, neither HTTP reponse headers nor TS packets in TCP stream");
 }

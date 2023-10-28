@@ -159,6 +159,9 @@ namespace ts {
             void store(const IPv4Packet& pkt, MicroSecond tstamp);
         };
 
+        // Maximum number of out-of-sequence TCP segments after a segment is declared missing.
+        static constexpr size_t TCP_MAX_FUTURE = 10;
+
         // There are two streams, two directions in a connection.
         // The source filter is at index 0, the destination filter is at index 1.
         static constexpr size_t ISRC = 0;

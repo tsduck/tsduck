@@ -8,8 +8,11 @@
 
 #include "tsPcapStream.h"
 
-// Maximum number of out-of-sequence TCP segments after a segment is declared missing.
-#define TS_TCP_MAX_FUTURE 10
+#if !defined(TS_CXX17)
+constexpr size_t ts::PcapStream::TCP_MAX_FUTURE;
+constexpr size_t ts::PcapStream::ISRC;
+constexpr size_t ts::PcapStream::IDST;
+#endif
 
 
 //----------------------------------------------------------------------------
@@ -176,8 +179,14 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
             return false;
         }
 
-        // Ignore non-TCP packets. Also ignored fragmented IP packets.
-        if (!pkt.isTCP() || pkt.fragmented()) {
+        // Ignore non-TCP packets.
+        if (!pkt.isTCP()) {
+            continue;
+        }
+
+        // Also ignored fragmented IP packets.
+        if (pkt.fragmented()) {
+            report.debug(u"got fragmented IP packet in TCP stream, sync lost on that TCP stream");
             continue;
         }
 
@@ -274,7 +283,7 @@ bool ts::PcapStream::readTCP(IPv4SocketAddress& source, ByteBlock& data, size_t&
 
         // If no buffered data are available, read more packets.
         while (!stream.dataAvailable()) {
-            if (stream.packets.size() > TS_TCP_MAX_FUTURE) {
+            if (stream.packets.size() > TCP_MAX_FUTURE) {
                 report.error(u"missing TCP segment, too many future out-of-sequence segments");
                 return size > 0;
             }

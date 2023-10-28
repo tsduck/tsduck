@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3348
+VERSION 3.36-3353
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -20,6 +20,7 @@ VERSION 3.36-3348
       "tspacketize", "tstabcomp", plugins "inject", "eitinject".
     - Option --flush-last-unbounded-pes in plugin "pes".
     - Option --http to input plugin "pcap'.
+    - Option --output-tcp-stream to "tspcap".
 
 [BUG] Bug fixes:
 

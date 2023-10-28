@@ -19,6 +19,7 @@
 #include "tsEMMGMUX.h"
 #include "tsECMGSCS.h"
 #include "tsPagerArgs.h"
+#include "tsSysUtils.h"
 #include "tstlvMessageFactory.h"
 TS_MAIN(MainCode);
 
@@ -37,11 +38,13 @@ namespace {
         ts::DuckContext       duck {this};
         ts::PagerArgs         pager {true, true};
         ts::UString           input_file {};
+        ts::UString           output_file {};
         bool                  print_summary = false;
         bool                  list_streams = false;
         bool                  print_intervals = false;
         bool                  dvb_simulcrypt = false;
         bool                  extract_tcp = false;
+        bool                  save_tcp = false;
         std::set<uint8_t>     protocols {};
         ts::IPv4SocketAddress source_filter {};
         ts::IPv4SocketAddress dest_filter {};
@@ -82,6 +85,7 @@ Options::Options(int argc, char *argv[]) :
     option(u"extract-tcp-stream", 'e');
     help(u"extract-tcp-stream",
          u"Extract the content of a TCP session as hexadecimal dump. "
+         u"The two directions of the TCP session are dumped. "
          u"The first TCP session matching the --source and --destination options is selected.");
 
     option(u"interval", 'i', POSITIVE);
@@ -93,13 +97,20 @@ Options::Options(int argc, char *argv[]) :
          u"List all data streams. "
          u"A data streams is made of all packets from one source to one destination using one protocol.");
 
+    option(u"others");
+    help(u"others", u"Filter packets from \"other\" protocols, i.e. neither TCP nor UDP.");
+
+    option(u"output-tcp-stream", 'o', FILENAME);
+    help(u"output-tcp-stream",
+         u"Extract the content of a TCP session and save it in the specified binary file. "
+         u"The first TCP session matching the --source and --destination options is selected. "
+         u"Unlike --extract-tcp-stream, only one side of the TCP session is saved, from --source to --destination. "
+         u"If the file name is \"-\", the standard output is used.");
+
     option(u"source", 's', STRING);
     help(u"source", u"[address][:port]",
          u"Filter IPv4 packets based on the specified source socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
-
-    option(u"others", 'o');
-    help(u"others", u"Filter packets from \"other\" protocols, i.e. neither TCP nor UDP.");
 
     option(u"tcp", 't');
     help(u"tcp", u"Filter TCP packets.");
@@ -113,6 +124,8 @@ Options::Options(int argc, char *argv[]) :
     // Load option values.
     pager.loadArgs(duck, *this);
     getValue(input_file, u"");
+    getValue(output_file, u"output-tcp-stream");
+    save_tcp = present(u"output-tcp-stream");
     const ts::UString dest_string(value(u"destination"));
     const ts::UString source_string(value(u"source"));
     getIntValue(interval, u"interval", 0);
@@ -648,8 +661,11 @@ namespace {
         // Constructor.
         TCPSessionDump(Options& opt) : _opt(opt) {}
 
-        // Dump the session, return true on success, false on error.
+        // Dump the session in hexadecimal, return true on success, false on error.
         bool dump(std::ostream&);
+
+        // Save the session in a binary file.
+        bool save();
 
     private:
         Options& _opt;
@@ -723,6 +739,60 @@ bool TCPSessionDump::dump(std::ostream& out)
     return true;
 }
 
+// Save the session, return true on success, false on error.
+bool TCPSessionDump::save()
+{
+    // Open the pcap file.
+    if (!_file.loadArgs(_opt.duck, _opt) || !_file.open(_opt.input_file, _opt)) {
+        return false;
+    }
+
+    // Set packet filters.
+    _file.setBidirectionalFilter(_opt.source_filter, _opt.dest_filter);
+
+    // Open/create the output file.
+    std::ofstream outfile;
+    std::ostream* out = &outfile;
+    bool ok = true;
+    if (_opt.output_file.empty() || _opt.output_file == u"-") {
+        // Use standard output.
+        ok = SetBinaryModeStdout(_opt);
+        out = &std::cout;
+    }
+    else {
+        outfile.open(_opt.output_file.toUTF8(), std::ios::out | std::ios::binary);
+        ok = bool(outfile);
+        if (!ok) {
+            _opt.error(u"error creating %s", {_opt.output_file});
+        }
+    }
+
+    constexpr size_t buffer_size = 0xFFFF;
+    ts::ByteBlock data;
+    ts::MicroSecond timestamp = 0;
+    ts::IPv4SocketAddress source(_opt.source_filter);
+
+    // Read all TCP sessions matching the source and destination.
+    while (ok) {
+        size_t size = buffer_size;
+        ok = _file.readTCP(source, data, size, timestamp, _opt);
+        if (size == 0) {
+            break;
+        }
+        if (ok) {
+            out->write(reinterpret_cast<const char*>(data.data()), data.size());
+            ok = bool(outfile);
+            if (!ok) {
+                _opt.error(u"error writing %s", {_opt.output_file});
+            }
+            data.clear();
+        }
+    }
+
+    _file.close();
+    return ok;
+}
+
 
 //----------------------------------------------------------------------------
 // Program main code.
@@ -735,12 +805,17 @@ int MainCode(int argc, char *argv[])
     bool status = true;
 
     // Output device, may be paginated.
-    std::ostream& out(opt.pager.output(opt));
+    std::ostream& out(opt.save_tcp ? std::cout : opt.pager.output(opt));
 
     if (opt.extract_tcp) {
         // TCP session dump.
         TCPSessionDump tcp(opt);
         status = tcp.dump(out);
+    }
+    else if (opt.save_tcp) {
+        // TCP session save.
+        TCPSessionDump tcp(opt);
+        status = tcp.save();
     }
     else if (!opt.dvb_simulcrypt) {
         // Global file analysis by default.
