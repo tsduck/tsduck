@@ -14,6 +14,11 @@
 #include "tsFatal.h"
 #include "tsAlgorithm.h"
 
+#if !defined(TS_CXX17)
+constexpr size_t ts::EITProcessor::MIN_BUFFERED_SECTIONS;
+constexpr size_t ts::EITProcessor::DEFAULT_BUFFERED_SECTIONS;
+#endif
+
 
 //----------------------------------------------------------------------------
 // Constructor.

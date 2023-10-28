@@ -17,7 +17,6 @@
 #include "tsTSPacket.h"
 #include "tsService.h"
 #include "tsTransportStreamId.h"
-#include "tsReport.h"
 
 namespace ts {
     //!
