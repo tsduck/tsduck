@@ -314,7 +314,9 @@ bool ts::PcapFile::readIPv4(IPv4Packet& packet, MicroSecond& timestamp, Report& 
         return false;
     }
     if (_error) {
-        report.debug(u"pcap file already in error state");
+        if (!_in->eof()) {
+            report.debug(u"pcap file already in error state");
+        }
         return false;
     }
 
