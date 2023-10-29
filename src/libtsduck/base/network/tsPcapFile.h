@@ -84,7 +84,7 @@ namespace ts {
         //! This value is the number of the last returned packet, as seen in the left-most column in Wireshark interface.
         //! @return The number of captured packets so far.
         //!
-        size_t packetCount() const { return _packet_count; }
+        uint64_t packetCount() const { return _packet_count; }
 
         //!
         //! Check if the end of file (or other error) has been reached.
@@ -96,27 +96,27 @@ namespace ts {
         //! Get the number of valid captured IPv4 packets so far.
         //! @return The number of valid captured IPv4 packets so far.
         //!
-        size_t ipv4PacketCount() const { return _ipv4_packet_count; }
+        uint64_t ipv4PacketCount() const { return _ipv4_packet_count; }
 
         //!
         //! Get the total file size in bytes so far.
         //! @return The total file size in bytes so far.
         //!
-        size_t fileSize() const { return _file_size; }
+        uint64_t fileSize() const { return _file_size; }
 
         //!
         //! Get the total size in bytes of captured packets so far.
         //! This includes all packets, including link-layer headers when present.
         //! @return The total size in bytes of captured packets so far.
         //!
-        size_t totalPacketsSize() const { return _packets_size; }
+        uint64_t totalPacketsSize() const { return _packets_size; }
 
         //!
         //! Get the total size in bytes of valid captured IPv4 packets so far.
         //! This includes all IPv4 headers but not link-layer headers when present.
         //! @return The total size in bytes of valid captured IPv4 packets so far.
         //!
-        size_t totalIPv4PacketsSize() const { return _ipv4_packets_size; }
+        uint64_t totalIPv4PacketsSize() const { return _ipv4_packets_size; }
 
         //!
         //! Get the capture timestamp of the first packet in the file.
@@ -148,7 +148,7 @@ namespace ts {
         //! Close the file.
         //! Do not reset counters, file names, etc. The last values before close() are still accessible.
         //!
-        void close();
+        virtual void close();
 
     private:
         // Descriptioon of one capture interface.
@@ -171,11 +171,11 @@ namespace ts {
         bool          _ng = false;             // Pcapng format (not pcap).
         uint16_t      _major = 0;              // File format major version.
         uint16_t      _minor = 0;              // File format minor version.
-        size_t        _file_size = 0;          // Number of bytes read so far.
-        size_t        _packet_count = 0;       // Count of captured packets.
-        size_t        _ipv4_packet_count = 0;  // Count of captured IPv4 packets.
-        size_t        _packets_size = 0;       // Total size in bytes of captured packets.
-        size_t        _ipv4_packets_size = 0;  // Total size in bytes of captured IPv4 packets.
+        uint64_t      _file_size = 0;          // Number of bytes read so far.
+        uint64_t      _packet_count = 0;       // Count of captured packets.
+        uint64_t      _ipv4_packet_count = 0;  // Count of captured IPv4 packets.
+        uint64_t      _packets_size = 0;       // Total size in bytes of captured packets.
+        uint64_t      _ipv4_packets_size = 0;  // Total size in bytes of captured IPv4 packets.
         MicroSecond   _first_timestamp {-1};   // Timestamp of first packet in file.
         MicroSecond   _last_timestamp {-1};    // Timestamp of last packet in file.
         std::vector<InterfaceDesc> _if {};     // Capture interfaces by index, only one in pcap files.

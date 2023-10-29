@@ -247,6 +247,10 @@ bool ts::PcapInputPlugin::start()
 
 bool ts::PcapInputPlugin::stop()
 {
+    const size_t max = _pcap_tcp.maxReassemblyQueueSize();
+    if (max > 0) {
+        tsp->debug(u"max TCP reassembly queue size: %d data blocks", {max});
+    }
     _pcap_udp.close();
     _pcap_tcp.close();
     return AbstractDatagramInputPlugin::stop();
@@ -487,7 +491,8 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
             // The pcap file probably started in the middle of a TCP session.
             // Try to find 2 adjacent starts of packets (0x47).
             size_t size = _http_chunk_size;
-            _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
+            const bool ok = _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
+            tsp->debug(u"start in middle of HTTP session, initial read: %'d bytes, status: %s", {size, ok});
             size_t start = 0;
             for (;;) {
                 start = _data.find(SYNC_BYTE, start);
@@ -521,7 +526,10 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
         if (_data_next + 1024 > _data.size()) {
             // Read more but don't fail on error, need to process what we already have in _data.
             size_t size = _http_chunk_size;
-            _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
+            const bool ok = _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
+            if (!ok) {
+                tsp->debug(u"readTCP failed, read size: %'d bytes, position in file: %'d", {size, _pcap_tcp.fileSize()});
+            }
         }
 
         // If less than a packet could be read in the buffer, this is the end of file.

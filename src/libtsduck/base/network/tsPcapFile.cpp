@@ -122,7 +122,7 @@ bool ts::PcapFile::readall(uint8_t* data, size_t size, Report& report)
         // Get file size so far.
         const std::ios::pos_type fpos = _in->tellg();
         if (fpos != std::ios::pos_type(-1)) {
-            _file_size = size_t(fpos);
+            _file_size = uint64_t(fpos);
         }
 
         // Actual number of bytes.
