@@ -92,6 +92,13 @@ namespace ts {
 
         //!
         //! Check if the next data to read is at start of TCP session.
+        //! @param [in,out] report Where to report errors.
+        //! @return True on success and if the next data to read is at start of TCP session, false otherwise.
+        //!
+        bool startOfStream(Report& report);
+
+        //!
+        //! Check if the next data to read is at start of TCP session.
         //! @param [in] source Source address of the TCP stream. It must match one of the peers of the TCP session.
         //! @param [in,out] report Where to report errors.
         //! @return True on success and if the next data to read is at start of TCP session, false otherwise.
@@ -178,7 +185,7 @@ namespace ts {
         IPv4SocketAddress     _client {};
         IPv4SocketAddress     _server {};
         std::array<Stream, 2> _streams {};
-        size_t                _max_queue_size = 0; // Mximum size of TCP reassembly queues.
+        size_t                _max_queue_size = 0; // Maximum observed size of TCP reassembly queues.
 
         // Read IP packets and fill the two streams until one packet is read from the specified peer.
         // Index must be either ISRC, IDST or NPOS (any direction). Updated with actual index.
