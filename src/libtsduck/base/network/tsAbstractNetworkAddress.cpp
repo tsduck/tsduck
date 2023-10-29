@@ -8,6 +8,10 @@
 
 #include "tsAbstractNetworkAddress.h"
 
+#if !defined(TS_CXX17)
+constexpr ts::AbstractNetworkAddress::Port ts::AbstractNetworkAddress::AnyPort;
+#endif
+
 // All methods here are default implementations,
 // when a subclass does not implement the corresponding method.
 

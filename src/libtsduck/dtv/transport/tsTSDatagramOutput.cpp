@@ -102,7 +102,7 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
                   u"declared, this option may transport multicast IP packets in unicast Ethernet frames "
                   u"to the gateway, preventing multicast reception on the local network (seen on Linux).");
 
-        args.option(u"local-address", 'l', Args::STRING);
+        args.option(u"local-address", 'l', Args::IPADDR);
         args.help(u"local-address",
                   u"When the destination is a multicast address, specify the IP address "
                   u"of the outgoing local interface. It can be also a host name that "
@@ -156,9 +156,7 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
 
     if (_raw_udp) {
         success = _destination.resolve(args.value(u""), args) && success;
-        const UString local(args.value(u"local-address"));
-        _local_addr.clear();
-        success = (local.empty() || _local_addr.resolve(local, args)) && success;
+        args.getIPValue(_local_addr, u"local-address");
         args.getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
         args.getIntValue(_ttl, u"ttl", 0);
         args.getIntValue(_tos, u"tos", -1);

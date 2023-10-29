@@ -74,8 +74,8 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"Specify the TCP port on which tsp listens for control commands. "
               u"If unspecified, no control commands are expected.");
 
-    args.option(u"control-local", 0, Args::STRING);
-    args.help(u"control-local", u"address",
+    args.option(u"control-local", 0, Args::IPADDR);
+    args.help(u"control-local",
               u"Specify the IP address of the local interface on which to listen for control commands. "
               u"It can be also a host name that translates to a local address. "
               u"By default, listen on all local interfaces.");
@@ -86,8 +86,8 @@ void ts::TSProcessorArgs::defineArgs(Args& args)
               u"This option is not enabled by default to avoid accidentally running "
               u"two tsp commands with the same control port.");
 
-    args.option(u"control-source", 0, Args::STRING);
-    args.help(u"control-source", u"address",
+    args.option(u"control-source", 0, Args::IPADDR);
+    args.help(u"control-source",
               u"Specify a remote IP address which is allowed to send control commands. "
               u"By default, as a security precaution, only the local host is allowed to connect. "
               u"Several --control-source options are allowed.");
@@ -189,20 +189,13 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     args.getTristateValue(realtime, u"realtime");
     args.getIntValue(receive_timeout, u"receive-timeout", 0);
     args.getIntValue(final_wait, u"final-wait", -1);
+    args.getIPValue(control_local, u"control-local");
     args.getIntValue(control_port, u"control-port", 0);
     args.getIntValue(control_timeout, u"control-timeout", DEFAULT_CONTROL_TIMEOUT);
     control_reuse = args.present(u"control-reuse-port");
 
     // Convert MB in MiB for buffer size for compatibility with original versions.
     ts_buffer_size = size_t((uint64_t(ts_buffer_size) * 1024 * 1024) / 1000000);
-
-    // Get and resolve optional local address.
-    if (!args.present(u"control-local")) {
-        control_local.clear();
-    }
-    else {
-        control_local.resolve(args.value(u"control-local"), args);
-    }
 
     // Get and resolve optional allowed remote addresses.
     control_sources.clear();
@@ -212,10 +205,7 @@ bool ts::TSProcessorArgs::loadArgs(DuckContext& duck, Args& args)
     }
     else {
         for (size_t i = 0; i < args.count(u"control-source"); ++i) {
-            IPv4Address addr;
-            if (addr.resolve(args.value(u"control-source", u"", i), args)) {
-                control_sources.push_back(addr);
-            }
+            control_sources.push_back(args.ipValue(u"control-source", IPv4Address(), i));
         }
     }
 

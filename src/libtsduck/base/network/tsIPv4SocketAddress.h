@@ -27,7 +27,7 @@ namespace ts {
     {
         TS_RULE_OF_FIVE(IPv4SocketAddress, override);
     private:
-        uint16_t _port {AnyPort};  // Port in host byte order
+        uint16_t _port = 0;  // Port in host byte order
     public:
         //!
         //! Wildcard socket address, unspecified address and port.
@@ -106,12 +106,7 @@ namespace ts {
         //! set to @link AnyAddress @endlink and port to @link AnyPort @endlink.
         //! @param [in] report Where to report errors.
         //!
-        IPv4SocketAddress(const UString& name, Report& report) :
-            IPv4Address(),
-            _port(0)
-        {
-            resolve(name, report);
-        }
+        IPv4SocketAddress(const UString& name, Report& report) { IPv4SocketAddress::resolve(name, report); }
 
         // Inherited methods.
         virtual Port port() const override;

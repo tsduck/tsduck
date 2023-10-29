@@ -69,8 +69,8 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
               u"Be aware that the size of UDP datagrams is limited by design to 64 kB. "
               u"If larger JSON contents are expected, consider using --json-tcp.");
 
-    args.option(u"json-udp-local", 0, Args::STRING);
-    args.help(u"json-udp-local", u"address",
+    args.option(u"json-udp-local", 0, Args::IPADDR);
+    args.help(u"json-udp-local",
               u"With --json-udp, when the destination is a multicast address, specify "
               u"the IP address of the outgoing local interface. It can be also a host "
               u"name that translates to a local address.");
@@ -100,16 +100,13 @@ bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
     args.getValue(_line_prefix, u"json-line");
     args.getIntValue(_udp_ttl, u"json-udp-ttl");
     args.getIntValue(_sock_buffer_size, u"json-buffer-size");
+    args.getIPValue(_udp_local, u"json-udp-local");
     _udp_destination.clear();
-    _udp_local.clear();
     if (_json_tcp) {
         ok = _tcp_destination.resolve(args.value(u"json-tcp"), args);
     }
     if (_json_udp) {
         ok = _udp_destination.resolve(args.value(u"json-udp"), args);
-    }
-    if (args.present(u"json-udp-local")) {
-        ok = _udp_local.resolve(args.value(u"json-udp-local"), args) && ok;
     }
 
     // Force reinit of UDP and TCP session in case the arguments are reloaded.

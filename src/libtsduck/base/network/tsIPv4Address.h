@@ -48,7 +48,7 @@ namespace ts {
         //!
         //! Wildcard integer value for "any IP address".
         //!
-        static const uint32_t AnyAddress = 0;
+        static constexpr uint32_t AnyAddress = 0;
 
         //!
         //! Local host address.
@@ -102,11 +102,7 @@ namespace ts {
         //! representation of the address "a.b.c.d".
         //! @param [in] report Where to report errors.
         //!
-        IPv4Address(const UString& name, Report& report) :
-            _addr (0)
-        {
-            IPv4Address::resolve(name, report);
-        }
+        IPv4Address(const UString& name, Report& report) { IPv4Address::resolve(name, report); }
 
         // Inherited methods.
         virtual size_t binarySize() const override;

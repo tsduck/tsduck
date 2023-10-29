@@ -242,7 +242,7 @@ bool ts::MPEPlugin::getOptions()
     const UString ipSource(value(u"source"));
     const UString ipDest(value(u"destination"));
     const UString ipForward(value(u"redirect"));
-    const UString ipLocal(value(u"local-address"));
+    getIPValue(_local_address, u"local-address");
     getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
     getIntValue(_min_net_size, u"min-net-size");
     getIntValue(_max_net_size, u"max-net-size", NPOS);
@@ -275,7 +275,6 @@ bool ts::MPEPlugin::getOptions()
     _ip_source.clear();
     _ip_dest.clear();
     _ip_forward.clear();
-    _local_address.clear();
     if (!ipSource.empty() && !_ip_source.resolve(ipSource, *tsp)) {
         return false;
     }
@@ -283,9 +282,6 @@ bool ts::MPEPlugin::getOptions()
         return false;
     }
     if (!ipForward.empty() && !_ip_forward.resolve(ipForward, *tsp)) {
-        return false;
-    }
-    if (!ipLocal.empty() && !_local_address.resolve(ipLocal, *tsp)) {
         return false;
     }
 
