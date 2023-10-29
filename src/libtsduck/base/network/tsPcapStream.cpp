@@ -137,7 +137,7 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
             // Detect and truncate any overlap.
             const uint64_t diff = db.sequence - ptr->sequence;
             if (ptr->data.size() > diff) {
-                ptr->data.resize(diff);
+                ptr->data.resize(size_t(diff));
             }
             break;
         }
@@ -408,12 +408,31 @@ bool ts::PcapStream::indexOf(const IPv4SocketAddress& source, bool allow_unspeci
 // Position of the next data to read.
 //----------------------------------------------------------------------------
 
+bool ts::PcapStream::startOfStream(Report& report)
+{
+    // Each side must be either empty or at start.
+    if (!_streams[ISRC].packets.empty() && !_streams[IDST].packets.empty()) {
+        return _streams[ISRC].packets.front()->start && _streams[IDST].packets.front()->start;
+    }
+    else if (!_streams[ISRC].packets.empty()) {
+        return _streams[ISRC].packets.front()->start;
+    }
+    else if (!_streams[IDST].packets.empty()) {
+        return _streams[IDST].packets.front()->start;
+    }
+    else {
+        // Both sides are empty, need to read until the first packet of the session is found.
+        size_t index = NPOS;
+        return readStreams(index, report) && _streams[index].packets.front()->start;
+    }
+}
+
 bool ts::PcapStream::startOfStream(const IPv4SocketAddress& source, Report& report)
 {
     size_t index = NPOS;
     return indexOf(source, false, index, report) &&
-        (!_streams[index].packets.empty() || readStreams(index, report)) &&
-        _streams[index].packets.front()->start;
+           (!_streams[index].packets.empty() || readStreams(index, report)) &&
+           _streams[index].packets.front()->start;
 }
 
 bool ts::PcapStream::endOfStream(const IPv4SocketAddress& source, Report& report)

@@ -57,9 +57,9 @@ namespace ts {
         PcapStream           _pcap_tcp {};          // Pcap file, in TCP mode (DVB SimulCrypt EMMG/PDG <=> MUX).
         MicroSecond          _first_tstamp = 0;     // Time stamp of first datagram.
         IPv4SocketAddress    _actual_dest {};       // Actual destination UDP socket address.
+        IPv4SocketAddress    _actual_source {};     // Actual source TCP socket address for HTTP mode.
         IPv4SocketAddressSet _all_sources {};       // All source addresses.
         emmgmux::Protocol    _emmgmux {};           // EMMG/PDG <=> MUX protocol instance to decode TCP stream.
-        IPv4SocketAddress    _http_server {};       // Server side if HTTP session.
         ByteBlock            _data {};              // Session data buffer, for HTTP mode.
         size_t               _data_next = 0;        // Next index in _data.
         bool                 _data_error = false;   // Content of _data is invalid.
@@ -205,13 +205,11 @@ bool ts::PcapInputPlugin::start()
 {
     _first_tstamp = -1;
     _actual_dest = _destination;
+    _actual_source = _source;
     _all_sources.clear();
     _data.clear();
     _data_next = 0;
     _data_error = false;
-
-    // HTTP: start with known address as server. It will be reset when the session is identified.
-    _http_server = _source.hasAddress() ? _source : _destination;
 
     // Select the right receive method.
     if (_http) {
@@ -476,23 +474,42 @@ size_t ts::PcapInputPlugin::extractDataProvision(uint8_t* buffer, size_t buffer_
 // HTTP input method
 //----------------------------------------------------------------------------
 
-bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, MicroSecond &timestamp)
+bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_t &ret_size, MicroSecond& timestamp)
 {
     ret_size = 0;
 
     // The first time, detect start of HTTP session or resynchronize on a TS packet.
     if (tsp->pluginPackets() == 0) {
-        if (_pcap_tcp.startOfStream(_http_server, *tsp)) {
-            // At start of TCP session.
-            _http_server = _pcap_tcp.serverPeer();
-            tsp->debug(u"at start of HTTP session, server: %s", {_http_server});
+        if (_pcap_tcp.startOfStream(*tsp)) {
+            // At start of TCP session. At least one packet for this TCP session is ready to be read.
+            // If the source was initially unspecified, it is now known.
+            _actual_source = _pcap_tcp.sourceFilter();
+            tsp->debug(u"at start of HTTP session, source: %s, server: %s", {_actual_source, _pcap_tcp.serverPeer()});
         }
         else {
             // The pcap file probably started in the middle of a TCP session.
-            // Try to find 2 adjacent starts of packets (0x47).
+            // Initially, the source may be unknown (if only the destination was specified).
+            IPv4SocketAddress src(_source);
             size_t size = _http_chunk_size;
-            const bool ok = _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
-            tsp->debug(u"start in middle of HTTP session, initial read: %'d bytes, status: %s", {size, ok});
+            if (_pcap_tcp.readTCP(src, _data, size, timestamp, *tsp)) {
+                // The source is now known
+                _actual_source = _pcap_tcp.sourceFilter();
+                if (src != _actual_source) {
+                    // The source was unknown and the data were read from the other direction.
+                    // Revert the data buffer and retry to read from the real source.
+                    _data.clear();
+                    size = _http_chunk_size;
+                    _pcap_tcp.readTCP(_actual_source, _data, size, timestamp, *tsp);
+                }
+            }
+            if (size == 0) {
+                // No initial packet in this TCP session, the session does not exist.
+                tsp->verbose(u"TCP session not found in the pcap file");
+                return false;
+            }
+            tsp->debug(u"start in middle of HTTP session, initial read: %'d bytes, source: %s", {size, _actual_source});
+
+            // Try to find 2 adjacent starts of packets (0x47).
             size_t start = 0;
             for (;;) {
                 start = _data.find(SYNC_BYTE, start);
@@ -526,7 +543,7 @@ bool ts::PcapInputPlugin::receiveHTTP(uint8_t *buffer, size_t buffer_size, size_
         if (_data_next + 1024 > _data.size()) {
             // Read more but don't fail on error, need to process what we already have in _data.
             size_t size = _http_chunk_size;
-            const bool ok = _pcap_tcp.readTCP(_http_server, _data, size, timestamp, *tsp);
+            const bool ok = _pcap_tcp.readTCP(_actual_source, _data, size, timestamp, *tsp);
             if (!ok) {
                 tsp->debug(u"readTCP failed, read size: %'d bytes, position in file: %'d", {size, _pcap_tcp.fileSize()});
             }
