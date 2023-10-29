@@ -48,6 +48,9 @@ bool ts::PcapStream::open(const UString& filename, Report& report)
         PcapFilter::setProtocolFilterTCP();
         PcapFilter::setWildcardFilter(false);
         setBidirectionalFilter(IPv4SocketAddress(), IPv4SocketAddress());
+
+        // Statistics on the stream.
+        _max_queue_size = 0;
     }
     return ok;
 }
@@ -95,6 +98,29 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
     // Allocate a new data block.
     const DataBlockPtr ptr(new DataBlock(pkt, tstamp));
 
+    // Resolve wrap-up of TCP sequence number at 2^32.
+    // Use the 32 upper bits of first queued block to get the order of magnitude.
+    if (!packets.empty()) {
+        // Mask / wrap-up boundary for sequence numbers:
+        constexpr uint64_t max_seq = 0xFFFFFFFF;
+        // If within that range around boundary, there is a wrap-up (say max 10 packets out-of-order):
+        constexpr uint64_t range = 10 * TCP_MAX_PAYLOAD_SIZE;
+        // Original sequence number in first queued block:
+        const uint64_t first_full_seq = packets.front()->sequence;
+        const uint64_t first_seq = first_full_seq & max_seq;
+        uint64_t msb = first_full_seq >> 32;
+        // Adjust captured sequence number.
+        if (ptr->sequence > max_seq - range && first_seq < range) {
+            // Captured block is before first block and wrap-up occured between the two.
+            msb--;
+        }
+        else if (first_seq > max_seq - range && ptr->sequence < range) {
+            // Captured block is after first block and wrap-up occured between the two.
+            msb++;
+        }
+        ptr->sequence |= msb << 32;
+    }
+
     // Find the right location in the queue.
     auto it = packets.begin();
     while (it != packets.end()) {
@@ -106,10 +132,10 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
             }
             return;
         }
-        else if (TCPOrderedSequence(ptr->sequence, db.sequence)) {
+        else if (ptr->sequence < db.sequence) {
             // Need to be inserted here, next packet is after.
             // Detect and truncate any overlap.
-            const size_t diff = TCPSequenceDiff(ptr->sequence, db.sequence);
+            const uint64_t diff = db.sequence - ptr->sequence;
             if (ptr->data.size() > diff) {
                 ptr->data.resize(diff);
             }
@@ -117,18 +143,18 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
         }
         else {
             // Need to be inserted after this one but check if there is any overlap.
-            const size_t diff = TCPSequenceDiff(db.sequence, ptr->sequence);
+            const uint64_t diff = ptr->sequence - db.sequence;
             if (db.data.size() > diff) {
                 // The packet at **it overlaps on packet to insert.
-                const size_t extra = db.data.size() - diff;
+                const uint64_t extra = db.data.size() - diff;
                 if (ptr->data.size() <= extra) {
                     // Packet to insert is fully overlapped, drop it.
                     return;
                 }
                 else {
                     // Remove overlapping start of the packet to insert.
-                    ptr->data.erase(0, extra);
-                    ptr->sequence += uint32_t(extra);
+                    ptr->data.erase(0, size_t(extra));
+                    ptr->sequence += extra;
                 }
             }
         }
@@ -145,10 +171,10 @@ void ts::PcapStream::Stream::store(const IPv4Packet& pkt, MicroSecond tstamp)
         // If the previous packet is empty and adjacent, it was waiting for the next
         // adjacent packet and we may remove it now.
         if (it != packets.begin()) {
-            const uint32_t seq = (*it)->sequence;
+            const uint64_t seq = (*it)->sequence;
             --it;
             const DataBlock& db(**it);
-            if (db.index >= db.data.size() && db.sequence + uint32_t(db.data.size()) == seq) {
+            if (db.index >= db.data.size() && db.sequence + db.data.size() == seq) {
                 // Propagate start of stream from previous packet to this one.
                 if (db.start && db.data.empty()) {
                     ptr->start = true;
@@ -221,6 +247,7 @@ bool ts::PcapStream::readStreams(size_t& source, Report& report)
 
         // Store the packet in the stream.
         _streams[pkt_source].store(pkt, timestamp);
+        _max_queue_size = std::max(_max_queue_size, _streams[pkt_source].packets.size());
 
         // Stop when a packet was read from the specified peer.
         if ((source == pkt_source || (source != ISRC && source != IDST)) && !_streams[pkt_source].packets.empty()) {

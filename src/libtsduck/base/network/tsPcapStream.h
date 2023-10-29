@@ -120,6 +120,13 @@ namespace ts {
         //!
         bool nextSession(Report& report);
 
+        //!
+        //! Get the maximum number of queued data blocks to reassemble TCP streams.
+        //! This value gives an idea of how packets were reordered during transmission.
+        //! @return The maximum number of queued data blocks to reassemble TCP streams.
+        //!
+        size_t maxReassemblyQueueSize() const { return _max_queue_size; }
+
         // Inherited methods.
         virtual bool open(const UString& filename, Report& report) override;
         virtual void setBidirectionalFilter(const IPv4SocketAddress& addr1, const IPv4SocketAddress& addr2) override;
@@ -134,7 +141,7 @@ namespace ts {
 
             ByteBlock   data {};         // TCP payload
             size_t      index = 0;       // index of next byte to read in data
-            uint32_t    sequence = 0;    // TCP sequence number at start of data
+            uint64_t    sequence = 0;    // TCP sequence number at start of data, expanded for
             bool        start = false;   // start of TCP stream.
             bool        end = false;     // end of TCP stream.
             MicroSecond timestamp = -1;  // capture time stamp.
@@ -171,6 +178,7 @@ namespace ts {
         IPv4SocketAddress     _client {};
         IPv4SocketAddress     _server {};
         std::array<Stream, 2> _streams {};
+        size_t                _max_queue_size = 0; // Mximum size of TCP reassembly queues.
 
         // Read IP packets and fill the two streams until one packet is read from the specified peer.
         // Index must be either ISRC, IDST or NPOS (any direction). Updated with actual index.
