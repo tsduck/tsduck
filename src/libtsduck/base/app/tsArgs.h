@@ -20,6 +20,7 @@
 #include "tsSafePtr.h"
 #include "tsAbstractNumber.h"
 #include "tsCompactBitSet.h"
+#include "tsIPv4SocketAddress.h"
 
 namespace ts {
     //!
@@ -298,25 +299,30 @@ namespace ts {
         //! Type of an argument or parameter.
         //!
         enum ArgType {
-            NONE,      //!< Option without argument.
-            STRING,    //!< Uninterpreted string argument.
-            FILENAME,  //!< String argument which will be interpreted as a file name.
-            DIRECTORY, //!< String argument which will be interpreted as a directory name.
-            HEXADATA,  //!< String argument which will be interpreted as a suite of hexadecimal digits.
-            INTEGER,   //!< Integer argument, must set min & max values.
-            UNSIGNED,  //!< Integer 0..unlimited.
-            POSITIVE,  //!< Integer 1..unlimited.
-            UINT8,     //!< Integer 0..0xFF.
-            UINT16,    //!< Integer 0..0xFFFF.
-            UINT32,    //!< Integer 0..0xFFFFFFFF.
-            UINT63,    //!< 63-bit unsigned (cannot represent 2^63 and higher).
-            PIDVAL,    //!< Integer 0..0x1FFF (an MPEG PID value).
-            INT8,      //!< Integer -128..127.
-            INT16,     //!< Integer -32,768..32,767.
-            INT32,     //!< Integer -2,147,483,648..2,147,483,647.
-            INT64,     //!< 64-bit signed.
-            ANUMBER,   //!< A subclass of AbstractNumber.
-            TRISTATE,  //!< Tristate value, ts::Maybe if absent.
+            NONE,           //!< Option without argument.
+            STRING,         //!< Uninterpreted string argument.
+            FILENAME,       //!< String argument which will be interpreted as a file name.
+            DIRECTORY,      //!< String argument which will be interpreted as a directory name.
+            HEXADATA,       //!< String argument which will be interpreted as a suite of hexadecimal digits.
+            INTEGER,        //!< Integer argument, must set min & max values.
+            UNSIGNED,       //!< Integer 0..unlimited.
+            POSITIVE,       //!< Integer 1..unlimited.
+            UINT8,          //!< Integer 0..0xFF.
+            UINT16,         //!< Integer 0..0xFFFF.
+            UINT32,         //!< Integer 0..0xFFFFFFFF.
+            UINT63,         //!< 63-bit unsigned (cannot represent 2^63 and higher).
+            PIDVAL,         //!< Integer 0..0x1FFF (an MPEG PID value).
+            INT8,           //!< Integer -128..127.
+            INT16,          //!< Integer -32,768..32,767.
+            INT32,          //!< Integer -2,147,483,648..2,147,483,647.
+            INT64,          //!< 64-bit signed.
+            ANUMBER,        //!< A subclass of AbstractNumber.
+            TRISTATE,       //!< Tristate value, ts::Maybe if absent.
+            IPADDR,         //!< IPv4 address or host name translating to an address.
+            IPSOCKADDR,     //!< IPv4 socket address (or host name) and port, both are mandatory.
+            IPSOCKADDR_OA,  //!< IPv4 socket address (or host name) and port, address is optional.
+            IPSOCKADDR_OP,  //!< IPv4 socket address (or host name) and port, port is optional.
+            IPSOCKADDR_OAP, //!< IPv4 socket address (or host name) and port, address and port are optional.
         };
 
         //!
@@ -958,7 +964,7 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] def_value The string to return if the option or parameter
+        //! @param [in] def_value The data to return if the option or parameter
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
@@ -972,13 +978,73 @@ namespace ts {
         //! an empty string, this specifies a parameter, not an option. If the specified option
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
-        //! @param [in] def_value The string to return if the option or parameter
+        //! @param [in] def_value The data to return if the option or parameter
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //! @return The decoded binary value of the option or parameter.
         //!
         ByteBlock hexaValue(const UChar* name = nullptr, const ByteBlock& def_value = ByteBlock(), size_t index = 0) const;
+
+        //!
+        //! Get the value of an option as an IPv4 address in the last analyzed command line.
+        //!
+        //! @param [out] value A variable receiving the resolved IPv4 address value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The IPv4 address to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        void getIPValue(IPv4Address& value, const UChar* name = nullptr, const IPv4Address& def_value = IPv4Address(), size_t index = 0) const;
+
+        //!
+        //! Get the value of an option as an IPv4 address in the last analyzed command line.
+        //!
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The IPv4 address to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The resolved IPv4 address value of the option or parameter.
+        //!
+        IPv4Address ipValue(const UChar* name = nullptr, const IPv4Address& def_value = IPv4Address(), size_t index = 0) const;
+
+        //!
+        //! Get the value of an option as an IPv4 socket address in the last analyzed command line.
+        //!
+        //! @param [out] value A variable receiving the resolved IPv4 socket address value of the option or parameter.
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The IPv4 address socket to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //!
+        void getSocketValue(IPv4SocketAddress& value, const UChar* name = nullptr, const IPv4SocketAddress& def_value = IPv4SocketAddress(), size_t index = 0) const;
+
+        //!
+        //! Get the value of an option as an IPv4 socket address in the last analyzed command line.
+        //!
+        //! @param [in] name The full name of the option. If the parameter is a null pointer or
+        //! an empty string, this specifies a parameter, not an option. If the specified option
+        //! was not declared in the syntax of the command or declared as a non-string type,
+        //! a fatal error is reported.
+        //! @param [in] def_value The IPv4 socket address to return if the option or parameter
+        //! is not present in the command line or with fewer occurences than @a index.
+        //! @param [in] index The occurence of the option to return. Zero designates the
+        //! first occurence.
+        //! @return The resolved IPv4 socket address value of the option or parameter.
+        //!
+        IPv4SocketAddress socketValue(const UChar* name = nullptr, const IPv4SocketAddress& def_value = IPv4SocketAddress(), size_t index = 0) const;
 
         //!
         //! Get the value of an AbstractNumber option in the last analyzed command line.
@@ -1091,6 +1157,7 @@ namespace ts {
             Variable<UString> string {};      // Orginal string value from command line (unset if option is present without value).
             int64_t           int_base = 0;   // First (or only) integer value.
             size_t            int_count = 0;  // Number of consecutive integer values.
+            IPv4SocketAddress address {};     // IPv4 address or socket address value.
         };
 
         // List of values

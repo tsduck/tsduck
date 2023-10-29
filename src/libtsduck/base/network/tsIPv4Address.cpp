@@ -10,7 +10,12 @@
 #include "tsIPUtils.h"
 #include "tsMemory.h"
 
-// Local host address
+#if !defined(TS_CXX17)
+constexpr size_t ts::IPv4Address::BITS;
+constexpr size_t ts::IPv4Address::BYTES;
+constexpr uint32_t ts::IPv4Address::AnyAddress;
+#endif
+
 const ts::IPv4Address ts::IPv4Address::LocalHost(127, 0, 0, 1);
 
 
@@ -23,8 +28,7 @@ ts::IPv4Address::IPv4Address(uint8_t b1, uint8_t b2, uint8_t b3, uint8_t b4) :
 {
 }
 
-ts::IPv4Address::IPv4Address(const ::sockaddr& s) :
-    _addr(AnyAddress)
+ts::IPv4Address::IPv4Address(const ::sockaddr& s)
 {
     if (s.sa_family == AF_INET) {
         assert(sizeof(::sockaddr) >= sizeof(::sockaddr_in));
@@ -33,8 +37,7 @@ ts::IPv4Address::IPv4Address(const ::sockaddr& s) :
     }
 }
 
-ts::IPv4Address::IPv4Address(const ::sockaddr_in& s) :
-    _addr(AnyAddress)
+ts::IPv4Address::IPv4Address(const ::sockaddr_in& s)
 {
     if (s.sin_family == AF_INET) {
         _addr = ntohl(s.sin_addr.s_addr);

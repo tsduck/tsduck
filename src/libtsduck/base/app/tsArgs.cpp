@@ -71,6 +71,11 @@ ts::Args::IOption::IOption(const UChar* name_,
     switch (type) {
         case NONE:
         case TRISTATE:
+        case IPADDR:
+        case IPSOCKADDR:
+        case IPSOCKADDR_OA:
+        case IPSOCKADDR_OP:
+        case IPSOCKADDR_OAP:
             min_value = 0;
             max_value = 0;
             break;
@@ -218,7 +223,12 @@ ts::UString ts::Args::IOption::valueDescription(ValueContext ctx) const
             case FILENAME:  desc = u"file-name"; break;
             case DIRECTORY: desc = u"directory-name"; break;
             case HEXADATA:  desc = u"hexa-data"; break;
-            default:        desc = u"value"; break;
+            case IPADDR:    desc = u"ip-address"; break;
+            case IPSOCKADDR:     desc = u"ip-address:port"; break;
+            case IPSOCKADDR_OA:  desc = u"[ip-address:]port"; break;
+            case IPSOCKADDR_OP:  desc = u"ip-address[:port]"; break;
+            case IPSOCKADDR_OAP: desc = u"[ip-address]:[port]"; break;
+            default:             desc = u"value"; break;
         }
         TS_POP_WARNING()
     }
@@ -304,6 +314,15 @@ ts::UString ts::Args::IOption::optionType() const
             break;
         case HEXADATA:
             desc += u":hexadata";
+            break;
+        case IPADDR:
+            desc += u":ipaddress";
+            break;
+        case IPSOCKADDR:
+        case IPSOCKADDR_OA:
+        case IPSOCKADDR_OP:
+        case IPSOCKADDR_OAP:
+            desc += u":ipsocket";
             break;
         case NONE:
             desc += u":bool";
@@ -814,10 +833,8 @@ void ts::Args::getOptionalValue(Variable<UString>& value, const UChar* name, boo
 void ts::Args::getValues(UStringVector& values, const UChar* name) const
 {
     const IOption& opt(getIOption(name));
-
     values.clear();
     values.reserve(opt.values.size());
-
     for (auto& it : opt.values) {
         if (it.string.set()) {
             values.push_back(it.string.value());
@@ -833,7 +850,6 @@ void ts::Args::getValues(UStringVector& values, const UChar* name) const
 void ts::Args::getTristateValue(Tristate& value, const UChar* name, size_t index) const
 {
     const IOption& opt(getIOption(name));
-
     if (opt.type == INTEGER) {
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is integer, cannot be accessed as tristate");
     }
@@ -868,7 +884,6 @@ ts::Tristate ts::Args::tristateValue(const UChar* name, size_t index) const
 void ts::Args::getHexaValue(ByteBlock& value, const UChar* name, const ByteBlock& def_value, size_t index) const
 {
     const IOption& opt(getIOption(name));
-
     if (opt.type != STRING && opt.type != HEXADATA) {
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as string or hexa string");
     }
@@ -884,6 +899,43 @@ ts::ByteBlock ts::Args::hexaValue(const UChar* name, const ByteBlock& def_value,
 {
     ByteBlock value;
     getHexaValue(value, name, def_value, index);
+    return value;
+}
+
+
+//----------------------------------------------------------------------------
+// Get the value of an option as an IPv4 address or socket address.
+//----------------------------------------------------------------------------
+
+void ts::Args::getIPValue(IPv4Address& value, const UChar* name, const IPv4Address& def_value, size_t index) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.type != IPADDR && opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as IPv4 address");
+    }
+    value = index >= opt.values.size() ? def_value : opt.values[index].address;
+}
+
+ts::IPv4Address ts::Args::ipValue(const UChar* name, const IPv4Address& def_value, size_t index) const
+{
+    IPv4Address value;
+    getIPValue(value, name, def_value, index);
+    return value;
+}
+
+void ts::Args::getSocketValue(IPv4SocketAddress& value, const UChar* name, const IPv4SocketAddress& def_value, size_t index) const
+{
+    const IOption& opt(getIOption(name));
+    if (opt.type != IPSOCKADDR && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
+        throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as IPv4 socket address");
+    }
+    value = index >= opt.values.size() ? def_value : opt.values[index].address;
+}
+
+ts::IPv4SocketAddress ts::Args::socketValue(const UChar* name, const IPv4SocketAddress& def_value, size_t index) const
+{
+    IPv4SocketAddress value;
+    getSocketValue(value, name, def_value, index);
     return value;
 }
 
@@ -1183,6 +1235,27 @@ bool ts::Args::validateParameter(IOption& opt, const Variable<UString>& val)
         }
         if (data.size() > size_t(opt.max_value)) {
             error(u"invalid size %d for %s, must be at most %d bytes", {data.size(), opt.display(), opt.max_value});
+            return false;
+        }
+    }
+    else if (opt.type == IPADDR) {
+        IPv4Address addr;
+        if (!addr.resolve(val.value(), *this)) {
+            return false;
+        }
+        arg.address.setAddress(addr);
+        arg.address.setPort(0);
+    }
+    else if (opt.type == IPSOCKADDR || opt.type == IPSOCKADDR_OA || opt.type == IPSOCKADDR_OP || opt.type == IPSOCKADDR_OAP) {
+        if (!arg.address.resolve(val.value(), *this)) {
+            return false;
+        }
+        if (!arg.address.hasAddress() && opt.type != IPSOCKADDR_OA && opt.type != IPSOCKADDR_OAP) {
+            error(u"mandatory IP address is missing in %s, use ip-address:port", {val.value()});
+            return false;
+        }
+        if (!arg.address.hasPort() && opt.type != IPSOCKADDR_OP && opt.type != IPSOCKADDR_OAP) {
+            error(u"mandatory port number is missing in %s, use ip-address:port", {val.value()});
             return false;
         }
     }

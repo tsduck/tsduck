@@ -36,7 +36,7 @@ namespace ts {
         //!
         //! Wildcard integer value for "any port" or "no port".
         //!
-        static const Port AnyPort = 0;
+        static constexpr Port AnyPort = 0;
 
         //!
         //! Default constructor.

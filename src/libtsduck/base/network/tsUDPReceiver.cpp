@@ -73,8 +73,8 @@ void ts::UDPReceiver::defineArgs(ts::Args& args, bool with_short_options, bool d
                     u"options than receivers, the last --local-address applies for all remaining receivers.",
                     {dest_display});
     }
-    args.option(u"local-address", with_short_options ? 'l' : 0, Args::STRING, 0, max_count);
-    args.help(u"local-address", u"address", help);
+    args.option(u"local-address", with_short_options ? 'l' : 0, Args::IPADDR, 0, max_count);
+    args.help(u"local-address", help);
 
     args.option(u"no-reuse-port");
     args.help(u"no-reuse-port",
@@ -193,8 +193,8 @@ bool ts::UDPReceiver::loadArgs(DuckContext& duck, Args& args, size_t index)
     if (laddr_count == 0) {
         _local_address.clear();
     }
-    else if (!_local_address.resolve(args.value(u"local-address", u"", std::min(_receiver_index, laddr_count - 1)), args)) {
-        return false;
+    else {
+        args.getIPValue(_local_address, u"local-address", IPv4Address(), std::min(_receiver_index, laddr_count - 1));
     }
 
     // Either specify a local address or let the system decide, but not both.
