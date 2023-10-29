@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3353
+VERSION 3.36-3355
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -35,6 +35,8 @@ VERSION 3.36-3353
     value zero (no buffering at all) was not allowed.
   * Fixed issue #1321: In input plugin "dektec", read what is available in the
     input FIFO only, instead of trying to fill the complete buffer.
+  * Fixed issue #1334: Incorrect service type names in JSON report of
+    "tsanalyze" and plugin "analyze".
 
 -------------------------------------------------------------------------------
 

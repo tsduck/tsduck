@@ -1169,7 +1169,7 @@ void ts::TSAnalyzerReport::reportJSON(TSAnalyzerOptions& opt, std::ostream& stm,
         jv.add(u"provider", sv.getProvider());
         jv.add(u"name", sv.getName());
         jv.add(u"type", sv.service_type);
-        jv.add(u"type-name", names::StreamType(sv.service_type));
+        jv.add(u"type-name", names::ServiceType(sv.service_type));
         jv.add(u"tsid", _ts_id);
         jv.add(u"original-network-id", sv.orig_netw_id);
         jv.add(u"is-scrambled", json::Bool(sv.scrambled_pid_cnt > 0));
