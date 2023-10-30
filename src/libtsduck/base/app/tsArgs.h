@@ -1026,6 +1026,8 @@ namespace ts {
         //! a fatal error is reported.
         //! @param [in] def_value The IPv4 address socket to return if the option or parameter
         //! is not present in the command line or with fewer occurences than @a index.
+        //! If the parameter is present but either address or port is missing, the missing part
+        //! is copied from @a def_value.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.
         //!
@@ -1039,6 +1041,8 @@ namespace ts {
         //! was not declared in the syntax of the command or declared as a non-string type,
         //! a fatal error is reported.
         //! @param [in] def_value The IPv4 socket address to return if the option or parameter
+        //! If the parameter is present but either address or port is missing, the missing part
+        //! is copied from @a def_value.
         //! is not present in the command line or with fewer occurences than @a index.
         //! @param [in] index The occurence of the option to return. Zero designates the
         //! first occurence.

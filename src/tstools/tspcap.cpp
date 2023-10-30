@@ -77,8 +77,8 @@ Options::Options(int argc, char *argv[]) :
          u"are interpreted as EMMG/PDG <=> MUX protocol (this is the only DVB SimulCrypt "
          u"protocol which is based on UDP).");
 
-    option(u"destination", 'd', STRING);
-    help(u"destination", u"[address][:port]",
+    option(u"destination", 'd', IPSOCKADDR_OAP);
+    help(u"destination",
          u"Filter IPv4 packets based on the specified destination socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
 
@@ -107,8 +107,8 @@ Options::Options(int argc, char *argv[]) :
          u"Unlike --extract-tcp-stream, only one side of the TCP session is saved, from --source to --destination. "
          u"If the file name is \"-\", the standard output is used.");
 
-    option(u"source", 's', STRING);
-    help(u"source", u"[address][:port]",
+    option(u"source", 's', IPSOCKADDR_OAP);
+    help(u"source",
          u"Filter IPv4 packets based on the specified source socket address. "
          u"The optional port number is used for TCP and UDP packets only.");
 
@@ -126,8 +126,8 @@ Options::Options(int argc, char *argv[]) :
     getValue(input_file, u"");
     getValue(output_file, u"output-tcp-stream");
     save_tcp = present(u"output-tcp-stream");
-    const ts::UString dest_string(value(u"destination"));
-    const ts::UString source_string(value(u"source"));
+    getSocketValue(dest_filter, u"destination");
+    getSocketValue(source_filter, u"source");
     getIntValue(interval, u"interval", 0);
     list_streams = present(u"list-streams");
     print_intervals = present(u"interval");
@@ -152,15 +152,6 @@ Options::Options(int argc, char *argv[]) :
         }
     }
 
-    // Decode network addresses.
-    if (!source_string.empty()) {
-        source_filter.resolve(source_string, *this);
-    }
-    if (!dest_string.empty()) {
-        dest_filter.resolve(dest_string, *this);
-    }
-
-    // Final checking.
     if (dvb_simulcrypt && extract_tcp) {
         error(u"--dvb-simulcrypt and --extract-tcp-stream are mutually exclusive");
     }

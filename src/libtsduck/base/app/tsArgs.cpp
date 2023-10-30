@@ -914,6 +914,9 @@ void ts::Args::getIPValue(IPv4Address& value, const UChar* name, const IPv4Addre
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as IPv4 address");
     }
     value = index >= opt.values.size() ? def_value : opt.values[index].address;
+    if (!value.hasAddress() && def_value.hasAddress()) {
+        value.setAddress(def_value.address());
+    }
 }
 
 ts::IPv4Address ts::Args::ipValue(const UChar* name, const IPv4Address& def_value, size_t index) const
@@ -930,6 +933,12 @@ void ts::Args::getSocketValue(IPv4SocketAddress& value, const UChar* name, const
         throw ArgsError(_app_name + u": application internal error, option --" + opt.name + u" is not declared as IPv4 socket address");
     }
     value = index >= opt.values.size() ? def_value : opt.values[index].address;
+    if (!value.hasAddress() && def_value.hasAddress()) {
+        value.setAddress(def_value.address());
+    }
+    if (!value.hasPort() && def_value.hasPort()) {
+        value.setPort(def_value.port());
+    }
 }
 
 ts::IPv4SocketAddress ts::Args::socketValue(const UChar* name, const IPv4SocketAddress& def_value, size_t index) const

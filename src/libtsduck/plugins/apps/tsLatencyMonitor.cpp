@@ -16,13 +16,7 @@
 
 ts::LatencyMonitor::LatencyMonitor(const LatencyMonitorArgs& args, Report& report) :
     _report(report),
-    _args(args),
-    _inputs(),
-    _mutex(),
-    _max_latency(0),
-    _last_output_time(Time::Epoch),
-    _output_stream(),
-    _output_file(nullptr)
+    _args(args)
 {
     // Debug message.
     if (_report.debug()) {

@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsMuxer.h"
-#include "tsSystemMonitor.h"
 #include "tstsmuxCore.h"
 
 
@@ -16,10 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::Muxer::Muxer(Report& report) :
-    PluginEventHandlerRegistry(),
-    _report(report),
-    _args(),
-    _core(nullptr)
+    _report(report)
 {
 }
 

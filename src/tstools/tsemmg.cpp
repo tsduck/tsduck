@@ -172,8 +172,8 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
          u"Stop after sending the specified number of bytes. By default, send data "
          u"indefinitely.");
 
-    option(u"mux", 'm', STRING);
-    help(u"mux", u"address:port",
+    option(u"mux", 'm', IPSOCKADDR, 1, 1);
+    help(u"mux",
          u"Specify the IP address (or host name) and TCP port of the MUX. This is a "
          u"required parameter, there is no default.");
 
@@ -201,8 +201,8 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
          u"This option sets the DVB SimulCrypt parameter 'data_type'. Default: 0 (EMM). "
          u"In addition to integer values, names can be used.");
 
-    option(u"udp", 'u', STRING);
-    help(u"udp", u"[address:]port",
+    option(u"udp", 'u', IPSOCKADDR_OA);
+    help(u"udp",
          u"Specify that the 'data_provision' messages shall be sent using UDP. By "
          u"default, the 'data_provision' messages are sent over TCP using the same "
          u"TCP connection as the management commands. If the IP address (or host "
@@ -221,8 +221,9 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
 
     getValues(inputFiles);
     getIntValue(maxCycles, u"cycles");
-    const ts::UString tcpMux(value(u"mux"));
-    const ts::UString udpMux(value(u"udp"));
+    getSocketValue(tcpMuxAddress, u"mux");
+    useUDP = present(u"udp");
+    getSocketValue(udpMuxAddress, u"udp");
     getIntValue(clientId, u"client-id", 0);
     getIntValue(dataId, u"data-id", 0);
     getIntValue(channelId, u"channel-id", 1);
@@ -252,25 +253,9 @@ EMMGOptions::EMMGOptions(int argc, char *argv[]) :
         error(u"--emm-max-table-id 0x%X is less than --emm-min-table-id 0x%X", {emmMaxTableId, emmMinTableId});
     }
 
-    // Resolve MUX address.
-    if (tcpMux.empty()) {
-        error(u"missing MUX server, use --mux address:port");
-    }
-    else if (tcpMuxAddress.resolve(tcpMux, *this) && (!tcpMuxAddress.hasAddress() || !tcpMuxAddress.hasPort())) {
-        error(u"missing MUX server address or port, use --mux address:port");
-    }
-
-    // Check if UDP is used for data provision.
-    useUDP = !udpMux.empty();
-    if (useUDP && udpMuxAddress.resolve(udpMux, *this)) {
-        // Use same address as TCP by default.
-        if (!udpMuxAddress.hasAddress()) {
-            udpMuxAddress.setAddress(tcpMuxAddress.address());
-        }
-        // UDP port is mandatory.
-        if (!udpMuxAddress.hasPort()) {
-            error(u"missing port in --udp [address:]port");
-        }
+    // If UDP is used for data provision, use same address as TCP by default.
+    if (useUDP && !udpMuxAddress.hasAddress()) {
+        udpMuxAddress.setAddress(tcpMuxAddress.address());
     }
 
     // Specify which EMMG/PDG <=> MUX version to use.

@@ -72,7 +72,7 @@ namespace ts {
 
     private:
         Report&      _report;
-        MuxerArgs    _args;
-        tsmux::Core* _core;
+        MuxerArgs    _args {};
+        tsmux::Core* _core = nullptr;
     };
 }

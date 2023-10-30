@@ -7,7 +7,6 @@
 //----------------------------------------------------------------------------
 
 #include "tsInputSwitcher.h"
-#include "tsSystemMonitor.h"
 #include "tstsswitchCore.h"
 #include "tstsswitchCommandListener.h"
 
@@ -17,17 +16,12 @@
 //----------------------------------------------------------------------------
 
 ts::InputSwitcher::InputSwitcher(Report& report) :
-    PluginEventHandlerRegistry(),
-    _report(report),
-    _args(),
-    _core(nullptr),
-    _remote(nullptr),
-    _success(false)
+    _report(report)
 {
 }
 
 ts::InputSwitcher::InputSwitcher(const InputSwitcherArgs& args, Report& report) :
-    InputSwitcher(report)
+    _report(report)
 {
     _success = start(args);
     waitForTermination();
