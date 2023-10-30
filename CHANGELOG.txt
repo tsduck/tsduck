@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3355
+VERSION 3.36-3359
 
 [IMP] Improvements on existing commands and plugins:
 
@@ -29,6 +29,7 @@ VERSION 3.36-3355
     due to an artefact in the SRT library, the second caller appeared to be
     connected but the packets were dropped. The third and next callers were
     properly rejected.
+  * Fixed issue #996: Restarting plugin "tables" failed with JSON output.
   * Fixed issue #1293: In plugin "zap", the options --subtitles-pid and
     --audio-pid were broken and no longer selected the specified PID's.
   * In "fork" packet processing plugin, in option --buffered-packets, the
