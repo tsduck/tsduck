@@ -204,8 +204,8 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
          u"Set the reuse port socket option. This is now enabled by default, the option "
          u"is present for legacy only.");
 
-    option(u"server", 's', STRING, 1, 1);
-    help(u"server", u"[address:]port",
+    option(u"server", 's', IPSOCKADDR_OA, 1, 1);
+    help(u"server",
          u"Specifies the local TCP port on which the plugin listens for an incoming "
          u"EMMG/PDG connection. This option is mandatory. "
          u"When present, the optional address shall specify a local IP address or "
@@ -213,8 +213,8 @@ ts::DataInjectPlugin::DataInjectPlugin(TSP* tsp_) :
          u"interface). This plugin behaves as a MUX, ie. a TCP server, and accepts "
          u"only one EMMG/PDG connection at a time.");
 
-    option(u"udp", 'u', STRING);
-    help(u"udp", u"[address:]port",
+    option(u"udp", 'u', IPSOCKADDR_OA);
+    help(u"udp",
          u"Specifies the local UDP port on which the plugin listens for data "
          u"provision messages (these messages can be sent using TCP or UDP). By "
          u"default, use the same port and optional local address as specified for "
@@ -240,6 +240,8 @@ bool ts::DataInjectPlugin::start()
     _reuse_port = !present(u"no-reuse-port");
     getIntValue(_sock_buf_size, u"buffer-size");
     _unregulated = present(u"unregulated");
+    getSocketValue(_tcp_address, u"server");
+    getSocketValue(_udp_address, u"udp");
 
     // Set logging levels.
     const int log_protocol = present(u"log-protocol") ? intValue<int>(u"log-protocol", ts::Severity::Info) : ts::Severity::Debug;
@@ -254,20 +256,7 @@ bool ts::DataInjectPlugin::start()
     // Specify which EMMG/PDG <=> MUX version to use.
     _protocol.setVersion(intValue<tlv::VERSION>(u"emmg-mux-version", DEFAULT_PROTOCOL_VERSION));
 
-    // Get TCP server address. The only mandatory part is the TCP port.
-    if (!_tcp_address.resolve(value(u"server"), *tsp)) {
-        return false;
-    }
-    if (!_tcp_address.hasPort()) {
-        tsp->error(u"no TCP server port specified");
-        return false;
-    }
-
-    // Get UDP server address. Same as TCP by default.
-    _udp_address.clear();
-    if (present(u"udp") && !_udp_address.resolve(value(u"udp"), *tsp)) {
-        return false;
-    }
+    // UDP server address is same as TCP by default.
     if (!_udp_address.hasAddress()) {
         _udp_address.setAddress(_tcp_address.address());
     }

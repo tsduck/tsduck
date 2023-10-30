@@ -67,8 +67,8 @@ bool ts::IPv4SocketAddress::resolve(const UString& name, Report& report)
 
     if (colon == NPOS) {
         // No colon in string, can be an address alone or a port alone.
-        if (name.toInteger(_port)) {
-            // This is an integer, this is a port alone.
+        if (name.empty() || name.toInteger(_port)) {
+            // Empty valid default address or an integer (a port alone).
             return true;
         }
         else {

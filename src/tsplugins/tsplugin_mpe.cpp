@@ -97,8 +97,8 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"With --output-file, if the file already exists, append to the end of the "
          u"file. By default, existing files are overwritten.");
 
-    option(u"destination", 'd', STRING);
-    help(u"destination", u"address[:port]",
+    option(u"destination", 'd', IPSOCKADDR_OP);
+    help(u"destination",
          u"Filter MPE UDP datagrams based on the specified destination IP address.");
 
     option(u"dump-datagram");
@@ -168,8 +168,8 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"specified. When no PID is specified, use all PID's carrying MPE which are "
          u"properly declared in the signalization.");
 
-    option(u"redirect", 'r', STRING);
-    help(u"redirect", u"address[:port]",
+    option(u"redirect", 'r', IPSOCKADDR_OP);
+    help(u"redirect",
          u"With --udp-forward, redirect all UDP datagrams to the specified socket "
          u"address. By default, all datagrams are forwarded to their original "
          u"destination address. If you specify a redirected address, it is "
@@ -181,8 +181,8 @@ ts::MPEPlugin::MPEPlugin(TSP* tsp_) :
          u"With --output-file, --dump-datagram, --dump-udp or --log-hexa-line, specify the initial "
          u"number of bytes to skip. By default, save or dump from the beginning.");
 
-    option(u"source", 's', STRING);
-    help(u"source", u"address[:port]",
+    option(u"source", 's', IPSOCKADDR_OP);
+    help(u"source",
          u"Filter MPE UDP datagrams based on the specified source IP address.");
 
     option(u"sync-layout");
@@ -239,9 +239,9 @@ bool ts::MPEPlugin::getOptions()
     getIntValue(_event_code, u"event-code");
     getIntValue(_ttl, u"ttl");
     getIntValues(_pids, u"pid");
-    const UString ipSource(value(u"source"));
-    const UString ipDest(value(u"destination"));
-    const UString ipForward(value(u"redirect"));
+    getSocketValue(_ip_source, u"source");
+    getSocketValue(_ip_dest, u"destination");
+    getSocketValue(_ip_forward, u"redirect");
     getIPValue(_local_address, u"local-address");
     getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
     getIntValue(_min_net_size, u"min-net-size");
@@ -269,20 +269,6 @@ bool ts::MPEPlugin::getOptions()
         else {
             _min_udp_size = _max_udp_size = intValue<size_t>(u"udp-size");
         }
-    }
-
-    // Decode socket addresses.
-    _ip_source.clear();
-    _ip_dest.clear();
-    _ip_forward.clear();
-    if (!ipSource.empty() && !_ip_source.resolve(ipSource, *tsp)) {
-        return false;
-    }
-    if (!ipDest.empty() && !_ip_dest.resolve(ipDest, *tsp)) {
-        return false;
-    }
-    if (!ipForward.empty() && !_ip_forward.resolve(ipForward, *tsp)) {
-        return false;
     }
 
     // If no PID is specified, extract all.

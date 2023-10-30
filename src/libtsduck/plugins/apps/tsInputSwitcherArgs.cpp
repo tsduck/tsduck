@@ -81,7 +81,7 @@ void ts::InputSwitcherArgs::enforceDefaults()
 
 void ts::InputSwitcherArgs::defineArgs(Args& args)
 {
-    args.option(u"allow", 'a', Args::STRING);
+    args.option(u"allow", 'a', Args::IPADDR);
     args.help(u"allow",
               u"Specify an IP address or host name which is allowed to send remote commands. "
               u"Several --allow options are allowed. By default, all remote commands are accepted.");
@@ -193,8 +193,8 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
               u"when the current input plugin is waiting for packets. With "
               u"--primary-input, the default is " + UString::Decimal(DEFAULT_RECEIVE_TIMEOUT) + u" ms.");
 
-    args.option(u"remote", 'r', Args::STRING);
-    args.help(u"remote", u"[address:]port",
+    args.option(u"remote", 'r', Args::IPSOCKADDR_OA);
+    args.help(u"remote",
               u"Specify the local UDP port which is used to receive remote commands. "
               u"If an optional address is specified, it must be a local IP address of the system. "
               u"By default, there is no remote control.");
@@ -222,7 +222,7 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(bufferedPackets, u"buffer-packets", DEFAULT_BUFFERED_PACKETS);
     maxInputPackets = std::min(args.intValue<size_t>(u"max-input-packets", DEFAULT_MAX_INPUT_PACKETS), bufferedPackets / 2);
     args.getIntValue(maxOutputPackets, u"max-output-packets", DEFAULT_MAX_OUTPUT_PACKETS);
-    const UString remoteName(args.value(u"remote"));
+    args.getSocketValue(remoteServer, u"remote");
     reusePort = !args.present(u"no-reuse-port");
     args.getIntValue(sockBuffer, u"udp-buffer-size");
     args.getIntValue(firstInput, u"first-input", 0);
@@ -243,20 +243,11 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
         args.error(u"options --delayed-switch and --fast-switch are mutually exclusive");
     }
 
-    // Resolve network names. The resolve() method reports error and set the args error state.
-    if (!remoteName.empty() && remoteServer.resolve(remoteName, args) && !remoteServer.hasPort()) {
-        args.error(u"missing UDP port number in --remote");
-    }
-
     // Resolve all allowed remote.
-    UStringVector remotes;
-    args.getValues(remotes, u"allow");
+    const size_t allow_count = args.count(u"allow");
     allowedRemote.clear();
-    for (const auto& it : remotes) {
-        const IPv4Address addr(it, args);
-        if (addr.hasAddress()) {
-            allowedRemote.insert(addr);
-        }
+    for (size_t i = 0; i < allow_count; ++i) {
+        allowedRemote.insert(args.ipValue(u"allow", IPv4Address(), i));
     }
 
     // Load all plugin descriptions. Default output is the standard output file.
