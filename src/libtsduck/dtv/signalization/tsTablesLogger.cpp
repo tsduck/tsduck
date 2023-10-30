@@ -363,6 +363,7 @@ bool ts::TablesLogger::open()
     _last_sections.clear();
     _deep_hashes.clear();
     _sections_once.clear();
+    _x2j_conv.clear();
 
     if (_bin_file.is_open()) {
         _bin_file.close();
