@@ -30,8 +30,8 @@ void ts::ECMGClientArgs::defineArgs(Args& args)
     args.option(u"ecm-id", 'i', Args::UINT16);
     args.help(u"ecm-id", u"Specifies the DVB SimulCrypt ECM_id for the ECMG (default: 1).");
 
-    args.option(u"ecmg", 'e', Args::STRING);
-    args.help(u"ecmg", u"host:port", u"Specify an ECM Generator host name and port.");
+    args.option(u"ecmg", 'e', Args::IPSOCKADDR);
+    args.help(u"ecmg", u"Specify an ECM Generator host name and port.");
 
     args.option(u"ecmg-scs-version", 'v', Args::INTEGER, 0, 1, 2, 3);
     args.help(u"ecmg-scs-version",
@@ -75,19 +75,6 @@ bool ts::ECMGClientArgs::loadArgs(DuckContext& duck, Args& args)
     log_data = args.present(u"log-data") ? args.intValue<int>(u"log-data", ts::Severity::Info) : log_protocol;
     args.getIntValue(dvbsim_version, u"ecmg-scs-version", 2);
     args.getHexaValue(access_criteria, u"access-criteria");
-
-    // Decode ECMG socket address.
-    const UString ecmg(args.value(u"ecmg"));
-    if (ecmg.empty()) {
-        ecmg_address.clear();
-    }
-    else if (!ecmg_address.resolve(ecmg, args)) {
-        // Invalid host:port, error message already reported
-        return false;
-    }
-    else if (!ecmg_address.hasAddress() || !ecmg_address.hasPort()) {
-        args.error(u"missing ECMG address or port");
-    }
-
+    args.getSocketValue(ecmg_address, u"ecmg");
     return true;
 }

@@ -100,8 +100,8 @@ ts::PcapInputPlugin::PcapInputPlugin(TSP* tsp_) :
          u"This input plugin extracts IPv4 UDP datagrams which contain transport stream packets. "
          u"Use the standard input by default, when no file name is specified.");
 
-    option(u"destination", 'd', STRING);
-    help(u"destination", u"[address][:port]",
+    option(u"destination", 'd', IPSOCKADDR_OAP);
+    help(u"destination",
          u"Filter UDP datagrams based on the specified destination socket address. "
          u"By default or if either the IP address or UDP port is missing, "
          u"use the destination of the first matching UDP datagram containing TS packets. "
@@ -129,8 +129,8 @@ ts::PcapInputPlugin::PcapInputPlugin(TSP* tsp_) :
          u"When there is no --destination option, select the first multicast address which is found in a UDP datagram. "
          u"By default, use the destination address of the first UDP datagram containing TS packets, unicast or multicast.");
 
-    option(u"source", 's', STRING);
-    help(u"source", u"[address][:port]",
+    option(u"source", 's', IPSOCKADDR_OAP);
+    help(u"source",
          u"Filter UDP datagrams based on the specified source socket address. "
          u"By default, do not filter on source address.");
 
@@ -162,8 +162,8 @@ ts::PcapInputPlugin::PcapInputPlugin(TSP* tsp_) :
 bool ts::PcapInputPlugin::getOptions()
 {
     getValue(_file_name, u"");
-    const UString str_source(value(u"source"));
-    const UString str_destination(value(u"destination"));
+    getSocketValue(_source, u"source");
+    getSocketValue(_destination, u"destination");
     _multicast = present(u"multicast-only");
     _http = present(u"http");
     _udp_emmg_mux = present(u"udp-emmg-mux");
@@ -175,16 +175,6 @@ bool ts::PcapInputPlugin::getOptions()
 
     if (_http + _tcp_emmg_mux + _udp_emmg_mux > 1) {
         tsp->error(u"--http, --tcp-emmg-mux, --udp-emmg-mux are mutually exclusive");
-        return false;
-    }
-
-    // Decode socket addresses.
-    _source.clear();
-    _destination.clear();
-    if (!str_source.empty() && !_source.resolve(str_source, *tsp)) {
-        return false;
-    }
-    if (!str_destination.empty() && !_destination.resolve(str_destination, *tsp)) {
         return false;
     }
     if (_http && !_source.hasAddress() && !_destination.hasAddress()) {

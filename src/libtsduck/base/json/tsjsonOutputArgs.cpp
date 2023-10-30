@@ -46,8 +46,8 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
               u"The optional string parameter specifies a prefix to prepend on the log "
               u"line before the JSON text to locate the appropriate line in the logs.");
 
-    args.option(u"json-tcp", 0, Args::STRING);
-    args.help(u"json-tcp", u"address:port",
+    args.option(u"json-tcp", 0, Args::IPSOCKADDR);
+    args.help(u"json-tcp",
               u"Same as --json but report the JSON text as one single line in a TCP connection instead of the output file. "
               u"The 'address' specifies an IP address or a host name that translates to an IP address. "
               u"The 'port' specifies the destination TCP port. "
@@ -60,8 +60,8 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
               u"With --json-tcp, keep the TCP connection open for all JSON messages. "
               u"By default, a new TCP connection is established each time a JSON message is produced.");
 
-    args.option(u"json-udp", 0, Args::STRING);
-    args.help(u"json-udp", u"address:port",
+    args.option(u"json-udp", 0, Args::IPSOCKADDR);
+    args.help(u"json-udp",
               u"Same as --json but report the JSON text as one single line in a UDP datagram instead of the output file. "
               u"The 'address' specifies an IP address which can be either unicast or multicast. "
               u"It can be also a host name that translates to an IP address. "
@@ -91,7 +91,6 @@ void ts::json::OutputArgs::defineArgs(Args& args, bool use_short_opt, const UStr
 
 bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    bool ok = true;
     _json_opt = args.present(u"json");
     _json_line = args.present(u"json-line");
     _json_tcp = args.present(u"json-tcp");
@@ -101,19 +100,13 @@ bool ts::json::OutputArgs::loadArgs(DuckContext& duck, Args& args)
     args.getIntValue(_udp_ttl, u"json-udp-ttl");
     args.getIntValue(_sock_buffer_size, u"json-buffer-size");
     args.getIPValue(_udp_local, u"json-udp-local");
-    _udp_destination.clear();
-    if (_json_tcp) {
-        ok = _tcp_destination.resolve(args.value(u"json-tcp"), args);
-    }
-    if (_json_udp) {
-        ok = _udp_destination.resolve(args.value(u"json-udp"), args);
-    }
+    args.getSocketValue(_tcp_destination, u"json-tcp");
+    args.getSocketValue(_udp_destination, u"json-udp");
 
     // Force reinit of UDP and TCP session in case the arguments are reloaded.
     udpClose(args);
     tcpDisconnect(true, args);
-
-    return ok;
+    return true;
 }
 
 

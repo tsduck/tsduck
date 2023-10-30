@@ -338,17 +338,17 @@ void NetworkingTest::testIPv4SocketAddressConstructors()
     TSUNIT_ASSERT(a2a.address() == 0x01020304);
     TSUNIT_ASSERT(a2a.port() == 80);
 
-    ts::IPv4SocketAddress a2b (0x01020304, 80);
+    ts::IPv4SocketAddress a2b(0x01020304, 80);
     TSUNIT_ASSERT(a2b.address() == 0x01020304);
     TSUNIT_ASSERT(a2b.port() == 80);
 
-    ts::IPv4SocketAddress a3 (1, 2, 3, 4, 80);
+    ts::IPv4SocketAddress a3(1, 2, 3, 4, 80);
     TSUNIT_ASSERT(a3.address() == 0x01020304);
     TSUNIT_ASSERT(a3.port() == 80);
 
     ::in_addr ia4;
-    ia4.s_addr = htonl (0x01020304);
-    ts::IPv4SocketAddress a4 (ia4, 80);
+    ia4.s_addr = htonl(0x01020304);
+    ts::IPv4SocketAddress a4(ia4, 80);
     TSUNIT_ASSERT(a4.address() == 0x01020304);
     TSUNIT_ASSERT(a4.port() == 80);
 
@@ -386,6 +386,22 @@ void NetworkingTest::testIPv4SocketAddressConstructors()
     ts::IPv4SocketAddress a10(u":80", CERR);
     TSUNIT_ASSERT(a10.address() == ts::IPv4Address::AnyAddress);
     TSUNIT_ASSERT(a10.port() == 80);
+
+    ts::IPv4SocketAddress a11(u"83", CERR);
+    TSUNIT_ASSERT(a11.address() == ts::IPv4Address::AnyAddress);
+    TSUNIT_ASSERT(a11.port() == 83);
+
+    ts::IPv4SocketAddress a12(u"2.3.4.5:", CERR);
+    TSUNIT_ASSERT(a12.address() == 0x02030405);
+    TSUNIT_ASSERT(a12.port() == ts::IPv4SocketAddress::AnyPort);
+
+    ts::IPv4SocketAddress a13(u":", CERR);
+    TSUNIT_ASSERT(a13.address() == ts::IPv4Address::AnyAddress);
+    TSUNIT_ASSERT(a13.port() == ts::IPv4SocketAddress::AnyPort);
+
+    ts::IPv4SocketAddress a14(u"", CERR);
+    TSUNIT_ASSERT(a14.address() == ts::IPv4Address::AnyAddress);
+    TSUNIT_ASSERT(a14.port() == ts::IPv4SocketAddress::AnyPort);
 }
 
 void NetworkingTest::testIPv4SocketAddress()

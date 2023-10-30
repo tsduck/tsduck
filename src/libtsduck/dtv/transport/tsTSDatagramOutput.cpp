@@ -75,7 +75,7 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
 
     // The following options are defined only when raw UDP is allowed.
     if (_raw_udp) {
-        args.option(u"", 0, Args::STRING, 1, 1);
+        args.option(u"", 0, Args::IPSOCKADDR, 1, 1);
         args.help(u"",
                   u"The parameter address:port describes the destination for UDP packets. "
                   u"The 'address' specifies an IP address which can be either unicast or "
@@ -139,8 +139,6 @@ void ts::TSDatagramOutput::defineArgs(Args& args)
 
 bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
 {
-    bool success = true;
-
     args.getIntValue(_pkt_burst, u"packet-burst", DEFAULT_PACKET_BURST);
     _enforce_burst = (_flags & TSDatagramOutputOptions::ALWAYS_BURST) != TSDatagramOutputOptions::NONE || args.present(u"enforce-burst");
 
@@ -155,7 +153,7 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
     }
 
     if (_raw_udp) {
-        success = _destination.resolve(args.value(u""), args) && success;
+        args.getSocketValue(_destination, u"");
         args.getIPValue(_local_addr, u"local-address");
         args.getIntValue(_local_port, u"local-port", IPv4SocketAddress::AnyPort);
         args.getIntValue(_ttl, u"ttl", 0);
@@ -166,7 +164,7 @@ bool ts::TSDatagramOutput::loadArgs(DuckContext& duck, Args& args)
         _rs204_format = args.present(u"rs204");
     }
 
-    return success;
+    return true;
 }
 
 
