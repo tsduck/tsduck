@@ -122,6 +122,7 @@ bool ts::AnalyzePlugin::getOptions()
 bool ts::AnalyzePlugin::start()
 {
     _output = _output_name.empty() ? &std::cout : &_output_stream;
+    _analyzer.reset();
     _analyzer.setAnalysisOptions(_analyzer_options);
     _name_gen.initDateTime(_output_name);
 

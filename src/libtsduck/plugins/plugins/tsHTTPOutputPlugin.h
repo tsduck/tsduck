@@ -13,6 +13,8 @@
 
 #pragma once
 #include "tsOutputPlugin.h"
+#include "tsTCPServer.h"
+#include "tsTCPConnection.h"
 
 namespace ts {
     //!
@@ -37,7 +39,20 @@ namespace ts {
 
     private:
         // Command line options:
+        IPv4SocketAddress _server_address {};
+        bool              _reuse_port = false;
+        bool              _multiple_clients = false;
+        bool              _ignore_bad_request = false;
+        size_t            _tcp_buffer_size = 0;
 
         // Working data:
+        TCPServer     _server {};
+        TCPConnection _client {};
+
+        // Process request headers from new client, send response headers.
+        bool startSession();
+
+        // Send a response header.
+        bool sendResponseHeader(const std::string& line);
     };
 }
