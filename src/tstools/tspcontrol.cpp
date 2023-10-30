@@ -45,8 +45,8 @@ Options::Options(int argc, char *argv[]) :
     option(u"", 0, STRING, 1, UNLIMITED_COUNT);
     help(u"", u"The control command to send to tsp.");
 
-    option(u"tsp", 't', STRING, 1, 1);
-    help(u"tsp", u"[address:]port",
+    option(u"tsp", 't', IPSOCKADDR_OA, 1, 1);
+    help(u"tsp",
          u"Specify the IP address (or host name) and port where the tsp process "
          u"expects control commands (tsp option --control-port). "
          u"If the IP address is omitted, the local host is used. "
@@ -57,6 +57,7 @@ Options::Options(int argc, char *argv[]) :
     // Build command line.
     ts::UStringVector args;
     getValues(args, u"");
+    getSocketValue(tsp_address, u"tsp", ts::IPv4SocketAddress(ts::IPv4Address::LocalHost));
     command.quotedLine(args);
 
     // Validate the control command. It will be validated inside tsp anyway
@@ -64,14 +65,6 @@ Options::Options(int argc, char *argv[]) :
     // validated outside the context of the tsp, but let's filter most errors.
     if (!cmdline.analyzeCommand(command)) {
         error(u"invalid tsp control command: %s", {command});
-    }
-
-    // Resolve tsp address.
-    if (!tsp_address.resolve(value(u"tsp"), *this) || !tsp_address.hasPort()) {
-        error(u"invalid tsp address or port, use --tsp [address:]port");
-    }
-    if (!tsp_address.hasAddress()) {
-        tsp_address.setAddress(ts::IPv4Address::LocalHost);
     }
 
     exitOnError();

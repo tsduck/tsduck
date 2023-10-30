@@ -359,8 +359,8 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
          u"section this number of milliseconds before the specified splice PTS "
          u"value. The default is " + UString::Decimal(DEFAULT_START_DELAY) + u" ms.");
 
-    option(u"udp", 'u', STRING);
-    help(u"udp", u"[address:]port",
+    option(u"udp", 'u', IPSOCKADDR_OA);
+    help(u"udp",
          u"Specifies the local UDP port on which the plugin listens for incoming "
          u"binary or XML splice information tables. When present, the optional "
          u"address shall specify a local IP address or host name (by default, the "
@@ -381,9 +381,11 @@ ts::SpliceInjectPlugin::SpliceInjectPlugin(TSP* tsp_) :
 bool ts::SpliceInjectPlugin::getOptions()
 {
     duck.loadArgs(*this);
-    getValue(_files, u"files");
     getValue(_service_ref, u"service");
-    const UString udpName(value(u"udp"));
+    getValue(_files, u"files");
+    _use_files = !_files.empty();
+    _use_udp = present(u"udp");
+    getSocketValue(_server_address, u"udp");
     getIntValue(_inject_pid_opt, u"pid", PID_NULL);
     getIntValue(_pcr_pid_opt, u"pcr-pid", PID_NULL);
     getIntValue(_pts_pid_opt, u"pts-pid", PID_NULL);
@@ -408,8 +410,6 @@ bool ts::SpliceInjectPlugin::getOptions()
     }
 
     // We need at least one of --files and --udp.
-    _use_files = !_files.empty();
-    _use_udp = !udpName.empty();
     if (!_use_files && !_use_udp) {
         tsp->error(u"specify at least one of --files and --udp");
         return false;
@@ -419,17 +419,6 @@ bool ts::SpliceInjectPlugin::getOptions()
     if (_min_bitrate > 0 && _min_inter_packet > 0) {
         tsp->error(u"specify at most one of --min-bitrate and --min-inter-packet");
         return false;
-    }
-
-    // Resolve UDP addresses.
-    if (_use_udp) {
-        if (!_server_address.resolve(udpName, *tsp)) {
-            return false;
-        }
-        if (!_server_address.hasPort()) {
-            tsp->error(u"missing port name in --udp");
-            return false;
-        }
     }
 
     return true;

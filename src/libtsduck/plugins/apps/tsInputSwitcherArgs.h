@@ -27,28 +27,28 @@ namespace ts {
     class TSDUCKDLL InputSwitcherArgs
     {
     public:
-        UString             appName;           //!< Application name, for help messages.
-        bool                fastSwitch;        //!< Fast switch between input plugins.
-        bool                delayedSwitch;     //!< Delayed switch between input plugins.
-        bool                terminate;         //!< Terminate when one input plugin completes.
-        bool                reusePort;         //!< Reuse-port socket option.
-        size_t              firstInput;        //!< Index of first input plugin.
-        size_t              primaryInput;      //!< Index of primary input plugin, NPOS if there is none.
-        size_t              cycleCount;        //!< Number of input cycles to execute (0 = infinite).
-        size_t              bufferedPackets;   //!< Input buffer size in packets.
-        size_t              maxInputPackets;   //!< Maximum input packets to read at a time.
-        size_t              maxOutputPackets;  //!< Maximum output packets to send at a time.
-        UString             eventCommand;      //!< External shell command to run on an event.
-        IPv4SocketAddress   eventUDP;          //!< Remote UDP socket address for event description.
-        IPv4Address         eventLocalAddress; //!< Outgoing local interface for UDP event description.
-        int                 eventTTL;          //!< Time-to-live socket option for event UDP.
-        UString             eventUserData;     //!< User-defined data string in event messages.
-        size_t              sockBuffer;        //!< Socket buffer size.
-        IPv4SocketAddress   remoteServer;      //!< UDP server address for remote control.
-        IPv4AddressSet      allowedRemote;     //!< Set of allowed remotes.
-        MilliSecond         receiveTimeout;    //!< Receive timeout before switch (0=none).
-        PluginOptionsVector inputs;            //!< Input plugins descriptions.
-        PluginOptions       output;            //!< Output plugin description.
+        UString             appName {};            //!< Application name, for help messages.
+        bool                fastSwitch = false;    //!< Fast switch between input plugins.
+        bool                delayedSwitch = false; //!< Delayed switch between input plugins.
+        bool                terminate = false;     //!< Terminate when one input plugin completes.
+        bool                reusePort = false;     //!< Reuse-port socket option.
+        size_t              firstInput = 0;        //!< Index of first input plugin.
+        size_t              primaryInput = NPOS;   //!< Index of primary input plugin, NPOS if there is none.
+        size_t              cycleCount = 1;        //!< Number of input cycles to execute (0 = infinite).
+        size_t              bufferedPackets = 0;   //!< Input buffer size in packets.
+        size_t              maxInputPackets = 0;   //!< Maximum input packets to read at a time.
+        size_t              maxOutputPackets = 0;  //!< Maximum output packets to send at a time.
+        UString             eventCommand {};       //!< External shell command to run on an event.
+        IPv4SocketAddress   eventUDP {};           //!< Remote UDP socket address for event description.
+        IPv4Address         eventLocalAddress {};  //!< Outgoing local interface for UDP event description.
+        int                 eventTTL = 0;          //!< Time-to-live socket option for event UDP.
+        UString             eventUserData {};      //!< User-defined data string in event messages.
+        size_t              sockBuffer = 0;        //!< Socket buffer size.
+        IPv4SocketAddress   remoteServer {};       //!< UDP server address for remote control.
+        IPv4AddressSet      allowedRemote {};      //!< Set of allowed remotes.
+        MilliSecond         receiveTimeout = 0;    //!< Receive timeout before switch (0=none).
+        PluginOptionsVector inputs {};             //!< Input plugins descriptions.
+        PluginOptions       output {};             //!< Output plugin description.
 
         static constexpr size_t      DEFAULT_MAX_INPUT_PACKETS = 128;  //!< Default maximum input packets to read at a time.
         static constexpr size_t      MIN_INPUT_PACKETS = 1;            //!< Minimum input packets to read at a time.
@@ -61,21 +61,12 @@ namespace ts {
         //!
         //! Constructor.
         //!
-        InputSwitcherArgs();
+        InputSwitcherArgs() = default;
 
         //!
         //! Enforce default or minimum values.
         //!
         void enforceDefaults();
-
-        //!
-        //! Set the UDP destination for event reporting using strings.
-        //! @param [in] destination Remote UDP socket address for event description. Empty to erase the destination.
-        //! @param [in] local Outgoing local interface for UDP event description. Can be empty.
-        //! @param [in,out] report Where to report errors.
-        //! @return True on success, false on failure.
-        //!
-        bool setEventUDP(const UString& destination, const UString& local, Report& report);
 
         //!
         //! Add command line option definitions in an Args.

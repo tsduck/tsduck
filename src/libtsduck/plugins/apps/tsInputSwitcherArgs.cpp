@@ -21,37 +21,6 @@ constexpr ts::MilliSecond ts::InputSwitcherArgs::DEFAULT_RECEIVE_TIMEOUT;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
-//----------------------------------------------------------------------------
-
-ts::InputSwitcherArgs::InputSwitcherArgs() :
-    appName(),
-    fastSwitch(false),
-    delayedSwitch(false),
-    terminate(false),
-    reusePort(false),
-    firstInput(0),
-    primaryInput(NPOS),
-    cycleCount(1),
-    bufferedPackets(0),
-    maxInputPackets(0),
-    maxOutputPackets(0),
-    eventCommand(),
-    eventUDP(),
-    eventLocalAddress(),
-    eventTTL(0),
-    eventUserData(),
-    sockBuffer(0),
-    remoteServer(),
-    allowedRemote(),
-    receiveTimeout(0),
-    inputs(),
-    output()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Enforce default or minimum values.
 //----------------------------------------------------------------------------
 
@@ -115,16 +84,16 @@ void ts::InputSwitcherArgs::defineArgs(Args& args)
               u"3. The input index after the event.\n"
               u"4. Optional: the user data string from --event-user-data option.");
 
-    args.option(u"event-udp", 0, Args::STRING);
-    args.help(u"event-udp", u"address:port",
+    args.option(u"event-udp", 0, Args::IPSOCKADDR);
+    args.help(u"event-udp",
               u"When a switch event occurs, send a short JSON description over UDP/IP to the specified destination. "
               u"This can be used to notify some external system of the event. "
               u"The 'address' specifies an IP address which can be either unicast or multicast. "
               u"It can be also a host name that translates to an IP address. "
               u"The 'port' specifies the destination UDP port.");
 
-    args.option(u"event-local-address", 0, Args::STRING);
-    args.help(u"event-local-address", u"address",
+    args.option(u"event-local-address", 0, Args::IPADDR);
+    args.help(u"event-local-address",
               u"With --event-udp, when the destination is a multicast address, specify "
               u"the IP address of the outgoing local interface. It can be also a host "
               u"name that translates to a local address.");
@@ -231,7 +200,8 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
 
     // Event reporting.
     args.getValue(eventCommand, u"event-command");
-    setEventUDP(args.value(u"event-udp"), args.value(u"event-local-address"), args);
+    args.getSocketValue(eventUDP, u"event-udp");
+    args.getIPValue(eventLocalAddress, u"event-local-address");
     args.getIntValue(eventTTL, u"event-ttl", 0);
     args.getValue(eventUserData, u"event-user-data");
 
@@ -275,32 +245,4 @@ bool ts::InputSwitcherArgs::loadArgs(DuckContext& duck, Args& args)
     }
 
     return args.valid();
-}
-
-
-//----------------------------------------------------------------------------
-// Set the UDP destination for event reporting using strings.
-//----------------------------------------------------------------------------
-
-bool ts::InputSwitcherArgs::setEventUDP(const UString& destination, const UString& local, Report& report)
-{
-    if (destination.empty()) {
-        eventUDP.clear();
-    }
-    else if (!eventUDP.resolve(destination, report)) {
-        return false;
-    }
-    else if (!eventUDP.hasAddress() || !eventUDP.hasPort()) {
-        report.error(u"event reporting through UDP requires an IP address and a UDP port");
-        return false;
-    }
-
-    if (local.empty()) {
-        eventLocalAddress.clear();
-    }
-    else if (!eventLocalAddress.resolve(local, report)) {
-        return false;
-    }
-
-    return true;
 }

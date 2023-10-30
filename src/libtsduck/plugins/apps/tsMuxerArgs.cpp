@@ -25,42 +25,6 @@ constexpr ts::BitRate::int_t ts::MuxerArgs::DEFAULT_PSI_BITRATE;
 
 
 //----------------------------------------------------------------------------
-// Constructors.
-//----------------------------------------------------------------------------
-
-ts::MuxerArgs::MuxerArgs() :
-    appName(),
-    inputs(),
-    output(),
-    outputBitRate(0),
-    patBitRate(DEFAULT_PSI_BITRATE),
-    catBitRate(DEFAULT_PSI_BITRATE),
-    nitBitRate(DEFAULT_PSI_BITRATE),
-    sdtBitRate(DEFAULT_PSI_BITRATE),
-    lossyReclaim(DEFAULT_LOSSY_INPUT_PACKETS),
-    lossyInput(false),
-    inputOnce(false),
-    outputOnce(false),
-    ignoreConflicts(false),
-    inputRestartDelay(DEFAULT_RESTART_DELAY),
-    outputRestartDelay(DEFAULT_RESTART_DELAY),
-    cadence(DEFAULT_CADENCE),
-    inBufferPackets(DEFAULT_BUFFERED_PACKETS),
-    outBufferPackets(DEFAULT_BUFFERED_PACKETS),
-    maxInputPackets(DEFAULT_MAX_INPUT_PACKETS),
-    maxOutputPackets(DEFAULT_MAX_OUTPUT_PACKETS),
-    outputTSId(0),
-    outputNetwId(0),
-    nitScope(TableScope::ACTUAL),
-    sdtScope(TableScope::ACTUAL),
-    eitScope(TableScope::ACTUAL),
-    timeInputIndex(NPOS),
-    duckArgs()
-{
-}
-
-
-//----------------------------------------------------------------------------
 // Enforce default or minimum values.
 //----------------------------------------------------------------------------
 

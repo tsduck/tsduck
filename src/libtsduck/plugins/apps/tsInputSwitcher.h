@@ -120,10 +120,10 @@ namespace ts {
 
     private:
         Report&                    _report;
-        InputSwitcherArgs          _args;
-        tsswitch::Core*            _core;
-        tsswitch::CommandListener* _remote;
-        volatile bool              _success;
+        InputSwitcherArgs          _args {};
+        tsswitch::Core*            _core = nullptr;
+        tsswitch::CommandListener* _remote = nullptr;
+        volatile bool              _success = false;
 
         // Internal and unconditional cleanupp of resources.
         void internalCleanup();

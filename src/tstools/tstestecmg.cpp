@@ -66,9 +66,8 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
 {
     log_args.defineArgs(*this);
 
-    option(u"", 0, Args::STRING, 1, 1);
-    help(u"", u"",
-         u"Specify the host name and port of the ECM Generator to test.");
+    option(u"", 0, Args::IPSOCKADDR, 1, 1);
+    help(u"", u"Specify the host name and port of the ECM Generator to test.");
 
     option(u"access-criteria", 'a', Args::HEXADATA);
     help(u"access-criteria",
@@ -158,7 +157,7 @@ CmdOptions::CmdOptions(int argc, char *argv[]) :
 
     // Analyze parameters.
     log_args.loadArgs(duck, *this);
-    ecmg_address.resolve(value(u""), *this);
+    getSocketValue(ecmg_address, u"");
     getIntValue(channel_count, u"channels", 10);
     getIntValue(streams_per_channel, u"streams-per-channel", 10);
     getIntValue(dvbsim_version, u"ecmg-scs-version", 2);
