@@ -2,7 +2,11 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3359
+VERSION 3.36-3363
+
+[NEW] New commands and plugins:
+
+  * Added output plugin "http", acting as a server.
 
 [IMP] Improvements on existing commands and plugins:
 
