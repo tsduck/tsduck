@@ -179,7 +179,7 @@ bool ts::HTTPOutputPlugin::sendResponseHeader(const std::string& line)
 bool ts::HTTPOutputPlugin::startSession()
 {
     UString request;
-    UString header;
+    UString header(1, SPACE); // Need an initial non-empty value
     ByteBlock data;
     data.reserve(1024);
 
@@ -195,18 +195,18 @@ bool ts::HTTPOutputPlugin::startSession()
         data.resize(previous + ret_size);
 
         // Look for a header line.
-        const size_t eol = data.find('\n');
-        if (eol != NPOS) {
+        size_t eol = 0;
+        while (!header.empty() && (eol = data.find('\n')) != NPOS) {
             // Extract the header line from the buffer.
             header.assignFromUTF8(reinterpret_cast<const char*>(data.data()), eol);
             header.trim();
             data.erase(0, eol + 1);
+            tsp->debug(u"request header: %s", {header});
 
             // The first header is the request.
             if (request.empty()) {
                 request = header;
             }
-            tsp->debug(u"request header: %s", {header});
         }
     } while (!header.empty());
 
@@ -225,12 +225,13 @@ bool ts::HTTPOutputPlugin::startSession()
         sendResponseHeader("");
         return false;
     }
-
-    // Send the HTTP response headers.
-    sendResponseHeader("HTTP/1.1 200 OK");
-    sendResponseHeader("Server: TSDuck/" TS_VERSION_STRING );
-    sendResponseHeader("Content-Type: video/mp2t");
-    sendResponseHeader("Connection: close");
-    sendResponseHeader("");
-    return true;
+    else {
+        // Send the HTTP response headers.
+        sendResponseHeader("HTTP/1.1 200 OK");
+        sendResponseHeader("Server: TSDuck/" TS_VERSION_STRING);
+        sendResponseHeader("Content-Type: video/mp2t");
+        sendResponseHeader("Connection: close");
+        sendResponseHeader("");
+        return true;
+    }
 }
