@@ -910,11 +910,20 @@ size_t ts::DektecInputPlugin::receive(TSPacket* buffer, TSPacketMetadata* pkt_da
         tsp->warning(u"input FIFO full, possible packet loss");
     }
 
+    // For ASI inputs, the DekTec library expects to read multiples of 4 bytes only
+    // If size is not a multiple of 4, an DTAPI_E_INVALID_SIZE will be thrown.
+    // (This limitation does not apply for ASI over IP inputs)
+    //
+    // The TSDuck library expects whole PKT_SIZE packets (which we get because
+    // mode DTAPI_RXMODE_ST188), else we will get an sync error.
+    // Make sure we only read PKT_SIZE chunks.
+    fifo_load = (fifo_load / PKT_SIZE) * PKT_SIZE;
+
     // If no data is available, wait for at least 1 packet
     int size = (fifo_load == 0) ? PKT_SIZE : fifo_load;
 
     // Do not read more than buffer can hold
-    size = std::min(size, int(max_packets * 188));
+    size = std::min(size, int(max_packets * PKT_SIZE));
 
     // Receive packets.
     if (_guts->timeout_ms < 0) {
