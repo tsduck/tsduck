@@ -25,10 +25,9 @@
 namespace ts {
     class PCRBitratePlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(PCRBitratePlugin);
+        TS_PLUGIN_CONSTRUCTORS(PCRBitratePlugin);
     public:
         // Implementation of plugin API
-        PCRBitratePlugin(TSP*);
         virtual bool start() override;
         virtual BitRate getBitrate() override;
         virtual BitRateConfidence getBitrateConfidence() override;

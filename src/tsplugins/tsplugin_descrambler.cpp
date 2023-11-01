@@ -24,11 +24,8 @@
 namespace ts {
     class DescramblerPlugin: public AbstractDescrambler
     {
-        TS_NOBUILD_NOCOPY(DescramblerPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DescramblerPlugin);
     public:
-        // Constructor.
-        DescramblerPlugin(TSP*);
-
         // Implementation of ProcessorPlugin interface.
         virtual bool getOptions() override;
 

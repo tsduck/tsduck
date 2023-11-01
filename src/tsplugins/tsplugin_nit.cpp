@@ -27,10 +27,9 @@
 namespace ts {
     class NITPlugin: public AbstractTablePlugin
     {
-        TS_NOBUILD_NOCOPY(NITPlugin);
+        TS_PLUGIN_CONSTRUCTORS(NITPlugin);
     public:
         // Implementation of plugin API
-        NITPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

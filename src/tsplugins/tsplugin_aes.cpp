@@ -36,10 +36,9 @@
 namespace ts {
     class AESPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(AESPlugin);
+        TS_PLUGIN_CONSTRUCTORS(AESPlugin);
     public:
         // Implementation of plugin API
-        AESPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

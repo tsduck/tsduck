@@ -21,10 +21,9 @@
 namespace ts {
     class BoostPIDPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(BoostPIDPlugin);
+        TS_PLUGIN_CONSTRUCTORS(BoostPIDPlugin);
     public:
         // Implementation of plugin API
-        BoostPIDPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

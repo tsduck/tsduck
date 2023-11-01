@@ -26,10 +26,9 @@
 namespace ts {
     class MPEPlugin: public ProcessorPlugin, private MPEHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(MPEPlugin);
+        TS_PLUGIN_CONSTRUCTORS(MPEPlugin);
     public:
         // Implementation of plugin API
-        MPEPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

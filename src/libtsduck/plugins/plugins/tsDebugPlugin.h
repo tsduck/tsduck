@@ -21,14 +21,8 @@ namespace ts {
     //!
     class TSDUCKDLL DebugPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(DebugPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DebugPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        DebugPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
@@ -38,6 +32,6 @@ namespace ts {
         char*   _null = nullptr;
         bool    _segfault = false;
         bool    _exit = false;
-        int     _exit_code {EXIT_SUCCESS};
+        int     _exit_code = EXIT_SUCCESS;
     };
 }

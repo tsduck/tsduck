@@ -182,3 +182,21 @@ namespace ts {
         virtual void writeLog(int severity, const UString& message) override;
     };
 }
+
+//!
+//! A convenience macro to declare constructors for plugin classes.
+//! The default, copy and move constructors and assignments are explicitly deleted.
+//! The only allowed constructor uses a TSP*.
+//! @param classname Name of the enclosing plugin class.
+//!
+#define TS_PLUGIN_CONSTRUCTORS(classname)                                \
+    public:                                                              \
+        /** Constructor. */                                              \
+        /** @param [in] tsp Associated callback to @c tsp executable. */ \
+        classname(TSP* tsp);                                             \
+    private:                                                             \
+        classname() = delete;                                            \
+        classname(classname&&) = delete;                                 \
+        classname(const classname&) = delete;                            \
+        classname& operator=(classname&&) = delete;                      \
+        classname& operator=(const classname&) = delete

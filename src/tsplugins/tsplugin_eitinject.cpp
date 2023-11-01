@@ -39,10 +39,9 @@ namespace {
 namespace ts {
     class EITInjectPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(EITInjectPlugin);
+        TS_PLUGIN_CONSTRUCTORS(EITInjectPlugin);
     public:
         // Implementation of plugin API
-        EITInjectPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

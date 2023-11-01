@@ -28,10 +28,9 @@
 namespace ts {
     class TimeRefPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(TimeRefPlugin);
+        TS_PLUGIN_CONSTRUCTORS(TimeRefPlugin);
     public:
         // Implementation of plugin API
-        TimeRefPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

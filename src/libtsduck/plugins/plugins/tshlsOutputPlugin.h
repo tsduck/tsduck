@@ -33,14 +33,8 @@ namespace ts {
         //!
         class TSDUCKDLL OutputPlugin: public ts::OutputPlugin, private TableHandlerInterface
         {
-            TS_NOBUILD_NOCOPY(OutputPlugin);
+            TS_PLUGIN_CONSTRUCTORS(OutputPlugin);
         public:
-            //!
-            //! Constructor.
-            //! @param [in] tsp Associated callback to @c tsp executable.
-            //!
-            OutputPlugin(TSP* tsp);
-
             // Implementation of plugin API
             virtual bool getOptions() override;
             virtual bool start() override;

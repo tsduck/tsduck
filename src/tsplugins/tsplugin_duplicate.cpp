@@ -25,10 +25,9 @@
 namespace ts {
     class DuplicatePlugin: public AbstractDuplicateRemapPlugin
     {
-        TS_NOBUILD_NOCOPY(DuplicatePlugin);
+        TS_PLUGIN_CONSTRUCTORS(DuplicatePlugin);
     public:
         // Implementation of plugin API
-        DuplicatePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

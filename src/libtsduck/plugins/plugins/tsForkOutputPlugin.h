@@ -24,14 +24,8 @@ namespace ts {
     //!
     class TSDUCKDLL ForkOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(ForkOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(ForkOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        ForkOutputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

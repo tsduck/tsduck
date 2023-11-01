@@ -32,10 +32,9 @@
 namespace ts {
     class FeedPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(FeedPlugin);
+        TS_PLUGIN_CONSTRUCTORS(FeedPlugin);
     public:
         // Implementation of plugin API
-        FeedPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

@@ -25,10 +25,9 @@
 namespace ts {
     class SIFilterPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(SIFilterPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SIFilterPlugin);
     public:
         // Implementation of plugin API
-        SIFilterPlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

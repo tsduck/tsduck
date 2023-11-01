@@ -29,10 +29,9 @@ namespace ts {
         private SectionHandlerInterface,
         private SectionProviderInterface
     {
-        TS_NOBUILD_NOCOPY(SectionsPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SectionsPlugin);
     public:
         // Implementation of plugin API
-        SectionsPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

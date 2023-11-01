@@ -22,10 +22,9 @@
 namespace ts {
     class UntilPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(UntilPlugin);
+        TS_PLUGIN_CONSTRUCTORS(UntilPlugin);
     public:
         // Implementation of plugin API
-        UntilPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

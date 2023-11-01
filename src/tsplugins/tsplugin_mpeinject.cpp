@@ -31,10 +31,9 @@
 namespace ts {
     class MPEInjectPlugin: public ProcessorPlugin, private SectionProviderInterface
     {
-        TS_NOBUILD_NOCOPY(MPEInjectPlugin);
+        TS_PLUGIN_CONSTRUCTORS(MPEInjectPlugin);
     public:
         // Implementation of plugin API.
-        MPEInjectPlugin(TSP*);
         virtual bool start() override;
         virtual bool getOptions() override;
         virtual bool stop() override;

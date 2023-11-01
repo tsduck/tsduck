@@ -27,10 +27,9 @@
 namespace ts {
     class ReducePlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(ReducePlugin);
+        TS_PLUGIN_CONSTRUCTORS(ReducePlugin);
     public:
         // Implementation of plugin API
-        ReducePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual size_t getPacketWindowSize() override;

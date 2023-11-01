@@ -21,17 +21,9 @@ namespace ts {
     //!
     class TSDUCKDLL RISTInputPlugin: public InputPlugin
     {
-        TS_NOBUILD_NOCOPY(RISTInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(RISTInputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        RISTInputPlugin(TSP* tsp);
-
-        //!
         //! Destructor.
-        //!
         virtual ~RISTInputPlugin() override;
 
         // Implementation of plugin API

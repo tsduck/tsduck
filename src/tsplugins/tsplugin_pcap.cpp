@@ -25,10 +25,9 @@
 namespace ts {
     class PcapInputPlugin: public AbstractDatagramInputPlugin
     {
-        TS_NOBUILD_NOCOPY(PcapInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PcapInputPlugin);
     public:
         // Implementation of plugin API
-        PcapInputPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

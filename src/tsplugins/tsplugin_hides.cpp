@@ -24,10 +24,9 @@
 namespace ts {
     class HiDesOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(HiDesOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(HiDesOutputPlugin);
     public:
         // Implementation of plugin API
-        HiDesOutputPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;

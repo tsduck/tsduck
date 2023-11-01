@@ -24,10 +24,9 @@
 namespace ts {
     class FilterPlugin: public ProcessorPlugin, private SignalizationHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(FilterPlugin);
+        TS_PLUGIN_CONSTRUCTORS(FilterPlugin);
     public:
         // Implementation of plugin API
-        FilterPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

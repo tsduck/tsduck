@@ -75,10 +75,9 @@ namespace ts {
         public ProcessorPlugin,
         private SignalizationHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(ScramblerPlugin);
+        TS_PLUGIN_CONSTRUCTORS(ScramblerPlugin);
     public:
         // Implementation of plugin API
-        ScramblerPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

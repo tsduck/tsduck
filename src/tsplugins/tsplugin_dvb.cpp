@@ -26,10 +26,9 @@
 namespace ts {
     class DVBInputPlugin: public InputPlugin
     {
-        TS_NOBUILD_NOCOPY(DVBInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DVBInputPlugin);
     public:
         // Implementation of plugin API
-        DVBInputPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

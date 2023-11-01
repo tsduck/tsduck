@@ -21,14 +21,8 @@ namespace ts {
     //!
     class TSDUCKDLL SkipPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(SkipPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SkipPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        SkipPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

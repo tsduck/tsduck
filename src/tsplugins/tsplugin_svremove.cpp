@@ -33,10 +33,9 @@
 namespace ts {
     class SVRemovePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(SVRemovePlugin);
+        TS_PLUGIN_CONSTRUCTORS(SVRemovePlugin);
     public:
         // Implementation of plugin API
-        SVRemovePlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL SRTInputPlugin: public AbstractDatagramInputPlugin
     {
-        TS_NOBUILD_NOCOPY(SRTInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SRTInputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        SRTInputPlugin(TSP* tsp);
-
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;

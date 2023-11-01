@@ -23,14 +23,8 @@ namespace ts {
     //!
     class TSDUCKDLL PSIPlugin : public ProcessorPlugin, private SectionHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(PSIPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PSIPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        PSIPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

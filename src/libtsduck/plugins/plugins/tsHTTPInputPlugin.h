@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL HTTPInputPlugin: public AbstractHTTPInputPlugin
     {
-        TS_NOBUILD_NOCOPY(HTTPInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(HTTPInputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        HTTPInputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

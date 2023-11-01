@@ -22,10 +22,9 @@
 namespace ts {
     class DecapPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(DecapPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DecapPlugin);
     public:
         // Implementation of plugin API
-        DecapPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

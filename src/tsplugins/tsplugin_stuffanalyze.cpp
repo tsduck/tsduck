@@ -28,10 +28,9 @@ namespace ts {
         private TableHandlerInterface,
         private SectionHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(StuffAnalyzePlugin);
+        TS_PLUGIN_CONSTRUCTORS(StuffAnalyzePlugin);
     public:
         // Implementation of plugin API
-        StuffAnalyzePlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

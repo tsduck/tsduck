@@ -29,10 +29,9 @@
 namespace ts {
     class CutoffPlugin: public ProcessorPlugin, private Thread
     {
-        TS_NOBUILD_NOCOPY(CutoffPlugin);
+        TS_PLUGIN_CONSTRUCTORS(CutoffPlugin);
     public:
         // Implementation of plugin API
-        CutoffPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

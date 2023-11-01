@@ -25,10 +25,9 @@
 namespace ts {
     class T2MIPlugin: public ProcessorPlugin, private T2MIHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(T2MIPlugin);
+        TS_PLUGIN_CONSTRUCTORS(T2MIPlugin);
     public:
         // Implementation of plugin API
-        T2MIPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

@@ -25,10 +25,9 @@
 namespace ts {
     class PIDShiftPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(PIDShiftPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PIDShiftPlugin);
     public:
         // Implementation of plugin API
-        PIDShiftPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

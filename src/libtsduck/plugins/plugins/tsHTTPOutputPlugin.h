@@ -23,14 +23,8 @@ namespace ts {
     //!
     class TSDUCKDLL HTTPOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(HTTPOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(HTTPOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        HTTPOutputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

@@ -27,10 +27,9 @@
 namespace ts {
     class StatsPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(StatsPlugin);
+        TS_PLUGIN_CONSTRUCTORS(StatsPlugin);
     public:
         // Implementation of plugin API
-        StatsPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

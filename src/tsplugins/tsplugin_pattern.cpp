@@ -22,10 +22,9 @@
 namespace ts {
     class PatternPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(PatternPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PatternPlugin);
     public:
         // Implementation of plugin API
-        PatternPlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

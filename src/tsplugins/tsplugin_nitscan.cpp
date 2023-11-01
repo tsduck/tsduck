@@ -27,10 +27,9 @@
 namespace ts {
     class NITScanPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(NITScanPlugin);
+        TS_PLUGIN_CONSTRUCTORS(NITScanPlugin);
     public:
         // Implementation of plugin API
-        NITScanPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

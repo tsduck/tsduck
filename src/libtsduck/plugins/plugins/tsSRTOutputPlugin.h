@@ -23,14 +23,8 @@ namespace ts {
     //!
     class TSDUCKDLL SRTOutputPlugin: public OutputPlugin, private TSDatagramOutputHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(SRTOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SRTOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        SRTOutputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

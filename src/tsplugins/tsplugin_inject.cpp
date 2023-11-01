@@ -33,10 +33,9 @@ typedef ts::SectionFile::FileType FType;
 namespace ts {
     class InjectPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(InjectPlugin);
+        TS_PLUGIN_CONSTRUCTORS(InjectPlugin);
     public:
         // Implementation of plugin API
-        InjectPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

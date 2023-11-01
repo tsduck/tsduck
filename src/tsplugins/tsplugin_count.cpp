@@ -23,10 +23,9 @@
 namespace ts {
     class CountPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(CountPlugin);
+        TS_PLUGIN_CONSTRUCTORS(CountPlugin);
     public:
         // Implementation of plugin API
-        CountPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

@@ -31,10 +31,9 @@
 namespace ts {
     class ZapPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(ZapPlugin);
+        TS_PLUGIN_CONSTRUCTORS(ZapPlugin);
     public:
         // Implementation of plugin API
-        ZapPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

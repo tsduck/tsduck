@@ -22,10 +22,9 @@
 namespace ts {
     class TimeShiftPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(TimeShiftPlugin);
+        TS_PLUGIN_CONSTRUCTORS(TimeShiftPlugin);
     public:
         // Implementation of plugin API
-        TimeShiftPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

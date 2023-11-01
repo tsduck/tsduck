@@ -25,10 +25,9 @@
 namespace ts {
     class BitrateMonitorPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(BitrateMonitorPlugin);
+        TS_PLUGIN_CONSTRUCTORS(BitrateMonitorPlugin);
     public:
         // Implementation of plugin API
-        BitrateMonitorPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

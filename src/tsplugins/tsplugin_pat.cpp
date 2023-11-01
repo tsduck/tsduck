@@ -24,10 +24,9 @@
 namespace ts {
     class PATPlugin: public AbstractTablePlugin
     {
-        TS_NOBUILD_NOCOPY(PATPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PATPlugin);
     public:
         // Implementation of plugin API
-        PATPlugin(TSP*);
         virtual bool start() override;
 
     private:

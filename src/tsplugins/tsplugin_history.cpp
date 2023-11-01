@@ -36,10 +36,9 @@ namespace ts {
         private TableHandlerInterface,
         private SectionHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(HistoryPlugin);
+        TS_PLUGIN_CONSTRUCTORS(HistoryPlugin);
     public:
         // Implementation of plugin API
-        HistoryPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

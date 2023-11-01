@@ -25,14 +25,8 @@ namespace ts {
     //!
     class TSDUCKDLL TeletextPlugin: public ProcessorPlugin, private SignalizationHandlerInterface, private TeletextHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(TeletextPlugin);
+        TS_PLUGIN_CONSTRUCTORS(TeletextPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        TeletextPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool start() override;
         virtual bool stop() override;

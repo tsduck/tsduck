@@ -33,10 +33,9 @@
 namespace ts {
     class PMTPlugin: public AbstractTablePlugin
     {
-        TS_NOBUILD_NOCOPY(PMTPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PMTPlugin);
     public:
         // Implementation of plugin API
-        PMTPlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

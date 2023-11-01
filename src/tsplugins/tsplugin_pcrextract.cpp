@@ -28,10 +28,9 @@
 namespace ts {
     class PCRExtractPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(PCRExtractPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PCRExtractPlugin);
     public:
         // Implementation of plugin API
-        PCRExtractPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

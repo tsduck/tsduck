@@ -33,10 +33,9 @@
 namespace ts {
     class PESPlugin: public ProcessorPlugin, private PESHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(PESPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PESPlugin);
     public:
         // Implementation of plugin API
-        PESPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

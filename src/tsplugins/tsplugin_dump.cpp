@@ -21,10 +21,9 @@
 namespace ts {
     class DumpPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(DumpPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DumpPlugin);
     public:
         // Implementation of plugin API
-        DumpPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

@@ -64,10 +64,9 @@ namespace ts {
         private SignalizationHandlerInterface,
         private SectionProviderInterface
     {
-        TS_NOBUILD_NOCOPY(SpliceInjectPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SpliceInjectPlugin);
     public:
         // Implementation of plugin API
-        SpliceInjectPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

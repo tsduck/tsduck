@@ -23,17 +23,9 @@ namespace ts {
     //!
     class TSDUCKDLL DektecInputPlugin: public InputPlugin
     {
-        TS_NOBUILD_NOCOPY(DektecInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DektecInputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        DektecInputPlugin(TSP* tsp);
-
-        //!
         //! Destructor.
-        //!
         virtual ~DektecInputPlugin() override;
 
         // Implementation of plugin API

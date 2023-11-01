@@ -26,10 +26,9 @@
 namespace ts {
     class SDTPlugin: public AbstractTablePlugin
     {
-        TS_NOBUILD_NOCOPY(SDTPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SDTPlugin);
     public:
         // Implementation of plugin API
-        SDTPlugin(TSP*);
         virtual bool getOptions() override;
 
     private:
