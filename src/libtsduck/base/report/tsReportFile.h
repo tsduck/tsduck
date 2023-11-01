@@ -104,8 +104,7 @@ TS_LLVM_NOWARNING(dtor-name)
 template <class MUTEX>
 ts::ReportFile<MUTEX>::~ReportFile()
 {
-    GuardMutex lock(_mutex);
-
+    TemplateGuardMutex<MUTEX> lock(_mutex);
     // Close the file if it was explicitly open by constructor
     if (_named_file.is_open()) {
         _named_file.close();
@@ -117,6 +116,6 @@ TS_POP_WARNING()
 template <class MUTEX>
 void ts::ReportFile<MUTEX>::writeLog(int severity, const UString& message)
 {
-    GuardMutex lock(_mutex);
+    TemplateGuardMutex<MUTEX> lock(_mutex);
     _file << Severity::Header(severity) << message << std::endl;
 }

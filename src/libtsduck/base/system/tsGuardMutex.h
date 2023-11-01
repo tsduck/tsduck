@@ -12,17 +12,29 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMutexInterface.h"
+#include "tsNullMutex.h"
 #include "tsException.h"
+#include "tsFatal.h"
 
 namespace ts {
     //!
-    //! Automatic guard class for mutex (ts::MutexInterface).
+    //! Automatic guard class for mutex.
     //! @ingroup thread
     //!
-    //! This class implements the @e guard design pattern for mutex,
-    //! as defined by ts::MutexInterface.
+    //! This is a template class which can be instantiated using any class which
+    //! implements acquire() and release() as declared in classes Mutex and NullMutex.
+    //! @tparam MUTEX A mutex class with acquire() and release() methods.
     //!
+    //! Previously, Mutex and NullMutex where subclasses of a common MutexInterface
+    //! class which defined acquire() and release() as virtual methods. GuardMutex
+    //! was a non-template class using MutexInterface. However, the downside of
+    //! virtual classes is that the virtual methods were called, even with NullMutex.
+    //! This creates a useless overhead in non thread-safe usage of GuardMutex.
+    //! To eliminate this overhead, Mutex and NullMutex are no longer virtual classes,
+    //! they no longer share a common superclass, and GuardMutex became a template class.
+    //! @see GuardMutex
+    //!
+    //! This class implements the @e guard design pattern for mutex.
     //! The common pitfall in the usage of resources which must be explicitly
     //! released after having been acquired is the absence of release.
     //! This can be an omission in the code (no invocation of @c release() at all)
@@ -56,16 +68,17 @@ namespace ts {
     //! Mutex mutex;
     //! ...
     //! {
-    //!     MutexGuard guard (mutex); // mutex acquired
+    //!     MutexGuard guard(mutex); // mutex acquired
     //!     ...
     //!     // some exception occurs here, no problem, don't worry
     //!     ...
     //! } // guard's destructor invoked, mutex always released
     //! @endcode
     //!
-    class TSDUCKDLL GuardMutex
+    template <class MUTEX>
+    class TemplateGuardMutex
     {
-        TS_NOBUILD_NOCOPY(GuardMutex);
+        TS_NOBUILD_NOCOPY(TemplateGuardMutex);
     public:
         //!
         //! Fatal low-level mutex guard error.
@@ -86,7 +99,7 @@ namespace ts {
         //! error, the object is successfully constructed but isLocked() will
         //! return false.
         //!
-        GuardMutex(MutexInterface& mutex, MilliSecond timeout = Infinite);
+        TemplateGuardMutex(MUTEX& mutex, MilliSecond timeout = Infinite);
 
         //!
         //! Destructor, automatically release the mutex.
@@ -95,7 +108,7 @@ namespace ts {
         //! during the release of the mutex, i.e. when
         //! ts::MutexInterface::release() returns false.
         //!
-        virtual ~GuardMutex();
+        ~TemplateGuardMutex();
 
         //!
         //! Check if the mutex was actually locked.
@@ -106,7 +119,7 @@ namespace ts {
         //!
         //! @return True if the mutex was successfully acquired and false if the timeout expired.
         //!
-        bool isLocked() const {return _is_locked;}
+        bool isLocked() const { return _is_locked; }
 
         //!
         //! Force an early unlock of the mutex.
@@ -115,7 +128,71 @@ namespace ts {
         bool unlock();
 
     private:
-        MutexInterface& _mutex;
+        MUTEX& _mutex;
         bool _is_locked = false;
     };
+
+    class Mutex;
+
+    //!
+    //! Instantiation of TemplateGuardMutex on Mutex.
+    //!
+    typedef TemplateGuardMutex<Mutex> GuardMutex;
+
+    // Template specialization on NullMutex: reduce overhead to nothing.
+    //! @cond doxygen
+    template<> class TemplateGuardMutex<NullMutex>
+    {
+    public:
+        TemplateGuardMutex(NullMutex& mutex, MilliSecond timeout = Infinite) {}
+    };
+    //! @endcond
+}
+
+
+//----------------------------------------------------------------------------
+// Template definitions.
+//----------------------------------------------------------------------------
+
+// Constructor
+template <class MUTEX>
+ts::TemplateGuardMutex<MUTEX>::TemplateGuardMutex(MUTEX& mutex, MilliSecond timeout) :
+    _mutex(mutex)
+{
+    _is_locked = mutex.acquire(timeout);
+    if (timeout == Infinite && !_is_locked) {
+        throw GuardMutexError(u"failed to acquire mutex");
+    }
+}
+
+// Destructor
+TS_PUSH_WARNING()
+TS_LLVM_NOWARNING(dtor-name)
+template <class MUTEX>
+ts::TemplateGuardMutex<MUTEX>::~TemplateGuardMutex()
+{
+    if (_is_locked) {
+        _is_locked = !_mutex.release();
+        if (_is_locked) {
+            // With C++11, destructors are no longer allowed to throw an exception.
+            static const char err[] = "\n\n*** Fatal error: GuardMutex failed to release mutex in destructor, aborting...\n\n";
+            static constexpr size_t err_size = sizeof(err) - 1;
+            FatalError(err, err_size);
+        }
+    }
+}
+TS_POP_WARNING()
+
+// Force an early unlock of the mutex.
+template <class MUTEX>
+bool ts::TemplateGuardMutex<MUTEX>::unlock()
+{
+    if (_is_locked) {
+        _is_locked = !_mutex.release();
+        return !_is_locked;
+    }
+    else {
+        // The mutex was not locked in the first place.
+        return false;
+    }
 }

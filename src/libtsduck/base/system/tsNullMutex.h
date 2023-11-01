@@ -12,19 +12,18 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMutexInterface.h"
+#include "tsPlatform.h"
 
 namespace ts {
     //!
     //! Empty mutex implementation.
     //! @ingroup thread
     //!
-    //! The concrete class ts::NullMutex is an empty mutex implementation
-    //! which does nothing and can be used wherever a ts::MutexInterface is
-    //! required but no actual synchronization is necessary (non-threaded
+    //! The class ts::NullMutex is an empty mutex implementation which does nothing
+    //! and can be used wherever no actual synchronization is necessary (non-threaded
     //! applications for instances).
     //!
-    class TSDUCKDLL NullMutex: public MutexInterface
+    class TSDUCKDLL NullMutex
     {
     public:
         //!
@@ -32,12 +31,12 @@ namespace ts {
         //! @param [in] timeout Maximum number of milliseconds to wait for the mutex. Ignored.
         //! @return Always true.
         //!
-        virtual bool acquire(MilliSecond timeout = Infinite) override;
+        bool acquire(MilliSecond timeout = Infinite) { return true; }
 
         //!
         //! Release the mutex, does nothing but successfully!
         //! @return Always true.
         //!
-        virtual bool release() override;
+        bool release() { return true; }
     };
 }

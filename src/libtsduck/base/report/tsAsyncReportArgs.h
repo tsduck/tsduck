@@ -29,7 +29,7 @@ namespace ts {
         // Public fields
         bool   sync_log = false;                  //!< Synchronous log.
         bool   timed_log = false;                 //!< Add time stamps in log messages.
-        size_t log_msg_count {MAX_LOG_MESSAGES};  //!< Maximum buffered log messages.
+        size_t log_msg_count = MAX_LOG_MESSAGES;  //!< Maximum buffered log messages.
 
         //!
         //! Default maximum number of messages in the queue.
