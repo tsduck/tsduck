@@ -23,10 +23,9 @@
 namespace ts {
     class PCREditPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(PCREditPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PCREditPlugin);
     public:
         // Implementation of plugin API
-        PCREditPlugin(TSP*);
         virtual bool getOptions() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

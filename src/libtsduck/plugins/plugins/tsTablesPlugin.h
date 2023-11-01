@@ -23,14 +23,8 @@ namespace ts {
     //!
     class TSDUCKDLL TablesPlugin: public ProcessorPlugin, private SectionHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(TablesPlugin);
+        TS_PLUGIN_CONSTRUCTORS(TablesPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        TablesPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

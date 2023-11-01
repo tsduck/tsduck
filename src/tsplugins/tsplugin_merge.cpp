@@ -35,10 +35,9 @@
 namespace ts {
     class MergePlugin: public ProcessorPlugin, private Thread
     {
-        TS_NOBUILD_NOCOPY(MergePlugin);
+        TS_PLUGIN_CONSTRUCTORS(MergePlugin);
     public:
         // Implementation of plugin API
-        MergePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

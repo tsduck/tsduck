@@ -60,10 +60,9 @@
 namespace ts {
     class PCRAdjustPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(PCRAdjustPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PCRAdjustPlugin);
     public:
         // Implementation of plugin API
-        PCRAdjustPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

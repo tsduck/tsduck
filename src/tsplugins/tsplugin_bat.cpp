@@ -23,10 +23,9 @@
 namespace ts {
     class BATPlugin: public AbstractTablePlugin
     {
-        TS_NOBUILD_NOCOPY(BATPlugin);
+        TS_PLUGIN_CONSTRUCTORS(BATPlugin);
     public:
         // Implementation of plugin API
-        BATPlugin(TSP*);
         virtual bool getOptions() override;
 
         // Implementation of AbstractTablePlugin.

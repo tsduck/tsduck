@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL IPInputPlugin: public AbstractDatagramInputPlugin
     {
-        TS_NOBUILD_NOCOPY(IPInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(IPInputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        IPInputPlugin(TSP* tsp);
-
         // Implementation of plugin API.
         virtual bool getOptions() override;
         virtual bool start() override;

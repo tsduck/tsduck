@@ -29,10 +29,9 @@
 namespace ts {
     class RMOrphanPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(RMOrphanPlugin);
+        TS_PLUGIN_CONSTRUCTORS(RMOrphanPlugin);
     public:
         // Implementation of plugin API
-        RMOrphanPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

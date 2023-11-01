@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL IPOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(IPOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(IPOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        IPOutputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

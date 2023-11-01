@@ -28,10 +28,9 @@
 namespace ts {
     class ClearPlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(ClearPlugin);
+        TS_PLUGIN_CONSTRUCTORS(ClearPlugin);
     public:
         // Implementation of plugin API
-        ClearPlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

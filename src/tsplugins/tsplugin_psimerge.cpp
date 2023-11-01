@@ -22,10 +22,9 @@
 namespace ts {
     class PSIMergePlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(PSIMergePlugin);
+        TS_PLUGIN_CONSTRUCTORS(PSIMergePlugin);
     public:
         // Implementation of plugin API
-        PSIMergePlugin (TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

@@ -27,10 +27,9 @@
 namespace ts {
     class PlayPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(PlayPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PlayPlugin);
     public:
         // Implementation of plugin API
-        PlayPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
         virtual bool isRealTime() override {return true;}

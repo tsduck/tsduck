@@ -25,10 +25,9 @@
 namespace ts {
     class TriggerPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(TriggerPlugin);
+        TS_PLUGIN_CONSTRUCTORS(TriggerPlugin);
     public:
         // Implementation of plugin API
-        TriggerPlugin (TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

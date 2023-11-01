@@ -22,10 +22,9 @@
 namespace ts {
     class PCRVerifyPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(PCRVerifyPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PCRVerifyPlugin);
     public:
         // Implementation of plugin API
-        PCRVerifyPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

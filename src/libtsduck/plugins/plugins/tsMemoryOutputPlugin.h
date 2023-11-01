@@ -21,14 +21,8 @@ namespace ts {
     //!
     class TSDUCKDLL MemoryOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(MemoryOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(MemoryOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        MemoryOutputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;

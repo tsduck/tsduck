@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL FileInputPlugin: public InputPlugin
     {
-        TS_NOBUILD_NOCOPY(FileInputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(FileInputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        FileInputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

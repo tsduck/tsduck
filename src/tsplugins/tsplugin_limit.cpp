@@ -33,10 +33,9 @@ namespace ts {
         public ProcessorPlugin,
         private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(LimitPlugin);
+        TS_PLUGIN_CONSTRUCTORS(LimitPlugin);
     public:
         // Implementation of plugin API
-        LimitPlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

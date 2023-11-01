@@ -22,10 +22,9 @@
 namespace ts {
     class ContinuityPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(ContinuityPlugin);
+        TS_PLUGIN_CONSTRUCTORS(ContinuityPlugin);
     public:
         // Implementation of plugin API
-        ContinuityPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

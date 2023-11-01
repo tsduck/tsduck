@@ -24,8 +24,12 @@ namespace ts {
     {
         TS_NOCOPY(AbstractDuplicateRemapPlugin);
     public:
+        // Implementation of plugin API
+        virtual bool getOptions() override;
+
+    protected:
         //!
-        //! Constructor.
+        //! Constructor for subclasses.
         //! @param [in] remap If true, use "remap" in help text, otherwise use "duplicate".
         //! @param [in] tsp Associated callback to @c tsp executable.
         //! @param [in] description A short one-line description, eg. "Wonderful File Copier".
@@ -33,10 +37,6 @@ namespace ts {
         //!
         AbstractDuplicateRemapPlugin(bool remap, TSP* tsp, const UString& description = UString(), const UString& syntax = UString());
 
-        // Implementation of plugin API
-        virtual bool getOptions() override;
-
-    protected:
         typedef std::map<PID, PID> PIDMap;    //!< A map from PID to PID.
         bool             _unchecked = false;  //!< Ignore conflicting input/output PID's.
         PIDSet           _newPIDs {};         //!< Set of output (duplicated or remapped) PID values.

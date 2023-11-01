@@ -29,10 +29,9 @@
 namespace ts {
     class RemapPlugin: public AbstractDuplicateRemapPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(RemapPlugin);
+        TS_PLUGIN_CONSTRUCTORS(RemapPlugin);
     public:
         // Implementation of plugin API
-        RemapPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

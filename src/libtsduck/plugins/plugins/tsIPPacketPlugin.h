@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL IPPacketPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(IPPacketPlugin);
+        TS_PLUGIN_CONSTRUCTORS(IPPacketPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        IPPacketPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

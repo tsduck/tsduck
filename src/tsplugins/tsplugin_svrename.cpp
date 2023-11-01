@@ -32,10 +32,9 @@
 namespace ts {
     class SVRenamePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(SVRenamePlugin);
+        TS_PLUGIN_CONSTRUCTORS(SVRenamePlugin);
     public:
         // Implementation of plugin API
-        SVRenamePlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

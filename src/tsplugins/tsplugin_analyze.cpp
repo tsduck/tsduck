@@ -24,10 +24,9 @@
 namespace ts {
     class AnalyzePlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(AnalyzePlugin);
+        TS_PLUGIN_CONSTRUCTORS(AnalyzePlugin);
     public:
         // Implementation of plugin API
-        AnalyzePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

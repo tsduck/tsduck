@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL FileOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(FileOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(FileOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        FileOutputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

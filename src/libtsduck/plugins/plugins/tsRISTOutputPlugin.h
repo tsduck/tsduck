@@ -22,17 +22,9 @@ namespace ts {
     //!
     class TSDUCKDLL RISTOutputPlugin: public OutputPlugin, private TSDatagramOutputHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(RISTOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(RISTOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        RISTOutputPlugin(TSP* tsp);
-
-        //!
         //! Destructor.
-        //!
         virtual ~RISTOutputPlugin() override;
 
         // Implementation of plugin API

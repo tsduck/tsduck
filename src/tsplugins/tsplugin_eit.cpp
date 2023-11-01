@@ -30,10 +30,9 @@
 namespace ts {
     class EITPlugin: public ProcessorPlugin, private TableHandlerInterface, private SectionHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(EITPlugin);
+        TS_PLUGIN_CONSTRUCTORS(EITPlugin);
     public:
         // Implementation of plugin API
-        EITPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

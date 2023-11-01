@@ -24,10 +24,9 @@
 namespace ts {
     class CATPlugin: public AbstractTablePlugin
     {
-        TS_NOBUILD_NOCOPY(CATPlugin);
+        TS_PLUGIN_CONSTRUCTORS(CATPlugin);
     public:
         // Implementation of plugin API
-        CATPlugin(TSP*);
         virtual bool getOptions() override;
 
         // Implementation of AbstractTablePlugin.

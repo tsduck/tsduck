@@ -23,10 +23,9 @@
 namespace ts {
     class SlicePlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(SlicePlugin);
+        TS_PLUGIN_CONSTRUCTORS(SlicePlugin);
     public:
         // Implementation of plugin API
-        SlicePlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

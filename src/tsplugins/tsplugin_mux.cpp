@@ -23,10 +23,9 @@
 namespace ts {
     class MuxPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(MuxPlugin);
+        TS_PLUGIN_CONSTRUCTORS(MuxPlugin);
     public:
         // Implementation of plugin API
-        MuxPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

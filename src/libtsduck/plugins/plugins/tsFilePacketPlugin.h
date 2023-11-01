@@ -22,14 +22,8 @@ namespace ts {
     //!
     class TSDUCKDLL FilePacketPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(FilePacketPlugin);
+        TS_PLUGIN_CONSTRUCTORS(FilePacketPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        FilePacketPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

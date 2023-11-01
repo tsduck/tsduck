@@ -25,10 +25,9 @@
 namespace ts {
     class RegulatePlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(RegulatePlugin);
+        TS_PLUGIN_CONSTRUCTORS(RegulatePlugin);
     public:
         // Implementation of plugin API
-        RegulatePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool isRealTime() override {return true;}

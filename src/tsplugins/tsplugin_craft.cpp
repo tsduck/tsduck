@@ -22,10 +22,9 @@
 namespace ts {
     class CraftInput: public InputPlugin
     {
-        TS_NOBUILD_NOCOPY(CraftInput);
+        TS_PLUGIN_CONSTRUCTORS(CraftInput);
     public:
         // Implementation of plugin API
-        CraftInput(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual size_t receive(TSPacket*, TSPacketMetadata*, size_t) override;
@@ -52,10 +51,9 @@ namespace ts {
 namespace ts {
     class CraftPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(CraftPlugin);
+        TS_PLUGIN_CONSTRUCTORS(CraftPlugin);
     public:
         // Implementation of plugin API
-        CraftPlugin(TSP*);
         virtual bool getOptions() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

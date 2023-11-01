@@ -23,10 +23,9 @@
 namespace ts {
     class EncapPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(EncapPlugin);
+        TS_PLUGIN_CONSTRUCTORS(EncapPlugin);
     public:
         // Implementation of plugin API
-        EncapPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

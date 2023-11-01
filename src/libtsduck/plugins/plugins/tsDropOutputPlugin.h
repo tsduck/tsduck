@@ -21,14 +21,8 @@ namespace ts {
     //!
     class TSDUCKDLL DropOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(DropOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DropOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        DropOutputPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool send(const TSPacket*, const TSPacketMetadata*, size_t) override;
     };

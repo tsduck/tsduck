@@ -23,17 +23,9 @@ namespace ts {
     //!
     class TSDUCKDLL VatekOutputPlugin: public OutputPlugin
     {
-        TS_NOBUILD_NOCOPY(VatekOutputPlugin);
+        TS_PLUGIN_CONSTRUCTORS(VatekOutputPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        VatekOutputPlugin(TSP* tsp);
-
-        //!
         //! Destructor.
-        //!
         virtual ~VatekOutputPlugin() override;
 
         // Implementation of plugin API

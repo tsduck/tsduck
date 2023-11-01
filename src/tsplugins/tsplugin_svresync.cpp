@@ -22,10 +22,9 @@
 namespace ts {
     class SVResyncPlugin: public ProcessorPlugin, private SignalizationHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(SVResyncPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SVResyncPlugin);
     public:
         // Implementation of plugin API
-        SVResyncPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

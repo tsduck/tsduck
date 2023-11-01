@@ -26,10 +26,9 @@
 namespace ts {
     class TimePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(TimePlugin);
+        TS_PLUGIN_CONSTRUCTORS(TimePlugin);
     public:
         // Implementation of plugin API
-        TimePlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

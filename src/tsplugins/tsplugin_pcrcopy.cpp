@@ -22,10 +22,9 @@
 namespace ts {
     class PCRCopyPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(PCRCopyPlugin);
+        TS_PLUGIN_CONSTRUCTORS(PCRCopyPlugin);
     public:
         // Implementation of plugin API
-        PCRCopyPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

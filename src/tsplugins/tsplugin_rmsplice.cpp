@@ -29,10 +29,9 @@ namespace ts {
             private SectionHandlerInterface,
             private SignalizationHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(RMSplicePlugin);
+        TS_PLUGIN_CONSTRUCTORS(RMSplicePlugin);
     public:
         // Implementation of plugin API
-        RMSplicePlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;

@@ -30,10 +30,9 @@
 namespace ts {
     class TSRenamePlugin: public ProcessorPlugin, private TableHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(TSRenamePlugin);
+        TS_PLUGIN_CONSTRUCTORS(TSRenamePlugin);
     public:
         // Implementation of plugin API
-        TSRenamePlugin(TSP*);
         virtual bool start() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
 

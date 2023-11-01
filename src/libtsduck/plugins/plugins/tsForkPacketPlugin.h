@@ -24,14 +24,8 @@ namespace ts {
     //!
     class TSDUCKDLL ForkPacketPlugin: public ProcessorPlugin
     {
-        TS_NOBUILD_NOCOPY(ForkPacketPlugin);
+        TS_PLUGIN_CONSTRUCTORS(ForkPacketPlugin);
     public:
-        //!
-        //! Constructor.
-        //! @param [in] tsp Associated callback to @c tsp executable.
-        //!
-        ForkPacketPlugin(TSP* tsp);
-
         // Implementation of plugin API
         virtual bool getOptions() override;
         virtual bool start() override;

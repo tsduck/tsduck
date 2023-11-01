@@ -36,10 +36,9 @@ namespace ts {
             private TableHandlerInterface,
             private SignalizationHandlerInterface
     {
-        TS_NOBUILD_NOCOPY(SpliceMonitorPlugin);
+        TS_PLUGIN_CONSTRUCTORS(SpliceMonitorPlugin);
     public:
         // Implementation of plugin API
-        SpliceMonitorPlugin(TSP*);
         virtual bool getOptions() override;
         virtual bool start() override;
         virtual bool stop() override;

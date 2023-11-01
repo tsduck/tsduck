@@ -38,10 +38,9 @@
 namespace ts {
     class DataInjectPlugin: public ProcessorPlugin, private SectionProviderInterface
     {
-        TS_NOBUILD_NOCOPY(DataInjectPlugin);
+        TS_PLUGIN_CONSTRUCTORS(DataInjectPlugin);
     public:
         // Implementation of plugin API
-        DataInjectPlugin(TSP*);
         virtual bool start() override;
         virtual bool stop() override;
         virtual Status processPacket(TSPacket&, TSPacketMetadata&) override;
