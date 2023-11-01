@@ -14,6 +14,10 @@
 #include "tsSysUtils.h"
 #include "tsunit.h"
 
+namespace {
+    class MutexTest;
+}
+
 
 //----------------------------------------------------------------------------
 // The test fixture
@@ -31,7 +35,7 @@ public:
 
     TSUNIT_TEST_BEGIN(GuardTest);
     TSUNIT_TEST(testGuard);
-    TSUNIT_TEST_EXCEPTION(testAcquireFailed, ts::GuardMutex::GuardMutexError);
+    TSUNIT_TEST_EXCEPTION(testAcquireFailed, ts::TemplateGuardMutex<MutexTest>::GuardMutexError);
     TSUNIT_TEST(testReleaseFailed);
     TSUNIT_TEST_END();
 };
@@ -45,7 +49,7 @@ TSUNIT_REGISTER(GuardTest);
 //----------------------------------------------------------------------------
 
 namespace {
-    class MutexTest: public ts::MutexInterface
+    class MutexTest
     {
         TS_NOCOPY(MutexTest);
     private:
@@ -69,7 +73,7 @@ namespace {
 
         // Acquire the mutex. Block until granted.
         // Return true on success and false on error.
-        virtual bool acquire(ts::MilliSecond timeout = ts::Infinite) override
+        bool acquire(ts::MilliSecond timeout = ts::Infinite)
         {
             _count++;
             return _acquireResult;
@@ -77,7 +81,7 @@ namespace {
 
         // Release the mutex.
         // Return true on success and false on error.
-        virtual bool release() override
+        bool release()
         {
             _count--;
             return _failResult;
@@ -111,10 +115,10 @@ void GuardTest::testGuard()
     MutexTest mutex;
     TSUNIT_ASSERT(mutex.count() == 0);
     {
-        ts::GuardMutex gard1(mutex);
+        ts::TemplateGuardMutex<MutexTest> gard1(mutex);
         TSUNIT_ASSERT(mutex.count() == 1);
         {
-            ts::GuardMutex gard2(mutex);
+            ts::TemplateGuardMutex<MutexTest> gard2(mutex);
             TSUNIT_ASSERT(mutex.count() == 2);
         }
         TSUNIT_ASSERT(mutex.count() == 1);
@@ -128,7 +132,7 @@ void GuardTest::testAcquireFailed()
     MutexTest mutex(false, true);
     TSUNIT_ASSERT(mutex.count() == 0);
     {
-        ts::GuardMutex gard(mutex);
+        ts::TemplateGuardMutex<MutexTest> gard(mutex);
         TSUNIT_FAIL("mutex.acquire() passed, should not get there");
     }
 }
@@ -142,7 +146,7 @@ void GuardTest::testReleaseFailed()
         MutexTest mutex(true, false);
         TSUNIT_ASSERT(mutex.count() == 0);
         {
-            ts::GuardMutex gard(mutex);
+            ts::TemplateGuardMutex<MutexTest> gard(mutex);
             TSUNIT_ASSERT(mutex.count() == 1);
         }
         TSUNIT_FAIL("mutex.release() passed, should not get there");

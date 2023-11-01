@@ -15,7 +15,6 @@
 #include "tsSysUtils.h"
 #include "tsIntegerUtils.h"
 #include "tsSysInfo.h"
-#include "tsFatal.h"
 
 namespace ts {
     //!

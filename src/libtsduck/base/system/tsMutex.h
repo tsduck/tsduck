@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsMutexInterface.h"
 #include "tsException.h"
 
 namespace ts {
@@ -32,7 +31,7 @@ namespace ts {
     //! The implementation of this class is operating system dependent,
     //! just like ts::Thread.
     //!
-    class TSDUCKDLL Mutex: public MutexInterface
+    class TSDUCKDLL Mutex
     {
         TS_NOCOPY(Mutex);
     public:
@@ -52,7 +51,7 @@ namespace ts {
         //!
         //! Destructor.
         //!
-        virtual ~Mutex() override;
+        ~Mutex();
 
         //!
         //! Acquire the mutex with a timeout.
@@ -71,7 +70,7 @@ namespace ts {
         //! @param [in] timeout Maximum number of milliseconds to wait for the mutex.
         //! @return True on success and false on error or when the timeout expires.
         //!
-        virtual bool acquire(MilliSecond timeout = Infinite) override;
+        bool acquire(MilliSecond timeout = Infinite);
 
         //!
         //! Release the mutex.
@@ -89,7 +88,7 @@ namespace ts {
         //!
         //! @return true on success and false on error.
         //!
-        virtual bool release() override;
+        bool release();
 
     private:
         // Private members

@@ -47,7 +47,7 @@ void ts::AsyncReportArgs::defineArgs(Args& args)
 
 bool ts::AsyncReportArgs::loadArgs(DuckContext& duck, Args& args)
 {
-    log_msg_count = args.intValue<size_t>(u"log-message-count", MAX_LOG_MESSAGES);
+    args.getIntValue(log_msg_count, u"log-message-count", MAX_LOG_MESSAGES);
     sync_log = args.present(u"synchronous-log");
     timed_log = args.present(u"timed-log");
     return true;

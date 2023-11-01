@@ -13,7 +13,6 @@
 
 #pragma once
 #include "tsThreadAttributes.h"
-#include "tsIntegerUtils.h"
 #include "tsException.h"
 #include "tsMutex.h"
 
@@ -212,7 +211,7 @@ namespace ts {
         void mainWrapper();
 
         #if defined(TS_WINDOWS)
-            ::HANDLE _handle {INVALID_HANDLE_VALUE};
+            ::HANDLE _handle = INVALID_HANDLE_VALUE;
             ::DWORD _thread_id = 0;
             // Actual starting point of thread. Parameter is "this".
             static ::DWORD WINAPI ThreadProc(::LPVOID parameter);

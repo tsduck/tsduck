@@ -23,11 +23,7 @@ namespace ts {
     //!
     //! Reentrancy is supported though the template parameter @a MUTEX.
     //!
-    //! @tparam MUTEX A subclass of ts::MutexInterface which is used to
-    //! serialize access to the buffer. By default, the class ts::NullMutex
-    //! is used, meaning that there is no synchronization on the file.
-    //! Multi-threaded applications must use an appropriate mutex class,
-    //! typically ts::Mutex.
+    //! @tparam MUTEX A mutex class with acquire() and release() methods.
     //!
     template <class MUTEX = NullMutex>
     class ReportBuffer: public Report
@@ -92,7 +88,7 @@ inline std::ostream& operator<< (std::ostream& strm, const ts::ReportBuffer<MUTE
 template <class MUTEX>
 void ts::ReportBuffer<MUTEX>::resetMessages()
 {
-    GuardMutex lock(_mutex);
+    TemplateGuardMutex<MUTEX> lock(_mutex);
     _buffer.clear();
 }
 
@@ -100,7 +96,7 @@ void ts::ReportBuffer<MUTEX>::resetMessages()
 template <class MUTEX>
 bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 {
-    GuardMutex lock(_mutex);
+    TemplateGuardMutex<MUTEX> lock(_mutex);
     return _buffer.empty();
 }
 
@@ -108,7 +104,7 @@ bool ts::ReportBuffer<MUTEX>::emptyMessages() const
 template <class MUTEX>
 ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
 {
-    GuardMutex lock(_mutex);
+    TemplateGuardMutex<MUTEX> lock(_mutex);
     return _buffer;
 }
 
@@ -116,7 +112,7 @@ ts::UString ts::ReportBuffer<MUTEX>::getMessages() const
 template <class MUTEX>
 void ts::ReportBuffer<MUTEX>::writeLog(int severity, const UString& message)
 {
-    GuardMutex lock(_mutex);
+    TemplateGuardMutex<MUTEX> lock(_mutex);
     if (!_buffer.empty()) {
         _buffer.append(u'\n');
     }
