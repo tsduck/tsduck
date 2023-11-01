@@ -8,6 +8,7 @@
 
 #include "tsMACAddress.h"
 #include "tsMemory.h"
+#include "tsUString.h"
 
 
 //----------------------------------------------------------------------------

@@ -7,6 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsAbstractNetworkAddress.h"
+#include "tsUString.h"
 
 #if !defined(TS_CXX17)
 constexpr ts::AbstractNetworkAddress::Port ts::AbstractNetworkAddress::AnyPort;

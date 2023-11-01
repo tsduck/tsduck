@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsReport.h"
+#include "tsUString.h"
 
 namespace ts {
     //!

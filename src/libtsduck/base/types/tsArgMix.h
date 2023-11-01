@@ -12,7 +12,6 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsPlatform.h"
 #include "tsUChar.h"
 #include "tsEnumUtils.h"
 #include "tsAbstractNumber.h"

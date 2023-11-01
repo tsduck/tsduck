@@ -17,10 +17,8 @@
 #include "tsTSProcessorArgs.h"
 #include "tsPluginEventHandlerRegistry.h"
 #include "tsPlugin.h"
-#include "tsUserInterrupt.h"
 #include "tsCondition.h"
 #include "tsMutex.h"
-#include "tsThread.h"
 
 namespace ts {
     namespace tsp {

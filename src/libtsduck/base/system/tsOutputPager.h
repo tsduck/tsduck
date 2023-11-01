@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsForkPipe.h"
+#include "tsUString.h"
 
 namespace ts {
     //!
