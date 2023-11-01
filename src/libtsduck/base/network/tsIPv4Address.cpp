@@ -10,6 +10,7 @@
 #include "tsMemory.h"
 #include "tsUString.h"
 #include "tsSysUtils.h"
+#include "tsIPUtils.h" // Windows
 
 #if !defined(TS_CXX17)
 constexpr size_t ts::IPv4Address::BITS;
