@@ -14,7 +14,6 @@
 
 #pragma once
 #include "tsPlatform.h"
-#include <cwctype>
 
 namespace ts {
 

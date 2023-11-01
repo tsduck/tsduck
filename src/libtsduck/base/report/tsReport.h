@@ -12,17 +12,21 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsUString.h"
-#include "tsEnumeration.h"
+#include "tsUChar.h"
+#include "tsArgMix.h"
 
 namespace ts {
+
+    class Enumeration;
+    class UString;
+
     //!
     //! Message severity.
     //! @ingroup log
     //!
     //! Positive values are debug levels. The typical default reporting level is @c Info.
     //! All messages with a higher level (@c Verbose and all debug levels) are not reported by default.
-    //! The @c struct is here just to add a naming level
+    //! The @c struct is here just to add a naming level.
     //!
     struct TSDUCKDLL Severity {
 
@@ -300,7 +304,7 @@ namespace ts {
         //!
         //! Debug level is accessible to subclasses
         //!
-        volatile int _max_severity {Severity::Info};
+        volatile int _max_severity = Severity::Info;
 
         //!
         //! Actual message reporting method.

@@ -15,6 +15,7 @@
 #include "tsUString.h"
 #include "tsByteBlock.h"
 #include "tsSysUtils.h"
+#include "tsEnumeration.h"
 
 // The UTF-8 Byte Order Mark
 const char* const ts::UString::UTF8_BOM = "\xEF\xBB\xBF";
