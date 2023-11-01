@@ -14,6 +14,7 @@
 
 #pragma once
 #include "tsReport.h"
+#include "tsUString.h"
 #include "tsComIds.h"
 
 #include "tsBeforeStandardHeaders.h"
