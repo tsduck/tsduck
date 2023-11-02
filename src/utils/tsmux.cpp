@@ -82,7 +82,7 @@ int MainCode(int argc, char *argv[])
 
     // If plugins were statically linked, disallow the dynamic loading of plugins.
 #if defined(TSDUCK_STATIC_PLUGINS)
-    ts::PluginRepository::Instance()->setSharedLibraryAllowed(false);
+    ts::PluginRepository::Instance().setSharedLibraryAllowed(false);
 #endif
 
     // Prevent from being killed when writing on broken pipes.

@@ -13,6 +13,7 @@
 
 #pragma once
 #include "tsSafePtr.h"
+#include "tsMutex.h"
 
 namespace ts {
 

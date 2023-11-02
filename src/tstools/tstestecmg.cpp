@@ -617,7 +617,7 @@ void ECMGConnection::terminate()
 // Abort connection with the ECMG.
 void ECMGConnection::abort()
 {
-    _logger.setReport(ts::NullReport::Instance());
+    _logger.setReport(&NULLREP);
     _conn.disconnect(_logger.report());
     _conn.close(_logger.report());
 }

@@ -69,7 +69,7 @@ ts::SHA512::SHA512()
     // Check once if SHA-512 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.
     if (!_accel_checked) {
-        _accel_supported = SysInfo::Instance()->sha512Instructions();
+        _accel_supported = SysInfo::Instance().sha512Instructions();
         _accel_checked = true;
     }
 

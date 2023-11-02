@@ -24,7 +24,7 @@ ts::DVBCharTable::DVBCharTable(const UChar* name, uint32_t tableCode) :
     _code(tableCode)
 {
     // Register the character set.
-    TableCodeRepository::Instance()->add(_code, this);
+    TableCodeRepository::Instance().add(_code, this);
 }
 
 ts::DVBCharTable::~DVBCharTable()
@@ -83,12 +83,12 @@ void ts::DVBCharTable::TableCodeRepository::remove(const DVBCharTable* charset)
 
 const ts::DVBCharTable* ts::DVBCharTable::GetTableFromLeadingCode(uint32_t code)
 {
-    return TableCodeRepository::Instance()->get(code);
+    return TableCodeRepository::Instance().get(code);
 }
 
 void ts::DVBCharTable::unregister() const
 {
-    TableCodeRepository::Instance()->remove(this);
+    TableCodeRepository::Instance().remove(this);
     Charset::unregister(); // invoke superclass
 }
 

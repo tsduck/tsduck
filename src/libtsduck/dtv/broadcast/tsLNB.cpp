@@ -136,7 +136,7 @@ ts::UString ts::LNB::toString() const
 bool ts::LNB::set(const UString& name, Report& report)
 {
     // Try to find a matching name of alias in the repository.
-    const LNB* lnb = LNBRepository::Instance()->get(name, report);
+    const LNB* lnb = LNBRepository::Instance().get(name, report);
     if (lnb != nullptr) {
         // Found a matching name in the repository.
         *this = *lnb;
@@ -208,7 +208,7 @@ void ts::LNB::set(uint64_t low_frequency, uint64_t high_frequency, uint64_t swit
 
 ts::UStringList ts::LNB::GetAllNames(Report& report)
 {
-    return LNBRepository::Instance()->allNames(report);
+    return LNBRepository::Instance().allNames(report);
 }
 
 
@@ -409,7 +409,7 @@ bool ts::LNB::LNBRepository::load(Report& report)
     }
 
     // Override the default LNB if specified in the TSDuck configuration file.
-    const UString def_name(DuckConfigFile::Instance()->value(u"default.lnb"));
+    const UString def_name(DuckConfigFile::Instance().value(u"default.lnb"));
     const UString def_index(ToIndex(def_name));
     if (!def_index.empty()) {
         auto it = _lnbs.find(def_index);

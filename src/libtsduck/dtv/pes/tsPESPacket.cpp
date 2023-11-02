@@ -16,7 +16,7 @@
 #include "tsAVCAccessUnitDelimiter.h"
 #include "tsHEVCAccessUnitDelimiter.h"
 #include "tsVVCAccessUnitDelimiter.h"
-#include "tsStaticInstance.h"
+#include "tsSingleton.h"
 
 
 //----------------------------------------------------------------------------
@@ -289,19 +289,17 @@ bool ts::PESPacket::operator==(const PESPacket& pp) const
 // List of functions to check the compatibility of PES content and codec.
 //----------------------------------------------------------------------------
 
-namespace {
-    typedef bool (*ContentCheckFunction)(const uint8_t* data, size_t size, uint8_t stream_type);
-    typedef std::map<ts::CodecType, ContentCheckFunction> CodecCheckMap;
-    TS_STATIC_INSTANCE(CodecCheckMap, ({
-        std::make_pair(ts::CodecType::MPEG1_VIDEO, ts::PESPacket::IsMPEG2Video),
-        std::make_pair(ts::CodecType::MPEG2_VIDEO, ts::PESPacket::IsMPEG2Video),
-        std::make_pair(ts::CodecType::AC3, ts::PESPacket::IsAC3),
-        std::make_pair(ts::CodecType::EAC3, ts::PESPacket::IsAC3),
-        std::make_pair(ts::CodecType::AVC, ts::PESPacket::IsAVC),
-        std::make_pair(ts::CodecType::HEVC, ts::PESPacket::IsHEVC),
-        std::make_pair(ts::CodecType::VVC, ts::PESPacket::IsVVC),
-    }), StaticCodecCheckMap)
-}
+typedef bool (*ContentCheckFunction)(const uint8_t* data, size_t size, uint8_t stream_type);
+typedef std::map<ts::CodecType, ContentCheckFunction> CodecCheckMap;
+TS_STATIC_INSTANCE(CodecCheckMap, ({
+    std::make_pair(ts::CodecType::MPEG1_VIDEO, ts::PESPacket::IsMPEG2Video),
+    std::make_pair(ts::CodecType::MPEG2_VIDEO, ts::PESPacket::IsMPEG2Video),
+    std::make_pair(ts::CodecType::AC3, ts::PESPacket::IsAC3),
+    std::make_pair(ts::CodecType::EAC3, ts::PESPacket::IsAC3),
+    std::make_pair(ts::CodecType::AVC, ts::PESPacket::IsAVC),
+    std::make_pair(ts::CodecType::HEVC, ts::PESPacket::IsHEVC),
+    std::make_pair(ts::CodecType::VVC, ts::PESPacket::IsVVC),
+}), StaticCodecCheckMap);
 
 
 //----------------------------------------------------------------------------

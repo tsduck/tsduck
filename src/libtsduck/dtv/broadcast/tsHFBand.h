@@ -16,7 +16,7 @@
 #include "tsMutex.h"
 #include "tsSafePtr.h"
 #include "tsCerrReport.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsxml.h"
 
 namespace ts {

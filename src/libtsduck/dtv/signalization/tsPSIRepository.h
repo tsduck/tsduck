@@ -16,7 +16,7 @@
 #include "tsEDID.h"
 #include "tsStandards.h"
 #include "tsTablesPtr.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsVersionInfo.h"
 
 namespace ts {

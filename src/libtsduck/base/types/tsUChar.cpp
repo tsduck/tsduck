@@ -9,7 +9,7 @@
 #include "tsUChar.h"
 #include "tsUString.h"
 #include "tsAlgorithm.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 
 
 //----------------------------------------------------------------------------
@@ -222,8 +222,7 @@ namespace {
     LowerUpper::LowerUpper() : SuperClass()
     {
         // Build inversed table from UpperLower.
-        const UpperLower* ul = UpperLower::Instance();
-        for (auto it : *ul) {
+        for (auto& it : UpperLower::Instance()) {
             insert(std::make_pair(it.second, it.first));
         }
     }
@@ -719,9 +718,8 @@ namespace {
     HTMLCharacters::HTMLCharacters() : SuperClass()
     {
         // Build inversed table from HTMLEntities.
-        const HTMLEntities* he = HTMLEntities::Instance();
-        for (auto it = he->begin(); it != he->end(); ++it) {
-            insert(std::make_pair(it->second, it->first));
+        for (auto& it : HTMLEntities::Instance()) {
+            insert(std::make_pair(it.second, it.first));
         }
     }
 }
@@ -963,9 +961,8 @@ namespace {
     CombiningCharacters::CombiningCharacters() : SuperClass()
     {
         // Build inversed table from HTMLEntities.
-        const CombiningSequences* cs = CombiningSequences::Instance();
-        for (auto it = cs->begin(); it != cs->end(); ++it) {
-            insert(std::make_pair(it->second, it->first));
+        for (auto& it : CombiningSequences::Instance()) {
+            insert(std::make_pair(it.second, it.first));
         }
     }
 }
@@ -1895,9 +1892,9 @@ namespace {
 
 uint32_t ts::UCharacteristics(UChar c)
 {
-    const auto ll = CharChar::Instance();
-    const auto it = ll->find(c);
-    return it == ll->end() ? 0 : it->second;
+    const auto& ll(CharChar::Instance());
+    const auto it = ll.find(c);
+    return it == ll.end() ? 0 : it->second;
 }
 
 
@@ -1928,7 +1925,7 @@ bool ts::IsLower(UChar c)
     }
     else {
         // Check if it is a known lowercase for us.
-        return Contains(*LowerUpper::Instance(), c);
+        return Contains(LowerUpper::Instance(), c);
     }
 }
 
@@ -1940,7 +1937,7 @@ bool ts::IsUpper(UChar c)
     }
     else {
         // Check if it is a known uppercase for us.
-        return Contains(*UpperLower::Instance(), c);
+        return Contains(UpperLower::Instance(), c);
     }
 }
 
@@ -1953,9 +1950,9 @@ ts::UChar ts::ToLower(UChar c)
     }
     else {
         // Search for an additional translation, if any.
-        const auto ul = UpperLower::Instance();
-        const auto it = ul->find(c);
-        return it == ul->end() ? c : it->second;
+        const auto& ul(UpperLower::Instance());
+        const auto it = ul.find(c);
+        return it == ul.end() ? c : it->second;
     }
 }
 
@@ -1968,45 +1965,45 @@ ts::UChar ts::ToUpper(UChar c)
     }
     else {
         // Search for an additional translation, if any.
-        const auto lu = LowerUpper::Instance();
-        const auto it = lu->find(c);
-        return it == lu->end() ? c : it->second;
+        const auto& lu(LowerUpper::Instance());
+        const auto it = lu.find(c);
+        return it == lu.end() ? c : it->second;
     }
 }
 
 bool ts::IsAccented(UChar c)
 {
-    const auto wa = WithoutAccent::Instance();
-    const auto it = wa->find(c);
-    return it != wa->end();
+    const auto& wa(WithoutAccent::Instance());
+    const auto it = wa.find(c);
+    return it != wa.end();
 }
 
 ts::UString ts::RemoveAccent(UChar c)
 {
-    const auto wa = WithoutAccent::Instance();
-    const auto it = wa->find(c);
-    return it == wa->end() ? UString(1, c) : UString::FromUTF8(it->second);
+    const auto& wa(WithoutAccent::Instance());
+    const auto it = wa.find(c);
+    return it == wa.end() ? UString(1, c) : UString::FromUTF8(it->second);
 }
 
 ts::UString ts::ToHTML(UChar c)
 {
-    const auto he = HTMLEntities::Instance();
-    const auto it = he->find(c);
-    return it == he->end() ? UString(1, c) : (UChar('&') + UString::FromUTF8(it->second) + UChar(';'));
+    const auto& he(HTMLEntities::Instance());
+    const auto it = he.find(c);
+    return it == he.end() ? UString(1, c) : (UChar('&') + UString::FromUTF8(it->second) + UChar(';'));
 }
 
 ts::UChar ts::FromHTML(const UString& entity)
 {
-    const auto hc = HTMLCharacters::Instance();
-    const auto it = hc->find(entity.toUTF8());
-    return it == hc->end() ? CHAR_NULL : it->second;
+    const auto& hc(HTMLCharacters::Instance());
+    const auto it = hc.find(entity.toUTF8());
+    return it == hc.end() ? CHAR_NULL : it->second;
 }
 
 void ts::UString::convertToHTML(const UString& convert)
 {
     // Should not be there, but this is much faster to do it that way.
     const bool convertAll = convert.empty();
-    const auto he = HTMLEntities::Instance();
+    const auto& he(HTMLEntities::Instance());
     for (size_type i = 0; i < length(); ) {
         if (!convertAll && convert.find(at(i)) == NPOS) {
             // Do not convert this one.
@@ -2014,8 +2011,8 @@ void ts::UString::convertToHTML(const UString& convert)
         }
         else {
             // Look for an HTML entity.
-            const auto it = he->find(at(i));
-            if (it == he->end()) {
+            const auto it = he.find(at(i));
+            if (it == he.end()) {
                 // No HTML entity for this character, don't convert.
                 ++i;
             }
@@ -2034,7 +2031,7 @@ void ts::UString::convertToHTML(const UString& convert)
 void ts::UString::convertFromHTML()
 {
     // Should not be there, but this is much faster to do it that way.
-    const auto hc = HTMLCharacters::Instance();
+    const auto& hc(HTMLCharacters::Instance());
     for (size_type i = 0; i < length(); ) {
 
         // Find next "&...;" sequence.
@@ -2051,8 +2048,8 @@ void ts::UString::convertFromHTML()
 
         // Sequence found, locate character translation.
         assert(semi > amp);
-        const auto it = hc->find(substr(amp + 1, semi - amp - 1).toUTF8());
-        if (it == hc->end()) {
+        const auto it = hc.find(substr(amp + 1, semi - amp - 1).toUTF8());
+        if (it == hc.end()) {
             // Unknown sequence, leave it as is.
             i = semi + 1;
         }
@@ -2087,9 +2084,9 @@ bool ts::Match(UChar c1, UChar c2, CaseSensitivity cs)
 
 bool ts::DecomposePrecombined(UChar c, UChar& letter, UChar& mark)
 {
-    const auto cs = CombiningSequences::Instance();
-    const auto it = cs->find(c);
-    const bool found = it != cs->end();
+    const auto& cs(CombiningSequences::Instance());
+    const auto it = cs.find(c);
+    const bool found = it != cs.end();
     if (found) {
         letter = DIAC_LETTER(it->second);
         mark = DIAC_MARK(it->second);
@@ -2105,7 +2102,7 @@ bool ts::DecomposePrecombined(UChar c, UChar& letter, UChar& mark)
 
 ts::UChar ts::Precombined(UChar letter, UChar mark)
 {
-    const auto cc = CombiningCharacters::Instance();
-    const auto it = cc->find(DIAC(letter, mark));
-    return it == cc->end() ? CHAR_NULL : it->second;
+    const auto& cc(CombiningCharacters::Instance());
+    const auto it = cc.find(DIAC(letter, mark));
+    return it == cc.end() ? CHAR_NULL : it->second;
 }

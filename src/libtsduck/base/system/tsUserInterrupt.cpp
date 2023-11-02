@@ -7,13 +7,14 @@
 //----------------------------------------------------------------------------
 
 #include "tsUserInterrupt.h"
-#include "tsStaticInstance.h"
+#include "tsSingleton.h"
+#include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 
 ts::UserInterrupt* volatile ts::UserInterrupt::_active_instance = nullptr;
 
 // A local mutex to avoid multiple activations.
-TS_STATIC_INSTANCE(ts::Mutex, (), ActivationMutex)
+TS_STATIC_INSTANCE(ts::Mutex, (), ActivationMutex);
 
 // On UNIX platforms, we use a semaphore (sem_t). On macOS, the address of the
 // semaphore is returned by sem_open. On other UNIX, the semaphore instance is

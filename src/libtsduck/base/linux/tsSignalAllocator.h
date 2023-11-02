@@ -12,7 +12,7 @@
 //-----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsMutex.h"
 
 namespace ts {

@@ -1425,7 +1425,7 @@ bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout)
         // Set an actual receive timer.
         if (_rt_signal < 0) {
             // Allocate one real-time signal.
-            if ((_rt_signal = SignalAllocator::Instance()->allocate()) < 0) {
+            if ((_rt_signal = SignalAllocator::Instance().allocate()) < 0) {
                 _duck.report().error(u"cannot set tuner receive timer, no more signal available");
                 return false;
             }
@@ -1440,7 +1440,7 @@ bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout)
             TS_POP_WARNING()
             if (::sigaction(_rt_signal, &sac, nullptr) < 0) {
                 _duck.report().error(u"error setting tuner receive timer signal: %s", {SysErrorCodeMessage()});
-                SignalAllocator::Instance()->release(_rt_signal);
+                SignalAllocator::Instance().release(_rt_signal);
                 _rt_signal = -1;
                 return false;
             }
@@ -1483,7 +1483,7 @@ bool ts::TunerDevice::setReceiveTimeout(MilliSecond timeout)
                 ok = false;
             }
             // Release signal
-            SignalAllocator::Instance()->release(_rt_signal);
+            SignalAllocator::Instance().release(_rt_signal);
             _rt_signal = -1;
         }
 

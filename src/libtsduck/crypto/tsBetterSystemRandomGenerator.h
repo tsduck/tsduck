@@ -14,7 +14,7 @@
 
 #pragma once
 #include "tsSystemRandomGenerator.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsReport.h"
 #include "tsByteBlock.h"
 #include "tsUString.h"

@@ -8,6 +8,7 @@
 
 #include "tsTLVSyntax.h"
 #include "tsIntegerUtils.h"
+#include "tsUString.h"
 #include "tsMemory.h"
 
 

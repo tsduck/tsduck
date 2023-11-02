@@ -486,7 +486,7 @@ namespace {
         }
 
         // Get system info to determine which command to run.
-        const ts::SysInfo& sys(*ts::SysInfo::Instance());
+        const ts::SysInfo& sys(ts::SysInfo::Instance());
 
         if (files.empty() && !sys.isMacOS()) {
             opt.error(u"no binary installer available for your system");
@@ -630,7 +630,7 @@ int MainCode(int argc, char *argv[])
     if (opt.extensions) {
         // Display list of available extensions.
         // The returned string is either empty or ends with a new-line.
-        std::cout << ts::DuckExtensionRepository::Instance()->listExtensions(opt);
+        std::cout << ts::DuckExtensionRepository::Instance().listExtensions(opt);
     }
     else if (opt.integer) {
         // Display current version in integer format.

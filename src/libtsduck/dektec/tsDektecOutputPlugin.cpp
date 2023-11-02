@@ -1152,7 +1152,7 @@ bool ts::DektecOutputPlugin::setModulation(int& modulation_type)
 
     // Get input plugin modulation parameters if required
     const bool use_input_modulation = present(u"input-modulation");
-    const ObjectPtr input_params(use_input_modulation ? ObjectRepository::Instance()->retrieve(u"tsp.dvb.params") : nullptr);
+    const ObjectPtr input_params(use_input_modulation ? ObjectRepository::Instance().retrieve(u"tsp.dvb.params") : nullptr);
     const ModulationArgs* input = dynamic_cast<const ModulationArgs*>(input_params.pointer());
     ModulationArgs other_args;
 

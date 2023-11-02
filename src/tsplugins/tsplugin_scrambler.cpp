@@ -879,7 +879,7 @@ void ts::ScramblerPlugin::CryptoPeriod::initNext(const CryptoPeriod& previous)
 
 void ts::ScramblerPlugin::CryptoPeriod::generateCW(ByteBlock& cw)
 {
-    BetterSystemRandomGenerator::Instance()->readByteBlock(cw, _plugin->_scrambling.cwSize());
+    BetterSystemRandomGenerator::Instance().readByteBlock(cw, _plugin->_scrambling.cwSize());
     if (_plugin->_pre_reduce_cw && _plugin->_scrambling.entropyMode() == DVBCSA2::REDUCE_ENTROPY) {
         assert(cw.size() == DVBCSA2::KEY_SIZE);
         DVBCSA2::ReduceCW(cw.data());

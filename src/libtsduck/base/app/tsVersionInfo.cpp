@@ -245,13 +245,13 @@ ts::UString ts::VersionInfo::GetCompilerVersion()
 
 ts::UString ts::VersionInfo::GetSystemVersion()
 {
-    UString name(SysInfo::Instance()->systemName());
-    const UString version(SysInfo::Instance()->systemVersion());
+    UString name(SysInfo::Instance().systemName());
+    const UString version(SysInfo::Instance().systemVersion());
     if (!version.empty()) {
         name.format(u" (%s)", {version});
     }
     name.format(u", on %s, %d-bit, %s-endian, page size: %d bytes",
-                {SysInfo::Instance()->cpuName(),
+                {SysInfo::Instance().cpuName(),
                  TS_ADDRESS_BITS,
                  #if defined(TS_LITTLE_ENDIAN)
                      u"little",
@@ -260,7 +260,7 @@ ts::UString ts::VersionInfo::GetSystemVersion()
                  #else
                      u"unknown",
                  #endif
-                 SysInfo::Instance()->memoryPageSize()});
+                 SysInfo::Instance().memoryPageSize()});
     return name;
 }
 
@@ -334,11 +334,11 @@ ts::UString ts::VersionInfo::GetVersion(Format format, const UString& applicatio
         case Format::ACCELERATION: {
             // Support for accelerated instructions.
             return UString::Format(u"CRC32: %s, AES: %s, SHA-1: %s, SHA-256: %s, SHA-512: %s", {
-                UString::YesNo(SysInfo::Instance()->crcInstructions()),
-                UString::YesNo(SysInfo::Instance()->aesInstructions()),
-                UString::YesNo(SysInfo::Instance()->sha1Instructions()),
-                UString::YesNo(SysInfo::Instance()->sha256Instructions()),
-                UString::YesNo(SysInfo::Instance()->sha512Instructions())
+                UString::YesNo(SysInfo::Instance().crcInstructions()),
+                UString::YesNo(SysInfo::Instance().aesInstructions()),
+                UString::YesNo(SysInfo::Instance().sha1Instructions()),
+                UString::YesNo(SysInfo::Instance().sha256Instructions()),
+                UString::YesNo(SysInfo::Instance().sha512Instructions())
             });
         }
         case Format::ALL: {

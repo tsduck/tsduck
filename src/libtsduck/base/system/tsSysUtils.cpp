@@ -8,7 +8,7 @@
 
 #include "tsSysUtils.h"
 #include "tsFileUtils.h"
-#include "tsStaticInstance.h"
+#include "tsSingleton.h"
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsTime.h"
@@ -59,7 +59,7 @@
 #endif
 
 // External calls to environment variables are not reentrant. Use a global mutex.
-TS_STATIC_INSTANCE(ts::Mutex, (), EnvironmentMutex)
+TS_STATIC_INSTANCE(ts::Mutex, (), EnvironmentMutex);
 
 
 //----------------------------------------------------------------------------

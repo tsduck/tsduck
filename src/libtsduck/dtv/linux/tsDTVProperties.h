@@ -14,7 +14,7 @@
 #pragma once
 #include "tsReport.h"
 #include "tsVariable.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <linux/dvb/version.h>
@@ -174,7 +174,7 @@ namespace ts {
         //! @param [in] cmd Command code.
         //! @return A name for @a cmd or a null pointer if unknown.
         //!
-        static const char* CommandName(uint32_t cmd) { return DTVNames::Instance()->name(cmd); }
+        static const char* CommandName(uint32_t cmd) { return DTVNames::Instance().name(cmd); }
 
     private:
         // Private members:

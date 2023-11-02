@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsBetterSystemRandomGenerator.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsFileUtils.h"
 #include "tsGuardMutex.h"
 

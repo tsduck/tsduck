@@ -445,7 +445,7 @@ ts::UString ts::TempDirectory()
 
 ts::UString ts::TempFile(const UString& suffix)
 {
-    return TempDirectory() + PathSeparator + UString::Format(u"tstmp-%X", {UID::Instance()->newUID()}) + suffix;
+    return TempDirectory() + PathSeparator + UString::Format(u"tstmp-%X", {UID::Instance().newUID()}) + suffix;
 }
 
 

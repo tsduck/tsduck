@@ -32,7 +32,7 @@ ts::AES::AES()
     // Check once if AES acceleration is supported at runtime.
     // This logic does not require explicit synchronization.
     if (!_accel_checked) {
-        _accel_supported = SysInfo::Instance()->aesInstructions();
+        _accel_supported = SysInfo::Instance().aesInstructions();
         _accel_checked = true;
     }
     if (_accel_supported) {

@@ -102,7 +102,7 @@ void ts::CADescriptor::DisplayDescriptor(TablesDisplay& disp, PSIBuffer& buf, co
         // CA private part.
         if (buf.canRead()) {
             // Check if a specific CAS registered its own display routine.
-            DisplayCADescriptorFunction func = PSIRepository::Instance()->getCADescriptorDisplay(casid);
+            DisplayCADescriptorFunction func = PSIRepository::Instance().getCADescriptorDisplay(casid);
             if (func != nullptr) {
                 // Use a CAS-specific display routine.
                 func(disp, buf, margin, tid);

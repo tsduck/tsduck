@@ -7,7 +7,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsSRTSocket.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsArgs.h"
 #include "tsjsonObject.h"
 #include "tsTextFormatter.h"
@@ -552,7 +552,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
     _guts->disconnected = false;
 
     // Initialize SRT.
-    SRTInit::Instance()->start();
+    SRTInit::Instance().start();
 
     // Create the SRT socket.
 #if SRT_VERSION_VALUE >= SRT_MAKE_VERSION_VALUE(1, 4, 1)
@@ -565,7 +565,7 @@ bool ts::SRTSocket::open(SRTSocketMode mode,
 #endif
     if (_guts->sock == SRT_INVALID_SOCK) {
         report.error(u"error creating SRT socket: %s", {::srt_getlasterror_str()});
-        SRTInit::Instance()->stop();
+        SRTInit::Instance().stop();
         return false;
     }
 
@@ -643,7 +643,7 @@ bool ts::SRTSocket::close(Report& report)
         }
 
         // Decrement reference count to SRT library.
-        SRTInit::Instance()->stop();
+        SRTInit::Instance().stop();
     }
     return true;
 }

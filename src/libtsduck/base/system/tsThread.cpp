@@ -210,7 +210,7 @@ bool ts::Thread::start()
     // Set required stack size.
     if (_attributes._stackSize > 0) {
         // Round to a multiple of the page size. This is required on macOS.
-        const size_t size = round_up(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stackSize), SysInfo::Instance()->memoryPageSize());
+        const size_t size = round_up(std::max<size_t>(PTHREAD_STACK_MIN, _attributes._stackSize), SysInfo::Instance().memoryPageSize());
         if (::pthread_attr_setstacksize(&attr, size) != 0) {
             ::pthread_attr_destroy(&attr);
             return false;
@@ -347,7 +347,7 @@ void ts::Thread::mainWrapper()
     catch (const std::exception& e) {
         std::cerr << "*** Internal error, thread aborted: " << e.what() << std::endl;
     }
-    ThreadLocalObjects::Instance()->deleteLocalObjects();
+    ThreadLocalObjects::Instance().deleteLocalObjects();
 }
 
 #if defined(TS_WINDOWS)

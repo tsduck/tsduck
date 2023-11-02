@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::tlv::Logger::Logger(int default_level, Report* default_report) :
-    _report(default_report != nullptr ? default_report : NullReport::Instance()),
+    _report(default_report != nullptr ? default_report : &NULLREP),
     _default_level(default_level)
 {
 }
@@ -27,7 +27,7 @@ ts::tlv::Logger::Logger(int default_level, Report* default_report) :
 
 void ts::tlv::Logger::setReport(Report* default_report)
 {
-    _report = default_report != nullptr ? default_report : NullReport::Instance();
+    _report = default_report != nullptr ? default_report : &NULLREP;
 }
 
 

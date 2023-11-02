@@ -35,12 +35,12 @@ TSDUCKPY void tspyReportHeader(int severity, uint8_t* buffer, size_t* buffer_siz
 
 TSDUCKPY void* tspyStdErrReport()
 {
-    return ts::CerrReport::Instance();
+    return &CERR;
 }
 
 TSDUCKPY void* tspyNullReport()
 {
-    return ts::NullReport::Instance();
+    return &NULLREP;
 }
 
 //-----------------------------------------------------------------------------

@@ -17,7 +17,7 @@
 TSDUCKPY void* tspyNewDuckContext(void* report)
 {
     ts::Report* rep = reinterpret_cast<ts::Report*>(report);
-    return new ts::DuckContext(rep == nullptr ? ts::NullReport::Instance() : rep);
+    return new ts::DuckContext(rep == nullptr ? &NULLREP : rep);
 }
 
 TSDUCKPY void tspyDeleteDuckContext(void* duck_ptr)

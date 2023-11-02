@@ -95,7 +95,7 @@ ts::ResidentBuffer<T>::ResidentBuffer(size_t elem_count) :
     _elem_count(elem_count)
 {
     const size_t requested_size = elem_count * sizeof(T);
-    const size_t page_size = SysInfo::Instance()->memoryPageSize();
+    const size_t page_size = SysInfo::Instance().memoryPageSize();
 
     // Allocate enough space to include memory pages around the requested size
     _allocated_size = requested_size + 2 * page_size;

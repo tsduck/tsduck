@@ -39,7 +39,7 @@ ts::ECMGClient::~ECMGClient()
 
         // Break connection, if not already done
         _abort = nullptr;
-        _logger.setReport(NullReport::Instance());
+        _logger.setReport(&NULLREP);
         _connection.disconnect(NULLREP);
         _connection.close(NULLREP);
 
@@ -67,7 +67,7 @@ bool ts::ECMGClient::abortConnection(const UString& message)
     _connection.close(_logger.report());
     lock.signal();
 
-    _logger.setReport(NullReport::Instance());
+    _logger.setReport(&NULLREP);
     return false;
 }
 

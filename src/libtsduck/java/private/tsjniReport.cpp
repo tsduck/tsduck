@@ -61,7 +61,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_Report_log(JNIEnv* env, jobject obj, jint 
 TSDUCKJNI void JNICALL Java_io_tsduck_NullReport_initNativeObject(JNIEnv* env, jobject obj)
 {
     // Set the same singleton address to all Java instances (won't be deleted).
-    ts::jni::SetPointerField(env, obj, "nativeObject", ts::NullReport::Instance());
+    ts::jni::SetPointerField(env, obj, "nativeObject", &NULLREP);
 }
 
 //----------------------------------------------------------------------------
@@ -74,7 +74,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_NullReport_initNativeObject(JNIEnv* env, j
 TSDUCKJNI void JNICALL Java_io_tsduck_ErrReport_initNativeObject(JNIEnv* env, jobject obj)
 {
     // Set the same singleton address to all Java instances (won't be deleted).
-    ts::jni::SetPointerField(env, obj, "nativeObject", ts::CerrReport::Instance());
+    ts::jni::SetPointerField(env, obj, "nativeObject", &CERR);
 }
 
 //----------------------------------------------------------------------------
