@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsObject.h"
 
 namespace ts {
@@ -79,7 +79,7 @@ namespace ts {
 
         // The thread local storage index/key pointing to the ThreadLocalRepository instance of the thread.
 #if defined(TS_WINDOWS)
-        ::DWORD _tls_index {TLS_OUT_OF_INDEXES};
+        ::DWORD _tls_index = TLS_OUT_OF_INDEXES;
 #else
         pthread_key_t _key = 0;
         static void DeleteThreadLocalRepository(void*);

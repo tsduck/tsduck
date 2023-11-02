@@ -513,7 +513,7 @@ bool ts::SectionFile::LoadModel(xml::Document& doc, bool load_extensions)
 
     // Get the list of all registered extension files.
     UStringList extfiles;
-    PSIRepository::Instance()->getRegisteredTablesModels(extfiles);
+    PSIRepository::Instance().getRegisteredTablesModels(extfiles);
 
     // Load all extension files. Only report a warning in case of failure.
     for (const auto& name : extfiles) {

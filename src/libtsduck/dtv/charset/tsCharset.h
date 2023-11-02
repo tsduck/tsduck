@@ -14,7 +14,7 @@
 #pragma once
 #include "tsUString.h"
 #include "tsException.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //!

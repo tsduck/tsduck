@@ -22,12 +22,12 @@
 //----------------------------------------------------------------------------
 
 ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
-    _report(report != nullptr ? report : CerrReport::Instance()),
+    _report(report != nullptr ? report : &CERR),
     _initial_out(output != nullptr ? output : &std::cout),
     _out(_initial_out),
     _charsetIn(&DVBCharTableSingleByte::DVB_ISO_6937),  // default DVB charset
     _charsetOut(&DVBCharTableSingleByte::DVB_ISO_6937),
-    _timeRefConfig(DuckConfigFile::Instance()->value(u"default.time")),
+    _timeRefConfig(DuckConfigFile::Instance().value(u"default.time")),
     _predefined_cas{{CASID_CONAX_MIN,      u"conax"},
                     {CASID_IRDETO_MIN,     u"irdeto"},
                     {CASID_MEDIAGUARD_MIN, u"mediaguard"},
@@ -39,14 +39,14 @@ ts::DuckContext::DuckContext(Report* report, std::ostream* output) :
 {
     // Initialize time reference from configuration file. Ignore errors.
     if (!_timeRefConfig.empty() && !setTimeReference(_timeRefConfig)) {
-        CERR.verbose(u"invalid default.time '%s' in %s", {_timeRefConfig, DuckConfigFile::Instance()->fileName()});
+        CERR.verbose(u"invalid default.time '%s' in %s", {_timeRefConfig, DuckConfigFile::Instance().fileName()});
     }
 
     // Get leap.seconds initial value from configuration file. Default value is true.
-    const UString ls(DuckConfigFile::Instance()->value(u"leap.seconds"));
+    const UString ls(DuckConfigFile::Instance().value(u"leap.seconds"));
     if (!ls.empty() && !ls.toBool(_useLeapSeconds)) {
         _useLeapSeconds = true;
-        CERR.verbose(u"invalid leap.seconds '%s' in %s", {ls, DuckConfigFile::Instance()->fileName()});
+        CERR.verbose(u"invalid leap.seconds '%s' in %s", {ls, DuckConfigFile::Instance().fileName()});
     }
 }
 
@@ -77,7 +77,7 @@ void ts::DuckContext::reset()
 
 void ts::DuckContext::setReport(Report* report)
 {
-    _report = report != nullptr ? report : CerrReport::Instance();
+    _report = report != nullptr ? report : &CERR;
 }
 
 
@@ -184,7 +184,7 @@ ts::UString ts::DuckContext::defaultHFRegion() const
         return _hfDefaultRegion;
     }
     else {
-        return DuckConfigFile::Instance()->value(u"default.region", u"europe");
+        return DuckConfigFile::Instance().value(u"default.region", u"europe");
     }
 }
 

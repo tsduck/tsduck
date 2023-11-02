@@ -282,14 +282,14 @@ namespace {
 JNIEnv* ts::jni::JNIEnvForCurrentThead()
 {
     // Get the thread-specific LocalThreadJNI.
-    ts::ObjectPtr obj(ThreadLocalObjects::Instance()->getLocalObject(u"LocalThreadJNI"));
+    ts::ObjectPtr obj(ThreadLocalObjects::Instance().getLocalObject(u"LocalThreadJNI"));
     LocalThreadJNI* lobj = dynamic_cast<LocalThreadJNI*>(obj.pointer());
     if (lobj == nullptr) {
         // First time we use this thread, create the thread-specific LocalThreadJNI.
         obj = lobj = new LocalThreadJNI;
         CheckNonNull(lobj);
         CheckNonNull(lobj->env());
-        ThreadLocalObjects::Instance()->setLocalObject(u"LocalThreadJNI", obj);
+        ThreadLocalObjects::Instance().setLocalObject(u"LocalThreadJNI", obj);
     }
     return lobj->env();
 }

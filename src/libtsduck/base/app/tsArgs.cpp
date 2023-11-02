@@ -1021,14 +1021,14 @@ bool ts::Args::analyze(const UString& app_name, const UStringVector& arguments, 
         // Prepend and append default options.
         UStringVector pre;
         UStringVector post;
-        DuckConfigFile::Instance()->value(u"prepend.options").splitShellStyle(pre);
-        DuckConfigFile::Instance()->value(u"append.options").splitShellStyle(post);
+        DuckConfigFile::Instance().value(u"prepend.options").splitShellStyle(pre);
+        DuckConfigFile::Instance().value(u"append.options").splitShellStyle(post);
         _args.insert(_args.begin(), pre.begin(), pre.end());
         _args.insert(_args.end(), post.begin(), post.end());
 
         // Default arguments if there is none.
         if (_args.empty()) {
-            DuckConfigFile::Instance()->value(u"default.options").splitShellStyle(_args);
+            DuckConfigFile::Instance().value(u"default.options").splitShellStyle(_args);
         }
     }
 

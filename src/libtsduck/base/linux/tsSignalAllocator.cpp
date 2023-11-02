@@ -11,6 +11,7 @@
 //-----------------------------------------------------------------------------
 
 #include "tsSignalAllocator.h"
+#include "tsGuardMutex.h"
 
 #include "tsBeforeStandardHeaders.h"
 #include <signal.h>

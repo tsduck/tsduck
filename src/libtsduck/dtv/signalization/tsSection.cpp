@@ -329,7 +329,7 @@ ts::ByteBlock ts::Section::hash() const
 ts::Standards ts::Section::definingStandards() const
 {
     // The defining standard is taken from table id.
-    return PSIRepository::Instance()->getTableStandards(tableId(), sourcePID());
+    return PSIRepository::Instance().getTableStandards(tableId(), sourcePID());
 }
 
 

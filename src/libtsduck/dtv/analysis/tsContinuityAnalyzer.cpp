@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::ContinuityAnalyzer::ContinuityAnalyzer(const PIDSet& pid_filter, Report* report) :
-    _report(report != nullptr ? report : NullReport::Instance()),
+    _report(report != nullptr ? report : &NULLREP),
     _pid_filter(pid_filter)
 {
 }
@@ -27,7 +27,7 @@ ts::ContinuityAnalyzer::ContinuityAnalyzer(const PIDSet& pid_filter, Report* rep
 
 void ts::ContinuityAnalyzer::setReport(Report* report)
 {
-    _report = report != nullptr ? report : NullReport::Instance();
+    _report = report != nullptr ? report : &NULLREP;
 }
 
 

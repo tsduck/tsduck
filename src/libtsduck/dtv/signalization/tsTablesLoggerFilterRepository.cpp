@@ -27,7 +27,7 @@ ts::TablesLoggerFilterRepository::TablesLoggerFilterRepository()
 ts::TablesLoggerFilterRepository::Register::Register(FilterFactory factory)
 {
     if (factory != nullptr) {
-        TablesLoggerFilterRepository::Instance()->_factories.push_back(factory);
+        TablesLoggerFilterRepository::Instance()._factories.push_back(factory);
     }
 }
 

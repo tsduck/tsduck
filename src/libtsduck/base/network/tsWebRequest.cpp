@@ -15,7 +15,7 @@
 #include "tsFatal.h"
 #include "tsFileUtils.h"
 #include "tsSysUtils.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsURL.h"
 
 
@@ -41,10 +41,10 @@ namespace {
 }
 
 // WebRequest static fields:
-ts::UString ts::WebRequest::_defaultProxyHost(DefaultProxy::Instance()->url.getHost());
-uint16_t    ts::WebRequest::_defaultProxyPort = DefaultProxy::Instance()->url.getPort();
-ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance()->url.getUserName());
-ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance()->url.getPassword());
+ts::UString ts::WebRequest::_defaultProxyHost(DefaultProxy::Instance().url.getHost());
+uint16_t    ts::WebRequest::_defaultProxyPort = DefaultProxy::Instance().url.getPort();
+ts::UString ts::WebRequest::_defaultProxyUser(DefaultProxy::Instance().url.getUserName());
+ts::UString ts::WebRequest::_defaultProxyPassword(DefaultProxy::Instance().url.getPassword());
 const ts::UString ts::WebRequest::DEFAULT_USER_AGENT(u"tsduck");
 
 

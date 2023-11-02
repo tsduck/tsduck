@@ -10,7 +10,7 @@
 //
 //----------------------------------------------------------------------------
 
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsunit.h"
 
 
@@ -25,9 +25,13 @@ public:
     virtual void afterTest() override;
 
     void testSingleton();
+    void testNoInitializer();
+    void testInitializerTwoArgs();
 
     TSUNIT_TEST_BEGIN(SingletonTest);
     TSUNIT_TEST(testSingleton);
+    TSUNIT_TEST(testNoInitializer);
+    TSUNIT_TEST(testInitializerTwoArgs);
     TSUNIT_TEST_END();
 };
 
@@ -74,7 +78,39 @@ namespace {
 void SingletonTest::testSingleton()
 {
     // Check that this is a singleton
-    Singleton* p1(Singleton::Instance());
-    Singleton* p2(Singleton::Instance());
+    Singleton& p1(Singleton::Instance());
+    Singleton& p2(Singleton::Instance());
+    TSUNIT_ASSERT(&p1 == &p2);
+}
+
+// Static instance, no initializer
+TS_STATIC_INSTANCE(std::string, (), Foo1);
+
+void SingletonTest::testNoInitializer()
+{
+    debug() << "SingletonTest: Foo1::Instance() = \"" << Foo1::Instance() << "\"" << std::endl;
+
+    // Check the value
+    TSUNIT_ASSERT(Foo1::Instance().empty());
+
+    // Check that this is a singleton
+    std::string* p1(&Foo1::Instance());
+    std::string* p2(&Foo1::Instance());
+    TSUNIT_ASSERT(p1 == p2);
+}
+
+// Static instance, initializer with two parameters
+TS_STATIC_INSTANCE(std::string, (4, '='), Foo2);
+
+void SingletonTest::testInitializerTwoArgs()
+{
+    debug() << "StaticInstanceTest: Foo2::Instance() = \"" << Foo2::Instance() << "\"" << std::endl;
+
+    // Check the value
+    TSUNIT_EQUAL("====", Foo2::Instance());
+
+    // Check that this is a singleton
+    std::string* p1(&Foo2::Instance());
+    std::string* p2(&Foo2::Instance());
     TSUNIT_ASSERT(p1 == p2);
 }

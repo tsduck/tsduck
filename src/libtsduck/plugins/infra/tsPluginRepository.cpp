@@ -80,17 +80,17 @@ void ts::PluginRepository::registerOutput(const UString& name, OutputPluginFacto
 
 ts::PluginRepository::Register::Register(const UString& name, InputPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerInput(name, allocator);
+    PluginRepository::Instance().registerInput(name, allocator);
 }
 
 ts::PluginRepository::Register::Register(const UString& name, ProcessorPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerProcessor(name, allocator);
+    PluginRepository::Instance().registerProcessor(name, allocator);
 }
 
 ts::PluginRepository::Register::Register(const UString& name, OutputPluginFactory allocator)
 {
-    PluginRepository::Instance()->registerOutput(name, allocator);
+    PluginRepository::Instance().registerOutput(name, allocator);
 }
 
 

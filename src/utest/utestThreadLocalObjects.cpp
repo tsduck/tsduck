@@ -126,22 +126,22 @@ namespace {
             ts::ObjectPtr obj;
             LocalObject* lobj = nullptr;
 
-            obj = ts::ThreadLocalObjects::Instance()->getLocalObject(u"A");
+            obj = ts::ThreadLocalObjects::Instance().getLocalObject(u"A");
             TSUNIT_ASSERT(obj.isNull());
 
-            obj = ts::ThreadLocalObjects::Instance()->getLocalObject(u"B");
+            obj = ts::ThreadLocalObjects::Instance().getLocalObject(u"B");
             TSUNIT_ASSERT(obj.isNull());
 
-            ts::ThreadLocalObjects::Instance()->setLocalObject(u"A", new LocalObject(_data + 1));
-            ts::ThreadLocalObjects::Instance()->setLocalObject(u"B", new LocalObject(_data + 2));
+            ts::ThreadLocalObjects::Instance().setLocalObject(u"A", new LocalObject(_data + 1));
+            ts::ThreadLocalObjects::Instance().setLocalObject(u"B", new LocalObject(_data + 2));
 
-            obj = ts::ThreadLocalObjects::Instance()->getLocalObject(u"A");
+            obj = ts::ThreadLocalObjects::Instance().getLocalObject(u"A");
             TSUNIT_ASSERT(!obj.isNull());
             lobj = dynamic_cast<LocalObject*>(obj.pointer());
             TSUNIT_ASSERT(lobj != nullptr);
             TSUNIT_EQUAL(_data + 1, lobj->data);
 
-            obj = ts::ThreadLocalObjects::Instance()->getLocalObject(u"B");
+            obj = ts::ThreadLocalObjects::Instance().getLocalObject(u"B");
             TSUNIT_ASSERT(!obj.isNull());
             lobj = dynamic_cast<LocalObject*>(obj.pointer());
             TSUNIT_ASSERT(lobj != nullptr);

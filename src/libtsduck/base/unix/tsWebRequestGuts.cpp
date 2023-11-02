@@ -37,7 +37,7 @@
 //----------------------------------------------------------------------------
 
 #include "tsWebRequest.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsFileUtils.h"
@@ -326,15 +326,15 @@ void ts::WebRequest::abort()
 bool ts::WebRequest::SystemGuts::startTransfer(CertState certState)
 {
     // Check that libcurl was correctly initialized.
-    if (LibCurlInit::Instance()->initStatus != ::CURLE_OK) {
-        _request._report.error(easyMessage(u"libcurl initialization error", LibCurlInit::Instance()->initStatus));
+    if (LibCurlInit::Instance().initStatus != ::CURLE_OK) {
+        _request._report.error(easyMessage(u"libcurl initialization error", LibCurlInit::Instance().initStatus));
         return false;
     }
 
     // Get retry scheme for that URL.
     size_t retries = 0;
     MilliSecond retryInterval = 0;
-    LibCurlInit::Instance()->getRetry(_request._originalURL, retries, retryInterval);
+    LibCurlInit::Instance().getRetry(_request._originalURL, retries, retryInterval);
     _request._report.debug(u"curl retries: %d, interval: %'d ms", {retries, retryInterval});
 
     // Loop until all retries are exhausted.

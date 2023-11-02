@@ -348,7 +348,7 @@ void ts::GitHubRelease::getAssets(AssetList& assets) const
 
 bool ts::GitHubRelease::IsPlatformAsset(const UString& fileName)
 {
-    const SysInfo& sys(*SysInfo::Instance());
+    const SysInfo& sys(SysInfo::Instance());
 
     // System major version as a string (empty string if unknown).
     UString smv;

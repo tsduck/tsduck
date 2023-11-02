@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsReport.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //!
@@ -37,4 +37,4 @@ namespace ts {
 //!
 //! Macro for fast access to the ts::CerrReport singleton.
 //!
-#define CERR (*(static_cast<ts::Report*>(ts::CerrReport::Instance())))
+#define CERR (ts::CerrReport::Instance())

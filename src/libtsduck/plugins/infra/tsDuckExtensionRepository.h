@@ -12,7 +12,7 @@
 //----------------------------------------------------------------------------
 
 #pragma once
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsReport.h"
 #include "tsVersionInfo.h"
 

@@ -140,7 +140,7 @@ PluginExecutor::PluginExecutor(Options& opt, size_t index, PluginExecutor* previ
         shell_opt = u" -I";
         _name = _opt.input.name;
         args = &_opt.input.args;
-        ts::PluginRepository::InputPluginFactory allocator = ts::PluginRepository::Instance()->getInput(_name, _opt);
+        ts::PluginRepository::InputPluginFactory allocator = ts::PluginRepository::Instance().getInput(_name, _opt);
         if (allocator != nullptr) {
             _shlib = allocator(this);
         }
@@ -150,7 +150,7 @@ PluginExecutor::PluginExecutor(Options& opt, size_t index, PluginExecutor* previ
         shell_opt = u" -P";
         _name = _opt.plugins[_index - 1].name;
         args = &_opt.plugins[_index - 1].args;
-        ts::PluginRepository::ProcessorPluginFactory allocator = ts::PluginRepository::Instance()->getProcessor(_name, _opt);
+        ts::PluginRepository::ProcessorPluginFactory allocator = ts::PluginRepository::Instance().getProcessor(_name, _opt);
         if (allocator != nullptr) {
             _shlib = allocator(this);
         }
@@ -160,7 +160,7 @@ PluginExecutor::PluginExecutor(Options& opt, size_t index, PluginExecutor* previ
         shell_opt = u" -O";
         _name = _opt.output.name;
         args = &_opt.output.args;
-        ts::PluginRepository::OutputPluginFactory allocator = ts::PluginRepository::Instance()->getOutput(_name, _opt);
+        ts::PluginRepository::OutputPluginFactory allocator = ts::PluginRepository::Instance().getOutput(_name, _opt);
         if (allocator != nullptr) {
             _shlib = allocator(this);
         }

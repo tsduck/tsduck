@@ -61,9 +61,9 @@ void PluginRepositoryTest::afterTest()
 
 void PluginRepositoryTest::testRegistrations()
 {
-    const ts::UStringList inputs(ts::PluginRepository::Instance()->inputNames());
-    const ts::UStringList outputs(ts::PluginRepository::Instance()->outputNames());
-    const ts::UStringList procs(ts::PluginRepository::Instance()->processorNames());
+    const ts::UStringList inputs(ts::PluginRepository::Instance().inputNames());
+    const ts::UStringList outputs(ts::PluginRepository::Instance().outputNames());
+    const ts::UStringList procs(ts::PluginRepository::Instance().processorNames());
 
     debug() << "PluginRepositoryTest::testRegistrations: input names: " << ts::UString::Join(inputs) << std::endl
             << "PluginRepositoryTest::testRegistrations: output names: " << ts::UString::Join(outputs) << std::endl
@@ -82,32 +82,32 @@ void PluginRepositoryTest::testRegistrations()
 void PluginRepositoryTest::testEmbedded()
 {
     ts::Report& report(debugMode() ? *static_cast<ts::Report*>(&CERR) : *static_cast<ts::Report*>(&NULLREP));
-    ts::PluginRepository* repo = ts::PluginRepository::Instance();
+    ts::PluginRepository& repo(ts::PluginRepository::Instance());
 
     // There are embedded plugins of all types in TSDuck shared library.
-    TSUNIT_ASSERT(repo->inputCount() > 0);
-    TSUNIT_ASSERT(repo->outputCount() > 0);
-    TSUNIT_ASSERT(repo->processorCount() > 0);
+    TSUNIT_ASSERT(repo.inputCount() > 0);
+    TSUNIT_ASSERT(repo.outputCount() > 0);
+    TSUNIT_ASSERT(repo.processorCount() > 0);
 
-    TSUNIT_ASSERT(repo->getInput(u"null", report) != nullptr);
-    TSUNIT_ASSERT(repo->getOutput(u"null", report) == nullptr);
-    TSUNIT_ASSERT(repo->getProcessor(u"null", report) == nullptr);
+    TSUNIT_ASSERT(repo.getInput(u"null", report) != nullptr);
+    TSUNIT_ASSERT(repo.getOutput(u"null", report) == nullptr);
+    TSUNIT_ASSERT(repo.getProcessor(u"null", report) == nullptr);
 
-    TSUNIT_ASSERT(repo->getInput(u"drop", report) == nullptr);
-    TSUNIT_ASSERT(repo->getOutput(u"drop", report) != nullptr);
-    TSUNIT_ASSERT(repo->getProcessor(u"drop", report) == nullptr);
+    TSUNIT_ASSERT(repo.getInput(u"drop", report) == nullptr);
+    TSUNIT_ASSERT(repo.getOutput(u"drop", report) != nullptr);
+    TSUNIT_ASSERT(repo.getProcessor(u"drop", report) == nullptr);
 
-    TSUNIT_ASSERT(repo->getInput(u"file", report) != nullptr);
-    TSUNIT_ASSERT(repo->getOutput(u"file", report) != nullptr);
-    TSUNIT_ASSERT(repo->getProcessor(u"file", report) != nullptr);
+    TSUNIT_ASSERT(repo.getInput(u"file", report) != nullptr);
+    TSUNIT_ASSERT(repo.getOutput(u"file", report) != nullptr);
+    TSUNIT_ASSERT(repo.getProcessor(u"file", report) != nullptr);
 }
 
 void PluginRepositoryTest::testLoaded()
 {
     ts::Report& report(debugMode() ? *static_cast<ts::Report*>(&CERR) : *static_cast<ts::Report*>(&NULLREP));
-    ts::PluginRepository* repo = ts::PluginRepository::Instance();
+    ts::PluginRepository& repo(ts::PluginRepository::Instance());
 
-    TSUNIT_ASSERT(repo->getInput(u"merge", report) == nullptr);
-    TSUNIT_ASSERT(repo->getOutput(u"merge", report) == nullptr);
-    TSUNIT_ASSERT(repo->getProcessor(u"merge", report) != nullptr);
+    TSUNIT_ASSERT(repo.getInput(u"merge", report) == nullptr);
+    TSUNIT_ASSERT(repo.getOutput(u"merge", report) == nullptr);
+    TSUNIT_ASSERT(repo.getProcessor(u"merge", report) != nullptr);
 }

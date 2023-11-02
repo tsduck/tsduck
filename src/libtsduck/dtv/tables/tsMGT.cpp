@@ -176,7 +176,7 @@ ts::MGT::TableTypeEnum::TableTypeEnum() :
 
 ts::UString ts::MGT::TableTypeName(uint16_t table_type)
 {
-    return TableTypeEnum::Instance()->name(table_type);
+    return TableTypeEnum::Instance().name(table_type);
 }
 
 
@@ -230,7 +230,7 @@ void ts::MGT::buildXML(DuckContext& duck, xml::Element* root) const
 
     for (const auto& it : tables) {
         xml::Element* e = root->addElement(u"table");
-        e->setEnumAttribute(*TableTypeEnum::Instance(), u"type", it.second.table_type);
+        e->setEnumAttribute(TableTypeEnum::Instance(), u"type", it.second.table_type);
         e->setIntAttribute(u"PID", it.second.table_type_PID, true);
         e->setIntAttribute(u"version_number", it.second.table_type_version_number);
         e->setIntAttribute(u"number_bytes", it.second.number_bytes);
@@ -254,7 +254,7 @@ bool ts::MGT::analyzeXML(DuckContext& duck, const xml::Element* element)
     for (size_t index = 0; ok && index < children.size(); ++index) {
         // Add a new TableType at the end of the list.
         TableType& tt(tables.newEntry());
-        ok = children[index]->getIntEnumAttribute(tt.table_type, *TableTypeEnum::Instance(), u"type", true) &&
+        ok = children[index]->getIntEnumAttribute(tt.table_type, TableTypeEnum::Instance(), u"type", true) &&
              children[index]->getIntAttribute<PID>(tt.table_type_PID, u"PID", true, 0, 0x0000, 0x1FFF) &&
              children[index]->getIntAttribute(tt.table_type_version_number, u"version_number", true, 0, 0, 31) &&
              children[index]->getIntAttribute(tt.number_bytes, u"number_bytes", true) &&

@@ -23,7 +23,7 @@ ts::CRC32::CRC32()
     // Check once if CRC32 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.
     if (!_accel_checked) {
-        _accel_supported = SysInfo::Instance()->crcInstructions();
+        _accel_supported = SysInfo::Instance().crcInstructions();
         _accel_checked = true;
     }
 }

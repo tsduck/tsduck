@@ -15,7 +15,7 @@
 //----------------------------------------------------------------------------
 
 ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
-    _report(report == nullptr ? NullReport::Instance() : report),
+    _report(report == nullptr ? &NULLREP : report),
     _log_level(log_level)
 {
 }
@@ -27,7 +27,7 @@ ts::BitRateRegulator::BitRateRegulator(Report* report, int log_level) :
 
 void ts::BitRateRegulator::setReport(ts::Report *report, int log_level)
 {
-    _report = report == nullptr ? NullReport::Instance() : report;
+    _report = report == nullptr ? &NULLREP : report;
     _log_level = log_level;
 }
 

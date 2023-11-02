@@ -12,7 +12,7 @@
 #include "tsFatal.h"
 #include "tsMutex.h"
 #include "tsGuardMutex.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 
 
 //----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ void AllInstances::getExtensionFiles(ts::UStringList& fileNames)
 
 const ts::NamesFile* ts::NamesFile::Instance(const UString& fileName, bool mergeExtensions)
 {
-    return AllInstances::Instance()->getFile(fileName, mergeExtensions);
+    return AllInstances::Instance().getFile(fileName, mergeExtensions);
 }
 
 
@@ -176,7 +176,7 @@ const ts::NamesFile* ts::NamesFile::Instance(Predefined index)
     }
     Predef* pr = PredefData + size_t(index);
     if (pr->instance == nullptr) {
-        pr->instance = AllInstances::Instance()->getFile(pr->name, pr->merge);
+        pr->instance = AllInstances::Instance().getFile(pr->name, pr->merge);
     }
     return pr->instance;
 }
@@ -184,7 +184,7 @@ const ts::NamesFile* ts::NamesFile::Instance(Predefined index)
 void ts::NamesFile::DeleteInstance(Predefined index)
 {
     if (size_t(index) < PredefDataCount) {
-        AllInstances::Instance()->deleteInstance(PredefData[size_t(index)].instance);
+        AllInstances::Instance().deleteInstance(PredefData[size_t(index)].instance);
     }
 }
 
@@ -196,13 +196,13 @@ void ts::NamesFile::DeleteInstance(Predefined index)
 ts::NamesFile::RegisterExtensionFile::RegisterExtensionFile(const UString& filename)
 {
     CERR.debug(u"registering names file %s", {filename});
-    AllInstances::Instance()->addExtensionFile(filename);
+    AllInstances::Instance().addExtensionFile(filename);
 }
 
 void ts::NamesFile::UnregisterExtensionFile(const UString& filename)
 {
     CERR.debug(u"unregistering names file %s", {filename});
-    AllInstances::Instance()->removeExtensionFile(filename);
+    AllInstances::Instance().removeExtensionFile(filename);
 }
 
 
@@ -229,7 +229,7 @@ ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
     if (mergeExtensions) {
         // Get list of extension names.
         UStringList files;
-        AllInstances::Instance()->getExtensionFiles(files);
+        AllInstances::Instance().getExtensionFiles(files);
         for (const auto& name : files) {
             const UString path(SearchConfigurationFile(name));
             if (path.empty()) {

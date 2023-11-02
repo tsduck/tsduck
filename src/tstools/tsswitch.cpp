@@ -96,7 +96,7 @@ int MainCode(int argc, char *argv[])
 
     // If plugins were statically linked, disallow the dynamic loading of plugins.
 #if defined(TSDUCK_STATIC_PLUGINS)
-    ts::PluginRepository::Instance()->setSharedLibraryAllowed(false);
+    ts::PluginRepository::Instance().setSharedLibraryAllowed(false);
 #endif
 
     // Create and start an asynchronous log (separate thread).

@@ -20,7 +20,7 @@ ts::Charset::Charset(const UChar* name) :
 {
     // Character sets with non empty names are registered.
     if (name != nullptr && *name != CHAR_NULL) {
-        Repository::Instance()->add(name, this);
+        Repository::Instance().add(name, this);
     }
 }
 
@@ -28,7 +28,7 @@ ts::Charset::Charset(std::initializer_list<const UChar*> names)
 {
     for (auto it : names) {
         if (it != nullptr && *it != CHAR_NULL) {
-            Repository::Instance()->add(it, this);
+            Repository::Instance().add(it, this);
             if (_name.empty()) {
                 _name = it;
             }
@@ -96,17 +96,17 @@ void ts::Charset::Repository::remove(const Charset* charset)
 
 const ts::Charset* ts::Charset::GetCharset(const UString& name)
 {
-    return Repository::Instance()->get(name);
+    return Repository::Instance().get(name);
 }
 
 ts::UStringList ts::Charset::GetAllNames()
 {
-    return Repository::Instance()->getAllNames();
+    return Repository::Instance().getAllNames();
 }
 
 void ts::Charset::unregister() const
 {
-    Repository::Instance()->remove(this);
+    Repository::Instance().remove(this);
 }
 
 

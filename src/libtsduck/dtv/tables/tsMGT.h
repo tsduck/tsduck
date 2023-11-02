@@ -14,7 +14,7 @@
 #pragma once
 #include "tsAbstractLongTable.h"
 #include "tsDescriptorList.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsEnumeration.h"
 #include "tsTS.h"
 

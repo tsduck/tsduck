@@ -294,7 +294,7 @@ bool ts::Time::decode(const ts::UString& str, int fields)
 
 ts::Second ts::Time::leapSecondsTo(const Time& end) const
 {
-    return TimeConfigurationFile::Instance()->leapSeconds(*this, end);
+    return TimeConfigurationFile::Instance().leapSeconds(*this, end);
 }
 
 

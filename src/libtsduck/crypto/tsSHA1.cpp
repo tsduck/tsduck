@@ -32,7 +32,7 @@ ts::SHA1::SHA1()
     // Check once if SHA-1 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.
     if (!_accel_checked) {
-        _accel_supported = SysInfo::Instance()->sha1Instructions();
+        _accel_supported = SysInfo::Instance().sha1Instructions();
         if (_accel_supported) {
             initAccel();
         }

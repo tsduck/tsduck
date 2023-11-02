@@ -20,37 +20,32 @@
 
 const ts::HFBand* ts::HFBand::GetBand(const UString& region, const UString& band, Report& report, bool silent_band)
 {
-    HFBandRepository* repo = HFBandRepository::Instance();
-    repo->load(report);
-    return repo->get(band, region, silent_band ? NULLREP : report);
+    HFBandRepository::Instance().load(report);
+    return HFBandRepository::Instance().get(band, region, silent_band ? NULLREP : report);
 }
 
 ts::UString ts::HFBand::DefaultRegion(Report& report)
 {
-    HFBandRepository* repo = HFBandRepository::Instance();
-    repo->load(report);
-    return repo->defaultRegion();
+    HFBandRepository::Instance().load(report);
+    return HFBandRepository::Instance().defaultRegion();
 }
 
 void ts::HFBand::SetDefaultRegion(const ts::UString& region, ts::Report& report)
 {
-    HFBandRepository* repo = HFBandRepository::Instance();
-    repo->load(report);
-    repo->setDefaultRegion(region);
+    HFBandRepository::Instance().load(report);
+    HFBandRepository::Instance().setDefaultRegion(region);
 }
 
 ts::UStringList ts::HFBand::GetAllRegions(Report& report)
 {
-    HFBandRepository* repo = HFBandRepository::Instance();
-    repo->load(report);
-    return repo->allRegions();
+    HFBandRepository::Instance().load(report);
+    return HFBandRepository::Instance().allRegions();
 }
 
 ts::UStringList ts::HFBand::GetAllBands(const UString& region, Report& report)
 {
-    HFBandRepository* repo = HFBandRepository::Instance();
-    repo->load(report);
-    return repo->allBands(region);
+    HFBandRepository::Instance().load(report);
+    return HFBandRepository::Instance().allBands(region);
 }
 
 
@@ -508,7 +503,7 @@ void ts::HFBand::HFBandRepository::setDefaultRegion(const UString& region)
 {
     GuardMutex lock(_mutex);
     // If the region is empty, get the one for configuration file.
-    _default_region = region.empty() ? DuckConfigFile::Instance()->value(u"default.region", u"europe") : region;
+    _default_region = region.empty() ? DuckConfigFile::Instance().value(u"default.region", u"europe") : region;
 }
 
 

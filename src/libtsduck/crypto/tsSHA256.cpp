@@ -65,7 +65,7 @@ ts::SHA256::SHA256()
     // Check once if SHA-256 acceleration is supported at runtime.
     // This logic does not require explicit synchronization.
     if (!_accel_checked) {
-        _accel_supported = SysInfo::Instance()->sha256Instructions();
+        _accel_supported = SysInfo::Instance().sha256Instructions();
         _accel_checked = true;
     }
 

@@ -114,7 +114,7 @@ void SystemRandomGeneratorTest::testSystemRandomGenerator()
 
 void SystemRandomGeneratorTest::testBetterSystemRandomGenerator()
 {
-    testRandom(*ts::BetterSystemRandomGenerator::Instance());
+    testRandom(ts::BetterSystemRandomGenerator::Instance());
 }
 
 void SystemRandomGeneratorTest::testRandomRange(ts::RandomGenerator& prng, int64_t min, int64_t max)

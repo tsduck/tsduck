@@ -29,7 +29,7 @@ TSDUCKJNI void JNICALL Java_io_tsduck_TSProcessor_initNativeObject(JNIEnv* env, 
             report = ts::jni::GetPointerField<ts::Report>(env, jreport, "nativeObject");
         }
         if (report == nullptr) {
-            report = ts::NullReport::Instance();
+            report = &NULLREP;
         }
         ts::jni::SetPointerField(env, obj, "nativeObject", new ts::TSProcessor(*report));
     }

@@ -31,7 +31,7 @@
             // Thread termination, executed for each terminating thread.
             // Delete all local objects in the thread. Already done for ts::Thread objects.
             // Added as a precaution if TSDuck code is called in the context of other threads.
-            ts::ThreadLocalObjects::Instance()->deleteLocalObjects();
+            ts::ThreadLocalObjects::Instance().deleteLocalObjects();
             break;
 
         case DLL_PROCESS_DETACH:

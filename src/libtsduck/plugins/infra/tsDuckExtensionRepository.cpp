@@ -68,7 +68,7 @@ ts::DuckExtensionRepository::Loader::Loader()
         }
     }
 
-    CERR.debug(u"loaded %d extensions", {DuckExtensionRepository::Instance()->_extensions.size()});
+    CERR.debug(u"loaded %d extensions", {DuckExtensionRepository::Instance()._extensions.size()});
 }
 
 //----------------------------------------------------------------------------
@@ -82,7 +82,7 @@ ts::DuckExtensionRepository::Register::Register(const UString& name,
                                                 const UStringVector& tools)
 {
     CERR.debug(u"registering extension \"%s\"", {name});
-    DuckExtensionRepository::Instance()->_extensions.push_back({ name, file_name, description, plugins, tools });
+    DuckExtensionRepository::Instance()._extensions.push_back({ name, file_name, description, plugins, tools });
 }
 
 

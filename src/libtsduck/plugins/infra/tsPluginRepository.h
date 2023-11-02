@@ -16,7 +16,7 @@
 #include "tsProcessorPlugin.h"
 #include "tsOutputPlugin.h"
 #include "tsReport.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 #include "tsVersionInfo.h"
 
 namespace ts {

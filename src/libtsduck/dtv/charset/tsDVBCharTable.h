@@ -13,7 +13,7 @@
 
 #pragma once
 #include "tsCharset.h"
-#include "tsSingletonManager.h"
+#include "tsSingleton.h"
 
 namespace ts {
     //!

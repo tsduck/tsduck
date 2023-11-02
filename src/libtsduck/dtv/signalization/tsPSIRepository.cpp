@@ -152,7 +152,7 @@ FUNCTION ts::PSIRepository::getDescriptorFunction(const EDID& edid, TID tid, FUN
 ts::PSIRepository::RegisterXML::RegisterXML(const UString& filename)
 {
     CERR.debug(u"registering XML file %s", {filename});
-    PSIRepository::Instance()->_xmlModelFiles.push_back(filename);
+    PSIRepository::Instance()._xmlModelFiles.push_back(filename);
 }
 
 
@@ -171,11 +171,11 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
                                                 uint16_t maxCAS)
 {
     CERR.log(2, u"registering table <%s>", {xmlName});
-    PSIRepository* const repo = PSIRepository::Instance();
+    PSIRepository& repo(PSIRepository::Instance());
 
     // XML names are recorded independently.
     if (!xmlName.empty()) {
-        repo->_tableNames.insert(std::make_pair(xmlName, factory));
+        repo._tableNames.insert(std::make_pair(xmlName, factory));
     }
 
     // Build a table description for this table.
@@ -191,7 +191,7 @@ ts::PSIRepository::RegisterTable::RegisterTable(TableFactory factory,
     // Store a copy of the table description for each table id.
     // This is a multimap, distinct definitions for the same table id accumulate.
     for (auto it : tids) {
-        PSIRepository::Instance()->_tables.insert(std::make_pair(it, desc));
+        repo._tables.insert(std::make_pair(it, desc));
     }
 }
 
@@ -219,23 +219,23 @@ ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DescriptorFactory fact
                                                           const UString& xmlNameLegacy)
 {
     registerXML(factory, edid, xmlName, xmlNameLegacy);
-    PSIRepository::Instance()->_descriptors.insert(std::make_pair(edid, DescriptorDescription(factory, displayFunction)));
+    PSIRepository::Instance()._descriptors.insert(std::make_pair(edid, DescriptorDescription(factory, displayFunction)));
 }
 
 void ts::PSIRepository::RegisterDescriptor::registerXML(DescriptorFactory factory, const EDID& edid, const UString& xmlName, const UString& xmlNameLegacy)
 {
-    PSIRepository* const repo = PSIRepository::Instance();
+    PSIRepository& repo(PSIRepository::Instance());
 
     if (!xmlName.empty()) {
-        repo->_descriptorNames.insert(std::make_pair(xmlName, factory));
+        repo._descriptorNames.insert(std::make_pair(xmlName, factory));
         if (edid.isTableSpecific()) {
-            repo->_descriptorTablesIds.insert(std::make_pair(xmlName, edid.tableId()));
+            repo._descriptorTablesIds.insert(std::make_pair(xmlName, edid.tableId()));
         }
     }
     if (!xmlNameLegacy.empty()) {
-        repo->_descriptorNames.insert(std::make_pair(xmlNameLegacy, factory));
+        repo._descriptorNames.insert(std::make_pair(xmlNameLegacy, factory));
         if (edid.isTableSpecific()) {
-            repo->_descriptorTablesIds.insert(std::make_pair(xmlNameLegacy, edid.tableId()));
+            repo._descriptorTablesIds.insert(std::make_pair(xmlNameLegacy, edid.tableId()));
         }
     }
 }
@@ -243,9 +243,9 @@ void ts::PSIRepository::RegisterDescriptor::registerXML(DescriptorFactory factor
 ts::PSIRepository::RegisterDescriptor::RegisterDescriptor(DisplayCADescriptorFunction displayFunction, uint16_t minCAS, uint16_t maxCAS)
 {
     if (displayFunction != nullptr) {
-        PSIRepository* const repo = PSIRepository::Instance();
+        PSIRepository& repo(PSIRepository::Instance());
         do {
-            repo->_casIdDescriptorDisplays.insert(std::make_pair(minCAS, displayFunction));
+            repo._casIdDescriptorDisplays.insert(std::make_pair(minCAS, displayFunction));
         } while (minCAS++ < maxCAS);
     }
 }

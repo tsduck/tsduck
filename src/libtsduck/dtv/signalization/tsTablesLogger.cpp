@@ -31,7 +31,7 @@ ts::TablesLogger::TablesLogger(TablesDisplay& display) :
     _report(_duck.report())
 {
     // Create an instance of each registered section filter.
-    TablesLoggerFilterRepository::Instance()->createFilters(_section_filters);
+    TablesLoggerFilterRepository::Instance().createFilters(_section_filters);
     _report.debug(u"TablesLogger has %s section filters", {_section_filters.size()});
 }
 

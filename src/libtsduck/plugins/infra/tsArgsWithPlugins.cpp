@@ -295,7 +295,7 @@ void ts::ArgsWithPlugins::loadDefaultPlugins(PluginType type, const ts::UString&
     // Get default plugins only when none where specified for that type.
     if (options.empty()) {
         UStringVector lines;
-        DuckConfigFile::Instance()->getValues(entry, lines);
+        DuckConfigFile::Instance().getValues(entry, lines);
         // Loop on all default plugins for that type.
         for (size_t i = 0; i < lines.size(); ++i) {
             // Got one plugin specification. Parse its arguments.
@@ -333,7 +333,7 @@ void ts::ArgsWithPlugins::processListPlugins()
     }
 
     // Build the list of plugins.
-    const UString text(PluginRepository::Instance()->listPlugins(true, *this, op));
+    const UString text(PluginRepository::Instance().listPlugins(true, *this, op));
 
     // Try to page, raw output otherwise.
     OutputPager pager;
