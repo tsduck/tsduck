@@ -136,7 +136,18 @@ bool ts::TablesLoggerFilter::loadFilterOptions(DuckContext& duck, Args& args, PI
         initial_pids.set();
     }
 
-    // Clear the current PAT.
+    // Initialize the filter.
+    return reset();
+}
+
+
+//----------------------------------------------------------------------------
+// Reset context, if filtering restarts from the beginning for instance.
+//----------------------------------------------------------------------------
+
+bool ts::TablesLoggerFilter::reset()
+{
+    _current_pids = _pids;
     _pat.clear();
     return true;
 }
@@ -166,17 +177,17 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
             const PAT new_pat(duck, _pat);
             if (new_pat.isValid()) {
                 // Check NIT PID, if present.
-                if (new_pat.nit_pid != PID_NULL && !_pids.test(new_pat.nit_pid)) {
+                if (new_pat.nit_pid != PID_NULL && !_current_pids.test(new_pat.nit_pid)) {
                     // The NIT PID was not yet known.
-                    _pids.set(new_pat.nit_pid);
+                    _current_pids.set(new_pat.nit_pid);
                     more_pids.set(new_pat.nit_pid);
                 }
                 // Check all PMT PID's.
                 for (const auto& it : new_pat.pmts) {
                     const PID pmt_pid = it.second;
-                    if (pmt_pid != PID_NULL && !_pids.test(pmt_pid)) {
+                    if (pmt_pid != PID_NULL && !_current_pids.test(pmt_pid)) {
                         // This PMT PID was not yet known.
-                        _pids.set(pmt_pid);
+                        _current_pids.set(pmt_pid);
                         more_pids.set(pmt_pid);
                     }
                 }
@@ -193,7 +204,7 @@ bool ts::TablesLoggerFilter::filterSection(DuckContext& duck, const Section& sec
     // not specified or the corresponding value matches.
     return
         // Check PID:
-        (_pids.none() || _pids.test(section.sourcePID())) &&
+        (_current_pids.none() || _current_pids.test(section.sourcePID())) &&
         // Check TID:
         (_tids.empty() || (tid_set && !_negate_tid) || (!tid_set && _negate_tid)) &&
         // Check TIDext:

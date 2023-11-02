@@ -2,7 +2,7 @@ TSDUCK CHANGE LOG AND RELEASE NOTES
 
 -------------------------------------------------------------------------------
 
-VERSION 3.36-3363
+VERSION 3.36-3370
 
 [NEW] New commands and plugins:
 
@@ -42,6 +42,8 @@ VERSION 3.36-3363
     input FIFO only, instead of trying to fill the complete buffer.
   * Fixed issue #1334: Incorrect service type names in JSON report of
     "tsanalyze" and plugin "analyze".
+  * Fixed issue #1340: Restarting plugin "tables" with option --psi-si failed
+    with to collect PMT's again.
 
 -------------------------------------------------------------------------------
 
