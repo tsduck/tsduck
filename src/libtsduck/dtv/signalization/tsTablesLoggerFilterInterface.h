@@ -51,6 +51,12 @@ namespace ts {
         virtual bool loadFilterOptions(DuckContext& duck, Args& args, PIDSet& initial_pids) = 0;
 
         //!
+        //! Reset context, if filtering restarts from the beginning for instance.
+        //! @return True on success, false on error in argument line.
+        //!
+        virtual bool reset() = 0;
+
+        //!
         //! Check if a specific section must be filtered and displayed.
         //! @param [in,out] duck TSDuck context.
         //! @param [in] section The section to check.

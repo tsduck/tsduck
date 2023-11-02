@@ -375,6 +375,13 @@ bool ts::TablesLogger::open()
     // Set PID's to filter.
     _demux.setPIDFilter(_initial_pids);
 
+    // Reinitialize all section filters.
+    for (const auto& it : _section_filters) {
+        if (!it->reset()) {
+            return false;
+        }
+    }
+
     // Set either a table or section handler, depending on --all-sections
     _demux.setTableHandler(_all_sections ? nullptr : this);
     _demux.setSectionHandler(_all_sections ? this : nullptr);
