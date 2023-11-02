@@ -8,6 +8,7 @@
 
 #include "tsUserInterrupt.h"
 #include "tsSingleton.h"
+#include "tsMutex.h"
 #include "tsGuardMutex.h"
 #include "tsSysUtils.h"
 
