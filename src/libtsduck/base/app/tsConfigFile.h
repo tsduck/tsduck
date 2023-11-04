@@ -15,7 +15,6 @@
 #include "tsPlatform.h"
 #include "tsConfigSection.h"
 #include "tsCerrReport.h"
-#include "tsException.h"
 
 namespace ts {
     //!

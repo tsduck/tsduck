@@ -31,12 +31,12 @@ namespace ts {
         EITMainOptions(int argc, char *argv[]);
         virtual ~EITMainOptions() override;
 
-        bool          exit_error;
-        UStringVector commands;
-        UStringVector command_files;
-        UString       input_directory;
-        UString       output_directory;
-        CommandLine   cmdline;
+        bool          exit_error = false;
+        UStringVector commands {};
+        UStringVector command_files {};
+        UString       input_directory {};
+        UString       output_directory {};
+        CommandLine   cmdline {*this};
 
         // Inherited methods.
         virtual UString getHelpText(HelpFormat format, size_t line_width = DEFAULT_LINE_WIDTH) const override;
@@ -45,13 +45,7 @@ namespace ts {
 
 // Constructor: get command line options.
 ts::EITMainOptions::EITMainOptions(int argc, char *argv[]) :
-    Args(u"Manipulate EIT's through commands", u"[options]"),
-    exit_error(false),
-    commands(),
-    command_files(),
-    input_directory(),
-    output_directory(),
-    cmdline(*this)
+    Args(u"Manipulate EIT's through commands", u"[options]")
  {
     // Command line options.
     option(u"command", 'c', STRING, 0, UNLIMITED_COUNT);
@@ -224,11 +218,11 @@ namespace ts {
         virtual ~EITCommand() override;
 
     private:
-        EITMainOptions&  _opt;
-        DuckContext  _duck;
-        BitRate      _ts_bitrate;
-        EITOptions   _eit_options;
-        EITGenerator _eit_gen;
+        EITMainOptions& _opt;
+        DuckContext     _duck {&_opt};
+        BitRate         _ts_bitrate = 0;
+        EITOptions      _eit_options = EITOptions::GEN_ALL | EITOptions::LOAD_INPUT;
+        EITGenerator    _eit_gen {_duck, PID_EIT, _eit_options, EITRepetitionProfile::SatelliteCable};
 
         // Get full path of an input or output directory.
         UString fileName(const UString& directory, const UString& name) const;
@@ -263,11 +257,7 @@ ts::EITCommand::~EITCommand()
 //----------------------------------------------------------------------------
 
 ts::EITCommand::EITCommand(EITMainOptions& opt) :
-    _opt(opt),
-    _duck(&_opt),
-    _ts_bitrate(0),
-    _eit_options(EITOptions::GEN_ALL | EITOptions::LOAD_INPUT),
-    _eit_gen(_duck, PID_EIT, _eit_options, EITRepetitionProfile::SatelliteCable)
+    _opt(opt)
 {
     // Connect this object as command handler for all commands.
     _opt.cmdline.setCommandLineHandler(this, &EITCommand::load, u"load");

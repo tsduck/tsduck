@@ -32,27 +32,19 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck;          // TSDuck context
-        bool               raw_file;      // Raw dump of file, not TS packets
-        uint64_t           start_offset;  // Start offset in bytes
-        ts::PacketCounter  max_packets;   // Maximum number of packets to dump per file
-        ts::UStringVector  infiles;       // Input file names
-        ts::TSPacketFormat format;        // Input file format
-        ts::TSDumpArgs     dump;          // Packet dump options
-        ts::PagerArgs      pager;         // Output paging options
+        ts::DuckContext    duck {this};         // TSDuck context
+        bool               raw_file = false;    // Raw dump of file, not TS packets
+        uint64_t           start_offset = 0;    // Start offset in bytes
+        ts::PacketCounter  max_packets = 0;     // Maximum number of packets to dump per file
+        ts::UStringVector  infiles {};          // Input file names
+        ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;  // Input file format
+        ts::TSDumpArgs     dump {};             // Packet dump options
+        ts::PagerArgs      pager {true, true};  // Output paging options
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]"),
-    duck(this),
-    raw_file(false),
-    start_offset(0),
-    max_packets(0),
-    infiles(),
-    format(ts::TSPacketFormat::AUTODETECT),
-    dump(),
-    pager(true, true)
+    Args(u"Dump and format MPEG transport stream packets", u"[options] [filename ...]")
 {
     dump.defineArgs(*this);
     pager.defineArgs(*this);

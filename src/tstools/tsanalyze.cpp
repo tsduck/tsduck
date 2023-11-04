@@ -30,23 +30,17 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext       duck;      // TSDuck execution context.
-        ts::BitRate           bitrate;   // Expected bitrate (188-byte packets)
-        ts::UString           infile;    // Input file name
-        ts::TSPacketFormat    format;    // Input file format.
-        ts::TSAnalyzerOptions analysis;  // Analysis options.
-        ts::PagerArgs         pager;     // Output paging options.
+        ts::DuckContext       duck {this};         // TSDuck execution context.
+        ts::BitRate           bitrate = 0;         // Expected bitrate (188-byte packets)
+        ts::UString           infile {};           // Input file name
+        ts::TSPacketFormat    format = ts::TSPacketFormat::AUTODETECT; // Input file format.
+        ts::TSAnalyzerOptions analysis {};         // Analysis options.
+        ts::PagerArgs         pager {true, true};  // Output paging options.
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]"),
-    duck(this),
-    bitrate(0),
-    infile(),
-    format(ts::TSPacketFormat::AUTODETECT),
-    analysis(),
-    pager(true, true)
+    ts::Args(u"Analyze the structure of a transport stream", u"[options] [filename]")
 {
     // Define all standard analysis options.
     duck.defineArgsForStandards(*this);

@@ -34,51 +34,32 @@ namespace ts {
         TSCompareOptions(int argc, char *argv[]);
         virtual ~TSCompareOptions() override;
 
-        DuckContext      duck;
-        TSPacketFormat   format;
-        UString          filename0;
-        UString          filename1;
-        uint64_t         byte_offset;
-        size_t           buffered_packets;
-        size_t           threshold_diff;
-        size_t           min_reorder;
-        bool             search_reorder;
-        bool             dump;
-        uint32_t         dump_flags;
-        bool             normalized;
-        bool             quiet;
-        bool             payload_only;
-        bool             pcr_ignore;
-        bool             pid_ignore;
-        bool             cc_ignore;
-        bool             continue_all;
-        json::OutputArgs json;
+        DuckContext      duck {this};
+        TSPacketFormat   format = TSPacketFormat::AUTODETECT;
+        UString          filename0 {};
+        UString          filename1 {};
+        uint64_t         byte_offset = 0;
+        size_t           buffered_packets = 0;
+        size_t           threshold_diff = 0;
+        size_t           min_reorder = 0;
+        bool             search_reorder = false;
+        bool             dump = false;
+        uint32_t         dump_flags = 0;
+        bool             normalized = false;
+        bool             quiet = false;
+        bool             payload_only = false;
+        bool             pcr_ignore = false;
+        bool             pid_ignore = false;
+        bool             cc_ignore = false;
+        bool             continue_all = false;
+        json::OutputArgs json {};
     };
 }
 
 
 // Command line options constructor.
 ts::TSCompareOptions::TSCompareOptions(int argc, char *argv[]) :
-    Args(u"Compare two transport stream files", u"[options] filename-1 filename-2"),
-    duck(this),
-    format(TSPacketFormat::AUTODETECT),
-    filename0(),
-    filename1(),
-    byte_offset(0),
-    buffered_packets(0),
-    threshold_diff(0),
-    min_reorder(0),
-    search_reorder(false),
-    dump(false),
-    dump_flags(0),
-    normalized(false),
-    quiet(false),
-    payload_only(false),
-    pcr_ignore(false),
-    pid_ignore(false),
-    cc_ignore(false),
-    continue_all(false),
-    json()
+    Args(u"Compare two transport stream files", u"[options] filename-1 filename-2")
 {
     ts::DefineTSPacketFormatInputOption(*this, 'f');
 
@@ -206,11 +187,11 @@ namespace ts {
     private:
         TSCompareOptions& _opt;
     public:
-        bool   equal;          // Compared packets are identical
-        size_t compared_size;  // Size of compared data
-        size_t first_diff;     // Offset of first difference
-        size_t end_diff;       // Offset of last difference + 1
-        size_t diff_count;     // Number of different bytes (can be lower than end_diff-first_diff)
+        bool   equal = false;      // Compared packets are identical
+        size_t compared_size = 0;  // Size of compared data
+        size_t first_diff = 0;     // Offset of first difference
+        size_t end_diff = 0;       // Offset of last difference + 1
+        size_t diff_count = 0;     // Number of different bytes (can be lower than end_diff-first_diff)
 
         // Constructor, compare the packets.
         PacketComparator(const TSPacket& pkt1, const TSPacket& pkt2, TSCompareOptions& opt);
@@ -224,12 +205,7 @@ namespace ts {
 
 // Packet comparator constructor.
 ts::PacketComparator::PacketComparator(const TSPacket& pkt1, const TSPacket& pkt2, TSCompareOptions& opt) :
-    _opt(opt),
-    equal(false),
-    compared_size(0),
-    first_diff(0),
-    end_diff(0),
-    diff_count(0)
+    _opt(opt)
 {
     if (pkt1.getPID() == PID_NULL || pkt2.getPID() == PID_NULL) {
         // At least one packet is a null packet.
@@ -349,21 +325,21 @@ namespace ts {
     private:
         // Metadata for one packet in the buffer.
         struct PacketData {
-            PacketCounter count_in_pid;  // Index of this packet in its PID.
-            bool          ignore;        // Ignore this packet, already matched to a packet in other file.
+            PacketCounter count_in_pid = 0;  // Index of this packet in its PID.
+            bool          ignore = false;    // Ignore this packet, already matched to a packet in other file.
         };
 
         TSCompareOptions&           _opt;
-        std::map<PID,PacketCounter> _by_pid;           // Packet counter per PID.
-        TSFile                      _file;
-        TSPacketVector              _packets_buffer;
-        std::vector<PacketData>     _packets_data;     // One entry per packet at same index in _packets_buffer.
-        PacketCounter               _packet_index;     // Index in file of first packet in buffer.
-        PacketCounter               _packet_count;     // Number of packets in _packets_buffer (wrap up at end of buffer).
-        PacketCounter               _missing_start;    // If not NONE, we are inside a zone of missing packets (missing in the other file).
-        PacketCounter               _missing_packets;  // Total numner of missing packets.
-        PacketCounter               _missing_chunks;   // Number of holes, missing chunks.
-        bool                        _end_of_file;      // End of file or error encountered.
+        std::map<PID,PacketCounter> _by_pid {};            // Packet counter per PID.
+        TSFile                      _file {};
+        TSPacketVector              _packets_buffer {};
+        std::vector<PacketData>     _packets_data {};      // One entry per packet at same index in _packets_buffer.
+        PacketCounter               _packet_index = 0;     // Index in file of first packet in buffer.
+        PacketCounter               _packet_count = 0;     // Number of packets in _packets_buffer (wrap up at end of buffer).
+        PacketCounter               _missing_start = NONE; // If not NONE, we are inside a zone of missing packets (missing in the other file).
+        PacketCounter               _missing_packets = 0;  // Total numner of missing packets.
+        PacketCounter               _missing_chunks = 0;   // Number of holes, missing chunks.
+        bool                        _end_of_file = false;  // End of file or error encountered.
 
         // Dummy value for no packet index.
         static constexpr PacketCounter NONE = std::numeric_limits<PacketCounter>::max();
@@ -381,15 +357,8 @@ namespace ts {
 // Constructor of one file to compare.
 ts::FileToCompare::FileToCompare(TSCompareOptions& opt, const UString& filename) :
     _opt(opt),
-    _by_pid(),
-    _file(),
     _packets_buffer(_opt.buffered_packets),
     _packets_data(_opt.buffered_packets),
-    _packet_index(0),
-    _packet_count(0),
-    _missing_start(NONE),
-    _missing_packets(0),
-    _missing_chunks(0),
     _end_of_file(!_file.openRead(filename, 1, _opt.byte_offset, _opt, _opt.format))
 {
     fillBuffer();
@@ -535,14 +504,14 @@ namespace ts {
         FileComparator(TSCompareOptions& opt);
 
         // Final status.
-        bool success;
+        bool success = false;
 
     private:
         TSCompareOptions& _opt;
         FileToCompare     _file0;
         FileToCompare     _file1;
-        json::Object      _jroot;
-        PacketCounter     _diff_count;
+        json::Object      _jroot {};
+        PacketCounter     _diff_count = 0;
 
         void displayHeader();
         void displayFinal();
@@ -559,12 +528,9 @@ namespace ts {
 
 // File comparator constructor.
 ts::FileComparator::FileComparator(TSCompareOptions& opt) :
-    success(false),
     _opt(opt),
     _file0(_opt, _opt.filename0),
-    _file1(_opt, _opt.filename1),
-    _jroot(),
-    _diff_count(0)
+    _file1(_opt, _opt.filename1)
 {
     // No need to go further if at least one file is on error or empty.
     if (_file0.eof() || _file1.eof()) {

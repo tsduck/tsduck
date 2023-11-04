@@ -31,19 +31,18 @@ namespace {
     public:
         GenECMOptions(int argc, char *argv[]);
 
-        ts::DuckContext       duck;          // TSDuck execution context.
+        ts::DuckContext       duck {this};   // TSDuck execution context.
         ts::ecmgscs::Protocol ecmgscs {};    // ECMG <=> SCS protocol instance.
         ts::UString           outFile {};    // Name of binary output file.
         ts::ECMGClientArgs    ecmg {};       // ECMG parameters
-        uint16_t              cpNumber {0};  // Crypto-period number
+        uint16_t              cpNumber = 0;  // Crypto-period number
         ts::ByteBlock         cwCurrent {};  // Current CW
         ts::ByteBlock         cwNext {};     // Next CW
     };
 }
 
 GenECMOptions::GenECMOptions(int argc, char *argv[]) :
-    ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file"),
-    duck(this)
+    ts::Args(u"Generate one ECM using any DVB SimulCrypt compliant ECMG", u"[options] output-file")
 {
     setIntro(u"This command connects to a DVB SimulCrypt compliant ECMG and requests "
              u"the generation of one ECM. Restriction: The target ECMG shall support "

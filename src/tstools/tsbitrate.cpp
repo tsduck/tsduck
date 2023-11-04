@@ -27,31 +27,21 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        uint32_t           min_pcr;        // Min # of PCR per PID
-        uint16_t           min_pid;        // Min # of PID
-        ts::UString        pcr_name;       // Time stamp type name
-        bool               use_dts;        // Use DTS instead of PCR
-        bool               all;            // All packets analysis
-        bool               full;           // Full analysis
-        bool               value_only;     // Output value only
-        bool               ignore_errors;  // Ignore TS errors
-        ts::UString        infile;         // Input file name
-        ts::TSPacketFormat format;         // Input file format.
+        uint32_t           min_pcr = 0;            // Min # of PCR per PID
+        uint16_t           min_pid = 0;            // Min # of PID
+        ts::UString        pcr_name {};            // Time stamp type name
+        bool               use_dts = false;        // Use DTS instead of PCR
+        bool               all = false;            // All packets analysis
+        bool               full = false;           // Full analysis
+        bool               value_only = false;     // Output value only
+        bool               ignore_errors = false;  // Ignore TS errors
+        ts::UString        infile {};              // Input file name
+        ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Evaluate the bitrate of a transport stream", u"[options] [filename]"),
-    min_pcr(0),
-    min_pid(0),
-    pcr_name(),
-    use_dts(false),
-    all(false),
-    full(false),
-    value_only(false),
-    ignore_errors(false),
-    infile(),
-    format(ts::TSPacketFormat::AUTODETECT)
+    Args(u"Evaluate the bitrate of a transport stream", u"[options] [filename]")
 {
     ts::DefineTSPacketFormatInputOption(*this);
 

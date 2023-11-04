@@ -237,10 +237,10 @@ namespace {
         // EventScheduler private fields.
         const CmdOptions& _opt;
         ts::Report&       _report;
-        ts::Mutex         _mutex;
-        ts::Condition     _condition;
-        std::list<Event>  _events;
-        size_t            _request_count;
+        ts::Mutex         _mutex {};
+        ts::Condition     _condition {};
+        std::list<Event>  _events {};
+        size_t            _request_count = 0;
 
         // Enqueue an event.
         void enqueue(const Event& event);
@@ -250,11 +250,7 @@ namespace {
 // Constructor.
 EventQueue::EventQueue(const CmdOptions& opt, ts::Report& report) :
     _opt(opt),
-    _report(report),
-    _mutex(),
-    _condition(),
-    _events(),
-    _request_count(0)
+    _report(report)
 {
     // If a max duration is specified, pre-enqueue a termination event.
     if (_opt.max_seconds > 0) {

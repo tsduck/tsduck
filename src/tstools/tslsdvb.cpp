@@ -33,22 +33,16 @@ namespace {
         Options(int argc, char *argv[]);
 
 #if defined(TS_WINDOWS)
-        ts::DirectShowTest::TestType test_type;  // DirectShow test (Windows only).
+        ts::DirectShowTest::TestType test_type = ts::DirectShowTest::NONE;  // DirectShow test (Windows only).
 #endif
-        ts::DuckContext duck;
-        ts::TunerArgs   tuner_args;  // Name of device to list (unspecified means all).
-        bool            extended;
+        ts::DuckContext duck {this};
+        ts::TunerArgs   tuner_args {true};  // true = info_only
+        bool            extended = false;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    ts::Args(u"List DVB tuner devices", u"[options]"),
-#if defined(TS_WINDOWS)
-    test_type(ts::DirectShowTest::NONE),
-#endif
-    duck(this),
-    tuner_args(true),
-    extended(false)
+    ts::Args(u"List DVB tuner devices", u"[options]")
 {
     // Common tuner options.
     tuner_args.defineArgs(*this, true);

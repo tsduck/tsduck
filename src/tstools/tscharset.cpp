@@ -34,15 +34,15 @@ namespace ts {
     {
         TS_NOBUILD_NOCOPY(CharsetOptions);
     public:
-        DuckContext duck;          // TSDuck execution context.
-        bool        list;          // List all character sets names.
-        bool        generate_b24;  // Generate encoding tables for ARIB STD-B24.
-        bool        c_style;       // Output binary data in C/C++ syntax.
-        bool        to_utf8;       // Output decoded string as UTF-8.
-        bool        to_utf16;      // Output decoded string as UTF-16.
-        UString     outfile;       // Output file.
-        UString     encode;        // String to encode.
-        ByteBlock   decode;        // Hexadecimal content to decode.
+        DuckContext duck {this};           // TSDuck execution context.
+        bool        list = false;          // List all character sets names.
+        bool        generate_b24 = false;  // Generate encoding tables for ARIB STD-B24.
+        bool        c_style = false;       // Output binary data in C/C++ syntax.
+        bool        to_utf8 = false;       // Output decoded string as UTF-8.
+        bool        to_utf16 = false;      // Output decoded string as UTF-16.
+        UString     outfile {};            // Output file.
+        UString     encode {};             // String to encode.
+        ByteBlock   decode {};             // Hexadecimal content to decode.
 
         // Print string and binary data according to formatting options.
         void printBinary(const UString& title, const ByteBlock& bin) const;
@@ -66,16 +66,7 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 ts::CharsetOptions::CharsetOptions(int argc, char *argv[]) :
-    Args(u"Test tool for DVB and ARIB character sets", u"[options]"),
-    duck(this),
-    list(false),
-    generate_b24(false),
-    c_style(false),
-    to_utf8(false),
-    to_utf16(false),
-    outfile(),
-    encode(),
-    decode()
+    Args(u"Test tool for DVB and ARIB character sets", u"[options]")
 {
     duck.defineArgsForCharset(*this);
 
