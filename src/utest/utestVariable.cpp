@@ -171,7 +171,7 @@ namespace {
             _instanceCount--;
             trace("destructor");
         }
-        bool operator==(const TestData& other)
+        bool operator==(const TestData& other) const
         {
             return _value == other._value;
         }
