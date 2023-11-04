@@ -30,21 +30,16 @@ namespace {
     public:
         TSMuxOptions(int argc, char *argv[]);
 
-        bool                monitor;         // Run a resource monitoring thread in the background.
-        ts::UString         monitor_config;  // System monitoring configuration file.
-        ts::DuckContext     duck;            // TSDuck context
-        ts::AsyncReportArgs log_args;        // Asynchronous logger arguments.
-        ts::MuxerArgs       mux_args;        // TS multiplexer arguments.
+        bool                monitor = false;    // Run a resource monitoring thread in the background.
+        ts::UString         monitor_config {};  // System monitoring configuration file.
+        ts::DuckContext     duck {this};        // TSDuck context
+        ts::AsyncReportArgs log_args {};        // Asynchronous logger arguments.
+        ts::MuxerArgs       mux_args {};        // TS multiplexer arguments.
     };
 }
 
 TSMuxOptions::TSMuxOptions(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1, u"TS multiplexer", u"[tsmux-options]"),
-    monitor(false),
-    monitor_config(),
-    duck(this),
-    log_args(),
-    mux_args()
+    ts::ArgsWithPlugins(0, UNLIMITED_COUNT, 0, 0, 0, 1, u"TS multiplexer", u"[tsmux-options]")
 {
     log_args.defineArgs(*this);
     mux_args.defineArgs(*this);

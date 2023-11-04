@@ -28,19 +28,15 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        bool              check_only;   // check only, do not truncate
-        size_t            packet_size;  // packet size in bytes
-        ts::PacketCounter trunc_pkt;    // first packet to truncate (0 means eof)
-        ts::UStringVector files;        // file names
+        bool              check_only = false;          // check only, do not truncate
+        size_t            packet_size = ts::PKT_SIZE;  // packet size in bytes
+        ts::PacketCounter trunc_pkt = 0;               // first packet to truncate (0 means eof)
+        ts::UStringVector files {};                    // file names
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Truncate an MPEG transport stream file", u"[options] filename ..."),
-    check_only(false),
-    packet_size(ts::PKT_SIZE),
-    trunc_pkt(0),
-    files()
+    Args(u"Truncate an MPEG transport stream file", u"[options] filename ...")
 {
     option(u"", 0, FILENAME, 1, UNLIMITED_COUNT);
     help(u"", u"MPEG capture files to be truncated.");

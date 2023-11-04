@@ -37,19 +37,15 @@ namespace ts {
         FileCleanOptions(int argc, char *argv[]);
         virtual ~FileCleanOptions() override;
 
-        DuckContext   duck;      // TSDuck execution context.
-        UStringVector in_files;  // Input file names.
-        UString       out_file;  // Output file name or directory.
-        bool          out_dir;   // Output name is a directory.
+        DuckContext   duck {this};  // TSDuck execution context.
+        UStringVector in_files {};  // Input file names.
+        UString       out_file {};  // Output file name or directory.
+        bool          out_dir {};   // Output name is a directory.
     };
 }
 
 ts::FileCleanOptions::FileCleanOptions(int argc, char *argv[]) :
-    Args(u"Cleanup the structure and boundaries of a transport stream file", u"[options] filename ..."),
-    duck(this),
-    in_files(),
-    out_file(),
-    out_dir()
+    Args(u"Cleanup the structure and boundaries of a transport stream file", u"[options] filename ...")
 {
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"",
@@ -116,17 +112,17 @@ namespace ts {
         PMTContextPtr getPMTContext(PID pmt_pid, bool create);
 
         // File cleaner private fields:
-        bool               _success;
+        bool               _success = true;
         FileCleanOptions&  _opt;
-        TSFile             _in_file;
-        TSFile             _out_file;
-        PAT                _pat;
-        CyclingPacketizer  _pat_pzer;
-        CAT                _cat;
-        CyclingPacketizer  _cat_pzer;
-        SDT                _sdt;
-        CyclingPacketizer  _sdt_pzer;
-        PMTContextMap      _pmts;
+        TSFile             _in_file {};
+        TSFile             _out_file {};
+        PAT                _pat {};
+        CyclingPacketizer  _pat_pzer {_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        CAT                _cat {};
+        CyclingPacketizer  _cat_pzer {_opt.duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        SDT                _sdt {};
+        CyclingPacketizer  _sdt_pzer {_opt.duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS};
+        PMTContextMap      _pmts {};
 
         // Implementation of SignalizationHandlerInterface:
         virtual void handlePAT(const PAT& pat, PID pid) override;
@@ -151,17 +147,7 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 ts::FileCleaner::FileCleaner(FileCleanOptions& opt, const UString& infile_name) :
-    _success(true),
-    _opt(opt),
-    _in_file(),
-    _out_file(),
-    _pat(),
-    _pat_pzer(_opt.duck, PID_PAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _cat(),
-    _cat_pzer(_opt.duck, PID_CAT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _sdt(),
-    _sdt_pzer(_opt.duck, PID_SDT, CyclingPacketizer::StuffingPolicy::ALWAYS),
-    _pmts()
+    _opt(opt)
 {
     // Mark all tables as invalid. The first occurrence in the input file will initialize them.
     _pat.invalidate();

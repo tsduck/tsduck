@@ -26,11 +26,11 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        bool         test;          // Test mode
-        bool         circular;      // Add empty packets to enforce circular continuity
-        bool         no_replicate;  // Option --no-replicate-duplicated
-        ts::UString  filename;      // File name
-        std::fstream file;          // File buffer
+        bool         test = false;          // Test mode
+        bool         circular = false;      // Add empty packets to enforce circular continuity
+        bool         no_replicate = false;  // Option --no-replicate-duplicated
+        ts::UString  filename {};           // File name
+        std::fstream file {};               // File buffer
 
         // Check if there was an I/O error on the file.
         // Print an error message if this is the case.
@@ -40,12 +40,7 @@ namespace {
 
 // Constructor.
 Options::Options(int argc, char *argv[]) :
-    Args(u"Fix continuity counters in a transport stream", u"[options] filename"),
-    test(false),
-    circular(false),
-    no_replicate(false),
-    filename(),
-    file()
+    Args(u"Fix continuity counters in a transport stream", u"[options] filename")
 {
     option(u"", 0, FILENAME, 1, 1);
     help(u"", u"MPEG capture file to be modified.");

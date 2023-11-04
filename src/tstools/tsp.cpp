@@ -34,21 +34,16 @@ namespace {
         TSPOptions(int argc, char *argv[]);
 
         // Option values
-        bool                monitor;          // Run a resource monitoring thread in the background.
-        ts::UString         monitor_config;   // System monitoring configuration file.S
-        ts::DuckContext     duck;             // TSDuck context
-        ts::AsyncReportArgs log_args;         // Asynchronous logger arguments.
-        ts::TSProcessorArgs tsp_args;         // TS processing arguments.
+        bool                monitor = false;     // Run a resource monitoring thread in the background.
+        ts::UString         monitor_config {};   // System monitoring configuration file.S
+        ts::DuckContext     duck {this};         // TSDuck context
+        ts::AsyncReportArgs log_args {};         // Asynchronous logger arguments.
+        ts::TSProcessorArgs tsp_args {};         // TS processing arguments.
     };
 }
 
 TSPOptions::TSPOptions(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1, u"MPEG transport stream processor using a chain of plugins", u"[tsp-options]"),
-    monitor(false),
-    monitor_config(),
-    duck(this),
-    log_args(),
-    tsp_args()
+    ts::ArgsWithPlugins(0, 1, 0, UNLIMITED_COUNT, 0, 1, u"MPEG transport stream processor using a chain of plugins", u"[tsp-options]")
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForCharset(*this);

@@ -38,7 +38,7 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext          duck;                  // TSDuck execution contexts.
+        ts::DuckContext          duck {this};           // TSDuck execution contexts.
         ts::UStringVector        infiles {};            // Input file names.
         ts::UString              outfile {};            // Output file name.
         ts::UString              model {};              // Model file name.
@@ -61,8 +61,7 @@ namespace {
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Test tool for TSDuck XML manipulation", u"[options] [input-file ...]"),
-    duck(this)
+    Args(u"Test tool for TSDuck XML manipulation", u"[options] [input-file ...]")
 {
     json.defineArgs(*this, true, u"Perform an automated XML-to-JSON conversion. The output file is in JSON format instead of XML.");
     xml_tweaks.defineArgs(*this);

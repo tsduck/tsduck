@@ -21,6 +21,8 @@
 
 namespace {
     struct Predef {
+        // The instance is also registered in AllInstances, as any NamesFile.
+        // This is just a faster lookup table.
         const ts::NamesFile* volatile instance;
         const ts::UChar* name;
         bool merge;
@@ -52,19 +54,16 @@ namespace {
         void removeExtensionFile(const ts::UString& fileName);
         void getExtensionFiles(ts::UStringList& fileNames);
     private:
-        ts::Mutex                                   _mutex;     // Protected access to other fiekds.
-        std::map<ts::UString, const ts::NamesFile*> _files;     // Loaded instances by name.
-        ts::UStringList                             _extFiles;  // Additional names files.
+        ts::Mutex                                   _mutex {};     // Protected access to other fiekds.
+        std::map<ts::UString, const ts::NamesFile*> _files {};     // Loaded instances by name.
+        ts::UStringList                             _extFiles {};  // Additional names files.
     };
 }
 
 TS_DEFINE_SINGLETON(AllInstances);
 
 // Constructor
-AllInstances::AllInstances() :
-    _mutex(),
-    _files(),
-    _extFiles()
+AllInstances::AllInstances()
 {
 }
 
@@ -212,9 +211,7 @@ void ts::NamesFile::UnregisterExtensionFile(const UString& filename)
 
 ts::NamesFile::NamesFile(const UString& fileName, bool mergeExtensions) :
     _log(CERR),
-    _configFile(SearchConfigurationFile(fileName)),
-    _configErrors(0),
-    _sections()
+    _configFile(SearchConfigurationFile(fileName))
 {
     // Locate the configuration file.
     if (_configFile.empty()) {

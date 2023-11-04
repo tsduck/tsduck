@@ -34,25 +34,18 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck;     // TSDuck execution context.
-        ts::TablesDisplay  display;  // Table formatting options (all default values, nothing on command line).
-        bool               no_tdt;   // Do not try to get a TDT
-        bool               no_tot;   // Do not try to get a TOT
-        bool               all;      // Report all tables, not only the first one.
-        ts::UString        infile;   // Input file name
-        ts::TSPacketFormat format;   // Input file format.
+        ts::DuckContext    duck {this};     // TSDuck execution context.
+        ts::TablesDisplay  display {duck};  // Table formatting options (all default values, nothing on command line).
+        bool               no_tdt = false;  // Do not try to get a TDT
+        bool               no_tot = false;  // Do not try to get a TOT
+        bool               all = false;     // Report all tables, not only the first one.
+        ts::UString        infile {};       // Input file name
+        ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Extract the date and time (TDT/TOT) from a transport stream", u"[options] [filename]"),
-    duck(this),
-    display(duck),
-    no_tdt(false),
-    no_tot(false),
-    all(false),
-    infile(),
-    format(ts::TSPacketFormat::AUTODETECT)
+    Args(u"Extract the date and time (TDT/TOT) from a transport stream", u"[options] [filename]")
 {
     duck.defineArgsForStandards(*this);
     duck.defineArgsForTimeReference(*this);

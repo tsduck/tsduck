@@ -29,19 +29,15 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::UStringVector infiles;     // Input file names.
-        ts::ByteBlock     indata;      // Raw input data.
-        bool              show_name;   // Show file name on input.
-        bool              accelerated; // Check if the computation of CRC32 is accelerated.
+        ts::UStringVector infiles {};          // Input file names.
+        ts::ByteBlock     indata {};           // Raw input data.
+        bool              show_name = false;   // Show file name on input.
+        bool              accelerated = false; // Check if the computation of CRC32 is accelerated.
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Compute MPEG-style CRC32 values", u"[options] [filename ...]"),
-    infiles(),
-    indata(),
-    show_name(false),
-    accelerated(false)
+    Args(u"Compute MPEG-style CRC32 values", u"[options] [filename ...]")
 {
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"", u"Any number of binary input files (standard input if omitted).");

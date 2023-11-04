@@ -55,14 +55,14 @@ namespace {
     public:
         ECMGOptions(int argc, char *argv[]);
 
-        ts::DuckContext            duck;                    // TSDuck execution context.
+        ts::DuckContext            duck {this};             // TSDuck execution context.
         ts::AsyncReportArgs        logArgs {};              // Options for asynchronous log.
         ts::ecmgscs::Protocol      ecmgscs {};              // ECMG <=> SCS protocol instance.
-        int                        logProtocol {ts::Severity::Debug};  // Log level for ECMG <=> SCS protocol.
-        int                        logData {ts::Severity::Debug};      // Log level for CW/ECM data messages.
-        bool                       once {false};            // Accept only one client.
-        bool                       reusePort {false};       // Socket option.
-        ts::MilliSecond            ecmCompTime {0};         // ECM computation time.
+        int                        logProtocol = ts::Severity::Debug;  // Log level for ECMG <=> SCS protocol.
+        int                        logData = ts::Severity::Debug;      // Log level for CW/ECM data messages.
+        bool                       once = false;            // Accept only one client.
+        bool                       reusePort = false;       // Socket option.
+        ts::MilliSecond            ecmCompTime = 0;         // ECM computation time.
         ts::IPv4SocketAddress      serverAddress {};        // TCP server local address.
         ts::ecmgscs::ChannelStatus channelStatus {ecmgscs}; // Standard parameters required by this ECMG.
         ts::ecmgscs::StreamStatus  streamStatus {ecmgscs};  // Standard parameters required by this ECMG.
@@ -70,8 +70,7 @@ namespace {
 }
 
 ECMGOptions::ECMGOptions(int argc, char *argv[]) :
-    ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]"),
-    duck(this)
+    ts::Args(u"Minimal generic DVB SimulCrypt-compliant ECMG", u"[options]")
 {
     logArgs.defineArgs(*this);
 
@@ -288,7 +287,7 @@ public:
 private:
     const ECMGOptions&          _opt;
     ts::duck::Protocol          _protocol {};   // To encode ECM structure.
-    ECMGSharedData*             _shared {nullptr};
+    ECMGSharedData*             _shared = nullptr;
     ECMGConnectionPtr           _conn {};
     ts::UString                 _peer {};
     ts::Variable<uint16_t>      _channel {};    // Current channel id.

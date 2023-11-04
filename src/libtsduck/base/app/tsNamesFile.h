@@ -257,10 +257,10 @@ namespace ts {
         static UString NormalizedSectionName(const UString& sectionName) { return sectionName.toTrimmed().toLower(); }
 
         // Names private fields.
-        Report&          _log;           // Error logger.
-        const UString    _configFile;    // Configuration file path.
-        size_t           _configErrors;  // Number of errors in configuration file.
-        ConfigSectionMap _sections;      // Configuration sections.
+        Report&          _log;               // Error logger.
+        const UString    _configFile;        // Configuration file path.
+        size_t           _configErrors = 0;  // Number of errors in configuration file.
+        ConfigSectionMap _sections {};       // Configuration sections.
     };
 
     //!

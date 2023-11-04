@@ -30,23 +30,17 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext    duck;     // TSDuck execution context.
-        ts::TablesDisplay  display;  // Table formatting.
-        ts::TablesLogger   logger;   // Table logging.
-        ts::PagerArgs      pager;    // Output paging options.
-        ts::UString        infile;   // Input file name.
-        ts::TSPacketFormat format;   // Input file format.
+        ts::DuckContext    duck {this};        // TSDuck execution context.
+        ts::TablesDisplay  display {duck};     // Table formatting.
+        ts::TablesLogger   logger {display};   // Table logging.
+        ts::PagerArgs      pager {true, true}; // Output paging options.
+        ts::UString        infile {};          // Input file name.
+        ts::TSPacketFormat format = ts::TSPacketFormat::AUTODETECT;
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    Args(u"Collect PSI/SI tables from an MPEG transport stream", u"[options] [filename]"),
-    duck(this),
-    display(duck),
-    logger(display),
-    pager(true, true),
-    infile(),
-    format(ts::TSPacketFormat::AUTODETECT)
+    Args(u"Collect PSI/SI tables from an MPEG transport stream", u"[options] [filename]")
 {
     duck.defineArgsForCAS(*this);
     duck.defineArgsForPDS(*this);

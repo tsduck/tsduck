@@ -37,17 +37,14 @@ namespace {
     public:
         Options(int argc, char *argv[]);
 
-        ts::DuckContext         duck;                 // TSDuck context
-        ts::AsyncReportArgs     log_args;             // Asynchronous logger arguments.
-        ts::LatencyMonitorArgs  latency_monitor_args; // TS processing arguments.
+        ts::DuckContext         duck {this};             // TSDuck context
+        ts::AsyncReportArgs     log_args {};             // Asynchronous logger arguments.
+        ts::LatencyMonitorArgs  latency_monitor_args {}; // TS processing arguments.
     };
 }
 
 Options::Options(int argc, char *argv[]) :
-    ts::ArgsWithPlugins(2, 2, 0, 0, 0, 0, u"Monitor latency between two TS input sources", u"[options]"),
-    duck(this),
-    log_args(),
-    latency_monitor_args()
+    ts::ArgsWithPlugins(2, 2, 0, 0, 0, 0, u"Monitor latency between two TS input sources", u"[options]")
 {
     log_args.defineArgs(*this);
     latency_monitor_args.defineArgs(*this);

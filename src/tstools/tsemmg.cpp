@@ -23,12 +23,12 @@ TS_MAIN(MainCode);
 
 namespace {
     // Command line default arguments.
-    static const uint16_t        DEFAULT_BANDWIDTH      = 100;
+    static constexpr uint16_t        DEFAULT_BANDWIDTH      = 100;
     static constexpr size_t          DEFAULT_EMM_SIZE       = 100;
-    static const ts::TID         DEFAULT_EMM_MIN_TID    = ts::TID_EMM_FIRST;
-    static const ts::TID         DEFAULT_EMM_MAX_TID    = ts::TID_EMM_LAST;
+    static constexpr ts::TID         DEFAULT_EMM_MIN_TID    = ts::TID_EMM_FIRST;
+    static constexpr ts::TID         DEFAULT_EMM_MAX_TID    = ts::TID_EMM_LAST;
     static constexpr size_t          DEFAULT_BYTES_PER_SEND = 500;
-    static const ts::MilliSecond DEFAULT_UDP_END_WAIT   = 100;
+    static constexpr ts::MilliSecond DEFAULT_UDP_END_WAIT   = 100;
 
     // Minimum interval between two send operations.
     static const ts::NanoSecond MIN_SEND_INTERVAL = 4 * ts::NanoSecPerMilliSec; // 4 ms
@@ -53,32 +53,32 @@ namespace {
     public:
         EMMGOptions(int argc, char *argv[]);
 
-        ts::DuckContext       duck;                      // TSDuck execution context.
-        ts::tlv::Logger       logger;                    // Message logger.
+        ts::DuckContext       duck {this};               // TSDuck execution context.
+        ts::tlv::Logger       logger {ts::Severity::Debug, this}; // Message logger.
         ts::emmgmux::Protocol emmgmux {};                // EMMG <=> MUX protocol instance.
         ts::UStringVector     inputFiles {};             // Input file names.
         ts::SectionPtrVector  sections{};                // Loaded sections from input files.
-        size_t                maxCycles {0};             // Maximum number of cycles of section files.
+        size_t                maxCycles = 0;             // Maximum number of cycles of section files.
         ts::IPv4SocketAddress tcpMuxAddress {};          // TCP server address for MUX.
         ts::IPv4SocketAddress udpMuxAddress {};          // UDP server address for MUX.
         bool                  useUDP {false};            // Use UDP to send data provisions.
-        uint32_t              clientId {0};              // Client id, see EMMG/PDG <=> MUX protocol.
-        uint16_t              channelId {0};             // Data_channel_id, see EMMG/PDG <=> MUX protocol.
-        uint16_t              streamId {0};              // Data_stream_id, see EMMG/PDG <=> MUX protocol.
-        uint16_t              dataId {0};                // Data_id, see EMMG/PDG <=> MUX protocol.
-        uint8_t               dataType {0};              // Data_type, see EMMG/PDG <=> MUX protocol.
-        bool                  sectionMode {false};       // If true, send data in section format.
-        uint16_t              sendBandwidth {0};         // Bandwidth of sent data in kb/s.
-        uint16_t              requestedBandwidth {0};    // Requested bandwidth in kb/s.
-        bool                  ignoreAllocatedBW {false}; // Ignore the returned allocated bandwidth.
-        size_t                emmSize {0};               // Size in bytes of generated EMM's.
-        ts::TID               emmMinTableId {0};         // Minimum table id of generated EMM's.
-        ts::TID               emmMaxTableId {0};         // Maximum table id of generated EMM's.
-        uint64_t              maxBytes {0};              // Stop after injecting that number of bytes.
-        ts::BitRate           dataBitrate {0};           // Actual data bitrate.
-        size_t                bytesPerSend {0};          // Approximate size of each send.
-        ts::NanoSecond        sendInterval {0};          // Interval between two send operations.
-        ts::MilliSecond       udpEndWait {0};            // Number of ms to wait between last UDP message and stream close.
+        uint32_t              clientId = 0;              // Client id, see EMMG/PDG <=> MUX protocol.
+        uint16_t              channelId = 0;             // Data_channel_id, see EMMG/PDG <=> MUX protocol.
+        uint16_t              streamId = 0;              // Data_stream_id, see EMMG/PDG <=> MUX protocol.
+        uint16_t              dataId = 0;                // Data_id, see EMMG/PDG <=> MUX protocol.
+        uint8_t               dataType = 0;              // Data_type, see EMMG/PDG <=> MUX protocol.
+        bool                  sectionMode = false;       // If true, send data in section format.
+        uint16_t              sendBandwidth = 0;         // Bandwidth of sent data in kb/s.
+        uint16_t              requestedBandwidth = 0;    // Requested bandwidth in kb/s.
+        bool                  ignoreAllocatedBW = false; // Ignore the returned allocated bandwidth.
+        size_t                emmSize = 0;               // Size in bytes of generated EMM's.
+        ts::TID               emmMinTableId = 0;         // Minimum table id of generated EMM's.
+        ts::TID               emmMaxTableId = 0;         // Maximum table id of generated EMM's.
+        uint64_t              maxBytes = 0;              // Stop after injecting that number of bytes.
+        ts::BitRate           dataBitrate = 0;           // Actual data bitrate.
+        size_t                bytesPerSend = 0;          // Approximate size of each send.
+        ts::NanoSecond        sendInterval = 0;          // Interval between two send operations.
+        ts::MilliSecond       udpEndWait = 0;            // Number of ms to wait between last UDP message and stream close.
 
         // Adjust the various rates and delays according to the allocated bandwidth.
         bool adjustBandwidth(uint16_t allocated);
@@ -86,9 +86,7 @@ namespace {
 }
 
 EMMGOptions::EMMGOptions(int argc, char *argv[]) :
-    ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG", u"[options] [section-file ...]"),
-    duck(this),
-    logger(ts::Severity::Debug, this)
+    ts::Args(u"Minimal generic DVB SimulCrypt-compliant EMMG", u"[options] [section-file ...]")
 {
     option(u"", 0, FILENAME, 0, UNLIMITED_COUNT);
     help(u"",
@@ -352,19 +350,16 @@ public:
 
 private:
     const EMMGOptions& _opt;
-    ts::TID _emmTableId;
-    uint8_t _payloadData;
-    size_t  _nextSection;
-    size_t  _cycleCount;
+    ts::TID _emmTableId = ts::TID_NULL;
+    uint8_t _payloadData = 0;
+    size_t  _nextSection = 0;
+    size_t  _cycleCount = 0;
 };
 
 // Constructor.
 EMMGSectionProvider::EMMGSectionProvider(const EMMGOptions& opt) :
     _opt(opt),
-    _emmTableId(opt.emmMinTableId),
-    _payloadData(0),
-    _nextSection(0),
-    _cycleCount(0)
+    _emmTableId(opt.emmMinTableId)
 {
 }
 

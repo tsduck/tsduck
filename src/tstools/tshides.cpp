@@ -28,23 +28,17 @@ namespace {
     public:
         HiDesOptions(int argc, char *argv[]);
 
-        bool          count;       // Only display device count.
-        bool          gain_range;  // Only display output gain range.
-        int           dev_number;  // Device adapter number.
-        ts::UString   dev_name;    // Device name.
-        uint64_t      frequency;   // Carrier frequency, in Hz.
-        ts::BandWidth bandwidth;   // Bandwidth.
+        bool          count = false;       // Only display device count.
+        bool          gain_range = false;  // Only display output gain range.
+        int           dev_number = -1;     // Device adapter number.
+        ts::UString   dev_name {};         // Device name.
+        uint64_t      frequency = 0;       // Carrier frequency, in Hz.
+        ts::BandWidth bandwidth = 0;       // Bandwidth.
     };
 }
 
 HiDesOptions::HiDesOptions(int argc, char *argv[]) :
-    ts::Args(u"List HiDes modulator devices", u"[options]"),
-    count(false),
-    gain_range(false),
-    dev_number(-1),
-    dev_name(),
-    frequency(0),
-    bandwidth(0)
+    ts::Args(u"List HiDes modulator devices", u"[options]")
 {
     option(u"adapter", 'a', UNSIGNED);
     help(u"adapter", u"Specify the HiDes adapter number to list. By default, list all HiDes devices.");
