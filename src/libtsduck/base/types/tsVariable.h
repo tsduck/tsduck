@@ -28,14 +28,14 @@ namespace ts {
     class Variable
     {
     private:
-        T*      _access;           // point to _data when initialized
+        T*      _access = nullptr; // point to _data when initialized
         uint8_t _data[sizeof(T)];  // flat memory area for T instance
 
     public:
         //!
         //! Default constructor, the variable is uninitialized.
         //!
-        Variable() noexcept : _access(nullptr) {}
+        Variable() = default;
 
         //!
         //! Copy constructor.
@@ -191,8 +191,7 @@ namespace ts {
 //----------------------------------------------------------------------------
 
 template <typename T>
-ts::Variable<T>::Variable(const Variable<T>& other) :
-    _access(nullptr)
+ts::Variable<T>::Variable(const Variable<T>& other)
 {
     if (other._access != nullptr) {
         _access = new(_data) T(*(other._access));
@@ -200,12 +199,12 @@ ts::Variable<T>::Variable(const Variable<T>& other) :
 }
 
 template <typename T>
-ts::Variable<T>::Variable(Variable<T>&& other) :
-    _access(nullptr)
+ts::Variable<T>::Variable(Variable<T>&& other)
 {
     if (other._access != nullptr) {
         _access = new(_data) T(std::move(*(other._access)));
-        other.clear();
+        // Other's data has been moved, we cannot destruct it, just mark it as unset.
+        other._access = nullptr;
     }
 }
 
@@ -237,7 +236,8 @@ ts::Variable<T>& ts::Variable<T>::operator=(Variable<T>&& other)
         clear();
         if (other._access != nullptr) {
             _access = new(_data) T(std::move(*(other._access)));
-            other.clear();
+            // Other's data has been moved, we cannot destruct it, just mark it as unset.
+            other._access = nullptr;
         }
     }
     return *this;
