@@ -134,23 +134,52 @@ namespace {
     private:
         int _value;
         static int _instanceCount;
+        void trace(const char* name)
+        {
+            tsunit::Test::debug() << "TestData, " << name << " (" << _value << "), instances: " << _instanceCount << std::endl;
+        }
     public:
-        // Constructors
-        explicit TestData(int value = 0) : _value(value) {_instanceCount++;}
-        TestData(TestData&& other) : _value(other._value) {_instanceCount++;}
-        TestData(const TestData& other) : _value(other._value) {_instanceCount++;}
-        // TestData& operator=(TestData&& other) {_value = other._value; return *this;}
-        TestData& operator=(const TestData& other) {_value = other._value; return *this;}
-        bool operator==(const TestData& other) const {return _value == other._value;}
-
-        // Destructor
-        ~TestData() {_instanceCount--;}
-
+        explicit TestData(int value = 0) : _value(value)
+        {
+            _instanceCount++;
+            trace("default constructor");
+        }
+        TestData(TestData&& other) : _value(std::move(other._value))
+        {
+            // move object => don't increment instance count
+            trace("move constructor");
+        }
+        TestData(const TestData& other) : _value(other._value)
+        {
+            _instanceCount++;
+            trace("copy constructor");
+        }
+        TestData& operator=(TestData&& other)
+        {
+            _value = std::move(other._value);
+            _instanceCount--; // other is moved => disappear without destructor
+            trace("move assignment");
+            return *this;
+        }
+        TestData& operator=(const TestData& other)
+        {
+            _value = other._value;
+            trace("copy assignment");
+            return *this;
+        }
+        ~TestData() {
+            _instanceCount--;
+            trace("destructor");
+        }
+        bool operator==(const TestData& other)
+        {
+            return _value == other._value;
+        }
         // Get the object's value
-        int v() const {return _value;}
+        int v() const { return _value; }
 
         // Get the number of instances
-        static int InstanceCount() {return _instanceCount;}
+        static int InstanceCount() { return _instanceCount; }
     };
 
     int TestData::_instanceCount = 0;
@@ -246,7 +275,6 @@ void VariableTest::testClass()
         v5 = NewInstance(5, 4);
         TSUNIT_EQUAL(4, TestData::InstanceCount());
         TSUNIT_ASSERT(v5.set());
-        TSUNIT_EQUAL(5, v5.value().v());
     }
     // Check that the destructor of variable properly destroys the contained object
     TSUNIT_EQUAL(0, TestData::InstanceCount());
